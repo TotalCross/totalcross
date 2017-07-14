@@ -168,6 +168,20 @@ public final class Font
    }
 
    /**
+    * Gets the instance of the default font, normal style and with the given size.
+    * @param boldStyle If true, a bold font is used. Otherwise, a plain font is used.
+    * @param size If you want a text bigger than the standard size, use Font.NORMAL_SIZE+x; or if you want
+    * a text smaller than the standard size, use Font.NORMAL_SIZE-x. Size is adjusted to be in the range
+    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>. That is, passing a value out of the bounds 
+    * won't throw an exception, will only use the minimum default size if the size passed is less than it or 
+    * use the maximum default size if the size passed is greater than it.
+    */
+   public static Font getFont(int size) // guich@580_10
+   {
+      return getFont(DEFAULT, false, size);
+   }
+
+   /**
     * Gets the instance of a font of the given name, style and size. Font styles are defined
     * in this class. Font.DEFAULT will be used if the font is not installed on the device. 
     * This method can be used to check if the created font is in fact installed on the device.

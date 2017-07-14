@@ -82,7 +82,7 @@ public class FileSample extends BaseContainer implements Runnable
             if (files[0].charAt(1) == '[') // is it a volume label?
                files[0] = files[0].substring(1); // remove the preceding slash
          }
-         add(new ComboBox(files), LEFT, TOP);
+         add(new ComboBox(files), LEFT, TOP, FILL,PREFERRED);
          log("recursiveList took " + (Vm.getTimeStamp() - start) + "ms");
       }
    }

@@ -60,6 +60,7 @@ public final class Graphics4D
    static public final byte R3D_RAISED=3;
    static public final byte R3D_CHECK=4;
    static public final byte R3D_SHADED=5;
+   static public final byte R3D_FILL = 6;
    static public final byte ARROW_UP = 1;
    static public final byte ARROW_DOWN = 2;
    static public final byte ARROW_LEFT = 3;

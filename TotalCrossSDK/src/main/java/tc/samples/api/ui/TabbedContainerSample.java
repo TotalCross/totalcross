@@ -59,7 +59,6 @@ public class TabbedContainerSample extends BaseContainer
          tc2.getContainer(1).setBackColor(0x840C08);
          tc2.getContainer(2).setBackColor(0x080C84);
          tc2.useOnTabTheContainerColor = true;
-         tc2.pressedColor = Color.ORANGE;
          tc2.allSameWidth = true;
          tc2.extraTabHeight = fmH/2;
          sc.add(tc2,LEFT,AFTER+fmH,FILL,SCREENSIZE+30);

@@ -20,6 +20,7 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
@@ -242,7 +243,7 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiFlat,uiVista=true,uiAndroid,uiHolo;
+   protected static boolean uiFlat,uiVista=true,uiAndroid,uiHolo,uiMaterial;
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
@@ -251,6 +252,9 @@ public class Control extends GfxSurface
 
    protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
    public boolean eventsEnabled = true;
+
+   /** Color to fill the background in Material UI when its enabled. */
+   public int fillColor = -1;
 
    Rect cli = new Rect();
    /** Specifies if this device is a tablet, computing the number of text lines.
@@ -316,6 +320,8 @@ public class Control extends GfxSurface
    /** Keep the control enabled even if enabled is false. */
    public boolean keepEnabled;
    
+   /** The current effect used in this control */
+   public UIEffects effect;
    
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
@@ -1356,7 +1362,7 @@ public class Control extends GfxSurface
    @since SuperWaba 2.0 */
    public int getForeColor()
    {
-      return isEnabled()?foreColor:Color.brighter(foreColor);
+      return isEnabled()?foreColor: uiMaterial ? Color.getGray(foreColor) : Color.brighter(foreColor);
    }
 
    /** Get the desired background color of this control.
@@ -1448,7 +1454,8 @@ public class Control extends GfxSurface
       if (!uiStyleAlreadyChanged)
       {
          uiFlat    = Settings.uiStyle == Settings.Flat;
-         uiAndroid = Settings.uiStyle == Settings.Android || Settings.uiStyle == Settings.Holo;
+         uiMaterial= Settings.uiStyle == Settings.Material;
+         uiAndroid = Settings.uiStyle == Settings.Android || Settings.uiStyle == Settings.Holo || uiMaterial;
          uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;
          uiHolo    = Settings.uiStyle == Settings.Holo || uiAndroid;
          uiStyleAlreadyChanged = true;
@@ -1619,14 +1626,21 @@ public class Control extends GfxSurface
             font = current; fm = font.fm; fmH = font.fm.height;
             refreshGraphics(gfx, 0, null,0,0);
          }
-         if (recursive && asContainer != null)
-         {
-            asContainer.lastX = -999999; asContainer.lastY = asContainer.lastW = asContainer.lastH = 0;
-            for (Control child = asContainer.children; child != null; child = child.next)
-               child.reposition();
-         }
+         if (recursive)
+            repositionChildren();
       }
       if (asContainer != null) asContainer.lastScreenWidth = Settings.screenWidth; // save the last screen resolution so we can be repositioned if a rotation occured at a time that the container was not on screen
+   }
+   
+   /** Repositions the children controls. This is usually called from reposition, but you can call by yourself if you are changing this control's position and size by yourself (for example during rotaton) */
+   protected void repositionChildren()
+   {
+      if (asContainer != null)
+      {
+         asContainer.lastX = -999999; asContainer.lastY = asContainer.lastW = asContainer.lastH = 0;
+         for (Control child = asContainer.children; child != null; child = child.next)
+            child.reposition();
+      }
    }
 
    /** Reposition this control, calling again setRect with the original parameters. */
@@ -2125,6 +2139,8 @@ public class Control extends GfxSurface
       foreColor = Color.WHITE;
       textShadowColor = 0x444444;
       alphaValue = 0x80;
+      if (effect != null)
+         effect.enabled = translucentShape == TranslucentShape.NONE || translucentShape == TranslucentShape.RECT;
    }
 
    private Image transback;
@@ -2156,5 +2172,17 @@ public class Control extends GfxSurface
          return true;
       }
       return false;
+   }
+   
+   public int getEffectW() {return this.width;}
+   public int getEffectH() {return this.height;}
+   public int getEffectX() {return 0;}
+   public int getEffectY() {return 0;}
+   
+   /** Returns true if this control has focus */
+   public boolean hasFocus()
+   {
+      Window w = getParentWindow();
+      return w != null && w.getFocus() == this;
    }
 }

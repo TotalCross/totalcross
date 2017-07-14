@@ -51,9 +51,12 @@ public class TranslucentBaseContainer extends Container
    {
       Edit ed = new Edit();
       ed.caption = cap;
-      ed.setForeColor(ed.captionColor = Color.WHITE);
+      ed.captionColor = Color.WHITE;
+      if (uiMaterial)
+         ed.setBackColor(Color.WHITE);
+      ed.setForeColor(Color.WHITE);
       ed.textShadowColor = 0x444444;
-      ed.alphaValue = 128;
+      if (!uiMaterial) ed.alphaValue = 128;
       return ed;
    }
 

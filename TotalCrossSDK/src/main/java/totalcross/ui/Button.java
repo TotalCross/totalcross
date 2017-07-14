@@ -18,11 +18,11 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.util.Hashtable;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * Button is a push button control. It supports multilined text, a standalone image,
@@ -128,7 +128,7 @@ public class Button extends Control implements TextControl
    public int INITIAL_DELAY = 600;
    /** The frequency in which the PRESSED event will be posted after the INITIAL_DELAY was reached. Defaults to 150ms. */
    public int AUTO_DELAY = 150;
-   
+
    protected String text;
    protected Image img,img0,imgDis;
    protected boolean armed;
@@ -249,6 +249,8 @@ public class Button extends Control implements TextControl
       this.tiGap = gap;
       txtPos = textPosition;
       this.localCommonGap = commonGap;
+      effect = UIEffects.get(this);
+      shiftOnPress = !uiMaterial;
    }
 
    /** Creates a button displaying the given text. */
@@ -544,12 +546,13 @@ public class Button extends Control implements TextControl
    {
       if (skipPaint) return;
       boolean isRound = border == BORDER_ROUND;
+      if (uiMaterial && effect != null) effect.darkSideOnPress = border != BORDER_NONE;
       if (isAndroidStyle)
       {
-         if (translucentShape == TranslucentShape.NONE && !Settings.isOpenGL && !Settings.onJavaSE)
+         if (translucentShape == TranslucentShape.NONE && !uiMaterial && !Settings.isOpenGL)
          {
             g.getClip(clip);
-            g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
+            g.backColor = parent.backColor;
             g.fillRect(0,0,width,height);
          }
       }
@@ -563,8 +566,11 @@ public class Button extends Control implements TextControl
          g.fillRoundRect(0,0,width,height,height/roundBorderFactor);
       }
       else
-      if (isAndroidStyle)
+      if (isAndroidStyle || (uiMaterial && border != BORDER_NONE))
          paintImage(g, true, 0,0);
+      
+      if (effect != null)
+         effect.paintEffect(g);
       
       int border = txtPos == CENTER ? 0 : Math.min(2,this.border); // guich@tc112_31
       g.setClip(border,border,width-(border<<1),height-(border<<1)); // guich@101: cut text if button is too small - guich@510_4
@@ -618,7 +624,7 @@ public class Button extends Control implements TextControl
             imgDis = null;
          } catch (Throwable t) {img = img0;}
       isAndroidStyle = uiAndroid && this.border == BORDER_3D;
-      if (isAndroidStyle && clip == null)
+      if ((isAndroidStyle || uiMaterial) && clip == null)
          clip = new Rect();
       npback = null;
       int th=0,iw=0,ih=0;
@@ -688,7 +694,7 @@ public class Button extends Control implements TextControl
       if (!enabled && autoRepeatTimer != null)
          disableAutoRepeat();
       fColor = enabled ? foreColor : Color.getCursorColor(foreColor); // guich@tc110_49: use getCursorColor so a white forecolor shows up as changed
-      if (!isAndroidStyle)
+      if (!isAndroidStyle && !uiMaterial)
          Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
       if (!isAndroidStyle)
@@ -723,12 +729,13 @@ public class Button extends Control implements TextControl
                g.fillRect(0,0,width,height);
                break;
             case Settings.Android:
+            case Settings.Material:
             case Settings.Holo:
             case Settings.Vista: // guich@573_6
             {
                if (border == BORDER_NONE && flatBackground) // guich@582_14
                {
-                  g.backColor = armed && fixPressColor ? pressColor : backColor;
+                  g.backColor = armed && fixPressColor && effect == null ? pressColor : backColor;
                   g.fillRect(0,0,width,height);
                }
                else
@@ -774,7 +781,7 @@ public class Button extends Control implements TextControl
             {
                if (npback == null)
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
-               NinePatch.tryDrawImage(g, enabled ? armed ? 
+               NinePatch.tryDrawImage(g, enabled ? armed && (isSticky || effect == null) ? 
                      NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor) : 
                      npback : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false),ix,iy);
             }

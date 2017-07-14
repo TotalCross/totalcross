@@ -14,6 +14,8 @@
 package tc;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import tc.tools.JarClassPathLoader;
 import tc.tools.RegisterSDK;
@@ -137,6 +139,7 @@ public class Deploy
                if (!DeploySettings.filePrefix.equals("TCBase") && !DeploySettings.filePrefix.equals("TCUI") && !DeploySettings.filePrefix.toLowerCase().endsWith("lib"))
                   System.out.println("If this file is really a library, you must name it "+DeploySettings.filePrefix+"Lib."+ext+", or it will NOT be loaded in the device.");
             }
+            System.out.println("Finished at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime()));
          }
       }
       catch (OutOfMemoryError oome)

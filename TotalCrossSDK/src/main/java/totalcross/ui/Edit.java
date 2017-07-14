@@ -22,6 +22,7 @@ package totalcross.ui;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
@@ -81,10 +82,10 @@ import totalcross.util.*;
  * @see #clipboardDelay
  */
 
-public class Edit extends Control implements TextControl
+public class Edit extends Control implements TextControl, TimerListener
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
-   private static int xMins[] = {4,1,3,3,4,4};
+   private static int xMins[] = {4,1,3,3,4,4,2};
    public static final int prefH = uiAndroid ? 4 : 2;
 
    protected boolean hasFocus;
@@ -152,6 +153,9 @@ public class Edit extends Control implements TextControl
    /** Used to inform that a <i>command</i> operation has been made. You can localize this message if you wish. */
    public static String commandStr = "command";
 
+   /** Handler for the CaptionPress */
+   public CaptionPress captionPress;
+   
    /** Defines an optional value to be used in the CalculatorBox when the keyboard type is KBD_NUMERIC or KBD_CALCULATOR. 
     * Replaces the decimal separator / 00 char.
     * @since TotalCross 1.5 
@@ -263,6 +267,12 @@ public class Edit extends Control implements TextControl
 
    /** Cursor thickness */
    public static int cursorThickness = Math.max(Settings.screenWidth,Settings.screenHeight) > 1500 ? 3 : Math.max(Settings.screenWidth,Settings.screenHeight) > 700 ? 2 : 1;
+   
+   // changes for material design
+   private int xcap,ycap,ycap0,fmHmin,fmHtarget,xcap0,inccap;
+   private Font fcap;
+   private TimerEvent tea;
+   private boolean postPopupKCC;
 
    /** Construct an Edit with FILL as preferred width. Note that you cannot use RIGHT or CENTER at the x coordinate if you use this constructor. */
    public Edit()
@@ -270,6 +280,8 @@ public class Edit extends Control implements TextControl
       clearPosState();
       onFontChanged();
       useFillAsPreferred = true;
+      if (uiMaterial)
+         backColor = 0;
    }
 
    /** Construct an Edit with the default width computed based in the specified
@@ -373,6 +385,9 @@ public class Edit extends Control implements TextControl
    protected void onFontChanged()
    {
       wildW = fm.charWidth('*');
+      // material
+      fmHmin = fmH*75/100;
+      fcap = this.font;
    }
 
    /** Returns the mask passed on the constructor. */
@@ -531,9 +546,13 @@ public class Edit extends Control implements TextControl
       xOffset = pushedxOffset;
    }
 
+   private int getX0()
+   {
+      return captionIcon == null ? 0 : captionIcon.getWidth() + fmH/4;
+   }
    protected int charPos2x(int n)
    {
-      int extra = captionIcon == null ? 0 : captionIcon.getWidth() + fmH;
+      int extra = getX0();
       if (!isMaskedEdit)
       {
          if (n == 0) // start of string?
@@ -702,6 +721,7 @@ public class Edit extends Control implements TextControl
       applyMaskToInput();
       clearPosState();
       Window.needsPaint = true;
+      animateMaterial(isDisplayed());
       if (postPressed)
          postPressedEvent();
    }
@@ -736,6 +756,9 @@ public class Edit extends Control implements TextControl
       xMax = this.width - xMin;
       gap = hasBorder ? (xMin>>1) : 0;
       npback = null;
+      // material
+      xcap0 = xcap = chars.length() == 0 ? xMin : 0;
+      ycap0 = ycap = chars.length() == 0 ? getTextY() : 0;
    }
 
    public int getPreferredWidth()
@@ -745,7 +768,10 @@ public class Edit extends Control implements TextControl
 
    public int getPreferredHeight()
    {
-      return fmH+prefH;
+      int ret = fmH+prefH;
+      if (uiMaterial && caption != null)
+         ret += fmHmin;
+      return ret;
    }
 
    protected void onColorsChanged(boolean colorsChanged)
@@ -784,34 +810,73 @@ public class Edit extends Control implements TextControl
       }
    }
 
+   private int getTextY()
+   {
+      int y = this.height - fmH - gap;
+      if (uiAndroid) y--;
+      if (uiHolo) // no else here!
+         y = (height-fmH - gap) / 2;
+      if (uiMaterial)
+         y = height - fmH - gap-1;
+      return y;
+   }
+   
    protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
 
       boolean uiAndroid = Control.uiAndroid || uiHolo;
-      int y = this.height - fmH - gap;
-      if (uiAndroid) y -= 1;
-      if (uiHolo) // no else here!
-         y = (height-fmH - gap) / 2;
+      int y = getTextY();
 
+      // background
       g.backColor = back0;
       if (!transparentBackground)
       {
-         int gg = gap;
-         if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-         if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
-         if (hasBorder && uiAndroid)
+         if (uiMaterial)
          {
-            try
+            int h = fmH/10; if (h < 2) h = 2;
+            if (focusColor != -1 && hasFocus)
             {
-               if (npback == null || focusColor != -1)
-               {
-                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
-                  npback.alphaMask = alphaValue;
-               }
+               g.backColor = focusColor;
+               g.fillRect(0,0,width,height-h);
             }
-            catch (ImageException e) {e.printStackTrace();}
-            NinePatch.tryDrawImage(g,npback,0,0);
+            int c = hasFocus ? backColor : Color.getGray(backColor);
+            if (isEnabled())
+            {
+               if (fillColor != -1)
+               {
+                  g.backColor = fillColor;
+                  g.fillRect(0,0,width,height-h);
+               }
+               g.backColor = c;
+               g.fillRect(0,height-h,width,h);
+            }
+            else
+            {
+               g.foreColor = c;
+               g.backColor = Color.getGray(getForeColor());
+               for (int i = 0; i < h; i++)
+                  g.drawDots(i&1,height-1-i, width, height-1-i);
+            }
+         }
+         else
+         {
+            int gg = gap;
+            if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
+            if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (hasBorder && uiAndroid)
+            {
+               try
+               {
+                  if (npback == null || focusColor != -1)
+                  {
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
+                     npback.alphaMask = alphaValue;
+                  }
+               }
+               catch (ImageException e) {e.printStackTrace();}
+               NinePatch.tryDrawImage(g,npback,0,0);
+            }
          }
       }
       // draw the text and/or the selection
@@ -831,7 +896,7 @@ public class Edit extends Control implements TextControl
             if (sel1X != sel2X)
             {
                int old = g.backColor;
-               g.backColor = back1;
+               g.backColor = back1 == backColor ? Color.brighter(back1) : back1;
                g.fillRect(sel1X,y,sel2X-sel1X+1,fmH);
                g.backColor = old;
             }
@@ -841,8 +906,8 @@ public class Edit extends Control implements TextControl
          int xx = xOffset;
          if (captionIcon != null)
          {
-            xx += captionIcon.getWidth() + fmH;
-            g.drawImage(captionIcon, fmH, (height-captionIcon.getHeight())/2);
+            xx += getX0();
+            g.drawImage(captionIcon, uiMaterial ? 0 : fmH, y);
          }
             
          if (!hasFocus && !drawCaption) // guich@503_2: align the edit after it looses focus
@@ -851,8 +916,8 @@ public class Edit extends Control implements TextControl
                case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
                case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
             }
-         if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
-         if (drawCaption)
+         if (hasBorder) g.setClip(xMin+(captionIcon!=null?captionIcon.getWidth():0),0,xMax-Edit.prefH,height);
+         if (drawCaption && !uiMaterial)
          {
             g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
             g.drawText(caption, xx, y, textShadowColor != -1, textShadowColor);
@@ -897,6 +962,13 @@ public class Edit extends Control implements TextControl
       }
       else
          cursorShowing = false;
+      // material
+      if (uiMaterial)
+      {
+         g.foreColor = hasFocus ? (captionColor != -1 ? captionColor : backColor) : Color.getGray(backColor);
+         g.setFont(fcap);
+         g.drawText(caption, xcap+getX0(), ycap);
+      }
    }
 
    private void applyMaskToInput()
@@ -1210,6 +1282,8 @@ public class Edit extends Control implements TextControl
                Window.needsPaint = true; //draw(drawg=getGraphics(), true); // erase cursor at old insert position
             newInsertPos = 0;
             focusOut();
+            if (uiMaterial && caption != null)
+               animateMaterial(true);
             break;
          case KeyEvent.KEY_PRESS:
          case KeyEvent.SPECIAL_KEY_PRESS:
@@ -1422,15 +1496,37 @@ public class Edit extends Control implements TextControl
             break;
          }
          case PenEvent.PEN_UP:
-            if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled())
+         {
+            PenEvent pe = (PenEvent)event;
+            if (captionPress != null && caption != null && pe.y <= fmHmin)
             {
-               if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
-                  showClipboardMenu();
-               else
-               if (wasFocusInOnPenDown || !Window.isScreenShifted())
-                  popupKCC();
+               captionPress.onCaptionPress();
+            }
+            else
+            if (captionPress != null && captionIcon != null && pe.x <= captionIcon.getWidth())
+            {
+               captionPress.onIconPress();
+            }
+            else
+            {
+               if (uiMaterial && caption != null)
+                  animateMaterial(true);
+               if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled())
+               {
+                  if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
+                     showClipboardMenu();
+                  else
+                  if (wasFocusInOnPenDown || !Window.isScreenShifted())
+                  {
+                     if (tea != null)
+                        postPopupKCC = true;
+                     else
+                        popupKCC();
+                  }
+               }
             }
             break;
+         }
          case KeyboardBox.KEYBOARD_ON_UNPOP: // guich@320_34
             pushPosState();
             ignoreSelect = true; // guich@570_112: don't autoselect when keyboard is called
@@ -1483,6 +1579,8 @@ public class Edit extends Control implements TextControl
                xOffset = xMin;
          }
          int totalCharWidth = getTotalCharWidth();
+         int cw = captionIcon != null ? captionIcon.getWidth()+fmH/4 : 0;
+         int xMax = this.xMax - cw;
          if (x > xMax)
          {
             // characters hidden on right - jump
@@ -1748,5 +1846,55 @@ public class Edit extends Control implements TextControl
    protected boolean willOpenKeyboard()
    {
       return editable && (kbdType == KBD_DEFAULT || kbdType == KBD_KEYBOARD);
+   }
+   
+   // material
+   private void animateMaterial(boolean slow)
+   {
+      if (tea == null)
+      {
+         fmHtarget = hasFocus || chars.length() > 0 ? fmHmin : fmH;
+         if (fcap.size != fmHtarget)
+         {
+            if (slow)
+            {
+               inccap = fcap.size == fmH ? -1 : 1;
+               addTimerListener(this);
+               tea = addTimer(10);
+            }
+            else
+            {  
+               inccap = fmHtarget-fcap.size;
+               singleStep();
+            }
+         }
+      }
+   }
+   
+   public void timerTriggered(TimerEvent e)
+   {
+      if (tea != null && tea.triggered)
+      {
+         singleStep();
+         Window.needsPaint = true;
+         if (fcap.size == fmHtarget)
+         {
+            removeTimer(tea);
+            removeTimerListener(this);
+            tea = null;
+            if (postPopupKCC)
+            {
+               postPopupKCC = false;
+               popupKCC();
+            }
+         }
+      }
+   }
+
+   private void singleStep()
+   {
+      fcap = fcap.adjustedBy(inccap);
+      ycap = ycap0 * (fcap.size - fmHmin) / (fmH - fmHmin);
+      xcap = xcap0 * (fcap.size - fmHmin) / (fmH - fmHmin);
    }
 }

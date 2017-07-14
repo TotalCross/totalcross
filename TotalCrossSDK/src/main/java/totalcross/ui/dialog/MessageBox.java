@@ -247,6 +247,9 @@ public class MessageBox extends Window
          msg.setRect(LEFT+2+lgap,btns == null ? CENTER : ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
       if (btns != null)
       {
+         if (uiMaterial)
+            btns.setRect(wb>2*w/3? CENTER : RIGHT-fmH, ly+hm+androidGap, Math.max(w/3,wb),FILL-2);
+         else
          if (uiAndroid && !multiRow)
             btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,ly+hm+androidGap,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-2);
          else
@@ -440,7 +443,7 @@ public class MessageBox extends Window
     * Here's a sample:
     * <pre>
     * MessageBox mb = new MessageBox("Novo Tweet!",tweet);
-    * mb.setTimeToShowButton(7000);
+    * mb.setDelayToShowButton(7000);
     * mb.popup();
     * </pre>
     * @since TotalCross 1.53

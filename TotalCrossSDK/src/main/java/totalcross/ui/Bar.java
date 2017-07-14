@@ -17,7 +17,9 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
@@ -92,6 +94,8 @@ public class Bar extends Container
       public int buttonTitleAlign=-1;
       public boolean buttonCanSelectTitle;
       public boolean isShadedText;
+      public boolean isSticky,down;
+      public int fillColor=-1;
       
       public BarButton(String title, Image icon) // title or icon
       {
@@ -99,8 +103,14 @@ public class Bar extends Container
          this.icon0 = icon;
          buttonCanSelectTitle = canSelectTitle;
          isShadedText = backgroundStyle != Container.BACKGROUND_SOLID;
+         effect = UIEffects.get(this);
       }
       
+      public void setTitle(String s)
+      {
+         title = s;
+      }
+
       public void onFontChanged()
       {
          if (title != null)
@@ -147,7 +157,13 @@ public class Bar extends Container
          int w = width;
          int h = height;
          
-         if (pressed)
+         if (fillColor != -1)
+         {
+            g.backColor = fillColor;
+            g.fillRect(0,0,w,h);
+         }
+         else
+         if (pressed || down)
             g.fillShadedRect(0,0,w,h,true,false,fc,pcolor,30);
          
          // draw borders
@@ -162,7 +178,7 @@ public class Bar extends Container
             else
                g.drawLine(0,0,0,h);
          }
-
+         if (effect != null) {effect.enabled = buttonCanSelectTitle; effect.paintEffect(g);}
          // draw contents
          if (title != null)
          {
@@ -189,6 +205,7 @@ public class Bar extends Container
             g.drawImage(icon, px,py);
       }
       
+      private boolean tempPressed;
       public void onEvent(Event e)
       {
          if ((!buttonCanSelectTitle && title != null) || Flick.currentFlick != null)
@@ -210,7 +227,10 @@ public class Bar extends Container
                }
                break;
             case PenEvent.PEN_DOWN:
-               pressed = true;
+               if (isSticky)
+                  down = !down;
+               tempPressed = true;
+               if (!uiMaterial) pressed = true;
                Window.needsPaint = true;
                if (autoRepeatRate != 0)
                {
@@ -219,8 +239,10 @@ public class Bar extends Container
                }
                break;
             case PenEvent.PEN_UP:
-               if (pressed)
+               if (pressed || tempPressed)
                {
+                  pressed = true;
+                  tempPressed = false;
                   selected = appId;
                   if (selected > 1000) selected -= 1000;
                   boolean fired = repeatTimer != null && startRepeat <= 0;
@@ -281,7 +303,7 @@ public class Bar extends Container
    public Bar(String title)
    {
       this.title = title != null ? new BarButton(title,null) : null;
-      this.backgroundStyle = BACKGROUND_SHADED;
+      this.backgroundStyle = uiMaterial ? BACKGROUND_SOLID : BACKGROUND_SHADED;
       //this.ignoreInsets = true;
       setFont(font.asBold());
    }
@@ -352,7 +374,9 @@ public class Bar extends Container
     */
    public int addButton(Image icon, boolean atRight)
    {
-      return addControl(new BarButton(null,icon), atRight);
+      BarButton bb = new BarButton(null,icon);
+      bb.buttonCanSelectTitle = true;
+      return addControl(bb, atRight);
    }
    
    /** 
@@ -413,6 +437,16 @@ public class Bar extends Container
       if (initialized) initUI();
    }
    
+   /** Shows or hide a set of buttons.
+    */
+   public void setButtonsVisible(boolean visible, int ... indexes)
+   {
+      for (int idx: indexes)
+         if (idx != -1)
+            ((BarButton)icons.items[idx-1]).setVisible(visible);
+      if (initialized) initUI();
+   }
+   
    /** 
     * Returns the selected button, or -1 if none was selected.
     * 
@@ -451,6 +485,8 @@ public class Bar extends Container
          for (int i = n; --i >= 0;)
          {
             Control c = (Control)icons.items[i];
+            if (!c.isVisible())
+               continue;
             boolean atRight = c.appId >= 1000;
             int posX;
             Control rel = null;
@@ -466,7 +502,7 @@ public class Bar extends Container
                rel = lastAtLeft;
                lastAtLeft = c;
             }
-            add(c, posX, TOP, height, FILL, rel);
+            add(c, posX, TOP, getButtonWidth(c.appId > 1000 ? c.appId-1000 : c.appId), FILL, rel);
          }
          if (n == 0)
             add(title, n == 0 ? LEFT : AFTER, TOP, FILL, FILL);
@@ -475,7 +511,7 @@ public class Bar extends Container
             Spacer spl = new Spacer(0,0), spr = new Spacer(0,0);
             add(spl,lastAtLeft != null ? AFTER : LEFT,SAME,lastAtLeft);
             add(spr,lastAtRight != null ? BEFORE : RIGHT,SAME,lastAtRight);
-            add(title, AFTER, TOP, FIT, FILL,spl);
+            try {add(title, AFTER, TOP, FIT, FILL,spl);} catch (Throwable t) {} // ignore title if there is not enough space                  
          }
          if (spinner != null)
          {
@@ -484,6 +520,12 @@ public class Bar extends Container
          }
       }
       initialized = true;
+   }
+   
+   /** Override this method to return a customized button's width */
+   protected int getButtonWidth(int idx)
+   {
+      return this.height;
    }
    
    /**
@@ -562,6 +604,17 @@ public class Bar extends Container
       super.reposition();
       initUI();
    }
+
+   public void onFontChanged()
+   {
+      if (icons != null) // we have to do this here because some icons may not be visible
+         for (int i = 0, n = icons.size(); i < n; i++)
+         {
+            Control c = (Control)icons.items[i];
+            Font f = c.getFont();
+            c.setFont(Font.getFont(f.name, f.isBold(), this.font.size));
+         }
+   }
    
    /** 
     * Assigns the BACK key on Android (mapped to <code>SpecialKeys.ESCAPE</code>) to the given button. This can only be called after the bar has been 
@@ -609,5 +662,10 @@ public class Bar extends Container
    public void setSpinner(Spinner s)
    {
       spinner = s;
+   }
+   
+   public int getTitleWidth()
+   {
+      return title == null ? 0 : title.getWidth();
    }
 }

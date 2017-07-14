@@ -21,7 +21,9 @@ package totalcross.ui;
 
 import totalcross.res.*;
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
@@ -34,7 +36,7 @@ import totalcross.util.*;
  * given color.
  */
 
-public class ComboBox extends Container
+public class ComboBox extends Container implements TimerListener, MaterialEffect.SideEffect
 {
    public static final int ARROWSTYLE_DOWNDOT = 0;
    public static final int ARROWSTYLE_PAGEFLIP = 1;
@@ -48,17 +50,22 @@ public class ComboBox extends Container
    private int fourColors[] = new int[4];
    private Image npback,nparmed;
    private int selOnPopup = -2;
+   private boolean cancelPopup;
    private boolean wasOpen; // guich@tc152: fixed ComboBox problem of clicking on an open combobox was making it open again
    /** If set to true, the popup window will have the height of the screen */
    public boolean fullHeight;
    /** If set to true, the popup window will have the width of the screen */
    public boolean fullWidth;                    // guich@550_20
 
+   /** Handler for the CustomPress */
+   public CaptionPress captionPress;
+   
    /** The default value that is set to the clearValueInt of all ComboBox.
     * Usually this value is 0, but sometimes you may wish set it to -1, to unselect the ComboBox when clear is called.
     */
    public static int defaultClearValueInt;
    /** The check color used to fill the radio button used in Android. Defaults to the fore color.
+    * In material UI, the arrow will be filled with this color when it has focus
     * @since TotalCross 1.3 
     */
    public int checkColor = -1;
@@ -72,7 +79,18 @@ public class ComboBox extends Container
     * @see PopupMenu#enableSearch
     */
    public boolean enableSearch=true;
+
+   /** The caption to draw when this Edit is empty.
+    * @see #captionColor 
+    */
+   public String caption;
    
+   /** The caption's color. */
+   public int captionColor = -1;
+   
+   /** An optional caption's icon */
+   public Image captionIcon;   
+
    /** Set to false to don't use the PopupMenu when the user interface style is Android.
     * This affects all ComboBoxes. If you want to change a particular ComboBox to use the standard
     * popup list, but keep others with the PopupMenu, you can do something like:
@@ -90,7 +108,12 @@ public class ComboBox extends Container
    public static boolean usePopupMenu = true;
    
    private boolean _usePopupMenu;
-   
+
+   // changes for material design
+   private int xcap,ycap,ycap0,fmHmin,fmHtarget,xcap0,inccap;
+   private Font fcap;
+   private TimerEvent tea;
+
    /** Creates an empty ComboBox */
    public ComboBox()
    {
@@ -122,31 +145,36 @@ public class ComboBox extends Container
       clearValueInt = defaultClearValueInt;
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
-      if (uiAndroid)
+      if (!uiMaterial)
       {
-         btn = new Button(getArrowImage());
-         btn.setBorder(Button.BORDER_NONE);
-         btn.transparentBackground = true;
-      }
-      else
-      {
-         btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK);
-         btn.setBorder(Button.BORDER_NONE);
-         if (uiVista)
+         if (uiAndroid)
          {
-            btn.flatBackground = false;
-            btn.setBackColor(Color.darker(backColor,32));
+            btn = new Button(getArrowImage());
+            btn.setBorder(Button.BORDER_NONE);
+            btn.transparentBackground = true;
          }
+         else
+         {
+            btn = new ArrowButton(Graphics.ARROW_DOWN, uiMaterial ? getArrowWidth()/2 : getArrowWidth(), Color.BLACK);
+            btn.setBorder(Button.BORDER_NONE);
+            if (uiVista)
+            {
+               btn.flatBackground = false;
+               btn.setBackColor(Color.darker(backColor,32));
+            }
+         }
+         btn.focusTraversable = false;
+         super.add(btn);
       }
-      btn.focusTraversable = false;
-      super.add(btn);
+      effect = UIEffects.get(this);
       started = true; // avoid calling the initUI method
       this.focusTraversable = true; // kmeehl@tc100
+      setMatFontParams();
    }
    
    private int getArrowWidth()
    {
-      return fmH * 3 / 11;
+      return uiMaterial ? fmH/2 : fmH * 3 / 11;
    }
 
    /** Does nothing */
@@ -293,6 +321,7 @@ public class ComboBox extends Container
    {
       int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedItem(name);
+      animateMaterial(isDisplayed());
       if (sendPress && pop.lb.selectedIndex != idx)
          postPressedEvent();
       Window.needsPaint = true;
@@ -317,6 +346,7 @@ public class ComboBox extends Container
       pop.lb.setSelectedIndex(i);
       if (sendPressEvent && pop.lb.selectedIndex != idx)
          postPressedEvent();
+      animateMaterial(isDisplayed());
       Window.needsPaint = true;
    }
 
@@ -328,7 +358,7 @@ public class ComboBox extends Container
 
    public int getPreferredWidth()
    {
-      return pop.getPreferredWidth() + 1 + insets.left+insets.right + (Settings.fingerTouch ? btn.getPreferredWidth()+4 : 0);
+      return Math.max(fm.stringWidth(caption == null ? "" : caption), pop.getPreferredWidth()) + 1 + insets.left+insets.right + (uiMaterial ? fmH*3/2 : Settings.fingerTouch ? btn.getPreferredWidth()+4 : 0);
    }
 
    private Image getArrowImage() 
@@ -350,7 +380,23 @@ public class ComboBox extends Container
    
    public int getPreferredHeight()
    {
-      return (pop.lb.itemCount > 0 && !isSupportedListBox() ? pop.lb.getItemHeight(0) : fmH) + Edit.prefH + insets.top+insets.bottom;
+      int ret = (pop.lb.itemCount > 0 && !isSupportedListBox() ? pop.lb.getItemHeight(0) : fmH) + Edit.prefH + insets.top+insets.bottom;;
+      if (uiMaterial && caption != null)
+         ret += fmHmin;
+      return ret;
+   }
+
+   private int getTextY()
+   {
+      boolean isString = pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String;
+      if (isString && caption == null) 
+         return (height-fmH)/2;
+      int ret = getPreferredHeight();
+      if (uiMaterial && caption != null)
+         ret = height-ret+fmHmin;
+      else
+         ret = (height-ret)/2;
+      return ret;
    }
 
    /** Passes the font to the pop list */
@@ -358,9 +404,8 @@ public class ComboBox extends Container
    {
       if (pop != null)
          pop.setFont(font);
-      // guich@tc100b3: resize the arrow based on the font.
-      boolean uiAndroid = Control.uiAndroid;
-      if (!uiAndroid)
+      
+      if (!uiAndroid) // guich@tc100b3: resize the arrow based on the font.
       {
          ArrowButton ab = (ArrowButton)btn;
          int newWH = getArrowWidth();
@@ -370,6 +415,15 @@ public class ComboBox extends Container
             onBoundsChanged(false);
          }
       }
+      btnW = getArrowWidth();
+      setMatFontParams();
+   }
+   
+   private void setMatFontParams()
+   {
+      // material
+      fmHmin = fmH*75/100;
+      fcap = this.font;
    }
    
    /** Sets the ihtForeColors and ihtBackColors for the ListBox used with this ComboBox.
@@ -384,24 +438,33 @@ public class ComboBox extends Container
 
    protected void onBoundsChanged(boolean screenChanged)
    {
-      btnW = btn.getPreferredWidth();
-      switch (Settings.uiStyle)
+      if (uiMaterial)
+         btnW = getArrowWidth();
+      else
       {
-         case Settings.Holo:
-         case Settings.Android:
-            btn.setImage(getArrowImage());
-            if (arrowStyle == ARROWSTYLE_PAGEFLIP)
-               btn.setRect(width - btnW - 1, height-fmH-2, btnW, fmH,null,screenChanged);
-            else
-               btn.setRect(width - btnW - 3, 2, btnW, height,null,screenChanged);
-            break;
-         default: // guich@573_6: both Flat and Vista use this
-            btn.setRect(width - btnW - 3, 1, btnW + 2, height - 2, null, screenChanged);
-            break;
+         btnW = btn.getPreferredWidth();
+         switch (Settings.uiStyle)
+         {
+            case Settings.Holo:
+            case Settings.Android:
+               btn.setImage(getArrowImage());
+               if (arrowStyle == ARROWSTYLE_PAGEFLIP)
+                  btn.setRect(width - btnW - 1, height-fmH-2, btnW, fmH,null,screenChanged);
+               else
+                  btn.setRect(width - btnW - 3, 2, btnW, height,null,screenChanged);
+               break;
+            default: // guich@573_6: both Flat and Vista use this
+               btn.setRect(width - btnW - 3, 1, btnW + 2, height - 2, null, screenChanged);
+               break;
+         }
       }
       if (screenChanged && pop.isVisible()) // guich@tc100b4_29: reposition the pop too if its visible
          updatePopRect();
       npback = nparmed = null;
+      // material
+      int idx = getSelectedIndex();
+      xcap0 = xcap = getX0();
+      ycap0 = ycap = idx == -1 ? getTextY() : 0;
    }
 
    public void onEvent(Event event)
@@ -422,6 +485,7 @@ public class ComboBox extends Container
                if (uiAndroid)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
                else
+               if (!uiMaterial)
                   btn.press(armed);
             }
             break;
@@ -432,6 +496,7 @@ public class ComboBox extends Container
                if (uiAndroid)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
                else
+               if (!uiMaterial)
                   btn.press(true);
                armed = true;
             }
@@ -440,17 +505,31 @@ public class ComboBox extends Container
             pe = (PenEvent) event;
             if (event.target == this && !wasOpen && (armed || isActionEvent(event)))
             {
-               if (uiAndroid)
-                  Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
-               else
-                  btn.press(false);
-               armed = false;
-               inside = isInsideOrNear(pe.x, pe.y); //  is a method of class Control that uses absolute coords
-               if (inside && (!Settings.fingerTouch || !hadParentScrolled()))
+               if (captionPress != null && caption != null && pe.y <= fmHmin)
                {
-                  opened = true;
-                  selOnPopup  =pop.lb.selectedIndex;
-                  popup();
+                  captionPress.onCaptionPress();
+                  cancelPopup = true;
+               }
+               else
+               if (captionPress != null && captionIcon != null && pe.x <= captionIcon.getWidth())
+               {
+                  captionPress.onIconPress();
+                  cancelPopup = true;
+               }
+               else
+               {
+                  if (uiAndroid)
+                     Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
+                  else
+                  if (!uiMaterial)
+                     btn.press(false);
+                  armed = false;
+                  inside = isInsideOrNear(pe.x, pe.y); //  is a method of class Control that uses absolute coords
+                  if (inside && (!Settings.fingerTouch || !hadParentScrolled()))
+                  {
+                     if (!uiMaterial)
+                        open();
+                  }
                }
             }
             break;
@@ -461,12 +540,16 @@ public class ComboBox extends Container
                opened = false;
                boolean isMulti = pop.lb instanceof MultiListBox;
                if (pop.lb.selectedIndex >= 0 && ((!isMulti && (!Settings.sendPressEventOnChange || pop.lb.selectedIndex != selOnPopup)) || (isMulti && ((MultiListBox)pop.lb).changed)))
+               {
+                  if (uiMaterial && caption != null)
+                     animateMaterial(isDisplayed());
                   postPressedEvent();
+               }
                selOnPopup = -2;
             }
             break;
          case ControlEvent.PRESSED:
-            if (event.target == btn && pop.lb.itemCount > 0)
+            if (!uiMaterial && event.target == btn && pop.lb.itemCount > 0)
             {
                btn.appId = this.appId; // guich@502_3: make the button have the same appid than us.
                event.consumed = true; // kevinsmotherman@450_22: avoid passing this to the other controls.
@@ -474,14 +557,30 @@ public class ComboBox extends Container
             }
             break;
          case ControlEvent.FOCUS_IN:
-         case ControlEvent.FOCUS_OUT:
             if (event.target == btn) // guich@240_11: change the target focus so parents can catch the focus_in and focus_out event
                event.target = this;
             break;
+         case ControlEvent.FOCUS_OUT:
+            if (event.target == btn) // guich@240_11: change the target focus so parents can catch the focus_in and focus_out event
+               event.target = this;
+            if (uiMaterial && caption != null)
+               animateMaterial(true);
+            break;
          case KeyEvent.ACTION_KEY_PRESS:
-            btn.simulatePress();
+            if (!uiMaterial)
+               btn.simulatePress();
             popup();
             break;
+      }
+   }
+
+   private void open()
+   {
+      if (!opened)
+      {
+         opened = true;
+         selOnPopup = pop.lb.selectedIndex;
+         popup();
       }
    }
 
@@ -517,7 +616,7 @@ public class ComboBox extends Container
                pm.itemCount = pop.lb.size();
                pm.dataCol = pop.lb.dataCol;
                pm.checkColor = checkColor;
-               pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
+               if (!uiMaterial) pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
                pm.setCursorColor(pop.lb.back1);
                pm.setSelectedIndex(pop.lb.selectedIndex);
                pm.setFont(this.font);
@@ -528,12 +627,7 @@ public class ComboBox extends Container
                opened = false;
                int sel = pm.getSelectedIndex();
                if (sel != -1)
-               {
-                  pop.lb.selectedIndex = sel;
-                  if (sel != -1)
-                     postPressedEvent();
-                  Window.needsPaint = true;
-               }
+                  setSelectedIndex(pop.lb.selectedIndex = sel);
             }
             catch (Exception e)
             {
@@ -576,7 +670,7 @@ public class ComboBox extends Container
       {
          if (uiAndroid)
             btn.setImage(getArrowImage());
-         else
+         else if (!uiMaterial)
          {
             btn.setBackForeColors(uiVista ? Color.darker(bColor,32) : uiFlat ? bColor : backColor, foreColor);
             ((ArrowButton)btn).arrowColor = fColor;
@@ -590,36 +684,67 @@ public class ComboBox extends Container
    public void onPaint(Graphics g)
    {
       boolean enabled = isEnabled();
-      // guich@200b4_126: repaint the background.
-      if (!transparentBackground) // guich@tc115_18
-         if (!uiAndroid && uiVista && enabled) // guich@573_6
-            g.fillVistaRect(0, 0, width, height, bColor, false, false);
+      if (!uiMaterial)
+      {
+         if (!transparentBackground) // guich@tc115_18
+         {
+            if (!uiAndroid && uiVista && enabled) // guich@573_6
+               g.fillVistaRect(0, 0, width, height, bColor, false, false);
+            else
+            {
+               g.backColor = uiAndroid ? parent.backColor : bColor;
+               g.fillRect(0, 0, width, height);
+            }
+         }
+         if (uiAndroid)
+            try
+            {
+               if (npback == null)
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false);
+               if ((armed || btn.armed) && nparmed == null)
+                  nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
+               Image img = armed || btn.armed ? nparmed : npback;
+               g.drawImage(img, 0,0);
+               g.setClip(2,2,width-btnW-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 8),height-4);
+            }
+            catch (ImageException e) {e.printStackTrace();}
          else
          {
-            g.backColor = uiAndroid ? parent.backColor : bColor;
-            g.fillRect(0, 0, width, height);
+            g.draw3dRect(0, 0, width, height, Graphics.R3D_CHECK, false, false, fourColors);
+            g.setClip(2, 2, width - btnW - 3, height - 4);
          }
-      if (uiAndroid)
-         try
-         {
-            if (npback == null)
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false);
-            if ((armed || btn.armed) && nparmed == null)
-               nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
-            Image img = armed || btn.armed ? nparmed : npback;
-            g.drawImage(img, 0,0);
-//            Graphics gg = img.getGraphics();
-//            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
-            g.setClip(2,2,width-btnW-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 8),height-4);
-         }
-         catch (ImageException e) {e.printStackTrace();}
+      }
       else
       {
-         g.draw3dRect(0, 0, width, height, Graphics.R3D_CHECK, false, false, fourColors);
-         g.setClip(2, 2, width - btnW - 3, height - 4);
+         boolean hasFocus = super.hasFocus();
+         if (captionIcon != null) // is uiMaterial
+            g.drawImage(captionIcon, 0, getTextY());
+         // material
+         g.foreColor = hasFocus ? (captionColor != -1 ? captionColor : backColor) : Color.getGray(backColor);
+         g.setFont(fcap);
+         g.drawText(caption, xcap, ycap);
+         g.setFont(font);
+      }
+      if (effect != null)
+         effect.paintEffect(g);
+      if (uiMaterial)
+      {
+         if (fillColor != -1)
+         {
+            g.backColor = fillColor;
+            g.fillRect(0,0,width,height);
+         }
+         int y = isSupportedListBox() ? getTextY() : (height-fmH)/2;         
+         g.drawArrow(width-btnW*2-1,y+(fmH-btnW)/2,btnW, Graphics.ARROW_DOWN, false, checkColor != -1 && hasFocus() ? checkColor : fColor);
+         g.setClip(0,0,width-btnW*2,height);
       }
       if (pop.lb.itemCount > 0 && pop.lb.selectedIndex >= 0) // guich@402_31: avoid drawing invalid index
          drawSelectedItem(g);
+   }
+
+   private int getX0()
+   {
+      return captionIcon == null ? fmH/4 : captionIcon.getWidth() + fmH/4;
    }
 
    protected void drawSelectedItem(Graphics g)
@@ -627,9 +752,7 @@ public class ComboBox extends Container
       g.foreColor = fColor;
       boolean trickW = pop.lb.width == 0; // guich@tc125_35
       if (trickW) pop.lb.width = width - btnW;
-      int ih = pop.lb.itemCount > 0 ? pop.lb.getItemHeight(0) : fmH;
-      boolean isString = pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String;
-      pop.lb.drawSelectedItem(g, pop.lb.selectedIndex, 3, height == fmH+Edit.prefH ? Edit.prefH/2 : isString && uiAndroid ? (height-(fmH+Edit.prefH))/2 : (height - ih)/2); // guich@200b4: let the listbox draw the item
+      pop.lb.drawSelectedItem(g, pop.lb.selectedIndex, getX0(), getTextY()); // guich@200b4: let the listbox draw the item
       if (trickW) pop.lb.width = 0;
    }
 
@@ -755,5 +878,67 @@ public class ComboBox extends Container
          }
       }
       return super.equals(o);
+   }
+   
+   // material
+   private void animateMaterial(boolean slow)
+   {
+      if (tea == null)
+      {
+         int sel = getSelectedIndex();
+         fmHtarget = sel != -1 ? fmHmin : fmH;
+         if (fcap.size != fmHtarget)
+         {
+            if (slow)
+            {
+               inccap = fcap.size == fmH ? -1 : 1;
+               addTimerListener(this);
+               tea = addTimer(10);
+            }
+            else
+            {  
+               inccap = fmHtarget-fcap.size;
+               singleStep();
+            }
+         }
+      }
+   }
+   
+   public void timerTriggered(TimerEvent e)
+   {
+      if (tea != null && tea.triggered)
+      {
+         singleStep();
+         Window.needsPaint = true;
+         if (fcap.size == fmHtarget)
+         {
+            removeTimer(tea);
+            removeTimerListener(this);
+            tea = null;
+         }
+      }
+   }
+
+   private void singleStep()
+   {
+      fcap = fcap.adjustedBy(inccap);
+      ycap = ycap0 * (fcap.size - fmHmin) / (fmH - fmHmin);
+      xcap = xcap0; // no horizontal movement - xcap0 * (fcap.size - fmHmin) / (fmH - fmHmin);
+   }
+
+   public void sideStart()
+   {
+   }
+
+   public void sideStop()
+   {
+      if (cancelPopup)
+         cancelPopup = false;
+      else
+         open();
+   }
+
+   public void sidePaint(Graphics g, int alpha)
+   {
    }
 }
