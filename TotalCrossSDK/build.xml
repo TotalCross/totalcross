@@ -199,6 +199,10 @@ target: compile
         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
+     	<pathelement location="${etc}/libs/appdirs-1.0.0.jar"/>
+     	<pathelement location="${etc}/libs/jna-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/jna-platform-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/slf4j-api-1.7.21.jar"/>
      </classpath>
   </javac>
 
@@ -260,6 +264,10 @@ target: compile
        <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
        <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
        <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
+     	<pathelement location="${etc}/libs/appdirs-1.0.0.jar"/>
+     	<pathelement location="${etc}/libs/jna-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/jna-platform-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/slf4j-api-1.7.21.jar"/>
     </classpath>  	
   </javac>
 
