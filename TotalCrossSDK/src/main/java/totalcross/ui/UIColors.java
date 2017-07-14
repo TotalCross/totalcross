@@ -171,4 +171,7 @@ public final class UIColors // guich@564_6
    public static int topmenuFore = Color.WHITE;
    /** Separator color of the TopMenu */
    public static int separatorFore = 0x61666A;
+   
+   /** The selected color for material UI */
+   public static int materialSelectedColor = Color.BLUE;
 }

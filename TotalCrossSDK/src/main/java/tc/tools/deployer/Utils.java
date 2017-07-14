@@ -13,11 +13,13 @@
 
 package tc.tools.deployer;
 
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.util.*;
+import totalcross.util.Hashtable;
+import totalcross.util.Vector;
 
 /**
  * Some general utility methods used by the deployer programs.

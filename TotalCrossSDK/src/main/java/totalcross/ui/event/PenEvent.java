@@ -27,7 +27,7 @@ import totalcross.ui.*;
  * A pen drag occurs when the pen moves while the screen is pressed.
  */
 
-public class PenEvent extends Event
+public class PenEvent extends Event implements Cloneable
 {
    /** The event type for a pen or mouse down. */
    public static final int PEN_DOWN = 200;
@@ -89,5 +89,19 @@ public class PenEvent extends Event
    {
       return EVENT_NAME[type-200]+" pos: "+x+","+y+" "+super.toString();
    }
+   
+  @Override
+  public PenEvent clone() {
+    PenEvent clone = new PenEvent();
+    clone.x = x;
+    clone.y = y;
+    clone.type = type;
+    clone.absoluteX = absoluteX;
+    clone.absoluteY = absoluteY;
+    clone.modifiers = modifiers;
+    clone.target = target;
+    clone.timeStamp = timeStamp;
+    return clone;
+  }
 }
 

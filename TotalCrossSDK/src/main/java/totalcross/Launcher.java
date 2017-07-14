@@ -410,6 +410,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.out.println("*  /uiStyle Vista   : Vista user interface style");
       System.out.println("   /uiStyle Android : Android 4 user interface style");
       System.out.println("   /uiStyle Holo    : Android 5 user interface style");
+      System.out.println("   /uiStyle Material: Material 6 user interface style");
       System.out.println("   /penlessDevice   : acts as a device that has no touchscreen.");
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
       System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
@@ -546,6 +547,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                else
                if (next.equalsIgnoreCase("Holo")) // guich@580_33
                   toUI = Settings.Holo;
+               else
+               if (next.equalsIgnoreCase("Material")) // guich@580_33
+                  toUI = Settings.Material;
                else
                   throw new Exception();
                System.out.println("UI style is "+toUI);
@@ -966,7 +970,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          mmsb.setLength(0);
          if (frameTitle != null)
             mmsb.append(frameTitle).append(" (");
-         mmsb.append((int)(event.getX()/toScale)).append(",").append((int)(event.getY()/toScale));
+         int xx = (int)(event.getX()/toScale);
+         int yy = (int)(event.getY()/toScale);
+         int[] pixels = (int[])totalcross.ui.gfx.Graphics.mainWindowPixels;
+         mmsb.append(xx).append(",").append(yy).append(" ").append(totalcross.sys.Convert.unsigned2hex(pixels[yy*Settings.screenWidth+xx],6));
          if (frameTitle != null)
             mmsb.append(")");
          frame.setTitle(mmsb.toString());

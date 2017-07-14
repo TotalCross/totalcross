@@ -27,8 +27,9 @@ public class SwitchSample extends BaseContainer implements PressListener
    public void initUI()
    {
       super.initUI();
-      add(s1 = new Switch(true), CENTER, PARENTSIZE+30,PARENTSIZE+50,PREFERRED+fmH);
-      add(s2 = new Switch(false), CENTER,PARENTSIZE+70,PARENTSIZE+50,PREFERRED+fmH);
+      s1 = new Switch(true);  add(s1, CENTER, PARENTSIZE+30,PARENTSIZE+50,PREFERRED+fmH);
+      s1 = new Switch(true);  s1.setFont(font.adjustedBy(fmH/2)); add(s1, CENTER, AFTER+fmH,PARENTSIZE+50,PREFERRED+fmH);
+      s2 = new Switch(false); add(s2, CENTER,AFTER+fmH,PARENTSIZE+60,PREFERRED+fmH);
       s1.addPressListener(this);
       s2.addPressListener(this);
       s1.textForeOn = "I";

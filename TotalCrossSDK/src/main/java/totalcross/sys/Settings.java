@@ -237,7 +237,7 @@ public final class Settings
 
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
-    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2. 
+    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2.
     */
    public static final byte WinCE = 0;
    /** Defines a PalmOS user interface style. Used in the uiStyle member.
@@ -261,6 +261,11 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Holo = 5; // guich@tc130
+
+   /** Defines an user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Material = 6; // guich@20170527
    
    /** Field that stores the current user interface style.
     * It must be set by calling Settings.setUIStyle.
@@ -268,6 +273,7 @@ public final class Settings
     * @see #Vista
     * @see #Android
     * @see #Holo
+    * @see #Material
     */
    public static byte uiStyle = Vista;
    

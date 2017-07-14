@@ -67,7 +67,7 @@ public class DynScrollContainerSample extends BaseContainer
 
       goButton = new Button("Generate");
       goButton.setBackColor(Color.GREEN);
-      add(goButton, RIGHT, SAME, PARENTSIZE+20, PREFERRED);
+      add(goButton, RIGHT, SAME);
 
       vsc = new DynamicScrollContainer();
       vsc.setBackColor(Color.WHITE);

@@ -43,10 +43,10 @@ public class Spacer extends Control
    private int prefW, prefH;
    private String s;
    
-   /** Constructs a new Spacer, using a single space " " to compute the width and height. */
+   /** Constructs a new Spacer with width and height = 0. */
    public Spacer()
    {
-      this(" ");
+      this(0,0);
    }
    
    /** Constructs a new Spacer using the given x and y values. */

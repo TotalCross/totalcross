@@ -25,6 +25,7 @@ import totalcross.io.*;
 import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
@@ -300,7 +301,7 @@ public class MainWindow extends Window implements totalcross.MainClass
     *    public Foo()
     *    {
     *       super("Hi bar",TAB_ONLY_BORDER);
-    *       setUIStyle(totalcross.sys.Settings.FLAT);
+    *       setUIStyle(totalcross.sys.Settings.Flat);
     * </pre>
     * Changing to Android style will also set Settings.fingerTouch to true.
     * If you don't like such behaviour in non finger devices, set this property to false after calling setUIStyle.
@@ -309,6 +310,7 @@ public class MainWindow extends Window implements totalcross.MainClass
     * @see totalcross.sys.Settings#Vista
     * @see totalcross.sys.Settings#Android
     * @see totalcross.sys.Settings#Holo
+    * @see totalcross.sys.Settings#Material
     * @since SuperWaba 5.05
     */
    public void setUIStyle(byte style)
@@ -316,6 +318,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       Settings.uiStyle = style;
       if (style >= Settings.Android)
          Settings.fingerTouch = true;
+      if (style == Settings.Material)
+         UIEffects.defaultEffect = UIEffects.Effects.MATERIAL;
       Control.uiStyleChanged();
       Resources.uiStyleChanged();
       if (uiAndroid)
@@ -660,7 +664,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       {
          if (timer.target == null) // aleady removed but still in the queue?
          {
-            if (Settings.onJavaSE) Vm.debug("removing timer since target is null");
             TimerEvent t = timer.next;
             removeTimer(timer);
             timer = t != null ? t.next : null;

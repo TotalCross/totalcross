@@ -103,6 +103,22 @@ public class ScrollContainer extends Container implements Scrollable
       this(true);
    }
    
+   /** Returns the client rect from the area that scrolls */
+   public Rect getClientRect() // guich@200final_15
+   {
+      Rect r = new Rect();
+      bag.getClientRect(r);
+      return r;
+   }
+
+   /** Returns the client rect from the ScrollContainer control */
+   public Rect getRealClientRect() // guich@200final_15
+   {
+      Rect r = new Rect();
+      this.getClientRect(r);
+      return r;
+   }
+
    /** Constructor used to specify when both scrollbars are enabled or not. */
    public ScrollContainer(boolean allowScrollBars)
    {
@@ -120,7 +136,7 @@ public class ScrollContainer extends Container implements Scrollable
       bag0.add(bag = new ClippedContainer());
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
       bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
-      bag.setRect(0,0,4000,20000); // set an arbitrary size
+      bag.setRect(0,0,getBagInitialWidth(),getBagInitialHeight()); // set an arbitrary size
       bag.setX = SETX_NOT_SET; // ignore this setX and use the next one
       if (allowHScrollBar)
       {
@@ -136,6 +152,18 @@ public class ScrollContainer extends Container implements Scrollable
       }
       if (Settings.fingerTouch)
          flick = new Flick(this);
+   }
+   
+   /** Overwrite this method to define a custom height for the scrolling area */
+   protected int getBagInitialHeight()
+   {
+      return 20000;
+   }
+
+   /** Overwrite this method to define a custom width for the scrolling area */
+   protected int getBagInitialWidth()
+   {
+      return 4000;
    }
    
    public boolean flickStarted()
@@ -290,7 +318,7 @@ public class ScrollContainer extends Container implements Scrollable
       }
       if (hasFillH) // now resize the height
       {
-         maxY = getClientRect().height;
+         maxY = super.getClientRect().height;
          for (Control child = bag.children; child != null; child = child.next)
             if ((FILL-RANGE) <= child.setH && child.setH <= (FILL+RANGE))
             {
@@ -311,7 +339,7 @@ public class ScrollContainer extends Container implements Scrollable
          super.remove(sbH);
       // check if we need horizontal or vertical or both scrollbars
       boolean needX = false, needY = false, changed=false;
-      Rect r = getClientRect();
+      Rect r = super.getClientRect();
       int availX = r.width;
       int availY = r.height;
       boolean finger = ScrollPosition.AUTO_HIDE && 

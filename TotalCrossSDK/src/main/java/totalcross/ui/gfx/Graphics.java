@@ -83,6 +83,8 @@ public final class Graphics
     * is drawn; if is false, a listbox shaded is drawn. Also note that the fore color must have been set.
     */
    static public final byte R3D_SHADED = 5;
+   /** used in the draw3dRect method */
+   static public final byte R3D_FILL = 6;
    /** used in the drawArrow method */
    static public final byte ARROW_UP = 1;
    /** used in the drawArrow method */
@@ -1718,6 +1720,12 @@ public final class Graphics
     */
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int[] fourColors)
    {
+      if (type == R3D_FILL)
+      {
+         backColor = backColor | alpha;
+         fillRect(x,y,width,height);
+      }
+      else
       if (type == R3D_SHADED)
       {
          boolean menu = simple; // is menu?
@@ -1752,6 +1760,7 @@ public final class Graphics
             case Settings.Holo:
             case Settings.Android:
             case Settings.Vista:
+            case Settings.Material:
                foreColor = fourColors[2] | alpha;
                switch (type)
                {

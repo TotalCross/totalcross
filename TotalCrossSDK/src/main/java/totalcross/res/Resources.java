@@ -56,19 +56,23 @@ public class Resources
    public static Image comboArrow;
    public static Image comboArrow2;
    // SWITCH
-   public static Image switchBrdAnd,switchBack,switchBtnAnd,switchBtnIos,switchBrdIos;
+   public static Image switchBrdAnd,switchBack,switchBtnAnd,switchBtnIos,switchBrdIos,switchBtn,switchBrd; // material last 2
    
    public static String chimeMP3 = "device/chime.mp3";
    
+   private static boolean uiMat;
+   
    private static void loadImages(String folder) throws ImageException, IOException
    {
+      boolean b = Settings.showDesktopMessages;
+      Settings.showDesktopMessages = false;
       if (progressHandle == null) try {progressHandle = new Image(folder+"progressHandle.png");  } catch (ImageException e) {}
       if (warning        == null) try {warning        = new Image(folder+"warning.png");         } catch (ImageException e) {}
       if (button         == null) try {button         = new Image(folder+"button.png");          } catch (ImageException e) {}
-      if (edit           == null) try {edit           = new Image(folder+"edit.png");            } catch (ImageException e) {}
+      if (!uiMat && edit == null) try {edit           = new Image(folder+"edit.png");            } catch (ImageException e) {}
       if (combobox       == null) try {combobox       = new Image(folder+"combobox.png");        } catch (ImageException e) {}
       if (listbox        == null) try {listbox        = new Image(folder+"listbox.png");         } catch (ImageException e) {}
-      if (multiedit      == null) try {multiedit      = new Image(folder+"multiedit.png");       } catch (ImageException e) {}
+      if (!uiMat && multiedit == null) try {multiedit = new Image(folder+"multiedit.png");       } catch (ImageException e) {}
       if (progressbarv   == null) try {progressbarv   = new Image(folder+"progressbarV.png");    } catch (ImageException e) {}
       if (scrollposh     == null) try {scrollposh     = new Image(folder+"scrollposH.png");      } catch (ImageException e) {}
       if (scrollposv     == null) try {scrollposv     = new Image(folder+"scrollposV.png");      } catch (ImageException e) {}
@@ -80,15 +84,18 @@ public class Resources
       if (menu           == null) try {menu           = new Image(folder+"menu.png");            } catch (ImageException e) {}
       if (comboArrow     == null) try {comboArrow     = new Image(folder+"comboArrow.png");      } catch (ImageException e) {}
       if (comboArrow2    == null) try {comboArrow2    = new Image(folder+"comboArrow2.png");     } catch (ImageException e) {}
-      if (switchBack     == null) try {switchBack     = new Image(folder+"switch_bck.png");      } catch (ImageException e) {}
-      if (switchBtnAnd   == null) try {switchBtnAnd   = new Image(folder+"switch_btn_and.png");  } catch (ImageException e) {}
-      if (switchBtnIos   == null) try {switchBtnIos   = new Image(folder+"switch_btn_ios.png");  } catch (ImageException e) {}
-      if (switchBrdAnd   == null) try {switchBrdAnd   = new Image(folder+"switch_brd_and.png");  } catch (ImageException e) {}
-      if (switchBrdIos   == null) try {switchBrdIos   = new Image(folder+"switch_brd_ios.png");  } catch (ImageException e) {}
+      if (!uiMat && switchBack     == null) try {switchBack     = new Image(folder+"switch_bck.png");      } catch (ImageException e) {}
+      if (!uiMat && switchBtnAnd   == null) try {switchBtnAnd = new Image(folder+"switch_btn_and.png");  } catch (ImageException e) {}
+      if (!uiMat && switchBtnIos   == null) try {switchBtnIos = new Image(folder+"switch_btn_ios.png");  } catch (ImageException e) {}
+      if (!uiMat && switchBrdAnd   == null) try {switchBrdAnd = new Image(folder+"switch_brd_and.png");  } catch (ImageException e) {}
+      if (!uiMat && switchBrdIos   == null) try {switchBrdIos = new Image(folder+"switch_brd_ios.png");  } catch (ImageException e) {}
+      if (uiMat && switchBtn == null) try {switchBtn  = new Image(folder+"switch_btn.png");  } catch (ImageException e) {}
+      if (uiMat && switchBrd == null) try {switchBrd  = new Image(folder+"switch_brd.png");  } catch (ImageException e) {}
       if (checkBkg       == null) try {checkBkg       = new TristateImage(folder+"checkBkg.png");} catch (ImageException e) {}
       if (checkSel       == null) try {checkSel       = new TristateImage(folder+"checkSel.png");} catch (ImageException e) {}
       if (radioBkg       == null) try {radioBkg       = new TristateImage(folder+"radioBkg.png");} catch (ImageException e) {}
       if (radioSel       == null) try {radioSel       = new TristateImage(folder+"radioSel.png");} catch (ImageException e) {}
+      Settings.showDesktopMessages = b;
    }
    
    public static void uiStyleChanged()
@@ -99,6 +106,10 @@ public class Resources
          {
             case Settings.Holo:
                loadImages("totalcross/res/holo/");
+               break;
+            case Settings.Material:
+               uiMat = true;
+               loadImages("totalcross/res/mat/");
                break;
          }
          loadImages("totalcross/res/android/"); // always load android UI

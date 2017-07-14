@@ -66,6 +66,7 @@ void flushAll();
 #define R3D_RAISED   3
 #define R3D_CHECK    4
 #define R3D_SHADED   5
+#define R3D_FILL     6
 #define ARROW_UP     1
 #define ARROW_DOWN   2
 #define ARROW_LEFT   3
@@ -575,6 +576,11 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
    int32 *fourColorsI = (int32*)ARRAYOBJ_START(p->obj[1]);
    Pixel fourColors[4], foreColor = Graphics_forePixel(g);
 
+   if (type == R3D_FILL)
+   {
+      fillRect(p->currentContext, g,x,y,width,height,Graphics_backPixel(g));
+      return;
+   }
    if (fourColorsI == null)
       return;
 

@@ -122,7 +122,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       this.items = items;
       this.animDir = animDir;
       titleGap = 0;
-      fadeOtherWindows = false;
+      sameBackgroundColor = fadeOtherWindows = false;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       borderColor = UIColors.separatorFore;
       setBackForeColors(UIColors.separatorFore,UIColors.topmenuFore);

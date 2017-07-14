@@ -160,6 +160,8 @@ public class Window extends Container
    private static int repeatedEventMinInterval = Settings.isIOS() || Settings.ANDROID.equals(Settings.platform) ? 40 : 0;
    private String oldTitle;
    protected int footerH;
+   /** Use the same color in border and in body */
+   public boolean sameBackgroundColor;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
     * needs to cancel the next pen_up during a drag-scrolling interaction. */
    public static boolean cancelPenUp;
@@ -296,6 +298,11 @@ public class Window extends Container
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
       titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height/2 : 0;
+      if (uiMaterial)
+      {
+         sameBackgroundColor = true;
+         titleAlign = LEFT;
+      }
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -1157,11 +1164,11 @@ public class Window extends Container
          hh += titleGap;
          int xx = titleAlign, yy = (hh-titleFont.fm.height)/2;
          if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
-         if ((LEFT  -RANGE) <= titleAlign && titleAlign <= (LEFT  +RANGE)) xx +=                       - LEFT; else
+         if ((LEFT  -RANGE) <= titleAlign && titleAlign <= (LEFT  +RANGE)) {xx +=                       - LEFT; if (uiMaterial) xx += fmH; }else
          if ((RIGHT -RANGE) <= titleAlign && titleAlign <= (RIGHT +RANGE)) xx += (this.width - ww)     - RIGHT;
          int f = getForeColor();
          int b = getBackColor();
-         gg.foreColor = gg.backColor = f;
+         gg.foreColor = gg.backColor = sameBackgroundColor ? b : f;
          if (borderStyle != NO_BORDER)
          {
             int y0 = borderStyle == RECT_BORDER?0:hh;
@@ -1186,7 +1193,13 @@ public class Window extends Container
                   {
                      boolean hasTitle = tit != null && tit.length() > 0;
                      int c = Color.getCursorColor(f);
-                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,borderColor != -1 ? borderColor : f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
+                     int bordercolor = borderColor != -1 ? borderColor : f;
+                     int titlecolor  = hasTitle? headerColor != -1 ? headerColor : c : b;
+                     int footercolor = footerH > 0 ? footerColor != -1 ? footerColor : c : b;
+                     int bodycolor   = b;
+                     if (sameBackgroundColor)
+                        bordercolor = titlecolor = footercolor = bodycolor;
+                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,bordercolor,titlecolor,bodycolor,footercolor, borderGaps[ROUND_BORDER], hasTitle || footerH > 0);
                      if (!hasTitle)
                         return;
                      else
@@ -1214,6 +1227,8 @@ public class Window extends Container
          }
          if (borderStyle != NO_BORDER && tit != null && !tit.isEmpty())
          {
+            if (sameBackgroundColor && gg.foreColor == b)
+               gg.foreColor = foreColor;
             gg.setFont(titleFont);
             gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
             gg.setFont(font);
