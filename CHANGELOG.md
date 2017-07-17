@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 3.44.3483 - 2017-07-17
+
+### Highlights
+- Launcher no longer requires an activation key to run, instead it shows a dismissible popup to input the activation key to be stored on the user's AppData system equivalent directory.
+- The stored activation key is used by default for both Launcher and Deploy if the activation key is not provided as a command line argument.
+
+### Fixed
+- `AccordionContainer.collapseAll` not using `showAnimation` when set to false.
+- AccordionContainer expand/collapse not resizing the parent window.
+- Fixed not being able to set focus to a Window under the current top one.
+- ImageControl not using the alphaMask that may have been assigned to the Image.
+- `Graphics.getAnglePoint` implementation fixed by using the same algorithm of `Graphics.drawPie`.
+
+### Added
+- Added missing qsort methods to Vector to allow sorting in ascending or descending order.
+
 ## 3.43.3452 - 2017-06-29
 
 ### Highlights
