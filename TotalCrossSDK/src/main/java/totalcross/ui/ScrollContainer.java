@@ -373,7 +373,7 @@ public class ScrollContainer extends Container implements Scrollable
          super.add(sbH);
          sbH.setMaximum(maxX);
          sbH.setVisibleItems(bag0.width);
-         sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY?sbV.getPreferredWidth():0),PREFERRED);
+         sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY && sbV != null?sbV.getPreferredWidth():0),PREFERRED);
          sbH.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fm.charWidth('@'));
          lastH = 0;
       }
