@@ -627,7 +627,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
                opened = false;
                int sel = pm.getSelectedIndex();
                if (sel != -1)
-                  setSelectedIndex(pop.lb.selectedIndex = sel);
+                  setSelectedIndex(sel);
             }
             catch (Exception e)
             {
