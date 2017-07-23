@@ -730,30 +730,30 @@ void freeTexture(TCObject img)
 void resetFontTexture(); // PalmFont_c.h
 #ifdef ANDROID
 static int timestampOldLimit;
-void onImage(int32 it, VoidP ptr) {
-    TCObject img = (TCObject)ptr;
-    TCObject field = FIELD_OBJ(img, OBJ_CLASS(img), 2);
-    if (field) {
-        int arrayLen = ARRAYOBJ_LEN(field);
-        int32 *ids = Image_textureId(img);
-        if (arrayLen && ids && ids[0]) {
-            if (ENABLE_TEXTURE_TRACE) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),ids[0]);
-            switch ((INVTEX)it) {
-            case INVTEX_INVALIDATE:
-                ids[0] = ids[1] = 0;
-                break;
-            case INVTEX_DEL_ALL:
-                glDeleteTexture(img, ids);
-                break;
-            case INVTEX_DEL_ONLYOLD:
-                if (Image_lastAccess(img) != -1 && Image_lastAccess(img) < timestampOldLimit) {
-                    glDeleteTexture(img, ids);
-                }
-                break;
-            }
-        }
-    }
-    Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+void onImage(int32 it, VoidP ptr)
+{
+   TCObject img = (TCObject)ptr;
+   if (!Surface_isImage(ptr)) // Image can be created and an exception be thrown before the constructor is called
+      return;
+   int32 *ids = Image_textureId(img);
+   if (ids && ids[0])
+   {
+      if (ENABLE_TEXTURE_TRACE) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),ids[0]);
+      switch ((INVTEX)it)
+      {
+         case INVTEX_INVALIDATE:
+            ids[0] = ids[1] = 0;
+            break;
+         case INVTEX_DEL_ALL:
+            glDeleteTexture(img, ids);
+            break;
+         case INVTEX_DEL_ONLYOLD:
+            if (Image_lastAccess(img) != -1 && Image_lastAccess(img) < timestampOldLimit)
+               glDeleteTexture(img, ids);
+            break;
+      }
+   }
+   Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
 }
                                                                        
 void invalidateTextures(INVTEX it) // called by opengl when the application changes the opengl surface
