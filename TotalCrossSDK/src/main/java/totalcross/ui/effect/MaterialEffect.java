@@ -64,7 +64,7 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
             int curDn = Vm.getTimeStamp() - iniDn;
             int curUp = Vm.getTimeStamp() - iniUp;
             int rad = Math.min(max, curDn * max / duration);
-            alpha = isDown ? 0xFF : rad < max ? 255 - curUp * 255 / (duration-(iniUp-iniDn)) : Math.max(0, alpha - TIMER_INTERVAL);
+            alpha = isDown ? alphaValue : rad < max ? alphaValue - curUp * alphaValue / (duration-(iniUp-iniDn)) : Math.max(0, alpha - TIMER_INTERVAL);
             
             if (!sideEffOnly)
             {
@@ -75,8 +75,11 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
                if (darkSideOnPress)
                   gg.setClip(2,2,w-4,h-4);
                int bc = target.getBackColor();
+               int olda = gg.alpha;
+               if (isDown) gg.alpha = alphaValue << 24;
                gg.backColor = color != -1 && color != bc ? color : Color.getBrightness(bc) < 127 ? Color.brighter(bc,64) : Color.darker(bc,64);
                gg.fillCircle(px - x,py - y, rad);
+               gg.alpha = olda;
                if (isDown && darkSideOnPress) // make darker area at sides and bottom
                {
                   gg.clearClip();

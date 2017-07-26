@@ -34,7 +34,8 @@ public class ImageControl extends Control
    private Image img,img0,imgBack;
    private int startX,startY;
    private Coord c = new Coord();
-   private boolean isEventEnabled, canDrag;
+   private boolean isEventEnabled, canDrag, isPressedEventsEnabled;
+   private UIEffects effect;
    /** Set to true to center the image in the control when it is loaded */
    public boolean centerImage;
 
@@ -81,12 +82,23 @@ public class ImageControl extends Control
       focusTraversable = true;
    }
 
-   /** Change this to true to enable dragging and events on the image. */
+   /** Pass true to enable dragging and events on the image. */
    public void setEventsEnabled(boolean enabled)
    {
       focusTraversable = isEventEnabled = enabled;
    }
 
+   /** Pass true to enable this ImageControl to send Press events. Note that it will disable drag and resize of the image. */
+   public void setPressedEventsEnabled(boolean enabled)
+   {
+      focusTraversable = isPressedEventsEnabled = enabled;
+      if (isEventEnabled && enabled) // disable drag
+         isEventEnabled = false;
+      effect = enabled ? UIEffects.get(this) : null;
+      if (effect != null)
+         effect.alphaValue = 0xA0;
+   }
+   
    /** Sets the image to the given one. If the image size is different, you must explicitly call
     * setRect again if you want to resize the control.
     */
@@ -136,9 +148,13 @@ public class ImageControl extends Control
 
    public void onEvent(Event event)
    {
-      if (img == null || !isEventEnabled) // no images found, nothing to do!
+      if (img == null) // no images found, nothing to do!
          return;
       PenEvent pe;
+      if (isPressedEventsEnabled && event.type == PenEvent.PEN_UP && !hadParentScrolled() && contains(((PenEvent)event).x,((PenEvent)event).y))
+         postPressedEvent();
+      else
+      if (isEventEnabled)
       switch (event.type)
       {
          case MultiTouchEvent.SCALE:
@@ -273,6 +289,8 @@ public class ImageControl extends Control
          g.foreColor = borderColor;
          g.drawRect(0,0,width,height);
       }
+      if (effect != null)
+         effect.paintEffect(g);
    }
 
    private void drawImage(Graphics g, Image img)
