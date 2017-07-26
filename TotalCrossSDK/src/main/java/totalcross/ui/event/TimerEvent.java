@@ -19,6 +19,8 @@
 
 package totalcross.ui.event;
 
+import totalcross.ui.effect.*;
+
 /**
  * TimerEvent represents a control's timer. Timers are created and destroyed using
  * the addTimer() and removeTimer() methods present in the Control class.
@@ -46,5 +48,10 @@ public class TimerEvent extends Event
    public String toString()
    {
       return "TRIGGERED millis: "+millis+" "+super.toString();
+   }
+   
+   public void postpone()
+   {
+      lastTick = Vm.getTimeStamp();
    }
 }

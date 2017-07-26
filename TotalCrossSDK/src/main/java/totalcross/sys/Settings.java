@@ -247,18 +247,22 @@ public final class Settings
    public static final byte PalmOS = 1;
    /** Defines a FLAT user interface style, like the ones used in Pocket PC 2003. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use FLAT_UI instead
     */
    public static final byte Flat = 2;
    /** Defines a Windows Vista user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use VISTA_UI instead
     */
    public static final byte Vista = 3; // guich@573_6
    /** Defines an Android user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use ANDROID_UI instead
     */
    public static final byte Android = 4; // guich@tc130
    /** Defines an Holo user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use HOLO_UI instead
     */
    public static final byte Holo = 5; // guich@tc130
 
@@ -267,15 +271,36 @@ public final class Settings
     */
    public static final byte Material = 6; // guich@20170527
    
+   /** Defines a FLAT user interface style, like the ones used in Pocket PC 2003. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte FLAT_UI = 2;
+   /** Defines a Windows Vista user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte VISTA_UI = 3; // guich@573_6
+   /** Defines an Android user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte ANDROID_UI = 4; // guich@tc130
+   /** Defines an Holo user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte HOLO_UI = 5; // guich@tc130
+   /** Defines an user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte MATERIAL_UI = 6; // guich@20170527
+   
    /** Field that stores the current user interface style.
     * It must be set by calling Settings.setUIStyle.
-    * @see #Flat
-    * @see #Vista
-    * @see #Android
-    * @see #Holo
-    * @see #Material
+    * @see #FLAT_UI
+    * @see #VISTA_UI
+    * @see #ANDROID_UI
+    * @see #HOLO_UI
+    * @see #MATERIAL_UI
     */
-   public static byte uiStyle = Vista;
+   public static byte uiStyle = VISTA_UI;
    
    /** Constant used in dateFormat: month day year */
    public static final byte DATE_MDY = 1;
