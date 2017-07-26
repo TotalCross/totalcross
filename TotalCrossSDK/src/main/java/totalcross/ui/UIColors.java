@@ -34,6 +34,9 @@ public final class UIColors // guich@564_6
 {
    private UIColors() {}
 
+   /** The border color of all windows. */
+   public static int windowBorder = Color.BLACK;
+   
    /** KeyboardBox background color. */
    public static int keyboardBack = 0xE6E68C;
    /** KeyboardBox foreground color. */

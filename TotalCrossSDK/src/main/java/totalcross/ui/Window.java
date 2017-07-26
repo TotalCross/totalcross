@@ -298,6 +298,7 @@ public class Window extends Container
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
       titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height/2 : 0;
+      if (UIColors.windowBorder != 0) borderColor = UIColors.windowBorder;
       if (uiMaterial)
       {
          sameBackgroundColor = true;
@@ -1184,6 +1185,8 @@ public class Window extends Container
                case TAB_ONLY_BORDER:
                   gg.foreColor = f;
                   gg.drawLine(1, 0, ww + 2, 0); // Draws the tab
+                  if (borderColor != -1)
+                     gg.backColor = borderColor;
                   gg.fillRect(0, 1, ww + 4, hh);
                   gg.fillRect(0, hh, width, 2); // Draws the line
                   xx = 3;
@@ -1214,6 +1217,8 @@ public class Window extends Container
                   break;
                case RECT_BORDER:
                default:
+                  if (borderColor != -1)
+                     gg.backColor = borderColor;
                   gg.fillRect(0, 0, this.width, hh + 2); // black border, white text
                   break;
             }
