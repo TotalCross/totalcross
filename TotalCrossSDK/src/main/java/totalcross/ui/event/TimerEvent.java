@@ -19,8 +19,6 @@
 
 package totalcross.ui.event;
 
-import totalcross.ui.effect.*;
-
 /**
  * TimerEvent represents a control's timer. Timers are created and destroyed using
  * the addTimer() and removeTimer() methods present in the Control class.
@@ -52,6 +50,6 @@ public class TimerEvent extends Event
    
    public void postpone()
    {
-      lastTick = Vm.getTimeStamp();
+      lastTick = totalcross.sys.Vm.getTimeStamp();
    }
 }
