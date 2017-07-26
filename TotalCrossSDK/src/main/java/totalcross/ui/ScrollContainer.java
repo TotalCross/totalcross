@@ -342,8 +342,7 @@ public class ScrollContainer extends Container implements Scrollable
       Rect r = super.getClientRect();
       int availX = r.width;
       int availY = r.height;
-      boolean finger = ScrollPosition.AUTO_HIDE && 
-                       ((sbH != null && sbH instanceof ScrollPosition) ||
+      boolean finger = ((sbH != null && sbH instanceof ScrollPosition) ||
                         (sbV != null && sbV instanceof ScrollPosition));
       if (sbH != null || sbV != null)
          do
