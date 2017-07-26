@@ -45,7 +45,7 @@ public class CheckRadioSample extends BaseContainer
          sc.add(c1 = c = new Check("Check box / yellow background"),LEFT,AFTER+gap,PREFERRED+gap,PREFERRED+gap);
          c.setBackColor(Color.YELLOW);
          c.textColor = Color.BLUE;
-         c.checkColor = Color.YELLOW;
+         c.checkColor = uiMaterial ? Color.BLACK : Color.YELLOW;
 
          sc.add(c2 = c = new Check("Check box / green foreground"),LEFT,AFTER+gap,PREFERRED+gap,PREFERRED+gap); 
          c.setForeColor(Color.darker(Color.GREEN));
@@ -61,7 +61,7 @@ public class CheckRadioSample extends BaseContainer
          sc.add(c4 = r = new Radio("Radio / yellow background",rg),LEFT,AFTER+gap,PREFERRED+gap,PREFERRED+gap);
          r.setBackColor(Color.YELLOW);
          r.textColor = Color.BLUE;
-         r.checkColor = Color.YELLOW;
+         r.checkColor = uiMaterial ? Color.BLACK : Color.YELLOW;
 
          sc.add(c5 = r = new Radio("Radio / green foreground",rg),LEFT,AFTER+gap,PREFERRED+gap,PREFERRED+gap); 
          r.setForeColor(Color.darker(Color.GREEN));

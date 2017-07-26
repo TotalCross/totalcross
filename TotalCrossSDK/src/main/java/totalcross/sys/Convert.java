@@ -903,7 +903,7 @@ public final class Convert
     * @return the array of strings computed by splitting this string around matches of the given delimiters
     * @since TotalCross 1.15
     */
-   public static String[] tokenizeString(String input, char[] delims)
+   public static String[] tokenizeString(String input, char... delims)
    {
       if (input == null || delims == null)
          throw new NullPointerException();
@@ -1884,7 +1884,7 @@ public final class Convert
    /** Returns the maximum value among the given ints
     * @since TotalCross 1.15
     */
-   public static int max(int[] ai) // guich@tc115_61
+   public static int max(int... ai) // guich@tc115_61
    {
       int m = ai[0];
       for (int i = ai.length; --i >= 1;)
@@ -1907,7 +1907,7 @@ public final class Convert
    /** Returns the sum of the given ints
     * @since TotalCross 1.15
     */
-   public static int sum(int[] ai) // guich@tc115_61
+   public static int sum(int... ai) // guich@tc115_61
    {
       int m = 0;
       for (int i = ai.length; --i >= 0;)
@@ -1918,7 +1918,7 @@ public final class Convert
    /** Returns the minimum value among the given ints
     * @since TotalCross 1.15
     */
-   public static int min(int[] ai) // guich@tc115_61
+   public static int min(int... ai) // guich@tc115_61
    {
       int m = ai[0];
       for (int i = ai.length; --i >= 1;)
@@ -2374,7 +2374,7 @@ public final class Convert
    {
    }
 
-   static String withAcc = "áÁâÂàÀåÅãÃäÄçÇéÉêÊèÈëËíÍîÎìÌïÏñÑóÓôÔòÒõÕöÖúÚûÛùÙüÜıİÿÿ";
+   static String withAcc = "Ã¡ÃÃ¢Ã‚Ã Ã€Ã¥Ã…Ã£ÃƒÃ¤Ã„Ã§Ã‡Ã©Ã‰ÃªÃŠÃ¨ÃˆÃ«Ã‹Ã­ÃÃ®ÃÃ¬ÃŒÃ¯ÃÃ±Ã‘Ã³Ã“Ã´Ã”Ã²Ã’ÃµÃ•Ã¶Ã–ÃºÃšÃ»Ã›Ã¹Ã™Ã¼ÃœÃ½ÃÃ¿Ã¿";
    static char[] woutAcc = "aAaAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOoOuUuUuUuUyYyY".toCharArray();
    /** Returns the given string without accentuation characters, using the unicode range 0-255 */
    public static String removeAccentuation(String s)

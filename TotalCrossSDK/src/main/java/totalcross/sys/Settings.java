@@ -34,10 +34,10 @@ public final class Settings
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
    */
-   public static int version = 341;
+   public static int version = 344;
     
    /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
-   public static String versionStr = "3.41";
+   public static String versionStr = "3.44";
     
    /** Current build number for the TotalCross SDK.
     * @since TotalCross 1.53 
@@ -237,7 +237,7 @@ public final class Settings
 
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
-    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2. 
+    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2.
     */
    public static final byte WinCE = 0;
    /** Defines a PalmOS user interface style. Used in the uiStyle member.
@@ -261,6 +261,11 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Holo = 5; // guich@tc130
+
+   /** Defines an user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Material = 6; // guich@20170527
    
    /** Field that stores the current user interface style.
     * It must be set by calling Settings.setUIStyle.
@@ -268,6 +273,7 @@ public final class Settings
     * @see #Vista
     * @see #Android
     * @see #Holo
+    * @see #Material
     */
    public static byte uiStyle = Vista;
    
@@ -897,9 +903,9 @@ public final class Settings
 
    /** An optional value for the backspace key. Android 4.4.2 has a bug that prevents the backspace from working well;
     * this bug is fixed in 4.4.3. The workaround is to define a unused key that will work as the backspace one.
-    * Defaults to the î key, used only if romVersion is 442.
+    * Defaults to the Ã® key, used only if romVersion is 442.
     */
-   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'î' : 0;
+   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'Ã®' : 0;
    
    /** Set to false to disable the scroll optimization using images. This optimization
     * greatly improves performance but uses more memory.
@@ -974,4 +980,9 @@ public final class Settings
    public static boolean abortedOnLastRun;
 
    public static IVirtualKeyboard customKeyboard;
+
+   /** Set to false to disable the virtual keyboard on all Edits and MultiEdits at once
+    * @since TotalCross 4.0
+    */
+   public static boolean enableVirtualKeyboard = true;
 }

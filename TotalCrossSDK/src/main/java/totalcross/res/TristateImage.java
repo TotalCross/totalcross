@@ -98,7 +98,7 @@ public class TristateImage
             ret.applyColor2(pressColor);
          }
          else 
-            ret = getNormalInstance(width,height,backColor,false).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
+            ret = getNormalInstance(width,height,backColor,false).getTouchedUpInstance(Color.getBrightness(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
          if (!enabled)
             ret = ret.getFadedInstance();
          htPressed.put(hash, ret);

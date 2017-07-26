@@ -20,6 +20,7 @@ package totalcross.ui;
 import totalcross.sys.*;
 import totalcross.ui.anim.*;
 import totalcross.ui.anim.ControlAnimation.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
@@ -118,6 +119,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
    private boolean scScrolled;
    private String[] strCaptions0;
    private int tabsType = TABS_TOP;
+   // material
+   private int lineH;
    
    /** Set to true to enable the alternative tab border */
    public boolean useBorder2;
@@ -157,6 +160,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
      * @since SuperWaba 4.21
      */
    public int lastActiveTab = -1; // guich@421_30: changed name to conform with getActiveIndex
+   private int materialLastActiveIndex=-1;
 
    /** In finger touch devices, the user still can flick into a disabled tab. To disable this behaviour,
     * set this flag to false; so when a disabled tab is reached, the user will not be able to flick into it, and will
@@ -235,6 +239,9 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
          c.ignoreOnAddAgain = c.ignoreOnRemove = true;
       }
       disabled = new boolean[count];
+      if (uiMaterial)
+         activeTabBackColor = UIColors.materialSelectedColor;
+      effect = UIEffects.get(this);
    }
    
    protected void computeClipRect()
@@ -455,7 +462,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
          int dif = firstTabChange ? 0 : activeIndex - tab;
          if (!firstTabChange && flick == null) 
             remove(containers[activeIndex]);
-         lastActiveTab = activeIndex; // guich@402_4
+         materialLastActiveIndex = lastActiveTab = activeIndex; // guich@402_4
          activeIndex = tab;
          if (flick == null)
             add(containers[activeIndex]);
@@ -598,11 +605,12 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
       }
       onFontChanged();
       computeTabsRect();
+      boolean isTop = tabsType == TABS_TOP;
       int borderGap = style==Window.NO_BORDER || uiAndroid ? 0 : 1; // guich@400_89
       int xx = insets.left+borderGap;
-      int yy = (tabsType == TABS_TOP?tabH:borderGap)+insets.top;
+      int yy = (isTop?tabH:borderGap)+insets.top;
       int ww = width-insets.left-insets.right-(borderGap<<1);
-      int hh = height-insets.top-insets.bottom-(borderGap<<1)-(tabsType == TABS_TOP?yy:tabH);
+      int hh = height-insets.top-insets.bottom-(borderGap<<1)-(isTop?yy:tabH);
       clientRect = new Rect(xx,yy,ww,hh);
       for (i = 0; i < count; i++)
       {
@@ -614,6 +622,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
          if (flick != null)
             xx += width;
       }
+      if (effect != null)
+         effect.color = Color.brighter(pressedColor != -1 ? pressedColor : activeTabBackColor,32);
       if (flick != null)
          flick.setScrollDistance(width);
       if (activeIndex == -1) setActiveTab(nextEnabled(-1,true),false); // fvincent@340_40
@@ -649,7 +659,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
             btnLeft.setBorder(Button.BORDER_NONE);
             int yy = (tabH+btnRight.getPreferredHeight()) >> 1;
             super.add(btnRight,RIGHT,tabsType == TABS_TOP ? (tabH-yy) : (this.height-yy),PREFERRED+(Settings.fingerTouch ? fmH : 0),PREFERRED);
-            super.add(btnLeft,BEFORE-2,SAME,SAME,SAME);
+            super.add(btnLeft,BEFORE,SAME,SAME,SAME);
             btnLeft.setEnabled(false);
             btnLeft.setFocusLess(true); // guich@570_39
             btnRight.setFocusLess(true); // guich@570_39
@@ -681,7 +691,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
    /** compute the rects that represents each tab on the screen. */
    public void computeTabsRect()
    {
-      int x0 = 1;
+      int x0 = uiMaterial ? 0 : 1;
       int y0 = tabsType == TABS_TOP?0:(height-tabH);
       int n = count;
       if (tabsType == TABS_NONE)
@@ -695,12 +705,12 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
       for (int i =0; i < n; i++)
       {
          Rect r = rects[i];
-         Rect r0 = i == activeIndex ? rSel[i] : rNotSel[i];
+         Rect r0 = !uiMaterial && i == activeIndex ? rSel[i] : rNotSel[i];
          r.x = x0;
          r.y = r0.y + y0;
          r.width = r0.width;
          r.height = r0.height;
-         x0 += r.width-1;
+         x0 += r.width-(uiMaterial?0:1);
          rects[i] = r;
       }
    }
@@ -751,6 +761,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
     * (bolded) and unselected (plain) titles. */
    public void onFontChanged() // guich@564_11
    {
+      lineH = fmH/10; // material
       boolean isText = isTextCaption;
       if (wplains == null)
       {
@@ -759,7 +770,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
          rSel = new Rect[count];
          rNotSel = new Rect[count];
       }
-      int extraTabHeight = tabsType == TABS_NONE ? 0 : this.extraTabHeight;
+      int extraTabHeight = tabsType == TABS_NONE ? 0 : this.extraTabHeight + (uiMaterial?lineH*3:0);
       tabH = tabsType == TABS_NONE ? 0 : isText ? uiAndroid ? (fmH + 8 + extraTabHeight) : (fmH + 4) : (imgCaptions[0].getHeight() + 4);
       int y0 = tabsType == TABS_TOP && !uiAndroid ?2:0;
       bold = uiAndroid ? font : font.asBold();
@@ -813,7 +824,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
          backColor = Color.darker(backColor,32);
       }
       if (colorsChanged)
-         brightBack = Color.getAlpha(foreColor) > 128;
+         brightBack = Color.getBrightness(foreColor) >= 127;
       fColor = (isEnabled() || !brightBack) ? getForeColor()    : Color.darker(foreColor);
       cColor = (isEnabled() || !brightBack) ? getCaptionColor() : Color.darker(captionColor);
       if (colorsChanged && btnLeft != null)
@@ -827,9 +838,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
    public void onPaint(Graphics g)
    {
       if (activeIndex == -1) return;
+      
+      boolean atTop = tabsType == TABS_TOP;
       Rect r;
       int n = count;
-      boolean atTop = tabsType == TABS_TOP;
       int y = atTop?(tabH-1):0;
       int h = atTop?(height-y):(height-tabH+1);
       int yl = atTop?y:(y+h-1);
@@ -869,20 +881,49 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
       // draw the tabs
       if (tabsType != TABS_NONE)
       {
-         boolean drawSelectedTabAlone = !transparentBackground && (activeTabBackColor >= 0 || uiAndroid);
-         if (!transparentBackground && (uiAndroid || useOnTabTheContainerColor || tabsBackColor != null || parent.backColor != backColor || uiVista)) // guich@400_40: now we need to first fill, if needed, and at last draw the border, since the text will overlap the last pixel (bottom-right or top-right) - guich@tc100b4_10: uivista also needs this
-            for (int i = 0; i < n; i++)
+         if (!uiMaterial)
+         {
+            boolean drawSelectedTabAlone = !transparentBackground && (activeTabBackColor >= 0 || uiAndroid);
+            if (!transparentBackground && (uiAndroid || useOnTabTheContainerColor || tabsBackColor != null || parent.backColor != backColor || uiVista)) // guich@400_40: now we need to first fill, if needed, and at last draw the border, since the text will overlap the last pixel (bottom-right or top-right) - guich@tc100b4_10: uivista also needs this
+               for (int i = 0; i < n; i++)
+               {
+                  if (drawSelectedTabAlone && i == activeIndex)
+                     continue;
+                  r = rects[i];
+                  g.backColor = back = getTabColor(i); // guich@580_7: use the container's color if containersColor was not set - guich@tc110_59: use default back color if container was not yet shown.
+      
+                  if (uiAndroid)
+                     try
+                     {
+                        Image img = NinePatch.getInstance().getNormalInstance(useBorder2 ? NinePatch.TAB2 : NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop);
+                        img.alphaMask = alphaValue;
+                        NinePatch.tryDrawImage(g, img, r.x,r.y);
+                     }
+                     catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
+                  else
+                  if (uiFlat) // the flat style has rect borders instead of hatched ones.
+                     g.fillRect(r.x,r.y,r.width,r.height);
+                  else
+                  if (uiVista && isEnabled())
+                     g.fillVistaRect(r.x+1,r.y+1,r.width-2,r.height-2, back, atTop,false);
+                  else
+                     g.fillHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // (*)
+               }
+            if (drawSelectedTabAlone) // draw again for the selected tab if we want to use a different color
             {
-               if (drawSelectedTabAlone && i == activeIndex)
-                  continue;
-               r = rects[i];
-               g.backColor = back = getTabColor(i); // guich@580_7: use the container's color if containersColor was not set - guich@tc110_59: use default back color if container was not yet shown.
-   
+               int b = containers[activeIndex].backColor;
+               if (tabsBackColor == null && useOnTabTheContainerColor && activeTabBackColor != -1)
+                  g.backColor = b == backColor ? activeTabBackColor : b;
+               else
+               {
+                  boolean dontUseTabs = tabsBackColor == null || tabsBackColor[activeIndex] == -1;
+                  g.backColor = activeTabBackColor != -1 && dontUseTabs ? activeTabBackColor : activeTabBackColor != -1 && !dontUseTabs ? Color.interpolate(activeTabBackColor,tabsBackColor[activeIndex]) : getTabColor(activeIndex);
+               }
+               r = rects[activeIndex];
                if (uiAndroid)
                   try
                   {
-                     Image img = NinePatch.getInstance().getNormalInstance(useBorder2 ? NinePatch.TAB2 : NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop);
-                     img.alphaMask = alphaValue;
+                     Image img = NinePatch.getInstance().getNormalInstance(useBorder2 ? NinePatch.TAB2 : NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
                      NinePatch.tryDrawImage(g, img, r.x,r.y);
                   }
                   catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
@@ -890,50 +931,61 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
                if (uiFlat) // the flat style has rect borders instead of hatched ones.
                   g.fillRect(r.x,r.y,r.width,r.height);
                else
-               if (uiVista && isEnabled())
-                  g.fillVistaRect(r.x+1,r.y+1,r.width-2,r.height-2, back, atTop,false);
-               else
                   g.fillHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // (*)
+               g.backColor = backColor;
             }
-         if (drawSelectedTabAlone) // draw again for the selected tab if we want to use a different color
-         {
-            int b = containers[activeIndex].backColor;
-            if (tabsBackColor == null && useOnTabTheContainerColor && activeTabBackColor != -1)
-               g.backColor = b == backColor ? activeTabBackColor : b;
-            else
-            {
-               boolean dontUseTabs = tabsBackColor == null || tabsBackColor[activeIndex] == -1;
-               g.backColor = activeTabBackColor != -1 && dontUseTabs ? activeTabBackColor : activeTabBackColor != -1 && !dontUseTabs ? Color.interpolate(activeTabBackColor,tabsBackColor[activeIndex]) : getTabColor(activeIndex);
-            }
-            r = rects[activeIndex];
-            if (uiAndroid)
-               try
-               {
-                  Image img = NinePatch.getInstance().getNormalInstance(useBorder2 ? NinePatch.TAB2 : NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
-                  NinePatch.tryDrawImage(g, img, r.x,r.y);
-               }
-               catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
-            else
-            if (uiFlat) // the flat style has rect borders instead of hatched ones.
-               g.fillRect(r.x,r.y,r.width,r.height);
-            else
-               g.fillHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // (*)
-            g.backColor = backColor;
          }
          
-         // draw text
+         if (effect != null) effect.paintEffect(g);
          
+         if (uiMaterial && activeIcon == null)
+         {
+            r = rects[activeIndex];
+            int x=r.x, w=r.width;
+            // draw all tabs
+            int bc = pressedColor != -1 ? pressedColor : getTabColor(activeIndex);
+            y = atTop ? r.y+r.height-lineH: r.y;
+            g.backColor = Color.getGray(bc);
+            g.fillRect(0,y,width, lineH);
+            
+            // draw selected tab
+            g.backColor = bc;
+            
+            if (materialLastActiveIndex != -1)
+            {
+               int iold = materialLastActiveIndex == -1 ? lastActiveTab : activeIndex;
+               int inew = materialLastActiveIndex == -1 ? activeIndex   : materialLastActiveIndex;
+               // maps the container position to the line position
+               int dif = iold-inew;
+               int wcurr = containers[inew].x - clientRect.x;
+               int perc = wcurr * 100*(dif > 0 ? 1 : -1) / this.width;
+               perc = 100 + perc / (dif < 0 ? -dif : dif);
+               
+               int xdest = rects[inew].x;   
+               int xorig = rects[iold].x; 
+               x = (xdest - xorig) * perc / 100 + xorig;
+               
+               int wdest = rects[inew].width;   
+               int worig = rects[iold].width; 
+               w = (wdest - worig) * perc / 100 + worig;
+            }
+            int yy = atTop ? y-lineH*2 : y+lineH;
+            g.fillRect(x,yy, w,lineH*2);
+         }
+         
+         // draw text         
          boolean isText = isTextCaption;
          for (int i =0; i < n; i++)
          {
             r = rects[i];
             int xx = r.x + (r.width-(i==activeIndex ? wbolds[i] : wplains[i]))/2;
             int yy = r.y + (r.height-fmH)/2;
+            //if (uiMaterial) yy -= lineH*3;
             if (isText)
             {
                g.foreColor = disabled[i] ? Color.getCursorColor(cColor) : i != activeIndex && unselectedTextColor != -1 ? unselectedTextColor : cColor; // guich@200b4_156
                if (uiAndroid)
-                  g.drawText(strCaptions[i],xx, atTop ? (extraTabHeight > 0 ? r.y + r.height-fmH-7 : yy-2) : (extraTabHeight > 0 ? r.y + 7 : yy), textShadowColor != -1, textShadowColor);
+                  g.drawText(strCaptions[i],xx, atTop ? (extraTabHeight > 0 ? (r.y + r.height-fmH-7-(uiMaterial?lineH*3 : 0)) : yy-2) : (extraTabHeight > 0 ? r.y + 7 : yy), textShadowColor != -1, textShadowColor);
                else
                if (i != activeIndex)
                   g.drawText(strCaptions[i],xx, yy, textShadowColor != -1, textShadowColor);
@@ -961,6 +1013,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
          
          // guich@200b4: remove the underlaying line of the active tab.
          r = rects[activeIndex];
+
          if (!uiAndroid)
          {
             g.foreColor = getTabColor(activeIndex); // guich@580_7: use the container's back color
@@ -976,6 +1029,23 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
          }
       }
    }
+   public int getEffectW() 
+   {
+      return tempSelected == -1 ? 0 : rects[tempSelected].width;
+   }
+   public int getEffectH() 
+   {
+      return tempSelected == -1 ? 0 : rects[tempSelected].height;
+   }
+   public int getEffectX() 
+   {
+      return tempSelected == -1 ? UIEffects.X_UNKNOWN : rects[tempSelected].x;
+   }
+   public int getEffectY() 
+   {
+      return tempSelected == -1 ? 0 : rects[tempSelected].y;
+   }
+
 
    /** Returns the color of the given tab.
     * @since TotalCross 1.52
@@ -1015,10 +1085,27 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
    {
       if (event.type == PenEvent.PEN_DOWN)
          scScrolled = false;
+      
+      switch (event.type) // material: when the container is dragged and we have to move the selected tab 
+      {
+         case PenEvent.PEN_DRAG_START:
+            DragEvent de = (DragEvent)event;
+            if (de.direction == DragEvent.LEFT || de.direction == DragEvent.RIGHT)
+            {
+               int p = activeIndex + (de.direction == DragEvent.RIGHT ? -1 : 1);
+               if (0 <= p && p < count)
+                  materialLastActiveIndex = p;
+            }
+            break;
+      }
+      
       if (event.target != this)
       {
-         if (event.type == ControlEvent.PRESSED && (event.target == btnLeft || event.target == btnRight))
-            setActiveTab(nextEnabled(activeIndex,event.target == btnRight),true);
+         if (event.type == ControlEvent.PRESSED)
+         {
+            if (event.target == btnLeft || event.target == btnRight)
+               setActiveTab(nextEnabled(activeIndex,event.target == btnRight),true);
+         }
          if (!(flick != null && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP)))
             return;
       }
@@ -1281,6 +1368,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
       int tab = getPositionedTab(false);
       setActiveTab(tab,false);
       releaseScreenShots();
+      materialLastActiveIndex = -1;
    }
    
    private int getPositionedTab(boolean exact)

@@ -64,6 +64,10 @@ public class ScrollContainer extends Container implements Scrollable
    /** Returns the scrollbar for this ScrollContainer. With it, you can directly
     * set its parameters, like blockIncrement, unitIncrement and liveScrolling.
     * But be careful, don't mess with the minimum, maximum and visibleItems.
+    * 
+    * If using Android or Material user interface style, these are replaced
+    * by the ScrollPosition. If you set <code>sbV.transparentBackground=true</code> 
+    * (or for sbH), you will expand the client area to over the ScrollPosition's area.
     */
    public ScrollBar sbH,sbV;
 
@@ -103,6 +107,22 @@ public class ScrollContainer extends Container implements Scrollable
       this(true);
    }
    
+   /** Returns the client rect from the area that scrolls */
+   public Rect getClientRect() // guich@200final_15
+   {
+      Rect r = new Rect();
+      bag.getClientRect(r);
+      return r;
+   }
+
+   /** Returns the client rect from the ScrollContainer control */
+   public Rect getRealClientRect() // guich@200final_15
+   {
+      Rect r = new Rect();
+      this.getClientRect(r);
+      return r;
+   }
+
    /** Constructor used to specify when both scrollbars are enabled or not. */
    public ScrollContainer(boolean allowScrollBars)
    {
@@ -120,7 +140,7 @@ public class ScrollContainer extends Container implements Scrollable
       bag0.add(bag = new ClippedContainer());
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
       bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
-      bag.setRect(0,0,4000,20000); // set an arbitrary size
+      bag.setRect(0,0,getBagInitialWidth(),getBagInitialHeight()); // set an arbitrary size
       bag.setX = SETX_NOT_SET; // ignore this setX and use the next one
       if (allowHScrollBar)
       {
@@ -136,6 +156,18 @@ public class ScrollContainer extends Container implements Scrollable
       }
       if (Settings.fingerTouch)
          flick = new Flick(this);
+   }
+   
+   /** Overwrite this method to define a custom height for the scrolling area */
+   protected int getBagInitialHeight()
+   {
+      return 20000;
+   }
+
+   /** Overwrite this method to define a custom width for the scrolling area */
+   protected int getBagInitialWidth()
+   {
+      return 4000;
    }
    
    public boolean flickStarted()
@@ -290,7 +322,7 @@ public class ScrollContainer extends Container implements Scrollable
       }
       if (hasFillH) // now resize the height
       {
-         maxY = getClientRect().height;
+         maxY = super.getClientRect().height;
          for (Control child = bag.children; child != null; child = child.next)
             if ((FILL-RANGE) <= child.setH && child.setH <= (FILL+RANGE))
             {
@@ -311,11 +343,10 @@ public class ScrollContainer extends Container implements Scrollable
          super.remove(sbH);
       // check if we need horizontal or vertical or both scrollbars
       boolean needX = false, needY = false, changed=false;
-      Rect r = getClientRect();
+      Rect r = super.getClientRect();
       int availX = r.width;
       int availY = r.height;
-      boolean finger = ScrollPosition.AUTO_HIDE && 
-                       ((sbH != null && sbH instanceof ScrollPosition) ||
+      boolean finger = ((sbH != null && sbH instanceof ScrollPosition) ||
                         (sbV != null && sbV instanceof ScrollPosition));
       if (sbH != null || sbV != null)
          do
@@ -334,7 +365,7 @@ public class ScrollContainer extends Container implements Scrollable
          } while (changed);
 
       if (sbH != null || sbV != null || !shrink2size)
-         bag0.setRect(r.x,r.y,r.width-(!finger && needY && sbV != null ? sbV.getPreferredWidth() : 0), r.height-(!finger && needX && sbH != null ? sbH.getPreferredHeight() : 0));
+         bag0.setRect(r.x,r.y,r.width-(!finger && needY && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth() : 0), r.height-(!finger && needX && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0));
       else
       {
          bag0.setRect(r.x,r.y,maxX,maxY);
@@ -345,7 +376,7 @@ public class ScrollContainer extends Container implements Scrollable
          super.add(sbH);
          sbH.setMaximum(maxX);
          sbH.setVisibleItems(bag0.width);
-         sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY?sbV.getPreferredWidth():0),PREFERRED);
+         sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY && sbV != null?sbV.getPreferredWidth():0),PREFERRED);
          sbH.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fm.charWidth('@'));
          lastH = 0;
       }
@@ -371,7 +402,7 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void reposition()
    {
-      int vx = bag.x, vy = bag.y; // keep position when changing size
+      int vx = bag.x, vy = bag.y, vw = bag.width, vh = bag.height; // keep position when changing size
       int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
       super.reposition();
       resize();
@@ -382,9 +413,15 @@ public class ScrollContainer extends Container implements Scrollable
       else
       {
          if (sbH != null)
-            sbH.setValue(-(bag.x = sbH.maximum == 0 ? 0 : vx));
+         {
+            sbH.setValue(sbH.maximum == 0 ? 0 : -vx);
+            bag.x = -sbH.getValue();
+         }
          if (sbV != null)
-            sbV.setValue(-(bag.y = sbV.maximum == 0 ? 0 : vy)); // if we're scrolled but we don't need scroll, move to origin
+         {
+            sbV.setValue(sbV.maximum == 0 ? 0 : -vy); // if we're scrolled but we don't need scroll, move to origin
+            bag.y = -sbV.getValue();
+         }
       }
    }
    
@@ -578,32 +615,60 @@ public class ScrollContainer extends Container implements Scrollable
          {
             lastH = sbH.value;
             int val = lastH + (r.x <= 0 || r.width > bag0.width ? r.x : (r.x2()-bag0.width));
-            if (val < sbH.minimum)
-               val = sbH.minimum;
-            sbH.setValue(val);
-            if (lastH != sbH.value)
-            {
-               lastH = sbH.value;
-               bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
-            }
+            setHValue(val);
          }
          // vertical
          if (sbV != null && (r.y < 0 || r.y2() > bag0.height))
          {
             lastV = sbV.value;
             int val = lastV + (r.y <= 0 || r.height > bag0.height ? r.y : (r.y2() - bag0.height));
-            if (val < sbV.minimum)
-               val = sbV.minimum;
-            sbV.setValue(val);
-            if (lastV != sbV.value)
-            {
-               lastV = sbV.value;
-               bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
-            }
+            setVValue(val);
+         }
+      }
+   }
+
+   /** Scroll the container to origin position 0,0 */
+   public void scrollToOrigin()
+   {
+      if (sbH != null)
+         setHValue(0);
+      if (sbV != null)
+         setVValue(0);
+      bag.reposition();
+   }
+   
+   /** Sets the vertical's ScrollBar value to the given one. */
+   protected void setVValue(int val)
+   {
+      if (sbV != null)
+      {
+         sbV.setValue(val);
+         if (val < sbV.minimum)
+            val = sbV.minimum;
+         if (lastV != sbV.value)
+         {
+            lastV = sbV.value;
+            bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
          }
       }
    }
    
+   /** Sets the horizontal's ScrollBar value to the given one. */
+   protected void setHValue(int val)
+   {
+      if (sbH != null)
+      {
+         if (val < sbH.minimum)
+            val = sbH.minimum;
+         sbH.setValue(val);
+         if (lastH != sbH.value)
+         {
+            lastH = sbH.value;
+            bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
+         }
+      }
+   }
+
    public void setBorderStyle(byte border)
    {
       if (shrink2size)

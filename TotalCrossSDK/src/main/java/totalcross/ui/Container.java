@@ -1082,7 +1082,7 @@ public class Container extends Control
       if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
       {
          c.requestFocus();
-         if (Settings.virtualKeyboard)
+         if (Settings.virtualKeyboard && Settings.enableVirtualKeyboard)
          {
             if (c instanceof Edit)
                ((Edit)c).popupKCC();

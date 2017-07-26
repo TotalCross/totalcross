@@ -83,6 +83,8 @@ public final class Graphics
     * is drawn; if is false, a listbox shaded is drawn. Also note that the fore color must have been set.
     */
    static public final byte R3D_SHADED = 5;
+   /** used in the draw3dRect method */
+   static public final byte R3D_FILL = 6;
    /** used in the drawArrow method */
    static public final byte ARROW_UP = 1;
    /** used in the drawArrow method */
@@ -101,13 +103,12 @@ public final class Graphics
    private int pitch;
    private static int[] pal685;
    private boolean isControlSurface;
-   private int lastXC, lastYC, lastRX, lastRY, lastSize, lastClipFactor, gxPoints[], gyPoints[], axPoints[][], ayPoints[][], anPoints[], aBase[];
-   private double lastPPD;
+   private int lastXC, lastYC, lastRX, lastRY, lastSize, lastClipFactor, gxPoints[], gyPoints[], axPoints[][], ayPoints[][], anPoints[], aBase[], cyPoints[], cxPoints[], lastcRX, lastcRY, lastcSize;
+   private double lastPPD, lastcPPD;
    private int[] translateAndClipResults = new int[4];
    private int[] tlx, tly;
    /** Defines if the screen has been changed. */
    public static boolean needsUpdate;
-   private static int[] acos, asin;
    /** Alpha value used on operations, shifted by 24 bits left. E.G.: to use an alpha value of 0x80, set this with 0x80000000, or 0x80<<24.
     * The default value is 0xFF000000 and is used only when drawing on Images. 
     */
@@ -334,8 +335,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the arc
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawArc(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -350,8 +351,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawPie(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -365,8 +366,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillPie(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -380,8 +381,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillPieGradient(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -397,8 +398,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -414,8 +415,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -432,8 +433,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -450,8 +451,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillEllipticalPieGradient(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -1719,6 +1720,12 @@ public final class Graphics
     */
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int[] fourColors)
    {
+      if (type == R3D_FILL)
+      {
+         backColor = backColor | alpha;
+         fillRect(x,y,width,height);
+      }
+      else
       if (type == R3D_SHADED)
       {
          boolean menu = simple; // is menu?
@@ -1753,6 +1760,7 @@ public final class Graphics
             case Settings.Holo:
             case Settings.Android:
             case Settings.Vista:
+            case Settings.Material:
                foreColor = fourColors[2] | alpha;
                switch (type)
                {
@@ -1861,11 +1869,10 @@ public final class Graphics
     *           unpredictable.
     * @param ry y radix of the circle that contains the point. Maximum ry value is 8000; above this, the result is
     *           unpredictable.
-    * @param angle angle of the point. It should be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param angle angle of the point. It should be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     * @param out the Coord with the x,y points
     */
-   public void getAnglePoint(int xc, int yc, int rx, int ry, int angle, Coord out) // guich@300_41: fixed method
-                                                                                   // signature
+   public void getAnglePoint(int xc, int yc, int rx, int ry, int angle, Coord out)
    {
       if (angle < 0 || angle >= 360)
       {
@@ -1874,29 +1881,165 @@ public final class Graphics
          while (angle >= 360)
             angle -= 360;
       }
-      if (acos == null) // create a lookup table for sin and cos - these tend to be slooow when in loop.
-      {
-         acos = new int[360];
-         asin = new int[360];
-         double tick = 2.0 * Math.PI / acos.length, a = 0;
-         for (int i = 0; i <= 45; a += tick, i++)
-         {
-            acos[90 - i] = asin[i] = (int) (Math.sin(a) * (1 << 18));
-            asin[90 - i] = acos[i] = (int) (Math.cos(a) * (1 << 18));
-         }
-         for (int s, c, i = 0; i < 90; i++)
-         {
-            s = asin[i];
-            c = acos[i];
 
-            asin[i + 90] = c;
-            asin[i + 180] = acos[i + 90] = -s;
-            asin[i + 270] = acos[i + 180] = -c;
-            acos[i + 270] = s;
+      int nPoints = 0;
+      // this algorithm was created by Guilherme Campos Hazan
+      double ppd;
+      int index, i;
+      int size = 0;
+      // step 0: correct angle values
+      int[] xPoints = cxPoints;
+      int[] yPoints = cyPoints;
+      // step 0: if possible, use cached results
+      boolean sameR = rx == lastcRX && ry == lastcRY;
+      if (!sameR)
+      {
+         long t1 = (long) rx * rx, t2 = t1 << 1, t3 = t2 << 1;
+         long t4 = (long) ry * ry, t5 = t4 << 1, t6 = t5 << 1;
+         long t7 = (long) rx * t5, t8 = t7 << 1, t9 = 0;
+         long d1 = t2 - t7 + (t4 >> 1); // error terms
+         long d2 = (t1 >> 1) - t8 + t5;
+         int x = rx, y = 0; // ellipse points
+
+         if (sameR)
+            size = lastcSize;
+         else
+         {
+            // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)
+            // intermediate terms to speed up loop
+            while (d2 < 0) // til slope = -1
+            {
+               t9 += t3;
+               if (d1 < 0) // move straight up
+               {
+                  d1 += t9 + t2;
+                  d2 += t9;
+               }
+               else // move up and left
+               {
+                  x--;
+                  t8 -= t6;
+                  d1 += t9 + t2 - t8;
+                  d2 += t9 + t5 - t8;
+               }
+               size++;
+            }
+
+            do // rest of top right quadrant
+            {
+               x--; // always move left here
+               t8 -= t6;
+               if (d2 < 0) // move up and left
+               {
+                  t9 += t3;
+                  d2 += t9 + t5 - t8;
+               }
+               else // move straight left
+                  d2 += t5 - t8;
+               size++;
+
+            } while (x >= 0);
          }
+         // step 2: computes how many points per degree
+         ppd = (double) size / 90.0;
+         // step 3: create space in the buffer so it can save 1/4 of the circle
+         if (nPoints < size)
+         {
+            cxPoints = cyPoints = null;
+            xPoints = cxPoints = new int[size];
+            yPoints = cyPoints = new int[size];
+         }
+         // step 4: stores all the 1/4 circle in the array. the odd arcs are drawn in reverse order
+         // intermediate terms to speed up loop
+         t2 = t1 << 1;
+         t3 = t2 << 1;
+         t8 = t7 << 1;
+         t9 = 0;
+         d1 = t2 - t7 + (t4 >> 1); // error terms
+         d2 = (t1 >> 1) - t8 + t5;
+         x = rx;
+
+         i = 0;
+         while (d2 < 0) // til slope = -1
+         {
+            // save 4 points using symmetry
+            xPoints[i] = x;
+            yPoints[i] = y;
+            i++;
+
+            y++; // always move up here
+            t9 += t3;
+            if (d1 < 0) // move straight up
+            {
+               d1 += t9 + t2;
+               d2 += t9;
+            }
+            else // move up and left
+            {
+               x--;
+               t8 -= t6;
+               d1 += t9 + t2 - t8;
+               d2 += t9 + t5 - t8;
+            }
+         }
+
+         do // rest of top right quadrant
+         {
+            // save 4 points using symmetry
+            // guich@340_3: added clipping
+            xPoints[i] = x;
+            yPoints[i] = y;
+            i++;
+
+            x--; // always move left here
+            t8 -= t6;
+            if (d2 < 0) // move up and left
+            {
+               y++;
+               t9 += t3;
+               d2 += t9 + t5 - t8;
+            }
+            else // move straight left
+               d2 += t5 - t8;
+         } while (x >= 0);
+         // save last arguments
+         lastcPPD = ppd;
+         lastcSize = size;
+         lastcRX = rx;
+         lastcRY = ry;
       }
-      out.x = xc + (acos[angle] * rx >> 18);
-      out.y = yc - (asin[angle] * ry >> 18);
+      else
+      {
+         ppd  = lastcPPD;
+         size = lastcSize;
+      }
+      // step 5: computes the start and end indexes that will become part of the arc
+      index = (int) (ppd * angle + 0.5);
+      int x = 0;
+      int y = 0;
+      switch (angle / 90)
+      {
+         case 0: 
+            x = + xPoints[index];
+            y = - yPoints[index];
+            break;
+         case 1:
+            x = - xPoints[size-(index-size)-1];
+            y = - yPoints[size-(index-size)-1];
+            break;
+         case 2:
+            x = - xPoints[index-2*size];
+            y = + yPoints[index-2*size];
+            break;
+         case 3:
+            int idx = size-(index-3*size)-1; if (idx < 0) idx = 0;
+            x = + xPoints[idx];
+            y = + yPoints[idx];
+            break;
+      }
+
+      out.x = xc + x;
+      out.y = yc + y;
    }
 
    /**
@@ -2839,7 +2982,7 @@ public final class Graphics
       int[] xPoints = gxPoints;
       int[] yPoints = gyPoints;
       // step 0: if possible, use cached results
-      int clipFactor = clipY1 * 10000000 + clipY2;
+      int clipFactor = clipX1 * 1000000000 + clipX2 * 10000000 + clipY1 * 100000 + clipY2;
       boolean sameClip = clipFactor == lastClipFactor;
       boolean sameC = sameClip && xc == lastXC && yc == lastYC;
       boolean sameR = sameClip && rx == lastRX && ry == lastRY;
@@ -3585,5 +3728,12 @@ public final class Graphics
             err += ++y * 2 + 1;
          }
       } while (x < 0);
+   }
+
+   /** Draws a set of connected lines from the given x,y coordinates array. You must provide at least 2 points (4 int numbers). */
+   public void drawLines(int... p)
+   {
+      for (int i = 0, n = p.length-2; i < n; i += 2)
+         drawLine(p[i],p[i+1], p[i+2], p[i+3]);
    }
 }

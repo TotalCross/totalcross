@@ -16,11 +16,12 @@
 
 package tc.samples.api.ui;
 
-import tc.samples.api.*;
-
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
+
+import tc.samples.api.*;
 
 public class MultiEditSample extends BaseContainer
 {
@@ -43,17 +44,38 @@ public class MultiEditSample extends BaseContainer
          add(sc,LEFT,TOP,FILL,FILL);
          MultiEdit c;
 
-         sc.add(c = new MultiEdit(5,1), LEFT,AFTER+gap,FILL,PREFERRED);
+         // IN MATERIAL UI, IS VERY IMPORTANT THAT THE CAPTION IS SET BEFORE ADDING THE CONTROL.
+         c = new MultiEdit(5,1);
          c.caption = "Please enter the text in this MultiEdit";
-         c.setBackColor(Color.brighter(Color.BLUE));
+         c.captionIcon = getAwesomeImage('\uf12d', fmH*75/100, Color.BLACK);
+         c.setBackColor(0x0000AA);
+         c.fillColor = 0xEEEEFF;
+         sc.add(c, LEFT,AFTER+gap,FILL,PREFERRED);
+
+         final MultiEdit c1 = c;
+         c.captionPress = new CaptionPress()
+         {
+            public void onIconPress()
+            {
+               Vm.debug("on icon press");
+               c1.clear();
+            }
+            
+            public void onCaptionPress()
+            {
+               Vm.debug("on caption press");
+               c1.clear();
+            }
+         };
 
          sc.add(c = new MultiEdit(2,0), LEFT,AFTER+gap,FILL,PREFERRED);
-         c.setBackColor(Color.brighter(Color.GREEN));
+         c.setBackColor(0x00AA00);
+         c.fillColor = 0xEEFFEE;
 
          sc.add(new Label("Non-editable MultiEdit:"),LEFT,AFTER+gap);
          MultiEdit mEdit;
          mEdit = new MultiEdit("",6,1);
-         mEdit.drawDots = (false);
+         mEdit.drawDots = false;
          mEdit.justify = true;
          mEdit.setEditable(false);
          MultiEdit.hasCursorWhenNotEditable = false;

@@ -116,7 +116,9 @@ public final class Color
    {
    }
 
-   /** Returns the alpha channel (brightness) of the color value in a value from 0 to 255 */
+   /** Returns the alpha channel (brightness) of the color value in a value from 0 to 255.
+    * @deprecated Use {@link #getBrightness(int)}
+    */
    public static int getAlpha(int rgb)
    {
       return ((((rgb >> 16) & 0xFF) << 5) + (((rgb >> 8) & 0xFF) << 6) + ((rgb & 0xFF) << 2)) / 100;
@@ -158,14 +160,35 @@ public final class Color
       return lastDarkerDst = getRGBEnsureRange(((rgb >> 16) & 0xFF)-FULL_STEP,((rgb >> 8) & 0xFF)-FULL_STEP,(rgb & 0xFF)-FULL_STEP);
    }
    
+   /** Returns the brightness value of a color, in the range 0-255.
+    * 
+    * Source: https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color 
+    */
+   public static int getBrightness(int rgb)
+   {
+      int r = (rgb >> 16) & 0xFF;
+      int g = (rgb >>  8) & 0xFF;
+      int b = (rgb      ) & 0xFF;
+      return (3*r + b + 4*g) >> 3;
+   }
+   
    /** Returns the best cursor color depending on this color */
    public static int getCursorColor(int rgb)
    {
-      return getAlpha(rgb) > 128
-           ? getRGBEnsureRange(((rgb >> 16) & 0xFF)-FULL_STEP,((rgb >> 8) & 0xFF)-FULL_STEP,(rgb & 0xFF)-FULL_STEP)
-           : getRGBEnsureRange(((rgb >> 16) & 0xFF)+FULL_STEP,((rgb >> 8) & 0xFF)+FULL_STEP,(rgb & 0xFF)+FULL_STEP); // guich@220_45 - guich@340_51: in color devices, use normal step
+      int step = Settings.uiStyle == Settings.Material ? HALF_STEP : FULL_STEP;
+      return getBrightness(rgb) >= 127
+           ? getRGBEnsureRange(((rgb >> 16) & 0xFF)-step,((rgb >> 8) & 0xFF)-step,(rgb & 0xFF)-step)
+           : getRGBEnsureRange(((rgb >> 16) & 0xFF)+step,((rgb >> 8) & 0xFF)+step,(rgb & 0xFF)+step); // guich@220_45 - guich@340_51: in color devices, use normal step
    }
-   
+
+   /** Returns the best cursor color depending on this color */
+   public static int getCursorColor(int rgb, int step)
+   {
+      return getBrightness(rgb) >= 127
+           ? getRGBEnsureRange(((rgb >> 16) & 0xFF)-step,((rgb >> 8) & 0xFF)-step,(rgb & 0xFF)-step)
+           : getRGBEnsureRange(((rgb >> 16) & 0xFF)+step,((rgb >> 8) & 0xFF)+step,(rgb & 0xFF)+step); // guich@220_45 - guich@340_51: in color devices, use normal step
+   }
+
    /** Returns a color that is brighter than the current one. */
    public static int brighter(int rgb, int step)
    {
@@ -245,9 +268,9 @@ public final class Color
     */
    public static int getBetterContrast(int original, int color1, int color2) 
    {
-      int a0 = getAlpha(original);
-      int a1 = getAlpha(color1);
-      int a2 = getAlpha(color2);
+      int a0 = getBrightness(original);
+      int a1 = getBrightness(color1);
+      int a2 = getBrightness(color2);
       return Math.abs(a1-a0) > Math.abs(a2-a0) ? color1 : color2;
    }
 
@@ -263,5 +286,18 @@ public final class Color
    public static int getRandomColor(Random r)
    {
       return getRGBEnsureRange(r.nextInt(256),r.nextInt(256),r.nextInt(256));
+   }
+
+   /** Returns a gray color based on the given one */
+   public static int getGray(int c)
+   {
+      int r = (c >> 16) & 0xFF;
+      int g = (c >>  8) & 0xFF;
+      int b = (c      ) & 0xFF;
+      int m = (r+g+b)/3;
+      int bright = (3*r + b + 4*g) >> 3;
+      if (bright < 128)
+         m = 128 - bright;
+      return getRGB(m,m,m);
    }
 }

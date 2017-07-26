@@ -30,11 +30,18 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    {
       ArrayList<AccordionContainer> l = new ArrayList<AccordionContainer>(5);
       
+      public void collapseAll(boolean showAnimation)
+      {
+         for (AccordionContainer a: l) {
+            if (a.isExpanded()) {
+               a.collapse(showAnimation);
+            }
+         }
+      }
+
       public void collapseAll()
       {
-         for (AccordionContainer a: l)
-            if (a.isExpanded())
-               a.collapse();
+          this.collapseAll(true);
       }
    }
    
@@ -136,7 +143,7 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    public void expand(boolean showAnimation)
    {
       if (group != null)
-         group.collapseAll();
+         group.collapseAll(showAnimation);
       final int maxH = getMaxHeight();
       if (showAnimation) {
          PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
@@ -144,7 +151,8 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
          p.setpos = this;
          p.start();
       } else {
-         setPos(0,maxH);
+         setPos(0, maxH);
+         onAnimationFinished(null);
       }
    }
 
@@ -154,9 +162,10 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
          PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
          p.useOffscreen = false;
          p.setpos = this;
-         p.start();         
+         p.start();
       } else {
          setPos(0, getPreferredHeight());
+         onAnimationFinished(null);
       }
    }
    

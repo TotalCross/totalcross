@@ -20,6 +20,7 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -71,7 +72,7 @@ public class ListBox extends Container implements Scrollable
 {
    protected Vector items = new Vector();
    protected int offset;
-   protected int selectedIndex=-1;
+   protected int selectedIndex=-1,tempSelectedIndex=-1;
    protected int itemCount;
    protected int visibleItems;
    protected int btnX,btnX0;
@@ -98,7 +99,7 @@ public class ListBox extends Container implements Scrollable
    
    /** Set to false to disable border drawing. */
    public boolean drawBorder = true;
-   
+
    /** Used to show an icon and a text. You can mix IconItem with other item types in the
     * ListBox. Example:
     * <pre>
@@ -258,6 +259,9 @@ public class ListBox extends Container implements Scrollable
          flick.shortestFlick = 50; // make the listbox more responsive
       }
       iconGap = fmH*4/3;
+      if (uiMaterial)
+         useFullWidthOnSelection = true;
+      effect = UIEffects.get(this);
    }
    
    public boolean flickStarted()
@@ -911,8 +915,14 @@ public class ListBox extends Container implements Scrollable
          case PenEvent.PEN_DOWN:
             scScrolled = false;
             pe = (PenEvent)event;
-            if (!Settings.fingerTouch && event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))
-               handleSelection(((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset); // guich@200b4: corrected line selection
+            if (event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))
+            {
+               int sel = ((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset;
+               if (Settings.fingerTouch)
+                  tempSelectedIndex = sel;
+               else
+                  handleSelection(sel); // guich@200b4: corrected line selection
+            }
             break;
       }
    }
@@ -1004,6 +1014,9 @@ public class ListBox extends Container implements Scrollable
       if (uiFlat) dy--;
       if (simpleBorder) {dx--; dy--;}
 
+      if (effect != null) // limits the effect to the area of the selected item
+         effect.paintEffect(g);
+
       setTextAreaClip(g,dx,dy); // guich@tc100b4_5
       dx += xOffset;
       int greatestVisibleItemIndex = Math.min(itemCount, visibleItems+offset); // code corrected by Bjoem Knafla
@@ -1011,6 +1024,28 @@ public class ListBox extends Container implements Scrollable
       drawItems(g, dx, dy, greatestVisibleItemIndex); 
    }
    
+   public int getEffectW() 
+   {
+      return width-(getEffectX()+xOffset);
+   }
+   public int getEffectH() 
+   {
+      return getItemHeight(tempSelectedIndex);
+   }
+   public int getEffectX() 
+   {
+      int dx = 2;
+      if (simpleBorder) dx--;
+      return dx + xOffset;
+   }
+   public int getEffectY() 
+   {
+      int dy = 3;
+      if (uiFlat) dy--;
+      if (simpleBorder) dy--;
+      return dy + (tempSelectedIndex-offset) * getItemHeight(tempSelectedIndex);
+   }
+
    protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex)
    {
       for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))

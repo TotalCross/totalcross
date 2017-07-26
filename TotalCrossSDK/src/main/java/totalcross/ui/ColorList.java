@@ -106,7 +106,7 @@ public class ColorList extends ListBox
             g.fillVistaRect(dx-1,dy,xx,hh,g.backColor,false,false);
          else
             g.fillRect(dx-1,dy,xx,hh);
-         g.foreColor = Color.getAlpha(colors[index].value) > 128 ? Color.BLACK : Color.WHITE;
+         g.foreColor = Color.getBrightness(colors[index].value) >= 127 ? Color.BLACK : Color.WHITE;
          g.drawText(colors[index].toString(), dx+4, dy+(hh-fmH)/2, textShadowColor != -1, textShadowColor);
       }
    }
@@ -129,8 +129,8 @@ public class ColorList extends ListBox
          int yy = dy-2-(ih-fmH)/2;
          g.setClip(dx-1,yy,btnX-dx+1,Math.min(ih * visibleItems, this.height-dy)); // guich@200b4_83: fixed selection overflowing paint area
          int c = colors[sel].value;
-         int a = Color.getAlpha(c);
-         g.foreColor = a >= 128 ? 0 : Color.WHITE;
+         int a = Color.getBrightness(c);
+         g.foreColor = a >= 127 ? Color.BLACK : Color.WHITE;
          g.drawRect(dx-1,yy,btnX-1,ih); // only select the Object - guich@200b4_130
       }
    }

@@ -16,8 +16,7 @@
 
 package tc.samples.api.ui;
 
-import tc.samples.api.*;
-
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -25,9 +24,12 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 
+import tc.samples.api.*;
+
 public class ComboListSample extends BaseContainer
 {
    private int lastSel;
+   Button btn;
 
    public void initUI()
    {
@@ -38,21 +40,59 @@ public class ComboListSample extends BaseContainer
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);
+
+         sc.add(btn = new Button("  Clear  "),CENTER,TOP);
          
          String[] items = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Um","Dois","Tres","Quatro","Cinco","Seis","Sete","Oito","Nove","Dez"};
          ComboBox cb = new ComboBox(items);
+         cb.caption = "Numbers with popup";
+         cb.captionIcon = getAwesomeImage('\uF12D',fmH,Color.BLACK);
          cb.popupTitle = "Select the item";
          cb.enableSearch = false;
          cb.setBackColor(Color.BRIGHT);
-         cb.checkColor = Color.GREEN;
-         sc.add(cb,LEFT,AFTER,FILL,PREFERRED+gap);
+         cb.checkColor = Color.BLUE;
+         sc.add(cb,LEFT,AFTER+gap,FILL,PREFERRED);
+         final ComboBox cb1 = cb;
+         cb.captionPress = new CaptionPress()
+         {
+            public void onIconPress()
+            {
+               Vm.debug("on icon press");
+               cb1.setSelectedIndex(-1);
+            }
+            
+            public void onCaptionPress()
+            {
+               Vm.debug("on caption press");
+               cb1.setSelectedIndex(-1);
+            }
+         };
          
+         ComboBox.usePopupMenu = false;
+         cb = new ComboBox(items);
+         cb.caption = "Numbers with dropdown";
+         cb.setBackColor(Color.BRIGHT);
+         sc.add(cb,LEFT,AFTER+gap ,FILL,PREFERRED);
+         final ComboBox cb2 = cb;
+         ComboBox.usePopupMenu = true;
+
          String[] items2 = {"cyan","black","blue","bright","green","dark","magenta","orange","pink","red","white","yellow"};
          cb = new ComboBox(items2);
          cb.popupTitle = "Select the item";
          cb.setBackColor(Color.BRIGHT);
          cb.checkColor = Color.CYAN;
+         final ComboBox cb3 = cb;
          sc.add(cb,LEFT,AFTER+gap,FILL,PREFERRED+gap);
+
+         btn.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               cb1.setSelectedIndex(-1);
+               cb2.setSelectedIndex(-1);
+               cb3.setSelectedIndex(-1);
+            }
+         });
 
          ListBox l = new ListBox(items);
          l.setBackColor(SELCOLOR);
