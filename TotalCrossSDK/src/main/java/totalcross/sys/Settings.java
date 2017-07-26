@@ -928,9 +928,9 @@ public final class Settings
 
    /** An optional value for the backspace key. Android 4.4.2 has a bug that prevents the backspace from working well;
     * this bug is fixed in 4.4.3. The workaround is to define a unused key that will work as the backspace one.
-    * Defaults to the Ã® key, used only if romVersion is 442.
+    * Defaults to the í key, used only if romVersion is 442.
     */
-   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'Ã®' : 0;
+   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'í' : 0;
    
    /** Set to false to disable the scroll optimization using images. This optimization
     * greatly improves performance but uses more memory.
