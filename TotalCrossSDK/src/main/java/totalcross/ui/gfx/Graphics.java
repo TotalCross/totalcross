@@ -2982,7 +2982,7 @@ public final class Graphics
       int[] xPoints = gxPoints;
       int[] yPoints = gyPoints;
       // step 0: if possible, use cached results
-      int clipFactor = clipY1 * 10000000 + clipY2;
+      int clipFactor = clipX1 * 1000000000 + clipX2 * 10000000 + clipY1 * 100000 + clipY2;
       boolean sameClip = clipFactor == lastClipFactor;
       boolean sameC = sameClip && xc == lastXC && yc == lastYC;
       boolean sameR = sameClip && rx == lastRX && ry == lastRY;
