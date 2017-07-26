@@ -19,6 +19,7 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -67,6 +68,7 @@ public class PushButtonGroup extends Control
    private int userCursorColor=-1;
    private int []btnFColors,btnBColors;
    private int nullNames;
+   private int tempIndex=-1;
    
    /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
     * Works only when the type is BUTTON.
@@ -152,6 +154,7 @@ public class PushButtonGroup extends Control
       onFontChanged();
       colspan = new int[count];
       rowspan = new int[count];
+      effect = UIEffects.get(this);
    }
 
    /** Create the button matrix, with insideGap = 4, selected = -1, atLeastOne = false, allSameWidth = true and type = BUTTON.
@@ -356,12 +359,14 @@ public class PushButtonGroup extends Control
 
       g.foreColor = fColor;
       boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiAndroid || (uiVista && isEnabled())) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
-      if (!drawEachBack && !uiAndroid)
+      if (uiMaterial && Settings.onJavaSE && effect != null && effect.isRunning())
       {
-         g.backColor = backColor;
+         g.backColor = parent.backColor;
          g.fillRect(0,0,width,height);
       }
       g.backColor = backColor;
+      if (!drawEachBack && !uiAndroid)
+         g.fillRect(0,0,width,height);
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
@@ -380,7 +385,7 @@ public class PushButtonGroup extends Control
    
                   if (uiAndroid)
                   {
-                     Image img = getAndroidButton(r.width,r.height,isEnabled() ? back : Color.interpolate(back,parent.backColor), i == sel);
+                     Image img = getAndroidButton(r.width,r.height,isEnabled() ? back : Color.interpolate(back,parent.backColor), i == sel && !uiMaterial);
                      img.alphaMask = alphaValue;
                      NinePatch.tryDrawImage(g,img, r.x,r.y);
                      continue;
@@ -403,10 +408,12 @@ public class PushButtonGroup extends Control
                   g.draw3dRect(r.x,r.y,r.width,r.height,actLikeCheck && !checkAppearsRaised?(uiVista && i==sel)?Graphics.R3D_RAISED:Graphics.R3D_CHECK:(uiVista && i==sel)?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors);
          }
       g.foreColor = fColor;
+      if (effect != null) // limits the effect to the area of the selected item
+         effect.paintEffect(g);
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
-            if (i == selectedIndex)
+            if (i == selectedIndex && !uiMaterial)
             {
                g.clearClip();
                int bb = g.backColor; g.backColor = dColor;
@@ -428,6 +435,23 @@ public class PushButtonGroup extends Control
             if (useCustomColor) g.foreColor = fColor;
          }
       g.clearClip();
+   }
+
+   public int getEffectW() 
+   {
+      return tempIndex == -1 ? 0 : rects[tempIndex].width;
+   }
+   public int getEffectH() 
+   {
+      return tempIndex == -1 ? 0 : rects[tempIndex].height;
+   }
+   public int getEffectX() 
+   {
+      return tempIndex == -1 ? UIEffects.X_UNKNOWN : rects[tempIndex].x;
+   }
+   public int getEffectY() 
+   {
+      return tempIndex == -1 ? 0 : rects[tempIndex].y;
    }
 
    private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
@@ -459,8 +483,8 @@ public class PushButtonGroup extends Control
          Rect r;
          if (inside)
          {
-            int s = cols*(py / rowH);
-            int e = Math.min(count,s+cols);
+            int s = colspan == null && rowspan == null ? cols*(py / rowH) : 0;
+            int e = colspan == null && rowspan == null ? Math.min(count,s+cols) : count;
             for (int i =s; i < e; i++)
                if ((r=rects[i]) != null && !hidden[i] && r.contains(px,py))
                   return i;
@@ -489,7 +513,7 @@ public class PushButtonGroup extends Control
    {
       int sel = 0;
       if (event instanceof PenEvent)
-         sel = findButtonAt(((PenEvent)event).x,((PenEvent)event).y);
+         tempIndex = sel = findButtonAt(((PenEvent)event).x,((PenEvent)event).y);
 
       switch (event.type)
       {

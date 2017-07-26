@@ -45,7 +45,7 @@ public class TotalCrossAPI extends MainWindow
    {
       super("TotalCross API",NO_BORDER);
       setTitle("");
-      setUIStyle(Settings.Android);
+      setUIStyle(Settings.Material);
       setBackColor(UIColors.controlsBack = Color.WHITE);
       Settings.fadeOtherWindows = true;
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);

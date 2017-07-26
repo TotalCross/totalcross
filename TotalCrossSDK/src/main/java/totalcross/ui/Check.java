@@ -21,6 +21,7 @@ package totalcross.ui;
 
 import totalcross.res.*;
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -49,16 +50,18 @@ import totalcross.ui.image.*;
  * </pre>
  */
 
-public class Check extends Control implements TextControl
+public class Check extends Control implements TextControl, MaterialEffect.SideEffect
 {
    private String text;
-   private boolean checked;
+   private boolean checked,checked0;
    private int cbColor, cfColor;
    private int fourColors[] = new int[4];
    private String []lines = Label.emptyStringArray;
    private int []linesW;
    private int lastASW;
    private String originalText;
+   private int alphaSel = 255;
+   private boolean animating;
    /** Set to true to left-justify the text in the control. The default is right-justified,
     * if the control's width is greater than the preferred one.
     * @since TotalCross 1.0
@@ -87,6 +90,7 @@ public class Check extends Control implements TextControl
    public Check(String text)
    {
       setText(text);
+      effect = UIEffects.get(this);
    }
 
    /** Called by the system to pass events to the check control. */
@@ -101,14 +105,18 @@ public class Check extends Control implements TextControl
             postPressedEvent();
             break;
          default: 
+            if (uiMaterial && event.type == PenEvent.PEN_DOWN)
+               checked0 = checked;
             if (!isActionEvent(event))
                break;
             PenEvent pe = (PenEvent)event;
             if (isInsideOrNear(pe.x,pe.y))
             {
                Window.needsPaint = true;
+               checked0 = checked;
                checked = !checked;
-               postPressedEvent();
+               if (!uiMaterial)
+                  postPressedEvent();
             }
             break;
       }
@@ -145,8 +153,11 @@ public class Check extends Control implements TextControl
    {
       if (this.checked != checked)
       {
+         checked0 = this.checked;
          this.checked = checked;
          Window.needsPaint = true;
+         if (effect != null)
+            effect.startEffect();
          if (sendPress)
             postPressedEvent();
       }
@@ -185,7 +196,9 @@ public class Check extends Control implements TextControl
    public void onPaint(Graphics g)
    {
       boolean enabled = isEnabled();
-      int wh = lines.length == 1 ? height : fmH+Edit.prefH;
+      int wh0 = lines.length == 1 ? height : fmH+Edit.prefH;
+      int wh = uiMaterial ? fmH+Edit.prefH : wh0;
+      if (wh == height) wh -= Edit.prefH;
       int xx,yy;
 
       // guich@200b4_126: repaint the background of the whole control
@@ -201,15 +214,24 @@ public class Check extends Control implements TextControl
          g.backColor = uiAndroid ? backColor : cbColor;
          g.fillRect(0,0,wh,wh); // guich@220_28
       }
+      
+      if (effect != null)
+         effect.paintEffect(g);
+
       if (uiAndroid)
          try 
          {
-            Image img = enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor);
+            Image img = uiMaterial ? Resources.checkBkg.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled) : enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor);
             img.alphaMask = alphaValue;
-            NinePatch.tryDrawImage(g, img,0,0);
+            if (!uiMaterial || !checked || animating) NinePatch.tryDrawImage(g, img,0,(height-wh)/2);
             img.alphaMask = 255;
-            if (checked)
-               NinePatch.tryDrawImage(g,Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
+            if (checked || animating)
+            {
+               img = Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
+               img.alphaMask = alphaSel;
+               NinePatch.tryDrawImage(g, img,0,(height-wh)/2);
+               img.alphaMask = 255;
+            }
          } catch (ImageException ie) {}
       else
          g.draw3dRect(0,0,wh,wh,Graphics.R3D_CHECK,false,false,fourColors); // guich@220_28
@@ -217,9 +239,10 @@ public class Check extends Control implements TextControl
 
       if (!uiAndroid && checked)
          paintCheck(g, fmH, wh);
+      
       // draw label
       yy = (this.height - fmH*lines.length) >> 1;
-      xx = wh+2; // guich@300_69
+      xx = wh0+2; // guich@300_69
       g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cfColor;
       for (int i =0; i < lines.length; i++,yy+=fmH)
          g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
@@ -307,4 +330,22 @@ public class Check extends Control implements TextControl
       }
    }
 
+   public void sideStart()
+   {
+      animating = true;
+   }
+   public void sideStop()
+   {
+      if (animating)
+      {
+         animating = false;
+         postPressedEvent();
+      }
+   }
+   public void sidePaint(Graphics g, int alpha)
+   {
+      if (!checked0) // from checked to unchecked
+         alpha = 255 - alpha;
+      alphaSel  = alpha * alphaValue / 255; // limits on current alpha set by user
+   }
 }

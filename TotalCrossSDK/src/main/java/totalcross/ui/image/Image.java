@@ -227,9 +227,11 @@ public class Image extends GfxSurface
 
    /** Sets the transparent color of this image. A new image is NOT created.
     * 
+    * @deprecated use the alpha channel instead
     * @return The image itself
     * @since TotalCross 2.0
     */
+   @Deprecated
    public Image setTransparentColor(int color)
    {
       int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
@@ -2358,5 +2360,42 @@ public class Image extends GfxSurface
       Graphics g = img.getGraphics();
       g.copyImageRect(this, x,y,w,h,true);
       return img;
+   }
+   
+   public static void resizeJpeg(String inputPath, String outputPath, int maxPixelSize) {
+		try {
+			Image img = new Image(inputPath);
+			
+			int height = img.getHeight();
+			int width = img.getWidth();
+			
+			boolean doResize = false;
+			boolean isHeight = height > width;
+			
+			if (maxPixelSize > 0) {
+				doResize = true;
+			}
+			
+			Image resizedImage;
+			
+			if (doResize) {
+				resizedImage = img.smoothScaledFixedAspectRatio(maxPixelSize, isHeight);
+			} else {
+				resizedImage = img;
+			}
+			
+			File imageDestiny = null;
+			try {
+				imageDestiny = new File(outputPath, File.CREATE_EMPTY);
+				resizedImage.createJpg(imageDestiny, 85);
+			} finally {
+				if (imageDestiny != null) {
+					imageDestiny.close();
+				}
+			}
+		} catch (IOException | ImageException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
    }
 }

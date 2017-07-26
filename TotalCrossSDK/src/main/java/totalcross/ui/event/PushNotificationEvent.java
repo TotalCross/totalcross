@@ -26,7 +26,7 @@ import totalcross.ui.*;
  * TimerEvent represents a control's timer. Timers are created and destroyed using
  * the addTimer() and removeTimer() methods present in the Control class.
  */
-
+@Deprecated
 public class PushNotificationEvent extends Event
 {
    /** The event type for a token for this device being received by server */
@@ -37,12 +37,13 @@ public class PushNotificationEvent extends Event
    /** The message or the token, depending on the event type */
    public String message;
 
+   @Deprecated
    public PushNotificationEvent(int type, String msg)
    {
       super(type, MainWindow.getMainWindow(), Vm.getTimeStamp());
       message = msg;
    }
-
+   
    public String toString()
    {
       return (type == TOKEN_RECEIVED ? "TOKEN_RECEIVED" : "MESSAGE_RECEIVED")+": "+message;

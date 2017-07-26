@@ -135,7 +135,7 @@ target: makeNativeHT - updates the native methods hash table.
       classpath="${path.to.prototypeGenerator}"
       fork="yes"
    >
-      <arg line="makeNativeHT TC ${source.vm.path}\src\init ${source.vm.path}\src\nm\NativeMethods.txt" />
+      <arg line="makeNativeHT TC ${source.vm.path}/src/init ${source.vm.path}/src/nm/NativeMethods.txt" />
    </java>
 </target>
    
@@ -380,7 +380,7 @@ target: IPhone builds
 <target name="invalidate-ipas" >
    <property name="path.to.invalidator" value="${base.temp.path}/invalidator" />
    <mkdir dir="${path.to.invalidator}" />
-   <property name="ipa.files" value="${target.sdk.path}\dist\vm\ios\TotalCross.ipa" />
+   <property name="ipa.files" value="${target.sdk.path}/dist/vm/ios/TotalCross.ipa" />
 
    <javac
       srcdir="${source.sdk.path}/tc/tools/"
@@ -607,8 +607,8 @@ target: checks if we must update the versions of the files prior to a build.
    <arg line="/r 5443444B314891CE3D2DD791"/>
   </java>
   
-  <copy file="${temp}\install\win32\PostInstall.exe" todir="${target.sdk.path}" />
-  <copy file="${temp}\install\win32\PostInstall.tcz" todir="${target.sdk.path}" />
+  <copy file="${temp}/install/win32/PostInstall.exe" todir="${target.sdk.path}" />
+  <copy file="${temp}/install/win32/PostInstall.tcz" todir="${target.sdk.path}" />
 
 </target>
 

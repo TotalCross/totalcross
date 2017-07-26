@@ -47,6 +47,15 @@ public class MessageBoxSample extends BaseContainer
                mb.popup();
             }
          });
+         sc.add(btn = new Button("Yes/No Title only"), CENTER, AFTER+fmH,PREFERRED+gap,PREFERRED+gap);
+         btn.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               MessageBox mb = new MessageBox("Message","Do you prefer this one?",new String[]{"Yes","No"});
+               mb.popup();
+            }
+         });
          sc.add(btn = new Button("No title"), CENTER, AFTER+fmH,PREFERRED+gap,PREFERRED+gap);
          btn.addPressListener(new PressListener()
          {

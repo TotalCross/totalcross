@@ -50,7 +50,7 @@ public class BaseContainer extends Container
    
    public static Image getAwesomeImage(char c, int height, int color) throws ImageException
    {
-      Font f = Font.getFont("FontAwesome", false, height*11/10);
+      Font f = Font.getFont("FontAwesome", false, height);
       Image img = new Image(f.fm.charWidth(c),height);
       Graphics g = img.getGraphics();
       g.foreColor = color;

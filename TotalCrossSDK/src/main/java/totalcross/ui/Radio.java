@@ -19,12 +19,13 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
+import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
-import totalcross.res.*;
-import totalcross.sys.*;
 
 /**
  * Radio is a radio control.
@@ -55,14 +56,16 @@ import totalcross.sys.*;
  * @see totalcross.ui.RadioGroupController
  */
 
-public class Radio extends Control implements TextControl
+public class Radio extends Control implements TextControl, MaterialEffect.SideEffect
 {
    private String text;
-   private boolean checked;
+   private boolean checked,checked0;
    RadioGroupController radioGroup;
    private int colors[] = new int[4];
    private int cColor,bColor;
    private int textW;
+   private int alphaSel = 255;
+   private boolean animating;
    
    /** Sets the text color of the check. Defaults to the foreground color. 
     * @since TotalCross 2.0.
@@ -85,6 +88,7 @@ public class Radio extends Control implements TextControl
    {
       this.text = text;
       textW = fm.stringWidth(text);
+      effect = UIEffects.get(this);
    }
 
    /** Creates a radio control with the given text attached to the given RadioGroupController */
@@ -154,14 +158,18 @@ public class Radio extends Control implements TextControl
    /** Sets the checked state of the control, and send the press event if desired. */
    public void setChecked(boolean checked, boolean sendPress)
    {
-      if (this.checked == checked)
-         return;
-      this.checked = checked;
-      if (radioGroup != null) // guich@402_21: now the radiogroup has a property that indicates the index of the selected Radio.
-         radioGroup.setSelectedItem(this,checked);
-      Window.needsPaint = true;
-      if (sendPress)
-         postPressedEvent();
+      if (this.checked != checked)
+      {
+         checked0 = this.checked;
+         this.checked = checked;
+         if (radioGroup != null) // guich@402_21: now the radiogroup has a property that indicates the index of the selected Radio.
+            radioGroup.setSelectedItem(this,checked);
+         Window.needsPaint = true;
+         if (effect != null)
+            effect.startEffect();
+         if (sendPress)
+            postPressedEvent();
+      }
    }
 
    /** returns the preffered width of this control. */
@@ -189,15 +197,19 @@ public class Radio extends Control implements TextControl
             postPressedEvent();
             break;
          default:
+            if (uiMaterial && event.type == PenEvent.PEN_DOWN)
+               checked0 = checked;
             if (!isActionEvent(event))
                break;
             PenEvent pe = (PenEvent)event;
             if (isInsideOrNear(pe.x,pe.y))
             {
                Window.needsPaint = true;
+               checked0 = checked;
                checked = !checked;
                if (radioGroup != null) radioGroup.setSelectedItem(this);
-               postPressedEvent();
+               if (!uiMaterial)
+                  postPressedEvent();
             }
             break;
       }
@@ -205,81 +217,25 @@ public class Radio extends Control implements TextControl
 
    private final static int coords1[] =
    {
-      // dark grey top
-      4, 0, 7, 0,
-      2, 1, 3, 1,
-      8, 1, 9, 1,
-      // dark grey left
-      0, 4, 0, 7,
-      1, 2, 1, 3,
-      1, 8, 1, 9,
-      // black top
-      4, 1, 7, 1,
-      2, 2, 3, 2,
-      8, 2, 9, 2,
-      // black left
-      1, 4, 1, 7,
-      2, 3, 2, 3,
-      2, 8, 2, 8,
-      // light grey bottom
-      2, 9, 3, 9,
-      8, 9, 9, 9,
-      4, 10, 7, 10,
-      // light grey right
-      9, 3, 9, 3,
-      9, 8, 9, 8,
-      10, 4, 10, 7,
-      // bottom white
-      2, 10, 3, 10,
-      8, 10, 9, 10,
-      4, 11, 7, 11,
-      // right white
-      10, 2, 10, 3,
-      10, 8, 10, 9,
-      11, 4, 11, 7
+      4, 0, 7, 0, 2, 1, 3, 1, 8, 1, 9, 1, // dark grey top
+      0, 4, 0, 7, 1, 2, 1, 3, 1, 8, 1, 9, // dark grey left
+      4, 1, 7, 1, 2, 2, 3, 2, 8, 2, 9, 2, // black top
+      1, 4, 1, 7, 2, 3, 2, 3, 2, 8, 2, 8, // black left
+      2, 9, 3, 9, 8, 9, 9, 9, 4, 10, 7, 10, // light grey bottom
+      9, 3, 9, 3, 9, 8, 9, 8, 10, 4, 10, 7, // light grey right
+      2, 10, 3, 10, 8, 10, 9, 10, 4, 11, 7, 11, // bottom white
+      10, 2, 10, 3,  10, 8, 10, 9, 11, 4, 11, 7 // right white
    };
    private final static int coords2[] =
    {
-      // dark grey top
-      5, 0, 9, 0,
-      3, 1, 4, 1,
-      10, 1, 11, 1,
-      12, 2, 12, 2,
-      // dark grey left
-      0, 5, 0, 9,
-      1, 3, 1, 4,
-      1, 10, 1, 11,
-      2, 2, 2, 2,
-      // black top
-      5, 1, 9, 1,
-      3, 2, 4, 2,
-      10, 2, 11, 2,
-      12, 3, 12, 3,
-      // black left
-      1, 5, 1, 9,
-      2, 3, 2, 4,
-      2, 10, 2, 11,
-      2, 10, 2, 11,
-      // light grey bottom
-      3, 12, 4, 12,
-      5, 13, 9, 13,
-      10, 12, 11, 12,
-      10, 12, 11, 12,
-      // light grey right
-      12, 10, 12, 11,
-      13, 5, 13, 9,
-      12, 4, 12, 4,
-      12, 4, 12, 4,
-      // bottom white
-      2, 12, 2, 12,
-      3, 13, 4, 13,
-      5, 14, 9, 14,
-      10, 13, 11, 13,
-      // right white
-      12, 12, 12, 12,
-      13, 10, 13, 11,
-      14, 5, 14, 9,
-      13, 3, 13, 4
+      5, 0, 9, 0,  3, 1, 4, 1,  10, 1, 11, 1,  12, 2, 12, 2, // dark grey top
+      0, 5, 0, 9,  1, 3, 1, 4,  1, 10, 1, 11,   2, 2, 2, 2,  // dark grey left
+      5, 1, 9, 1,  3, 2, 4, 2,  10, 2, 11, 2,  12, 3, 12, 3, // black top
+      1, 5, 1, 9,  2, 3, 2, 4,  2, 10, 2, 11,   2, 10, 2, 11, // black left
+      3, 12, 4, 12, 5, 13, 9, 13,  10, 12, 11, 12,  10, 12, 11, 12, // light grey bottom
+      12, 10, 12, 11, 13, 5, 13, 9, 12, 4, 12, 4, 12, 4, 12, 4, // light grey right
+      2, 12, 2, 12, 3, 13, 4, 13, 5, 14, 9, 14, 10, 13, 11, 13, // bottom white
+      12, 12, 12, 12, 13, 10, 13, 11, 14, 5, 14, 9, 13, 3, 13, 4 // right white
    };
 
    protected void onColorsChanged(boolean colorsChanged)
@@ -310,6 +266,7 @@ public class Radio extends Control implements TextControl
    /** Called by the system to draw the radio control. */
    public void onPaint(Graphics g)
    {
+      boolean enabled = isEnabled();
       int xx,yy;
       // guich@200b4_126: erase the back always
       if (!transparentBackground)
@@ -318,114 +275,147 @@ public class Radio extends Control implements TextControl
          g.fillRect(0,0,width,height);
       }
       boolean big = fmH >= 20;
+      
+      if (effect != null)
+         effect.paintEffect(g);
+      
       if (uiAndroid)
          try 
          {
-            int hh = Math.max(fmH,Math.min(width - (textW+2), height)); 
-            Image ret = isEnabled() ? Resources.radioBkg.getNormalInstance(hh,hh,foreColor) : Resources.radioBkg.getDisabledInstance(hh, hh, foreColor);
+            int hh = Math.max(fmH,Math.min(width - (textW+2), uiMaterial ? fmH+Edit.prefH : height));
+            if (hh == height) hh -= Edit.prefH;
+            Image img = uiMaterial ? Resources.radioBkg.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,enabled) : enabled ? Resources.radioBkg.getNormalInstance(hh,hh,foreColor) : Resources.radioBkg.getDisabledInstance(hh, hh, foreColor);
             yy = (height - hh) / 2;
-            ret.alphaMask = alphaValue;
-            g.drawImage(ret,0,yy);
-            ret.alphaMask = 255;
-            if (checked)
-               g.drawImage(Resources.radioSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,isEnabled()),0,yy);
+            img.alphaMask = alphaValue;
+            g.drawImage(img,0,yy);
+            img.alphaMask = 255;
+            if (checked || animating)
+            {
+               img = Resources.radioSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
+               img.alphaMask = alphaSel;
+               NinePatch.tryDrawImage(g, img,0,yy);
+               img.alphaMask = 255;
+            }
          } catch (ImageException ie) {}
       else
       if (uiVista && imgSel != null)
          g.drawImage(checked ? imgSel : imgUnsel, 0, (height-imgSel.getHeight())/2); // guich@tc122_50: /2
       else
-      {
-         int i=0,k,j=0;
-         int kk = big?8:6; // number of elements per arc
-         xx = 0; // guich@tc100: can't be -1, now we have real clipping that will cut out if draw out of bounds
-         yy = (this.height - (big?15:12)) >> 1; // guich@tc114_69: always 14
-         g.translate(xx,yy);
-
-         int []coords = big?coords2:coords1;
-         // white center
-         g.backColor = bColor;
-         if (big)
-            g.fillCircle(7,7,7);
-         else
-            g.fillCircle(5,6,4);
-         if (uiVista && isEnabled()) // guich@573_6: shade diagonally
-         {
-            g.foreColor = Color.darker(bColor,UIColors.vistaFadeStep*2);
-            for (k=9,j=6; j >= 0; j--) // bigger k -> darker
-            {
-               g.foreColor = Color.darker(g.foreColor,UIColors.vistaFadeStep);
-               g.drawLine(2,4+j,4+j,2);
-            }
-         }
-
-         // 3d borders
-         if (uiFlat)
-         {
-            g.foreColor = colors[j];
-            if (big)
-               g.drawCircle(7,7,7);
-            else
-               g.drawCircle(5,6,4);
-         }
-         else
-            for (j = 0; j < 4; j++)
-               if (colors[j] != -1)
-               {
-                  g.foreColor = colors[j];
-                  for (k = kk; k > 0; k--)
-                     g.drawLine(coords[i++], coords[i++], coords[i++], coords[i++]);
-               }
-               else i += kk << 2;
-
-         // checked
-         g.foreColor = cColor;
-         if (checked)
-         {
-            g.backColor = cColor;
-            if (uiVista) // guich@573_6
-            {
-               if (big)
-               {
-                  g.backColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
-                  g.fillCircle(7,7,4);
-                  g.backColor = cColor;
-                  g.fillCircle(7,7,2);
-               }
-               else
-               {
-                  g.backColor = cColor;
-                  g.fillRect(5, 4, 2, 4);
-                  g.foreColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
-                  g.drawLine(4, 5, 4, 6);
-                  g.drawLine(7, 5, 7, 6);
-               }
-            }
-            else
-            if (big)
-               g.fillCircle(7,7,3);
-            else
-            if (uiFlat)
-               g.fillCircle(5,6,2);
-            else
-            {
-               g.fillRect(5, 4, 2, 4);
-               g.drawLine(4, 5, 4, 6);
-               g.drawLine(7, 5, 7, 6);
-            }
-         }
-         g.translate(-xx,-yy);
-      }
+         drawBack(big, enabled, g);
 
       // draw label
       yy = (this.height - fmH) >> 1;
       xx = leftJustify ? (uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
-      g.foreColor = textColor != -1 ? (isEnabled() ? textColor : Color.interpolate(textColor,backColor)) : cColor;
+      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cColor;
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
+   }
+
+   private void drawBack(boolean big, boolean enabled, Graphics g)
+   {
+      int i=0,k,j=0;
+      int kk = big?8:6; // number of elements per arc
+      int xx = 0; // guich@tc100: can't be -1, now we have real clipping that will cut out if draw out of bounds
+      int yy = (this.height - (big?15:12)) >> 1; // guich@tc114_69: always 14
+      g.translate(xx,yy);
+
+      int []coords = big?coords2:coords1;
+      // white center
+      g.backColor = bColor;
+      if (big)
+         g.fillCircle(7,7,7);
+      else
+         g.fillCircle(5,6,4);
+      if (uiVista && enabled) // guich@573_6: shade diagonally
+      {
+         g.foreColor = Color.darker(bColor,UIColors.vistaFadeStep*2);
+         for (k=9,j=6; j >= 0; j--) // bigger k -> darker
+         {
+            g.foreColor = Color.darker(g.foreColor,UIColors.vistaFadeStep);
+            g.drawLine(2,4+j,4+j,2);
+         }
+      }
+
+      // 3d borders
+      if (uiFlat)
+      {
+         g.foreColor = colors[j];
+         if (big)
+            g.drawCircle(7,7,7);
+         else
+            g.drawCircle(5,6,4);
+      }
+      else
+         for (j = 0; j < 4; j++)
+            if (colors[j] != -1)
+            {
+               g.foreColor = colors[j];
+               for (k = kk; k > 0; k--)
+                  g.drawLine(coords[i++], coords[i++], coords[i++], coords[i++]);
+            }
+            else i += kk << 2;
+
+      // checked
+      g.foreColor = cColor;
+      if (checked)
+      {
+         g.backColor = cColor;
+         if (uiVista) // guich@573_6
+         {
+            if (big)
+            {
+               g.backColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
+               g.fillCircle(7,7,4);
+               g.backColor = cColor;
+               g.fillCircle(7,7,2);
+            }
+            else
+            {
+               g.backColor = cColor;
+               g.fillRect(5, 4, 2, 4);
+               g.foreColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
+               g.drawLine(4, 5, 4, 6);
+               g.drawLine(7, 5, 7, 6);
+            }
+         }
+         else
+         if (big)
+            g.fillCircle(7,7,3);
+         else
+         if (uiFlat)
+            g.fillCircle(5,6,2);
+         else
+         {
+            g.fillRect(5, 4, 2, 4);
+            g.drawLine(4, 5, 4, 6);
+            g.drawLine(7, 5, 7, 6);
+         }
+      }
+      g.translate(-xx,-yy);
    }
 
    /** Clears this control, checking it if clearValueInt is 1. */
    public void clear() // guich@572_19
    {
       setChecked(clearValueInt == 1);
+   }
+
+   public void sideStart()
+   {
+      animating = true;
+   }
+   public void sideStop()
+   {
+      if (animating)
+      {
+         animating = false;
+         Window.needsPaint = true;
+         postPressedEvent();
+      }
+   }
+   public void sidePaint(Graphics g, int alpha)
+   {
+      if (!checked0) // from checked to unchecked
+         alpha = 255 - alpha;
+      alphaSel  = alpha * alphaValue / 255; // limits on current alpha set by user
    }
 }

@@ -367,12 +367,20 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          return false;
       }      
    }
+   
+   private boolean isSamsungKeyboard() {
+      final String currentKeyboard =  Settings.Secure.getString(loader.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+      return "com.sec.android.inputmethod/.SamsungKeypad".equals(currentKeyboard);
+   }
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
       outAttrs.inputType = InputType.TYPE_NULL;
+      if (isSamsungKeyboard()) {
+         outAttrs.inputType |= InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+      }
       outAttrs.actionLabel = null;
       return new MyInputConnection(this, false);
    }
@@ -635,6 +643,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
    public native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
+   public native static void nativeSmsReceived(String displayOriginatingAddress, String displayMessageBody);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
    public void _onTimerTick(boolean canUpdate) {}
@@ -1693,5 +1702,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       while (adsRet == -1)
          try {Thread.sleep(20);} catch (Exception e) {};
       return adsRet;
+   }
+   
+   public static void startActivity(Intent intent) {
+      loader.startActivity(intent);
+   }
+   
+   public static void enableSmsReceiver(boolean enabled) {
+      loader.enableSmsReceiver(enabled);
    }
 }

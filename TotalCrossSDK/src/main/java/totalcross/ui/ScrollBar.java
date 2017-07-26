@@ -20,6 +20,8 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.anim.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
@@ -57,7 +59,7 @@ import totalcross.ui.gfx.*;
  * </pre>
  */
 
-public class ScrollBar extends Container
+public class ScrollBar extends Container implements PathAnimation.SetPosition, ControlAnimation.AnimationFinished
 {
    /** To be passed in the constructor */
    public static final byte VERTICAL = 1;
@@ -90,6 +92,11 @@ public class ScrollBar extends Container
    protected int dragBarMax,dragBarMin;
    protected int bColor,sbColor,sfColor,sbColorDis;
    protected int fourColors[] = new int[4];
+   // material ui
+   protected boolean directMove;
+   protected int midBarSize;
+   private int oldPos=-1;
+   private PathAnimation pathanim;
    int thumbSize; // guich@tc134: used in ScrollPosition
    /** The minimum dragbar size in pixels. By default, 5. This has no effect if the ui style is Palm OS. */
    public int minDragBarSize = 5*Settings.screenHeight/160; // guich@510_26
@@ -147,6 +154,7 @@ public class ScrollBar extends Container
       btnInc.setBorder(Button.BORDER_3D);
       started = true; // avoid calling the initUI method
       this.focusTraversable = true; // kmeehl@tc100
+      onFontChanged();
    }
 
    /** Sets the value, visibleItems, minimum and maximum values */
@@ -284,6 +292,11 @@ public class ScrollBar extends Container
          dragBarMin = uiFlat ? (btnWH-1) : btnWH;
          dragBarMax = size-dragBarMin-dragBarSize;
       }
+      // guich@20170628 - ensure that value is in the correct range
+      if (value > maximum-visibleItems)
+         value = maximum-visibleItems;
+      if (value < minimum) // no else here!
+         value = minimum;
       dragBarPos = Math.min(dragBarMax,dragBarMin+(int)(valuesPerPixel * (value-minimum) + 0.5d)); // round value - guich@512_12: subtract minimum from value
       enableButtons();
    }
@@ -332,17 +345,23 @@ public class ScrollBar extends Container
                event.consumed = true;
             return;
          case PenEvent.PEN_DOWN:
+            if (pathanim != null)
+            {
+               pathanim.stop(true);
+               pathanim = null;
+            }
+            oldPos = dragBarPos;
             if (event.target == this) // can be the buttons
             {
                if (enableAutoScroll)
                {
                   autoScrollTimer = addTimer(INITIAL_DELAY);
                   autoScrollTarget = this;
-               }
-
+               }               
                pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
                this.autoScrollBarPos = pos;
-               if (pos < dragBarPos)
+               int margin = Settings.fingerTouch ? fmH/2 : 0;
+               if (!directMove && pos < dragBarPos-margin)
                {
                   if (!disableBlockIncrement)
                      value -= blockIncrement;
@@ -350,7 +369,7 @@ public class ScrollBar extends Container
                      event.consumed = true;
                }
                else
-               if (pos > dragBarPos+dragBarSize)
+               if (!directMove && pos > dragBarPos+dragBarSize+margin)
                {
                   if (!disableBlockIncrement)
                      value += blockIncrement;
@@ -359,7 +378,7 @@ public class ScrollBar extends Container
                }
                else
                {
-                  startDragPos = pos-dragBarPos; // point inside drag bar
+                  startDragPos = pos-dragBarPos+midBarSize; // point inside drag bar
                   Window.needsPaint = true;
                }
             }
@@ -371,6 +390,7 @@ public class ScrollBar extends Container
             }
             break;
          case PenEvent.PEN_DRAG:
+            oldPos = -1;
             if (event.target == btnDec || event.target == btnInc) // kmeehl@tc100: cancel the scroll timer when the user drags off of the buttons
             {
                Control btn = (Control)event.target;
@@ -388,31 +408,34 @@ public class ScrollBar extends Container
                return;
             }
             if (startDragPos != -1)
-            {
-               dragBarPos = pos - startDragPos;
-               if (dragBarPos < dragBarMin) dragBarPos = dragBarMin; else
-               if (dragBarPos > dragBarMax) dragBarPos = dragBarMax;
-               if (dragBarPos == dragBarMax) // guich@240_12: make sure that at the maximum bar pos we get the maximum value
-                  value = Math.max(0,maximum-visibleItems); // guich@556_7: fixed the correct value, subtracting by visibleItems
-               else
-               {
-                  value = (int) ((dragBarPos-dragBarMin)/valuesPerPixel);
-                  if (unitIncrement != 1) // guich@340_45: snap the scrollbar to the nearest increment
-                     value = ((int)value/unitIncrement)*unitIncrement;
-                  value += minimum; // msicotte@502_5: fixes problem when minimum is different of zero
-               }
-            }
+               updateValue(pos);
             autoScrollBarPos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
             event.consumed = true;
-            Event.clearQueue(PenEvent.PEN_DRAG); // guich@tc122_26: not for Palm OS
+            Event.clearQueue(PenEvent.PEN_DRAG);
             break;
          case PenEvent.PEN_UP:
             if (autoScrollTimer != null)
                disableAutoScroll();
             Window.needsPaint = true;
-            startDragPos = -1;
             mustPostEvent = btnDec.isEnabled() || btnInc.isEnabled();
             pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
+            startDragPos = 0;
+            if (directMove && oldPos >= 0)
+            {
+               int value = (int) ((pos-dragBarMin)/valuesPerPixel);
+               if (unitIncrement != 1) // guich@340_45: snap the scrollbar to the nearest increment
+                  value = ((int)value/unitIncrement)*unitIncrement;
+               pos = (int)(value * valuesPerPixel) + midBarSize;
+               if (pos < dragBarMin+midBarSize) pos = dragBarMin+midBarSize; else
+               if (pos > dragBarMax-midBarSize-1) pos = dragBarMax-midBarSize-1;
+               
+               pathanim = PathAnimation.create(this, oldPos, 0, pos, 0, this, UIEffects.duration);
+               pathanim.useOffscreen = false;
+               pathanim.setpos = this;
+               pathanim.start();
+               event.consumed = true;
+               return;
+            }
             if (disableBlockIncrement && (pos < dragBarPos || pos > dragBarPos+dragBarSize))
             {
                event.consumed = true;
@@ -456,6 +479,20 @@ public class ScrollBar extends Container
          if (parent != null)
             parent.postEvent(getPressedEvent(this));
          isHighlighting = false; // don't let postEvent steal our focus!
+      }
+   }
+   
+   protected void updateValue(int pos)
+   {
+      dragBarPos = pos - startDragPos;
+      if (dragBarPos == dragBarMax) // guich@240_12: make sure that at the maximum bar pos we get the maximum value
+         value = Math.max(0,maximum-visibleItems); // guich@556_7: fixed the correct value, subtracting by visibleItems
+      else
+      {
+         value = (int) ((dragBarPos-dragBarMin)/valuesPerPixel);
+         if (unitIncrement != 1) // guich@340_45: snap the scrollbar to the nearest increment
+            value = ((int)value/unitIncrement)*unitIncrement;
+         value += minimum; // msicotte@502_5: fixes problem when minimum is different of zero
       }
    }
    
@@ -624,6 +661,12 @@ public class ScrollBar extends Container
       return (verticalBar?(btnDec.getPreferredWidth()<<1):btnDec.getPreferredHeight()+extraSize) + insets.top+insets.bottom; // guich@300_70: vertical bar always use width; horizontal always use height
    }
 
+   public void onFontChanged()
+   {
+      if (btnDec != null) btnDec.setFont(font);
+      if (btnInc != null) btnInc.setFont(font);
+   }
+   
    /* this is needed to recalculate the box size for the selected item if the control is resized by the main application */
    protected void onBoundsChanged(boolean screenChanged)
    {
@@ -666,7 +709,26 @@ public class ScrollBar extends Container
        return this;
    }
    
+   /** Used by ScrollPosition */
    public void tempShow()
    {
+   }
+
+   public void setPos(int x, int y)
+   {
+      startDragPos = 0;
+      int val = value;
+      updateValue(x);
+      if (liveScrolling && value != val)
+         postPressedEvent();
+      repaintNow();
+   }
+
+   public void onAnimationFinished(ControlAnimation anim)
+   {
+      pathanim = null;
+      if (!liveScrolling)
+         postPressedEvent();
+      recomputeParams(false);
    }
 }

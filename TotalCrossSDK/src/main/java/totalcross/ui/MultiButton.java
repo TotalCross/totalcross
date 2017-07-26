@@ -2,6 +2,7 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -35,10 +36,13 @@ public class MultiButton extends Control
    /** Set to true to behave like a Radio, false like a Button */
    public boolean isSticky;
    
+   private int tempIndex;
+   
    /** Constructs a MultiButton with the given captions. */
    public MultiButton(String[] captions)
    {
       this.tits = captions;
+      effect = UIEffects.get(this);
    }
    
    public void onColorsChanged(boolean colorsChanged)
@@ -110,8 +114,9 @@ public class MultiButton extends Control
          
          NinePatch.tryDrawImage(g,npback,0,0);
          int w = width / tits.length;
-         if (sel != -1)
+         if (sel != -1 && !uiMaterial)
             g.copyRect(npsel,sel*w+2,0,w-2,height,sel*w+2,1);
+         if (effect != null) effect.paintEffect(g);
          for (int i = 0, x0 = 0, n = tits.length-1; i <= n; i++, x0 += w)
          {
             String s = tits[i];
@@ -146,11 +151,37 @@ public class MultiButton extends Control
          MessageBox.showException(ee,true);
       }
    }
+   public int getEffectW() 
+   {
+      int w = width / tits.length;
+      return tempIndex == -1 ? 0 : w - 2;
+   }
+   public int getEffectH() 
+   {
+      return height;
+   }
+   public int getEffectX() 
+   {
+      if (tempIndex == -1 || (disabled != null && disabled[tempIndex]))
+         return UIEffects.X_UNKNOWN;
+      int w = width / tits.length;
+      return tempIndex*w+2;
+   }
+   public int getEffectY() 
+   {
+      return 0;
+   }
    
    public void onEvent(Event e)
    {
       switch (e.type)
       {
+         case PenEvent.PEN_DOWN:
+         {
+            PenEvent pe = (PenEvent)e;
+            tempIndex = isInsideOrNear(pe.x,pe.y) ? pe.x / (width / tits.length) : -1;
+            break;
+         }
          case PenEvent.PEN_UP:
             if (isEnabled() && !hadParentScrolled())
             {

@@ -22,6 +22,7 @@ package totalcross.ui;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
@@ -51,12 +52,15 @@ import totalcross.util.*;
  * </pre>
  * If the MultiEdit is not editable, the user can scroll the edit a page at a time
  * just by clicking in the middle upper or middle lower.
+ * 
+ * <p><b>IN MATERIAL UI, IS VERY IMPORTANT THAT THE CAPTION IS SET BEFORE ADDING THE CONTROL.</b></p>
+ * 
  * @author Jean Rissoto (in memoriam)
  * @author Guilherme Campos Hazan (guich)
  */
 
 
-public class MultiEdit extends Container implements Scrollable, TextControl
+public class MultiEdit extends Container implements Scrollable, TextControl, TimerListener
 {
    private static final char ENTER = '\n';
    private static final char LINEFEED = '\r';
@@ -73,6 +77,9 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    /** The last insert position before this control looses focus. */
    public int lastInsertPos;
 
+   /** Handler for the CaptionPress */
+   public CaptionPress captionPress;
+   
    protected IntVector first = new IntVector(5); //JR@0.4.  indices of first character of each line. the value of last is len(text)+1
    private int firstToDraw; //JR@0.4
    private int numberTextLines; // JR@0.4
@@ -111,6 +118,11 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    private boolean scScrolled;
    int lastPenDown=-1;
    private static KeyEvent backspaceEvent = new KeyEvent(KeyEvent.SPECIAL_KEY_PRESS,SpecialKeys.BACKSPACE,0);
+   // changes for material design
+   private int xcap,ycap,ycap0,fmHmin,fmHtarget,xcap0,inccap,iconX0;
+   private Font fcap;
+   private TimerEvent tea;
+   private boolean postPopupKCC;
 
    private boolean scrollBarsAlwaysVisible;
    /** The mask used to infer the preferred width. Unlike the Edit class, the MultiEdit does not support real masking. */
@@ -152,6 +164,9 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    /** The caption's color. */
    public int captionColor = -1;
 
+   /** An optional caption's icon */
+   public Image captionIcon;
+   
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
 
@@ -174,8 +189,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl
       ignoreOnAddAgain = ignoreOnRemove = true;
       this.started = true;
       this.rowCount = rowCount;
-      this.hLine = fmH + spaceBetweenLines;
       this.spaceBetweenLines = spaceBetweenLines;
+      onFontChanged();
       this.clearPosState();
       add(this.sb = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL));
       if (!Settings.fingerTouch)
@@ -190,6 +205,11 @@ public class MultiEdit extends Container implements Scrollable, TextControl
       this.focusTraversable = true; // kmeehl@tc100
       if (Settings.fingerTouch)
          flick = new Flick(this);
+      if (uiMaterial)
+      {
+         backColor = 0;
+         drawDots = false;
+      }
    }
 
    /** Constructor for a text Edit with a vertical scroll Bar, gap is 1
@@ -291,7 +311,10 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    {
       if (rowCount0 == -1)
          rowCount0 = rowCount;
-      return (hLine*rowCount0+ (uiFlat?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
+      int ret = (hLine*rowCount0+ (uiFlat?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
+      if (uiMaterial && caption != null)
+         ret += fmHmin;
+      return ret;
    }
 
    public int getPreferredWidth()
@@ -365,6 +388,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
       if (textRect != null)
          calculateFirst();
       clearPosState();
+      animateMaterial(isDisplayed());
       if (postPressed)
          postPressedEvent();
    }
@@ -402,7 +426,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    /** user method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == Edit.KBD_NONE || !editable || !isEnabled()) return;
+      if (kbdType == Edit.KBD_NONE || !editable || !isEnabled() || !Settings.enableVirtualKeyboard) return;
       if (Settings.virtualKeyboard)
          _onEvent(new Event(ControlEvent.FOCUS_IN,this,0)); // simulate a focus in event.
       else
@@ -469,7 +493,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    {
       int zOffset = uiFlat?0:2; // size of borders
       boardRect = new Rect(zOffset,zOffset,this.width-2*zOffset-(Settings.fingerTouch?0:sb.getPreferredWidth()),this.height-2*zOffset);    //JR @0.5
-      textRect = boardRect.modifiedBy(gap,gap,-2*gap,-2*gap);
+      int caph = uiMaterial && caption != null ? fmHmin : 0;
+      textRect = boardRect.modifiedBy(gap,gap+caph,-2*gap,-2*gap-caph);
       rowCount = textRect.height / this.hLine; // kambiz@350_5: update rowCount according to the new size of the text area
       sb.setRect(RIGHT-(Settings.fingerTouch ? 1 : 0),TOP,PREFERRED,FILL, null, screenChanged);
       sb.setValues(0, rowCount, 0, rowCount);
@@ -478,6 +503,10 @@ public class MultiEdit extends Container implements Scrollable, TextControl
       if (chars.length() > 0)
          calculateFirst();
       npback = null;
+      // material
+      xcap0 = xcap = chars.length() == 0 ? zOffset : 0;
+      ycap0 = ycap = chars.length() == 0 ? textRect.y : 0;
+      iconX0 = captionIcon == null ? 0 : captionIcon.getWidth() + fmH/4;
    }
 
    /** Compute the index of the first character of each line */
@@ -613,6 +642,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl
                break;
             case ControlEvent.FOCUS_OUT:
                focusOut();
+               if (uiMaterial && caption != null)
+                  animateMaterial(true);
                break;
             case KeyEvent.KEY_PRESS:
             case KeyEvent.SPECIAL_KEY_PRESS:
@@ -867,24 +898,41 @@ public class MultiEdit extends Container implements Scrollable, TextControl
                }
                break;
             case PenEvent.PEN_UP: // kmeehl@tc100
-               lastPenDown = -1;
-               firstPenDown = false;
-               if (!editable && !Settings.fingerTouch) // guich@tc100: allow the user to scroll by just clicking in the ME
+            {
+               PenEvent pe = (PenEvent)event;
+               if (captionPress != null && caption != null && pe.y <= fmHmin)
                {
-                  event.target = sb;
-                  ((PenEvent) event).y = ((PenEvent) event).y < height / 2 ? 0 : height;
-                  sb.onEvent(event);
-                  break;
+                  if (captionIcon != null && pe.x <= iconX0)
+                     captionPress.onIconPress();
+                  else
+                     captionPress.onCaptionPress();
+                  lastPenDown = -1;
+                  firstPenDown = false;
                }
                else
-               if (popupVKbd)
                {
-                  showSip();
-                  popupVKbd = false;
+                  if (uiMaterial && caption != null)
+                     animateMaterial(true);
+                  lastPenDown = -1;
+                  firstPenDown = false;
+                  if (!editable && !Settings.fingerTouch) // guich@tc100: allow the user to scroll by just clicking in the ME
+                  {
+                     event.target = sb;
+                     ((PenEvent) event).y = ((PenEvent) event).y < height / 2 ? 0 : height;
+                     sb.onEvent(event);
+                     break;
+                  }
+                  else
+                  if (popupVKbd)
+                  {
+                     showSip();
+                     popupVKbd = false;
+                  }
+                  charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
+                  isScrolling = false;
                }
-               charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
-               isScrolling = false;
                break;
+            }
             case PenEvent.PEN_DOWN:
             {
                lastPenDown = event.timeStamp;
@@ -1157,8 +1205,11 @@ public class MultiEdit extends Container implements Scrollable, TextControl
 
    private void showSip() // guich@tc126_21
    {
-      if (kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && !hadParentScrolled() && !Window.isScreenShifted()) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
+      if (kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && !hadParentScrolled() && !Window.isScreenShifted() && Settings.enableVirtualKeyboard) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
       {
+         if (tea != null)
+            postPopupKCC = true;
+         else
          if (Settings.customKeyboard != null)
          {
             Settings.customKeyboard.show(this, validChars);
@@ -1180,33 +1231,59 @@ public class MultiEdit extends Container implements Scrollable, TextControl
                w.shiftScreen(this,0);
             }
             lastZ1y = -9999;
-   	   }
+         }
       }
    }
 
    protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed() || boardRect == null) return; // guich@tc114_65: check if its displayed
+      // background
       if (!transparentBackground)
       {
-         g.backColor = uiAndroid ? parent.backColor : back0;
-         g.clearClip();
-         int x2 = this.width - (Settings.fingerTouch ? 0 : sb.getPreferredWidth());
-         if (alphaValue == 255)
-            g.fillRect(0, 0, x2, this.height);
-         if (uiAndroid)
+         if (uiMaterial)
          {
-            if (npback == null)
-               try
+            int c = hasFocus ? backColor : Color.getGray(backColor);
+            int h = fmH/10;
+            if (isEnabled())
+            {
+               if (fillColor != -1)
                {
-                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, isEnabled() ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
-                  npback.alphaMask = alphaValue;
+                  g.backColor = fillColor;
+                  g.fillRect(0,caption != null ? fmHmin : 0,width,height);
                }
-               catch (ImageException e) {}
-            NinePatch.tryDrawImage(g,npback,0,0);
+               g.backColor = c;
+               g.fillRect(0,height-h,width,h);
+            }
+            else
+            {
+               g.foreColor = c;
+               g.backColor = parent.getBackColor();
+               for (int i = 0; i < h; i++)
+                  g.drawDots(0,height-1-i, width, height-1-i);
+            }
          }
          else
-            g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
+         {
+            g.backColor = uiAndroid ? parent.backColor : back0;
+            g.clearClip();
+            int x2 = this.width - (Settings.fingerTouch ? 0 : sb.getPreferredWidth());
+            if (alphaValue == 255)
+               g.fillRect(0, 0, x2, this.height);
+            if (uiAndroid)
+            {
+               if (npback == null)
+                  try
+                  {
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, isEnabled() ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
+                     npback.alphaMask = alphaValue;
+                  }
+                  catch (ImageException e) {}
+               NinePatch.tryDrawImage(g,npback,0,0);
+            }
+            else
+               g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
+         }
       }
       g.setClip(boardRect);
       // draw the text and/or the selection --original
@@ -1218,7 +1295,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
          int sel2 = Math.max(startSelectPos, insertPos);
          charPosToZ(sel1, z1);
          charPosToZ(sel2, z2);
-         g.backColor = back1;
+         g.backColor = g.backColor = back1 == backColor ? Color.brighter(back1) : back1;;
          if (z1.y == z2.y)
             g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
          else
@@ -1238,10 +1315,10 @@ public class MultiEdit extends Container implements Scrollable, TextControl
       StringBuffer chars = this.chars;
       int len = chars.length();
       boolean drawCaption = caption != null && !hasFocus && len == 0;
-      if (drawCaption)
+      if (drawCaption && !uiMaterial)
       {
          g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
-         g.drawText(caption, textRect.x, h, textShadowColor != -1, textShadowColor);
+         g.drawText(caption, textRect.x, textRect.y, textShadowColor != -1, textShadowColor);
       }
       else
          for (; i <= last && h < maxh; i++, h += hLine, dh += hLine)
@@ -1285,6 +1362,16 @@ public class MultiEdit extends Container implements Scrollable, TextControl
       }
       else
          cursorShowing = false;
+      // material
+      if (uiMaterial)
+      {
+         g.clearClip();
+         g.foreColor = hasFocus ? (captionColor != -1 ? captionColor : backColor) : Color.getGray(backColor);
+         g.setFont(fcap);
+         if (captionIcon != null)
+            g.drawImage(captionIcon, 0, 0);
+         g.drawText(caption, xcap, ycap);
+      }
    }
    
    protected void onWindowPaintFinished()
@@ -1348,6 +1435,9 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    protected void onFontChanged() // guich@320_28
    {
       hLine = fmH + spaceBetweenLines;
+      // material
+      fmHmin = fmH*75/100;
+      fcap = this.font;
    }
 
    /** Clears the text of this control. */
@@ -1560,4 +1650,53 @@ public class MultiEdit extends Container implements Scrollable, TextControl
      return new int[]{startSelectPos,insertPos};
   }
    
+   // material
+   private void animateMaterial(boolean slow)
+   {
+      if (tea == null)
+      {
+         fmHtarget = hasFocus || chars.length() > 0 ? fmHmin : fmH;
+         if (fcap.size != fmHtarget)
+         {
+            if (slow)
+            {
+               inccap = fcap.size == fmH ? -1 : 1;
+               addTimerListener(this);
+               tea = addTimer(10);
+            }
+            else
+            {  
+               inccap = fmHtarget-fcap.size;
+               singleStep();
+            }
+         }
+      }
+   }
+   
+   public void timerTriggered(TimerEvent e)
+   {
+      if (tea != null && tea.triggered)
+      {
+         singleStep();
+         Window.needsPaint = true;
+         if (fcap.size == fmHtarget)
+         {
+            removeTimer(tea);
+            removeTimerListener(this);
+            tea = null;
+            if (postPopupKCC)
+            {
+               postPopupKCC = false;
+               showSip();
+            }
+         }
+      }
+   }
+
+   private void singleStep()
+   {
+      fcap = fcap.adjustedBy(inccap);
+      ycap = ycap0 * (fcap.size - fmHmin) / (fmH - fmHmin);
+      xcap = (xcap0 - iconX0) * (fcap.size - fmHmin) / (fmH - fmHmin) + iconX0;
+   }
 }

@@ -34,6 +34,9 @@ public final class UIColors // guich@564_6
 {
    private UIColors() {}
 
+   /** The border color of all windows. */
+   public static int windowBorder = Color.BLACK;
+   
    /** KeyboardBox background color. */
    public static int keyboardBack = 0xE6E68C;
    /** KeyboardBox foreground color. */
@@ -171,4 +174,7 @@ public final class UIColors // guich@564_6
    public static int topmenuFore = Color.WHITE;
    /** Separator color of the TopMenu */
    public static int separatorFore = 0x61666A;
+   
+   /** The selected color for material UI */
+   public static int materialSelectedColor = Color.BLUE;
 }
