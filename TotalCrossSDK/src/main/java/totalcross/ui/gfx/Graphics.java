@@ -3729,4 +3729,11 @@ public final class Graphics
          }
       } while (x < 0);
    }
+
+   /** Draws a set of connected lines from the given x,y coordinates array. You must provide at least 2 points (4 int numbers). */
+   public void drawLines(int... p)
+   {
+      for (int i = 0, n = p.length-2; i < n; i += 2)
+         drawLine(p[i],p[i+1], p[i+2], p[i+3]);
+   }
 }
