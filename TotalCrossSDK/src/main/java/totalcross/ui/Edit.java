@@ -218,6 +218,11 @@ public class Edit extends Control implements TextControl, TimerListener
     * True by default on penless devices. */
    public boolean autoSelect = Settings.keyboardFocusTraversable; // guic@550_20
 
+   /** Keep selection of last character */
+   public boolean selectLast;
+   /** Keep the selection persistent; otherwise, it is reset if you change the letter */
+   public boolean persistentSelection;
+   
    /** No keyboard will be popped up for this Edit */
    public static final byte KBD_NONE = 0;
    /** The default keyboard for the current mode will be used for this Edit */
@@ -884,12 +889,12 @@ public class Edit extends Control implements TextControl, TimerListener
       boolean drawCaption = caption != null && !hasFocus && len == 0;
       if (len > 0 || drawCaption || captionIcon != null)
       {
-         if (startSelectPos != -1 && editable) // moved here to avoid calling g.eraseRect (call fillRect instead) - guich@tc113_38: only if editable
+         if ((selectLast || startSelectPos != -1) && editable) // moved here to avoid calling g.eraseRect (call fillRect instead) - guich@tc113_38: only if editable
          {
             // character regions are:
             // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char
-            int sel1 = Math.min(startSelectPos,insertPos);
-            int sel2 = Math.max(startSelectPos,insertPos);
+            int sel1 = selectLast ? insertPos-1 : Math.min(startSelectPos,insertPos);
+            int sel2 = selectLast ? insertPos   : Math.max(startSelectPos,insertPos);
             int sel1X = charPos2x(sel1);
             int sel2X = charPos2x(sel2);
             
@@ -1062,6 +1067,12 @@ public class Edit extends Control implements TextControl, TimerListener
          cursorChangedEvent = new ControlEvent(ControlEvent.CURSOR_CHANGED,this);
       onEvent(cursorChangedEvent);
       Window.needsPaint = true;
+   }
+
+   /** Sets the cursor position */
+   public void setCursorPos(int pos) // guich@400_18
+   {
+      setCursorPos(pos,pos);
    }
 
    /** Returns an array with the cursor positions. You can use it with getText
@@ -1293,6 +1304,8 @@ public class Edit extends Control implements TextControl, TimerListener
             if (editable && isEnabled())
             {
                KeyEvent ke = (KeyEvent)event;
+               if (PreprocessKey.instance != null)
+                  PreprocessKey.instance.preprocess(this, ke);
                if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
                if (insertPos == 0 && ke.key == ' ' && (mode == CURRENCY || mode == DATE)) // guich@tc114_34
                {
@@ -1486,7 +1499,7 @@ public class Edit extends Control implements TextControl, TimerListener
                if ((pe.modifiers & SpecialKeys.SHIFT) > 0) // shift
                   extendSelect = true;
                else
-                  clearSelect = true;
+                  clearSelect = !persistentSelection;
             } else wasFocusIn = false; // guich@570_98: let the user change cursor location after the first focus_in event.
             break;
          }

@@ -427,6 +427,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             break;
          case KeyEvent.ACTION_DOWN:
             htPressedKeys.put(String.valueOf(keyCode), "");
+            int flags = event.getFlags();
             int state = event.getMetaState();
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) 
             {
@@ -467,7 +468,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                c = event.getUnicodeChar(state);
             
             if (showKeyCodes)
-               alert("Key code: " + keyCode + ", Modifier: " + state);
+               alert("Key code: " + keyCode + ", Modifier: " + state+", flags: "+flags);
+            if ((flags & KeyEvent.FLAG_FROM_SYSTEM) != 0)
+               state |= 8;
             eventThread.pushEvent(KEY_PRESS, c, keyCode, 0, state, 0);
             break;
          case KeyEvent.ACTION_MULTIPLE: // unicode chars

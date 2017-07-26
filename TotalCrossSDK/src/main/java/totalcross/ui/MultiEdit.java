@@ -170,6 +170,11 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Tim
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
 
+   /** Keep selection of last character */
+   public boolean selectLast;
+   /** Keep the selection persistent; otherwise, it is reset if you change the letter */
+   public boolean persistentSelection;
+
    /** Constructs a MultiEdit with 1 pixel as space between lines and with no lines.
     * You must set the bounds using FILL or FIT. */
    public MultiEdit()
@@ -645,6 +650,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Tim
                if (editable && isEnabled())
                {
                   KeyEvent ke = (KeyEvent) event;
+                  if (PreprocessKey.instance != null)
+                     PreprocessKey.instance.preprocess(this, ke);
                   if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
                   if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsCE() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
                      ke.key = SpecialKeys.ENTER;
@@ -1054,12 +1061,13 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Tim
             else if (newInsertPos == startSelectPos) startSelectPos = -1;
             redraw = true;
          }
-         if (clearSelect && (startSelectPos != -1))
+         if (!persistentSelection && clearSelect && (startSelectPos != -1))
          {
             startSelectPos = -1;
             redraw = true;
          }
          newInsertPos = Math.min(chars.length(), newInsertPos);
+         if (selectLast) startSelectPos = newInsertPos-1;
          if (newInsertPos < 0) newInsertPos = 0;
          boolean insertChanged = (newInsertPos != startSelectPos);
          if (insertChanged && cursorShowing) 
@@ -1600,6 +1608,48 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Tim
          insertPos = pos;
    }
 
+   /** Sets the selected text of this Edit (if start != end). Can be used to set the cursor position,
+    * if start equals end. Start must be less or equal to end, and both must be >= 0.
+    * It can also be used to clear the selectedText, calling <code>setCursorPos(-1,0)</code>.
+    * Note: if you're setting the cursor position before the edit is drawn for the first
+    * time, the edit will not be scrolled if the end position goes beyond the limits.
+    * Important! No bounds checking is made. Be sure to not call this method with invalid positions!
+    * Example:
+    * <pre>
+    * ed.setText("1234567890123456");
+    * ed.setCursorPos(3,14);
+    * ed.requestFocus();
+    * </pre>
+    */
+  public void setCursorPos(int start, int end) // guich@400_18
+  {
+     if (0 <= start && start <= chars.length() && 0 <= end && end <= chars.length()+1)
+     {
+        startSelectPos = (start != end)?start:-1;
+        insertPos = end;
+        Window.needsPaint = true;
+     }
+  }
+
+   /** Returns an array with the cursor positions. You can use it with getText
+    * to find the selected text String.
+    * E.g.:
+    * <pre>
+    * int []cursorPos = ed.getCursorPos();
+    * int start = cursorPos[0];
+    * int end = cursorPos[1];
+    * String text = ed.getText();
+    * if (start != -1) // is the text selected?
+    * {
+    *    String selectedText = text.substring(start,end);
+    *    ...
+    * </pre>
+    */
+  public int[] getCursorPos() // guich@400_18
+  {
+     return new int[]{startSelectPos,insertPos};
+  }
+   
    // material
    private void animateMaterial(boolean slow)
    {
