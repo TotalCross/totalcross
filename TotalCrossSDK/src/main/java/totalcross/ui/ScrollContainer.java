@@ -398,7 +398,7 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void reposition()
    {
-      int vx = bag.x, vy = bag.y; // keep position when changing size
+      int vx = bag.x, vy = bag.y, vw = bag.width, vh = bag.height; // keep position when changing size
       int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
       super.reposition();
       resize();
@@ -409,9 +409,15 @@ public class ScrollContainer extends Container implements Scrollable
       else
       {
          if (sbH != null)
-            sbH.setValue(-(bag.x = sbH.maximum == 0 ? 0 : vx));
+         {
+            sbH.setValue(sbH.maximum == 0 ? 0 : -vx);
+            bag.x = -sbH.getValue();
+         }
          if (sbV != null)
-            sbV.setValue(-(bag.y = sbV.maximum == 0 ? 0 : vy)); // if we're scrolled but we don't need scroll, move to origin
+         {
+            sbV.setValue(sbV.maximum == 0 ? 0 : -vy); // if we're scrolled but we don't need scroll, move to origin
+            bag.y = -sbV.getValue();
+         }
       }
    }
    
@@ -605,32 +611,60 @@ public class ScrollContainer extends Container implements Scrollable
          {
             lastH = sbH.value;
             int val = lastH + (r.x <= 0 || r.width > bag0.width ? r.x : (r.x2()-bag0.width));
-            if (val < sbH.minimum)
-               val = sbH.minimum;
-            sbH.setValue(val);
-            if (lastH != sbH.value)
-            {
-               lastH = sbH.value;
-               bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
-            }
+            setHValue(val);
          }
          // vertical
          if (sbV != null && (r.y < 0 || r.y2() > bag0.height))
          {
             lastV = sbV.value;
             int val = lastV + (r.y <= 0 || r.height > bag0.height ? r.y : (r.y2() - bag0.height));
-            if (val < sbV.minimum)
-               val = sbV.minimum;
-            sbV.setValue(val);
-            if (lastV != sbV.value)
-            {
-               lastV = sbV.value;
-               bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
-            }
+            setVValue(val);
+         }
+      }
+   }
+
+   /** Scroll the container to origin position 0,0 */
+   public void scrollToOrigin()
+   {
+      if (sbH != null)
+         setHValue(0);
+      if (sbV != null)
+         setVValue(0);
+      bag.reposition();
+   }
+   
+   /** Sets the vertical's ScrollBar value to the given one. */
+   protected void setVValue(int val)
+   {
+      if (sbV != null)
+      {
+         sbV.setValue(val);
+         if (val < sbV.minimum)
+            val = sbV.minimum;
+         if (lastV != sbV.value)
+         {
+            lastV = sbV.value;
+            bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
          }
       }
    }
    
+   /** Sets the horizontal's ScrollBar value to the given one. */
+   protected void setHValue(int val)
+   {
+      if (sbH != null)
+      {
+         if (val < sbH.minimum)
+            val = sbH.minimum;
+         sbH.setValue(val);
+         if (lastH != sbH.value)
+         {
+            lastH = sbH.value;
+            bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
+         }
+      }
+   }
+
    public void setBorderStyle(byte border)
    {
       if (shrink2size)
