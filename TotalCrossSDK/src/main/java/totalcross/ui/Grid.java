@@ -54,7 +54,7 @@ import totalcross.util.*;
  * for example the rowid of a table.
  * </ul>
  *
- *  Here´s an example:
+ *  HereÂ´s an example:
  * <pre>
  *     Rect r = getClientRect();
  *
@@ -1086,7 +1086,7 @@ public class Grid extends Container implements Scrollable
          try
          {
             if (npcapt == null)
-               npcapt = NinePatch.getInstance().getNormalInstance(NinePatch.GRID_CAPTION,width,lineH+5,captionsBackColor,false);
+               npcapt = NinePatch.getInstance().getNormalInstance(uiMaterial ? NinePatch.BUTTON : NinePatch.EDIT,width,lineH+5,captionsBackColor,false);
             // draw top
             g.setClip(0,0,width,lineH);
             NinePatch.tryDrawImage(g,npcapt,0,0);
@@ -1391,6 +1391,7 @@ public class Grid extends Container implements Scrollable
       if (!uiAndroid)
          g.drawRect(0, lineH, width + 1, height - lineH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
       else
+      if (!uiMaterial)
       {
          // draw bottom
          g.expandClipLimits(0,0,0,5);
@@ -1787,7 +1788,7 @@ public class Grid extends Container implements Scrollable
          ed.setVisible(true);
          ed.requestFocus();
          ed.bringToFront();
-         if (Settings.virtualKeyboard)
+         if (Settings.virtualKeyboard && Settings.enableVirtualKeyboard)
             ed.popupKCC();
       }
       else

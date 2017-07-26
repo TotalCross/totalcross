@@ -147,7 +147,7 @@ public class Level5Impl extends Level5
       {
          t.setDaemon(true);
          t.start();
-         long end = System.currentTimeMillis() + 4000;
+         long end = System.currentTimeMillis() + 12000;
          while (t.isAlive() && System.currentTimeMillis() < end)
             try {Thread.sleep(20);} catch (Exception e) {}
          if (t.isAlive())

@@ -37,6 +37,7 @@ import android.util.*;
 import android.view.*;
 import android.view.ViewGroup.*;
 import android.view.inputmethod.*;
+import android.webkit.MimeTypeMap;
 import android.widget.*;
 import com.google.android.gms.ads.*;
 import com.google.firebase.FirebaseApp;
@@ -486,7 +487,9 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
 				builder.setApplicationId(mobilesdk_app_id);//<string name="google_app_id" translatable="false">1:462748528174:android:d1696eef73864aa2</string>
 				builder.setApiKey(current_api_key);//<string name="google_api_key" translatable="false">AIzaSyCiU3EE9ckkvlzvyC8_dc7Z9MiC8NGgfHI</string>
 				
-				FirebaseApp.initializeApp(getApplicationContext(), builder.build());
+				FirebaseApp app = FirebaseApp.initializeApp(getApplicationContext(), builder.build());
+				
+				FirebaseUtils.registerFirebaseApp(app);
 			} else {
 				AndroidUtils.debug("Could not initialize Firebase, can't find your package in google-services.json");
 			}
@@ -904,7 +907,13 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             if (args != null)
             {
                Intent i = new Intent(Intent.ACTION_VIEW);
-               i.setData(Uri.parse(args));
+               Uri uriData = Uri.parse(args);
+               String mimeType = getMimeType(uriData);
+               if (mimeType != null && !mimeType.endsWith("octet-stream")) {
+            	   i.setDataAndType(uriData, mimeType);
+               } else {
+            	   i.setData(uriData);
+               }
                startActivity(i);
             }
          }
@@ -936,6 +945,19 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          finish();
    }
    
+   // From https://stackoverflow.com/a/31691791/4438007
+   public String getMimeType(Uri uri) {
+	    String mimeType = null;
+	    if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+	        ContentResolver cr = getContentResolver();
+	        mimeType = cr.getType(uri);
+	    } else {
+	        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+	        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase());
+	    }
+	    return mimeType;
+	}
+   
    public void onConfigurationChanged(Configuration config)
    {
       super.onConfigurationChanged(config);
@@ -962,6 +984,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       if (onMainLoop)
          Launcher4A.appPaused();
       super.onPause();
+      updateSmsReceiver(true);
       if (isFinishing() && runningVM) // guich@tc126_60: stop the vm if finishing is true, since onDestroy is not guaranteed to be called
          quitVM();                    // call app 1, exit, call app 2: onPause is called but onDestroy not
    }
@@ -986,6 +1009,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          Launcher4A.appResumed();
       Launcher4A.appPaused = false;
       super.onResume();
+      updateSmsReceiver(false);      
    }
 
    public String strBarcodeData;    
@@ -1112,4 +1136,49 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          Toast.makeText(getApplicationContext(), "Text to Speech is not supported", Toast.LENGTH_SHORT).show();
       }
    }
+   
+   private static boolean smsReceiverEnabled = false;
+   
+   IntentFilter intentFilter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+   
+   BroadcastReceiver mReceiver = new BroadcastReceiver() {
+      
+      @Override
+      public void onReceive(Context context, Intent intent) {
+         // Get the data (SMS data) bound to intent
+         Bundle bundle = intent.getExtras();
+  
+         android.telephony.SmsMessage[] msgs = null;
+  
+         if (bundle != null) {
+             // Retrieve the SMS Messages received
+             Object[] pdus = (Object[]) bundle.get("pdus");
+             msgs = new android.telephony.SmsMessage[pdus.length];
+  
+             // For every SMS message received
+             for (int i=0; i < msgs.length; i++) {
+                 // Convert Object array
+                 msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
+                 Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody());
+             }
+         }
+      }
+   };
+
+   public void enableSmsReceiver(boolean enabled) {
+      smsReceiverEnabled = enabled;
+      updateSmsReceiver(false);
+   }
+   
+  public void updateSmsReceiver(boolean unregisterOnly) {
+    if (unregisterOnly || !smsReceiverEnabled) {
+      try {
+        this.unregisterReceiver(this.mReceiver);
+      } catch (IllegalArgumentException e) {
+        // ignore exception thrown when the receiver was not registered
+      }
+    } else {
+      this.registerReceiver(mReceiver, intentFilter);
+    }
+  }
 }

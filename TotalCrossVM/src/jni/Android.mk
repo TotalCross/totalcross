@@ -134,10 +134,12 @@ NM_PIM_FILES =                                \
 NM_MONEY_FILES =                                \
 	$(TC_SRCDIR)/nm/money/money.c
 
-NM_PHONE_FILES =                              \
+NM_PHONE_FILES =                               \
 	$(TC_SRCDIR)/nm/phone/Dial.c               \
 	$(TC_SRCDIR)/nm/phone/SMS.c                \
-	$(TC_SRCDIR)/nm/phone/CellInfo.c
+	$(TC_SRCDIR)/nm/phone/CellInfo.c           \
+	$(TC_SRCDIR)/nm/telephony/SmsManager.c     \
+	$(TC_SRCDIR)/nm/firebase/firebase.c
 
 NM_SYS_FILES =                                \
 	$(TC_SRCDIR)/nm/sys/CharacterConverter.c   \

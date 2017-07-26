@@ -4,6 +4,7 @@ import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.anim.*;
 import totalcross.ui.anim.ControlAnimation.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -13,12 +14,12 @@ import totalcross.ui.image.*;
  */
 public class Switch extends Control implements PathAnimation.SetPosition, AnimationFinished
 {
-   private Image back,backLR;
-   private Image btn;
+   private Image barOn,barOff;
+   private Image ballOn,ballOff;
    private boolean isIos,dragged,wasChecked;
    private int startDragPos, dragBarPos, dragBarSize, dragBarMin, dragBarMax;
    /** The animation time. Set to 0 to disable animations in all Switches. */
-   public static int ANIMATION_TIME = 250;
+   public static int ANIMATION_TIME = 200;
    
    /** Text to draw when on background or foreground, and when this switch is on or off */
    public String textBackOn, textForeOn, textBackOff, textForeOff;
@@ -26,27 +27,46 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    /** Text color to draw when on background or foreground, and when this switch is on or off */
    public int colorBackOn, colorForeOn, colorBackOff, colorForeOff;
    
+   /** Colors used in material */
+   public int colorBallOn,colorBallOff,colorBarOn,colorBarOff;
+   
    /** Set to true to center text instead of moving it to left or right */
    public boolean centerText;
    
+   /** Constructs a switch of iOS type. In material UI, there is only one type */
+   public Switch()
+   {
+      this(false);
+   }
+   
+   /** Constructs a switch of the given type. In material UI, there is only one type */
    public Switch(boolean androidType)
    {
       foreColor = 0x05B6EE;
       backColor = 0xDDDDDD;
+      if (uiMaterial)
+      {
+         colorBallOff = Color.WHITE;
+         colorBarOff = 0x9E9E9E;
+         colorBarOn  = 0xFDA6A6;
+         colorBallOn  = 0xFF5252;
+      }
       this.isIos = !androidType;
+      effect = UIEffects.get(this);
    }
    
    public void onBoundsChanged(boolean b)
    {
-      back = btn = null;
+      barOn = ballOn = ballOff = null;
       dragBarSize = height;
       dragBarMin = 0;
-      dragBarMax = width - dragBarSize-1;
+      dragBarMax = width - dragBarSize + (uiMaterial ? 1 : -1);
    }
    
    public void onColorsChanged(boolean b)
    {
-      back = btn = null;
+      barOn = ballOn = ballOff = null;
+      //effect.color = Color.brighter(backColor);
    }
    
    /** Change the on/off state. */
@@ -56,7 +76,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
          moveSwitch(!b);
    }
    
-   /** Returns true if this switch is ON. Note that, if this Switch has animations, it will return on only after the animation finishes */
+   /** Returns true if this switch is ON. Note that, if this Switch has animations, you must call this method only after the animation finishes */
    public boolean isOn()
    {
       return dragBarPos+dragBarSize/2 >= width/2;
@@ -103,61 +123,66 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    {
       try
       {
-         boolean enabled = isEnabled();
-         if (btn == null)
+         if (ballOn == null)
+            buildBall();
+         if (barOn == null)
+            buildBar();
+                  
+         int perc = dragBarPos * 255 / (width-dragBarSize);
+         if (effect != null) effect.paintEffect(g);
+         boolean on = isOn();
+         int dy = uiMaterial ? height/4 : 0;
+         if (!uiMaterial)
          {
-            btn = (isIos ? Resources.switchBtnIos : Resources.switchBtnAnd).getSmoothScaledInstance(height,height);
-            btn.applyColor2(!enabled ? backColor : foreColor);
+            barOn.alphaMask = alphaValue;
+            g.drawImage(barOn, 0,dy);
+            barOn.alphaMask = 255;
          }
-         if (back == null)
+         else
          {
-            backLR = (isIos ? Resources.switchBrdIos : Resources.switchBrdAnd).smoothScaledFixedAspectRatio(height,true); // left/right
-            back = Resources.switchBack.getSmoothScaledInstance(width-backLR.getWidth(),height); // mid
-            int fillB = !enabled ? Color.interpolate(backColor, parent.backColor) : backColor;
-            back.applyColor2(fillB);
-            backLR.applyColor2(fillB);
+            barOff.alphaMask = (255-perc)*alphaValue/255;
+            barOn.alphaMask = perc*alphaValue/255;
+            if (perc != 255) g.drawImage(barOff, 0,dy);
+            if (perc !=   0) g.drawImage(barOn, 0,dy);
+            barOff.alphaMask = barOn.alphaMask = 255;
          }
-         int lrww = backLR.getWidth();
-         int lrw = lrww / 2;
-         back.alphaMask = backLR.alphaMask = alphaValue;
-         g.drawImage(back,lrw,0);
-         // draw left
-         g.setClip(0,0,lrw,height);
-         g.drawImage(backLR,0,0);
-         // draw right
-         g.setClip(width-lrw-1,0,height+1,height);
-         g.drawImage(backLR,width-lrww-1,0);
-         g.clearClip();
-         back.alphaMask = backLR.alphaMask = 255;
-         if (isOn()) // text at left
+         
+         // text
+         if (on && textBackOn != null) // text at left
          {
-            if (textBackOn != null)
-            {
-               g.foreColor = colorBackOn;
-               int ww = fm.stringWidth(textBackOn);
-               g.drawText(textBackOn,centerText ? (width-ww)/2 : (width-dragBarSize-ww)/2,(height-fmH)/2);
-            }
-            g.drawImage(btn,dragBarPos,0);
-            if (textForeOn != null)
-            {
-               g.foreColor = colorForeOn;
-               g.drawText(textForeOn,dragBarPos+(dragBarSize-fm.stringWidth(textForeOn))/2,(height-fmH)/2);
-            }
+            g.foreColor = colorBackOn;
+            int ww = fm.stringWidth(textBackOn);
+            g.drawText(textBackOn,centerText ? (width-ww)/2 : (width-dragBarSize-ww)/2,(height-fmH)/2);
          }
-         else // text at right
+         else
+         if (!on && textBackOff != null) // text at right
          {
-            if (textBackOff != null)
-            {
-               g.foreColor = colorBackOff;
-               int ww = fm.stringWidth(textBackOn);
-               g.drawText(textBackOff,centerText ? (width-ww)/2 : (width-dragBarSize-ww)/2+dragBarSize,(height-fmH)/2);
-            }
-            g.drawImage(btn,dragBarPos,0);
-            if (textForeOff != null)
-            {
-               g.foreColor = colorForeOff;
-               g.drawText(textForeOff,dragBarPos+(dragBarSize-fm.stringWidth(textForeOff))/2,(height-fmH)/2);
-            }
+            g.foreColor = colorBackOff;
+            int ww = fm.stringWidth(textBackOn);
+            g.drawText(textBackOff,centerText ? (width-ww)/2 : (width-dragBarSize-ww)/2+dragBarSize,(height-fmH)/2);
+         }
+         // ball
+         if (!uiMaterial)
+            g.drawImage(ballOn,dragBarPos,0);
+         else
+         {
+            ballOff.alphaMask = (255-perc)*alphaValue/255;
+            ballOn.alphaMask = perc*alphaValue/255;
+            if (perc != 255) g.drawImage(ballOff, dragBarPos,0);
+            if (perc !=   0) g.drawImage(ballOn, dragBarPos,0);
+            ballOff.alphaMask = ballOff.alphaMask = 255;
+         }
+         // text
+         if (on && textForeOn != null) // text at left
+         {
+            g.foreColor = colorForeOn;
+            g.drawText(textForeOn,dragBarPos+(dragBarSize-fm.stringWidth(textForeOn))/2,(height-fmH)/2);
+         }
+         else
+         if (!on && textForeOff != null) // text at right
+         {
+            g.foreColor = colorForeOff;
+            g.drawText(textForeOff,dragBarPos+(dragBarSize-fm.stringWidth(textForeOff))/2,(height-fmH)/2);
          }
       }
       catch (Throwable t)
@@ -167,6 +192,50 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
       // draw button
    }
    
+   private void buildBall() throws Exception
+   {
+      int h = uiMaterial || isIos ? height : height-2;
+      ballOn = (uiMaterial ? Resources.switchBtn : isIos ? Resources.switchBtnIos : Resources.switchBtnAnd).getSmoothScaledInstance(h,h);
+      if (uiMaterial)
+         ballOff = ballOn.getCopy();
+      ballOn.applyColor2(uiMaterial ? colorBallOn : foreColor);
+      if (uiMaterial)
+         ballOff.applyColor2(uiMaterial ? colorBallOff : backColor);
+   }
+
+   private void buildBar() throws Exception
+   {
+      int h = uiMaterial ? height/2 : height;
+      barOn = new Image(width,h);
+      Image barLR = (uiMaterial ? Resources.switchBrd : isIos ? Resources.switchBrdIos : Resources.switchBrdAnd).smoothScaledFixedAspectRatio(uiMaterial || isIos?h:h-2,true); // left/right
+      int bw = barLR.getWidth() / 2;
+      Image barMid = uiMaterial ? null : Resources.switchBack.getSmoothScaledInstance(width-2*bw, h); // mid
+
+      Graphics gg = barOn.getGraphics();
+      if (!uiMaterial)
+         gg.drawImage(barMid,bw,isIos?0:-1);
+      else
+      {
+         gg.backColor = Color.WHITE;
+         gg.fillRect(bw,2,width-2*bw,h-3);
+      }
+      // draw left
+      gg.setClip(0,0,bw,h);
+      gg.drawImage(barLR,0,0);
+      // draw right
+      gg.setClip(width-bw-1,0,bw,h);
+      gg.drawImage(barLR,width-2*bw-1,0);
+      gg.clearClip();
+      
+      if (uiMaterial)
+         barOff = barOn.getCopy();
+      
+      int fillB = !isEnabled() ? Color.interpolate(backColor, parent.backColor) : backColor;
+      barOn.applyColor2(uiMaterial ? colorBarOn : fillB);
+      if (uiMaterial)
+         barOff.applyColor2(uiMaterial ? colorBarOff : fillB);
+   }
+
    public void onEvent(Event event)
    {
       if (isEnabled())

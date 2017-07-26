@@ -111,6 +111,14 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeInitSize
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeOnEvent
   (JNIEnv *, jobject, jint, jint, jint, jint, jint, jint);
 
+/*
+ * Class:     totalcross_Launcher4A
+ * Method:    nativeSmsReceived
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSmsReceived
+  (JNIEnv *, jclass, jstring, jstring);
+
 #ifdef __cplusplus
 }
 #endif

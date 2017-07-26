@@ -128,6 +128,8 @@ public class GpsSample extends BaseContainer
       {
          if (Settings.platform.equals(Settings.ANDROID))
             add(chPlay = new Check("Enable Google Play Services"), LEFT, TOP+10);
+         else
+            add(new Spacer(0,0), LEFT,TOP);
          add(btnGps = new Button("Start Logger"), PARENTSIZE+25, AFTER+10,PARENTSIZE+40,PREFERRED);
          add(btnStopGps = new Button("Stop Logger"), PARENTSIZE+75, SAME,PARENTSIZE+40,PREFERRED);
          btnGps.setBackColor(Color.getRGB(188, 238, 104));

@@ -103,7 +103,8 @@ public class PopupMenu extends Window
       super(caption,ROUND_BORDER);
       this.multipleSelection = multipleSelection;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
-      titleColor = Color.WHITE;
+      titleColor = uiMaterial ? Color.BLACK : Color.WHITE;
+      if (uiMaterial) setBackColor(0xDDDDDD);
       this.items = items;
       itemCount = items.length;
       if (multipleSelection)
@@ -112,6 +113,7 @@ public class PopupMenu extends Window
          ball = Resources.checkSel.getCopy();
       }
       else
+      if (!uiMaterial) // remove ball on material
       {
          off = Resources.radioBkg.getCopy();
          ball = Resources.radioSel.getCopy();
@@ -138,10 +140,13 @@ public class PopupMenu extends Window
          
          ListContainer.Layout layout = list.getLayout(3,1);
          layout.insets.set(10,50,10,50);
-         layout.defaultRightImage = off;
-         layout.defaultRightImage2 = getSelectedImage(checkColor == -1 ? foreColor : checkColor);
-         layout.imageGap = 50;
-         layout.controlGap = 50; // 50% of font's height
+         if (multipleSelection || !uiMaterial)
+         {
+            layout.defaultRightImage = off;
+            layout.defaultRightImage2 = getSelectedImage(checkColor == -1 ? foreColor : checkColor);
+            layout.imageGap = 50;
+            layout.controlGap = 50; // 50% of font's height
+         }
          layout.centerVertically = true;
          layout.setup();
          int cw=-1;
@@ -193,13 +198,18 @@ public class PopupMenu extends Window
             for (int i = 0; i < caps.length; i++)
                caps[i] = Convert.toString((char)v.items[i]);
             pbgSearch = new PushButtonGroup(caps,false,-1,0,fmH,1,true,PushButtonGroup.BUTTON);
-            add(sc2 = new ScrollContainer(true, false),LEFT,TOP,FILL,FONTSIZE+200);
-            sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FILL);
+            add(sc2 = new ScrollContainer(true, false),LEFT,TOP,FILL,FONTSIZE+(ScrollPosition.AUTO_HIDE ? 200 : 225));
+            sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FONTSIZE+200);
          }
          if (enableCancel)
-            add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,PARENTSIZE+90,PREFERRED+fmH);
-         add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,(enableCancel?FIT:FILL)-fmH/2, enableSearch ? sc2 : null);
-         list.setBackColor(Color.WHITE);
+         {
+            cancel = new Button(cancelString);
+            cancel.setBackColor(Color.WHITE);
+            add(cancel,CENTER,BOTTOM-fmH/2,PARENTSIZE+90,PREFERRED+fmH);
+         }
+         list = new ListContainer();
+         if (!uiMaterial) list.setBackColor(Color.WHITE);
+         add(list,LEFT,enableSearch ? AFTER+fmH/5 : TOP,FILL,(enableCancel?FIT:FILL)-fmH/2, enableSearch ? sc2 : null);
          list.addContainers(containers);
          repositionOnSize();
       }
@@ -261,7 +271,7 @@ public class PopupMenu extends Window
          for (int i = 0; i < itemCount; i++)
          {
             String s = items[i] instanceof String ? (String)items[i] : (items[i] instanceof String[]) ? ((String[])items[i])[dataCol] : items[i].toString();
-            int w = fm.stringWidth(s) + fmH*6;
+            int w = fm.stringWidth(s) + (uiMaterial ? fmH*4 : fmH*6);
             if (w > maxW) maxW = w;
          }
          setRect(CENTER,CENTER,maxW < Math.min(Settings.screenWidth,Settings.screenHeight)-fmH*2 ? maxW : SCREENSIZE+90,SCREENSIZE+90);

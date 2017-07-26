@@ -199,6 +199,10 @@ target: compile
         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
+     	<pathelement location="${etc}/libs/appdirs-1.0.0.jar"/>
+     	<pathelement location="${etc}/libs/jna-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/jna-platform-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/slf4j-api-1.7.21.jar"/>
      </classpath>
   </javac>
 
@@ -260,6 +264,10 @@ target: compile
        <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
        <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
        <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
+     	<pathelement location="${etc}/libs/appdirs-1.0.0.jar"/>
+     	<pathelement location="${etc}/libs/jna-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/jna-platform-4.2.2.jar"/>
+     	<pathelement location="${etc}/libs/slf4j-api-1.7.21.jar"/>
     </classpath>  	
   </javac>
 
@@ -524,8 +532,8 @@ target: device
   <copy file="${src}/totalcross/chartypes.bin" todir="${output}/classes/totalcross"/>
   <jar destfile="${output}/tcsdk2_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
-    includes="totalcross/io/sync/*.class,totalcross/money/*.class,totalcross/util/*.class,totalcross/util/pdf/*.class,totalcross/util/regex/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/barcode/**/*.class,totalcross/json/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/unit/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/json/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class,org/json/simple/*.class,org/json/simple/parser/*.class,jdkcompat/**/*.class,jdkcompatx/**/*.class"
-    excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/res/**"
+    includes="totalcross/firebase/**/*.class,totalcross/telephony/*.class,totalcross/io/sync/*.class,totalcross/money/*.class,totalcross/util/*.class,totalcross/util/pdf/*.class,totalcross/util/regex/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/barcode/**/*.class,totalcross/json/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/unit/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/json/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class,org/json/simple/*.class,org/json/simple/parser/*.class,jdkcompat/**/*.class,jdkcompatx/**/*.class"
+    excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/effect/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/res/**"
     />
   </jar>
 
@@ -562,7 +570,7 @@ target: device
   
   <jar destfile="${output}/tcsdk2_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
-    includes="totalcross/res/**,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class"
+    includes="totalcross/res/**,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/effect/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class"
     />
     <fileset dir="${src}" includes="totalcross/res/**/*.mp3,totalcross/res/**/*.gif,totalcross/res/**/*.png" />
   	<fileset dir="${resources}" includes="totalcross/res/**/*.mp3,totalcross/res/**/*.gif,totalcross/res/**/*.png" />

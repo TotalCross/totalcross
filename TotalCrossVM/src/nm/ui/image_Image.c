@@ -14,6 +14,10 @@
 #include "tcvm.h"
 #include "ImagePrimitives_c.h"
 
+#if defined darwin
+#include "darwin/image_Image_c.h"
+#endif
+
 void jpegLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
 void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
 
@@ -173,6 +177,22 @@ TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native pub
    TCObject thisObj = p->obj[0];
    int32 fadeValue = p->i32[0];
    applyFade(thisObj, fadeValue);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p) // totalcross/ui/image/Image native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
+{
+   TCObject inputPathObj = p->obj[0];
+   TCObject outputPathObj = p->obj[1];
+   int32 maxPixelSize = p->i32[0];
+   char input_path[512];
+   char output_path[512];
+   
+#if defined (darwin)
+   String2CharPBuf(inputPathObj, input_path);
+   String2CharPBuf(outputPathObj, output_path);
+   
+   resizeImageAtPath(input_path, output_path, maxPixelSize);
+#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

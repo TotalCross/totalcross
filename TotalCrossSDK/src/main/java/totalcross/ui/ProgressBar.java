@@ -210,7 +210,7 @@ public class ProgressBar extends Control
       int bc = getBackColor();
       int fc = getForeColor();
       
-      if (uiAndroid)
+      if (uiAndroid && !uiMaterial)
          try
          {
             if (npback == null)
@@ -248,20 +248,34 @@ public class ProgressBar extends Control
       {
          if (s > 0)
          {
-            if (endless)
+            if (endless || uiMaterial)
             {
                g.backColor = bc;
                g.fillRect(0,0,width,height);
             }
-            if (uiVista && isEnabled()) // guich@573_6
+            if ((uiMaterial || uiVista) && isEnabled()) // guich@573_6
             {
-               if (vertical)
-                  g.fillVistaRect(0, height - s, width, s, fc, false, false);
+               if (uiMaterial)
+               {
+                  g.backColor = fc;
+                  if (vertical)
+                     g.fillRect(0, height - s, width, s);
+                  else
+                  if (!endless)
+                     g.fillRect(0,0,s,height);
+                  else
+                     g.fillRect(value-dif,0,dif,height);
+               }
                else
-               if (!endless)
-                  g.fillVistaRect(0,0,s,height,fc,false,false);
-               else
-                  g.fillVistaRect(value-dif,0,dif,height,fc,false,false);
+               {
+                  if (vertical)
+                     g.fillVistaRect(0, height - s, width, s, fc, false, false);
+                  else
+                  if (!endless)
+                     g.fillVistaRect(0,0,s,height,fc,false,false);
+                  else
+                     g.fillVistaRect(value-dif,0,dif,height,fc,false,false);
+               }
             }
             else
             {
@@ -298,7 +312,7 @@ public class ProgressBar extends Control
          String st = sb.append(suffix).toString();
          int x = (width-fm.stringWidth(st))>>1;
          int y = ((height-fmH)>>1)-1;
-         int shadow = textShadowColor != -1 ? textShadowColor : !highlight ? -1 : highlightColor == -1 ? Color.getCursorColor(textColor) : highlightColor;
+         int shadow = uiMaterial ? -1 : textShadowColor != -1 ? textShadowColor : !highlight ? -1 : highlightColor == -1 ? Color.getCursorColor(textColor) : highlightColor;
          g.foreColor = textColor;
          g.drawText(st, x, y, shadow != -1, shadow);
       }

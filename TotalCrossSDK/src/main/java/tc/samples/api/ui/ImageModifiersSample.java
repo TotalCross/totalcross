@@ -27,10 +27,10 @@ import totalcross.ui.image.*;
 
 public class ImageModifiersSample extends BaseContainer
 {
-   ScrollBar sbRotate;
-   ScrollBar sbScale;
-   ScrollBar sbContrast;
-   ScrollBar sbBrightness;
+   Slider slRotate;
+   Slider slScale;
+   Slider slContrast;
+   Slider slBrightness;
    Label lbRotate;
    Label lbScale;
    Label lbContrast;
@@ -53,45 +53,48 @@ public class ImageModifiersSample extends BaseContainer
       Label l;
       
       add(l = new Label("Rotate "), LEFT, TOP + gap);
-      add(sbRotate = new ScrollBar(ScrollBar.HORIZONTAL));
-      sbRotate.setValues(180, 1, 0, 361);
-      sbRotate.setUnitIncrement(5);
-      sbRotate.setBlockIncrement(30);
-      sbRotate.setLiveScrolling(true);
-      sbRotate.setRect(RIGHT, SAME + 2, PARENTSIZE+70, PREFERRED+fmH/4, lbRotate);
+      add(slRotate = new Slider(ScrollBar.HORIZONTAL));
+      slRotate.setValues(180, 1, 0, 361);
+      slRotate.setUnitIncrement(5);
+      slRotate.setBlockIncrement(30);
+      slRotate.setLiveScrolling(true);
+      slRotate.setRect(RIGHT, SAME + 2, PARENTSIZE+60, PREFERRED+fmH/4, lbRotate);
       add(lbRotate = new Label("0000"), AFTER, SAME,FIT,SAME,l);
-      
+
       add(l = new Label("Scale "), LEFT, AFTER+gap);
-      add(sbScale = new ScrollBar(ScrollBar.HORIZONTAL));
-      sbScale.setValues(100, 1, 0, 400); // palm os has very limited memory
-      sbScale.setUnitIncrement(5);
-      sbScale.setBlockIncrement(20);
-      sbScale.setLiveScrolling(true);
-      sbScale.setRect(RIGHT, SAME + 2, PARENTSIZE+70, PREFERRED+fmH/4, lbScale);
+      add(slScale = new Slider(ScrollBar.HORIZONTAL));
+      slScale.setValues(100, 1, 0, 400); // palm os has very limited memory
+      slScale.setUnitIncrement(5);
+      slScale.setBlockIncrement(20);
+      slScale.setLiveScrolling(true);
+      slScale.setRect(RIGHT, SAME + 2, PARENTSIZE+60, PREFERRED+fmH/4, lbScale);
       add(lbScale = new Label("0000"), AFTER, SAME,FIT,SAME,l);
-      
+
       add(l = new Label("Contrast "), LEFT, AFTER+gap);
-      add(sbContrast = new ScrollBar(ScrollBar.HORIZONTAL));
-      sbContrast.setValues(128, 0, 0, 256);
-      sbContrast.setUnitIncrement(8);
-      sbContrast.setBlockIncrement(32);
-      sbContrast.setLiveScrolling(true);
-      sbContrast.setRect(RIGHT, SAME + 2, PARENTSIZE+70, PREFERRED+fmH/4, lbContrast);
+      add(slContrast = new Slider(ScrollBar.HORIZONTAL));
+      slContrast.setValues(128, 0, 0, 256);
+      slContrast.setUnitIncrement(8);
+      slContrast.setBlockIncrement(32);
+      slContrast.setLiveScrolling(true);
+      slContrast.setRect(RIGHT, SAME + 2, PARENTSIZE+60, PREFERRED+fmH/4, lbContrast);
       add(lbContrast = new Label("0000"), AFTER, SAME,FIT,SAME,l);
+
       
       add(l = new Label("Brightness "), LEFT, AFTER+gap);
-      add(sbBrightness = new ScrollBar(ScrollBar.HORIZONTAL));
-      sbBrightness.setValues(128, 0, 0, 256);
-      sbBrightness.setUnitIncrement(8);
-      sbBrightness.setBlockIncrement(32);
-      sbBrightness.setLiveScrolling(true);
-      sbBrightness.setRect(RIGHT, SAME + 2, PARENTSIZE+70, PREFERRED+fmH/4, lbBrightness);
+      add(slBrightness = new Slider(ScrollBar.HORIZONTAL));
+      slBrightness.setValues(128, 0, 0, 256);
+      slBrightness.setUnitIncrement(8);
+      slBrightness.setBlockIncrement(32);
+      slBrightness.setLiveScrolling(true);
+      slBrightness.setRect(RIGHT, SAME + 2, PARENTSIZE+60, PREFERRED+fmH/4, lbBrightness);
       add(lbBrightness = new Label("0000"), AFTER, SAME,FIT,SAME,l);
-
+      
       lbRotate.setText("0");
       lbContrast.setText("0");
       lbBrightness.setText("0");
       lbScale.setText("100");
+      
+      slRotate.sliderColor = slScale.sliderColor = slContrast.sliderColor = slBrightness.sliderColor = 0xFF5252;
 
       add(imgFrm = new ImageControl());
       imgFrm.setRect(LEFT + 1, AFTER + gap, FILL - 2, FILL - 2,lbBrightness);
@@ -116,10 +119,10 @@ public class ImageModifiersSample extends BaseContainer
          int scaleW = (100 * rectImg.width) / img.getWidth();
          int scaleH = (100 * rectImg.height) / img.getHeight();
          if ((scaleH < 100) || (scaleW < 100))
-            sbScale.setValue((scaleH < scaleW) ? scaleH : scaleW);
+            slScale.setValue((scaleH < scaleW) ? scaleH : scaleW);
          else
-            sbScale.setValue(100);
-         onEvent(getPressedEvent(sbScale));
+            slScale.setValue(100);
+         onEvent(getPressedEvent(slScale));
       }
       catch (ImageException ie)
       {
@@ -145,10 +148,10 @@ public class ImageModifiersSample extends BaseContainer
             {
                try
                {
-                  if ((event.target == sbContrast) || (event.target == sbBrightness))
+                  if ((event.target == slContrast) || (event.target == slBrightness))
                   {
-                     byte newBrightnessLevel = (byte) (sbBrightness.getValue() - 128);
-                     byte newContrastLevel = (byte) (sbContrast.getValue() - 128);
+                     byte newBrightnessLevel = (byte) (slBrightness.getValue() - 128);
+                     byte newContrastLevel = (byte) (slContrast.getValue() - 128);
                      if (newBrightnessLevel == brightnessLevel && newContrastLevel == contrastLevel)
                         return;
                      brightnessLevel = newBrightnessLevel;
@@ -174,10 +177,10 @@ public class ImageModifiersSample extends BaseContainer
                         }
                      }
                   }
-                  else if ((event.target == sbRotate) || (event.target == sbScale))
+                  else if ((event.target == slRotate) || (event.target == slScale))
                   {
-                     int newRotateLevel = sbRotate.getValue() - 180;
-                     int newScaleLevel = sbScale.getValue();
+                     int newRotateLevel = slRotate.getValue() - 180;
+                     int newScaleLevel = slScale.getValue();
                      if (newRotateLevel == rotateLevel && newScaleLevel == scaleLevel)
                         return;
                      rotateLevel = newRotateLevel;

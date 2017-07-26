@@ -159,6 +159,8 @@ public class Window extends Container
    private static int repeatedEventMinInterval = Settings.isIOS() || Settings.ANDROID.equals(Settings.platform) ? 40 : 0;
    private String oldTitle;
    protected int footerH;
+   /** Use the same color in border and in body */
+   public boolean sameBackgroundColor;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
     * needs to cancel the next pen_up during a drag-scrolling interaction. */
    public static boolean cancelPenUp;
@@ -203,6 +205,11 @@ public class Window extends Container
    
    /** The UIRobot instance that is being used to record or play events. */
    public static UIRobot robot;
+
+   /** During a swap, the container is repainted. If the swap is being done under the presence of a (wait) Window, the container will be drawn but the window dont.
+    * To fix this, set this flag to false. 
+    */
+   public static boolean repaintOnSwap = true;
 
    protected static int androidBorderThickness;
    
@@ -291,6 +298,12 @@ public class Window extends Container
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
       titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height/2 : 0;
+      if (UIColors.windowBorder != 0) borderColor = UIColors.windowBorder;
+      if (uiMaterial)
+      {
+         sameBackgroundColor = true;
+         titleAlign = LEFT;
+      }
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -417,6 +430,8 @@ public class Window extends Container
             if (_focus == null) // guich@tc100: maybe the user changed the focus to a new control in the FOCUS_OUT event
             {
                _focus = c;
+               if (c.getParentWindow() != getTopMost()) // in case the focus is being set to a window under the current one
+                  focusOnPopup = c;
                if (c.isEnabled()) // guich@tc152: disabled controls can't send focus events
                {
                   _controlEvent.type = ControlEvent.FOCUS_IN;
@@ -1148,11 +1163,11 @@ public class Window extends Container
          hh += titleGap;
          int xx = titleAlign, yy = (hh-titleFont.fm.height)/2;
          if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
-         if ((LEFT  -RANGE) <= titleAlign && titleAlign <= (LEFT  +RANGE)) xx +=                       - LEFT; else
+         if ((LEFT  -RANGE) <= titleAlign && titleAlign <= (LEFT  +RANGE)) {xx +=                       - LEFT; if (uiMaterial) xx += fmH; }else
          if ((RIGHT -RANGE) <= titleAlign && titleAlign <= (RIGHT +RANGE)) xx += (this.width - ww)     - RIGHT;
          int f = getForeColor();
          int b = getBackColor();
-         gg.foreColor = gg.backColor = f;
+         gg.foreColor = gg.backColor = sameBackgroundColor ? b : f;
          if (borderStyle != NO_BORDER)
          {
             int y0 = borderStyle == RECT_BORDER?0:hh;
@@ -1168,6 +1183,8 @@ public class Window extends Container
                case TAB_ONLY_BORDER:
                   gg.foreColor = f;
                   gg.drawLine(1, 0, ww + 2, 0); // Draws the tab
+                  if (borderColor != -1)
+                     gg.backColor = borderColor;
                   gg.fillRect(0, 1, ww + 4, hh);
                   gg.fillRect(0, hh, width, 2); // Draws the line
                   xx = 3;
@@ -1177,7 +1194,13 @@ public class Window extends Container
                   {
                      boolean hasTitle = tit != null && tit.length() > 0;
                      int c = Color.getCursorColor(f);
-                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,borderColor != -1 ? borderColor : f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
+                     int bordercolor = borderColor != -1 ? borderColor : f;
+                     int titlecolor  = hasTitle? headerColor != -1 ? headerColor : c : b;
+                     int footercolor = footerH > 0 ? footerColor != -1 ? footerColor : c : b;
+                     int bodycolor   = b;
+                     if (sameBackgroundColor)
+                        bordercolor = titlecolor = footercolor = bodycolor;
+                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,bordercolor,titlecolor,bodycolor,footercolor, borderGaps[ROUND_BORDER], hasTitle || footerH > 0);
                      if (!hasTitle)
                         return;
                      else
@@ -1192,6 +1215,8 @@ public class Window extends Container
                   break;
                case RECT_BORDER:
                default:
+                  if (borderColor != -1)
+                     gg.backColor = borderColor;
                   gg.fillRect(0, 0, this.width, hh + 2); // black border, white text
                   break;
             }
@@ -1205,6 +1230,8 @@ public class Window extends Container
          }
          if (borderStyle != NO_BORDER && tit != null && !tit.isEmpty())
          {
+            if (sameBackgroundColor && gg.foreColor == b)
+               gg.foreColor = foreColor;
             gg.setFont(titleFont);
             gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
             gg.setFont(font);
@@ -1493,7 +1520,7 @@ public class Window extends Container
       applyTransitionEffect();
       if (Toast.btn != null)
          try {Toast.btn.bringToFront();} catch (Exception e) {}
-      newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
+      if (repaintOnSwap) newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
       firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;

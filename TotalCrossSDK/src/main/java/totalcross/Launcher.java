@@ -20,50 +20,31 @@
 
 package totalcross;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.Insets;
-import java.awt.Panel;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.event.*;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowListener;
 import java.awt.image.DirectColorModel;
 import java.awt.image.MemoryImageSource;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.zip.ZipInputStream;
+
+import tc.tools.JarClassPathLoader;
+import tc.tools.RegisterSDK;
+import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
-import totalcross.sys.Settings;
-import totalcross.sys.SpecialKeys;
-import totalcross.sys.Time;
-import totalcross.sys.Vm;
-import totalcross.ui.Control;
-import totalcross.ui.MainWindow;
-import totalcross.ui.UIColors;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.Button;
+import totalcross.ui.Label;
+import totalcross.ui.Window;
+import totalcross.ui.event.*;
 import totalcross.ui.event.KeyEvent;
-import totalcross.ui.event.MultiTouchEvent;
-import totalcross.ui.event.PenEvent;
 import totalcross.util.Hashtable;
 import totalcross.util.IntHashtable;
 import totalcross.util.zip.TCZ;
@@ -134,6 +115,14 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       addMouseMotionListener(this);
       try {Runtime.runFinalizersOnExit(true);} catch (Throwable t) {}
       //try {System.runFinalizersOnExit(true);} catch (Throwable t) {} // guich@300_31
+    try {
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/jna-4.2.2.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/jna-platform-4.2.2.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/slf4j-api-1.7.21.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/appdirs-1.0.0.jar");
+    } catch (java.io.IOException e) {
+      e.printStackTrace();
+    }
    }
 
    public void destroy()
@@ -189,8 +178,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          }
 
          fillSettings();
-         if (isApplication && !className.equals("tc.Help"))
+         if (isApplication && !className.equals("tc.Help") && activationKey != null) {
             Class.forName("tc.tools.RegisterSDK").getConstructor(String.class).newInstance(activationKey);
+         }
 
          try
          {
@@ -220,6 +210,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             if (isApplication)
             {
                frame = new LauncherFrame();
+          if (activationKey == null) {
+            new Activate().popup();
+          }
                requestFocus();
             }
             else
@@ -417,6 +410,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.out.println("*  /uiStyle Vista   : Vista user interface style");
       System.out.println("   /uiStyle Android : Android 4 user interface style");
       System.out.println("   /uiStyle Holo    : Android 5 user interface style");
+      System.out.println("   /uiStyle Material: Material 6 user interface style");
       System.out.println("   /penlessDevice   : acts as a device that has no touchscreen.");
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
       System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
@@ -554,6 +548,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                if (next.equalsIgnoreCase("Holo")) // guich@580_33
                   toUI = Settings.Holo;
                else
+               if (next.equalsIgnoreCase("Material")) // guich@580_33
+                  toUI = Settings.Material;
+               else
                   throw new Exception();
                System.out.println("UI style is "+toUI);
             }
@@ -647,15 +644,13 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
-      if (isApplication && !className.equals("tc.Help") && (activationKey == null || activationKey.length() != 24))
+    if (activationKey == null) {
+      activationKey = RegisterSDK.getStoredActivationKey();
+    }
+      if (activationKey != null && activationKey.length() != 24)
       {
-         if (activationKey != null)
             System.err.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
-         System.err.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
-         System.err.println("If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown.");
-         System.err.println("If you're a FREE user, the key was sent to the email that you used to download the SDK.");
          System.exit(0);
-         return;
       }
    }
    
@@ -975,7 +970,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          mmsb.setLength(0);
          if (frameTitle != null)
             mmsb.append(frameTitle).append(" (");
-         mmsb.append((int)(event.getX()/toScale)).append(",").append((int)(event.getY()/toScale));
+         int xx = (int)(event.getX()/toScale);
+         int yy = (int)(event.getY()/toScale);
+         int[] pixels = (int[])totalcross.ui.gfx.Graphics.mainWindowPixels;
+         mmsb.append(xx).append(",").append(yy).append(" ").append(totalcross.sys.Convert.unsigned2hex(pixels[yy*Settings.screenWidth+xx],6));
          if (frameTitle != null)
             mmsb.append(")");
          frame.setTitle(mmsb.toString());
@@ -2131,6 +2129,53 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       }
    }
 
+  private class Activate extends Window {
+
+    public Activate() {
+      super("Activation Key required", ROUND_BORDER);
+      this.fadeOtherWindows = true;
+      this.canDrag = false;
+    }
+
+    @Override
+    public void initUI() {
+      Label lblKey = new Label("Activation Key");
+      final Edit edKey = new Edit();
+      edKey.setMaxLength(24);
+
+      add(lblKey, CENTER, CENTER - 50);
+      add(edKey, LEFT + 20, AFTER, FILL - 20, PREFERRED);
+
+      Button btOk = new Button("  OK  ");
+      add(btOk, CENTER, AFTER + 10);
+      btOk.addPressListener(
+          new PressListener() {
+
+            @Override
+            public void controlPressed(ControlEvent e) {
+              String email = edKey.getText();
+              if (email != null && email.length() > 0) {
+                try {
+                  Class.forName("tc.tools.RegisterSDK")
+                      .getConstructor(String.class, String.class)
+                      .newInstance(email, null);
+                } catch (Exception e1) {
+                  e1.printStackTrace();
+                }
+              }
+              Activate.this.unpop();
+            }
+          });
+
+      add(new Label("Register at totalcross.com"), CENTER, BOTTOM - 20);
+    }
+
+    @Override
+    protected void onPopup() {
+      setRect(CENTER, CENTER, SCREENSIZE + 90, SCREENSIZE + 60);
+    }
+  }
+   
    public void alert(String msg)
    {
       if (!started)

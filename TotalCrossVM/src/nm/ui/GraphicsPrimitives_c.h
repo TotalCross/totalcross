@@ -1693,7 +1693,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
    int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
-   int32 clipFactor = Graphics_minY(g) * Graphics_maxY(g);
+   int32 clipFactor = Graphics_minX(g) * 1000000000 + Graphics_maxX(g) * 10000000 + Graphics_minY(g) * 100000 + Graphics_maxY(g);
    bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;
 
    if (rx < 0 || ry < 0) // guich@501_13
