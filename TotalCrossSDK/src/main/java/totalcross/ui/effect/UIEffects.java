@@ -18,7 +18,9 @@ public abstract class UIEffects
    public boolean darkSideOnPress;
    public boolean enabled=true;
    public int color = -1;
-   
+   /** The alpha value to be applied during the press, range from 0 to 255 (default value). */
+   public int alphaValue = 0xFF;
+
    public static UIEffects get(Control c)
    {
       switch (defaultEffect)
