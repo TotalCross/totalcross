@@ -54,7 +54,7 @@ import totalcross.util.*;
  * for example the rowid of a table.
  * </ul>
  *
- *  Here´s an example:
+ *  HereÂ´s an example:
  * <pre>
  *     Rect r = getClientRect();
  *
@@ -1788,7 +1788,7 @@ public class Grid extends Container implements Scrollable
          ed.setVisible(true);
          ed.requestFocus();
          ed.bringToFront();
-         if (Settings.virtualKeyboard)
+         if (Settings.virtualKeyboard && Settings.enableVirtualKeyboard)
             ed.popupKCC();
       }
       else

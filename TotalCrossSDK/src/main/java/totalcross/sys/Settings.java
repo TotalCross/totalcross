@@ -903,9 +903,9 @@ public final class Settings
 
    /** An optional value for the backspace key. Android 4.4.2 has a bug that prevents the backspace from working well;
     * this bug is fixed in 4.4.3. The workaround is to define a unused key that will work as the backspace one.
-    * Defaults to the î key, used only if romVersion is 442.
+    * Defaults to the Ã® key, used only if romVersion is 442.
     */
-   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'î' : 0;
+   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'Ã®' : 0;
    
    /** Set to false to disable the scroll optimization using images. This optimization
     * greatly improves performance but uses more memory.
@@ -980,4 +980,9 @@ public final class Settings
    public static boolean abortedOnLastRun;
 
    public static IVirtualKeyboard customKeyboard;
+
+   /** Set to false to disable the virtual keyboard on all Edits and MultiEdits at once
+    * @since TotalCross 4.0
+    */
+   public static boolean enableVirtualKeyboard = true;
 }
