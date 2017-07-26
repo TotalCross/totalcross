@@ -83,7 +83,7 @@ public class Button extends Control implements TextControl
     * Important: you must set the button colors before calling setBorder.
     * Here's a sample:
     * <pre>
-      Button btn = new Button("Bárbara\nHazan", new Image("button1.png"), CENTER, 8);
+      Button btn = new Button("BÃ¡rbara\nHazan", new Image("button1.png"), CENTER, 8);
       btn.setBackColor(backColor);
       btn.borderColor3DG = 0x008800; // used to colorize the image
       btn.setFont(font.asBold());
@@ -552,7 +552,7 @@ public class Button extends Control implements TextControl
          if (translucentShape == TranslucentShape.NONE && !uiMaterial && !Settings.isOpenGL)
          {
             g.getClip(clip);
-            g.backColor = parent.backColor;
+            g.backColor = Settings.isOpenGL ? parent.backColor : g.getPixel(clip.x,clip.y);
             g.fillRect(0,0,width,height);
          }
       }
