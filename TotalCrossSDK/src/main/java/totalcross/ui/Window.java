@@ -207,6 +207,11 @@ public class Window extends Container
    /** The UIRobot instance that is being used to record or play events. */
    public static UIRobot robot;
 
+   /** During a swap, the container is repainted. If the swap is being done under the presence of a (wait) Window, the container will be drawn but the window dont.
+    * To fix this, set this flag to false. 
+    */
+   public static boolean repaintOnSwap = true;
+
    protected static int androidBorderThickness;
    
    /** Used in popup */
@@ -1527,7 +1532,7 @@ public class Window extends Container
       applyTransitionEffect();
       if (Toast.btn != null)
          try {Toast.btn.bringToFront();} catch (Exception e) {}
-      newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
+      if (repaintOnSwap) newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
       firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
