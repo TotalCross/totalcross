@@ -64,6 +64,10 @@ public class ScrollContainer extends Container implements Scrollable
    /** Returns the scrollbar for this ScrollContainer. With it, you can directly
     * set its parameters, like blockIncrement, unitIncrement and liveScrolling.
     * But be careful, don't mess with the minimum, maximum and visibleItems.
+    * 
+    * If using Android or Material user interface style, these are replaced
+    * by the ScrollPosition. If you set <code>sbV.transparentBackground=true</code> 
+    * (or for sbH), you will expand the client area to over the ScrollPosition's area.
     */
    public ScrollBar sbH,sbV;
 
@@ -361,7 +365,7 @@ public class ScrollContainer extends Container implements Scrollable
          } while (changed);
 
       if (sbH != null || sbV != null || !shrink2size)
-         bag0.setRect(r.x,r.y,r.width-(!finger && needY && sbV != null ? sbV.getPreferredWidth() : 0), r.height-(!finger && needX && sbH != null ? sbH.getPreferredHeight() : 0));
+         bag0.setRect(r.x,r.y,r.width-(!finger && needY && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth() : 0), r.height-(!finger && needX && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0));
       else
       {
          bag0.setRect(r.x,r.y,maxX,maxY);
