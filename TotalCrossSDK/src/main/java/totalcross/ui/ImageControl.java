@@ -19,6 +19,7 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.effect.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
