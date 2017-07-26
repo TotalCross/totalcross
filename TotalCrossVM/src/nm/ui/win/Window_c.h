@@ -81,7 +81,17 @@ static bool loadSip6()
 
 #endif
 
-static void windowSetSIP(int32 sipOption)
+static bool isShown;
+static bool windowGetSIP()
+{
+   return isShown;
+}
+static void windowSetSIP(int32 sipOption, bool numeric)
+{
+   isShown = sipOption != SIP_HIDE && sipOption != SIP_DISABLE_NUMERICPAD;
+   if (numeric)
+      sipOption = sipOption == SIP_HIDE ? SIP_DISABLE_NUMERICPAD : SIP_ENABLE_NUMERICPAD;
+   
 {
 #if defined(WIN32) && !defined(WINCE)
    switch (sipOption)
@@ -201,6 +211,7 @@ static void windowSetSIP(int32 sipOption)
          break;
    }
 #endif
+}
 }
 
 static void windowSetDeviceTitle(TCObject titleObj)

@@ -221,7 +221,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          instance.nativeInitSize(null,-999,h); // signal vm that the keyboard will appear
          if (rotated) // close the sip if a rotation occurs
-            setSIP(SIP_HIDE);
+            setSIP(SIP_HIDE,false);
       }
       else
       {
@@ -377,10 +377,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
-      outAttrs.inputType = InputType.TYPE_NULL;
-      if (isSamsungKeyboard()) {
+      outAttrs.inputType = !wasNumeric ? InputType.TYPE_NULL : InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED | InputType.TYPE_NUMBER_FLAG_DECIMAL;
+      if (isSamsungKeyboard())
          outAttrs.inputType |= InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
-      }
       outAttrs.actionLabel = null;
       return new MyInputConnection(this, false);
    }
@@ -416,7 +415,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (!hardwareKeyboardIsVisible && sipVisible)
          {
             if (event.getAction() == KeyEvent.ACTION_UP)
-               setSIP(SIP_HIDE);
+               setSIP(SIP_HIDE,false);
             return false;
          }
       }
@@ -426,6 +425,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             htPressedKeys.remove(String.valueOf(keyCode));
             break;
          case KeyEvent.ACTION_DOWN:
+            int flags = event.getFlags();
             htPressedKeys.put(String.valueOf(keyCode), "");
             int flags = event.getFlags();
             int state = event.getMetaState();
@@ -659,10 +659,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static final int SIP_TOP = 10001;
    public static final int SIP_BOTTOM = 10002;
    public static final int SIP_SHOW = 10003;
-   public static final int SIP_ENABLE_NUMERICPAD = 10004; // guich@tc110_55
-   public static final int SIP_DISABLE_NUMERICPAD = 10005; // guich@tc110_55   
    
-   static boolean sipVisible;
+   static boolean sipVisible,wasNumeric;
    
    class SipClosedReceiver extends ResultReceiver
    {
@@ -695,8 +693,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       msg.setData(b);
       loader.achandler.sendMessage(msg);
    }
+                               
+   public static boolean getSIP()
+   {
+      return sipVisible;
+   }                    
    
-   public static void setSIP(int sipOption)
+   public static void setSIP(int sipOption, boolean numeric)
    {
       InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
       switch (sipOption)
@@ -713,7 +716,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case SIP_SHOW:
          case SIP_TOP:
          case SIP_BOTTOM:
+            wasNumeric = numeric;
             sipVisible = true;
+            imm.restartInput(instance);
             if (Loader.adView != null)
                showAds(false);
             if (Loader.isFullScreen)
@@ -1237,7 +1242,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
       if (eventThread != null)
       {
-         setSIP(SIP_HIDE);
+         setSIP(SIP_HIDE,false);
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
       }
    }   

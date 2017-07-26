@@ -110,6 +110,10 @@ void windowSetDeviceTitle(TCObject titleObj)
 {
 }
 
+bool windowGetSIP()
+{                 
+   return false;
+}
 void windowSetSIP(enum TCSIP kb)
 {
 	//XXX
@@ -305,9 +309,17 @@ double getFontHeightCPP()
 	return Direct3DBase::getLastInstance()->csharp->getFontHeightCS();
 }
 
+static bool isShown;
+
 void privateWindowSetSIP(bool visible)
-{
+{                   
+   isShown = visible;
    Direct3DBase::getLastInstance()->csharp->privateWindowSetSIP(visible);
+}
+
+bool privateWindowGetSIP()
+{
+   return dxGetSipHeight() != 0;
 }
 
 void dxprivateScreenChange()

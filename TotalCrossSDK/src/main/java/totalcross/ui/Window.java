@@ -137,7 +137,6 @@ public class Window extends Container
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
    
-   static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus,focusOnPenUp;
    private Control focusOnPopup; // last control that had focus when popup was called.
@@ -252,10 +251,6 @@ public class Window extends Container
    public static final int SIP_BOTTOM = 10002;
    /** Used to show the virtual keyboard, without changing the position */
    public static final int SIP_SHOW = 10003;
-   /** Used to enable the numeric pad on devices that have a hard keyboard. */
-   public static final int SIP_ENABLE_NUMERICPAD = 10004; // guich@tc110_55
-   /** Used to disable the numeric pad on devices that have a hard keyboard. */
-   public static final int SIP_DISABLE_NUMERICPAD = 10005; // guich@tc110_55
 
    /** Stack of poped up windows. Dont mess with this, unless you want to crash the VM! */
    public static totalcross.util.Vector zStack = new totalcross.util.Vector(5); // guich@102
@@ -523,6 +518,7 @@ public class Window extends Container
       if (needsPaint)
          repaintActiveWindows();
    }
+   
    ////////////////////////////////////////////////////////////////////////////////////
    /**
     * Called by the VM to post key and pen events.
@@ -628,7 +624,6 @@ public class Window extends Container
          if (type == ControlEvent.SIP_CLOSED)
          {
             shiftScreen(null,0);
-            isSipShown = false;
             repaintActiveWindows();
             return;
          }
@@ -983,7 +978,7 @@ public class Window extends Container
 
          if (type == PenEvent.PEN_UP)
          {
-            if (Settings.unmovableSIP && (isScreenShifted() || isSipShown))
+            if (Settings.unmovableSIP && (isScreenShifted() || isSipShown()))
             {
                boolean keepShifted = tempFocus != null && tempFocus.willOpenKeyboard();
                if (!keepShifted && tempFocus != null)
@@ -999,12 +994,10 @@ public class Window extends Container
                   //pe.y -= lastShiftY; with this line, clicking in a control when the screen is shifted makes the pe.y to an invalid value
                   shiftScreen(null,0);
                   lastShiftY = 0;
-                  if (isSipShown)
+                  if (isSipShown())
                   {
-                     isSipShown = false;
                      setSIP(SIP_HIDE,null,false);
                      needsPaint = true;
-                     
                   }
                }
             }
@@ -1383,11 +1376,8 @@ public class Window extends Container
          if (topMost == lastTopMost) // guich@240_23: if the postEvent before pops up another Window, we must not set the focus back because the topMost var has changed
             topMost.setFocus(topMost.focusOnPopup);
          postUnpop();
-         if (topMost.focusOnPopup != null && !(topMost.focusOnPopup instanceof TextControl) && Settings.virtualKeyboard && Window.isSipShown) // if we close a window that has opened the keyboard, close it.
-         {
-            Window.isSipShown = false;
+         if (topMost.focusOnPopup != null && !(topMost.focusOnPopup instanceof TextControl) && Settings.virtualKeyboard && Window.isSipShown()) // if we close a window that has opened the keyboard, close it.
             Window.setSIP(Window.SIP_HIDE,null,false);
-         }
          popped = false;
          needsPaint = true;
          if (transitionEffect != TRANSITION_NONE)
@@ -1451,23 +1441,21 @@ public class Window extends Container
       return this == topMost || parent != null;
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /** Used to set the position of the Soft Input Panel on devices that support it, like the Windows CE.
+   /** Used to set the position of the Soft Input Panel.
     * @param sipOption One of the SIP_xxx values.
     * @param edit control (Edit or MultiEdit) (iPhone only)
-    * @param secret enable password entry (iPhone only)
+    * @param numeric enable numeric keyboard (Android only)
     * @see #SIP_HIDE
     * @see #SIP_SHOW
     * @see #SIP_TOP
     * @see #SIP_BOTTOM
-    * @see #SIP_ENABLE_NUMERICPAD
-    * @see #SIP_DISABLE_NUMERICPAD
     * @see Edit#mapKeys
     */
-   final public static void setSIP(int sipOption, Control edit, boolean secret)
+   final public static void setSIP(int sipOption, Control edit, boolean numeric)
    {
-      Launcher.instance.setSIP(sipOption, edit, secret);
+      Launcher.instance.setSIP(sipOption, edit, numeric);
    }
-   native public static void setSIP4D(int sipOption, Control edit, boolean secret);
+   native public static void setSIP4D(int sipOption, Control edit, boolean numeric);
    ////////////////////////////////////////////////////////////////////////////////////
    /** Sets the menu bar for this window */
    public void setMenuBar(Control menubar)
@@ -1935,11 +1923,8 @@ public class Window extends Container
          boolean wasPenEvent = PenEvent.PEN_DOWN <= lastType && lastType <= PenEvent.PEN_DRAG;
          if (force || !wasPenEvent)
             lastShiftY = 0;
-         if (force && isSipShown) // guich@tc126_58: always try to close the sip
-         {
-            isSipShown = false;
+         if (force && isSipShown()) // guich@tc126_58: always try to close the sip
             setSIP(SIP_HIDE,null,false);
-         }
          repaintActiveWindows();
       }
       else
@@ -1962,6 +1947,7 @@ public class Window extends Container
    
    public static boolean isSipShown()
    {
-      return isSipShown;
+      return false;
    }
+   native public static boolean isSipShown4D();
 }

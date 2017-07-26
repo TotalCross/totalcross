@@ -17,6 +17,12 @@
 #include "gfx_ex.h"
 
 bool allowMainThread();
+extern int isShown; // mainview.m
+
+bool windowGetSIP()
+{
+   return isShown;
+}
 
 void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret)
 {
