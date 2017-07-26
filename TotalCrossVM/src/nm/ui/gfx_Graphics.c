@@ -262,7 +262,7 @@ TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics nativ
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false, false);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
@@ -276,7 +276,7 @@ TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphi
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_backPixel(g), true);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_backPixel(g), true, false);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawPolygon(int []xPoints, int []yPoints, int nPoints);
