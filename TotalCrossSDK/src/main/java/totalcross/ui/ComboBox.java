@@ -668,7 +668,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       fColor = getForeColor();
       if (colorsChanged)
       {
-         if (uiAndroid)
+         if (uiAndroid && btn != null)
             btn.setImage(getArrowImage());
          else if (!uiMaterial)
          {
