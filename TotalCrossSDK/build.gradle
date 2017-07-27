@@ -17,7 +17,7 @@ configurations {
 
 jar {
     manifest {
-        attributes('Main-Class': '..........')
+        attributes('Main-Class': 'totalcross.Launcher')
     }
 }
 
