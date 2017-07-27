@@ -206,6 +206,20 @@ task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar
     libraryjars "${System.getProperty('java.home')}/lib/jce.jar"
     libraryjars "${System.getProperty('java.home')}/lib/jsse.jar"
     libraryjars files(configurations.compile.collect())
+    
+	doLast{
+      ant.signjar(
+                  jar: myProguardTask.outputs.files.singleFile,
+                  signedJar: myProguardTask.outputs.files.singleFile,
+                  alias:'tcandroidkey',
+                  storetype:"jks",
+                  keystore: new File("etc/security/tcandroidkey.keystore").getAbsolutePath(),
+                  storepass:"@ndroid\$w",
+                  keypass:"@ndroidsw",
+                  verbose:true,
+                  preservelastmodified:"true"
+      )
+    }
 }
 
 artifacts {
