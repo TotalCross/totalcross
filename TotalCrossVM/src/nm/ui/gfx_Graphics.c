@@ -775,7 +775,7 @@ TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics n
       tlx[0] = x1+t; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2+t;
       tly[0] = tly[1] = y1; tly[2] = tly[3] = y2;
    }
-   fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false);
+   fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false, false);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p) // totalcross/ui/gfx/Graphics native protected void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
