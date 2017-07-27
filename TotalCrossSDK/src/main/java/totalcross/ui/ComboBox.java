@@ -80,7 +80,8 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
     */
    public boolean enableSearch=true;
 
-   /** The caption to draw when this Edit is empty.
+   /** The caption to draw when this ComboBox is empty.
+    * In Material UI, you must set the caption BEFORE you add this control to the container; also remember to set the height to at least PREFERRED, it is 75% taller.
     * @see #captionColor 
     */
    public String caption;
