@@ -138,7 +138,7 @@ public class ControlBox extends Window
 
       int h = captionH + hb + hm + he + fmH;
       if (uiAndroid) h += fmH;
-      int w = Math.max(Math.max(Math.max(wb,wm),we),titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
+      int w = Convert.max(wb,wm,we,titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       h = Math.min(h,Settings.screenHeight);
       setRect(CENTER,yPosition,w,h);
