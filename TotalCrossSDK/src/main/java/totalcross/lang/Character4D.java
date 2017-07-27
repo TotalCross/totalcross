@@ -1,5 +1,6 @@
 package totalcross.lang;
 
+import jdkcompat.util.function.Supplier4D;
 import totalcross.sys.Convert;
 
 public class Character4D
@@ -118,22 +119,39 @@ public class Character4D
   public static final int MAX_VALUE = 65535;
   private static final int TYPE_MASK = 0x1F;
   private static final int NO_BREAK_MASK = 0x20;
+  
+  private static Supplier4D<byte[]> genTypes = new Supplier4D<byte[]>()
+  {
+     @Override
+     public byte[] get()
+     {
+        genTypes = new Supplier4D<byte[]>()
+        {
+           @Override
+           public byte[] get()
+           {
+              return types;
+           }
+        };
+        return types = totalcross.sys.Vm.getFile("totalcross/chartypes.bin");
+     }
+  };
 
-  static byte[] types = totalcross.sys.Vm.getFile("totalcross/chartypes.bin");
+  static byte[] types;
 
   public static int getType(int i)
   {
-    return types[i];
+    return genTypes.get()[i];
   }
 
   public static int getType(char i)
   {
-    return types[i];
+    return genTypes.get()[i];
   }
 
   public static boolean isDigit(char i)
   {
-    return types[i] == DECIMAL_DIGIT_NUMBER;
+    return genTypes.get()[i] == DECIMAL_DIGIT_NUMBER;
   }
 
   public static char toLowerCase(char c)
@@ -154,7 +172,7 @@ public class Character4D
   public static boolean isWhitespace(char ch)
   {
     int codePoint = ch;
-    int attr = types[codePoint];
+    int attr = genTypes.get()[codePoint];
     return ((((1 << (attr & TYPE_MASK))
         & ((1 << SPACE_SEPARATOR)
             | (1 << LINE_SEPARATOR)
@@ -175,7 +193,7 @@ public class Character4D
   public static boolean isJavaIdentifierStart(char ch)
   {
     int codePoint = ch;
-    return ((1 << types[codePoint])
+    return ((1 << genTypes.get()[codePoint])
         & ((1 << UPPERCASE_LETTER)
             | (1 << LOWERCASE_LETTER)
             | (1 << TITLECASE_LETTER)
@@ -189,7 +207,7 @@ public class Character4D
   public static boolean isJavaIdentifierPart(char ch)
   {
     int codePoint = ch;
-    int category = types[codePoint];
+    int category = genTypes.get()[codePoint];
     return ((1 << category)
         & ((1 << UPPERCASE_LETTER)
             | (1 << LOWERCASE_LETTER)
@@ -211,7 +229,7 @@ public class Character4D
     if ((codePoint >= 0 && codePoint <= 0x0008)
         || (codePoint >= 0x000E && codePoint <= 0x001B)
         || (codePoint >= 0x007F && codePoint <= 0x009F)
-        || types[codePoint] == FORMAT){
+        || genTypes.get()[codePoint] == FORMAT){
       return true;
     }
     return false;
