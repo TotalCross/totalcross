@@ -446,8 +446,8 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
          btnW = btn.getPreferredWidth();
          switch (Settings.uiStyle)
          {
-            case Settings.Holo:
-            case Settings.Android:
+            case Settings.HOLO_UI:
+            case Settings.ANDROID_UI:
                btn.setImage(getArrowImage());
                if (arrowStyle == ARROWSTYLE_PAGEFLIP)
                   btn.setRect(width - btnW - 1, height-fmH-2, btnW, fmH,null,screenChanged);
