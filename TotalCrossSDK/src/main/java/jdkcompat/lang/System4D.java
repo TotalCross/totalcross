@@ -12,7 +12,12 @@ public class System4D {
     StringBuffer acc = new StringBuffer();
 
     public VmDebugStream() {
-      super((OutputStream) null);
+      super((OutputStream) new OutputStream() {
+
+        @Override
+        public void write(int b) {
+        }
+      });
     }
 
     @Override

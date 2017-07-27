@@ -144,23 +144,9 @@ public final class Vm
    * int result = Vm.exec(&quot;scandir&quot;, &quot;/p mydir&quot;, 0, true);
    * </pre>
    *
-   * This example executes the Scribble program under PalmOS:
-   *
-   * <pre>
-   * Vm.exec(&quot;Scribble&quot;, null, 0, false);
-   * </pre>
-   *
-   * This example executes the web clipper program under PalmOS, telling it to display a web page by using launchCode
-   * 54 (CmdGoToURL).
-   *
-   * <pre>
-   * Vm.exec(&quot;Clipper&quot;, &quot;http://www.yahoo.com&quot;, 54, true);
-   * </pre>
-   *
    * The args parameter passed to this method is the arguments string to pass to the program being executed.
    * <p>
-   * The launchCode parameter is only used under PalmOS. Under PalmOS, it is the launch code value to use when the Vm
-   * calls SysUIAppSwitch(). If 0 is passed, the default launch code (CmdNormalLaunch) is used to execute the program.
+   * The launchCode parameter was only used under PalmOS. It is no longer used.
    * <p>
    * The wait parameter passed to this method determines whether to execute the command asynchronously. If false, then
    * the method will return without waiting for the command to complete execution. If true, the method will wait for
@@ -188,7 +174,7 @@ public final class Vm
    * In some platforms, the caller application must be quit by calling <code>exit</code>.
    * <p>
    * In Windows 98 and beyond, if you don't pass the full path to the file, it is searched in the current PATH
-   * environment variable. The command must contain only the exe name, and all the other arguments must bein the args
+   * environment variable. The command must contain only the exe name, and all the other arguments must being the args
    * parameter. For example, the following code uses the CMD to open a file with the proper editor:
    *
    * <pre>
@@ -207,20 +193,16 @@ public final class Vm
    * If you're using /cmd and the command fails, change /c option to /k, which will keep the open window instead
    * of closing it, so you can see the error cause.
    *<p>
-   * In BlackBerry, the command must be a module name. For instance, you can open TotalCross programs, just providing its 
-   * module (cod) name.
-   * <ul>
-   * <li> Vm.exec("net_rim_bb_browser_daemon", "http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); -- launchers a url </li>
-   * </ul>
-   * <p>
    * In Android, you can launch an application, an url at the browser, execute a shell command, or install an apk:
    * <ul>
    * <li> Vm.exec("cmd","logcat -d -f /sdcard/error.log -v time *:I",0,true); -- creates the adb report (useful to get errors - note that you must wait for the file to be created, since the wait parameter does not work - like File f = new File("/sdcard/error.log"); while (!f.exists()) Vm.sleep(500);)
-   * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
-   * <li> Vm.exec("totalcross.app.uigadgets","UIGadgets",0,false): -- launches another TotalCross' application
+   * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); -- launches a url
+   * <li> Vm.exec("url","file:///sdcard/bunny.3gp",0,true); -- launches default app to open the program associated with the 'Video/3gpp' MIME-type passing the URI 'file:///sdcard/bunny.3gp' (see https://gitlab.com/totalcross/TotalCross/issues/61 and https://gitlab.com/totalcross/TotalCross/wikis/Features/open-known-files-in-Android)
+   * <li> Vm.exec("url", "googlechrome://navigate?url=" + "file:///storage/emulated/0/BuilderLynx/pics/Page.html", 0, true); -- launches Google Chrome to open 'file:///storage/emulated/0/BuilderLynx/pics/Page.html' (see https://gitlab.com/totalcross/TotalCross/issues/57)
+   * <li> Vm.exec("totalcross.app.uigadgets","UIGadgets",0,false); -- launches another TotalCross application
    * <li> Vm.exec("com.android.calculator2","Calculator",0,true); -- runs the Calculator program 
    * <li> Vm.exec("/sdcard/myapp.apk",null,0,false); -- calls the apk installation tool. To access the card in Android devices, prefix the path with <code>/sdcard</code>. Be sure that the sdcard is NOT MOUNTED, otherwise your application will not have access to it.
-   * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
+   * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTML.  Also accepts HTML and JPG files. 
    * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store. Returns -1 if args is null, -2 if file was not found.
    * <li> Vm.exec("viewer","/sdcard/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed. Returns -1 if args is null, -2 if file was not found.
    * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
@@ -229,14 +211,14 @@ public final class Vm
    * <p>
    * In iOS, the following work as in Android. Note that since iOS does not have a sdcard, you must extract or copy the files to your application's directory (Settings.appPath).
    * <ul>
-   * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
-   * <li> Vm.exec("viewer",Settings.appPath+"/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
+   * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); -- launches a url
+   * <li> Vm.exec("viewer",Settings.appPath+"/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTML. Also accepts HTML and JPG files. 
    * <li> Vm.exec("viewer",Settings.appPath+"/handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and all file types that the <code>UIWebView</code> component can show. A PDF reader is NOT required.
    * <li> Vm.exec("viewer",Settings.appPath+"/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed.
    * </ul>
    * In Win32, you can also use the "viewer" or "url" to open files and web pages:
    * <ul>
-   * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
+   * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); -- launches a url
    * <li> Vm.exec("viewer","c:\\handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and other registered extensions.
    * </ul>
    * In Win32 you can find if a program is running by using "running process", and passing the exe's filename (case insensitive):
@@ -257,8 +239,8 @@ public final class Vm
    * However, trying to update the program itself or the vm will close the program. So, update it at last.
    * 
    * @param command the command to execute
-   * @param args command arguments. Does not work on Android.
-   * @param launchCode launch code for PalmOS applications.
+   * @param args command arguments.
+   * @param launchCode no longer used.
    * @param wait whether to wait for the command to complete execution before returning. If wait is false,
    * don't forget to call the <code>exit</code> method right after this command is called, otherwise the application may
    * not be called. In Android, if you're calling a TotalCross program, the wait parameter is ignored (and defaults to false). 
