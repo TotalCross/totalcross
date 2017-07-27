@@ -104,6 +104,7 @@ public class Edit extends Control implements TextControl, TimerListener
    public int alignment=LEFT;
 
    /** The caption to draw when this Edit is empty.
+    * In Material UI, you must set the caption BEFORE you add this control to the container; also remember to set the height to at least PREFERRED, it is 75% taller.
     * @see #captionColor 
     */
    public String caption;
