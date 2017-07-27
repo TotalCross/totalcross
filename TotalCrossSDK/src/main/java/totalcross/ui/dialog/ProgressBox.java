@@ -106,7 +106,7 @@ public class ProgressBox extends MessageBox
       if (spinner != null) // guich@tc200: two spinners was being created during popup, because MessageBox' reposition was calling onPopup
          spinner.stop();
       spinner = new Spinner();
-      spinner.setBackForeColors(uiMaterial ? foreColor : backColor, uiMaterial ? backColor : foreColor);
+      spinner.setBackForeColors(backColor, foreColor);
       boolean multiline = msg.getLineCount() > 1;
       int s = multiline ? fmH*2 : fmH;
       int y = btns == null ? CENTER : titleGap == 0 ? TOP+androidBorderThickness : TOP;

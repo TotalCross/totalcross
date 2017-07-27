@@ -364,7 +364,7 @@ public class ScrollContainer extends Container implements Scrollable
 
       boolean showScroll = !Settings.fingerTouch || !ScrollPosition.AUTO_HIDE;
       int sbVsize = needY && showScroll && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth()  : 0;
-      int sbHsize = needY && showScroll && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0;
+      int sbHsize = needX && showScroll && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0;
       if (sbH != null || sbV != null || !shrink2size)
          bag0.setRect(r.x,r.y,r.width-sbVsize, r.height-sbHsize);
       else
