@@ -15,15 +15,15 @@ package tc.tools.converter.bytecode;
 
 public class Switch extends ByteCode
 {
-   public int[] jumps;
-   public int def; // pc for the "default" instruction. if there's no default, it points to the end of the switch.
-   public int paramStackPos;
+  public int[] jumps;
+  public int def; // pc for the "default" instruction. if there's no default, it points to the end of the switch.
+  public int paramStackPos;
 
-   public Switch(int paramStackPos)
-   {
-      this.paramStackPos = paramStackPos;
-   }
-/*
+  public Switch(int paramStackPos)
+  {
+    this.paramStackPos = paramStackPos;
+  }
+  /*
    The code below does not work. This sample:
 public class AddressBook
 {
@@ -55,7 +55,7 @@ results on this:
     //    5   25:aload_0
     //    6   26:invokespecial   #5   <Method int getActiveTab()>
     //    7   29:pop
-  * //    8   30:aload_0
+   * //    8   30:aload_0
     //    9   31:invokespecial   #4   <Method void clear()>
     //   10   34:return
     }
@@ -93,4 +93,4 @@ Which proves that is impossible to find where the switch ends. (marked by *)
             m = j[i];
       return m;
    }
-*/}
+   */}

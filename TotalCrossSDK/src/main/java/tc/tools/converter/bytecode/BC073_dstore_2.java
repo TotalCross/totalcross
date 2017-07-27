@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC073_dstore_2 extends StoreLocal
 {
-   public BC073_dstore_2()
-   {
-      super(2,-2,DOUBLE);
-   }
+  public BC073_dstore_2()
+  {
+    super(2,-2,DOUBLE);
+  }
 }

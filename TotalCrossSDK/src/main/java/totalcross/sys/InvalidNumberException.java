@@ -22,14 +22,14 @@ package totalcross.sys;
 
 public class InvalidNumberException extends Exception
 {
-   /** Constructs an empty Exception. */
-   public InvalidNumberException()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public InvalidNumberException()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public InvalidNumberException(String message)
-   {
-      super(message);
-   }
+  /** Constructs an exception with the given message. */
+  public InvalidNumberException(String message)
+  {
+    super(message);
+  }
 }

@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC076_astore_1 extends StoreLocal
 {
-   public BC076_astore_1()
-   {
-      super(1,-1,OBJECT);
-   }
+  public BC076_astore_1()
+  {
+    super(1,-1,OBJECT);
+  }
 }

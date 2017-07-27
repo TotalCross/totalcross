@@ -1,5 +1,5 @@
 package jdkcompat.util.function;
 
 public interface IntPredicate4D {
-	boolean test(int value);
+  boolean test(int value);
 }

@@ -7,9 +7,9 @@ package totalcross.json.zip;
  * such as the negative result of a search.
  */
 public interface None {
-    /**
-     * Negative One.
-     */
-    public static final int none = -1;
+  /**
+   * Negative One.
+   */
+  public static final int none = -1;
 
 }

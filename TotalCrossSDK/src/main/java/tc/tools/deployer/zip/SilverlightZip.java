@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -24,55 +25,56 @@ import org.apache.commons.io.FileUtils;
  */
 public class SilverlightZip
 {
-   private ZipOutputStream zos;
-   private BlackHoleOutputStream nos = new BlackHoleOutputStream();
+  private ZipOutputStream zos;
+  private BlackHoleOutputStream nos = new BlackHoleOutputStream();
 
-   private Hashtable<String,ZipEntry> entries = new Hashtable<String,ZipEntry>();
+  private Hashtable<String,ZipEntry> entries = new Hashtable<String,ZipEntry>();
 
-   public SilverlightZip(File outputFile) throws FileNotFoundException
-   {
-      this.zos = new ZipOutputStream(new FileOutputStream(outputFile));
-   }
+  public SilverlightZip(File outputFile) throws FileNotFoundException
+  {
+    this.zos = new ZipOutputStream(new FileOutputStream(outputFile));
+  }
 
-   /**
-    * Adds a new entry on the zip file.
-    * 
-    * @param name
-    * @param content
-    * @return true if successful, false if there's already a file with the given name on the zip file.
-    * @throws IOException
-    */
-   public boolean putEntry(String name, byte[] content) throws IOException
-   {
-      if (entries.containsKey(name))
-         return false;
+  /**
+   * Adds a new entry on the zip file.
+   * 
+   * @param name
+   * @param content
+   * @return true if successful, false if there's already a file with the given name on the zip file.
+   * @throws IOException
+   */
+  public boolean putEntry(String name, byte[] content) throws IOException
+  {
+    if (entries.containsKey(name)){
+      return false;
+    }
 
-      ZipEntry entry = new ZipEntry(name);
+    ZipEntry entry = new ZipEntry(name);
 
-      final ZipOutputStream zipOut = new ZipOutputStream(nos);
-      zipOut.setMethod(ZipOutputStream.DEFLATED);
-      zipOut.setLevel(Deflater.DEFAULT_COMPRESSION);
-      zipOut.putNextEntry(entry);
-      zipOut.write(content);
-      zipOut.closeEntry();
-      zipOut.finish();
-      zipOut.close();
+    final ZipOutputStream zipOut = new ZipOutputStream(nos);
+    zipOut.setMethod(ZipOutputStream.DEFLATED);
+    zipOut.setLevel(Deflater.DEFAULT_COMPRESSION);
+    zipOut.putNextEntry(entry);
+    zipOut.write(content);
+    zipOut.closeEntry();
+    zipOut.finish();
+    zipOut.close();
 
-      zos.putNextEntry(entry);
-      zos.write(content);
-      zos.closeEntry();
+    zos.putNextEntry(entry);
+    zos.write(content);
+    zos.closeEntry();
 
-      entries.put(name, entry);
-      return true;
-   }
+    entries.put(name, entry);
+    return true;
+  }
 
-   public boolean putEntry(String name, File file) throws IOException
-   {
-      return putEntry(name, FileUtils.readFileToByteArray(file));
-   }
+  public boolean putEntry(String name, File file) throws IOException
+  {
+    return putEntry(name, FileUtils.readFileToByteArray(file));
+  }
 
-   public void close() throws IOException
-   {
-      zos.close();
-   }
+  public void close() throws IOException
+  {
+    zos.close();
+  }
 }

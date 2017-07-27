@@ -22,9 +22,9 @@ package totalcross.net;
 
 public class UnknownHostException extends totalcross.io.IOException
 {
-   /** Constructs an exception with the given message. */
-   public UnknownHostException(String msg)
-   {
-      super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public UnknownHostException(String msg)
+  {
+    super(msg);
+  }
 }

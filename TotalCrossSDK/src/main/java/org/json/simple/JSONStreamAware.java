@@ -21,10 +21,10 @@ import java.io.Writer;
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
  */
 public interface JSONStreamAware {
-	/**
-	 * write JSON string to out.
-	 * @param out description omitted.
-	 * @throws IOException description omitted.
-	 */
-	void writeJSONString(Writer out) throws IOException;
+  /**
+   * write JSON string to out.
+   * @param out description omitted.
+   * @throws IOException description omitted.
+   */
+  void writeJSONString(Writer out) throws IOException;
 }

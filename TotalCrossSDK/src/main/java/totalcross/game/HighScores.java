@@ -18,8 +18,11 @@
 
 package totalcross.game;
 
-import totalcross.io.*;
-import totalcross.ui.dialog.*;
+import totalcross.io.DataStream;
+import totalcross.io.IOException;
+import totalcross.io.PDBFile;
+import totalcross.io.ResizeRecord;
+import totalcross.ui.dialog.MessageBox;
 
 /**
  * The game highscores management class. <br>
@@ -97,161 +100,172 @@ import totalcross.ui.dialog.*;
 
 public class HighScores extends PDBFile
 {
-   private final static String dbName_suffix = "_HSC.";
-   private final static String dbType        = ".DATA";
+  private final static String dbName_suffix = "_HSC.";
+  private final static String dbType        = ".DATA";
 
-   HighScoreEntry              entries[];
-   private boolean             dirty;
-   private int                 validEntries;           // number of valid highscore entries
+  HighScoreEntry              entries[];
+  private boolean             dirty;
+  private int                 validEntries;           // number of valid highscore entries
 
-   /**
-    * This class must be instantiated using the
-    * GameEngineMainWindow.getHighScores
-    *
-    * @throws totalcross.io.IOException
-    */
-   protected HighScores(GameEngine engine) throws totalcross.io.IOException
-   {
-      super(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType, PDBFile.CREATE);
+  /**
+   * This class must be instantiated using the
+   * GameEngineMainWindow.getHighScores
+   *
+   * @throws totalcross.io.IOException
+   */
+  protected HighScores(GameEngine engine) throws totalcross.io.IOException
+  {
+    super(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType, PDBFile.CREATE);
 
-      entries = new HighScoreEntry[engine.gameHighscoresSize];
-      for (int i = 0; i < entries.length; i++)
-         entries[i] = new HighScoreEntry(this);
-      dirty = false;
+    entries = new HighScoreEntry[engine.gameHighscoresSize];
+    for (int i = 0; i < entries.length; i++) {
+      entries[i] = new HighScoreEntry(this);
+    }
+    dirty = false;
 
-      if (getRecordCount() < 1)
-         return;
-      try
-      {
-         setRecordPos(0);
-         DataStream ds = new DataStream(this);
-   
-         /* int version= */ds.readInt();
-         /*
-          * this test is not needed until a database format change occurs... if
-          * (version>GameEngine.GAME_ENGINE_VERSION) throw new
-          * GameEngineException("HS:game API "+GameEngine.GAME_ENGINE_VERSION+" out
-          * of date error");
-          */
-   
-         validEntries = ds.readInt();
-         for (int i = 0; i < entries.length; i++)
-            if (i < validEntries)
-            {
-               entries[i].name = ds.readString();
-               entries[i].score = ds.readInt();
-            }
+    if (getRecordCount() < 1){
+      return;
+    }
+    try
+    {
+      setRecordPos(0);
+      DataStream ds = new DataStream(this);
+
+      /* int version= */ds.readInt();
+      /*
+       * this test is not needed until a database format change occurs... if
+       * (version>GameEngine.GAME_ENGINE_VERSION) throw new
+       * GameEngineException("HS:game API "+GameEngine.GAME_ENGINE_VERSION+" out
+       * of date error");
+       */
+
+      validEntries = ds.readInt();
+      for (int i = 0; i < entries.length; i++) {
+        if (i < validEntries)
+        {
+          entries[i].name = ds.readString();
+          entries[i].score = ds.readInt();
+        }
       }
-      catch (IOException e)
-      {
-         MessageBox.showException(e,false);
+    }
+    catch (IOException e)
+    {
+      MessageBox.showException(e,false);
+    }
+  }
+
+  /**
+   * Amount of highscore entries.
+   *
+   * @return the number of entries in the highscore table.
+   */
+  public final int size()
+  {
+    return entries.length;
+  }
+
+  /**
+   * Retrieve the highscore entries.
+   *
+   * @return an array to the highscore entries.
+   */
+  public final HighScoreEntry[] getEntries()
+  {
+    return entries;
+  }
+
+  /**
+   * add a new score to the highscore table.
+   *
+   * @param score
+   *           to add.
+   * @param name
+   *           of the performer, may be null.
+   * @see HighScoreEntry
+   * @return added entry or null
+   */
+  public HighScoreEntry add(int score, String name)
+  {
+    int insert;
+
+    // lookup the position to insert the score
+    for (insert = 0; insert < entries.length; insert++) {
+      if (entries[insert].name == null || score > entries[insert].score) {
+        break;
       }
-   }
+    }
 
-   /**
-    * Amount of highscore entries.
-    *
-    * @return the number of entries in the highscore table.
-    */
-   public final int size()
-   {
-      return entries.length;
-   }
+    if (insert >= entries.length)
+    {
+      return null; // didn't found a lower score to replace
+    }
 
-   /**
-    * Retrieve the highscore entries.
-    *
-    * @return an array to the highscore entries.
-    */
-   public final HighScoreEntry[] getEntries()
-   {
-      return entries;
-   }
+    // reuse the last highscore entry, sorry but you are ejected
+    HighScoreEntry free = entries[entries.length - 1];
 
-   /**
-    * add a new score to the highscore table.
-    *
-    * @param score
-    *           to add.
-    * @param name
-    *           of the performer, may be null.
-    * @see HighScoreEntry
-    * @return added entry or null
-    */
-   public HighScoreEntry add(int score, String name)
-   {
-      int insert;
+    // create a free entry by moving back the least scores
+    for (int m = entries.length - 2; m >= insert; m--) {
+      entries[m + 1] = entries[m];
+    }
 
-      // lookup the position to insert the score
-      for (insert = 0; insert < entries.length; insert++)
-         if (entries[insert].name == null || score > entries[insert].score)
-            break;
+    // store the new score
+    free.name = name;
+    free.score = score;
+    entries[insert] = free;
+    if (validEntries < entries.length){
+      validEntries++;
+    }
 
-      if (insert >= entries.length)
-         return null; // didn't found a lower score to replace
+    dirty = true;
+    return entries[insert];
+  }
 
-      // reuse the last highscore entry, sorry but you are ejected
-      HighScoreEntry free = entries[entries.length - 1];
+  /**
+   * Stores the highscores database.
+   *
+   * @return false if no changes to save or an error occurs
+   */
+  public boolean save()
+  {
+    if (!dirty){
+      return false;
+    }
 
-      // create a free entry by moving back the least scores
-      for (int m = entries.length - 2; m >= insert; m--)
-         entries[m + 1] = entries[m];
+    // use this nice object to resize the highscore record
+    ResizeRecord rs = new ResizeRecord(this, 100);
+    try
+    {
+      rs.restartRecord(0);
 
-      // store the new score
-      free.name = name;
-      free.score = score;
-      entries[insert] = free;
-      if (validEntries < entries.length)
-         validEntries++;
-
-      dirty = true;
-      return entries[insert];
-   }
-
-   /**
-    * Stores the highscores database.
-    *
-    * @return false if no changes to save or an error occurs
-    */
-   public boolean save()
-   {
-      if (!dirty)
-         return false;
-
-      // use this nice object to resize the highscore record
-      ResizeRecord rs = new ResizeRecord(this, 100);
-      try
+      DataStream ds = new DataStream(rs);
+      ds.writeInt(GameEngine.GAME_ENGINE_VERSION);
+      ds.writeInt(validEntries);
+      for (int i = 0; i < validEntries; i++)
       {
-         rs.restartRecord(0);
-
-         DataStream ds = new DataStream(rs);
-         ds.writeInt(GameEngine.GAME_ENGINE_VERSION);
-         ds.writeInt(validEntries);
-         for (int i = 0; i < validEntries; i++)
-         {
-            ds.writeString(entries[i].name);
-            ds.writeInt(entries[i].score);
-         }
-
-         rs.endRecord();
+        ds.writeString(entries[i].name);
+        ds.writeInt(entries[i].score);
       }
-      catch (totalcross.io.IOException e)
-      {
-         throw new GameEngineException(e.getMessage());
-      }
-      dirty = false;
 
-      return true;
-   }
+      rs.endRecord();
+    }
+    catch (totalcross.io.IOException e)
+    {
+      throw new GameEngineException(e.getMessage());
+    }
+    dirty = false;
 
-   /**
-    * closes the highscores database.
-    *
-    * @throws totalcross.io.IOException
-    */
-   public void close() throws totalcross.io.IOException
-   {
-      save();
-      super.close();
-   }
+    return true;
+  }
+
+  /**
+   * closes the highscores database.
+   *
+   * @throws totalcross.io.IOException
+   */
+  @Override
+  public void close() throws totalcross.io.IOException
+  {
+    save();
+    super.close();
+  }
 }

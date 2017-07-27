@@ -18,8 +18,8 @@
 
 package totalcross.ui.media;
 
-import totalcross.io.*;
-import totalcross.ui.dialog.*;
+import totalcross.io.IOException;
+import totalcross.ui.dialog.FileChooserBox;
 
 /**
  * This class is used to enable the camera of the underlying device. The following platforms are supported:
@@ -58,121 +58,121 @@ import totalcross.ui.dialog.*;
 
 public class Camera
 {
-   /** The initial directory. */
-   public String initialDir;
-   /** The default file name. */
-   public String defaultFileName;
-   /** The title to display in the window. */
-   public String title;
-   
-   /**
-    * The still quality.
-    * 
-    * @see #CAMERACAPTURE_STILLQUALITY_DEFAULT
-    * @see #CAMERACAPTURE_STILLQUALITY_LOW
-    * @see #CAMERACAPTURE_STILLQUALITY_NORMAL
-    * @see #CAMERACAPTURE_STILLQUALITY_HIGH
-    */
-   public int stillQuality;
-   /**
-    * Video type; defaults to ALL.
-    * 
-    * @see #CAMERACAPTURE_VIDEOTYPE_ALL
-    * @see #CAMERACAPTURE_VIDEOTYPE_STANDARD
-    * @see #CAMERACAPTURE_VIDEOTYPE_MESSAGING
-    */
-   public int videoType = CAMERACAPTURE_VIDEOTYPE_ALL;
-   /** The width for the resolution */
-   public int resolutionWidth;
-   /** The height for the resolution */
-   public int resolutionHeight;
-   /** Maximum time limit for recording a video. */
-   public int videoTimeLimit;
-   /**
-    * Capture mode; defaults to STILL.
-    * 
-    * @see #CAMERACAPTURE_MODE_STILL
-    * @see #CAMERACAPTURE_MODE_VIDEOONLY
-    * @see #CAMERACAPTURE_MODE_VIDEOWITHAUDIO
-    */
-   public int captureMode = CAMERACAPTURE_MODE_STILL;
-   
-   /**
-    * This field is false by default so that the default camera orientation is still landscape. 
-	 * If this is set to true, the camera orientation will follow the device orientation.
-	 * Used on Android only.
-	 */
-   public boolean allowRotation;
+  /** The initial directory. */
+  public String initialDir;
+  /** The default file name. */
+  public String defaultFileName;
+  /** The title to display in the window. */
+  public String title;
 
-   /** The camera type; defaults to CAMERA_CUSTOM. */
-   public int cameraType;
+  /**
+   * The still quality.
+   * 
+   * @see #CAMERACAPTURE_STILLQUALITY_DEFAULT
+   * @see #CAMERACAPTURE_STILLQUALITY_LOW
+   * @see #CAMERACAPTURE_STILLQUALITY_NORMAL
+   * @see #CAMERACAPTURE_STILLQUALITY_HIGH
+   */
+  public int stillQuality;
+  /**
+   * Video type; defaults to ALL.
+   * 
+   * @see #CAMERACAPTURE_VIDEOTYPE_ALL
+   * @see #CAMERACAPTURE_VIDEOTYPE_STANDARD
+   * @see #CAMERACAPTURE_VIDEOTYPE_MESSAGING
+   */
+  public int videoType = CAMERACAPTURE_VIDEOTYPE_ALL;
+  /** The width for the resolution */
+  public int resolutionWidth;
+  /** The height for the resolution */
+  public int resolutionHeight;
+  /** Maximum time limit for recording a video. */
+  public int videoTimeLimit;
+  /**
+   * Capture mode; defaults to STILL.
+   * 
+   * @see #CAMERACAPTURE_MODE_STILL
+   * @see #CAMERACAPTURE_MODE_VIDEOONLY
+   * @see #CAMERACAPTURE_MODE_VIDEOWITHAUDIO
+   */
+  public int captureMode = CAMERACAPTURE_MODE_STILL;
 
-   /** The original camera used in TotalCross */
-   public static final int CAMERA_CUSTOM = 0;
-   /** The native camera application; a copy of the image is returned. */      
-   public static final int CAMERA_NATIVE = 1;
-   /** The native camera application; the original image is deleted and a copy of it is returned. */
-   public static final int CAMERA_NATIVE_NOCOPY = 2;
-   /** Take the picture from the gallery. */
-   public static final int CAMERA_FROM_GALLERY = 3;
+  /**
+   * This field is false by default so that the default camera orientation is still landscape. 
+   * If this is set to true, the camera orientation will follow the device orientation.
+   * Used on Android only.
+   */
+  public boolean allowRotation;
 
-   /** Used in the cameraMode member. */
-   public static final int CAMERACAPTURE_MODE_STILL = 0;
-   /** Used in the cameraMode member. */
-   public static final int CAMERACAPTURE_MODE_VIDEOONLY = 1;
-   /** Used in the cameraMode member. */
-   public static final int CAMERACAPTURE_MODE_VIDEOWITHAUDIO = 2;
+  /** The camera type; defaults to CAMERA_CUSTOM. */
+  public int cameraType;
 
-   /** Used in the videoType member. */
-   public static final int CAMERACAPTURE_STILLQUALITY_DEFAULT = 0;
-   /** Used in the videoType member. */
-   public static final int CAMERACAPTURE_STILLQUALITY_LOW = 1;
-   /** Used in the videoType member. */
-   public static final int CAMERACAPTURE_STILLQUALITY_NORMAL = 2;
-   /** Used in the videoType member. */
-   public static final int CAMERACAPTURE_STILLQUALITY_HIGH = 3;
+  /** The original camera used in TotalCross */
+  public static final int CAMERA_CUSTOM = 0;
+  /** The native camera application; a copy of the image is returned. */      
+  public static final int CAMERA_NATIVE = 1;
+  /** The native camera application; the original image is deleted and a copy of it is returned. */
+  public static final int CAMERA_NATIVE_NOCOPY = 2;
+  /** Take the picture from the gallery. */
+  public static final int CAMERA_FROM_GALLERY = 3;
 
-   /** Used in the captureMode member. */
-   public static final int CAMERACAPTURE_VIDEOTYPE_ALL = 0xFFFF;
-   /** Used in the captureMode member. */
-   public static final int CAMERACAPTURE_VIDEOTYPE_STANDARD = 1;
-   /** Used in the captureMode member. */
-   public static final int CAMERACAPTURE_VIDEOTYPE_MESSAGING = 2;
+  /** Used in the cameraMode member. */
+  public static final int CAMERACAPTURE_MODE_STILL = 0;
+  /** Used in the cameraMode member. */
+  public static final int CAMERACAPTURE_MODE_VIDEOONLY = 1;
+  /** Used in the cameraMode member. */
+  public static final int CAMERACAPTURE_MODE_VIDEOWITHAUDIO = 2;
 
-   /** The default title when used in desktop */
-   public static String fcbTitle = "Select a photo";
-   
-   public Camera()
-   {
-   }
+  /** Used in the videoType member. */
+  public static final int CAMERACAPTURE_STILLQUALITY_DEFAULT = 0;
+  /** Used in the videoType member. */
+  public static final int CAMERACAPTURE_STILLQUALITY_LOW = 1;
+  /** Used in the videoType member. */
+  public static final int CAMERACAPTURE_STILLQUALITY_NORMAL = 2;
+  /** Used in the videoType member. */
+  public static final int CAMERACAPTURE_STILLQUALITY_HIGH = 3;
 
-   /**
-    * Takes a photo based on the members set.
-    * 
-    * @return The String with the file name where the image is located or null if the user canceled.
-    * @throws IOException
-    *            if any other error occurs.
-    */
-   public String click() throws IOException
-   {
-      FileChooserBox fcb = new FileChooserBox(fcbTitle,FileChooserBox.defaultButtonCaptions,null);
-      fcb.showPreview = fcb.newestFirst = true;
-      fcb.popup();
-      return fcb.getAnswer();
-   }
+  /** Used in the captureMode member. */
+  public static final int CAMERACAPTURE_VIDEOTYPE_ALL = 0xFFFF;
+  /** Used in the captureMode member. */
+  public static final int CAMERACAPTURE_VIDEOTYPE_STANDARD = 1;
+  /** Used in the captureMode member. */
+  public static final int CAMERACAPTURE_VIDEOTYPE_MESSAGING = 2;
 
-   /** Returns the resolutions that are supported by the device. Works for Windows CE, Blackberry and Android.
-    * 
-    * When the information is not available, a default list is returned and the first element is set to "Default values:".
-    * 
-    * If you take a photo and an image with a different resolution is returned, its because the selected resolution is not supported by the device.
-    * 
-    * Values are always in LANDSCAPE.
-    * 
-    * @since TotalCross 1.3
-    */
-   public static String[] getSupportedResolutions()
-   {
-      return new String[]{"320x240","640x480","1024x768","2048x1536"};
-   }
+  /** The default title when used in desktop */
+  public static String fcbTitle = "Select a photo";
+
+  public Camera()
+  {
+  }
+
+  /**
+   * Takes a photo based on the members set.
+   * 
+   * @return The String with the file name where the image is located or null if the user canceled.
+   * @throws IOException
+   *            if any other error occurs.
+   */
+  public String click() throws IOException
+  {
+    FileChooserBox fcb = new FileChooserBox(fcbTitle,FileChooserBox.defaultButtonCaptions,null);
+    fcb.showPreview = fcb.newestFirst = true;
+    fcb.popup();
+    return fcb.getAnswer();
+  }
+
+  /** Returns the resolutions that are supported by the device. Works for Windows CE, Blackberry and Android.
+   * 
+   * When the information is not available, a default list is returned and the first element is set to "Default values:".
+   * 
+   * If you take a photo and an image with a different resolution is returned, its because the selected resolution is not supported by the device.
+   * 
+   * Values are always in LANDSCAPE.
+   * 
+   * @since TotalCross 1.3
+   */
+  public static String[] getSupportedResolutions()
+  {
+    return new String[]{"320x240","640x480","1024x768","2048x1536"};
+  }
 }

@@ -18,25 +18,28 @@ import totalcross.io.IOException;
 
 public class Generic implements AttributeInfo
 {
-   public byte[] bytes;
+  public byte[] bytes;
 
-   public Generic(int length)
-   {
-      bytes = new byte[length];
-   }
+  public Generic(int length)
+  {
+    bytes = new byte[length];
+  }
 
-   public int length()
-   {
-      return bytes.length;
-   }
+  @Override
+  public int length()
+  {
+    return bytes.length;
+  }
 
-   public void load(DataStream ds) throws IOException
-   {
-      ds.readBytes(bytes);
-   }
+  @Override
+  public void load(DataStream ds) throws IOException
+  {
+    ds.readBytes(bytes);
+  }
 
-   public void save(DataStream ds) throws IOException
-   {
-      ds.writeBytes(bytes);
-   }
+  @Override
+  public void save(DataStream ds) throws IOException
+  {
+    ds.writeBytes(bytes);
+  }
 }

@@ -83,219 +83,227 @@ public class TestHandler
 
 package tc.samples.api.xml;
 
-import tc.samples.api.*;
-
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.xml.soap.*;
+import tc.samples.api.BaseContainer;
+import totalcross.ui.Button;
+import totalcross.ui.ComboBox;
+import totalcross.ui.Edit;
+import totalcross.ui.Label;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.gfx.Color;
+import totalcross.xml.soap.SOAP;
+import totalcross.xml.soap.SOAPException;
 
 public class SoapSample extends BaseContainer
 {
-   ComboBox cbTest;
-   Button btOk;
-   Edit edRemote;
+  ComboBox cbTest;
+  Button btOk;
+  Edit edRemote;
 
-   int selectedServer;
+  int selectedServer;
 
-   private String[] tests = 
-   {
-      "All tests",
-      "parameters",
-      "sum int",
-      "sum double",
-      "boolean return",
-      "sum int array",
-      "sum double array",
-      "return string array",
-//      "return int array",     - does not work
-//      "return double array"   - in our server
-   };
+  private String[] tests = 
+    {
+        "All tests",
+        "parameters",
+        "sum int",
+        "sum double",
+        "boolean return",
+        "sum int array",
+        "sum double array",
+        "return string array",
+        //      "return int array",     - does not work
+        //      "return double array"   - in our server
+    };
 
-   public void initUI()
-   {
-      super.initUI();
-      add(new Label("URI:"), LEFT+2, TOP+4);
-      add(edRemote = new Edit(""), AFTER+2,SAME-2);
-      edRemote.setText("http://www.superwaba.net/SoapSampleWS/services/TestHandler");
-      
-      add(new Label("Select test: "), LEFT+2, AFTER+2);
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    add(new Label("URI:"), LEFT+2, TOP+4);
+    add(edRemote = new Edit(""), AFTER+2,SAME-2);
+    edRemote.setText("http://www.superwaba.net/SoapSampleWS/services/TestHandler");
 
-      add(cbTest = new ComboBox(tests),AFTER, SAME);
+    add(new Label("Select test: "), LEFT+2, AFTER+2);
 
-      add(btOk = new Button(" GO! "));
-      btOk.setBackColor(Color.ORANGE);
-      btOk.setRect(AFTER+fmH,SAME, FILL, PREFERRED);
+    add(cbTest = new ComboBox(tests),AFTER, SAME);
 
-      addLog(LEFT,AFTER+2,FILL,FILL,null);
-   }
+    add(btOk = new Button(" GO! "));
+    btOk.setBackColor(Color.ORANGE);
+    btOk.setRect(AFTER+fmH,SAME, FILL, PREFERRED);
 
-   public void executeTest(int test)
-   {
-      if (test == -1)
-      {
-         for (int i=0; i < tests.length-1; i++)
-            executeTest(i);
-      }
-      else
-      {
-         log("Executing test #"+test+": "+tests[test+1]);
-         switch (test)
-         {
-            case 0: testParameters(); break;        // String testParameters(String testString, int testInt, double testDouble, boolean testBoolean)
-            case 1: testSomaInt(); break;           // int somaInt(int x, int y)
-            case 2: testSomaDouble(); break;        // double somaDouble(double x, double y)
-            case 3: testReturnBoolean(); break;     // boolean returnBoolean(boolean b)
-            case 4: testSumIntArray(); break;       // int sumIntArray(int[] array, String name)
-            case 5: testSumDoubleArray(); break;    // double sumDoubleArray(double[] array, String name)
-            case 6: testReturnStringArray(); break; // string[] returnStringArray(string[] s)
-            //case 7: testReturnIntArray(); break;    // int[] returnIntArray()
-            //case 8: testReturnDoubleArray(); break; // double[] returnDoubleArray()
-         }
-      }
-   }
+    addLog(LEFT,AFTER+2,FILL,FILL,null);
+  }
 
-   public void onEvent(Event e)
-   {
-      switch (e.type)
-      {
-         case ControlEvent.PRESSED:
-            if (e.target == btOk && cbTest.getSelectedIndex() >= 0)
-            {
-               lblog.removeAll();
-               executeTest(cbTest.getSelectedIndex()-1);
-            }
-            break;
+  public void executeTest(int test)
+  {
+    if (test == -1)
+    {
+      for (int i=0; i < tests.length-1; i++) {
+        executeTest(i);
       }
-   }
+    }
+    else
+    {
+      log("Executing test #"+test+": "+tests[test+1]);
+      switch (test)
+      {
+      case 0: testParameters(); break;        // String testParameters(String testString, int testInt, double testDouble, boolean testBoolean)
+      case 1: testSomaInt(); break;           // int somaInt(int x, int y)
+      case 2: testSomaDouble(); break;        // double somaDouble(double x, double y)
+      case 3: testReturnBoolean(); break;     // boolean returnBoolean(boolean b)
+      case 4: testSumIntArray(); break;       // int sumIntArray(int[] array, String name)
+      case 5: testSumDoubleArray(); break;    // double sumDoubleArray(double[] array, String name)
+      case 6: testReturnStringArray(); break; // string[] returnStringArray(string[] s)
+      //case 7: testReturnIntArray(); break;    // int[] returnIntArray()
+      //case 8: testReturnDoubleArray(); break; // double[] returnDoubleArray()
+      }
+    }
+  }
 
-   private void testParameters()
-   {
-      try
+  @Override
+  public void onEvent(Event e)
+  {
+    switch (e.type)
+    {
+    case ControlEvent.PRESSED:
+      if (e.target == btOk && cbTest.getSelectedIndex() >= 0)
       {
-         SOAP s = createSoap("testParameters");
-         s.setParam(totalcross.ui.html.EscapeHtml.escape("hoje eh"),"testString");
-         s.setParam(26,"testInt");
-         s.setParam(7.4,"testDouble");
-         s.setParam(true,"testBoolean");
-         s.execute();
-         log("Answer: " + s.getAnswer());
+        lblog.removeAll();
+        executeTest(cbTest.getSelectedIndex()-1);
       }
-      catch (SOAPException /*XmlRpcException*/ e)
-      {
-         log("*** Error! "+e.getMessage());
-         e.printStackTrace();
-      }
-   }
+      break;
+    }
+  }
 
-   private void testSomaInt()  //int somaInt(int x, int y)
-   {
-      try
-      {
-         SOAP s = createSoap("somaInt");
-         s.setParam(2,"x");
-         s.setParam(3,"y");
-         s.execute();
-         log("Answer: " + s.getAnswer());
-      }
-      catch (SOAPException /*XmlRpcException*/ e)
-      {
-         log("*** Error! "+e.getMessage());
-         e.printStackTrace();
-      }
-   }
+  private void testParameters()
+  {
+    try
+    {
+      SOAP s = createSoap("testParameters");
+      s.setParam(totalcross.ui.html.EscapeHtml.escape("hoje eh"),"testString");
+      s.setParam(26,"testInt");
+      s.setParam(7.4,"testDouble");
+      s.setParam(true,"testBoolean");
+      s.execute();
+      log("Answer: " + s.getAnswer());
+    }
+    catch (SOAPException /*XmlRpcException*/ e)
+    {
+      log("*** Error! "+e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-   private void testSomaDouble()  //double somaDouble(double x, double y)
-   {
-      try
-      {
-         SOAP s = createSoap("somaDouble");
-         s.setParam(3.3,"x");
-         s.setParam(6.2,"y");
-         s.execute();
-         log("Answer: " + s.getAnswer());
-      }
-      catch (SOAPException /*XmlRpcException*/ e)
-      {
-         log("*** Error! "+e.getMessage());
-         e.printStackTrace();
-      }
-   }
+  private void testSomaInt()  //int somaInt(int x, int y)
+  {
+    try
+    {
+      SOAP s = createSoap("somaInt");
+      s.setParam(2,"x");
+      s.setParam(3,"y");
+      s.execute();
+      log("Answer: " + s.getAnswer());
+    }
+    catch (SOAPException /*XmlRpcException*/ e)
+    {
+      log("*** Error! "+e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-   private void testReturnBoolean()  //boolean returnBoolean(boolean b)
-   {
-      try
-      {
-         SOAP s = createSoap("returnBoolean");
-         s.setParam(true,"b");
-         s.execute();
-         log("Answer: " + s.getAnswer());
-      }
-      catch (SOAPException /*XmlRpcException*/ e)
-      {
-         log("*** Error! "+e.getMessage());
-         e.printStackTrace();
-      }
-   }
+  private void testSomaDouble()  //double somaDouble(double x, double y)
+  {
+    try
+    {
+      SOAP s = createSoap("somaDouble");
+      s.setParam(3.3,"x");
+      s.setParam(6.2,"y");
+      s.execute();
+      log("Answer: " + s.getAnswer());
+    }
+    catch (SOAPException /*XmlRpcException*/ e)
+    {
+      log("*** Error! "+e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-   private void testSumIntArray()  //int sumIntArray(int[] array, String name)
-   {
-      try
-      {
-         SOAP s = createSoap("sumIntArray");
-         int[] array = {1,2,3,4,5};
-         s.setParam(array, "array");
-         s.setParam("teste","nome","string");
-         s.execute();
-         log("Answer: " + s.getAnswer());
-      }
-      catch (SOAPException /*XmlRpcException*/ e)
-      {
-         log("*** Error! "+e.getMessage());
-         e.printStackTrace();
-      }
-   }
+  private void testReturnBoolean()  //boolean returnBoolean(boolean b)
+  {
+    try
+    {
+      SOAP s = createSoap("returnBoolean");
+      s.setParam(true,"b");
+      s.execute();
+      log("Answer: " + s.getAnswer());
+    }
+    catch (SOAPException /*XmlRpcException*/ e)
+    {
+      log("*** Error! "+e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-   private void testSumDoubleArray()  //double sumDoubleArray(double[] array, String name)
-   {
-      try
-      {
-         SOAP s = createSoap("sumDoubleArray");
-         double[] array = {1.1, 2.2, 3.3, 4.4, 5.5};
-         s.setParam(array, "array");
-         s.setParam("teste","nome","string");
-         s.execute();
-         log("Answer: " + s.getAnswer());
-      }
-      catch (SOAPException /*XmlRpcException*/ e)
-      {
-         log("*** Error! "+e.getMessage());
-         e.printStackTrace();
-      }
-   }
+  private void testSumIntArray()  //int sumIntArray(int[] array, String name)
+  {
+    try
+    {
+      SOAP s = createSoap("sumIntArray");
+      int[] array = {1,2,3,4,5};
+      s.setParam(array, "array");
+      s.setParam("teste","nome","string");
+      s.execute();
+      log("Answer: " + s.getAnswer());
+    }
+    catch (SOAPException /*XmlRpcException*/ e)
+    {
+      log("*** Error! "+e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-   private void testReturnStringArray() //string[] returnStringArray(string[] s)
-   {
-      try
-      {
-         SOAP s = createSoap("returnStringArray");
-         String[] sArray = {"teste1","teste2","teste3"};
-         s.setParam(sArray,"s");
-         s.execute();
-         log("Answer: ");
-         sArray = (String[])s.getAnswer();
-         int len = sArray.length;
-         for (int i=0; i<len; i++)
-            log(sArray[i]);
-      }
-      catch (SOAPException /*XmlRpcException*/ e)
-      {
-         log("*** Error! "+e.getMessage());
-         e.printStackTrace();
-      }
-   }
+  private void testSumDoubleArray()  //double sumDoubleArray(double[] array, String name)
+  {
+    try
+    {
+      SOAP s = createSoap("sumDoubleArray");
+      double[] array = {1.1, 2.2, 3.3, 4.4, 5.5};
+      s.setParam(array, "array");
+      s.setParam("teste","nome","string");
+      s.execute();
+      log("Answer: " + s.getAnswer());
+    }
+    catch (SOAPException /*XmlRpcException*/ e)
+    {
+      log("*** Error! "+e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-/* does not work in our server
+  private void testReturnStringArray() //string[] returnStringArray(string[] s)
+  {
+    try
+    {
+      SOAP s = createSoap("returnStringArray");
+      String[] sArray = {"teste1","teste2","teste3"};
+      s.setParam(sArray,"s");
+      s.execute();
+      log("Answer: ");
+      sArray = (String[])s.getAnswer();
+      int len = sArray.length;
+      for (int i=0; i<len; i++) {
+        log(sArray[i]);
+      }
+    }
+    catch (SOAPException /*XmlRpcException*/ e)
+    {
+      log("*** Error! "+e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  /* does not work in our server
    private void testReturnIntArray() //int[] returnIntArray()
    {
       try
@@ -334,9 +342,9 @@ public class SoapSample extends BaseContainer
       }
    }*/
 
-   private SOAP createSoap(String method)
-   {
-      SOAP s = new SOAP(method, edRemote.getText()); //"http://localhost:8080/axis/TestHandler.jws"
-      return s;
-   }
+  private SOAP createSoap(String method)
+  {
+    SOAP s = new SOAP(method, edRemote.getText()); //"http://localhost:8080/axis/TestHandler.jws"
+    return s;
+  }
 }

@@ -39,7 +39,13 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A set which guarantees its iteration order. The elements in the set

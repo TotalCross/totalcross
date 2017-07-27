@@ -20,6 +20,6 @@ package totalcross.phone;
 
 public class SMS4D
 {
-   native public static void send(String destination, String message) throws totalcross.io.IOException;
-   native public static String[] receive() throws totalcross.io.IOException;
+  native public static void send(String destination, String message) throws totalcross.io.IOException;
+  native public static String[] receive() throws totalcross.io.IOException;
 }

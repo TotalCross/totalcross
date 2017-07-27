@@ -19,43 +19,45 @@ import totalcross.util.Vector;
 
 public class Instanceof extends SingleInstruction
 {
-   public int sym;
-   public int regO;
-   public int regI;
+  public int sym;
+  public int regO;
+  public int regI;
 
-   public Instanceof(int op, int line, int s, int ro, int ri)
-   {
-      super(op, line);
-      sym  = s;
-      regO = ro;
-      regI = ri;
-   }
+  public Instanceof(int op, int line, int s, int ro, int ri)
+  {
+    super(op, line);
+    sym  = s;
+    regO = ro;
+    regI = ri;
+  }
 
-   public Instanceof(int op, int line)
-   {
-      super(op, line);
-   }
+  public Instanceof(int op, int line)
+  {
+    super(op, line);
+  }
 
-   public void set(int s, int ro, int ri)
-   {
-      sym  = s;
-      regO = ro;
-      regI = ri;
-   }
+  public void set(int s, int ro, int ri)
+  {
+    sym  = s;
+    regO = ro;
+    regI = ri;
+  }
 
-   public String toString()
-   {
-      String print;
-      print = TCConstants.bcTClassNames[opcode] + " " + sym + ", " + regO + ", " + regI;
-      return print;
-   }
+  @Override
+  public String toString()
+  {
+    String print;
+    print = TCConstants.bcTClassNames[opcode] + " " + sym + ", " + regO + ", " + regI;
+    return print;
+  }
 
-   public void toTCCode(Vector vcode)
-   {
-      TCCode tc = new TCCode(opcode, line);
-      tc.instanceof__regI(regI);
-      tc.instanceof__regO(regO);
-      tc.instanceof__sym(sym);
-      vcode.addElement(tc);
-   }
+  @Override
+  public void toTCCode(Vector vcode)
+  {
+    TCCode tc = new TCCode(opcode, line);
+    tc.instanceof__regI(regI);
+    tc.instanceof__regO(regO);
+    tc.instanceof__sym(sym);
+    vcode.addElement(tc);
+  }
 }

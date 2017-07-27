@@ -33,31 +33,33 @@ import totalcross.io.Stream;
 
 public class ZLibStream extends CompressedStream
 {
-   /**
-    * Creates a ZLibStream object that may be used to read compressed data from the given stream, or to write compressed
-    * data to the given stream.<br>
-    * 
-    * @param stream
-    *           input stream.
-    * @param mode
-    *           its value must be either DEFLATE or INFLATE.
-    * 
-    * @since TotalCross 1.10
-    */
-   public ZLibStream(Stream stream, int mode)
-   {
-      super(stream, mode);
-   }
+  /**
+   * Creates a ZLibStream object that may be used to read compressed data from the given stream, or to write compressed
+   * data to the given stream.<br>
+   * 
+   * @param stream
+   *           input stream.
+   * @param mode
+   *           its value must be either DEFLATE or INFLATE.
+   * 
+   * @since TotalCross 1.10
+   */
+  public ZLibStream(Stream stream, int mode)
+  {
+    super(stream, mode);
+  }
 
-   protected Object createDeflate(Stream stream)
-   {
-      Launcher.S2OS os = new Launcher.S2OS(stream, false);
-      return new DeflaterOutputStream(os);
-   }
+  @Override
+  protected Object createDeflate(Stream stream)
+  {
+    Launcher.S2OS os = new Launcher.S2OS(stream, false);
+    return new DeflaterOutputStream(os);
+  }
 
-   protected Object createInflate(Stream stream)
-   {
-      Launcher.S2IS is = new Launcher.S2IS(stream, -1, false);
-      return new InflaterInputStream(is);
-   }
+  @Override
+  protected Object createInflate(Stream stream)
+  {
+    Launcher.S2IS is = new Launcher.S2IS(stream, -1, false);
+    return new InflaterInputStream(is);
+  }
 }

@@ -22,7 +22,7 @@ package totalcross.ui.event;
 
 public interface EnabledStateChangeListener
 {
-   /** The state has changed.
-    */
-   public void enabledStateChange(EnabledStateChangeEvent e);
+  /** The state has changed.
+   */
+  public void enabledStateChange(EnabledStateChangeEvent e);
 }

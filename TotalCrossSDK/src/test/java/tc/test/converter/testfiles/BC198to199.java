@@ -15,18 +15,22 @@ package tc.test.converter.testfiles;
 
 public class BC198to199
 {
-   public BC198to199()
-   {
-      Object o1 = new Object(), o2;
+  public BC198to199()
+  {
+    Object o1 = new Object(), o2;
 
-      if (o1 == null)
-      {
-         o1 = null;
-      }
+    if (o1 == null)
+    {
+      o1 = null;
+    }
 
-      if (o1 != null)
-         o2 = null;
+    if (o1 != null){
+      o2 = null;
+    }
 
-      if (false) o1 = o2; // remove warnings
-   }
+    if (false)
+    {
+      o1 = o2; // remove warnings
+    }
+  }
 }

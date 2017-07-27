@@ -6,6 +6,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
+
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.x509.X509Store;
@@ -18,66 +19,67 @@ import org.bouncycastle.x509.X509Store;
  */
 public abstract class AppleBinary
 {
-   enum Type
-   {
-      MH_MAGIC(0xFEEDFACEL),
-      MH_CIGAM(0xCEFAEDFEL),
-      MH_MAGIC_64(0xFEEDFACFL),
-      MH_CIGAM_64(0xCFFAEDFEL),
-      FAT_MAGIC(0xCAFEBABEL),
-      FAT_CIGAM(0xBEBAFECAL);
+  enum Type
+  {
+    MH_MAGIC(0xFEEDFACEL),
+    MH_CIGAM(0xCEFAEDFEL),
+    MH_MAGIC_64(0xFEEDFACFL),
+    MH_CIGAM_64(0xCFFAEDFEL),
+    FAT_MAGIC(0xCAFEBABEL),
+    FAT_CIGAM(0xBEBAFECAL);
 
-      private final long magic;
+    private final long magic;
 
-      Type(long magic)
+    Type(long magic)
+    {
+      this.magic = magic;
+    }
+
+    public static Type valueOf(long magic)
+    {
+      for (Type type : Type.values())
       {
-         this.magic = magic;
+        if (type.magic == magic) {
+          return type;
+        }
       }
+      throw new RuntimeException();
+    }
+  }
 
-      public static Type valueOf(long magic)
+  protected Type type;
+  protected byte[] data;
+
+  public static AppleBinary create(byte[] data) throws IOException, InstantiationException, IllegalAccessException
+  {
+    ElephantMemoryReader reader = new ElephantMemoryReader(data);
+
+    try
+    {
+      switch (Type.valueOf(reader.readUnsignedInt()))
       {
-         for (Type type : Type.values())
-         {
-            if (type.magic == magic)
-               return type;
-         }
-         throw new RuntimeException();
+      case MH_CIGAM:
+        return new MachObjectFile(data);
+      case MH_CIGAM_64:
+        return new MachObjectFile64(data);
+      case FAT_MAGIC:
+        return new FatBinary(data);
+      default:
+        throw new RuntimeException();
       }
-   }
+    }
+    finally
+    {
+      reader.close();
+    }
+  }
 
-   protected Type type;
-   protected byte[] data;
+  protected AppleBinary(byte[] data)
+  {
+    this.data = data;
+  }
 
-   public static AppleBinary create(byte[] data) throws IOException, InstantiationException, IllegalAccessException
-   {
-      ElephantMemoryReader reader = new ElephantMemoryReader(data);
-
-      try
-      {
-         switch (Type.valueOf(reader.readUnsignedInt()))
-         {
-            case MH_CIGAM:
-               return new MachObjectFile(data);
-            case MH_CIGAM_64:
-               return new MachObjectFile64(data);
-            case FAT_MAGIC:
-               return new FatBinary(data);
-            default:
-               throw new RuntimeException();
-         }
-      }
-      finally
-      {
-         reader.close();
-      }
-   }
-
-   protected AppleBinary(byte[] data)
-   {
-      this.data = data;
-   }
-
-   abstract public byte[] resign(KeyStore ks, X509Store certStore, String bundleIdentifier, byte[] entitlementsBytes,
-         byte[] info, byte[] sourceData) throws IOException, CMSException, UnrecoverableKeyException,
-         CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException;
+  abstract public byte[] resign(KeyStore ks, X509Store certStore, String bundleIdentifier, byte[] entitlementsBytes,
+      byte[] info, byte[] sourceData) throws IOException, CMSException, UnrecoverableKeyException,
+  CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException;
 }

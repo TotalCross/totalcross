@@ -170,7 +170,7 @@ target: compile
   <mkdir dir="${output}/devicesrc" />
   <copy todir="${output}/devicesrc" overwrite="true" preservelastmodified="true">
      <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/zxing/**,totalcross/android/**,**/*4A.*,**/*4B*" />
-     <fileset dir="${src}" includes="ras/CompilationDate4B.java" />
+     <fileset dir="${src}" includes="ras/CompilationDate4D.java" />
   </copy>
   <replaceregexp file="${output}/devicesrc/tc/Deploy.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 
@@ -203,6 +203,9 @@ target: compile
      	<pathelement location="${etc}/libs/jna-4.2.2.jar"/>
      	<pathelement location="${etc}/libs/jna-platform-4.2.2.jar"/>
      	<pathelement location="${etc}/libs/slf4j-api-1.7.21.jar"/>
+     	<pathelement location="${etc}/libs/totalcross-annotations-1.0.0.jar"/>
+     	<pathelement location="${etc}/libs/asm-5.2.jar"/>
+     	<pathelement location="${etc}/libs/asm-tree-5.2.jar"/>
      </classpath>
   </javac>
 
@@ -268,6 +271,9 @@ target: compile
      	<pathelement location="${etc}/libs/jna-4.2.2.jar"/>
      	<pathelement location="${etc}/libs/jna-platform-4.2.2.jar"/>
      	<pathelement location="${etc}/libs/slf4j-api-1.7.21.jar"/>
+    	<pathelement location="${etc}/libs/totalcross-annotations-1.0.0.jar"/>
+    	<pathelement location="${etc}/libs/asm-5.2.jar"/>
+    	<pathelement location="${etc}/libs/asm-tree-5.2.jar"/>
     </classpath>  	
   </javac>
 
@@ -529,7 +535,7 @@ target: device
   <mkdir dir="${dist}" />
   
   <!-- all but ui classes -->
-  <copy file="${src}/totalcross/chartypes.bin" todir="${output}/classes/totalcross"/>
+  <copy file="${src}/../resources/totalcross/chartypes.bin" todir="${output}/classes/totalcross"/>
   <jar destfile="${output}/tcsdk2_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
     includes="totalcross/firebase/**/*.class,totalcross/telephony/*.class,totalcross/io/sync/*.class,totalcross/money/*.class,totalcross/util/*.class,totalcross/util/pdf/*.class,totalcross/util/regex/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/barcode/**/*.class,totalcross/json/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/unit/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/json/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class,org/json/simple/*.class,org/json/simple/parser/*.class,jdkcompat/**/*.class,jdkcompatx/**/*.class"
@@ -539,6 +545,7 @@ target: device
 
    <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
        <keep name="*"><field access="public protected" /></keep>
+   	<keepattributes name="*Annotation*"/>
        <keepclassmembers>
          <method name="*" />
          <field access="!public !protected !private" />
@@ -555,6 +562,9 @@ target: device
     <classpath>
         <pathelement location="${output}/classes"/>
         <pathelement location="${sdk.root}"/>
+    	<pathelement location="${etc}/libs/totalcross-annotations-1.0.0.jar"/>
+    	<pathelement location="${etc}/libs/asm-5.2.jar"/>
+    	<pathelement location="${etc}/libs/asm-tree-5.2.jar"/>
     </classpath>
     <arg value="${output}/tcsdk2.jar"/>
     <arg line="/n TCBase"/>
@@ -578,6 +588,7 @@ target: device
 
    <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
        <keep name="*"><field access="public protected" /></keep>
+	<keepattributes name="*Annotation*"/>
        <keepclassmembers>
          <method name="*" />
          <field access="!public !protected !private" />
@@ -594,6 +605,7 @@ target: device
     <classpath>
         <pathelement location="${output}/classes"/>
         <pathelement location="${sdk.root}"/>
+    	<pathelement location="${etc}/libs/totalcross-annotations-1.0.0.jar"/>
     </classpath>
     <arg value="${output}/tcsdk2.jar"/>
     <arg line="/n TCUI"/>

@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC051_baload extends LoadArray
 {
-   public BC051_baload()
-   {
-      super(-1,-1,0,-1,BYTE);
-   }
+  public BC051_baload()
+  {
+    super(-1,-1,0,-1,BYTE);
+  }
 }

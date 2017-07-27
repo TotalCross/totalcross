@@ -38,7 +38,15 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This class provides a HashMap-backed implementation of the Set interface.
@@ -74,7 +82,7 @@ import java.util.*;
  * @status updated to 1.4
  */
 public class HashSet4D<T> extends AbstractSet<T>
-  implements Set<T>, Cloneable
+implements Set<T>, Cloneable
 {
   /**
    * The HashMap which backs this Set.
@@ -138,6 +146,7 @@ public class HashSet4D<T> extends AbstractSet<T>
    * @param o the Object to add to this Set
    * @return true if the set did not already contain o
    */
+  @Override
   public boolean add(T o)
   {
     return map.put(o, "") == null;
@@ -146,28 +155,30 @@ public class HashSet4D<T> extends AbstractSet<T>
   /**
    * Empties this Set of all elements; this takes constant time.
    */
+  @Override
   public void clear()
   {
     map.clear();
   }
-  
+
   /**
    * Returns a shallow copy of this Set. The Set itself is cloned; its
    * elements are not.
    *
    * @return a shallow clone of the set
    */
+  @Override
   public Object clone()
   {
     HashSet4D<T> copy = null;
     try
-      {
-        copy = (HashSet4D<T>) super.clone();
-      }
+    {
+      copy = (HashSet4D<T>) super.clone();
+    }
     catch (CloneNotSupportedException x)
-      {
-        // Impossible to get here.
-      }
+    {
+      // Impossible to get here.
+    }
     copy.map = (HashMap4D<T, String>) map.clone();
     return copy;
   }
@@ -178,6 +189,7 @@ public class HashSet4D<T> extends AbstractSet<T>
    * @param o the Object to look for
    * @return true if it is in the set
    */
+  @Override
   public boolean contains(Object o)
   {
     return map.containsKey(o);
@@ -188,6 +200,7 @@ public class HashSet4D<T> extends AbstractSet<T>
    *
    * @return <code>size() == 0</code>.
    */
+  @Override
   public boolean isEmpty()
   {
     return map.size == 0;
@@ -202,10 +215,11 @@ public class HashSet4D<T> extends AbstractSet<T>
    * @return a set iterator
    * @see ConcurrentModificationException
    */
+  @Override
   public Iterator<T> iterator()
   {
     // Avoid creating intermediate keySet() object by using non-public API.
-    return map.iterator(HashMap4D.KEYS);
+    return map.iterator(AbstractMap4D.KEYS);
   }
 
   /**
@@ -214,6 +228,7 @@ public class HashSet4D<T> extends AbstractSet<T>
    * @param o the object to remove
    * @return true if an element was removed
    */
+  @Override
   public boolean remove(Object o)
   {
     return (map.remove(o) != null);
@@ -224,6 +239,7 @@ public class HashSet4D<T> extends AbstractSet<T>
    *
    * @return the size of the set
    */
+  @Override
   public int size()
   {
     return map.size;

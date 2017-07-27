@@ -19,7 +19,7 @@
 
 package totalcross.ui.event;
 
-import totalcross.ui.*;
+import totalcross.ui.Control;
 
 /**
  * MultiTouchEvent works on devices that support more than one finger at a time.
@@ -33,36 +33,37 @@ import totalcross.ui.*;
 
 public class MultiTouchEvent extends Event
 {
-   /** The event type for a pen or mouse down. */
-   public static final int SCALE = 250;
-   
-   protected static final String[] EVENT_NAME = {"SCALE"};
+  /** The event type for a pen or mouse down. */
+  public static final int SCALE = 250;
 
-   /** The current scale value. */
-   public double scale;
+  protected static final String[] EVENT_NAME = {"SCALE"};
 
-   /** Updates this event setting also the timestamp, consumed and target.
-    * @since TotalCross 1.0
-    */
-   public MultiTouchEvent update(Control c, double scale)
-   {
-      this.type = SCALE;
-      timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.
-      consumed = false;
-      target = c;
-      this.scale = scale;
-      return this;
-   }
-   
-   /** Returns the event name. Used to debugging. */
-   public static String getEventName(int type)
-   {
-      return SCALE <= type && type <= SCALE ? EVENT_NAME[type-250] : "Not a MultiTouchEvent";
-   }
-   
-   public String toString()
-   {
-      return EVENT_NAME[type-250]+" scale: "+scale+" "+super.toString();
-   }
+  /** The current scale value. */
+  public double scale;
+
+  /** Updates this event setting also the timestamp, consumed and target.
+   * @since TotalCross 1.0
+   */
+  public MultiTouchEvent update(Control c, double scale)
+  {
+    this.type = SCALE;
+    timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.
+    consumed = false;
+    target = c;
+    this.scale = scale;
+    return this;
+  }
+
+  /** Returns the event name. Used to debugging. */
+  public static String getEventName(int type)
+  {
+    return SCALE <= type && type <= SCALE ? EVENT_NAME[type-250] : "Not a MultiTouchEvent";
+  }
+
+  @Override
+  public String toString()
+  {
+    return EVENT_NAME[type-250]+" scale: "+scale+" "+super.toString();
+  }
 }
 

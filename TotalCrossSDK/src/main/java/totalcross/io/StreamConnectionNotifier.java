@@ -23,12 +23,12 @@ package totalcross.io;
  */
 public abstract class StreamConnectionNotifier extends Connection
 {
-   /**
-    * Returns a Stream that represents a server side connection.
-    * 
-    * @return A stream to communicate with a client.
-    * @throws IOException
-    *            If an I/O error occurs.
-    */
-   abstract public Stream accept() throws IOException;
+  /**
+   * Returns a Stream that represents a server side connection.
+   * 
+   * @return A stream to communicate with a client.
+   * @throws IOException
+   *            If an I/O error occurs.
+   */
+  abstract public Stream accept() throws IOException;
 }

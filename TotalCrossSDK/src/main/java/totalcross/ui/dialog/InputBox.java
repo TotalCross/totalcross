@@ -18,11 +18,19 @@
 
 package totalcross.ui.dialog;
 
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
+import totalcross.sys.Convert;
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
+import totalcross.ui.Edit;
+import totalcross.ui.Label;
+import totalcross.ui.PushButtonGroup;
+import totalcross.ui.UIColors;
+import totalcross.ui.Window;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.KeyEvent;
+import totalcross.ui.font.FontMetrics;
+import totalcross.ui.gfx.Color;
 
 /** This class pops up a Window with a Label, an Edit and some buttons. Good
     to input some text from the user.
@@ -122,15 +130,19 @@ public class InputBox extends Window
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       this.originalText = text;
       ed = new Edit("@@@@@@@@@@");
-      if (defaultValue != null) ed.setText(defaultValue);
+    if (defaultValue != null){
+      ed.setText(defaultValue);
+    }
    }
 
+  @Override
    protected void onPopup()
    {
       removeAll();
       String text = originalText;
-      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth-6) // guich@tc100: automatically split the text if its too big to fit screen
+    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth-6){
          text = Convert.insertLineBreak(Settings.screenWidth-6, fm, text.replace('\n',' '));
+    }
       msg = new Label(text,labelAlign);
       msg.setFont(font);
       ed.setFont(font);
@@ -145,12 +157,15 @@ public class InputBox extends Window
       }
       
       int androidGap = uiAndroid ? fmH/3 : 0;
-      if (androidGap > 0 && (androidGap&1) == 1) androidGap++;
+    if (androidGap > 0 && (androidGap&1) == 1){
+      androidGap++;
+    }
       int hb = btns.getPreferredHeight() + androidGap;
       int wm = Math.min(msg.getPreferredWidth()+(uiAndroid?fmH:1),Settings.screenWidth-6);
       int hm = msg.getPreferredHeight();
-      if (uiAndroid)
+    if (uiAndroid){
          hb += fmH/2;
+    }
       int we = ed.getPreferredWidth();
       int he = ed.getPreferredHeight();
       FontMetrics fm2 = titleFont.fm; // guich@220_28
@@ -165,13 +180,17 @@ public class InputBox extends Window
       add(ed);
       msg.setRect(4,TOP,wm,hm);
       ed.setRect(LEFT+4,AFTER+2,FILL-4,he);
-      if (uiAndroid)
+    if (uiAndroid){
          btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,AFTER+3,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-3);
-      else
+    }else {
          btns.setRect(CENTER,AFTER+2,wb,hb);
+    }
       setBackForeColors(UIColors.inputboxBack, UIColors.inputboxFore);
       msg.setBackForeColors(backColor, foreColor); // guich@tc115_9: moved to here
-      if (btns != null) btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
+    if (btns != null)
+    {
+      btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
+    }
    }
    
    /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */
@@ -180,29 +199,39 @@ public class InputBox extends Window
       labelAlign = align;
    }
 
+  @Override
    public void reposition()
    {
       onPopup();
    }
 
+  @Override
    protected void postPopup()
    {
       ed.requestFocus();
-      if (openKeyboardOnPopup)
+    if (openKeyboardOnPopup){
          ed.popupKCC();
-      if (Settings.keyboardFocusTraversable) // guich@570_39: use this instead of pen less
+    }
+    if (Settings.keyboardFocusTraversable)
+    {
          isHighlighting = false; // allow a direct click to dismiss this dialog
    }
+  }
 
+  @Override
    protected void postUnpop()
    {
-      if (Settings.keyboardFocusTraversable) // guich@573_1: put back the highlighting state
+    if (Settings.keyboardFocusTraversable){
          isHighlighting = true;
+    }
       if (selected != -1)
+    {
          postPressedEvent(); // guich@580_27
    }
+  }
 
    /** handle scroll buttons and normal buttons */
+  @Override
    public void onEvent(Event e)
    {
       switch (e.type)
@@ -212,7 +241,7 @@ public class InputBox extends Window
             if (buttonKeys != null)
             {
                int k = ((KeyEvent)e).key;
-               for (int i = buttonKeys.length; --i >= 0;)
+        for (int i = buttonKeys.length; --i >= 0;) {
                   if (buttonKeys[i] == k)
                   {
                      btns.setSelectedIndex(i);
@@ -220,10 +249,12 @@ public class InputBox extends Window
                      break;
                   }
             }
+      }
             break;
          case ControlEvent.PRESSED:
-            if (e.target == btns && btns.getSelectedIndex() != -1)
+      if (e.target == btns && btns.getSelectedIndex() != -1) {
                close();
+      }
             break;
       }
    }

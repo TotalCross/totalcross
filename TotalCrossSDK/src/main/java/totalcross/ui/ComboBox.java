@@ -19,14 +19,24 @@
 
 package totalcross.ui;
 
-import totalcross.res.*;
-import totalcross.sys.*;
-import totalcross.ui.effect.*;
-import totalcross.ui.event.*;
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.util.*;
+import totalcross.res.Resources;
+import totalcross.sys.Settings;
+import totalcross.ui.effect.MaterialEffect;
+import totalcross.ui.effect.UIEffects;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.KeyEvent;
+import totalcross.ui.event.PenEvent;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.TimerListener;
+import totalcross.ui.font.Font;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.gfx.Rect;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
+import totalcross.util.IntHashtable;
+import totalcross.util.Vector;
 
 /**
  * ComboBox is an implementation of a ComboBox, with the drop down window implemented by the ComboBoxDropDown class.
@@ -179,6 +189,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    }
 
    /** Does nothing */
+  @Override
    public void add(Control control)
    {
    }
@@ -189,6 +200,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    }
 
    /** Does nothing */
+  @Override
    public void remove(Control control)
    {
    }
@@ -235,6 +247,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    }
 
    /** Empties the ListBox */
+  @Override
    public void removeAll() // guich@210_13
    {
       pop.lb.removeAll();
@@ -323,8 +336,9 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedItem(name);
       animateMaterial(isDisplayed());
-      if (sendPress && pop.lb.selectedIndex != idx)
+    if (sendPress && pop.lb.selectedIndex != idx){
          postPressedEvent();
+    }
       Window.needsPaint = true;
    }
 
@@ -345,8 +359,9 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    {
       int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedIndex(i);
-      if (sendPressEvent && pop.lb.selectedIndex != idx)
+    if (sendPressEvent && pop.lb.selectedIndex != idx){
          postPressedEvent();
+    }
       animateMaterial(isDisplayed());
       Window.needsPaint = true;
    }
@@ -357,6 +372,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       return pop.lb.itemCount;
    }
 
+  @Override
    public int getPreferredWidth()
    {
       return Math.max(fm.stringWidth(caption == null ? "" : caption), pop.getPreferredWidth()) + 1 + insets.left+insets.right + (uiMaterial ? fmH*3/2 : Settings.fingerTouch ? btn.getPreferredWidth()+4 : 0);
@@ -379,32 +395,38 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       return img;
    }
    
+  @Override
    public int getPreferredHeight()
    {
       int ret = (pop.lb.itemCount > 0 && !isSupportedListBox() ? pop.lb.getItemHeight(0) : fmH) + Edit.prefH + insets.top+insets.bottom;;
-      if (uiMaterial && caption != null)
+    if (uiMaterial && caption != null){
          ret += fmHmin;
+    }
       return ret;
    }
 
    private int getTextY()
    {
       boolean isString = pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String;
-      if (isString && caption == null) 
+    if (isString && caption == null){
          return (height-fmH)/2;
+    }
       int ret = getPreferredHeight();
-      if (uiMaterial && caption != null)
+    if (uiMaterial && caption != null){
          ret = height-ret+fmHmin;
-      else
+    }else {
          ret = (height-ret)/2;
+    }
       return ret;
    }
 
    /** Passes the font to the pop list */
+  @Override
    protected void onFontChanged() // guich@200b4_153
    {
-      if (pop != null)
+    if (pop != null){
          pop.setFont(font);
+    }
       
       if (!uiAndroid) // guich@tc100b3: resize the arrow based on the font.
       {
@@ -437,11 +459,12 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       pop.lb.ihtBackColors = ihtBack;
    }
 
+  @Override
    protected void onBoundsChanged(boolean screenChanged)
    {
-      if (uiMaterial)
+    if (uiMaterial){
          btnW = getArrowWidth();
-      else
+    }else
       {
          btnW = btn.getPreferredWidth();
          switch (Settings.uiStyle)
@@ -449,18 +472,20 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
             case Settings.HOLO_UI:
             case Settings.ANDROID_UI:
                btn.setImage(getArrowImage());
-               if (arrowStyle == ARROWSTYLE_PAGEFLIP)
+        if (arrowStyle == ARROWSTYLE_PAGEFLIP) {
                   btn.setRect(width - btnW - 1, height-fmH-2, btnW, fmH,null,screenChanged);
-               else
+        } else {
                   btn.setRect(width - btnW - 3, 2, btnW, height,null,screenChanged);
+        }
                break;
             default: // guich@573_6: both Flat and Vista use this
                btn.setRect(width - btnW - 3, 1, btnW + 2, height - 2, null, screenChanged);
                break;
          }
       }
-      if (screenChanged && pop.isVisible()) // guich@tc100b4_29: reposition the pop too if its visible
+    if (screenChanged && pop.isVisible()){
          updatePopRect();
+    }
       npback = nparmed = null;
       // material
       int idx = getSelectedIndex();
@@ -468,13 +493,15 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       ycap0 = ycap = idx == -1 ? getTextY() : 0;
    }
 
+  @Override
    public void onEvent(Event event)
    {
       PenEvent pe;
       boolean inside;
-      if (opened && event.type != ControlEvent.WINDOW_CLOSED)
+    if (opened && event.type != ControlEvent.WINDOW_CLOSED){
          return;
-      if (isEnabled())
+    }
+    if (isEnabled()){
       switch (event.type)
       {
          case PenEvent.PEN_DRAG:
@@ -483,22 +510,24 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
             if (event.target == this && inside != armed && pop.lb.itemCount > 0)
             {
                armed = inside;
-               if (uiAndroid)
+          if (uiAndroid) {
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
-               else
-               if (!uiMaterial)
+          } else
+            if (!uiMaterial) {
                   btn.press(armed);
             }
+        }
             break;
          case PenEvent.PEN_DOWN:
             if (event.target == this && !armed && pop.lb.itemCount > 0)
             {
                wasOpen = false;
-               if (uiAndroid)
+          if (uiAndroid) {
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
-               else
-               if (!uiMaterial)
+          } else
+            if (!uiMaterial) {
                   btn.press(true);
+            }
                armed = true;
             }
             break;
@@ -519,20 +548,22 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
                }
                else
                {
-                  if (uiAndroid)
+              if (uiAndroid) {
                      Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
-                  else
-                  if (!uiMaterial)
+              } else
+                if (!uiMaterial) {
                      btn.press(false);
+                }
                   armed = false;
                   inside = isInsideOrNear(pe.x, pe.y); //  is a method of class Control that uses absolute coords
                   if (inside && (!Settings.fingerTouch || !hadParentScrolled()))
                   {
-                     if (!uiMaterial)
+                if (!uiMaterial) {
                         open();
                   }
                }
             }
+        }
             break;
          case ControlEvent.WINDOW_CLOSED:
             if (event.target == pop) // an item was selected?
@@ -542,8 +573,9 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
                boolean isMulti = pop.lb instanceof MultiListBox;
                if (pop.lb.selectedIndex >= 0 && ((!isMulti && (!Settings.sendPressEventOnChange || pop.lb.selectedIndex != selOnPopup)) || (isMulti && ((MultiListBox)pop.lb).changed)))
                {
-                  if (uiMaterial && caption != null)
+            if (uiMaterial && caption != null) {
                      animateMaterial(isDisplayed());
+            }
                   postPressedEvent();
                }
                selOnPopup = -2;
@@ -558,22 +590,27 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
             }
             break;
          case ControlEvent.FOCUS_IN:
-            if (event.target == btn) // guich@240_11: change the target focus so parents can catch the focus_in and focus_out event
+        if (event.target == btn) {
                event.target = this;
+        }
             break;
          case ControlEvent.FOCUS_OUT:
-            if (event.target == btn) // guich@240_11: change the target focus so parents can catch the focus_in and focus_out event
+        if (event.target == btn) {
                event.target = this;
-            if (uiMaterial && caption != null)
+        }
+        if (uiMaterial && caption != null) {
                animateMaterial(true);
+        }
             break;
          case KeyEvent.ACTION_KEY_PRESS:
-            if (!uiMaterial)
+        if (!uiMaterial) {
                btn.simulatePress();
+        }
             popup();
             break;
       }
    }
+  }
 
    private void open()
    {
@@ -606,9 +643,9 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
       if (uiAndroid && _usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
       {
-         if (pop.lb.itemCount == 0)
+      if (pop.lb.itemCount == 0) {
             opened = false;
-         else
+      } else {
             try
             {
                PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "("+pop.lb.size()+")",pop.lb.getItemsArray(), isMultiListBox);
@@ -617,29 +654,36 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
                pm.itemCount = pop.lb.size();
                pm.dataCol = pop.lb.dataCol;
                pm.checkColor = checkColor;
-               if (!uiMaterial) pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
+          if (!uiMaterial) {
+            pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
+          }
                pm.setCursorColor(pop.lb.back1);
                pm.setSelectedIndex(pop.lb.selectedIndex);
                pm.setFont(this.font);
-               if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
+          if (pm.itemCount > 100) {
+            Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000;
+          } 
                pm.popup();
                Event.clearQueue(PenEvent.PEN_UP); // prevent problem when user selects an item that is at the top of this ComboBox
                Flick.defaultLongestFlick = 2500;
                opened = false;
                int sel = pm.getSelectedIndex();
-               if (sel != -1)
+          if (sel != -1) {
                   setSelectedIndex(sel);
             }
+        }
             catch (Exception e)
             {
                e.printStackTrace();
             }
       }
+    }
       else
       {
          updatePopRect();
-         if (pop.lb.hideScrollBarIfNotNeeded()) // guich@tc115_77
+      if (pop.lb.hideScrollBarIfNotNeeded()) {
             updatePopRect();
+      }
          // guich@320_17
          if (!isMultiListBox)
          {
@@ -658,10 +702,12 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
     */
    public void unpop() // guich@tc120_64
    {
-      if (pop.isVisible())
+    if (pop.isVisible()){
          pop.unpop();
    }
+  }
 
+  @Override
    protected void onColorsChanged(boolean colorsChanged)
    {
       npback = nparmed = null;
@@ -669,19 +715,22 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       fColor = getForeColor();
       if (colorsChanged)
       {
-         if (uiAndroid && btn != null)
+      if (uiAndroid && btn != null) {
             btn.setImage(getArrowImage());
-         else if (!uiMaterial)
+      } else if (!uiMaterial)
          {
             btn.setBackForeColors(uiVista ? Color.darker(bColor,32) : uiFlat ? bColor : backColor, foreColor);
             ((ArrowButton)btn).arrowColor = fColor;
          }
          pop.lb.setBackForeColors(backColor, foreColor);
       }
-      if (!uiAndroid) Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
+    if (!uiAndroid){
+      Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
+  }
 
    /** paint the combo's border and the current selected item */
+  @Override
    public void onPaint(Graphics g)
    {
       boolean enabled = isEnabled();
@@ -689,27 +738,29 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       {
          if (!transparentBackground) // guich@tc115_18
          {
-            if (!uiAndroid && uiVista && enabled) // guich@573_6
+        if (!uiAndroid && uiVista && enabled) {
                g.fillVistaRect(0, 0, width, height, bColor, false, false);
-            else
+        } else
             {
                g.backColor = uiAndroid ? parent.backColor : bColor;
                g.fillRect(0, 0, width, height);
             }
          }
-         if (uiAndroid)
+      if (uiAndroid) {
             try
             {
-               if (npback == null)
+          if (npback == null) {
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false);
-               if ((armed || btn.armed) && nparmed == null)
+          }
+          if ((armed || btn.armed) && nparmed == null) {
                   nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
+          }
                Image img = armed || btn.armed ? nparmed : npback;
                g.drawImage(img, 0,0);
                g.setClip(2,2,width-btnW-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 8),height-4);
             }
             catch (ImageException e) {e.printStackTrace();}
-         else
+      } else
          {
             g.draw3dRect(0, 0, width, height, Graphics.R3D_CHECK, false, false, fourColors);
             g.setClip(2, 2, width - btnW - 3, height - 4);
@@ -718,16 +769,18 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       else
       {
          boolean hasFocus = super.hasFocus();
-         if (captionIcon != null) // is uiMaterial
+      if (captionIcon != null) {
             g.drawImage(captionIcon, 0, getTextY());
+      }
          // material
          g.foreColor = hasFocus ? (captionColor != -1 ? captionColor : backColor) : Color.getGray(backColor);
          g.setFont(fcap);
          g.drawText(caption, xcap, ycap);
          g.setFont(font);
       }
-      if (effect != null)
+    if (effect != null){
          effect.paintEffect(g);
+    }
       if (uiMaterial)
       {
          if (fillColor != -1)
@@ -739,9 +792,10 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
          g.drawArrow(width-btnW*2-1,y+(fmH-btnW)/2,btnW, Graphics.ARROW_DOWN, false, checkColor != -1 && hasFocus() ? checkColor : fColor);
          g.setClip(0,0,width-btnW*2,height);
       }
-      if (pop.lb.itemCount > 0 && pop.lb.selectedIndex >= 0) // guich@402_31: avoid drawing invalid index
+    if (pop.lb.itemCount > 0 && pop.lb.selectedIndex >= 0){
          drawSelectedItem(g);
    }
+  }
 
    private int getX0()
    {
@@ -752,9 +806,13 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    {
       g.foreColor = fColor;
       boolean trickW = pop.lb.width == 0; // guich@tc125_35
-      if (trickW) pop.lb.width = width - btnW;
+    if (trickW){
+      pop.lb.width = width - btnW;
+    }
       pop.lb.drawSelectedItem(g, pop.lb.selectedIndex, getX0(), getTextY()); // guich@200b4: let the listbox draw the item
-      if (trickW) pop.lb.width = 0;
+    if (trickW){
+      pop.lb.width = 0;
+    }
    }
 
    /** Sorts the items of this combobox, and then unselects the current item. */
@@ -799,17 +857,22 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    }
 
    /** Clears this control, selecting index clearValueInt (0 by default); uses clearValueStr if set, instead. */
+  @Override
    public void clear() // guich@572_19
    {
       final int clearValueStrIdx = clearValueStr != null ? indexOf(clearValueStr) : -1;
       setSelectedIndex(clearValueStrIdx > -1 ? clearValueStrIdx : clearValueInt);
    }
 
+  @Override
    public void getFocusableControls(Vector v) // kmeehl@tc100
    {
-      if (visible && isEnabled()) v.addElement(this);
+    if (visible && isEnabled()){
+      v.addElement(this);
+    }
    }
 
+  @Override
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100
    {
       if (armed)
@@ -848,8 +911,9 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    {
       int idx = pop.lb.selectedIndex;
       boolean b = pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
-      if (sendPress && pop.lb.selectedIndex != idx)
+    if (sendPress && pop.lb.selectedIndex != idx){
          postPressedEvent();
+    }
       return b;
    }
 
@@ -862,19 +926,22 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       setSelectedIndex(-1);
    }
    
+  @Override
    public boolean equals(Object o)
    {
       if (o != null && o instanceof String[])
       {
          String[] s = (String[])o;
          Vector v = pop.lb.items;
-         if (v.size() != s.length)
+      if (v.size() != s.length) {
             return false;
-         else
+      } else
          {
-            for (int i = s.length; --i >= 0;)
-               if ((s[i] == null && s[i] != v.items[i]) || (s[i] != null && !s[i].equals(v.items[i])))
+        for (int i = s.length; --i >= 0;) {
+          if ((s[i] == null && s[i] != v.items[i]) || (s[i] != null && !s[i].equals(v.items[i]))) {
                   return false;
+          }
+        }
             return true;
          }
       }
@@ -905,6 +972,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       }
    }
    
+  @Override
    public void timerTriggered(TimerEvent e)
    {
       if (tea != null && tea.triggered)
@@ -927,18 +995,22 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       xcap = xcap0; // no horizontal movement - xcap0 * (fcap.size - fmHmin) / (fmH - fmHmin);
    }
 
+  @Override
    public void sideStart()
    {
    }
 
+  @Override
    public void sideStop()
    {
-      if (cancelPopup)
+    if (cancelPopup){
          cancelPopup = false;
-      else
+    }else {
          open();
    }
+  }
 
+  @Override
    public void sidePaint(Graphics g, int alpha)
    {
    }

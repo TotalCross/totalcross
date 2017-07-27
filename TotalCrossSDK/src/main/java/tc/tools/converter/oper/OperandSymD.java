@@ -15,8 +15,8 @@ package tc.tools.converter.oper;
 
 public abstract class OperandSymD extends OperandSym
 {
-   public OperandSymD(int index)
-   {
-      super(opr_symD, index);
-   }
+  public OperandSymD(int index)
+  {
+    super(opr_symD, index);
+  }
 }

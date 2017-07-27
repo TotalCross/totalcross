@@ -22,18 +22,18 @@ import totalcross.util.Hashtable;
 
 public abstract class Packet
 {
-   static final Hashtable packetClasses = new Hashtable(10);
-   protected String webServiceMethod;
-   
-   // Register packets
-   static
-   {
-      packetClasses.put("ras.comm.Hello", Hello.class);
-      packetClasses.put("ras.comm.v1.ActivationRequest", ActivationRequest.class);
-      packetClasses.put("ras.comm.v1.ActivationFailure", ActivationFailure.class);
-      packetClasses.put("ras.comm.v1.ActivationSuccess", ActivationSuccess.class);
-   }
-   
-   protected abstract void read(DataStream ds) throws IOException;
-   protected abstract void write(DataStream ds) throws IOException;
+  static final Hashtable packetClasses = new Hashtable(10);
+  protected String webServiceMethod;
+
+  // Register packets
+  static
+  {
+    packetClasses.put("ras.comm.Hello", Hello.class);
+    packetClasses.put("ras.comm.v1.ActivationRequest", ActivationRequest.class);
+    packetClasses.put("ras.comm.v1.ActivationFailure", ActivationFailure.class);
+    packetClasses.put("ras.comm.v1.ActivationSuccess", ActivationSuccess.class);
+  }
+
+  protected abstract void read(DataStream ds) throws IOException;
+  protected abstract void write(DataStream ds) throws IOException;
 }

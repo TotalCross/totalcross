@@ -23,72 +23,73 @@ package totalcross.ui.event;
  */
 public class DragEvent extends PenEvent
 {
-	/** The direction constant for a drag or flick right. */
-	public static final int RIGHT = 1;
-	/** The direction constant for a drag or flick left. */
-	public static final int LEFT = 2;
-	/** The direction constant for a drag or flick up. */
-	public static final int UP = 3;
-	/** The direction constant for a drag or flick down. */
-	public static final int DOWN = 4;
-	
-	public final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
+  /** The direction constant for a drag or flick right. */
+  public static final int RIGHT = 1;
+  /** The direction constant for a drag or flick left. */
+  public static final int LEFT = 2;
+  /** The direction constant for a drag or flick up. */
+  public static final int UP = 3;
+  /** The direction constant for a drag or flick down. */
+  public static final int DOWN = 4;
 
-   public int xDelta,yDelta,xTotal,yTotal;
+  public final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
 
-   public int direction;
+  public int xDelta,yDelta,xTotal,yTotal;
 
-   /** Unique id for the entire physical drag. */
-   public int dragId;
+  public int direction;
 
-   /** Constructs an empty DragEvent. */
-   public DragEvent()
-   {
-   }
+  /** Unique id for the entire physical drag. */
+  public int dragId;
 
-   /**
-    * Constructs a new DragEvent from a PenEvent, setting a new timestamp and setting consumed to false.
-    */
-   public DragEvent(PenEvent evt)
-   {
-      update(evt);
-   }
+  /** Constructs an empty DragEvent. */
+  public DragEvent()
+  {
+  }
 
-   /**
-    * Updates this DragEvent from a PenEvent, setting a new timestamp and setting consumed to false.
-    */
-   public DragEvent update(PenEvent evt)
-   {
-      this.absoluteX = evt.absoluteX;
-      this.x = evt.x;
-      this.absoluteY = evt.absoluteY;
-      this.y = evt.y;
-      this.type = evt.type;
-      timeStamp = totalcross.sys.Vm.getTimeStamp();
-      target = evt.target;
-      this.modifiers = evt.modifiers;
-      return this;
-   }
-   
-   public String toString()
-   {      
-      return EVENT_NAME[type-200]+", direction: "+DIRECTIONS[direction]+", pos: "+x+","+y+", delta: "+xDelta+","+yDelta+", total: "+xTotal+","+yTotal+". "+super.toString();
-   }
-   
-   public static int getInverseDirection(int direction)
-   {
-      switch (direction)
-      {
-         case UP:
-            return DOWN;
-         case DOWN:
-            return UP;
-         case LEFT:
-            return RIGHT;
-         case RIGHT:
-            return LEFT;
-         default:
-            return 0;
-      }
-   }
+  /**
+   * Constructs a new DragEvent from a PenEvent, setting a new timestamp and setting consumed to false.
+   */
+  public DragEvent(PenEvent evt)
+  {
+    update(evt);
+  }
+
+  /**
+   * Updates this DragEvent from a PenEvent, setting a new timestamp and setting consumed to false.
+   */
+  public DragEvent update(PenEvent evt)
+  {
+    this.absoluteX = evt.absoluteX;
+    this.x = evt.x;
+    this.absoluteY = evt.absoluteY;
+    this.y = evt.y;
+    this.type = evt.type;
+    timeStamp = totalcross.sys.Vm.getTimeStamp();
+    target = evt.target;
+    this.modifiers = evt.modifiers;
+    return this;
+  }
+
+  @Override
+  public String toString()
+  {      
+    return EVENT_NAME[type-200]+", direction: "+DIRECTIONS[direction]+", pos: "+x+","+y+", delta: "+xDelta+","+yDelta+", total: "+xTotal+","+yTotal+". "+super.toString();
+  }
+
+  public static int getInverseDirection(int direction)
+  {
+    switch (direction)
+    {
+    case UP:
+      return DOWN;
+    case DOWN:
+      return UP;
+    case LEFT:
+      return RIGHT;
+    case RIGHT:
+      return LEFT;
+    default:
+      return 0;
+    }
+  }
 }

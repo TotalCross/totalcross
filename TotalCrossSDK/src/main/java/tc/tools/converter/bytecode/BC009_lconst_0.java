@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC009_lconst_0 extends LoadConstant
 {
-   public BC009_lconst_0()
-   {
-      super(0L);
-   }
+  public BC009_lconst_0()
+  {
+    super(0L);
+  }
 }

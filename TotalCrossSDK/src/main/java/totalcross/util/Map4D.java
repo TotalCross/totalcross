@@ -39,7 +39,13 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * An object that maps keys onto values. Keys cannot be duplicated. This
@@ -142,6 +148,7 @@ public interface Map4D<K, V>
    * @return true if the object equals this map
    * @see Set#equals(Object)
    */
+  @Override
   boolean equals(Object o);
 
   /**
@@ -185,6 +192,7 @@ public interface Map4D<K, V>
    * @return the hash code
    * @see Map.Entry#hashCode()
    */
+  @Override
   int hashCode();
 
   /**
@@ -318,6 +326,7 @@ public interface Map4D<K, V>
      *
      * @return the hash code
      */
+    @Override
     int hashCode();
 
     /**
@@ -335,6 +344,7 @@ public interface Map4D<K, V>
      *
      * @return <code>true</code> if it is equal
      */
+    @Override
     boolean equals(Object o);
   }
 }

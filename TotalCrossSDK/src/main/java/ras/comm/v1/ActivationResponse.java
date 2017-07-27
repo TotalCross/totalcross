@@ -19,30 +19,32 @@ import totalcross.io.IOException;
 
 public class ActivationResponse extends Packet
 {
-   protected ActivationRequest request;
-   
-   public ActivationResponse()
-   {
-      request = new ActivationRequest();
-   }
-   
-   public ActivationResponse(ActivationRequest request)
-   {
-      this.request = request;
-   }
-   
-   public ActivationRequest getRequest()
-   {
-      return request;
-   }
-   
-   protected void read(DataStream ds) throws IOException
-   {
-      request.read(ds);
-   }
+  protected ActivationRequest request;
 
-   protected void write(DataStream ds) throws IOException
-   {
-      request.write(ds);
-   }
+  public ActivationResponse()
+  {
+    request = new ActivationRequest();
+  }
+
+  public ActivationResponse(ActivationRequest request)
+  {
+    this.request = request;
+  }
+
+  public ActivationRequest getRequest()
+  {
+    return request;
+  }
+
+  @Override
+  protected void read(DataStream ds) throws IOException
+  {
+    request.read(ds);
+  }
+
+  @Override
+  protected void write(DataStream ds) throws IOException
+  {
+    request.write(ds);
+  }
 }

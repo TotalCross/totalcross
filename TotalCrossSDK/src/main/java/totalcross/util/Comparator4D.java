@@ -38,6 +38,12 @@ exception statement from your version. */
 
 package totalcross.util;
 
+import java.util.Comparator;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 /**
  * Interface for objects that specify an ordering between objects. The ordering
  * should be <em>total</em>, such that any two objects of the correct type
@@ -114,5 +120,6 @@ public interface Comparator4D<T>
    * @return true if it is a Comparator that imposes the same order
    * @see Object#equals(Object)
    */
+  @Override
   boolean equals(Object obj);
 }

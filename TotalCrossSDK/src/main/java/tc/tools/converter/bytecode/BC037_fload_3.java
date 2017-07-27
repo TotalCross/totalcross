@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC037_fload_3 extends LoadLocal
 {
-   public BC037_fload_3()
-   {
-      super(3,FLOAT);
-   }
+  public BC037_fload_3()
+  {
+    super(3,FLOAT);
+  }
 }

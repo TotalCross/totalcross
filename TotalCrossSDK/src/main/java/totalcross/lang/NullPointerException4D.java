@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class NullPointerException4D extends RuntimeException
 {
-   /** Constructs an empty Exception. */
-   public NullPointerException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public NullPointerException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public NullPointerException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public NullPointerException4D(String msg)
+  {
+    super(msg);
+  }
 }

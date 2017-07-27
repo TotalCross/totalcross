@@ -22,8 +22,8 @@ package totalcross.ui.event;
 
 public interface MultiTouchListener
 {
-   /** A SCALE event was dispatched.
-    * @see PenEvent 
-    */
-   public void scale(MultiTouchEvent e);
+  /** A SCALE event was dispatched.
+   * @see PenEvent 
+   */
+  public void scale(MultiTouchEvent e);
 }

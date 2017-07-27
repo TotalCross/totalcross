@@ -15,14 +15,17 @@ package tc.test.converter.testfiles;
 
 public class BC022_030to033
 {
-   public BC022_030to033()
-   {
-      long l1=1, l2=2, l3=3, l4=4, l;
-      l = l1;
-      l = l2;
-      l = l3;
-      l = l4;
+  public BC022_030to033()
+  {
+    long l1=1, l2=2, l3=3, l4=4, l;
+    l = l1;
+    l = l2;
+    l = l3;
+    l = l4;
 
-      if (false) l+=0; // remove warnings
-   }
+    if (false)
+    {
+      l+=0; // remove warnings
+    }
+  }
 }

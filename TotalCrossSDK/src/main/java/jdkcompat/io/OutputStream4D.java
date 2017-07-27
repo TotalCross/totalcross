@@ -43,15 +43,15 @@ import java.io.Flushable;
 import java.io.IOException;
 
 /**
-  * This abstract class forms the base of the hierarchy of classes that
-  * write output as a stream of bytes.  It provides a common set of methods
-  * for writing bytes to stream.  Subclasses implement and/or extend these
-  * methods to write bytes in a particular manner or to a particular
-  * destination such as a file on disk or network connection.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey (tromey@cygnus.com)
-  */
+ * This abstract class forms the base of the hierarchy of classes that
+ * write output as a stream of bytes.  It provides a common set of methods
+ * for writing bytes to stream.  Subclasses implement and/or extend these
+ * methods to write bytes in a particular manner or to a particular
+ * destination such as a file on disk or network connection.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@cygnus.com)
+ */
 public abstract class OutputStream4D implements Closeable, Flushable {
   /**
    * This is the default no-argument constructor for this class.  This method
@@ -105,12 +105,14 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    * @exception IOException If an error occurs
    */
   public void write (byte[] b, int off, int len)
-    throws IOException, NullPointerException, IndexOutOfBoundsException
+      throws IOException, NullPointerException, IndexOutOfBoundsException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
+    if (off < 0 || len < 0 || off + len > b.length){
       throw new ArrayIndexOutOfBoundsException ();
-    for (int i = 0; i < len; ++i)
+    }
+    for (int i = 0; i < len; ++i) {
       write (b[off + i]);
+    }
   }
 
   /**
@@ -124,6 +126,7 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    *
    * @exception IOException If an error occurs
    */
+  @Override
   public void flush () throws IOException
   {
   }
@@ -137,6 +140,7 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    *
    * @exception IOException If an error occurs
    */
+  @Override
   public void close () throws IOException
   {
   }

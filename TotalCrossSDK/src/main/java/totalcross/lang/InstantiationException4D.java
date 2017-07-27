@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class InstantiationException4D extends ReflectiveOperationException
 {
-   /** Constructs an empty Exception. */
-   public InstantiationException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public InstantiationException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public InstantiationException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public InstantiationException4D(String msg)
+  {
+    super(msg);
+  }
 }

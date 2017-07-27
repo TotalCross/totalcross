@@ -26,30 +26,31 @@ package totalcross.ui.event;
 
 public class TimerEvent extends Event
 {
-   /** The event type for a triggered timer */
-   public static final int TRIGGERED = 350;
-   /** The timer interval in milliseconds. */
-   public int millis;
-   /** The timestamp of the last tick. */
-   public int lastTick;
-   /** The next timer in the linked list. */
-   public TimerEvent next;
-   /** a flag set when the timer event is being posted. With it, you can test from various timers to the same target control when one of them is dispatched. */
-   public boolean triggered; // guich@220_39
+  /** The event type for a triggered timer */
+  public static final int TRIGGERED = 350;
+  /** The timer interval in milliseconds. */
+  public int millis;
+  /** The timestamp of the last tick. */
+  public int lastTick;
+  /** The next timer in the linked list. */
+  public TimerEvent next;
+  /** a flag set when the timer event is being posted. With it, you can test from various timers to the same target control when one of them is dispatched. */
+  public boolean triggered; // guich@220_39
 
-   /** Constructs a new TimerEvent, setting the type to TRIGGERED. */
-   public TimerEvent()
-   {
-      type = TRIGGERED;
-   }
-   
-   public String toString()
-   {
-      return "TRIGGERED millis: "+millis+" "+super.toString();
-   }
-   
-   public void postpone()
-   {
-      lastTick = totalcross.sys.Vm.getTimeStamp();
-   }
+  /** Constructs a new TimerEvent, setting the type to TRIGGERED. */
+  public TimerEvent()
+  {
+    type = TRIGGERED;
+  }
+
+  @Override
+  public String toString()
+  {
+    return "TRIGGERED millis: "+millis+" "+super.toString();
+  }
+
+  public void postpone()
+  {
+    lastTick = totalcross.sys.Vm.getTimeStamp();
+  }
 }

@@ -16,55 +16,60 @@
 
 package tc.samples.api.ui;
 
-import tc.samples.api.*;
-
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
-import totalcross.ui.image.*;
+import tc.samples.api.BaseContainer;
+import totalcross.sys.Settings;
+import totalcross.ui.ImageControl;
+import totalcross.ui.Label;
+import totalcross.ui.dialog.MessageBox;
+import totalcross.ui.event.MultiTouchEvent;
+import totalcross.ui.event.MultiTouchListener;
+import totalcross.ui.image.Image;
 
 public class MultitouchSample extends BaseContainer
 {
-   ImageControl ic;
-   public static Image screenShot;
-   private static Image lata;
+  ImageControl ic;
+  public static Image screenShot;
+  private static Image lata;
 
-   public void initUI()
-   {
-      super.initUI();
-      isSingleCall = true;
-      
-      if (!Settings.isOpenGL && !Settings.onJavaSE)
-         add(new Label("This sample works only on iOS, Android and Windows Phone."),CENTER,CENTER);
-      else
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    isSingleCall = true;
+
+    if (!Settings.isOpenGL && !Settings.onJavaSE){
+      add(new Label("This sample works only on iOS, Android and Windows Phone."),CENTER,CENTER);
+    }else {
       try
       {
-         super.initUI();
-         if (lata == null)
-            lata = new Image("ui/images/lata.jpg");
-         ic = new ImageControl(screenShot != null ? screenShot : lata);
-         screenShot = null;
-         ic.allowBeyondLimits = false;
-         ic.setEventsEnabled(true);
-         updateStatus();
-         add(ic,LEFT+gap,TOP+gap,FILL-gap,FILL-gap);
-         ic.addMultiTouchListener(new MultiTouchListener()
-         {
-            public void scale(MultiTouchEvent e)
-            {
-               updateStatus();
-            }
-         });
+        super.initUI();
+        if (lata == null) {
+          lata = new Image("ui/images/lata.jpg");
+        }
+        ic = new ImageControl(screenShot != null ? screenShot : lata);
+        screenShot = null;
+        ic.allowBeyondLimits = false;
+        ic.setEventsEnabled(true);
+        updateStatus();
+        add(ic,LEFT+gap,TOP+gap,FILL-gap,FILL-gap);
+        ic.addMultiTouchListener(new MultiTouchListener()
+        {
+          @Override
+          public void scale(MultiTouchEvent e)
+          {
+            updateStatus();
+          }
+        });
       }
       catch (Exception e)
       {
-         MessageBox.showException(e,false);
+        MessageBox.showException(e,false);
       }
-   }
-   
-   private void updateStatus()
-   {
-      setInfo(ic.getImageWidth()+"x"+ic.getImageHeight());
-   }
+    }
+  }
+
+  private void updateStatus()
+  {
+    setInfo(ic.getImageWidth()+"x"+ic.getImageHeight());
+  }
 }

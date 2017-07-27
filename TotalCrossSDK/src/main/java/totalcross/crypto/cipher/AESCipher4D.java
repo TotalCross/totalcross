@@ -13,43 +13,51 @@
 
 package totalcross.crypto.cipher;
 
-import totalcross.crypto.*;
+import totalcross.crypto.CryptoException;
+import totalcross.crypto.NoSuchAlgorithmException;
 
 public class AESCipher4D extends Cipher
 {
-   public AESCipher4D()
-   {
-      nativeCreate();
-   }
-   
-   public final String getAlgorithm()
-   {
-      return "AES";
-   }
+  public AESCipher4D()
+  {
+    nativeCreate();
+  }
 
-   public final int getBlockLength()
-   {
-      return 16;
-   }
-   
-   protected final boolean isKeySupported(Key key, int operation)
-   {
-      return key instanceof AESKey;
-   }
-   
-   protected final boolean isChainingSupported(int chaining)
-   {
-      return chaining == CHAINING_ECB || chaining == CHAINING_CBC;
-   }
-   
-   protected final boolean isPaddingSupported(int padding)
-   {
-      return padding == PADDING_PKCS5;
-   }
-   
-   native void nativeCreate();
-   
-   native protected final void doReset() throws NoSuchAlgorithmException, CryptoException;
-   
-   native protected byte[] process(byte[] data) throws CryptoException;
+  @Override
+  public final String getAlgorithm()
+  {
+    return "AES";
+  }
+
+  @Override
+  public final int getBlockLength()
+  {
+    return 16;
+  }
+
+  @Override
+  protected final boolean isKeySupported(Key key, int operation)
+  {
+    return key instanceof AESKey;
+  }
+
+  @Override
+  protected final boolean isChainingSupported(int chaining)
+  {
+    return chaining == CHAINING_ECB || chaining == CHAINING_CBC;
+  }
+
+  @Override
+  protected final boolean isPaddingSupported(int padding)
+  {
+    return padding == PADDING_PKCS5;
+  }
+
+  native void nativeCreate();
+
+  @Override
+  native protected final void doReset() throws NoSuchAlgorithmException, CryptoException;
+
+  @Override
+  native protected byte[] process(byte[] data) throws CryptoException;
 }

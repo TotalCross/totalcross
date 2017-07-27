@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC104_imul extends Arithmetic
 {
-   public BC104_imul()
-   {
-      super(-1,-2,-1,INT);
-   }
-   public void exec()
-   {
-      stack[stackPtr-2].asInt *= stack[stackPtr-1].asInt;
-   }
+  public BC104_imul()
+  {
+    super(-1,-2,-1,INT);
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr-2].asInt *= stack[stackPtr-1].asInt;
+  }
 }

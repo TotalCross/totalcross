@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class NegativeArraySizeException4D extends RuntimeException
 {
-   /** Constructs an empty Exception. */
-   public NegativeArraySizeException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public NegativeArraySizeException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public NegativeArraySizeException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public NegativeArraySizeException4D(String msg)
+  {
+    super(msg);
+  }
 }

@@ -18,9 +18,16 @@
 
 package totalcross.ui.dialog;
 
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
+import totalcross.sys.Convert;
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
+import totalcross.ui.Control;
+import totalcross.ui.Label;
+import totalcross.ui.PushButtonGroup;
+import totalcross.ui.Window;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.KeyEvent;
 
 /** A popup window that displays any Control, given as parameter to the constructor. */
 
@@ -105,26 +112,32 @@ public class ControlBox extends Window
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      if (buttonCaptions != null) // guich@tc114_7 
+    if (buttonCaptions != null){
          btns = new PushButtonGroup(buttonCaptions,false,-1,uiAndroid?fmH/2:4,6,buttonRows,uiAndroid,PushButtonGroup.BUTTON);
-      msg = new Label(originalText = text,Label.CENTER);
+    }
+    msg = new Label(originalText = text,Control.CENTER);
       this.cb = cb;
       this.prefW = prefW;
       this.prefH = prefH;
    }
 
+  @Override
    protected void onPopup() // guich@tc100b5_28
    {
-      if (children != null)
+    if (children != null){
          return;
+    }
 
-      if (btns != null) btns.setFont(font);
+    if (btns != null){
+      btns.setFont(font);
+    }
       cb.setFont(font);
       msg.setFont(font);
       int maxW = Settings.screenWidth-fmH*2;
       String text = originalText;
-      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) // guich@tc100: automatically split the text if its too big to fit screen
+    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW){
          text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
+    }
       msg.setText(text);
       int wb = btns == null ? 0 : btns.getPreferredWidth();
       int hb = btns == null ? 0 : btns.getPreferredHeight();
@@ -137,22 +150,29 @@ public class ControlBox extends Window
       int captionH = titleFont.fm.height+10;
 
       int h = captionH + hb + hm + he + fmH;
-      if (uiAndroid) h += fmH;
+    if (uiAndroid){
+      h += fmH;
+    }
       int w = Convert.max(wb,wm,we,titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       h = Math.min(h,Settings.screenHeight);
       setRect(CENTER,yPosition,w,h);
       add(msg);
-      if (btns != null) add(btns);
+    if (btns != null){
+      add(btns);
+    }
       add(cb);
       msg.setRect(LEFT,TOP,FILL,hm);
-      if (btns != null) btns.setRect(CENTER,BOTTOM-(uiAndroid?fmH/2:2),wb,hb);
+    if (btns != null){
+      btns.setRect(CENTER,BOTTOM-(uiAndroid?fmH/2:2),wb,hb);
+    }
       msg.setBackForeColors(backColor, foreColor);
       int gap = we == FILL ? fmH/2 : 0;
       cb.setRect(we==FILL ? LEFT+gap : CENTER,AFTER+fmH/2,we-gap,he,msg);
    }
 
    /** handle scroll buttons and normal buttons */
+  @Override
    public void onEvent(Event e)
    {
       switch (e.type)
@@ -162,7 +182,7 @@ public class ControlBox extends Window
             if (buttonKeys != null)
             {
                int k = ((KeyEvent)e).key;
-               for (int i = buttonKeys.length; --i >= 0;)
+        for (int i = buttonKeys.length; --i >= 0;) {
                   if (buttonKeys[i] == k)
                   {
                      btns.setSelectedIndex(selected = i);
@@ -170,6 +190,7 @@ public class ControlBox extends Window
                      break;
                   }
             }
+      }
             break;
          case ControlEvent.PRESSED:
             if (e.target == btns && (selected=btns.getSelectedIndex()) != -1)
@@ -193,9 +214,11 @@ public class ControlBox extends Window
       return cb;
    }
 
+  @Override
    protected void postUnpop()
    {
-      if (selected != -1) // guich@580_27
+    if (selected != -1){
          postPressedEvent();
    }
+}
 }

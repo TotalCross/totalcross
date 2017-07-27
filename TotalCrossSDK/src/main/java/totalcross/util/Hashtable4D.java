@@ -39,7 +39,22 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeMap;
 import totalcross.util.concurrent.Lock;
 
 // NOTE: This implementation is very similar to that of HashMap. If you fix
@@ -99,7 +114,7 @@ import totalcross.util.concurrent.Lock;
  * @status updated to 1.4
  */
 public class Hashtable4D<K, V> extends Dictionary<K, V>
-  implements Map<K, V>, Cloneable
+implements Map<K, V>, Cloneable
 {
   // WARNING: Hashtable is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
@@ -161,7 +176,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * The cache for {@link #entrySet()}.
    */
   private transient Set<Map.Entry<K, V>> entries;
-  
+
   private Lock lock = new Lock();
 
   /**
@@ -170,7 +185,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * `null' is not allowed for keys and values.
    */
   private static final class HashEntry<K, V>
-    extends AbstractMap4D.SimpleEntry<K, V>
+  extends AbstractMap4D.SimpleEntry<K, V>
   {
     /** The next entry in the linked list. */
     HashEntry<K, V> next;
@@ -191,10 +206,12 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return the prior value
      * @throws NullPointerException if <code>newVal</code> is null
      */
+    @Override
     public V setValue(V newVal)
     {
-      if (newVal == null)
+      if (newVal == null){
         throw new NullPointerException();
+      }
       return super.setValue(newVal);
     }
   }
@@ -251,14 +268,17 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    */
   public Hashtable4D(int initialCapacity, float loadFactor)
   {
-    if (initialCapacity < 0)
+    if (initialCapacity < 0){
       throw new IllegalArgumentException("Illegal Capacity: "
-                                         + initialCapacity);
-    if (! (loadFactor > 0)) // check for NaN too
+          + initialCapacity);
+    }
+    if (! (loadFactor > 0)){
       throw new IllegalArgumentException("Illegal Load: " + loadFactor);
+    }
 
-    if (initialCapacity == 0)
+    if (initialCapacity == 0){
       initialCapacity = 1;
+    }
     buckets = (HashEntry<K, V>[]) new HashEntry[initialCapacity];
     this.loadFactor = loadFactor;
     threshold = (int) (initialCapacity * loadFactor);
@@ -268,6 +288,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * Returns the number of key-value mappings currently in this hashtable.
    * @return the size
    */
+  @Override
   public synchronized int size()
   {
     return size;
@@ -277,6 +298,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * Returns true if there are no key-value mappings currently in this table.
    * @return <code>size() == 0</code>
    */
+  @Override
   public synchronized boolean isEmpty()
   {
     return size == 0;
@@ -291,6 +313,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @see #elements()
    * @see #keySet()
    */
+  @Override
   public Enumeration<K> keys()
   {
     return new KeyEnumerator();
@@ -305,6 +328,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @see #keys()
    * @see #values()
    */
+  @Override
   public Enumeration<V> elements()
   {
     return new ValueEnumerator();
@@ -324,19 +348,21 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    */
   public synchronized boolean contains(Object value)
   {
-    if (value == null)
+    if (value == null){
       throw new NullPointerException();
+    }
 
     for (int i = buckets.length - 1; i >= 0; i--)
+    {
+      HashEntry<K, V> e = buckets[i];
+      while (e != null)
       {
-        HashEntry<K, V> e = buckets[i];
-        while (e != null)
-          {
-            if (e.value.equals(value))
-              return true;
-            e = e.next;
-          }
+        if (e.value.equals(value)) {
+          return true;
+        }
+        e = e.next;
       }
+    }
 
     return false;
   }
@@ -353,6 +379,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @throws NullPointerException if <code>value</code> is null
    * @since 1.2
    */
+  @Override
   public boolean containsValue(Object value)
   {
     // Delegate to older method to make sure code overriding it continues
@@ -369,16 +396,18 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @throws NullPointerException if key is null
    * @see #containsValue(Object)
    */
+  @Override
   public synchronized boolean containsKey(Object key)
   {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     while (e != null)
-      {
-        if (e.key.equals(key))
-          return true;
-        e = e.next;
+    {
+      if (e.key.equals(key)) {
+        return true;
       }
+      e = e.next;
+    }
     return false;
   }
 
@@ -392,16 +421,18 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
+  @Override
   public synchronized V get(Object key)
   {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     while (e != null)
-      {
-        if (e.key.equals(key))
-          return e.value;
-        e = e.next;
+    {
+      if (e.key.equals(key)) {
+        return e.value;
       }
+      e = e.next;
+    }
     return null;
   }
 
@@ -417,38 +448,40 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @see #get(Object)
    * @see Object#equals(Object)
    */
+  @Override
   public synchronized V put(K key, V value)
   {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
 
     // Check if value is null since it is not permitted.
-    if (value == null)
+    if (value == null){
       throw new NullPointerException();
+    }
 
     while (e != null)
+    {
+      if (e.key.equals(key))
       {
-        if (e.key.equals(key))
-          {
-            // Bypass e.setValue, since we already know value is non-null.
-            V r = e.value;
-            e.value = value;
-            return r;
-          }
-        else
-          {
-            e = e.next;
-          }
+        // Bypass e.setValue, since we already know value is non-null.
+        V r = e.value;
+        e.value = value;
+        return r;
       }
+      else
+      {
+        e = e.next;
+      }
+    }
 
     // At this point, we know we need to add a new entry.
     modCount++;
     if (++size > threshold)
-      {
-        rehash();
-        // Need a new hash value to suit the bigger table.
-        idx = hash(key);
-      }
+    {
+      rehash();
+      // Need a new hash value to suit the bigger table.
+      idx = hash(key);
+    }
 
     e = new HashEntry<K, V>(key, value);
 
@@ -466,6 +499,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
    */
+  @Override
   public synchronized V remove(Object key)
   {
     int idx = hash(key);
@@ -473,20 +507,21 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
     HashEntry<K, V> last = null;
 
     while (e != null)
+    {
+      if (e.key.equals(key))
       {
-        if (e.key.equals(key))
-          {
-            modCount++;
-            if (last == null)
-              buckets[idx] = e.next;
-            else
-              last.next = e.next;
-            size--;
-            return e.value;
-          }
-        last = e;
-        e = e.next;
+        modCount++;
+        if (last == null) {
+          buckets[idx] = e.next;
+        } else {
+          last.next = e.next;
+        }
+        size--;
+        return e.value;
       }
+      last = e;
+      e = e.next;
+    }
     return null;
   }
 
@@ -498,38 +533,40 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @param m the map to be hashed into this
    * @throws NullPointerException if m is null, or contains null keys or values
    */
+  @Override
   public synchronized void putAll(Map<? extends K, ? extends V> m)
   {
     final Map<K,V> addMap = (Map<K,V>) m;
     final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
     while (it.hasNext())
+    {
+      final Map.Entry<K,V> e = it.next();
+      // Optimize in case the Entry is one of our own.
+      if (e instanceof AbstractMap.SimpleEntry)
       {
-        final Map.Entry<K,V> e = it.next();
-        // Optimize in case the Entry is one of our own.
-        if (e instanceof AbstractMap.SimpleEntry)
-          {
-            AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry
-              = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
-            put(entry.key, entry.value);
-          }
-        else
-          {
-            put(e.getKey(), e.getValue());
-          }
+        AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry
+        = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
+        put(entry.key, entry.value);
       }
+      else
+      {
+        put(e.getKey(), e.getValue());
+      }
+    }
   }
 
   /**
    * Clears the hashtable so it has no keys.  This is O(1).
    */
+  @Override
   public synchronized void clear()
   {
     if (size > 0)
-      {
-        modCount++;
-        Arrays.fill(buckets, null);
-        size = 0;
-      }
+    {
+      modCount++;
+      Arrays.fill(buckets, null);
+      size = 0;
+    }
   }
 
   /**
@@ -538,17 +575,18 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    *
    * @return the clone
    */
+  @Override
   public synchronized Object clone()
   {
     Hashtable4D<K, V> copy = null;
     try
-      {
-        copy = (Hashtable4D<K, V>) super.clone();
-      }
+    {
+      copy = (Hashtable4D<K, V>) super.clone();
+    }
     catch (CloneNotSupportedException x)
-      {
-        // This is impossible.
-      }
+    {
+      // This is impossible.
+    }
     copy.buckets = (HashEntry<K, V>[]) new HashEntry[buckets.length];
     copy.putAllInternal(this);
     // Clear the caches.
@@ -568,6 +606,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    *
    * @return the string representation
    */
+  @Override
   public synchronized String toString()
   {
     // Since we are already synchronized, and entrySet().iterator()
@@ -576,11 +615,12 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
     Iterator<Map.Entry<K, V>> entries = new EntryIterator();
     StringBuffer r = new StringBuffer("{");
     for (int pos = size; pos > 0; pos--)
-      {
-        r.append(entries.next());
-        if (pos > 1)
-          r.append(", ");
+    {
+      r.append(entries.next());
+      if (pos > 1) {
+        r.append(", ");
       }
+    }
     r.append("}");
     return r.toString();
   }
@@ -600,45 +640,52 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @see #entrySet()
    * @since 1.2
    */
+  @Override
   public Set<K> keySet()
   {
     if (keys == null)
+    {
+      // Create a synchronized AbstractSet with custom implementations of
+      // those methods that can be overridden easily and efficiently.
+      Set<K> r = new AbstractSet<K>()
       {
-        // Create a synchronized AbstractSet with custom implementations of
-        // those methods that can be overridden easily and efficiently.
-        Set<K> r = new AbstractSet<K>()
+        @Override
+        public int size()
         {
-          public int size()
-          {
-            return size;
-          }
+          return size;
+        }
 
-          public Iterator<K> iterator()
-          {
-            return new KeyIterator();
-          }
+        @Override
+        public Iterator<K> iterator()
+        {
+          return new KeyIterator();
+        }
 
-          public void clear()
-          {
-            Hashtable4D.this.clear();
-          }
+        @Override
+        public void clear()
+        {
+          Hashtable4D.this.clear();
+        }
 
-          public boolean contains(Object o)
-          {
-            if (o == null)
-              return false;
-            return containsKey(o);
+        @Override
+        public boolean contains(Object o)
+        {
+          if (o == null) {
+            return false;
           }
+          return containsKey(o);
+        }
 
-          public boolean remove(Object o)
-          {
-            return Hashtable4D.this.remove(o) != null;
-          }
-        };
-        // We must specify the correct object to synchronize upon, hence the
-        // use of a non-public API
-        keys = new Collections4D.SynchronizedSet<K>(lock, r);
-      }
+        @Override
+        public boolean remove(Object o)
+        {
+          return Hashtable4D.this.remove(o) != null;
+        }
+      };
+      // We must specify the correct object to synchronize upon, hence the
+      // use of a non-public API
+      keys = new Collections4D.SynchronizedSet<K>(lock, r);
+    }
     return keys;
   }
 
@@ -658,33 +705,37 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @see #entrySet()
    * @since 1.2
    */
+  @Override
   public Collection<V> values()
   {
     if (values == null)
+    {
+      // We don't bother overriding many of the optional methods, as doing so
+      // wouldn't provide any significant performance advantage.
+      Collection<V> r = new AbstractCollection<V>()
       {
-        // We don't bother overriding many of the optional methods, as doing so
-        // wouldn't provide any significant performance advantage.
-        Collection<V> r = new AbstractCollection<V>()
+        @Override
+        public int size()
         {
-          public int size()
-          {
-            return size;
-          }
+          return size;
+        }
 
-          public Iterator<V> iterator()
-          {
-            return new ValueIterator();
-          }
+        @Override
+        public Iterator<V> iterator()
+        {
+          return new ValueIterator();
+        }
 
-          public void clear()
-          {
-            Hashtable4D.this.clear();
-          }
-        };
-        // We must specify the correct object to synchronize upon, hence the
-        // use of a non-public API
-        values = new Collections4D.SynchronizedCollection<V>(lock, r);
-      }
+        @Override
+        public void clear()
+        {
+          Hashtable4D.this.clear();
+        }
+      };
+      // We must specify the correct object to synchronize upon, hence the
+      // use of a non-public API
+      values = new Collections4D.SynchronizedCollection<V>(lock, r);
+    }
     return values;
   }
 
@@ -710,49 +761,55 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @see Map.Entry
    * @since 1.2
    */
+  @Override
   public Set<Map.Entry<K, V>> entrySet()
   {
     if (entries == null)
+    {
+      // Create an AbstractSet with custom implementations of those methods
+      // that can be overridden easily and efficiently.
+      Set<Map.Entry<K, V>> r = new AbstractSet<Map.Entry<K, V>>()
       {
-        // Create an AbstractSet with custom implementations of those methods
-        // that can be overridden easily and efficiently.
-        Set<Map.Entry<K, V>> r = new AbstractSet<Map.Entry<K, V>>()
+        @Override
+        public int size()
         {
-          public int size()
-          {
-            return size;
-          }
+          return size;
+        }
 
-          public Iterator<Map.Entry<K, V>> iterator()
-          {
-            return new EntryIterator();
-          }
+        @Override
+        public Iterator<Map.Entry<K, V>> iterator()
+        {
+          return new EntryIterator();
+        }
 
-          public void clear()
-          {
-            Hashtable4D.this.clear();
-          }
+        @Override
+        public void clear()
+        {
+          Hashtable4D.this.clear();
+        }
 
-          public boolean contains(Object o)
-          {
-            return getEntry(o) != null;
-          }
+        @Override
+        public boolean contains(Object o)
+        {
+          return getEntry(o) != null;
+        }
 
-          public boolean remove(Object o)
+        @Override
+        public boolean remove(Object o)
+        {
+          HashEntry<K, V> e = getEntry(o);
+          if (e != null)
           {
-            HashEntry<K, V> e = getEntry(o);
-            if (e != null)
-              {
-                Hashtable4D.this.remove(e.key);
-                return true;
-              }
-            return false;
+            Hashtable4D.this.remove(e.key);
+            return true;
           }
-        };
-        // We must specify the correct object to synchronize upon, hence the
-        // use of a non-public API
-        entries = new Collections4D.SynchronizedSet<Map.Entry<K, V>>(lock, r);
-      }
+          return false;
+        }
+      };
+      // We must specify the correct object to synchronize upon, hence the
+      // use of a non-public API
+      entries = new Collections4D.SynchronizedSet<Map.Entry<K, V>>(lock, r);
+    }
     return entries;
   }
 
@@ -767,13 +824,16 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @return true if o is an equal map
    * @since 1.2
    */
+  @Override
   public boolean equals(Object o)
   {
     // no need to synchronize, entrySet().equals() does that.
-    if (o == this)
+    if (o == this){
       return true;
-    if (!(o instanceof Map))
+    }
+    if (!(o instanceof Map)){
       return false;
+    }
 
     return entrySet().equals(((Map) o).entrySet());
   }
@@ -785,6 +845,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @return the sum of the hashcodes of the entries
    * @since 1.2
    */
+  @Override
   public synchronized int hashCode()
   {
     // Since we are already synchronized, and entrySet().iterator()
@@ -792,8 +853,9 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
     // unsynchronized EntryIterator instead.
     Iterator<Map.Entry<K, V>> itr = new EntryIterator();
     int hashcode = 0;
-    for (int pos = size; pos > 0; pos--)
+    for (int pos = size; pos > 0; pos--) {
       hashcode += itr.next().hashCode();
+    }
 
     return hashcode;
   }
@@ -825,20 +887,23 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
   // Package visible, for use in nested classes.
   HashEntry<K, V> getEntry(Object o)
   {
-    if (! (o instanceof Map.Entry))
+    if (! (o instanceof Map.Entry)){
       return null;
+    }
     K key = ((Map.Entry<K, V>) o).getKey();
-    if (key == null)
+    if (key == null){
       return null;
+    }
 
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     while (e != null)
-      {
-        if (e.equals(o))
-          return e;
-        e = e.next;
+    {
+      if (e.equals(o)) {
+        return e;
       }
+      e = e.next;
+    }
     return null;
   }
 
@@ -855,15 +920,15 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
     final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
     size = 0;
     while (it.hasNext())
-      {
-        final Map.Entry<K,V> e = it.next();
-        size++;
-        K key = e.getKey();
-        int idx = hash(key);
-        HashEntry<K, V> he = new HashEntry<K, V>(key, e.getValue());
-        he.next = buckets[idx];
-        buckets[idx] = he;
-      }
+    {
+      final Map.Entry<K,V> e = it.next();
+      size++;
+      K key = e.getKey();
+      int idx = hash(key);
+      HashEntry<K, V> he = new HashEntry<K, V>(key, e.getValue());
+      he.next = buckets[idx];
+      buckets[idx] = he;
+    }
   }
 
   /**
@@ -886,33 +951,33 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
     buckets = (HashEntry<K, V>[]) new HashEntry[newcapacity];
 
     for (int i = oldBuckets.length - 1; i >= 0; i--)
+    {
+      HashEntry<K, V> e = oldBuckets[i];
+      while (e != null)
       {
-        HashEntry<K, V> e = oldBuckets[i];
-        while (e != null)
+        int idx = hash(e.key);
+        HashEntry<K, V> dest = buckets[idx];
+
+        if (dest != null)
+        {
+          HashEntry next = dest.next;
+          while (next != null)
           {
-            int idx = hash(e.key);
-            HashEntry<K, V> dest = buckets[idx];
-
-            if (dest != null)
-              {
-                HashEntry next = dest.next;
-                while (next != null)
-                  {
-                    dest = next;
-                    next = dest.next;
-                  }
-                dest.next = e;
-              }
-            else
-              {
-                buckets[idx] = e;
-              }
-
-            HashEntry<K, V> next = e.next;
-            e.next = null;
-            e = next;
+            dest = next;
+            next = dest.next;
           }
+          dest.next = e;
+        }
+        else
+        {
+          buckets[idx] = e;
+        }
+
+        HashEntry<K, V> next = e.next;
+        e.next = null;
+        e = next;
       }
+    }
   }
 
   /**
@@ -928,7 +993,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @author Fridjof Siebert
    */
   private class EntryIterator
-      implements Iterator<Entry<K,V>>
+  implements Iterator<Entry<K,V>>
   {
     /**
      * The number of modifications to the backing Hashtable that we know about.
@@ -959,6 +1024,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * Returns true if the Iterator has more elements.
      * @return true if there are more elements
      */
+    @Override
     public boolean hasNext()
     {
       return count > 0;
@@ -970,20 +1036,25 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws NoSuchElementException if there is none
      */
+    @Override
     public Map.Entry<K,V> next()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (count == 0)
+      }
+      if (count == 0){
         throw new NoSuchElementException();
+      }
       count--;
       HashEntry<K, V> e = next;
 
-      while (e == null)
-        if (idx <= 0)
+      while (e == null){
+        if (idx <= 0) {
           return null;
-        else
+        } else {
           e = buckets[--idx];
+        }
+      }
 
       next = e.next;
       last = e;
@@ -996,12 +1067,15 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws IllegalStateException if called when there is no last element
      */
+    @Override
     public void remove()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (last == null)
+      }
+      if (last == null){
         throw new IllegalStateException();
+      }
 
       Hashtable4D.this.remove(last.key);
       last = null;
@@ -1018,7 +1092,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   private class KeyIterator
-      implements Iterator<K>
+  implements Iterator<K>
   {
 
     /**
@@ -1033,7 +1107,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      */
     KeyIterator()
     {
-        iterator = new EntryIterator();
+      iterator = new EntryIterator();
     }
 
 
@@ -1043,9 +1117,10 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return true if there are more elements
      * @throws ConcurrentModificationException if the hashtable was modified
      */
+    @Override
     public boolean hasNext()
     {
-        return iterator.hasNext();
+      return iterator.hasNext();
     }
 
     /**
@@ -1056,6 +1131,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws NoSuchElementException if there is none
      */
+    @Override
     public K next()
     {
       return ((HashEntry<K,V>) iterator.next()).key;
@@ -1068,6 +1144,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws IllegalStateException if called when there is no last element
      */
+    @Override
     public void remove()
     {
       iterator.remove();
@@ -1083,7 +1160,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   private class ValueIterator
-      implements Iterator<V>
+  implements Iterator<V>
   {
 
     /**
@@ -1098,7 +1175,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      */
     ValueIterator()
     {
-        iterator = new EntryIterator();
+      iterator = new EntryIterator();
     }
 
 
@@ -1108,9 +1185,10 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return true if there are more elements
      * @throws ConcurrentModificationException if the hashtable was modified
      */
+    @Override
     public boolean hasNext()
     {
-        return iterator.hasNext();
+      return iterator.hasNext();
     }
 
     /**
@@ -1121,6 +1199,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws NoSuchElementException if there is none
      */
+    @Override
     public V next()
     {
       return ((HashEntry<K,V>) iterator.next()).value;
@@ -1133,6 +1212,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws IllegalStateException if called when there is no last element
      */
+    @Override
     public void remove()
     {
       iterator.remove();
@@ -1155,7 +1235,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @author Fridjof Siebert
    */
   private class EntryEnumerator
-      implements Enumeration<Entry<K,V>>
+  implements Enumeration<Entry<K,V>>
   {
     /** The number of elements remaining to be returned by next(). */
     int count = size;
@@ -1180,6 +1260,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * Checks whether more elements remain in the enumeration.
      * @return true if nextElement() will not fail.
      */
+    @Override
     public boolean hasMoreElements()
     {
       return count > 0;
@@ -1190,18 +1271,22 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return the next element
      * @throws NoSuchElementException if there is none.
      */
+    @Override
     public Map.Entry<K,V> nextElement()
     {
-      if (count == 0)
+      if (count == 0){
         throw new NoSuchElementException("Hashtable Enumerator");
+      }
       count--;
       HashEntry<K, V> e = next;
 
-      while (e == null)
-        if (idx <= 0)
+      while (e == null){
+        if (idx <= 0) {
           return null;
-        else
+        } else {
           e = buckets[--idx];
+        }
+      }
 
       next = e.next;
       return e;
@@ -1225,7 +1310,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   private final class KeyEnumerator
-      implements Enumeration<K>
+  implements Enumeration<K>
   {
     /**
      * This entry enumerator is used for most operations.  Only
@@ -1249,9 +1334,10 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return true if there are more elements
      * @throws ConcurrentModificationException if the hashtable was modified
      */
+    @Override
     public boolean hasMoreElements()
     {
-        return enumerator.hasMoreElements();
+      return enumerator.hasMoreElements();
     }
 
     /**
@@ -1259,12 +1345,14 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return the next element
      * @throws NoSuchElementException if there is none.
      */
+    @Override
     public K nextElement()
     {
       HashEntry<K,V> entry = (HashEntry<K,V>) enumerator.nextElement();
       K retVal = null;
-      if (entry != null)
+      if (entry != null){
         retVal = entry.key;
+      }
       return retVal;
     }
   } // class KeyEnumerator
@@ -1286,7 +1374,7 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   private final class ValueEnumerator
-      implements Enumeration<V>
+  implements Enumeration<V>
   {
     /**
      * This entry enumerator is used for most operations.  Only
@@ -1310,9 +1398,10 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return true if there are more elements
      * @throws ConcurrentModificationException if the hashtable was modified
      */
+    @Override
     public boolean hasMoreElements()
     {
-        return enumerator.hasMoreElements();
+      return enumerator.hasMoreElements();
     }
 
     /**
@@ -1320,12 +1409,14 @@ public class Hashtable4D<K, V> extends Dictionary<K, V>
      * @return the next element
      * @throws NoSuchElementException if there is none.
      */
+    @Override
     public V nextElement()
     {
       HashEntry<K,V> entry = (HashEntry<K,V>) enumerator.nextElement();
       V retVal = null;
-      if (entry != null)
+      if (entry != null){
         retVal = entry.value;
+      }
       return retVal;
     }
   } // class ValueEnumerator

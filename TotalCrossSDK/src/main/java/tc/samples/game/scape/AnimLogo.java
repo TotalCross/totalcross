@@ -18,10 +18,11 @@
 
 package tc.samples.game.scape;
 
-import totalcross.game.*;
-import totalcross.io.*;
-import totalcross.ui.font.*;
-import totalcross.ui.image.*;
+import totalcross.game.Animation;
+import totalcross.io.IOException;
+import totalcross.ui.font.Font;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /**
  * The game animated logo.<br>
@@ -29,8 +30,8 @@ import totalcross.ui.image.*;
 
 public final class AnimLogo extends Animation
 {
-   public AnimLogo() throws ImageException, IOException
-   {
-      super(new Image("tc/samples/game/scape/hockey.png").getHwScaledInstance(Font.NORMAL_SIZE*4*8,Font.NORMAL_SIZE*4), 8, Font.NORMAL_SIZE*4);
-   }
+  public AnimLogo() throws ImageException, IOException
+  {
+    super(new Image("tc/samples/game/scape/hockey.png").getHwScaledInstance(Font.NORMAL_SIZE*4*8,Font.NORMAL_SIZE*4), 8, Font.NORMAL_SIZE*4);
+  }
 }

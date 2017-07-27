@@ -29,22 +29,22 @@ import totalcross.net.URI;
  */
 public interface XmlReadable
 {
-   /**
-    * Read this XmlReadable through an XmlReader parser.
-    *
-    * @param rdr
-    *           the XmlReader that will report the SAX events
-    * @exception SyntaxException
-    * @throws totalcross.io.IOException
-    */
-   public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException;
+  /**
+   * Read this XmlReadable through an XmlReader parser.
+   *
+   * @param rdr
+   *           the XmlReader that will report the SAX events
+   * @exception SyntaxException
+   * @throws totalcross.io.IOException
+   */
+  public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException;
 
-   /**
-    * Get the base URI attached to this XmlReadable
-    *
-    * @return the base URI attached to this XmlReadable
-    */
-   public URI getBaseURI();
-   
-   public void setCaseInsensitive(boolean caseInsensitive); // guich@tc113_29      
+  /**
+   * Get the base URI attached to this XmlReadable
+   *
+   * @return the base URI attached to this XmlReadable
+   */
+  public URI getBaseURI();
+
+  public void setCaseInsensitive(boolean caseInsensitive); // guich@tc113_29      
 }

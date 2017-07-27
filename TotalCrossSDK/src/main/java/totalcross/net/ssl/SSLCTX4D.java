@@ -48,44 +48,46 @@ import totalcross.net.Socket;
  */
 public class SSLCTX4D
 {
-   /**
-    * A reference to the real client/server context. For internal use only.
-    */
-   protected long m_ctx;
-   
-   boolean dontFinalize; //flsobral@tc114_36: finalize support.
-   
-   protected Object nativeHeap;
+  /**
+   * A reference to the real client/server context. For internal use only.
+   */
+  protected long m_ctx;
 
-   protected SSLCTX4D(int options, int num_sessions)
-   {
-      create4D(options, num_sessions);
-   }
+  boolean dontFinalize; //flsobral@tc114_36: finalize support.
 
-   native void create4D(int options, int num_sessions);
+  protected Object nativeHeap;
 
-   native public void dispose4D();
+  protected SSLCTX4D(int options, int num_sessions)
+  {
+    create4D(options, num_sessions);
+  }
 
-   native public SSL find4D(Socket s);
+  native void create4D(int options, int num_sessions);
 
-   native public int objLoad4D(int obj_type, totalcross.io.Stream material, String password) throws IOException;
+  native public void dispose4D();
 
-   native public int objLoad4D(int obj_type, byte[] data, int len, String password);
+  native public SSL find4D(Socket s);
+
+  native public int objLoad4D(int obj_type, totalcross.io.Stream material, String password) throws IOException;
+
+  native public int objLoad4D(int obj_type, byte[] data, int len, String password);
 
 
-   native public SSL newClient4D(Socket socket, byte[] session_id);
+  native public SSL newClient4D(Socket socket, byte[] session_id);
 
-   native public SSL newServer4D(Socket socket);
-   
-   protected final void finalize() //flsobral@tc114_36: finalize support.
-   {
-      try
-      {
-         if (dontFinalize != true)
-            dispose4D();
+  native public SSL newServer4D(Socket socket);
+
+  @Override
+  protected final void finalize() //flsobral@tc114_36: finalize support.
+  {
+    try
+    {
+      if (dontFinalize != true) {
+        dispose4D();
       }
-      catch (Throwable t)
-      {
-      }
-   }     
+    }
+    catch (Throwable t)
+    {
+    }
+  }     
 }

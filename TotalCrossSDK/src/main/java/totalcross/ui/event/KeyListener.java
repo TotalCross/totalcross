@@ -22,16 +22,16 @@ package totalcross.ui.event;
 
 public interface KeyListener
 {
-   /** A KEY_PRESS event was dispatched.
-    * @see KeyEvent 
-    */
-   public void keyPressed(KeyEvent e);
-   /** An ACTION_KEY_PRESS event was dispatched.
-    * @see KeyEvent 
-    */
-   public void actionkeyPressed(KeyEvent e);
-   /** A SPECIAL_KEY_PRESS event was dispatched.
-    * @see KeyEvent 
-    */
-   public void specialkeyPressed(KeyEvent e);
+  /** A KEY_PRESS event was dispatched.
+   * @see KeyEvent 
+   */
+  public void keyPressed(KeyEvent e);
+  /** An ACTION_KEY_PRESS event was dispatched.
+   * @see KeyEvent 
+   */
+  public void actionkeyPressed(KeyEvent e);
+  /** A SPECIAL_KEY_PRESS event was dispatched.
+   * @see KeyEvent 
+   */
+  public void specialkeyPressed(KeyEvent e);
 }

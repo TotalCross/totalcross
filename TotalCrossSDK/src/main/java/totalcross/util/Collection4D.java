@@ -38,7 +38,15 @@ exception statement from your version. */
 
 package totalcross.util;
 
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Interface that represents a collection of objects. This interface is the
@@ -174,6 +182,7 @@ public interface Collection4D<E> extends Iterable<E>
    * @param o the object to compare to this collection.
    * @return true if the o is equal to this collection.
    */
+  @Override
   boolean equals(Object o);
 
   /**
@@ -190,6 +199,7 @@ public interface Collection4D<E> extends Iterable<E>
    *
    * @return a hash code for this collection.
    */
+  @Override
   int hashCode();
 
   /**
@@ -204,6 +214,7 @@ public interface Collection4D<E> extends Iterable<E>
    *
    * @return an Iterator over the elements of this collection, in any order.
    */
+  @Override
   Iterator<E> iterator();
 
   /**

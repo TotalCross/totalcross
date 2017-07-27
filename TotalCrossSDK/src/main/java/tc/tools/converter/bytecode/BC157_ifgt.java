@@ -15,15 +15,17 @@ package tc.tools.converter.bytecode;
 
 public class BC157_ifgt extends ConditionalBranch
 {
-   public BC157_ifgt()
-   {
-      super(-1,-1,0,readInt16(pc+1),INT);
-   }
-   public void exec()
-   {
-      if (stack[stackPtr-1].asInt > 0)
-         pcInc = jumpIfTrue;
-      else
-         pcInc = jumpIfFalse;
-   }
+  public BC157_ifgt()
+  {
+    super(-1,-1,0,readInt16(pc+1),INT);
+  }
+  @Override
+  public void exec()
+  {
+    if (stack[stackPtr-1].asInt > 0){
+      pcInc = jumpIfTrue;
+    }else {
+      pcInc = jumpIfFalse;
+    }
+  }
 }

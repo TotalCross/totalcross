@@ -39,8 +39,25 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
-import java.lang.Comparable;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 
 /**
@@ -91,7 +108,7 @@ import java.lang.Comparable;
  * @status updated to 1.6
  */
 public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
-  implements NavigableMap<K, V>, Cloneable
+implements NavigableMap<K, V>, Cloneable
 {
   // Implementation note:
   // A red-black tree is a binary search tree with the additional properties
@@ -104,7 +121,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * Color status of a node. Package visible for use by nested classes.
    */
   static final int RED = -1,
-                   BLACK = 1;
+      BLACK = 1;
 
   /**
    * Sentinal node, used to avoid null checks for corner cases and make the
@@ -115,12 +132,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    */
   static final Node nil = new Node(null, null, BLACK);
   static
-    {
-      // Nil is self-referential, so we must initialize it after creation.
-      nil.parent = nil;
-      nil.left = nil;
-      nil.right = nil;
-    }
+  {
+    // Nil is self-referential, so we must initialize it after creation.
+    nil.parent = nil;
+    nil.left = nil;
+    nil.right = nil;
+  }
 
   /**
    * The root node of this TreeMap.
@@ -259,25 +276,26 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     Node node = firstNode();
 
     while (--pos >= 0)
-      {
-        Map.Entry me = (Map.Entry) itr.next();
-        node.key = me.getKey();
-        node.value = me.getValue();
-        node = successor(node);
-      }
+    {
+      Map.Entry me = (Map.Entry) itr.next();
+      node.key = me.getKey();
+      node.value = me.getValue();
+      node = successor(node);
+    }
   }
 
   /**
    * Clears the Map so it has no keys. This is O(1).
    */
+  @Override
   public void clear()
   {
     if (size > 0)
-      {
-        modCount++;
-        root = nil;
-        size = 0;
-      }
+    {
+      modCount++;
+      root = nil;
+      size = 0;
+    }
   }
 
   /**
@@ -286,16 +304,17 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *
    * @return the clone
    */
+  @Override
   public Object clone()
   {
     TreeMap4D copy = null;
     try
-      {
-        copy = (TreeMap4D) super.clone();
-      }
+    {
+      copy = (TreeMap4D) super.clone();
+    }
     catch (CloneNotSupportedException x)
-      {
-      }
+    {
+    }
     copy.entries = null;
     copy.fabricateTree(size);
 
@@ -303,12 +322,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     Node cnode = copy.firstNode();
 
     while (node != nil)
-      {
-        cnode.key = node.key;
-        cnode.value = node.value;
-        node = successor(node);
-        cnode = copy.successor(cnode);
-      }
+    {
+      cnode.key = node.key;
+      cnode.value = node.value;
+      node = successor(node);
+      cnode = copy.successor(cnode);
+    }
     return copy;
   }
 
@@ -318,6 +337,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *
    * @return the map's comparator
    */
+  @Override
   public Comparator<? super K> comparator()
   {
     return comparator;
@@ -332,6 +352,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws NullPointerException if key is null and the comparator is not
    *         tolerant of nulls
    */
+  @Override
   public boolean containsKey(Object key)
   {
     return getNode((K) key) != nil;
@@ -344,15 +365,17 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @param value the value to look for
    * @return true if the value appears in a mapping
    */
+  @Override
   public boolean containsValue(Object value)
   {
     Node node = firstNode();
     while (node != nil)
-      {
-        if (equals(value, node.value))
-          return true;
-        node = successor(node);
+    {
+      if (equals(value, node.value)) {
+        return true;
       }
+      node = successor(node);
+    }
     return false;
   }
 
@@ -369,12 +392,14 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #values()
    * @see Map.Entry
    */
+  @Override
   public Set<Map.Entry<K,V>> entrySet()
   {
-    if (entries == null)
+    if (entries == null){
       // Create an AbstractSet with custom implementations of those methods
       // that can be overriden easily and efficiently.
       entries = new NavigableEntrySet();
+    }
     return entries;
   }
 
@@ -384,10 +409,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @return the first key
    * @throws NoSuchElementException if the map is empty
    */
+  @Override
   public K firstKey()
   {
-    if (root == nil)
+    if (root == nil){
       throw new NoSuchElementException();
+    }
     return firstNode().key;
   }
 
@@ -405,6 +432,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
+  @Override
   public V get(Object key)
   {
     // Exploit fact that nil.value == null.
@@ -428,6 +456,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws NullPointerException if toKey is null, but the comparator does not
    *         tolerate null elements
    */
+  @Override
   public SortedMap<K, V> headMap(K toKey)
   {
     return headMap(toKey, false);
@@ -449,10 +478,11 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws NullPointerException if toKey is null, but the comparator does not
    *         tolerate null elements
    */
+  @Override
   public NavigableMap<K, V> headMap(K toKey, boolean inclusive)
   {
     return new SubMap((K)(Object)nil, inclusive
-                      ? successor(getNode(toKey)).key : toKey);
+        ? successor(getNode(toKey)).key : toKey);
   }
 
   /**
@@ -464,12 +494,14 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #values()
    * @see #entrySet()
    */
+  @Override
   public Set<K> keySet()
   {
-    if (keys == null)
+    if (keys == null){
       // Create an AbstractSet with custom implementations of those methods
       // that can be overriden easily and efficiently.
       keys = new KeySet();
+    }
     return keys;
   }
 
@@ -479,10 +511,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @return the last key
    * @throws NoSuchElementException if the map is empty
    */
+  @Override
   public K lastKey()
   {
-    if (root == nil)
+    if (root == nil){
       throw new NoSuchElementException("empty");
+    }
     return lastNode().key;
   }
 
@@ -502,6 +536,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #get(Object)
    * @see Object#equals(Object)
    */
+  @Override
   public V put(K key, V value)
   {
     Node<K,V> current = root;
@@ -510,16 +545,17 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     // Find new node's parent.
     while (current != nil)
-      {
-        parent = current;
-        comparison = compare(key, current.key);
-        if (comparison > 0)
-          current = current.right;
-        else if (comparison < 0)
-          current = current.left;
-        else // Key already in tree.
-          return current.setValue(value);
+    {
+      parent = current;
+      comparison = compare(key, current.key);
+      if (comparison > 0) {
+        current = current.right;
+      } else if (comparison < 0) {
+        current = current.left;
+      } else {
+        return current.setValue(value);
       }
+    }
 
     // Set up new node.
     Node n = new Node(key, value, RED);
@@ -529,15 +565,16 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     modCount++;
     size++;
     if (parent == nil)
-      {
-        // Special case inserting into an empty tree.
-        root = n;
-        return null;
-      }
-    if (comparison > 0)
+    {
+      // Special case inserting into an empty tree.
+      root = n;
+      return null;
+    }
+    if (comparison > 0){
       parent.right = n;
-    else
+    }else {
       parent.left = n;
+    }
 
     // Rebalance after insert.
     insertFixup(n);
@@ -555,15 +592,16 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws NullPointerException if a key in m is null, and the comparator
    *         does not tolerate nulls
    */
+  @Override
   public void putAll(Map<? extends K, ? extends V> m)
   {
     Iterator itr = m.entrySet().iterator();
     int pos = m.size();
     while (--pos >= 0)
-      {
-        Map.Entry<K,V> e = (Map.Entry<K,V>) itr.next();
-        put(e.getKey(), e.getValue());
-      }
+    {
+      Map.Entry<K,V> e = (Map.Entry<K,V>) itr.next();
+      put(e.getKey(), e.getValue());
+    }
   }
 
   /**
@@ -579,11 +617,13 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws NullPointerException if key is null, but the comparator does
    *         not tolerate nulls
    */
+  @Override
   public V remove(Object key)
   {
     Node<K, V> n = getNode((K)key);
-    if (n == nil)
+    if (n == nil){
       return null;
+    }
     // Note: removeNode can alter the contents of n, so save value now.
     V result = n.value;
     removeNode(n);
@@ -595,6 +635,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *
    * @return the size
    */
+  @Override
   public int size()
   {
     return size;
@@ -621,6 +662,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *         comparator does not tolerate null elements
    * @throws IllegalArgumentException if fromKey is greater than toKey
    */
+  @Override
   public SortedMap<K, V> subMap(K fromKey, K toKey)
   {
     return subMap(fromKey, true, toKey, false);
@@ -646,11 +688,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *         comparator does not tolerate null elements
    * @throws IllegalArgumentException if fromKey is greater than toKey
    */
+  @Override
   public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive,
-                                   K toKey, boolean toInclusive)
+      K toKey, boolean toInclusive)
   {
     return new SubMap(fromInclusive ? fromKey : successor(getNode(fromKey)).key,
-                      toInclusive ? successor(getNode(toKey)).key : toKey);
+        toInclusive ? successor(getNode(toKey)).key : toKey);
   }
 
   /**
@@ -669,6 +712,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws NullPointerException if fromKey is null, but the comparator
    *         does not tolerate null elements
    */
+  @Override
   public SortedMap<K, V> tailMap(K fromKey)
   {
     return tailMap(fromKey, true);
@@ -690,10 +734,11 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws NullPointerException if fromKey is null, but the comparator
    *         does not tolerate null elements
    */
+  @Override
   public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive)
   {
     return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key,
-                      (K)(Object)nil);
+        (K)(Object)nil);
   }
 
   /**
@@ -706,28 +751,33 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #keySet()
    * @see #entrySet()
    */
+  @Override
   public Collection<V> values()
   {
-    if (values == null)
+    if (values == null){
       // We don't bother overriding many of the optional methods, as doing so
       // wouldn't provide any significant performance advantage.
       values = new AbstractCollection<V>()
       {
+        @Override
         public int size()
         {
           return size;
         }
 
+        @Override
         public Iterator<V> iterator()
         {
           return new TreeIterator(VALUES);
         }
 
+        @Override
         public void clear()
         {
           TreeMap4D.this.clear();
         }
       };
+    }
     return values;
   }
 
@@ -744,7 +794,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   final int compare(K o1, K o2)
   {
     return (comparator == null
-            ? ((Comparable) o1).compareTo(o2)
+        ? ((Comparable) o1).compareTo(o2)
             : comparator.compare(o1, o2));
   }
 
@@ -762,96 +812,96 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     // violating the "same number of black nodes on any path" rule. If
     // node is red, we can simply recolor it black and all is well.
     while (node != root && node.color == BLACK)
+    {
+      if (node == parent.left)
       {
-        if (node == parent.left)
-          {
-            // Rebalance left side.
-            Node<K,V> sibling = parent.right;
-            // if (sibling == nil)
-            //   throw new InternalError();
-            if (sibling.color == RED)
-              {
-                // Case 1: Sibling is red.
-                // Recolor sibling and parent, and rotate parent left.
-                sibling.color = BLACK;
-                parent.color = RED;
-                rotateLeft(parent);
-                sibling = parent.right;
-              }
+        // Rebalance left side.
+        Node<K,V> sibling = parent.right;
+        // if (sibling == nil)
+        //   throw new InternalError();
+        if (sibling.color == RED)
+        {
+          // Case 1: Sibling is red.
+          // Recolor sibling and parent, and rotate parent left.
+          sibling.color = BLACK;
+          parent.color = RED;
+          rotateLeft(parent);
+          sibling = parent.right;
+        }
 
-            if (sibling.left.color == BLACK && sibling.right.color == BLACK)
-              {
-                // Case 2: Sibling has no red children.
-                // Recolor sibling, and move to parent.
-                sibling.color = RED;
-                node = parent;
-                parent = parent.parent;
-              }
-            else
-              {
-                if (sibling.right.color == BLACK)
-                  {
-                    // Case 3: Sibling has red left child.
-                    // Recolor sibling and left child, rotate sibling right.
-                    sibling.left.color = BLACK;
-                    sibling.color = RED;
-                    rotateRight(sibling);
-                    sibling = parent.right;
-                  }
-                // Case 4: Sibling has red right child. Recolor sibling,
-                // right child, and parent, and rotate parent left.
-                sibling.color = parent.color;
-                parent.color = BLACK;
-                sibling.right.color = BLACK;
-                rotateLeft(parent);
-                node = root; // Finished.
-              }
-          }
+        if (sibling.left.color == BLACK && sibling.right.color == BLACK)
+        {
+          // Case 2: Sibling has no red children.
+          // Recolor sibling, and move to parent.
+          sibling.color = RED;
+          node = parent;
+          parent = parent.parent;
+        }
         else
+        {
+          if (sibling.right.color == BLACK)
           {
-            // Symmetric "mirror" of left-side case.
-            Node<K,V> sibling = parent.left;
-            // if (sibling == nil)
-            //   throw new InternalError();
-            if (sibling.color == RED)
-              {
-                // Case 1: Sibling is red.
-                // Recolor sibling and parent, and rotate parent right.
-                sibling.color = BLACK;
-                parent.color = RED;
-                rotateRight(parent);
-                sibling = parent.left;
-              }
-
-            if (sibling.right.color == BLACK && sibling.left.color == BLACK)
-              {
-                // Case 2: Sibling has no red children.
-                // Recolor sibling, and move to parent.
-                sibling.color = RED;
-                node = parent;
-                parent = parent.parent;
-              }
-            else
-              {
-                if (sibling.left.color == BLACK)
-                  {
-                    // Case 3: Sibling has red right child.
-                    // Recolor sibling and right child, rotate sibling left.
-                    sibling.right.color = BLACK;
-                    sibling.color = RED;
-                    rotateLeft(sibling);
-                    sibling = parent.left;
-                  }
-                // Case 4: Sibling has red left child. Recolor sibling,
-                // left child, and parent, and rotate parent right.
-                sibling.color = parent.color;
-                parent.color = BLACK;
-                sibling.left.color = BLACK;
-                rotateRight(parent);
-                node = root; // Finished.
-              }
+            // Case 3: Sibling has red left child.
+            // Recolor sibling and left child, rotate sibling right.
+            sibling.left.color = BLACK;
+            sibling.color = RED;
+            rotateRight(sibling);
+            sibling = parent.right;
           }
+          // Case 4: Sibling has red right child. Recolor sibling,
+          // right child, and parent, and rotate parent left.
+          sibling.color = parent.color;
+          parent.color = BLACK;
+          sibling.right.color = BLACK;
+          rotateLeft(parent);
+          node = root; // Finished.
+        }
       }
+      else
+      {
+        // Symmetric "mirror" of left-side case.
+        Node<K,V> sibling = parent.left;
+        // if (sibling == nil)
+        //   throw new InternalError();
+        if (sibling.color == RED)
+        {
+          // Case 1: Sibling is red.
+          // Recolor sibling and parent, and rotate parent right.
+          sibling.color = BLACK;
+          parent.color = RED;
+          rotateRight(parent);
+          sibling = parent.left;
+        }
+
+        if (sibling.right.color == BLACK && sibling.left.color == BLACK)
+        {
+          // Case 2: Sibling has no red children.
+          // Recolor sibling, and move to parent.
+          sibling.color = RED;
+          node = parent;
+          parent = parent.parent;
+        }
+        else
+        {
+          if (sibling.left.color == BLACK)
+          {
+            // Case 3: Sibling has red right child.
+            // Recolor sibling and right child, rotate sibling left.
+            sibling.right.color = BLACK;
+            sibling.color = RED;
+            rotateLeft(sibling);
+            sibling = parent.left;
+          }
+          // Case 4: Sibling has red left child. Recolor sibling,
+          // left child, and parent, and rotate parent right.
+          sibling.color = parent.color;
+          parent.color = BLACK;
+          sibling.left.color = BLACK;
+          rotateRight(parent);
+          node = root; // Finished.
+        }
+      }
+    }
     node.color = BLACK;
   }
 
@@ -864,11 +914,11 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   private void fabricateTree(final int count)
   {
     if (count == 0)
-      {
-        root = nil;
-        size = 0;
-        return;
-      }
+    {
+      root = nil;
+      size = 0;
+      return;
+    }
 
     // We color every row of nodes black, except for the overflow nodes.
     // I believe that this is the optimal arrangement. We construct the tree
@@ -883,58 +933,59 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     // Fill each row that is completely full of nodes.
     for (rowsize = 2; rowsize + rowsize <= count; rowsize <<= 1)
+    {
+      Node parent = row;
+      Node last = null;
+      for (int i = 0; i < rowsize; i += 2)
       {
-        Node parent = row;
-        Node last = null;
-        for (int i = 0; i < rowsize; i += 2)
-          {
-            Node left = new Node(null, null, BLACK);
-            Node right = new Node(null, null, BLACK);
-            left.parent = parent;
-            left.right = right;
-            right.parent = parent;
-            parent.left = left;
-            Node next = parent.right;
-            parent.right = right;
-            parent = next;
-            if (last != null)
-              last.right = left;
-            last = right;
-          }
-        row = row.left;
+        Node left = new Node(null, null, BLACK);
+        Node right = new Node(null, null, BLACK);
+        left.parent = parent;
+        left.right = right;
+        right.parent = parent;
+        parent.left = left;
+        Node next = parent.right;
+        parent.right = right;
+        parent = next;
+        if (last != null) {
+          last.right = left;
+        }
+        last = right;
       }
+      row = row.left;
+    }
 
     // Now do the partial final row in red.
     int overflow = count - rowsize;
     Node parent = row;
     int i;
     for (i = 0; i < overflow; i += 2)
-      {
-        Node left = new Node(null, null, RED);
-        Node right = new Node(null, null, RED);
-        left.parent = parent;
-        right.parent = parent;
-        parent.left = left;
-        Node next = parent.right;
-        parent.right = right;
-        parent = next;
-      }
+    {
+      Node left = new Node(null, null, RED);
+      Node right = new Node(null, null, RED);
+      left.parent = parent;
+      right.parent = parent;
+      parent.left = left;
+      Node next = parent.right;
+      parent.right = right;
+      parent = next;
+    }
     // Add a lone left node if necessary.
     if (i - overflow == 0)
-      {
-        Node left = new Node(null, null, RED);
-        left.parent = parent;
-        parent.left = left;
-        parent = parent.right;
-        left.parent.right = nil;
-      }
+    {
+      Node left = new Node(null, null, RED);
+      left.parent = parent;
+      parent.left = left;
+      parent = parent.right;
+      left.parent.right = nil;
+    }
     // Unlink the remaining nodes of the previous row.
     while (parent != nil)
-      {
-        Node next = parent.right;
-        parent.right = nil;
-        parent = next;
-      }
+    {
+      Node next = parent.right;
+      parent.right = nil;
+      parent = next;
+    }
   }
 
   /**
@@ -947,8 +998,9 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   {
     // Exploit fact that nil.left == nil.
     Node node = root;
-    while (node.left != nil)
+    while (node.left != nil){
       node = node.left;
+    }
     return node;
   }
 
@@ -963,15 +1015,16 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   {
     Node<K,V> current = root;
     while (current != nil)
-      {
-        int comparison = compare(key, current.key);
-        if (comparison > 0)
-          current = current.right;
-        else if (comparison < 0)
-          current = current.left;
-        else
-          return current;
+    {
+      int comparison = compare(key, current.key);
+      if (comparison > 0) {
+        current = current.right;
+      } else if (comparison < 0) {
+        current = current.left;
+      } else {
+        return current;
       }
+    }
     return current;
   }
 
@@ -999,24 +1052,26 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    */
   final Node<K,V> highestLessThan(K key, boolean equal)
   {
-    if (key == nil)
+    if (key == nil){
       return lastNode();
+    }
 
     Node<K,V> last = nil;
     Node<K,V> current = root;
     int comparison = 0;
 
     while (current != nil)
-      {
-        last = current;
-        comparison = compare(key, current.key);
-        if (comparison > 0)
-          current = current.right;
-        else if (comparison < 0)
-          current = current.left;
-        else // Exact match.
-          return (equal ? last : predecessor(last));
+    {
+      last = current;
+      comparison = compare(key, current.key);
+      if (comparison > 0) {
+        current = current.right;
+      } else if (comparison < 0) {
+        current = current.left;
+      } else {
+        return (equal ? last : predecessor(last));
       }
+    }
     return comparison < 0 ? predecessor(last) : last;
   }
 
@@ -1031,67 +1086,67 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     // 2 levels deep into the tree (ie: node has a grandparent). Remember
     // that nil.color == BLACK.
     while (n.parent.color == RED && n.parent.parent != nil)
+    {
+      if (n.parent == n.parent.parent.left)
       {
-        if (n.parent == n.parent.parent.left)
-          {
-            Node uncle = n.parent.parent.right;
-            // Uncle may be nil, in which case it is BLACK.
-            if (uncle.color == RED)
-              {
-                // Case 1. Uncle is RED: Change colors of parent, uncle,
-                // and grandparent, and move n to grandparent.
-                n.parent.color = BLACK;
-                uncle.color = BLACK;
-                uncle.parent.color = RED;
-                n = uncle.parent;
-              }
-            else
-              {
-                if (n == n.parent.right)
-                  {
-                    // Case 2. Uncle is BLACK and x is right child.
-                    // Move n to parent, and rotate n left.
-                    n = n.parent;
-                    rotateLeft(n);
-                  }
-                // Case 3. Uncle is BLACK and x is left child.
-                // Recolor parent, grandparent, and rotate grandparent right.
-                n.parent.color = BLACK;
-                n.parent.parent.color = RED;
-                rotateRight(n.parent.parent);
-              }
-          }
+        Node uncle = n.parent.parent.right;
+        // Uncle may be nil, in which case it is BLACK.
+        if (uncle.color == RED)
+        {
+          // Case 1. Uncle is RED: Change colors of parent, uncle,
+          // and grandparent, and move n to grandparent.
+          n.parent.color = BLACK;
+          uncle.color = BLACK;
+          uncle.parent.color = RED;
+          n = uncle.parent;
+        }
         else
+        {
+          if (n == n.parent.right)
           {
-            // Mirror image of above code.
-            Node uncle = n.parent.parent.left;
-            // Uncle may be nil, in which case it is BLACK.
-            if (uncle.color == RED)
-              {
-                // Case 1. Uncle is RED: Change colors of parent, uncle,
-                // and grandparent, and move n to grandparent.
-                n.parent.color = BLACK;
-                uncle.color = BLACK;
-                uncle.parent.color = RED;
-                n = uncle.parent;
-              }
-            else
-              {
-                if (n == n.parent.left)
-                {
-                    // Case 2. Uncle is BLACK and x is left child.
-                    // Move n to parent, and rotate n right.
-                    n = n.parent;
-                    rotateRight(n);
-                  }
-                // Case 3. Uncle is BLACK and x is right child.
-                // Recolor parent, grandparent, and rotate grandparent left.
-                n.parent.color = BLACK;
-                n.parent.parent.color = RED;
-                rotateLeft(n.parent.parent);
-              }
+            // Case 2. Uncle is BLACK and x is right child.
+            // Move n to parent, and rotate n left.
+            n = n.parent;
+            rotateLeft(n);
           }
+          // Case 3. Uncle is BLACK and x is left child.
+          // Recolor parent, grandparent, and rotate grandparent right.
+          n.parent.color = BLACK;
+          n.parent.parent.color = RED;
+          rotateRight(n.parent.parent);
+        }
       }
+      else
+      {
+        // Mirror image of above code.
+        Node uncle = n.parent.parent.left;
+        // Uncle may be nil, in which case it is BLACK.
+        if (uncle.color == RED)
+        {
+          // Case 1. Uncle is RED: Change colors of parent, uncle,
+          // and grandparent, and move n to grandparent.
+          n.parent.color = BLACK;
+          uncle.color = BLACK;
+          uncle.parent.color = RED;
+          n = uncle.parent;
+        }
+        else
+        {
+          if (n == n.parent.left)
+          {
+            // Case 2. Uncle is BLACK and x is left child.
+            // Move n to parent, and rotate n right.
+            n = n.parent;
+            rotateRight(n);
+          }
+          // Case 3. Uncle is BLACK and x is right child.
+          // Recolor parent, grandparent, and rotate grandparent left.
+          n.parent.color = BLACK;
+          n.parent.parent.color = RED;
+          rotateLeft(n.parent.parent);
+        }
+      }
+    }
     root.color = BLACK;
   }
 
@@ -1104,8 +1159,9 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   {
     // Exploit fact that nil.right == nil.
     Node node = root;
-    while (node.right != nil)
+    while (node.right != nil){
       node = node.right;
+    }
     return node;
   }
 
@@ -1135,24 +1191,26 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    */
   final Node<K,V> lowestGreaterThan(K key, boolean first, boolean equal)
   {
-    if (key == nil)
+    if (key == nil){
       return first ? firstNode() : nil;
+    }
 
     Node<K,V> last = nil;
     Node<K,V> current = root;
     int comparison = 0;
 
     while (current != nil)
-      {
-        last = current;
-        comparison = compare(key, current.key);
-        if (comparison > 0)
-          current = current.right;
-        else if (comparison < 0)
-          current = current.left;
-        else
-          return (equal ? current : successor(current));
+    {
+      last = current;
+      comparison = compare(key, current.key);
+      if (comparison > 0) {
+        current = current.right;
+      } else if (comparison < 0) {
+        current = current.left;
+      } else {
+        return (equal ? current : successor(current));
       }
+    }
     return comparison > 0 ? successor(last) : last;
   }
 
@@ -1165,20 +1223,21 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   private Node<K,V> predecessor(Node<K,V> node)
   {
     if (node.left != nil)
-      {
-        node = node.left;
-        while (node.right != nil)
-          node = node.right;
-        return node;
+    {
+      node = node.left;
+      while (node.right != nil) {
+        node = node.right;
       }
+      return node;
+    }
 
     Node parent = node.parent;
     // Exploit fact that nil.left == nil and node is non-nil.
     while (node == parent.left)
-      {
-        node = parent;
-        parent = node.parent;
-      }
+    {
+      node = parent;
+      parent = node.parent;
+    }
     return parent;
   }
 
@@ -1196,11 +1255,11 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     Node<K,V> node = firstNode();
 
     while (--count >= 0)
-      {
-        node.key = keys.next();
-        node.value = (V) "";
-        node = successor(node);
-      }
+    {
+      node.key = keys.next();
+      node.value = (V) "";
+      node = successor(node);
+    }
   }
 
   /**
@@ -1219,46 +1278,50 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     // Find splice, the node at the position to actually remove from the tree.
     if (node.left == nil)
-      {
-        // Node to be deleted has 0 or 1 children.
-        splice = node;
-        child = node.right;
-      }
+    {
+      // Node to be deleted has 0 or 1 children.
+      splice = node;
+      child = node.right;
+    }
     else if (node.right == nil)
-      {
-        // Node to be deleted has 1 child.
-        splice = node;
-        child = node.left;
-      }
+    {
+      // Node to be deleted has 1 child.
+      splice = node;
+      child = node.left;
+    }
     else
-      {
-        // Node has 2 children. Splice is node's predecessor, and we swap
-        // its contents into node.
-        splice = node.left;
-        while (splice.right != nil)
-          splice = splice.right;
-        child = splice.left;
-        node.key = splice.key;
-        node.value = splice.value;
+    {
+      // Node has 2 children. Splice is node's predecessor, and we swap
+      // its contents into node.
+      splice = node.left;
+      while (splice.right != nil) {
+        splice = splice.right;
       }
+      child = splice.left;
+      node.key = splice.key;
+      node.value = splice.value;
+    }
 
     // Unlink splice from the tree.
     Node parent = splice.parent;
-    if (child != nil)
+    if (child != nil){
       child.parent = parent;
+    }
     if (parent == nil)
-      {
-        // Special case for 0 or 1 node remaining.
-        root = child;
-        return;
-      }
-    if (splice == parent.left)
+    {
+      // Special case for 0 or 1 node remaining.
+      root = child;
+      return;
+    }
+    if (splice == parent.left){
       parent.left = child;
-    else
+    }else {
       parent.right = child;
+    }
 
-    if (splice.color == BLACK)
+    if (splice.color == BLACK){
       deleteFixup(child, parent);
+    }
   }
 
   /**
@@ -1274,20 +1337,22 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     // Establish node.right link.
     node.right = child.left;
-    if (child.left != nil)
+    if (child.left != nil){
       child.left.parent = node;
+    }
 
     // Establish child->parent link.
     child.parent = node.parent;
     if (node.parent != nil)
-      {
-        if (node == node.parent.left)
-          node.parent.left = child;
-        else
-          node.parent.right = child;
+    {
+      if (node == node.parent.left) {
+        node.parent.left = child;
+      } else {
+        node.parent.right = child;
       }
-    else
+    }else {
       root = child;
+    }
 
     // Link n and child.
     child.left = node;
@@ -1307,20 +1372,22 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     // Establish node.left link.
     node.left = child.right;
-    if (child.right != nil)
+    if (child.right != nil){
       child.right.parent = node;
+    }
 
     // Establish child->parent link.
     child.parent = node.parent;
     if (node.parent != nil)
-      {
-        if (node == node.parent.right)
-          node.parent.right = child;
-        else
-          node.parent.left = child;
+    {
+      if (node == node.parent.right) {
+        node.parent.right = child;
+      } else {
+        node.parent.left = child;
       }
-    else
+    }else {
       root = child;
+    }
 
     // Link n and child.
     child.right = node;
@@ -1337,20 +1404,21 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   final Node<K,V> successor(Node<K,V> node)
   {
     if (node.right != nil)
-      {
-        node = node.right;
-        while (node.left != nil)
-          node = node.left;
-        return node;
+    {
+      node = node.right;
+      while (node.left != nil) {
+        node = node.left;
       }
+      return node;
+    }
 
     Node<K,V> parent = node.parent;
     // Exploit fact that nil.right == nil and node is non-nil.
     while (node == parent.right)
-      {
-        node = parent;
-        parent = parent.parent;
-      }
+    {
+      node = parent;
+      parent = parent.parent;
+    }
     return parent;
   }
 
@@ -1407,6 +1475,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
      * Returns true if the Iterator has more elements.
      * @return true if there are more elements
      */
+    @Override
     public boolean hasNext()
     {
       return next != max;
@@ -1418,19 +1487,23 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
      * @throws ConcurrentModificationException if the TreeMap was modified
      * @throws NoSuchElementException if there is none
      */
+    @Override
     public Object next()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (next == max)
+      }
+      if (next == max){
         throw new NoSuchElementException();
+      }
       last = next;
       next = successor(last);
 
-      if (type == VALUES)
+      if (type == VALUES){
         return last.value;
-      else if (type == KEYS)
+      }else if (type == KEYS){
         return last.key;
+      }
       return last;
     }
 
@@ -1440,12 +1513,15 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
      * @throws ConcurrentModificationException if the TreeMap was modified
      * @throws IllegalStateException if called when there is no last element
      */
+    @Override
     public void remove()
     {
-      if (last == null)
+      if (last == null){
         throw new IllegalStateException();
-      if (knownMod != modCount)
+      }
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
+      }
 
       removeNode(last);
       last = null;
@@ -1462,8 +1538,8 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @author Eric Blake (ebb9@email.byu.edu)
    */
   private final class SubMap
-    extends AbstractMap4D<K,V>
-    implements NavigableMap<K,V>
+  extends AbstractMap4D<K,V>
+  implements NavigableMap<K,V>
   {
     /**
      * The lower range of this view, inclusive, or nil for unbounded.
@@ -1503,8 +1579,9 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
      */
     SubMap(K minKey, K maxKey)
     {
-      if (minKey != nil && maxKey != nil && compare(minKey, maxKey) > 0)
+      if (minKey != nil && maxKey != nil && compare(minKey, maxKey) > 0){
         throw new IllegalArgumentException("fromKey > toKey");
+      }
       this.minKey = minKey;
       this.maxKey = maxKey;
     }
@@ -1520,282 +1597,342 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     boolean keyInRange(K key)
     {
       return ((minKey == nil || compare(key, minKey) >= 0)
-              && (maxKey == nil || compare(key, maxKey) < 0));
+          && (maxKey == nil || compare(key, maxKey) < 0));
     }
 
+    @Override
     public Entry<K,V> ceilingEntry(K key)
     {
       Entry<K,V> n = TreeMap4D.this.ceilingEntry(key);
-      if (n != null && keyInRange(n.getKey()))
+      if (n != null && keyInRange(n.getKey())){
         return n;
+      }
       return null;
     }
 
+    @Override
     public K ceilingKey(K key)
     {
       K found = TreeMap4D.this.ceilingKey(key);
-      if (keyInRange(found))
+      if (keyInRange(found)){
         return found;
-      else
+      }else {
         return null;
+      }
     }
 
+    @Override
     public NavigableSet<K> descendingKeySet()
     {
       return descendingMap().navigableKeySet();
     }
 
+    @Override
     public NavigableMap<K,V> descendingMap()
     {
-      if (descendingMap == null)
+      if (descendingMap == null){
         descendingMap = new DescendingMap(this);
+      }
       return descendingMap;
     }
 
+    @Override
     public void clear()
     {
       Node next = lowestGreaterThan(minKey, true);
       Node max = lowestGreaterThan(maxKey, false);
       while (next != max)
-        {
-          Node current = next;
-          next = successor(current);
-          removeNode(current);
-        }
+      {
+        Node current = next;
+        next = successor(current);
+        removeNode(current);
+      }
     }
 
+    @Override
     public Comparator<? super K> comparator()
     {
       return comparator;
     }
 
+    @Override
     public boolean containsKey(Object key)
     {
       return keyInRange((K) key) && TreeMap4D.this.containsKey(key);
     }
 
+    @Override
     public boolean containsValue(Object value)
     {
       Node node = lowestGreaterThan(minKey, true);
       Node max = lowestGreaterThan(maxKey, false);
       while (node != max)
-        {
-          if (equals(value, node.getValue()))
-            return true;
-          node = successor(node);
+      {
+        if (equals(value, node.getValue())) {
+          return true;
         }
+        node = successor(node);
+      }
       return false;
     }
 
+    @Override
     public Set<Map.Entry<K,V>> entrySet()
     {
-      if (entries == null)
+      if (entries == null){
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
         entries = new SubMap.NavigableEntrySet();
+      }
       return entries;
     }
 
+    @Override
     public Entry<K,V> firstEntry()
     {
       Node<K,V> node = lowestGreaterThan(minKey, true);
-      if (node == nil || ! keyInRange(node.key))
+      if (node == nil || ! keyInRange(node.key)){
         return null;
+      }
       return node;
     }
 
+    @Override
     public K firstKey()
     {
       Entry<K,V> e = firstEntry();
-      if (e == null)
+      if (e == null){
         throw new NoSuchElementException();
+      }
       return e.getKey();
     }
 
+    @Override
     public Entry<K,V> floorEntry(K key)
     {
       Entry<K,V> n = TreeMap4D.this.floorEntry(key);
-      if (n != null && keyInRange(n.getKey()))
+      if (n != null && keyInRange(n.getKey())){
         return n;
+      }
       return null;
     }
 
+    @Override
     public K floorKey(K key)
     {
       K found = TreeMap4D.this.floorKey(key);
-      if (keyInRange(found))
+      if (keyInRange(found)){
         return found;
-      else
+      }else {
         return null;
+      }
     }
 
+    @Override
     public V get(Object key)
     {
-      if (keyInRange((K) key))
+      if (keyInRange((K) key)){
         return TreeMap4D.this.get(key);
+      }
       return null;
     }
 
+    @Override
     public SortedMap<K,V> headMap(K toKey)
     {
       return headMap(toKey, false);
     }
 
+    @Override
     public NavigableMap<K,V> headMap(K toKey, boolean inclusive)
     {
-      if (!keyInRange(toKey))
+      if (!keyInRange(toKey)){
         throw new IllegalArgumentException("Key outside submap range");
+      }
       return new SubMap(minKey, (inclusive ?
-                                 successor(getNode(toKey)).key : toKey));
+          successor(getNode(toKey)).key : toKey));
     }
 
+    @Override
     public Set<K> keySet()
     {
-      if (this.keys == null)
+      if (this.keys == null){
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
         this.keys = new SubMap.KeySet();
+      }
       return this.keys;
     }
 
+    @Override
     public Entry<K,V> higherEntry(K key)
     {
       Entry<K,V> n = TreeMap4D.this.higherEntry(key);
-      if (n != null && keyInRange(n.getKey()))
+      if (n != null && keyInRange(n.getKey())){
         return n;
+      }
       return null;
     }
 
+    @Override
     public K higherKey(K key)
     {
       K found = TreeMap4D.this.higherKey(key);
-      if (keyInRange(found))
+      if (keyInRange(found)){
         return found;
-      else
+      }else {
         return null;
+      }
     }
 
+    @Override
     public Entry<K,V> lastEntry()
     {
       return lowerEntry(maxKey);
     }
 
+    @Override
     public K lastKey()
     {
       Entry<K,V> e = lastEntry();
-      if (e == null)
+      if (e == null){
         throw new NoSuchElementException();
+      }
       return e.getKey();
     }
 
+    @Override
     public Entry<K,V> lowerEntry(K key)
     {
       Entry<K,V> n = TreeMap4D.this.lowerEntry(key);
-      if (n != null && keyInRange(n.getKey()))
+      if (n != null && keyInRange(n.getKey())){
         return n;
+      }
       return null;
     }
 
+    @Override
     public K lowerKey(K key)
     {
       K found = TreeMap4D.this.lowerKey(key);
-      if (keyInRange(found))
+      if (keyInRange(found)){
         return found;
-      else
+      }else {
         return null;
+      }
     }
 
+    @Override
     public NavigableSet<K> navigableKeySet()
     {
-      if (this.nKeys == null)
+      if (this.nKeys == null){
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
         this.nKeys = new SubMap.NavigableKeySet();
+      }
       return this.nKeys;
     }
 
+    @Override
     public Entry<K,V> pollFirstEntry()
     {
       Entry<K,V> e = firstEntry();
-      if (e != null)
+      if (e != null){
         removeNode((Node<K,V>) e);
+      }
       return e;
     }
 
+    @Override
     public Entry<K,V> pollLastEntry()
     {
       Entry<K,V> e = lastEntry();
-      if (e != null)
+      if (e != null){
         removeNode((Node<K,V>) e);
+      }
       return e;
     }
 
+    @Override
     public V put(K key, V value)
     {
-      if (! keyInRange(key))
+      if (! keyInRange(key)){
         throw new IllegalArgumentException("Key outside range");
+      }
       return TreeMap4D.this.put(key, value);
     }
 
+    @Override
     public V remove(Object key)
     {
-      if (keyInRange((K)key))
+      if (keyInRange((K)key)){
         return TreeMap4D.this.remove(key);
+      }
       return null;
     }
 
+    @Override
     public int size()
     {
       Node node = lowestGreaterThan(minKey, true);
       Node max = lowestGreaterThan(maxKey, false);
       int count = 0;
       while (node != max)
-        {
-          count++;
-          node = successor(node);
-        }
+      {
+        count++;
+        node = successor(node);
+      }
       return count;
     }
 
+    @Override
     public SortedMap<K,V> subMap(K fromKey, K toKey)
     {
       return subMap(fromKey, true, toKey, false);
     }
 
+    @Override
     public NavigableMap<K,V> subMap(K fromKey, boolean fromInclusive,
-                                    K toKey, boolean toInclusive)
+        K toKey, boolean toInclusive)
     {
-      if (! keyInRange(fromKey) || ! keyInRange(toKey))
+      if (! keyInRange(fromKey) || ! keyInRange(toKey)){
         throw new IllegalArgumentException("key outside range");
+      }
       return new SubMap(fromInclusive ? fromKey : successor(getNode(fromKey)).key,
-                        toInclusive ? successor(getNode(toKey)).key : toKey);
+          toInclusive ? successor(getNode(toKey)).key : toKey);
     }
 
+    @Override
     public SortedMap<K, V> tailMap(K fromKey)
     {
       return tailMap(fromKey, true);
     }
 
+    @Override
     public NavigableMap<K,V> tailMap(K fromKey, boolean inclusive)
     {
-      if (! keyInRange(fromKey))
+      if (! keyInRange(fromKey)){
         throw new IllegalArgumentException("key outside range");
+      }
       return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key,
-                        maxKey);
+          maxKey);
     }
 
+    @Override
     public Collection<V> values()
     {
-      if (this.values == null)
+      if (this.values == null){
         // Create an AbstractCollection with custom implementations of those
         // methods that can be overriden easily and efficiently.
         this.values = new AbstractCollection()
         {
+          @Override
           public int size()
           {
             return SubMap.this.size();
           }
 
+          @Override
           public Iterator<V> iterator()
           {
             Node first = lowestGreaterThan(minKey, true);
@@ -1803,22 +1940,26 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
             return new TreeIterator(VALUES, first, max);
           }
 
+          @Override
           public void clear()
           {
             SubMap.this.clear();
           }
         };
+      }
       return this.values;
     }
 
     private class KeySet
-      extends AbstractSet<K>
+    extends AbstractSet<K>
     {
+      @Override
       public int size()
       {
         return SubMap.this.size();
       }
 
+      @Override
       public Iterator<K> iterator()
       {
         Node first = lowestGreaterThan(minKey, true);
@@ -1826,285 +1967,334 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
         return new TreeIterator(KEYS, first, max);
       }
 
+      @Override
       public void clear()
       {
         SubMap.this.clear();
       }
 
+      @Override
       public boolean contains(Object o)
       {
-        if (! keyInRange((K) o))
+        if (! keyInRange((K) o)) {
           return false;
+        }
         return getNode((K) o) != nil;
       }
 
+      @Override
       public boolean remove(Object o)
       {
-        if (! keyInRange((K) o))
+        if (! keyInRange((K) o)) {
           return false;
+        }
         Node n = getNode((K) o);
         if (n != nil)
-          {
-            removeNode(n);
-            return true;
-          }
+        {
+          removeNode(n);
+          return true;
+        }
         return false;
       }
 
     } // class SubMap.KeySet
 
     private final class NavigableKeySet
-      extends KeySet
-      implements NavigableSet<K>
+    extends KeySet
+    implements NavigableSet<K>
     {
 
+      @Override
       public K ceiling(K k)
       {
         return SubMap.this.ceilingKey(k);
       }
 
+      @Override
       public Comparator<? super K> comparator()
       {
         return comparator;
       }
 
+      @Override
       public Iterator<K> descendingIterator()
       {
         return descendingSet().iterator();
       }
 
+      @Override
       public NavigableSet<K> descendingSet()
       {
         return new DescendingSet(this);
       }
 
+      @Override
       public K first()
       {
         return SubMap.this.firstKey();
       }
 
+      @Override
       public K floor(K k)
       {
         return SubMap.this.floorKey(k);
       }
 
+      @Override
       public SortedSet<K> headSet(K to)
       {
         return headSet(to, false);
       }
 
+      @Override
       public NavigableSet<K> headSet(K to, boolean inclusive)
       {
         return SubMap.this.headMap(to, inclusive).navigableKeySet();
       }
 
+      @Override
       public K higher(K k)
       {
         return SubMap.this.higherKey(k);
       }
 
+      @Override
       public K last()
       {
         return SubMap.this.lastKey();
       }
 
+      @Override
       public K lower(K k)
       {
         return SubMap.this.lowerKey(k);
       }
 
+      @Override
       public K pollFirst()
       {
         return SubMap.this.pollFirstEntry().getKey();
       }
 
+      @Override
       public K pollLast()
       {
         return SubMap.this.pollLastEntry().getKey();
       }
 
+      @Override
       public SortedSet<K> subSet(K from, K to)
       {
         return subSet(from, true, to, false);
       }
 
+      @Override
       public NavigableSet<K> subSet(K from, boolean fromInclusive,
-                                    K to, boolean toInclusive)
+          K to, boolean toInclusive)
       {
         return SubMap.this.subMap(from, fromInclusive,
-                                  to, toInclusive).navigableKeySet();
+            to, toInclusive).navigableKeySet();
       }
 
+      @Override
       public SortedSet<K> tailSet(K from)
       {
         return tailSet(from, true);
       }
 
+      @Override
       public NavigableSet<K> tailSet(K from, boolean inclusive)
       {
         return SubMap.this.tailMap(from, inclusive).navigableKeySet();
       }
 
-  } // class SubMap.NavigableKeySet
+    } // class SubMap.NavigableKeySet
 
-  /**
-   * Implementation of {@link #entrySet()}.
-   */
-  private class EntrySet
+    /**
+     * Implementation of {@link #entrySet()}.
+     */
+    private class EntrySet
     extends AbstractSet<Entry<K,V>>
-  {
-
-    public int size()
     {
-      return SubMap.this.size();
-    }
 
-    public Iterator<Map.Entry<K,V>> iterator()
-    {
-      Node first = lowestGreaterThan(minKey, true);
-      Node max = lowestGreaterThan(maxKey, false);
-      return new TreeIterator(ENTRIES, first, max);
-    }
+      @Override
+      public int size()
+      {
+        return SubMap.this.size();
+      }
 
-    public void clear()
-    {
-      SubMap.this.clear();
-    }
+      @Override
+      public Iterator<Map.Entry<K,V>> iterator()
+      {
+        Node first = lowestGreaterThan(minKey, true);
+        Node max = lowestGreaterThan(maxKey, false);
+        return new TreeIterator(ENTRIES, first, max);
+      }
 
-    public boolean contains(Object o)
-    {
-      if (! (o instanceof Map.Entry))
-        return false;
-      Map.Entry<K,V> me = (Map.Entry<K,V>) o;
-      K key = me.getKey();
-      if (! keyInRange(key))
-        return false;
-      Node<K,V> n = getNode(key);
-      return n != nil && AbstractCollection4D.equals(me.getValue(), n.value);
-    }
+      @Override
+      public void clear()
+      {
+        SubMap.this.clear();
+      }
 
-    public boolean remove(Object o)
-    {
-      if (! (o instanceof Map.Entry))
-        return false;
-      Map.Entry<K,V> me = (Map.Entry<K,V>) o;
-      K key = me.getKey();
-      if (! keyInRange(key))
-        return false;
-      Node<K,V> n = getNode(key);
-      if (n != nil && AbstractCollection4D.equals(me.getValue(), n.value))
+      @Override
+      public boolean contains(Object o)
+      {
+        if (! (o instanceof Map.Entry)){
+          return false;
+        }
+        Map.Entry<K,V> me = (Map.Entry<K,V>) o;
+        K key = me.getKey();
+        if (! keyInRange(key)){
+          return false;
+        }
+        Node<K,V> n = getNode(key);
+        return n != nil && AbstractCollection4D.equals(me.getValue(), n.value);
+      }
+
+      @Override
+      public boolean remove(Object o)
+      {
+        if (! (o instanceof Map.Entry)){
+          return false;
+        }
+        Map.Entry<K,V> me = (Map.Entry<K,V>) o;
+        K key = me.getKey();
+        if (! keyInRange(key)){
+          return false;
+        }
+        Node<K,V> n = getNode(key);
+        if (n != nil && AbstractCollection4D.equals(me.getValue(), n.value))
         {
           removeNode(n);
           return true;
         }
-      return false;
-    }
-  } // class SubMap.EntrySet
+        return false;
+      }
+    } // class SubMap.EntrySet
 
     private final class NavigableEntrySet
-      extends EntrySet
-      implements NavigableSet<Entry<K,V>>
+    extends EntrySet
+    implements NavigableSet<Entry<K,V>>
     {
 
+      @Override
       public Entry<K,V> ceiling(Entry<K,V> e)
       {
         return SubMap.this.ceilingEntry(e.getKey());
       }
 
+      @Override
       public Comparator<? super Entry<K,V>> comparator()
       {
         return new Comparator<Entry<K,V>>()
+        {
+          @Override
+          public int compare(Entry<K,V> t1, Entry<K,V> t2)
           {
-            public int compare(Entry<K,V> t1, Entry<K,V> t2)
-              {
-                return comparator.compare(t1.getKey(), t2.getKey());
-              }
-          };
+            return comparator.compare(t1.getKey(), t2.getKey());
+          }
+        };
       }
 
+      @Override
       public Iterator<Entry<K,V>> descendingIterator()
       {
         return descendingSet().iterator();
       }
 
+      @Override
       public NavigableSet<Entry<K,V>> descendingSet()
       {
         return new DescendingSet(this);
       }
 
+      @Override
       public Entry<K,V> first()
       {
         return SubMap.this.firstEntry();
       }
 
+      @Override
       public Entry<K,V> floor(Entry<K,V> e)
       {
         return SubMap.this.floorEntry(e.getKey());
       }
 
+      @Override
       public SortedSet<Entry<K,V>> headSet(Entry<K,V> to)
       {
         return headSet(to, false);
       }
 
+      @Override
       public NavigableSet<Entry<K,V>> headSet(Entry<K,V> to, boolean inclusive)
       {
         return (NavigableSet<Entry<K,V>>)
-          SubMap.this.headMap(to.getKey(), inclusive).entrySet();
+            SubMap.this.headMap(to.getKey(), inclusive).entrySet();
       }
 
+      @Override
       public Entry<K,V> higher(Entry<K,V> e)
       {
         return SubMap.this.higherEntry(e.getKey());
       }
 
+      @Override
       public Entry<K,V> last()
       {
         return SubMap.this.lastEntry();
       }
 
+      @Override
       public Entry<K,V> lower(Entry<K,V> e)
       {
         return SubMap.this.lowerEntry(e.getKey());
       }
 
+      @Override
       public Entry<K,V> pollFirst()
       {
         return SubMap.this.pollFirstEntry();
       }
 
+      @Override
       public Entry<K,V> pollLast()
       {
         return SubMap.this.pollLastEntry();
       }
 
+      @Override
       public SortedSet<Entry<K,V>> subSet(Entry<K,V> from, Entry<K,V> to)
       {
         return subSet(from, true, to, false);
       }
 
+      @Override
       public NavigableSet<Entry<K,V>> subSet(Entry<K,V> from, boolean fromInclusive,
-                                             Entry<K,V> to, boolean toInclusive)
+          Entry<K,V> to, boolean toInclusive)
       {
         return (NavigableSet<Entry<K,V>>)
-          SubMap.this.subMap(from.getKey(), fromInclusive,
-                             to.getKey(), toInclusive).entrySet();
+            SubMap.this.subMap(from.getKey(), fromInclusive,
+                to.getKey(), toInclusive).entrySet();
       }
 
+      @Override
       public SortedSet<Entry<K,V>> tailSet(Entry<K,V> from)
       {
         return tailSet(from, true);
       }
 
+      @Override
       public NavigableSet<Entry<K,V>> tailSet(Entry<K,V> from, boolean inclusive)
       {
         return (NavigableSet<Entry<K,V>>)
-          SubMap.this.tailMap(from.getKey(), inclusive).navigableKeySet();
+            SubMap.this.tailMap(from.getKey(), inclusive).navigableKeySet();
       }
 
-  } // class SubMap.NavigableEntrySet
+    } // class SubMap.NavigableEntrySet
 
-} // class SubMap
+  } // class SubMap
 
   /**
    * Returns the entry associated with the least or lowest key
@@ -2123,6 +2313,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> ceilingEntry(K key)
   {
     Node<K,V> n = lowestGreaterThan(key, false);
@@ -2145,6 +2336,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public K ceilingKey(K key)
   {
     Entry<K,V> e = ceilingEntry(key);
@@ -2161,6 +2353,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @since 1.6
    * @see #descendingMap()
    */
+  @Override
   public NavigableSet<K> descendingKeySet()
   {
     return descendingMap().navigableKeySet();
@@ -2180,10 +2373,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @return a reverse order view of the map.
    * @since 1.6
    */
+  @Override
   public NavigableMap<K,V> descendingMap()
   {
-    if (descendingMap == null)
+    if (descendingMap == null){
       descendingMap = new DescendingMap<K,V>(this);
+    }
     return descendingMap;
   }
 
@@ -2195,6 +2390,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *         is empty.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> firstEntry()
   {
     Node<K,V> n = firstNode();
@@ -2218,6 +2414,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> floorEntry(K key)
   {
     Node<K,V> n = highestLessThan(key, true);
@@ -2240,6 +2437,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public K floorKey(K key)
   {
     Entry<K,V> e = floorEntry(key);
@@ -2263,6 +2461,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> higherEntry(K key)
   {
     Node<K,V> n = lowestGreaterThan(key, false, false);
@@ -2285,6 +2484,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public K higherKey(K key)
   {
     Entry<K,V> e = higherEntry(key);
@@ -2299,6 +2499,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *         is empty.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> lastEntry()
   {
     Node<K,V> n = lastNode();
@@ -2322,6 +2523,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> lowerEntry(K key)
   {
     Node<K,V> n = highestLessThan(key);
@@ -2344,6 +2546,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *                              not permit null keys.
    * @since 1.6
    */
+  @Override
   public K lowerKey(K key)
   {
     Entry<K,V> e = lowerEntry(key);
@@ -2361,10 +2564,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @return a {@link NavigableSet} view of the keys.
    * @since 1.6
    */
+  @Override
   public NavigableSet<K> navigableKeySet()
   {
-    if (nKeys == null)
+    if (nKeys == null){
       nKeys = new NavigableKeySet();
+    }
     return nKeys;
   }
 
@@ -2377,11 +2582,13 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *         map is empty.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> pollFirstEntry()
   {
     Entry<K,V> e = firstEntry();
-    if (e != null)
+    if (e != null){
       removeNode((Node<K,V>)e);
+    }
     return e;
   }
 
@@ -2394,11 +2601,13 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    *         map is empty.
    * @since 1.6
    */
+  @Override
   public Entry<K,V> pollLastEntry()
   {
     Entry<K,V> e = lastEntry();
-    if (e != null)
+    if (e != null){
       removeNode((Node<K,V>)e);
+    }
     return e;
   }
 
@@ -2412,7 +2621,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   private static final class DescendingMap<DK,DV>
-    implements NavigableMap<DK,DV>
+  implements NavigableMap<DK,DV>
   {
 
     /**
@@ -2451,201 +2660,242 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
       this.map = map;
     }
 
+    @Override
     public Map.Entry<DK,DV> ceilingEntry(DK key)
     {
       return map.floorEntry(key);
     }
 
+    @Override
     public DK ceilingKey(DK key)
     {
       return map.floorKey(key);
     }
 
+    @Override
     public void clear()
     {
       map.clear();
     }
 
+    @Override
     public Comparator<? super DK> comparator()
     {
       return Collections.reverseOrder(map.comparator());
     }
 
+    @Override
     public boolean containsKey(Object o)
     {
       return map.containsKey(o);
     }
 
+    @Override
     public boolean containsValue(Object o)
     {
       return map.containsValue(o);
     }
 
+    @Override
     public NavigableSet<DK> descendingKeySet()
     {
       return descendingMap().navigableKeySet();
     }
 
+    @Override
     public NavigableMap<DK,DV> descendingMap()
     {
       return map;
     }
 
+    @Override
     public Set<Entry<DK,DV>> entrySet()
     {
-      if (entries == null)
+      if (entries == null){
         entries =
-          new DescendingSet<Entry<DK,DV>>((NavigableSet<Entry<DK,DV>>)
-                                          map.entrySet());
+            new DescendingSet<Entry<DK,DV>>((NavigableSet<Entry<DK,DV>>)
+                map.entrySet());
+      }
       return entries;
     }
 
+    @Override
     public boolean equals(Object o)
     {
       return map.equals(o);
     }
 
+    @Override
     public Entry<DK,DV> firstEntry()
     {
       return map.lastEntry();
     }
 
+    @Override
     public DK firstKey()
     {
       return map.lastKey();
     }
 
+    @Override
     public Entry<DK,DV> floorEntry(DK key)
     {
       return map.ceilingEntry(key);
     }
 
+    @Override
     public DK floorKey(DK key)
     {
       return map.ceilingKey(key);
     }
 
+    @Override
     public DV get(Object key)
     {
       return map.get(key);
     }
 
+    @Override
     public int hashCode()
     {
       return map.hashCode();
     }
 
+    @Override
     public SortedMap<DK,DV> headMap(DK toKey)
     {
       return headMap(toKey, false);
     }
 
+    @Override
     public NavigableMap<DK,DV> headMap(DK toKey, boolean inclusive)
     {
       return new DescendingMap(map.tailMap(toKey, !inclusive));
     }
 
+    @Override
     public Entry<DK,DV> higherEntry(DK key)
     {
       return map.lowerEntry(key);
     }
 
+    @Override
     public DK higherKey(DK key)
     {
       return map.lowerKey(key);
     }
 
+    @Override
     public Set<DK> keySet()
     {
-      if (keys == null)
+      if (keys == null){
         keys = new DescendingSet<DK>(map.navigableKeySet());
+      }
       return keys;
     }
 
+    @Override
     public boolean isEmpty()
     {
       return map.isEmpty();
     }
 
+    @Override
     public Entry<DK,DV> lastEntry()
     {
       return map.firstEntry();
     }
 
+    @Override
     public DK lastKey()
     {
       return map.firstKey();
     }
 
+    @Override
     public Entry<DK,DV> lowerEntry(DK key)
     {
       return map.higherEntry(key);
     }
 
+    @Override
     public DK lowerKey(DK key)
     {
       return map.higherKey(key);
     }
 
+    @Override
     public NavigableSet<DK> navigableKeySet()
     {
-      if (nKeys == null)
+      if (nKeys == null){
         nKeys = new DescendingSet<DK>(map.navigableKeySet());
+      }
       return nKeys;
     }
 
+    @Override
     public Entry<DK,DV> pollFirstEntry()
     {
       return map.pollLastEntry();
     }
 
+    @Override
     public Entry<DK,DV> pollLastEntry()
     {
       return map.pollFirstEntry();
     }
 
+    @Override
     public DV put(DK key, DV value)
     {
       return map.put(key, value);
     }
 
+    @Override
     public void putAll(Map<? extends DK, ? extends DV> m)
     {
       map.putAll(m);
     }
 
+    @Override
     public DV remove(Object key)
     {
       return map.remove(key);
     }
 
+    @Override
     public int size()
     {
       return map.size();
     }
 
+    @Override
     public SortedMap<DK,DV> subMap(DK fromKey, DK toKey)
     {
       return subMap(fromKey, true, toKey, false);
     }
 
+    @Override
     public NavigableMap<DK,DV> subMap(DK fromKey, boolean fromInclusive,
-                                      DK toKey, boolean toInclusive)
+        DK toKey, boolean toInclusive)
     {
       return new DescendingMap(map.subMap(toKey, fromInclusive,
-                                          fromKey, toInclusive));
+          fromKey, toInclusive));
     }
 
+    @Override
     public SortedMap<DK,DV> tailMap(DK fromKey)
     {
       return tailMap(fromKey, true);
     }
 
+    @Override
     public NavigableMap<DK,DV> tailMap(DK fromKey, boolean inclusive)
     {
       return new DescendingMap(map.headMap(fromKey, !inclusive));
     }
 
+    @Override
     public String toString()
     {
       StringBuffer r = new StringBuffer("{");
@@ -2658,66 +2908,77 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
         r.append(e.getValue());
         r.append(", ");
       }
-      if (r.length() > 1)
-         r.replace(r.length() - 2, r.length(), "}");
-      else
-         r.append('}');
+      if (r.length() > 1){
+        r.replace(r.length() - 2, r.length(), "}");
+      }else {
+        r.append('}');
+      }
       return r.toString();
     }
 
+    @Override
     public Collection<DV> values()
     {
-      if (values == null)
+      if (values == null){
         // Create an AbstractCollection with custom implementations of those
         // methods that can be overriden easily and efficiently.
         values = new AbstractCollection()
+        {
+          @Override
+          public int size()
           {
-            public int size()
+            return DescendingMap.this.size();
+          }
+
+          @Override
+          public Iterator<DV> iterator()
+          {
+            return new Iterator<DV>()
             {
-              return DescendingMap.this.size();
-            }
+              /** The last Entry returned by a next() call. */
+              private Entry<DK,DV> last;
 
-            public Iterator<DV> iterator()
-            {
-              return new Iterator<DV>()
-                {
-                  /** The last Entry returned by a next() call. */
-                  private Entry<DK,DV> last;
+              /** The next entry that should be returned by next(). */
+              private Entry<DK,DV> next = firstEntry();
 
-                  /** The next entry that should be returned by next(). */
-                  private Entry<DK,DV> next = firstEntry();
+              @Override
+              public boolean hasNext()
+              {
+                return next != null;
+              }
 
-                  public boolean hasNext()
-                  {
-                    return next != null;
-                  }
+              @Override
+              public DV next()
+              {
+                if (next == null) {
+                  throw new NoSuchElementException();
+                }
+                last = next;
+                next = higherEntry(last.getKey());
 
-                  public DV next()
-                  {
-                    if (next == null)
-                      throw new NoSuchElementException();
-                    last = next;
-                    next = higherEntry(last.getKey());
+                return last.getValue();
+              }
 
-                    return last.getValue();
-                  }
+              @Override
+              public void remove()
+              {
+                if (last == null) {
+                  throw new IllegalStateException();
+                }
 
-                  public void remove()
-                  {
-                    if (last == null)
-                      throw new IllegalStateException();
+                DescendingMap.this.remove(last.getKey());
+                last = null;
+              }
+            };
+          }
 
-                    DescendingMap.this.remove(last.getKey());
-                    last = null;
-                  }
-                };
-            }
-
-            public void clear()
-            {
-              DescendingMap.this.clear();
-            }
-          };
+          @Override
+          public void clear()
+          {
+            DescendingMap.this.clear();
+          }
+        };
+      }
       return values;
     }
 
@@ -2727,34 +2988,40 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * Implementation of {@link #keySet()}.
    */
   private class KeySet
-    extends AbstractSet<K>
+  extends AbstractSet<K>
   {
 
+    @Override
     public int size()
     {
       return size;
     }
 
+    @Override
     public Iterator<K> iterator()
     {
       return new TreeIterator(KEYS);
     }
 
+    @Override
     public void clear()
     {
       TreeMap4D.this.clear();
     }
 
+    @Override
     public boolean contains(Object o)
     {
       return containsKey(o);
     }
 
+    @Override
     public boolean remove(Object key)
     {
       Node<K,V> n = getNode((K) key);
-      if (n == nil)
+      if (n == nil){
         return false;
+      }
       removeNode(n);
       return true;
     }
@@ -2766,92 +3033,109 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   private final class NavigableKeySet
-    extends KeySet
-    implements NavigableSet<K>
+  extends KeySet
+  implements NavigableSet<K>
   {
 
+    @Override
     public K ceiling(K k)
     {
       return ceilingKey(k);
     }
 
+    @Override
     public Comparator<? super K> comparator()
     {
       return comparator;
     }
 
+    @Override
     public Iterator<K> descendingIterator()
     {
       return descendingSet().iterator();
     }
 
+    @Override
     public NavigableSet<K> descendingSet()
     {
       return new DescendingSet<K>(this);
     }
 
+    @Override
     public K first()
     {
       return firstKey();
     }
 
+    @Override
     public K floor(K k)
     {
       return floorKey(k);
     }
 
+    @Override
     public SortedSet<K> headSet(K to)
     {
       return headSet(to, false);
     }
 
+    @Override
     public NavigableSet<K> headSet(K to, boolean inclusive)
     {
       return headMap(to, inclusive).navigableKeySet();
     }
 
+    @Override
     public K higher(K k)
     {
       return higherKey(k);
     }
 
+    @Override
     public K last()
     {
       return lastKey();
     }
 
+    @Override
     public K lower(K k)
     {
       return lowerKey(k);
     }
 
+    @Override
     public K pollFirst()
     {
       return pollFirstEntry().getKey();
     }
 
+    @Override
     public K pollLast()
     {
       return pollLastEntry().getKey();
     }
 
+    @Override
     public SortedSet<K> subSet(K from, K to)
     {
       return subSet(from, true, to, false);
     }
 
+    @Override
     public NavigableSet<K> subSet(K from, boolean fromInclusive,
-                                  K to, boolean toInclusive)
+        K to, boolean toInclusive)
     {
       return subMap(from, fromInclusive,
-                    to, toInclusive).navigableKeySet();
+          to, toInclusive).navigableKeySet();
     }
 
+    @Override
     public SortedSet<K> tailSet(K from)
     {
       return tailSet(from, true);
     }
 
+    @Override
     public NavigableSet<K> tailSet(K from, boolean inclusive)
     {
       return tailMap(from, inclusive).navigableKeySet();
@@ -2870,7 +3154,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   private static final class DescendingSet<D>
-    implements NavigableSet<D>
+  implements NavigableSet<D>
   {
 
     /**
@@ -2889,190 +3173,226 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
       this.set = set;
     }
 
+    @Override
     public boolean add(D e)
     {
       return set.add(e);
     }
 
+    @Override
     public boolean addAll(Collection<? extends D> c)
     {
       return set.addAll(c);
     }
 
+    @Override
     public D ceiling(D e)
     {
       return set.floor(e);
     }
 
+    @Override
     public void clear()
     {
       set.clear();
     }
 
+    @Override
     public Comparator<? super D> comparator()
     {
       return Collections.reverseOrder(set.comparator());
     }
 
+    @Override
     public boolean contains(Object o)
     {
       return set.contains(o);
     }
 
+    @Override
     public boolean containsAll(Collection<?> c)
     {
       return set.containsAll(c);
     }
 
+    @Override
     public Iterator<D> descendingIterator()
     {
       return descendingSet().iterator();
     }
 
+    @Override
     public NavigableSet<D> descendingSet()
     {
       return set;
     }
 
+    @Override
     public boolean equals(Object o)
     {
       return set.equals(o);
     }
 
+    @Override
     public D first()
     {
       return set.last();
     }
 
+    @Override
     public D floor(D e)
     {
       return set.ceiling(e);
     }
 
+    @Override
     public int hashCode()
     {
       return set.hashCode();
     }
 
+    @Override
     public SortedSet<D> headSet(D to)
     {
       return headSet(to, false);
     }
 
+    @Override
     public NavigableSet<D> headSet(D to, boolean inclusive)
     {
       return new DescendingSet(set.tailSet(to, !inclusive));
     }
 
+    @Override
     public D higher(D e)
     {
       return set.lower(e);
     }
 
+    @Override
     public boolean isEmpty()
     {
       return set.isEmpty();
     }
 
+    @Override
     public Iterator<D> iterator()
     {
       return new Iterator<D>()
+      {
+
+        /** The last element returned by a next() call. */
+        private D last;
+
+        /** The next element that should be returned by next(). */
+        private D next = first();
+
+        @Override
+        public boolean hasNext()
         {
+          return next != null;
+        }
 
-          /** The last element returned by a next() call. */
-          private D last;
+        @Override
+        public D next()
+        {
+          if (next == null) {
+            throw new NoSuchElementException();
+          }
+          last = next;
+          next = higher(last);
 
-          /** The next element that should be returned by next(). */
-          private D next = first();
+          return last;
+        }
 
-          public boolean hasNext()
-          {
-            return next != null;
+        @Override
+        public void remove()
+        {
+          if (last == null) {
+            throw new IllegalStateException();
           }
 
-          public D next()
-          {
-            if (next == null)
-              throw new NoSuchElementException();
-            last = next;
-            next = higher(last);
-
-            return last;
-          }
-
-          public void remove()
-          {
-            if (last == null)
-              throw new IllegalStateException();
-
-            DescendingSet.this.remove(last);
-            last = null;
-          }
-        };
+          DescendingSet.this.remove(last);
+          last = null;
+        }
+      };
     }
 
+    @Override
     public D last()
     {
       return set.first();
     }
 
+    @Override
     public D lower(D e)
     {
       return set.higher(e);
     }
 
+    @Override
     public D pollFirst()
     {
       return set.pollLast();
     }
 
+    @Override
     public D pollLast()
     {
       return set.pollFirst();
     }
 
+    @Override
     public boolean remove(Object o)
     {
       return set.remove(o);
     }
 
+    @Override
     public boolean removeAll(Collection<?> c)
     {
       return set.removeAll(c);
     }
 
+    @Override
     public boolean retainAll(Collection<?> c)
     {
       return set.retainAll(c);
     }
 
+    @Override
     public int size()
     {
       return set.size();
     }
 
+    @Override
     public SortedSet<D> subSet(D from, D to)
     {
       return subSet(from, true, to, false);
     }
 
+    @Override
     public NavigableSet<D> subSet(D from, boolean fromInclusive,
-                                  D to, boolean toInclusive)
+        D to, boolean toInclusive)
     {
       return new DescendingSet(set.subSet(to, fromInclusive,
-                                          from, toInclusive));
+          from, toInclusive));
     }
 
+    @Override
     public SortedSet<D> tailSet(D from)
     {
       return tailSet(from, true);
     }
 
+    @Override
     public NavigableSet<D> tailSet(D from, boolean inclusive)
     {
       return new DescendingSet(set.headSet(from, !inclusive));
     }
 
+    @Override
     public Object[] toArray()
     {
       D[] array = (D[]) set.toArray();
@@ -3080,6 +3400,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
       return array;
     }
 
+    @Override
     public <T> T[] toArray(T[] a)
     {
       T[] array = set.toArray(a);
@@ -3087,6 +3408,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
       return array;
     }
 
+    @Override
     public String toString()
     {
       StringBuffer r = new StringBuffer("[");
@@ -3094,10 +3416,11 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
       while (it.hasNext())
       {
         final D o = it.next();
-        if (o == this)
+        if (o == this) {
           r.append("<this>");
-        else
+        } else {
           r.append(o);
+        }
         r.append(", ");
       }
       r.replace(r.length() - 2, r.length(), "]");
@@ -3107,140 +3430,165 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   } // class DescendingSet
 
   private class EntrySet
-    extends AbstractSet<Entry<K,V>>
+  extends AbstractSet<Entry<K,V>>
   {
+    @Override
     public int size()
     {
       return size;
     }
 
+    @Override
     public Iterator<Map.Entry<K,V>> iterator()
     {
       return new TreeIterator(ENTRIES);
     }
 
+    @Override
     public void clear()
     {
       TreeMap4D.this.clear();
     }
 
+    @Override
     public boolean contains(Object o)
     {
-      if (! (o instanceof Map.Entry))
+      if (! (o instanceof Map.Entry)){
         return false;
+      }
       Map.Entry<K,V> me = (Map.Entry<K,V>) o;
       Node<K,V> n = getNode(me.getKey());
       return n != nil && AbstractCollection4D.equals(me.getValue(), n.value);
     }
 
+    @Override
     public boolean remove(Object o)
     {
-      if (! (o instanceof Map.Entry))
+      if (! (o instanceof Map.Entry)){
         return false;
+      }
       Map.Entry<K,V> me = (Map.Entry<K,V>) o;
       Node<K,V> n = getNode(me.getKey());
       if (n != nil && AbstractCollection4D.equals(me.getValue(), n.value))
-        {
-          removeNode(n);
-          return true;
-        }
+      {
+        removeNode(n);
+        return true;
+      }
       return false;
     }
   }
 
   private final class NavigableEntrySet
-    extends EntrySet
-    implements NavigableSet<Entry<K,V>>
+  extends EntrySet
+  implements NavigableSet<Entry<K,V>>
   {
 
+    @Override
     public Entry<K,V> ceiling(Entry<K,V> e)
     {
       return ceilingEntry(e.getKey());
     }
 
+    @Override
     public Comparator<? super Entry<K,V>> comparator()
     {
       return new Comparator<Entry<K,V>>()
+      {
+        @Override
+        public int compare(Entry<K,V> t1, Entry<K,V> t2)
         {
-          public int compare(Entry<K,V> t1, Entry<K,V> t2)
-          {
-            return comparator.compare(t1.getKey(), t2.getKey());
-          }
-        };
+          return comparator.compare(t1.getKey(), t2.getKey());
+        }
+      };
     }
 
+    @Override
     public Iterator<Entry<K,V>> descendingIterator()
     {
       return descendingSet().iterator();
     }
 
+    @Override
     public NavigableSet<Entry<K,V>> descendingSet()
     {
       return new DescendingSet(this);
     }
 
+    @Override
     public Entry<K,V> first()
     {
       return firstEntry();
     }
 
+    @Override
     public Entry<K,V> floor(Entry<K,V> e)
     {
       return floorEntry(e.getKey());
     }
 
+    @Override
     public SortedSet<Entry<K,V>> headSet(Entry<K,V> to)
     {
       return headSet(to, false);
     }
 
+    @Override
     public NavigableSet<Entry<K,V>> headSet(Entry<K,V> to, boolean inclusive)
     {
       return (NavigableSet<Entry<K,V>>) headMap(to.getKey(), inclusive).entrySet();
     }
 
+    @Override
     public Entry<K,V> higher(Entry<K,V> e)
     {
       return higherEntry(e.getKey());
     }
 
+    @Override
     public Entry<K,V> last()
     {
       return lastEntry();
     }
 
+    @Override
     public Entry<K,V> lower(Entry<K,V> e)
     {
       return lowerEntry(e.getKey());
     }
 
+    @Override
     public Entry<K,V> pollFirst()
     {
       return pollFirstEntry();
     }
 
+    @Override
     public Entry<K,V> pollLast()
     {
       return pollLastEntry();
     }
 
+    @Override
     public SortedSet<Entry<K,V>> subSet(Entry<K,V> from, Entry<K,V> to)
     {
       return subSet(from, true, to, false);
     }
 
+    @Override
     public NavigableSet<Entry<K,V>> subSet(Entry<K,V> from, boolean fromInclusive,
-                                           Entry<K,V> to, boolean toInclusive)
+        Entry<K,V> to, boolean toInclusive)
     {
       return (NavigableSet<Entry<K,V>>) subMap(from.getKey(), fromInclusive,
-                                               to.getKey(), toInclusive).entrySet();
+          to.getKey(), toInclusive).entrySet();
     }
 
+    @Override
     public SortedSet<Entry<K,V>> tailSet(Entry<K,V> from)
     {
       return tailSet(from, true);
     }
 
+    @Override
     public NavigableSet<Entry<K,V>> tailSet(Entry<K,V> from, boolean inclusive)
     {
       return (NavigableSet<Entry<K,V>>) tailMap(from.getKey(), inclusive).navigableKeySet();

@@ -35,7 +35,7 @@ package totalcross.util.regex;
  */
 
 public class PatternSyntaxException extends IllegalArgumentException{
-    public PatternSyntaxException(String s){
-       super(s);
-    }
- }
+  public PatternSyntaxException(String s){
+    super(s);
+  }
+}

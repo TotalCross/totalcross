@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC124_iushr extends Logical
 {
-   public BC124_iushr()
-   {
-      super(-1,-2,-1,INT);
-   }
-   public void exec()
-   {
-      stack[-2].asInt >>>= stack[-1].asInt & 0x1F;
-   }
+  public BC124_iushr()
+  {
+    super(-1,-2,-1,INT);
+  }
+  @Override
+  public void exec()
+  {
+    stack[-2].asInt >>>= stack[-1].asInt & 0x1F;
+  }
 }

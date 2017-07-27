@@ -21,17 +21,19 @@ import tc.tools.converter.java.JavaMethod;
 import tc.tools.converter.oper.*;
 import totalcross.io.File;
 import totalcross.util.*;*/
-import tc.tools.converter.*;
-import totalcross.unit.*;
+import tc.tools.converter.JConstants;
+import tc.tools.converter.TCConstants;
+import totalcross.unit.TestCase;
 
 
 public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConstants
 {
-   public void testRun()
-   {
-   }
+  @Override
+  public void testRun()
+  {
+  }
 
-   /*private static final double DOUBLE_ERROR_PRECISION = 1e-3d;
+  /*private static final double DOUBLE_ERROR_PRECISION = 1e-3d;
    public static Vector vcodeTest = new Vector(500);
    private JavaMethod[] startTest(String fileName) throws Exception
    {

@@ -9,7 +9,7 @@ package totalcross.util.pdf;
 
 public abstract class Base
 {
-   public abstract void clear();
+  public abstract void clear();
 
-   public abstract String toPDFString();
+  public abstract String toPDFString();
 }

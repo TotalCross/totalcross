@@ -20,35 +20,35 @@ import java.sql.SQLException;
 
 public class SQLWarning4D extends SQLException
 {
-   SQLWarning4D next;
-   
-   public SQLWarning4D(String reason, String sqlState, int errorCode)
-   {
-      super(reason, sqlState, errorCode);
-   }
+  SQLWarning4D next;
 
-   public SQLWarning4D(String reason, String sqlState)
-   {
-      super(reason, sqlState);
-   }
+  public SQLWarning4D(String reason, String sqlState, int errorCode)
+  {
+    super(reason, sqlState, errorCode);
+  }
 
-   public SQLWarning4D(String reason)
-   {
-      super(reason);
-   }
+  public SQLWarning4D(String reason, String sqlState)
+  {
+    super(reason, sqlState);
+  }
 
-   public SQLWarning4D()
-   {
-      super();
-   }
+  public SQLWarning4D(String reason)
+  {
+    super(reason);
+  }
 
-   public SQLWarning4D getNextWarning()
-   {
-      return next;
-   }
+  public SQLWarning4D()
+  {
+    super();
+  }
 
-   public void setNextException(SQLWarning4D ex)
-   {
-      next = ex;
-   }
+  public SQLWarning4D getNextWarning()
+  {
+    return next;
+  }
+
+  public void setNextException(SQLWarning4D ex)
+  {
+    next = ex;
+  }
 }

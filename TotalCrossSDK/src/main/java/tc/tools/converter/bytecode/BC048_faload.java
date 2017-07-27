@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC048_faload extends LoadArray
 {
-   public BC048_faload()
-   {
-      super(-1,-1,0,-1,FLOAT);
-   }
+  public BC048_faload()
+  {
+    super(-1,-1,0,-1,FLOAT);
+  }
 }

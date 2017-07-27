@@ -22,8 +22,8 @@ package totalcross.ui.event;
 
 public interface PressListener
 {
-   /** A PRESSED event was dispatched.
-    * @see ControlEvent 
-    */
-   public void controlPressed(ControlEvent e);
+  /** A PRESSED event was dispatched.
+   * @see ControlEvent 
+   */
+  public void controlPressed(ControlEvent e);
 }

@@ -18,31 +18,35 @@
 
 package totalcross.crypto.digest;
 
-import totalcross.crypto.*;
+import totalcross.crypto.NoSuchAlgorithmException;
 
 public class SHA256Digest4D extends Digest
 {
-   public SHA256Digest4D() throws NoSuchAlgorithmException
-   {
-      nativeCreate();
-   }
-   
-   public final String getAlgorithm()
-   {
-      return "SHA-256";
-   }
-   
-   public final int getBlockLength()
-   {
-      return 64;
-   }
-   
-   public final int getDigestLength()
-   {
-      return 32;
-   }
-   
-   native void nativeCreate();
-   
-   native protected final byte[] process(byte[] data);
+  public SHA256Digest4D() throws NoSuchAlgorithmException
+  {
+    nativeCreate();
+  }
+
+  @Override
+  public final String getAlgorithm()
+  {
+    return "SHA-256";
+  }
+
+  @Override
+  public final int getBlockLength()
+  {
+    return 64;
+  }
+
+  @Override
+  public final int getDigestLength()
+  {
+    return 32;
+  }
+
+  native void nativeCreate();
+
+  @Override
+  native protected final byte[] process(byte[] data);
 }

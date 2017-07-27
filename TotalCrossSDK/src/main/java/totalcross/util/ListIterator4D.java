@@ -38,7 +38,11 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * An extended version of Iterator to support the extra features of Lists. The
@@ -70,6 +74,7 @@ public interface ListIterator4D<E> extends Iterator<E>
    *
    * @return true if the list continues in the forward direction
    */
+  @Override
   boolean hasNext();
 
   /**
@@ -90,6 +95,7 @@ public interface ListIterator4D<E> extends Iterator<E>
    * @return the next element in the list in the forward direction
    * @throws NoSuchElementException if there are no more elements
    */
+  @Override
   E next();
 
   /**
@@ -149,6 +155,7 @@ public interface ListIterator4D<E> extends Iterator<E>
    * @throws UnsupportedOperationException if this ListIterator does not
    *         support the remove operation
    */
+  @Override
   void remove();
 
   /**

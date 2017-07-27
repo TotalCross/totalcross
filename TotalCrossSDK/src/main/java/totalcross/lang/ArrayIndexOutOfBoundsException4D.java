@@ -33,20 +33,20 @@ package totalcross.lang;
  */
 public class ArrayIndexOutOfBoundsException4D extends IndexOutOfBoundsException
 {
-   /** 
-    * Constructs an empty exception. 
-    */
-   public ArrayIndexOutOfBoundsException4D()
-   {
-   }
+  /** 
+   * Constructs an empty exception. 
+   */
+  public ArrayIndexOutOfBoundsException4D()
+  {
+  }
 
-   /** 
-    * Constructs an exception with the given message. 
-    *
-    * @param msg The error message.
-    */
-   public ArrayIndexOutOfBoundsException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** 
+   * Constructs an exception with the given message. 
+   *
+   * @param msg The error message.
+   */
+  public ArrayIndexOutOfBoundsException4D(String msg)
+  {
+    super(msg);
+  }
 }

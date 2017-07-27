@@ -41,15 +41,15 @@ package jdkcompat.io;
 import totalcross.io.IOException;
 
 /**
-  * This abstract class forms the base of the hierarchy of classes that read
-  * input as a stream of bytes.  It provides a common set of methods for
-  * reading bytes from streams.  Subclasses implement and extend these
-  * methods to read bytes from a particular input source such as a file
-  * or network connection.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy (warrenl@cygnus.com)
-  */
+ * This abstract class forms the base of the hierarchy of classes that read
+ * input as a stream of bytes.  It provides a common set of methods for
+ * reading bytes from streams.  Subclasses implement and extend these
+ * methods to read bytes from a particular input source such as a file
+ * or network connection.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy (warrenl@cygnus.com)
+ */
 public abstract class InputStream4D implements java.io.Closeable
 {
   /**
@@ -85,6 +85,7 @@ public abstract class InputStream4D implements java.io.Closeable
    * @exception IOException If an error occurs, which can only happen
    * in a subclass
    */
+  @Override
   public void close() throws java.io.IOException
   {
     // Do nothing
@@ -195,25 +196,30 @@ public abstract class InputStream4D implements java.io.Closeable
    */
   public int read(byte[] b, int off, int len) throws java.io.IOException
   {
-    if (off < 0 || len < 0 || b.length - off < len)
+    if (off < 0 || len < 0 || b.length - off < len){
       throw new IndexOutOfBoundsException();
+    }
 
     int i, ch;
 
-    for (i = 0; i < len; ++i)
+    for (i = 0; i < len; ++i) {
       try
+      {
+        if ((ch = read()) < 0)
         {
-          if ((ch = read()) < 0)
-            return i == 0 ? -1 : i;             // EOF
-          b[off + i] = (byte) ch;
+          return i == 0 ? -1 : i;             // EOF
         }
+        b[off + i] = (byte) ch;
+      }
       catch (java.io.IOException ex)
-        {
-          // Only reading the first byte should cause an IOException.
-          if (i == 0)
-            throw ex;
-          return i;
+      {
+        // Only reading the first byte should cause an IOException.
+        if (i == 0) {
+          throw ex;
         }
+        return i;
+      }
+    }
 
     return i;
   }
@@ -260,12 +266,13 @@ public abstract class InputStream4D implements java.io.Closeable
     final long origN = n;
 
     while (n > 0L)
-      {
-        int numread = read(tmpbuf, 0, n > buflen ? buflen : (int) n);
-        if (numread <= 0)
-          break;
-        n -= numread;
+    {
+      int numread = read(tmpbuf, 0, n > buflen ? buflen : (int) n);
+      if (numread <= 0) {
+        break;
       }
+      n -= numread;
+    }
 
     return origN - n;
   }

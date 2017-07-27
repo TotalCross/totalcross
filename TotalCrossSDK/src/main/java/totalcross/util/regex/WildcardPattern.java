@@ -40,65 +40,67 @@ package totalcross.util.regex;
  */
 
 public class WildcardPattern extends Pattern{
-   //a wildcard class, see WildcardPattern(String,String,int)
-   public static final String WORD_CHAR="\\w";
-   
-   //a wildcard class, see WildcardPattern(String,String,int)
-   public static final String ANY_CHAR=".";
-   
-   private static final String defaultSpecials="[]().{}+|^$\\";
-   private static final String defaultWcClass=ANY_CHAR;
-   protected static String convertSpecials(String s,String wcClass,String specials){
-      int len=s.length();
-      StringBuffer sb=new StringBuffer();
-      for(int i=0;i<len;i++){
-         char c=s.charAt(i);
-         switch(c){
-            case '*':
-               sb.append("(");
-               sb.append(wcClass);
-               sb.append("*)");
-               break;
-            case '?':
-               sb.append("(");
-               sb.append(wcClass);
-               sb.append(")");
-               break;
-            default:
-               if(specials.indexOf(c)>=0) sb.append('\\');
-               sb.append(c);
-         }
+  //a wildcard class, see WildcardPattern(String,String,int)
+  public static final String WORD_CHAR="\\w";
+
+  //a wildcard class, see WildcardPattern(String,String,int)
+  public static final String ANY_CHAR=".";
+
+  private static final String defaultSpecials="[]().{}+|^$\\";
+  private static final String defaultWcClass=ANY_CHAR;
+  protected static String convertSpecials(String s,String wcClass,String specials){
+    int len=s.length();
+    StringBuffer sb=new StringBuffer();
+    for(int i=0;i<len;i++){
+      char c=s.charAt(i);
+      switch(c){
+      case '*':
+        sb.append("(");
+        sb.append(wcClass);
+        sb.append("*)");
+        break;
+      case '?':
+        sb.append("(");
+        sb.append(wcClass);
+        sb.append(")");
+        break;
+      default:
+        if(specials.indexOf(c)>=0) {
+          sb.append('\\');
+        }
+        sb.append(c);
       }
-      return sb.toString();
-   }
-   
-   private String str;
-   
+    }
+    return sb.toString();
+  }
+
+  private String str;
+
   /**
    * @param  wc    The pattern
    */
-   public WildcardPattern(String wc){
-      this(wc,true);
-   }
-   
+  public WildcardPattern(String wc){
+    this(wc,true);
+  }
+
   /**
    * @param  wc    The pattern
    * @param  icase If true, the pattern is case-insensitive.
    */
-   public WildcardPattern(String wc,boolean icase){
-      this(wc,icase? DEFAULT|IGNORE_CASE: DEFAULT);
-   }
-   
+  public WildcardPattern(String wc,boolean icase){
+    this(wc,icase? DEFAULT|IGNORE_CASE: DEFAULT);
+  }
+
   /**
    * @param  wc    The pattern
    * @param  flags The bitwise OR of any of REFlags.* . The only meaningful
    * flags are REFlags.IGNORE_CASE and REFlags.DOTALL (the latter allows 
    * the wildcards to match the EOL characters).
    */
-   public WildcardPattern(String wc,int flags){
-      compile(wc,defaultWcClass,defaultSpecials,flags);
-   }
-   
+  public WildcardPattern(String wc,int flags){
+    compile(wc,defaultWcClass,defaultSpecials,flags);
+  }
+
   /**
    * @param  wc       The pattern
    * @param  wcClass  The wildcard class, could be any of WORD_CHAR or ANY_CHAR
@@ -106,29 +108,30 @@ public class WildcardPattern extends Pattern{
    * flags are REFlags.IGNORE_CASE and REFlags.DOTALL (the latter allows 
    * the wildcards to match the EOL characters).
    */
-   public WildcardPattern(String wc,String wcClass,int flags){
-      compile(wc,wcClass,defaultSpecials,flags);
-   }
-   
-   protected WildcardPattern(){}
-   
-   protected void compile(String wc,String wcClass,String specials,int flags){
-      String converted=convertSpecials(wc,wcClass,specials);
-      try{
-         compile(converted,flags);
-      }
-      catch(PatternSyntaxException e){
-         //something unexpected
-         throw new Error(e.getMessage()+"; original expr: "+wc+", converted: "+converted);
-      }
-      str=wc;
-   }
-   
-   public String toString(){
-      return str;
-   }
-   
-   /*
+  public WildcardPattern(String wc,String wcClass,int flags){
+    compile(wc,wcClass,defaultSpecials,flags);
+  }
+
+  protected WildcardPattern(){}
+
+  protected void compile(String wc,String wcClass,String specials,int flags){
+    String converted=convertSpecials(wc,wcClass,specials);
+    try{
+      compile(converted,flags);
+    }
+    catch(PatternSyntaxException e){
+      //something unexpected
+      throw new Error(e.getMessage()+"; original expr: "+wc+", converted: "+converted);
+    }
+    str=wc;
+  }
+
+  @Override
+  public String toString(){
+    return str;
+  }
+
+  /*
    public static void main(String[] args){
       Pattern p=new WildcardPattern("*.???");
       Matcher m=p.matcher("abc.def");

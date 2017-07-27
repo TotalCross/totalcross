@@ -15,13 +15,14 @@ package tc.tools.converter.bytecode;
 
 public class BC152_dcmpg extends Comparison
 {
-   public BC152_dcmpg()
-   {
-      super(-1,-2,-2,-1,DOUBLE);
-   }
-   public void exec()
-   {
-      double r = stack[stackPtr-2].asDouble - stack[stackPtr-1].asDouble;
-      stack[stackPtr-2].asInt = (r > 0)?1:(r < 0)?-1:0;
-   }
+  public BC152_dcmpg()
+  {
+    super(-1,-2,-2,-1,DOUBLE);
+  }
+  @Override
+  public void exec()
+  {
+    double r = stack[stackPtr-2].asDouble - stack[stackPtr-1].asDouble;
+    stack[stackPtr-2].asInt = (r > 0)?1:(r < 0)?-1:0;
+  }
 }

@@ -23,8 +23,8 @@ import totalcross.io.Stream;
 
 public class GZipStream4D extends CompressedStream4D
 {
-   public GZipStream4D(Stream stream, int mode) throws IOException
-   {
-      super(stream, mode, GZIP_COMPRESSION); //flsobral@tc114_82: Subclasses of CompressedStream4D must now inform the type of compression to be used by the ZLib library.
-   }
+  public GZipStream4D(Stream stream, int mode) throws IOException
+  {
+    super(stream, mode, GZIP_COMPRESSION); //flsobral@tc114_82: Subclasses of CompressedStream4D must now inform the type of compression to be used by the ZLib library.
+  }
 }

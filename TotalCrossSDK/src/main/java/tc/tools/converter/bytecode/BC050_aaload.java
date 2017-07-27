@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC050_aaload extends LoadArray
 {
-   public BC050_aaload()
-   {
-      super(-1,-1,0,-1,OBJECT);
-   }
+  public BC050_aaload()
+  {
+    super(-1,-1,0,-1,OBJECT);
+  }
 }

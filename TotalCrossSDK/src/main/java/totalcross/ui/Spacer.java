@@ -40,39 +40,41 @@ package totalcross.ui;
 
 public class Spacer extends Control
 {
-   private int prefW, prefH;
-   private String s;
-   
-   /** Constructs a new Spacer with width and height = 0. */
-   public Spacer()
-   {
-      this(0,0);
-   }
-   
-   /** Constructs a new Spacer using the given x and y values. */
-   public Spacer(int x, int y)
-   {
-      this.prefW = x;
-      this.prefH = y;
-      eventsEnabled = false;
-      focusTraversable = false; // guich@tc123_12
-   }
-   
-   /** Constructs a new Spacer using the given String, whose width will be the horizontal spacement. The vertical spacement will be the font's height. */
-   public Spacer(String s)
-   {
-      this.s = s;
-      eventsEnabled = false;
-      focusTraversable = false; // guich@tc123_12
-   }
-   
-   public int getPreferredWidth()
-   {
-      return s == null ? prefW : fm.stringWidth(s);
-   }
+  private int prefW, prefH;
+  private String s;
 
-   public int getPreferredHeight()
-   {
-      return s == null ? prefH : fmH;
-   }
+  /** Constructs a new Spacer with width and height = 0. */
+  public Spacer()
+  {
+    this(0,0);
+  }
+
+  /** Constructs a new Spacer using the given x and y values. */
+  public Spacer(int x, int y)
+  {
+    this.prefW = x;
+    this.prefH = y;
+    eventsEnabled = false;
+    focusTraversable = false; // guich@tc123_12
+  }
+
+  /** Constructs a new Spacer using the given String, whose width will be the horizontal spacement. The vertical spacement will be the font's height. */
+  public Spacer(String s)
+  {
+    this.s = s;
+    eventsEnabled = false;
+    focusTraversable = false; // guich@tc123_12
+  }
+
+  @Override
+  public int getPreferredWidth()
+  {
+    return s == null ? prefW : fm.stringWidth(s);
+  }
+
+  @Override
+  public int getPreferredHeight()
+  {
+    return s == null ? prefH : fmH;
+  }
 }

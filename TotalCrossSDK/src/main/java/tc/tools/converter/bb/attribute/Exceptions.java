@@ -21,34 +21,39 @@ import totalcross.util.Vector;
 
 public class Exceptions implements AttributeInfo
 {
-   private JavaClass jclass;
+  private JavaClass jclass;
 
-   public Vector exceptions;
+  public Vector exceptions;
 
-   public Exceptions(JavaClass jclass)
-   {
-      this.jclass = jclass;
-      exceptions = new Vector();
-   }
+  public Exceptions(JavaClass jclass)
+  {
+    this.jclass = jclass;
+    exceptions = new Vector();
+  }
 
-   public int length()
-   {
-      return 2 + (exceptions.size() * 2);
-   }
+  @Override
+  public int length()
+  {
+    return 2 + (exceptions.size() * 2);
+  }
 
-   public void load(DataStream ds) throws IOException
-   {
-      int count = ds.readUnsignedShort();
-      exceptions.removeAllElements();
-      for (int i = 0; i < count; i ++)
-         exceptions.addElement(jclass.getConstant(ds.readUnsignedShort(), this));
-   }
+  @Override
+  public void load(DataStream ds) throws IOException
+  {
+    int count = ds.readUnsignedShort();
+    exceptions.removeAllElements();
+    for (int i = 0; i < count; i ++) {
+      exceptions.addElement(jclass.getConstant(ds.readUnsignedShort(), this));
+    }
+  }
 
-   public void save(DataStream ds) throws IOException
-   {
-      int count = exceptions.size();
-      ds.writeShort(count);
-      for (int i = 0; i < count; i ++)
-         ds.writeShort(jclass.getConstantIndex((JavaConstant)exceptions.items[i], this));
-   }
+  @Override
+  public void save(DataStream ds) throws IOException
+  {
+    int count = exceptions.size();
+    ds.writeShort(count);
+    for (int i = 0; i < count; i ++) {
+      ds.writeShort(jclass.getConstantIndex((JavaConstant)exceptions.items[i], this));
+    }
+  }
 }

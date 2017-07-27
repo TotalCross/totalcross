@@ -15,13 +15,14 @@ package tc.tools.converter.bytecode;
 
 public class BC167_goto extends Branch
 {
-   public BC167_goto()
-   {
-      super(0,readInt16(pc+1));
-      this.pcInc = 3; // this is the instruction length
-   }
-   public void exec()
-   {
-      pcInc = jumpTo-pcInMethod; // this is the target address
-   }
+  public BC167_goto()
+  {
+    super(0,readInt16(pc+1));
+    this.pcInc = 3; // this is the instruction length
+  }
+  @Override
+  public void exec()
+  {
+    pcInc = jumpTo-pcInMethod; // this is the target address
+  }
 }

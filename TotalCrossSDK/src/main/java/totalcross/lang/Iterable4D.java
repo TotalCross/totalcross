@@ -39,7 +39,7 @@ exception statement from your version. */
 package totalcross.lang;
 
 // We only need Iterator, but we import * to support lib/mkcollections.pl
-import java.util.*;
+import java.util.Iterator;
 
 /**
  * This interface is used to indicate that a given class can be

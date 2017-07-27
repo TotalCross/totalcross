@@ -26,31 +26,34 @@ import totalcross.util.Properties;
  */
 public class SMTPSSLTransport extends SMTPTransport
 {
-   protected SMTPSSLTransport(MailSession session)
-   {
-      super(session);
-   }
+  protected SMTPSSLTransport(MailSession session)
+  {
+    super(session);
+  }
 
-   public void connect(Socket connection) throws MessagingException
-   {
-      super.connect(connection);
+  @Override
+  public void connect(Socket connection) throws MessagingException
+  {
+    super.connect(connection);
 
-      boolean tlsRequired = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS_REQUIRED)).value;
-      if (tlsRequired && !supportsTLS)
-         throw new MessagingException(
-               "MailSession.SMTP_STARTTLS_REQUIRED is enabled, but server doesn't support secure connections");
-   }
+    boolean tlsRequired = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS_REQUIRED)).value;
+    if (tlsRequired && !supportsTLS){
+      throw new MessagingException(
+          "MailSession.SMTP_STARTTLS_REQUIRED is enabled, but server doesn't support secure connections");
+    }
+  }
 
-   protected void startTLS() throws MessagingException
-   {
-      try
-      {
-         issueCommand(starttls, 220);
-         ((SSLSocket) connection).startHandshake();
-      }
-      catch (IOException e)
-      {
-         throw new MessagingException(e);
-      }
-   }
+  @Override
+  protected void startTLS() throws MessagingException
+  {
+    try
+    {
+      issueCommand(starttls, 220);
+      ((SSLSocket) connection).startHandshake();
+    }
+    catch (IOException e)
+    {
+      throw new MessagingException(e);
+    }
+  }
 }

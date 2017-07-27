@@ -23,21 +23,21 @@ package totalcross.net.mail;
  */
 public class AddressException extends Exception
 {
-   /** 
-    * Constructs an empty Exception. 
-    */
-   public AddressException()
-   {
-      super();
-   }
+  /** 
+   * Constructs an empty Exception. 
+   */
+  public AddressException()
+  {
+    super();
+  }
 
-   /** 
-    * Constructs an exception with the given message. 
-    *
-    * @param msg The error message.
-    */
-   public AddressException(String msg)
-   {
-      super(msg);
-   }
+  /** 
+   * Constructs an exception with the given message. 
+   *
+   * @param msg The error message.
+   */
+  public AddressException(String msg)
+  {
+    super(msg);
+  }
 }

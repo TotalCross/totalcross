@@ -15,11 +15,12 @@ package tc.tools.converter.bytecode;
 
 public class BC182_invokevirtual extends MethodCall
 {
-   public BC182_invokevirtual()
-   {
-      super(readUInt16(pc+1));
-   }
-   public void exec()
-   {
-   }
+  public BC182_invokevirtual()
+  {
+    super(readUInt16(pc+1));
+  }
+  @Override
+  public void exec()
+  {
+  }
 }

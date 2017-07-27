@@ -35,24 +35,24 @@ package totalcross.lang;
 
 public class StringIndexOutOfBoundsException4D extends IndexOutOfBoundsException
 {
-   /** Constructs an empty Exception. */
-   public StringIndexOutOfBoundsException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public StringIndexOutOfBoundsException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public StringIndexOutOfBoundsException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public StringIndexOutOfBoundsException4D(String msg)
+  {
+    super(msg);
+  }
 
-   /**
-    * Create an exception noting the illegal index.
-    *
-    * @param index the invalid index
-    */
-   public StringIndexOutOfBoundsException4D(int index)
-   {
-     super("String index out of range: " + index);
-   }
+  /**
+   * Create an exception noting the illegal index.
+   *
+   * @param index the invalid index
+   */
+  public StringIndexOutOfBoundsException4D(int index)
+  {
+    super("String index out of range: " + index);
+  }
 }

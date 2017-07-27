@@ -47,12 +47,12 @@ package totalcross.xml.rpc;
  */
 public class XmlRpcException extends Exception
 {
-   public XmlRpcException()
-   {
-   }
+  public XmlRpcException()
+  {
+  }
 
-   public XmlRpcException(String msg)
-   {
-      super(msg);
-   }
+  public XmlRpcException(String msg)
+  {
+    super(msg);
+  }
 }

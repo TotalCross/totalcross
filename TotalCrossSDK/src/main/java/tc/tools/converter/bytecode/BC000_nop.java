@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC000_nop extends ByteCode
 {
-   public BC000_nop()
-   {
-      stackInc = 0;
-   }
+  public BC000_nop()
+  {
+    stackInc = 0;
+  }
 }

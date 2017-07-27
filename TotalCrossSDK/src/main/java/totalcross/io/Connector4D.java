@@ -18,50 +18,52 @@
 
 package totalcross.io;
 
-import totalcross.io.device.bluetooth.*;
-import totalcross.sys.*;
+import totalcross.io.device.bluetooth.SerialPortClient;
+import totalcross.io.device.bluetooth.SerialPortServer;
+import totalcross.sys.Convert;
+import totalcross.sys.InvalidNumberException;
 
 public class Connector4D
 {
-   public static Connection open(String url) throws IOException, InvalidNumberException
-   {
-      int targetStart = url.indexOf(':');
-      int targetEnd = url.indexOf(';');
-      String scheme = url.substring(0, targetStart);
-      String target;
-      String[] params = null;
+  public static Connection open(String url) throws IOException, InvalidNumberException
+  {
+    int targetStart = url.indexOf(':');
+    int targetEnd = url.indexOf(';');
+    String scheme = url.substring(0, targetStart);
+    String target;
+    String[] params = null;
 
-      if (targetEnd == -1)
-         target = url.substring(targetStart + 1);
-      else
+    if (targetEnd == -1){
+      target = url.substring(targetStart + 1);
+    }else
+    {
+      target = url.substring(targetStart + 1, targetEnd);
+      params = Convert.tokenizeString(url.substring(targetEnd + 1), ';');
+    }
+
+    if (scheme.equals("btspp"))
+    {
+      // handle bluetooth connection
+      int targetColon = target.indexOf(':');
+      String address = target.substring(2, targetColon);
+
+      if (address.length() == 0 || address.equals("localhost"))
       {
-         target = url.substring(targetStart + 1, targetEnd);
-         params = Convert.tokenizeString(url.substring(targetEnd + 1), ';');
-      }
-
-      if (scheme.equals("btspp"))
-      {
-         // handle bluetooth connection
-         int targetColon = target.indexOf(':');
-         String address = target.substring(2, targetColon);
-
-         if (address.length() == 0 || address.equals("localhost"))
-         {
-            // start server
-            String uuid = target.substring(targetColon + 1);
-            return new SerialPortServer(uuid, params);
-         }
-         else
-         {
-            String port = target.substring(targetColon + 1);
-            return new SerialPortClient(address, Convert.toInt(port), params);
-         }
+        // start server
+        String uuid = target.substring(targetColon + 1);
+        return new SerialPortServer(uuid, params);
       }
       else
       {
-         // not supported
+        String port = target.substring(targetColon + 1);
+        return new SerialPortClient(address, Convert.toInt(port), params);
       }
+    }
+    else
+    {
+      // not supported
+    }
 
-      return null;
-   }
+    return null;
+  }
 }

@@ -16,7 +16,7 @@
 
 package totalcross.ui.event;
 
-import totalcross.ui.*;
+import totalcross.ui.Control;
 
 /** An event generated when the user clicks on ListContainer.Item.
  * @since SuperWaba 5.54
@@ -24,34 +24,35 @@ import totalcross.ui.*;
 
 public class ListContainerEvent extends Event
 {
-   /** Event generated when a new item was selected. */
-   public static final int ITEM_SELECTED_EVENT = 510;
-   /** Event generated when the left image was clicked.
-    * Verify the isImage2 member to determine the current image that's displayed. */
-   public static final int LEFT_IMAGE_CLICKED_EVENT = 511;
-   /** Event generated when the right image was clicked.
-    * Verify the isImage2 member to determine the current image that's displayed. */
-   public static final int RIGHT_IMAGE_CLICKED_EVENT = 512;
+  /** Event generated when a new item was selected. */
+  public static final int ITEM_SELECTED_EVENT = 510;
+  /** Event generated when the left image was clicked.
+   * Verify the isImage2 member to determine the current image that's displayed. */
+  public static final int LEFT_IMAGE_CLICKED_EVENT = 511;
+  /** Event generated when the right image was clicked.
+   * Verify the isImage2 member to determine the current image that's displayed. */
+  public static final int RIGHT_IMAGE_CLICKED_EVENT = 512;
 
-   /** True if the new image is the second one. If there are two images, one
-    * as an unselected image and a second one as the selected, using this field you
-    * can find which one is being displayed. 
-    */
-   public boolean isImage2;
-   
-   /** The control that originated the event. When the user clicks on an Image, 
-    * the <code>target</code> is the Image, and the source is the control where the image is. */
-   public Control source;
+  /** True if the new image is the second one. If there are two images, one
+   * as an unselected image and a second one as the selected, using this field you
+   * can find which one is being displayed. 
+   */
+  public boolean isImage2;
 
-   public String toString()
-   {
-      String s = "";
-      switch (type)
-      {
-         case ITEM_SELECTED_EVENT: s = "ITEM_SELECTED_EVENT"; break;
-         case LEFT_IMAGE_CLICKED_EVENT: s = "LEFT_IMAGE_CLICKED_EVENT"; break;
-         case RIGHT_IMAGE_CLICKED_EVENT: s = "RIGHT_IMAGE_CLICKED_EVENT"; break;
-      }
-      return s+" isImage2:"+isImage2+" "+super.toString();
-   }
+  /** The control that originated the event. When the user clicks on an Image, 
+   * the <code>target</code> is the Image, and the source is the control where the image is. */
+  public Control source;
+
+  @Override
+  public String toString()
+  {
+    String s = "";
+    switch (type)
+    {
+    case ITEM_SELECTED_EVENT: s = "ITEM_SELECTED_EVENT"; break;
+    case LEFT_IMAGE_CLICKED_EVENT: s = "LEFT_IMAGE_CLICKED_EVENT"; break;
+    case RIGHT_IMAGE_CLICKED_EVENT: s = "RIGHT_IMAGE_CLICKED_EVENT"; break;
+    }
+    return s+" isImage2:"+isImage2+" "+super.toString();
+  }
 }

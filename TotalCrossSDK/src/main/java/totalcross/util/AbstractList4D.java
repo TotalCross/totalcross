@@ -39,7 +39,16 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.AbstractSequentialList;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 
 /**
  * A basic implementation of most of the methods in the List interface to make
@@ -72,8 +81,8 @@ import java.util.*;
  * @status updated to 1.4
  */
 public abstract class AbstractList4D<E>
-  extends AbstractCollection4D<E>
-  implements List<E>
+extends AbstractCollection4D<E>
+implements List<E>
 {
   /**
    * A count of the number of structural modifications that have been made to
@@ -106,6 +115,7 @@ public abstract class AbstractList4D<E>
    * @return the element at that position
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
+  @Override
   public abstract E get(int index);
 
   /**
@@ -128,6 +138,7 @@ public abstract class AbstractList4D<E>
    *         some other reason
    * @see #modCount
    */
+  @Override
   public void add(int index, E o)
   {
     throw new UnsupportedOperationException();
@@ -149,6 +160,7 @@ public abstract class AbstractList4D<E>
    *         some other reason
    * @see #add(int, Object)
    */
+  @Override
   public boolean add(E o)
   {
     add(size(), o);
@@ -178,12 +190,14 @@ public abstract class AbstractList4D<E>
    * @throws NullPointerException if the specified collection is null
    * @see #add(int, Object)
    */
+  @Override
   public boolean addAll(int index, Collection<? extends E> c)
   {
     Iterator<? extends E> itr = c.iterator();
     int size = c.size();
-    for (int pos = size; pos > 0; pos--)
+    for (int pos = size; pos > 0; pos--) {
       add(index++, itr.next());
+    }
     return size > 0;
   }
 
@@ -198,6 +212,7 @@ public abstract class AbstractList4D<E>
    * @see #remove(int)
    * @see #removeRange(int, int)
    */
+  @Override
   public void clear()
   {
     removeRange(0, size());
@@ -222,22 +237,28 @@ public abstract class AbstractList4D<E>
    * @see Object#equals(Object)
    * @see #hashCode()
    */
+  @Override
   public boolean equals(Object o)
   {
-    if (o == this)
+    if (o == this){
       return true;
-    if (! (o instanceof List))
+    }
+    if (! (o instanceof List)){
       return false;
+    }
     int size = size();
-    if (size != ((List) o).size())
+    if (size != ((List) o).size()){
       return false;
+    }
 
     Iterator<E> itr1 = iterator();
     Iterator itr2 = ((List) o).iterator();
 
-    while (--size >= 0)
-      if (! AbstractCollection4D.equals(itr1.next(), itr2.next()))
+    while (--size >= 0){
+      if (! AbstractCollection4D.equals(itr1.next(), itr2.next())){
         return false;
+      }
+    }
     return true;
   }
 
@@ -261,13 +282,15 @@ while (i.hasNext())
    * @see Object#hashCode()
    * @see #equals(Object)
    */
+  @Override
   public int hashCode()
   {
     int hashCode = 1;
     Iterator<E> itr = iterator();
     int pos = size();
-    while (--pos >= 0)
+    while (--pos >= 0){
       hashCode = 31 * hashCode + AbstractCollection4D.hashCode(itr.next());
+    }
     return hashCode;
   }
 
@@ -280,13 +303,16 @@ while (i.hasNext())
    * @return the least integer n such that <code>o == null ? get(n) == null :
    *         o.equals(get(n))</code>, or -1 if there is no such index
    */
+  @Override
   public int indexOf(Object o)
   {
     ListIterator<E> itr = listIterator();
     int size = size();
-    for (int pos = 0; pos < size; pos++)
-      if (AbstractCollection4D.equals(o, itr.next()))
+    for (int pos = 0; pos < size; pos++) {
+      if (AbstractCollection4D.equals(o, itr.next())){
         return pos;
+      }
+    }
     return -1;
   }
 
@@ -302,6 +328,7 @@ while (i.hasNext())
    * @return an Iterator over the elements of this list, in order
    * @see #modCount
    */
+  @Override
   public Iterator<E> iterator()
   {
     // Bah, Sun's implementation forbids using listIterator(0).
@@ -322,8 +349,9 @@ while (i.hasNext())
        */
       private void checkMod()
       {
-        if (knownMod != modCount)
+        if (knownMod != modCount) {
           throw new ConcurrentModificationException();
+        }
       }
 
       /**
@@ -333,6 +361,7 @@ while (i.hasNext())
        * @return True if the end of the list has not yet been
        *         reached.
        */
+      @Override
       public boolean hasNext()
       {
         return pos < size;
@@ -347,11 +376,13 @@ while (i.hasNext())
        * @throws ConcurrentModificationException if the
        *         list has been modified elsewhere.
        */
+      @Override
       public E next()
       {
         checkMod();
-        if (pos == size)
+        if (pos == size) {
           throw new NoSuchElementException();
+        }
         last = pos;
         return get(pos++);
       }
@@ -368,11 +399,13 @@ while (i.hasNext())
        * @throws UnsupportedOperationException if the list does
        *         not support removing elements.
        */
+      @Override
       public void remove()
       {
         checkMod();
-        if (last < 0)
+        if (last < 0) {
           throw new IllegalStateException();
+        }
         AbstractList4D.this.remove(last);
         pos--;
         size--;
@@ -390,13 +423,16 @@ while (i.hasNext())
    * @return the greatest integer n such that <code>o == null ? get(n) == null
    *         : o.equals(get(n))</code>, or -1 if there is no such index
    */
+  @Override
   public int lastIndexOf(Object o)
   {
     int pos = size();
     ListIterator<E> itr = listIterator(pos);
-    while (--pos >= 0)
-      if (AbstractCollection4D.equals(o, itr.previous()))
+    while (--pos >= 0){
+      if (AbstractCollection4D.equals(o, itr.previous())){
         return pos;
+      }
+    }
     return -1;
   }
 
@@ -407,6 +443,7 @@ while (i.hasNext())
    * @return a ListIterator over the elements of this list, in order, starting
    *         at the beginning
    */
+  @Override
   public ListIterator<E> listIterator()
   {
     return listIterator(0);
@@ -430,11 +467,13 @@ while (i.hasNext())
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    * @see #modCount
    */
+  @Override
   public ListIterator<E> listIterator(final int index)
   {
-    if (index < 0 || index > size())
+    if (index < 0 || index > size()){
       throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-                                          + size());
+          + size());
+    }
 
     return new ListIterator<E>()
     {
@@ -453,8 +492,9 @@ while (i.hasNext())
        */
       private void checkMod()
       {
-        if (knownMod != modCount)
+        if (knownMod != modCount) {
           throw new ConcurrentModificationException();
+        }
       }
 
       /**
@@ -464,6 +504,7 @@ while (i.hasNext())
        * @return True if the end of the list has not yet been
        *         reached.
        */
+      @Override
       public boolean hasNext()
       {
         return position < size;
@@ -476,6 +517,7 @@ while (i.hasNext())
        * @return True if objects exist prior to the current
        *         position of the iterator.
        */
+      @Override
       public boolean hasPrevious()
       {
         return position > 0;
@@ -490,11 +532,13 @@ while (i.hasNext())
        * @throws ConcurrentModificationException if the
        *         list has been modified elsewhere.
        */
+      @Override
       public E next()
       {
         checkMod();
-        if (position == size)
+        if (position == size) {
           throw new NoSuchElementException();
+        }
         lastReturned = position;
         return get(position++);
       }
@@ -508,11 +552,13 @@ while (i.hasNext())
        * @throws ConcurrentModificationException if the
        *         list has been modified elsewhere.
        */
+      @Override
       public E previous()
       {
         checkMod();
-        if (position == 0)
+        if (position == 0) {
           throw new NoSuchElementException();
+        }
         lastReturned = --position;
         return get(lastReturned);
       }
@@ -523,6 +569,7 @@ while (i.hasNext())
        *
        * @return The index of the next element.
        */
+      @Override
       public int nextIndex()
       {
         return position;
@@ -534,29 +581,32 @@ while (i.hasNext())
        *
        * @return The index of the previous element.
        */
+      @Override
       public int previousIndex()
       {
         return position - 1;
       }
 
-     /**
-      * Removes the last object retrieved by <code>next()</code>
-      * or <code>previous()</code> from the list, if the list
-      * supports object removal.
-      *
-      * @throws IllegalStateException if the iterator is positioned
-      *         before the start of the list or the last object has already
-      *         been removed.
-      * @throws UnsupportedOperationException if the list does
-      *         not support removing elements.
-      * @throws ConcurrentModificationException if the list
-      *         has been modified elsewhere.
-      */
+      /**
+       * Removes the last object retrieved by <code>next()</code>
+       * or <code>previous()</code> from the list, if the list
+       * supports object removal.
+       *
+       * @throws IllegalStateException if the iterator is positioned
+       *         before the start of the list or the last object has already
+       *         been removed.
+       * @throws UnsupportedOperationException if the list does
+       *         not support removing elements.
+       * @throws ConcurrentModificationException if the list
+       *         has been modified elsewhere.
+       */
+      @Override
       public void remove()
       {
         checkMod();
-        if (lastReturned < 0)
+        if (lastReturned < 0) {
           throw new IllegalStateException();
+        }
         AbstractList4D.this.remove(lastReturned);
         size--;
         position = lastReturned;
@@ -564,29 +614,31 @@ while (i.hasNext())
         knownMod = modCount;
       }
 
-     /**
-      * Replaces the last object retrieved by <code>next()</code>
-      * or <code>previous</code> with o, if the list supports object
-      * replacement and an add or remove operation has not already
-      * been performed.
-      *
-      * @throws IllegalStateException if the iterator is positioned
-      *         before the start of the list or the last object has already
-      *         been removed.
-      * @throws UnsupportedOperationException if the list doesn't support
-      *         the addition or removal of elements.
-      * @throws ClassCastException if the type of o is not a valid type
-      *         for this list.
-      * @throws IllegalArgumentException if something else related to o
-      *         prevents its addition.
-      * @throws ConcurrentModificationException if the list
-      *         has been modified elsewhere.
-      */
+      /**
+       * Replaces the last object retrieved by <code>next()</code>
+       * or <code>previous</code> with o, if the list supports object
+       * replacement and an add or remove operation has not already
+       * been performed.
+       *
+       * @throws IllegalStateException if the iterator is positioned
+       *         before the start of the list or the last object has already
+       *         been removed.
+       * @throws UnsupportedOperationException if the list doesn't support
+       *         the addition or removal of elements.
+       * @throws ClassCastException if the type of o is not a valid type
+       *         for this list.
+       * @throws IllegalArgumentException if something else related to o
+       *         prevents its addition.
+       * @throws ConcurrentModificationException if the list
+       *         has been modified elsewhere.
+       */
+      @Override
       public void set(E o)
       {
         checkMod();
-        if (lastReturned < 0)
+        if (lastReturned < 0) {
           throw new IllegalStateException();
+        }
         AbstractList4D.this.set(lastReturned, o);
       }
 
@@ -604,6 +656,7 @@ while (i.hasNext())
        * @throws ConcurrentModificationException if the list
        *         has been modified elsewhere.
        */
+      @Override
       public void add(E o)
       {
         checkMod();
@@ -629,6 +682,7 @@ while (i.hasNext())
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    * @see #modCount
    */
+  @Override
   public E remove(int index)
   {
     throw new UnsupportedOperationException();
@@ -657,10 +711,10 @@ while (i.hasNext())
   {
     ListIterator<E> itr = listIterator(fromIndex);
     for (int index = fromIndex; index < toIndex; index++)
-      {
-        itr.next();
-        itr.remove();
-      }
+    {
+      itr.next();
+      itr.remove();
+    }
   }
 
   /**
@@ -678,6 +732,7 @@ while (i.hasNext())
    * @throws IllegalArgumentException if o cannot be added to this list for
    *         some other reason
    */
+  @Override
   public E set(int index, E o)
   {
     throw new UnsupportedOperationException();
@@ -727,17 +782,21 @@ while (i.hasNext())
    * @see ConcurrentModificationException
    * @see RandomAccess
    */
+  @Override
   public List<E> subList(int fromIndex, int toIndex)
   {
     // This follows the specification of AbstractList, but is inconsistent
     // with the one in List. Don't you love Sun's inconsistencies?
-    if (fromIndex > toIndex)
+    if (fromIndex > toIndex){
       throw new IllegalArgumentException(fromIndex + " > " + toIndex);
-    if (fromIndex < 0 || toIndex > size())
+    }
+    if (fromIndex < 0 || toIndex > size()){
       throw new IndexOutOfBoundsException();
+    }
 
-    if (this instanceof RandomAccess)
+    if (this instanceof RandomAccess){
       return new RandomAccessSubList<E>(this, fromIndex, toIndex);
+    }
     return new SubList<E>(this, fromIndex, toIndex);
   }
 
@@ -758,7 +817,7 @@ while (i.hasNext())
     final int offset;
     /** The size of the sublist. */
     int size;
-    
+
     /**
      * Construct the sublist.
      *
@@ -773,7 +832,7 @@ while (i.hasNext())
       offset = fromIndex;
       size = toIndex - fromIndex;
     }
-    
+
     /**
      * This method checks the two modCount fields to ensure that there has
      * not been a concurrent modification, returning if all is okay.
@@ -784,10 +843,11 @@ while (i.hasNext())
     // This can be inlined. Package visible, for use by iterator.
     void checkMod()
     {
-      if (modCount != backingList.modCount)
-	throw new ConcurrentModificationException();
+      if (modCount != backingList.modCount){
+        throw new ConcurrentModificationException();
+      }
     }
-    
+
     /**
      * This method checks that a value is between 0 and size (inclusive). If
      * it is not, an exception is thrown.
@@ -798,11 +858,12 @@ while (i.hasNext())
     // This will get inlined, since it is private.
     private void checkBoundsInclusive(int index)
     {
-      if (index < 0 || index > size)
-	throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-					    + size);
+      if (index < 0 || index > size){
+        throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
+            + size);
+      }
     }
-    
+
     /**
      * This method checks that a value is between 0 (inclusive) and size
      * (exclusive). If it is not, an exception is thrown.
@@ -813,11 +874,12 @@ while (i.hasNext())
     // This will get inlined, since it is private.
     private void checkBoundsExclusive(int index)
     {
-      if (index < 0 || index >= size)
-	throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-					    + size);
+      if (index < 0 || index >= size){
+        throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
+            + size);
+      }
     }
-    
+
     /**
      * Specified by AbstractList.subList to return the private field size.
      *
@@ -825,12 +887,13 @@ while (i.hasNext())
      * @throws ConcurrentModificationException if the backing list has been
      *         modified externally to this sublist
      */
+    @Override
     public int size()
     {
       checkMod();
       return size;
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -847,13 +910,14 @@ while (i.hasNext())
      * @throws IllegalArgumentException if o cannot be added to the backing list
      *         for some other reason
      */
+    @Override
     public E set(int index, E o)
     {
       checkMod();
       checkBoundsExclusive(index);
       return backingList.set(index + offset, o);
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -863,13 +927,14 @@ while (i.hasNext())
      *         modified externally to this sublist
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
      */
+    @Override
     public E get(int index)
     {
       checkMod();
       checkBoundsExclusive(index);
       return backingList.get(index + offset);
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -885,6 +950,7 @@ while (i.hasNext())
      * @throws IllegalArgumentException if o cannot be added to the backing
      *         list for some other reason.
      */
+    @Override
     public void add(int index, E o)
     {
       checkMod();
@@ -893,7 +959,7 @@ while (i.hasNext())
       size++;
       modCount = backingList.modCount;
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -905,6 +971,7 @@ while (i.hasNext())
      * @throws UnsupportedOperationException if the backing list does not
      *         support the remove operation
      */
+    @Override
     public E remove(int index)
     {
       checkMod();
@@ -914,7 +981,7 @@ while (i.hasNext())
       modCount = backingList.modCount;
       return o;
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      * This does no bounds checking, as it assumes it will only be called
@@ -927,15 +994,16 @@ while (i.hasNext())
      * @throws UnsupportedOperationException if the backing list does
      *         not support removing elements.
      */
+    @Override
     protected void removeRange(int fromIndex, int toIndex)
     {
       checkMod();
-      
+
       backingList.removeRange(offset + fromIndex, offset + toIndex);
       size -= toIndex - fromIndex;
       modCount = backingList.modCount;
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -953,6 +1021,7 @@ while (i.hasNext())
      *         to this list for some other reason
      * @throws NullPointerException if the specified collection is null
      */
+    @Override
     public boolean addAll(int index, Collection<? extends E> c)
     {
       checkMod();
@@ -963,7 +1032,7 @@ while (i.hasNext())
       modCount = backingList.modCount;
       return result;
     }
-    
+
     /**
      * Specified by AbstractList.subList to return addAll(size, c).
      *
@@ -979,21 +1048,23 @@ while (i.hasNext())
      *         to this list for some other reason
      * @throws NullPointerException if the specified collection is null
      */
+    @Override
     public boolean addAll(Collection<? extends E> c)
     {
       return addAll(size, c);
     }
-    
+
     /**
      * Specified by AbstractList.subList to return listIterator().
      *
      * @return an iterator over the sublist
      */
+    @Override
     public Iterator<E> iterator()
     {
       return listIterator();
     }
-    
+
     /**
      * Specified by AbstractList.subList to return a wrapper around the
      * backing list's iterator.
@@ -1004,180 +1075,192 @@ while (i.hasNext())
      *         modified externally to this sublist
      * @throws IndexOutOfBoundsException if the value is out of range
      */
+    @Override
     public ListIterator<E> listIterator(final int index)
     {
       checkMod();
       checkBoundsInclusive(index);
-      
-      return new ListIterator<E>()
-	{
-	  private final ListIterator<E> i
-	    = backingList.listIterator(index + offset);
-	  private int position = index;
-	  
-	  /**
-	   * Tests to see if there are any more objects to
-	   * return.
-	   *
-	   * @return True if the end of the list has not yet been
-	   *         reached.
-	   */
-	  public boolean hasNext()
-	  {
-	      return position < size;
-	  }
-	  
-	  /**
-	   * Tests to see if there are objects prior to the
-	   * current position in the list.
-	   *
-	   * @return True if objects exist prior to the current
-	   *         position of the iterator.
-	   */
-	  public boolean hasPrevious()
-	  {
-	      return position > 0;
-	  }
-	  
-	  /**
-	   * Retrieves the next object from the list.
-	   *
-	   * @return The next object.
-	   * @throws NoSuchElementException if there are no
-	   *         more objects to retrieve.
-	   * @throws ConcurrentModificationException if the
-	   *         list has been modified elsewhere.
-	   */
-	  public E next()
-	  {
-	      if (position == size)
-		throw new NoSuchElementException();
-	      position++;
-	      return i.next();
-	  }
 
-	  /**
-	   * Retrieves the previous object from the list.
-	   *
-	   * @return The next object.
-	   * @throws NoSuchElementException if there are no
-	   *         previous objects to retrieve.
-	   * @throws ConcurrentModificationException if the
-	   *         list has been modified elsewhere.
-	   */
-	  public E previous()
-	  {
-	      if (position == 0)
-		throw new NoSuchElementException();
-	      position--;
-	      return i.previous();
-	  }
-	  
-	  /**
-	   * Returns the index of the next element in the
-	   * list, which will be retrieved by <code>next()</code>
-	   *
-	   * @return The index of the next element.
-	   */
-	  public int nextIndex()
-	  {
-	      return i.nextIndex() - offset;
-	  }
-	  
-	  /**
-	   * Returns the index of the previous element in the
-	   * list, which will be retrieved by <code>previous()</code>
-	   *
-	   * @return The index of the previous element.
-	   */
-	  public int previousIndex()
-	  {
-	      return i.previousIndex() - offset;
-	  }
-	  
-	  /**
-	   * Removes the last object retrieved by <code>next()</code>
-	   * from the list, if the list supports object removal.
-	   *
-	   * @throws IllegalStateException if the iterator is positioned
-	   *         before the start of the list or the last object has already
-	   *         been removed.
-	   * @throws UnsupportedOperationException if the list does
-	   *         not support removing elements.
-	   */
-	  public void remove()
-	  {
-	      i.remove();
-	      size--;
-	      position = nextIndex();
-	      modCount = backingList.modCount;
-	  }
-	  
-	  
-	  /**
-	   * Replaces the last object retrieved by <code>next()</code>
-	   * or <code>previous</code> with o, if the list supports object
-	   * replacement and an add or remove operation has not already
-	   * been performed.
-	   *
-	   * @throws IllegalStateException if the iterator is positioned
-	   *         before the start of the list or the last object has already
-	   *         been removed.
-	   * @throws UnsupportedOperationException if the list doesn't support
-	   *         the addition or removal of elements.
-	   * @throws ClassCastException if the type of o is not a valid type
-	   *         for this list.
-	   * @throws IllegalArgumentException if something else related to o
-	   *         prevents its addition.
-	   * @throws ConcurrentModificationException if the list
-	   *         has been modified elsewhere.
-	   */
-	  public void set(E o)
-	  {
-	      i.set(o);
-	  }
-	  
-	  /**
-	   * Adds the supplied object before the element that would be returned
-	   * by a call to <code>next()</code>, if the list supports addition.
-	   * 
-	   * @param o The object to add to the list.
-	   * @throws UnsupportedOperationException if the list doesn't support
-	   *         the addition of new elements.
-	   * @throws ClassCastException if the type of o is not a valid type
-	   *         for this list.
-	   * @throws IllegalArgumentException if something else related to o
-	   *         prevents its addition.
-	   * @throws ConcurrentModificationException if the list
-	   *         has been modified elsewhere.
-	   */
-	  public void add(E o)
-	  {
-	      i.add(o);
-	      size++;
-	      position++;
-	      modCount = backingList.modCount;
-	  }
-	  
-	  // Here is the reason why the various modCount fields are mostly
-	  // ignored in this wrapper listIterator.
-	  // If the backing listIterator is failfast, then the following holds:
-	  //   Using any other method on this list will call a corresponding
-	  //   method on the backing list *after* the backing listIterator
-	  //   is created, which will in turn cause a ConcurrentModException
-	  //   when this listIterator comes to use the backing one. So it is
-	  //   implicitly failfast.
-	  // If the backing listIterator is NOT failfast, then the whole of
-	  //   this list isn't failfast, because the modCount field of the
-	  //   backing list is not valid. It would still be *possible* to
-	  //   make the iterator failfast wrt modifications of the sublist
-	  //   only, but somewhat pointless when the list can be changed under
-	  //   us.
-	  // Either way, no explicit handling of modCount is needed.
-	  // However modCount = backingList.modCount must be executed in add
-	  // and remove, and size must also be updated in these two methods,
-	  // since they do not go through the corresponding methods of the subList.
-	};
+      return new ListIterator<E>()
+      {
+        private final ListIterator<E> i
+        = backingList.listIterator(index + offset);
+        private int position = index;
+
+        /**
+         * Tests to see if there are any more objects to
+         * return.
+         *
+         * @return True if the end of the list has not yet been
+         *         reached.
+         */
+        @Override
+        public boolean hasNext()
+        {
+          return position < size;
+        }
+
+        /**
+         * Tests to see if there are objects prior to the
+         * current position in the list.
+         *
+         * @return True if objects exist prior to the current
+         *         position of the iterator.
+         */
+        @Override
+        public boolean hasPrevious()
+        {
+          return position > 0;
+        }
+
+        /**
+         * Retrieves the next object from the list.
+         *
+         * @return The next object.
+         * @throws NoSuchElementException if there are no
+         *         more objects to retrieve.
+         * @throws ConcurrentModificationException if the
+         *         list has been modified elsewhere.
+         */
+        @Override
+        public E next()
+        {
+          if (position == size) {
+            throw new NoSuchElementException();
+          }
+          position++;
+          return i.next();
+        }
+
+        /**
+         * Retrieves the previous object from the list.
+         *
+         * @return The next object.
+         * @throws NoSuchElementException if there are no
+         *         previous objects to retrieve.
+         * @throws ConcurrentModificationException if the
+         *         list has been modified elsewhere.
+         */
+        @Override
+        public E previous()
+        {
+          if (position == 0) {
+            throw new NoSuchElementException();
+          }
+          position--;
+          return i.previous();
+        }
+
+        /**
+         * Returns the index of the next element in the
+         * list, which will be retrieved by <code>next()</code>
+         *
+         * @return The index of the next element.
+         */
+        @Override
+        public int nextIndex()
+        {
+          return i.nextIndex() - offset;
+        }
+
+        /**
+         * Returns the index of the previous element in the
+         * list, which will be retrieved by <code>previous()</code>
+         *
+         * @return The index of the previous element.
+         */
+        @Override
+        public int previousIndex()
+        {
+          return i.previousIndex() - offset;
+        }
+
+        /**
+         * Removes the last object retrieved by <code>next()</code>
+         * from the list, if the list supports object removal.
+         *
+         * @throws IllegalStateException if the iterator is positioned
+         *         before the start of the list or the last object has already
+         *         been removed.
+         * @throws UnsupportedOperationException if the list does
+         *         not support removing elements.
+         */
+        @Override
+        public void remove()
+        {
+          i.remove();
+          size--;
+          position = nextIndex();
+          modCount = backingList.modCount;
+        }
+
+
+        /**
+         * Replaces the last object retrieved by <code>next()</code>
+         * or <code>previous</code> with o, if the list supports object
+         * replacement and an add or remove operation has not already
+         * been performed.
+         *
+         * @throws IllegalStateException if the iterator is positioned
+         *         before the start of the list or the last object has already
+         *         been removed.
+         * @throws UnsupportedOperationException if the list doesn't support
+         *         the addition or removal of elements.
+         * @throws ClassCastException if the type of o is not a valid type
+         *         for this list.
+         * @throws IllegalArgumentException if something else related to o
+         *         prevents its addition.
+         * @throws ConcurrentModificationException if the list
+         *         has been modified elsewhere.
+         */
+        @Override
+        public void set(E o)
+        {
+          i.set(o);
+        }
+
+        /**
+         * Adds the supplied object before the element that would be returned
+         * by a call to <code>next()</code>, if the list supports addition.
+         * 
+         * @param o The object to add to the list.
+         * @throws UnsupportedOperationException if the list doesn't support
+         *         the addition of new elements.
+         * @throws ClassCastException if the type of o is not a valid type
+         *         for this list.
+         * @throws IllegalArgumentException if something else related to o
+         *         prevents its addition.
+         * @throws ConcurrentModificationException if the list
+         *         has been modified elsewhere.
+         */
+        @Override
+        public void add(E o)
+        {
+          i.add(o);
+          size++;
+          position++;
+          modCount = backingList.modCount;
+        }
+
+        // Here is the reason why the various modCount fields are mostly
+        // ignored in this wrapper listIterator.
+        // If the backing listIterator is failfast, then the following holds:
+        //   Using any other method on this list will call a corresponding
+        //   method on the backing list *after* the backing listIterator
+        //   is created, which will in turn cause a ConcurrentModException
+        //   when this listIterator comes to use the backing one. So it is
+        //   implicitly failfast.
+        // If the backing listIterator is NOT failfast, then the whole of
+        //   this list isn't failfast, because the modCount field of the
+        //   backing list is not valid. It would still be *possible* to
+        //   make the iterator failfast wrt modifications of the sublist
+        //   only, but somewhat pointless when the list can be changed under
+        //   us.
+        // Either way, no explicit handling of modCount is needed.
+        // However modCount = backingList.modCount must be executed in add
+        // and remove, and size must also be updated in these two methods,
+        // since they do not go through the corresponding methods of the subList.
+      };
     }
   } // class SubList
 
@@ -1188,7 +1271,7 @@ while (i.hasNext())
    * @author Eric Blake (ebb9@email.byu.edu)
    */
   private static final class RandomAccessSubList<E> extends SubList<E>
-    implements RandomAccess
+  implements RandomAccess
   {
     /**
      * Construct the sublist.
@@ -1202,5 +1285,5 @@ while (i.hasNext())
       super(backing, fromIndex, toIndex);
     }
   } // class RandomAccessSubList
-  
+
 } // class AbstractList
