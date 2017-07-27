@@ -425,7 +425,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             htPressedKeys.remove(String.valueOf(keyCode));
             break;
          case KeyEvent.ACTION_DOWN:
-            int flags = event.getFlags();
             htPressedKeys.put(String.valueOf(keyCode), "");
             int flags = event.getFlags();
             int state = event.getMetaState();
