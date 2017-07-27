@@ -89,8 +89,8 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
    void endRow()
    {
       colsPerRow.addElement(colCount);
-      maxColspan = Math.max(maxColspan, curColspan);
-      maxRowspan = Math.max(maxRowspan, Math.max(colsPerRow.size(),curRowspan));
+      maxColspan = Convert.max(maxColspan, curColspan);
+      maxRowspan = Convert.max(maxRowspan,colsPerRow.size(),curRowspan);
       curColspan = colCount = 0;
    }
    

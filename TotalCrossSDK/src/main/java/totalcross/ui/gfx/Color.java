@@ -294,10 +294,17 @@ public final class Color
       int r = (c >> 16) & 0xFF;
       int g = (c >>  8) & 0xFF;
       int b = (c      ) & 0xFF;
-      int m = (r+g+b)/3;
-      int bright = (3*r + b + 4*g) >> 3;
-      if (bright < 128)
-         m = 128 - bright;
+      int m = (3*r + b + 4*g) >> 3;
       return getRGB(m,m,m);
+   }
+
+   /** Returns an inverted gray color based on the given one (255 - gray) */
+   public static int getInvertedGray(int c)
+   {
+      int r = (c >> 16) & 0xFF;
+      int g = (c >>  8) & 0xFF;
+      int b = (c      ) & 0xFF;
+      int m = (3*r + b + 4*g) >> 3;
+      return getRGB(255-m,255-m,255-m);
    }
 }

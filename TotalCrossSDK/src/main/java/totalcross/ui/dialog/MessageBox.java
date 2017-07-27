@@ -224,7 +224,7 @@ public class MessageBox extends Window
          ly = androidBorderThickness+1;
       int h = captionH + hb + hm;
       if (uiAndroid) h += fmH/2;
-      int w = lgap + Math.max(Math.max(wb,wm),(iconW > 0 ? iconW+fmH : 0) + fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
+      int w = lgap + Convert.max(wb,wm,(iconW > 0 ? iconW+fmH : 0) + fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       setRect(CENTER,yPosition,w,h);
       if (!removeTitleLine && icon != null)

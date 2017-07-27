@@ -157,7 +157,7 @@ public class InputBox extends Window
       int captionH = fm2.height+10 + titleGap;
 
       int h = captionH + hb + hm + he;
-      int w = Math.max(Math.max(Math.max(wb,wm),we),fm2.stringWidth(title!=null?title:""))+6; // guich@200b4_29
+      int w = Convert.max(wb,wm,we,fm2.stringWidth(title!=null?title:""))+6; // guich@200b4_29
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       setRect(CENTER,yPosition,w,h);
       add(msg);
