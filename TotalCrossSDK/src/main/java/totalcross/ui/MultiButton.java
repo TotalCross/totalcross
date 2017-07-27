@@ -114,7 +114,7 @@ public class MultiButton extends Control
          
          NinePatch.tryDrawImage(g,npback,0,0);
          int w = width / tits.length;
-         if (sel != -1 && !uiMaterial)
+         if (sel != -1 && (!uiMaterial || isSticky))
             g.copyRect(npsel,sel*w+2,0,w-2,height,sel*w+2,1);
          if (effect != null) effect.paintEffect(g);
          for (int i = 0, x0 = 0, n = tits.length-1; i <= n; i++, x0 += w)
