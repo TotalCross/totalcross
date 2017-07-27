@@ -18,7 +18,7 @@
 
 package totalcross.ui.chart;
 
-import totalcross.ui.*;
+import totalcross.ui.Insets;
 import totalcross.ui.gfx.Coord;
 import totalcross.ui.gfx.Graphics;
 import totalcross.util.Vector;
@@ -27,59 +27,64 @@ import totalcross.util.Vector;
 
 public class XYChart extends PointLineChart
 {
-   /** Position the values at the center of the column instead of at the line. */ 
-   public boolean positionAtColumnCenter;
-   
-   /**
-    * Creates a new XY (scatter) chart without categories
-    */
-   public XYChart()
-   {
-      this(null);
-   }
-   
-   /**
-    * Creates a new XY (scatter) chart with the given categories
-    */
-   public XYChart(String[] categories)
-   {
-      if (categories != null)
-         setXAxis(categories);
-      border = new Insets(5, 5, 5, 5);
-      showLines = true;
-      showPoints = true;
-   }
+  /** Position the values at the center of the column instead of at the line. */ 
+  public boolean positionAtColumnCenter;
 
-   public void onPaint(Graphics g)
-   {
-      if (!draw(g)) // draw axis, title, etc
-         return;
+  /**
+   * Creates a new XY (scatter) chart without categories
+   */
+  public XYChart()
+  {
+    this(null);
+  }
 
-      // Update points
-      int sCount = series.size();
-      int transX = positionAtColumnCenter ? -columnW/2 : 0;
-      for (int i = 0; i < sCount; i ++) // for each series
-      {
-         if (i >= points.size())
-            points.addElement(new Vector());
+  /**
+   * Creates a new XY (scatter) chart with the given categories
+   */
+  public XYChart(String[] categories)
+  {
+    if (categories != null){
+      setXAxis(categories);
+    }
+    border = new Insets(5, 5, 5, 5);
+    showLines = true;
+    showPoints = true;
+  }
 
-         Vector v = (Vector) points.items[i];
-         Series s = (Series) series.items[i];
-         double[] xValues = s.xValues;
-         double[] yValues = s.yValues;
+  @Override
+  public void onPaint(Graphics g)
+  {
+    if (!draw(g)){
+      return;
+    }
 
-         int vCount = xValues.length;
-         for (int j = 0; j < vCount; j ++) // for each category
-         {
-            if (j >= v.size())
-               v.addElement(new Coord());
-            Coord c = (Coord) v.items[j];
-
-            c.x = getXValuePos(xValues[j]) + transX;
-            c.y = getYValuePos(yValues[j]);
-         }
+    // Update points
+    int sCount = series.size();
+    int transX = positionAtColumnCenter ? -columnW/2 : 0;
+    for (int i = 0; i < sCount; i ++) // for each series
+    {
+      if (i >= points.size()) {
+        points.addElement(new Vector());
       }
 
-      super.onPaint(g);
-   }
+      Vector v = (Vector) points.items[i];
+      Series s = (Series) series.items[i];
+      double[] xValues = s.xValues;
+      double[] yValues = s.yValues;
+
+      int vCount = xValues.length;
+      for (int j = 0; j < vCount; j ++) // for each category
+      {
+        if (j >= v.size()) {
+          v.addElement(new Coord());
+        }
+        Coord c = (Coord) v.items[j];
+
+        c.x = getXValuePos(xValues[j]) + transX;
+        c.y = getYValuePos(yValues[j]);
+      }
+    }
+
+    super.onPaint(g);
+  }
 }

@@ -10,38 +10,40 @@ package totalcross.util.pdf;
 public class Header extends Base
 {
 
-   private String mVersion;
-   private String mRenderedHeader;
+  private String mVersion;
+  private String mRenderedHeader;
 
-   public Header()
-   {
-      clear();
-   }
+  public Header()
+  {
+    clear();
+  }
 
-   public void setVersion(int Major, int Minor)
-   {
-      mVersion = Integer.toString(Major) + "." + Integer.toString(Minor);
-      render();
-   }
+  public void setVersion(int Major, int Minor)
+  {
+    mVersion = Integer.toString(Major) + "." + Integer.toString(Minor);
+    render();
+  }
 
-   public int getPDFStringSize()
-   {
-      return mRenderedHeader.length();
-   }
+  public int getPDFStringSize()
+  {
+    return mRenderedHeader.length();
+  }
 
-   private void render()
-   {
-      mRenderedHeader = "%PDF-" + mVersion + "\n%©»ªµ\n";
-   }
+  private void render()
+  {
+    mRenderedHeader = "%PDF-" + mVersion + "\n%Â©Â»ÂªÂµ\n";
+  }
 
-   public String toPDFString()
-   {
-      return mRenderedHeader;
-   }
+  @Override
+  public String toPDFString()
+  {
+    return mRenderedHeader;
+  }
 
-   public void clear()
-   {
-      setVersion(1, 4);
-   }
+  @Override
+  public void clear()
+  {
+    setVersion(1, 4);
+  }
 
 }

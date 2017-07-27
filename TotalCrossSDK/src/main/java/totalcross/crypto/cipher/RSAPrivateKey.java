@@ -16,51 +16,51 @@ package totalcross.crypto.cipher;
  */
 public class RSAPrivateKey extends Key
 {
-   private byte[] e;
-   private byte[] d;
-   private byte[] n;
-   
-   /**
-    * Creates a new RSAPublicKey object, given the public and private exponents and the modulus.
-    * 
-    * @param e A byte array containing the public exponent.
-    * @param d A byte array containing the private exponent.
-    * @param n A byte array containing the modulus.
-    */
-   public RSAPrivateKey(byte[] e, byte[] d, byte[] n)
-   {
-      this.e = e;
-      this.d = d;
-      this.n = n;
-   }
-   
-   /**
-    * Returns a copy of the byte array containing the modulus.
-    * 
-    * @return A copy of the byte array containing the modulus.
-    */
-   public byte[] getModulus()
-   {
-      return n;
-   }
-   
-   /**
-    * Returns a copy of the byte array containing the public exponent.
-    * 
-    * @return A copy of the byte array containing the public exponent.
-    */
-   public byte[] getPublicExponent()
-   {
-      return e;
-   }
-   
-   /**
-    * Returns a copy of the byte array containing the private exponent.
-    * 
-    * @return A copy of the byte array containing the private exponent.
-    */
-   public byte[] getPrivateExponent()
-   {
-      return d;
-   }
+  private byte[] e;
+  private byte[] d;
+  private byte[] n;
+
+  /**
+   * Creates a new RSAPublicKey object, given the public and private exponents and the modulus.
+   * 
+   * @param e A byte array containing the public exponent.
+   * @param d A byte array containing the private exponent.
+   * @param n A byte array containing the modulus.
+   */
+  public RSAPrivateKey(byte[] e, byte[] d, byte[] n)
+  {
+    this.e = e;
+    this.d = d;
+    this.n = n;
+  }
+
+  /**
+   * Returns a copy of the byte array containing the modulus.
+   * 
+   * @return A copy of the byte array containing the modulus.
+   */
+  public byte[] getModulus()
+  {
+    return n;
+  }
+
+  /**
+   * Returns a copy of the byte array containing the public exponent.
+   * 
+   * @return A copy of the byte array containing the public exponent.
+   */
+  public byte[] getPublicExponent()
+  {
+    return e;
+  }
+
+  /**
+   * Returns a copy of the byte array containing the private exponent.
+   * 
+   * @return A copy of the byte array containing the private exponent.
+   */
+  public byte[] getPrivateExponent()
+  {
+    return d;
+  }
 }

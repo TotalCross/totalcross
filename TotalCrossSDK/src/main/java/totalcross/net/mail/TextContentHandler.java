@@ -18,8 +18,9 @@
 
 package totalcross.net.mail;
 
-import totalcross.io.*;
-import totalcross.sys.*;
+import totalcross.io.IOException;
+import totalcross.io.Stream;
+import totalcross.sys.Convert;
 
 /**
  * Implementation of DataContentHandler that handles textual (not encoded) MIME types.
@@ -28,18 +29,19 @@ import totalcross.sys.*;
  */
 public class TextContentHandler extends DataContentHandler
 {
-   public void writeTo(Object obj, String mimeType, Stream stream) throws IOException
-   {
-      String text;
-      if (obj instanceof Part)
-      {
-         Part part = (Part) obj;
-         text = (String) part.content;
-      }
-      else
-         text = obj.toString();
-      stream.writeBytes(Convert.CRLF_BYTES);
-      stream.writeBytes(text);
-      stream.writeBytes(Convert.CRLF_BYTES);
-   }
+  @Override
+  public void writeTo(Object obj, String mimeType, Stream stream) throws IOException
+  {
+    String text;
+    if (obj instanceof Part)
+    {
+      Part part = (Part) obj;
+      text = (String) part.content;
+    }else {
+      text = obj.toString();
+    }
+    stream.writeBytes(Convert.CRLF_BYTES);
+    stream.writeBytes(text);
+    stream.writeBytes(Convert.CRLF_BYTES);
+  }
 }

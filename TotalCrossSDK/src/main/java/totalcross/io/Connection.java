@@ -23,11 +23,11 @@ package totalcross.io;
  */
 abstract class Connection
 {
-   /**
-    * Closes this I/O connection, releasing any associated resources. Once closed a connection is no longer valid.
-    * 
-    * @throws IOException
-    *            If an I/O error occurs.
-    */
-   abstract public void close() throws IOException;
+  /**
+   * Closes this I/O connection, releasing any associated resources. Once closed a connection is no longer valid.
+   * 
+   * @throws IOException
+   *            If an I/O error occurs.
+   */
+  abstract public void close() throws IOException;
 }

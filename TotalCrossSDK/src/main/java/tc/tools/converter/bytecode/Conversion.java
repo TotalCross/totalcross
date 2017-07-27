@@ -15,14 +15,14 @@ package tc.tools.converter.bytecode;
 
 public class Conversion extends ByteCode
 {
-   public int result, operand, srcType;
+  public int result, operand, srcType;
 
-   public Conversion(int result, int operand, int srcType, int dstType)
-   {
-      this.result = result;
-      this.operand = operand;
-      this.srcType = srcType;
-      this.targetType = dstType;
-      stackInc = 0;
-   }
+  public Conversion(int result, int operand, int srcType, int dstType)
+  {
+    this.result = result;
+    this.operand = operand;
+    this.srcType = srcType;
+    this.targetType = dstType;
+    stackInc = 0;
+  }
 }

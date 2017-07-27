@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC083_aastore extends StoreArray
 {
-   public BC083_aastore()
-   {
-      super(-3,0,1,2,OBJECT);
-   }
+  public BC083_aastore()
+  {
+    super(-3,0,1,2,OBJECT);
+  }
 }

@@ -40,8 +40,9 @@
 
 package totalcross.net.ssl;
 
-import totalcross.crypto.*;
-import totalcross.io.*;
+import totalcross.crypto.CryptoException;
+import totalcross.crypto.NoSuchAlgorithmException;
+import totalcross.io.IOException;
 import totalcross.net.Socket;
 
 /**
@@ -50,30 +51,30 @@ import totalcross.net.Socket;
  */
 public class SSLServer extends SSLCTX
 {
-   /**
-    * Start a new server context.
-    * @throws NoSuchAlgorithmException 
-    * @see SSLCTX for details.
-    */
-   public SSLServer(int options, int num_sessions) throws NoSuchAlgorithmException
-   {
-      super(options, num_sessions);
-   }
+  /**
+   * Start a new server context.
+   * @throws NoSuchAlgorithmException 
+   * @see SSLCTX for details.
+   */
+  public SSLServer(int options, int num_sessions) throws NoSuchAlgorithmException
+  {
+    super(options, num_sessions);
+  }
 
-   /**
-    * Establish a new SSL connection to an SSL client.
-    * It is up to the application to establish the initial socket connection.
-    *
-    * Call dispose() when the connection is to be removed.
-    *
-    * @param socket [in] A reference to a totalcross.net.Socket.
-    * @return An SSL object reference.
-    * @throws IOException 
-    * @throws CryptoException 
-    * @throws NoSuchAlgorithmException 
-    */
-   public SSL connect(Socket socket) throws IOException, NoSuchAlgorithmException, CryptoException
-   {
-      return newServer(socket);
-   }
+  /**
+   * Establish a new SSL connection to an SSL client.
+   * It is up to the application to establish the initial socket connection.
+   *
+   * Call dispose() when the connection is to be removed.
+   *
+   * @param socket [in] A reference to a totalcross.net.Socket.
+   * @return An SSL object reference.
+   * @throws IOException 
+   * @throws CryptoException 
+   * @throws NoSuchAlgorithmException 
+   */
+  public SSL connect(Socket socket) throws IOException, NoSuchAlgorithmException, CryptoException
+  {
+    return newServer(socket);
+  }
 }

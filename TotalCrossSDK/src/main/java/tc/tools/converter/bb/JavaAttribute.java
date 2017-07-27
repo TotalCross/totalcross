@@ -13,7 +13,7 @@
 
 package tc.tools.converter.bb;
 
-import tc.tools.converter.*;
+import tc.tools.converter.ConverterException;
 import tc.tools.converter.bb.attribute.AttributeInfo;
 import tc.tools.converter.bb.attribute.Code;
 import tc.tools.converter.bb.attribute.ConstantValue;
@@ -31,61 +31,67 @@ import totalcross.io.IOException;
 
 public class JavaAttribute implements JavaClassStructure
 {
-   public JavaClass jclass;
-   public JavaConstant name;
-   public AttributeInfo info;
+  public JavaClass jclass;
+  public JavaConstant name;
+  public AttributeInfo info;
 
-   public JavaAttribute(JavaClass jclass)
-   {
-      this.jclass = jclass;
-   }
+  public JavaAttribute(JavaClass jclass)
+  {
+    this.jclass = jclass;
+  }
 
-   public String toString()
-   {
-      return name.toString();
-   }
+  @Override
+  public String toString()
+  {
+    return name.toString();
+  }
 
-   public int length()
-   {
-      return 6 + info.length();
-   }
+  @Override
+  public int length()
+  {
+    return 6 + info.length();
+  }
 
-   public void load(DataStream ds) throws IOException
-   {
-      name = jclass.getConstant(ds.readUnsignedShort(), this);
-      int len = ds.readInt();
+  @Override
+  public void load(DataStream ds) throws IOException
+  {
+    name = jclass.getConstant(ds.readUnsignedShort(), this);
+    int len = ds.readInt();
 
-      String value = ((UTF8)name.info).value;
-      if (value.equals("ConstantValue"))
-         info = new ConstantValue(jclass);
-      else if (value.equals("Code"))
-         info = new Code(jclass);
-      else if (value.equals("Exceptions"))
-         info = new Exceptions(jclass);
-      else if (value.equals("InnerClasses"))
-         info = new InnerClasses(jclass);
-      else if (value.equals("Synthetic"))
-         info = new Synthetic();
-      else if (value.equals("SourceFile"))
-         info = new SourceFile(jclass);
-      else if (value.equals("LineNumberTable"))
-         info = new LineNumberTable();
-      else if (value.equals("LocalVariableTable"))
-         info = new LocalVariableTable(jclass);
-      else if (value.equals("Deprecated"))
-         info = new Deprecated();
-      else
-         info = new Generic(len);
+    String value = ((UTF8)name.info).value;
+    if (value.equals("ConstantValue")){
+      info = new ConstantValue(jclass);
+    }else if (value.equals("Code")){
+      info = new Code(jclass);
+    }else if (value.equals("Exceptions")){
+      info = new Exceptions(jclass);
+    }else if (value.equals("InnerClasses")){
+      info = new InnerClasses(jclass);
+    }else if (value.equals("Synthetic")){
+      info = new Synthetic();
+    }else if (value.equals("SourceFile")){
+      info = new SourceFile(jclass);
+    }else if (value.equals("LineNumberTable")){
+      info = new LineNumberTable();
+    }else if (value.equals("LocalVariableTable")){
+      info = new LocalVariableTable(jclass);
+    }else if (value.equals("Deprecated")){
+      info = new Deprecated();
+    }else {
+      info = new Generic(len);
+    }
 
-      info.load(ds);
-      if (len != info.length())
-         throw new ConverterException("Invalid " + value + " length: " + len);
-   }
+    info.load(ds);
+    if (len != info.length()){
+      throw new ConverterException("Invalid " + value + " length: " + len);
+    }
+  }
 
-   public void save(DataStream ds) throws IOException
-   {
-      ds.writeShort(jclass.getConstantIndex(name, this));
-      ds.writeInt(info.length());
-      info.save(ds);
-   }
+  @Override
+  public void save(DataStream ds) throws IOException
+  {
+    ds.writeShort(jclass.getConstantIndex(name, this));
+    ds.writeInt(info.length());
+    info.save(ds);
+  }
 }

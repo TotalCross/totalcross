@@ -38,9 +38,15 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
 import java.lang.Enum;
-import totalcross.sys.Vm;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * <p>
@@ -84,8 +90,8 @@ import totalcross.sys.Vm;
 // FIXME: serialization is special, uses SerializationProxy.
 // of(E e) is the 'bottom' method that creates a real EnumSet.
 public abstract class EnumSet4D<T extends Enum<T>>
-  extends AbstractSet<T>
-  implements Cloneable
+extends AbstractSet<T>
+implements Cloneable
 {
   // These fields could go into the anonymous inner class in of(E),
   // complementOf would need to be refactored then, though.
@@ -118,19 +124,20 @@ public abstract class EnumSet4D<T extends Enum<T>>
    *
    * @return a clone of the set.
    */
+  @Override
   public EnumSet4D<T> clone()
   {
     EnumSet4D<T> r;
 
     try
-      {
-        r = (EnumSet4D<T>) super.clone();
-      }
+    {
+      r = (EnumSet4D<T>) super.clone();
+    }
     catch (CloneNotSupportedException cnse)
-      {
-        /* Can't happen */
-        return null;
-      }
+    {
+      /* Can't happen */
+      return null;
+    }
     r.store = (BitSet4D) store.clone();
     return r;
   }
@@ -187,19 +194,22 @@ public abstract class EnumSet4D<T extends Enum<T>>
    */
   public static <T extends Enum<T>> EnumSet4D<T> copyOf(Collection<T> other)
   {
-    if (other instanceof EnumSet)
+    if (other instanceof EnumSet){
       return ((EnumSet4D)other).clone();
-    if (other.isEmpty())
-        throw new IllegalArgumentException("Collection is empty");
+    }
+    if (other.isEmpty()){
+      throw new IllegalArgumentException("Collection is empty");
+    }
     EnumSet4D<T> r = null;
-    
+
     for (T val : other)
-      {
-        if (r == null)
-          r = of(val);
-        else
-          r.add(val);
+    {
+      if (r == null) {
+        r = of(val);
+      } else {
+        r.add(val);
       }
+    }
 
     return r;
   }
@@ -233,16 +243,19 @@ public abstract class EnumSet4D<T extends Enum<T>>
   {
     EnumSet4D<T> r = new EnumSet4D<T>()
     {
+      @Override
       public boolean add(T val)
       {
-        if (store.get(val.ordinal()))
+        if (store.get(val.ordinal())) {
           return false;
+        }
 
         store.set(val.ordinal());
         ++cardinality;
         return true;
       }
 
+      @Override
       public boolean addAll(Collection<? extends T> c)
       {
         boolean result = false;
@@ -261,44 +274,52 @@ public abstract class EnumSet4D<T extends Enum<T>>
         {
           for (T val : c)
           {
-            if (add (val))
-            result = true;
+            if (add (val)) {
+              result = true;
+            }
           }
         }
         return result;
       }
 
+      @Override
       public void clear()
       {
         store.clear();
         cardinality = 0;
       }
 
+      @Override
       public boolean contains(Object o)
       {
-        if (! (o instanceof Enum))
+        if (! (o instanceof Enum)) {
           return false;
+        }
 
         Enum<T> e = (Enum<T>) o;
-        if (e.getDeclaringClass() != enumClass)
+        if (e.getDeclaringClass() != enumClass) {
           return false;
+        }
 
         return store.get(e.ordinal());
       }
 
+      @Override
       public boolean containsAll(Collection<?> c)
       {
         if (c instanceof EnumSet)
         {
           EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass.equals(enumClass))
+          if (enumClass.equals(enumClass)) {
             return store.containsAll(other.store);
+          }
 
           return false;
         }
         return super.containsAll(c);
       }
 
+      @Override
       public Iterator<T> iterator()
       {
         return new Iterator<T>()
@@ -306,11 +327,13 @@ public abstract class EnumSet4D<T extends Enum<T>>
           int next = -1;
           int count = 0;
 
+          @Override
           public boolean hasNext()
           {
             return count < cardinality;
           }
 
+          @Override
           public T next()
           {
             next = store.nextSetBit(next + 1);
@@ -318,38 +341,44 @@ public abstract class EnumSet4D<T extends Enum<T>>
             return enumClass.getEnumConstants()[next];
           }
 
+          @Override
           public void remove()
           {
             if (! store.get(next))
             {
-                store.clear(next);
-                --cardinality;
+              store.clear(next);
+              --cardinality;
             }
           }
         };
       }
 
+      @Override
       public boolean remove(Object o)
       {
-        if (! (o instanceof Enum))
+        if (! (o instanceof Enum)) {
           return false;
+        }
 
         Enum<T> e = (Enum<T>) o;
-        if (e.getDeclaringClass() != enumClass)
+        if (e.getDeclaringClass() != enumClass) {
           return false;
+        }
 
         store.clear(e.ordinal());
         --cardinality;
         return true;
       }
 
+      @Override
       public boolean removeAll(Collection<?> c)
       {
         if (c instanceof EnumSet)
         {
           EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass != other.enumClass)
+          if (enumClass != other.enumClass) {
             return false;
+          }
 
           store.andNot(other.store);
           int save = cardinality;
@@ -359,13 +388,15 @@ public abstract class EnumSet4D<T extends Enum<T>>
         return super.removeAll(c);
       }
 
+      @Override
       public boolean retainAll(Collection<?> c)
       {
         if (c instanceof EnumSet)
         {
           EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass != other.enumClass)
+          if (enumClass != other.enumClass) {
             return false;
+          }
 
           store.and(other.store);
           int save = cardinality;
@@ -375,6 +406,7 @@ public abstract class EnumSet4D<T extends Enum<T>>
         return super.retainAll(c);
       }
 
+      @Override
       public int size()
       {
         return cardinality;
@@ -431,7 +463,7 @@ public abstract class EnumSet4D<T extends Enum<T>>
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
   public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third,
-                                                  T fourth)
+      T fourth)
   {
     EnumSet4D<T> r = of(first, second, third);
     r.add(fourth);
@@ -450,7 +482,7 @@ public abstract class EnumSet4D<T extends Enum<T>>
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
   public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third,
-                                                  T fourth, T fifth)
+      T fourth, T fifth)
   {
     EnumSet4D<T> r = of(first, second, third, fourth);
     r.add(fifth);
@@ -469,8 +501,9 @@ public abstract class EnumSet4D<T extends Enum<T>>
   {
     EnumSet4D<T> r = noneOf(first.getDeclaringClass());
     r.add(first);
-    for (T val : rest)
+    for (T val : rest) {
       r.add(val);
+    }
     return r;
   }
 
@@ -492,16 +525,18 @@ public abstract class EnumSet4D<T extends Enum<T>>
    */
   public static <T extends Enum<T>> EnumSet4D<T> range(T from, T to)
   {
-    if (from.compareTo(to) > 0)
+    if (from.compareTo(to) > 0){
       throw new IllegalArgumentException();
+    }
     Class<T> type = from.getDeclaringClass();
     EnumSet4D<T> r = noneOf(type);
 
     T[] values = type.getEnumConstants();
     // skip over values until start of range is found
     int i = 0;
-    while (from != values[i])
+    while (from != values[i]){
       i++;
+    }
 
     // add values until end of range is found
     while (to != values[i]) {

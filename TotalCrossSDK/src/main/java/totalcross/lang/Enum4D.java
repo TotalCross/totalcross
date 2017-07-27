@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package totalcross.lang;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
 
 /**
  * This class represents a Java enumeration.  All enumerations are
@@ -48,7 +48,7 @@ import java.lang.reflect.*;
  * @since 1.5
  */
 public abstract class Enum4D<T extends Enum4D<T>>
-  implements Comparable<T>
+implements Comparable<T>
 {
   /**
    * The name of this enum constant.
@@ -82,6 +82,7 @@ public abstract class Enum4D<T extends Enum4D<T>>
    * @param o the object to compare to this.
    * @return true if <code>this == o</code>.
    */
+  @Override
   public final boolean equals(Object o)
   {
     // Enum constants are singular, so we need only compare `=='.
@@ -93,6 +94,7 @@ public abstract class Enum4D<T extends Enum4D<T>>
    *
    * @return the hash code of this enumeration constant.
    */
+  @Override
   public final int hashCode()
   {
     return ordinal;
@@ -106,6 +108,7 @@ public abstract class Enum4D<T extends Enum4D<T>>
    *
    * @return a textual representation of this constant.
    */
+  @Override
   public String toString()
   {
     return name;
@@ -126,10 +129,12 @@ public abstract class Enum4D<T extends Enum4D<T>>
    * @throws ClassCastException if <code>e</code> is not an enumeration
    *                            constant of the same class.
    */ 
+  @Override
   public final int compareTo(T e)
   {
-    if (!getDeclaringClass().equals(e.getDeclaringClass()))
+    if (!getDeclaringClass().equals(e.getDeclaringClass())){
       throw new ClassCastException();
+    }
     return ordinal - e.ordinal;
   }
 
@@ -141,6 +146,7 @@ public abstract class Enum4D<T extends Enum4D<T>>
    * @throws CloneNotSupportedException as enumeration constants can't be
    *         cloned.
    */
+  @Override
   protected final Object clone() throws CloneNotSupportedException
   {
     throw new CloneNotSupportedException("can't clone an enum constant");
@@ -176,11 +182,12 @@ public abstract class Enum4D<T extends Enum4D<T>>
   public final Class<T> getDeclaringClass()
   {
     Class k = getClass(),
-          s = k.getSuperclass();
+        s = k.getSuperclass();
     // We might be in an anonymous subclass of the enum class, so go
     // up one more level.
-    if (!s.equals(Enum.class))
+    if (!s.equals(Enum.class)){
       return s;
+    }
     return k;
   }
 
@@ -189,23 +196,26 @@ public abstract class Enum4D<T extends Enum4D<T>>
    *
    * @since 1.6
    */
+  @Override
   protected final void finalize()
   {
   }
 
   public static <T extends Enum4D<T>> T valueOf(Class<T> enumType, String name)
   {
-     Field[] declaredFields = enumType.getDeclaredFields();
-     try
-     {
-        for (Field field : declaredFields) 
-            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name))
-               return (T) field.get(null);
-     }
-     catch (IllegalAccessException iae)
-     {
-        throw new Error("Unable to access Enum class");
-     }
-     return null;
+    Field[] declaredFields = enumType.getDeclaredFields();
+    try
+    {
+      for (Field field : declaredFields) {
+        if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name)) {
+          return (T) field.get(null);
+        }
+      }
+    }
+    catch (IllegalAccessException iae)
+    {
+      throw new Error("Unable to access Enum class");
+    }
+    return null;
   }
 }

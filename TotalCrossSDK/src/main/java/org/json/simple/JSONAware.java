@@ -18,8 +18,8 @@ package org.json.simple;
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
  */
 public interface JSONAware {
-	/**
-	 * @return JSON text
-	 */
-	String toJSONString();
+  /**
+   * @return JSON text
+   */
+  String toJSONString();
 }

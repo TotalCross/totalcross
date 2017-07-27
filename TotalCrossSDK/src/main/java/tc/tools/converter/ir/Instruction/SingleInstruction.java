@@ -13,14 +13,15 @@
 
 package tc.tools.converter.ir.Instruction;
 
-import totalcross.util.*;
+import totalcross.util.Vector;
 
 public class SingleInstruction extends Instruction
 {
-   public SingleInstruction(int op, int line)
-   {
-      super(op, line);
-   }
+  public SingleInstruction(int op, int line)
+  {
+    super(op, line);
+  }
 
-   public void toTCCode(Vector vcode)  { }
+  @Override
+  public void toTCCode(Vector vcode)  { }
 }

@@ -79,301 +79,309 @@ import totalcross.util.Vector;
  */
 public class ObjectPDBFile extends PDBFile
 {
-   /* the registered classes */
-   protected Vector          classes;
+  /* the registered classes */
+  protected Vector          classes;
 
-   /* the position in the search through the records */
-   protected int             cnt;
+  /* the position in the search through the records */
+  protected int             cnt;
 
-   protected byte[]          buf;
+  protected byte[]          buf;
 
-   protected ByteArrayStream bs;
+  protected ByteArrayStream bs;
 
-   protected DataStream      ds;
+  protected DataStream      ds;
 
-   /**
-    * Constructs a new ObjectPDBFile
-    *
-    * @param name
-    *           the name of the PDBFile
-    * @param type
-    *           the mode to open the PDBFile with
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.FileNotFoundException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public ObjectPDBFile(String name, int type) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
-   {
-      super(name, type);
-   }
+  /**
+   * Constructs a new ObjectPDBFile
+   *
+   * @param name
+   *           the name of the PDBFile
+   * @param type
+   *           the mode to open the PDBFile with
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.FileNotFoundException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public ObjectPDBFile(String name, int type) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
+  {
+    super(name, type);
+  }
 
-   /**
-    * Construct a new ObjectPDBFile
-    *
-    * @param name
-    *           the name of the PDBFile
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public ObjectPDBFile(String name) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-   {
-      super(name, PDBFile.CREATE);
-   }
+  /**
+   * Construct a new ObjectPDBFile
+   *
+   * @param name
+   *           the name of the PDBFile
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public ObjectPDBFile(String name) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+  {
+    super(name, PDBFile.CREATE);
+  }
 
-   /**
-    * Registers this class with the PDBFile. Classes must be registered before
-    * using the loadObjectAt(int) method.
-    *
-    * @param s
-    *           an instance of the class to register. The contents are ignored.
-    */
-   public void registerClass(Storable s)
-   {
-      if (classes == null)
-         classes = new Vector();
-      classes.addElement(s);
-   }
+  /**
+   * Registers this class with the PDBFile. Classes must be registered before
+   * using the loadObjectAt(int) method.
+   *
+   * @param s
+   *           an instance of the class to register. The contents are ignored.
+   */
+  public void registerClass(Storable s)
+  {
+    if (classes == null){
+      classes = new Vector();
+    }
+    classes.addElement(s);
+  }
 
-   /**
-    * Add an object to this PDBFile.
-    *
-    * @param s
-    *           the storable object to add
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public void addObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-   {
+  /**
+   * Add an object to this PDBFile.
+   *
+   * @param s
+   *           the storable object to add
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public void addObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+  {
+    if (bs == null)
+    {
+      bs = new ByteArrayStream(1024);
+      ds = new DataStream(bs);
+    }else {
+      bs.reset();
+    }
+
+    if (s.getID() != 0){
+      ds.writeByte(s.getID());
+    }
+    s.saveState(ds);
+
+    byte[] buf = bs.getBuffer();
+    addRecord(buf.length);
+    writeBytes(buf, 0, buf.length);
+    setRecordPos(-1);
+  }
+
+  /**
+   * Insert an object to this PDBFile.
+   *
+   * @param s
+   *           the storable object to add
+   * @param i
+   *           the index where to insert
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public void insertObjectAt(Storable s, int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+  {
+    if (bs == null)
+    {
+      bs = new ByteArrayStream(1024);
+      ds = new DataStream(bs);
+    }else {
+      bs.reset();
+    }
+
+    if (s.getID() != 0){
+      ds.writeByte(s.getID());
+    }
+    s.saveState(ds);
+
+    byte[] buf = bs.getBuffer();
+    addRecord(buf.length, i);
+    writeBytes(buf, 0, buf.length);
+    setRecordPos(-1);
+  }
+
+  /**
+   * Load an object from the PDBFile into the given storable. Unpredictable
+   * results will occur if the object in the PDBFile is not of the same class
+   * as the storable given. Good for when you know what each record will
+   * contain.
+   *
+   * @param s
+   *           the object to load the data into
+   * @param i
+   *           the index in the PDBFile to load from
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public void loadObjectAt(Storable s, int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+  {
+    // bs=null;
+    // buf=null;
+    setRecordPos(i);
+    int size = getRecordSize();
+    if (buf == null || buf.length < size){
+      buf = new byte[size];
+    }
+    readBytes(buf, 0, size);
+    setRecordPos(-1);
+    if (bs == null)
+    {
+      bs = new ByteArrayStream(buf);
+      ds = new DataStream(bs);
+    }else {
+      bs.setBuffer(buf);
+    }
+
+    if (s.getID() != 0){
+      ds.readByte();
+    }
+    s.loadState(ds);
+  }
+
+  /**
+   * Loads an object from the PDBFile. Good for when you don't know which
+   * classes are going to be in records. Note that you must call the
+   * registerClass() with each storable class before this method will work
+   * properly.
+   *
+   * @param i
+   *           the index in the PDBFile to load from
+   * @return the loaded object, or null if unsucessful
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public Storable loadObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+  {
+    Storable s = null;
+
+    setRecordPos(i);
+    if (classes != null)
+    {
+      int recsize = getRecordSize();
+      if (buf == null || buf.length < recsize) {
+        buf = new byte[recsize];
+      }
+      readBytes(buf, 0, recsize);
+
       if (bs == null)
       {
-         bs = new ByteArrayStream(1024);
-         ds = new DataStream(bs);
+        bs = new ByteArrayStream(buf);
+        ds = new DataStream(bs);
+      } else {
+        bs.setBuffer(buf);
       }
-      else
-         bs.reset();
 
-      if (s.getID() != 0)
-         ds.writeByte(s.getID());
-      s.saveState(ds);
-
-      byte[] buf = bs.getBuffer();
-      addRecord(buf.length);
-      writeBytes(buf, 0, buf.length);
       setRecordPos(-1);
-   }
+      byte type = ds.readByte();
 
-   /**
-    * Insert an object to this PDBFile.
-    *
-    * @param s
-    *           the storable object to add
-    * @param i
-    *           the index where to insert
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public void insertObjectAt(Storable s, int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-   {
-      if (bs == null)
-      {
-         bs = new ByteArrayStream(1024);
-         ds = new DataStream(bs);
+      for (int j = 0, size = classes.size(); j < size; j++) {
+        if ((s = (Storable) classes.items[j]).getID() == type)
+        {
+          s = s.getInstance();
+          s.loadState(ds);
+          break;
+        }
       }
-      else
-         bs.reset();
+    }
+    return s;
+  }
 
-      if (s.getID() != 0)
-         ds.writeByte(s.getID());
-      s.saveState(ds);
+  /**
+   * Delete an object from the PDBFile
+   *
+   * @param i
+   *           the index to delete from
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public void deleteObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+  {
+    setRecordPos(i);
+    deleteRecord();
+  }
 
-      byte[] buf = bs.getBuffer();
-      addRecord(buf.length, i);
-      writeBytes(buf, 0, buf.length);
-      setRecordPos(-1);
-   }
+  /**
+   * Set attributes of an object record from the PDBFile
+   *
+   * @param i
+   *           the index to set the attribute
+   * @param a
+   *           the attribute to set, use the REC_ATTR_XXXX constants from
+   *           PDBFile class
+   * @return true if sucessful, false otherwise
+   * @throws totalcross.io.IOException
+   */
+  public boolean setObjectAttribute(int i, byte a) throws totalcross.io.IOException
+  {
+    setRecordAttributes(i, a);
+    return true;
+  }
 
-   /**
-    * Load an object from the PDBFile into the given storable. Unpredictable
-    * results will occur if the object in the PDBFile is not of the same class
-    * as the storable given. Good for when you know what each record will
-    * contain.
-    *
-    * @param s
-    *           the object to load the data into
-    * @param i
-    *           the index in the PDBFile to load from
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public void loadObjectAt(Storable s, int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-   {
-      // bs=null;
-      // buf=null;
-      setRecordPos(i);
-      int size = getRecordSize();
-      if (buf == null || buf.length < size)
-         buf = new byte[size];
-      readBytes(buf, 0, size);
-      setRecordPos(-1);
-      if (bs == null)
-      {
-         bs = new ByteArrayStream(buf);
-         ds = new DataStream(bs);
-      }
-      else
-         bs.setBuffer(buf);
+  /**
+   * Get attributes of an object record from the PDBFile
+   *
+   * @param i
+   *           the index to get the attribute from
+   * @return the record attributes
+   * @throws totalcross.io.IOException
+   */
+  public byte getObjectAttribute(int i) throws totalcross.io.IOException
+  {
+    return getRecordAttributes(i);
+  }
 
-      if (s.getID() != 0)
-         ds.readByte();
-      s.loadState(ds);
-   }
+  /**
+   * Get the size of this PDBFile
+   *
+   * @return the number of records contained by it
+   * @throws totalcross.io.IOException
+   */
+  public int size() throws totalcross.io.IOException
+  {
+    return getRecordCount();
+  }
 
-   /**
-    * Loads an object from the PDBFile. Good for when you don't know which
-    * classes are going to be in records. Note that you must call the
-    * registerClass() with each storable class before this method will work
-    * properly.
-    *
-    * @param i
-    *           the index in the PDBFile to load from
-    * @return the loaded object, or null if unsucessful
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public Storable loadObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-   {
-      Storable s = null;
+  /**
+   * Resets a counter for iterating through the PDBFile. Should be called
+   * before iterating with nextObject().
+   */
+  public void resetSearch()
+  {
+    setSearchIndex(0);
+  }
 
-      setRecordPos(i);
-      if (classes != null)
-      {
-         int recsize = getRecordSize();
-         if (buf == null || buf.length < recsize)
-            buf = new byte[recsize];
-         readBytes(buf, 0, recsize);
+  /**
+   * Sets the search counter at the given index in the PDBFile.
+   *
+   * @param i
+   *           the index to start
+   */
+  public void setSearchIndex(int i)
+  {
+    cnt = i;
+  }
 
-         if (bs == null)
-         {
-            bs = new ByteArrayStream(buf);
-            ds = new DataStream(bs);
-         }
-         else
-            bs.setBuffer(buf);
+  /**
+   * Gets the next object in the PDBFile and places it in the given storable.
+   *
+   * @return true if sucessful, false if the end of the PDBFile has been
+   *         reached
+   * @throws totalcross.io.IOException
+   * @throws totalcross.io.IllegalArgumentIOException
+   */
+  public boolean nextObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+  {
+    boolean ret = cnt < size();
 
-         setRecordPos(-1);
-         byte type = ds.readByte();
+    if (ret){
+      loadObjectAt(s, cnt++);
+    }
+    return ret;
+  }
 
-         for (int j = 0, size = classes.size(); j < size; j++)
-            if ((s = (Storable) classes.items[j]).getID() == type)
-            {
-               s = s.getInstance();
-               s.loadState(ds);
-               break;
-            }
-      }
-      return s;
-   }
-
-   /**
-    * Delete an object from the PDBFile
-    *
-    * @param i
-    *           the index to delete from
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public void deleteObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-   {
-      setRecordPos(i);
-      deleteRecord();
-   }
-
-   /**
-    * Set attributes of an object record from the PDBFile
-    *
-    * @param i
-    *           the index to set the attribute
-    * @param a
-    *           the attribute to set, use the REC_ATTR_XXXX constants from
-    *           PDBFile class
-    * @return true if sucessful, false otherwise
-    * @throws totalcross.io.IOException
-    */
-   public boolean setObjectAttribute(int i, byte a) throws totalcross.io.IOException
-   {
-      setRecordAttributes(i, a);
-      return true;
-   }
-
-   /**
-    * Get attributes of an object record from the PDBFile
-    *
-    * @param i
-    *           the index to get the attribute from
-    * @return the record attributes
-    * @throws totalcross.io.IOException
-    */
-   public byte getObjectAttribute(int i) throws totalcross.io.IOException
-   {
-      return getRecordAttributes(i);
-   }
-
-   /**
-    * Get the size of this PDBFile
-    *
-    * @return the number of records contained by it
-    * @throws totalcross.io.IOException
-    */
-   public int size() throws totalcross.io.IOException
-   {
-      return getRecordCount();
-   }
-
-   /**
-    * Resets a counter for iterating through the PDBFile. Should be called
-    * before iterating with nextObject().
-    */
-   public void resetSearch()
-   {
-      setSearchIndex(0);
-   }
-
-   /**
-    * Sets the search counter at the given index in the PDBFile.
-    *
-    * @param i
-    *           the index to start
-    */
-   public void setSearchIndex(int i)
-   {
-      cnt = i;
-   }
-
-   /**
-    * Gets the next object in the PDBFile and places it in the given storable.
-    *
-    * @return true if sucessful, false if the end of the PDBFile has been
-    *         reached
-    * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
-    */
-   public boolean nextObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-   {
-      boolean ret = cnt < size();
-
-      if (ret)
-         loadObjectAt(s, cnt++);
-      return ret;
-   }
-
-   /**
-    * Gets the next object in the PDBFile.
-    *
-    * @return the next object, or null on error or if the end has been reached
-    * @throws totalcross.io.IOException
-    */
-   public Storable nextObject() throws totalcross.io.IOException
-   {
-      return cnt < size() ? loadObjectAt(cnt++) : null;
-   }
+  /**
+   * Gets the next object in the PDBFile.
+   *
+   * @return the next object, or null on error or if the end has been reached
+   * @throws totalcross.io.IOException
+   */
+  public Storable nextObject() throws totalcross.io.IOException
+  {
+    return cnt < size() ? loadObjectAt(cnt++) : null;
+  }
 }

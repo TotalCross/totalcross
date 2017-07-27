@@ -16,51 +16,55 @@
 
 package tc.samples.api.ui;
 
-import totalcross.ui.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-
-import tc.samples.api.*;
+import tc.samples.api.BaseContainer;
+import totalcross.ui.AccordionContainer;
+import totalcross.ui.Button;
+import totalcross.ui.Label;
+import totalcross.ui.MultiEdit;
+import totalcross.ui.ScrollContainer;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.image.Image;
 
 public class AccordionSample extends BaseContainer
 {
-   public void initUI()
-   {
-      super.initUI();
-      ScrollContainer sc = new ScrollContainer(false,true);
-      add(sc,LEFT,TOP,FILL,FILL);
-      // using default arrows
-      AccordionContainer.Group gr = new AccordionContainer.Group();
-      AccordionContainer ac = new AccordionContainer(gr);
-      int gap = fmH/2;
-      sc.add(ac, LEFT+gap,TOP,FILL-gap,PREFERRED);
-      ac.add(ac.new Caption("Type text 1"), LEFT,TOP,FILL,PREFERRED);
-      ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    ScrollContainer sc = new ScrollContainer(false,true);
+    add(sc,LEFT,TOP,FILL,FILL);
+    // using default arrows
+    AccordionContainer.Group gr = new AccordionContainer.Group();
+    AccordionContainer ac = new AccordionContainer(gr);
+    int gap = fmH/2;
+    sc.add(ac, LEFT+gap,TOP,FILL-gap,PREFERRED);
+    ac.add(ac.new Caption("Type text 1"), LEFT,TOP,FILL,PREFERRED);
+    ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
 
-      // using +- from Awesome font
+    // using +- from Awesome font
+    ac = new AccordionContainer(gr);
+    sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
+    ac.add(ac.new Caption(new Label("Type text 2"),setAwesome(new Button("\uf146",Button.BORDER_NONE),fmH), setAwesome(new Button("\uf0fe",Button.BORDER_NONE),fmH)), LEFT,AFTER,FILL,PREFERRED);
+    ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
+
+    try
+    {
+      // using colorized images
       ac = new AccordionContainer(gr);
       sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
-      ac.add(ac.new Caption(new Label("Type text 2"),setAwesome(new Button("\uf146",Button.BORDER_NONE),fmH), setAwesome(new Button("\uf0fe",Button.BORDER_NONE),fmH)), LEFT,AFTER,FILL,PREFERRED);
+      Image img = new Image("tc/samples/api/ui/images/bt_minus.png").smoothScaledFixedAspectRatio(fmH,true);
+      img.applyColor2(Color.BLUE);
+      Button b1 = new Button(img, Button.BORDER_NONE);
+      img = new Image("tc/samples/api/ui/images/bt_add.png").smoothScaledFixedAspectRatio(fmH,true);
+      img.applyColor2(Color.GREEN);
+      Button b2 = new Button(img, Button.BORDER_NONE);
+      ac.add(ac.new Caption(new Label("Type text 3"),b1,b2), LEFT,AFTER,FILL,PREFERRED);
       ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
-      
-      try
-      {
-         // using colorized images
-         ac = new AccordionContainer(gr);
-         sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
-         Image img = new Image("tc/samples/api/ui/images/bt_minus.png").smoothScaledFixedAspectRatio(fmH,true);
-         img.applyColor2(Color.BLUE);
-         Button b1 = new Button(img, Button.BORDER_NONE);
-         img = new Image("tc/samples/api/ui/images/bt_add.png").smoothScaledFixedAspectRatio(fmH,true);
-         img.applyColor2(Color.GREEN);
-         Button b2 = new Button(img, Button.BORDER_NONE);
-         ac.add(ac.new Caption(new Label("Type text 3"),b1,b2), LEFT,AFTER,FILL,PREFERRED);
-         ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         // let sample work without this last one 
-      }
-   }
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      // let sample work without this last one 
+    }
+  }
 }

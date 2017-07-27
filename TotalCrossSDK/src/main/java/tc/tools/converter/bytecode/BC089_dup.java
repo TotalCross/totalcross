@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC089_dup extends StackManipulation
 {
-   public BC089_dup()
-   {
-      super(1,false);
-   }
-   public void exec()
-   {
-      stack[stackPtr].copyFrom(stack[stackPtr-1]);
-   }
+  public BC089_dup()
+  {
+    super(1,false);
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr].copyFrom(stack[stackPtr-1]);
+  }
 }

@@ -29,10 +29,10 @@
 
 package totalcross.util.regex;
 
-import totalcross.util.*;
+import totalcross.util.ElementNotFoundException;
 
 public interface MatchIterator{
-   public boolean hasMore();
-   public MatchResult nextMatch() throws ElementNotFoundException;
-   public int count();
+  public boolean hasMore();
+  public MatchResult nextMatch() throws ElementNotFoundException;
+  public int count();
 }

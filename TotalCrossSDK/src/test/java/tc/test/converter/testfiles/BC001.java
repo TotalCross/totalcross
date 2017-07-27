@@ -15,11 +15,14 @@ package tc.test.converter.testfiles;
 
 public class BC001
 {
-   public BC001()
-   {
-      Object x = null;
+  public BC001()
+  {
+    Object x = null;
 
-      if (false) x.toString(); // remove warnings
-   }
+    if (false)
+    {
+      x.toString(); // remove warnings
+    }
+  }
 }
 

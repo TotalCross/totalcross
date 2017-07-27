@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class IllegalArgumentException4D extends RuntimeException
 {
-   /** Constructs an empty Exception. */
-   public IllegalArgumentException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public IllegalArgumentException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public IllegalArgumentException4D(String message)
-   {
-      super(message);
-   }
+  /** Constructs an exception with the given message. */
+  public IllegalArgumentException4D(String message)
+  {
+    super(message);
+  }
 }

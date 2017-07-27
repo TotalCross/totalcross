@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class NoSuchMethodException4D extends ReflectiveOperationException
 {
-   /** Constructs an empty Exception. */
-   public NoSuchMethodException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public NoSuchMethodException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public NoSuchMethodException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public NoSuchMethodException4D(String msg)
+  {
+    super(msg);
+  }
 }

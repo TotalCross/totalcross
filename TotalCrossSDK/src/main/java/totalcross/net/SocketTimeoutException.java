@@ -24,9 +24,9 @@ import totalcross.io.IOException;
 
 public class SocketTimeoutException extends IOException
 {
-   /** Constructs an exception with the given message. */
-   public SocketTimeoutException(String msg)
-   {
-      super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public SocketTimeoutException(String msg)
+  {
+    super(msg);
+  }
 }

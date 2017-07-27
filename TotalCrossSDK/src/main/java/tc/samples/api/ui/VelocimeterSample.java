@@ -16,45 +16,48 @@
 
 package tc.samples.api.ui;
 
-import tc.samples.api.*;
-
-import totalcross.ui.chart.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
+import tc.samples.api.BaseContainer;
+import totalcross.ui.chart.Velocimeter;
+import totalcross.ui.dialog.MessageBox;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.gfx.Color;
 
 public class VelocimeterSample extends BaseContainer
 {
-   Velocimeter vel;
-   TimerEvent tt;
-   
-   public void initUI()
-   {
-      try
-      {
-         super.initUI();
-         tt = addTimer(50);
-         vel = new Velocimeter();
-         vel.value = -20;
-         vel.max = 40;
-         vel.pointerColor = Color.GREEN;
-         add(vel,CENTER,CENTER,PARENTSIZE+50,PARENTSIZE+50);
+  Velocimeter vel;
+  TimerEvent tt;
+
+  @Override
+  public void initUI()
+  {
+    try
+    {
+      super.initUI();
+      tt = addTimer(50);
+      vel = new Velocimeter();
+      vel.value = -20;
+      vel.max = 40;
+      vel.pointerColor = Color.GREEN;
+      add(vel,CENTER,CENTER,PARENTSIZE+50,PARENTSIZE+50);
+    }
+    catch (Exception e)
+    {
+      MessageBox.showException(e,true);
+      back();
+    }
+  }
+
+  @Override
+  public void onEvent(Event e)
+  {
+    if (e.type == TimerEvent.TRIGGERED && tt.triggered)
+    {
+      vel.value++;
+      if (vel.value > vel.max+20) {
+        vel.value = vel.min-20;
       }
-      catch (Exception e)
-      {
-         MessageBox.showException(e,true);
-         back();
-      }
-   }
-   
-   public void onEvent(Event e)
-   {
-      if (e.type == TimerEvent.TRIGGERED && tt.triggered)
-      {
-         vel.value++;
-         if (vel.value > vel.max+20)
-            vel.value = vel.min-20;
-         repaint();
-      }
-   }
+      repaint();
+    }
+  }
 }

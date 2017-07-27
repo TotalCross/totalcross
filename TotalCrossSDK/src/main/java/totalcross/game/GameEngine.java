@@ -16,7 +16,10 @@
 
 package totalcross.game;
 
-import totalcross.ui.event.*;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.KeyEvent;
+import totalcross.ui.event.PenEvent;
+import totalcross.ui.event.TimerEvent;
 import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.ImageException;
@@ -208,214 +211,222 @@ import totalcross.ui.image.ImageException;
 
 public abstract class GameEngine extends GameEngineMainWindow
 {
-   public final static int GAME_ENGINE_VERSION = 110;   // version 1.1 - remodeled by guich
-   /**
-    * Name of the game. <br>
-    * The Highscores/Options databases are prefixed with this name.
-    */
-   public String gameName;
+  public final static int GAME_ENGINE_VERSION = 110;   // version 1.1 - remodeled by guich
+  /**
+   * Name of the game. <br>
+   * The Highscores/Options databases are prefixed with this name.
+   */
+  public String gameName;
 
-   /**
-    * Game CreatorID. <br>
-    * The Highscores/Options databases references are created with this ID.<br>
-    * This must be a String with exactly four characters.
-    * This has the effect to link the databases to the game software
-    * causing an automatic database removal when the application is
-    * deleted from the device.
-    */
-   public String gameCreatorID;
+  /**
+   * Game CreatorID. <br>
+   * The Highscores/Options databases references are created with this ID.<br>
+   * This must be a String with exactly four characters.
+   * This has the effect to link the databases to the game software
+   * causing an automatic database removal when the application is
+   * deleted from the device.
+   */
+  public String gameCreatorID;
 
-   /**
-    * Game version. <br>
-    * This information is written in the Options database and may be compared
-    * to it's old version retrievable by the getOldVersion() function of the
-    * Options interface.
-    * E.g. 100 for 1.00)
-    */
-   public int gameVersion;
+  /**
+   * Game version. <br>
+   * This information is written in the Options database and may be compared
+   * to it's old version retrievable by the getOldVersion() function of the
+   * Options interface.
+   * E.g. 100 for 1.00)
+   */
+  public int gameVersion;
 
-   /**
-    * Amount of highscores entries in the highscores database. <br>
-    */
-   public int gameHighscoresSize;
+  /**
+   * Amount of highscores entries in the highscores database. <br>
+   */
+  public int gameHighscoresSize;
 
-   /**
-    * No automatic refresh. <br>
-    * @see #gameRefreshPeriod
-    */
-   public final static int NO_AUTO_REFRESH=-1;
+  /**
+   * No automatic refresh. <br>
+   * @see #gameRefreshPeriod
+   */
+  public final static int NO_AUTO_REFRESH=-1;
 
-   /**
-    * Automatic refresh period in milliseconds. <br>
-    * The NO_AUTO_REFRESH value prevents the engine to do time
-    * based refreshes. You will have to call explicitly the refresh() function
-    * to force a screen repainting.
-    * @see #refresh()
-    */
-   public int gameRefreshPeriod = NO_AUTO_REFRESH;
+  /**
+   * Automatic refresh period in milliseconds. <br>
+   * The NO_AUTO_REFRESH value prevents the engine to do time
+   * based refreshes. You will have to call explicitly the refresh() function
+   * to force a screen repainting.
+   * @see #refresh()
+   */
+  public int gameRefreshPeriod = NO_AUTO_REFRESH;
 
-   /**
-    * True if the screen should be cleared before the onPaint() call. <br>
-    */
-   public boolean gameDoClearScreen;
+  /**
+   * True if the screen should be cleared before the onPaint() call. <br>
+   */
+  public boolean gameDoClearScreen;
 
-   /** True if the game is running. Set by the GameEngineMainWindow. To stop or
-     * start the game use the methods stop or run. Setting this variable has
-     * no effect.
-     */
-   protected boolean gameIsRunning;
+  /** True if the game is running. Set by the GameEngineMainWindow. To stop or
+   * start the game use the methods stop or run. Setting this variable has
+   * no effect.
+   */
+  protected boolean gameIsRunning;
 
-   /** Must be set to true if the game screen has any control from the totalcross.ui.
-     * package. Complex games should not have UI elements
-     */
-   protected boolean gameHasUI;
+  /** Must be set to true if the game screen has any control from the totalcross.ui.
+   * package. Complex games should not have UI elements
+   */
+  protected boolean gameHasUI;
 
-   /**
-    * Event notication called when the game is initialized. <br>
-    * It's the first place where API calls can take place because
-    * the game engine has been initialized.<br>
-    * You can do game initialization at this place. Typically Sprites may be
-    * created in the overloaded function.
-    */
-   public abstract void onGameInit ();
+  /**
+   * Event notication called when the game is initialized. <br>
+   * It's the first place where API calls can take place because
+   * the game engine has been initialized.<br>
+   * You can do game initialization at this place. Typically Sprites may be
+   * created in the overloaded function.
+   */
+  public abstract void onGameInit ();
 
-   /**
-    * Event notication called when the game exits. <br>
-    */
-   public void onGameExit () {}
+  /**
+   * Event notication called when the game exits. <br>
+   */
+  public void onGameExit () {}
 
-   /**
-    * Event notication called when the game mainloop is entered. <br>
-    */
-   public void onGameStart () {}
+  /**
+   * Event notication called when the game mainloop is entered. <br>
+   */
+  public void onGameStart () {}
 
-   /**
-    * Event notication called when the game mainloop is leaved. <br>
-    * @see #stop
-    */
-   public void onGameStop () {}
+  /**
+   * Event notication called when the game mainloop is leaved. <br>
+   * @see #stop
+   */
+  public void onGameStop () {}
 
-   /**
-    * Event notication called when a control event is signaled. <br>
-    * @param evt control event that occurred.
-    */
-   public void onTimer (TimerEvent evt) {}
+  /**
+   * Event notication called when a control event is signaled. <br>
+   * @param evt control event that occurred.
+   */
+  public void onTimer (TimerEvent evt) {}
 
-   /**
-    * Event notication called when a key event is signaled. <br>
-    * @param evt key event that occurred.
-    */
-   public void onKey (KeyEvent evt) {}
+  /**
+   * Event notication called when a key event is signaled. <br>
+   * @param evt key event that occurred.
+   */
+  public void onKey (KeyEvent evt) {}
 
-   /**
-    * Event notication called when a pen down event is signaled. <br>
-    * @param evt pen event that occurred.
-    */
-   public void onPenDown (PenEvent evt) {}
+  /**
+   * Event notication called when a pen down event is signaled. <br>
+   * @param evt pen event that occurred.
+   */
+  public void onPenDown (PenEvent evt) {}
 
-   /**
-    * Event notication called when a pen up event is signaled. <br>
-    * @param evt pen event that occurred.
-    */
-   public void onPenUp (PenEvent evt) {}
+  /**
+   * Event notication called when a pen up event is signaled. <br>
+   * @param evt pen event that occurred.
+   */
+  public void onPenUp (PenEvent evt) {}
 
-   /**
-    * Event notication called when a pen drag/move event is signaled. <br>
-    * @param evt pen event that occurred.
-    */
-   public void onPenDrag (PenEvent evt) {}
+  /**
+   * Event notication called when a pen drag/move event is signaled. <br>
+   * @param evt pen event that occurred.
+   */
+  public void onPenDrag (PenEvent evt) {}
 
-   /**
-    * Event notication called when any other event is signaled. <br>
-    * @param evt event that occurred.
-    */
-   public void onOtherEvent (Event evt) {}
+  /**
+   * Event notication called when any other event is signaled. <br>
+   * @param evt event that occurred.
+   */
+  public void onOtherEvent (Event evt) {}
 
-   /** Called at each refresh to draw the current game state */
-   public void onPaint(Graphics g) {}
+  /** Called at each refresh to draw the current game state */
+  @Override
+  public void onPaint(Graphics g) {}
 
-   /**
-    * Get the game highscores.
-    * @return HighScores.
-    */
-   public HighScores getHighScores()
-   {
-      return super.getHighScores();
-   }
+  /**
+   * Get the game highscores.
+   * @return HighScores.
+   */
+  @Override
+  public HighScores getHighScores()
+  {
+    return super.getHighScores();
+  }
 
-   /**
-    * Get a new instance of the game options.
-    * @return Options.
-    */
-   public Options getOptions()
-   {
-      return super.getOptions();
-   }
+  /**
+   * Get a new instance of the game options.
+   * @return Options.
+   */
+  @Override
+  public Options getOptions()
+  {
+    return super.getOptions();
+  }
 
-   /**
-    * Create a new TextRenderer.
-    * A TextRenderer performs a fast String display with an optional integer value.
-    * @param font to display with.
-    * @param foreColor text color, may be null.
-    * @param text to render.
-    * @param maxDigits digits to display.
-    * @return a new TextRenderer.
-    * @throws ImageException
-    * @see TextRenderer TextRenderer for more information
-    */
-   public final TextRenderer createTextRenderer (Font font,int foreColor, String text,int maxDigits) throws ImageException
-   {
-     return super.createTextRenderer(font,foreColor,text,maxDigits);
-   }
+  /**
+   * Create a new TextRenderer.
+   * A TextRenderer performs a fast String display with an optional integer value.
+   * @param font to display with.
+   * @param foreColor text color, may be null.
+   * @param text to render.
+   * @param maxDigits digits to display.
+   * @return a new TextRenderer.
+   * @throws ImageException
+   * @see TextRenderer TextRenderer for more information
+   */
+  @Override
+  public final TextRenderer createTextRenderer (Font font,int foreColor, String text,int maxDigits) throws ImageException
+  {
+    return super.createTextRenderer(font,foreColor,text,maxDigits);
+  }
 
-   /**
-    * Create a new TextRenderer. A TextRenderer performs a fast String display with an optional integer value.
-    * 
-    * @param font
-    *           to display with.
-    * @param foreColor
-    *           text color, may be null.
-    * @param text
-    *           to render.
-    * @param maxDigits
-    *           digits to display.
-    * @param zeroPadding
-    *           pad with leading zeros.
-    * @return a new TextRenderer.
-    * @throws ImageException
-    * @see TextRenderer TextRenderer for more information
-    */
-   public final TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits,
-         boolean zeroPadding) throws ImageException // fdie@420_27
-   {
-      return super.createTextRenderer(font, foreColor, text, maxDigits, zeroPadding);
-   }
+  /**
+   * Create a new TextRenderer. A TextRenderer performs a fast String display with an optional integer value.
+   * 
+   * @param font
+   *           to display with.
+   * @param foreColor
+   *           text color, may be null.
+   * @param text
+   *           to render.
+   * @param maxDigits
+   *           digits to display.
+   * @param zeroPadding
+   *           pad with leading zeros.
+   * @return a new TextRenderer.
+   * @throws ImageException
+   * @see TextRenderer TextRenderer for more information
+   */
+  @Override
+  public final TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits,
+      boolean zeroPadding) throws ImageException // fdie@420_27
+  {
+    return super.createTextRenderer(font, foreColor, text, maxDigits, zeroPadding);
+  }
 
-   /** Must be called to start the game. */
-   final public void start()
-   {
-      super.start();
-   }
+  /** Must be called to start the game. */
+  @Override
+  final public void start()
+  {
+    super.start();
+  }
 
-   /** Must be called to make the game stop. */
-   final public void stop()
-   {
-      super.stop();
-   }
+  /** Must be called to make the game stop. */
+  @Override
+  final public void stop()
+  {
+    super.stop();
+  }
 
   /**
    * This function causes an onPaint() call to draw a new frame.<br>
    * This function has to be called in non time based games to refresh
    * the complete screen.
    */
-   final public void refresh()
-   {
-      super.refresh();
-   }
+  @Override
+  final public void refresh()
+  {
+    super.refresh();
+  }
 
-   /** Creates a new GameEngine */
-   public GameEngine()
-   {
-      super.setGameEngine(this);
-   }
+  /** Creates a new GameEngine */
+  public GameEngine()
+  {
+    super.setGameEngine(this);
+  }
 }

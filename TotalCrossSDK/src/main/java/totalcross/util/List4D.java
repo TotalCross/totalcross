@@ -38,7 +38,17 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.AbstractSequentialList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 /**
  * An ordered collection (also known as a list). This collection allows
@@ -120,6 +130,7 @@ public interface List4D<E> extends Collection<E>
    * @throws NullPointerException if o is null and this list doesn't support
    *         the addition of null values.
    */
+  @Override
   boolean add(E o);
 
   /**
@@ -167,6 +178,7 @@ public interface List4D<E> extends Collection<E>
    *         doesn't support the addition of null values.
    * @see #add(Object)
    */
+  @Override
   boolean addAll(Collection<? extends E> c);
 
   /**
@@ -176,6 +188,7 @@ public interface List4D<E> extends Collection<E>
    * @throws UnsupportedOperationException if this list does not support the
    *         clear operation
    */
+  @Override
   void clear();
 
   /**
@@ -190,6 +203,7 @@ public interface List4D<E> extends Collection<E>
    * @throws NullPointerException if o is null and the list doesn't
    *         support null values.
    */
+  @Override
   boolean contains(Object o);
 
   /**
@@ -204,6 +218,7 @@ public interface List4D<E> extends Collection<E>
    *         list does not support null values.
    * @see #contains(Object)
    */
+  @Override
   boolean containsAll(Collection<?> c);
 
   /**
@@ -219,6 +234,7 @@ public interface List4D<E> extends Collection<E>
    * @see Object#equals(Object)
    * @see #hashCode()
    */
+  @Override
   boolean equals(Object o);
 
   /**
@@ -250,6 +266,7 @@ while (i.hasNext())
    * @see Object#hashCode()
    * @see #equals(Object)
    */
+  @Override
   int hashCode();
 
   /**
@@ -271,6 +288,7 @@ while (i.hasNext())
    *
    * @return true if this list contains no elements
    */
+  @Override
   boolean isEmpty();
 
   /**
@@ -278,6 +296,7 @@ while (i.hasNext())
    *
    * @return an Iterator over the elements of this list, in order
    */
+  @Override
   Iterator<E> iterator();
 
   /**
@@ -341,6 +360,7 @@ while (i.hasNext())
    * @throws NullPointerException if o is null and this
    *         list does not support removing null values.
    */
+  @Override
   boolean remove(Object o);
 
   /**
@@ -359,6 +379,7 @@ while (i.hasNext())
    * @see #remove(Object)
    * @see #contains(Object)
    */
+  @Override
   boolean removeAll(Collection<?> c);
 
   /**
@@ -378,6 +399,7 @@ while (i.hasNext())
    * @see #remove(Object)
    * @see #contains(Object)
    */
+  @Override
   boolean retainAll(Collection<?> c);
 
   /**
@@ -404,6 +426,7 @@ while (i.hasNext())
    *
    * @return the number of elements in the list
    */
+  @Override
   int size();
 
   /**
@@ -430,6 +453,7 @@ while (i.hasNext())
    * @return an array of type Object[] and length equal to the length of this
    *         list, containing the elements currently in this list, in order
    */
+  @Override
   Object[] toArray();
 
   /**
@@ -449,5 +473,6 @@ while (i.hasNext())
    *         collection is not a subtype of the element type of a
    * @throws NullPointerException if the specified array is null
    */
+  @Override
   <T> T[] toArray(T[] a);
 }

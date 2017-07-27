@@ -13,52 +13,57 @@
 
 package tc.samples.api.phone;
 
-import tc.samples.api.*;
-
-import totalcross.io.*;
-import totalcross.phone.*;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
+import tc.samples.api.BaseContainer;
+import totalcross.io.IOException;
+import totalcross.phone.SMS;
+import totalcross.sys.Settings;
+import totalcross.ui.Button;
+import totalcross.ui.Edit;
+import totalcross.ui.Label;
+import totalcross.ui.MultiEdit;
+import totalcross.ui.dialog.MessageBox;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
 
 /** Sample program that shows how to send and receive SMS messages. */
 
 public class PhoneSmsSample extends BaseContainer
 {
-   Edit edNumber;
-   MultiEdit edMsg;
-   Button btSend;
-   Button btReceive;
+  Edit edNumber;
+  MultiEdit edMsg;
+  Button btSend;
+  Button btReceive;
 
-   public void initUI()
-   {
-      super.initUI();
-      if (!Settings.platform.equals(Settings.WINDOWSPHONE) && !Settings.onJavaSE)
-      {
-         add(new Label("This sample works only on Windows Phone"),CENTER,CENTER);
-         return;
-      }
-      add(new Label("Number: "),LEFT+2,TOP+2);
-      add(edNumber = new Edit(), AFTER, TOP);
-      edNumber.setKeyboard(Edit.KBD_NUMERIC);
-      add(btSend = new Button("Send"), LEFT + 3, BOTTOM);
-      //add(btReceive = new Button("Receive"), RIGHT - 3, BOTTOM);
-      add(edMsg = new MultiEdit(), LEFT, AFTER, FILL, FIT, edNumber);
-   }
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    if (!Settings.platform.equals(Settings.WINDOWSPHONE) && !Settings.onJavaSE)
+    {
+      add(new Label("This sample works only on Windows Phone"),CENTER,CENTER);
+      return;
+    }
+    add(new Label("Number: "),LEFT+2,TOP+2);
+    add(edNumber = new Edit(), AFTER, TOP);
+    edNumber.setKeyboard(Edit.KBD_NUMERIC);
+    add(btSend = new Button("Send"), LEFT + 3, BOTTOM);
+    //add(btReceive = new Button("Receive"), RIGHT - 3, BOTTOM);
+    add(edMsg = new MultiEdit(), LEFT, AFTER, FILL, FIT, edNumber);
+  }
 
-   public void onEvent(Event event)
-   {
-      if (event.type == ControlEvent.PRESSED)
+  @Override
+  public void onEvent(Event event)
+  {
+    if (event.type == ControlEvent.PRESSED)
+    {
+      try
       {
-         try
-         {
-            if (event.target == btSend)
-            {
-               SMS.send(edNumber.getText(), edMsg.getText());
-               new MessageBox("Status","SMS message sent.").popup();
-            }
-/*            else if (event.target == btReceive)
+        if (event.target == btSend)
+        {
+          SMS.send(edNumber.getText(), edMsg.getText());
+          new MessageBox("Status","SMS message sent.").popup();
+        }
+        /*            else if (event.target == btReceive)
             {
                edMsg.setText("Program is blocked until a message is received.");
                edMsg.repaintNow();
@@ -66,11 +71,11 @@ public class PhoneSmsSample extends BaseContainer
                edNumber.setText(answer[0]);
                edMsg.setText(answer[1]);
             }
-*/         }
-         catch (IOException e)
-         {
-            MessageBox.showException(e, false);
-         }
+         */         }
+      catch (IOException e)
+      {
+        MessageBox.showException(e, false);
       }
-   }
+    }
+  }
 }

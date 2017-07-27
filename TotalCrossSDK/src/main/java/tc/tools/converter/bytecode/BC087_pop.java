@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC087_pop extends StackManipulation
 {
-   public BC087_pop()
-   {
-      super(-1,false);
-   }
+  public BC087_pop()
+  {
+    super(-1,false);
+  }
 }

@@ -22,30 +22,31 @@ package totalcross.io;
 
 public class FileNotFoundException extends IOException
 {
-   /** Constructs an empty Exception. */
-   public FileNotFoundException()
-   {
-      super();
-   }
+  /** Constructs an empty Exception. */
+  public FileNotFoundException()
+  {
+    super();
+  }
 
-   /** Constructs an exception with the given message. */
-   public FileNotFoundException(String path)
-   {
-      super("File not found: " + path);
-   }
+  /** Constructs an exception with the given message. */
+  public FileNotFoundException(String path)
+  {
+    super("File not found: " + path);
+  }
 
-   /** Returns the file name from the exception's message.
-    * If there's no file name, returns an empty string.
-    * @since TotalCross 1.15
-    */
-   public String getFileName() // guich@tc115_44
-   {
-      String msg = getMessage();
-      int idx;
-      if (msg != null && (idx=msg.indexOf(':')) >= 0)
-         msg = msg.substring(idx).trim();
-      else
-         msg = "";
-      return msg;
-   }
+  /** Returns the file name from the exception's message.
+   * If there's no file name, returns an empty string.
+   * @since TotalCross 1.15
+   */
+  public String getFileName() // guich@tc115_44
+  {
+    String msg = getMessage();
+    int idx;
+    if (msg != null && (idx=msg.indexOf(':')) >= 0){
+      msg = msg.substring(idx).trim();
+    }else {
+      msg = "";
+    }
+    return msg;
+  }
 }

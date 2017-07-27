@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class ClassCastException4D extends RuntimeException
 {
-   /** Constructs an empty Exception. */
-   public ClassCastException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public ClassCastException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public ClassCastException4D(String s)
-   {
-	  super(s);
-   }
+  /** Constructs an exception with the given message. */
+  public ClassCastException4D(String s)
+  {
+    super(s);
+  }
 }

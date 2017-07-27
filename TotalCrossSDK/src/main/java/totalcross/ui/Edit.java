@@ -19,13 +19,30 @@
 
 package totalcross.ui;
 
-import totalcross.sys.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.util.*;
+import totalcross.sys.Convert;
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
+import totalcross.sys.Time;
+import totalcross.sys.Vm;
+import totalcross.ui.dialog.CalculatorBox;
+import totalcross.ui.dialog.CalendarBox;
+import totalcross.ui.dialog.KeyboardBox;
+import totalcross.ui.dialog.TimeBox;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.KeyEvent;
+import totalcross.ui.event.PenEvent;
+import totalcross.ui.event.PressListener;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.TimerListener;
+import totalcross.ui.font.Font;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.gfx.Rect;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
+import totalcross.util.Date;
+import totalcross.util.InvalidDateException;
 
 /**
  * Edit is a text entry control.
@@ -291,9 +308,10 @@ public class Edit extends Control implements TextControl, TimerListener
       clearPosState();
       onFontChanged();
       useFillAsPreferred = true;
-      if (uiMaterial)
+    if (uiMaterial){
          backColor = 0;
    }
+  }
 
    /** Construct an Edit with the default width computed based in the specified
      * mask and in the control's font. In order to allow the mask to be used as
@@ -325,11 +343,12 @@ public class Edit extends Control implements TextControl, TimerListener
     */
    public void mapKeys(String from, String to)
    {
-      if (from == null || to == null)
+    if (from == null || to == null){
          from = to = null;
-      else
-      if (from.length() != to.length())
+    }else
+      if (from.length() != to.length()){
          throw new IllegalArgumentException("from.length must match to.length");
+      }
       this.mapFrom = from;
       this.mapTo = to;
    }
@@ -342,10 +361,12 @@ public class Edit extends Control implements TextControl, TimerListener
     */
    public void setDecimalPlaces(int count)
    {
-      if (count < 0)
+    if (count < 0){
          throw new IllegalArgumentException("count must be >= 0");
-      if (isMaskedEdit)
+    }
+    if (isMaskedEdit){
          throw new RuntimeException("Edit.setDecimalPlaces can't be used after the mask is applied using setMode.");
+    }
       this.decimalPlaces = count;
    }
 
@@ -369,7 +390,7 @@ public class Edit extends Control implements TextControl, TimerListener
    public void setKeyboard(byte kbd) // guich@310_19
    {
       this.kbdType = kbd;
-      if (kbd == KBD_DEFAULT)
+    if (kbd == KBD_DEFAULT){
          switch (mode)
          {
             case DATE:     kbdType = KBD_CALENDAR;   break;
@@ -377,6 +398,7 @@ public class Edit extends Control implements TextControl, TimerListener
             default:       kbdType = KBD_KEYBOARD;   break;
          }
    }
+  }
 
    /** Returns the keyboard type of this Edit control.
      * @see #KBD_NONE
@@ -393,6 +415,7 @@ public class Edit extends Control implements TextControl, TimerListener
       return kbdType;
    }
 
+  @Override
    protected void onFontChanged()
    {
       wildW = fm.charWidth('*');
@@ -459,21 +482,24 @@ public class Edit extends Control implements TextControl, TimerListener
             setValidChars(currencyCharsSet);
             if (maskedEdit)
             {
-               if (mask == null || mask.length == 0) // use a default mask
+        if (mask == null || mask.length == 0) {
                   mask = getDefaultCurrencyMask(decimalPlaces);
+        }
                applyMaxLengthBasedOnMask();
                alignment = RIGHT;
             }
             break;
          default:
             setValidChars(null);
-            if (maskedEdit && mask != null && mask.length > 0)
+      if (maskedEdit && mask != null && mask.length > 0) {
                applyMaxLengthBasedOnMask();
+      }
             break;
       }
-      if (kbdType != KBD_NONE) // guich@tc115_29
+    if (kbdType != KBD_NONE){
          setKeyboard(KBD_DEFAULT);
    }
+  }
    
    public static char[] getDefaultCurrencyMask(int decimalPlaces)
    {
@@ -486,12 +512,14 @@ public class Edit extends Control implements TextControl, TimerListener
    private void applyMaxLengthBasedOnMask()
    {
       int nines = 0;
-      for (int i =0; i < mask.length; i++)
-         if (mask[i] == '9')
+    for (int i =0; i < mask.length; i++) {
+      if (mask[i] == '9') {
             nines++;
-         else
-         if (mode == CURRENCY && mask[i] == Settings.decimalSeparator)
+      } else
+        if (mode == CURRENCY && mask[i] == Settings.decimalSeparator) {
             decimalPlaces = mask.length-i-1;
+        }
+    }
       maxLength = nines;
    }
    /** Sets the valid chars that can be entered in this edit
@@ -503,11 +531,12 @@ public class Edit extends Control implements TextControl, TimerListener
     */
    public void setValidChars(String validCharsString)
    {
-      if (validCharsString != null)
+    if (validCharsString != null){
          validChars = validCharsString.toUpperCase();
-      else
+    }else {
          validChars = null;
    }
+  }
 
    /** Return true if the given char exists in the set of valid characters for this Edit */
    protected boolean isCharValid(char c)
@@ -523,10 +552,11 @@ public class Edit extends Control implements TextControl, TimerListener
       //if (!isMaskedEdit) // guich@tc115_83: ignore if using masks
       {
          maxLength = length;
-         if (length != 0 && maxLength < chars.length())  // jescoto@421_15: resize text if maxLength < len
+      if (length != 0 && maxLength < chars.length()) {
          	chars.setLength(length);
       }
    }
+  }
 
    public int getMaxLength()
    {
@@ -566,13 +596,17 @@ public class Edit extends Control implements TextControl, TimerListener
       int extra = getX0();
       if (!isMaskedEdit)
       {
-         if (n == 0) // start of string?
+      if (n == 0) {
             return extra + xOffset;
-         if (n >= chars.length()) // end or beyond end of string?
+      }
+      if (n >= chars.length()) {
             return extra + xOffset + getTotalCharWidth();
       }
+    }
       else
-      if (n > chars.length()) n = chars.length();
+      if (n > chars.length()){
+        n = chars.length();
+      }
       switch (mode)
       {
          case PASSWORD_ALL:
@@ -588,23 +622,30 @@ public class Edit extends Control implements TextControl, TimerListener
                {
                   char c = masked.charAt(pos);
                   xx -= fm.charWidth(c);
-                  if ('0' <= c && c <= '9') // update the position at the main string only when a numeric value is represented
+          if ('0' <= c && c <= '9') {
                      i--;
                }
+        }
                return extra + xx;
+      } else {
+        break;
             }
-            else break;
          default://case DATE:
             if (masked.length() > 0)
             {
                int i=0,pos=0;
-               for (; i < n; pos++)
-                  if (pos >= mask.length)
+        for (; i < n; pos++) {
+          if (pos >= mask.length) {
                      break;
-                  else
-                  if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
+          } else
+            if (mask[pos] == '9') {
                      i++;
-               while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
+            }
+        }
+        while (pos < mask.length && mask[pos] != '9')
+        {
+          pos++; // skip next non-numeric chars
+        }
                return extra + xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
             }
       }
@@ -615,6 +656,7 @@ public class Edit extends Control implements TextControl, TimerListener
     * to get the text without the mask, use the getTextWithoutMask method.
     * @see #getTextWithoutMask()
     */
+  @Override
    public String getText()
    {
       return isMaskedEdit ? masked.toString() : chars.toString();
@@ -625,8 +667,9 @@ public class Edit extends Control implements TextControl, TimerListener
     */
    public String getTextWithoutMask()
    {
-      if (chars.length() == 0)
+    if (chars.length() == 0){
          return "";
+    }
       String str = chars.toString();
       if (isMaskedEdit)
       {
@@ -634,41 +677,49 @@ public class Edit extends Control implements TextControl, TimerListener
          {
             if (!hasSignificantDigits())
             {
-               if (str.indexOf('.') < 0 && str.indexOf(',') < 0) // guich@tc130: return "0" instead of "000"
+          if (str.indexOf('.') < 0 && str.indexOf(',') < 0)
+          {
                   str = Convert.toString(0d,decimalPlaces);//"0";
             }
+        }
             else
             {
                if (decimalPlaces > 0) // for currency mode, remove the , and . and put it in Java's format (xxxx.yy)
                {
                   int k = str.length() - decimalPlaces; // get the number of decimal places
-                  if (k <= 0)
+            if (k <= 0) {
                      str = "0.".concat(Convert.zeroPad(str,decimalPlaces));
-                  else
+            } else {
                      str = str.substring(0,k)+"."+str.substring(k);
                }
-               if (isNegative)
+          }
+          if (isNegative) {
                   str = "-".concat(str);
             }
          }
+      }
          else
          {
             StringBuffer sbuf = new StringBuffer(str.length());
             if (mask.length == str.length()) // totally formatted? faster algorithm
             {
                // 25/03/1970 -> 25031970
-               for (int i =0; i < mask.length; i++)
-                  if (mask[i] == '9')
+          for (int i =0; i < mask.length; i++) {
+            if (mask[i] == '9') {
                      sbuf.append(chars.charAt(i));
             }
+          }
+        }
             else
             {
                // 25031970 -> 25031970
                int max = chars.length();
-               for (int i =0,j=0; i < mask.length; i++) // guich@tc124_23: must go throught all the mask size
-                  if ('0' <= mask[i] && mask[i] <= '9' && j < max)
+          for (int i =0,j=0; i < mask.length; i++) {
+            if ('0' <= mask[i] && mask[i] <= '9' && j < max) {
                      sbuf.append(chars.charAt(j++));
             }
+          }
+        }
             str = sbuf.toString();
          }
       }
@@ -695,28 +746,31 @@ public class Edit extends Control implements TextControl, TimerListener
          {
             isNegative = s.startsWith("-");
             if (isNegative) {len--; s = s.substring(1); chars.setLength(0); chars.append(s);} // guich@tc168 - if user sends a negative value, remove it from start and set the flag
-            if (s.indexOf(',') >= 0 || Convert.numberOf(s, '.') > 1)
+        if (s.indexOf(',') >= 0 || Convert.numberOf(s, '.') > 1) {
                s = Convert.replace(s,".","").replace(',','.');
+        }
 
             dot = s.indexOf('.');
             decimals = len - dot - 1;
             if (decimalPlaces == 0) // setText("12.34") -> "12"
             {
                if (dot >= 0)
+          {
                   chars.setLength(dot); // cut
             }
+        }
             else
-            if (dot < 0) // setText("12") -> "12.00"
+          if (dot < 0) {
                chars.append(Convert.dup('0',decimalPlaces));
-            else
+          } else
             {
-               if (decimals == decimalPlaces)
-                  ;
-               else
-               if (decimals > decimalPlaces) // setText("12.3456") -> "12.34"
+            if (decimals == decimalPlaces) {;
+            } else
+              if (decimals > decimalPlaces) {
                   chars.setLength(len - (decimals - decimalPlaces));
-               else // decimals <= decimalPlaces setText("12.1") -> "12.10"
+              } else {
                   chars.append(Convert.dup('0', decimalPlaces - decimals));
+              }
                int delpos = len - decimals - 1;
                chars.delete(delpos, delpos+1); // remove the . - guich@tc100b4_11: added +1
             }
@@ -733,15 +787,17 @@ public class Edit extends Control implements TextControl, TimerListener
       clearPosState();
       Window.needsPaint = true;
       animateMaterial(isDisplayed());
-      if (postPressed)
+    if (postPressed){
          postPressedEvent();
    }
+  }
    
    /**
      * Sets the text displayed in the edit control.
      * If you're setting the text in CURRENCY mode,
      * the text must be set <b>not</b> formatted (unmasked).
      */
+  @Override
    public void setText(String s)
    {
       setText(s,Settings.sendPressEventOnChange);
@@ -761,6 +817,7 @@ public class Edit extends Control implements TextControl, TimerListener
       return editable;
    }
 
+  @Override
    protected void onBoundsChanged(boolean screenChanged) // guich
    {
       xMin = xMins[Settings.uiStyle];
@@ -772,26 +829,32 @@ public class Edit extends Control implements TextControl, TimerListener
       ycap0 = ycap = chars.length() == 0 ? getTextY() : 0;
    }
 
+  @Override
    public int getPreferredWidth()
    {
       return (mask==null || useFillAsPreferred)?FILL:(fm.stringWidth(new String(mask)) + (uiAndroid?10:(uiFlat||uiVista)?8:4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
    }
 
+  @Override
    public int getPreferredHeight()
    {
       int ret = fmH+prefH;
-      if (uiMaterial && caption != null)
+    if (uiMaterial && caption != null){
          ret += fmHmin;
+    }
       return ret;
    }
 
+  @Override
    protected void onColorsChanged(boolean colorsChanged)
    {
       npback = null;
       fColor = getForeColor();
       back0  = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       back1  = back0 != Color.WHITE ?(UIColors.sameColors?Color.darker(getBackColor()):backColor):Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
+    if (!uiAndroid){
+      Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
+    }
    }
 
    private int getTotalCharWidth()
@@ -811,30 +874,38 @@ public class Edit extends Control implements TextControl, TimerListener
                {
                   char c = masked.charAt(pos);
                   ww += fm.charWidth(c);
-                  if ('0' <= c && c <= '9') // update the position at the main string only when a numeric value is represented
+          if ('0' <= c && c <= '9') {
                      i--;
                }
+        }
                return ww;
+      } else {
+        return fm.sbWidth(chars,0,len);
             }
-            else
-               return fm.sbWidth(chars,0,len);
       }
    }
 
    private int getTextY()
    {
       int y = this.height - fmH - gap;
-      if (uiAndroid) y--;
-      if (uiHolo) // no else here!
+    if (uiAndroid){
+      y--;
+    }
+    if (uiHolo){
          y = (height-fmH - gap) / 2;
-      if (uiMaterial)
+    }
+    if (uiMaterial){
          y = height - fmH - gap-1;
+    }
       return y;
    }
    
    protected void draw(Graphics g)
    {
-      if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
+    if (g == null || !isDisplayed())
+    {
+      return; // guich@tc114_65: check if its displayed
+    }
 
       boolean uiAndroid = Control.uiAndroid || uiHolo;
       int y = getTextY();
@@ -845,7 +916,9 @@ public class Edit extends Control implements TextControl, TimerListener
       {
          if (uiMaterial)
          {
-            int h = fmH/10; if (h < 2) h = 2;
+        int h = fmH/10; if (h < 2) {
+          h = 2;
+        }
             if (focusColor != -1 && hasFocus)
             {
                g.backColor = focusColor;
@@ -866,15 +939,18 @@ public class Edit extends Control implements TextControl, TimerListener
             {
                g.foreColor = c;
                g.backColor = Color.getGray(getForeColor());
-               for (int i = 0; i < h; i++)
+          for (int i = 0; i < h; i++) {
                   g.drawDots(i&1,height-1-i, width, height-1-i);
             }
          }
+      }
          else
          {
             int gg = gap;
             if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+        if (!uiAndroid || !hasBorder) {
+          g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+        }
             if (hasBorder && uiAndroid)
             {
                try
@@ -921,41 +997,51 @@ public class Edit extends Control implements TextControl, TimerListener
             g.drawImage(captionIcon, uiMaterial ? 0 : fmH, y);
          }
             
-         if (!hasFocus && !drawCaption) // guich@503_2: align the edit after it looses focus
+      if (!hasFocus && !drawCaption) {
             switch (alignment)
             {
                case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
                case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
             }
-         if (hasBorder) g.setClip(xMin+(captionIcon!=null?captionIcon.getWidth():0),0,xMax-Edit.prefH,height);
+      }
+      if (hasBorder) {
+        g.setClip(xMin+(captionIcon!=null?captionIcon.getWidth():0),0,xMax-Edit.prefH,height);
+      }
          if (drawCaption && !uiMaterial)
          {
             g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
             g.drawText(caption, xx, y, textShadowColor != -1, textShadowColor);
-         }
-         else
+      } else {
             switch (mode)
             {
                case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
-                  if (len > 0)
+          if (len > 0) {
                      g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
+          }
                   break;
                case PASSWORD_ALL:
                   g.drawText(Convert.dup('*',len), xx, y, textShadowColor != -1, textShadowColor);
                   break;
                case CURRENCY:
-                  if (isMaskedEdit)
+          if (isMaskedEdit) {
                      xx = this.width-getTotalCharWidth()-xOffset-1;
+          }
                default:
-                  if (masked.length() > 0)
+          if (masked.length() > 0) {
                      g.drawText(masked, 0, masked.length(), xx, y, textShadowColor != -1, textShadowColor);
-                  else
+          } else {
                      g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
             }
-         if (hasBorder) g.clearClip();
+        }
       }
+      if (hasBorder) {
+        g.clearClip();
+      }
+    }
       if (hasBorder && !uiAndroid)
+    {
          g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
+    }
       cursorX = charPos2x(insertPos);
       if (hasFocus && isEnabled() && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
       {
@@ -970,9 +1056,9 @@ public class Edit extends Control implements TextControl, TimerListener
             }
          }
          cursorShowing = !cursorShowing;
+    }else {
+      cursorShowing = false;
       }
-      else
-         cursorShowing = false;
       // material
       if (uiMaterial)
       {
@@ -987,16 +1073,16 @@ public class Edit extends Control implements TextControl, TimerListener
       int len = chars.length();
       StringBuffer masked = this.masked; // cache instance field
       masked.setLength(0);
-      if (len == 0)
+    if (len == 0){
          isNegative = false;
-      else
+    }else
       if ((mode == DATE || mode == NORMAL) && isMaskedEdit) // date must go forward
       {
          int n = Math.min(len,mask.length),i=0,pos=0;
-         while (i < n)
-            if (pos >= mask.length)
+        while (i < n) {
+          if (pos >= mask.length) {
                break;
-            else
+          } else
             if (mask[pos] == '9')
             {
                masked.append(chars.charAt(i++));
@@ -1005,17 +1091,20 @@ public class Edit extends Control implements TextControl, TimerListener
             else
             {
                masked.append(mask[pos]);
-               if (mask[pos] == chars.charAt(i)) // if the user passed 25/03/1970 to a mask 99/99/9999, skip the chars if the char matches
+              if (mask[pos] == chars.charAt(i)) {
                   i++;
+              }
                pos++;
             }
-         if (pos < mask.length && mask[pos] != '9') // put the slash if it's next
+        }
+        if (pos < mask.length && mask[pos] != '9') {
             masked.append(mask[pos]);
+      }
       }
       else
       if (mode == CURRENCY && isMaskedEdit && len > 0) // currency must go backward
       {
-         for (int i =len-1,pos=mask.length-1; i >= 0 && pos >= 0;)
+          for (int i =len-1,pos=mask.length-1; i >= 0 && pos >= 0;) {
             if (mask[pos] == '9')
             {
                masked.append(chars.charAt(i--));
@@ -1024,31 +1113,38 @@ public class Edit extends Control implements TextControl, TimerListener
             else
             {
                masked.append(mask[pos]);
-               if (chars.charAt(i) == mask[pos])
+              if (chars.charAt(i) == mask[pos]) {
                   i--;
+              }
                pos--;
             }
+          }
          if (hasSignificantDigits())
          {
             if (decimalPlaces > 0)
             {
                int k = masked.length() - decimalPlaces; // get the number of decimal places
-               if (k <= 0)
+              if (k <= 0) {
                   masked.append(Convert.zeroPad("",-k)).append(Settings.decimalSeparator).append('0');
             }
-            if (isNegative)
+            }
+            if (isNegative) {
                masked.append('-');
          }
-         else isNegative = false;
+          } else {
+            isNegative = false;
+          }
          masked.reverse();
       }
    }
 
    private boolean hasSignificantDigits()
    {
-      for (int i=chars.length()-1; i >= 0; i--)
-         if (chars.charAt(i) != '0')
+    for (int i=chars.length()-1; i >= 0; i--) {
+      if (chars.charAt(i) != '0') {
             return true;
+      }
+    }
       return false;
    }
    
@@ -1069,8 +1165,9 @@ public class Edit extends Control implements TextControl, TimerListener
    {
       startSelectPos = (start != end)?start:-1;
       insertPos = end;
-      if (cursorChangedEvent == null)
+    if (cursorChangedEvent == null){
          cursorChangedEvent = new ControlEvent(ControlEvent.CURSOR_CHANGED,this);
+    }
       onEvent(cursorChangedEvent);
       Window.needsPaint = true;
    }
@@ -1103,22 +1200,29 @@ public class Edit extends Control implements TextControl, TimerListener
    /** User method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == KBD_NONE || !editable || !isEnabled()) // fdie@ nothing to do if kdb has been disabled
+    if (kbdType == KBD_NONE || !editable || !isEnabled()){
          return;
+    }
       if (!popupsHidden())
       {
          // check if the keyboard is already popped up
-         if(Settings.fingerTouch && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
+      if(Settings.fingerTouch && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC) {
             return;
       }
+    }
 
       Window w = getParentWindow();
-      if (w != null) w.swapFocus(this);//requestFocus(); // guich@200b4: bring focus back -  guich@401_15: changed to swapFocus
+    if (w != null)
+    {
+      w.swapFocus(this);//requestFocus(); // guich@200b4: bring focus back -  guich@401_15: changed to swapFocus
+    }
 
       switch (kbdType)
       {
          case KBD_TIME: 
-            if (time == null) time = new TimeBox();
+      if (time == null) {
+        time = new TimeBox();
+      }
             time.tempTitle = keyboardTitle;
             try 
             {
@@ -1127,15 +1231,19 @@ public class Edit extends Control implements TextControl, TimerListener
             catch (Exception e) 
             {
                time.setTime(new Time(0));
-               if (chars.length() > 0 && Settings.onJavaSE) e.printStackTrace();
+        if (chars.length() > 0 && Settings.onJavaSE) {
+          e.printStackTrace();
             }
+      }
             hideSip();
             time.popup();
             setText(time.getTime().toString(),true);
             break;
             
          case KBD_CALENDAR:
-            if (calendar == null) calendar = new CalendarBox();
+      if (calendar == null) {
+        calendar = new CalendarBox();
+      }
             calendar.tempTitle = keyboardTitle;
             try {calendar.setSelectedDate(new Date(getText()));} catch (InvalidDateException ide) {} // if the date is invalid, just ignore it
             hideSip();
@@ -1143,11 +1251,13 @@ public class Edit extends Control implements TextControl, TimerListener
             break;
 
          case KBD_CALCULATOR:
-            if (useNativeNumericPad)
+      if (useNativeNumericPad) {
                showVirtualKeyboard();
-            else
+      } else
             {
-            if (calculator == null) calculator = new CalculatorBox();
+        if (calculator == null) {
+          calculator = new CalculatorBox();
+        }
             calculator.rangeCheck = this.rangeCheck;
             calculator.tempTitle = keyboardTitle;
             calculator.optionalValue = optionalValue4CalculatorBox;
@@ -1157,11 +1267,13 @@ public class Edit extends Control implements TextControl, TimerListener
             break;
 
          case KBD_NUMERIC:
-            if (useNativeNumericPad)
+      if (useNativeNumericPad) {
                showVirtualKeyboard();
-            else
+      } else
             {
-            if (numeric == null) numeric = new CalculatorBox(false);
+        if (numeric == null) {
+          numeric = new CalculatorBox(false);
+        }
             numeric.rangeCheck = this.rangeCheck;
             numeric.tempTitle = keyboardTitle;
             numeric.optionalValue = optionalValue4CalculatorBox;
@@ -1178,9 +1290,8 @@ public class Edit extends Control implements TextControl, TimerListener
    private static boolean lastWasNumeric;
    private void showVirtualKeyboard()
    {
-      if (!Settings.enableVirtualKeyboard)
-         ;
-      else
+    if (!Settings.enableVirtualKeyboard){;
+    }else
       if (virtualKeyboard && editable && !"".equals(validChars))
       {
          if (Settings.customKeyboard != null)
@@ -1190,14 +1301,17 @@ public class Edit extends Control implements TextControl, TimerListener
          else
          {
             int sbl = Settings.SIPBottomLimit;
-            if (sbl == -1) sbl = Settings.screenHeight / 2;
+          if (sbl == -1) {
+            sbl = Settings.screenHeight / 2;
+          }
             boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
             if (Settings.unmovableSIP && !Window.isSipShown()) // guich@tc126_21
             {
                Window ww = getParentWindow();
-               if (ww != null)
+            if (ww != null) {
                   ww.shiftScreen(this,this.height-(fmH+prefH));
             }
+          }
             boolean isNumeric = useNativeNumericPad && kbdType == KBD_NUMERIC;
             if (!Window.isSipShown() || lastWasNumeric != isNumeric)
             {
@@ -1208,7 +1322,9 @@ public class Edit extends Control implements TextControl, TimerListener
       }
       else
       {
-         if (keyboard == null) keyboard = new KeyboardBox();
+        if (keyboard == null) {
+          keyboard = new KeyboardBox();
+        }
          keyboard.tempTitle = keyboardTitle;
          showInputWindow(keyboard);
       }
@@ -1217,16 +1333,18 @@ public class Edit extends Control implements TextControl, TimerListener
    protected void hideSip()
    {
       lastWasNumeric = false;
-      if (Window.isSipShown()) // non-default keyboards gets here
+    if (Window.isSipShown()){
          Window.setSIP(Window.SIP_HIDE,null,false);
    }
+  }
 
    private void showInputWindow(Window w)
    {
       oldTabIndex = parent.tabOrder.indexOf(this);
       pushPosState();
-      if (removeTimer(blinkTimer)) // guich@200b4_167
+    if (removeTimer(blinkTimer)){
          blinkTimer = null;
+    }
       w.popupNonBlocking();
       popPosState();
       requestFocus();
@@ -1236,29 +1354,33 @@ public class Edit extends Control implements TextControl, TimerListener
    {
       hasFocus = false;
       clearPosState();
-      if (removeTimer(blinkTimer)) // guich@200b4_167
+    if (removeTimer(blinkTimer)){
          blinkTimer = null;
    }
+  }
 
    /** Called by the system to pass events to the edit control. */
+  @Override
    public void onEvent(Event event)
    {
       if (calendar != null && event.type == ControlEvent.WINDOW_CLOSED && event.target == calendar) // called from the keyboard and from the calendar
       {
          Date d = calendar.getSelectedDate();
-         if (d != null)
+      if (d != null) {
             setText(d.toString(),true);
-         else
-         if (!calendar.canceled)
+      } else
+        if (!calendar.canceled) {
             setText("",true);
+        }
          return;
       }
       boolean extendSelect = false;
       boolean clearSelect = false;
       boolean reapplyMask = false;
       int len = chars.length();
-      if (len == 0) // guich@571_3: make sure the insert position is zero if there's no text.
+    if (len == 0){
          insertPos = startSelectPos = 0;
+    }
       int newInsertPos = insertPos;
       switch (event.type)
       {
@@ -1274,9 +1396,9 @@ public class Edit extends Control implements TextControl, TimerListener
             }
             if (event == blinkTimer) // kmeehl@tc100: make sure its our timer
             {
-               if (!isTopMost()) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
+        if (!isTopMost()) {
                   focusOut();
-               else
+        } else
                if (parent != null)
                {
                   Window.needsPaint = true;
@@ -1295,8 +1417,9 @@ public class Edit extends Control implements TextControl, TimerListener
             isHighlighting = false; // guich@573_28: after closing a KCC, don't let the focus move from here.
          	wasFocusIn=true; // jairocg@450_31: set it so we can validate later
             hasFocus = true;
-            if (blinkTimer == null)
+      if (blinkTimer == null) {
                blinkTimer = addTimer(350);
+      }
             if (len > 0) // guich@550_20: autoselect the text
             {
                if (autoSelect && !ignoreSelect) // guich@570_112: changed to !ignoreSelect
@@ -1305,26 +1428,34 @@ public class Edit extends Control implements TextControl, TimerListener
                   newInsertPos = 0;
                }
                else 
-               if (Settings.moveCursorToEndOnFocus) 
+          if (Settings.moveCursorToEndOnFocus) {
                   newInsertPos = len; 
             }
+      }
             break;
          case ControlEvent.FOCUS_OUT:
             if (cursorShowing)
+      {
                Window.needsPaint = true; //draw(drawg=getGraphics(), true); // erase cursor at old insert position
+      }
             newInsertPos = 0;
             focusOut();
-            if (uiMaterial && caption != null)
+      if (uiMaterial && caption != null) {
                animateMaterial(true);
+      }
             break;
          case KeyEvent.KEY_PRESS:
          case KeyEvent.SPECIAL_KEY_PRESS:
             if (editable && isEnabled())
             {
                KeyEvent ke = (KeyEvent)event;
-               if (PreprocessKey.instance != null)
+        if (PreprocessKey.instance != null) {
                   PreprocessKey.instance.preprocess(this, ke);
-               if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
+        }
+        if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE)
+        {
+          event.consumed = true; // don't let the back key be passed to the parent
+        }
                if (insertPos == 0 && ke.key == ' ' && (mode == CURRENCY || mode == DATE)) // guich@tc114_34
                {
                   popupKCC();
@@ -1333,9 +1464,10 @@ public class Edit extends Control implements TextControl, TimerListener
                boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
                if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
                {
-                  if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
+          if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null) {
                      return;
                }
+        }
                boolean loseFocus = moveFocus || ke.key == SpecialKeys.ESCAPE;
                if (event.target == this && loseFocus)
                {
@@ -1345,8 +1477,9 @@ public class Edit extends Control implements TextControl, TimerListener
                      Window w = getParentWindow(); // guich@tc114_32: restore the highlight to this control...
                      if (w != null) // guich@tc123_16
                      {
-                        if (w.getFocus() == this)
+              if (w.getFocus() == this) {
                            w.removeFocus();
+              }
                         w.setHighlighted(this);
                      }
                   }
@@ -1375,8 +1508,9 @@ public class Edit extends Control implements TextControl, TimerListener
                      break;
                   }
                }
-               if ("".equals(validChars)) // guich@tc115_33 
+        if ("".equals(validChars)) {
                   break;
+        }
                boolean isDelete = (ke.key == SpecialKeys.DELETE);
                boolean isBackspace = (ke.key == SpecialKeys.BACKSPACE);
                boolean isPrintable = ke.key > 0 && event.type == KeyEvent.KEY_PRESS && (ke.modifiers & SpecialKeys.ALT) == 0 && (ke.modifiers & SpecialKeys.CONTROL) == 0;
@@ -1393,7 +1527,9 @@ public class Edit extends Control implements TextControl, TimerListener
                // clipboard
                if (isControl)
                {
-                  if (0 < ke.key && ke.key < 32) ke.key += 64;
+          if (0 < ke.key && ke.key < 32) {
+            ke.key += 64;
+          }
                   ke.modifiers &= ~SpecialKeys.CONTROL; // remove control
                   int key = Convert.toUpperCase((char)ke.key);
                   switch (key)
@@ -1403,10 +1539,11 @@ public class Edit extends Control implements TextControl, TimerListener
                         return;
                      case 'X':
                      case 'C':
-                        if (key == 'X') // cut
+            if (key == 'X') {
                            clipboardCut();
-                        else
+            } else {
                            clipboardCopy();
+            }
                         return;
                      case 'P':
                      case 'V':
@@ -1417,20 +1554,23 @@ public class Edit extends Control implements TextControl, TimerListener
                if (mapFrom != null) // guich@tc110_56
                {
                   int idx = mapFrom.indexOf(Convert.toLowerCase((char)ke.key));
-                  if (idx != -1)
+          if (idx != -1) {
                      ke.key = mapTo.charAt(idx);
                }
+        }
                if (isPrintable)
                {
-                  if (capitalise == ALL_UPPER)
+          if (capitalise == ALL_UPPER) {
                      ke.key = Convert.toUpperCase((char)ke.key);
-                  else
-                  if (capitalise == ALL_LOWER)
+          } else
+            if (capitalise == ALL_LOWER) {
                      ke.key = Convert.toLowerCase((char)ke.key);
+            }
 
-                  if (!isCharValid((char)ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
+          if (!isCharValid((char)ke.key)) {
                      break;
                }
+        }
                if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
                {
                   del1 = sel1;
@@ -1449,7 +1589,9 @@ public class Edit extends Control implements TextControl, TimerListener
                if (del1 >= 0 && del2 < len)
                {
                   if (cursorShowing)
+          {
                      Window.needsPaint = true; //draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
+          }
                   if (len > del2 - 1)
                   {
                      chars.delete(del1, del2+1);
@@ -1458,7 +1600,7 @@ public class Edit extends Control implements TextControl, TimerListener
                   newInsertPos = del1;
                   clearSelect = true;
                }
-               if (isPrintable)
+        if (isPrintable) {
                   if (maxLength == 0 || len < maxLength || clearSelect) // guich@tc125_34
                   {
                      char c = (char)ke.key;
@@ -1468,25 +1610,29 @@ public class Edit extends Control implements TextControl, TimerListener
                         char first = masked.charAt(0);
                         if (c == '+' || c == '-')
                         {
-                           if (first == '-')
+                if (first == '-') {
                               isNegative = false; // typed + and is negative (or neg of neg)?
-                           else
-                           if (c == '+')
+                } else
+                  if (c == '+') {
                               break; // else, if its already positive, just ignore
-                           else
+                  } else {
                               isNegative = true;
+                  }
                            append = false;
                         }
                      }
-                     if (append) 
-                        if (newInsertPos >= chars.length())
+            if (append) {
+              if (newInsertPos >= chars.length()) {
                            chars.append(c);
-                        else
+              } else {
                            Convert.insertAt(chars, newInsertPos, c);
+              }
+            }
                      reapplyMask = true;
                      newInsertPos++;
                      clearSelect = true;
                   }
+        }
                boolean isMove = true;
                switch (ke.key)
                {
@@ -1500,12 +1646,13 @@ public class Edit extends Control implements TextControl, TimerListener
                }
                if (isMove && newInsertPos != insertPos)
                {
-                  if ((ke.modifiers & SpecialKeys.SHIFT) > 0)
+          if ((ke.modifiers & SpecialKeys.SHIFT) > 0) {
                      extendSelect = true;
-                  else
+          } else {
                      clearSelect = true;
                }
             }
+      }
             break;
          case PenEvent.PEN_DOWN:
          {
@@ -1514,19 +1661,24 @@ public class Edit extends Control implements TextControl, TimerListener
          	if (!autoSelect || !wasFocusIn) // jairocg@450_31: if the event was focusIn, do not change the selected text
             {
                for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) < pe.x-3; newInsertPos++) {}
-               if ((pe.modifiers & SpecialKeys.SHIFT) > 0) // shift
+        if ((pe.modifiers & SpecialKeys.SHIFT) > 0) {
                   extendSelect = true;
-               else
+        } else {
                   clearSelect = !persistentSelection;
-            } else wasFocusIn = false; // guich@570_98: let the user change cursor location after the first focus_in event.
+        }
+      }
+      else {
+        wasFocusIn = false; // guich@570_98: let the user change cursor location after the first focus_in event.
+      }
             break;
          }
          case PenEvent.PEN_DRAG:
          {
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
-            if (newInsertPos != insertPos && isEnabled())
+      if (newInsertPos != insertPos && isEnabled()) {
                extendSelect = true;
+      }
             break;
          }
          case PenEvent.PEN_UP:
@@ -1543,22 +1695,24 @@ public class Edit extends Control implements TextControl, TimerListener
             }
             else
             {
-               if (uiMaterial && caption != null)
+          if (uiMaterial && caption != null) {
                   animateMaterial(true);
+          }
                if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled())
                {
-                  if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
+            if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos) {
                      showClipboardMenu();
-                  else
+            } else
                   if (wasFocusInOnPenDown || !Window.isScreenShifted())
                   {
-                     if (tea != null)
+                if (tea != null) {
                         postPopupKCC = true;
-                     else
+                } else {
                         popupKCC();
                   }
                }
             }
+        }
             break;
          }
          case KeyboardBox.KEYBOARD_ON_UNPOP: // guich@320_34
@@ -1583,35 +1737,42 @@ public class Edit extends Control implements TextControl, TimerListener
       }
       if (extendSelect)
       {
-         if (startSelectPos == -1)
+      if (startSelectPos == -1) {
             startSelectPos = insertPos;
-         else if (newInsertPos == startSelectPos)
+      } else if (newInsertPos == startSelectPos) {
             startSelectPos = -1;
       }
+    }
 
-      if (wasFocusIn && startSelectPos != -1 && insertPos>startSelectPos) // jairocg@450_31: event validation with text selection
+    if (wasFocusIn && startSelectPos != -1 && insertPos>startSelectPos){
       	 wasFocusIn=false;
-      else
-      if (clearSelect && startSelectPos != -1)
+    }else
+      if (clearSelect && startSelectPos != -1){
          startSelectPos = -1;
+      }
       newInsertPos = Math.min(newInsertPos, chars.length());
-      if (newInsertPos < 0)
+    if (newInsertPos < 0){
          newInsertPos = 0;
+    }
       boolean insertChanged = event.type == ControlEvent.CURSOR_CHANGED || (newInsertPos != insertPos);
-      if (reapplyMask && mask != null && (mode == CURRENCY || mode == DATE || mode == NORMAL))
+    if (reapplyMask && mask != null && (mode == CURRENCY || mode == DATE || mode == NORMAL)){
          applyMaskToInput();
+    }
       if (insertChanged)
       {
          int x = charPos2x(newInsertPos);
          if (cursorShowing)
+      {
             Window.needsPaint = true;//draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
+      }
          if (x - 3 < xMin)
          {
             // characters hidden on left - jump
             xOffset += (xMin - x) + fmH;
-            if (xOffset > xMin)
+        if (xOffset > xMin) {
                xOffset = xMin;
          }
+      }
          int totalCharWidth = getTotalCharWidth();
          int cw = captionIcon != null ? captionIcon.getWidth()+fmH/4 : 0;
          int xMax = this.xMax - cw;
@@ -1620,20 +1781,26 @@ public class Edit extends Control implements TextControl, TimerListener
             // characters hidden on right - jump
             xOffset -= (x - xMax) + fmH;
             int minOfs = xMax - totalCharWidth;
-            if (xOffset < minOfs)
+        if (xOffset < minOfs) {
                xOffset = minOfs;
          }
-         if (totalCharWidth < xMax - xMin && xOffset != xMin)
+      }
+      if (totalCharWidth < xMax - xMin && xOffset != xMin) {
             xOffset = xMin;
+      }
          cursorX = x;
       }
       if (reapplyMask)
+    {
          postPressedEvent(); // guich@tc113_1
+    }
 
       insertPos = newInsertPos;
-      if (isTopMost()) // guich@tc124_24: prevent screen updates when we're not the topmost window
+    if (isTopMost())
+    {
          Window.needsPaint = true; // must repaint everything due to a possible background image
    }
+  }
 
    private boolean showClipboardMenu()
    {
@@ -1645,12 +1812,12 @@ public class Edit extends Control implements TextControl, TimerListener
             startSelectPos = 0;
             insertPos = chars.length();
          }
-         if (idx == 0)
+      if (idx == 0) {
             clipboardCut();
-         else
-         if (idx == 1)
+      } else
+        if (idx == 1) {
             clipboardCopy();
-         else
+        } else
          {
             clipboardPaste();
             return true;
@@ -1661,6 +1828,7 @@ public class Edit extends Control implements TextControl, TimerListener
    
    private static class ClipboardMenuListener implements PressListener
    {
+    @Override
       public void controlPressed(ControlEvent e)
       {
          clipSel = clipboardMenu.selectedIndex;
@@ -1676,6 +1844,7 @@ public class Edit extends Control implements TextControl, TimerListener
             String[] names = {cutStr,copyStr,replaceStr,pasteStr};
             clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,2,true,PushButtonGroup.BUTTON)
             {
+          @Override
                protected boolean willOpenKeyboard()
                {
                   return true;
@@ -1702,10 +1871,11 @@ public class Edit extends Control implements TextControl, TimerListener
             if (Event.isAvailable())
             {
                Window.pumpEvents();
-               if (clipSel != -2)
+          if (clipSel != -2) {
                   break;
             }
          }
+      }
          clipboardMenu.removePressListener(pl);
          w.remove(clipboardMenu);
          
@@ -1713,7 +1883,9 @@ public class Edit extends Control implements TextControl, TimerListener
       }
       catch (Exception e)
       {
-         if (Settings.onJavaSE) e.printStackTrace();
+      if (Settings.onJavaSE) {
+        e.printStackTrace();
+      }
       }
       return -1;
    }
@@ -1727,12 +1899,17 @@ public class Edit extends Control implements TextControl, TimerListener
              (numeric == null || !numeric.isVisible());
    }
 
+  @Override
    protected void onWindowPaintFinished()
    {
-      if (!hasFocus) _onEvent(new ControlEvent(ControlEvent.FOCUS_IN,this)); // this event is called on the focused control of the parent window. so, if we are not in FOCUS state, set it now. - guich@tc112_
+    if (!hasFocus)
+    {
+      _onEvent(new ControlEvent(ControlEvent.FOCUS_IN,this)); // this event is called on the focused control of the parent window. so, if we are not in FOCUS state, set it now. - guich@tc112_
+    }
    }
 
    /** Called by the system to draw the edit control. */
+  @Override
    public void onPaint(Graphics g)
    {
       draw(g);
@@ -1755,24 +1932,29 @@ public class Edit extends Control implements TextControl, TimerListener
       StringBuffer sb = isMaskedEdit ? masked : chars;
       int l = sb.length();
       int s = 0;
-      while (s < l && sb.charAt(s) <= ' ')
+    while (s < l && sb.charAt(s) <= ' '){
          s++;
-      while (l > s && sb.charAt(l-1) <= ' ')
+    }
+    while (l > s && sb.charAt(l-1) <= ' '){
          l--;
+    }
       return l-s;
    }      
 
    /** Clears this control, settings the text to clearValueStr. Note that if the Edit
     * is not editable, you will have to explicitly call the clear method of this Edit. */
+  @Override
    public void clear() // guich@572_19
    {
       setText(clearValueStr,Settings.sendPressEventOnChange);
    }
 
+  @Override
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100
    {
-      if (ke.isUpKey() || ke.isDownKey() || (ke.isNextKey() && insertPos == chars.length()) || (ke.isPrevKey() && insertPos == 0))
+    if (ke.isUpKey() || ke.isDownKey() || (ke.isNextKey() && insertPos == chars.length()) || (ke.isPrevKey() && insertPos == 0)){
          return null;
+    }
       _onEvent(ke);
       return this;
    }
@@ -1832,9 +2014,8 @@ public class Edit extends Control implements TextControl, TimerListener
    public void clipboardPaste() // guich@tc114_66
    {
       String pasted = Vm.clipboardPaste();
-      if (pasted == null || pasted.length() == 0)
-         ;
-      else
+    if (pasted == null || pasted.length() == 0){;
+    }else
       {
          showTip(this, pasteStr, 500, -1);
          KeyEvent ke = new KeyEvent();
@@ -1866,8 +2047,9 @@ public class Edit extends Control implements TextControl, TimerListener
       ed.startSelectPos = startSelectPos;
       ed.insertPos = insertPos;
       ed.setBackForeColors(backColor,foreColor);
-      if (validChars != null)
+    if (validChars != null){
          ed.setValidChars(validChars);
+    }
       ed.capitalise = capitalise;
       ed.alignment = alignment;
       ed.maxLength = maxLength;
@@ -1877,6 +2059,7 @@ public class Edit extends Control implements TextControl, TimerListener
       return ed;
    }
    
+  @Override
    protected boolean willOpenKeyboard()
    {
       return editable && (kbdType == KBD_DEFAULT || kbdType == KBD_KEYBOARD);
@@ -1905,6 +2088,7 @@ public class Edit extends Control implements TextControl, TimerListener
       }
    }
    
+  @Override
    public void timerTriggered(TimerEvent e)
    {
       if (tea != null && tea.triggered)

@@ -38,7 +38,17 @@ exception statement from your version. */
 
 package totalcross.util;
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.AbstractSequentialList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 /**
  * Linked list implementation of the List interface. In addition to the
@@ -71,7 +81,7 @@ import java.util.*;
  * @status Complete to 1.6
  */
 public class LinkedList4D<T> extends AbstractSequentialList<T>
-  implements List<T>, Deque<T>, Cloneable
+implements List<T>, Deque<T>, Cloneable
 {
   /**
    * The first element in the list.
@@ -129,19 +139,21 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
   {
     Entry<T> e;
     if (n < size / 2)
-      {
-        e = first;
-        // n less than size/2, iterate from start
-        while (n-- > 0)
-          e = e.next;
+    {
+      e = first;
+      // n less than size/2, iterate from start
+      while (n-- > 0) {
+        e = e.next;
       }
+    }
     else
-      {
-        e = last;
-        // n greater than size/2, iterate from end
-        while (++n < size)
-          e = e.previous;
+    {
+      e = last;
+      // n greater than size/2, iterate from end
+      while (++n < size) {
+        e = e.previous;
       }
+    }
     return e;
   }
 
@@ -156,26 +168,26 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
   {
     modCount++;
     size--;
-    if (size == 0)
+    if (size == 0){
       first = last = null;
-    else
+    }else
+    {
+      if (e == first)
       {
-        if (e == first)
-          {
-            first = e.next;
-            e.next.previous = null;
-          }
-        else if (e == last)
-          {
-            last = e.previous;
-            e.previous.next = null;
-          }
-        else
-          {
-            e.next.previous = e.previous;
-            e.previous.next = e.next;
-          }
+        first = e.next;
+        e.next.previous = null;
       }
+      else if (e == last)
+      {
+        last = e.previous;
+        e.previous.next = null;
+      }
+      else
+      {
+        e.next.previous = e.previous;
+        e.previous.next = e.next;
+      }
+    }
   }
 
   /**
@@ -186,9 +198,10 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    */
   private void checkBoundsInclusive(int index)
   {
-    if (index < 0 || index > size)
+    if (index < 0 || index > size){
       throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-                                          + size);
+          + size);
+    }
   }
 
   /**
@@ -199,9 +212,10 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    */
   private void checkBoundsExclusive(int index)
   {
-    if (index < 0 || index >= size)
+    if (index < 0 || index >= size){
       throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-                                          + size);
+          + size);
+    }
   }
 
   /**
@@ -229,10 +243,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return the first list element
    * @throws NoSuchElementException if the list is empty
    */
+  @Override
   public T getFirst()
   {
-    if (size == 0)
+    if (size == 0){
       throw new NoSuchElementException();
+    }
     return first.data;
   }
 
@@ -242,10 +258,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return the last list element
    * @throws NoSuchElementException if the list is empty
    */
+  @Override
   public T getLast()
   {
-    if (size == 0)
+    if (size == 0){
       throw new NoSuchElementException();
+    }
     return last.data;
   }
 
@@ -255,18 +273,21 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return the former first element in the list
    * @throws NoSuchElementException if the list is empty
    */
+  @Override
   public T removeFirst()
   {
-    if (size == 0)
+    if (size == 0){
       throw new NoSuchElementException();
+    }
     modCount++;
     size--;
     T r = first.data;
 
-    if (first.next != null)
+    if (first.next != null){
       first.next.previous = null;
-    else
+    }else {
       last = null;
+    }
 
     first = first.next;
 
@@ -279,18 +300,21 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return the former last element in the list
    * @throws NoSuchElementException if the list is empty
    */
+  @Override
   public T removeLast()
   {
-    if (size == 0)
+    if (size == 0){
       throw new NoSuchElementException();
+    }
     modCount++;
     size--;
     T r = last.data;
 
-    if (last.previous != null)
+    if (last.previous != null){
       last.previous.next = null;
-    else
+    }else {
       first = null;
+    }
 
     last = last.previous;
 
@@ -302,19 +326,20 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *
    * @param o the element to insert
    */
+  @Override
   public void addFirst(T o)
   {
     Entry<T> e = new Entry(o);
 
     modCount++;
-    if (size == 0)
+    if (size == 0){
       first = last = e;
-    else
-      {
-        e.next = first;
-        first.previous = e;
-        first = e;
-      }
+    }else
+    {
+      e.next = first;
+      first.previous = e;
+      first = e;
+    }
     size++;
   }
 
@@ -323,6 +348,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *
    * @param o the element to insert
    */
+  @Override
   public void addLast(T o)
   {
     addLastEntry(new Entry<T>(o));
@@ -336,14 +362,14 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
   private void addLastEntry(Entry<T> e)
   {
     modCount++;
-    if (size == 0)
+    if (size == 0){
       first = last = e;
-    else
-      {
-        e.previous = last;
-        last.next = e;
-        last = e;
-      }
+    }else
+    {
+      e.previous = last;
+      last.next = e;
+      last = e;
+    }
     size++;
   }
 
@@ -354,15 +380,17 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @param o the element to look for
    * @return true if it is found
    */
+  @Override
   public boolean contains(Object o)
   {
     Entry<T> e = first;
     while (e != null)
-      {
-        if (AbstractCollection4D.equals(o, e.data))
-          return true;
-        e = e.next;
+    {
+      if (AbstractCollection4D.equals(o, e.data)) {
+        return true;
       }
+      e = e.next;
+    }
     return false;
   }
 
@@ -371,6 +399,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *
    * @return the list size
    */
+  @Override
   public int size()
   {
     return size;
@@ -382,6 +411,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @param o the entry to add
    * @return true, as it always succeeds
    */
+  @Override
   public boolean add(T o)
   {
     addLastEntry(new Entry<T>(o));
@@ -395,18 +425,19 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @param o the object to remove
    * @return true if an instance of the object was removed
    */
+  @Override
   public boolean remove(Object o)
   {
     Entry<T> e = first;
     while (e != null)
+    {
+      if (AbstractCollection4D.equals(o, e.data))
       {
-        if (AbstractCollection4D.equals(o, e.data))
-          {
-            removeEntry(e);
-            return true;
-          }
-        e = e.next;
+        removeEntry(e);
+        return true;
       }
+      e = e.next;
+    }
     return false;
   }
 
@@ -419,6 +450,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return true if the list was modified
    * @throws NullPointerException if c is null
    */
+  @Override
   public boolean addAll(Collection<? extends T> c)
   {
     return addAll(size, c);
@@ -434,13 +466,15 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @throws NullPointerException if c is null
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
+  @Override
   public boolean addAll(int index, Collection<? extends T> c)
   {
     checkBoundsInclusive(index);
     int csize = c.size();
 
-    if (csize == 0)
+    if (csize == 0){
       return false;
+    }
 
     Iterator<? extends T> itr = c.iterator();
 
@@ -450,12 +484,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
     Entry<T> after = null;
     Entry<T> before = null;
     if (index != size)
-      {
-        after = getEntry(index);
-        before = after.previous;
-      }
-    else
+    {
+      after = getEntry(index);
+      before = after.previous;
+    }else {
       before = last;
+    }
 
     // Create the first new entry. We do not yet set the link from `before'
     // to the first entry, in order to deal with the case where (c == this).
@@ -468,41 +502,44 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
 
     // Create and link all the remaining entries.
     for (int pos = 1; pos < csize; pos++)
-      {
-        e = new Entry<T>(itr.next());
-        e.previous = prev;
-        prev.next = e;
-        prev = e;
-      }
+    {
+      e = new Entry<T>(itr.next());
+      e.previous = prev;
+      prev.next = e;
+      prev = e;
+    }
 
     // Link the new chain of entries into the list.
     modCount++;
     size += csize;
     prev.next = after;
-    if (after != null)
+    if (after != null){
       after.previous = e;
-    else
+    }else {
       last = e;
+    }
 
-    if (before != null)
+    if (before != null){
       before.next = firstNew;
-    else
+    }else {
       first = firstNew;
+    }
     return true;
   }
 
   /**
    * Remove all elements from this list.
    */
+  @Override
   public void clear()
   {
     if (size > 0)
-      {
-        modCount++;
-        first = null;
-        last = null;
-        size = 0;
-      }
+    {
+      modCount++;
+      first = null;
+      last = null;
+      size = 0;
+    }
   }
 
   /**
@@ -512,6 +549,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return the element at index
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
+  @Override
   public T get(int index)
   {
     checkBoundsExclusive(index);
@@ -526,6 +564,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return the prior element
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
+  @Override
   public T set(int index, T o)
   {
     checkBoundsExclusive(index);
@@ -542,26 +581,28 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @param o the element to insert
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
+  @Override
   public void add(int index, T o)
   {
     checkBoundsInclusive(index);
     Entry<T> e = new Entry<T>(o);
 
     if (index < size)
-      {
-        modCount++;
-        Entry<T> after = getEntry(index);
-        e.next = after;
-        e.previous = after.previous;
-        if (after.previous == null)
-          first = e;
-        else
-          after.previous.next = e;
-        after.previous = e;
-        size++;
+    {
+      modCount++;
+      Entry<T> after = getEntry(index);
+      e.next = after;
+      e.previous = after.previous;
+      if (after.previous == null) {
+        first = e;
+      } else {
+        after.previous.next = e;
       }
-    else
+      after.previous = e;
+      size++;
+    }else {
       addLastEntry(e);
+    }
   }
 
   /**
@@ -571,6 +612,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return the removed element
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
+  @Override
   public T remove(int index)
   {
     checkBoundsExclusive(index);
@@ -585,17 +627,19 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @param o the element to look for
    * @return its position, or -1 if not found
    */
+  @Override
   public int indexOf(Object o)
   {
     int index = 0;
     Entry<T> e = first;
     while (e != null)
-      {
-        if (AbstractCollection4D.equals(o, e.data))
-          return index;
-        index++;
-        e = e.next;
+    {
+      if (AbstractCollection4D.equals(o, e.data)) {
+        return index;
       }
+      index++;
+      e = e.next;
+    }
     return -1;
   }
 
@@ -605,17 +649,19 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @param o the element to look for
    * @return its position, or -1 if not found
    */
+  @Override
   public int lastIndexOf(Object o)
   {
     int index = size - 1;
     Entry<T> e = last;
     while (e != null)
-      {
-        if (AbstractCollection4D.equals(o, e.data))
-          return index;
-        index--;
-        e = e.previous;
+    {
+      if (AbstractCollection4D.equals(o, e.data)) {
+        return index;
       }
+      index--;
+      e = e.previous;
+    }
     return -1;
   }
 
@@ -628,28 +674,30 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *        next(), or size() to be initially positioned at the end of the list
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
+  @Override
   public ListIterator<T> listIterator(int index)
   {
     checkBoundsInclusive(index);
     return new LinkedListItr<T>(index);
   }
-  
+
   /**
    * Create a shallow copy of this LinkedList (the elements are not cloned).
    *
    * @return an object of the same class as this object, containing the
    *         same elements in the same order
    */
+  @Override
   public Object clone()
   {
     LinkedList<T> copy = null;
     try
-      {
-        copy = (LinkedList<T>) super.clone();
-      }
+    {
+      copy = (LinkedList<T>) super.clone();
+    }
     catch (CloneNotSupportedException ex)
-      {
-      }
+    {
+    }
     copy.clear();
     copy.addAll(this);
     return copy;
@@ -660,15 +708,16 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *
    * @return an array containing the list elements
    */
+  @Override
   public Object[] toArray()
   {
     Object[] array = new Object[size];
     Entry<T> e = first;
     for (int i = 0; i < size; i++)
-      {
-        array[i] = e.data;
-        e = e.next;
-      }
+    {
+      array[i] = e.data;
+      e = e.next;
+    }
     return array;
   }
 
@@ -686,18 +735,20 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         an element in this list
    * @throws NullPointerException if a is null
    */
+  @Override
   public <S> S[] toArray(S[] a)
   {
-    if (a.length < size)
+    if (a.length < size){
       a = (S[]) Array.newInstance(a.getClass().getComponentType(), size);
-    else if (a.length > size)
+    }else if (a.length > size){
       a[size] = null;
+    }
     Entry<T> e = first;
     for (int i = 0; i < size; i++)
-      {
-        a[i] = (S) e.data;
-        e = e.next;
-      }
+    {
+      a[i] = (S) e.data;
+      e = e.next;
+    }
     return a;
   }
 
@@ -708,6 +759,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return true.
    * @since 1.5
    */
+  @Override
   public boolean offer(T value)
   {
     return add(value);
@@ -721,6 +773,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @throws NoSuchElementException if the list is empty.
    * @since 1.5
    */
+  @Override
   public T element()
   {
     return getFirst();
@@ -734,10 +787,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         if the list is empty.
    * @since 1.5
    */
+  @Override
   public T peek()
   {
-    if (size == 0)
+    if (size == 0){
       return null;
+    }
     return getFirst();
   }
 
@@ -748,10 +803,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         if the list is empty.
    * @since 1.5
    */
+  @Override
   public T poll()
   {
-    if (size == 0)
+    if (size == 0){
       return null;
+    }
     return removeFirst();
   }
 
@@ -762,6 +819,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @throws NoSuchElementException if the list is empty.
    * @since 1.5
    */
+  @Override
   public T remove()
   {
     return removeFirst();
@@ -775,7 +833,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @author Eric Blake (ebb9@email.byu.edu)
    */
   private final class LinkedListItr<I>
-    implements ListIterator<I>
+  implements ListIterator<I>
   {
     /** Number of modifications we know about. */
     private int knownMod = modCount;
@@ -800,15 +858,15 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
     LinkedListItr(int index)
     {
       if (index == size)
-        {
-          next = null;
-          previous = (Entry<I>) last;
-        }
+      {
+        next = null;
+        previous = (Entry<I>) last;
+      }
       else
-        {
-          next = (Entry<I>) getEntry(index);
-          previous = next.previous;
-        }
+      {
+        next = (Entry<I>) getEntry(index);
+        previous = next.previous;
+      }
       position = index;
     }
 
@@ -819,8 +877,9 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      */
     private void checkMod()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
+      }
     }
 
     /**
@@ -828,6 +887,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      *
      * @return the next index
      */
+    @Override
     public int nextIndex()
     {
       return position;
@@ -838,6 +898,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      *
      * @return the previous index
      */
+    @Override
     public int previousIndex()
     {
       return position - 1;
@@ -848,6 +909,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      *
      * @return true if next will succeed
      */
+    @Override
     public boolean hasNext()
     {
       return (next != null);
@@ -858,6 +920,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      *
      * @return true if previous will succeed
      */
+    @Override
     public boolean hasPrevious()
     {
       return (previous != null);
@@ -870,11 +933,13 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      * @throws ConcurrentModificationException if the list was modified
      * @throws NoSuchElementException if there is no next
      */
+    @Override
     public I next()
     {
       checkMod();
-      if (next == null)
+      if (next == null){
         throw new NoSuchElementException();
+      }
       position++;
       lastReturned = previous = next;
       next = lastReturned.next;
@@ -888,11 +953,13 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      * @throws ConcurrentModificationException if the list was modified
      * @throws NoSuchElementException if there is no previous
      */
+    @Override
     public I previous()
     {
       checkMod();
-      if (previous == null)
+      if (previous == null){
         throw new NoSuchElementException();
+      }
       position--;
       lastReturned = next = previous;
       previous = lastReturned.previous;
@@ -905,16 +972,19 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      * @throws ConcurrentModificationException if the list was modified
      * @throws IllegalStateException if there was no last element
      */
+    @Override
     public void remove()
     {
       checkMod();
-      if (lastReturned == null)
+      if (lastReturned == null){
         throw new IllegalStateException();
+      }
 
       // Adjust the position to before the removed element, if the element
       // being removed is behind the cursor.
-      if (lastReturned == previous)
+      if (lastReturned == previous){
         position--;
+      }
 
       next = lastReturned.next;
       previous = lastReturned.previous;
@@ -930,6 +1000,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      * @param o the element to add
      * @throws ConcurrentModificationException if the list was modified
      */
+    @Override
     public void add(I o)
     {
       checkMod();
@@ -941,15 +1012,17 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
       e.previous = previous;
       e.next = next;
 
-      if (previous != null)
+      if (previous != null){
         previous.next = e;
-      else
+      }else {
         first = (Entry<T>) e;
+      }
 
-      if (next != null)
+      if (next != null){
         next.previous = e;
-      else
+      }else {
         last = (Entry<T>) e;
+      }
 
       previous = e;
       lastReturned = null;
@@ -962,11 +1035,13 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
      * @throws ConcurrentModificationException if the list was modified
      * @throws IllegalStateException if there was no last element
      */
+    @Override
     public void set(I o)
     {
       checkMod();
-      if (lastReturned == null)
+      if (lastReturned == null){
         throw new IllegalStateException();
+      }
       lastReturned.data = o;
     }
   } // class LinkedListItr
@@ -978,6 +1053,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         reverse order.
    * @since 1.6
    */
+  @Override
   public Iterator<T> descendingIterator()
   {
     return new Iterator<T>()
@@ -1004,8 +1080,9 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
        */
       private void checkMod()
       {
-        if (knownMod != modCount)
+        if (knownMod != modCount) {
           throw new ConcurrentModificationException();
+        }
       }
 
       /**
@@ -1015,6 +1092,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
        * @return true if the start of the list has not yet been
        *         reached.
        */
+      @Override
       public boolean hasNext()
       {
         return next != null;
@@ -1029,14 +1107,16 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
        * @throws ConcurrentModificationException if the
        *         list has been modified elsewhere.
        */
+      @Override
       public T next()
       {
         checkMod();
-        if (next == null)
+        if (next == null) {
           throw new NoSuchElementException();
+        }
         --position;
-	lastReturned = next;
-	next = lastReturned.previous;
+        lastReturned = next;
+        next = lastReturned.previous;
         return lastReturned.data;
       }
 
@@ -1050,14 +1130,16 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
        *         before the start of the list or the last object has already
        *         been removed.
        */
+      @Override
       public void remove()
       {
         checkMod();
-        if (lastReturned == null)
+        if (lastReturned == null) {
           throw new IllegalStateException();
-	removeEntry(lastReturned);
-	lastReturned = null;
-	++knownMod;
+        }
+        removeEntry(lastReturned);
+        lastReturned = null;
+        ++knownMod;
       }
     };
   }
@@ -1069,6 +1151,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return true.
    * @since 1.6
    */
+  @Override
   public boolean offerFirst(T value)
   {
     addFirst(value);
@@ -1082,6 +1165,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return true.
    * @since 1.6
    */
+  @Override
   public boolean offerLast(T value)
   {
     return add(value);
@@ -1095,6 +1179,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         if the list is empty.
    * @since 1.6
    */
+  @Override
   public T peekFirst()
   {
     return peek();
@@ -1108,10 +1193,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         if the list is empty.
    * @since 1.6
    */
+  @Override
   public T peekLast()
   {
-    if (size == 0)
+    if (size == 0){
       return null;
+    }
     return getLast();
   }
 
@@ -1122,6 +1209,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         if the list is empty.
    * @since 1.6
    */
+  @Override
   public T pollFirst()
   {
     return poll();
@@ -1134,10 +1222,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    *         if the list is empty.
    * @since 1.6
    */
+  @Override
   public T pollLast()
   {
-    if (size == 0)
+    if (size == 0){
       return null;
+    }
     return removeLast();
   }
 
@@ -1152,6 +1242,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @since 1.6
    * @see #removeFirst()
    */
+  @Override
   public T pop()
   {
     return removeFirst();
@@ -1167,11 +1258,12 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @since 1.6
    * @see #addFirst(T)
    */
+  @Override
   public void push(T value)
   {
     addFirst(value);
   }
-  
+
   /**
    * Removes the first occurrence of the specified element
    * from the list, when traversing the list from head to
@@ -1182,6 +1274,7 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return true if an instance of the object was removed.
    * @since 1.6
    */
+  @Override
   public boolean removeFirstOccurrence(Object o)
   {
     return remove(o);
@@ -1196,18 +1289,19 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
    * @return true if an instance of the object was removed.
    * @since 1.6
    */
+  @Override
   public boolean removeLastOccurrence(Object o)
   {
     Entry<T> e = last;
     while (e != null)
+    {
+      if (AbstractCollection4D.equals(o, e.data))
       {
-	if (AbstractCollection4D.equals(o, e.data))
-	  {
-	    removeEntry(e);
-	    return true;
-	  }
-	e = e.previous;
+        removeEntry(e);
+        return true;
       }
+      e = e.previous;
+    }
     return false;
   }
 

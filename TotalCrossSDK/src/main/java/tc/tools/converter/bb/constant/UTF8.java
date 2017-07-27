@@ -18,25 +18,29 @@ import totalcross.io.IOException;
 
 public class UTF8 implements ConstantInfo
 {
-   public java.lang.String value;
+  public java.lang.String value;
 
-   public java.lang.String toString()
-   {
-      return value;
-   }
+  @Override
+  public java.lang.String toString()
+  {
+    return value;
+  }
 
-   public int length()
-   {
-      return 2 + value.length();
-   }
+  @Override
+  public int length()
+  {
+    return 2 + value.length();
+  }
 
-   public void load(DataStream ds) throws IOException
-   {
-      value = ds.readString();
-   }
+  @Override
+  public void load(DataStream ds) throws IOException
+  {
+    value = ds.readString();
+  }
 
-   public void save(DataStream ds) throws IOException
-   {
-      ds.writeString(value);
-   }
+  @Override
+  public void save(DataStream ds) throws IOException
+  {
+    ds.writeString(value);
+  }
 }

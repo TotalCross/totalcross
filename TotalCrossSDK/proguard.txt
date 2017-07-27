@@ -1,0 +1,99 @@
+-keepattributes Exceptions
+-keepattributes InnerClasses
+-dontshrink
+-repackageclasses 'z'
+-dontoptimize
+-overloadaggressively
+-ignorewarnings
+-printmapping 'out.map'
+# removes classes 4D
+-assumenosideeffects class * {
+! *4D(...);
+}
+-keep public class litebase.** {
+	public protected <fields>;
+    public protected <methods>;
+}
+
+# keep classes on "totalcross" package
+-keep class totalcross.** {
+	<fields>;
+    <methods>;
+}
+
+# keep classes on package "jdkcompat"
+-keep class jdkcompat.** {
+	<fields>;
+    <methods>;
+}
+
+# keep classes on package "jdkcompatx"
+-keep class jdkcompatx.** {
+	<fields>;
+    <methods>;
+}
+
+# public classes on the "ras" package
+-keep public class ras.** 
+
+# anything on the "org" package
+-keep class org.** {
+	<fields>;
+    <methods>;
+}
+
+-keep class PostInstall
+-keep class tc.tools.converter.ConverterException {
+	*;
+}
+-keep class tc.Help {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.Deploy* {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.deployer.LinuxBuildNatives* {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.deployer.Deployer4IPhone$* {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.deployer.zip.BlackHoleOutputStream {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.deployer.zip.Deployer4WP8$CopyZipFilter {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.deployer.bzip2.* {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.NativeMethodsPrototypeGenerator {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.FontGenerator {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class tc.tools.RegisterSDK* {
+	public <fields>;
+	public <methods>;
+}
+-keep class tc.tools.SW2TC {
+	public protected <fields>;
+	public protected <methods>;
+}
+# keep some method names, otherwise Hashtable class and dump will not work.
+-keepclassmembernames class ** {
+	*** toString();
+	*** equals(...);
+	*** hashCode();
+	*** finalize();	
+}

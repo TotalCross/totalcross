@@ -18,29 +18,31 @@ import totalcross.io.IOException;
 
 public class Hello extends Packet
 {
-   private int version;
-   
-   public Hello()
-   {
-   }
-   
-   public Hello(int version)
-   {
-      this.version = version;
-   }
-   
-   public int getVersion()
-   {
-      return version;
-   }
-   
-   protected void read(DataStream ds) throws IOException
-   {
-      version = ds.readInt();
-   }
+  private int version;
 
-   protected void write(DataStream ds) throws IOException
-   {
-      ds.writeInt(version);
-   }
+  public Hello()
+  {
+  }
+
+  public Hello(int version)
+  {
+    this.version = version;
+  }
+
+  public int getVersion()
+  {
+    return version;
+  }
+
+  @Override
+  protected void read(DataStream ds) throws IOException
+  {
+    version = ds.readInt();
+  }
+
+  @Override
+  protected void write(DataStream ds) throws IOException
+  {
+    ds.writeInt(version);
+  }
 }

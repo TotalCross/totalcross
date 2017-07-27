@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="etc/fonts"/>
+	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry excluding="tc/tools/PostInstall.java" kind="src" path="src/main/java"/>
 	<classpathentry kind="lib" path="etc/tools/jdeb/lib/ant.jar"/>
@@ -26,5 +27,8 @@
 	<classpathentry kind="lib" path="etc/libs/jna-platform-4.2.2.jar"/>
 	<classpathentry kind="lib" path="etc/libs/slf4j-api-1.7.21.jar"/>
 	<classpathentry kind="lib" path="etc/libs/jna-4.2.2.jar"/>
+	<classpathentry kind="lib" path="etc/libs/asm-5.2.jar"/>
+	<classpathentry kind="lib" path="etc/libs/asm-tree-5.2.jar"/>
+	<classpathentry kind="lib" path="etc/libs/totalcross-annotations-1.0.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

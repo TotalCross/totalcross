@@ -12,8 +12,9 @@
 
 
 package totalcross.db.sqlite.ui;
-import totalcross.ui.gfx.*;
-import totalcross.ui.*;
+import totalcross.ui.Control;
+import totalcross.ui.ListBox;
+import totalcross.ui.gfx.Graphics;
 
 /**
  * DBListBox is a simple implementation of a Listbox.
@@ -63,236 +64,272 @@ import totalcross.ui.*;
 
 public class DBListBox extends ListBox
 {
-   /** The String items */
-   protected String [][]sitems;
+  /** The String items */
+  protected String [][]sitems;
 
-   /** Creates an empty Listbox. */
-   public DBListBox()
-   {
-      this(null,-1);
-   }
+  /** Creates an empty Listbox. */
+  public DBListBox()
+  {
+    this(null,-1);
+  }
 
-   /** Creates a Listbox with the given items. */
-   public DBListBox(String[][] items, int displayCol)
-   {
-      super((Object[])null);
-      if (items != null)
-      {
-         sitems = items;
-         itemCount = items.length;
-      }
-      this.dataCol = displayCol;
-   }
+  /** Creates a Listbox with the given items. */
+  public DBListBox(String[][] items, int displayCol)
+  {
+    super((Object[])null);
+    if (items != null)
+    {
+      sitems = items;
+      itemCount = items.length;
+    }
+    this.dataCol = displayCol;
+  }
 
-   /** Sets the column of the String matrix that will be used to display the
-     * elements.
-     */
-   public void setDisplayCol(int displayCol)
-   {
-      this.dataCol = displayCol;
-   }
-   
-   /** Returns the number of columns, if there are items.
-    */
-   public int getColumnCount()
-   {
-      return sitems == null || sitems.length == 0 ? 1 : sitems[0].length;
-   }
+  /** Sets the column of the String matrix that will be used to display the
+   * elements.
+   */
+  public void setDisplayCol(int displayCol)
+  {
+    this.dataCol = displayCol;
+  }
 
-   /** <b>REPLACES</b> the current items with the given ones. */
-   public void add(Object []items)
-   {
-      if (items instanceof String[][])
-      {
-         sitems = (String[][])items;
-         itemCount = sitems.length;
-         sbar.setEnabled(isEnabled() && visibleItems < itemCount);
-         sbar.setMaximum(itemCount); // guich@210_12: forgot this line!
-      }
-   }
+  /** Returns the number of columns, if there are items.
+   */
+  public int getColumnCount()
+  {
+    return sitems == null || sitems.length == 0 ? 1 : sitems[0].length;
+  }
 
-   /** <b>REPLACES</b> the current items with the given ones. */
-   public void add(Object item)
-   {
-      if (item instanceof String[][])
-         add((Object[])item);
-   }
+  /** <b>REPLACES</b> the current items with the given ones. */
+  @Override
+  public void add(Object []items)
+  {
+    if (items instanceof String[][])
+    {
+      sitems = (String[][])items;
+      itemCount = sitems.length;
+      sbar.setEnabled(isEnabled() && visibleItems < itemCount);
+      sbar.setMaximum(itemCount); // guich@210_12: forgot this line!
+    }
+  }
 
-   /** Does nothing */
-   public void insert(Object item, int index)
-   {
-   }
+  /** <b>REPLACES</b> the current items with the given ones. */
+  @Override
+  public void add(Object item)
+  {
+    if (item instanceof String[][]){
+      add((Object[])item);
+    }
+  }
 
-   /** Empties this ListBox, setting all elements of the array to <code>null</code>
+  /** Does nothing */
+  @Override
+  public void insert(Object item, int index)
+  {
+  }
+
+  /** Empties this ListBox, setting all elements of the array to <code>null</code>
        so they can be garbage collected.
        <b>Attention!</b> If you used the same object array
        to initialize two ListBoxes (or ComboBoxes), this method will null both ListBoxes
        ('cos they use the same array reference),
        and you'll get a null pointer exception!
-    */
-   public void removeAll() // guich@210_13
-   {
-      sitems = null;
-      sbar.setMaximum(0);
-      itemCount = 0;
-      offset=0;  // wolfgang@330_23
-      repaint();
-   }
+   */
+  @Override
+  public void removeAll() // guich@210_13
+  {
+    sitems = null;
+    sbar.setMaximum(0);
+    itemCount = 0;
+    offset=0;  // wolfgang@330_23
+    repaint();
+  }
 
-   /** Does nothing */
-   public void remove(int itemIndex) // guich@200final_12: new method
-   {
-   }
+  /** Does nothing */
+  @Override
+  public void remove(int itemIndex) // guich@200final_12: new method
+  {
+  }
 
-   /** Does nothing */
-   public void remove(Object item)
-   {
-   }
+  /** Does nothing */
+  @Override
+  public void remove(Object item)
+  {
+  }
 
-   /** Does nothing */
-   public void setItemAt(int i, Object s)
-   {
-   }
+  /** Does nothing */
+  @Override
+  public void setItemAt(int i, Object s)
+  {
+  }
 
-   /** Get the Object at the given Index. Returns a String array, or null if i is out of range. */
-   public Object getItemAt(int i)
-   {
-      if (0 <= i && i < itemCount)
-         return sitems[i];
-      return null;
-   }
+  /** Get the Object at the given Index. Returns a String array, or null if i is out of range. */
+  @Override
+  public Object getItemAt(int i)
+  {
+    if (0 <= i && i < itemCount){
+      return sitems[i];
+    }
+    return null;
+  }
 
-   /** Returns the selected item of the Listbox or null if none is selected */
-   public Object getSelectedItem()
-   {
-      return selectedIndex >= 0 ? sitems[selectedIndex] : null;
-   }
+  /** Returns the selected item of the Listbox or null if none is selected */
+  @Override
+  public Object getSelectedItem()
+  {
+    return selectedIndex >= 0 ? sitems[selectedIndex] : null;
+  }
 
-   /** Returns the position of the selected item of the Listbox or -1 if the listbox has no selected index yet. */
-   public int getSelectedIndex()
-   {
-      return selectedIndex;
-   }
+  /** Returns the position of the selected item of the Listbox or -1 if the listbox has no selected index yet. */
+  @Override
+  public int getSelectedIndex()
+  {
+    return selectedIndex;
+  }
 
-   /** Returns all items in this ListBox. The array can be casted to String[][].
-     */
-   public Object []getItems()
-   {
-      return sitems;
-   }
+  /** Returns all items in this ListBox. The array can be casted to String[][].
+   */
+  @Override
+  public Object []getItems()
+  {
+    return sitems;
+  }
 
-   protected Object []getItemsArray()
-   {
-      return sitems;
-   }
+  @Override
+  protected Object []getItemsArray()
+  {
+    return sitems;
+  }
 
-   /** Returns the index of the object at the given column. */
-   public int indexOf(Object name, int col)
-   {
-      for (int i = 0; i < sitems.length; i++)
-         if (sitems[i][col].equals(name))
-            return i;
-      return -1;
-   }
-
-   /** Select an item and scroll to it if necessary. Note: select must be called only after the control has been added to the container and its rect has been set. */
-   public void setSelectedIndex(int i)
-   {
-      if (0 <= i && i < itemCount && i != selectedIndex/* && height != 0*/) // flsobral@220_14: commented height!=0 otherwise combobox are not properly set. (same problem observed with listbox)
-      {
-         offset=i;
-         int vi = sbar.getVisibleItems();
-         int ma = sbar.getMaximum();
-         if (offset+vi > ma) // astein@200b4_195: fix list items from being lost when the comboBox.setSelectedIndex() method is used
-           offset=Math.max(ma-vi,0); // guich@220_4: fixed bug when the listbox is greater than the current item count
-
-         selectedIndex = i;
-         sbar.setValue(offset); // guich@210_9: fixed scrollbar update when selecting items
-         repaint();
+  /** Returns the index of the object at the given column. */
+  public int indexOf(Object name, int col)
+  {
+    for (int i = 0; i < sitems.length; i++) {
+      if (sitems[i][col].equals(name)) {
+        return i;
       }
-      else
+    }
+    return -1;
+  }
+
+  /** Select an item and scroll to it if necessary. Note: select must be called only after the control has been added to the container and its rect has been set. */
+  @Override
+  public void setSelectedIndex(int i)
+  {
+    if (0 <= i && i < itemCount && i != selectedIndex/* && height != 0*/) // flsobral@220_14: commented height!=0 otherwise combobox are not properly set. (same problem observed with listbox)
+    {
+      offset=i;
+      int vi = sbar.getVisibleItems();
+      int ma = sbar.getMaximum();
+      if (offset+vi > ma)
+      {
+        offset=Math.max(ma-vi,0); // guich@220_4: fixed bug when the listbox is greater than the current item count
+      }
+
+      selectedIndex = i;
+      sbar.setValue(offset); // guich@210_9: fixed scrollbar update when selecting items
+      repaint();
+    }
+    else
       if (i == -1) // guich@200b4_191: unselect all items
       {
-         offset = 0;
-         sbar.setValue(0);
-         selectedIndex = -1;
-         repaint();
+        offset = 0;
+        sbar.setValue(0);
+        selectedIndex = -1;
+        repaint();
       }
-   }
+  }
 
-   /** Returns the number of items */
-   public int size()
-   {
-      return itemCount;
-   }
+  /** Returns the number of items */
+  @Override
+  public int size()
+  {
+    return itemCount;
+  }
 
-   /** Does nothing */
-   public void add(Control control)
-   {
-   }
-   /** Does nothing */
-   public void remove(Control control)
-   {
-   }
+  /** Does nothing */
+  @Override
+  public void add(Control control)
+  {
+  }
+  /** Does nothing */
+  @Override
+  public void remove(Control control)
+  {
+  }
 
-   /** Does nothing */
-   protected void find(char c)
-   {
-   }
+  /** Does nothing */
+  @Override
+  protected void find(char c)
+  {
+  }
 
-   /** You can extend ListBox and overide this method to draw the items */
-   protected void drawItem(Graphics g, int index, int dx, int dy)
-   {
-      //Vm. debug(this+" index: "+index+", items.size: "+items.size()+", dx,dy = "+dx+","+dy);
-      if (0 <= index && index < itemCount)
-         g.drawText(sitems[index][dataCol],dx,dy);
-   }
+  /** You can extend ListBox and overide this method to draw the items */
+  @Override
+  protected void drawItem(Graphics g, int index, int dx, int dy)
+  {
+    //Vm. debug(this+" index: "+index+", items.size: "+items.size()+", dx,dy = "+dx+","+dy);
+    if (0 <= index && index < itemCount){
+      g.drawText(sitems[index][dataCol],dx,dy);
+    }
+  }
 
-   /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
-   protected int getItemWidth(int index)
-   {
-      if (sitems == null) return 0;
-      return fm.stringWidth(sitems[index][dataCol]);
-   }
+  /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
+  @Override
+  protected int getItemWidth(int index)
+  {
+    if (sitems == null){
+      return 0;
+    }
+    return fm.stringWidth(sitems[index][dataCol]);
+  }
 
-   private void qsort(int first, int last) // guich@220_34
-   {
-      String[][] sitems = this.sitems;
-      int low = first;
-      int high = last;
-      if (first >= last)
-         return;
-      String mid = sitems[(first+last) >> 1][dataCol];
-      while (true)
+  private void qsort(int first, int last) // guich@220_34
+  {
+    String[][] sitems = this.sitems;
+    int low = first;
+    int high = last;
+    if (first >= last){
+      return;
+    }
+    String mid = sitems[(first+last) >> 1][dataCol];
+    while (true)
+    {
+      while (high >= low && mid.compareTo(sitems[low][dataCol])  > 0) {
+        low++;
+      }
+      while (high >= low && mid.compareTo(sitems[high][dataCol]) < 0) {
+        high--;
+      }
+      if (low <= high)
       {
-         while (high >= low && mid.compareTo(sitems[low][dataCol])  > 0) // guich@_566_25: added "high > low" here and below - guich@_568_5: changed to >=
-            low++;
-         while (high >= low && mid.compareTo(sitems[high][dataCol]) < 0)
-            high--;
-         if (low <= high)
-         {
-            String []temp = sitems[low];
-            sitems[low++] = sitems[high];
-            sitems[high--] = temp;
-         }
-         else break;
+        String []temp = sitems[low];
+        sitems[low++] = sitems[high];
+        sitems[high--] = temp;
+      } else {
+        break;
       }
-      if (first < high)
-         qsort(first,high);
-      if (low < last)
-         qsort(low,last);
-   }
+    }
+    if (first < high){
+      qsort(first,high);
+    }
+    if (low < last){
+      qsort(low,last);
+    }
+  }
 
-   /** Sorts the elements of this ListBox. The current selection is cleared. */
-   public void qsort()
-   {
-      qsort(0,itemCount-1);
-      setSelectedIndex(-1);
-   }
+  /** Sorts the elements of this ListBox. The current selection is cleared. */
+  @Override
+  public void qsort()
+  {
+    qsort(0,itemCount-1);
+    setSelectedIndex(-1);
+  }
 
-   public String getText()
-   {
-      return selectedIndex < 0 ? "" : sitems[selectedIndex][dataCol];
-   }
+  @Override
+  public String getText()
+  {
+    return selectedIndex < 0 ? "" : sitems[selectedIndex][dataCol];
+  }
 
 }

@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class NumberFormatException4D extends IllegalArgumentException
 {
-   /** Constructs an empty Exception. */
-   public NumberFormatException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public NumberFormatException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public NumberFormatException4D(String message)
-   {
-      super(message);
-   }
+  /** Constructs an exception with the given message. */
+  public NumberFormatException4D(String message)
+  {
+    super(message);
+  }
 }

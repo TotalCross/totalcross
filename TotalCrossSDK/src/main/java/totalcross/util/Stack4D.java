@@ -40,7 +40,7 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.EmptyStackException;
 import java.util.Vector;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -103,8 +103,9 @@ public class Stack4D<T> extends Vector<T>
   @SuppressWarnings("unchecked")
   public synchronized T pop()
   {
-    if (elementCount == 0)
+    if (elementCount == 0){
       throw new EmptyStackException();
+    }
 
     modCount++;
     T obj = (T) elementData[--elementCount];
@@ -123,8 +124,9 @@ public class Stack4D<T> extends Vector<T>
   @SuppressWarnings("unchecked")
   public synchronized T peek()
   {
-    if (elementCount == 0)
+    if (elementCount == 0){
       throw new EmptyStackException();
+    }
 
     return (T) elementData[elementCount - 1];
   }
@@ -151,9 +153,11 @@ public class Stack4D<T> extends Vector<T>
   public synchronized int search(Object o)
   {
     int i = elementCount;
-    while (--i >= 0)
-      if (AbstractCollection4D.equals(o, elementData[i]))
+    while (--i >= 0){
+      if (AbstractCollection4D.equals(o, elementData[i])){
         return elementCount - i;
+      }
+    }
     return -1;
   }
 }

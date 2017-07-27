@@ -16,9 +16,13 @@
 
 package totalcross.game;
 
-import totalcross.sys.*;
-import totalcross.ui.image.*;
-import totalcross.ui.event.*;
+import totalcross.sys.SpecialKeys;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.KeyEvent;
+import totalcross.ui.event.PenEvent;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /**
  * An animated button control.
@@ -78,20 +82,20 @@ public class AnimatedButton extends Animation
 
   private final static int IDLE = -1;
 
-   /**
-    * Animated button constructor.
-    * 
-    * @param frames Button different states frames in multi-frame BMP format.
-    * @param states Number of states of the button.
-    * @param framesPerState Number of frames for each state.
-    * @param layoutType <code>FADE_OUT_LAYOUT</code>, <code>FADE_IN_LAYOUT</code>, or <code>FADE_OUT_IN_LAYOUT</code>.
-    * @param framePeriod Delay in milliseconds between two frames.
-    * @throws ImageException If an internal method throws it.
-    * 
-    * @see #FADE_OUT_LAYOUT
-    * @see #FADE_IN_LAYOUT
-    * @see #FADE_OUT_IN_LAYOUT
-    */
+  /**
+   * Animated button constructor.
+   * 
+   * @param frames Button different states frames in multi-frame BMP format.
+   * @param states Number of states of the button.
+   * @param framesPerState Number of frames for each state.
+   * @param layoutType <code>FADE_OUT_LAYOUT</code>, <code>FADE_IN_LAYOUT</code>, or <code>FADE_OUT_IN_LAYOUT</code>.
+   * @param framePeriod Delay in milliseconds between two frames.
+   * @throws ImageException If an internal method throws it.
+   * 
+   * @see #FADE_OUT_LAYOUT
+   * @see #FADE_IN_LAYOUT
+   * @see #FADE_OUT_IN_LAYOUT
+   */
   public AnimatedButton(Image frames,int states,int framesPerState,int layoutType, int framePeriod) throws ImageException // fdie@341_2
   {
     super(frames,states * framesPerState,framePeriod);
@@ -100,8 +104,9 @@ public class AnimatedButton extends Animation
     this.layoutType = layoutType;
     this.maxStates = states;
     statesIndexes = new int[states];
-    for (int s=0; s<states; s++)
+    for (int s=0; s<states; s++) {
       statesIndexes[s] = (layoutType==FADE_IN_LAYOUT) ? ((s+1)*framesPerState)-1 : s*framesPerState;
+    }
 
     curFrame = statesIndexes[state=0];
     fadeInState = IDLE;
@@ -141,45 +146,49 @@ public class AnimatedButton extends Animation
    * 
    * @param event The event being handled.
    */
+  @Override
   public void onEvent(Event event)
   {
-     switch (event.type)
-     {
-        case PenEvent.PEN_DOWN:
-           if (fadeInState==IDLE)
-              inc(((PenEvent)event).x >= (width>>1));
-           break;
-        case KeyEvent.SPECIAL_KEY_PRESS:
-          if (fadeInState==IDLE)
-          {
-            int key = ((KeyEvent)event).key;
-            if (key == SpecialKeys.ACTION || key == SpecialKeys.ENTER)
-              inc(true);
-          }
-          break;
-        case AnimationEvent.FINISH:
-         if (fadeInState!=IDLE)
-         {
-           state=fadeInState;
-           fadeInState=IDLE;
-           if (layoutType==FADE_OUT_IN_LAYOUT)
-           {
-             postPressedEvent();
-             return;
-           }
-           int dest=statesIndexes[state];
-           if (layoutType!=FADE_IN_LAYOUT)
-              start(dest+framesPerState-1,dest,-1,1);
-           else
-              start(dest-framesPerState+1,dest,1,1);
-         }
-         break;
-        case ControlEvent.PRESSED:
-           postPressedEvent();
-          break;
-        default: // pass timer events to the parent
-           super.onEvent(event);
-     }
+    switch (event.type)
+    {
+    case PenEvent.PEN_DOWN:
+      if (fadeInState==IDLE) {
+        inc(((PenEvent)event).x >= (width>>1));
+      }
+      break;
+    case KeyEvent.SPECIAL_KEY_PRESS:
+      if (fadeInState==IDLE)
+      {
+        int key = ((KeyEvent)event).key;
+        if (key == SpecialKeys.ACTION || key == SpecialKeys.ENTER) {
+          inc(true);
+        }
+      }
+      break;
+    case AnimationEvent.FINISH:
+      if (fadeInState!=IDLE)
+      {
+        state=fadeInState;
+        fadeInState=IDLE;
+        if (layoutType==FADE_OUT_IN_LAYOUT)
+        {
+          postPressedEvent();
+          return;
+        }
+        int dest=statesIndexes[state];
+        if (layoutType!=FADE_IN_LAYOUT) {
+          start(dest+framesPerState-1,dest,-1,1);
+        } else {
+          start(dest-framesPerState+1,dest,1,1);
+        }
+      }
+      break;
+    case ControlEvent.PRESSED:
+      postPressedEvent();
+      break;
+    default: // pass timer events to the parent
+      super.onEvent(event);
+    }
   }
 
   /**
@@ -192,13 +201,14 @@ public class AnimatedButton extends Animation
     int dir=up ? 1:-1;
     int dest=(state+maxStates+dir) % maxStates;
     int src=statesIndexes[state];
-    if (layoutType==FADE_OUT_IN_LAYOUT)
-       start(src,statesIndexes[dest],dir,1);
-    else
-    if (layoutType!=FADE_IN_LAYOUT)
-       start(src,src+framesPerState-1,1,1);
-    else
-       start(src,src-framesPerState+1,-1,1);
+    if (layoutType==FADE_OUT_IN_LAYOUT){
+      start(src,statesIndexes[dest],dir,1);
+    }else
+      if (layoutType!=FADE_IN_LAYOUT){
+        start(src,src+framesPerState-1,1,1);
+      }else {
+        start(src,src-framesPerState+1,-1,1);
+      }
     fadeInState=dest;
   }
 }

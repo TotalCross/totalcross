@@ -18,9 +18,9 @@ import totalcross.io.IOException;
 
 public interface JavaClassStructure
 {
-   public int length();
+  public int length();
 
-   public void load(DataStream ds) throws IOException;
+  public void load(DataStream ds) throws IOException;
 
-   public void save(DataStream ds) throws IOException;
+  public void save(DataStream ds) throws IOException;
 }

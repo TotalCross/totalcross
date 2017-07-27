@@ -22,8 +22,8 @@ package totalcross.ui.event;
 
 public interface TimerListener
 {
-   /** A TRIGGERED event was dispatched.
-    * @see TimerEvent 
-    */
-   public void timerTriggered(TimerEvent e);
+  /** A TRIGGERED event was dispatched.
+   * @see TimerEvent 
+   */
+  public void timerTriggered(TimerEvent e);
 }

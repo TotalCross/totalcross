@@ -36,12 +36,12 @@ package totalcross.json.zip;
  * encapsulation.
  */
 public interface PostMortem {
-    /**
-     * Determine if two objects are equivalent.
-     *
-     * @param pm
-     *            Another object of the same type.
-     * @return true if they match.
-     */
-    public boolean postMortem(PostMortem pm);
+  /**
+   * Determine if two objects are equivalent.
+   *
+   * @param pm
+   *            Another object of the same type.
+   * @return true if they match.
+   */
+  public boolean postMortem(PostMortem pm);
 }

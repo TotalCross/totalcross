@@ -21,15 +21,20 @@ package totalcross.ui.html;
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //!!!!  REMEMBER THAT ANY CHANGE YOU MAKE IN THIS CODE MUST BE SENT BACK TO SUPERWABA COMPANY     !!!!
-//!!!!  LEMBRE-SE QUE QUALQUER ALTERACAO QUE SEJA FEITO NESSE CODIGO DEVER¡ SER ENVIADA PARA NOS  !!!!
+//!!!!  LEMBRE-SE QUE QUALQUER ALTERACAO QUE SEJA FEITO NESSE CODIGO DEVER√Å SER ENVIADA PARA NOS  !!!!
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.html.Document.*;
-import totalcross.util.*;
-import totalcross.xml.*;
+import totalcross.sys.Convert;
+import totalcross.sys.Settings;
+import totalcross.sys.Vm;
+import totalcross.ui.Container;
+import totalcross.ui.Control;
+import totalcross.ui.ScrollContainer;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.html.Document.CustomLayout;
+import totalcross.ui.html.Document.SizeDelimiter;
+import totalcross.ui.html.Document.StopLayout;
+import totalcross.util.IntVector;
+import totalcross.xml.AttributeList;
 
 /**
  * <code>Table</code> is the Tile associated to the &lt;TABLE&gt; tag.
@@ -64,17 +69,21 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
       spacing = atts.getAttributeValueAsInt("cellspacing",0);
       padding = atts.getAttributeValueAsInt("cellpadding",0);
       String s = atts.getAttributeValue("width");
-      if (s != null)
+    if (s != null){
       try
       {
          int perc = s.indexOf('%');
-         if (perc > 0)
+        if (perc > 0) {
             prefW = -Convert.toInt(s.substring(0,perc));
-         else
+        } else {
             prefW = Convert.toInt(s);
       }
-      catch (Exception e) {if (Settings.onJavaSE) Vm.debug("Exception on Table's constructor: "+e+" "+e.getMessage()+"");}
    }
+      catch (Exception e) {if (Settings.onJavaSE){
+        Vm.debug("Exception on Table's constructor: "+e+" "+e.getMessage()+"");
+      }}
+    }
+  }
 
    /**
     * Add a row to the table
@@ -130,17 +139,19 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
       int rows = colsPerRow.size();
       Control [][]matrix = new Control[maxRowspan][maxColspan];
       // first, colspan: fill the span columns with CellSpan objects
-      for (int r = 0,i=cs.length,jj=0; r < rows; r++,jj++)
+    for (int r = 0,i=cs.length,jj=0; r < rows; r++,jj++) {
          for (int c = 0,ii=0,maxCols = colsPerRow.items[r]; c < maxCols; c++,ii++)
          {
             Cell cell = (Cell)(matrix[jj][ii] = cs[--i]);
             if (cell.colspan > 1)
             {
-               for (int z = 1; z < cell.colspan; z++)
+          for (int z = 1; z < cell.colspan; z++) {
                   matrix[jj][ii+z] = new CellSpan(cell);
+          }
                ii += cell.colspan - 1;
             }
          }
+    }
       
       /* now, rowspan: shift columns to right when a rowspan is found (C=Cell, S=CellSpan, 0=null - see Sample6 in HtmlBrowser)
             C C C C      C C C C 
@@ -149,13 +160,14 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
             C C C C      C C C C 
             C S C 0      S C S C 
             C 0 0 0      S S S C      */      
-      for (int c = 0; c < maxColspan; c++)
+    for (int c = 0; c < maxColspan; c++) {
          for (int r = 0; r < maxRowspan; r++)
          {
             Control control = (Control)matrix[r][c];
             Cell cell = control instanceof CellSpan ? ((CellSpan)control).owner : (Cell)control;
-            if (cell == null) // guich@tc114_22
+        if (cell == null) {
                continue;
+        }
             int rowspan = cell.rowspan;
             if (rowspan > 1)
             {
@@ -168,10 +180,12 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
                r += rowspan - 1;
             }
          }
+    }
       // dump - for (int i = 0; i < rows; i++) for (int j =0; j < maxColspan; j++) System.out.print((matrix[i][j] == null ? "0 " : matrix[i][j] instanceof Cell ? "C " : "S ")+(j==maxColspan-1?"\n":""));
       return matrix;
    }
    
+  @Override
    public void layout(LayoutContext lc)
    {
       this.width = this.height = 4096; // temporary
@@ -182,16 +196,16 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
       Control [][]matrix = adjustSpan();
       // 2. we place the cells along the table
       int xx = 0, yy = 0, ww,hh;
-      for (int r = 0; r < maxRowspan; r++)
+    for (int r = 0; r < maxRowspan; r++) {
          for (int c = 0; c < maxColspan; c++)
          {
             Control control = (Control)matrix[r][c];
             if (control instanceof CellSpan)
             {
                Cell cell = ((CellSpan)control).owner;
-               if (c == 0)
+          if (c == 0) {
                   ww = cell.getWidth();
-               else
+          } else
                {
                   Control c1 = matrix[r][c-1];
                   Cell cell1 = c1 instanceof CellSpan ? ((CellSpan)c1).owner : (Cell)c1;
@@ -206,14 +220,17 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
                hh = maxRowHeights[r];
                if (cell != null) // guich@tc114_22: google.com.br?
                {
-                  if (cell.colspan > 1)
-                     for (int cs = cell.colspan; --cs >= 1;)
+            if (cell.colspan > 1) {
+              for (int cs = cell.colspan; --cs >= 1;) {
                         ww += colMaxWidths[c+cs];
+              }
+            }
                   if (cell.rowspan > 1)
                   {
                      hh = 0;
-                     for (int cs = cell.rowspan; --cs >= 0;)
+              for (int cs = cell.rowspan; --cs >= 0;) {
                         hh += maxRowHeights[r+cs];
+              }
                      hh = Math.max(cell.getPreferredHeight(),hh); // if the cell has a height bigger than the sum of the other rows, use it
                   }
                   cell.setRect(xx,yy,ww,hh);
@@ -226,21 +243,25 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
                xx = 0;
             }
          }
+    }
       resize();
       setRect(lc.nextX,lc.nextY,PREFERRED+k+k,PREFERRED+k+k);
       lc.disjoin();
    }
    
+  @Override
    public void onPaint(Graphics g)
    {
       g.backColor = style.backColor;
       g.fillRect(0,0,width,height);
       super.onPaint(g);
       // paint Table's border
-      for (int i = borderWidth; --i >= 0;)
+    for (int i = borderWidth; --i >= 0;) {
          g.drawRect(i,i,width-i-i,height-i-i);
    }
+  }
    
+  @Override
    public int getMaxWidth()
    {
       colMaxWidths = new int[maxColspan];
@@ -256,24 +277,30 @@ class Table extends ScrollContainer implements CustomLayout, StopLayout, SizeDel
             Cell cell = (Cell)cs[--i];
             // compute max width
             int w = cell.getMaxWidth();
-            if (w > colMaxWidths[c])
+        if (w > colMaxWidths[c]) {
                colMaxWidths[c] = w;
+        }
             // compute max height - don't move from here!
             int h = cell.getPreferredHeight();
-            if (h > maxRowHeights[r] && cell.rowspan <= 1)
+        if (h > maxRowHeights[r] && cell.rowspan <= 1) {
                maxRowHeights[r] = h;
+        }
             // also consider border and gaps
-            if (borderWidth >= 1)
+        if (borderWidth >= 1) {
                w += 2;
-            if (padding > 0)
+        }
+        if (padding > 0) {
                w += padding;
-            if (spacing > 0)
+        }
+        if (spacing > 0) {
                w += spacing;
+        }
             currentRowSize += w;
          }
-         if (currentRowSize > maxRowSize) 
+      if (currentRowSize > maxRowSize) {
             maxRowSize = currentRowSize;
       }
+    }
       return maxRowSize;
    }
 }

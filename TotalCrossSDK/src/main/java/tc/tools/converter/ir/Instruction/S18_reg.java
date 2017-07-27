@@ -19,39 +19,41 @@ import totalcross.util.Vector;
 
 public class S18_reg extends SingleInstruction
 {
-   public int s18;
-   public int reg;
+  public int s18;
+  public int reg;
 
-   public S18_reg(int op, int line, int s, int r)
-   {
-      super(op, line);
-      s18 = s;
-      reg = r;
-   }
+  public S18_reg(int op, int line, int s, int r)
+  {
+    super(op, line);
+    s18 = s;
+    reg = r;
+  }
 
-   public S18_reg(int op, int line)
-   {
-      super(op, line);
-   }
+  public S18_reg(int op, int line)
+  {
+    super(op, line);
+  }
 
-   public void set(int s, int r)
-   {
-      s18 = s;
-      reg = r;
-   }
+  public void set(int s, int r)
+  {
+    s18 = s;
+    reg = r;
+  }
 
-   public String toString()
-   {
-      String print;
-      print = TCConstants.bcTClassNames[opcode] + "  " + reg + ", " + s18;
-      return print;
-   }
+  @Override
+  public String toString()
+  {
+    String print;
+    print = TCConstants.bcTClassNames[opcode] + "  " + reg + ", " + s18;
+    return print;
+  }
 
-   public void toTCCode(Vector vcode)
-   {
-      TCCode tc = new TCCode(opcode, line);
-      tc.s18_reg__reg(reg);
-      tc.s18_reg__s18(s18);
-      vcode.addElement(tc);
-   }
+  @Override
+  public void toTCCode(Vector vcode)
+  {
+    TCCode tc = new TCCode(opcode, line);
+    tc.s18_reg__reg(reg);
+    tc.s18_reg__s18(s18);
+    vcode.addElement(tc);
+  }
 }

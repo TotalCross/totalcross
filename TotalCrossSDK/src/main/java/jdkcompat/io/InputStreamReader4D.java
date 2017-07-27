@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package jdkcompat.io;
 
+import java.io.BufferedReader;
+
 //import gnu.classpath.SystemProperties;
 //import gnu.java.nio.charset.EncodingHelper;
 
@@ -103,62 +105,62 @@ import totalcross.sys.Vm;
  */
 public class InputStreamReader4D extends Reader
 {
-	boolean eos = false;
-	
-	private static final int BYTES_ENCODED_SIZE = 4 * 1024;
-	private static final int BYTES_DECODED_SIZE = 3 * 1024;
-	byte[] bytesEncodedRead = new byte[BYTES_ENCODED_SIZE];
-	char[] charsDecodedRead = new char[BYTES_DECODED_SIZE];
-	
-	byte[] overflowEncodedRead = new byte[4];
-	int decodedSize = 0;
-	int decodedReadPos = 0;
+  boolean eos = false;
+
+  private static final int BYTES_ENCODED_SIZE = 4 * 1024;
+  private static final int BYTES_DECODED_SIZE = 3 * 1024;
+  byte[] bytesEncodedRead = new byte[BYTES_ENCODED_SIZE];
+  char[] charsDecodedRead = new char[BYTES_DECODED_SIZE];
+
+  byte[] overflowEncodedRead = new byte[4];
+  int decodedSize = 0;
+  int decodedReadPos = 0;
   /**
    * The input stream.
    */
   private InputStream in;
 
-//  /**
-//   * The charset decoder.
-//   */
-//  private CharsetDecoder decoder;
-//
-//  /**
-//   * End of stream reached.
-//   */
-//  private boolean isDone = false;
-//
-//  /**
-//   * Need this.
-//   */
-//  private float maxBytesPerChar;
-//
-//  /**
-//   * Buffer holding surplus loaded bytes (if any)
-//   */
-//  private ByteBuffer byteBuffer;
-//
-//  /**
-//   * java.io canonical name of the encoding.
-//   */
-//  private String encoding;
-//
-//  /**
-//   * We might decode to a 2-char UTF-16 surrogate, which won't fit in the
-//   * output buffer. In this case we need to save the surrogate char.
-//   */
-//  private char savedSurrogate;
-//  private boolean hasSavedSurrogate = false;
-//
-//  /**
-//   * A byte array to be reused in read(byte[], int, int).
-//   */
-//  private byte[] bytesCache;
-//
-//  /**
-//   * Locks the bytesCache above in read(byte[], int, int).
-//   */
-//  private Object cacheLock = new Object();
+  //  /**
+  //   * The charset decoder.
+  //   */
+  //  private CharsetDecoder decoder;
+  //
+  //  /**
+  //   * End of stream reached.
+  //   */
+  //  private boolean isDone = false;
+  //
+  //  /**
+  //   * Need this.
+  //   */
+  //  private float maxBytesPerChar;
+  //
+  //  /**
+  //   * Buffer holding surplus loaded bytes (if any)
+  //   */
+  //  private ByteBuffer byteBuffer;
+  //
+  //  /**
+  //   * java.io canonical name of the encoding.
+  //   */
+  //  private String encoding;
+  //
+  //  /**
+  //   * We might decode to a 2-char UTF-16 surrogate, which won't fit in the
+  //   * output buffer. In this case we need to save the surrogate char.
+  //   */
+  //  private char savedSurrogate;
+  //  private boolean hasSavedSurrogate = false;
+  //
+  //  /**
+  //   * A byte array to be reused in read(byte[], int, int).
+  //   */
+  //  private byte[] bytesCache;
+  //
+  //  /**
+  //   * Locks the bytesCache above in read(byte[], int, int).
+  //   */
+  //  private Object cacheLock = new Object();
 
   /**
    * This method initializes a new instance of <code>InputStreamReader</code>
@@ -168,40 +170,41 @@ public class InputStreamReader4D extends Reader
    */
   public InputStreamReader4D(InputStream in)
   {
-    if (in == null)
+    if (in == null){
       throw new NullPointerException();
+    }
     this.in = in;
-//    try
-//        {
-//          encoding = EncodingHelper.getDefaultEncoding();//SystemProperties.getProperty("file.encoding");
-//          // Don't use NIO if avoidable
-//          if(EncodingHelper.isISOLatin1(encoding))
-//            {
-//              encoding = "ISO8859_1";
-//              maxBytesPerChar = 1f;
-//              decoder = null;
-//              return;
-//            }
-//          Charset cs = EncodingHelper.getCharset(encoding);
-//          decoder = cs.newDecoder();
-//          encoding = EncodingHelper.getOldCanonical(cs.name());
-//          try {
-//              maxBytesPerChar = cs.newEncoder().maxBytesPerChar();
-//          } catch(UnsupportedOperationException _){
-//              maxBytesPerChar = 1f;
-//          }
-//          decoder.onMalformedInput(CodingErrorAction.REPLACE);
-//          decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-//          decoder.reset();
-//        } catch(RuntimeException e) {
-//          encoding = "ISO8859_1";
-//          maxBytesPerChar = 1f;
-//          decoder = null;
-//        } catch(UnsupportedEncodingException e) {
-//          encoding = "ISO8859_1";
-//          maxBytesPerChar = 1f;
-//          decoder = null;
-//        }
+    //    try
+    //        {
+    //          encoding = EncodingHelper.getDefaultEncoding();//SystemProperties.getProperty("file.encoding");
+    //          // Don't use NIO if avoidable
+    //          if(EncodingHelper.isISOLatin1(encoding))
+    //            {
+    //              encoding = "ISO8859_1";
+    //              maxBytesPerChar = 1f;
+    //              decoder = null;
+    //              return;
+    //            }
+    //          Charset cs = EncodingHelper.getCharset(encoding);
+    //          decoder = cs.newDecoder();
+    //          encoding = EncodingHelper.getOldCanonical(cs.name());
+    //          try {
+    //              maxBytesPerChar = cs.newEncoder().maxBytesPerChar();
+    //          } catch(UnsupportedOperationException _){
+    //              maxBytesPerChar = 1f;
+    //          }
+    //          decoder.onMalformedInput(CodingErrorAction.REPLACE);
+    //          decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+    //          decoder.reset();
+    //        } catch(RuntimeException e) {
+    //          encoding = "ISO8859_1";
+    //          maxBytesPerChar = 1f;
+    //          decoder = null;
+    //        } catch(UnsupportedEncodingException e) {
+    //          encoding = "ISO8859_1";
+    //          maxBytesPerChar = 1f;
+    //          decoder = null;
+    //        }
   }
 
   /**
@@ -216,43 +219,43 @@ public class InputStreamReader4D extends Reader
    * @exception UnsupportedEncodingException If the encoding scheme
    * requested is not available.
    */
-//  public InputStreamReader4D(InputStream in, String encoding_name)
-//    throws UnsupportedEncodingException
-//  {
-//    if (in == null
-//        || encoding_name == null)
-//      throw new NullPointerException();
-//
-//    this.in = in;
-//    // Don't use NIO if avoidable
-//    if(EncodingHelper.isISOLatin1(encoding_name))
-//      {
-//        encoding = "ISO8859_1";
-//        maxBytesPerChar = 1f;
-//        decoder = null;
-//        return;
-//      }
-//    try {
-//      Charset cs = EncodingHelper.getCharset(encoding_name);
-//      try {
-//        maxBytesPerChar = cs.newEncoder().maxBytesPerChar();
-//      } catch(UnsupportedOperationException _){
-//        maxBytesPerChar = 1f;
-//      }
-//
-//      decoder = cs.newDecoder();
-//      decoder.onMalformedInput(CodingErrorAction.REPLACE);
-//      decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-//      decoder.reset();
-//
-//      // The encoding should be the old name, if such exists.
-//      encoding = EncodingHelper.getOldCanonical(cs.name());
-//    } catch(RuntimeException e) {
-//      encoding = "ISO8859_1";
-//      maxBytesPerChar = 1f;
-//      decoder = null;
-//    }
-//  }
+  //  public InputStreamReader4D(InputStream in, String encoding_name)
+  //    throws UnsupportedEncodingException
+  //  {
+  //    if (in == null
+  //        || encoding_name == null)
+  //      throw new NullPointerException();
+  //
+  //    this.in = in;
+  //    // Don't use NIO if avoidable
+  //    if(EncodingHelper.isISOLatin1(encoding_name))
+  //      {
+  //        encoding = "ISO8859_1";
+  //        maxBytesPerChar = 1f;
+  //        decoder = null;
+  //        return;
+  //      }
+  //    try {
+  //      Charset cs = EncodingHelper.getCharset(encoding_name);
+  //      try {
+  //        maxBytesPerChar = cs.newEncoder().maxBytesPerChar();
+  //      } catch(UnsupportedOperationException _){
+  //        maxBytesPerChar = 1f;
+  //      }
+  //
+  //      decoder = cs.newDecoder();
+  //      decoder.onMalformedInput(CodingErrorAction.REPLACE);
+  //      decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+  //      decoder.reset();
+  //
+  //      // The encoding should be the old name, if such exists.
+  //      encoding = EncodingHelper.getOldCanonical(cs.name());
+  //    } catch(RuntimeException e) {
+  //      encoding = "ISO8859_1";
+  //      maxBytesPerChar = 1f;
+  //      decoder = null;
+  //    }
+  //  }
 
   /**
    * Creates an InputStreamReader that uses a decoder of the given
@@ -261,23 +264,23 @@ public class InputStreamReader4D extends Reader
    *
    * @since 1.4
    */
-//  public InputStreamReader4D(InputStream in, Charset charset) {
-//    if (in == null)
-//      throw new NullPointerException();
-//    this.in = in;
-//    decoder = charset.newDecoder();
-//
-//    try {
-//      maxBytesPerChar = charset.newEncoder().maxBytesPerChar();
-//    } catch(UnsupportedOperationException e){
-//      maxBytesPerChar = 1f;
-//    }
-//
-//    decoder.onMalformedInput(CodingErrorAction.REPLACE);
-//    decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-//    decoder.reset();
-//    encoding = EncodingHelper.getOldCanonical(charset.name());
-//  }
+  //  public InputStreamReader4D(InputStream in, Charset charset) {
+  //    if (in == null)
+  //      throw new NullPointerException();
+  //    this.in = in;
+  //    decoder = charset.newDecoder();
+  //
+  //    try {
+  //      maxBytesPerChar = charset.newEncoder().maxBytesPerChar();
+  //    } catch(UnsupportedOperationException e){
+  //      maxBytesPerChar = 1f;
+  //    }
+  //
+  //    decoder.onMalformedInput(CodingErrorAction.REPLACE);
+  //    decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+  //    decoder.reset();
+  //    encoding = EncodingHelper.getOldCanonical(charset.name());
+  //  }
 
   /**
    * Creates an InputStreamReader that uses the given charset decoder
@@ -285,30 +288,30 @@ public class InputStreamReader4D extends Reader
    *
    * @since 1.4
    */
-//  public InputStreamReader4D(InputStream in, CharsetDecoder decoder) {
-//    if (in == null)
-//      throw new NullPointerException();
-//    this.in = in;
-//    this.decoder = decoder;
-//
-//    Charset charset = decoder.charset();
-//    try {
-//      if (charset == null)
-//        maxBytesPerChar = 1f;
-//      else
-//        maxBytesPerChar = charset.newEncoder().maxBytesPerChar();
-//    } catch(UnsupportedOperationException e){
-//        maxBytesPerChar = 1f;
-//    }
-//
-//    decoder.onMalformedInput(CodingErrorAction.REPLACE);
-//    decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-//    decoder.reset();
-//    if (charset == null)
-//      encoding = "US-ASCII";
-//    else
-//      encoding = EncodingHelper.getOldCanonical(decoder.charset().name());
-//  }
+  //  public InputStreamReader4D(InputStream in, CharsetDecoder decoder) {
+  //    if (in == null)
+  //      throw new NullPointerException();
+  //    this.in = in;
+  //    this.decoder = decoder;
+  //
+  //    Charset charset = decoder.charset();
+  //    try {
+  //      if (charset == null)
+  //        maxBytesPerChar = 1f;
+  //      else
+  //        maxBytesPerChar = charset.newEncoder().maxBytesPerChar();
+  //    } catch(UnsupportedOperationException e){
+  //        maxBytesPerChar = 1f;
+  //    }
+  //
+  //    decoder.onMalformedInput(CodingErrorAction.REPLACE);
+  //    decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+  //    decoder.reset();
+  //    if (charset == null)
+  //      encoding = "US-ASCII";
+  //    else
+  //      encoding = EncodingHelper.getOldCanonical(decoder.charset().name());
+  //  }
 
   /**
    * This method closes this stream, as well as the underlying
@@ -316,19 +319,21 @@ public class InputStreamReader4D extends Reader
    *
    * @exception IOException If an error occurs
    */
+  @Override
   public void close() throws java.io.IOException
   {
     synchronized (lock)
-      {
-        // Makes sure all intermediate data is released by the decoder.
-//        if (decoder != null)
-//           decoder.reset();
-        if (in != null)
-           in.close();
-        in = null;
-//        isDone = true;
-//        decoder = null;
+    {
+      // Makes sure all intermediate data is released by the decoder.
+      //        if (decoder != null)
+      //           decoder.reset();
+      if (in != null) {
+        in.close();
       }
+      in = null;
+      //        isDone = true;
+      //        decoder = null;
+    }
   }
 
   /**
@@ -338,10 +343,10 @@ public class InputStreamReader4D extends Reader
    *
    * @return The current encoding name
    */
-//  public String getEncoding()
-//  {
-//    return in != null ? encoding : null;
-//  }
+  //  public String getEncoding()
+  //  {
+  //    return in != null ? encoding : null;
+  //  }
 
   /**
    * This method checks to see if the stream is ready to be read.  It
@@ -354,62 +359,65 @@ public class InputStreamReader4D extends Reader
    *
    * @exception IOException If an error occurs
    */
+  @Override
   public boolean ready() throws java.io.IOException
   {
-    if (in == null)
+    if (in == null){
       throw new java.io.IOException("Reader has been closed");
+    }
 
     return in.available() != 0;
   }
-  
+
   private static final int BUFFER_SIZE = 16 * 1024;
   private byte[] readBytesBuff = new byte[BUFFER_SIZE];
-  
+
   private CharacterConverter cconv = new CharacterConverter();
 
-	/**
-	 * This method reads up to <code>length</code> characters from the stream into
-	 * the specified array starting at index <code>offset</code> into the
-	 * array.
-	 *
-	 * @param buf The character array to recieve the data read
-	 * @param offset The offset into the array to start storing characters
-	 * @param length The requested number of characters to read.
-	 *
-	 * @return The actual number of characters read, or -1 if end of stream.
-	 *
-	 * @exception IOException If an error occurs
-	 */
-	public int read(char[] b, int off, int len) throws java.io.IOException {
-		synchronized (lock) {
-			if (eos) {
-				return -1;
-			}
+  /**
+   * This method reads up to <code>length</code> characters from the stream into
+   * the specified array starting at index <code>offset</code> into the
+   * array.
+   *
+   * @param buf The character array to recieve the data read
+   * @param offset The offset into the array to start storing characters
+   * @param length The requested number of characters to read.
+   *
+   * @return The actual number of characters read, or -1 if end of stream.
+   *
+   * @exception IOException If an error occurs
+   */
+  @Override
+  public int read(char[] b, int off, int len) throws java.io.IOException {
+    synchronized (lock) {
+      if (eos) {
+        return -1;
+      }
 
-			int arraySize = b.length;
-			int maxReadable = Math.min(len, arraySize - off);
-			int remaining = maxReadable;
+      int arraySize = b.length;
+      int maxReadable = Math.min(len, arraySize - off);
+      int remaining = maxReadable;
 
-			int offsetUsed = off;
-			int totalRead = 0;
+      int offsetUsed = off;
+      int totalRead = 0;
 
-			while (remaining > 0) {
-				ensureFetch();
-				if (decodedSize <= 0) {
-					break;
-				}
-				int size = Math.min(remaining, decodedSize - decodedReadPos);
-				Vm.arrayCopy(charsDecodedRead, decodedReadPos, b, offsetUsed, size);
-				decodedReadPos += size;
-				offsetUsed += size;
-				remaining -= size;
-				totalRead += size;
-			}
+      while (remaining > 0) {
+        ensureFetch();
+        if (decodedSize <= 0) {
+          break;
+        }
+        int size = Math.min(remaining, decodedSize - decodedReadPos);
+        Vm.arrayCopy(charsDecodedRead, decodedReadPos, b, offsetUsed, size);
+        decodedReadPos += size;
+        offsetUsed += size;
+        remaining -= size;
+        totalRead += size;
+      }
 
-			return totalRead;
-		}
-	}
-  
+      return totalRead;
+    }
+  }
+
   /**
    * Reads an char from the input stream and returns it
    * as an int in the range of 0-65535.  This method also will return -1 if
@@ -421,6 +429,7 @@ public class InputStreamReader4D extends Reader
    *
    * @exception IOException If an error occurs
    */
+  @Override
   public int read() throws java.io.IOException
   {
     char[] buf = new char[1];
@@ -439,46 +448,48 @@ public class InputStreamReader4D extends Reader
    *
    * @exception IOException If an error occurs
    */
-   public long skip(long count) throws java.io.IOException
-   {
-     if (in == null)
-       throw new java.io.IOException("Reader has been closed");
+  @Override
+  public long skip(long count) throws java.io.IOException
+  {
+    if (in == null){
+      throw new java.io.IOException("Reader has been closed");
+    }
 
-     return super.skip(count);
-   }
-   
-   private void ensureFetch() throws java.io.IOException {
-		if (eos) {
-			markEos();
-			return;
-		}
-		// If read position equals size, then it must fetch more data
-		if (decodedReadPos == decodedSize) {
-			int readFromStream = in.read(readBytesBuff, 0, BUFFER_SIZE);
-			
-			if (readFromStream == -1) {
-				markEos();
-				return;
-			}
-			
-			// Has reached end of stream?
-			if (readFromStream < 0) {
-				markEos();
-			} else if (readFromStream > 0) {
-				try {
-					charsDecodedRead = cconv.bytes2chars(readBytesBuff, 0, readFromStream);
-					decodedReadPos = 0;
-					decodedSize = charsDecodedRead.length;
-				} catch (ArrayIndexOutOfBoundsException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+    return super.skip(count);
+  }
 
-	private void markEos() {
-		eos = true;
-		decodedReadPos = -1;
-		decodedSize = -1;
-	}	
+  private void ensureFetch() throws java.io.IOException {
+    if (eos) {
+      markEos();
+      return;
+    }
+    // If read position equals size, then it must fetch more data
+    if (decodedReadPos == decodedSize) {
+      int readFromStream = in.read(readBytesBuff, 0, BUFFER_SIZE);
+
+      if (readFromStream == -1) {
+        markEos();
+        return;
+      }
+
+      // Has reached end of stream?
+      if (readFromStream < 0) {
+        markEos();
+      } else if (readFromStream > 0) {
+        try {
+          charsDecodedRead = cconv.bytes2chars(readBytesBuff, 0, readFromStream);
+          decodedReadPos = 0;
+          decodedSize = charsDecodedRead.length;
+        } catch (ArrayIndexOutOfBoundsException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
+
+  private void markEos() {
+    eos = true;
+    decodedReadPos = -1;
+    decodedSize = -1;
+  }	
 }

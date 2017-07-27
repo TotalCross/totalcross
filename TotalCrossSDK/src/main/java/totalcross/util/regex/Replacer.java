@@ -29,7 +29,8 @@
 
 package totalcross.util.regex;
 
-import totalcross.io.*;
+import totalcross.io.CharStream;
+import totalcross.io.IOException;
 
 /**
  * <b>The Replacer class</b> suggests some methods to replace occurences of a pattern 
@@ -60,241 +61,256 @@ import totalcross.io.*;
  */
 
 public class Replacer{
-   private Pattern pattern;
-   private Substitution substitution;
-   
+  private Pattern pattern;
+  private Substitution substitution;
+
   /**
    */
-   public Replacer(Pattern pattern,Substitution substitution){
-      this.pattern=pattern;
-      this.substitution=substitution;
-   }
-   
+  public Replacer(Pattern pattern,Substitution substitution){
+    this.pattern=pattern;
+    this.substitution=substitution;
+  }
+
   /**
    */
-   public Replacer(Pattern pattern, String substitution){
-      this(pattern,substitution,true);
-   }
-   
+  public Replacer(Pattern pattern, String substitution){
+    this(pattern,substitution,true);
+  }
+
   /**
    */
-   public Replacer(Pattern pattern, String substitution, boolean isPerlExpr){
-      this.pattern=pattern;
-      this.substitution= isPerlExpr? (Substitution)new PerlSubstitution(substitution): 
-                               new DummySubstitution(substitution);
-   }
-   
-   public void setSubstitution(String s, boolean isPerlExpr){
-      substitution= isPerlExpr? (Substitution)new PerlSubstitution(s): 
-                               new DummySubstitution(s);
-   }
-   
+  public Replacer(Pattern pattern, String substitution, boolean isPerlExpr){
+    this.pattern=pattern;
+    this.substitution= isPerlExpr? (Substitution)new PerlSubstitution(substitution): 
+      new DummySubstitution(substitution);
+  }
+
+  public void setSubstitution(String s, boolean isPerlExpr){
+    substitution= isPerlExpr? (Substitution)new PerlSubstitution(s): 
+      new DummySubstitution(s);
+  }
+
   /**
    */
-   public String replace(String text){
-      TextBuffer tb=wrap(new StringBuffer(text.length()));
-      replace(pattern.matcher(text),substitution,tb);
-      return tb.toString();
-   }
-   
+  public String replace(String text){
+    TextBuffer tb=wrap(new StringBuffer(text.length()));
+    replace(pattern.matcher(text),substitution,tb);
+    return tb.toString();
+  }
+
   /**
    */
-   public String replace(char[] chars,int off,int len){
-      TextBuffer tb=wrap(new StringBuffer(len));
-      replace(pattern.matcher(chars,off,len),substitution,tb);
-      return tb.toString();
-   }
-   
+  public String replace(char[] chars,int off,int len){
+    TextBuffer tb=wrap(new StringBuffer(len));
+    replace(pattern.matcher(chars,off,len),substitution,tb);
+    return tb.toString();
+  }
+
   /**
    */
-   public String replace(MatchResult res,int group){
-      TextBuffer tb=wrap(new StringBuffer());
-      replace(pattern.matcher(res,group),substitution,tb);
-      return tb.toString();
-   }
-   
+  public String replace(MatchResult res,int group){
+    TextBuffer tb=wrap(new StringBuffer());
+    replace(pattern.matcher(res,group),substitution,tb);
+    return tb.toString();
+  }
+
   /**
    */
-   public String replace(CharStream text,int length)throws IOException{
-      TextBuffer tb=wrap(new StringBuffer(length>=0? length: 0));
-      replace(pattern.matcher(text,length),substitution,tb);
-      return tb.toString();
-   }
-   
+  public String replace(CharStream text,int length)throws IOException{
+    TextBuffer tb=wrap(new StringBuffer(length>=0? length: 0));
+    replace(pattern.matcher(text,length),substitution,tb);
+    return tb.toString();
+  }
+
   /**
    */
-   public int replace(String text,StringBuffer sb){
-      return replace(pattern.matcher(text),substitution,wrap(sb));
-   }
-   
+  public int replace(String text,StringBuffer sb){
+    return replace(pattern.matcher(text),substitution,wrap(sb));
+  }
+
   /**
    */
-   public int replace(char[] chars,int off,int len,StringBuffer sb){
-      return replace(chars,off,len,wrap(sb));
-   }
-   
+  public int replace(char[] chars,int off,int len,StringBuffer sb){
+    return replace(chars,off,len,wrap(sb));
+  }
+
   /**
    */
-   public int replace(MatchResult res,int group,StringBuffer sb){
-      return replace(res,group,wrap(sb));
-   }
-   
+  public int replace(MatchResult res,int group,StringBuffer sb){
+    return replace(res,group,wrap(sb));
+  }
+
   /**
    */
-   public int replace(MatchResult res,String groupName,StringBuffer sb){
-      return replace(res,groupName,wrap(sb));
-   }
-   
-   public int replace(CharStream text,int length,StringBuffer sb)throws IOException{
-      return replace(text,length,wrap(sb));
-   }
-   
+  public int replace(MatchResult res,String groupName,StringBuffer sb){
+    return replace(res,groupName,wrap(sb));
+  }
+
+  public int replace(CharStream text,int length,StringBuffer sb)throws IOException{
+    return replace(text,length,wrap(sb));
+  }
+
   /**
    */
-   public int replace(String text,TextBuffer dest){
-      return replace(pattern.matcher(text),substitution,dest);
-   }
-   
+  public int replace(String text,TextBuffer dest){
+    return replace(pattern.matcher(text),substitution,dest);
+  }
+
   /**
    */
-   public int replace(char[] chars,int off,int len,TextBuffer dest){
-      return replace(pattern.matcher(chars,off,len),substitution,dest);
-   }
-   
+  public int replace(char[] chars,int off,int len,TextBuffer dest){
+    return replace(pattern.matcher(chars,off,len),substitution,dest);
+  }
+
   /**
    */
-   public int replace(MatchResult res,int group,TextBuffer dest){
-      return replace(pattern.matcher(res,group),substitution,dest);
-   }
-   
+  public int replace(MatchResult res,int group,TextBuffer dest){
+    return replace(pattern.matcher(res,group),substitution,dest);
+  }
+
   /**
    */
-   public int replace(MatchResult res,String groupName,TextBuffer dest){
-      return replace(pattern.matcher(res,groupName),substitution,dest);
-   }
-   
-   public int replace(CharStream text,int length,TextBuffer dest)throws IOException{
-      return replace(pattern.matcher(text,length),substitution,dest);
-   }
-   
+  public int replace(MatchResult res,String groupName,TextBuffer dest){
+    return replace(pattern.matcher(res,groupName),substitution,dest);
+  }
+
+  public int replace(CharStream text,int length,TextBuffer dest)throws IOException{
+    return replace(pattern.matcher(text,length),substitution,dest);
+  }
+
   /**
    * Replaces all occurences of a matcher's pattern in a matcher's target
    * by a given substitution appending the result to a buffer.<br>
    * The substitution starts from current matcher's position, current match
    * not included.
    */
-   public static int replace(Matcher m,Substitution substitution,TextBuffer dest){
-      boolean firstPass=true;
-      int c=0;
-      while(m.find()){
-         if(m.end()==0 && !firstPass) continue;  //allow to replace at "^"
-         if(m.start()>0) m.getGroup(MatchResult.PREFIX,dest);
-         substitution.appendSubstitution(m,dest);
-         c++;
-         m.setTarget(m,MatchResult.SUFFIX);
-         firstPass=false;
+  public static int replace(Matcher m,Substitution substitution,TextBuffer dest){
+    boolean firstPass=true;
+    int c=0;
+    while(m.find()){
+      if(m.end()==0 && !firstPass)
+      {
+        continue;  //allow to replace at "^"
       }
-      m.getGroup(MatchResult.TARGET,dest);
-      return c;
-   }
-   
-   public static int replace(Matcher m,Substitution substitution,CharStream out) throws IOException{
-      try{
-         return replace(m,substitution,wrap(out));
+      if(m.start()>0) {
+        m.getGroup(MatchResult.PREFIX,dest);
       }
-      catch(WriteException e){
-         throw e.reason;
-      }
-   }
-   
+      substitution.appendSubstitution(m,dest);
+      c++;
+      m.setTarget(m,MatchResult.SUFFIX);
+      firstPass=false;
+    }
+    m.getGroup(MatchResult.TARGET,dest);
+    return c;
+  }
+
+  public static int replace(Matcher m,Substitution substitution,CharStream out) throws IOException{
+    try{
+      return replace(m,substitution,wrap(out));
+    }
+    catch(WriteException e){
+      throw e.reason;
+    }
+  }
+
   /**
    */
-   public void replace(String text,CharStream out) throws IOException{
-      replace(pattern.matcher(text),substitution,out);
-   }
-   
+  public void replace(String text,CharStream out) throws IOException{
+    replace(pattern.matcher(text),substitution,out);
+  }
+
   /**
    */
-   public void replace(char[] chars,int off,int len,CharStream out) throws IOException{
-      replace(pattern.matcher(chars,off,len),substitution,out);
-   }
-   
+  public void replace(char[] chars,int off,int len,CharStream out) throws IOException{
+    replace(pattern.matcher(chars,off,len),substitution,out);
+  }
+
   /**
    */
-   public void replace(MatchResult res,int group,CharStream out) throws IOException{
-      replace(pattern.matcher(res,group),substitution,out);
-   }
-   
+  public void replace(MatchResult res,int group,CharStream out) throws IOException{
+    replace(pattern.matcher(res,group),substitution,out);
+  }
+
   /**
    */
-   public void replace(MatchResult res,String groupName,CharStream out) throws IOException{
-      replace(pattern.matcher(res,groupName),substitution,out);
-   }
-   
-   public void replace(CharStream in,int length,CharStream out)throws IOException{
-      replace(pattern.matcher(in,length),substitution,out);
-   }
-   
-   private static class DummySubstitution implements Substitution{
-      String str;
-      DummySubstitution(String s){
-         str=s;
+  public void replace(MatchResult res,String groupName,CharStream out) throws IOException{
+    replace(pattern.matcher(res,groupName),substitution,out);
+  }
+
+  public void replace(CharStream in,int length,CharStream out)throws IOException{
+    replace(pattern.matcher(in,length),substitution,out);
+  }
+
+  private static class DummySubstitution implements Substitution{
+    String str;
+    DummySubstitution(String s){
+      str=s;
+    }
+    @Override
+    public void appendSubstitution(MatchResult match,TextBuffer res){
+      if(str!=null) {
+        res.append(str);
       }
-      public void appendSubstitution(MatchResult match,TextBuffer res){
-         if(str!=null) res.append(str);
+    }
+  }
+
+  public static TextBuffer wrap(final StringBuffer sb){
+    return new TextBuffer(){
+      @Override
+      public void append(char c){
+        sb.append(c);
       }
-   }
-   
-   public static TextBuffer wrap(final StringBuffer sb){
-      return new TextBuffer(){
-         public void append(char c){
-            sb.append(c);
-         }
-         public void append(char[] chars,int start,int len){
-            sb.append(chars,start,len);
-         }
-         public void append(String s){
-            sb.append(s);
-         }
-         public String toString(){
-            return sb.toString();
-         }
-      };
-   }
-   
-   public static TextBuffer wrap(final CharStream writer){
-      return new TextBuffer(){
-         public void append(char c){
-            try{
-               writer.write(c);
-            }
-            catch(IOException e){
-               throw new WriteException(e);
-            }
-         }
-         public void append(char[] chars,int off,int len){
-            try{
-               writer.write(chars,off,len);
-            }
-            catch(IOException e){
-               throw new WriteException(e);
-            }
-         }
-         public void append(String s){
-            try{
-               writer.write(s.toCharArray());
-            }
-            catch(IOException e){
-               throw new WriteException(e);
-            }
-         }
-      };
-   }
-   
-   private static class WriteException extends RuntimeException{
-      IOException reason;
-      WriteException(IOException io){
-         reason=io;
+      @Override
+      public void append(char[] chars,int start,int len){
+        sb.append(chars,start,len);
       }
-   }
+      @Override
+      public void append(String s){
+        sb.append(s);
+      }
+      @Override
+      public String toString(){
+        return sb.toString();
+      }
+    };
+  }
+
+  public static TextBuffer wrap(final CharStream writer){
+    return new TextBuffer(){
+      @Override
+      public void append(char c){
+        try{
+          writer.write(c);
+        }
+        catch(IOException e){
+          throw new WriteException(e);
+        }
+      }
+      @Override
+      public void append(char[] chars,int off,int len){
+        try{
+          writer.write(chars,off,len);
+        }
+        catch(IOException e){
+          throw new WriteException(e);
+        }
+      }
+      @Override
+      public void append(String s){
+        try{
+          writer.write(s.toCharArray());
+        }
+        catch(IOException e){
+          throw new WriteException(e);
+        }
+      }
+    };
+  }
+
+  private static class WriteException extends RuntimeException{
+    IOException reason;
+    WriteException(IOException io){
+      reason=io;
+    }
+  }
 }

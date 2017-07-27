@@ -32,5 +32,5 @@ package totalcross.util.regex;
 public interface Substitution{
   /**
    */
-   public void appendSubstitution(MatchResult match,TextBuffer dest);
+  public void appendSubstitution(MatchResult match,TextBuffer dest);
 }

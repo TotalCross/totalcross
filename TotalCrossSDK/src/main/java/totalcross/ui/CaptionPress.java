@@ -5,7 +5,7 @@ package totalcross.ui;
  */
 public interface CaptionPress
 {
-   public void onCaptionPress();
-   public void onIconPress();
+  public void onCaptionPress();
+  public void onIconPress();
 }
 

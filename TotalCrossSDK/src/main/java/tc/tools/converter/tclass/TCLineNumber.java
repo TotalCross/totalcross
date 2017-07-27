@@ -16,14 +16,14 @@ package tc.tools.converter.tclass;
 /* Debug info - line number information */
 public final class TCLineNumber
 {
-   // The pc where this line number goes
-   public int /*uint16*/ startPC;
-   // The line number itself;
-   public int /*uint16*/ lineNumber;
+  // The pc where this line number goes
+  public int /*uint16*/ startPC;
+  // The line number itself;
+  public int /*uint16*/ lineNumber;
 
-   public TCLineNumber(int startPC, int lineNumber)
-   {
-      this.startPC = startPC;
-      this.lineNumber = lineNumber;
-   }
+  public TCLineNumber(int startPC, int lineNumber)
+  {
+    this.startPC = startPC;
+    this.lineNumber = lineNumber;
+  }
 }

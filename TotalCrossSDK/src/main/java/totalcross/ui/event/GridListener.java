@@ -22,16 +22,16 @@ package totalcross.ui.event;
 
 public interface GridListener
 {
-   /** A SELECTED_EVENT event was dispatched.
-    * @see GridEvent 
-    */
-   public void gridSelected(GridEvent e);
-   /** A CHECK_CHANGED_EVENT event was dispatched.
-    * @see GridEvent 
-    */
-   public void gridCheckChanged(GridEvent e);
-   /** A TEXT_CHANGED_EVENT event was dispatched.
-    * @see GridEvent 
-    */
-   public void gridTextChanged(GridEvent e);
+  /** A SELECTED_EVENT event was dispatched.
+   * @see GridEvent 
+   */
+  public void gridSelected(GridEvent e);
+  /** A CHECK_CHANGED_EVENT event was dispatched.
+   * @see GridEvent 
+   */
+  public void gridCheckChanged(GridEvent e);
+  /** A TEXT_CHANGED_EVENT event was dispatched.
+   * @see GridEvent 
+   */
+  public void gridTextChanged(GridEvent e);
 }

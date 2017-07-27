@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC028_iload_2 extends LoadLocal
 {
-   public BC028_iload_2()
-   {
-      super(2,INT);
-   }
+  public BC028_iload_2()
+  {
+    super(2,INT);
+  }
 }

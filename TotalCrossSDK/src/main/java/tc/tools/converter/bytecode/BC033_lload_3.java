@@ -15,9 +15,9 @@ package tc.tools.converter.bytecode;
 
 public class BC033_lload_3 extends LoadLocal
 {
-   public BC033_lload_3()
-   {
-      super(3,LONG);
-      stackInc = 2;
-   }
+  public BC033_lload_3()
+  {
+    super(3,LONG);
+    stackInc = 2;
+  }
 }

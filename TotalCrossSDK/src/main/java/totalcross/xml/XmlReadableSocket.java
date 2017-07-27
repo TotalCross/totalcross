@@ -30,54 +30,57 @@ import totalcross.net.URI;
  */
 public class XmlReadableSocket extends HttpStream implements XmlReadable
 {
-   private URI baseURI;
-   private boolean caseInsensitive;
+  private URI baseURI;
+  private boolean caseInsensitive;
 
-   /**
-    * Constructor
-    *
-    * @param uri
-    *           to connect to
-    * @param options
-    *           The options for this socket
-    * @throws IOException
-    * @throws IllegalArgumentIOException
-    */
-   public XmlReadableSocket(URI uri, Options options) throws IllegalArgumentIOException, IOException
-   {
-      // guich@510_14
-      super(uri, options);
-      baseURI = uri;
-   }
+  /**
+   * Constructor
+   *
+   * @param uri
+   *           to connect to
+   * @param options
+   *           The options for this socket
+   * @throws IOException
+   * @throws IllegalArgumentIOException
+   */
+  public XmlReadableSocket(URI uri, Options options) throws IllegalArgumentIOException, IOException
+  {
+    // guich@510_14
+    super(uri, options);
+    baseURI = uri;
+  }
 
-   /**
-    * Constructor
-    *
-    * @param uri
-    *           to connect to
-    * @throws IOException
-    * @throws IllegalArgumentIOException
-    */
-   public XmlReadableSocket(URI uri) throws IllegalArgumentIOException, IOException
-   {
-      super(uri);
-      baseURI = uri;
-   }
+  /**
+   * Constructor
+   *
+   * @param uri
+   *           to connect to
+   * @throws IOException
+   * @throws IllegalArgumentIOException
+   */
+  public XmlReadableSocket(URI uri) throws IllegalArgumentIOException, IOException
+  {
+    super(uri);
+    baseURI = uri;
+  }
 
-   public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException
-   {
-      rdr.setCaseInsensitive(caseInsensitive);
-      rdr.parse(socket, buffer, ofsStart, ofsEnd, readPos);
-      socket.close();
-   }
+  @Override
+  public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException
+  {
+    rdr.setCaseInsensitive(caseInsensitive);
+    rdr.parse(socket, buffer, ofsStart, ofsEnd, readPos);
+    socket.close();
+  }
 
-   public URI getBaseURI()
-   {
-      return baseURI;
-   }
+  @Override
+  public URI getBaseURI()
+  {
+    return baseURI;
+  }
 
-   public void setCaseInsensitive(boolean caseInsensitive)
-   {
-      this.caseInsensitive = caseInsensitive;
-   }
+  @Override
+  public void setCaseInsensitive(boolean caseInsensitive)
+  {
+    this.caseInsensitive = caseInsensitive;
+  }
 }

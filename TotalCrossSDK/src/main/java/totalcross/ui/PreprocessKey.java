@@ -1,7 +1,12 @@
 package totalcross.ui;
 
-import totalcross.sys.*;
-import totalcross.ui.event.*;
+import totalcross.sys.Convert;
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
+import totalcross.sys.Vm;
+import totalcross.ui.event.KeyEvent;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.TimerListener;
 
 /** Class used to customize the way that Edit and MultiEdit handle keys. Useful, for example, 
  * to handle devices with special keypads and translate them into standard characters.
@@ -50,103 +55,111 @@ import totalcross.ui.event.*;
 
 public abstract class PreprocessKey
 {
-   public static PreprocessKey instance;
-   
-   /** Maximum millis delay to consider that the user is repeating the current key */
-   public static int MAX_DELAY = 750;
-   
-   public abstract void preprocess(Control target, KeyEvent ke);
-   
-   private int curIdx=-1,curKey;
-   private int lastTime;
-   private TimerEvent te;
-   private Control target;
-   
-   protected char[] getKeySet(Control target, KeyEvent e)
-   {
-      return null;
-   }
-   
-   protected void handleKeypadPress(Control target, KeyEvent e)
-   {
-      if (Settings.onJavaSE) e.modifiers = SpecialKeys.SYSTEM;
-      this.target = target;
-      int key = e.key;
-      char[] chars = getKeySet(target, e);
-      if (chars == null) return;
-      
-      int curTime = Vm.getTimeStamp();
-      int elapsed = curTime - lastTime;
-      lastTime = curTime;
-      if (curKey != key || elapsed > MAX_DELAY) // changed key or took too long?
-      {
-         if (target instanceof Edit)
-            ((Edit)target).selectLast = true;
-         else
-         if (target instanceof MultiEdit)
-         {
-            if (curKey != key && te != null)
-               changeCursor(true);
-            ((MultiEdit)target).selectLast = true;
-         }
-         curIdx = 0;
-         curKey = key;
-         resetTimer();
-      }
-      else
+  public static PreprocessKey instance;
+
+  /** Maximum millis delay to consider that the user is repeating the current key */
+  public static int MAX_DELAY = 750;
+
+  public abstract void preprocess(Control target, KeyEvent ke);
+
+  private int curIdx=-1,curKey;
+  private int lastTime;
+  private TimerEvent te;
+  private Control target;
+
+  protected char[] getKeySet(Control target, KeyEvent e)
+  {
+    return null;
+  }
+
+  protected void handleKeypadPress(Control target, KeyEvent e)
+  {
+    if (Settings.onJavaSE){
+      e.modifiers = SpecialKeys.SYSTEM;
+    }
+    this.target = target;
+    int key = e.key;
+    char[] chars = getKeySet(target, e);
+    if (chars == null){
+      return;
+    }
+
+    int curTime = Vm.getTimeStamp();
+    int elapsed = curTime - lastTime;
+    lastTime = curTime;
+    if (curKey != key || elapsed > MAX_DELAY) // changed key or took too long?
+    {
+      if (target instanceof Edit) {
+        ((Edit)target).selectLast = true;
+      } else
+        if (target instanceof MultiEdit)
+        {
+          if (curKey != key && te != null) {
+            changeCursor(true);
+          }
+          ((MultiEdit)target).selectLast = true;
+        }
+      curIdx = 0;
+      curKey = key;
+      resetTimer();
+    }
+    else
       if (elapsed < MAX_DELAY)
       {
-         resetTimer();
-         if (++curIdx == chars.length)
-            curIdx = 0;
-         changeCursor(false);
+        resetTimer();
+        if (++curIdx == chars.length) {
+          curIdx = 0;
+        }
+        changeCursor(false);
       }
-      
-      e.key = chars[curIdx];
-      if ((e.modifiers & SpecialKeys.SHIFT) != 0)
-         e.key = Convert.toUpperCase((char)e.key);
-      e.consumed = true;
-   }
-   
-   private void changeCursor(boolean advance)
-   {
-      if (target instanceof Edit)
-      {
-         Edit ed = (Edit)target;
-         int[] pos = ed.getCursorPos();
-         ed.persistentSelection = ed.selectLast = !advance;
-         ed.setCursorPos(advance ? pos[1] : pos[1]-1, pos[1]);
-      }
-      else
+
+    e.key = chars[curIdx];
+    if ((e.modifiers & SpecialKeys.SHIFT) != 0){
+      e.key = Convert.toUpperCase((char)e.key);
+    }
+    e.consumed = true;
+  }
+
+  private void changeCursor(boolean advance)
+  {
+    if (target instanceof Edit)
+    {
+      Edit ed = (Edit)target;
+      int[] pos = ed.getCursorPos();
+      ed.persistentSelection = ed.selectLast = !advance;
+      ed.setCursorPos(advance ? pos[1] : pos[1]-1, pos[1]);
+    }
+    else
       if (target instanceof MultiEdit)
       {
-         MultiEdit ed = (MultiEdit)target;
-         int[] pos = ed.getCursorPos();
-         ed.persistentSelection = ed.selectLast = !advance;
-         ed.setCursorPos(advance ? pos[1] : pos[1]-1, pos[1]);
+        MultiEdit ed = (MultiEdit)target;
+        int[] pos = ed.getCursorPos();
+        ed.persistentSelection = ed.selectLast = !advance;
+        ed.setCursorPos(advance ? pos[1] : pos[1]-1, pos[1]);
       }
-   }
-   
-   private void resetTimer()
-   {
-      final MainWindow m = MainWindow.getMainWindow();
-      if (te != null)
-         te.postpone();
-      else
+  }
+
+  private void resetTimer()
+  {
+    final MainWindow m = MainWindow.getMainWindow();
+    if (te != null){
+      te.postpone();
+    }else
+    {
+      te = m.addTimer(MAX_DELAY);
+      m.addTimerListener(new TimerListener()
       {
-         te = m.addTimer(MAX_DELAY);
-         m.addTimerListener(new TimerListener()
-         {
-            public void timerTriggered(TimerEvent e)
-            {
-               if (te.triggered)
-               {
-                  m.removeTimer(te);
-                  te = null;
-                  changeCursor(true);
-               }
-            }
-         });
-      }
-   }
+        @Override
+        public void timerTriggered(TimerEvent e)
+        {
+          if (te.triggered)
+          {
+            m.removeTimer(te);
+            te = null;
+            changeCursor(true);
+          }
+        }
+      });
+    }
+  }
 }

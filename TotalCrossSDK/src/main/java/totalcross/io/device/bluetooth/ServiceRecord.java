@@ -90,126 +90,127 @@ package totalcross.io.device.bluetooth;
  */
 public class ServiceRecord
 {
-   Object nativeInstance;
-   
-   /**
-    * Authentication and encryption are not needed on a connection to this service. Used with
-    * <code>getConnectionURL()</code> method.
-    * <p>
-    * <code>NOAUTHENTICATE_NOENCRYPT</code> is set to the constant value 0x00 (0).
-    * </p>
-    */
-   public static final int NOAUTHENTICATE_NOENCRYPT = 0x00;
+  Object nativeInstance;
 
-   /**
-    * Authentication is required for connections to this service, but not encryption. It is OK for encryption to be
-    * either on or off for the connection. Used with <code>getConnectionURL()</code> method.
-    * <p>
-    * <code>AUTHENTICATE_NOENCRYPT</code> is set to the constant value 0x01 (1).
-    * </p>
-    */
-   public static final int AUTHENTICATE_NOENCRYPT = 0x01;
+  /**
+   * Authentication and encryption are not needed on a connection to this service. Used with
+   * <code>getConnectionURL()</code> method.
+   * <p>
+   * <code>NOAUTHENTICATE_NOENCRYPT</code> is set to the constant value 0x00 (0).
+   * </p>
+   */
+  public static final int NOAUTHENTICATE_NOENCRYPT = 0x00;
 
-   /**
-    * Authentication and encryption are required for connections to this service. Used with
-    * <code>getConnectionURL()</code> method.
-    * <p>
-    * <code>AUTHENTICATE_ENCRYPT</code> is set to the constant value 0x02 (2).
-    * </p>
-    */
-   public static final int AUTHENTICATE_ENCRYPT = 0x02;
+  /**
+   * Authentication is required for connections to this service, but not encryption. It is OK for encryption to be
+   * either on or off for the connection. Used with <code>getConnectionURL()</code> method.
+   * <p>
+   * <code>AUTHENTICATE_NOENCRYPT</code> is set to the constant value 0x01 (1).
+   * </p>
+   */
+  public static final int AUTHENTICATE_NOENCRYPT = 0x01;
 
-   ServiceRecord()
-   {
-   }   
-   
-   ServiceRecord(Object nativeInstance)
-   {
-      this.nativeInstance = nativeInstance;
-   }
+  /**
+   * Authentication and encryption are required for connections to this service. Used with
+   * <code>getConnectionURL()</code> method.
+   * <p>
+   * <code>AUTHENTICATE_ENCRYPT</code> is set to the constant value 0x02 (2).
+   * </p>
+   */
+  public static final int AUTHENTICATE_ENCRYPT = 0x02;
 
-   /**
-    * Returns the remote Bluetooth device that populated the service record with attribute values. It is important to
-    * note that the Bluetooth device that provided the value might not be reachable anymore, since it can move, turn
-    * off, or change its security mode denying all further transactions.
-    * 
-    * @return the remote Bluetooth device that populated the service record, or null if the local device populated this
-    *         ServiceRecord
-    * @since TotalCross 1.27
-    */
-   public RemoteDevice getHostDevice()
-   {
-      return null;
-   }
+  ServiceRecord()
+  {
+  }   
 
-   /**
-    * Returns the value of the service attribute ID provided it is present in the service record, otherwise this method
-    * returns null.
-    * 
-    * @param attrID
-    *           the attribute whose value is to be returned
-    * @return the value of the attribute ID if present in the service record, otherwise null
-    * @throws IllegalArgumentException
-    *            if attrID is negative or greater than or equal to 2<sup>16</sup>
-    * @since TotalCross 1.27
-    */
-   public DataElement getAttributeValue(int attrID)
-   {
-      if (attrID < 0x0000 || attrID > 0xffff)
-         throw new IllegalArgumentException();
-      return null;
-   }
+  ServiceRecord(Object nativeInstance)
+  {
+    this.nativeInstance = nativeInstance;
+  }
 
-   /**
-    * Returns a string including optional parameters that can be used by a client to connect to the service described by
-    * this ServiceRecord. The return value can be used as the first argument to Connector.open(). In the case of a
-    * Serial Port service record, this string might look like
-    * "btspp://0050CD00321B:3;authenticate=true;encrypt=false;master=true", where "0050CD00321B" is the Bluetooth
-    * address of the device that provided this ServiceRecord, "3" is the RFCOMM server channel mentioned in this
-    * ServiceRecord, and there are three optional parameters related to security and master/slave roles.
-    * 
-    * @return a string that can be used to connect to the service or null if the ProtocolDescriptorList in this
-    *         ServiceRecord is not formatted according to the Bluetooth specification
-    * @since TotalCross 1.15
-    */
-   public String getConnectionURL()
-   {
-      return getConnectionURL(NOAUTHENTICATE_NOENCRYPT, false);
-   }
+  /**
+   * Returns the remote Bluetooth device that populated the service record with attribute values. It is important to
+   * note that the Bluetooth device that provided the value might not be reachable anymore, since it can move, turn
+   * off, or change its security mode denying all further transactions.
+   * 
+   * @return the remote Bluetooth device that populated the service record, or null if the local device populated this
+   *         ServiceRecord
+   * @since TotalCross 1.27
+   */
+  public RemoteDevice getHostDevice()
+  {
+    return null;
+  }
 
-   /**
-    * Returns a String including optional parameters that can be used by a client to connect to the service described by
-    * this ServiceRecord. The return value can be used as the first argument to Connector.open(). In the case of a
-    * Serial Port service record, this string might look like
-    * "btspp://0050CD00321B:3;authenticate=true;encrypt=false;master=true", where "0050CD00321B" is the Bluetooth
-    * address of the device that provided this ServiceRecord, "3" is the RFCOMM server channel mentioned in this
-    * ServiceRecord, and there are three optional parameters related to security and master/slave roles.
-    * 
-    * @param requiredSecurity
-    *           determines whether authentication or encryption are required for a connection
-    * @param mustBeMaster
-    *           true indicates that this device must play the role of master in connections to this service; false
-    *           indicates that the local device is willing to be either the master or the slave
-    * @return a string that can be used to connect to the service or null if the ProtocolDescriptorList in this
-    *         ServiceRecord is not formatted according to the Bluetooth specification
-    * @throws IllegalArgumentException
-    *            if requiredSecurity is not one of the constants NOAUTHENTICATE_NOENCRYPT, AUTHENTICATE_NOENCRYPT, or
-    *            AUTHENTICATE_ENCRYPT
-    * @since TotalCross 1.27
-    * @see #NOAUTHENTICATE_NOENCRYPT
-    */
-   public String getConnectionURL(int requiredSecurity, boolean mustBeMaster)
-   {
-      // security
-      switch (requiredSecurity)
-      {
-         case NOAUTHENTICATE_NOENCRYPT:
-         case AUTHENTICATE_NOENCRYPT:
-         case AUTHENTICATE_ENCRYPT:
-         break;
-         default:
-            throw new IllegalArgumentException();
-      }      
-      return null;
-   }
+  /**
+   * Returns the value of the service attribute ID provided it is present in the service record, otherwise this method
+   * returns null.
+   * 
+   * @param attrID
+   *           the attribute whose value is to be returned
+   * @return the value of the attribute ID if present in the service record, otherwise null
+   * @throws IllegalArgumentException
+   *            if attrID is negative or greater than or equal to 2<sup>16</sup>
+   * @since TotalCross 1.27
+   */
+  public DataElement getAttributeValue(int attrID)
+  {
+    if (attrID < 0x0000 || attrID > 0xffff){
+      throw new IllegalArgumentException();
+    }
+    return null;
+  }
+
+  /**
+   * Returns a string including optional parameters that can be used by a client to connect to the service described by
+   * this ServiceRecord. The return value can be used as the first argument to Connector.open(). In the case of a
+   * Serial Port service record, this string might look like
+   * "btspp://0050CD00321B:3;authenticate=true;encrypt=false;master=true", where "0050CD00321B" is the Bluetooth
+   * address of the device that provided this ServiceRecord, "3" is the RFCOMM server channel mentioned in this
+   * ServiceRecord, and there are three optional parameters related to security and master/slave roles.
+   * 
+   * @return a string that can be used to connect to the service or null if the ProtocolDescriptorList in this
+   *         ServiceRecord is not formatted according to the Bluetooth specification
+   * @since TotalCross 1.15
+   */
+  public String getConnectionURL()
+  {
+    return getConnectionURL(NOAUTHENTICATE_NOENCRYPT, false);
+  }
+
+  /**
+   * Returns a String including optional parameters that can be used by a client to connect to the service described by
+   * this ServiceRecord. The return value can be used as the first argument to Connector.open(). In the case of a
+   * Serial Port service record, this string might look like
+   * "btspp://0050CD00321B:3;authenticate=true;encrypt=false;master=true", where "0050CD00321B" is the Bluetooth
+   * address of the device that provided this ServiceRecord, "3" is the RFCOMM server channel mentioned in this
+   * ServiceRecord, and there are three optional parameters related to security and master/slave roles.
+   * 
+   * @param requiredSecurity
+   *           determines whether authentication or encryption are required for a connection
+   * @param mustBeMaster
+   *           true indicates that this device must play the role of master in connections to this service; false
+   *           indicates that the local device is willing to be either the master or the slave
+   * @return a string that can be used to connect to the service or null if the ProtocolDescriptorList in this
+   *         ServiceRecord is not formatted according to the Bluetooth specification
+   * @throws IllegalArgumentException
+   *            if requiredSecurity is not one of the constants NOAUTHENTICATE_NOENCRYPT, AUTHENTICATE_NOENCRYPT, or
+   *            AUTHENTICATE_ENCRYPT
+   * @since TotalCross 1.27
+   * @see #NOAUTHENTICATE_NOENCRYPT
+   */
+  public String getConnectionURL(int requiredSecurity, boolean mustBeMaster)
+  {
+    // security
+    switch (requiredSecurity)
+    {
+    case NOAUTHENTICATE_NOENCRYPT:
+    case AUTHENTICATE_NOENCRYPT:
+    case AUTHENTICATE_ENCRYPT:
+      break;
+    default:
+      throw new IllegalArgumentException();
+    }      
+    return null;
+  }
 }

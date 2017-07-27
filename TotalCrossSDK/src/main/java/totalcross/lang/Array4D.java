@@ -32,15 +32,16 @@ package totalcross.lang;
  */
 public class Array4D implements Cloneable
 {  
-   public Object clone()
-   {
-      try
-      {
-         return super.clone();
-      }
-      catch (CloneNotSupportedException e)
-      {
-         return null; // Never occurs.
-      }
-   }
+  @Override
+  public Object clone()
+  {
+    try
+    {
+      return super.clone();
+    }
+    catch (CloneNotSupportedException e)
+    {
+      return null; // Never occurs.
+    }
+  }
 }

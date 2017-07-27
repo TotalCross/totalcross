@@ -21,20 +21,20 @@ package totalcross.crypto;
 
 public class CryptoException extends Exception
 {
-   /** 
-    * Constructs an empty Exception. 
-    */
-   public CryptoException()
-   {
-   }
-   
-   /** 
-    * Constructs an exception with the given message. 
-    *
-    * @param msg The exception message.
-    */
-   public CryptoException(String msg)
-   {
-      super(msg);
-   }
+  /** 
+   * Constructs an empty Exception. 
+   */
+  public CryptoException()
+  {
+  }
+
+  /** 
+   * Constructs an exception with the given message. 
+   *
+   * @param msg The exception message.
+   */
+  public CryptoException(String msg)
+  {
+    super(msg);
+  }
 }

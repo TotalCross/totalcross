@@ -33,167 +33,185 @@ package totalcross.ui.tree;
  */
 public class TreeModel
 {
-   private Tree    tree;
-   private Node    root;
-   
-   /** flag used to determine if a node is a leaf or a folder. */
-   public boolean allowsChildren;
+  private Tree    tree;
+  private Node    root;
 
-   /**
-    * Constructor to create a tree model with the specified root node and with the specified allowsChildren flag.
-    */
-   public TreeModel(Node root, boolean allowsChildren)
-   {
-      this.root = (root != null) ? root : new Node("");
-      this.allowsChildren = allowsChildren;
-   }
+  /** flag used to determine if a node is a leaf or a folder. */
+  public boolean allowsChildren;
 
-   /**
-    * Constructor to create a tree model with the specified root node and with allowsChildren is true.
-    */
-   public TreeModel(Node root)
-   {
-      this(root, true);
-   }
+  /**
+   * Constructor to create a tree model with the specified root node and with the specified allowsChildren flag.
+   */
+  public TreeModel(Node root, boolean allowsChildren)
+  {
+    this.root = (root != null) ? root : new Node("");
+    this.allowsChildren = allowsChildren;
+  }
 
-   /**
-    * Constructor to create an empty tree model with allowsChildren is true.
-    */
-   public TreeModel()
-   {
-      this(true);
-   }
+  /**
+   * Constructor to create a tree model with the specified root node and with allowsChildren is true.
+   */
+  public TreeModel(Node root)
+  {
+    this(root, true);
+  }
 
-   /**
-    * Constructor to create an empty tree model that use allowsChildren to determine the leaf node, if and only if
-    * allowsChildren is true.
-    *
-    * @param allowsChildren
-    *           true to use allowwsChildren to determine a leaf node.
-    */
-   public TreeModel(boolean allowsChildren)
-   {
-      this(null, allowsChildren);
-   }
+  /**
+   * Constructor to create an empty tree model with allowsChildren is true.
+   */
+  public TreeModel()
+  {
+    this(true);
+  }
 
-   /**
-    * Method to set the tree (For internal use only) This method register the tree to this model, so when the user add,
-    * delete, or modify a node, the tree view will be notify and updated.
-    *
-    * @param tree
-    *           the tree (view) that is associated with this model.
-    */
-   public void setTree(Tree tree)
-   {
-      this.tree = tree;
-   }
+  /**
+   * Constructor to create an empty tree model that use allowsChildren to determine the leaf node, if and only if
+   * allowsChildren is true.
+   *
+   * @param allowsChildren
+   *           true to use allowwsChildren to determine a leaf node.
+   */
+  public TreeModel(boolean allowsChildren)
+  {
+    this(null, allowsChildren);
+  }
 
-   /**
-    * Method to clear this model.
-    */
-   public void clear()
-   {
-      root = new Node("");
-      tree.setModel(this);
-   }
+  /**
+   * Method to set the tree (For internal use only) This method register the tree to this model, so when the user add,
+   * delete, or modify a node, the tree view will be notify and updated.
+   *
+   * @param tree
+   *           the tree (view) that is associated with this model.
+   */
+  public void setTree(Tree tree)
+  {
+    this.tree = tree;
+  }
 
-   /**
-    * Method to notify the tree to reload.
-    */
-   public void reload()
-   {
-      if (tree != null) tree.reload();
-   }
+  /**
+   * Method to clear this model.
+   */
+  public void clear()
+  {
+    root = new Node("");
+    tree.setModel(this);
+  }
 
-   /**
-    * Method to return the root node of this tree model.
-    *
-    * @return the root node of this tree model.
-    */
-   public Node getRoot()
-   {
-      return root;
-   }
+  /**
+   * Method to notify the tree to reload.
+   */
+  public void reload()
+  {
+    if (tree != null){
+      tree.reload();
+    }
+  }
 
-   /**
-    * Method to set the root node of this tree model and notify the tree to reload the tree.
-    *
-    * @param root
-    *           the new root node of this tree model.
-    */
-   public void setRoot(Node root)
-   {
-      this.root = root;
-      reload();
-   }
+  /**
+   * Method to return the root node of this tree model.
+   *
+   * @return the root node of this tree model.
+   */
+  public Node getRoot()
+  {
+    return root;
+  }
 
-   /**
-    * Method to insert a node to the parent node at the specified position. This method will notify the associated tree
-    * to display the node, if the parent node is expanded. If the index out of range, the new node will be inserted at
-    * the end of the parent node children vector (consider, in this case, using the addNode method, which is faster).
-    *
-    * @param parent
-    *           the parent node of the node to insert.
-    * @param newNode
-    *           the new node to insert into this tree model.
-    * @param index
-    *           the index to insert the node into
-    */
-   public void insertNode(Node parent, Node newNode, int index)
-   {
-      if (parent == null || newNode == null || parent.isLeaf(allowsChildren)) return; // cannot insert into a leaf node
+  /**
+   * Method to set the root node of this tree model and notify the tree to reload the tree.
+   *
+   * @param root
+   *           the new root node of this tree model.
+   */
+  public void setRoot(Node root)
+  {
+    this.root = root;
+    reload();
+  }
 
-      index = parent.insert(newNode, index);
-      if (tree != null) tree.nodeInserted(parent, newNode, index);
-   }
+  /**
+   * Method to insert a node to the parent node at the specified position. This method will notify the associated tree
+   * to display the node, if the parent node is expanded. If the index out of range, the new node will be inserted at
+   * the end of the parent node children vector (consider, in this case, using the addNode method, which is faster).
+   *
+   * @param parent
+   *           the parent node of the node to insert.
+   * @param newNode
+   *           the new node to insert into this tree model.
+   * @param index
+   *           the index to insert the node into
+   */
+  public void insertNode(Node parent, Node newNode, int index)
+  {
+    if (parent == null || newNode == null || parent.isLeaf(allowsChildren))
+    {
+      return; // cannot insert into a leaf node
+    }
 
-   /**
-    * Method to add a node to the parent node at the specified position. This method will notify the associated tree
-    * to display the node, if the parent node is expanded. This is fastest than insertNode.
-    *
-    * @param parent
-    *           the parent node of the node to insert.
-    * @param newNode
-    *           the new node to insert into this tree model.
-    */
-   public void addNode(Node parent, Node newNode)
-   {
-      if (parent == null || newNode == null || parent.isLeaf(allowsChildren)) return; // cannot insert into a leaf node
+    index = parent.insert(newNode, index);
+    if (tree != null){
+      tree.nodeInserted(parent, newNode, index);
+    }
+  }
 
-      parent.add(newNode);
-      if (tree != null) tree.nodeInserted(parent, newNode, parent.size());
-   }
+  /**
+   * Method to add a node to the parent node at the specified position. This method will notify the associated tree
+   * to display the node, if the parent node is expanded. This is fastest than insertNode.
+   *
+   * @param parent
+   *           the parent node of the node to insert.
+   * @param newNode
+   *           the new node to insert into this tree model.
+   */
+  public void addNode(Node parent, Node newNode)
+  {
+    if (parent == null || newNode == null || parent.isLeaf(allowsChildren))
+    {
+      return; // cannot insert into a leaf node
+    }
 
-   /**
-    * Method to remove a node from the tree. This method will notify the tree to collapse the tree.
-    *
-    * @param parent
-    *           the parent node of the node to remove.
-    * @param node
-    *           the node to remove from this tree model.
-    */
-   public void removeNode(Node parent, Node node)
-   {
-      // cannot delete root node
-      if (parent == null || node == null) return;
+    parent.add(newNode);
+    if (tree != null){
+      tree.nodeInserted(parent, newNode, parent.size());
+    }
+  }
 
-      parent.remove(node);
-      if (tree != null) tree.nodeRemoved(node);
-   }
+  /**
+   * Method to remove a node from the tree. This method will notify the tree to collapse the tree.
+   *
+   * @param parent
+   *           the parent node of the node to remove.
+   * @param node
+   *           the node to remove from this tree model.
+   */
+  public void removeNode(Node parent, Node node)
+  {
+    // cannot delete root node
+    if (parent == null || node == null){
+      return;
+    }
 
-   /**
-    * Method to modify a node userObject and notify the tree of the changes.
-    *
-    * @param node
-    *           the node to modify.
-    * @param userObject
-    *           the new user object.
-    */
-   public void modifyNode(Node node, Object userObject)
-   {
-      if (node == null) return;
+    parent.remove(node);
+    if (tree != null){
+      tree.nodeRemoved(node);
+    }
+  }
 
-      node.userObject = userObject;
-      tree.nodeModified(node);
-   }
+  /**
+   * Method to modify a node userObject and notify the tree of the changes.
+   *
+   * @param node
+   *           the node to modify.
+   * @param userObject
+   *           the new user object.
+   */
+  public void modifyNode(Node node, Object userObject)
+  {
+    if (node == null){
+      return;
+    }
+
+    node.userObject = userObject;
+    tree.nodeModified(node);
+  }
 }

@@ -12,8 +12,10 @@
 package totalcross.crypto.cipher;
 
 import java.security.GeneralSecurityException;
-import javax.crypto.spec.*;
-import totalcross.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import totalcross.crypto.CryptoException;
+import totalcross.crypto.NoSuchAlgorithmException;
 
 /**
  * This class implements the AES cryptographic cipher.
@@ -24,103 +26,111 @@ import totalcross.crypto.*;
  */
 public class AESCipher extends Cipher
 {
-   /**
-    * Returns the name of the algorithm.
-    * 
-    * @return "AES".
-    */
-   public final String getAlgorithm()
-   {
-      return "AES";
-   }
+  /**
+   * Returns the name of the algorithm.
+   * 
+   * @return "AES".
+   */
+  @Override
+  public final String getAlgorithm()
+  {
+    return "AES";
+  }
 
-   /**
-    * Returns the block length.
-    * 
-    * @return Always returns 16.
-    */
-   public final int getBlockLength()
-   {
-      // Applet may support 16 or 32, like axtls
-      // javax.crypto.Cipher cipher = (javax.crypto.Cipher)cipherRef;
-      // return (cipher != null) ? cipher.getBlockSize() : 16;
-      return 16;
-   }
-   
-   protected final void doReset() throws NoSuchAlgorithmException, CryptoException
-   {
-      String transf = "AES";
-      switch (chaining)
-      {
-         case CHAINING_NONE:
-            transf += "/NONE";
-            break;
-         case CHAINING_ECB:
-            transf += "/ECB";
-            break;
-         case CHAINING_CBC:
-            transf += "/CBC";
-            break;
+  /**
+   * Returns the block length.
+   * 
+   * @return Always returns 16.
+   */
+  @Override
+  public final int getBlockLength()
+  {
+    // Applet may support 16 or 32, like axtls
+    // javax.crypto.Cipher cipher = (javax.crypto.Cipher)cipherRef;
+    // return (cipher != null) ? cipher.getBlockSize() : 16;
+    return 16;
+  }
+
+  @Override
+  protected final void doReset() throws NoSuchAlgorithmException, CryptoException
+  {
+    String transf = "AES";
+    switch (chaining)
+    {
+    case CHAINING_NONE:
+      transf += "/NONE";
+      break;
+    case CHAINING_ECB:
+      transf += "/ECB";
+      break;
+    case CHAINING_CBC:
+      transf += "/CBC";
+      break;
+    }
+    switch (padding)
+    {
+    case PADDING_NONE:
+      transf += "/NoPadding";
+      break;
+    case PADDING_PKCS1:
+      transf += "/PKCS1Padding";
+      break;
+    case PADDING_PKCS5:
+      transf += "/PKCS5Padding";
+    }
+
+    try
+    {
+      javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance(transf);
+      cipherRef = cipher;
+
+      keyRef = new SecretKeySpec(((AESKey)key).getData(), "AES");
+
+      int mode = operation == OPERATION_ENCRYPT ? javax.crypto.Cipher.ENCRYPT_MODE : javax.crypto.Cipher.DECRYPT_MODE;
+      cipher.init(mode, (java.security.Key)keyRef, iv == null ? null : new IvParameterSpec(iv));
+      if (iv == null) {
+        iv = cipher.getIV();
       }
-      switch (padding)
-      {
-         case PADDING_NONE:
-            transf += "/NoPadding";
-            break;
-         case PADDING_PKCS1:
-            transf += "/PKCS1Padding";
-            break;
-         case PADDING_PKCS5:
-            transf += "/PKCS5Padding";
-      }
-      
-      try
-      {
-         javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance(transf);
-         cipherRef = cipher;
-         
-         keyRef = new SecretKeySpec(((AESKey)key).getData(), "AES");
-         
-         int mode = operation == OPERATION_ENCRYPT ? javax.crypto.Cipher.ENCRYPT_MODE : javax.crypto.Cipher.DECRYPT_MODE;
-         cipher.init(mode, (java.security.Key)keyRef, iv == null ? null : new IvParameterSpec(iv));
-         if (iv == null)
-            iv = cipher.getIV();
-      }
-      catch (java.security.NoSuchAlgorithmException e)
-      {
-         throw new NoSuchAlgorithmException(e.getMessage());
-      }
-      catch (GeneralSecurityException e)
-      {
-         throw new CryptoException(e.getMessage());
-      }
-   }
-   
-   protected final byte[] process(byte[] data) throws CryptoException
-   {
-      try
-      {
-         javax.crypto.Cipher cipher = (javax.crypto.Cipher)cipherRef;
-         return cipher.doFinal(data);
-      }
-      catch (GeneralSecurityException e)
-      {
-         throw new CryptoException(e.getMessage());
-      }
-   }
-   
-   protected final boolean isKeySupported(Key key, int operation)
-   {
-      return key instanceof AESKey;
-   }
-   
-   protected final boolean isChainingSupported(int chaining)
-   {
-      return chaining == CHAINING_ECB || chaining == CHAINING_CBC;
-   }
-   
-   protected final boolean isPaddingSupported(int padding)
-   {
-      return padding == PADDING_PKCS5;
-   }
+    }
+    catch (java.security.NoSuchAlgorithmException e)
+    {
+      throw new NoSuchAlgorithmException(e.getMessage());
+    }
+    catch (GeneralSecurityException e)
+    {
+      throw new CryptoException(e.getMessage());
+    }
+  }
+
+  @Override
+  protected final byte[] process(byte[] data) throws CryptoException
+  {
+    try
+    {
+      javax.crypto.Cipher cipher = (javax.crypto.Cipher)cipherRef;
+      return cipher.doFinal(data);
+    }
+    catch (GeneralSecurityException e)
+    {
+      throw new CryptoException(e.getMessage());
+    }
+  }
+
+  @Override
+  protected final boolean isKeySupported(Key key, int operation)
+  {
+    return key instanceof AESKey;
+  }
+
+  @Override
+  protected final boolean isChainingSupported(int chaining)
+  {
+    return chaining == CHAINING_ECB || chaining == CHAINING_CBC;
+  }
+
+  @Override
+  protected final boolean isPaddingSupported(int padding)
+  {
+    return padding == PADDING_PKCS5;
+  }
 }

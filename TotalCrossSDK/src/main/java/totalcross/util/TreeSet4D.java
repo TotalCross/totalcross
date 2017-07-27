@@ -38,7 +38,19 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
 
 /**
  * This class provides a TreeMap-backed implementation of the SortedSet
@@ -79,7 +91,7 @@ import java.util.*;
  * @status updated to 1.6
  */
 public class TreeSet4D<T> extends AbstractSet<T>
-  implements NavigableSet<T>, Cloneable
+implements NavigableSet<T>, Cloneable
 {
   /**
    * The NavigableMap which backs this Set.
@@ -144,7 +156,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
     Iterator<T> itr;
 
     map = new TreeMap4D<T, String>
-      ((Comparator<? super T>)sortedSet.comparator());
+    ((Comparator<? super T>)sortedSet.comparator());
     itr = ((SortedSet<T>) sortedSet).iterator();
     ((TreeMap4D<T, String>) map).putKeysLinear(itr, sortedSet.size());
   }
@@ -168,6 +180,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @throws ClassCastException if the element cannot be compared with objects
    *         already in the set
    */
+  @Override
   public boolean add(T obj)
   {
     return map.put(obj, "") == null;
@@ -182,19 +195,22 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @throws ClassCastException if an element in c cannot be compared with
    *         objects already in the set
    */
+  @Override
   public boolean addAll(Collection<? extends T> c)
   {
     boolean result = false;
     int pos = c.size();
     Iterator<? extends T> itr = c.iterator();
-    while (--pos >= 0)
+    while (--pos >= 0){
       result |= (map.put(itr.next(), "") == null);
+    }
     return result;
   }
 
   /**
    * Removes all elements in this Set.
    */
+  @Override
   public void clear()
   {
     map.clear();
@@ -205,19 +221,20 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *
    * @return the cloned set
    */
+  @Override
   public Object clone()
   {
     TreeSet4D<T> copy = null;
     try
-      {
-        copy = (TreeSet4D<T>) super.clone();
-        // Map may be either TreeMap or TreeMap.SubMap, hence the ugly casts.
-        copy.map = (NavigableMap<T, String>) ((AbstractMap4D<T, String>) map).clone();
-      }
+    {
+      copy = (TreeSet4D<T>) super.clone();
+      // Map may be either TreeMap or TreeMap.SubMap, hence the ugly casts.
+      copy.map = (NavigableMap<T, String>) ((AbstractMap4D<T, String>) map).clone();
+    }
     catch (CloneNotSupportedException x)
-      {
-        // Impossible result.
-      }
+    {
+      // Impossible result.
+    }
     return copy;
   }
 
@@ -226,6 +243,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *
    * @return the comparator, or null if the set uses natural ordering
    */
+  @Override
   public Comparator<? super T> comparator()
   {
     return map.comparator();
@@ -239,6 +257,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @throws ClassCastException if obj cannot be compared with objects
    *         already in the set
    */
+  @Override
   public boolean contains(Object obj)
   {
     return map.containsKey(obj);
@@ -250,6 +269,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @return the first element
    * @throws NoSuchElementException if the set is empty
    */
+  @Override
   public T first()
   {
     return map.firstKey();
@@ -272,6 +292,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @throws NullPointerException if to is null, but the comparator does not
    *         tolerate null elements
    */
+  @Override
   public SortedSet<T> headSet(T to)
   {
     return headSet(to, false);
@@ -293,6 +314,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @throws NullPointerException if to is null, but the comparator does not
    *         tolerate null elements
    */
+  @Override
   public NavigableSet<T> headSet(T to, boolean inclusive)
   {
     return new TreeSet4D<T>(map.headMap(to, inclusive));
@@ -303,6 +325,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *
    * @return true if the set is empty
    */
+  @Override
   public boolean isEmpty()
   {
     return map.isEmpty();
@@ -314,6 +337,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *
    * @return an iterator
    */
+  @Override
   public Iterator<T> iterator()
   {
     return map.keySet().iterator();
@@ -325,6 +349,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @return the last element
    * @throws NoSuchElementException if the set is empty
    */
+  @Override
   public T last()
   {
     return map.lastKey();
@@ -338,6 +363,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @return true if the set was modified
    * @throws ClassCastException if obj cannot be compared to set elements
    */
+  @Override
   public boolean remove(Object obj)
   {
     return map.remove(obj) != null;
@@ -348,6 +374,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *
    * @return the set size
    */
+  @Override
   public int size()
   {
     return map.size();
@@ -373,6 +400,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *         does not tolerate null elements
    * @throws IllegalArgumentException if from is greater than to
    */
+  @Override
   public SortedSet<T> subSet(T from, T to)
   {
     return subSet(from, true, to, false);
@@ -397,11 +425,12 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *         does not tolerate null elements
    * @throws IllegalArgumentException if from is greater than to
    */
+  @Override
   public NavigableSet<T> subSet(T from, boolean fromInclusive,
-                                T to, boolean toInclusive)
+      T to, boolean toInclusive)
   {
     return new TreeSet4D<T>(map.subMap(from, fromInclusive,
-                                     to, toInclusive));
+        to, toInclusive));
   }
 
   /**
@@ -421,6 +450,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @throws NullPointerException if from is null, but the comparator
    *         does not tolerate null elements
    */
+  @Override
   public SortedSet<T> tailSet(T from)
   {
     return tailSet(from, true);
@@ -441,6 +471,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @throws NullPointerException if from is null, but the comparator
    *         does not tolerate null elements
    */
+  @Override
   public NavigableSet<T> tailSet(T from, boolean inclusive)
   {
     return new TreeSet4D<T>(map.tailMap(from, inclusive));
@@ -463,6 +494,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *                              not permit null elements.
    * @since 1.6
    */
+  @Override
   public T ceiling(T e)
   {
     return map.ceilingKey(e);
@@ -476,6 +508,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @return an iterator over the elements in descending order.
    * @since 1.6
    */
+  @Override
   public Iterator<T> descendingIterator()
   {
     return descendingSet().iterator();
@@ -495,6 +528,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    * @return a reverse order view of the set.
    * @since 1.6
    */
+  @Override
   public NavigableSet<T> descendingSet()
   {
     return map.descendingKeySet();
@@ -517,6 +551,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *                              not permit null elements.
    * @since 1.6
    */
+  @Override
   public T floor(T e)
   {
     return map.floorKey(e);
@@ -539,6 +574,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *                              not permit null elements.
    * @since 1.6
    */
+  @Override
   public T higher(T e)
   {
     return map.higherKey(e);
@@ -561,6 +597,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *                              not permit null elements.
    * @since 1.6
    */
+  @Override
   public T lower(T e)
   {
     return map.lowerKey(e);
@@ -574,6 +611,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *         map is empty.
    * @since 1.6
    */
+  @Override
   public T pollFirst()
   {
     return map.pollFirstEntry().getKey();
@@ -587,6 +625,7 @@ public class TreeSet4D<T> extends AbstractSet<T>
    *         map is empty.
    * @since 1.6
    */
+  @Override
   public T pollLast()
   {
     return map.pollLastEntry().getKey();

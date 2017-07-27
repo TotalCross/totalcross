@@ -13,6 +13,8 @@
 
 package totalcross.util.concurrent;
 
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 /** Class used with the <code>synchronize</code> keyword, representing a lock to avoid concurrent access.
  * Here's a sample:
  * <pre>
@@ -30,26 +32,26 @@ package totalcross.util.concurrent;
 
 public class Lock
 {
-   Object mutex;
+  Object mutex;
 
-   public Lock()
-   {
-      create();
-   }
-   
-   protected void finalize()
-   {
-      destroy();
-   }
-   
-   final void create() 
-   {
-   }
-   
-   final void destroy()
-   {
-   }
-   
-   native void create4D();
-   native void destroy4D();
+  public Lock()
+  {
+    create();
+  }
+
+  @Override
+  protected void finalize()
+  {
+    destroy();
+  }
+
+  @ReplacedByNativeOnDeploy
+  final void create() 
+  {
+  }
+
+  @ReplacedByNativeOnDeploy
+  final void destroy()
+  {
+  }
 }

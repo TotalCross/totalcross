@@ -15,14 +15,14 @@ package tc.tools.converter.oper;
 
 public class OperandExternal extends Operand
 {
-   public OperandReg regO;
-   public OperandSym sym;
+  public OperandReg regO;
+  public OperandSym sym;
 
-   public OperandExternal(OperandReg reg, OperandSym sym)
-   {
-      super(sym.kind);
-      regO = reg;
-      this.sym = sym;
-      nWords = sym.nWords;
-   }
+  public OperandExternal(OperandReg reg, OperandSym sym)
+  {
+    super(sym.kind);
+    regO = reg;
+    this.sym = sym;
+    nWords = sym.nWords;
+  }
 }

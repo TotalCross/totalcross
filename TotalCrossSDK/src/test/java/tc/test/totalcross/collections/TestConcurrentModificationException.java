@@ -11,30 +11,32 @@
 
 package tc.test.totalcross.collections;
 
-import java.util.*;
+import java.util.ConcurrentModificationException;
+
 import totalcross.unit.TestCase;
 
 public class TestConcurrentModificationException extends TestCase
 {
-   public void testRun()
-   {
-      try
-      {
-         throw new ConcurrentModificationException();
-      }
-      catch (ConcurrentModificationException exception)
-      {
-         assertTrue(exception instanceof ConcurrentModificationException);
-      }
-      
-      try
-      {
-         throw new ConcurrentModificationException("erro");
-      }
-      catch (ConcurrentModificationException exception)
-      {
-         assertTrue(exception instanceof ConcurrentModificationException);
-         assertEquals("erro", exception.getMessage());
-      }
-   }
+  @Override
+  public void testRun()
+  {
+    try
+    {
+      throw new ConcurrentModificationException();
+    }
+    catch (ConcurrentModificationException exception)
+    {
+      assertTrue(exception instanceof ConcurrentModificationException);
+    }
+
+    try
+    {
+      throw new ConcurrentModificationException("erro");
+    }
+    catch (ConcurrentModificationException exception)
+    {
+      assertTrue(exception instanceof ConcurrentModificationException);
+      assertEquals("erro", exception.getMessage());
+    }
+  }
 }

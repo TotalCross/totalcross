@@ -26,21 +26,21 @@ package totalcross.sys;
 
 public class AppExitException extends RuntimeException
 {
-   /** 
-    * Constructs an empty Exception. 
-    */
-   public AppExitException()
-   {
-      super();
-   }
+  /** 
+   * Constructs an empty Exception. 
+   */
+  public AppExitException()
+  {
+    super();
+  }
 
-   /** 
-    * Constructs an exception with the given message. 
-    * 
-    * @param msg The error message.
-    */
-   public AppExitException(String msg)
-   {
-     super(msg);
-   }
+  /** 
+   * Constructs an exception with the given message. 
+   * 
+   * @param msg The error message.
+   */
+  public AppExitException(String msg)
+  {
+    super(msg);
+  }
 }

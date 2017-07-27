@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC061_istore_2 extends StoreLocal
 {
-   public BC061_istore_2()
-   {
-      super(2,-1,INT);
-   }
+  public BC061_istore_2()
+  {
+    super(2,-1,INT);
+  }
 }

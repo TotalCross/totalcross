@@ -22,12 +22,12 @@ package totalcross.ui.event;
 
 public interface FocusListener
 {
-   /** A FOCUS_IN event was dispatched.
-    * @see ControlEvent 
-    */
-   public void focusIn(ControlEvent e);
-   /** A FOCUS_OUT event was dispatched. 
-    * @see ControlEvent 
-    */
-   public void focusOut(ControlEvent e);
+  /** A FOCUS_IN event was dispatched.
+   * @see ControlEvent 
+   */
+  public void focusIn(ControlEvent e);
+  /** A FOCUS_OUT event was dispatched. 
+   * @see ControlEvent 
+   */
+  public void focusOut(ControlEvent e);
 }

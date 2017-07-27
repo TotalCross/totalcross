@@ -2,61 +2,61 @@ package tc.samples.api.json;
 
 public class FacebookPost
 {
-   private String name;
-   private long date;
-   private String text;
-   private int likes;
-   
-   public String getName()
-   {
-      return name;
-   }
+  private String name;
+  private long date;
+  private String text;
+  private int likes;
 
-   public void setName(String name)
-   {
-      this.name = name;
-   }
+  public String getName()
+  {
+    return name;
+  }
 
-   public long getDate()
-   {
-      return date;
-   }
+  public void setName(String name)
+  {
+    this.name = name;
+  }
 
-   public void setDate(long date)
-   {
-      this.date = date;
-   }
+  public long getDate()
+  {
+    return date;
+  }
 
-   public String getText()
-   {
-      return text;
-   }
+  public void setDate(long date)
+  {
+    this.date = date;
+  }
 
-   public void setText(String text)
-   {
-      this.text = text;
-   }
+  public String getText()
+  {
+    return text;
+  }
 
-   public int getLikes()
-   {
-      return likes;
-   }
+  public void setText(String text)
+  {
+    this.text = text;
+  }
 
-   public void setLikes(int likes)
-   {
-      this.likes = likes;
-   }
+  public int getLikes()
+  {
+    return likes;
+  }
 
-   public FacebookPost()
-   {
-   }
+  public void setLikes(int likes)
+  {
+    this.likes = likes;
+  }
 
-   public FacebookPost(String name, long date, String text, int likes)
-   {
-      this.name = name;
-      this.date = date;
-      this.text = text;
-      this.likes = likes;
-   }
+  public FacebookPost()
+  {
+  }
+
+  public FacebookPost(String name, long date, String text, int likes)
+  {
+    this.name = name;
+    this.date = date;
+    this.text = text;
+    this.likes = likes;
+  }
 
 }

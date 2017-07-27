@@ -15,18 +15,18 @@ package tc.test.converter.testfiles;
 
 public class BC187
 {
-   public BC187()
-   {
-      BC187 c1   = new BC187();
-      BC187_A c2 = new BC187_A();
-      if (false) {Object o; o = c1; o = c2;} // remove warnings
+  public BC187()
+  {
+    BC187 c1   = new BC187();
+    BC187_A c2 = new BC187_A();
+    if (false) {Object o; o = c1; o = c2;} // remove warnings
 
-   }
+  }
 }
 
 class BC187_A
 {
-   public BC187_A()
-   {
-   }
+  public BC187_A()
+  {
+  }
 }

@@ -1,11 +1,12 @@
 package tc.samples.app.btchat;
 
-import totalcross.ui.*;
+import totalcross.ui.MainWindow;
 
 public class BtChat extends MainWindow
 {
-   public void initUI()
-   {
-      swap(new FirstScreen());
-   }
+  @Override
+  public void initUI()
+  {
+    swap(new FirstScreen());
+  }
 }

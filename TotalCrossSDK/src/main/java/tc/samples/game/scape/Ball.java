@@ -18,57 +18,59 @@
 
 package tc.samples.game.scape;
 
-import totalcross.game.*;
-import totalcross.io.*;
-import totalcross.sys.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.game.Sprite;
+import totalcross.io.IOException;
+import totalcross.sys.Settings;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 public class Ball extends Sprite
 {
-   private int _regionMinx;
-   private int _regionMiny;
-   private int _regionMaxx;
-   private int _regionMaxy;
+  private int _regionMinx;
+  private int _regionMiny;
+  private int _regionMaxx;
+  private int _regionMaxy;
 
-   public Ball() throws ImageException, IOException
-   {
-      super(new Image("tc/samples/game/scape/ball.png").getSmoothScaledInstance(26*Math.min(Settings.screenWidth,Settings.screenHeight)/320*7, 26*Math.min(Settings.screenWidth,Settings.screenHeight)/320),
-            7, Color.WHITE, Scape.SPRITE_BKGD_SAVING, null);
+  public Ball() throws ImageException, IOException
+  {
+    super(new Image("tc/samples/game/scape/ball.png").getSmoothScaledInstance(26*Math.min(Settings.screenWidth,Settings.screenHeight)/320*7, 26*Math.min(Settings.screenWidth,Settings.screenHeight)/320),
+        7, Color.WHITE, Scape.SPRITE_BKGD_SAVING, null);
 
-      this.doClip = false;
+    this.doClip = false;
 
-      regionMiny += Scape.miny;
+    regionMiny += Scape.miny;
 
-      _regionMinx = regionMinx;
-      _regionMiny = regionMiny;
-      _regionMaxx = regionMaxx;
-      _regionMaxy = regionMaxy;
-   }
+    _regionMinx = regionMinx;
+    _regionMiny = regionMiny;
+    _regionMaxx = regionMaxx;
+    _regionMaxy = regionMaxy;
+  }
 
-   public void reduceZone(int size)
-   {
-      regionMinx = _regionMinx + size;
-      regionMiny = _regionMiny + size;
-      regionMaxx = _regionMaxx - size;
-      regionMaxy = _regionMaxy - size;
-   }
+  public void reduceZone(int size)
+  {
+    regionMinx = _regionMinx + size;
+    regionMiny = _regionMiny + size;
+    regionMaxx = _regionMaxx - size;
+    regionMaxy = _regionMaxy - size;
+  }
 
-   public void show()
-   {
-      image.nextFrame();
-      super.show();
-   }
+  @Override
+  public void show()
+  {
+    image.nextFrame();
+    super.show();
+  }
 
-   public boolean place(int x, int y, boolean doValidate)
-   {
-      return setPos(xpos = x, ypos = y, doValidate);
-   }
+  public boolean place(int x, int y, boolean doValidate)
+  {
+    return setPos(xpos = x, ypos = y, doValidate);
+  }
 
-   public boolean move(int dx, int dy)
-   {
-      return setPos(xpos += dx, ypos += dy, true);
-   }
+  public boolean move(int dx, int dy)
+  {
+    return setPos(xpos += dx, ypos += dy, true);
+  }
 
-   private int xpos, ypos;
+  private int xpos, ypos;
 }

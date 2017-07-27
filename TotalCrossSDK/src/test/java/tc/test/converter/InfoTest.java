@@ -19,13 +19,15 @@ import tc.tools.converter.tclass.*;
 import tc.test.converter.util.*;
 import totalcross.io.*;
 import totalcross.util.zip.*;
-*/import totalcross.unit.*;
+ */
+import totalcross.unit.TestCase;
 
 public class InfoTest extends TestCase
 {
-   public void testRun()
-   {
-/*      GlobalConstantPool.init();
+  @Override
+  public void testRun()
+  {
+    /*      GlobalConstantPool.init();
       // get the bytes from the string
       ByteArrayStream uncompressed = new ByteArrayStream(512);
       ImageTester.hex2bytes(LzmaTest.TestTypes_uncompressed, uncompressed);
@@ -59,5 +61,5 @@ public class InfoTest extends TestCase
       byte[] u = uncompressed.toByteArray();
       byte[] s = saved.toByteArray();
       assertEquals(u, s);
-*/   }
+     */   }
 }

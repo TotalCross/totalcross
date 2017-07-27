@@ -39,7 +39,12 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This class provides a hashtable-backed implementation of the
@@ -89,7 +94,7 @@ import java.util.*;
  * @status updated to 1.4
  */
 public class LinkedHashSet4D<T> extends HashSet4D<T>
-  implements Set<T>, Cloneable
+implements Set<T>, Cloneable
 {
   /**
    * Construct a new, empty HashSet whose backing HashMap has the default
@@ -147,6 +152,7 @@ public class LinkedHashSet4D<T> extends HashSet4D<T>
    * @param load the initial load factor
    * @return the backing HashMap
    */
+  @Override
   HashMap4D<T, String> init(int capacity, double load)
   {
     return new LinkedHashMap4D<T, String>(capacity, load);

@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC131_lxor extends Logical
 {
-   public BC131_lxor()
-   {
-      super(-1,-2,-1,LONG);
-   }
-   public void exec()
-   {
-      stack[-2].asLong ^= stack[-1].asLong;
-   }
+  public BC131_lxor()
+  {
+    super(-1,-2,-1,LONG);
+  }
+  @Override
+  public void exec()
+  {
+    stack[-2].asLong ^= stack[-1].asLong;
+  }
 }

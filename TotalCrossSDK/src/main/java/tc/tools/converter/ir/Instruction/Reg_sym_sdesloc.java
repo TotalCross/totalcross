@@ -19,43 +19,45 @@ import totalcross.util.Vector;
 
 public class Reg_sym_sdesloc extends SingleInstruction
 {
-   public int reg;
-   public int sym;
-   public int desloc;
+  public int reg;
+  public int sym;
+  public int desloc;
 
-   public Reg_sym_sdesloc(int op, int line, int r, int s, int d)
-   {
-      super(op, line);
-      reg    = r;
-      sym    = s;
-      desloc = d;
-   }
+  public Reg_sym_sdesloc(int op, int line, int r, int s, int d)
+  {
+    super(op, line);
+    reg    = r;
+    sym    = s;
+    desloc = d;
+  }
 
-   public Reg_sym_sdesloc(int op, int line)
-   {
-      super(op, line);
-   }
+  public Reg_sym_sdesloc(int op, int line)
+  {
+    super(op, line);
+  }
 
-   public void set(int r, int s, int d)
-   {
-      reg    = r;
-      sym    = s;
-      desloc = d;
-   }
+  public void set(int r, int s, int d)
+  {
+    reg    = r;
+    sym    = s;
+    desloc = d;
+  }
 
-   public String toString()
-   {
-      String print;
-      print = TCConstants.bcTClassNames[opcode] + " " + reg + ", " + sym + ", " + desloc;
-      return print;
-   }
+  @Override
+  public String toString()
+  {
+    String print;
+    print = TCConstants.bcTClassNames[opcode] + " " + reg + ", " + sym + ", " + desloc;
+    return print;
+  }
 
-   public void toTCCode(Vector vcode)
-   {
-      TCCode tc = new TCCode(opcode, line);
-      tc.reg_sym_sdesloc__desloc(desloc);
-      tc.reg_sym_sdesloc__reg(reg);
-      tc.reg_sym_sdesloc__sym(sym);
-      vcode.addElement(tc);
-   }
+  @Override
+  public void toTCCode(Vector vcode)
+  {
+    TCCode tc = new TCCode(opcode, line);
+    tc.reg_sym_sdesloc__desloc(desloc);
+    tc.reg_sym_sdesloc__reg(reg);
+    tc.reg_sym_sdesloc__sym(sym);
+    vcode.addElement(tc);
+  }
 }

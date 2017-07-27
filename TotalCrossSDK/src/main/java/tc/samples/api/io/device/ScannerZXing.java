@@ -19,57 +19,63 @@
 
 package tc.samples.api.io.device;
 
-import tc.samples.api.*;
-
-import totalcross.io.device.scanner.*;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
+import tc.samples.api.BaseContainer;
+import totalcross.io.device.scanner.Scanner;
+import totalcross.sys.Settings;
+import totalcross.ui.Label;
+import totalcross.ui.MultiEdit;
+import totalcross.ui.PushButtonGroup;
+import totalcross.ui.UIColors;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.gfx.Color;
 
 /** ZXing scanner demo
  */
 
 public class ScannerZXing extends BaseContainer 
 {
-   // by making the members private, the compiler can optimize them.
-   private MultiEdit edtBarCode;
-   private PushButtonGroup pbg;
+  // by making the members private, the compiler can optimize them.
+  private MultiEdit edtBarCode;
+  private PushButtonGroup pbg;
 
-   public void initUI()
-   {
-      super.initUI();
-      if (!Settings.platform.equals(Settings.ANDROID) && !Settings.onJavaSE)
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    if (!Settings.platform.equals(Settings.ANDROID) && !Settings.onJavaSE)
+    {
+      add(new Label("This sample works only on Android"),CENTER,CENTER);
+      return;
+    }
+    setBackColor(UIColors.controlsBack = Color.WHITE);
+    pbg = new PushButtonGroup(new String[]{"SCAN 1D barcodes","SCAN 2D QR codes","SCAN Both types"},fmH/2,3);
+    add(pbg,LEFT,TOP+fmH,FILL,PREFERRED+fmH);
+
+    add(edtBarCode = new MultiEdit(3,1), LEFT, BOTTOM-fmH,FILL,PREFERRED);
+    edtBarCode.setEditable(false);
+
+    add(new Label("Result:"),LEFT,BEFORE);
+  }
+
+  private static final String msg = "Place a barcode inside the viewfinder rectangle to scan it";
+
+  @Override
+  public void onEvent(Event event)
+  {
+    switch (event.type)
+    {
+    case ControlEvent.PRESSED:
+      if (event.target == pbg)
       {
-         add(new Label("This sample works only on Android"),CENTER,CENTER);
-         return;
+        int sel = pbg.getSelectedIndex();
+        String mode = sel == 0 ? "1D" : sel == 1 ? "2D" : "";
+        String scan = Scanner.readBarcode("mode="+mode+"&msg="+msg);
+        if (scan != null) {
+          edtBarCode.setText(scan);
+        }
       }
-      setBackColor(UIColors.controlsBack = Color.WHITE);
-      pbg = new PushButtonGroup(new String[]{"SCAN 1D barcodes","SCAN 2D QR codes","SCAN Both types"},fmH/2,3);
-      add(pbg,LEFT,TOP+fmH,FILL,PREFERRED+fmH);
-
-      add(edtBarCode = new MultiEdit(3,1), LEFT, BOTTOM-fmH,FILL,PREFERRED);
-      edtBarCode.setEditable(false);
-      
-      add(new Label("Result:"),LEFT,BEFORE);
-   }
-
-   private static final String msg = "Place a barcode inside the viewfinder rectangle to scan it";
-
-   public void onEvent(Event event)
-   {
-      switch (event.type)
-      {
-         case ControlEvent.PRESSED:
-            if (event.target == pbg)
-            {
-               int sel = pbg.getSelectedIndex();
-               String mode = sel == 0 ? "1D" : sel == 1 ? "2D" : "";
-               String scan = Scanner.readBarcode("mode="+mode+"&msg="+msg);
-               if (scan != null)
-                  edtBarCode.setText(scan);
-            }
-            break;
-      }
-   }
+      break;
+    }
+  }
 }

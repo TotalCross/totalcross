@@ -20,23 +20,23 @@
 package totalcross.xml;
 
 /**
-* Make an XmlReadable from a String.
-* Example:
-* <PRE>
-*    XmlReader rdr = new XmlReader();
-*    rdr.setContentHandler(...);
-*    rdr.parse(new XmlReadableString("Hello World!"));
-* </PRE>
-*/
+ * Make an XmlReadable from a String.
+ * Example:
+ * <PRE>
+ *    XmlReader rdr = new XmlReader();
+ *    rdr.setContentHandler(...);
+ *    rdr.parse(new XmlReadableString("Hello World!"));
+ * </PRE>
+ */
 public class XmlReadableString extends XmlReadableByteArray
 {
-   /**
+  /**
    * Constructor
    *
    * @param source String that contains the XML readable HTML
    */
-   public XmlReadableString(String source)
-   {
-      super(source.getBytes());
-   }
+  public XmlReadableString(String source)
+  {
+    super(source.getBytes());
+  }
 }

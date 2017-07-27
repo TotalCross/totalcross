@@ -25,53 +25,53 @@ package totalcross.io;
  */
 public abstract class RandomAccessStream extends Stream
 {
-   /** The index of the next position to read or write in the stream */
-   protected int pos;
+  /** The index of the next position to read or write in the stream */
+  protected int pos;
 
-   /** Beginning of file */
-   public static final int SEEK_SET = 0;
-   /** Current position of the file pointer */
-   public static final int SEEK_CUR = 1;
-   /** End of file */
-   public static final int SEEK_END = 2;
+  /** Beginning of file */
+  public static final int SEEK_SET = 0;
+  /** Current position of the file pointer */
+  public static final int SEEK_CUR = 1;
+  /** End of file */
+  public static final int SEEK_END = 2;
 
-   /**
-    * Returns the current offset in this stream.
-    * 
-    * @return the offset from the beginning of the stream, in bytes, at which the next read or write occurs.
-    * @throws totalcross.io.IOException
-    *            if an I/O error has occurred.
-    * @since TotalCross 1.2
-    */
-   public int getPos() throws totalcross.io.IOException
-   {
-      return pos;
-   }
+  /**
+   * Returns the current offset in this stream.
+   * 
+   * @return the offset from the beginning of the stream, in bytes, at which the next read or write occurs.
+   * @throws totalcross.io.IOException
+   *            if an I/O error has occurred.
+   * @since TotalCross 1.2
+   */
+  public int getPos() throws totalcross.io.IOException
+  {
+    return pos;
+  }
 
-   /**
-    * Sets the file pointer for read and write operations to a new position defined by adding offset to a reference
-    * position specified by origin.
-    * 
-    * @param offset
-    *           number of bytes to offset from origin.
-    * @param origin
-    *           position from where offset is added. It is specified by one of the SEEK_* constants.
-    * @throws IllegalArgumentException
-    *            if origin is not one of the values specified by the SEEK_* constants.
-    * @throws totalcross.io.IOException
-    *            if the new position is negative or if an I/O error occurs.
-    * @since TotalCross 1.2
-    */
-   public abstract void setPos(int offset, int origin) throws totalcross.io.IOException;
+  /**
+   * Sets the file pointer for read and write operations to a new position defined by adding offset to a reference
+   * position specified by origin.
+   * 
+   * @param offset
+   *           number of bytes to offset from origin.
+   * @param origin
+   *           position from where offset is added. It is specified by one of the SEEK_* constants.
+   * @throws IllegalArgumentException
+   *            if origin is not one of the values specified by the SEEK_* constants.
+   * @throws totalcross.io.IOException
+   *            if the new position is negative or if an I/O error occurs.
+   * @since TotalCross 1.2
+   */
+  public abstract void setPos(int offset, int origin) throws totalcross.io.IOException;
 
-   /**
-    * Sets the file pointer for read and write operations to the given position. The position passed is an absolute
-    * position, in bytes, from the beginning of the stream.
-    * 
-    * @param pos
-    *           the offset position, measured in bytes from the beginning of the file, at which to set the file pointer.
-    * @throws totalcross.io.IOException
-    *            if pos is negative or if an I/O error occurs.
-    */
-   public abstract void setPos(int pos) throws totalcross.io.IOException;
+  /**
+   * Sets the file pointer for read and write operations to the given position. The position passed is an absolute
+   * position, in bytes, from the beginning of the stream.
+   * 
+   * @param pos
+   *           the offset position, measured in bytes from the beginning of the file, at which to set the file pointer.
+   * @throws totalcross.io.IOException
+   *            if pos is negative or if an I/O error occurs.
+   */
+  public abstract void setPos(int pos) throws totalcross.io.IOException;
 }

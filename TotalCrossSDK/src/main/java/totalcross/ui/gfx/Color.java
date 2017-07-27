@@ -19,8 +19,10 @@
 
 package totalcross.ui.gfx;
 
-import totalcross.sys.*;
-import totalcross.util.*;
+import totalcross.sys.Convert;
+import totalcross.sys.InvalidNumberException;
+import totalcross.sys.Settings;
+import totalcross.util.Random;
 
 /**
  * The Color class is just an utility class used to do operations in a color, which
@@ -86,17 +88,26 @@ public final class Color
     */
    public static int getRGBEnsureRange(int red, int green, int blue) // guich@580_28
    {
-      if (red < 0) red = 0;
-      else
-      if (red > 255) red = 255;
+    if (red < 0){
+      red = 0;
+    }else
+      if (red > 255){
+        red = 255;
+      }
 
-      if (green < 0) green = 0;
-      else
-      if (green > 255) green = 255;
+    if (green < 0){
+      green = 0;
+    }else
+      if (green > 255){
+        green = 255;
+      }
 
-      if (blue < 0) blue = 0;
-      else
-      if (blue > 255) blue = 255;
+    if (blue < 0){
+      blue = 0;
+    }else
+      if (blue > 255){
+        blue = 255;
+      }
 
       return (red << 16) | (green << 8) | blue;
    }
@@ -119,6 +130,7 @@ public final class Color
    /** Returns the alpha channel (brightness) of the color value in a value from 0 to 255.
     * @deprecated Use {@link #getBrightness(int)}
     */
+  @Deprecated
    public static int getAlpha(int rgb)
    {
       return ((((rgb >> 16) & 0xFF) << 5) + (((rgb >> 8) & 0xFF) << 6) + ((rgb & 0xFF) << 2)) / 100;
@@ -145,8 +157,9 @@ public final class Color
    /** Returns a color that is brighter than the current one. */
    public static int brighter(int rgb)
    {
-      if (rgb == lastBrighterSrc)
+    if (rgb == lastBrighterSrc){
          return lastBrighterDst;
+    }
       lastBrighterSrc = rgb;
       return lastBrighterDst = getRGBEnsureRange(((rgb >> 16) & 0xFF)+FULL_STEP,((rgb >> 8) & 0xFF)+FULL_STEP,(rgb & 0xFF)+FULL_STEP);
    }
@@ -154,8 +167,9 @@ public final class Color
    /** Return a color that is darker than the current one. */
    public static int darker(int rgb)
    {
-      if (rgb == lastDarkerSrc)
+    if (rgb == lastDarkerSrc){
          return lastDarkerDst;
+    }
       lastDarkerSrc = rgb;
       return lastDarkerDst = getRGBEnsureRange(((rgb >> 16) & 0xFF)-FULL_STEP,((rgb >> 8) & 0xFF)-FULL_STEP,(rgb & 0xFF)-FULL_STEP);
    }

@@ -17,11 +17,11 @@ import totalcross.unit.TestSuite;
 public class TestBigDecimalInteger extends TestSuite
 {
 
-   public TestBigDecimalInteger()
-   {
-      super("BigInteger and BigDecimal Test Suite");
-      addTestCase(TestBigInteger.class); // juliana@210_2: now Litebase supports tables with ascii strings.
-      addTestCase(TestBigDecimal.class);
-   }
-   
+  public TestBigDecimalInteger()
+  {
+    super("BigInteger and BigDecimal Test Suite");
+    addTestCase(TestBigInteger.class); // juliana@210_2: now Litebase supports tables with ascii strings.
+    addTestCase(TestBigDecimal.class);
+  }
+
 }

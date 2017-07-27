@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class IndexOutOfBoundsException4D extends RuntimeException
 {
-   /** Constructs an empty Exception. */
-   public IndexOutOfBoundsException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public IndexOutOfBoundsException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public IndexOutOfBoundsException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public IndexOutOfBoundsException4D(String msg)
+  {
+    super(msg);
+  }
 }

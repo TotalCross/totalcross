@@ -15,26 +15,26 @@ package tc.test.converter.testfiles;
 
 public class BC018to020
 {
-   public BC018to020()
-   {
-      int i;
-      i = - 2147483648;
-      i = 2147483647;
+  public BC018to020()
+  {
+    int i;
+    i = - 2147483648;
+    i = 2147483647;
 
-      float f;
-      f = 0.5f;
-      f = -0.5f;
+    float f;
+    f = 0.5f;
+    f = -0.5f;
 
-      long l;
-      l = -9223372036854775808L;
-      l = 9223372036854775807L;
+    long l;
+    l = -9223372036854775808L;
+    l = 9223372036854775807L;
 
-      double d;
-      d = 0.5;
-      d = -0.5;
+    double d;
+    d = 0.5;
+    d = -0.5;
 
-      String s = "testing java opcode";
+    String s = "testing java opcode";
 
-      if (false) {i+=0; f+=0; l+=0; d+=0; s+=0;} // remove warnings
-   }
+    if (false) {i+=0; f+=0; l+=0; d+=0; s+=0;} // remove warnings
+  }
 }

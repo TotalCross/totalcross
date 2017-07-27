@@ -20,16 +20,16 @@ package totalcross.ui.event;
 
 public interface ListContainerListener
 {
-   /** An ITEM_SELECTED_EVENT event was dispatched.
-    * @see ListContainerEvent 
-    */
-   public void itemSelected(ListContainerEvent e);
-   /** An LEFT_IMAGE_CLICKED_EVENT event was dispatched.
-    * @see ListContainerEvent 
-    */
-   public void leftImageClicked(ListContainerEvent e);
-   /** An RIGHT_IMAGE_CLICKED_EVENT event was dispatched.
-    * @see ListContainerEvent 
-    */
-   public void rightImageClicked(ListContainerEvent e);
+  /** An ITEM_SELECTED_EVENT event was dispatched.
+   * @see ListContainerEvent 
+   */
+  public void itemSelected(ListContainerEvent e);
+  /** An LEFT_IMAGE_CLICKED_EVENT event was dispatched.
+   * @see ListContainerEvent 
+   */
+  public void leftImageClicked(ListContainerEvent e);
+  /** An RIGHT_IMAGE_CLICKED_EVENT event was dispatched.
+   * @see ListContainerEvent 
+   */
+  public void rightImageClicked(ListContainerEvent e);
 }

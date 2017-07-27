@@ -72,62 +72,63 @@ package totalcross.io.device.bluetooth;
  */
 public class DeviceClass
 {
-   /** record of this class of device. */
-   private int record;
+  /** record of this class of device. */
+  private int record;
 
-   /** record masks */
-   private static final int SERVICE_CLASS_MASK = 0xFFE000;
-   private static final int MAJOR_DEVICE_CLASS_MASK = 0x001F00;
-   private static final int MINOR_DEVICE_CLASS_MASK = 0x0000FC;
+  /** record masks */
+  private static final int SERVICE_CLASS_MASK = 0xFFE000;
+  private static final int MAJOR_DEVICE_CLASS_MASK = 0x001F00;
+  private static final int MINOR_DEVICE_CLASS_MASK = 0x0000FC;
 
-   /**
-    * Creates a <code>DeviceClass</code> from the class of device record provided. <code>record</code> must follow the
-    * format of the class of device record in the Bluetooth specification.
-    * 
-    * @param record
-    *           describes the classes of a device
-    * @throws IllegalArgumentException
-    *            if record has any bits between 24 and 31 set
-    * @since TotalCross 1.2
-    */
-   public DeviceClass(int record) throws IllegalArgumentException
-   {
-      if ((record & 0xFF000000) != 0)
-         throw new IllegalArgumentException();
-      this.record = record;
-   }
+  /**
+   * Creates a <code>DeviceClass</code> from the class of device record provided. <code>record</code> must follow the
+   * format of the class of device record in the Bluetooth specification.
+   * 
+   * @param record
+   *           describes the classes of a device
+   * @throws IllegalArgumentException
+   *            if record has any bits between 24 and 31 set
+   * @since TotalCross 1.2
+   */
+  public DeviceClass(int record) throws IllegalArgumentException
+  {
+    if ((record & 0xFF000000) != 0){
+      throw new IllegalArgumentException();
+    }
+    this.record = record;
+  }
 
-   /**
-    * Retrieves the major device class. A device may have only a single major device class.
-    * 
-    * @return the major device class
-    * @since TotalCross 1.2
-    */
-   public int getMajorDeviceClass()
-   {
-      return record & MAJOR_DEVICE_CLASS_MASK;
-   }
+  /**
+   * Retrieves the major device class. A device may have only a single major device class.
+   * 
+   * @return the major device class
+   * @since TotalCross 1.2
+   */
+  public int getMajorDeviceClass()
+  {
+    return record & MAJOR_DEVICE_CLASS_MASK;
+  }
 
-   /**
-    * Retrieves the minor device class.
-    * 
-    * @return the minor device class
-    * @since TotalCross 1.2
-    */
-   public int getMinorDeviceClass()
-   {
-      return record & MINOR_DEVICE_CLASS_MASK;
-   }
+  /**
+   * Retrieves the minor device class.
+   * 
+   * @return the minor device class
+   * @since TotalCross 1.2
+   */
+  public int getMinorDeviceClass()
+  {
+    return record & MINOR_DEVICE_CLASS_MASK;
+  }
 
-   /**
-    * Retrieves the major service classes. A device may have multiple major service classes. When this occurs, the major
-    * service classes are bitwise OR'ed together.
-    * 
-    * @return the major service classes
-    * @since TotalCross 1.2
-    */
-   public int getServiceClasses()
-   {
-      return record & SERVICE_CLASS_MASK;
-   }
+  /**
+   * Retrieves the major service classes. A device may have multiple major service classes. When this occurs, the major
+   * service classes are bitwise OR'ed together.
+   * 
+   * @return the major service classes
+   * @since TotalCross 1.2
+   */
+  public int getServiceClasses()
+  {
+    return record & SERVICE_CLASS_MASK;
+  }
 }

@@ -18,35 +18,37 @@ import totalcross.util.Vector;
 
 public class I32 extends Parameter
 {
-   public int i32;
-   public I32(int line, int v)
-   {
-      super(line);
-      i32 = v;
-   }
+  public int i32;
+  public I32(int line, int v)
+  {
+    super(line);
+    i32 = v;
+  }
 
-   public I32(int line)
-   {
-      super(line);
-   }
+  public I32(int line)
+  {
+    super(line);
+  }
 
-   public void set(int v)
-   {
-      i32 = v;
-   }
+  public void set(int v)
+  {
+    i32 = v;
+  }
 
-   public String toString()
-   {
-      String print;
-      print = "" + i32;
-      return print;
-   }
+  @Override
+  public String toString()
+  {
+    String print;
+    print = "" + i32;
+    return print;
+  }
 
-   public void toTCCode(Vector vcode)
-   {
-      TCCode tc = new TCCode(line);
-      tc.len = 0;
-      tc.i32__i32(i32);
-      vcode.addElement(tc);
-   }
+  @Override
+  public void toTCCode(Vector vcode)
+  {
+    TCCode tc = new TCCode(line);
+    tc.len = 0;
+    tc.i32__i32(i32);
+    vcode.addElement(tc);
+  }
 }

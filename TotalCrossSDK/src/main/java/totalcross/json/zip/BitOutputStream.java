@@ -1,6 +1,7 @@
 package totalcross.json.zip;
 
-import totalcross.io.*;
+import totalcross.io.IOException;
+import totalcross.io.Stream;
 
 /*
  Copyright (c) 2013 JSON.org
@@ -34,122 +35,126 @@ import totalcross.io.*;
  */
 public class BitOutputStream implements BitWriter {
 
-    /**
-     * The number of bits written.
-     */
-    private long nrBits = 0;
+  /**
+   * The number of bits written.
+   */
+  private long nrBits = 0;
 
-    /**
-     * The destination of the bits.
-     */
-    private Stream out;
+  /**
+   * The destination of the bits.
+   */
+  private Stream out;
 
-    /**
-     * Holder of bits not yet written.
-     */
-    private int unwritten;
+  /**
+   * Holder of bits not yet written.
+   */
+  private int unwritten;
 
-    /**
-     * The number of unused bits in this.unwritten.
-     */
-    private int vacant = 8;
+  /**
+   * The number of unused bits in this.unwritten.
+   */
+  private int vacant = 8;
 
-    /**
-     * Use an OutputStream to produce a BitWriter. The BitWriter will send its
-     * bits to the OutputStream as each byte is filled.
-     *
-     * @param out
-     *            An Output Stream
-     */
-    public BitOutputStream(Stream out) {
-        this.out = out;
+  /**
+   * Use an OutputStream to produce a BitWriter. The BitWriter will send its
+   * bits to the OutputStream as each byte is filled.
+   *
+   * @param out
+   *            An Output Stream
+   */
+  public BitOutputStream(Stream out) {
+    this.out = out;
+  }
+
+  /**
+   * Returns the number of bits that have been written to this
+   * bitOutputStream. This may include bits that have not yet been written
+   * to the underlying outputStream.
+   */
+  public long nrBits() {
+    return this.nrBits;
+  }
+
+  /**
+   * Write a 1 bit.
+   *
+   * @throws IOException
+   */
+  @Override
+  public void one() throws IOException {
+    write(1, 1);
+  }
+
+  /**
+   * Pad the rest of the block with zeros and flush. pad(8) flushes the last
+   * unfinished byte. The underlying OutputStream will be flushed.
+   *
+   * @param width
+   *            The size of the block to pad in bits.
+   *            This will typically be 8, 16, 32, 64, 128, 256, etc.
+   * @throws IOException
+   */
+  @Override
+  public void pad(int width) throws IOException {
+    int gap = (int)this.nrBits % width;
+    if (gap < 0) {
+      gap += width;
     }
-
-    /**
-     * Returns the number of bits that have been written to this
-     * bitOutputStream. This may include bits that have not yet been written
-     * to the underlying outputStream.
-     */
-    public long nrBits() {
-        return this.nrBits;
+    if (gap != 0) {
+      int padding = width - gap;
+      while (padding > 0) {
+        this.zero();
+        padding -= 1;
+      }
     }
+    //this.out.flush();
+  }
 
-    /**
-     * Write a 1 bit.
-     *
-     * @throws IOException
-     */
-    public void one() throws IOException {
-        write(1, 1);
+  byte[] buf = new byte[1];
+  /**
+   * Write some bits. Up to 32 bits can be written at a time.
+   *
+   * @param bits
+   *            The bits to be written.
+   * @param width
+   *            The number of bits to write. (0..32)
+   * @throws IOException
+   */
+  @Override
+  public void write(int bits, int width) throws IOException {
+    if (bits == 0 && width == 0) {
+      return;
     }
-
-    /**
-     * Pad the rest of the block with zeros and flush. pad(8) flushes the last
-     * unfinished byte. The underlying OutputStream will be flushed.
-     *
-     * @param width
-     *            The size of the block to pad in bits.
-     *            This will typically be 8, 16, 32, 64, 128, 256, etc.
-     * @throws IOException
-     */
-    public void pad(int width) throws IOException {
-        int gap = (int)this.nrBits % width;
-        if (gap < 0) {
-            gap += width;
-        }
-        if (gap != 0) {
-            int padding = width - gap;
-            while (padding > 0) {
-                this.zero();
-                padding -= 1;
-            }
-        }
-        //this.out.flush();
+    if (width <= 0 || width > 32) {
+      throw new IOException("Bad write width.");
     }
-
-    byte[] buf = new byte[1];
-    /**
-     * Write some bits. Up to 32 bits can be written at a time.
-     *
-     * @param bits
-     *            The bits to be written.
-     * @param width
-     *            The number of bits to write. (0..32)
-     * @throws IOException
-     */
-    public void write(int bits, int width) throws IOException {
-        if (bits == 0 && width == 0) {
-            return;
-        }
-        if (width <= 0 || width > 32) {
-            throw new IOException("Bad write width.");
-        }
-        while (width > 0) {
-            int actual = width;
-            if (actual > this.vacant) {
-                actual = this.vacant;
-            }
-            this.unwritten |= ((bits >>> (width - actual)) &
-                    ((1 << actual) - 1)) << (this.vacant - actual);
-            width -= actual;
-            nrBits += actual;
-            this.vacant -= actual;
-            if (this.vacant == 0) {
-                buf[0] = (byte)this.unwritten;
-                this.out.writeBytes(buf,0,1);
-                this.unwritten = 0;
-                this.vacant = 8;
-            }
-        }
+    while (width > 0) {
+      int actual = width;
+      if (actual > this.vacant) {
+        actual = this.vacant;
+      }
+      this.unwritten |= ((bits >>> (width - actual)) &
+          ((1 << actual) - 1)) << (this.vacant - actual);
+      width -= actual;
+      nrBits += actual;
+      this.vacant -= actual;
+      if (this.vacant == 0) {
+        buf[0] = (byte)this.unwritten;
+        this.out.writeBytes(buf,0,1);
+        this.unwritten = 0;
+        this.vacant = 8;
+      }
     }
+  }
 
-    /**
-     * Write a 0 bit.
-     *
-     * @throws IOException
-     */
-    public void zero() throws IOException {
-        write(0, 1);
+  /**
+   * Write a 0 bit.
+   *
+   * @throws IOException
+   */
+  @Override
+  public void zero() throws IOException {
+    write(0, 1);
 
-    }
+  }
 }

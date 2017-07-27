@@ -15,9 +15,9 @@ package tc.tools.converter.bytecode;
 
 public class BC020_ldc2_w extends BC018_ldc
 {
-   public BC020_ldc2_w()
-   {
-      super(readUInt16(pc+1),3);
-      stackInc = 2;
-   }
+  public BC020_ldc2_w()
+  {
+    super(readUInt16(pc+1),3);
+    stackInc = 2;
+  }
 }

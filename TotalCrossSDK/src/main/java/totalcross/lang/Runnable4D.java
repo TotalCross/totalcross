@@ -54,5 +54,5 @@ package totalcross.lang;
 
 public interface Runnable4D
 {
-   public void run();
+  public void run();
 }

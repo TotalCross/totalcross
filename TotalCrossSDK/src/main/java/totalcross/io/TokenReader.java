@@ -18,7 +18,7 @@
 
 package totalcross.io;
 
-import totalcross.util.*;
+import totalcross.util.Vector;
 
 /**
  * Used to read an array of tokens in a line ending with \r\n (enter/linefeed) from a stream. Consecutive newlines are skipped. 
@@ -135,113 +135,122 @@ import totalcross.util.*;
  */
 public class TokenReader extends LineReader
 {
-   protected char delimiter;
-   private Vector lines = new Vector(10);
-   
-   /**
-    * Constructs a new TokenReader and sets maxTries accordingly to the type of
-    * class: 10 if its a Socket or a PortConnector; 0, otherwise.
-    *
-    * @throws totalcross.io.IOException
-    */
-   public TokenReader(Stream f, char delimiter) throws totalcross.io.IOException
-   {
-      super(f);
-      this.delimiter = delimiter;
-   }
+  protected char delimiter;
+  private Vector lines = new Vector(10);
 
-   /**
-    * Constructs a new TokenReader and sets maxTries accordingly to the type of
-    * class: 10 if its a Socket or a PortConnector, 0 otherwise.
-    * The given buffer contents are added to the internal buffer to start reading from them.
-    *
-    * @throws totalcross.io.IOException
-    * @since TotalCross 1.25
-    */
-   public TokenReader(Stream f, char delimiter, byte[] buffer, int start, int len) throws totalcross.io.IOException // guich@tc125_16
-   {
-      super(f, buffer, start, len);
-      this.delimiter = delimiter;
-   }
-   
-   /** Cannot be used; throws a RuntimeException.
-    * @see #readTokens
-    */
-   public String readLine()
-   {
-      throw new RuntimeException("Use readTokens instead of readLine!");
-   }
-   
-   /**
-    * Returns the next tokens available in this stream or null if none. Empty
-    * lines are skipped.
-    *
-    * @throws totalcross.io.IOException
-    */
-   public String[] readTokens() throws totalcross.io.IOException
-   {
-      byte[] buf = readBuf.getBuffer();
-      int size = readBuf.getPos();
-      byte delimiter = (byte)this.delimiter;
+  /**
+   * Constructs a new TokenReader and sets maxTries accordingly to the type of
+   * class: 10 if its a Socket or a PortConnector; 0, otherwise.
+   *
+   * @throws totalcross.io.IOException
+   */
+  public TokenReader(Stream f, char delimiter) throws totalcross.io.IOException
+  {
+    super(f);
+    this.delimiter = delimiter;
+  }
 
-      // skip starting control chars
-      while (ofs < size && (buf[ofs] == '\n' || buf[ofs] == '\r'))
-         ofs++;
-      
-      lines.removeAllElements();
+  /**
+   * Constructs a new TokenReader and sets maxTries accordingly to the type of
+   * class: 10 if its a Socket or a PortConnector, 0 otherwise.
+   * The given buffer contents are added to the internal buffer to start reading from them.
+   *
+   * @throws totalcross.io.IOException
+   * @since TotalCross 1.25
+   */
+  public TokenReader(Stream f, char delimiter, byte[] buffer, int start, int len) throws totalcross.io.IOException // guich@tc125_16
+  {
+    super(f, buffer, start, len);
+    this.delimiter = delimiter;
+  }
 
-      while (true)
+  /** Cannot be used; throws a RuntimeException.
+   * @see #readTokens
+   */
+  @Override
+  public String readLine()
+  {
+    throw new RuntimeException("Use readTokens instead of readLine!");
+  }
+
+  /**
+   * Returns the next tokens available in this stream or null if none. Empty
+   * lines are skipped.
+   *
+   * @throws totalcross.io.IOException
+   */
+  public String[] readTokens() throws totalcross.io.IOException
+  {
+    byte[] buf = readBuf.getBuffer();
+    int size = readBuf.getPos();
+    byte delimiter = (byte)this.delimiter;
+
+    // skip starting control chars
+    while (ofs < size && (buf[ofs] == '\n' || buf[ofs] == '\r')){
+      ofs++;
+    }
+
+    lines.removeAllElements();
+
+    while (true)
+    {
+      int i;
+      for (i = ofs; i < size; i++)
       {
-         int i;
-         for (i = ofs; i < size; i++)
-         {
-            if (buf[i] == delimiter || buf[i] == '\n') // found a token or a linefeed?
-            {
-               int len = i - ofs;
-               if (i > 0 && buf[i-1] == '\r') // guich@tc123_47: is the previous character a \r?
-                  len--;
-               int ii = ofs+len;
-               if (doTrim && len > 0 && (buf[ofs] <= ' ' || buf[ii-1] <= ' ')) // guich@tc123_37
-               {
-                  while (ofs < ii && buf[ofs] <= ' ')
-                     ofs++;
-                  while (ii > ofs && buf[ii-1] <= ' ')
-                     ii--;
-                  len = ii - ofs;
-               }
-               // allocate the new String and return
-               String s = new String(buf, ofs, len);
-               ofs = i;
-               lines.addElement(s);
-               if (buf[i] == '\n')
-                  return (String[])lines.toObjectArray();
-               ofs++; // strip the cr/lf from the string
+        if (buf[i] == delimiter || buf[i] == '\n') // found a token or a linefeed?
+        {
+          int len = i - ofs;
+          if (i > 0 && buf[i-1] == '\r') {
+            len--;
+          }
+          int ii = ofs+len;
+          if (doTrim && len > 0 && (buf[ofs] <= ' ' || buf[ii-1] <= ' ')) // guich@tc123_37
+          {
+            while (ofs < ii && buf[ofs] <= ' ') {
+              ofs++;
             }
-         }
-         // no enter found; fetch more data
-         int lastOfs = ofs; 
-         reuse();
-         boolean foundMore = readMore();
-         size = readBuf.getPos(); // size had changed
-         buf = readBuf.getBuffer(); // buffer may have changed
-         if (!foundMore)
-         {
-            int len = i - lastOfs;
-            if (len == 0 && lines.size() == 0)
-               return null;
-            ofs = len;
-            lastOfs = 0;
-            if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len-1] <= ' ')) // guich@tc123_37
-            {
-               while (lastOfs < len && buf[lastOfs] <= ' ')
-                  lastOfs++;
-               while (len > lastOfs && buf[len-1] <= ' ')
-                  len--;
+            while (ii > ofs && buf[ii-1] <= ' ') {
+              ii--;
             }
-            String s = new String(buf, lastOfs, len-lastOfs);
-            lines.addElement(s);
+            len = ii - ofs;
+          }
+          // allocate the new String and return
+          String s = new String(buf, ofs, len);
+          ofs = i;
+          lines.addElement(s);
+          if (buf[i] == '\n') {
             return (String[])lines.toObjectArray();
-         }
+          }
+          ofs++; // strip the cr/lf from the string
+        }
       }
-   }
+      // no enter found; fetch more data
+      int lastOfs = ofs; 
+      reuse();
+      boolean foundMore = readMore();
+      size = readBuf.getPos(); // size had changed
+      buf = readBuf.getBuffer(); // buffer may have changed
+      if (!foundMore)
+      {
+        int len = i - lastOfs;
+        if (len == 0 && lines.size() == 0) {
+          return null;
+        }
+        ofs = len;
+        lastOfs = 0;
+        if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len-1] <= ' ')) // guich@tc123_37
+        {
+          while (lastOfs < len && buf[lastOfs] <= ' ') {
+            lastOfs++;
+          }
+          while (len > lastOfs && buf[len-1] <= ' ') {
+            len--;
+          }
+        }
+        String s = new String(buf, lastOfs, len-lastOfs);
+        lines.addElement(s);
+        return (String[])lines.toObjectArray();
+      }
+    }
+  }
 }

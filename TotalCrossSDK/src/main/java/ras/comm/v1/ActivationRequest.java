@@ -20,55 +20,57 @@ import totalcross.util.Hashtable;
 
 public class ActivationRequest extends Packet
 {
-   protected Hashtable productInfo;
-   protected Hashtable deviceInfo;
-   protected String activationCode;
+  protected Hashtable productInfo;
+  protected Hashtable deviceInfo;
+  protected String activationCode;
 
-   public ActivationRequest()
-   {
-      productInfo = new Hashtable(10);
-      deviceInfo = new Hashtable(10);
-      this.webServiceMethod = "activate";
-   }
+  public ActivationRequest()
+  {
+    productInfo = new Hashtable(10);
+    deviceInfo = new Hashtable(10);
+    this.webServiceMethod = "activate";
+  }
 
-   public ActivationRequest(Hashtable productInfo, Hashtable deviceInfo, String activationCode)
-   {
-      this.productInfo = productInfo;
-      this.deviceInfo = deviceInfo;
-      this.activationCode = activationCode;
-      this.webServiceMethod = "activate";
-   }
+  public ActivationRequest(Hashtable productInfo, Hashtable deviceInfo, String activationCode)
+  {
+    this.productInfo = productInfo;
+    this.deviceInfo = deviceInfo;
+    this.activationCode = activationCode;
+    this.webServiceMethod = "activate";
+  }
 
-   public Hashtable getProductInfo()
-   {
-      return productInfo;
-   }
+  public Hashtable getProductInfo()
+  {
+    return productInfo;
+  }
 
-   public Hashtable getDeviceInfo()
-   {
-      return deviceInfo;
-   }
+  public Hashtable getDeviceInfo()
+  {
+    return deviceInfo;
+  }
 
-   public String getActivationCode()
-   {
-      return activationCode;
-   }
+  public String getActivationCode()
+  {
+    return activationCode;
+  }
 
-   protected void read(DataStream ds) throws IOException
-   {
-      productInfo.clear();
-      Utils.readInfo(ds, productInfo);
+  @Override
+  protected void read(DataStream ds) throws IOException
+  {
+    productInfo.clear();
+    Utils.readInfo(ds, productInfo);
 
-      deviceInfo.clear();
-      Utils.readInfo(ds, deviceInfo);
+    deviceInfo.clear();
+    Utils.readInfo(ds, deviceInfo);
 
-      activationCode = ds.readString();
-   }
+    activationCode = ds.readString();
+  }
 
-   protected void write(DataStream ds) throws IOException
-   {
-      Utils.writeInfo(ds, productInfo);
-      Utils.writeInfo(ds, deviceInfo);
-      ds.writeString(activationCode);
-   }
+  @Override
+  protected void write(DataStream ds) throws IOException
+  {
+    Utils.writeInfo(ds, productInfo);
+    Utils.writeInfo(ds, deviceInfo);
+    ds.writeString(activationCode);
+  }
 }

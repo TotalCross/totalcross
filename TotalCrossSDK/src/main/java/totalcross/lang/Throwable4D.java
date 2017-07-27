@@ -37,126 +37,128 @@ import java.util.ArrayList;
 
 public class Throwable4D
 {
-    /** Stores the message given when constructing this Throwable object */
-    protected String msg;
+  /** Stores the message given when constructing this Throwable object */
+  protected String msg;
 
-    public String trace;
-    
-    /**
-     * The throwable that caused this throwable to get thrown, or null if this 
-     * throwable was not caused by another throwable, or if the causative 
-     * throwable is unknown. If this field is equal to this throwable itself, 
-     * it indicates that the cause of this throwable has not yet been 
-     * initialized.
-     *
-     * @since 1.4
-     */
-    private Throwable4D cause = this;
+  public String trace;
 
-	private ArrayList<Throwable4D> suppressed = new ArrayList<>();
-	private Throwable4D[] cachedSuppressedArray;
+  /**
+   * The throwable that caused this throwable to get thrown, or null if this 
+   * throwable was not caused by another throwable, or if the causative 
+   * throwable is unknown. If this field is equal to this throwable itself, 
+   * it indicates that the cause of this throwable has not yet been 
+   * initialized.
+   *
+   * @since 1.4
+   */
+  private Throwable4D cause = this;
 
-    /** Constructs an empty Exception. */
-    public Throwable4D()
-    {
-    	this(null, null);
-    }
+  private ArrayList<Throwable4D> suppressed = new ArrayList<>();
+  private Throwable4D[] cachedSuppressedArray;
 
-    /** Constructs an exception with the given message. */
-    public Throwable4D(String msg)
-    {
-	    this(msg, null);
-    }
-    
-    /**
-     * Instantiate this Throwable with the given message and cause. Note that
-     * the message is unrelated to the message of the cause.
-     *
-     * @param message the message to associate with the Throwable
-     * @param cause the cause, may be null
-     * @since 1.4
-     */
-    public Throwable4D(String message, Throwable4D cause) {
-    	this(message, cause, true, true);
-    }
-    
-    public Throwable4D(String message, Throwable4D cause,  boolean enableSuppression, boolean writableStackTrace) {
-    	this.msg = message;
-        this.cause = cause;
-    }
+  /** Constructs an empty Exception. */
+  public Throwable4D()
+  {
+    this(null, null);
+  }
 
-    /**
-     * Instantiate this Throwable with the given cause. The message is then
-     * built as <code>cause == null ? null : cause.toString()</code>.
-     *
-     * @param cause the cause, may be null
-     * @since 1.4
-     */
-    public Throwable4D(Throwable4D cause)
-    {
-      this(cause == null ? null : cause.toString(), cause);
-    }
+  /** Constructs an exception with the given message. */
+  public Throwable4D(String msg)
+  {
+    this(msg, null);
+  }
 
-    /** Returns the message passed on the constructor. May be null. */
-    public String getMessage()
-    {
-	    return msg;
-    }
+  /**
+   * Instantiate this Throwable with the given message and cause. Note that
+   * the message is unrelated to the message of the cause.
+   *
+   * @param message the message to associate with the Throwable
+   * @param cause the cause, may be null
+   * @since 1.4
+   */
+  public Throwable4D(String message, Throwable4D cause) {
+    this(message, cause, true, true);
+  }
 
-    public String toString()
-    {
-       String ret = getClass().getName();
-       if (msg != null)
-          ret += ": " + msg;
-       return ret;
-    }
+  public Throwable4D(String message, Throwable4D cause,  boolean enableSuppression, boolean writableStackTrace) {
+    this.msg = message;
+    this.cause = cause;
+  }
 
-    /**
-     * Prints the stack trace to the debug console.
-     */
-    public void printStackTrace() // guich@300_23
-    {
-       totalcross.sys.Vm.warning(toString());
-       printStackTraceNative();
-       if (cause != null && cause != this)
-       {
-          totalcross.sys.Vm.warning("Caused by ");
-          cause.printStackTrace(); // allows recursion
-       }
-    }
+  /**
+   * Instantiate this Throwable with the given cause. The message is then
+   * built as <code>cause == null ? null : cause.toString()</code>.
+   *
+   * @param cause the cause, may be null
+   * @since 1.4
+   */
+  public Throwable4D(Throwable4D cause)
+  {
+    this(cause == null ? null : cause.toString(), cause);
+  }
 
-    native private void printStackTraceNative();
+  /** Returns the message passed on the constructor. May be null. */
+  public String getMessage()
+  {
+    return msg;
+  }
 
-    public void printStackTrace(Object o) {} // guich@582_6: just a place-holder to let it build-device
-    
-    public Throwable4D getCause()
-    {
-       return (cause == this ? null : cause);
+  @Override
+  public String toString()
+  {
+    String ret = getClass().getName();
+    if (msg != null){
+      ret += ": " + msg;
     }
-    public Throwable4D initCause(Throwable4D cause)
+    return ret;
+  }
+
+  /**
+   * Prints the stack trace to the debug console.
+   */
+  public void printStackTrace() // guich@300_23
+  {
+    totalcross.sys.Vm.warning(toString());
+    printStackTraceNative();
+    if (cause != null && cause != this)
     {
-        if (this.cause != this) {
-            throw new IllegalStateException("Can't overwrite cause");
-        }
-        if (cause == this) {
-            throw new IllegalArgumentException("Self-causation not permitted");
-        }
-       this.cause = cause;
-       return this;
+      totalcross.sys.Vm.warning("Caused by ");
+      cause.printStackTrace(); // allows recursion
     }
-    
-    public final void addSuppressed(Throwable4D exception)
+  }
+
+  native private void printStackTraceNative();
+
+  public void printStackTrace(Object o) {} // guich@582_6: just a place-holder to let it build-device
+
+  public Throwable4D getCause()
+  {
+    return (cause == this ? null : cause);
+  }
+  public Throwable4D initCause(Throwable4D cause)
+  {
+    if (this.cause != this) {
+      throw new IllegalStateException("Can't overwrite cause");
+    }
+    if (cause == this) {
+      throw new IllegalArgumentException("Self-causation not permitted");
+    }
+    this.cause = cause;
+    return this;
+  }
+
+  public final void addSuppressed(Throwable4D exception)
+  {
+    this.suppressed.add(exception);
+    cachedSuppressedArray = null;
+  }
+
+  public final Throwable4D[] getSuppressed()
+  {
+    if (cachedSuppressedArray == null)
     {
-        this.suppressed.add(exception);
-        cachedSuppressedArray = null;
+      cachedSuppressedArray = this.suppressed.toArray(new Throwable4D[0]);
     }
-    
-    public final Throwable4D[] getSuppressed()
-    {
-        if (cachedSuppressedArray == null)
-        {
-            cachedSuppressedArray = this.suppressed.toArray(new Throwable4D[0]);
-        }
-        return cachedSuppressedArray;
-    }
+    return cachedSuppressedArray;
+  }
 }

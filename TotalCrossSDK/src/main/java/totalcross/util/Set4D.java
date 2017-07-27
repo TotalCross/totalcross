@@ -39,7 +39,15 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A collection that contains no duplicates. In other words, for two set
@@ -86,6 +94,7 @@ public interface Set4D<E> extends Collection<E>
    *         being added
    * @throws NullPointerException if null is not permitted in this set
    */
+  @Override
   boolean add(E o);
 
   /**
@@ -105,6 +114,7 @@ public interface Set4D<E> extends Collection<E>
    *         if the argument c is null
    * @see #add(Object)
    */
+  @Override
   boolean addAll(Collection<? extends E> c);
 
   /**
@@ -113,6 +123,7 @@ public interface Set4D<E> extends Collection<E>
    *
    * @throws UnsupportedOperationException if this operation is not allowed
    */
+  @Override
   void clear();
 
   /**
@@ -126,6 +137,7 @@ public interface Set4D<E> extends Collection<E>
    * @throws NullPointerException if o is null and this set doesn't
    *         support null values.
    */
+  @Override
   boolean contains(Object o);
 
   /**
@@ -142,6 +154,7 @@ public interface Set4D<E> extends Collection<E>
    *         set doesn't support null values.
    * @see #contains(Object)
    */
+  @Override
   boolean containsAll(Collection<?> c);
 
   /**
@@ -152,6 +165,7 @@ public interface Set4D<E> extends Collection<E>
    * @param o the object to compare to
    * @return true if it is an equal set
    */
+  @Override
   boolean equals(Object o);
 
   /**
@@ -161,6 +175,7 @@ public interface Set4D<E> extends Collection<E>
    * @return the sum of the hashcodes of all set elements
    * @see #equals(Object)
    */
+  @Override
   int hashCode();
 
   /**
@@ -168,6 +183,7 @@ public interface Set4D<E> extends Collection<E>
    *
    * @return true if the set is empty
    */
+  @Override
   boolean isEmpty();
 
   /**
@@ -176,6 +192,7 @@ public interface Set4D<E> extends Collection<E>
    *
    * @return a set iterator
    */
+  @Override
   Iterator<E> iterator();
 
   /**
@@ -191,6 +208,7 @@ public interface Set4D<E> extends Collection<E>
    * @throws NullPointerException if o is null and this set doesn't allow
    *         the removal of a null value.
    */
+  @Override
   boolean remove(Object o);
 
   /**
@@ -208,6 +226,7 @@ public interface Set4D<E> extends Collection<E>
    *         set doesn't support removing null values.
    * @see #remove(Object)
    */
+  @Override
   boolean removeAll(Collection<?> c);
 
   /**
@@ -225,6 +244,7 @@ public interface Set4D<E> extends Collection<E>
    *         set doesn't support retaining null values.
    * @see #remove(Object)
    */
+  @Override
   boolean retainAll(Collection<?> c);
 
   /**
@@ -234,6 +254,7 @@ public interface Set4D<E> extends Collection<E>
    *
    * @return the number of elements
    */
+  @Override
   int size();
 
   /**
@@ -245,6 +266,7 @@ public interface Set4D<E> extends Collection<E>
    * @return an array of this set's elements
    * @see #toArray(Object[])
    */
+  @Override
   Object[] toArray();
 
   /**
@@ -263,5 +285,6 @@ public interface Set4D<E> extends Collection<E>
    * @throws NullPointerException if a is null
    * @see #toArray()
    */
+  @Override
   <T> T[] toArray(T[] a);
 }

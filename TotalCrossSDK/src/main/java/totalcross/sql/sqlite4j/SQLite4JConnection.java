@@ -1,111 +1,132 @@
 package totalcross.sql.sqlite4j;
 
-import totalcross.sql.*;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import totalcross.sql.Connection;
+import totalcross.sql.PreparedStatement;
+import totalcross.sql.Statement;
 
 public class SQLite4JConnection implements Connection
 {
-   public org.sqlite.SQLiteConnection con;
-   
-   public SQLite4JConnection(org.sqlite.SQLiteConnection con)
-   {
-      this.con = con;
-   }
+  public org.sqlite.SQLiteConnection con;
 
-   public Statement createStatement() throws SQLException
-   {
-      return new SQLite4JStatement(con.createStatement());
-   }
+  public SQLite4JConnection(org.sqlite.SQLiteConnection con)
+  {
+    this.con = con;
+  }
 
-   public PreparedStatement prepareStatement(String sql) throws SQLException
-   {
-      return new SQLite4JPreparedStatement(con.prepareStatement(sql));
-   }
+  @Override
+  public Statement createStatement() throws SQLException
+  {
+    return new SQLite4JStatement(con.createStatement());
+  }
 
-   public String nativeSQL(String sql)
-   {
-      return con.nativeSQL(sql);
-   }
+  @Override
+  public PreparedStatement prepareStatement(String sql) throws SQLException
+  {
+    return new SQLite4JPreparedStatement(con.prepareStatement(sql));
+  }
 
-   public void setAutoCommit(boolean autoCommit) throws SQLException
-   {
-      con.setAutoCommit(autoCommit);
-   }
+  @Override
+  public String nativeSQL(String sql)
+  {
+    return con.nativeSQL(sql);
+  }
 
-   public boolean getAutoCommit() throws SQLException
-   {
-      return con.getAutoCommit();
-   }
+  @Override
+  public void setAutoCommit(boolean autoCommit) throws SQLException
+  {
+    con.setAutoCommit(autoCommit);
+  }
 
-   public void commit() throws SQLException
-   {
-      con.commit();
-   }
+  @Override
+  public boolean getAutoCommit() throws SQLException
+  {
+    return con.getAutoCommit();
+  }
 
-   public void rollback() throws SQLException
-   {
-      con.rollback();
-   }
+  @Override
+  public void commit() throws SQLException
+  {
+    con.commit();
+  }
 
-   public void close() throws SQLException
-   {
-      con.close();
-   }
+  @Override
+  public void rollback() throws SQLException
+  {
+    con.rollback();
+  }
 
-   public boolean isClosed() throws SQLException
-   {
-      return con.isClosed();
-   }
+  @Override
+  public void close() throws SQLException
+  {
+    con.close();
+  }
 
-   public void setReadOnly(boolean readOnly) throws SQLException
-   {
-      con.setReadOnly(readOnly);
-   }
+  @Override
+  public boolean isClosed() throws SQLException
+  {
+    return con.isClosed();
+  }
 
-   public boolean isReadOnly() throws SQLException
-   {
-      return con.isReadOnly();
-   }
+  @Override
+  public void setReadOnly(boolean readOnly) throws SQLException
+  {
+    con.setReadOnly(readOnly);
+  }
 
-   public void setCatalog(String catalog) throws SQLException
-   {
-      con.setCatalog(catalog);
-   }
+  @Override
+  public boolean isReadOnly() throws SQLException
+  {
+    return con.isReadOnly();
+  }
 
-   public String getCatalog() throws SQLException
-   {
-      return con.getCatalog();
-   }
+  @Override
+  public void setCatalog(String catalog) throws SQLException
+  {
+    con.setCatalog(catalog);
+  }
 
-   public void setTransactionIsolation(int level) throws SQLException
-   {
-      con.setTransactionIsolation(level);
-   }
+  @Override
+  public String getCatalog() throws SQLException
+  {
+    return con.getCatalog();
+  }
 
-   public int getTransactionIsolation() throws SQLException
-   {
-      return con.getTransactionIsolation();
-   }
+  @Override
+  public void setTransactionIsolation(int level) throws SQLException
+  {
+    con.setTransactionIsolation(level);
+  }
 
-   public SQLWarning getWarnings() throws SQLException
-   {
-      return con.getWarnings();
-   }
+  @Override
+  public int getTransactionIsolation() throws SQLException
+  {
+    return con.getTransactionIsolation();
+  }
 
-   public void clearWarnings() throws SQLException
-   {
-      con.clearWarnings();
-   }
+  @Override
+  public SQLWarning getWarnings() throws SQLException
+  {
+    return con.getWarnings();
+  }
 
-   public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException
-   {
-      return new SQLite4JStatement(con.createStatement(resultSetType, resultSetConcurrency));
-   }
+  @Override
+  public void clearWarnings() throws SQLException
+  {
+    con.clearWarnings();
+  }
 
-   public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException
-   {
-      return new SQLite4JPreparedStatement(con.prepareStatement(sql, resultSetType, resultSetConcurrency));
-   }
+  @Override
+  public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException
+  {
+    return new SQLite4JStatement(con.createStatement(resultSetType, resultSetConcurrency));
+  }
+
+  @Override
+  public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException
+  {
+    return new SQLite4JPreparedStatement(con.prepareStatement(sql, resultSetType, resultSetConcurrency));
+  }
 
 }

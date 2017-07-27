@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC096_iadd extends Arithmetic
 {
-   public BC096_iadd()
-   {
-      super(-1,-2,-1,INT);
-   }
-   public void exec()
-   {
-      stack[stackPtr-2].asInt += stack[stackPtr-1].asInt;
-   }
+  public BC096_iadd()
+  {
+    super(-1,-2,-1,INT);
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr-2].asInt += stack[stackPtr-1].asInt;
+  }
 }
