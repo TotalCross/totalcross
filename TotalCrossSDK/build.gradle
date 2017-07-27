@@ -11,6 +11,10 @@ group = 'com.totalcross'
 // can't be used yet, enconding is a mess
 compileJava.options.encoding = 'UTF-8'
 
+configurations { 
+	obfuscatedArchive
+}
+
 jar {
     manifest {
         attributes('Main-Class': '..........')
@@ -192,10 +196,6 @@ task tcuiJar(type: Jar) {
     }
 }
 
-artifacts {
-    archives sourcesJar, totalcrossJar, tcbaseJar, tcuiJar
-}
-
 task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar) {
     configuration 'proguard.txt'
 
@@ -208,6 +208,14 @@ task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar
     libraryjars files(configurations.compile.collect())
 }
 
+artifacts {
+    obfuscatedArchive( myProguardTask.outputs.files.singleFile ) {
+        builtBy myProguardTask
+        // can also set classifier, extension, name, etc as needed (some defaults will be inferred from the filename)
+        // see https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/ConfigurablePublishArtifact.html
+    }
+    archives sourcesJar, tcbaseJar, tcuiJar
+}
 
 tasks.withType(Jar) {
     includeEmptyDirs = false
