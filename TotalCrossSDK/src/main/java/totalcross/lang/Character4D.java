@@ -2,6 +2,7 @@ package totalcross.lang;
 
 import jdkcompat.util.function.Supplier4D;
 import totalcross.sys.Convert;
+import totalcross.util.concurrent.Lock;
 
 public class Character4D
 {
@@ -120,20 +121,29 @@ public class Character4D
   private static final int TYPE_MASK = 0x1F;
   private static final int NO_BREAK_MASK = 0x20;
   
+  private static Lock lock = new Lock();
   private static Supplier4D<byte[]> genTypes = new Supplier4D<byte[]>()
   {
      @Override
      public byte[] get()
      {
-        genTypes = new Supplier4D<byte[]>()
+        synchronized (lock)
         {
-           @Override
-           public byte[] get()
+           if (types == null)
            {
-              return types;
+               genTypes = new Supplier4D<byte[]>()
+               {
+                  @Override
+                  public byte[] get()
+                  {
+                     return types;
+                  }
+              };
+              return types = totalcross.sys.Vm.getFile("totalcross/chartypes.bin");
            }
-        };
-        return types = totalcross.sys.Vm.getFile("totalcross/chartypes.bin");
+		}
+        
+        return types;
      }
   };
 
