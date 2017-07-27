@@ -112,6 +112,11 @@ public class ScrollContainer extends Container implements Scrollable
    {
       Rect r = new Rect();
       bag.getClientRect(r);
+      boolean showScroll = !Settings.fingerTouch || !ScrollPosition.AUTO_HIDE;
+      int sbVsize = showScroll && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth()  : 0;
+      int sbHsize = showScroll && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0;
+      r.width -= sbVsize;
+      r.height -= sbHsize;
       return r;
    }
 
@@ -266,14 +271,7 @@ public class ScrollContainer extends Container implements Scrollable
    protected void onBoundsChanged(boolean screenChanged)
    {
       bag0.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
-      if (sbH == null && sbV == null && shrink2size)
-         bagSetRect(LEFT, TOP, FILL, FILL, screenChanged);
-      else if (sbH == null || sbV == null)
-      {
-         int w = FILL - (sbV != null && !Settings.fingerTouch ? sbV.getPreferredWidth() : 0); // guich@tc152: set original size to the parent's one, so user can use FILL and PARENTSIZE
-         int h = FILL - (sbH != null && !Settings.fingerTouch ? sbH.getPreferredHeight() : 0);
-         bagSetRect(LEFT, TOP, w, h, screenChanged);
-      }
+      bagSetRect(LEFT, TOP, FILL, FILL, screenChanged);
    }
 
    protected void onColorsChanged(boolean colorsChanged)
@@ -364,8 +362,11 @@ public class ScrollContainer extends Container implements Scrollable
             }
          } while (changed);
 
+      boolean showScroll = !Settings.fingerTouch || !ScrollPosition.AUTO_HIDE;
+      int sbVsize = needY && showScroll && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth()  : 0;
+      int sbHsize = needY && showScroll && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0;
       if (sbH != null || sbV != null || !shrink2size)
-         bag0.setRect(r.x,r.y,r.width-(!finger && needY && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth() : 0), r.height-(!finger && needX && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0));
+         bag0.setRect(r.x,r.y,r.width-sbVsize, r.height-sbHsize);
       else
       {
          bag0.setRect(r.x,r.y,maxX,maxY);
@@ -376,7 +377,7 @@ public class ScrollContainer extends Container implements Scrollable
          super.add(sbH);
          sbH.setMaximum(maxX);
          sbH.setVisibleItems(bag0.width);
-         sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY && sbV != null?sbV.getPreferredWidth():0),PREFERRED);
+         sbH.setRect(LEFT,BOTTOM,FILL-sbVsize,PREFERRED);
          sbH.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fm.charWidth('@'));
          lastH = 0;
       }
@@ -402,7 +403,7 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void reposition()
    {
-      int vx = bag.x, vy = bag.y, vw = bag.width, vh = bag.height; // keep position when changing size
+      int vx = bag.x, vy = bag.y; // keep position when changing size
       int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
       super.reposition();
       resize();
