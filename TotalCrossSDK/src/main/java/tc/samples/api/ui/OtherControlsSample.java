@@ -87,12 +87,6 @@ public class OtherControlsSample extends BaseContainer
          sc.add(sl = new SpinList(new String[]{"Today","Day [1,31]"}, !Settings.fingerTouch),LEFT,AFTER,Settings.fingerTouch?FILL:PREFERRED,PREFERRED);
          sl.hAlign = CENTER;
   
-         sc.add(new Label("Slider"),LEFT,AFTER+gap);
-         sc.add(sb1 = new Slider(ScrollBar.HORIZONTAL),LEFT,AFTER, SCREENSIZE+50, PREFERRED);
-         sb1.drawTicks = true;
-         sb1.setLiveScrolling(true);
-         sb1.setValues(1,1,1,6);
-   
          sc.add(new Label("Horizontal ScrollBar"),LEFT,AFTER+gap);
          sc.add(sb2 = new ScrollBar(ScrollBar.HORIZONTAL), LEFT,AFTER, SCREENSIZE+50, PREFERRED);
          sb2.setVisibleItems(10);
