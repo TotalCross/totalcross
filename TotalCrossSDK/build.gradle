@@ -259,4 +259,19 @@ task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
 
-build.finalizedBy(myProguardTask)
+task dist(dependsOn: build) {
+
+	copy { 
+		from 'build/libs/install/win32/TCUI.tcz'
+		from 'build/libs/install/win32/TCBase.tcz'
+		into 'dist/vm/'
+	}
+
+	copy { 
+		from myProguardTask.outputs.files.singleFile
+		into 'dist/'
+		rename 'totalcross-sdk-' + project.version + '.jar', 'tc.jar'
+	}
+}
+
+build.finalizedBy(myProguardTask, deployTcbase, deployTcui)
