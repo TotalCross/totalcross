@@ -94,6 +94,7 @@ typedef enum
    PM_ALT     = 1,
    PM_CONTROL = 2,
    PM_SHIFT   = 4,
+   PM_SYSTEM  = 8,
 } PortableModifiers;
 
 /// Returns the device key mapped from the portable key, or the portable key itself if it could not be mapped
