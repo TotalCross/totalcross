@@ -1,5 +1,7 @@
 package totalcross.ui.effect;
 
+import totalcross.sys.Convert;
+import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.ui.Button;
 import totalcross.ui.Control;
