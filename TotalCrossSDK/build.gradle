@@ -271,7 +271,7 @@ task dist(dependsOn: build) {
 		from myProguardTask.outputs.files.singleFile
 		into 'dist/'
 		rename  { String fileName ->
-    				fileName.replace('totalcross-sdk-' + project.version, "tc")
+    				fileName.replace('-' + project.version, '')
   		}
 	}
 }
