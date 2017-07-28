@@ -15,6 +15,14 @@ All notable changes to this project will be documented in this file.
     1. Build to multiple platforms [here](https://github.com/TotalCross/IFoodUI/blob/c0e96ade3d24539fb2e96cae2637989c6aea5418/src/main/java/tc/samples/like/ifood/IFoodCompile.java#L12)
     1. Must compile with dependenceis `magical-utils`, `tc-utilities` and `tc-components` [here](https://github.com/TotalCross/totalcross-big-file/blob/master/src/main/java/com/totalcross/sample/bigfile/BigFileCompile.java#L11)
 
+### Fixed
+- Fixed deploy issue with `java.lang.System` while running with Java 8
+- Fixed deploy issue with `java.lang.Character` while running in a headless environment
+
+### Changes
+- `totalcross.io.Connection` implements `AutoCloseable`, so you may use `try-with-resources` with any `totalcross.io.Stream`, like `HttpStream` or `File`
+  - It also warns _Resource leak_ when the compiler detects that you are not releasing a opened resource
+
 ## 4.0.0 - SNAPSHOT
 
 ### Highlights
