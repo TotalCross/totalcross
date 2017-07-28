@@ -270,7 +270,9 @@ task dist(dependsOn: build) {
 	copy { 
 		from myProguardTask.outputs.files.singleFile
 		into 'dist/'
-		rename 'totalcross-sdk-' + project.version + '.jar', 'tc.jar'
+		rename  { String fileName ->
+    				fileName.replace('totalcross-sdk-' + project.version, "tc")
+  		}
 	}
 }
 
