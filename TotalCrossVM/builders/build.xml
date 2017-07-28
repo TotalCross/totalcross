@@ -590,6 +590,7 @@ target: checks if we must update the versions of the files prior to a build.
 <target name="buildPostInstall" >
 
   <property name="temp" value="${base.temp.path}/classes_desktop" />
+  <mkdir dir="${temp}"/>
   <javac srcdir="${source.sdk.path}/tc/tools" destdir="${temp}" target="${compile.target}" source="${compile.source}" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
