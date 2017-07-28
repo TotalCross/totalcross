@@ -186,11 +186,6 @@ target: buildSkeleton - Build the folders
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildSkeleton" >
-   <!-- try to delete this, it may be blocked by the classpath referencing it -->
-   <delete failonerror="true">
-      <fileset dir="${sdk.path}/dist" includes="*.jar"/>
-      </delete>
-
    <echo message="Building TotalCross SDK build ${buildNumber}"/>
    <ant antfile="build.xml" dir="${sdk.path}" target="clean"           inheritAll="false"/>
    <ant antfile="build.xml" dir="${sdk.path}" target="build"           inheritAll="false"/>
