@@ -3,6 +3,26 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Highlights
+- `@ReplacedByNativeOnDeploy` annotation to denote every method that runs with a native implementation on device
+  - It's Java implementation is replaced when it is deployed
+- `java.util.function.*` functional interfaces of Java 8 to provide a deeper dive into functional programming
+  - The project needs to be compiled with Java 8 to works, even if it has been downtargeted by RetroLambda
+  - **NOTE**: no default methods nor static methods yet
+- Wish to add your dependencies dynamically? Take a look at [`tc-compiler-help`](https://github.com/TotalCross/tc-compiler-help)
+  - The file `all.pkg` is dynamically updated with your dependencies and restored to it's original state
+  - See build examples:
+    1. Build to multiple platforms [here](https://github.com/TotalCross/IFoodUI/blob/c0e96ade3d24539fb2e96cae2637989c6aea5418/src/main/java/tc/samples/like/ifood/IFoodCompile.java#L12)
+    1. Must compile with dependenceis `magical-utils`, `tc-utilities` and `tc-components` [here](https://github.com/TotalCross/totalcross-big-file/blob/master/src/main/java/com/totalcross/sample/bigfile/BigFileCompile.java#L11)
+
+## 4.0.0 - SNAPSHOT
+
+### Highlights
+- Familiar with the Material design User Experience? Well, you can now give it to your user!
+
+### Fixed
+- Prevents null pointer when resizing `ScrollContainer`
+
 ## 3.44.3483 - 2017-07-17
 
 ### Highlights
