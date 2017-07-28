@@ -120,12 +120,12 @@ public class Character4D
   private static final int TYPE_MASK = 0x1F;
   private static final int NO_BREAK_MASK = 0x20;
   
-  private static interface Supplier<T> {
+  private static interface TypesSupplier<T> {
 	  T get();
   }
   
   private static Lock lock = new Lock();
-  private static Supplier<byte[]> genTypes = new Supplier<byte[]>()
+  private static TypesSupplier<byte[]> genTypes = new TypesSupplier<byte[]>()
   {
      @Override
      public byte[] get()
@@ -134,7 +134,7 @@ public class Character4D
         {
            if (types == null)
            {
-               genTypes = new Supplier<byte[]>()
+               genTypes = new TypesSupplier<byte[]>()
                {
                   @Override
                   public byte[] get()
