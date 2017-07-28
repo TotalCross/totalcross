@@ -596,7 +596,7 @@ target: checks if we must update the versions of the files prior to a build.
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
 	<env key="TOTALCROSS_HOME" value="${sdk.path}"/>
    <classpath>
-     <pathelement location="${temp}"/>
+   	<pathelement location="${sdk.path}/dist/tc.jar"/>
    </classpath>
    <arg line="PostInstall.class -win32"/>
    <arg line="/r 5443444B314891CE3D2DD791"/>
