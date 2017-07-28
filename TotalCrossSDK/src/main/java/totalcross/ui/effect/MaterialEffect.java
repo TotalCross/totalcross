@@ -69,6 +69,10 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
         w = target.getEffectW();
         h = target.getEffectH();
       }
+      int tw = target.getWidth();  // dont let it go beyond screen size
+      int th = target.getHeight();
+      if (w > tw) {x = 0; w = tw;}
+      if (h > th) {y = 0; h = th;}
       if (matImg == null || matImg.getWidth() != w || matImg.getHeight() != h) {
         try {matImg = new Image(w,h);} catch (Throwable t) {t.printStackTrace();}
       }
