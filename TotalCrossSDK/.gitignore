@@ -13,3 +13,5 @@ activation.html
 /images
 /books
 help.dat
+/build/**
+/.gradle/**
