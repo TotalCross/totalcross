@@ -21,7 +21,7 @@ package totalcross.io;
 /**
  * Base class for I/O connections.
  */
-abstract class Connection
+abstract class Connection implements AutoCloseable
 {
   /**
    * Closes this I/O connection, releasing any associated resources. Once closed a connection is no longer valid.
