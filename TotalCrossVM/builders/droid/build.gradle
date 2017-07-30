@@ -73,7 +73,7 @@ android {
 
 		doLast{
 			copy {
-				from "." + "/../../../../temp/android/TotalCross/" + "demo" + "/libs"
+				from "." + "/../../../../temp/android/TotalCross/" + "demo" + "/local"
 				into 'src/main/libs'
 				include '**/*'
 			}

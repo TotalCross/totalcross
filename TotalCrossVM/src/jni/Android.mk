@@ -2,7 +2,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-TYPE ?= release
+TYPE ?= debug
 
 TC_SRCDIR := ..
 TC_INCLUDEDIR := $(TC_SRCDIR)/src
