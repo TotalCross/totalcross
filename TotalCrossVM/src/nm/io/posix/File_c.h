@@ -113,7 +113,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
  * Link Library: libc.
  *
  *************************************/
-static inline Err fileFlush(NATIVE_FILE fref);
+static Err fileFlush(NATIVE_FILE fref);
 
 static Err fileClose(NATIVE_FILE* fref)
 {
@@ -249,7 +249,7 @@ static bool fileExists(TCHARP path, int32 slot)
  *
  *************************************/
 
-static inline Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
+static Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
 {
 #if defined(ANDROID)
    JNIEnv* env = getJNIEnv();
@@ -386,7 +386,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
  *
  *************************************/
 
-static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
+static Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
 {
    if ((*bytesRead = (int)fread(bytes+offset, 1, length, fref.handle)) <= 0 && !feof(fref.handle)) // flsobral@tc110_1: return 0 and NO_ERROR on EOF.
       return errno;
@@ -405,7 +405,7 @@ static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int
  *
  *************************************/
 
-static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
+static Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
 {
    if (isOpen)
       fclose(fref.handle);
@@ -425,7 +425,7 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
  *
  *************************************/
 
-static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
+static Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    if (fseek(fref.handle, position, SEEK_SET))
       return errno;
@@ -443,7 +443,7 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
  *
  *************************************/
 
-static inline Err fileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
+static Err fileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
 {
    if ((*bytesWritten = (int)fwrite(bytes+offset, 1, length, fref.handle)) < 0)
       return errno;
@@ -609,7 +609,7 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, in
  *
  *************************************/
 
-static inline Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
+static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
    fileFlush(*fref);
    return ftruncate(fileno(fref->handle), newSize) ? errno : NO_ERROR;
@@ -624,7 +624,7 @@ static inline Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
  * Link Library: libc.
  *
  *************************************/
-static inline Err fileFlush(NATIVE_FILE fref)
+static Err fileFlush(NATIVE_FILE fref)
 {
    return fflush(fref.handle) || fsync(fileno(fref.handle)) ? errno : NO_ERROR;
 }
