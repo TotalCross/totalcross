@@ -3,7 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+
+## 4.0.0 - 2017-07-31
+
 ### Highlights
+- Familiar with the Material design User Experience? Well, you can now give it to your user!
 - `@ReplacedByNativeOnDeploy` annotation to denote every method that runs with a native implementation on device
   - It's Java implementation is replaced when it is deployed
 - `java.util.function.*` functional interfaces of Java 8 to provide a deeper dive into functional programming
@@ -16,20 +20,13 @@ All notable changes to this project will be documented in this file.
     1. Must compile with dependenceis `magical-utils`, `tc-utilities` and `tc-components` [here](https://github.com/TotalCross/totalcross-big-file/blob/master/src/main/java/com/totalcross/sample/bigfile/BigFileCompile.java#L11)
 
 ### Fixed
+- Prevents null pointer when resizing `ScrollContainer`
 - Fixed deploy issue with `java.lang.System` while running with Java 8
 - Fixed deploy issue with `java.lang.Character` while running in a headless environment
 
 ### Changes
 - `totalcross.io.Connection` implements `AutoCloseable`, so you may use `try-with-resources` with any `totalcross.io.Stream`, like `HttpStream` or `File`
   - It also warns _Resource leak_ when the compiler detects that you are not releasing a opened resource
-
-## 4.0.0 - SNAPSHOT
-
-### Highlights
-- Familiar with the Material design User Experience? Well, you can now give it to your user!
-
-### Fixed
-- Prevents null pointer when resizing `ScrollContainer`
 
 ## 3.44.3483 - 2017-07-17
 
