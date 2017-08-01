@@ -18,60 +18,65 @@
 
 package tc.samples.game.breakout;
 
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
 import totalcross.sys.Settings;
+import totalcross.ui.Button;
+import totalcross.ui.Container;
+import totalcross.ui.Label;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.font.Font;
+import totalcross.ui.gfx.Color;
 
 final class GameOver extends Container
 {
-	private Breakout game;
-  	private Button button;
-  	private Label label;
+  private Breakout game;
+  private Button button;
+  private Label label;
 
-  	protected GameOver(Breakout game)
-  	{
-    	this.game=game;
-  	}
+  protected GameOver(Breakout game)
+  {
+    this.game=game;
+  }
 
-  	public void initUI()
-  	{
-    	setRect(game.getRect());
+  @Override
+  public void initUI()
+  {
+    setRect(game.getRect());
 
-    	int bgColor = 0x999900;
-    	label.setBackForeColors(bgColor, Color.YELLOW);
-    	Font bigFont = Font.getFont(font.name, true, Font.BIG_SIZE);
-		label.setFont(bigFont);
+    int bgColor = 0x999900;
+    label.setBackForeColors(bgColor, Color.YELLOW);
+    Font bigFont = Font.getFont(font.name, true, Font.BIG_SIZE);
+    label.setFont(bigFont);
 
-      add(label,CENTER,CENTER); // same bug: fonts must be set before placing the control on screen
-      add(button);
-      button.setRect(CENTER,AFTER+10,PREFERRED+Settings.screenWidth/16,PREFERRED+Settings.screenWidth/16);
-      setBackColor(bgColor);
-   }
+    add(label,CENTER,CENTER); // same bug: fonts must be set before placing the control on screen
+    add(button);
+    button.setRect(CENTER,AFTER+10,PREFERRED+Settings.screenWidth/16,PREFERRED+Settings.screenWidth/16);
+    setBackColor(bgColor);
+  }
 
-	public void announce(int nextLevel)
-	{
-		if(nextLevel > 0)
-		{
-			label = new Label("Level " + nextLevel);
-			button = new Button("Start");
-		}
-		else
-		{
-			label = new Label("GAME OVER");
-			button = new Button("New Game");
-		}
+  public void announce(int nextLevel)
+  {
+    if(nextLevel > 0)
+    {
+      label = new Label("Level " + nextLevel);
+      button = new Button("Start");
+    }
+    else
+    {
+      label = new Label("GAME OVER");
+      button = new Button("New Game");
+    }
 
-      game.swap(this);
-	}
+    game.swap(this);
+  }
 
-  	public void onEvent(Event event)
-   {
-    	if (event.type == ControlEvent.PRESSED && event.target==button)
-     	{
-	      game.blankScreen();
-    	  	game.start();
-     	}
-   }
+  @Override
+  public void onEvent(Event event)
+  {
+    if (event.type == ControlEvent.PRESSED && event.target==button)
+    {
+      game.blankScreen();
+      game.start();
+    }
+  }
 }

@@ -13,17 +13,17 @@
 
 package tc.test.converter;
 
-import totalcross.unit.*;
+import totalcross.unit.TestSuite;
 
 public class ConverterTests extends TestSuite
 {
-   /** Need to be used within TotalCross */
-   public ConverterTests()
-   {
-      super("Converter Test Suite");
-      addTestCase( tc.test.converter.TCCodeTest.class );
-      addTestCase( tc.test.converter.util.LzmaTest.class );
-      addTestCase( tc.test.converter.InfoTest.class );
-      addTestCase( tc.test.converter.Bytecode2TCCodeTest.class );
-   }
+  /** Need to be used within TotalCross */
+  public ConverterTests()
+  {
+    super("Converter Test Suite");
+    addTestCase( tc.test.converter.TCCodeTest.class );
+    addTestCase( tc.test.converter.util.LzmaTest.class );
+    addTestCase( tc.test.converter.InfoTest.class );
+    addTestCase( tc.test.converter.Bytecode2TCCodeTest.class );
+  }
 }

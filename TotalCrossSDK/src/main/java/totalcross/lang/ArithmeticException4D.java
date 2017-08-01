@@ -31,20 +31,20 @@ package totalcross.lang;
  */
 public class ArithmeticException4D extends RuntimeException
 {
-   /** 
-    * Constructs an empty exception. 
-    */
-   public ArithmeticException4D()
-   {
-   }
+  /** 
+   * Constructs an empty exception. 
+   */
+  public ArithmeticException4D()
+  {
+  }
 
-   /** 
-    * Constructs an exception with the given message. 
-    * 
-    * @param msg The error message.
-    */
-   public ArithmeticException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** 
+   * Constructs an exception with the given message. 
+   * 
+   * @param msg The error message.
+   */
+  public ArithmeticException4D(String msg)
+  {
+    super(msg);
+  }
 }

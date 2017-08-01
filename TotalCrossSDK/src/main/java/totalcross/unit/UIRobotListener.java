@@ -21,9 +21,9 @@ package totalcross.unit;
 
 public interface UIRobotListener
 {
-   /** The UIRobot has succeed. */
-   public void robotSucceed(UIRobotEvent e);
+  /** The UIRobot has succeed. */
+  public void robotSucceed(UIRobotEvent e);
 
-   /** The UIRobot has failed. Check the failureReason field for more information. */
-   public void robotFailed(UIRobotEvent e);
+  /** The UIRobot has failed. Check the failureReason field for more information. */
+  public void robotFailed(UIRobotEvent e);
 }

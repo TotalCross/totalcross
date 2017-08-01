@@ -66,6 +66,7 @@ void flushAll();
 #define R3D_RAISED   3
 #define R3D_CHECK    4
 #define R3D_SHADED   5
+#define R3D_FILL     6
 #define ARROW_UP     1
 #define ARROW_DOWN   2
 #define ARROW_LEFT   3
@@ -261,7 +262,7 @@ TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics nativ
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false, false);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
@@ -275,7 +276,7 @@ TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphi
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_backPixel(g), true);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_backPixel(g), true, false);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawPolygon(int []xPoints, int []yPoints, int nPoints);
@@ -575,6 +576,11 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
    int32 *fourColorsI = (int32*)ARRAYOBJ_START(p->obj[1]);
    Pixel fourColors[4], foreColor = Graphics_forePixel(g);
 
+   if (type == R3D_FILL)
+   {
+      fillRect(p->currentContext, g,x,y,width,height,Graphics_backPixel(g));
+      return;
+   }
    if (fourColorsI == null)
       return;
 
@@ -769,7 +775,7 @@ TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics n
       tlx[0] = x1+t; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2+t;
       tly[0] = tly[1] = y1; tly[2] = tly[3] = y2;
    }
-   fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false);
+   fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false, false);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p) // totalcross/ui/gfx/Graphics native protected void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);

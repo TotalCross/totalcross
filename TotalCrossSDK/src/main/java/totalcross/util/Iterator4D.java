@@ -38,6 +38,10 @@ exception statement from your version. */
 
 package totalcross.util;
 
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+
 /**
  * An object which iterates over a collection. An Iterator is used to return
  * the items once only, in sequence, by successive calls to the next method.

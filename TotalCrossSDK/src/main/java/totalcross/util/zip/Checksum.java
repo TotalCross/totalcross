@@ -74,33 +74,33 @@ package totalcross.util.zip;
  */
 public abstract class Checksum
 {
-   /**
-    * Returns the data checksum computed so far.
-    */
-   abstract long getValue();
+  /**
+   * Returns the data checksum computed so far.
+   */
+  abstract long getValue();
 
-   /**
-    * Resets the data checksum as if no update was ever called.
-    */
-   abstract void reset();
+  /**
+   * Resets the data checksum as if no update was ever called.
+   */
+  abstract void reset();
 
-   /**
-    * Adds one byte to the data checksum.
-    * 
-    * @param bval
-    *           the data value to add. The high byte of the int is ignored.
-    */
-   abstract void update(int bval);
+  /**
+   * Adds one byte to the data checksum.
+   * 
+   * @param bval
+   *           the data value to add. The high byte of the int is ignored.
+   */
+  abstract void update(int bval);
 
-   /**
-    * Adds the byte array to the data checksum.
-    * 
-    * @param buf
-    *           the buffer which contains the data
-    * @param off
-    *           the offset in the buffer where the data starts
-    * @param len
-    *           the length of the data
-    */
-   abstract void update(byte[] buf, int off, int len);
+  /**
+   * Adds the byte array to the data checksum.
+   * 
+   * @param buf
+   *           the buffer which contains the data
+   * @param off
+   *           the offset in the buffer where the data starts
+   * @param len
+   *           the length of the data
+   */
+  abstract void update(byte[] buf, int off, int len);
 }

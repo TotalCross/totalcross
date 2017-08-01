@@ -40,8 +40,16 @@ exception statement from your version. */
 package totalcross.util;
 
 import java.lang.reflect.Array;
-import java.util.*;
-import totalcross.sys.*;
+import java.util.AbstractList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.RandomAccess;
+import totalcross.sys.Convert;
+import totalcross.sys.Vm;
 
 /**
  * An array-backed implementation of the List interface.  This implements
@@ -80,7 +88,7 @@ import totalcross.sys.*;
  * @status updated to 1.4
  */
 public class ArrayList4D<E> extends AbstractList<E>
-  implements List<E>, RandomAccess, Cloneable
+implements List<E>, RandomAccess, Cloneable
 {
   /**
    * The default capacity for new ArrayLists.
@@ -107,8 +115,9 @@ public class ArrayList4D<E> extends AbstractList<E>
   public ArrayList4D(int capacity)
   {
     // Must explicitly check, to get correct exception.
-    if (capacity < 0)
+    if (capacity < 0){
       throw new IllegalArgumentException();
+    }
     data = (E[]) new Object[capacity];
   }
 
@@ -143,11 +152,11 @@ public class ArrayList4D<E> extends AbstractList<E>
     // Not a structural change from the perspective of iterators on this list,
     // so don't update modCount.
     if (size != data.length)
-      {
-        E[] newData = (E[]) new Object[size];
-        Vm.arrayCopy(data, 0, newData, 0, size);
-        data = newData;
-      }
+    {
+      E[] newData = (E[]) new Object[size];
+      Vm.arrayCopy(data, 0, newData, 0, size);
+      data = newData;
+    }
   }
 
   /**
@@ -165,11 +174,11 @@ public class ArrayList4D<E> extends AbstractList<E>
     int current = data.length;
 
     if (minCapacity > current)
-      {
-        E[] newData = (E[]) new Object[Math.max(current * 2, minCapacity)];
-        Vm.arrayCopy(data, 0, newData, 0, size);
-        data = newData;
-      }
+    {
+      E[] newData = (E[]) new Object[Math.max(current * 2, minCapacity)];
+      Vm.arrayCopy(data, 0, newData, 0, size);
+      data = newData;
+    }
   }
 
   /**
@@ -177,6 +186,7 @@ public class ArrayList4D<E> extends AbstractList<E>
    *
    * @return the list size
    */
+  @Override
   public int size()
   {
     return size;
@@ -187,6 +197,7 @@ public class ArrayList4D<E> extends AbstractList<E>
    *
    * @return true if there are no elements
    */
+  @Override
   public boolean isEmpty()
   {
     return size == 0;
@@ -198,6 +209,7 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @param e the element whose inclusion in the List is being tested
    * @return true if the list contains e
    */
+  @Override
   public boolean contains(Object e)
   {
     return indexOf(e) != -1;
@@ -210,11 +222,14 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @param e the element whose inclusion in the List is being tested
    * @return the index where e was found
    */
+  @Override
   public int indexOf(Object e)
   {
-    for (int i = 0; i < size; i++)
-      if (AbstractCollection4D.equals(e, data[i]))
+    for (int i = 0; i < size; i++) {
+      if (AbstractCollection4D.equals(e, data[i])){
         return i;
+      }
+    }
     return -1;
   }
 
@@ -225,11 +240,14 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @param e the element whose inclusion in the List is being tested
    * @return the index where e was found
    */
+  @Override
   public int lastIndexOf(Object e)
   {
-    for (int i = size - 1; i >= 0; i--)
-      if (AbstractCollection4D.equals(e, data[i]))
+    for (int i = size - 1; i >= 0; i--) {
+      if (AbstractCollection4D.equals(e, data[i])){
         return i;
+      }
+    }
     return -1;
   }
 
@@ -238,27 +256,29 @@ public class ArrayList4D<E> extends AbstractList<E>
    *
    * @return the cloned object
    */
+  @Override
   public Object clone()
   {
     ArrayList4D<E> clone = null;
     try
-      {
-        clone = (ArrayList4D<E>) super.clone();
-        clone.data = (E[])new Object[data.length];
-        Vm.arrayCopy(data, 0, clone.data, 0, data.length);
-      }
+    {
+      clone = (ArrayList4D<E>) super.clone();
+      clone.data = (E[])new Object[data.length];
+      Vm.arrayCopy(data, 0, clone.data, 0, data.length);
+    }
     catch (CloneNotSupportedException e)
-      {
-      }
+    {
+    }
     return clone;
   }
-  
+
   /**
    * Returns an Object array containing all of the elements in this ArrayList.
    * The array is independent of this list.
    *
    * @return an array representation of this list
    */
+  @Override
   public Object[] toArray()
   {
     E[] array = (E[]) new Object[size];
@@ -280,12 +300,14 @@ public class ArrayList4D<E> extends AbstractList<E>
    *         an element in this list
    * @throws NullPointerException if a is null
    */
+  @Override
   public <T> T[] toArray(T[] a)
   {
-    if (a.length < size)
+    if (a.length < size){
       a = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
-    else if (a.length > size)
+    }else if (a.length > size){
       a[size] = null;
+    }
     Vm.arrayCopy(data, 0, a, 0, size);
     return a;
   }
@@ -296,6 +318,7 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @param index the index of the element we are fetching
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
+  @Override
   public E get(int index)
   {
     checkBoundExclusive(index);
@@ -311,6 +334,7 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @return the element previously at the specified index
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= 0
    */
+  @Override
   public E set(int index, E e)
   {
     checkBoundExclusive(index);
@@ -326,11 +350,13 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @param e the element to be appended to this list
    * @return true, the add will always succeed
    */
+  @Override
   public boolean add(E e)
   {
     modCount++;
-    if (size == data.length)
+    if (size == data.length){
       ensureCapacity(size + 1);
+    }
     data[size++] = e;
     return true;
   }
@@ -344,14 +370,17 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @param e the item being added
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
+  @Override
   public void add(int index, E e)
   {
     checkBoundInclusive(index);
     modCount++;
-    if (size == data.length)
+    if (size == data.length){
       ensureCapacity(size + 1);
-    if (index != size)
-       Vm.arrayCopy(data, index, data, index + 1, size - index);
+    }
+    if (index != size){
+      Vm.arrayCopy(data, index, data, index + 1, size - index);
+    }
     data[index] = e;
     size++;
   }
@@ -363,13 +392,15 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @return the removed Object
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
+  @Override
   public E remove(int index)
   {
     checkBoundExclusive(index);
     E r = data[index];
     modCount++;
-    if (index != --size)
-       Vm.arrayCopy(data, index + 1, data, index, size - index);
+    if (index != --size){
+      Vm.arrayCopy(data, index + 1, data, index, size - index);
+    }
     // Aid for garbage collection by releasing this pointer.
     data[size] = null;
     return r;
@@ -378,15 +409,16 @@ public class ArrayList4D<E> extends AbstractList<E>
   /**
    * Removes all elements from this List
    */
+  @Override
   public void clear()
   {
     if (size > 0)
-      {
-        modCount++;
-        // Allow for garbage collection.
-        Convert.fill(data, 0, size, null);
-        size = 0;
-      }
+    {
+      modCount++;
+      // Allow for garbage collection.
+      Convert.fill(data, 0, size, null);
+      size = 0;
+    }
   }
 
   /**
@@ -399,6 +431,7 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @return true if the list was modified, in other words c is not empty
    * @throws NullPointerException if c is null
    */
+  @Override
   public boolean addAll(Collection<? extends E> c)
   {
     return addAll(size, c);
@@ -414,6 +447,7 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; 0
    * @throws NullPointerException if c is null
    */
+  @Override
   public boolean addAll(int index, Collection<? extends E> c)
   {
     checkBoundInclusive(index);
@@ -421,14 +455,17 @@ public class ArrayList4D<E> extends AbstractList<E>
     int csize = c.size();
 
     modCount++;
-    if (csize + size > data.length)
+    if (csize + size > data.length){
       ensureCapacity(size + csize);
+    }
     int end = index + csize;
-    if (size > 0 && index != size)
-       Vm.arrayCopy(data, index, data, end, size - index);
+    if (size > 0 && index != size){
+      Vm.arrayCopy(data, index, data, end, size - index);
+    }
     size += csize;
-    for ( ; index < end; index++)
+    for ( ; index < end; index++) {
       data[index] = itr.next();
+    }
     return csize > 0;
   }
 
@@ -440,17 +477,19 @@ public class ArrayList4D<E> extends AbstractList<E>
    * @param toIndex one greater than the last index which will be removed
    * @throws IndexOutOfBoundsException if fromIndex &gt; toIndex
    */
+  @Override
   protected void removeRange(int fromIndex, int toIndex)
   {
     int change = toIndex - fromIndex;
     if (change > 0)
-      {
-        modCount++;
-        Vm.arrayCopy(data, toIndex, data, fromIndex, size - toIndex);
-        size -= change;
-      }
-    else if (change < 0)
+    {
+      modCount++;
+      Vm.arrayCopy(data, toIndex, data, fromIndex, size - toIndex);
+      size -= change;
+    }
+    else if (change < 0){
       throw new IndexOutOfBoundsException();
+    }
   }
 
   /**
@@ -464,8 +503,9 @@ public class ArrayList4D<E> extends AbstractList<E>
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException,
     // a subclass of the required exception, with no effort on our part.
-    if (index > size)
+    if (index > size){
       raiseBoundsError(index);
+    }
   }
 
   /**
@@ -479,8 +519,9 @@ public class ArrayList4D<E> extends AbstractList<E>
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException,
     // a subclass of the required exception, with no effort on our part.
-    if (index >= size)
+    if (index >= size){
       raiseBoundsError(index);
+    }
   }
 
   /**
@@ -496,8 +537,8 @@ public class ArrayList4D<E> extends AbstractList<E>
     // do so).
     throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
   }
-  
-  
+
+
   /**
    * Remove from this list all elements contained in the given collection.
    * This is not public, due to Sun's API, but this performs in linear
@@ -511,16 +552,21 @@ public class ArrayList4D<E> extends AbstractList<E>
   {
     int i;
     int j;
-    for (i = 0; i < size; i++)
-      if (c.contains(data[i]))
+    for (i = 0; i < size; i++) {
+      if (c.contains(data[i])){
         break;
-    if (i == size)
+      }
+    }
+    if (i == size){
       return false;
+    }
 
     modCount++;
-    for (j = i++; i < size; i++)
-      if (! c.contains(data[i]))
+    for (j = i++; i < size; i++) {
+      if (! c.contains(data[i])){
         data[j++] = data[i];
+      }
+    }
     size -= i - j;
     return true;
   }
@@ -539,16 +585,21 @@ public class ArrayList4D<E> extends AbstractList<E>
   {
     int i;
     int j;
-    for (i = 0; i < size; i++)
-      if (! c.contains(data[i]))
+    for (i = 0; i < size; i++) {
+      if (! c.contains(data[i])){
         break;
-    if (i == size)
+      }
+    }
+    if (i == size){
       return false;
+    }
 
     modCount++;
-    for (j = i++; i < size; i++)
-      if (c.contains(data[i]))
+    for (j = i++; i < size; i++) {
+      if (c.contains(data[i])){
         data[j++] = data[i];
+      }
+    }
     size -= i - j;
     return true;
   }

@@ -16,11 +16,13 @@
 
 package totalcross.game;
 
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.sys.Settings;
+import totalcross.ui.Control;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /**
  * The Animation control class. <br>
@@ -73,17 +75,17 @@ public class Animation extends Control
    * No notify at all. 
    */
   public static final int eventNone      = 0x0;
-  
+
   /** 
    * Notifies animation endings. 
    */
   public static final int eventFinish    = 0x1;
-  
+
   /** 
    * Notifies animation loops. 
    */
   public static final int eventLoop      = 0x2;
-  
+
   /** 
    * Notifies animation frames. 
    */
@@ -99,7 +101,7 @@ public class Animation extends Control
    * The current frame.
    */
   protected int curFrame;
-  
+
   /** 
    * Dumb field to keep compilation compatibility with TC 1. 
    */
@@ -116,7 +118,7 @@ public class Animation extends Control
    */
   protected Animation()
   {
-     super();
+    super();
   }
 
   /**
@@ -155,21 +157,24 @@ public class Animation extends Control
    */
   public void setImage(Image frames,int frameCount,int framePeriod) throws ImageException
   {
-      this.focusTraversable = false;
-      boolean currentlyPlaying = this.isPlaying;
-      if (currentlyPlaying)
-         stop();
-      frames.setFrameCount(frameCount);
-      multiFramesImage = frames.getFrameCount() > 1;
+    this.focusTraversable = false;
+    boolean currentlyPlaying = this.isPlaying;
+    if (currentlyPlaying){
+      stop();
+    }
+    frames.setFrameCount(frameCount);
+    multiFramesImage = frames.getFrameCount() > 1;
 
-      this.framePeriod=framePeriod;
-      this.frameCount = frameCount;
+    this.framePeriod=framePeriod;
+    this.frameCount = frameCount;
 
-      framesBuffer=frames;
+    framesBuffer=frames;
 
-      width=frames.getWidth();
-      height=frames.getHeight();
-      if (currentlyPlaying) this.start(loopCount);
+    width=frames.getWidth();
+    height=frames.getHeight();
+    if (currentlyPlaying){
+      this.start(loopCount);
+    }
   }
 
   /**
@@ -177,12 +182,14 @@ public class Animation extends Control
    * 
    * @param e The posted event.
    */
+  @Override
   public void onEvent(Event e)
   {
-     if (animTimer != null && animTimer.triggered && !(pauseIfNotVisible && (getParentWindow() == null || !getParentWindow().isVisible())))
-        paintNextFrame();
-     else
-        super.onEvent(e);
+    if (animTimer != null && animTimer.triggered && !(pauseIfNotVisible && (getParentWindow() == null || !getParentWindow().isVisible()))){
+      paintNextFrame();
+    }else {
+      super.onEvent(e);
+    }
   }
 
   /**
@@ -200,9 +207,10 @@ public class Animation extends Control
    * 
    * @return The preferred width of this control.
    */
+  @Override
   public int getPreferredWidth()
   {
-     return width;
+    return width;
   }
 
   /**
@@ -210,43 +218,48 @@ public class Animation extends Control
    *
    * @return The preferred height of this control.
    */
+  @Override
   public int getPreferredHeight()
   {
     return height;
   }
 
-   /** 
-    * Called by the system to draw the animation.
-    * 
-    * @param gfx The graphics object for drawing. 
-    */
-   public void onPaint(Graphics gfx)
-   {
-      // fdie@400_51 : save animation background - no need in OpenGL, since the screen is fully painted at each frame
-      if (!Settings.isOpenGL && gfx.isControlSurface())
-         if (background == null)
-         {
-            // guich@tc100: on a screen rotation, we would have to re-get the background!
-            try
-            {
-               background = new Image(width, height);
-               // screen -> buffer
-               background.getGraphics().copyRect(parent, x, y, width, height, 0, 0);
-            }
-            catch (ImageException e)
-            {
-            }            
-         }
-         else if (background != null)
-            gfx.drawImage(background,0,0);
+  /** 
+   * Called by the system to draw the animation.
+   * 
+   * @param gfx The graphics object for drawing. 
+   */
+  @Override
+  public void onPaint(Graphics gfx)
+  {
+    // fdie@400_51 : save animation background - no need in OpenGL, since the screen is fully painted at each frame
+    if (!Settings.isOpenGL && gfx.isControlSurface()){
+      if (background == null)
+      {
+        // guich@tc100: on a screen rotation, we would have to re-get the background!
+        try
+        {
+          background = new Image(width, height);
+          // screen -> buffer
+          background.getGraphics().copyRect(parent, x, y, width, height, 0, 0);
+        }
+        catch (ImageException e)
+        {
+        }            
+      }
+      else if (background != null) {
+        gfx.drawImage(background,0,0);
+      }
+    }
 
-      // frame lookup table, for special animations
-      if (multiFramesImage)
-         framesBuffer.setCurrentFrame(curFrame);
+    // frame lookup table, for special animations
+    if (multiFramesImage){
+      framesBuffer.setCurrentFrame(curFrame);
+    }
 
-      // flsobral@tc100b5_6: argument doClip is now true, this avoids exceptions when the image is larger than the screen.
-      gfx.drawImage(framesBuffer, 0, 0, true);
-   }
+    // flsobral@tc100b5_6: argument doClip is now true, this avoids exceptions when the image is larger than the screen.
+    gfx.drawImage(framesBuffer, 0, 0, true);
+  }
 
   /**
    * Enable the posting of events. By default the posting of events are disabled.
@@ -262,7 +275,9 @@ public class Animation extends Control
    */
   public void pause()
   {
-    if (isPlaying) isPaused=true;
+    if (isPlaying){
+      isPaused=true;
+    }
   }
 
   /**
@@ -270,7 +285,9 @@ public class Animation extends Control
    */
   public void resume()
   {
-    if (isPlaying) isPaused=false;
+    if (isPlaying){
+      isPaused=false;
+    }
   }
 
   /** 
@@ -280,42 +297,46 @@ public class Animation extends Control
   {
     if (isPlaying)
     {
-       removeTimer(animTimer);
-       isPlaying = isPaused = false;
-       animTimer = null;
+      removeTimer(animTimer);
+      isPlaying = isPaused = false;
+      animTimer = null;
     }
   }
 
   private void paintNextFrame()
   {
-     if (isPlaying && !isPaused)
-     {
-        repaintNow();
-        if ((eventsMask & eventFrame) != 0)
-           postEvent(new AnimationEvent(AnimationEvent.FRAME,this));
+    if (isPlaying && !isPaused)
+    {
+      repaintNow();
+      if ((eventsMask & eventFrame) != 0) {
+        postEvent(new AnimationEvent(AnimationEvent.FRAME,this));
+      }
 
-        if (curFrame != endFrame)
-        {
-           curFrame += incFrame;
-           if (curFrame < 0 || curFrame >= frameCount)
-              curFrame = (curFrame+frameCount) % frameCount;
-           framesBuffer.setCurrentFrame(curFrame);
+      if (curFrame != endFrame)
+      {
+        curFrame += incFrame;
+        if (curFrame < 0 || curFrame >= frameCount) {
+          curFrame = (curFrame+frameCount) % frameCount;
         }
-        else
+        framesBuffer.setCurrentFrame(curFrame);
+      }
+      else
         if (loopCount == LOOPS_UNLIMITED || --loopCount> 0) // fdie@341_6 will be the only loop management once the above boolean loop is removed
         {
-           curFrame = startFrame;
-           framesBuffer.setCurrentFrame(curFrame);
-           if ((eventsMask & eventLoop) != 0)
-              postEvent(new AnimationEvent(AnimationEvent.LOOP,this));
+          curFrame = startFrame;
+          framesBuffer.setCurrentFrame(curFrame);
+          if ((eventsMask & eventLoop) != 0) {
+            postEvent(new AnimationEvent(AnimationEvent.LOOP,this));
+          }
         }
         else
         {
-           stop();
-           if ((eventsMask & eventFinish) != 0)
-              postEvent(new AnimationEvent(AnimationEvent.FINISH,this));
+          stop();
+          if ((eventsMask & eventFinish) != 0) {
+            postEvent(new AnimationEvent(AnimationEvent.FINISH,this));
+          }
         }
-     }
+    }
   }
 
   /**
@@ -329,7 +350,9 @@ public class Animation extends Control
    */
   public void start(int sFrame,int eFrame,int step,int loops)
   {
-    if (isPlaying || loops <= 0 || animTimer != null) return;
+    if (isPlaying || loops <= 0 || animTimer != null){
+      return;
+    }
     startFrame = Math.max(0,sFrame);
     endFrame = Math.min(eFrame,frameCount-1);
     incFrame = step;

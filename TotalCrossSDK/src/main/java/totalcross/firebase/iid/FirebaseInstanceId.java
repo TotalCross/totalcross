@@ -1,5 +1,7 @@
 package totalcross.firebase.iid;
 
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 /**
  * Use it like https://firebase.google.com/docs/reference/android/com/google/firebase/iid/FirebaseInstanceId
  * 
@@ -15,19 +17,18 @@ package totalcross.firebase.iid;
  * </ul>
  */
 public class FirebaseInstanceId {
-	private static FirebaseInstanceId instance = new FirebaseInstanceId();
-	
-	private FirebaseInstanceId() {
-		
-	}
-	
-	public static FirebaseInstanceId getInstance() {
-		return instance;
-	}
-	
-	public String getToken() {
-		return null;
-	}
-	
-	public native String getToken4D();
+  private static FirebaseInstanceId instance = new FirebaseInstanceId();
+
+  private FirebaseInstanceId() {
+
+  }
+
+  public static FirebaseInstanceId getInstance() {
+    return instance;
+  }
+
+  @ReplacedByNativeOnDeploy
+  public String getToken() {
+    return null;
+  }
 }

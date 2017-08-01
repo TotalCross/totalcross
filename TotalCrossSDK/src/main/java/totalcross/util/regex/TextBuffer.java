@@ -31,7 +31,7 @@ package totalcross.util.regex;
 
 public interface TextBuffer
 {
-   public void append(char c);
-   public void append(char[] chars,int start,int len);
-   public void append(String s);
+  public void append(char c);
+  public void append(char[] chars,int start,int len);
+  public void append(String s);
 }

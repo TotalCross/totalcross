@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC114_frem extends Arithmetic
 {
-   public BC114_frem()
-   {
-      super(-1,-2,-1,FLOAT);
-   }
-   public void exec()
-   {
-      stack[stackPtr-2].asDouble %= stack[stackPtr-1].asDouble;
-   }
+  public BC114_frem()
+  {
+    super(-1,-2,-1,FLOAT);
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr-2].asDouble %= stack[stackPtr-1].asDouble;
+  }
 }

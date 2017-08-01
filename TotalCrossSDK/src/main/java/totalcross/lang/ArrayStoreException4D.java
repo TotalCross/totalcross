@@ -33,20 +33,20 @@ package totalcross.lang;
  */
 public class ArrayStoreException4D extends RuntimeException
 {
-   /** 
-    * Constructs an empty Exception. 
-    */
-   public ArrayStoreException4D()
-   {
-   }
+  /** 
+   * Constructs an empty Exception. 
+   */
+  public ArrayStoreException4D()
+  {
+  }
 
-   /** 
-    * Constructs an exception with the given message.
-    * 
-    * @param message The error message. 
-    */
-   public ArrayStoreException4D(String message)
-   {
-      super(message);
-   }
+  /** 
+   * Constructs an exception with the given message.
+   * 
+   * @param message The error message. 
+   */
+  public ArrayStoreException4D(String message)
+  {
+    super(message);
+  }
 }

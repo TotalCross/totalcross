@@ -18,437 +18,465 @@
 
 package tc.samples.api.net;
 
-import tc.samples.api.*;
-
-import totalcross.crypto.*;
-import totalcross.io.*;
-import totalcross.net.*;
-import totalcross.net.ssl.*;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
+import tc.samples.api.BaseContainer;
+import totalcross.crypto.CryptoException;
+import totalcross.crypto.NoSuchAlgorithmException;
+import totalcross.io.IOException;
+import totalcross.net.Socket;
+import totalcross.net.ssl.Constants;
+import totalcross.net.ssl.SSL;
+import totalcross.net.ssl.SSLClient;
+import totalcross.net.ssl.SSLReadHolder;
+import totalcross.net.ssl.SSLUtil;
+import totalcross.sys.Convert;
+import totalcross.sys.InvalidNumberException;
+import totalcross.sys.Vm;
+import totalcross.ui.Button;
+import totalcross.ui.ComboBox;
+import totalcross.ui.Edit;
+import totalcross.ui.Label;
+import totalcross.ui.dialog.MessageBox;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
 
 /** ATTENTION: THE SSL IMPLEMENTATION IS BUGGY; USE IT AT YOUR OWN RISK! */
 
 public class SecureSocketSample extends BaseContainer
 {
-   Button btnOpen, btnAction, btnClear;
-   ComboBox cb, auth_cb;
-   Edit edA;
-   Socket socket;
-   int auth_mode = NO_AUTH;
+  Button btnOpen, btnAction, btnClear;
+  ComboBox cb, auth_cb;
+  Edit edA;
+  Socket socket;
+  int auth_mode = NO_AUTH;
 
-   byte[] session_id;
-   SSLClient ssl_ctx;
-   SSL ssl;
+  byte[] session_id;
+  SSLClient ssl_ctx;
+  SSL ssl;
 
-   final static int SERVER_AUTH = 0;
-   final static int CLIENT_AUTH = 1;
-   final static int NO_AUTH     = 2;
+  final static int SERVER_AUTH = 0;
+  final static int CLIENT_AUTH = 1;
+  final static int NO_AUTH     = 2;
 
-   public void initUI()
-   {
-      super.initUI();
-      new MessageBox("Attention","The SSL cerfiticate used by this sample is no longer valid, but you can see the sources and use with a valid certificate you may have.").popup();
-      add(new Label("Address: "),LEFT+2,TOP+1);
-      add(edA = new Edit(""),AFTER+3,SAME);
-      edA.setText("https://webmail.grad.inf.puc-rio.br");
-      add(cb = new ComboBox(
-            new String[] {
-                  "View CA X509 certificate",
-                  "View my X509 certificate",
-                  "View my private key",
-            }),LEFT+2,AFTER+3);
-      add(btnAction = new Button("Show"),AFTER+3,SAME);
-      add(btnClear = new Button("Clear"),LEFT+2,AFTER+5);
-      add(btnOpen = new Button("Http/get"),AFTER+5,SAME);
-      add(auth_cb = new ComboBox(
-            new String[] {
-                  "Svr auth",
-                  "Svr+Clt auth",
-                  "No auth",
-            }),RIGHT-2,SAME);
-      addLog(LEFT,AFTER+3,FILL,FILL,null);
-      cb.setSelectedIndex(0);
-      auth_cb.setSelectedIndex(auth_mode);
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    new MessageBox("Attention","The SSL cerfiticate used by this sample is no longer valid, but you can see the sources and use with a valid certificate you may have.").popup();
+    add(new Label("Address: "),LEFT+2,TOP+1);
+    add(edA = new Edit(""),AFTER+3,SAME);
+    edA.setText("https://webmail.grad.inf.puc-rio.br");
+    add(cb = new ComboBox(
+        new String[] {
+            "View CA X509 certificate",
+            "View my X509 certificate",
+            "View my private key",
+        }),LEFT+2,AFTER+3);
+    add(btnAction = new Button("Show"),AFTER+3,SAME);
+    add(btnClear = new Button("Clear"),LEFT+2,AFTER+5);
+    add(btnOpen = new Button("Http/get"),AFTER+5,SAME);
+    add(auth_cb = new ComboBox(
+        new String[] {
+            "Svr auth",
+            "Svr+Clt auth",
+            "No auth",
+        }),RIGHT-2,SAME);
+    addLog(LEFT,AFTER+3,FILL,FILL,null);
+    cb.setSelectedIndex(0);
+    auth_cb.setSelectedIndex(auth_mode);
 
-      log("scrolling log display area");
-      log(" -port 7000: server auth only");
-      log(" -port 7001: server + client auth");
-      log("");
+    log("scrolling log display area");
+    log(" -port 7000: server auth only");
+    log(" -port 7001: server + client auth");
+    log("");
 
-      displaySettings();
-   }
+    displaySettings();
+  }
 
-   private void dispose_ssl() throws IOException
-   {
-      if (ssl != null)
-      {
-         ssl.dispose();
-         ssl = null;
+  private void dispose_ssl() throws IOException
+  {
+    if (ssl != null)
+    {
+      ssl.dispose();
+      ssl = null;
+    }
+    if (ssl_ctx != null)
+    {
+      ssl_ctx.dispose();
+      ssl = null;
+    }
+  }
+
+  @Override
+  public void onRemove()
+  {
+    try
+    {
+      dispose_ssl();
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
+  }
+
+  private void displaySettings()
+  {
+    log("LteSSL version : " + SSLUtil.version());
+    log("max CA authorities : " + SSLUtil.maxCACerts());
+    log("max CERTIFICATES : " + SSLUtil.maxCerts());
+    log("");
+  }
+
+  private void display(String title, String s)
+  {
+    log("**** " + title + "****");
+    int startline = 0;
+    do
+    {
+      int endline = s.indexOf('\n', startline);
+      String str = (endline > 0) ? s.substring(startline, endline) : s.substring(startline);
+      log(str);
+      startline += str.length() + 1;
+    }
+    while(startline < s.length());
+  }
+
+  private String toHex(byte[] bytes)
+  {
+    String hex = "";
+    for (int i = 0; i < bytes.length; i++)
+    {
+      hex = hex.concat("0x" + Convert.unsigned2hex(bytes[i], 2) + ",");
+      if ((i+1) % 8 == 0) {
+        hex = hex.concat("\n");
       }
-      if (ssl_ctx != null)
-      {
-         ssl_ctx.dispose();
-         ssl = null;
-      }
-   }
+    }
+    return hex;
+  }
 
-   public void onRemove()
-   {
+  @Override
+  public void onEvent(Event e)
+  {
+    if (e.type == ControlEvent.PRESSED)
+    {
+      if (e.target == btnOpen)
+      {
+        try
+        {
+          httpsGetLine();
+        }
+        catch (NoSuchAlgorithmException e1)
+        {
+          totalcross.ui.dialog.MessageBox.showException(e1, true);
+        }
+        catch (CryptoException e1)
+        {
+          totalcross.ui.dialog.MessageBox.showException(e1, true);
+        }
+        catch (IOException e1)
+        {
+          totalcross.ui.dialog.MessageBox.showException(e1, true);
+        }
+      }
+      if (e.target == btnClear)
+      {
+        lblog.removeAll();
+        lblog.repaintNow();
+      }
+      else if (e.target == btnAction)
+      {
+        switch (cb.getSelectedIndex())
+        {
+        case 0:
+          display(cb.getSelectedItem().toString(), X509CACert);
+          break;
+        case 1:
+          display(cb.getSelectedItem().toString(), X509Cert);
+          break;
+        case 2:
+          display(cb.getSelectedItem().toString(), toHex(PKCS8PrivateKey));
+          break;
+        }
+      }
+    }
+  }
+
+  private void httpsGetLine() throws NoSuchAlgorithmException, CryptoException, IOException
+  {
+    repaintNow(); // release the button
+
+    String scheme = null;
+    String host = null;
+    int port = 0;
+    String path = null;
+    int ret;
+
+    String url = edA.getText();
+
+    int idx = url.indexOf("://");
+    if (idx > 0)
+    {
+      scheme = url.substring(0, idx);
+      if (scheme.equalsIgnoreCase("http")) {
+        port = 80;
+      } else if (scheme.equalsIgnoreCase("https")) {
+        port = 443;
+      } else
+      {
+        log("scheme '"+scheme+"' is not supported,");
+        log("use 'http' or 'https'.");
+        return;
+      }
+      url = url.substring(idx+3); // remove scheme +'://'
+    }
+    idx = url.indexOf(":"); // any port ? (user info are not supported!)
+    if (idx > 0)
+    {
+      host = url.substring(0, idx);
+      int slash = url.indexOf('/', idx+1);
       try
       {
-         dispose_ssl();
-      }
-      catch (IOException e)
+        if (slash > 0)
+        {
+          port = Convert.toInt(url.substring(idx+1, slash));
+          path = url.substring(slash);
+        } else {
+          port = Convert.toInt(url.substring(idx+1));
+        }
+      } catch (InvalidNumberException ine) {log("Invalid port number"); return;}
+    }
+    else
+    {
+      int slash = url.indexOf('/', idx+1);
+      if (slash > 0)
       {
-         e.printStackTrace();
-      }
-   }
-
-   private void displaySettings()
-   {
-      log("LteSSL version : " + SSLUtil.version());
-      log("max CA authorities : " + SSLUtil.maxCACerts());
-      log("max CERTIFICATES : " + SSLUtil.maxCerts());
-      log("");
-   }
-
-   private void display(String title, String s)
-   {
-      log("**** " + title + "****");
-      int startline = 0;
-      do
-      {
-         int endline = s.indexOf('\n', startline);
-         String str = (endline > 0) ? s.substring(startline, endline) : s.substring(startline);
-         log(str);
-         startline += str.length() + 1;
-      }
-      while(startline < s.length());
-   }
-
-   private String toHex(byte[] bytes)
-   {
-      String hex = "";
-      for (int i = 0; i < bytes.length; i++)
-      {
-         hex = hex.concat("0x" + Convert.unsigned2hex(bytes[i], 2) + ",");
-         if ((i+1) % 8 == 0) hex = hex.concat("\n");
-      }
-      return hex;
-   }
-
-   public void onEvent(Event e)
-   {
-      if (e.type == ControlEvent.PRESSED)
-      {
-         if (e.target == btnOpen)
-         {
-            try
-            {
-               httpsGetLine();
-            }
-            catch (NoSuchAlgorithmException e1)
-            {
-               totalcross.ui.dialog.MessageBox.showException(e1, true);
-            }
-            catch (CryptoException e1)
-            {
-               totalcross.ui.dialog.MessageBox.showException(e1, true);
-            }
-            catch (IOException e1)
-            {
-               totalcross.ui.dialog.MessageBox.showException(e1, true);
-            }
-         }
-         if (e.target == btnClear)
-         {
-            lblog.removeAll();
-            lblog.repaintNow();
-         }
-         else if (e.target == btnAction)
-         {
-            switch (cb.getSelectedIndex())
-            {
-            case 0:
-               display(cb.getSelectedItem().toString(), X509CACert);
-               break;
-            case 1:
-               display(cb.getSelectedItem().toString(), X509Cert);
-               break;
-            case 2:
-               display(cb.getSelectedItem().toString(), toHex(PKCS8PrivateKey));
-               break;
-            }
-         }
-      }
-   }
-
-   private void httpsGetLine() throws NoSuchAlgorithmException, CryptoException, IOException
-   {
-      repaintNow(); // release the button
-
-      String scheme = null;
-      String host = null;
-      int port = 0;
-      String path = null;
-      int ret;
-
-      String url = edA.getText();
-
-      int idx = url.indexOf("://");
-      if (idx > 0)
-      {
-         scheme = url.substring(0, idx);
-         if (scheme.equalsIgnoreCase("http")) port = 80;
-         else if (scheme.equalsIgnoreCase("https")) port = 443;
-         else
-         {
-            log("scheme '"+scheme+"' is not supported,");
-            log("use 'http' or 'https'.");
-            return;
-         }
-         url = url.substring(idx+3); // remove scheme +'://'
-      }
-      idx = url.indexOf(":"); // any port ? (user info are not supported!)
-      if (idx > 0)
-      {
-         host = url.substring(0, idx);
-         int slash = url.indexOf('/', idx+1);
-         try
-         {
-            if (slash > 0)
-            {
-               port = Convert.toInt(url.substring(idx+1, slash));
-               path = url.substring(slash);
-            }
-            else port = Convert.toInt(url.substring(idx+1));
-         } catch (InvalidNumberException ine) {log("Invalid port number"); return;}
+        host = url.substring(0, slash);
+        path = url.substring(slash);
       }
       else
       {
-         int slash = url.indexOf('/', idx+1);
-         if (slash > 0)
-         {
-            host = url.substring(0, slash);
-            path = url.substring(slash);
-         }
-         else
-         {
-            host = url;
-         }
+        host = url;
+      }
+    }
+
+    log("scheme : " + scheme);
+    log("host   : " + host);
+    log("port   : " + port);
+    log("path   : " + path);
+
+    if (host == null || host.length() == 0 || port == 0)
+    {
+      log("This URL is invalid!");
+      return;
+    }
+
+    if (ssl_ctx == null || auth_mode != auth_cb.getSelectedIndex())
+    {
+      auth_mode = auth_cb.getSelectedIndex();
+
+      if (ssl_ctx != null) {
+        dispose_ssl();
       }
 
-      log("scheme : " + scheme);
-      log("host   : " + host);
-      log("port   : " + port);
-      log("path   : " + path);
+      log("version: " + SSLUtil.version());
 
-      if (host == null || host.length() == 0 || port == 0)
+      int mode = (auth_mode == NO_AUTH) ? Constants.SSL_SERVER_VERIFY_LATER:0;
+      ssl_ctx = new SSLClient(mode, Constants.SSL_DEFAULT_CLNT_SESS);
+
+      if (ssl_ctx == null)
       {
-         log("This URL is invalid!");
-         return;
+        log("Failed to create SSL client context");
+        return;
       }
 
-      if (ssl_ctx == null || auth_mode != auth_cb.getSelectedIndex())
+      if (auth_mode != NO_AUTH)
       {
-         auth_mode = auth_cb.getSelectedIndex();
+        /* load the CA authorithy */
+        ret = ssl_ctx.objLoad(Constants.SSL_OBJ_X509_CACERT, X509CACert.getBytes(), X509CACert.getBytes().length, null);
+        if (ret != Constants.SSL_OK)
+        {
+          log("Err=" + ret + ":failed to load trusted CA");
+          return;
+        } else {
+          log("X509 trusted CA loaded");
+        }
 
-         if (ssl_ctx != null)
-            dispose_ssl();
-
-         log("version: " + SSLUtil.version());
-
-         int mode = (auth_mode == NO_AUTH) ? Constants.SSL_SERVER_VERIFY_LATER:0;
-         ssl_ctx = new SSLClient(mode, Constants.SSL_DEFAULT_CLNT_SESS);
-
-         if (ssl_ctx == null)
-         {
-            log("Failed to create SSL client context");
+        /* If the server requests client authentication, we have to send our client certificate or the SSL handshake will fail. */
+        if (auth_mode == CLIENT_AUTH)
+        {
+          ret = ssl_ctx.objLoad(Constants.SSL_OBJ_PKCS8, PKCS8PrivateKey, PKCS8PrivateKey.length, null);
+          if (ret != Constants.SSL_OK)
+          {
+            log("Err=" + ret + ":failed to load private key");
             return;
-         }
+          } else {
+            log("Client private key loaded");
+          }
 
-         if (auth_mode != NO_AUTH)
-         {
-            /* load the CA authorithy */
-            ret = ssl_ctx.objLoad(Constants.SSL_OBJ_X509_CACERT, X509CACert.getBytes(), X509CACert.getBytes().length, null);
-            if (ret != Constants.SSL_OK)
-            {
-               log("Err=" + ret + ":failed to load trusted CA");
-               return;
-            }
-            else log("X509 trusted CA loaded");
-   
-            /* If the server requests client authentication, we have to send our client certificate or the SSL handshake will fail. */
-            if (auth_mode == CLIENT_AUTH)
-            {
-               ret = ssl_ctx.objLoad(Constants.SSL_OBJ_PKCS8, PKCS8PrivateKey, PKCS8PrivateKey.length, null);
-               if (ret != Constants.SSL_OK)
-               {
-                  log("Err=" + ret + ":failed to load private key");
-                  return;
-               }
-               else log("Client private key loaded");
-   
-               ret = ssl_ctx.objLoad(Constants.SSL_OBJ_X509_CERT, X509Cert.getBytes(), X509Cert.getBytes().length, null);
-               if (ret != Constants.SSL_OK)
-               {
-                  log("Err=" + ret + ":failed to load certificate");
-                  return;
-               }
-               else log("X509 client certificate loaded");
-            }
-         }
+          ret = ssl_ctx.objLoad(Constants.SSL_OBJ_X509_CERT, X509Cert.getBytes(), X509Cert.getBytes().length, null);
+          if (ret != Constants.SSL_OK)
+          {
+            log("Err=" + ret + ":failed to load certificate");
+            return;
+          } else {
+            log("X509 client certificate loaded");
+          }
+        }
+      }
+    }
+
+    try
+    {
+      socket = new Socket(host, port, 25000);
+      socket.readTimeout = 2500;
+
+      log("Opening connection...");
+      ssl = ssl_ctx.connect(socket, session_id);
+      if (ssl == null)
+      {
+        log("Failed to connect to secured socket");
+        return;
       }
 
+      log("Socket opened");
+      int start = Vm.getTimeStamp();
+
+      int hs;
+      while ((hs = ssl.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
+      {
+        Vm.sleep(25);
+        if (Vm.getTimeStamp() - start > 5000) {
+          break;
+        }
+      }
+      if (hs != Constants.SSL_OK)
+      {
+        log("Err=" + hs + ":SSL handshake failed");
+        ssl.dispose();
+        ssl = null;
+        return;
+      } else {
+        log("SSL handshake succeeded");
+      }
+
+      display("SSL Peer information", "Host:" + host);
+      log("Cert DN: " + ssl.getCertificateDN(Constants.SSL_X509_CERT_COMMON_NAME));
+      log("Cert O: " + ssl.getCertificateDN(Constants.SSL_X509_CERT_ORGANIZATION));
+      log("Cert OU: " + ssl.getCertificateDN(Constants.SSL_X509_CERT_ORGANIZATIONAL_NAME));
+      log("CA DN: " + ssl.getCertificateDN(Constants.SSL_X509_CA_CERT_COMMON_NAME));
+      log("CA O: " + ssl.getCertificateDN(Constants.SSL_X509_CA_CERT_ORGANIZATION));
+      log("CA OU: " + ssl.getCertificateDN(Constants.SSL_X509_CA_CERT_ORGANIZATIONAL_NAME));
+      log("session ID: " + hexString(ssl.getSessionId()));
+      log("Cypher ID: " + (int)ssl.getCipherId());
+
+      if (auth_mode == NO_AUTH)
+      {
+        ret = ssl.verifyCertificate();
+        switch (ret)
+        {
+        case Constants.SSL_OK:
+          log("Verify: trusted");
+          break;
+        case Constants.X509_VFY_ERROR_NO_TRUSTED_CERT:
+          log("Verify: not trusted");
+          break;
+        default:
+          log("Verify result " + ret);
+          break;
+        }
+      }
+
+      String request_string =
+          "GET " + ((path == null || path.length() == 0) ? "/" : path) + " HTTP/1.0" + Convert.CRLF +
+          "User-Agent: LiteSSL/1.0" + Convert.CRLF +
+          "Host: " + host + Convert.CRLF +
+          "Accept: */*" + Convert.CRLF +
+          "Connection: keep-alive" + Convert.CRLF +
+          Convert.CRLF;
+      Vm.debug("HTTP request: " + request_string);
+
+      ret = ssl.write(request_string.getBytes());
+      if (ret < Constants.SSL_OK)
+      {
+        log("Err= " + ret + ":SSL write error");
+      }
+      else
+      {
+        log("HTTP request sent");
+
+        /* now read (and display) whatever the client sends us */
+        SSLReadHolder rh = new SSLReadHolder();
+
+        boolean finished = false;
+        do
+        {
+          /* keep reading until we get something interesting */
+          while ((ret = ssl.read(rh)) == Constants.SSL_OK)
+          {
+            Vm.debug("wait read completion...");
+            Vm.sleep(200);
+          }
+          if (ret > 0)
+          {
+            String content = new String(rh.getData(), 0, rh.getData().length);
+            Vm.debug("HTTP content: " + content);
+            if (content.indexOf('\n') >= 0)
+            {
+              // stop at first newline
+              content = content.substring(0, content.indexOf('\n'));
+              finished = true;
+            }
+            display("HTTP result", content);
+          }
+          else if (ret < Constants.SSL_OK) {
+            log("Err=" + ret + ":SSL read error");
+          }
+        }
+        while (!finished && ret >= Constants.SSL_OK);
+      }
+
+      ssl.dispose();
+      ssl = null;
+    }
+    catch (totalcross.net.UnknownHostException e)
+    {
+      log("UnknownHostException on Socket creation: " + e.getMessage());
+    }
+    catch (IOException e)
+    {
+      log("IOException on Socket creation: " + e.getMessage());
+    }
+
+    if (socket != null)
+    {
       try
       {
-         socket = new Socket(host, port, 25000);
-         socket.readTimeout = 2500;
-
-         log("Opening connection...");
-         ssl = ssl_ctx.connect(socket, session_id);
-         if (ssl == null)
-         {
-            log("Failed to connect to secured socket");
-            return;
-         }
-
-         log("Socket opened");
-         int start = Vm.getTimeStamp();
-
-         int hs;
-         while ((hs = ssl.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
-         {
-            Vm.sleep(25);
-            if (Vm.getTimeStamp() - start > 5000) break;
-         }
-         if (hs != Constants.SSL_OK)
-         {
-            log("Err=" + hs + ":SSL handshake failed");
-            ssl.dispose();
-            ssl = null;
-            return;
-         }
-         else log("SSL handshake succeeded");
-
-         display("SSL Peer information", "Host:" + host);
-         log("Cert DN: " + ssl.getCertificateDN(Constants.SSL_X509_CERT_COMMON_NAME));
-         log("Cert O: " + ssl.getCertificateDN(Constants.SSL_X509_CERT_ORGANIZATION));
-         log("Cert OU: " + ssl.getCertificateDN(Constants.SSL_X509_CERT_ORGANIZATIONAL_NAME));
-         log("CA DN: " + ssl.getCertificateDN(Constants.SSL_X509_CA_CERT_COMMON_NAME));
-         log("CA O: " + ssl.getCertificateDN(Constants.SSL_X509_CA_CERT_ORGANIZATION));
-         log("CA OU: " + ssl.getCertificateDN(Constants.SSL_X509_CA_CERT_ORGANIZATIONAL_NAME));
-         log("session ID: " + hexString(ssl.getSessionId()));
-         log("Cypher ID: " + (int)ssl.getCipherId());
-
-         if (auth_mode == NO_AUTH)
-         {
-            ret = ssl.verifyCertificate();
-	         switch (ret)
-	         {
-            case Constants.SSL_OK:
-               log("Verify: trusted");
-               break;
-            case Constants.X509_VFY_ERROR_NO_TRUSTED_CERT:
-               log("Verify: not trusted");
-               break;
-            default:
-               log("Verify result " + ret);
-               break;
-	         }
-         }
-         
-         String request_string =
-            "GET " + ((path == null || path.length() == 0) ? "/" : path) + " HTTP/1.0" + Convert.CRLF +
-            "User-Agent: LiteSSL/1.0" + Convert.CRLF +
-            "Host: " + host + Convert.CRLF +
-            "Accept: */*" + Convert.CRLF +
-            "Connection: keep-alive" + Convert.CRLF +
-            Convert.CRLF;
-         Vm.debug("HTTP request: " + request_string);
-
-         ret = ssl.write(request_string.getBytes());
-         if (ret < Constants.SSL_OK)
-         {
-            log("Err= " + ret + ":SSL write error");
-         }
-         else
-         {
-            log("HTTP request sent");
-
-            /* now read (and display) whatever the client sends us */
-            SSLReadHolder rh = new SSLReadHolder();
-
-            boolean finished = false;
-            do
-            {
-               /* keep reading until we get something interesting */
-               while ((ret = ssl.read(rh)) == Constants.SSL_OK)
-               {
-                  Vm.debug("wait read completion...");
-                  Vm.sleep(200);
-               }
-               if (ret > 0)
-               {
-                  String content = new String(rh.getData(), 0, rh.getData().length);
-                  Vm.debug("HTTP content: " + content);
-                  if (content.indexOf('\n') >= 0)
-                  {
-                     // stop at first newline
-                     content = content.substring(0, content.indexOf('\n'));
-                     finished = true;
-                  }
-                  display("HTTP result", content);
-               }
-               else if (ret < Constants.SSL_OK)
-                  log("Err=" + ret + ":SSL read error");
-            }
-            while (!finished && ret >= Constants.SSL_OK);
-         }
-
-         ssl.dispose();
-         ssl = null;
-      }
-      catch (totalcross.net.UnknownHostException e)
-      {
-         log("UnknownHostException on Socket creation: " + e.getMessage());
+        socket.close();
+        log("Socket closed");
       }
       catch (IOException e)
       {
-         log("IOException on Socket creation: " + e.getMessage());
+        log("IOException on Socket close: " + e.getMessage());
       }
+    }
+  }
 
-      if (socket != null)
-      {
-         try
-         {
-            socket.close();
-            log("Socket closed");
-         }
-         catch (IOException e)
-         {
-            log("IOException on Socket close: " + e.getMessage());
-         }
-      }
-   }
+  private static String hexString(byte[] buffer)
+  {
+    if (buffer == null){
+      return null;
+    }
 
-   private static String hexString(byte[] buffer)
-   {
-      if (buffer == null)
-         return null;
+    String s = "";
+    for (int i = 0; i < buffer.length; i++) {
+      s = s.concat(Convert.unsigned2hex(buffer[i], 2));
+    }
+    return s;
+  }
 
-      String s = "";
-      for (int i = 0; i < buffer.length; i++)
-         s = s.concat(Convert.unsigned2hex(buffer[i], 2));
-      return s;
-   }
-
-   // note: this certificate was issued by SuperWaba to work with a https server that
-   // is NO LONGER AVAILABLE. It is still here just for an example.
-   private final static String X509CACert =
+  // note: this certificate was issued by SuperWaba to work with a https server that
+  // is NO LONGER AVAILABLE. It is still here just for an example.
+  private final static String X509CACert =
       "Certificate:"+Convert.CRLF+
       "    Data:"+Convert.CRLF+
       "        Version: 3 (0x2)"+Convert.CRLF+
@@ -518,7 +546,7 @@ public class SecureSocketSample extends BaseContainer
       "wI0HtV6DmzY9g6uyiptke965OolmGOeeijQjy773tnyf1DD+"+Convert.CRLF+
       "-----END CERTIFICATE-----"+Convert.CRLF;
 
-   private final static String X509Cert =
+  private final static String X509Cert =
       "Certificate:"+Convert.CRLF+
       "    Data:"+Convert.CRLF+
       "        Version: 1 (0x0)"+Convert.CRLF+
@@ -565,7 +593,7 @@ public class SecureSocketSample extends BaseContainer
       "TrXYkQ61NDP+h3+sWdsGj/6J5GJ+fAsxuPcT3MW7eKSdbThrXuDOr1Zo9J5uAw=="+Convert.CRLF+
       "-----END CERTIFICATE-----"+Convert.CRLF;
 
-   private final static byte PKCS8PrivateKey[] = {
+  private final static byte PKCS8PrivateKey[] = {
       48,-126,1,86,2,1,0,48,13,6,9,42,-122,72,-122,-9,
       13,1,1,1,5,0,4,-126,1,64,48,-126,1,60,2,1,
       0,2,65,0,-68,-68,-63,-66,-46,-90,87,-69,-2,-124,-67,-76,
@@ -588,5 +616,5 @@ public class SecureSocketSample extends BaseContainer
       -33,-78,4,-112,117,-50,69,2,33,0,-113,-82,123,70,26,22,
       67,-49,100,-17,-66,30,-53,-82,97,42,8,-97,99,-64,-97,-20,
       -123,-40,-7,-81,-36,83,73,92,-31,69
-   };
+  };
 }

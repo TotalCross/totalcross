@@ -15,13 +15,14 @@ package tc.tools.converter.bytecode;
 
 public class BC016_bipush extends LoadLocal
 {
-   public BC016_bipush()
-   {
-      super(code[pc+1],INT);
-      pcInc = 2;
-   }
-   public void exec()
-   {
-      stack[stackPtr].asInt = localIdx;
-   }
+  public BC016_bipush()
+  {
+    super(code[pc+1],INT);
+    pcInc = 2;
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr].asInt = localIdx;
+  }
 }

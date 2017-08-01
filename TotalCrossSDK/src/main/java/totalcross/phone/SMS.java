@@ -23,21 +23,22 @@ package totalcross.phone;
  */
 public class SMS
 {
-   /** Sends the given message to the destination.
-    * @param destination The number to send to.
-    * @param message The message to send. Note that some phones will strip unicode characters.
-    * @throws totalcross.io.IOException if an error occurs.
-    */
-   public static void send(String destination, String message) throws totalcross.io.IOException
-   {
-   }
-   
-   /** Supposed to block until a message becomes available.
-    *  Does not work on the currently supported platforms.
-    *  @deprecated
-    */
-   public static String[] receive() throws totalcross.io.IOException
-   {
-      return null;
-   }
+  /** Sends the given message to the destination.
+   * @param destination The number to send to.
+   * @param message The message to send. Note that some phones will strip unicode characters.
+   * @throws totalcross.io.IOException if an error occurs.
+   */
+  public static void send(String destination, String message) throws totalcross.io.IOException
+  {
+  }
+
+  /** Supposed to block until a message becomes available.
+   *  Does not work on the currently supported platforms.
+   *  @deprecated
+   */
+  @Deprecated
+  public static String[] receive() throws totalcross.io.IOException
+  {
+    return null;
+  }
 }

@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class SecurityException4D extends Exception
 {
-   /** Constructs an empty Exception. */
-   public SecurityException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public SecurityException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public SecurityException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public SecurityException4D(String msg)
+  {
+    super(msg);
+  }
 }

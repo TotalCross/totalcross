@@ -48,213 +48,219 @@ package totalcross.net;
  */
 public class ServerSocket
 {
-   Object serverRef;
-   String addr;
-   int port;
+  Object serverRef;
+  String addr;
+  int port;
 
-   /**
-    * Stores the timeout value for accept operations. The value specifies the
-    * number of milliseconds to wait before timing out an accept operation.
-    * @see #WAIT_FOREVER
-    */
-   int timeout = DEFAULT_SOTIMEOUT;
-   
-   /** The default value for the accept operation timeout. */
-   public static final int DEFAULT_SOTIMEOUT = 10000;
-   /** The default backlog value */
-   public static final int DEFAULT_BACKLOG = 100;
+  /**
+   * Stores the timeout value for accept operations. The value specifies the
+   * number of milliseconds to wait before timing out an accept operation.
+   * @see #WAIT_FOREVER
+   */
+  int timeout = DEFAULT_SOTIMEOUT;
 
-   /** Passing a value of 0 to the constructor causes any accept operation to wait indefinitely. */
-   public static final int WAIT_FOREVER = 0;
+  /** The default value for the accept operation timeout. */
+  public static final int DEFAULT_SOTIMEOUT = 10000;
+  /** The default backlog value */
+  public static final int DEFAULT_BACKLOG = 100;
 
-   /** For internal use only */
-   protected ServerSocket()
-   {
-   }
+  /** Passing a value of 0 to the constructor causes any accept operation to wait indefinitely. */
+  public static final int WAIT_FOREVER = 0;
 
-   /**
-    * Opens a server socket. This method establishes a server socket connection
-    * at the specified port, with the default timeout for accept operations.
-    *
-    * @param port the local TCP port to listen for incoming connections
-    * @throws totalcross.io.IOException
-    */
-   public ServerSocket(int port) throws totalcross.io.IOException
-   {
-      this(port, DEFAULT_SOTIMEOUT, DEFAULT_BACKLOG, null);
-   }
+  /** For internal use only */
+  protected ServerSocket()
+  {
+  }
 
-   /**
-    * Opens a server socket. This method establishes a server socket connection
-    * at the specified port, with the specified timeout for accept operations.
-    *
-    * @param port the local TCP port to listen for incoming connections
-    * @param timeout the accept operation timeout
-    * @throws totalcross.io.IOException
-    */
-   public ServerSocket(int port, int timeout) throws totalcross.io.IOException
-   {
-      this(port, timeout, DEFAULT_BACKLOG, null);
-   }
+  /**
+   * Opens a server socket. This method establishes a server socket connection
+   * at the specified port, with the default timeout for accept operations.
+   *
+   * @param port the local TCP port to listen for incoming connections
+   * @throws totalcross.io.IOException
+   */
+  public ServerSocket(int port) throws totalcross.io.IOException
+  {
+    this(port, DEFAULT_SOTIMEOUT, DEFAULT_BACKLOG, null);
+  }
 
-   /**
-    * Opens a server socket. This method establishes a server socket connection
-    * at the specified port, with the specified timeout for accept operations.
-    * The addr argument can be used on a multi-homed host for a ServerSocket that
-    * will only accept connect requests to one of its addresses.
-    *
-    * @param port the local TCP port to listen for incoming connections
-    * @param timeout the accept operation timeout
-    * @param addr the local address this server will bind to
-    * @throws totalcross.io.IOException
-    */
-   public ServerSocket(int port, int timeout, String addr) throws totalcross.io.IOException
-   {
-      this(port, timeout, DEFAULT_BACKLOG, addr);
-   }
+  /**
+   * Opens a server socket. This method establishes a server socket connection
+   * at the specified port, with the specified timeout for accept operations.
+   *
+   * @param port the local TCP port to listen for incoming connections
+   * @param timeout the accept operation timeout
+   * @throws totalcross.io.IOException
+   */
+  public ServerSocket(int port, int timeout) throws totalcross.io.IOException
+  {
+    this(port, timeout, DEFAULT_BACKLOG, null);
+  }
 
-   /**
-    * Opens a server socket. This method establishes a server socket connection
-    * at the specified port, with the specified timeout for accept operations.
-    * The addr argument can be used on a multi-homed host for a ServerSocket that
-    * will only accept connect requests to one of its addresses.
-    *
-    * @param port the local TCP port to listen for incoming connections
-    * @param timeout the accept operation timeout
-    * @param backlog the limit of concurrent connections that are accepted.
-    * @param addr the local address this server will bind to
-    * @throws totalcross.io.IOException
-    */
-   public ServerSocket(int port, int timeout, int backlog, String addr)
-         throws totalcross.io.IOException
-   {
-      if (port < 0 || port > 65535)
-         throw new java.lang.IllegalArgumentException("Invalid value for argument 'port': " + port);
-      if (timeout < 0)
-         throw new java.lang.IllegalArgumentException("Invalid value for argument 'timeout': " + timeout);
-      if (backlog <= 0)
-         throw new java.lang.IllegalArgumentException("Invalid value for argument 'backlog': " + backlog);
+  /**
+   * Opens a server socket. This method establishes a server socket connection
+   * at the specified port, with the specified timeout for accept operations.
+   * The addr argument can be used on a multi-homed host for a ServerSocket that
+   * will only accept connect requests to one of its addresses.
+   *
+   * @param port the local TCP port to listen for incoming connections
+   * @param timeout the accept operation timeout
+   * @param addr the local address this server will bind to
+   * @throws totalcross.io.IOException
+   */
+  public ServerSocket(int port, int timeout, String addr) throws totalcross.io.IOException
+  {
+    this(port, timeout, DEFAULT_BACKLOG, addr);
+  }
 
-      this.port = port;
-      this.timeout = timeout;
-      this.addr = addr;
+  /**
+   * Opens a server socket. This method establishes a server socket connection
+   * at the specified port, with the specified timeout for accept operations.
+   * The addr argument can be used on a multi-homed host for a ServerSocket that
+   * will only accept connect requests to one of its addresses.
+   *
+   * @param port the local TCP port to listen for incoming connections
+   * @param timeout the accept operation timeout
+   * @param backlog the limit of concurrent connections that are accepted.
+   * @param addr the local address this server will bind to
+   * @throws totalcross.io.IOException
+   */
+  public ServerSocket(int port, int timeout, int backlog, String addr)
+      throws totalcross.io.IOException
+  {
+    if (port < 0 || port > 65535){
+      throw new java.lang.IllegalArgumentException("Invalid value for argument 'port': " + port);
+    }
+    if (timeout < 0){
+      throw new java.lang.IllegalArgumentException("Invalid value for argument 'timeout': " + timeout);
+    }
+    if (backlog <= 0){
+      throw new java.lang.IllegalArgumentException("Invalid value for argument 'backlog': " + backlog);
+    }
 
-      try
+    this.port = port;
+    this.timeout = timeout;
+    this.addr = addr;
+
+    try
+    {
+      serverRef = new java.net.ServerSocket(port, backlog);
+      ((java.net.ServerSocket) serverRef).setSoTimeout(timeout);
+    }
+    catch (java.net.SocketException e)
+    {
+      throw new totalcross.io.IOException(e.getMessage());
+    }
+    catch (java.io.IOException e)
+    {
+      throw new totalcross.io.IOException(e.getMessage());
+    }
+  }
+
+  /**
+   * Returns the local address of this server socket.
+   * @return the address to which this socket is bound, or null if the socket
+   * is unbound.
+   */
+  public String getHost()
+  {
+    return addr;
+  }
+
+  /**
+   * Returns the local TCP port on which this socket is listening, passed in the constructor.
+   * @return the port number to which this socket is listening.
+   */
+  public int getLocalPort()
+  {
+    return port;
+  }
+
+  /**
+   * Listens for a connection to be made to this socket and accepts it, returning
+   * a Socket representing the connection established with the client. This
+   * method blocks until a connection is made or the operation times out.
+   *
+   * @return the client Socket
+   * @throws totalcross.io.IOException
+   */
+  public Socket accept() throws totalcross.io.IOException
+  {
+    if (serverRef == null){
+      throw new totalcross.io.IOException("The server socket is closed");
+    }
+
+    totalcross.net.Socket clientSocket = nativeAccept();
+    return clientSocket;
+  }
+
+  final private totalcross.net.Socket nativeAccept() throws totalcross.io.IOException
+  {
+    totalcross.net.Socket clientSocket = null;
+    java.net.Socket socketRef;
+
+    try
+    {
+      java.net.ServerSocket ss = (java.net.ServerSocket)serverRef;
+      ss.setSoTimeout(timeout);
+      if ((socketRef = ss.accept()) != null)
       {
-         serverRef = new java.net.ServerSocket(port, backlog);
-         ((java.net.ServerSocket) serverRef).setSoTimeout(timeout);
+        clientSocket = new totalcross.net.Socket();
+        clientSocket.socketRef = socketRef;
       }
-      catch (java.net.SocketException e)
-      {
-         throw new totalcross.io.IOException(e.getMessage());
-      }
-      catch (java.io.IOException e)
-      {
-         throw new totalcross.io.IOException(e.getMessage());
-      }
-   }
-
-   /**
-    * Returns the local address of this server socket.
-    * @return the address to which this socket is bound, or null if the socket
-    * is unbound.
-    */
-   public String getHost()
-   {
-      return addr;
-   }
-
-   /**
-    * Returns the local TCP port on which this socket is listening, passed in the constructor.
-    * @return the port number to which this socket is listening.
-    */
-   public int getLocalPort()
-   {
-      return port;
-   }
-
-   /**
-    * Listens for a connection to be made to this socket and accepts it, returning
-    * a Socket representing the connection established with the client. This
-    * method blocks until a connection is made or the operation times out.
-    *
-    * @return the client Socket
-    * @throws totalcross.io.IOException
-    */
-   public Socket accept() throws totalcross.io.IOException
-   {
-      if (serverRef == null)
-         throw new totalcross.io.IOException("The server socket is closed");
-
-      totalcross.net.Socket clientSocket = nativeAccept();
       return clientSocket;
-   }
+    }
+    catch (java.net.SocketTimeoutException e)
+    {
+      return null;
+    }
+    catch (java.io.IOException e)
+    {
+      throw new totalcross.io.IOException(e.getMessage());
+    }
+  }
 
-   final private totalcross.net.Socket nativeAccept() throws totalcross.io.IOException
-   {
-      totalcross.net.Socket clientSocket = null;
-      java.net.Socket socketRef;
+  /**
+   * Closes the server socket.
+   * @throws totalcross.io.IOException
+   */
+  public void close() throws totalcross.io.IOException
+  {
+    if (serverRef == null){
+      throw new totalcross.io.IOException("The server socket is closed");
+    }
 
-      try
-      {
-         java.net.ServerSocket ss = (java.net.ServerSocket)serverRef;
-         ss.setSoTimeout(timeout);
-         if ((socketRef = ss.accept()) != null)
-         {
-            clientSocket = new totalcross.net.Socket();
-            clientSocket.socketRef = socketRef;
-         }
-         return clientSocket;
-      }
-      catch (java.net.SocketTimeoutException e)
-      {
-         return null;
-      }
-      catch (java.io.IOException e)
-      {
-         throw new totalcross.io.IOException(e.getMessage());
-      }
-   }
+    try
+    {
+      nativeClose();
+    }
+    finally
+    {
+      serverRef = null;
+    }
+  }
 
-   /**
-    * Closes the server socket.
-    * @throws totalcross.io.IOException
-    */
-   public void close() throws totalcross.io.IOException
-   {
-      if (serverRef == null)
-         throw new totalcross.io.IOException("The server socket is closed");
+  private void nativeClose() throws totalcross.io.IOException
+  {
+    try
+    {
+      ((java.net.ServerSocket) serverRef).close();
+    }
+    catch (java.io.IOException e)
+    {
+      throw new totalcross.io.IOException(e.getMessage());
+    }
+  }
 
-      try
-      {
-         nativeClose();
-      }
-      finally
-      {
-         serverRef = null;
-      }
-   }
-
-   private void nativeClose() throws totalcross.io.IOException
-   {
-      try
-      {
-         ((java.net.ServerSocket) serverRef).close();
-      }
-      catch (java.io.IOException e)
-      {
-         throw new totalcross.io.IOException(e.getMessage());
-      }
-   }
-
-   protected void finalize()
-   {
-      try
-      {
-         close();
-      }
-      catch (totalcross.io.IOException e)
-      {
-      }
-   }
+  @Override
+  protected void finalize()
+  {
+    try
+    {
+      close();
+    }
+    catch (totalcross.io.IOException e)
+    {
+    }
+  }
 }

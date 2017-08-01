@@ -35,19 +35,19 @@ package totalcross.lang;
 
 public class Error4D extends Throwable
 {
-   /** Constructs an empty Exception. */
-   public Error4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public Error4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public Error4D(String msg)
-   {
-      super(msg);
-   }
-   
-   public Error4D(String msg, Throwable cause) {
-	   super(msg, cause);
-   }
+  /** Constructs an exception with the given message. */
+  public Error4D(String msg)
+  {
+    super(msg);
+  }
+
+  public Error4D(String msg, Throwable cause) {
+    super(msg, cause);
+  }
 }
 

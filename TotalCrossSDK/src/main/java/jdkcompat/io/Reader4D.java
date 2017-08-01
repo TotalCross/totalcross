@@ -67,20 +67,20 @@ public abstract class Reader4D implements java.io.Closeable
   protected Object lock;
 
   /**
-    * Unitializes a <code>Reader</code> that will use the object
-    * itself for synchronization of critical code sections.
-    */
+   * Unitializes a <code>Reader</code> that will use the object
+   * itself for synchronization of critical code sections.
+   */
   protected Reader4D()
   {
     this.lock = this;
   }
 
   /**
-    * Initializes a <code>Reader</code> that will use the specified
-    * <code>Object</code> for synchronization of critical code sections.
-    *
-    * @param lock The <code>Object</code> to use for synchronization
-    */
+   * Initializes a <code>Reader</code> that will use the specified
+   * <code>Object</code> for synchronization of critical code sections.
+   *
+   * @param lock The <code>Object</code> to use for synchronization
+   */
   protected Reader4D(Object lock)
   {
     this.lock = lock;
@@ -114,7 +114,7 @@ public abstract class Reader4D implements java.io.Closeable
    * @exception IOException If an error occurs.
    */
   public abstract int read(char buf[], int offset, int count)
-    throws java.io.IOException;
+      throws java.io.IOException;
 
   /**
    * Reads chars from a stream and stores them into a caller
@@ -156,18 +156,18 @@ public abstract class Reader4D implements java.io.Closeable
     return count > 0 ? buf[0] : -1;
   }
 
-//  /** @since 1.5 */
-//  public int read(CharBuffer buffer) throws java.io.IOException
-//  {
-//    // We want to call put(), so we don't manipulate the CharBuffer
-//    // directly.
-//    int rem = buffer.remaining();
-//    char[] buf = new char[rem];
-//    int result = read(buf, 0, rem);
-//    if (result != -1)
-//      buffer.put(buf, 0, result);
-//    return result;
-//  }
+  //  /** @since 1.5 */
+  //  public int read(CharBuffer buffer) throws java.io.IOException
+  //  {
+  //    // We want to call put(), so we don't manipulate the CharBuffer
+  //    // directly.
+  //    int rem = buffer.remaining();
+  //    char[] buf = new char[rem];
+  //    int result = read(buf, 0, rem);
+  //    if (result != -1)
+  //      buffer.put(buf, 0, result);
+  //    return result;
+  //  }
 
   /**
    * Closes the stream.  Any futher attempts to read from the
@@ -175,6 +175,7 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs
    */
+  @Override
   public abstract void close() throws java.io.IOException;
 
   /**
@@ -197,91 +198,93 @@ public abstract class Reader4D implements java.io.Closeable
   }
 
   /**
-    * Marks a position in the input to which the stream can be
-    * "reset" by calling the <code>reset()</code> method.  The parameter
-    * <code>readlimit</code> is the number of chars that can be read from the
-    * stream after setting the mark before the mark becomes invalid.  For
-    * example, if <code>mark()</code> is called with a read limit of 10, then
-    * when 11 chars of data are read from the stream before the
-    * <code>reset()</code> method is called, then the mark is invalid and the
-    * stream object instance is not required to remember the mark.
-    *
-    * @param readLimit The number of chars that can be read before the mark
-    *        becomes invalid
-    *
-    * @exception IOException If an error occurs such as mark not being
-    *            supported for this class
-    */
+   * Marks a position in the input to which the stream can be
+   * "reset" by calling the <code>reset()</code> method.  The parameter
+   * <code>readlimit</code> is the number of chars that can be read from the
+   * stream after setting the mark before the mark becomes invalid.  For
+   * example, if <code>mark()</code> is called with a read limit of 10, then
+   * when 11 chars of data are read from the stream before the
+   * <code>reset()</code> method is called, then the mark is invalid and the
+   * stream object instance is not required to remember the mark.
+   *
+   * @param readLimit The number of chars that can be read before the mark
+   *        becomes invalid
+   *
+   * @exception IOException If an error occurs such as mark not being
+   *            supported for this class
+   */
   public void mark(int readLimit) throws java.io.IOException
   {
     throw new java.io.IOException("mark not supported");
   }
 
   /**
-    * Resets a stream to the point where the <code>mark()</code>
-    * method was called.  Any chars that were read after the mark point was
-    * set will be re-read during subsequent reads.
-    * <p>
-    * This method always throws an IOException in this class, but subclasses
-    * can override this method if they provide mark/reset functionality.
-    *
-    * @exception IOException Always thrown for this class
-    */
+   * Resets a stream to the point where the <code>mark()</code>
+   * method was called.  Any chars that were read after the mark point was
+   * set will be re-read during subsequent reads.
+   * <p>
+   * This method always throws an IOException in this class, but subclasses
+   * can override this method if they provide mark/reset functionality.
+   *
+   * @exception IOException Always thrown for this class
+   */
   public void reset() throws java.io.IOException
   {
     throw new java.io.IOException("reset not supported");
   }
 
   /**
-    * Determines whether or not this stream is ready to be
-    * read.  If it returns <code>false</code> the stream may block if a
-    * read is attempted, but it is not guaranteed to do so.
-    * <p>
-    * This method always returns <code>false</code> in this class
-    *
-    * @return <code>true</code> if the stream is ready to be read,
-    * <code>false</code> otherwise.
-    *
-    * @exception IOException If an error occurs
-    */
+   * Determines whether or not this stream is ready to be
+   * read.  If it returns <code>false</code> the stream may block if a
+   * read is attempted, but it is not guaranteed to do so.
+   * <p>
+   * This method always returns <code>false</code> in this class
+   *
+   * @return <code>true</code> if the stream is ready to be read,
+   * <code>false</code> otherwise.
+   *
+   * @exception IOException If an error occurs
+   */
   public boolean ready() throws java.io.IOException
   {
     return false;
   }
 
   /**
-    * Skips the specified number of chars in the stream.  It
-    * returns the actual number of chars skipped, which may be less than the
-    * requested amount.
-    * <p>
-    * This method reads and discards chars into a 256 char array until the
-    * specified number of chars were skipped or until either the end of stream
-    * is reached or a read attempt returns a short count.  Subclasses can
-    * override this method to provide a more efficient implementation where
-    * one exists.
-    *
-    * @param count The requested number of chars to skip
-    *
-    * @return The actual number of chars skipped.
-    *
-    * @exception IOException If an error occurs
-    */
+   * Skips the specified number of chars in the stream.  It
+   * returns the actual number of chars skipped, which may be less than the
+   * requested amount.
+   * <p>
+   * This method reads and discards chars into a 256 char array until the
+   * specified number of chars were skipped or until either the end of stream
+   * is reached or a read attempt returns a short count.  Subclasses can
+   * override this method to provide a more efficient implementation where
+   * one exists.
+   *
+   * @param count The requested number of chars to skip
+   *
+   * @return The actual number of chars skipped.
+   *
+   * @exception IOException If an error occurs
+   */
   public long skip(long count) throws java.io.IOException
   {
-    if (count <= 0)
+    if (count <= 0){
       return 0;
+    }
     int bsize = count > 1024 ? 1024 : (int) count;
     char[] buffer = new char[bsize];
     long todo = count;
     synchronized (lock)
     {
       while (todo > 0)
-        {
-          int skipped = read(buffer, 0, bsize > todo ? (int) todo : bsize);
-          if (skipped <= 0)
-            break;
-          todo -= skipped;
+      {
+        int skipped = read(buffer, 0, bsize > todo ? (int) todo : bsize);
+        if (skipped <= 0) {
+          break;
         }
+        todo -= skipped;
+      }
     }
     return count - todo;
   }

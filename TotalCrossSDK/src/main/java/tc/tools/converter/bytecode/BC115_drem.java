@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC115_drem extends Arithmetic
 {
-   public BC115_drem()
-   {
-      super(-1,-2,-1,DOUBLE);
-   }
-   public void exec()
-   {
-      stack[stackPtr-2].asDouble %= stack[stackPtr-1].asDouble;
-   }
+  public BC115_drem()
+  {
+    super(-1,-2,-1,DOUBLE);
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr-2].asDouble %= stack[stackPtr-1].asDouble;
+  }
 }

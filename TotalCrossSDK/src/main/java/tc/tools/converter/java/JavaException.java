@@ -17,21 +17,22 @@ import totalcross.io.DataStream;
 
 public final class JavaException
 {
-   public int    startPC, endPC, handlerPC;
-   public String catchType;
+  public int    startPC, endPC, handlerPC;
+  public String catchType;
 
-   public JavaException(DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException
-   {
-      startPC = ds.readUnsignedShort();
-      endPC = ds.readUnsignedShort();
-      handlerPC = ds.readUnsignedShort();
-      int c = ds.readUnsignedShort();
-      if (c > 0) // If the value of the catch_type item is zero, this exception handler is called for all exceptions. This is used to implement finally
-         catchType = cp.getString1(c);
-   }
+  public JavaException(DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException
+  {
+    startPC = ds.readUnsignedShort();
+    endPC = ds.readUnsignedShort();
+    handlerPC = ds.readUnsignedShort();
+    int c = ds.readUnsignedShort();
+    if (c > 0){
+      catchType = cp.getString1(c);
+    }
+  }
 
-   public boolean isFinallyHandler()
-   {
-      return catchType == null;
-   }
+  public boolean isFinallyHandler()
+  {
+    return catchType == null;
+  }
 }

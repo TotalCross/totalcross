@@ -15,12 +15,12 @@ import totalcross.unit.TestSuite;
 
 public class TestIO extends TestSuite
 {
-   public TestIO()
-   {
-      super("Test IO");
-      addTestCase(TestBufferedStream.class);
-      addTestCase(TestByteArrayStream.class);
-      addTestCase(TestCompressedByteArrayStream.class);
-   }
-   
+  public TestIO()
+  {
+    super("Test IO");
+    addTestCase(TestBufferedStream.class);
+    addTestCase(TestByteArrayStream.class);
+    addTestCase(TestCompressedByteArrayStream.class);
+  }
+
 }

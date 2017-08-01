@@ -29,43 +29,45 @@ import totalcross.ui.event.PressListener;
 
 public class WorldWatch extends MainWindow
 {
-   Container watches;
-   Button btExit;
+  Container watches;
+  Button btExit;
 
-   static
-   {
-      Settings.isFullScreen = true;
-   }
+  static
+  {
+    Settings.isFullScreen = true;
+  }
 
-   public WorldWatch()
-   {
-      setUIStyle(Settings.Flat);
-   }
+  public WorldWatch()
+  {
+    setUIStyle(Settings.Flat);
+  }
 
-   private void addWatch(int x, int y, int city)
-   {
-      Watch w = new Watch();
-      watches.add(w);
-      w.setRect(x, y, Settings.screenWidth / 2, Settings.screenHeight / 2);
-      w.setCity(city);
-   }
+  private void addWatch(int x, int y, int city)
+  {
+    Watch w = new Watch();
+    watches.add(w);
+    w.setRect(x, y, Settings.screenWidth / 2, Settings.screenHeight / 2);
+    w.setCity(city);
+  }
 
-   public void initUI()
-   {
-      add(watches = new Container(), LEFT, TOP, FILL, FILL);
-      add(btExit = new Button("Exit"), CENTER, BOTTOM, PREFERRED + 15, PREFERRED);
-      btExit.addPressListener(new PressListener()
+  @Override
+  public void initUI()
+  {
+    add(watches = new Container(), LEFT, TOP, FILL, FILL);
+    add(btExit = new Button("Exit"), CENTER, BOTTOM, PREFERRED + 15, PREFERRED);
+    btExit.addPressListener(new PressListener()
+    {
+      @Override
+      public void controlPressed(ControlEvent e)
       {
-         public void controlPressed(ControlEvent e)
-         {
-            MainWindow.exit(0);
-         }
-      });
-     
+        MainWindow.exit(0);
+      }
+    });
 
-      addWatch(LEFT, TOP, 49);
-      addWatch(RIGHT, TOP, 45);
-      addWatch(LEFT, BOTTOM, 47);
-      addWatch(RIGHT, BOTTOM, 35);
-   }
+
+    addWatch(LEFT, TOP, 49);
+    addWatch(RIGHT, TOP, 45);
+    addWatch(LEFT, BOTTOM, 47);
+    addWatch(RIGHT, BOTTOM, 35);
+  }
 }

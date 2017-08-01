@@ -40,7 +40,17 @@ exception statement from your version. */
 package totalcross.util;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 import totalcross.sys.Vm;
 import totalcross.util.concurrent.Lock;
 
@@ -83,7 +93,7 @@ import totalcross.util.concurrent.Lock;
  * @status updated to 1.4
  */
 public class Vector4D<T> extends AbstractList<T>
-  implements List<T>, RandomAccess, Cloneable
+implements List<T>, RandomAccess, Cloneable
 {
   /**
    * The internal array used to hold members of a Vector. The elements are
@@ -142,8 +152,9 @@ public class Vector4D<T> extends AbstractList<T>
    */
   public Vector4D(int initialCapacity, int capacityIncrement)
   {
-    if (initialCapacity < 0)
+    if (initialCapacity < 0){
       throw new IllegalArgumentException();
+    }
     elementData = new Object[initialCapacity];
     this.capacityIncrement = capacityIncrement;
   }
@@ -204,14 +215,16 @@ public class Vector4D<T> extends AbstractList<T>
    */
   public synchronized void ensureCapacity(int minCapacity)
   {
-    if (elementData.length >= minCapacity)
+    if (elementData.length >= minCapacity){
       return;
+    }
 
     int newCapacity;
-    if (capacityIncrement <= 0)
+    if (capacityIncrement <= 0){
       newCapacity = elementData.length * 2;
-    else
+    }else {
       newCapacity = elementData.length + capacityIncrement;
+    }
 
     T[] newArray = (T[]) new Object[Math.max(newCapacity, minCapacity)];
 
@@ -235,8 +248,9 @@ public class Vector4D<T> extends AbstractList<T>
     // not do the check and lose a bit of performance in that infrequent case
     modCount++;
     ensureCapacity(newSize);
-    if (newSize < elementCount)
+    if (newSize < elementCount){
       Arrays.fill(elementData, newSize, elementCount, null);
+    }
     elementCount = newSize;
   }
 
@@ -256,6 +270,7 @@ public class Vector4D<T> extends AbstractList<T>
    *
    * @return the number of elements in this Vector
    */
+  @Override
   public synchronized int size()
   {
     return elementCount;
@@ -266,6 +281,7 @@ public class Vector4D<T> extends AbstractList<T>
    *
    * @return true if the Vector is empty, false otherwise
    */
+  @Override
   public synchronized boolean isEmpty()
   {
     return elementCount == 0;
@@ -285,16 +301,19 @@ public class Vector4D<T> extends AbstractList<T>
     {
       private int i = 0;
 
+      @Override
       public boolean hasMoreElements()
       {
         return i < elementCount;
       }
 
+      @Override
       @SuppressWarnings("unchecked")
       public T nextElement()
       {
-        if (i >= elementCount)
+        if (i >= elementCount) {
           throw new NoSuchElementException();
+        }
         return (T) elementData[i++];
       }
     };
@@ -306,6 +325,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @param elem the element to check
    * @return true if the object is contained in this Vector, false otherwise
    */
+  @Override
   public boolean contains(Object elem)
   {
     return indexOf(elem, 0) >= 0;
@@ -318,6 +338,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @param elem the object to search for
    * @return the index of the first occurrence, or -1 if not found
    */
+  @Override
   public int indexOf(Object elem)
   {
     return indexOf(elem, 0);
@@ -336,9 +357,11 @@ public class Vector4D<T> extends AbstractList<T>
    */
   public synchronized int indexOf(Object e, int index)
   {
-    for (int i = index; i < elementCount; i++)
-      if (AbstractCollection4D.equals(e, elementData[i]))
+    for (int i = index; i < elementCount; i++) {
+      if (AbstractCollection4D.equals(e, elementData[i])){
         return i;
+      }
+    }
     return -1;
   }
 
@@ -349,6 +372,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @param elem the object to search for
    * @return the last index of the object, or -1 if not found
    */
+  @Override
   public int lastIndexOf(Object elem)
   {
     return lastIndexOf(elem, elementCount - 1);
@@ -367,9 +391,11 @@ public class Vector4D<T> extends AbstractList<T>
   public synchronized int lastIndexOf(Object e, int index)
   {
     checkBoundExclusive(index);
-    for (int i = index; i >= 0; i--)
-      if (AbstractCollection4D.equals(e, elementData[i]))
+    for (int i = index; i >= 0; i--) {
+      if (AbstractCollection4D.equals(e, elementData[i])){
         return i;
+      }
+    }
     return -1;
   }
 
@@ -397,8 +423,9 @@ public class Vector4D<T> extends AbstractList<T>
   @SuppressWarnings("unchecked")
   public synchronized T firstElement()
   {
-    if (elementCount == 0)
+    if (elementCount == 0){
       throw new NoSuchElementException();
+    }
 
     return (T) elementData[0];
   }
@@ -412,8 +439,9 @@ public class Vector4D<T> extends AbstractList<T>
   @SuppressWarnings("unchecked")
   public synchronized T lastElement()
   {
-    if (elementCount == 0)
+    if (elementCount == 0){
       throw new NoSuchElementException();
+    }
 
     return (T) elementData[elementCount - 1];
   }
@@ -456,11 +484,12 @@ public class Vector4D<T> extends AbstractList<T>
   public synchronized void insertElementAt(T obj, int index)
   {
     checkBoundInclusive(index);
-    if (elementCount == elementData.length)
+    if (elementCount == elementData.length){
       ensureCapacity(elementCount + 1);
+    }
     modCount++;
     System.arraycopy(elementData, index, elementData, index + 1,
-                     elementCount - index);
+        elementCount - index);
     elementCount++;
     elementData[index] = obj;
   }
@@ -473,8 +502,9 @@ public class Vector4D<T> extends AbstractList<T>
    */
   public synchronized void addElement(T obj)
   {
-    if (elementCount == elementData.length)
+    if (elementCount == elementData.length){
       ensureCapacity(elementCount + 1);
+    }
     modCount++;
     elementData[elementCount++] = obj;
   }
@@ -492,10 +522,10 @@ public class Vector4D<T> extends AbstractList<T>
   {
     int idx = indexOf(obj, 0);
     if (idx >= 0)
-      {
-        remove(idx);
-        return true;
-      }
+    {
+      remove(idx);
+      return true;
+    }
     return false;
   }
 
@@ -507,8 +537,9 @@ public class Vector4D<T> extends AbstractList<T>
    */
   public synchronized void removeAllElements()
   {
-    if (elementCount == 0)
+    if (elementCount == 0){
       return;
+    }
 
     modCount++;
     Arrays.fill(elementData, 0, elementCount, null);
@@ -521,19 +552,20 @@ public class Vector4D<T> extends AbstractList<T>
    *
    * @return the clone of this vector
    */
+  @Override
   public synchronized Object clone()
   {
     try
-      {
-        Vector4D clone = (Vector4D) super.clone();
-        clone.elementData = new Object[elementData.length];
-        Vm.arrayCopy(elementData, 0, clone.elementData, 0, elementData.length);
-        return clone;
-      }
+    {
+      Vector4D clone = (Vector4D) super.clone();
+      clone.elementData = new Object[elementData.length];
+      Vm.arrayCopy(elementData, 0, clone.elementData, 0, elementData.length);
+      return clone;
+    }
     catch (CloneNotSupportedException ex)
-      {
-        throw new RuntimeException(ex.getMessage());
-      }
+    {
+      throw new RuntimeException(ex.getMessage());
+    }
   }
 
   /**
@@ -546,6 +578,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @return an Object[] containing the contents of this Vector in order
    * @since 1.2
    */
+  @Override
   public synchronized Object[] toArray()
   {
     Object[] newArray = new Object[elementCount];
@@ -569,13 +602,15 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws NullPointerException if <code>a</code> is null
    * @since 1.2
    */
+  @Override
   public synchronized <S> S[] toArray(S[] a)
   {
-    if (a.length < elementCount)
+    if (a.length < elementCount){
       a = (S[]) Array.newInstance(a.getClass().getComponentType(),
-                                  elementCount);
-    else if (a.length > elementCount)
+          elementCount);
+    }else if (a.length > elementCount){
       a[elementCount] = null;
+    }
     System.arraycopy(elementData, 0, a, 0, elementCount);
     return a;
   }
@@ -588,6 +623,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws ArrayIndexOutOfBoundsException index &lt; 0 || index &gt;= size()
    * @since 1.2
    */
+  @Override
   public T get(int index)
   {
     return elementAt(index);
@@ -603,6 +639,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws ArrayIndexOutOfBoundsException index &lt; 0 || index &gt;= size()
    * @since 1.2
    */
+  @Override
   @SuppressWarnings("unchecked")
   public synchronized T set(int index, T element)
   {
@@ -619,6 +656,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @return true, as specified by List
    * @since 1.2
    */
+  @Override
   public boolean add(T o)
   {
     addElement(o);
@@ -633,6 +671,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @return true if the Object existed in the Vector, false otherwise
    * @since 1.2
    */
+  @Override
   public boolean remove(Object o)
   {
     return removeElement(o);
@@ -647,6 +686,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws ArrayIndexOutOfBoundsException index &lt; 0 || index &gt; size()
    * @since 1.2
    */
+  @Override
   public void add(int index, T element)
   {
     insertElementAt(element, index);
@@ -660,6 +700,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws ArrayIndexOutOfBoundsException index &lt; 0 || index &gt;= size()
    * @since 1.2
    */
+  @Override
   @SuppressWarnings("unchecked")
   public synchronized T remove(int index)
   {
@@ -667,9 +708,10 @@ public class Vector4D<T> extends AbstractList<T>
     T temp = (T) elementData[index];
     modCount++;
     elementCount--;
-    if (index < elementCount)
+    if (index < elementCount){
       System.arraycopy(elementData, index + 1, elementData, index,
-                       elementCount - index);
+          elementCount - index);
+    }
     elementData[elementCount] = null;
     return temp;
   }
@@ -677,6 +719,7 @@ public class Vector4D<T> extends AbstractList<T>
   /**
    * Clears all elements in the Vector and sets its size to 0.
    */
+  @Override
   public void clear()
   {
     removeAllElements();
@@ -690,6 +733,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws NullPointerException if c is null
    * @since 1.2
    */
+  @Override
   public synchronized boolean containsAll(Collection<?> c)
   {
     // Here just for the sychronization.
@@ -706,6 +750,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws NullPointerException if c is null
    * @since 1.2
    */
+  @Override
   public synchronized boolean addAll(Collection<? extends T> c)
   {
     return addAll(elementCount, c);
@@ -719,6 +764,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws NullPointerException if c is null
    * @since 1.2
    */
+  @Override
   public synchronized boolean removeAll(Collection<?> c)
   {
     // The NullPointerException is thrown implicitly when the Vector
@@ -728,16 +774,21 @@ public class Vector4D<T> extends AbstractList<T>
 
     int i;
     int j;
-    for (i = 0; i < elementCount; i++)
-      if (c.contains(elementData[i]))
+    for (i = 0; i < elementCount; i++) {
+      if (c.contains(elementData[i])){
         break;
-    if (i == elementCount)
+      }
+    }
+    if (i == elementCount){
       return false;
+    }
 
     modCount++;
-    for (j = i++; i < elementCount; i++)
-      if (! c.contains(elementData[i]))
+    for (j = i++; i < elementCount; i++) {
+      if (! c.contains(elementData[i])){
         elementData[j++] = elementData[i];
+      }
+    }
     elementCount -= i - j;
     return true;
   }
@@ -750,6 +801,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws NullPointerException if c is null
    * @since 1.2
    */
+  @Override
   public synchronized boolean retainAll(Collection<?> c)
   {
     // The NullPointerException is thrown implicitly when the Vector
@@ -759,16 +811,21 @@ public class Vector4D<T> extends AbstractList<T>
 
     int i;
     int j;
-    for (i = 0; i < elementCount; i++)
-      if (! c.contains(elementData[i]))
+    for (i = 0; i < elementCount; i++) {
+      if (! c.contains(elementData[i])){
         break;
-    if (i == elementCount)
+      }
+    }
+    if (i == elementCount){
       return false;
+    }
 
     modCount++;
-    for (j = i++; i < elementCount; i++)
-      if (c.contains(elementData[i]))
+    for (j = i++; i < elementCount; i++) {
+      if (c.contains(elementData[i])){
         elementData[j++] = elementData[i];
+      }
+    }
     elementCount -= i - j;
     return true;
   }
@@ -784,6 +841,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @throws ArrayIndexOutOfBoundsException index &lt; 0 || index &gt; size()
    * @since 1.2
    */
+  @Override
   public synchronized boolean addAll(int index, Collection<? extends T> c)
   {
     checkBoundInclusive(index);
@@ -793,12 +851,14 @@ public class Vector4D<T> extends AbstractList<T>
     modCount++;
     ensureCapacity(elementCount + csize);
     int end = index + csize;
-    if (elementCount > 0 && index != elementCount)
+    if (elementCount > 0 && index != elementCount){
       System.arraycopy(elementData, index,
-                       elementData, end, elementCount - index);
+          elementData, end, elementCount - index);
+    }
     elementCount += csize;
-    for ( ; index < end; index++)
+    for ( ; index < end; index++) {
       elementData[index] = itr.next();
+    }
     return (csize > 0);
   }
 
@@ -809,6 +869,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @return true if the two are equal
    * @since 1.2
    */
+  @Override
   public synchronized boolean equals(Object o)
   {
     // Here just for the sychronization.
@@ -821,6 +882,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @return the hashcode
    * @since 1.2
    */
+  @Override
   public synchronized int hashCode()
   {
     // Here just for the sychronization.
@@ -833,6 +895,7 @@ public class Vector4D<T> extends AbstractList<T>
    *
    * @return the String representation of this Vector
    */
+  @Override
   public synchronized String toString()
   {
     // Here just for the sychronization.
@@ -858,6 +921,7 @@ public class Vector4D<T> extends AbstractList<T>
    * @see ConcurrentModificationException
    * @since 1.2
    */
+  @Override
   public synchronized List<T> subList(int fromIndex, int toIndex)
   {
     List<T> sub = super.subList(fromIndex, toIndex);
@@ -876,20 +940,22 @@ public class Vector4D<T> extends AbstractList<T>
    */
   // This does not need to be synchronized, because it is only called through
   // clear() of a sublist, and clear() had already synchronized.
+  @Override
   protected void removeRange(int fromIndex, int toIndex)
   {
     int change = toIndex - fromIndex;
     if (change > 0)
-      {
-        modCount++;
-        System.arraycopy(elementData, toIndex, elementData, fromIndex,
-                         elementCount - toIndex);
-        int save = elementCount;
-        elementCount -= change;
-        Arrays.fill(elementData, elementCount, save, null);
-      }
-    else if (change < 0)
+    {
+      modCount++;
+      System.arraycopy(elementData, toIndex, elementData, fromIndex,
+          elementCount - toIndex);
+      int save = elementCount;
+      elementCount -= change;
+      Arrays.fill(elementData, elementCount, save, null);
+    }
+    else if (change < 0){
       throw new IndexOutOfBoundsException();
+    }
   }
 
   /**
@@ -903,8 +969,9 @@ public class Vector4D<T> extends AbstractList<T>
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException
     // with no effort on our part.
-    if (index > elementCount)
+    if (index > elementCount){
       raiseBoundsError(index, " > ");
+    }
   }
 
   /**
@@ -918,8 +985,9 @@ public class Vector4D<T> extends AbstractList<T>
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException
     // with no effort on our part.
-    if (index >= elementCount)
+    if (index >= elementCount){
       raiseBoundsError(index, " >= ");
+    }
   }
 
   /**

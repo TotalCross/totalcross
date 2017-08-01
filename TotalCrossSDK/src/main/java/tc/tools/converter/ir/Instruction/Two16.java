@@ -18,40 +18,42 @@ import totalcross.util.Vector;
 
 public class Two16 extends Parameter
 {
-   public int v1;
-   public int v2;
+  public int v1;
+  public int v2;
 
-   public Two16(int line, int v1, int v2)
-   {
-      super(line);
-      this.v1 = v1;
-      this.v2 = v2;
-   }
+  public Two16(int line, int v1, int v2)
+  {
+    super(line);
+    this.v1 = v1;
+    this.v2 = v2;
+  }
 
-   public Two16(int line)
-   {
-      super(line);
-   }
+  public Two16(int line)
+  {
+    super(line);
+  }
 
-   public void set(int v1, int v2)
-   {
-      this.v1 = v1;
-      this.v2 = v2;
-   }
+  public void set(int v1, int v2)
+  {
+    this.v1 = v1;
+    this.v2 = v2;
+  }
 
-   public String toString()
-   {
-      String print;
-      print = v1 + ", "+ v2;
-      return print;
-   }
+  @Override
+  public String toString()
+  {
+    String print;
+    print = v1 + ", "+ v2;
+    return print;
+  }
 
-   public void toTCCode(Vector vcode)
-   {
-      TCCode tc = new TCCode(line);
-      tc.len = 0;
-      tc.two16__v1(v1);
-      tc.two16__v2(v2);
-      vcode.addElement(tc);
-   }
+  @Override
+  public void toTCCode(Vector vcode)
+  {
+    TCCode tc = new TCCode(line);
+    tc.len = 0;
+    tc.two16__v1(v1);
+    tc.two16__v2(v2);
+    vcode.addElement(tc);
+  }
 }

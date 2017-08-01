@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC084_bastore extends StoreArray
 {
-   public BC084_bastore()
-   {
-      super(-3,0,1,2,BYTE);
-   }
+  public BC084_bastore()
+  {
+    super(-3,0,1,2,BYTE);
+  }
 }

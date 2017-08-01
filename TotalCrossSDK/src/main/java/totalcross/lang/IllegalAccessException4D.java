@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class IllegalAccessException4D extends ReflectiveOperationException
 {
-   /** Constructs an empty Exception. */
-   public IllegalAccessException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public IllegalAccessException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public IllegalAccessException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public IllegalAccessException4D(String msg)
+  {
+    super(msg);
+  }
 }

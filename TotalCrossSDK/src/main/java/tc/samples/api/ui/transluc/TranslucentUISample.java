@@ -16,12 +16,13 @@
 
 package tc.samples.api.ui.transluc;
 
-import tc.samples.api.*;
+import tc.samples.api.BaseContainer;
 
 public class TranslucentUISample extends BaseContainer
 {
-   public void initUI()
-   {
-      new MenuScreen(this).show();
-   }  
+  @Override
+  public void initUI()
+  {
+    new MenuScreen(this).show();
+  }  
 }

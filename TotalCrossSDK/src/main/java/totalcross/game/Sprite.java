@@ -17,7 +17,10 @@
 package totalcross.game;
 
 import totalcross.sys.Settings;
-import totalcross.ui.gfx.*;
+import totalcross.ui.gfx.Coord;
+import totalcross.ui.gfx.GfxSurface;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 
@@ -159,437 +162,450 @@ import totalcross.ui.image.ImageException;
 public class Sprite
 {
   /**
-    * Sprite center position.
-    */
-   public int centerX, centerY;
+   * Sprite center position.
+   */
+  public int centerX, centerY;
 
-   /**
-    * Sprite width/height dimensions. <b>READ-ONLY</b> attributes.
-    */
-   public int width, height;
+  /**
+   * Sprite width/height dimensions. <b>READ-ONLY</b> attributes.
+   */
+  public int width, height;
 
-   /**
-    * Sprite valid region. <br>
-    * The sprite cannot leave this area if the default position validation function is not overriden.
-    * 
-    * @see #onPositionChange
-    */
-   protected int regionMinx, regionMiny, regionMaxx, regionMaxy;
+  /**
+   * Sprite valid region. <br>
+   * The sprite cannot leave this area if the default position validation function is not overriden.
+   * 
+   * @see #onPositionChange
+   */
+  protected int regionMinx, regionMiny, regionMaxx, regionMaxy;
 
-   /**
-    * Sprite image.
-    */
-   public Image image;
+  /**
+   * Sprite image.
+   */
+  public Image image;
 
-   /**
-    * Graphics to draw at.
-    */
-   protected Graphics gfx;
+  /**
+   * Graphics to draw at.
+   */
+  protected Graphics gfx;
 
-   /**
-    * Surface to draw at.
-    */
-   protected GfxSurface surface;
+  /**
+   * Surface to draw at.
+   */
+  protected GfxSurface surface;
 
-   private boolean multiFrame;
+  private boolean multiFrame;
 
-   /**
-    * Speed in pixels used by the function towardPos.
-    * 
-    * @see #towardPos
-    */
-   public int speed = 8;
+  /**
+   * Speed in pixels used by the function towardPos.
+   * 
+   * @see #towardPos
+   */
+  public int speed = 8;
 
-   // cached double buffering with screen erasing
-   protected boolean screenErased;
-   /** set to false if this sprite never reaches the screen boundaries. Default is true. */
-   public boolean doClip = true;
+  // cached double buffering with screen erasing
+  protected boolean screenErased;
+  /** set to false if this sprite never reaches the screen boundaries. Default is true. */
+  public boolean doClip = true;
 
-   protected final static int INVALID = -500;
+  protected final static int INVALID = -500;
 
-   /**
-    * Sprite constructor. <br>
-    * 
-    * @param image
-    *           sprite image.
-    * @param transColor
-    *           sprite's transparency color or -1 if none<br>
-    *           (needed in DRAW_SPRITE mode to keep the current background).
-    * @param saveBckgd
-    *           true if the background should be saved each time the sprite is drawn to restore it once the sprite
-    *           moves.
-    * @param region
-    *           defines the sprite valid area.<br>
-    *           If null, a default region is set to prevent the sprite to leave even partially the screen.
-    * @throws ImageException
-    * @throws IllegalStateException
-    * @throws IllegalArgumentException
-    */
-   public Sprite(Image image, int transColor, boolean saveBckgd, Rect region) throws IllegalArgumentException, IllegalStateException, ImageException
-   {
-      this(image, image.getFrameCount(), transColor, saveBckgd, region);
-   }
+  /**
+   * Sprite constructor. <br>
+   * 
+   * @param image
+   *           sprite image.
+   * @param transColor
+   *           sprite's transparency color or -1 if none<br>
+   *           (needed in DRAW_SPRITE mode to keep the current background).
+   * @param saveBckgd
+   *           true if the background should be saved each time the sprite is drawn to restore it once the sprite
+   *           moves.
+   * @param region
+   *           defines the sprite valid area.<br>
+   *           If null, a default region is set to prevent the sprite to leave even partially the screen.
+   * @throws ImageException
+   * @throws IllegalStateException
+   * @throws IllegalArgumentException
+   */
+  public Sprite(Image image, int transColor, boolean saveBckgd, Rect region) throws IllegalArgumentException, IllegalStateException, ImageException
+  {
+    this(image, image.getFrameCount(), transColor, saveBckgd, region);
+  }
 
-   /**
-    * Sprite constructor. <br>
-    * 
-    * @param image
-    *           sprite image.
-    * @param transColor
-    *           sprite's transparency color or -1 if none<br>
-    *           (needed in DRAW_SPRITE mode to keep the current background).
-    * @param saveBckgd
-    *           true if the background should be saved each time the sprite is drawn to restore it once the sprite
-    *           moves.
-    * @param region
-    *           defines the sprite valid area.<br>
-    *           If null, a default region is set to prevent the sprite to leave even partially the screen.
-    * @throws ImageException
-    * @throws IllegalStateException
-    * @throws IllegalArgumentException
-    */
-   public Sprite(Image image, int nrFrames, int transColor, boolean saveBckgd, Rect region) throws IllegalArgumentException, IllegalStateException, ImageException
-   {
-      gfx = GameEngineMainWindow.getEngineGraphics();
-      surface = GameEngineMainWindow.getSurface();
-      image.setFrameCount(nrFrames);
+  /**
+   * Sprite constructor. <br>
+   * 
+   * @param image
+   *           sprite image.
+   * @param transColor
+   *           sprite's transparency color or -1 if none<br>
+   *           (needed in DRAW_SPRITE mode to keep the current background).
+   * @param saveBckgd
+   *           true if the background should be saved each time the sprite is drawn to restore it once the sprite
+   *           moves.
+   * @param region
+   *           defines the sprite valid area.<br>
+   *           If null, a default region is set to prevent the sprite to leave even partially the screen.
+   * @throws ImageException
+   * @throws IllegalStateException
+   * @throws IllegalArgumentException
+   */
+  public Sprite(Image image, int nrFrames, int transColor, boolean saveBckgd, Rect region) throws IllegalArgumentException, IllegalStateException, ImageException
+  {
+    gfx = GameEngineMainWindow.getEngineGraphics();
+    surface = GameEngineMainWindow.getSurface();
+    image.setFrameCount(nrFrames);
 
-      screenErased = true; /* GameEngineMainWindow.engine.gameIsDoubleBuffered */;
-      multiFrame = image.getFrameCount() > 1;
+    screenErased = true; /* GameEngineMainWindow.engine.gameIsDoubleBuffered */;
+    multiFrame = image.getFrameCount() > 1;
 
-      this.image = image;
-      width = image.getWidth();
-      height = image.getHeight();
-      if (width <= 0 || height <= 0)
-         throw new GameEngineException("bad Sprite bitmap");
+    this.image = image;
+    width = image.getWidth();
+    height = image.getHeight();
+    if (width <= 0 || height <= 0){
+      throw new GameEngineException("bad Sprite bitmap");
+    }
 
-      saveBackground(saveBckgd);
-      if (region == null)
+    saveBackground(saveBckgd);
+    if (region == null)
+    {
+      regionMinx = width / 2;
+      regionMiny = height / 2;
+      regionMaxx = Settings.screenWidth - regionMinx;
+      regionMaxy = Settings.screenHeight - regionMiny;
+    }else {
+      setRegion(region);
+    }
+  }
+
+  /**
+   * Background image.
+   */
+  protected Image background;
+
+  /**
+   * Background graphic context.
+   */
+  protected Graphics bgGfx;
+
+  /**
+   * Background restoring position.
+   */
+  protected int bgX, bgY;
+
+  /**
+   * Enable/disable background saving. <br>
+   * 
+   * @param enable
+   *           true if background have to be saved and restored at each drawing.
+   * @throws ImageException
+   */
+  private void saveBackground(boolean enable) throws ImageException
+  {
+    if (enable && !Settings.isOpenGL)
+    {
+      background = new Image(width, height);
+      bgGfx = background.getGraphics();
+    }
+    else if (background != null)
+    {
+      bgGfx = null;
+      background = null;
+    }
+    bgX = INVALID;
+  }
+
+  /**
+   * Retrieve the sprite valid region. <br>
+   * <B>NOTE</B>: should be called cautiously due to a Rect object alloc.
+   * 
+   * @return positions validity region
+   */
+  public final Rect getRegion()
+  {
+    return new Rect(regionMinx, regionMiny, regionMaxx - regionMinx + 1, regionMaxx - regionMiny + 1);
+  }
+
+  /**
+   * Change the sprite valid region.
+   * 
+   * @param region new positions validity area
+   */
+  public final void setRegion(Rect region)
+  {
+    regionMinx = region.x;
+    regionMiny = region.x;
+    regionMaxx = region.x2();
+    regionMaxy = region.y2();
+  }
+
+  /**
+   * Default position validation function. <br>
+   * This function can be overloaded to define your own sprite position validation or collision detection.<br>
+   * The overloaded function may use the sprite data members and should update the sprite position centerX and centerY
+   * if needed.
+   * 
+   * @return true if the (centerX,centerY) is a valid position, false if it's not and the position has been corrected.<br>
+   *         <B>NOTE</B>: false returns will stop the movements of the towardPos function.
+   * @see #towardPos
+   */
+  public boolean onPositionChange()
+  {
+    boolean b = true;
+    if (centerX < regionMinx)
+    {
+      centerX = regionMinx;
+      b = false;
+    }
+    else
+      if (centerX > regionMaxx)
       {
-         regionMinx = width / 2;
-         regionMiny = height / 2;
-         regionMaxx = Settings.screenWidth - regionMinx;
-         regionMaxy = Settings.screenHeight - regionMiny;
+        centerX = regionMaxx;
+        b = false;
+      }
+    if (centerY < regionMiny)
+    {
+      centerY = regionMiny;
+      b = false;
+    }
+    else
+      if (centerY > regionMaxy)
+      {
+        centerY = regionMaxy;
+        b = false;
+      }
+    return b;
+  }
+
+  /**
+   * Sets the sprite position (actually its center). <br>
+   * Note: if doValidate is false, you may consider just setting centerX and centerY attributes directly (it is 60%
+   * faster).
+   * 
+   * @param x position.
+   * @param y position.
+   * @param doValidate if true the position is validated which means that the onPositionChange() function is called.
+   * @return true if the defined position has been set
+   * @see #onPositionChange
+   */
+  public final boolean setPos(int x, int y, boolean doValidate)
+  {
+    centerX = x;
+    centerY = y;
+    if (doValidate){
+      return onPositionChange();
+    }
+    return true;
+  }
+
+  /**
+   * Retrieve the sprite position (actually its center). <br>
+   * <B>NOTE</B>: should be called cautiously due to a Coord object alloc. You may also consider accessing the centerX
+   * and centerY directly.
+   * 
+   * @return sprite's center position
+   */
+  public final Coord getPos()
+  {
+    return new Coord(centerX, centerY);
+  }
+
+  /**
+   * Moves the sprite toward the specified position. <br>
+   * This function is typically used when the user points the end position with the pen. The object position is
+   * computed to move smoothly from it's current position to the target position.
+   * 
+   * @param x position.
+   * @param y position.
+   * @param doValidate if true the position is validated which means that the onPositionChange() function is called.<br>
+   *           <B>NOTE</B>: a false return of onPositionChange() will stop the towardPos function.
+   * @return true if the defined position has been set
+   * @see #onPositionChange
+   */
+  public boolean towardPos(int x, int y, boolean doValidate)
+  {
+    int dx = x - centerX;
+    int dy = y - centerY;
+    int steps;
+
+    if (dx == 0) // vertical move
+    {
+      steps = Math.min(dy >= 0 ? dy : -dy, speed);
+      if (dy < 0) {
+        centerY -= steps;
+      } else
+        if (dy > 0) {
+          centerY += steps;
+        }
+      if (doValidate) {
+        return onPositionChange();
+      }
+    }
+    else
+      if (dy == 0) // horizontal move
+      {
+        steps = Math.min(dx >= 0 ? dx : -dx, speed);
+        if (dx < 0) {
+          centerX -= steps;
+        } else
+          if (dx > 0) {
+            centerX += steps;
+          }
+        if (doValidate) {
+          return onPositionChange();
+        }
       }
       else
-         setRegion(region);
-   }
-
-   /**
-    * Background image.
-    */
-   protected Image background;
-
-   /**
-    * Background graphic context.
-    */
-   protected Graphics bgGfx;
-
-   /**
-    * Background restoring position.
-    */
-   protected int bgX, bgY;
-
-   /**
-    * Enable/disable background saving. <br>
-    * 
-    * @param enable
-    *           true if background have to be saved and restored at each drawing.
-    * @throws ImageException
-    */
-   private void saveBackground(boolean enable) throws ImageException
-   {
-      if (enable && !Settings.isOpenGL)
       {
-         background = new Image(width, height);
-         bgGfx = background.getGraphics();
-      }
-      else if (background != null)
-      {
-         bgGfx = null;
-         background = null;
-      }
-      bgX = INVALID;
-   }
+        // diagonal moves
+        // derived from TOTALCROSS drawLine algorithm, thx to Guich.
+        // It's Bresenham's fastest implementation!
 
-   /**
-    * Retrieve the sprite valid region. <br>
-    * <B>NOTE</B>: should be called cautiously due to a Rect object alloc.
-    * 
-    * @return positions validity region
-    */
-   public final Rect getRegion()
-   {
-      return new Rect(regionMinx, regionMiny, regionMaxx - regionMinx + 1, regionMaxx - regionMiny + 1);
-   }
+        dx = dx >= 0 ? dx : -dx; // store the change in X and Y of the line endpoints
+        dy = dy >= 0 ? dy : -dy;
 
-   /**
-    * Change the sprite valid region.
-    * 
-    * @param region new positions validity area
-    */
-   public final void setRegion(Rect region)
-   {
-      regionMinx = region.x;
-      regionMiny = region.x;
-      regionMaxx = region.x2();
-      regionMaxy = region.y2();
-   }
+        int CurrentX = centerX; // store the starting point (just point A)
+        int CurrentY = centerY;
 
-   /**
-    * Default position validation function. <br>
-    * This function can be overloaded to define your own sprite position validation or collision detection.<br>
-    * The overloaded function may use the sprite data members and should update the sprite position centerX and centerY
-    * if needed.
-    * 
-    * @return true if the (centerX,centerY) is a valid position, false if it's not and the position has been corrected.<br>
-    *         <B>NOTE</B>: false returns will stop the movements of the towardPos function.
-    * @see #towardPos
-    */
-   public boolean onPositionChange()
-   {
-      boolean b = true;
-      if (centerX < regionMinx)
-      {
-         centerX = regionMinx;
-         b = false;
-      }
-      else
-         if (centerX > regionMaxx)
-         {
-            centerX = regionMaxx;
-            b = false;
-         }
-      if (centerY < regionMiny)
-      {
-         centerY = regionMiny;
-         b = false;
-      }
-      else
-         if (centerY > regionMaxy)
-         {
-            centerY = regionMaxy;
-            b = false;
-         }
-      return b;
-   }
+        // DETERMINE "DIRECTIONS" TO INCREMENT X AND Y (REGARDLESS OF DECISION)
+        int Xincr = (centerX > x) ? -1 : 1; // which direction in X?
+        int Yincr = (centerY > y) ? -1 : 1; // which direction in Y?
 
-   /**
-    * Sets the sprite position (actually its center). <br>
-    * Note: if doValidate is false, you may consider just setting centerX and centerY attributes directly (it is 60%
-    * faster).
-    * 
-    * @param x position.
-    * @param y position.
-    * @param doValidate if true the position is validated which means that the onPositionChange() function is called.
-    * @return true if the defined position has been set
-    * @see #onPositionChange
-    */
-   public final boolean setPos(int x, int y, boolean doValidate)
-   {
-      centerX = x;
-      centerY = y;
-      if (doValidate)
-         return onPositionChange();
-      return true;
-   }
+        // DETERMINE INDEPENDENT VARIABLE (ONE THAT ALWAYS INCREMENTS BY 1 (OR -1) )
+        // AND INITIATE APPROPRIATE LINE DRAWING ROUTINE (BASED ON FIRST OCTANT
+        // ALWAYS). THE X AND Y'S MAY BE FLIPPED IF Y IS THE INDEPENDENT VARIABLE.
 
-   /**
-    * Retrieve the sprite position (actually its center). <br>
-    * <B>NOTE</B>: should be called cautiously due to a Coord object alloc. You may also consider accessing the centerX
-    * and centerY directly.
-    * 
-    * @return sprite's center position
-    */
-   public final Coord getPos()
-   {
-      return new Coord(centerX, centerY);
-   }
+        steps = speed;
 
-   /**
-    * Moves the sprite toward the specified position. <br>
-    * This function is typically used when the user points the end position with the pen. The object position is
-    * computed to move smoothly from it's current position to the target position.
-    * 
-    * @param x position.
-    * @param y position.
-    * @param doValidate if true the position is validated which means that the onPositionChange() function is called.<br>
-    *           <B>NOTE</B>: a false return of onPositionChange() will stop the towardPos function.
-    * @return true if the defined position has been set
-    * @see #onPositionChange
-    */
-   public boolean towardPos(int x, int y, boolean doValidate)
-   {
-      int dx = x - centerX;
-      int dy = y - centerY;
-      int steps;
+        if (dx >= dy) // if X is the independent variable
+        {
+          int dPr = dy << 1; // amount to increment decision if right is chosen (always)
+          int dPru = dPr - (dx << 1); // amount to increment decision if up is chosen
+          int P = dPr - dx; // decision variable start value
 
-      if (dx == 0) // vertical move
-      {
-         steps = Math.min(dy >= 0 ? dy : -dy, speed);
-         if (dy < 0)
-            centerY -= steps;
-         else
-            if (dy > 0)
-               centerY += steps;
-         if (doValidate)
-            return onPositionChange();
-      }
-      else
-         if (dy == 0) // horizontal move
-         {
-            steps = Math.min(dx >= 0 ? dx : -dx, speed);
-            if (dx < 0)
-               centerX -= steps;
-            else
-               if (dx > 0)
-                  centerX += steps;
-            if (doValidate)
-               return onPositionChange();
-         }
-         else
-         {
-            // diagonal moves
-            // derived from TOTALCROSS drawLine algorithm, thx to Guich.
-            // It's Bresenham's fastest implementation!
+          for (; dx >= 0 && steps > 0; dx--) // process each point in the line one at a time (just use dX)
+          {
+            centerX = CurrentX; // update the sprite's position
+            centerY = CurrentY;
 
-            dx = dx >= 0 ? dx : -dx; // store the change in X and Y of the line endpoints
-            dy = dy >= 0 ? dy : -dy;
-
-            int CurrentX = centerX; // store the starting point (just point A)
-            int CurrentY = centerY;
-
-            // DETERMINE "DIRECTIONS" TO INCREMENT X AND Y (REGARDLESS OF DECISION)
-            int Xincr = (centerX > x) ? -1 : 1; // which direction in X?
-            int Yincr = (centerY > y) ? -1 : 1; // which direction in Y?
-
-            // DETERMINE INDEPENDENT VARIABLE (ONE THAT ALWAYS INCREMENTS BY 1 (OR -1) )
-            // AND INITIATE APPROPRIATE LINE DRAWING ROUTINE (BASED ON FIRST OCTANT
-            // ALWAYS). THE X AND Y'S MAY BE FLIPPED IF Y IS THE INDEPENDENT VARIABLE.
-
-            steps = speed;
-
-            if (dx >= dy) // if X is the independent variable
-            {
-               int dPr = dy << 1; // amount to increment decision if right is chosen (always)
-               int dPru = dPr - (dx << 1); // amount to increment decision if up is chosen
-               int P = dPr - dx; // decision variable start value
-
-               for (; dx >= 0 && steps > 0; dx--) // process each point in the line one at a time (just use dX)
-               {
-                  centerX = CurrentX; // update the sprite's position
-                  centerY = CurrentY;
-
-                  if (doValidate && !onPositionChange())
-                     return false;
-
-                  CurrentX += Xincr; // increment independent variable
-                  steps--;
-                  if (P > 0) // is the pixel going right AND up?
-                  {
-                     CurrentY += Yincr; // increment dependent variable
-                     steps--;
-                     P += dPru; // increment decision (for up)
-                  }
-                  else
-                     // is the pixel just going right?
-                     P += dPr; // increment decision (for right)
-               }
+            if (doValidate && !onPositionChange()) {
+              return false;
             }
-            else
-            // if Y is the independent variable
+
+            CurrentX += Xincr; // increment independent variable
+            steps--;
+            if (P > 0) // is the pixel going right AND up?
             {
-               int dPr = dx << 1; // amount to increment decision if right is chosen (always)
-               int dPru = dPr - (dy << 1); // amount to increment decision if up is chosen
-               int P = dPr - dy; // decision variable start value
-
-               for (; dy >= 0 && steps > 0; dy--) // process each point in the line one at a time (just use dY)
-               {
-                  centerX = CurrentX; // update the sprite's position
-                  centerY = CurrentY;
-
-                  if (doValidate && !onPositionChange())
-                     return false;
-
-                  CurrentY += Yincr; // increment independent variable
-                  steps--;
-                  if (P > 0) // is the pixel going up AND right?
-                  {
-                     CurrentX += Xincr; // increment dependent variable
-                     steps--;
-                     P += dPru; // increment decision (for up)
-                  }
-                  else
-                     // is the pixel just going up?
-                     P += dPr; // increment decision (for right)
-               }
+              CurrentY += Yincr; // increment dependent variable
+              steps--;
+              P += dPru; // increment decision (for up)
             }
-         }
-      return true;
-   }
+            else {
+              // is the pixel just going right?
+              P += dPr; // increment decision (for right)
+            }
+          }
+        }
+        else
+          // if Y is the independent variable
+        {
+          int dPr = dx << 1; // amount to increment decision if right is chosen (always)
+          int dPru = dPr - (dy << 1); // amount to increment decision if up is chosen
+          int P = dPr - dy; // decision variable start value
 
-   /**
-    * Draw the sprite at it's current position using the defined drawOp. <br>
-    * If the Sprite has been created with enabled background saving (usefull only when the screen is not cleared before
-    * the new frame display) the previously stored background will be restored first and the sprite is displayed in a
-    * second step.<br>
-    * <B>NOTE</B>: if several sprite moves simultaneously and may overlap the background restoring may erase a
-    * previously drawn sprite. In this case, the only solution is to call explicitly the hide() function on all the
-    * sprites in the DRAWN REVERSE ORDER.<br>
-    * By doing so, you always restore a clean image without sprites before starting a new draw cycle of all the sprites.
-    */
-   public void show()
-   {
-      int w2 = width >> 1;
-      int h2 = height >> 1;
-      // are we in background restoring mode ?
-      if (!Settings.isOpenGL && background != null)
-      {
-         // Is it not the first paint ?
-         if (bgX != INVALID)
-         {
-            // position didn't change, what are we doing here ?
-            if (!screenErased && bgX == centerX && bgY == centerY)
-               return;
-            // buffer -> screen
-            gfx.copyRect(background, 0, 0, width, height, bgX - w2, bgY - h2);
-         }
-         // screen -> buffer
-         bgX = centerX;
-         bgY = centerY;
-         bgGfx.copyRect(surface, bgX - w2, bgY - h2, width, height, 0, 0);
+          for (; dy >= 0 && steps > 0; dy--) // process each point in the line one at a time (just use dY)
+          {
+            centerX = CurrentX; // update the sprite's position
+            centerY = CurrentY;
+
+            if (doValidate && !onPositionChange()) {
+              return false;
+            }
+
+            CurrentY += Yincr; // increment independent variable
+            steps--;
+            if (P > 0) // is the pixel going up AND right?
+            {
+              CurrentX += Xincr; // increment dependent variable
+              steps--;
+              P += dPru; // increment decision (for up)
+            }
+            else {
+              // is the pixel just going up?
+              P += dPr; // increment decision (for right)
+            }
+          }
+        }
       }
-      // copy the sprite image to the graphic context
-      gfx.drawImage(image, centerX - w2, centerY - h2, doClip);
-      if (multiFrame)
-         image.nextFrame();
-   }
+    return true;
+  }
 
-   /**
-    * Restore the sprite's saved background. <br>
-    * <B>NOTE</B>: the position may have change, the saved background position has been memorized also, to restore it at
-    * the right place.
-    */
-   public void hide()
-   {
-      if (background == null || bgX == INVALID)
-         return;
-      gfx.copyRect(background, 0, 0, width, height, bgX - width / 2, bgY - height / 2); // buffer -> screen
-      bgX = INVALID;
-   }
+  /**
+   * Draw the sprite at it's current position using the defined drawOp. <br>
+   * If the Sprite has been created with enabled background saving (usefull only when the screen is not cleared before
+   * the new frame display) the previously stored background will be restored first and the sprite is displayed in a
+   * second step.<br>
+   * <B>NOTE</B>: if several sprite moves simultaneously and may overlap the background restoring may erase a
+   * previously drawn sprite. In this case, the only solution is to call explicitly the hide() function on all the
+   * sprites in the DRAWN REVERSE ORDER.<br>
+   * By doing so, you always restore a clean image without sprites before starting a new draw cycle of all the sprites.
+   */
+  public void show()
+  {
+    int w2 = width >> 1;
+          int h2 = height >> 1;
+          // are we in background restoring mode ?
+          if (!Settings.isOpenGL && background != null)
+          {
+            // Is it not the first paint ?
+            if (bgX != INVALID)
+            {
+              // position didn't change, what are we doing here ?
+              if (!screenErased && bgX == centerX && bgY == centerY) {
+                return;
+              }
+              // buffer -> screen
+              gfx.copyRect(background, 0, 0, width, height, bgX - w2, bgY - h2);
+            }
+            // screen -> buffer
+            bgX = centerX;
+            bgY = centerY;
+            bgGfx.copyRect(surface, bgX - w2, bgY - h2, width, height, 0, 0);
+          }
+          // copy the sprite image to the graphic context
+          gfx.drawImage(image, centerX - w2, centerY - h2, doClip);
+          if (multiFrame){
+            image.nextFrame();
+          }
+  }
 
-   /**
-    * Test if the sprite collides with another one. <br>
-    * 
-    * @param s sprite to test with
-    * @return true if both sprite overlaps, false otherwise
-    */
-   public boolean collide(Sprite s)
-   {
-      int w2 = width >> 1;
-      int h2 = height >> 1;
-      int sw2 = s.width >> 1;
-      int sh2 = s.height >> 1;
-      return !((s.centerX + sw2 <= centerX - w2) || (s.centerY + sh2 <= centerY - h2) || (s.centerX - sw2 >= centerX + w2) || (s.centerY - sh2 >= centerY + h2));
-   }
+  /**
+   * Restore the sprite's saved background. <br>
+   * <B>NOTE</B>: the position may have change, the saved background position has been memorized also, to restore it at
+   * the right place.
+   */
+  public void hide()
+  {
+    if (background == null || bgX == INVALID){
+      return;
+    }
+    gfx.copyRect(background, 0, 0, width, height, bgX - width / 2, bgY - height / 2); // buffer -> screen
+    bgX = INVALID;
+  }
+
+  /**
+   * Test if the sprite collides with another one. <br>
+   * 
+   * @param s sprite to test with
+   * @return true if both sprite overlaps, false otherwise
+   */
+  public boolean collide(Sprite s)
+  {
+    int w2 = width >> 1;
+    int h2 = height >> 1;
+    int sw2 = s.width >> 1;
+    int sh2 = s.height >> 1;
+    return !((s.centerX + sw2 <= centerX - w2) || (s.centerY + sh2 <= centerY - h2) || (s.centerX - sw2 >= centerX + w2) || (s.centerY - sh2 >= centerY + h2));
+  }
 }

@@ -11,22 +11,24 @@
 
 package tc.test.totalcross.collections;
 
-import java.util.*;
+import java.util.EmptyStackException;
+
 import totalcross.unit.TestCase;
 
 public class TestEmptyStackException extends TestCase
 {
-   public void testRun()
-   {
-      try
-      {
-         throw new EmptyStackException();
-      }
-      catch (EmptyStackException exception)
-      {
-         assertTrue(exception instanceof EmptyStackException);
-      }
-      
-   }
-   
+  @Override
+  public void testRun()
+  {
+    try
+    {
+      throw new EmptyStackException();
+    }
+    catch (EmptyStackException exception)
+    {
+      assertTrue(exception instanceof EmptyStackException);
+    }
+
+  }
+
 }

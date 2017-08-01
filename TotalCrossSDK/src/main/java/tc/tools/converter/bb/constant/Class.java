@@ -17,13 +17,13 @@ import tc.tools.converter.bb.JavaClass;
 
 public class Class extends Reference
 {
-   public Class(JavaClass jclass)
-   {
-      super(jclass);
-   }
+  public Class(JavaClass jclass)
+  {
+    super(jclass);
+  }
 
-   public UTF8 getValueAsName()
-   {
-      return (UTF8)value.info;
-   }
+  public UTF8 getValueAsName()
+  {
+    return (UTF8)value.info;
+  }
 }

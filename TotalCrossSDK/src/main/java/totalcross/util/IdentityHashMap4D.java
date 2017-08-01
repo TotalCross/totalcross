@@ -38,8 +38,20 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
-import totalcross.sys.*;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.WeakHashMap;
+import totalcross.sys.Vm;
 
 /**
  *  This class provides a hashtable-backed implementation of the
@@ -89,7 +101,7 @@ import totalcross.sys.*;
  * @status updated to 1.4
  */
 public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
-  implements Map<K,V>, Cloneable
+implements Map<K,V>, Cloneable
 {
   /** The default capacity. */
   private static final int DEFAULT_CAPACITY = 21;
@@ -150,11 +162,13 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    */
   public IdentityHashMap4D(int max)
   {
-    if (max < 0)
+    if (max < 0){
       throw new IllegalArgumentException();
+    }
     // Need at least two slots, or hash() will break.
-    if (max < 2)
+    if (max < 2){
       max = 2;
+    }
     table = new Object[max << 1];
     threshold = (max >> 2) * 3;
   }
@@ -175,34 +189,36 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
   /**
    * Remove all mappings from this map.
    */
+  @Override
   public void clear()
   {
     if (size != 0)
-      {
-        modCount++;
-        Arrays.fill(table, null);
-        size = 0;
-      }
+    {
+      modCount++;
+      Arrays.fill(table, null);
+      size = 0;
+    }
   }
 
   /**
    * Creates a shallow copy where keys and values are not cloned.
    */
+  @Override
   public Object clone()
   {
     try
-      {
-        IdentityHashMap4D copy = (IdentityHashMap4D) super.clone();
-        copy.table = new Object[table.length];
-        Vm.arrayCopy(table, 0, copy.table, 0, table.length);
-        copy.entries = null; // invalidate the cache
-        return copy;
-      }
+    {
+      IdentityHashMap4D copy = (IdentityHashMap4D) super.clone();
+      copy.table = new Object[table.length];
+      Vm.arrayCopy(table, 0, copy.table, 0, table.length);
+      copy.entries = null; // invalidate the cache
+      return copy;
+    }
     catch (CloneNotSupportedException e)
-      {
-        // Can't happen.
-        return null;
-      }
+    {
+      // Can't happen.
+      return null;
+    }
   }
 
   /**
@@ -215,6 +231,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @see #containsValue(Object)
    * @see #get(Object)
    */
+  @Override
   public boolean containsKey(Object key)
   {
     key = xform(key);
@@ -230,12 +247,15 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @return true if at least one key maps to the value
    * @see #containsKey(Object)
    */
+  @Override
   public boolean containsValue(Object value)
   {
     value = xform(value);
-    for (int i = table.length - 1; i > 0; i -= 2)
-      if (table[i] == value)
+    for (int i = table.length - 1; i > 0; i -= 2) {
+      if (table[i] == value){
         return true;
+      }
+    }
     return false;
   }
 
@@ -266,57 +286,67 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @see #values()
    * @see Map.Entry
    */
+  @Override
   public Set<Map.Entry<K,V>> entrySet()
   {
-    if (entries == null)
+    if (entries == null){
       entries = new AbstractSet<Map.Entry<K,V>>()
       {
+        @Override
         public int size()
         {
           return size;
         }
 
+        @Override
         public Iterator<Map.Entry<K,V>> iterator()
         {
           return new IdentityIterator<Map.Entry<K,V>>(ENTRIES);
         }
 
+        @Override
         public void clear()
         {
           IdentityHashMap4D.this.clear();
         }
 
+        @Override
         public boolean contains(Object o)
         {
-          if (! (o instanceof Map.Entry))
+          if (! (o instanceof Map.Entry)) {
             return false;
+          }
           Map.Entry m = (Map.Entry) o;
           Object value = xform(m.getValue());
           Object key = xform(m.getKey());
           return value == table[hash(key) + 1];
         }
 
+        @Override
         public int hashCode()
         {
           return IdentityHashMap4D.this.hashCode();
         }
 
+        @Override
         public boolean remove(Object o)
         {
-          if (! (o instanceof Map.Entry))
+          if (! (o instanceof Map.Entry)) {
             return false;
+          }
           Object key = xform(((Map.Entry) o).getKey());
           int h = hash(key);
           if (table[h] == key)
-            {
-              size--;
-              modCount++;
-              IdentityHashMap4D.this.removeAtIndex(h);
-              return true;
-            }
+          {
+            size--;
+            modCount++;
+            IdentityHashMap4D.this.removeAtIndex(h);
+            return true;
+          }
           return false;
         }
       };
+    }
     return entries;
   }
 
@@ -330,6 +360,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @param o the object to compare to
    * @return true if it is equal
    */
+  @Override
   public boolean equals(Object o)
   {
     // Why did Sun specify this one? The superclass does the right thing.
@@ -351,6 +382,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
+  @Override
   public V get(Object key)
   {
     key = xform(key);
@@ -366,18 +398,20 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    *
    * @return the hash code
    */
+  @Override
   public int hashCode()
   {
     int hash = 0;
     for (int i = table.length - 2; i >= 0; i -= 2)
-      {
-        Object key = table[i];
-        if (key == null)
-          continue;
-        // FIXME: this is a lame computation.
-        hash += (Vm.identityHashCode(unxform(key))
-                 ^ Vm.identityHashCode(unxform(table[i + 1])));
+    {
+      Object key = table[i];
+      if (key == null) {
+        continue;
       }
+      // FIXME: this is a lame computation.
+      hash += (Vm.identityHashCode(unxform(key))
+          ^ Vm.identityHashCode(unxform(table[i + 1])));
+    }
     return hash;
   }
 
@@ -385,6 +419,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * Returns true if there are no key-value mappings currently in this Map
    * @return <code>size() == 0</code>
    */
+  @Override
   public boolean isEmpty()
   {
     return size == 0;
@@ -409,58 +444,67 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @see #values()
    * @see #entrySet()
    */
+  @Override
   public Set<K> keySet()
   {
-    if (keys == null)
+    if (keys == null){
       keys = new AbstractSet<K>()
       {
+        @Override
         public int size()
         {
           return size;
         }
 
+        @Override
         public Iterator<K> iterator()
         {
           return new IdentityIterator<K>(KEYS);
         }
 
+        @Override
         public void clear()
         {
           IdentityHashMap4D.this.clear();
         }
 
+        @Override
         public boolean contains(Object o)
         {
           return containsKey(o);
         }
 
+        @Override
         public int hashCode()
         {
           int hash = 0;
           for (int i = table.length - 2; i >= 0; i -= 2)
-            {
-              Object key = table[i];
-              if (key == null)
-                continue;
-              hash += Vm.identityHashCode(unxform(key));
+          {
+            Object key = table[i];
+            if (key == null) {
+              continue;
             }
+            hash += Vm.identityHashCode(unxform(key));
+          }
           return hash;
         }
 
+        @Override
         public boolean remove(Object o)
         {
           o = xform(o);
           int h = hash(o);
           if (table[h] == o)
-            {
-              size--;
-              modCount++;
-              removeAtIndex(h);
-              return true;
-            }
+          {
+            size--;
+            modCount++;
+            removeAtIndex(h);
+            return true;
+          }
           return false;
         }
       };
+    }
     return keys;
   }
 
@@ -478,6 +522,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @return the prior mapping of the key, or null if there was none
    * @see #get(Object)
    */
+  @Override
   public V put(K key, V value)
   {
     key = (K) xform(key);
@@ -486,39 +531,39 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
     // We don't want to rehash if we're overwriting an existing slot.
     int h = hash(key);
     if (table[h] == key)
-      {
-        V r = (V) unxform(table[h + 1]);
-        table[h + 1] = value;
-        return r;
-      }
+    {
+      V r = (V) unxform(table[h + 1]);
+      table[h + 1] = value;
+      return r;
+    }
 
     // Rehash if the load factor is too high.
     if (size > threshold)
+    {
+      Object[] old = table;
+      // This isn't necessarily prime, but it is an odd number of key/value
+      // slots, which has a higher probability of fewer collisions.
+      table = new Object[(old.length * 2) + 2];
+      size = 0;
+      threshold = (table.length >>> 3) * 3;
+
+      for (int i = old.length - 2; i >= 0; i -= 2)
       {
-        Object[] old = table;
-        // This isn't necessarily prime, but it is an odd number of key/value
-        // slots, which has a higher probability of fewer collisions.
-        table = new Object[(old.length * 2) + 2];
-        size = 0;
-        threshold = (table.length >>> 3) * 3;
-
-        for (int i = old.length - 2; i >= 0; i -= 2)
-          {
-            K oldkey = (K) old[i];
-            if (oldkey != null)
-              {
-                h = hash(oldkey);
-                table[h] = oldkey;
-                table[h + 1] = old[i + 1];
-                ++size;
-                // No need to update modCount here, we'll do it
-                // just after the loop.
-              }
-          }
-
-        // Now that we've resize, recompute the hash value.
-        h = hash(key);
+        K oldkey = (K) old[i];
+        if (oldkey != null)
+        {
+          h = hash(oldkey);
+          table[h] = oldkey;
+          table[h + 1] = old[i + 1];
+          ++size;
+          // No need to update modCount here, we'll do it
+          // just after the loop.
+        }
       }
+
+      // Now that we've resize, recompute the hash value.
+      h = hash(key);
+    }
 
     // At this point, we add a new mapping.
     modCount++;
@@ -535,6 +580,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @param m the map to copy
    * @throws NullPointerException if m is null
    */
+  @Override
   public void putAll(Map<? extends K, ? extends V> m)
   {
     // Why did Sun specify this one? The superclass does the right thing.
@@ -551,28 +597,30 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
     // This is Algorithm R from Knuth, section 6.4.
     // Variable names are taken directly from the text.
     while (true)
+    {
+      table[i] = null;
+      table[i + 1] = null;
+      int j = i;
+      int r;
+      do
       {
-        table[i] = null;
-        table[i + 1] = null;
-        int j = i;
-        int r;
-        do
-          {
-            i -= 2;
-            if (i < 0)
-              i = table.length - 2;
-            Object key = table[i];
-            if (key == null)
-              return;
-            r = Math.abs(Vm.identityHashCode(key)
-                         % (table.length >> 1)) << 1;
-          }
-        while ((i <= r && r < j)
-            || (r < j && j < i)
-            || (j < i && i <= r));
-        table[j] = table[i];
-        table[j + 1] = table[i + 1];
+        i -= 2;
+        if (i < 0) {
+          i = table.length - 2;
+        }
+        Object key = table[i];
+        if (key == null) {
+          return;
+        }
+        r = Math.abs(Vm.identityHashCode(key)
+            % (table.length >> 1)) << 1;
       }
+      while ((i <= r && r < j)
+          || (r < j && j < i)
+          || (j < i && i <= r));
+      table[j] = table[i];
+      table[j + 1] = table[i + 1];
+    }
   }
 
   /**
@@ -589,18 +637,19 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
    */
+  @Override
   public V remove(Object key)
   {
     key = xform(key);
     int h = hash(key);
     if (table[h] == key)
-      {
-        modCount++;
-        size--;
-        Object r = unxform(table[h + 1]);
-        removeAtIndex(h);
-        return (V) r;
-      }
+    {
+      modCount++;
+      size--;
+      Object r = unxform(table[h + 1]);
+      removeAtIndex(h);
+      return (V) r;
+    }
     return null;
   }
 
@@ -608,6 +657,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * Returns the number of kay-value mappings currently in this Map
    * @return the size
    */
+  @Override
   public int size()
   {
     return size;
@@ -631,41 +681,48 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    * @see #keySet()
    * @see #entrySet()
    */
+  @Override
   public Collection<V> values()
   {
-    if (values == null)
+    if (values == null){
       values = new AbstractCollection<V>()
       {
+        @Override
         public int size()
         {
           return size;
         }
 
+        @Override
         public Iterator<V> iterator()
         {
           return new IdentityIterator<V>(VALUES);
         }
 
+        @Override
         public void clear()
         {
           IdentityHashMap4D.this.clear();
         }
 
+        @Override
         public boolean remove(Object o)
         {
           o = xform(o);
           // This approach may look strange, but it is ok.
-          for (int i = table.length - 1; i > 0; i -= 2)
+          for (int i = table.length - 1; i > 0; i -= 2) {
             if (table[i] == o)
-              {
-                modCount++;
-                size--;
-                IdentityHashMap4D.this.removeAtIndex(i - 1);
-                return true;
-              }
+            {
+              modCount++;
+              size--;
+              IdentityHashMap4D.this.removeAtIndex(i - 1);
+              return true;
+            }
+          }
           return false;
         }
       };
+    }
     return values;
   }
 
@@ -675,8 +732,9 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    */
   final Object xform(Object o)
   {
-    if (o == null)
+    if (o == null){
       o = nullslot;
+    }
     return o;
   }
 
@@ -686,8 +744,9 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
    */
   final Object unxform(Object o)
   {
-    if (o == nullslot)
+    if (o == nullslot){
       o = null;
+    }
     return o;
   }
 
@@ -707,18 +766,20 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
     int h = Math.abs(Vm.identityHashCode(key) % (table.length >> 1)) << 1;
 
     while (true)
-      {
-        // By requiring at least 2 key/value slots, and rehashing at 75%
-        // capacity, we guarantee that there will always be either an empty
-        // slot somewhere in the table.
-        if (table[h] == key || table[h] == null)
-          return h;
-        // We use linear probing as it is friendlier to the cache and
-        // it lets us efficiently remove entries.
-        h -= 2;
-        if (h < 0)
-          h = table.length - 2;
+    {
+      // By requiring at least 2 key/value slots, and rehashing at 75%
+      // capacity, we guarantee that there will always be either an empty
+      // slot somewhere in the table.
+      if (table[h] == key || table[h] == null) {
+        return h;
       }
+      // We use linear probing as it is friendlier to the cache and
+      // it lets us efficiently remove entries.
+      h -= 2;
+      if (h < 0) {
+        h = table.length - 2;
+      }
+    }
   }
 
   /**
@@ -757,6 +818,7 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * Returns true if the Iterator has more elements.
      * @return true if there are more elements
      */
+    @Override
     public boolean hasNext()
     {
       return count > 0;
@@ -768,25 +830,28 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the Map was modified
      * @throws NoSuchElementException if there is none
      */
+    @Override
     public I next()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (count == 0)
+      }
+      if (count == 0){
         throw new NoSuchElementException();
+      }
       count--;
 
       Object key;
       do
-        {
-          loc -= 2;
-          key = table[loc];
-        }
+      {
+        loc -= 2;
+        key = table[loc];
+      }
       while (key == null);
 
       return (I) (type == KEYS ? unxform(key)
-                  : (type == VALUES ? unxform(table[loc + 1])
-                     : new IdentityEntry(loc)));
+          : (type == VALUES ? unxform(table[loc + 1])
+              : new IdentityEntry(loc)));
     }
 
     /**
@@ -796,12 +861,15 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the Map was modified
      * @throws IllegalStateException if called when there is no last element
      */
+    @Override
     public void remove()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (loc == table.length)
+      }
+      if (loc == table.length){
         throw new IllegalStateException();
+      }
       modCount++;
       size--;
       removeAtIndex(loc);
@@ -846,15 +914,18 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
+    @Override
     public boolean equals(Object o)
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (! (o instanceof Map.Entry))
+      }
+      if (! (o instanceof Map.Entry)){
         return false;
+      }
       Map.Entry e = (Map.Entry) o;
       return table[loc] == xform(e.getKey())
-             && table[loc + 1] == xform(e.getValue());
+          && table[loc + 1] == xform(e.getValue());
     }
 
     /**
@@ -864,10 +935,12 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
+    @Override
     public EK getKey()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
+      }
       return (EK) unxform(table[loc]);
     }
 
@@ -878,10 +951,12 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
+    @Override
     public EV getValue()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
+      }
       return (EV) unxform(table[loc + 1]);
     }
 
@@ -894,12 +969,14 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
+    @Override
     public int hashCode()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
+      }
       return (Vm.identityHashCode(unxform(table[loc]))
-              ^ Vm.identityHashCode(unxform(table[loc + 1])));
+          ^ Vm.identityHashCode(unxform(table[loc + 1])));
     }
 
     /**
@@ -910,10 +987,12 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
+    @Override
     public EV setValue(EV value)
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
+      }
       EV r = (EV) unxform(table[loc + 1]);
       table[loc + 1] = xform(value);
       return r;
@@ -927,10 +1006,12 @@ public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
+    @Override
     public String toString()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
+      }
       return unxform(table[loc]) + "=" + unxform(table[loc + 1]);
     }
   } // class IdentityEntry

@@ -15,12 +15,12 @@ package tc.tools.deployer;
 
 public class DeployerException extends RuntimeException
 {
-   public DeployerException()
-   {
-   }
+  public DeployerException()
+  {
+  }
 
-   public DeployerException(String msg)
-   {
-      super(msg);
-   }
+  public DeployerException(String msg)
+  {
+    super(msg);
+  }
 }

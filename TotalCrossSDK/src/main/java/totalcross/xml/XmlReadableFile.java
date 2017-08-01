@@ -18,29 +18,30 @@
 
 
 package totalcross.xml;
-import totalcross.io.*;
+import totalcross.io.File;
+import totalcross.io.IOException;
 
 /**
-* Make an XmlReadable from a File
-* Example:
-* <PRE>
-*    XmlReader rdr = new XmlReader();
-*    rdr.setContentHandler(...);
-*    File f = new File(...);
-*    rdr.parse(new XmlReadableFile(f));
-* </PRE>
-*/
+ * Make an XmlReadable from a File
+ * Example:
+ * <PRE>
+ *    XmlReader rdr = new XmlReader();
+ *    rdr.setContentHandler(...);
+ *    File f = new File(...);
+ *    rdr.parse(new XmlReadableFile(f));
+ * </PRE>
+ */
 public class XmlReadableFile extends XmlReadableByteArray
 {
-   /**
+  /**
    * Constructor
    *
    * @param f The file you want to read. Be sure to don't open it with DONT_OPEN mode.
    * @throws IOException
    */
-   public XmlReadableFile(File f) throws totalcross.io.IOException
-   {
-      buf = new byte[f.getSize()];
-      f.readBytes(buf, 0, buf.length);
-   }
+  public XmlReadableFile(File f) throws totalcross.io.IOException
+  {
+    buf = new byte[f.getSize()];
+    f.readBytes(buf, 0, buf.length);
+  }
 }

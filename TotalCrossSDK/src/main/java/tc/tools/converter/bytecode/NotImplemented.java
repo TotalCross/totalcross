@@ -15,7 +15,7 @@ package tc.tools.converter.bytecode;
 
 public class NotImplemented extends ByteCode
 {
-   public NotImplemented()
-   {
-   }
+  public NotImplemented()
+  {
+  }
 }

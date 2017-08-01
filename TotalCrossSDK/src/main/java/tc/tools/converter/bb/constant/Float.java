@@ -18,25 +18,29 @@ import totalcross.io.IOException;
 
 public class Float implements ConstantInfo
 {
-   public double value;
+  public double value;
 
-   public java.lang.String toString()
-   {
-      return "" + value;
-   }
+  @Override
+  public java.lang.String toString()
+  {
+    return "" + value;
+  }
 
-   public int length()
-   {
-      return 4;
-   }
+  @Override
+  public int length()
+  {
+    return 4;
+  }
 
-   public void load(DataStream ds) throws IOException
-   {
-      value = ds.readFloat();
-   }
+  @Override
+  public void load(DataStream ds) throws IOException
+  {
+    value = ds.readFloat();
+  }
 
-   public void save(DataStream ds) throws IOException
-   {
-      ds.writeFloat(value);
-   }
+  @Override
+  public void save(DataStream ds) throws IOException
+  {
+    ds.writeFloat(value);
+  }
 }

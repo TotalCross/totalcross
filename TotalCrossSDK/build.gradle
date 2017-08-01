@@ -1,0 +1,279 @@
+import java.util.regex.*
+import org.apache.tools.ant.filters.*
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+sourceCompatibility = 1.7
+version = '4.0.0'
+group = 'com.totalcross'
+
+// can't be used yet, enconding is a mess
+compileJava.options.encoding = 'UTF-8'
+
+configurations { 
+	obfuscatedArchive
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': 'totalcross.Launcher')
+    }
+}
+
+task wrapper(type: Wrapper) {
+   gradleVersion = '4.0.1'
+}
+
+class RemoveFromSdkFilter extends FilterReader {
+    RemoveFromSdkFilter(Reader input) {
+        super(new StringReader(Pattern.compile('//\\$START:REMOVE-ON-SDK-GENERATION.*?//\\$END:REMOVE-ON-SDK-GENERATION\\$', Pattern.DOTALL).matcher(input.text).replaceAll('')))
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            exclude 'ras/UtilsInfoProviderImpl.java'
+        }
+    }
+    desktop {
+        java {
+            srcDirs = ['build/src/desktop/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+        compileClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+// Prepare sources for compilation
+task prepareSources(type: Copy) {
+    from('src/main/java') {
+        exclude 'tc/samples/**', 'tc/tools/InvalidateIPA*'
+		exclude { FileTreeElement elem -> (elem.path.contains('ras/') && !elem.path.contains('ras/ActivationClient.java') && !elem.path.contains('ras/ActivationException.java'))}    	
+    }
+    from(new File(project.rootDir, '../LitebaseSDK/src/java')) {
+        exclude 'samples/**', 'litebase/android/**', '**/*4D.java'
+    }
+    into('build/src/desktop/java')
+    filter(RemoveFromSdkFilter)
+}
+
+// Prepare sources, before compile
+compileJava {
+    dependsOn prepareSources
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.sf.proguard:proguard-gradle:5.3.3'
+    }
+}
+
+repositories {
+    maven {
+        url "http://maven.totalcross.com/artifactory/repo1"
+    }
+    mavenCentral()
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.vafer/jdeb
+    compile(group: 'org.vafer', name: 'jdeb', version: '0.7') {
+		exclude group: 'org.bouncycastle'
+	}
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
+    compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.56'
+    // https://mvnrepository.com/artifact/com.googlecode.plist/dd-plist
+    compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.19'
+    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.8.7'
+    // https://mvnrepository.com/artifact/de.schlichtherle.truezip/truezip-file
+    compile group: 'de.schlichtherle.truezip', name: 'truezip-file', version: '7.5.1'
+    // https://mvnrepository.com/artifact/de.schlichtherle.truezip/truezip-driver-zip
+    compile(group: 'de.schlichtherle.truezip', name: 'truezip-driver-zip', version: '7.5.1') {
+		exclude group: 'org.bouncycastle'
+	}
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile group: 'commons-io', name: 'commons-io', version: '2.2'
+
+    // https://mvnrepository.com/artifact/org.ow2.asm/asm
+    compile group: 'org.ow2.asm', name: 'asm', version: '5.2'
+    // https://mvnrepository.com/artifact/org.ow2.asm/asm-tree
+    compile group: 'org.ow2.asm', name: 'asm-tree', version: '5.2'
+
+    // https://mvnrepository.com/artifact/net.harawata/appdirs
+    compile group: 'net.harawata', name: 'appdirs', version: '1.0.0'
+	// https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
+	runtime group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
+
+
+    compile(group: 'com.totalcross.annotations', name: 'totalcross-annotations', version: '1.0.0')
+}
+
+publishing {
+    publications {
+        mavenCustom(MavenPublication) {
+            artifactId 'totalcross-sdk'
+			pom.packaging = 'jar'
+			
+			// workaround - maven-publish lists all dependencies as runtime regardless of the original scope
+			pom.withXml {
+				asNode().dependencies.'*'.findAll() {
+					it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+						dep.name == it.artifactId.text()
+					}
+				}.each { it.scope*.value = 'compile'}
+			}
+
+			// kept as reference
+            /*
+            pom.withXml {
+                asNode().appendNode('description',
+                                    'A demonstration of maven POM customization')
+            }
+            */
+
+            from components.java
+            artifact totalcrossJar
+        }
+    }
+}
+
+// we're not publishing yet
+publishing {
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            url "build/repo"
+        }
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	baseName = "totalcross-sdk"
+    classifier = 'sources'
+    from (sourceSets.desktop.allSource) { 
+    	exclude 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    }
+}
+
+// totalcross.jar
+task totalcrossJar(type: Jar) {
+    baseName = "totalcross-sdk"
+    classifier = 'intermediate'
+    
+    from(sourceSets.desktop.output) {
+        exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
+    }
+    from new File(project.rootDir, 'dist/vm/TCFont.tcz')
+    into("META-INF/maven/$project.group/$baseName") {
+        from {
+            generatePomFileForMavenCustomPublication
+        }
+        rename ".*", "pom.xml"
+    }
+}
+
+// tcbase.jar
+task tcbaseJar(type: Jar) {
+    baseName = "tcbase"
+    from(sourceSets.main.output) {
+        exclude '**/*4A.*', '**/*4B.*', '**/*4B$*', 'PostInstall.*', 'totalcross/Launcher*', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA.java'
+    }
+}
+
+// tcui.jar
+task tcuiJar(type: Jar) {
+    baseName = "tcui"
+    from(sourceSets.main.output) {
+        include 'totalcross/ui/**', 'totalcross/res/**'
+    }
+}
+
+task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar) {
+    configuration 'proguard.txt'
+
+    injars 'build/libs/totalcross-sdk-' + project.version + '-intermediate.jar'
+    outjars 'build/libs/totalcross-sdk-' + project.version + '.jar'
+
+    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    libraryjars "${System.getProperty('java.home')}/lib/jce.jar"
+    libraryjars "${System.getProperty('java.home')}/lib/jsse.jar"
+    libraryjars files(configurations.compile.collect())
+    
+	doLast{
+      ant.signjar(
+                  jar: myProguardTask.outputs.files.singleFile,
+                  signedJar: myProguardTask.outputs.files.singleFile,
+                  alias:'tcandroidkey',
+                  storetype:"jks",
+                  keystore: new File("etc/security/tcandroidkey.keystore").getAbsolutePath(),
+                  storepass:"@ndroid\$w",
+                  keypass:"@ndroidsw",
+                  verbose:true,
+                  preservelastmodified:"true"
+      )
+    }
+}
+
+artifacts {
+    obfuscatedArchive( myProguardTask.outputs.files.singleFile ) {
+        builtBy myProguardTask
+        // can also set classifier, extension, name, etc as needed (some defaults will be inferred from the filename)
+        // see https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/ConfigurablePublishArtifact.html
+    }
+    archives sourcesJar, tcbaseJar, tcuiJar
+}
+
+tasks.withType(Jar) {
+    includeEmptyDirs = false
+}
+
+task deployTcbase(type:JavaExec, dependsOn: [myProguardTask, tcbaseJar]) {
+	main = 'tc.Deploy'
+	args = [
+		'build/libs/tcbase-' + project.version + '.jar', 
+		'/n', 'TCBase', 
+		'-win32', 
+		'/a', 'TCvm', 
+		'/r', '5443444B314891CE3D2DD791'
+		]
+	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
+}
+
+task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
+	main = 'tc.Deploy'
+	args = [
+		'build/libs/tcui-' + project.version + '.jar', 
+		'/n', 'TCUI', 
+		'-win32', 
+		'/a', 'TCvm', 
+		'/r', '5443444B314891CE3D2DD791'
+		]
+	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
+}
+
+task dist(dependsOn: build) {
+
+	copy { 
+		from 'build/libs/install/win32/TCUI.tcz'
+		from 'build/libs/install/win32/TCBase.tcz'
+		into 'dist/vm/'
+	}
+
+	copy { 
+		from myProguardTask.outputs.files.singleFile
+		into 'dist/'
+		rename  { String fileName ->
+    				fileName.replace('-' + project.version, '')
+  		}
+	}
+}
+
+build.finalizedBy(myProguardTask, deployTcbase, deployTcui)

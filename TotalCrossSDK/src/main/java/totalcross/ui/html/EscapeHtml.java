@@ -18,284 +18,293 @@
 
 package totalcross.ui.html;
 
-import totalcross.util.*;
+import totalcross.util.ElementNotFoundException;
+import totalcross.util.IntHashtable;
 
 /** A class that can be used to convert escape characters in a Html string.
  * @since SuperWaba 5.71
  */
 public class EscapeHtml // guich@571_10
 {
-   /** When passing the escaped string to a SOAP service, you must change this to 
-    * <pre>
-    * EscapeHtml.amp = "&amp;";
-    * </pre>
-    * and then set back to null when done.
-    * @since TotalCross 1.14
-    */
-   public static String amp; // guich@tc114_10
+  /** When passing the escaped string to a SOAP service, you must change this to 
+   * <pre>
+   * EscapeHtml.amp = "&amp;";
+   * </pre>
+   * and then set back to null when done.
+   * @since TotalCross 1.14
+   */
+  public static String amp; // guich@tc114_10
 
-   /** Converts special chars into escaped sequences. Note that the space is NOT converted. */
-   public static final String escape(String s)
-   {
-      if (amp == null)
-         amp = "&";
-      StringBuffer sb = new StringBuffer(s.length()*12/10);
-      for (int i = 0, n = s.length(); i < n; i++)
+  /** Converts special chars into escaped sequences. Note that the space is NOT converted. */
+  public static final String escape(String s)
+  {
+    if (amp == null){
+      amp = "&";
+    }
+    StringBuffer sb = new StringBuffer(s.length()*12/10);
+    for (int i = 0, n = s.length(); i < n; i++)
+    {
+      char c = s.charAt(i);
+      switch (c)
       {
-         char c = s.charAt(i);
-         switch (c)
-         {
-            case 0   : break; //flsobral@tc120_58: ignore character of value 0, because it is not a valid value.
-            case 39  : sb.append(amp).append("#39;"); break;      // '''
-            case 60  : sb.append(amp).append("lt;"); break;       // '<'
-            case 62  : sb.append(amp).append("gt;"); break;       // '>'
-            case 173 : sb.append(amp).append("shy;"); break;      // '­'
-            case 34  : sb.append(amp).append("quot;"); break;     // '"'
-            case 38  : sb.append(amp).append("amp;"); break;      // '&'
-            case 161 : sb.append(amp).append("iexcl;"); break;    // '¡'
-            case 166 : sb.append(amp).append("brvbar;"); break;   // '¦'
-            case 168 : sb.append(amp).append("uml;"); break;      // '¨'
-            case 175 : sb.append(amp).append("macr;"); break;     // '¯'
-            case 180 : sb.append(amp).append("acute;"); break;    // '´'
-            case 184 : sb.append(amp).append("cedil;"); break;    // '¸'
-            case 191 : sb.append(amp).append("iquest;"); break;   // '¿'
-            case 177 : sb.append(amp).append("plusmn;"); break;   // '±'
-            case 171 : sb.append(amp).append("laquo;"); break;    // '«'
-            case 187 : sb.append(amp).append("raquo;"); break;    // '»'
-            case 215 : sb.append(amp).append("times;"); break;    // '×'
-            case 247 : sb.append(amp).append("divide;"); break;   // '÷'
-            case 162 : sb.append(amp).append("cent;"); break;     // '¢'
-            case 163 : sb.append(amp).append("pound;"); break;    // '£'
-            case 164 : sb.append(amp).append("curren;"); break;   // '¤'
-            case 165 : sb.append(amp).append("yen;"); break;      // '¥'
-            case 167 : sb.append(amp).append("sect;"); break;     // '§'
-            case 169 : sb.append(amp).append("copy;"); break;     // '©'
-            case 172 : sb.append(amp).append("not;"); break;      // '¬'
-            case 174 : sb.append(amp).append("reg;"); break;      // '®'
-            case 176 : sb.append(amp).append("deg;"); break;      // '°'
-            case 181 : sb.append(amp).append("micro;"); break;    // 'µ'
-            case 182 : sb.append(amp).append("para;"); break;     // '¶'
-            case 183 : sb.append(amp).append("middot;"); break;   // '·'
-            case 8364: sb.append(amp).append("euro;"); break;     // '€'
-            case 188 : sb.append(amp).append("frac14;"); break;   // '¼'
-            case 189 : sb.append(amp).append("frac12;"); break;   // '½'
-            case 190 : sb.append(amp).append("frac34;"); break;   // '¾'
-            case 185 : sb.append(amp).append("sup1;"); break;     // '¹'
-            case 178 : sb.append(amp).append("sup2;"); break;     // '²'
-            case 179 : sb.append(amp).append("sup3;"); break;     // '³'
-            case 225 : sb.append(amp).append("aacute;"); break;   // 'á'
-            case 193 : sb.append(amp).append("Aacute;"); break;   // 'Á'
-            case 226 : sb.append(amp).append("acirc;"); break;    // 'â'
-            case 194 : sb.append(amp).append("Acirc;"); break;    // 'Â'
-            case 224 : sb.append(amp).append("agrave;"); break;   // 'à'
-            case 192 : sb.append(amp).append("Agrave;"); break;   // 'À'
-            case 229 : sb.append(amp).append("aring;"); break;    // 'å'
-            case 197 : sb.append(amp).append("Aring;"); break;    // 'Å'
-            case 227 : sb.append(amp).append("atilde;"); break;   // 'ã'
-            case 195 : sb.append(amp).append("Atilde;"); break;   // 'Ã'
-            case 228 : sb.append(amp).append("auml;"); break;     // 'ä'
-            case 196 : sb.append(amp).append("Auml;"); break;     // 'Ä'
-            case 170 : sb.append(amp).append("ordf;"); break;     // 'ª'
-            case 230 : sb.append(amp).append("aelig;"); break;    // 'æ'
-            case 198 : sb.append(amp).append("AElig;"); break;    // 'Æ'
-            case 231 : sb.append(amp).append("ccedil;"); break;   // 'ç'
-            case 199 : sb.append(amp).append("Ccedil;"); break;   // 'Ç'
-            case 208 : sb.append(amp).append("ETH;"); break;      // 'Ğ'
-            case 240 : sb.append(amp).append("eth;"); break;      // 'ğ'
-            case 233 : sb.append(amp).append("eacute;"); break;   // 'é'
-            case 201 : sb.append(amp).append("Eacute;"); break;   // 'É'
-            case 234 : sb.append(amp).append("ecirc;"); break;    // 'ê'
-            case 202 : sb.append(amp).append("Ecirc;"); break;    // 'Ê'
-            case 232 : sb.append(amp).append("egrave;"); break;   // 'è'
-            case 200 : sb.append(amp).append("Egrave;"); break;   // 'È'
-            case 235 : sb.append(amp).append("euml;"); break;     // 'ë'
-            case 203 : sb.append(amp).append("Euml;"); break;     // 'Ë'
-            case 237 : sb.append(amp).append("iacute;"); break;   // 'í'
-            case 205 : sb.append(amp).append("Iacute;"); break;   // 'Í'
-            case 238 : sb.append(amp).append("icirc;"); break;    // 'î'
-            case 206 : sb.append(amp).append("Icirc;"); break;    // 'Î'
-            case 236 : sb.append(amp).append("igrave;"); break;   // 'ì'
-            case 204 : sb.append(amp).append("Igrave;"); break;   // 'Ì'
-            case 239 : sb.append(amp).append("iuml;"); break;     // 'ï'
-            case 207 : sb.append(amp).append("Iuml;"); break;     // 'Ï'
-            case 241 : sb.append(amp).append("ntilde;"); break;   // 'ñ'
-            case 209 : sb.append(amp).append("Ntilde;"); break;   // 'Ñ'
-            case 243 : sb.append(amp).append("oacute;"); break;   // 'ó'
-            case 211 : sb.append(amp).append("Oacute;"); break;   // 'Ó'
-            case 244 : sb.append(amp).append("ocirc;"); break;    // 'ô'
-            case 212 : sb.append(amp).append("Ocirc;"); break;    // 'Ô'
-            case 242 : sb.append(amp).append("ograve;"); break;   // 'ò'
-            case 210 : sb.append(amp).append("Ograve;"); break;   // 'Ò'
-            case 186 : sb.append(amp).append("ordm;"); break;     // 'º'
-            case 248 : sb.append(amp).append("oslash;"); break;   // 'ø'
-            case 216 : sb.append(amp).append("Oslash;"); break;   // 'Ø'
-            case 245 : sb.append(amp).append("otilde;"); break;   // 'õ'
-            case 213 : sb.append(amp).append("Otilde;"); break;   // 'Õ'
-            case 246 : sb.append(amp).append("ouml;"); break;     // 'ö'
-            case 214 : sb.append(amp).append("Ouml;"); break;     // 'Ö'
-            case 223 : sb.append(amp).append("szlig;"); break;    // 'ß'
-            case 254 : sb.append(amp).append("thorn;"); break;    // 'ş'
-            case 222 : sb.append(amp).append("THORN;"); break;    // 'Ş'
-            case 250 : sb.append(amp).append("uacute;"); break;   // 'ú'
-            case 218 : sb.append(amp).append("Uacute;"); break;   // 'Ú'
-            case 251 : sb.append(amp).append("ucirc;"); break;    // 'û'
-            case 219 : sb.append(amp).append("Ucirc;"); break;    // 'Û'
-            case 249 : sb.append(amp).append("ugrave;"); break;   // 'ù'
-            case 217 : sb.append(amp).append("Ugrave;"); break;   // 'Ù'
-            case 252 : sb.append(amp).append("uuml;"); break;     // 'ü'
-            case 220 : sb.append(amp).append("Uuml;"); break;     // 'Ü'
-            case 253 : sb.append(amp).append("yacute;"); break;   // 'ı'
-            case 221 : sb.append(amp).append("Yacute;"); break;   // 'İ'
-            case 255 : sb.append(amp).append("yuml;"); break;     // 'ÿ'
-            default  : sb.append(c); break;
-         }
+      case 0   : break; //flsobral@tc120_58: ignore character of value 0, because it is not a valid value.
+      case 39  : sb.append(amp).append("#39;"); break;      // '''
+      case 60  : sb.append(amp).append("lt;"); break;       // '<'
+      case 62  : sb.append(amp).append("gt;"); break;       // '>'
+      case 173 : sb.append(amp).append("shy;"); break;      // 'Â­'
+      case 34  : sb.append(amp).append("quot;"); break;     // '"'
+      case 38  : sb.append(amp).append("amp;"); break;      // '&'
+      case 161 : sb.append(amp).append("iexcl;"); break;    // 'Â¡'
+      case 166 : sb.append(amp).append("brvbar;"); break;   // 'Â¦'
+      case 168 : sb.append(amp).append("uml;"); break;      // 'Â¨'
+      case 175 : sb.append(amp).append("macr;"); break;     // 'Â¯'
+      case 180 : sb.append(amp).append("acute;"); break;    // 'Â´'
+      case 184 : sb.append(amp).append("cedil;"); break;    // 'Â¸'
+      case 191 : sb.append(amp).append("iquest;"); break;   // 'Â¿'
+      case 177 : sb.append(amp).append("plusmn;"); break;   // 'Â±'
+      case 171 : sb.append(amp).append("laquo;"); break;    // 'Â«'
+      case 187 : sb.append(amp).append("raquo;"); break;    // 'Â»'
+      case 215 : sb.append(amp).append("times;"); break;    // 'Ã—'
+      case 247 : sb.append(amp).append("divide;"); break;   // 'Ã·'
+      case 162 : sb.append(amp).append("cent;"); break;     // 'Â¢'
+      case 163 : sb.append(amp).append("pound;"); break;    // 'Â£'
+      case 164 : sb.append(amp).append("curren;"); break;   // 'Â¤'
+      case 165 : sb.append(amp).append("yen;"); break;      // 'Â¥'
+      case 167 : sb.append(amp).append("sect;"); break;     // 'Â§'
+      case 169 : sb.append(amp).append("copy;"); break;     // 'Â©'
+      case 172 : sb.append(amp).append("not;"); break;      // 'Â¬'
+      case 174 : sb.append(amp).append("reg;"); break;      // 'Â®'
+      case 176 : sb.append(amp).append("deg;"); break;      // 'Â°'
+      case 181 : sb.append(amp).append("micro;"); break;    // 'Âµ'
+      case 182 : sb.append(amp).append("para;"); break;     // 'Â¶'
+      case 183 : sb.append(amp).append("middot;"); break;   // 'Â·'
+      case 8364: sb.append(amp).append("euro;"); break;     // 'Â€'
+      case 188 : sb.append(amp).append("frac14;"); break;   // 'Â¼'
+      case 189 : sb.append(amp).append("frac12;"); break;   // 'Â½'
+      case 190 : sb.append(amp).append("frac34;"); break;   // 'Â¾'
+      case 185 : sb.append(amp).append("sup1;"); break;     // 'Â¹'
+      case 178 : sb.append(amp).append("sup2;"); break;     // 'Â²'
+      case 179 : sb.append(amp).append("sup3;"); break;     // 'Â³'
+      case 225 : sb.append(amp).append("aacute;"); break;   // 'Ã¡'
+      case 193 : sb.append(amp).append("Aacute;"); break;   // 'Ã'
+      case 226 : sb.append(amp).append("acirc;"); break;    // 'Ã¢'
+      case 194 : sb.append(amp).append("Acirc;"); break;    // 'Ã‚'
+      case 224 : sb.append(amp).append("agrave;"); break;   // 'Ã '
+      case 192 : sb.append(amp).append("Agrave;"); break;   // 'Ã€'
+      case 229 : sb.append(amp).append("aring;"); break;    // 'Ã¥'
+      case 197 : sb.append(amp).append("Aring;"); break;    // 'Ã…'
+      case 227 : sb.append(amp).append("atilde;"); break;   // 'Ã£'
+      case 195 : sb.append(amp).append("Atilde;"); break;   // 'Ãƒ'
+      case 228 : sb.append(amp).append("auml;"); break;     // 'Ã¤'
+      case 196 : sb.append(amp).append("Auml;"); break;     // 'Ã„'
+      case 170 : sb.append(amp).append("ordf;"); break;     // 'Âª'
+      case 230 : sb.append(amp).append("aelig;"); break;    // 'Ã¦'
+      case 198 : sb.append(amp).append("AElig;"); break;    // 'Ã†'
+      case 231 : sb.append(amp).append("ccedil;"); break;   // 'Ã§'
+      case 199 : sb.append(amp).append("Ccedil;"); break;   // 'Ã‡'
+      case 208 : sb.append(amp).append("ETH;"); break;      // 'Ã'
+      case 240 : sb.append(amp).append("eth;"); break;      // 'Ã°'
+      case 233 : sb.append(amp).append("eacute;"); break;   // 'Ã©'
+      case 201 : sb.append(amp).append("Eacute;"); break;   // 'Ã‰'
+      case 234 : sb.append(amp).append("ecirc;"); break;    // 'Ãª'
+      case 202 : sb.append(amp).append("Ecirc;"); break;    // 'ÃŠ'
+      case 232 : sb.append(amp).append("egrave;"); break;   // 'Ã¨'
+      case 200 : sb.append(amp).append("Egrave;"); break;   // 'Ãˆ'
+      case 235 : sb.append(amp).append("euml;"); break;     // 'Ã«'
+      case 203 : sb.append(amp).append("Euml;"); break;     // 'Ã‹'
+      case 237 : sb.append(amp).append("iacute;"); break;   // 'Ã­'
+      case 205 : sb.append(amp).append("Iacute;"); break;   // 'Ã'
+      case 238 : sb.append(amp).append("icirc;"); break;    // 'Ã®'
+      case 206 : sb.append(amp).append("Icirc;"); break;    // 'Ã'
+      case 236 : sb.append(amp).append("igrave;"); break;   // 'Ã¬'
+      case 204 : sb.append(amp).append("Igrave;"); break;   // 'ÃŒ'
+      case 239 : sb.append(amp).append("iuml;"); break;     // 'Ã¯'
+      case 207 : sb.append(amp).append("Iuml;"); break;     // 'Ã'
+      case 241 : sb.append(amp).append("ntilde;"); break;   // 'Ã±'
+      case 209 : sb.append(amp).append("Ntilde;"); break;   // 'Ã‘'
+      case 243 : sb.append(amp).append("oacute;"); break;   // 'Ã³'
+      case 211 : sb.append(amp).append("Oacute;"); break;   // 'Ã“'
+      case 244 : sb.append(amp).append("ocirc;"); break;    // 'Ã´'
+      case 212 : sb.append(amp).append("Ocirc;"); break;    // 'Ã”'
+      case 242 : sb.append(amp).append("ograve;"); break;   // 'Ã²'
+      case 210 : sb.append(amp).append("Ograve;"); break;   // 'Ã’'
+      case 186 : sb.append(amp).append("ordm;"); break;     // 'Âº'
+      case 248 : sb.append(amp).append("oslash;"); break;   // 'Ã¸'
+      case 216 : sb.append(amp).append("Oslash;"); break;   // 'Ã˜'
+      case 245 : sb.append(amp).append("otilde;"); break;   // 'Ãµ'
+      case 213 : sb.append(amp).append("Otilde;"); break;   // 'Ã•'
+      case 246 : sb.append(amp).append("ouml;"); break;     // 'Ã¶'
+      case 214 : sb.append(amp).append("Ouml;"); break;     // 'Ã–'
+      case 223 : sb.append(amp).append("szlig;"); break;    // 'ÃŸ'
+      case 254 : sb.append(amp).append("thorn;"); break;    // 'Ã¾'
+      case 222 : sb.append(amp).append("THORN;"); break;    // 'Ã'
+      case 250 : sb.append(amp).append("uacute;"); break;   // 'Ãº'
+      case 218 : sb.append(amp).append("Uacute;"); break;   // 'Ãš'
+      case 251 : sb.append(amp).append("ucirc;"); break;    // 'Ã»'
+      case 219 : sb.append(amp).append("Ucirc;"); break;    // 'Ã›'
+      case 249 : sb.append(amp).append("ugrave;"); break;   // 'Ã¹'
+      case 217 : sb.append(amp).append("Ugrave;"); break;   // 'Ã™'
+      case 252 : sb.append(amp).append("uuml;"); break;     // 'Ã¼'
+      case 220 : sb.append(amp).append("Uuml;"); break;     // 'Ãœ'
+      case 253 : sb.append(amp).append("yacute;"); break;   // 'Ã½'
+      case 221 : sb.append(amp).append("Yacute;"); break;   // 'Ã'
+      case 255 : sb.append(amp).append("yuml;"); break;     // 'Ã¿'
+      default  : sb.append(c); break;
       }
-      return sb.toString();
-   }
+    }
+    return sb.toString();
+  }
 
-   private static IntHashtable ht;
-   static
-   {
-      ht = new IntHashtable(235); // 10 collisions
-      ht.put("#39"    ,39   );   // '''
-      ht.put("lt"     ,60   );   // '<'
-      ht.put("gt"     ,62   );   // '>'
-      ht.put("shy"    ,173  );   // '­'
-      ht.put("quot"   ,34   );   // '"'
-      ht.put("amp"    ,38   );   // '&'
-      ht.put("iexcl"  ,161  );   // '¡'
-      ht.put("brvbar" ,166  );   // '¦'
-      ht.put("uml"    ,168  );   // '¨'
-      ht.put("macr"   ,175  );   // '¯'
-      ht.put("acute"  ,180  );   // '´'
-      ht.put("cedil"  ,184  );   // '¸'
-      ht.put("iquest" ,191  );   // '¿'
-      ht.put("plusmn" ,177  );   // '±'
-      ht.put("laquo"  ,171  );   // '«'
-      ht.put("raquo"  ,187  );   // '»'
-      ht.put("times"  ,215  );   // '×'
-      ht.put("divide" ,247  );   // '÷'
-      ht.put("cent"   ,162  );   // '¢'
-      ht.put("pound"  ,163  );   // '£'
-      ht.put("curren" ,164  );   // '¤'
-      ht.put("yen"    ,165  );   // '¥'
-      ht.put("sect"   ,167  );   // '§'
-      ht.put("copy"   ,169  );   // '©'
-      ht.put("not"    ,172  );   // '¬'
-      ht.put("reg"    ,174  );   // '®'
-      ht.put("deg"    ,176  );   // '°'
-      ht.put("micro"  ,181  );   // 'µ'
-      ht.put("para"   ,182  );   // '¶'
-      ht.put("middot" ,183  );   // '·'
-      ht.put("euro"   ,8364 );   // '€'
-      ht.put("frac14" ,188  );   // '¼'
-      ht.put("frac12" ,189  );   // '½'
-      ht.put("frac34" ,190  );   // '¾'
-      ht.put("sup1"   ,185  );   // '¹'
-      ht.put("sup2"   ,178  );   // '²'
-      ht.put("sup3"   ,179  );   // '³'
-      ht.put("aacute" ,225  );   // 'á'
-      ht.put("Aacute" ,193  );   // 'Á'
-      ht.put("acirc"  ,226  );   // 'â'
-      ht.put("Acirc"  ,194  );   // 'Â'
-      ht.put("agrave" ,224  );   // 'à'
-      ht.put("Agrave" ,192  );   // 'À'
-      ht.put("aring"  ,229  );   // 'å'
-      ht.put("Aring"  ,197  );   // 'Å'
-      ht.put("atilde" ,227  );   // 'ã'
-      ht.put("Atilde" ,195  );   // 'Ã'
-      ht.put("auml"   ,228  );   // 'ä'
-      ht.put("Auml"   ,196  );   // 'Ä'
-      ht.put("ordf"   ,170  );   // 'ª'
-      ht.put("aelig"  ,230  );   // 'æ'
-      ht.put("AElig"  ,198  );   // 'Æ'
-      ht.put("ccedil" ,231  );   // 'ç'
-      ht.put("Ccedil" ,199  );   // 'Ç'
-      ht.put("ETH"    ,208  );   // 'Ğ'
-      ht.put("eth"    ,240  );   // 'ğ'
-      ht.put("eacute" ,233  );   // 'é'
-      ht.put("Eacute" ,201  );   // 'É'
-      ht.put("ecirc"  ,234  );   // 'ê'
-      ht.put("Ecirc"  ,202  );   // 'Ê'
-      ht.put("egrave" ,232  );   // 'è'
-      ht.put("Egrave" ,200  );   // 'È'
-      ht.put("euml"   ,235  );   // 'ë'
-      ht.put("Euml"   ,203  );   // 'Ë'
-      ht.put("iacute" ,237  );   // 'í'
-      ht.put("Iacute" ,205  );   // 'Í'
-      ht.put("icirc"  ,238  );   // 'î'
-      ht.put("Icirc"  ,206  );   // 'Î'
-      ht.put("igrave" ,236  );   // 'ì'
-      ht.put("Igrave" ,204  );   // 'Ì'
-      ht.put("iuml"   ,239  );   // 'ï'
-      ht.put("Iuml"   ,207  );   // 'Ï'
-      ht.put("ntilde" ,241  );   // 'ñ'
-      ht.put("Ntilde" ,209  );   // 'Ñ'
-      ht.put("oacute" ,243  );   // 'ó'
-      ht.put("Oacute" ,211  );   // 'Ó'
-      ht.put("ocirc"  ,244  );   // 'ô'
-      ht.put("Ocirc"  ,212  );   // 'Ô'
-      ht.put("ograve" ,242  );   // 'ò'
-      ht.put("Ograve" ,210  );   // 'Ò'
-      ht.put("ordm"   ,186  );   // 'º'
-      ht.put("oslash" ,248  );   // 'ø'
-      ht.put("Oslash" ,216  );   // 'Ø'
-      ht.put("otilde" ,245  );   // 'õ'
-      ht.put("Otilde" ,213  );   // 'Õ'
-      ht.put("ouml"   ,246  );   // 'ö'
-      ht.put("Ouml"   ,214  );   // 'Ö'
-      ht.put("szlig"  ,223  );   // 'ß'
-      ht.put("thorn"  ,254  );   // 'ş'
-      ht.put("THORN"  ,222  );   // 'Ş'
-      ht.put("uacute" ,250  );   // 'ú'
-      ht.put("Uacute" ,218  );   // 'Ú'
-      ht.put("ucirc"  ,251  );   // 'û'
-      ht.put("Ucirc"  ,219  );   // 'Û'
-      ht.put("ugrave" ,249  );   // 'ù'
-      ht.put("Ugrave" ,217  );   // 'Ù'
-      ht.put("uuml"   ,252  );   // 'ü'
-      ht.put("Uuml"   ,220  );   // 'Ü'
-      ht.put("yacute" ,253  );   // 'ı'
-      ht.put("Yacute" ,221  );   // 'İ'
-      ht.put("yuml"   ,255  );   // 'ÿ'
-   }
-   /** Converts escaped sequences into special chars. Note that the space IS converted if it appears escaped. */
-   public static final String unescape(String escaped)
-   {
-      //totalcross.sys.Vm.debug("coll: "+ht.collisions);
-      char []chars = escaped.toCharArray();
-      StringBuffer sb = new StringBuffer(chars.length);
-      int last =0;
-      int i = 0;
-      while (true)
-      {
-         int s0 = escaped.indexOf('&',i);
-         if (s0 == -1)
-            break;
-         int sf = escaped.indexOf(';',s0);
-         if (sf == -1)
-            break;
-         int len = sf-s0-1;
-         if (2 <= len && len <= 6) // is this a valid symbol?
-         {
-            // compute the hash to avoid creating a string
-            int hash = 0;
-            for (int j = s0+1; j < sf; j++)
-               hash = (hash<<5) - hash + chars[j];
-            //String token = escaped.substring(s0+1,sf); int hash = token.hashCode();
-            try
-            {
-               int to = ht.get(hash);
-               if (s0 > last) sb.append(chars,last,s0-last);
-               sb.append((char)to);
-               last = sf+1;
-            } catch (ElementNotFoundException e) {}
-            i = sf+1;
-         }
-         else i++;
+  private static IntHashtable ht;
+  static
+  {
+    ht = new IntHashtable(235); // 10 collisions
+    ht.put("#39"    ,39   );   // '''
+    ht.put("lt"     ,60   );   // '<'
+    ht.put("gt"     ,62   );   // '>'
+    ht.put("shy"    ,173  );   // 'Â­'
+    ht.put("quot"   ,34   );   // '"'
+    ht.put("amp"    ,38   );   // '&'
+    ht.put("iexcl"  ,161  );   // 'Â¡'
+    ht.put("brvbar" ,166  );   // 'Â¦'
+    ht.put("uml"    ,168  );   // 'Â¨'
+    ht.put("macr"   ,175  );   // 'Â¯'
+    ht.put("acute"  ,180  );   // 'Â´'
+    ht.put("cedil"  ,184  );   // 'Â¸'
+    ht.put("iquest" ,191  );   // 'Â¿'
+    ht.put("plusmn" ,177  );   // 'Â±'
+    ht.put("laquo"  ,171  );   // 'Â«'
+    ht.put("raquo"  ,187  );   // 'Â»'
+    ht.put("times"  ,215  );   // 'Ã—'
+    ht.put("divide" ,247  );   // 'Ã·'
+    ht.put("cent"   ,162  );   // 'Â¢'
+    ht.put("pound"  ,163  );   // 'Â£'
+    ht.put("curren" ,164  );   // 'Â¤'
+    ht.put("yen"    ,165  );   // 'Â¥'
+    ht.put("sect"   ,167  );   // 'Â§'
+    ht.put("copy"   ,169  );   // 'Â©'
+    ht.put("not"    ,172  );   // 'Â¬'
+    ht.put("reg"    ,174  );   // 'Â®'
+    ht.put("deg"    ,176  );   // 'Â°'
+    ht.put("micro"  ,181  );   // 'Âµ'
+    ht.put("para"   ,182  );   // 'Â¶'
+    ht.put("middot" ,183  );   // 'Â·'
+    ht.put("euro"   ,8364 );   // 'Â€'
+    ht.put("frac14" ,188  );   // 'Â¼'
+    ht.put("frac12" ,189  );   // 'Â½'
+    ht.put("frac34" ,190  );   // 'Â¾'
+    ht.put("sup1"   ,185  );   // 'Â¹'
+    ht.put("sup2"   ,178  );   // 'Â²'
+    ht.put("sup3"   ,179  );   // 'Â³'
+    ht.put("aacute" ,225  );   // 'Ã¡'
+    ht.put("Aacute" ,193  );   // 'Ã'
+    ht.put("acirc"  ,226  );   // 'Ã¢'
+    ht.put("Acirc"  ,194  );   // 'Ã‚'
+    ht.put("agrave" ,224  );   // 'Ã '
+    ht.put("Agrave" ,192  );   // 'Ã€'
+    ht.put("aring"  ,229  );   // 'Ã¥'
+    ht.put("Aring"  ,197  );   // 'Ã…'
+    ht.put("atilde" ,227  );   // 'Ã£'
+    ht.put("Atilde" ,195  );   // 'Ãƒ'
+    ht.put("auml"   ,228  );   // 'Ã¤'
+    ht.put("Auml"   ,196  );   // 'Ã„'
+    ht.put("ordf"   ,170  );   // 'Âª'
+    ht.put("aelig"  ,230  );   // 'Ã¦'
+    ht.put("AElig"  ,198  );   // 'Ã†'
+    ht.put("ccedil" ,231  );   // 'Ã§'
+    ht.put("Ccedil" ,199  );   // 'Ã‡'
+    ht.put("ETH"    ,208  );   // 'Ã'
+    ht.put("eth"    ,240  );   // 'Ã°'
+    ht.put("eacute" ,233  );   // 'Ã©'
+    ht.put("Eacute" ,201  );   // 'Ã‰'
+    ht.put("ecirc"  ,234  );   // 'Ãª'
+    ht.put("Ecirc"  ,202  );   // 'ÃŠ'
+    ht.put("egrave" ,232  );   // 'Ã¨'
+    ht.put("Egrave" ,200  );   // 'Ãˆ'
+    ht.put("euml"   ,235  );   // 'Ã«'
+    ht.put("Euml"   ,203  );   // 'Ã‹'
+    ht.put("iacute" ,237  );   // 'Ã­'
+    ht.put("Iacute" ,205  );   // 'Ã'
+    ht.put("icirc"  ,238  );   // 'Ã®'
+    ht.put("Icirc"  ,206  );   // 'Ã'
+    ht.put("igrave" ,236  );   // 'Ã¬'
+    ht.put("Igrave" ,204  );   // 'ÃŒ'
+    ht.put("iuml"   ,239  );   // 'Ã¯'
+    ht.put("Iuml"   ,207  );   // 'Ã'
+    ht.put("ntilde" ,241  );   // 'Ã±'
+    ht.put("Ntilde" ,209  );   // 'Ã‘'
+    ht.put("oacute" ,243  );   // 'Ã³'
+    ht.put("Oacute" ,211  );   // 'Ã“'
+    ht.put("ocirc"  ,244  );   // 'Ã´'
+    ht.put("Ocirc"  ,212  );   // 'Ã”'
+    ht.put("ograve" ,242  );   // 'Ã²'
+    ht.put("Ograve" ,210  );   // 'Ã’'
+    ht.put("ordm"   ,186  );   // 'Âº'
+    ht.put("oslash" ,248  );   // 'Ã¸'
+    ht.put("Oslash" ,216  );   // 'Ã˜'
+    ht.put("otilde" ,245  );   // 'Ãµ'
+    ht.put("Otilde" ,213  );   // 'Ã•'
+    ht.put("ouml"   ,246  );   // 'Ã¶'
+    ht.put("Ouml"   ,214  );   // 'Ã–'
+    ht.put("szlig"  ,223  );   // 'ÃŸ'
+    ht.put("thorn"  ,254  );   // 'Ã¾'
+    ht.put("THORN"  ,222  );   // 'Ã'
+    ht.put("uacute" ,250  );   // 'Ãº'
+    ht.put("Uacute" ,218  );   // 'Ãš'
+    ht.put("ucirc"  ,251  );   // 'Ã»'
+    ht.put("Ucirc"  ,219  );   // 'Ã›'
+    ht.put("ugrave" ,249  );   // 'Ã¹'
+    ht.put("Ugrave" ,217  );   // 'Ã™'
+    ht.put("uuml"   ,252  );   // 'Ã¼'
+    ht.put("Uuml"   ,220  );   // 'Ãœ'
+    ht.put("yacute" ,253  );   // 'Ã½'
+    ht.put("Yacute" ,221  );   // 'Ã'
+    ht.put("yuml"   ,255  );   // 'Ã¿'
+  }
+  /** Converts escaped sequences into special chars. Note that the space IS converted if it appears escaped. */
+  public static final String unescape(String escaped)
+  {
+    //totalcross.sys.Vm.debug("coll: "+ht.collisions);
+    char []chars = escaped.toCharArray();
+    StringBuffer sb = new StringBuffer(chars.length);
+    int last =0;
+    int i = 0;
+    while (true)
+    {
+      int s0 = escaped.indexOf('&',i);
+      if (s0 == -1) {
+        break;
       }
-      if (i < chars.length)
-         sb.append(chars,i,chars.length-i);
-      return sb.toString();
-   }
+      int sf = escaped.indexOf(';',s0);
+      if (sf == -1) {
+        break;
+      }
+      int len = sf-s0-1;
+      if (2 <= len && len <= 6) // is this a valid symbol?
+      {
+        // compute the hash to avoid creating a string
+        int hash = 0;
+        for (int j = s0+1; j < sf; j++) {
+          hash = (hash<<5) - hash + chars[j];
+        }
+        //String token = escaped.substring(s0+1,sf); int hash = token.hashCode();
+        try
+        {
+          int to = ht.get(hash);
+          if (s0 > last) {
+            sb.append(chars,last,s0-last);
+          }
+          sb.append((char)to);
+          last = sf+1;
+        } catch (ElementNotFoundException e) {}
+        i = sf+1;
+      } else {
+        i++;
+      }
+    }
+    if (i < chars.length){
+      sb.append(chars,i,chars.length-i);
+    }
+    return sb.toString();
+  }
 }

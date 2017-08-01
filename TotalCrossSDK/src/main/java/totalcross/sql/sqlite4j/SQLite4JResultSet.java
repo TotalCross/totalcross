@@ -1,310 +1,364 @@
 package totalcross.sql.sqlite4j;
 
+import java.sql.SQLException;
+import java.sql.SQLWarning;
 import totalcross.sql.ResultSet;
 import totalcross.sql.ResultSetMetaData;
 import totalcross.sql.Statement;
 import totalcross.sql.Timestamp;
 import totalcross.sys.Time;
-import totalcross.util.*;
+import totalcross.util.BigDecimal;
 import totalcross.util.Date;
-
-import java.sql.SQLException;
-import java.sql.SQLWarning;
 
 public class SQLite4JResultSet implements ResultSet
 {
-   java.sql.ResultSet rs;
-   
-   public SQLite4JResultSet(java.sql.ResultSet rs)
-   {
-      this.rs = rs;
-   }
+  java.sql.ResultSet rs;
 
-   public boolean next() throws SQLException
-   {
-      return rs.next();
-   }
+  public SQLite4JResultSet(java.sql.ResultSet rs)
+  {
+    this.rs = rs;
+  }
 
-   public void close() throws SQLException
-   {
-      rs.close();
-   }
+  @Override
+  public boolean next() throws SQLException
+  {
+    return rs.next();
+  }
 
-   public boolean wasNull() throws SQLException
-   {
-      return rs.wasNull();
-   }
+  @Override
+  public void close() throws SQLException
+  {
+    rs.close();
+  }
 
-   public String getString(int columnIndex) throws SQLException
-   {
-      return rs.getString(columnIndex);
-   }
+  @Override
+  public boolean wasNull() throws SQLException
+  {
+    return rs.wasNull();
+  }
 
-   public boolean getBoolean(int columnIndex) throws SQLException
-   {
-      return rs.getBoolean(columnIndex);
-   }
+  @Override
+  public String getString(int columnIndex) throws SQLException
+  {
+    return rs.getString(columnIndex);
+  }
 
-   public byte getByte(int columnIndex) throws SQLException
-   {
-      return rs.getByte(columnIndex);
-   }
+  @Override
+  public boolean getBoolean(int columnIndex) throws SQLException
+  {
+    return rs.getBoolean(columnIndex);
+  }
 
-   public short getShort(int columnIndex) throws SQLException
-   {
-      return rs.getShort(columnIndex);
-   }
+  @Override
+  public byte getByte(int columnIndex) throws SQLException
+  {
+    return rs.getByte(columnIndex);
+  }
 
-   public int getInt(int columnIndex) throws SQLException
-   {
-      return rs.getInt(columnIndex);
-   }
+  @Override
+  public short getShort(int columnIndex) throws SQLException
+  {
+    return rs.getShort(columnIndex);
+  }
 
-   public long getLong(int columnIndex) throws SQLException
-   {
-      return rs.getLong(columnIndex);
-   }
+  @Override
+  public int getInt(int columnIndex) throws SQLException
+  {
+    return rs.getInt(columnIndex);
+  }
 
-   public double getFloat(int columnIndex) throws SQLException
-   {
-      return rs.getFloat(columnIndex);
-   }
+  @Override
+  public long getLong(int columnIndex) throws SQLException
+  {
+    return rs.getLong(columnIndex);
+  }
 
-   public double getDouble(int columnIndex) throws SQLException
-   {
-      return rs.getDouble(columnIndex);
-   }
+  public double getFloat(int columnIndex) throws SQLException
+  {
+    return rs.getFloat(columnIndex);
+  }
 
-   public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
-   {
-      return SQLConvert.bigdecimal(rs.getBigDecimal(columnIndex));
-   }
+  @Override
+  public double getDouble(int columnIndex) throws SQLException
+  {
+    return rs.getDouble(columnIndex);
+  }
 
-   public byte[] getBytes(int columnIndex) throws SQLException
-   {
-      return rs.getBytes(columnIndex);
-   }
+  @Override
+  public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
+  {
+    return SQLConvert.bigdecimal(rs.getBigDecimal(columnIndex));
+  }
 
-   public Date getDate(int columnIndex) throws SQLException
-   {
-      java.sql.Date dd = rs.getDate(columnIndex);
-      return SQLConvert.date(dd);
-   }
+  @Override
+  public byte[] getBytes(int columnIndex) throws SQLException
+  {
+    return rs.getBytes(columnIndex);
+  }
 
-   public Time getTime(int columnIndex) throws SQLException
-   {
-      return SQLConvert.time(rs.getString(columnIndex));
-   }
+  @Override
+  public Date getDate(int columnIndex) throws SQLException
+  {
+    java.sql.Date dd = rs.getDate(columnIndex);
+    return SQLConvert.date(dd);
+  }
 
-   public Timestamp getTimestamp(int columnIndex) throws SQLException
-   {
-      return SQLConvert.timestamp(rs.getTimestamp(columnIndex));
-   }
+  @Override
+  public Time getTime(int columnIndex) throws SQLException
+  {
+    return SQLConvert.time(rs.getString(columnIndex));
+  }
 
-   public String getString(String columnName) throws SQLException
-   {
-      return rs.getString(columnName);
-   }
+  @Override
+  public Timestamp getTimestamp(int columnIndex) throws SQLException
+  {
+    return SQLConvert.timestamp(rs.getTimestamp(columnIndex));
+  }
 
-   public boolean getBoolean(String columnName) throws SQLException
-   {
-      return rs.getBoolean(columnName);
-   }
+  @Override
+  public String getString(String columnName) throws SQLException
+  {
+    return rs.getString(columnName);
+  }
 
-   public byte getByte(String columnName) throws SQLException
-   {
-      return rs.getByte(columnName);
-   }
+  @Override
+  public boolean getBoolean(String columnName) throws SQLException
+  {
+    return rs.getBoolean(columnName);
+  }
 
-   public short getShort(String columnName) throws SQLException
-   {
-      return rs.getShort(columnName);
-   }
+  @Override
+  public byte getByte(String columnName) throws SQLException
+  {
+    return rs.getByte(columnName);
+  }
 
-   public int getInt(String columnName) throws SQLException
-   {
-      return rs.getInt(columnName);
-   }
+  @Override
+  public short getShort(String columnName) throws SQLException
+  {
+    return rs.getShort(columnName);
+  }
 
-   public long getLong(String columnName) throws SQLException
-   {
-      return rs.getLong(columnName);
-   }
+  @Override
+  public int getInt(String columnName) throws SQLException
+  {
+    return rs.getInt(columnName);
+  }
 
-   public double getFloat(String columnName) throws SQLException
-   {
-      return rs.getFloat(columnName);
-   }
+  @Override
+  public long getLong(String columnName) throws SQLException
+  {
+    return rs.getLong(columnName);
+  }
 
-   public double getDouble(String columnName) throws SQLException
-   {
-      return rs.getDouble(columnName);
-   }
+  public double getFloat(String columnName) throws SQLException
+  {
+    return rs.getFloat(columnName);
+  }
 
-   public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException
-   {
-      return SQLConvert.bigdecimal(rs.getBigDecimal(columnName));
-   }
+  @Override
+  public double getDouble(String columnName) throws SQLException
+  {
+    return rs.getDouble(columnName);
+  }
 
-   public byte[] getBytes(String columnName) throws SQLException
-   {
-      return rs.getBytes(columnName);
-   }
+  @Override
+  public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException
+  {
+    return SQLConvert.bigdecimal(rs.getBigDecimal(columnName));
+  }
 
-   public Date getDate(String columnName) throws SQLException
-   {
-      return SQLConvert.date(rs.getDate(columnName));
-   }
+  @Override
+  public byte[] getBytes(String columnName) throws SQLException
+  {
+    return rs.getBytes(columnName);
+  }
 
-   public Time getTime(String columnName) throws SQLException
-   {
-      return SQLConvert.time(rs.getString(columnName));
-   }
+  @Override
+  public Date getDate(String columnName) throws SQLException
+  {
+    return SQLConvert.date(rs.getDate(columnName));
+  }
 
-   public Timestamp getTimestamp(String columnName) throws SQLException
-   {
-      return SQLConvert.timestamp(rs.getTimestamp(columnName));
-   }
+  @Override
+  public Time getTime(String columnName) throws SQLException
+  {
+    return SQLConvert.time(rs.getString(columnName));
+  }
 
-   public SQLWarning getWarnings() throws SQLException
-   {
-      return rs.getWarnings();
-   }
+  @Override
+  public Timestamp getTimestamp(String columnName) throws SQLException
+  {
+    return SQLConvert.timestamp(rs.getTimestamp(columnName));
+  }
 
-   public void clearWarnings() throws SQLException
-   {
-      rs.clearWarnings();
-   }
+  @Override
+  public SQLWarning getWarnings() throws SQLException
+  {
+    return rs.getWarnings();
+  }
 
-   public String getCursorName() throws SQLException
-   {
-      return rs.getCursorName();
-   }
+  @Override
+  public void clearWarnings() throws SQLException
+  {
+    rs.clearWarnings();
+  }
 
-   SQLite4JResultSetMetaData rsmd;
-   public ResultSetMetaData getMetaData() throws SQLException
-   {
-      return rsmd == null ? rsmd = new SQLite4JResultSetMetaData(rs.getMetaData()) : rsmd;
-   }
+  @Override
+  public String getCursorName() throws SQLException
+  {
+    return rs.getCursorName();
+  }
 
-   public Object getObject(int columnIndex) throws SQLException
-   {
-      return rs.getObject(columnIndex);
-   }
+  SQLite4JResultSetMetaData rsmd;
+  @Override
+  public ResultSetMetaData getMetaData() throws SQLException
+  {
+    return rsmd == null ? rsmd = new SQLite4JResultSetMetaData(rs.getMetaData()) : rsmd;
+  }
 
-   public Object getObject(String columnName) throws SQLException
-   {
-      return rs.getObject(columnName);
-   }
+  @Override
+  public Object getObject(int columnIndex) throws SQLException
+  {
+    return rs.getObject(columnIndex);
+  }
 
-   public int findColumn(String columnName) throws SQLException
-   {
-      return rs.findColumn(columnName);
-   }
+  @Override
+  public Object getObject(String columnName) throws SQLException
+  {
+    return rs.getObject(columnName);
+  }
 
-   public BigDecimal getBigDecimal(int columnIndex) throws SQLException
-   {
-      return SQLConvert.bigdecimal(rs.getBigDecimal(columnIndex));
-   }
+  @Override
+  public int findColumn(String columnName) throws SQLException
+  {
+    return rs.findColumn(columnName);
+  }
 
-   public BigDecimal getBigDecimal(String columnName) throws SQLException
-   {
-      return SQLConvert.bigdecimal(rs.getBigDecimal(columnName));
-   }
+  @Override
+  public BigDecimal getBigDecimal(int columnIndex) throws SQLException
+  {
+    return SQLConvert.bigdecimal(rs.getBigDecimal(columnIndex));
+  }
 
-   public boolean isBeforeFirst() throws SQLException
-   {
-      return rs.isBeforeFirst();
-   }
+  @Override
+  public BigDecimal getBigDecimal(String columnName) throws SQLException
+  {
+    return SQLConvert.bigdecimal(rs.getBigDecimal(columnName));
+  }
 
-   public boolean isAfterLast() throws SQLException
-   {
-      return rs.isAfterLast();
-   }
+  @Override
+  public boolean isBeforeFirst() throws SQLException
+  {
+    return rs.isBeforeFirst();
+  }
 
-   public boolean isFirst() throws SQLException
-   {
-      return rs.isFirst();
-   }
+  @Override
+  public boolean isAfterLast() throws SQLException
+  {
+    return rs.isAfterLast();
+  }
 
-   public boolean isLast() throws SQLException
-   {
-      return rs.isLast();
-   }
+  @Override
+  public boolean isFirst() throws SQLException
+  {
+    return rs.isFirst();
+  }
 
-   public void beforeFirst() throws SQLException
-   {
-      rs.beforeFirst();
-   }
+  @Override
+  public boolean isLast() throws SQLException
+  {
+    return rs.isLast();
+  }
 
-   public void afterLast() throws SQLException
-   {
-      rs.afterLast();
-   }
+  @Override
+  public void beforeFirst() throws SQLException
+  {
+    rs.beforeFirst();
+  }
 
-   public boolean first() throws SQLException
-   {
-      return rs.first();
-   }
+  @Override
+  public void afterLast() throws SQLException
+  {
+    rs.afterLast();
+  }
 
-   public boolean last() throws SQLException
-   {
-      return rs.last();
-   }
+  @Override
+  public boolean first() throws SQLException
+  {
+    return rs.first();
+  }
 
-   public int getRow() throws SQLException
-   {
-      return rs.getRow();
-   }
+  @Override
+  public boolean last() throws SQLException
+  {
+    return rs.last();
+  }
 
-   public boolean absolute(int row) throws SQLException
-   {
-      return rs.absolute(row);
-   }
+  @Override
+  public int getRow() throws SQLException
+  {
+    return rs.getRow();
+  }
 
-   public boolean relative(int rows) throws SQLException
-   {
-      return rs.relative(rows);
-   }
+  @Override
+  public boolean absolute(int row) throws SQLException
+  {
+    return rs.absolute(row);
+  }
 
-   public boolean previous() throws SQLException
-   {
-      return rs.previous();
-   }
+  @Override
+  public boolean relative(int rows) throws SQLException
+  {
+    return rs.relative(rows);
+  }
 
-   public void setFetchDirection(int direction) throws SQLException
-   {
-      rs.setFetchDirection(direction);
-   }
+  @Override
+  public boolean previous() throws SQLException
+  {
+    return rs.previous();
+  }
 
-   public int getFetchDirection() throws SQLException
-   {
-      return rs.getFetchDirection();
-   }
+  @Override
+  public void setFetchDirection(int direction) throws SQLException
+  {
+    rs.setFetchDirection(direction);
+  }
 
-   public void setFetchSize(int rows) throws SQLException
-   {
-      rs.setFetchSize(rows);
-   }
+  @Override
+  public int getFetchDirection() throws SQLException
+  {
+    return rs.getFetchDirection();
+  }
 
-   public int getFetchSize() throws SQLException
-   {
-      return rs.getFetchSize();
-   }
+  @Override
+  public void setFetchSize(int rows) throws SQLException
+  {
+    rs.setFetchSize(rows);
+  }
 
-   public int getType() throws SQLException
-   {
-      return rs.getType();
-   }
+  @Override
+  public int getFetchSize() throws SQLException
+  {
+    return rs.getFetchSize();
+  }
 
-   public int getConcurrency() throws SQLException
-   {
-      return rs.getConcurrency();
-   }
+  @Override
+  public int getType() throws SQLException
+  {
+    return rs.getType();
+  }
 
-   SQLite4JStatement tcstat;
-   public Statement getStatement() throws SQLException
-   {
-      return tcstat != null ? tcstat : (tcstat=new SQLite4JStatement(rs.getStatement()));
-   }
+  @Override
+  public int getConcurrency() throws SQLException
+  {
+    return rs.getConcurrency();
+  }
+
+  SQLite4JStatement tcstat;
+  @Override
+  public Statement getStatement() throws SQLException
+  {
+    return tcstat != null ? tcstat : (tcstat=new SQLite4JStatement(rs.getStatement()));
+  }
 }

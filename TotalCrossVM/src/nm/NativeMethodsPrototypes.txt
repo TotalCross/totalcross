@@ -185,6 +185,7 @@ TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
 TC_API void tuW_setOrientation_i(NMParams p);
+TC_API void tuW_isSipShown(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
@@ -1287,7 +1288,7 @@ TC_API void tuW_pumpEvents(NMParams p) // totalcross/ui/Window native public sta
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
+TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean numeric);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1296,6 +1297,10 @@ TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native publ
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setOrientation_i(NMParams p) // totalcross/ui/Window native public static void setOrientation(int orientation);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuW_isSipShown(NMParams p) // totalcross/ui/Window native public static boolean isSipShown();
 {
 }
 //////////////////////////////////////////////////////////////////////////

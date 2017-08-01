@@ -19,7 +19,6 @@
 package totalcross.net;
 
 import java.net.InetAddress;
-
 import totalcross.io.IOException;
 import totalcross.io.IllegalArgumentIOException;
 
@@ -76,233 +75,240 @@ import totalcross.io.IllegalArgumentIOException;
 
 public class ConnectionManager
 {
-   static Object connRef;
+  static Object connRef;
 
-   /**
-    * This flag indicates a cradle (USB to PC) connection.
-    * @deprecated Not supported on the newer devices.
-    */
-   public static final int CRADLE = 1;
-   
-   /**
-    * This flag indicates a Wi-Fi connection.
-    */
-   public static final int WIFI = 2;
-   
-   /**
-    * This flag indicates a cellular connection.
-    */
-   public static final int CELLULAR = 3;
-   
-   /**
-    * @deprecated As of TotalCross 1.20, replaced by {@link #CELLULAR}.
-    */
-   public static final int GPRS = CELLULAR;
-   
-   private ConnectionManager()
-   {
-   }
-   
-   /**
-    * Used to configure the connection to be used by the application.
-    * 
-    * @param type one of the connection type constants defined by the ConnectionManager.
-    * @param configuration list of parameters in the format "parameter=value" separated by a semi-colon ";".
-    * 
-    * @throws IllegalArgumentIOException if <code>type</code> is invalid.
-    * @throws IOException if an I/O error occurs while configuring the connection.
-    * 
-    * @see #CRADLE
-    * @see #WIFI
-    * @see #CELLULAR
-    * @deprecated Not used on the newer devices.
-    */
-   public static void setDefaultConfiguration(int type, String configuration) throws IOException
-   {
-      switch (type)
-      {
-         case CRADLE:
-         case WIFI:
-         case CELLULAR:
-            break;
-         default:
-            throw new IllegalArgumentIOException("Invalid value for argument 'type'");
-      }
-   }
-   
-   /**
-    * Checks if an specific connection is currently available.
-    * 
-    * @param type one of the connection type constants defined by the ConnectionManager.
-    * @return true if and only if the given connection is available; false otherwise.
-    * 
-    * @throws IllegalArgumentIOException if <code>type</code> is invalid.
-    * @throws IOException if an I/O error occurs while checking connection availability.
-    * 
-    * @see #CRADLE
-    * @see #WIFI
-    * @see #CELLULAR
-    */
-   public static boolean isAvailable(int type) throws IOException
-   {
-      switch (type)
-      {
-         case CRADLE:
-         case WIFI:
-         case CELLULAR:
-            return true;
-         default:
-            throw new IllegalArgumentIOException("Invalid value for argument 'type'");
-      }
-   }
+  /**
+   * This flag indicates a cradle (USB to PC) connection.
+   * @deprecated Not supported on the newer devices.
+   */
+  @Deprecated
+  public static final int CRADLE = 1;
 
-   /**
-    * Attempts to establish a remote connection in the first available connection in
-    * the following priority list: {@link #CRADLE}, {@link #WIFI} and {@link #CELLULAR}.
-    * 
-    * @throws IOException if an I/O error occurs while opening the connection.
-    * @deprecated Not necessary anymore.
-    */
-   public static void open() throws IOException
-   {
-      IOException firstEx = null;
-      int[] conn = new int[] { CRADLE, WIFI, CELLULAR };
-      
-      for (int i = 0; i < conn.length; i++)
-      {
-         try
-         {
-            if (isAvailable(conn[i]))
-            {
-               open(conn[i]);
-               return; // successfully opened, so just return
-            }
-         }
-         catch (IOException ex)
-         {
-            if (firstEx == null) // store only the first exception
-               firstEx = ex;
-         }
-      }
-      
-      throw firstEx == null ? new IOException("No connection available") : firstEx;
-   }
+  /**
+   * This flag indicates a Wi-Fi connection.
+   */
+  public static final int WIFI = 2;
 
-   /**
-    * Attempts to establish a remote connection using the given connection.
-    * 
-    * @param type one of the connection type constants defined by the ConnectionManager.
-    * 
-    * @throws IllegalArgumentIOException if <code>type</code> is invalid.
-    * @throws IOException if an I/O error occurs while opening the connection.
-    * 
-    * @see #CRADLE
-    * @see #WIFI
-    * @see #CELLULAR
-    * @deprecated Not necessary anymore.
-    */
-   public static void open(int type) throws IOException
-   {
-      switch (type)
-      {
-         case CRADLE:
-         case WIFI:
-         case CELLULAR:
-            break;
-         default:
-            throw new IllegalArgumentIOException("Invalid value for argument 'type'");
-      }
-   }
+  /**
+   * This flag indicates a cellular connection.
+   */
+  public static final int CELLULAR = 3;
 
-   /**
-    * Attempts to close all open remote connections.
-    * 
-    * @throws IOException if an I/O error occurs while closing a connection.
-    * @deprecated Not necessary anymore.
-    */
-   public static void close() throws IOException
-   {
-   }
+  /**
+   * @deprecated As of TotalCross 1.20, replaced by {@link #CELLULAR}.
+   */
+  @Deprecated
+  public static final int GPRS = CELLULAR;
 
-   /**
-    * Returns the IP address of the given host in textual representation, or null if this information is not available.
-    * 
-    * @param hostName the host's name.
-    * @return the host's IP address in textual representation.
-    * 
-    * @throws UnknownHostException if the given host is unknown or cannot be reached.
-    */
-   public static String getHostAddress(String hostName) throws UnknownHostException
-   {
+  private ConnectionManager()
+  {
+  }
+
+  /**
+   * Used to configure the connection to be used by the application.
+   * 
+   * @param type one of the connection type constants defined by the ConnectionManager.
+   * @param configuration list of parameters in the format "parameter=value" separated by a semi-colon ";".
+   * 
+   * @throws IllegalArgumentIOException if <code>type</code> is invalid.
+   * @throws IOException if an I/O error occurs while configuring the connection.
+   * 
+   * @see #CRADLE
+   * @see #WIFI
+   * @see #CELLULAR
+   * @deprecated Not used on the newer devices.
+   */
+  @Deprecated
+  public static void setDefaultConfiguration(int type, String configuration) throws IOException
+  {
+    switch (type)
+    {
+    case CRADLE:
+    case WIFI:
+    case CELLULAR:
+      break;
+    default:
+      throw new IllegalArgumentIOException("Invalid value for argument 'type'");
+    }
+  }
+
+  /**
+   * Checks if an specific connection is currently available.
+   * 
+   * @param type one of the connection type constants defined by the ConnectionManager.
+   * @return true if and only if the given connection is available; false otherwise.
+   * 
+   * @throws IllegalArgumentIOException if <code>type</code> is invalid.
+   * @throws IOException if an I/O error occurs while checking connection availability.
+   * 
+   * @see #CRADLE
+   * @see #WIFI
+   * @see #CELLULAR
+   */
+  public static boolean isAvailable(int type) throws IOException
+  {
+    switch (type)
+    {
+    case CRADLE:
+    case WIFI:
+    case CELLULAR:
+      return true;
+    default:
+      throw new IllegalArgumentIOException("Invalid value for argument 'type'");
+    }
+  }
+
+  /**
+   * Attempts to establish a remote connection in the first available connection in
+   * the following priority list: {@link #CRADLE}, {@link #WIFI} and {@link #CELLULAR}.
+   * 
+   * @throws IOException if an I/O error occurs while opening the connection.
+   * @deprecated Not necessary anymore.
+   */
+  @Deprecated
+  public static void open() throws IOException
+  {
+    IOException firstEx = null;
+    int[] conn = new int[] { CRADLE, WIFI, CELLULAR };
+
+    for (int i = 0; i < conn.length; i++)
+    {
       try
       {
-         return InetAddress.getByName(hostName).getHostAddress();
+        if (isAvailable(conn[i]))
+        {
+          open(conn[i]);
+          return; // successfully opened, so just return
+        }
       }
-      catch (java.net.UnknownHostException e)
+      catch (IOException ex)
       {
-         throw new UnknownHostException(e.getMessage());
+        if (firstEx == null) {
+          firstEx = ex;
+        }
       }
-   }
+    }
 
-   /**
-    * Returns the name of the given host, or null if this information is not available.
-    * 
-    * @param hostAddress textual representation of the host's IP address.
-    * @return the host's name, or null if the host is unreachable or unknown.
-    * 
-    * @throws UnknownHostException if the given host is unknown or cannot be reached.
-    */
-   public static String getHostName(String hostAddress) throws UnknownHostException
-   {
-      try
-      {
-         return InetAddress.getByName(hostAddress).getHostName();
-      }
-      catch (java.net.UnknownHostException e)
-      {
-         throw new UnknownHostException(e.getMessage());
-      }
-   }
+    throw firstEx == null ? new IOException("No connection available") : firstEx;
+  }
 
-   /**
-    * Returns a textual representation of the IP address currently assigned to this device. If this information is not
-    * available for any reason, it returns the address "127.0.0.1", which is a reserved address for loopback
-    * communication.
-    * 
-    * @return the textual representation of this device's IP.
-    * 
-    * @throws UnknownHostException if the local host is unknown or cannot be reached.
-    */
-   public static String getLocalHost() throws UnknownHostException
-   {
-      try
-      {
-         return InetAddress.getLocalHost().getHostAddress();
-      }
-      catch (java.net.UnknownHostException e)
-      {
-         throw new UnknownHostException(e.getMessage());
-      }
-   }
-   
-   /**
-    * Returns true if we can connect to google.com using port 80, false otherwise. Please notice this is just a quick
-    * check that assumes the device is connected to the Internet without any restrictions. Results are undefined when
-    * used behind proxies or firewalls.
-    * 
-    * @since TotalCross 1.62
-    */
-   public static boolean isInternetAccessible()
-   {
-      try
-      {
-         Socket s = new Socket("www.google.com",80,30*1000);
-         s.close();
-         return true;
-      }
-      catch (Exception e)
-      {
-         return false;
-      }
-   }
+  /**
+   * Attempts to establish a remote connection using the given connection.
+   * 
+   * @param type one of the connection type constants defined by the ConnectionManager.
+   * 
+   * @throws IllegalArgumentIOException if <code>type</code> is invalid.
+   * @throws IOException if an I/O error occurs while opening the connection.
+   * 
+   * @see #CRADLE
+   * @see #WIFI
+   * @see #CELLULAR
+   * @deprecated Not necessary anymore.
+   */
+  @Deprecated
+  public static void open(int type) throws IOException
+  {
+    switch (type)
+    {
+    case CRADLE:
+    case WIFI:
+    case CELLULAR:
+      break;
+    default:
+      throw new IllegalArgumentIOException("Invalid value for argument 'type'");
+    }
+  }
+
+  /**
+   * Attempts to close all open remote connections.
+   * 
+   * @throws IOException if an I/O error occurs while closing a connection.
+   * @deprecated Not necessary anymore.
+   */
+  @Deprecated
+  public static void close() throws IOException
+  {
+  }
+
+  /**
+   * Returns the IP address of the given host in textual representation, or null if this information is not available.
+   * 
+   * @param hostName the host's name.
+   * @return the host's IP address in textual representation.
+   * 
+   * @throws UnknownHostException if the given host is unknown or cannot be reached.
+   */
+  public static String getHostAddress(String hostName) throws UnknownHostException
+  {
+    try
+    {
+      return InetAddress.getByName(hostName).getHostAddress();
+    }
+    catch (java.net.UnknownHostException e)
+    {
+      throw new UnknownHostException(e.getMessage());
+    }
+  }
+
+  /**
+   * Returns the name of the given host, or null if this information is not available.
+   * 
+   * @param hostAddress textual representation of the host's IP address.
+   * @return the host's name, or null if the host is unreachable or unknown.
+   * 
+   * @throws UnknownHostException if the given host is unknown or cannot be reached.
+   */
+  public static String getHostName(String hostAddress) throws UnknownHostException
+  {
+    try
+    {
+      return InetAddress.getByName(hostAddress).getHostName();
+    }
+    catch (java.net.UnknownHostException e)
+    {
+      throw new UnknownHostException(e.getMessage());
+    }
+  }
+
+  /**
+   * Returns a textual representation of the IP address currently assigned to this device. If this information is not
+   * available for any reason, it returns the address "127.0.0.1", which is a reserved address for loopback
+   * communication.
+   * 
+   * @return the textual representation of this device's IP.
+   * 
+   * @throws UnknownHostException if the local host is unknown or cannot be reached.
+   */
+  public static String getLocalHost() throws UnknownHostException
+  {
+    try
+    {
+      return InetAddress.getLocalHost().getHostAddress();
+    }
+    catch (java.net.UnknownHostException e)
+    {
+      throw new UnknownHostException(e.getMessage());
+    }
+  }
+
+  /**
+   * Returns true if we can connect to google.com using port 80, false otherwise. Please notice this is just a quick
+   * check that assumes the device is connected to the Internet without any restrictions. Results are undefined when
+   * used behind proxies or firewalls.
+   * 
+   * @since TotalCross 1.62
+   */
+  public static boolean isInternetAccessible()
+  {
+    try
+    {
+      Socket s = new Socket("www.google.com",80,30*1000);
+      s.close();
+      return true;
+    }
+    catch (Exception e)
+    {
+      return false;
+    }
+  }
 }

@@ -15,14 +15,14 @@ package tc.tools.converter.oper;
 
 public class OperandRegIs extends OperandRegI
 {
-   public OperandRegIs()
-   {
-      super();
-      kind = opr_regIs;
-   }
+  public OperandRegIs()
+  {
+    super();
+    kind = opr_regIs;
+  }
 
-   public OperandRegIs(int framePosition)
-   {
-      super(opr_regIs, framePosition);
-   }
+  public OperandRegIs(int framePosition)
+  {
+    super(opr_regIs, framePosition);
+  }
 }

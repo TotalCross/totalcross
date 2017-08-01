@@ -20,25 +20,25 @@ package totalcross.io.device;
 
 final public class RadioDevice4D
 {
-   // types
-   public static final int WIFI = 0;
-   public static final int PHONE = 1;
-   public static final int BLUETOOTH = 2;
+  // types
+  public static final int WIFI = 0;
+  public static final int PHONE = 1;
+  public static final int BLUETOOTH = 2;
 
-   // generic states
-   public static final int RADIO_STATE_DISABLED = 0;
-   public static final int RADIO_STATE_ENABLED = 1;
+  // generic states
+  public static final int RADIO_STATE_DISABLED = 0;
+  public static final int RADIO_STATE_ENABLED = 1;
 
-   // bluetooth states
-   public static final int BLUETOOTH_STATE_DISCOVERABLE = 2;
+  // bluetooth states
+  public static final int BLUETOOTH_STATE_DISCOVERABLE = 2;
 
-   private RadioDevice4D()
-   {
-   }
+  private RadioDevice4D()
+  {
+  }
 
-   native public static boolean isSupported(int type) throws IllegalArgumentException;
+  native public static boolean isSupported(int type) throws IllegalArgumentException;
 
-   native public static int getState(int type) throws IllegalArgumentException;
+  native public static int getState(int type) throws IllegalArgumentException;
 
-   native public static void setState(int type, int state) throws IllegalArgumentException;
+  native public static void setState(int type, int state) throws IllegalArgumentException;
 }

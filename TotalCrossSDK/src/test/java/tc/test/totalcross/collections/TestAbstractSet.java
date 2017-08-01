@@ -11,109 +11,118 @@
 
 package tc.test.totalcross.collections;
 
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.Iterator;
+
 import totalcross.sys.Settings;
 import totalcross.unit.TestCase;
 
 public class TestAbstractSet extends TestCase
 {
-   public void testRun()
-   {
-      Test16 test1 = new Test16();
-      AbstractSet test2 = new Test16();
-      AbstractCollection test3 = new Test16();
-      
-      assertEquals(null, test1.iterator());
-      assertEquals(null, test2.iterator());
-      assertEquals(null, test3.iterator());
-      
-      assertEquals(0, test1.size());
-      assertEquals(0, test2.size());
-      assertEquals(0, test3.size());
-      
-      assertTrue(test1.equals(test1));
-      assertTrue(test2.equals(test2));
-      assertTrue(test3.equals(test3));
-      if (Settings.onJavaSE)
-         assertFalse(test1.equals(test2));  
-      else
-         assertTrue(test1.equals(test2));
-      if (Settings.onJavaSE)
-         assertFalse(test2.equals(test3));  
-      else
-         assertTrue(test2.equals(test3));
-      if (Settings.onJavaSE)
-         assertFalse(test3.equals(test1));  
-      else
-         assertTrue(test3.equals(test1));
-      
-      try
-      {
-         assertEquals(0, test1.hashCode());
-         assertFalse(Settings.onJavaSE);
-      }
-      catch (NullPointerException exception) 
-      {
-         assertTrue(Settings.onJavaSE);
-      }
-      try
-      {
-         assertEquals(0, test2.hashCode());
-         assertFalse(Settings.onJavaSE);
-      }
-      catch (NullPointerException exception) 
-      {
-         assertTrue(Settings.onJavaSE);
-      }
-      try
-      {
-         assertEquals(0, test3.hashCode());
-         assertFalse(Settings.onJavaSE);
-      }
-      catch (NullPointerException exception) 
-      {
-         assertTrue(Settings.onJavaSE);
-      }
-      
-      try
-      {
-         assertFalse(test1.removeAll(test1));
-         assertFalse(Settings.onJavaSE);
-      }
-      catch (NullPointerException exception) 
-      {
-         assertTrue(Settings.onJavaSE);
-      }
-      try
-      {
-         assertFalse(test2.removeAll(test2));
-         assertFalse(Settings.onJavaSE);
-      }
-      catch (NullPointerException exception) 
-      {
-         assertTrue(Settings.onJavaSE);
-      }
-      try
-      {
-         assertFalse(test3.removeAll(test3));
-         assertFalse(Settings.onJavaSE);
-      }
-      catch (NullPointerException exception) 
-      {
-         assertTrue(Settings.onJavaSE);
-      }
-   }
+  @Override
+  public void testRun()
+  {
+    Test16 test1 = new Test16();
+    AbstractSet test2 = new Test16();
+    AbstractCollection test3 = new Test16();
+
+    assertEquals(null, test1.iterator());
+    assertEquals(null, test2.iterator());
+    assertEquals(null, test3.iterator());
+
+    assertEquals(0, test1.size());
+    assertEquals(0, test2.size());
+    assertEquals(0, test3.size());
+
+    assertTrue(test1.equals(test1));
+    assertTrue(test2.equals(test2));
+    assertTrue(test3.equals(test3));
+    if (Settings.onJavaSE){
+      assertFalse(test1.equals(test2));
+    }else {
+      assertTrue(test1.equals(test2));
+    }
+    if (Settings.onJavaSE){
+      assertFalse(test2.equals(test3));
+    }else {
+      assertTrue(test2.equals(test3));
+    }
+    if (Settings.onJavaSE){
+      assertFalse(test3.equals(test1));
+    }else {
+      assertTrue(test3.equals(test1));
+    }
+
+    try
+    {
+      assertEquals(0, test1.hashCode());
+      assertFalse(Settings.onJavaSE);
+    }
+    catch (NullPointerException exception) 
+    {
+      assertTrue(Settings.onJavaSE);
+    }
+    try
+    {
+      assertEquals(0, test2.hashCode());
+      assertFalse(Settings.onJavaSE);
+    }
+    catch (NullPointerException exception) 
+    {
+      assertTrue(Settings.onJavaSE);
+    }
+    try
+    {
+      assertEquals(0, test3.hashCode());
+      assertFalse(Settings.onJavaSE);
+    }
+    catch (NullPointerException exception) 
+    {
+      assertTrue(Settings.onJavaSE);
+    }
+
+    try
+    {
+      assertFalse(test1.removeAll(test1));
+      assertFalse(Settings.onJavaSE);
+    }
+    catch (NullPointerException exception) 
+    {
+      assertTrue(Settings.onJavaSE);
+    }
+    try
+    {
+      assertFalse(test2.removeAll(test2));
+      assertFalse(Settings.onJavaSE);
+    }
+    catch (NullPointerException exception) 
+    {
+      assertTrue(Settings.onJavaSE);
+    }
+    try
+    {
+      assertFalse(test3.removeAll(test3));
+      assertFalse(Settings.onJavaSE);
+    }
+    catch (NullPointerException exception) 
+    {
+      assertTrue(Settings.onJavaSE);
+    }
+  }
 }
 
 class Test16 extends AbstractSet
 {
-   public Iterator iterator()
-   {
-      return null;
-   }
+  @Override
+  public Iterator iterator()
+  {
+    return null;
+  }
 
-   public int size()
-   {
-      return 0;
-   }  
+  @Override
+  public int size()
+  {
+    return 0;
+  }  
 }

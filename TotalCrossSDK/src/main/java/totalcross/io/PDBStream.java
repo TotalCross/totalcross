@@ -21,74 +21,80 @@ package totalcross.io;
 
 public class PDBStream extends Stream
 {
-   protected int recSize;
-   protected PDBFile pdb;
+  protected int recSize;
+  protected PDBFile pdb;
 
-   /** Constructs a new PDBStream opening a PDB with the given name in READ_WRITE mode. 
-    * @param name The pdb name of the file to open in the format Name.CRTR.TYPE. 
-    */
-   public PDBStream(String name) throws IllegalArgumentIOException, FileNotFoundException, IOException
-   {
-      pdb = new PDBFile(name, PDBFile.READ_WRITE);
-      moveTo(0);
-   }
+  /** Constructs a new PDBStream opening a PDB with the given name in READ_WRITE mode. 
+   * @param name The pdb name of the file to open in the format Name.CRTR.TYPE. 
+   */
+  public PDBStream(String name) throws IllegalArgumentIOException, FileNotFoundException, IOException
+  {
+    pdb = new PDBFile(name, PDBFile.READ_WRITE);
+    moveTo(0);
+  }
 
-   private void moveTo(int recno) throws IOException
-   {
-      pdb.setRecordPos(recno);
-      pdb.skipBytes(8);
-      recSize = pdb.getRecordSize();
-   }
+  private void moveTo(int recno) throws IOException
+  {
+    pdb.setRecordPos(recno);
+    pdb.skipBytes(8);
+    recSize = pdb.getRecordSize();
+  }
 
-   /** Always throws IOException; not implemented. */
-   public int writeBytes(byte[] buf, int start, int count) throws IOException
-   {
-      throw new IOException("PDBStream.writeBytes is not implemented.");
-   }
-   
-   /** Closes the underlying PDBFile. */
-   public void close() throws IOException
-   {
-      pdb.close();
-   }
+  /** Always throws IOException; not implemented. */
+  @Override
+  public int writeBytes(byte[] buf, int start, int count) throws IOException
+  {
+    throw new IOException("PDBStream.writeBytes is not implemented.");
+  }
 
-   public int readBytes(byte[] buf, int start, int count) throws IOException
-   {
-      int total = 0;
-      // read some more data from the current record
-      int maxRead = Math.min(count, recSize - pdb.getRecordOffset());
-      int read = pdb.readBytes(buf, start, maxRead);
-      if (read == count)
-         return count; // quick check: probably most common case
+  /** Closes the underlying PDBFile. */
+  @Override
+  public void close() throws IOException
+  {
+    pdb.close();
+  }
 
-      if (read > 0)
+  @Override
+  public int readBytes(byte[] buf, int start, int count) throws IOException
+  {
+    int total = 0;
+    // read some more data from the current record
+    int maxRead = Math.min(count, recSize - pdb.getRecordOffset());
+    int read = pdb.readBytes(buf, start, maxRead);
+    if (read == count)
+    {
+      return count; // quick check: probably most common case
+    }
+
+    if (read > 0)
+    {
+      total = read;
+      start += read;
+    }
+    // could not read enough? move to next record and keep reading until we fill the buffer
+    int endRec = pdb.getRecordCount();
+    int p = pdb.getRecordPos();
+    while (total < count)
+    {
+      if (p < endRec) // still has records?
       {
-         total = read;
-         start += read;
+        moveTo(++p);
+        maxRead = Math.min(count - total, recSize - pdb.getRecordOffset());
+        read = pdb.readBytes(buf, start, maxRead);
+        if (read > 0)
+        {
+          total += read;
+          start += read;
+        }
       }
-      // could not read enough? move to next record and keep reading until we fill the buffer
-      int endRec = pdb.getRecordCount();
-      int p = pdb.getRecordPos();
-      while (total < count)
+      else
       {
-         if (p < endRec) // still has records?
-         {
-            moveTo(++p);
-            maxRead = Math.min(count - total, recSize - pdb.getRecordOffset());
-            read = pdb.readBytes(buf, start, maxRead);
-            if (read > 0)
-            {
-               total += read;
-               start += read;
-            }
-         }
-         else
-         {
-            if (total == 0)
-               total = -1;
-            break;
-         }
+        if (total == 0) {
+          total = -1;
+        }
+        break;
       }
-      return total;
-   }
+    }
+    return total;
+  }
 }

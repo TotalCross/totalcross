@@ -15,7 +15,7 @@ package tc.test.converter.testfiles;
 
 public class BC087to095
 {
-   public BC087to095()
-   {
-   }
+  public BC087to095()
+  {
+  }
 }

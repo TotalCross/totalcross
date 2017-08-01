@@ -15,16 +15,17 @@ package tc.tools.converter.oper;
 
 public class OperandSym extends Operand
 {
-   public int index;
+  public int index;
 
-   public OperandSym(int kind, int index)
-   {
-      super(kind);
-      this.index = index;
-   }
+  public OperandSym(int kind, int index)
+  {
+    super(kind);
+    this.index = index;
+  }
 
-   public boolean isSym()
-   {
-      return true;
-   }
+  @Override
+  public boolean isSym()
+  {
+    return true;
+  }
 }

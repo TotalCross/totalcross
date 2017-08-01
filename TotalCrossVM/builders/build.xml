@@ -157,7 +157,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <tstamp />
    <echo message="Compiler date: ${DSTAMP}" />
    <concat destfile="${source.vm.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
-   <concat destfile="${source.sdk.path}/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
+   <concat destfile="${source.sdk.path}/ras/CompilationDate4D.java">package ras; public class CompilationDate4D {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
 
    <replace file="${source.sdk.path}/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
    <replace file="${source.sdk.path.android}/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
@@ -186,11 +186,6 @@ target: buildSkeleton - Build the folders
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildSkeleton" >
-   <!-- try to delete this, it may be blocked by the classpath referencing it -->
-   <delete failonerror="true">
-      <fileset dir="${sdk.path}/dist" includes="*.jar"/>
-      </delete>
-
    <echo message="Building TotalCross SDK build ${buildNumber}"/>
    <ant antfile="build.xml" dir="${sdk.path}" target="clean"           inheritAll="false"/>
    <ant antfile="build.xml" dir="${sdk.path}" target="build"           inheritAll="false"/>
@@ -203,7 +198,6 @@ target: buildSkeleton - Build the folders
    <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${sdk.path}/docs/html" /></copy>
    <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${sdk.path}/dist/vm" includes="*.tcz" /></copy>
    <copy todir="${target.sdk.path}/dist" file="${sdk.path}/dist/tc.jar" />
-   <copy todir="${target.sdk.path}/dist" file="${sdk.path}/dist/tcweb.jar" />
 </target>
 
 <target name="buildSamples_sdk" >
@@ -475,7 +469,7 @@ target: Linux builds
 <target name="packageLinux" >
     <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
       <classpath>
-          <pathelement location="${base.temp.path}/classes_desktop"/>
+      	  <pathelement location="${sdk.path}/dist/tc.jar"/>
           <pathelement location="${tools}/jdeb/lib/ant.jar"/>
           <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
           <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -595,13 +589,12 @@ target: checks if we must update the versions of the files prior to a build.
 
 <target name="buildPostInstall" >
 
-  <property name="temp" value="${base.temp.path}/classes_desktop" />
-  <javac srcdir="${source.sdk.path}/tc/tools" destdir="${temp}" target="${compile.target}" source="${compile.source}" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
+  <property name="temp" value="${sdk.path}/build/classes/java/main" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
 	<env key="TOTALCROSS_HOME" value="${sdk.path}"/>
    <classpath>
-     <pathelement location="${temp}"/>
+   	<pathelement location="${temp}"/>
    </classpath>
    <arg line="PostInstall.class -win32"/>
    <arg line="/r 5443444B314891CE3D2DD791"/>

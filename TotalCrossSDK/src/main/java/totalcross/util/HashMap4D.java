@@ -39,7 +39,17 @@ exception statement from your version. */
 
 package totalcross.util;
 
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeMap;
 import totalcross.sys.Convert;
 
 // NOTE: This implementation is very similar to that of Hashtable. If you fix
@@ -95,13 +105,13 @@ import totalcross.sys.Convert;
  * @status updated to 1.4
  */
 public class HashMap4D<K, V> extends AbstractMap4D<K, V>
-  implements Map<K, V>, Cloneable
+implements Map<K, V>, Cloneable
 {
-   /**
-    * Default number of buckets; this is currently set to 16.
-    * Package visible for use by HashSet.
-    */
-   static final int DEFAULT_CAPACITY = 16;
+  /**
+   * Default number of buckets; this is currently set to 16.
+   * Package visible for use by HashSet.
+   */
+  static final int DEFAULT_CAPACITY = 16;
 
   /**
    * The default load factor; this is explicitly specified by the spec.
@@ -240,14 +250,17 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    */
   public HashMap4D(int initialCapacity, double loadFactor)
   {
-    if (initialCapacity < 0)
+    if (initialCapacity < 0){
       throw new IllegalArgumentException("Illegal Capacity: "
-                                         + initialCapacity);
-    if (! (loadFactor > 0)) // check for NaN too
+          + initialCapacity);
+    }
+    if (! (loadFactor > 0)){
       throw new IllegalArgumentException("Illegal Load: " + loadFactor);
+    }
 
-    if (initialCapacity == 0)
+    if (initialCapacity == 0){
       initialCapacity = 1;
+    }
     buckets = (HashEntry<K, V>[]) new HashEntry[initialCapacity];
     this.loadFactor = loadFactor;
     threshold = (int) (initialCapacity * loadFactor);
@@ -258,6 +271,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    *
    * @return the size
    */
+  @Override
   public int size()
   {
     return size;
@@ -268,6 +282,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    *
    * @return <code>size() == 0</code>
    */
+  @Override
   public boolean isEmpty()
   {
     return size == 0;
@@ -284,25 +299,29 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
+  @Override
   public V get(Object key)
   {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     while (e != null)
-      {
-        if (AbstractCollection4D.equals(key, e.key))
-          return e.value;
-        e = e.next;
+    {
+      if (AbstractCollection4D.equals(key, e.key)) {
+        return e.value;
       }
+      e = e.next;
+    }
     return null;
   }
 
+  @Override
   public V getOrDefault(Object key, V def)
   {
-     V ret = get(key);
-     if (ret == null)
-        ret = def;
-     return ret;
+    V ret = get(key);
+    if (ret == null){
+      ret = def;
+    }
+    return ret;
   }
 
   /**
@@ -313,16 +332,18 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @return true if the key is in the table
    * @see #containsValue(Object)
    */
+  @Override
   public boolean containsKey(Object key)
   {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     while (e != null)
-      {
-        if (AbstractCollection4D.equals(key, e.key))
-          return true;
-        e = e.next;
+    {
+      if (AbstractCollection4D.equals(key, e.key)) {
+        return true;
       }
+      e = e.next;
+    }
     return false;
   }
 
@@ -339,39 +360,40 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #get(Object)
    * @see Object#equals(Object)
    */
+  @Override
   public V put(K key, V value)
   {
-     int idx = hash(key);
-     HashEntry<K, V> e = buckets[idx];
+    int idx = hash(key);
+    HashEntry<K, V> e = buckets[idx];
 
-     int hash1 = key == null ? 0 : key.hashCode();
-     while (e != null)
-       {
-         int hash2 = e.key == null ? 0 : e.key.hashCode();
+    int hash1 = key == null ? 0 : key.hashCode();
+    while (e != null)
+    {
+      int hash2 = e.key == null ? 0 : e.key.hashCode();
 
-         if ((hash1 == hash2) && equals(key, e.key))
-           {
-             e.access(); // Must call this for bookkeeping in LinkedHashMap.
-             V r = e.value;
-             e.value = value;
-             return r;
-           }
-         else
-           e = e.next;
-       }
+      if ((hash1 == hash2) && equals(key, e.key))
+      {
+        e.access(); // Must call this for bookkeeping in LinkedHashMap.
+        V r = e.value;
+        e.value = value;
+        return r;
+      } else {
+        e = e.next;
+      }
+    }
 
-     // At this point, we know we need to add a new entry.
-     modCount++;
-     if (++size > threshold)
-       {
-         rehash();
-         // Need a new hash value to suit the bigger table.
-         idx = hash(key);
-       }
+    // At this point, we know we need to add a new entry.
+    modCount++;
+    if (++size > threshold)
+    {
+      rehash();
+      // Need a new hash value to suit the bigger table.
+      idx = hash(key);
+    }
 
-     // LinkedHashMap cannot override put(), hence this call.
-     addEntry(key, value, idx, true);
-     return null;
+    // LinkedHashMap cannot override put(), hence this call.
+    addEntry(key, value, idx, true);
+    return null;
   }
 
   /**
@@ -381,23 +403,24 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    *
    * @param m the map to be hashed into this
    */
+  @Override
   public void putAll(Map<? extends K, ? extends V> m)
   {
     final Map<K,V> addMap = (Map<K,V>) m;
     final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
     while (it.hasNext())
+    {
+      final Map.Entry<K,V> e = it.next();
+      // Optimize in case the Entry is one of our own.
+      if (e instanceof AbstractMap4D.SimpleEntry)
       {
-	final Map.Entry<K,V> e = it.next();
-        // Optimize in case the Entry is one of our own.
-        if (e instanceof AbstractMap4D.SimpleEntry)
-          {
-            AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry
-	      = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
-            put(entry.key, entry.value);
-          }
-        else
-          put(e.getKey(), e.getValue());
+        AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry
+        = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
+        put(entry.key, entry.value);
+      } else {
+        put(e.getKey(), e.getValue());
       }
+    }
   }
 
   /**
@@ -410,6 +433,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
    */
+  @Override
   public V remove(Object key)
   {
     int idx = hash(key);
@@ -417,35 +441,37 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
     HashEntry<K, V> last = null;
 
     while (e != null)
+    {
+      if (AbstractCollection4D.equals(key, e.key))
       {
-        if (AbstractCollection4D.equals(key, e.key))
-          {
-            modCount++;
-            if (last == null)
-              buckets[idx] = e.next;
-            else
-              last.next = e.next;
-            size--;
-            // Method call necessary for LinkedHashMap to work correctly.
-            return e.cleanup();
-          }
-        last = e;
-        e = e.next;
+        modCount++;
+        if (last == null) {
+          buckets[idx] = e.next;
+        } else {
+          last.next = e.next;
+        }
+        size--;
+        // Method call necessary for LinkedHashMap to work correctly.
+        return e.cleanup();
       }
+      last = e;
+      e = e.next;
+    }
     return null;
   }
 
   /**
    * Clears the Map so it has no keys. This is O(1).
    */
+  @Override
   public void clear()
   {
     if (size != 0)
-      {
-        modCount++;
-        Convert.fill(buckets, 0, buckets.length, null);
-        size = 0;
-      }
+    {
+      modCount++;
+      Convert.fill(buckets, 0, buckets.length, null);
+      size = 0;
+    }
   }
 
   /**
@@ -456,18 +482,20 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @return true if at least one key maps to the value
    * @see #containsKey(Object)
    */
+  @Override
   public boolean containsValue(Object value)
   {
     for (int i = buckets.length - 1; i >= 0; i--)
+    {
+      HashEntry<K, V> e = buckets[i];
+      while (e != null)
       {
-        HashEntry<K, V> e = buckets[i];
-        while (e != null)
-          {
-            if (AbstractCollection4D.equals(value, e.value))
-              return true;
-            e = e.next;
-          }
+        if (AbstractCollection4D.equals(value, e.value)) {
+          return true;
+        }
+        e = e.next;
       }
+    }
     return false;
   }
 
@@ -477,24 +505,25 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    *
    * @return the clone
    */
+  @Override
   public Object clone()
   {
     HashMap4D<K, V> copy = null;
     try
-      {
-        copy = (HashMap4D<K, V>) super.clone();
-      }
+    {
+      copy = (HashMap4D<K, V>) super.clone();
+    }
     catch (CloneNotSupportedException x)
-      {
-        // This is impossible.
-      }
+    {
+      // This is impossible.
+    }
     copy.buckets = (HashEntry<K, V>[]) new HashEntry[buckets.length];
     copy.putAllInternal(this);
     // Clear the entry cache. AbstractMap.clone() does the others.
     copy.entries = null;
     return copy;
   }
-  
+
   /**
    * Returns a "set view" of this HashMap's keys. The set is backed by the
    * HashMap, so changes in one show up in the other.  The set supports
@@ -504,34 +533,40 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #values()
    * @see #entrySet()
    */
+  @Override
   public Set<K> keySet()
   {
-    if (keys == null)
+    if (keys == null){
       // Create an AbstractSet with custom implementations of those methods
       // that can be overridden easily and efficiently.
       keys = new AbstractSet<K>()
       {
+        @Override
         public int size()
         {
           return size;
         }
 
+        @Override
         public Iterator<K> iterator()
         {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap4D.this.iterator(KEYS);
         }
 
+        @Override
         public void clear()
         {
           HashMap4D.this.clear();
         }
 
+        @Override
         public boolean contains(Object o)
         {
           return containsKey(o);
         }
 
+        @Override
         public boolean remove(Object o)
         {
           // Test against the size of the HashMap to determine if anything
@@ -542,6 +577,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
           return oldsize != size;
         }
       };
+    }
     return keys;
   }
 
@@ -555,29 +591,34 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #keySet()
    * @see #entrySet()
    */
+  @Override
   public Collection<V> values()
   {
-    if (values == null)
+    if (values == null){
       // We don't bother overriding many of the optional methods, as doing so
       // wouldn't provide any significant performance advantage.
       values = new AbstractCollection<V>()
       {
+        @Override
         public int size()
         {
           return size;
         }
 
+        @Override
         public Iterator<V> iterator()
         {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap4D.this.iterator(VALUES);
         }
 
+        @Override
         public void clear()
         {
           HashMap4D.this.clear();
         }
       };
+    }
     return values;
   }
 
@@ -594,45 +635,52 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @see #values()
    * @see Map.Entry
    */
+  @Override
   public Set<Map.Entry<K, V>> entrySet()
   {
-    if (entries == null)
+    if (entries == null){
       // Create an AbstractSet with custom implementations of those methods
       // that can be overridden easily and efficiently.
       entries = new AbstractSet<Map.Entry<K, V>>()
       {
+        @Override
         public int size()
         {
           return size;
         }
 
+        @Override
         public Iterator<Map.Entry<K, V>> iterator()
         {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap4D.this.iterator(ENTRIES);
         }
 
+        @Override
         public void clear()
         {
           HashMap4D.this.clear();
         }
 
+        @Override
         public boolean contains(Object o)
         {
           return getEntry(o) != null;
         }
 
+        @Override
         public boolean remove(Object o)
         {
           HashEntry<K, V> e = getEntry(o);
           if (e != null)
-            {
-              HashMap4D.this.remove(e.key);
-              return true;
-            }
+          {
+            HashMap4D.this.remove(e.key);
+            return true;
+          }
           return false;
         }
       };
+    }
     return entries;
   }
 
@@ -664,18 +712,20 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
   // Package visible, for use in nested classes.
   final HashEntry<K, V> getEntry(Object o)
   {
-    if (! (o instanceof Map.Entry))
+    if (! (o instanceof Map.Entry)){
       return null;
+    }
     Map.Entry<K, V> me = (Map.Entry<K, V>) o;
     K key = me.getKey();
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     while (e != null)
-      {
-        if (equals(e.key, key))
-          return equals(e.value, me.getValue()) ? e : null;
-        e = e.next;
+    {
+      if (equals(e.key, key)) {
+        return equals(e.value, me.getValue()) ? e : null;
       }
+      e = e.next;
+    }
     return null;
   }
 
@@ -717,13 +767,13 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
     final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
     size = 0;
     while (it.hasNext())
-      {
-	final Map.Entry<K,V> e = it.next();
-        size++;
-	K key = e.getKey();
-	int idx = hash(key);
-	addEntry(key, e.getValue(), idx, false);
-      }
+    {
+      final Map.Entry<K,V> e = it.next();
+      size++;
+      K key = e.getKey();
+      int idx = hash(key);
+      addEntry(key, e.getValue(), idx, false);
+    }
   }
 
   /**
@@ -744,18 +794,18 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
     buckets = (HashEntry<K, V>[]) new HashEntry[newcapacity];
 
     for (int i = oldBuckets.length - 1; i >= 0; i--)
+    {
+      HashEntry<K, V> e = oldBuckets[i];
+      while (e != null)
       {
-        HashEntry<K, V> e = oldBuckets[i];
-        while (e != null)
-          {
-            int idx = hash(e.key);
-            HashEntry<K, V> dest = buckets[idx];
-            HashEntry<K, V> next = e.next;
-            e.next = buckets[idx];
-            buckets[idx] = e;
-            e = next;
-          }
+        int idx = hash(e.key);
+        HashEntry<K, V> dest = buckets[idx];
+        HashEntry<K, V> next = e.next;
+        e.next = buckets[idx];
+        buckets[idx] = e;
+        e = next;
       }
+    }
   }
 
   /**
@@ -802,6 +852,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
      * Returns true if the Iterator has more elements.
      * @return true if there are more elements
      */
+    @Override
     public boolean hasNext()
     {
       return count > 0;
@@ -813,24 +864,30 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
      * @throws ConcurrentModificationException if the HashMap was modified
      * @throws NoSuchElementException if there is none
      */
+    @Override
     public T next()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (count == 0)
+      }
+      if (count == 0){
         throw new NoSuchElementException();
+      }
       count--;
       HashEntry e = next;
 
-      while (e == null)
+      while (e == null){
         e = buckets[--idx];
+      }
 
       next = e.next;
       last = e;
-      if (type == VALUES)
+      if (type == VALUES){
         return (T) e.value;
-      if (type == KEYS)
+      }
+      if (type == KEYS){
         return (T) e.key;
+      }
       return (T) e;
     }
 
@@ -840,12 +897,15 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
      * @throws ConcurrentModificationException if the HashMap was modified
      * @throws IllegalStateException if called when there is no last element
      */
+    @Override
     public void remove()
     {
-      if (knownMod != modCount)
+      if (knownMod != modCount){
         throw new ConcurrentModificationException();
-      if (last == null)
+      }
+      if (last == null){
         throw new IllegalStateException();
+      }
 
       HashMap4D.this.remove(last.key);
       last = null;

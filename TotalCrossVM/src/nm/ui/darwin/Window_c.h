@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret);
+bool windowGetSIP();
 
 /*static void windowSetDeviceTitle(TCObject titleObj)
 {

@@ -1,5 +1,7 @@
 package totalcross.telephony;
 
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 public class SmsManager {
 
   private static SmsManager instance;
@@ -22,11 +24,10 @@ public class SmsManager {
    * @param receiver the receiver that will handle incoming sms messages or null to stop listening
    *     incoming messages
    */
+  @ReplacedByNativeOnDeploy
   public void registerSmsReceiver(SmsReceiver receiver) {
     this.receiver = receiver;
   }
-
-  public native void registerSmsReceiver4D(SmsReceiver receiver);
 
   /**
    * Send a text based SMS.
@@ -35,6 +36,7 @@ public class SmsManager {
    * @param scAddress the service center address or null to use the current default SMSC
    * @param text the body of the message to send
    */
+  @ReplacedByNativeOnDeploy
   public void sendTextMessage(String destinationAddress, String scAddress, String text) {
     if (destinationAddress.length() == 0) {
       throw new IllegalArgumentException("Argument destinationAddress cannot be empty");
@@ -44,6 +46,4 @@ public class SmsManager {
     }
     System.out.println("To: " + destinationAddress + ", From: " + scAddress + ", Text: " + text);
   }
-
-  public native void sendTextMessage4D(String destinationAddress, String scAddress, String text);
 }

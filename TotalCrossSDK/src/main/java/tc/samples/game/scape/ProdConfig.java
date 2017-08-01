@@ -26,11 +26,11 @@ package tc.samples.game.scape;
 
 interface ProdConfig
 {
-   static final String PC_VERSION = "0.9";
-   static final String PC_CREATOR_ID = "Scpe";
+  static final String PC_VERSION = "0.9";
+  static final String PC_CREATOR_ID = "Scpe";
 
-   static final boolean PC_COLOR = true;
-   static final boolean PC_WAVES = true;
+  static final boolean PC_COLOR = true;
+  static final boolean PC_WAVES = true;
 
-   final static boolean NEVER_LOSE = false;
+  final static boolean NEVER_LOSE = false;
 }

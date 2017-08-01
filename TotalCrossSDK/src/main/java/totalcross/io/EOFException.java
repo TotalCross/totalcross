@@ -10,22 +10,22 @@ package totalcross.io;
  */
 public class EOFException extends IOException
 {
-   /**
-    * Constructs an EOFException with null as its error detail message.
-    */
-   public EOFException()
-   {
-      super();
-   }
+  /**
+   * Constructs an EOFException with null as its error detail message.
+   */
+  public EOFException()
+  {
+    super();
+  }
 
-   /**
-    * Constructs an IOException with the specified detail message.
-    * 
-    * @param msg
-    *           the detail message.
-    */
-   public EOFException(String msg)
-   {
-      super(msg);
-   }
+  /**
+   * Constructs an IOException with the specified detail message.
+   * 
+   * @param msg
+   *           the detail message.
+   */
+  public EOFException(String msg)
+  {
+    super(msg);
+  }
 }

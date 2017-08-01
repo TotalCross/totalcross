@@ -16,10 +16,12 @@
 
 package tc.samples.api.ui;
 
-import totalcross.sys.*;
-import totalcross.ui.*;
-
-import tc.samples.api.*;
+import tc.samples.api.BaseContainer;
+import totalcross.sys.Convert;
+import totalcross.sys.Settings;
+import totalcross.ui.Label;
+import totalcross.ui.ScrollContainer;
+import totalcross.ui.ToolTip;
 
 /**
  * Shows all AwesomeFont chars.
@@ -30,20 +32,21 @@ import tc.samples.api.*;
  */
 public class AwesomeFontSample extends BaseContainer
 {
-   public void initUI()
-   {
-      super.initUI();
-      ScrollContainer sc = new ScrollContainer(false,true);
-      add(sc,LEFT,TOP+fmH/4,FILL,FILL-fmH/4);
-      setAwesome(sc, fmH*2);
-      int cols = Math.min(Settings.screenWidth, Settings.screenHeight) / (fmH*3);
-      info = "Hold char to see its unicode value";
-      for (int i = 0xF000,j=0; i <= 0xF27F; i++,j++)
-      {
-         Label l = new Label(String.valueOf((char)i),CENTER);
-         new ToolTip(l, "\\u"+Convert.unsigned2hex(i,4));
-         sc.add(l, (j%cols) == 0 ? LEFT : AFTER, 
-               (j%cols) == 0 ? AFTER : SAME, PARENTSIZE-cols,fmH*3);
-      }
-   }
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    ScrollContainer sc = new ScrollContainer(false,true);
+    add(sc,LEFT,TOP+fmH/4,FILL,FILL-fmH/4);
+    setAwesome(sc, fmH*2);
+    int cols = Math.min(Settings.screenWidth, Settings.screenHeight) / (fmH*3);
+    info = "Hold char to see its unicode value";
+    for (int i = 0xF000,j=0; i <= 0xF27F; i++,j++)
+    {
+      Label l = new Label(String.valueOf((char)i),CENTER);
+      new ToolTip(l, "\\u"+Convert.unsigned2hex(i,4));
+      sc.add(l, (j%cols) == 0 ? LEFT : AFTER, 
+          (j%cols) == 0 ? AFTER : SAME, PARENTSIZE-cols,fmH*3);
+    }
+  }
 }

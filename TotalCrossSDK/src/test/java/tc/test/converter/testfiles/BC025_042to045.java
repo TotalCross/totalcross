@@ -15,15 +15,18 @@ package tc.test.converter.testfiles;
 
 public class BC025_042to045
 {
-   public BC025_042to045()
-   {
-      Object o1 = null, o2 = null, o3 = null, o4 = null, o;
+  public BC025_042to045()
+  {
+    Object o1 = null, o2 = null, o3 = null, o4 = null, o;
 
-      o = o1;
-      o = o2;
-      o = o3;
-      o = o4;
+    o = o1;
+    o = o2;
+    o = o3;
+    o = o4;
 
-      if (false) o1 = o; // remove warnings
-   }
+    if (false)
+    {
+      o1 = o; // remove warnings
+    }
+  }
 }

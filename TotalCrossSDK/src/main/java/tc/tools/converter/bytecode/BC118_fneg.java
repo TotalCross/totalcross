@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC118_fneg extends Arithmetic
 {
-   public BC118_fneg()
-   {
-      super(0,-1,-1,FLOAT);
-   }
-   public void exec()
-   {
-      stack[stackPtr-1].asDouble = -stack[stackPtr-1].asDouble;
-   }
+  public BC118_fneg()
+  {
+    super(0,-1,-1,FLOAT);
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr-1].asDouble = -stack[stackPtr-1].asDouble;
+  }
 }

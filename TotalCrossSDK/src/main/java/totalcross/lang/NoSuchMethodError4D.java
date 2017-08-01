@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class NoSuchMethodError4D extends Error
 {
-   /** Constructs an empty Exception. */
-   public NoSuchMethodError4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public NoSuchMethodError4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public NoSuchMethodError4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public NoSuchMethodError4D(String msg)
+  {
+    super(msg);
+  }
 }

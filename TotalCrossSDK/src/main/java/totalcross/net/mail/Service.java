@@ -26,48 +26,48 @@ import totalcross.net.AuthenticationException;
  */
 public abstract class Service
 {
-   protected MailSession session;
+  protected MailSession session;
 
-   protected String host;
+  protected String host;
 
-   protected int port;
+  protected int port;
 
-   protected String user;
+  protected String user;
 
-   protected String password;
+  protected String password;
 
-   protected Service(MailSession session)
-   {
-      this.session = session;
-   }
+  protected Service(MailSession session)
+  {
+    this.session = session;
+  }
 
-   /**
-    * A generic connect method that takes no parameters. Subclasses can implement the appropriate authentication
-    * schemes. Subclasses that need additional information might want to use some properties or might get it
-    * interactively.
-    * 
-    * Most clients should just call this method to connect to the store.
-    * 
-    * @throws AuthenticationException
-    * @throws MessagingException
-    * @since TotalCross 1.13
-    */
-   public abstract void connect() throws AuthenticationException, MessagingException;
+  /**
+   * A generic connect method that takes no parameters. Subclasses can implement the appropriate authentication
+   * schemes. Subclasses that need additional information might want to use some properties or might get it
+   * interactively.
+   * 
+   * Most clients should just call this method to connect to the store.
+   * 
+   * @throws AuthenticationException
+   * @throws MessagingException
+   * @since TotalCross 1.13
+   */
+  public abstract void connect() throws AuthenticationException, MessagingException;
 
-   public abstract void connect(String host, int port, String user, String password) throws AuthenticationException,
-         MessagingException;
+  public abstract void connect(String host, int port, String user, String password) throws AuthenticationException,
+  MessagingException;
 
-   /**
-    * Close this service and terminate its connection. Any Messaging components (Folders, Messages, etc.) belonging to
-    * this service are invalid after this store is closed. Note that the store is closed even if this method terminates
-    * abnormally by throwing a MessagingException.
-    * 
-    * @throws MessagingException
-    * @since TotalCross 1.13
-    */
-   public abstract void close() throws MessagingException;
+  /**
+   * Close this service and terminate its connection. Any Messaging components (Folders, Messages, etc.) belonging to
+   * this service are invalid after this store is closed. Note that the store is closed even if this method terminates
+   * abnormally by throwing a MessagingException.
+   * 
+   * @throws MessagingException
+   * @since TotalCross 1.13
+   */
+  public abstract void close() throws MessagingException;
 
-   protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException,
-         MessagingException
-   {}
+  protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException,
+  MessagingException
+  {}
 }

@@ -33,16 +33,16 @@ package totalcross.lang;
 
 public class IllegalStateException4D extends RuntimeException
 {
-   static final long serialVersionUID = -1848914673093119416L;
+  static final long serialVersionUID = -1848914673093119416L;
 
-   /** Constructs an empty Exception. */
-   public IllegalStateException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public IllegalStateException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public IllegalStateException4D(String message)
-   {
-      super(message);
-   }
+  /** Constructs an exception with the given message. */
+  public IllegalStateException4D(String message)
+  {
+    super(message);
+  }
 }

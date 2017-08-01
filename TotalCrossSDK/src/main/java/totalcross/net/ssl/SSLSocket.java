@@ -16,127 +16,140 @@ import totalcross.sys.Vm;
  */
 public class SSLSocket extends Socket
 {
-   private SSLClient sslClient;
-   private SSL sslConnection;
-   private SSLReadHolder sslReader;
-   private ByteArrayStream buffer = null;
+  private SSLClient sslClient;
+  private SSL sslConnection;
+  private SSLReadHolder sslReader;
+  private ByteArrayStream buffer = null;
 
-   /**
-    * Constructs an SSL connection to a named host at a specified port, with the specified connection timeout, binding
-    * the client side of the connection a given address and port. This acts as the SSL client.
-    * 
-    * @param host
-    *           the server's host
-    * @param port
-    *           its port
-    * @param timeout
-    *           the timeout for this operation
-    * @throws UnknownHostException
-    *            if the host is not known
-    * @throws IOException
-    *            if an I/O error occurs when creating the socket
-    */
-   public SSLSocket(String host, int port, int timeout) throws UnknownHostException, IOException
-   {
-      super(host, port, timeout);
-   }
+  /**
+   * Constructs an SSL connection to a named host at a specified port, with the specified connection timeout, binding
+   * the client side of the connection a given address and port. This acts as the SSL client.
+   * 
+   * @param host
+   *           the server's host
+   * @param port
+   *           its port
+   * @param timeout
+   *           the timeout for this operation
+   * @throws UnknownHostException
+   *            if the host is not known
+   * @throws IOException
+   *            if an I/O error occurs when creating the socket
+   */
+  public SSLSocket(String host, int port, int timeout) throws UnknownHostException, IOException
+  {
+    super(host, port, timeout);
+  }
 
-   /**
-    * Creates a new SSLClient to be used by this instance of SSLSocket during the handshake. The default implementation
-    * does not perform any kind of validation. Subclasses may override this method to use their own implementation of
-    * SSLClient.
-    * 
-    * @return a SSLClient initialized with the objects required to perform the validation for this socket.
-    * @throws CryptoException
-    */
-   protected SSLClient prepareContext() throws CryptoException
-   {
-      return new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
-   }
+  /**
+   * Creates a new SSLClient to be used by this instance of SSLSocket during the handshake. The default implementation
+   * does not perform any kind of validation. Subclasses may override this method to use their own implementation of
+   * SSLClient.
+   * 
+   * @return a SSLClient initialized with the objects required to perform the validation for this socket.
+   * @throws CryptoException
+   */
+  protected SSLClient prepareContext() throws CryptoException
+  {
+    return new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
+  }
 
-   /**
-    * Starts an SSL handshake on this connection.
-    * 
-    * @throws IOException
-    *            on a network level error
-    */
-   public void startHandshake() throws IOException
-   {
+  /**
+   * Starts an SSL handshake on this connection.
+   * 
+   * @throws IOException
+   *            on a network level error
+   */
+  public void startHandshake() throws IOException
+  {
+    try
+    {
+      sslClient = prepareContext();
+      sslConnection = sslClient.connect(this, null);
+      Exception e = sslConnection.getLastException();
+      if (e != null) {
+        throw new IOException(e.getMessage());
+      }
+      int status;
+      for (int elapsedTime = 0 ; (status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS && elapsedTime < super.readTimeout ; elapsedTime += 25) {
+        Vm.sleep(25);
+      }
+      if (status != Constants.SSL_OK) {
+        throw new IOException("SSL handshake failed: " + status);
+      }
+      sslReader = new SSLReadHolder();
+      buffer = new ByteArrayStream(256);
+      buffer.mark();
+    }
+    catch (Exception e)
+    {
       try
       {
-         sslClient = prepareContext();
-         sslConnection = sslClient.connect(this, null);
-         Exception e = sslConnection.getLastException();
-         if (e != null)
-            throw new IOException(e.getMessage());
-         int status;
-         for (int elapsedTime = 0 ; (status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS && elapsedTime < super.readTimeout ; elapsedTime += 25) {
-            Vm.sleep(25);
-         }
-         if (status != Constants.SSL_OK)
-            throw new IOException("SSL handshake failed: " + status);
-         sslReader = new SSLReadHolder();
-         buffer = new ByteArrayStream(256);
-         buffer.mark();
+        this.close();
       }
-      catch (Exception e)
+      catch (IOException e2)
       {
-         try
-         {
-            this.close();
-         }
-         catch (IOException e2)
-         {
-         }
-         if (e instanceof IOException)
-            throw (IOException) e;
-            throw new IOException(e.getMessage());
       }
-   }
-
-   public int readBytes(byte[] buf, int start, int count) throws IOException
-   {
-      if (buffer == null)
-         return super.readBytes(buf, start, count);
-      if (buffer.available() == 0)
-      {
-         int sslReadBytes = sslConnection.read(sslReader);
-         buffer.reuse();
-         if (sslReadBytes > 0)
-            buffer.writeBytes(sslReader.getData(), 0, sslReadBytes);
-         buffer.mark();
+      if (e instanceof IOException) {
+        throw (IOException) e;
       }
-      int readBytes = buffer.readBytes(buf, start, count);
+      throw new IOException(e.getMessage());
+    }
+  }
 
-      return readBytes;
-   }
-
-   public int readBytes(byte[] buf) throws IOException
-   {
-      return this.readBytes(buf, 0, buf.length);
-   }
-
-   public int writeBytes(byte[] buf, int start, int count) throws IOException
-   {
-      if (buffer == null)
-         return super.writeBytes(buf, start, count);
-      if (start > 0)
-      {
-         byte[] buf2 = new byte[count];
-         Vm.arrayCopy(buf, start, buf2, 0, count);
-         buf = buf2;
+  @Override
+  public int readBytes(byte[] buf, int start, int count) throws IOException
+  {
+    if (buffer == null){
+      return super.readBytes(buf, start, count);
+    }
+    if (buffer.available() == 0)
+    {
+      int sslReadBytes = sslConnection.read(sslReader);
+      buffer.reuse();
+      if (sslReadBytes > 0) {
+        buffer.writeBytes(sslReader.getData(), 0, sslReadBytes);
       }
-      return sslConnection.write(buf, count);
-   }
-   
-   public void close() throws IOException
-   {
-      if (buffer != null)
-         buffer = null;
-      if (sslConnection != null)
-         sslConnection.dispose();
-      if (sslClient != null)
-         sslClient.dispose();
-      super.close();
-   }
+      buffer.mark();
+    }
+    int readBytes = buffer.readBytes(buf, start, count);
+
+    return readBytes;
+  }
+
+  @Override
+  public int readBytes(byte[] buf) throws IOException
+  {
+    return this.readBytes(buf, 0, buf.length);
+  }
+
+  @Override
+  public int writeBytes(byte[] buf, int start, int count) throws IOException
+  {
+    if (buffer == null){
+      return super.writeBytes(buf, start, count);
+    }
+    if (start > 0)
+    {
+      byte[] buf2 = new byte[count];
+      Vm.arrayCopy(buf, start, buf2, 0, count);
+      buf = buf2;
+    }
+    return sslConnection.write(buf, count);
+  }
+
+  @Override
+  public void close() throws IOException
+  {
+    if (buffer != null){
+      buffer = null;
+    }
+    if (sslConnection != null){
+      sslConnection.dispose();
+    }
+    if (sslClient != null){
+      sslClient.dispose();
+    }
+    super.close();
+  }
 }

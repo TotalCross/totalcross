@@ -11,30 +11,32 @@
 
 package tc.test.totalcross.collections;
 
-import java.util.*;
+import java.util.NoSuchElementException;
+
 import totalcross.unit.TestCase;
 
 public class TestNoSuchElementException extends TestCase
 {
-   public void testRun()
-   {
-      try
-      {
-         throw new NoSuchElementException();
-      }
-      catch (NoSuchElementException exception)
-      {
-         assertTrue(exception instanceof NoSuchElementException);
-      }
-      
-      try
-      {
-         throw new NoSuchElementException("erro");
-      }
-      catch (NoSuchElementException exception)
-      {
-         assertTrue(exception instanceof NoSuchElementException);
-         assertEquals("erro", exception.getMessage());
-      }    
-   }
+  @Override
+  public void testRun()
+  {
+    try
+    {
+      throw new NoSuchElementException();
+    }
+    catch (NoSuchElementException exception)
+    {
+      assertTrue(exception instanceof NoSuchElementException);
+    }
+
+    try
+    {
+      throw new NoSuchElementException("erro");
+    }
+    catch (NoSuchElementException exception)
+    {
+      assertTrue(exception instanceof NoSuchElementException);
+      assertEquals("erro", exception.getMessage());
+    }    
+  }
 }

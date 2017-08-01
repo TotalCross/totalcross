@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class NoSuchFieldError4D extends Error
 {
-   /** Constructs an empty Exception. */
-   public NoSuchFieldError4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public NoSuchFieldError4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public NoSuchFieldError4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public NoSuchFieldError4D(String msg)
+  {
+    super(msg);
+  }
 }

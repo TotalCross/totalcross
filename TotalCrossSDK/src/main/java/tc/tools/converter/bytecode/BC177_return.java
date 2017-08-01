@@ -15,8 +15,8 @@ package tc.tools.converter.bytecode;
 
 public class BC177_return extends Return
 {
-   public BC177_return()
-   {
-      super(0,0,-1);
-   }
+  public BC177_return()
+  {
+    super(0,0,-1);
+  }
 }

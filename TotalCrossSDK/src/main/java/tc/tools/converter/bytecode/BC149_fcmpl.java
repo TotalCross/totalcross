@@ -15,13 +15,14 @@ package tc.tools.converter.bytecode;
 
 public class BC149_fcmpl extends Comparison
 {
-   public BC149_fcmpl()
-   {
-      super(-1,-2,-2,-1,FLOAT);
-   }
-   public void exec()
-   {
-      double r = stack[stackPtr-2].asDouble - stack[stackPtr-1].asDouble;
-      stack[stackPtr-2].asInt = (r > 0)?1:(r < 0)?-1:0;
-   }
+  public BC149_fcmpl()
+  {
+    super(-1,-2,-2,-1,FLOAT);
+  }
+  @Override
+  public void exec()
+  {
+    double r = stack[stackPtr-2].asDouble - stack[stackPtr-1].asDouble;
+    stack[stackPtr-2].asInt = (r > 0)?1:(r < 0)?-1:0;
+  }
 }

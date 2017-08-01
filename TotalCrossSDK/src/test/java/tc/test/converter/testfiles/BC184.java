@@ -15,9 +15,9 @@ package tc.test.converter.testfiles;
 
 public class BC184 extends BC184_A
 {
-   public void test()
-   {
-/*      BC184 thisClass = new BC184();
+  public void test()
+  {
+    /*      BC184 thisClass = new BC184();
       BC184_A superClass = new BC184_A();
 
       //------- testing internal method calls -------
@@ -38,16 +38,16 @@ public class BC184 extends BC184_A
       superClass.smA1();
       BC184_A.smA2();
       BC184_A.smOverloading();
-*/   }
+     */   }
 
-   public static void sm1() {}
-   public static void sm2() {}
-   public static void smOverloading() {}
+  public static void sm1() {}
+  public static void sm2() {}
+  public static void smOverloading() {}
 }
 
 class BC184_A
 {
-   public static void smA1() {}
-   public static void smA2() {}
-   public static void smOverloading() {}
+  public static void smA1() {}
+  public static void smA2() {}
+  public static void smOverloading() {}
 }

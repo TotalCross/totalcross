@@ -39,7 +39,10 @@ exception statement from your version. */
 package totalcross.util;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.AbstractList;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * A basic implementation of most of the methods in the Collection interface to
@@ -72,7 +75,7 @@ import java.util.*;
  * @status updated to 1.4
  */
 public abstract class AbstractCollection4D<E>
-  implements Collection<E>, Iterable<E>
+implements Collection<E>, Iterable<E>
 {
   /**
    * The main constructor, for use by subclasses.
@@ -88,6 +91,7 @@ public abstract class AbstractCollection4D<E>
    *
    * @return an iterator
    */
+  @Override
   public abstract Iterator<E> iterator();
 
   /**
@@ -96,6 +100,7 @@ public abstract class AbstractCollection4D<E>
    *
    * @return the size
    */
+  @Override
   public abstract int size();
 
   /**
@@ -114,6 +119,7 @@ public abstract class AbstractCollection4D<E>
    * @throws IllegalArgumentException if some aspect of the object prevents
    *         it from being added
    */
+  @Override
   public boolean add(E o)
   {
     throw new UnsupportedOperationException();
@@ -142,13 +148,15 @@ public abstract class AbstractCollection4D<E>
    *         collection doesn't allow null values.
    * @see #add(Object)
    */
+  @Override
   public boolean addAll(Collection<? extends E> c)
   {
     Iterator<? extends E> itr = c.iterator();
     boolean modified = false;
     int pos = c.size();
-    while (--pos >= 0)
+    while (--pos >= 0){
       modified |= add(itr.next());
+    }
     return modified;
   }
 
@@ -164,15 +172,16 @@ public abstract class AbstractCollection4D<E>
    *         iterator does not provide an implementation of remove
    * @see Iterator#remove()
    */
+  @Override
   public void clear()
   {
     Iterator<E> itr = iterator();
     int pos = size();
     while (--pos >= 0)
-      {
-        itr.next();
-        itr.remove();
-      }
+    {
+      itr.next();
+      itr.remove();
+    }
   }
 
   /**
@@ -186,13 +195,16 @@ public abstract class AbstractCollection4D<E>
    * @param o the object to remove from this collection
    * @return true if this collection contains an object equal to o
    */
+  @Override
   public boolean contains(Object o)
   {
     Iterator<E> itr = iterator();
     int pos = size();
-    while (--pos >= 0)
-      if (equals(o, itr.next()))
+    while (--pos >= 0){
+      if (equals(o, itr.next())){
         return true;
+      }
+    }
     return false;
   }
 
@@ -208,13 +220,16 @@ public abstract class AbstractCollection4D<E>
    * @throws NullPointerException if the given collection is null
    * @see #contains(Object)
    */
+  @Override
   public boolean containsAll(Collection<?> c)
   {
     Iterator<?> itr = c.iterator();
     int pos = c.size();
-    while (--pos >= 0)
-      if (!contains(itr.next()))
+    while (--pos >= 0){
+      if (!contains(itr.next())){
         return false;
+      }
+    }
     return true;
   }
 
@@ -225,6 +240,7 @@ public abstract class AbstractCollection4D<E>
    * @return true if this collection is empty.
    * @see #size()
    */
+  @Override
   public boolean isEmpty()
   {
     return size() == 0;
@@ -249,16 +265,18 @@ public abstract class AbstractCollection4D<E>
    *         does not support the remove method
    * @see Iterator#remove()
    */
+  @Override
   public boolean remove(Object o)
   {
     Iterator<E> itr = iterator();
     int pos = size();
-    while (--pos >= 0)
+    while (--pos >= 0){
       if (equals(o, itr.next()))
-        {
-          itr.remove();
-          return true;
-        }
+      {
+        itr.remove();
+        return true;
+      }
+    }
     return false;
   }
 
@@ -277,6 +295,7 @@ public abstract class AbstractCollection4D<E>
    * @throws NullPointerException if the collection, c, is null.
    * @see Iterator#remove()
    */
+  @Override
   public boolean removeAll(Collection<?> c)
   {
     return removeAllInternal(c);
@@ -304,12 +323,13 @@ public abstract class AbstractCollection4D<E>
     Iterator<E> itr = iterator();
     boolean modified = false;
     int pos = size();
-    while (--pos >= 0)
+    while (--pos >= 0){
       if (c.contains(itr.next()))
-        {
-          itr.remove();
-          modified = true;
-        }
+      {
+        itr.remove();
+        modified = true;
+      }
+    }
     return modified;
   }
 
@@ -328,6 +348,7 @@ public abstract class AbstractCollection4D<E>
    * @throws NullPointerException if the collection, c, is null.
    * @see Iterator#remove()
    */
+  @Override
   public boolean retainAll(Collection<?> c)
   {
     return retainAllInternal(c);
@@ -356,12 +377,13 @@ public abstract class AbstractCollection4D<E>
     Iterator<E> itr = iterator();
     boolean modified = false;
     int pos = size();
-    while (--pos >= 0)
+    while (--pos >= 0){
       if (!c.contains(itr.next()))
-        {
-          itr.remove();
-          modified = true;
-        }
+      {
+        itr.remove();
+        modified = true;
+      }
+    }
     return modified;
   }
 
@@ -374,13 +396,15 @@ public abstract class AbstractCollection4D<E>
    *
    * @return an array containing the elements of this collection
    */
+  @Override
   public Object[] toArray()
   {
     Iterator<E> itr = iterator();
     int size = size();
     Object[] a = new Object[size];
-    for (int pos = 0; pos < size; pos++)
+    for (int pos = 0; pos < size; pos++) {
       a[pos] = itr.next();
+    }
     return a;
   }
 
@@ -406,18 +430,21 @@ public abstract class AbstractCollection4D<E>
    * @throws ArrayStoreException if the type of the array precludes holding
    *         one of the elements of the Collection
    */
+  @Override
   public <T> T[] toArray(T[] a)
   {
     int size = size();
-    if (a.length < size)
+    if (a.length < size){
       a = (T[]) Array.newInstance(a.getClass().getComponentType(),
-                                       size);
-    else if (a.length > size)
+          size);
+    }else if (a.length > size){
       a[size] = null;
+    }
 
     Iterator<E> itr = iterator();
-    for (int pos = 0; pos < size; pos++)
+    for (int pos = 0; pos < size; pos++) {
       a[pos] = (T) (itr.next());
+    }
     return a;
   }
 
@@ -432,22 +459,25 @@ public abstract class AbstractCollection4D<E>
    *
    * @return a String representation of the Collection
    */
+  @Override
   public String toString()
   {
     Iterator itr = iterator();
     StringBuffer r = new StringBuffer("[");
     boolean hasNext = itr.hasNext();
     while (hasNext)
-      {
-        Object o = itr.next();
-	if (o == this)
-	  r.append("<this>");
-	else
-	  r.append(o);
-	hasNext = itr.hasNext();
-        if (hasNext)
-          r.append(", ");
+    {
+      Object o = itr.next();
+      if (o == this){
+        r.append("<this>");
+      }else {
+        r.append(o);
       }
+      hasNext = itr.hasNext();
+      if (hasNext) {
+        r.append(", ");
+      }
+    }
     r.append("]");
     return r.toString();
   }

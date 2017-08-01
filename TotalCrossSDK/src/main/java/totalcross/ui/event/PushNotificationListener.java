@@ -22,6 +22,6 @@ package totalcross.ui.event;
 
 public interface PushNotificationListener
 {
-   public void tokenReceived(PushNotificationEvent e);
-   public void messageReceived(PushNotificationEvent e);
+  public void tokenReceived(PushNotificationEvent e);
+  public void messageReceived(PushNotificationEvent e);
 }

@@ -15,25 +15,25 @@ package tc.test.converter.testfiles;
 
 public class BC159to166
 {
-   public BC159to166()
-   {
-      int a = 1, b = 1, c = 10;
+  public BC159to166()
+  {
+    int a = 1, b = 1, c = 10;
 
-      if (a == b)
-      {
-         a = a + b;
-      }
-      else
-      {
-         b = a - b;
-      }
+    if (a == b)
+    {
+      a = a + b;
+    }
+    else
+    {
+      b = a - b;
+    }
 
-      a = a * b;
+    a = a * b;
 
 
-      while (a < c)
-      {
-         a = a + 1;
-      }
-   }
+    while (a < c)
+    {
+      a = a + 1;
+    }
+  }
 }

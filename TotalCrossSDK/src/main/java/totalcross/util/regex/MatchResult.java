@@ -30,43 +30,43 @@
 package totalcross.util.regex;
 
 public interface MatchResult{
-   public int MATCH=0;
-   public int PREFIX=-1;
-   public int SUFFIX=-2;
-   public int TARGET=-3;
-   
-   public Pattern pattern();
-   
-   public int groupCount();
-   
-   public boolean isCaptured();
-   public boolean isCaptured(int groupId);
-   public boolean isCaptured(String groupName);
-   
-   public String group(int n);
-   public boolean getGroup(int n,StringBuffer sb);
-   public boolean getGroup(int n,TextBuffer tb);
-   
-   public String group(String name);
-   public boolean getGroup(String name,StringBuffer sb);
-   public boolean getGroup(String name,TextBuffer tb);
-   
-   public String prefix();
-   public String suffix();
-   public String target();
-   
-   public int targetStart();
-   public int targetEnd();
-   public char[] targetChars();
-   
-   public int start();
-   public int end();
-   public int length();
-   
-   public int start(int n);
-   public int end(int n);
-   public int length(int n);
-   
-   public char charAt(int i);
-   public char charAt(int i,int groupNo);
+  public int MATCH=0;
+  public int PREFIX=-1;
+  public int SUFFIX=-2;
+  public int TARGET=-3;
+
+  public Pattern pattern();
+
+  public int groupCount();
+
+  public boolean isCaptured();
+  public boolean isCaptured(int groupId);
+  public boolean isCaptured(String groupName);
+
+  public String group(int n);
+  public boolean getGroup(int n,StringBuffer sb);
+  public boolean getGroup(int n,TextBuffer tb);
+
+  public String group(String name);
+  public boolean getGroup(String name,StringBuffer sb);
+  public boolean getGroup(String name,TextBuffer tb);
+
+  public String prefix();
+  public String suffix();
+  public String target();
+
+  public int targetStart();
+  public int targetEnd();
+  public char[] targetChars();
+
+  public int start();
+  public int end();
+  public int length();
+
+  public int start(int n);
+  public int end(int n);
+  public int length(int n);
+
+  public char charAt(int i);
+  public char charAt(int i,int groupNo);
 }

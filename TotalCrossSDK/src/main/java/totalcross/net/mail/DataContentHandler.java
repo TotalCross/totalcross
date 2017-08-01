@@ -28,5 +28,5 @@ import totalcross.io.Stream;
  */
 public abstract class DataContentHandler
 {
-   public abstract void writeTo(Object obj, String mimeType, Stream stream) throws IOException; //flsobral@124_27: must be public.
+  public abstract void writeTo(Object obj, String mimeType, Stream stream) throws IOException; //flsobral@124_27: must be public.
 }

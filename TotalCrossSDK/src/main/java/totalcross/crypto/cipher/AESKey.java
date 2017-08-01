@@ -18,25 +18,25 @@ package totalcross.crypto.cipher;
  */
 public class AESKey extends Key
 {
-   private byte[] data;
-   
-   /**
-    * Creates a new AESKey object with the given data.
-    * 
-    * @param data A byte array containing the key data.
-    */
-   public AESKey(byte[] data)
-   {
-      this.data = data;
-   }
-   
-   /**
-    * Gets the key data.
-    * 
-    * @return A copy of the byte array containing the key data.
-    */
-   public byte[] getData()
-   {
-      return data;
-   }
+  private byte[] data;
+
+  /**
+   * Creates a new AESKey object with the given data.
+   * 
+   * @param data A byte array containing the key data.
+   */
+  public AESKey(byte[] data)
+  {
+    this.data = data;
+  }
+
+  /**
+   * Gets the key data.
+   * 
+   * @return A copy of the byte array containing the key data.
+   */
+  public byte[] getData()
+  {
+    return data;
+  }
 }

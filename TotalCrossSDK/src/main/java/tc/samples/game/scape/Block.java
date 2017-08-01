@@ -18,119 +18,123 @@
 
 package tc.samples.game.scape;
 
-import totalcross.game.*;
-import totalcross.ui.image.*;
-import totalcross.util.*;
+import totalcross.game.Sprite;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
+import totalcross.util.Random;
 
 public final class Block extends Sprite
 {
-   // random generator for the starting speeds
-   private static Random rand = new Random(1);
+  // random generator for the starting speeds
+  private static Random rand = new Random(1);
 
-   // other important sprite the ball sprite must know about for interaction...
-   private Ball ball;
+  // other important sprite the ball sprite must know about for interaction...
+  private Ball ball;
 
-   // ball movement speed in both directions in double values for acceleration
-   // precision
-   private double speedx, speedy;
+  // ball movement speed in both directions in double values for acceleration
+  // precision
+  private double speedx, speedy;
 
-   // and in integer format for quicker move computing.
-   private int ispeedx, ispeedy;
-   private int ispeed;
+  // and in integer format for quicker move computing.
+  private int ispeedx, ispeedy;
+  private int ispeed;
 
-   private int ix, iy;
-   private int isx, isy;
+  private int ix, iy;
+  private int isx, isy;
 
-   public Block(int ispeed, int ix, int iy, int isx, int isy, Image images,
-         Ball ball) throws IllegalArgumentException, IllegalStateException, ImageException
-   {
-      super(images, -1, false, null);
+  public Block(int ispeed, int ix, int iy, int isx, int isy, Image images,
+      Ball ball) throws IllegalArgumentException, IllegalStateException, ImageException
+  {
+    super(images, -1, false, null);
 
-      // reduce the playfield by the level & score display zone
-      regionMiny += Scape.miny;
+    // reduce the playfield by the level & score display zone
+    regionMiny += Scape.miny;
 
-      this.ix = ix;
-      this.iy = iy;
-      this.isx = isx;
-      this.isy = isy;
+    this.ix = ix;
+    this.iy = iy;
+    this.isx = isx;
+    this.isy = isy;
 
-      this.ispeed = ispeed;
+    this.ispeed = ispeed;
 
-      this.ball = ball;
-   }
+    this.ball = ball;
+  }
 
-   public void reinit()
-   {
-      setPos(ix, iy, false);
-      speedx = ispeed + rand.nextDouble() * 1.5f * ispeed;
-      speedy = (ispeed >> 1) + rand.nextDouble() * ispeed;
-      ispeedx = isx;
-      ispeedy = isy;
-      speed = 1000;
-      increaseSpeed(0);
-   }
+  public void reinit()
+  {
+    setPos(ix, iy, false);
+    speedx = ispeed + rand.nextDouble() * 1.5f * ispeed;
+    speedy = (ispeed >> 1) + rand.nextDouble() * ispeed;
+    ispeedx = isx;
+    ispeedy = isy;
+    speed = 1000;
+    increaseSpeed(0);
+  }
 
-   public void increaseSpeed(int perc)
-   {
-      speedx *= (100.0 + perc) / 100;
-      speedy *= (100.0 + perc) / 100;
+  public void increaseSpeed(int perc)
+  {
+    speedx *= (100.0 + perc) / 100;
+    speedy *= (100.0 + perc) / 100;
 
-      if (ispeedx >= 0)
-         ispeedx = (int) speedx;
-      else
-         ispeedx = -(int) speedx;
+    if (ispeedx >= 0){
+      ispeedx = (int) speedx;
+    }else {
+      ispeedx = -(int) speedx;
+    }
 
-      if (ispeedy >= 0)
-         ispeedy = (int) speedy;
-      else
-         ispeedy = -(int) speedy;
-   }
+    if (ispeedy >= 0){
+      ispeedy = (int) speedy;
+    }else {
+      ispeedy = -(int) speedy;
+    }
+  }
 
-   public boolean onPositionChange()
-   {
-      boolean pval = true;
+  @Override
+  public boolean onPositionChange()
+  {
+    boolean pval = true;
 
-      image.nextFrame();
+    image.nextFrame();
 
-      if (centerX < regionMinx) // hits left border
+    if (centerX < regionMinx) // hits left border
+    {
+      centerX = regionMinx;
+      ispeedx = -ispeedx;
+      pval = false;
+    }
+    else if (centerX > regionMaxx) // hits right border
+    {
+      centerX = regionMaxx;
+      ispeedx = -ispeedx;
+      pval = false;
+    }
+
+    if (centerY < regionMiny) // hits top border
+    {
+      centerY = regionMiny;
+      ispeedy = -ispeedy;
+      pval = false;
+    }
+    else if (centerY > regionMaxy) // hits bottom border
+    {
+      centerY = regionMaxy;
+      ispeedy = -ispeedy;
+      pval = false;
+    }
+
+    if (collide(ball))
+    {
+      if (!ProdConfig.NEVER_LOSE)
       {
-         centerX = regionMinx;
-         ispeedx = -ispeedx;
-         pval = false;
+        Scape.game.stop();
+        return false;
       }
-      else if (centerX > regionMaxx) // hits right border
-      {
-         centerX = regionMaxx;
-         ispeedx = -ispeedx;
-         pval = false;
-      }
+    }
+    return pval;
+  }
 
-      if (centerY < regionMiny) // hits top border
-      {
-         centerY = regionMiny;
-         ispeedy = -ispeedy;
-         pval = false;
-      }
-      else if (centerY > regionMaxy) // hits bottom border
-      {
-         centerY = regionMaxy;
-         ispeedy = -ispeedy;
-         pval = false;
-      }
-
-      if (collide(ball))
-      {
-         if (!Scape.NEVER_LOSE)
-         {
-            Scape.game.stop();
-            return false;
-         }
-      }
-      return pval;
-   }
-
-   public void move()
-   {
-      towardPos(centerX + ispeedx, centerY + ispeedy, true);
-   }
+  public void move()
+  {
+    towardPos(centerX + ispeedx, centerY + ispeedy, true);
+  }
 }

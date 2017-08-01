@@ -19,43 +19,45 @@ import totalcross.util.Vector;
 
 public class Reg_reg_sym extends SingleInstruction
 {
-   public int r0;
-   public int r1;
-   public int sym;
+  public int r0;
+  public int r1;
+  public int sym;
 
-   public Reg_reg_sym(int op, int line, int r0, int r1, int s)
-   {
-      super(op, line);
-      this.r0 = r0;
-      this.r1 = r1;
-      sym     = s;
-   }
+  public Reg_reg_sym(int op, int line, int r0, int r1, int s)
+  {
+    super(op, line);
+    this.r0 = r0;
+    this.r1 = r1;
+    sym     = s;
+  }
 
-   public Reg_reg_sym(int op, int line)
-   {
-      super(op, line);
-   }
+  public Reg_reg_sym(int op, int line)
+  {
+    super(op, line);
+  }
 
-   public void set(int r0, int r1, int s)
-   {
-      this.r0 = r0;
-      this.r1 = r1;
-      sym     = s;
-   }
+  public void set(int r0, int r1, int s)
+  {
+    this.r0 = r0;
+    this.r1 = r1;
+    sym     = s;
+  }
 
-   public String toString()
-   {
-      String print;
-      print = TCConstants.bcTClassNames[opcode] + " " + r0 + ", " + r1 + ", " + sym;
-      return print;
-   }
+  @Override
+  public String toString()
+  {
+    String print;
+    print = TCConstants.bcTClassNames[opcode] + " " + r0 + ", " + r1 + ", " + sym;
+    return print;
+  }
 
-   public void toTCCode(Vector vcode)
-   {
-      TCCode tc = new TCCode(opcode, line);
-      tc.reg_reg_sym__reg0(r0);
-      tc.reg_reg_sym__reg1(r1);
-      tc.reg_reg_sym__sym(sym);
-      vcode.addElement(tc);
-   }
+  @Override
+  public void toTCCode(Vector vcode)
+  {
+    TCCode tc = new TCCode(opcode, line);
+    tc.reg_reg_sym__reg0(r0);
+    tc.reg_reg_sym__reg1(r1);
+    tc.reg_reg_sym__sym(sym);
+    vcode.addElement(tc);
+  }
 }

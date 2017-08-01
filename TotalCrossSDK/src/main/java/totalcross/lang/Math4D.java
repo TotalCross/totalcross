@@ -50,7 +50,7 @@ produce an executable, this library does not by itself cause the
 resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License.
-*/
+ */
 
 package totalcross.lang;
 
@@ -178,11 +178,11 @@ public final class Math4D
   private static final double Lg7 = 1.479819860511658591e-01;
 
   private static final int[] SQRT_PARMS =
-  {     0,   1024,    3062,    5746,    9193,   13348,   18162,   23592,
-    29598,  36145,   43202,   50740,   58733,   67158,   75992,   85215,
-    83599,  71378,   60428,   50647,   41945,   34246,   27478,   21581,
-    16499,  12183,    8588,    5674,    3403,    1742,     661,     130
-  };
+    {     0,   1024,    3062,    5746,    9193,   13348,   18162,   23592,
+        29598,  36145,   43202,   50740,   58733,   67158,   75992,   85215,
+        83599,  71378,   60428,   50647,   41945,   34246,   27478,   21581,
+        16499,  12183,    8588,    5674,    3403,    1742,     661,     130
+    };
 
   /**
    * Take the absolute value of the argument.
@@ -261,8 +261,9 @@ public final class Math4D
    */
   public static double min(double a, double b)
   {
-    if (a == 0.0d && b == 0.0d)  // return -0.0d, if a or b is -0.0d
+    if (a == 0.0d && b == 0.0d){
       return ((Convert.doubleToLongBits(a) >> 63) == 1) ? a : b;
+    }
     return (a < b) ? a : b;
   }
 
@@ -296,8 +297,9 @@ public final class Math4D
    */
   public static double max(double a, double b)
   {
-    if (a == 0.0d && b == 0.0d)  // return +0.0d, if a or b is +0.0d
+    if (a == 0.0d && b == 0.0d){
       return ((Convert.doubleToLongBits(a) >> 63) == 0) ? a : b;
+    }
     return (a > b) ? a : b;
   }
 
@@ -312,24 +314,20 @@ public final class Math4D
     int ix = highPart(x) & 0x7fffffff;
 
     // |x| ~< pi/4
-    if (ix <= 0x3fe921fb)
-       return kernelSin (x);
-
-    // sin(Inf or NaN) is NaN
-    else if (ix>=0x7ff00000)
+    if (ix <= 0x3fe921fb){
+      return kernelSin (x);
+    }else if (ix>=0x7ff00000){
       return NaN;
-
-    // general case: argument reduction needed
-    else
+    }else
     {
-       double d = reducedArcValue(x);
-       switch (reducedArcDirection(x))
-       {
-          case 0: return  kernelSin (d);
-          case 1: return  kernelCos (d);
-          case 2: return -kernelSin (d);
-          default:  return -kernelCos (d);
-       }
+      double d = reducedArcValue(x);
+      switch (reducedArcDirection(x))
+      {
+      case 0: return  kernelSin (d);
+      case 1: return  kernelCos (d);
+      case 2: return -kernelSin (d);
+      default:  return -kernelCos (d);
+      }
     }
   }
 
@@ -344,23 +342,20 @@ public final class Math4D
     int ix = highPart(x) & 0x7fffffff;
 
     // |x| ~< pi/4
-    if (ix <= 0x3fe921fb)
+    if (ix <= 0x3fe921fb){
       return kernelCos (x);
-    // cos(Inf or NaN) is NaN
-    else if (ix>=0x7ff00000)
+    }else if (ix>=0x7ff00000){
       return NaN;
-
-    // general case: argument reduction needed
-    else
+    }else
     {
-       double d = reducedArcValue(x);
-       switch (reducedArcDirection(x))
-       {
-          case 0: return  kernelCos (d);
-          case 1: return -kernelSin (d);
-          case 2: return -kernelCos (d);
-          default: return  kernelSin (d);
-       }
+      double d = reducedArcValue(x);
+      switch (reducedArcDirection(x))
+      {
+      case 0: return  kernelCos (d);
+      case 1: return -kernelSin (d);
+      case 2: return -kernelCos (d);
+      default: return  kernelSin (d);
+      }
     }
   }
 
@@ -375,22 +370,21 @@ public final class Math4D
     int ix = highPart(x) & 0x7fffffff;
 
     // |x| ~< pi/4
-    if (ix <= 0x3fe921fb)
+    if (ix <= 0x3fe921fb){
       return kernelTan (x);
-    // tan(Inf or NaN) is NaN
-    else if (ix>=0x7ff00000)
+    }else if (ix>=0x7ff00000){
       return NaN;
-    // general case: argument reduction needed
-    else
+      // general case: argument reduction needed
+    }else
     {
-       switch (reducedArcDirection(x))
-       {
-          case 0:
-          case 2:
-             return  kernelTan (reducedArcValue(x));
-          default:
-             return  -1.0 / kernelTan (reducedArcValue(x));
-       }
+      switch (reducedArcDirection(x))
+      {
+      case 0:
+      case 2:
+        return  kernelTan (reducedArcValue(x));
+      default:
+        return  -1.0 / kernelTan (reducedArcValue(x));
+      }
     }
   }
 
@@ -409,22 +403,21 @@ public final class Math4D
     // |x| >= 1
     if (ix >= 0x3ff00000)
     {
-       if ((ix == 0x3ff00000) && (lx == 0))
-       {
-          if (hx == 0x3ff00000)
-             return PI_2;
-          else
-             return -PI_2;
-       }
-       else
-          return NaN;
+      if ((ix == 0x3ff00000) && (lx == 0))
+      {
+        if (hx == 0x3ff00000) {
+          return PI_2;
+        } else {
+          return -PI_2;
+        }
+      }else {
+        return NaN;
+      }
     }
     // |x| < 2e-27
-    else if (ix < 0x3e400000)
+    else if (ix < 0x3e400000){
       return x;
-
-    // |x| <= 0.5
-    else if (ix <= 0x3fe00000)
+    }else if (ix <= 0x3fe00000)
     {
       double x2 = x*x;
       double p = x2*(pS0 + x2*(pS1 + x2*(pS2 + x2*(pS3 + x2*(pS4 + x2*pS5)))));
@@ -432,11 +425,12 @@ public final class Math4D
       return x + x*(p/q);
     }
     // 0.5 < x < 1.0
-    else if (hx > 0)
+    else if (hx > 0){
       return (PI_2 - 2.0 * asin (sqrt (0.5 * (1.0 - x))));
-    // -1.0 < x < -0.5
-    else
+      // -1.0 < x < -0.5
+    }else {
       return (2.0 * asin (sqrt (0.5 * (1.0 + x))) - PI_2);
+    }
   }
 
   /**
@@ -454,22 +448,21 @@ public final class Math4D
     // |x| >= 1
     if (ix >= 0x3ff00000)
     {
-       if ((ix == 0x3ff00000) && (lx == 0))
-       {
-          if (hx == 0x3ff00000)
-             return 0.0;
-          else
-             return PI;
-       }
-       else
-          return NaN;
+      if ((ix == 0x3ff00000) && (lx == 0))
+      {
+        if (hx == 0x3ff00000) {
+          return 0.0;
+        } else {
+          return PI;
+        }
+      }else {
+        return NaN;
+      }
     }
     // |x| < 2e-27
-    else if (ix < 0x3e400000)
+    else if (ix < 0x3e400000){
       return PI_2 - x;
-
-    // |x| <= 0.5
-    else if (ix <= 0x3fe00000)
+    }else if (ix <= 0x3fe00000)
     {
       double x2 = x*x;
       double p = x2*(pS0 + x2*(pS1 + x2*(pS2 + x2*(pS3 + x2*(pS4 + x2*pS5)))));
@@ -477,12 +470,11 @@ public final class Math4D
       return PI_2 - x - x*(p/q);
     }
     // 0.5 < x < 1.0
-    else if (hx > 0)
+    else if (hx > 0){
       return 2.0 * asin (sqrt (0.5 * (1.0 - x)));
-
-    // -1.0 < x < -0.5
-    else
+    }else {
       return PI - 2.0 * asin (sqrt (0.5 * (1.0 + x)));
+    }
   }
 
   /**
@@ -500,44 +492,42 @@ public final class Math4D
     // |x| >= 2**66
     if (ix >= 0x44100000)
     {
-      if (hx > 0)
-         return PI_2;
-      else
-         return -PI_2;
+      if (hx > 0){
+        return PI_2;
+      }else {
+        return -PI_2;
+      }
     }
     // |x| <= 7/16 (=0.4375)
-    else if (ix <= 0x3fdc0000)
+    else if (ix <= 0x3fdc0000){
       return kernelAtan(x);
-
-    else if (hx > 0)
+    }else if (hx > 0)
     {
       // x <= 11/16
-      if (ix <= 0x3fe60000)
-         return ATAN_05 + kernelAtan ((2.0*x - 1.0) / (2.0 + x));
-      // x <= 19/16
-      else if (ix <= 0x3ff30000)
-         return ATAN_10 + kernelAtan ((x - 1.0) / (1.0 + x));
-      // x <= 39/16
-      else if (ix <= 0x40038000)
-         return ATAN_15 + kernelAtan ((2.0*x - 3.0) / (2.0 + 3.0*x));
-      // x > 39/16
-      else
-         return PI_2 - kernelAtan (1.0 / x);
+      if (ix <= 0x3fe60000){
+        return ATAN_05 + kernelAtan ((2.0*x - 1.0) / (2.0 + x));
+      }else if (ix <= 0x3ff30000){
+        return ATAN_10 + kernelAtan ((x - 1.0) / (1.0 + x));
+      }else if (ix <= 0x40038000){
+        return ATAN_15 + kernelAtan ((2.0*x - 3.0) / (2.0 + 3.0*x));
+        // x > 39/16
+      }else {
+        return PI_2 - kernelAtan (1.0 / x);
+      }
     }
     else
     {
       // x >= -11/16
-      if (ix <= 0x3fe60000)
-         return -ATAN_05 + kernelAtan ((2.0*x + 1.0) / (2.0 - x));
-      // x >= -19/16
-      else if (ix <= 0x3ff30000)
-         return -ATAN_10 + kernelAtan ((x + 1.0) / (1.0 - x));
-      // x >= -39/16
-      else if (ix <= 0x40038000)
-         return -ATAN_15 + kernelAtan ((2.0*x + 3.0) / (2.0 - 3.0*x));
-      // x < -39/16
-      else
-         return -PI_2 - kernelAtan (1.0 / x);
+      if (ix <= 0x3fe60000){
+        return -ATAN_05 + kernelAtan ((2.0*x + 1.0) / (2.0 - x));
+      }else if (ix <= 0x3ff30000){
+        return -ATAN_10 + kernelAtan ((x + 1.0) / (1.0 - x));
+      }else if (ix <= 0x40038000){
+        return -ATAN_15 + kernelAtan ((2.0*x + 3.0) / (2.0 - 3.0*x));
+        // x < -39/16
+      }else {
+        return -PI_2 - kernelAtan (1.0 / x);
+      }
     }
   }
 
@@ -565,41 +555,42 @@ public final class Math4D
     {
       switch (hx)
       {
-         case 0x7ff00000:
-            switch (hy)
-            {
-               case 0x7ff00000: return PI_4;
-               case 0xfff00000: return -PI_4;
-               case 0x7ff80000: return NaN;
-               default: return 0.0;
-            }
-         case 0xfff00000:
-            switch (hy)
-            {
-               case 0x7ff00000: return PI3_4;
-               case 0xfff00000: return -PI3_4;
-               case 0x7ff80000: return NaN;
-               default: return (hy < 0 ? -PI : PI);
-            }
-         case 0x7ff80000: return NaN;
-         default:
-            switch (hy)
-            {
-               case 0x7ff00000: return PI_2;
-               case 0xfff00000: return -PI_2;
-               default: return NaN;
-            }
+      case 0x7ff00000:
+        switch (hy)
+        {
+        case 0x7ff00000: return PI_4;
+        case 0xfff00000: return -PI_4;
+        case 0x7ff80000: return NaN;
+        default: return 0.0;
+        }
+      case 0xfff00000:
+        switch (hy)
+        {
+        case 0x7ff00000: return PI3_4;
+        case 0xfff00000: return -PI3_4;
+        case 0x7ff80000: return NaN;
+        default: return (hy < 0 ? -PI : PI);
+        }
+      case 0x7ff80000: return NaN;
+      default:
+        switch (hy)
+        {
+        case 0x7ff00000: return PI_2;
+        case 0xfff00000: return -PI_2;
+        default: return NaN;
+        }
       }
     }
-    if (y == 0) // guich@502_2: fixed case where y == 0
-       return PI;
-    else
-    if (hy > 0)
-       return PI_2 - atan(x/y);
-    else if (hy == 0)
-       return (hx >= 0 ? 0.0 : PI);
-    else
-       return -PI_2 - atan(x/y);
+    if (y == 0){
+      return PI;
+    }else
+      if (hy > 0){
+        return PI_2 - atan(x/y);
+      }else if (hy == 0){
+        return (hx >= 0 ? 0.0 : PI);
+      }else {
+        return -PI_2 - atan(x/y);
+      }
   }
 
   /**
@@ -617,12 +608,13 @@ public final class Math4D
     // |x| >= 709.78, infinite, NaN: non-finite result
     if (ix >= 0x40862e42)
     {
-      if (hx == 0x7ff80000)
-         return NaN;
-      else if (hx < 0)
-         return 0.0;
-      else
-         return POSITIVE_INFINITY;
+      if (hx == 0x7ff80000){
+        return NaN;
+      }else if (hx < 0){
+        return 0.0;
+      }else {
+        return POSITIVE_INFINITY;
+      }
     }
 
     int k = (int) round(x * INV_LN2);
@@ -630,17 +622,18 @@ public final class Math4D
     double t = rx * rx;
     double c = rx - t*(P1 + t*(P2 + t*(P3 + t*(P4 + t*P5))));
     double y = 1.0 - ((rx*c) / (c - 2.0) - rx);
-    if (k==0)
+    if (k==0){
       return y;
-    else
+    }else
     {
       long yl = Convert.doubleToLongBits(y) + (((long) k) << 52);
       // overflow/underflow result in yl < 0,
       // when all exponent bits = 0: "denormalized numbers"
-      if (yl < 0x0010000000000000L)
-         return (k > 0 ? POSITIVE_INFINITY : 0.0);
-      else
-         return Convert.longBitsToDouble(yl);
+      if (yl < 0x0010000000000000L){
+        return (k > 0 ? POSITIVE_INFINITY : 0.0);
+      }else {
+        return Convert.longBitsToDouble(yl);
+      }
     }
   }
 
@@ -658,24 +651,27 @@ public final class Math4D
 
     if (hx < 0x00100000)
     {
-      if (hx < 0)
-         return NaN;
-      else
-         return NEGATIVE_INFINITY;
+      if (hx < 0){
+        return NaN;
+      }else {
+        return NEGATIVE_INFINITY;
+      }
     }
     else if (hx >= 0x7ff00000)
     {
-      if (hx == 0x7ff00000)
-         return POSITIVE_INFINITY;
-      else
-         return NaN;
+      if (hx == 0x7ff00000){
+        return POSITIVE_INFINITY;
+      }else {
+        return NaN;
+      }
     }
 
     int k;
-    if ((hx & 0x000fffff) <= 0x6a09c)
+    if ((hx & 0x000fffff) <= 0x6a09c){
       k = (hx>>20)-1023;
-    else
+    }else {
       k = (hx>>20)-1022;
+    }
 
     double f = (Convert.longBitsToDouble(Convert.doubleToLongBits(x) - (((long) k) << 52)) - 1.0);
     double s = f / (2.0 + f);
@@ -696,13 +692,13 @@ public final class Math4D
   {
     int hx = highPart(x);
 
-    if (hx < 0)
+    if (hx < 0){
       return NaN;
-    else if (x == 0.0)
+    }else if (x == 0.0){
       return 0.0;
-    // NaN or positive infinity
-    else if ((hx & 0x7ff00000) == 0x7ff00000)
+    }else if ((hx & 0x7ff00000) == 0x7ff00000){
       return x;
+    }
 
     int k  = (hx >> 1) + 0x1ff80000;
     double y = Convert.longBitsToDouble (((long) (k - SQRT_PARMS[(k >> 15) & 31])) << 32);
@@ -721,23 +717,25 @@ public final class Math4D
    */
   public static double pow(double x, double y)
   {
-    if (isNaN(x) || isNaN(y))
+    if (isNaN(x) || isNaN(y)){
       return NaN;
+    }
 
     // added to improve accuracy for integer exponents
     // P M Dickerson, 28May2003
     int iy = (int)y;
     if ( iy >= 0 && iy == y && iy <= 1024 )
     {
-        double result = 1.0;
-        while ( iy != 0 )
-        {
-            if ( (iy & 1) != 0 )
-                result = result * x;
-            x = x*x;
-            iy >>>= 1;
+      double result = 1.0;
+      while ( iy != 0 )
+      {
+        if ( (iy & 1) != 0 ) {
+          result = result * x;
         }
-        return result;
+        x = x*x;
+        iy >>>= 1;
+      }
+      return result;
     }
 
     if (x < 0.0)
@@ -747,31 +745,34 @@ public final class Math4D
 
       // 0=non-int, 1=odd, 2=even
       int yIntType;
-      if (y == 0.0)
-         yIntType = 2;
-      else if (expY < 0)
-         yIntType = 0;
-      else if (expY <= 54)
+      if (y == 0.0){
+        yIntType = 2;
+      }else if (expY < 0){
+        yIntType = 0;
+      }else if (expY <= 54)
       {
-         long temp = ((((lly & 0x000fffffffffffffL) + 0x0010000000000000L) << expY) & 0x001fffffffffffffL);
-         if (temp == 0L)
-            yIntType = 2;
-         else if (temp == 0x0010000000000000L)
-           yIntType = 1;
-         else
-           yIntType = 0;
+        long temp = ((((lly & 0x000fffffffffffffL) + 0x0010000000000000L) << expY) & 0x001fffffffffffffL);
+        if (temp == 0L) {
+          yIntType = 2;
+        } else if (temp == 0x0010000000000000L) {
+          yIntType = 1;
+        } else {
+          yIntType = 0;
+        }
+      }else {
+        yIntType = 2;
       }
-      else
-         yIntType = 2;
 
-      if (yIntType == 0)
-         return NaN;
-      else if (yIntType == 1)
-         return -exp (y * log (-x));
-      else return exp (y * log (-x));
-    }
-    else
+      if (yIntType == 0){
+        return NaN;
+      }else if (yIntType == 1){
+        return -exp (y * log (-x));
+      }else {
+        return exp (y * log (-x));
+      }
+    }else {
       return exp (y * log (x));
+    }
   }
 
   /**
@@ -812,38 +813,40 @@ public final class Math4D
    */
   public static double ceil(double x)
   {
-    if (x == 0.0)
+    if (x == 0.0){
       return x;
+    }
 
     long lx = Convert.doubleToLongBits(x);
-    if ((lx & 0x7ff0000000000000L) == 0x7ff0000000000000L)
+    if ((lx & 0x7ff0000000000000L) == 0x7ff0000000000000L){
       return x;
+    }
 
     int exp = (((int)(lx >>> 52)) & 0x7ff) - 1075;
-    if (exp >= 0)
+    if (exp >= 0){
       return x;
-
-    else if (lx > 0L)
+    }else if (lx > 0L)
     {
-      if (exp < -52)
-         return 1.0;
-      else
+      if (exp < -52){
+        return 1.0;
+      }else
       {
-         long ltrunc = lx & (0xffffffffffffffffL << (-exp));
-         if (ltrunc == lx)
-           return x;
-         else
-           return Convert.longBitsToDouble(ltrunc) + 1.0;
+        long ltrunc = lx & (0xffffffffffffffffL << (-exp));
+        if (ltrunc == lx) {
+          return x;
+        } else {
+          return Convert.longBitsToDouble(ltrunc) + 1.0;
+        }
       }
     }
     else
     {
-      if (exp < -52)
-         return 0.0;
-      else
+      if (exp < -52){
+        return 0.0;
+      }else
       {
-         lx = lx & (0xffffffffffffffffL << (-exp));
-         return Convert.longBitsToDouble(lx);
+        lx = lx & (0xffffffffffffffffL << (-exp));
+        return Convert.longBitsToDouble(lx);
       }
     }
   }
@@ -856,35 +859,38 @@ public final class Math4D
    */
   public static double floor(double x)
   {
-    if (x == 0.0)
+    if (x == 0.0){
       return x;
+    }
 
     long lx = Convert.doubleToLongBits(x);
-    if ((lx & 0x7ff0000000000000L) == 0x7ff0000000000000L)
+    if ((lx & 0x7ff0000000000000L) == 0x7ff0000000000000L){
       return x;
+    }
 
     int exp = (((int)(lx >>> 52)) & 0x7ff) - 1075;
-    if (exp >= 0)
+    if (exp >= 0){
       return x;
-
-    else if (lx > 0L)
+    }else if (lx > 0L)
     {
-      if (exp < -52)
-         return 0.0;
-      else
-         return Convert.longBitsToDouble(lx & (0xffffffffffffffffL << (-exp)));
+      if (exp < -52){
+        return 0.0;
+      }else {
+        return Convert.longBitsToDouble(lx & (0xffffffffffffffffL << (-exp)));
+      }
     }
     else
     {
-      if (exp < -52)
-         return -1.0;
-      else
+      if (exp < -52){
+        return -1.0;
+      }else
       {
-         long ltrunc = lx & (0xffffffffffffffffL << (-exp));
-         if (ltrunc == lx)
-           return x;
-         else
-           return Convert.longBitsToDouble(ltrunc) - 1.0;
+        long ltrunc = lx & (0xffffffffffffffffL << (-exp));
+        if (ltrunc == lx) {
+          return x;
+        } else {
+          return Convert.longBitsToDouble(ltrunc) - 1.0;
+        }
       }
     }
   }
@@ -897,41 +903,41 @@ public final class Math4D
    */
   public static double rint(double x)
   {
-    if (x == 0.0)
+    if (x == 0.0){
       return x;
+    }
 
     long lx = Convert.doubleToLongBits(x);
-    if ((lx & 0x7ff0000000000000L) == 0x7ff0000000000000L)
+    if ((lx & 0x7ff0000000000000L) == 0x7ff0000000000000L){
       return x;
+    }
 
     int exp = (((int)(lx >>> 52)) & 0x7ff) - 1023;
-    if (exp >= 52)
+    if (exp >= 52){
       return x;
-
-    // 0 ... +/-0.49999
-    else if (exp <= -2)
+    }else if (exp <= -2){
       return 0.0;
-
-    // +/-0.5 ... +/-0.99999
-    else if (exp == -1)
+    }else if (exp == -1)
     {
-      if ((lx & 0x000fffffffffffffL) == 0L)
-         return 0.0;
-      else
-         return (x > 0.0 ? 1.0 : -1.0);
+      if ((lx & 0x000fffffffffffffL) == 0L){
+        return 0.0;
+      }else {
+        return (x > 0.0 ? 1.0 : -1.0);
+      }
     }
     else
     {
       double adder = 0.0;
       long fractMask = 0x000fffffffffffffL >> exp;
-      long halfMask  = 0x0008000000000000L >> exp;
+        long halfMask  = 0x0008000000000000L >> exp;
       long lfract = lx & fractMask;
-      if (lfract > halfMask)
-         adder = (x > 0.0 ? 1.0 : -1.0);
-      else if (lfract == halfMask)
+      if (lfract > halfMask){
+        adder = (x > 0.0 ? 1.0 : -1.0);
+      }else if (lfract == halfMask)
       {
-         if ((lx & (halfMask << 1)) != 0L)
-            adder = (x > 0.0 ? 1.0 : -1.0);
+        if ((lx & (halfMask << 1)) != 0L) {
+          adder = (x > 0.0 ? 1.0 : -1.0);
+        }
       }
       return (Convert.longBitsToDouble(lx & ~fractMask) + adder);
     }
@@ -980,8 +986,9 @@ public final class Math4D
   private static double kernelSin (double x)
   {
     // abs(x) < 2**-27:  sin(x) = x
-    if ((highPart(x) & 0x7fffffff) < 0x3e400000)
+    if ((highPart(x) & 0x7fffffff) < 0x3e400000){
       return x;
+    }
     double x2 = x * x;
     return x*(1.0 + x2*(S1 + x2*(S2 + x2*(S3 + x2*(S4 + x2*(S5 + x2*S6))))));
   }
@@ -991,8 +998,9 @@ public final class Math4D
    */
   private static double kernelCos (double x)
   {
-    if ((highPart(x) & 0x7fffffff) < 0x3e400000)
+    if ((highPart(x) & 0x7fffffff) < 0x3e400000){
       return 1.0;
+    }
 
     double x2 = x * x;
     return 1.0 + x2*(-0.5 + x2*(C1 + x2*(C2 + x2*(C3 + x2*(C4 + x2*(C5 + x2*C6))))));
@@ -1005,27 +1013,28 @@ public final class Math4D
   {
     int hx = highPart(x);
     int ix = hx & 0x7fffffff;
-    if (ix < 0x3e400000)
+    if (ix < 0x3e400000){
       return x;
+    }
     // |x|>=0.6744
     if (ix >= 0x3fe59428)
     {
       if (hx >= 0)
       {
-         double t = kernelTan (PI_4 - x);
-         return (1.0 - t) / (1.0 + t);
+        double t = kernelTan (PI_4 - x);
+        return (1.0 - t) / (1.0 + t);
       }
       else
       {
-         double t = kernelTan (PI_4 + x);
-         return (t - 1.0) / (1.0 + t);
+        double t = kernelTan (PI_4 + x);
+        return (t - 1.0) / (1.0 + t);
       }
     }
     double x2 = x * x;
     double x4 = x2 * x2;
     return (x +
-       x*x2*(T1 + x4*(T3 + x4*(T5 + x4*(T7 + x4*(T9 + x4*(T11 + x4*T13)))))) +
-       x*x4*(T2 + x4*(T4 + x4*(T6 + x4*(T8 + x4*(T10 + x4*T12))))));
+        x*x2*(T1 + x4*(T3 + x4*(T5 + x4*(T7 + x4*(T9 + x4*(T11 + x4*T13)))))) +
+        x*x4*(T2 + x4*(T4 + x4*(T6 + x4*(T8 + x4*(T10 + x4*T12))))));
   }
 
   /**
@@ -1034,10 +1043,9 @@ public final class Math4D
   private static double kernelAtan (double x)
   {
     int ix = highPart(x) & 0x7fffffff;
-    if (ix < 0x3e200000)
+    if (ix < 0x3e200000){
       return x;
-
-    else
+    }else
     {
       double z = x*x;
       double w = z*z;
@@ -1059,24 +1067,24 @@ public final class Math4D
 
   public static boolean isNaN(double d)
   {
-     return Convert.doubleToLongBits(d) == 0xfff0000000000000L;
+    return Convert.doubleToLongBits(d) == 0xfff0000000000000L;
   }
 
- /**
-  * An arc reduced into the range [-PI/4 ... PI/4].
-  * The arc is equivalent to:
-  * direction * PI/2 + value
-  */
+  /**
+   * An arc reduced into the range [-PI/4 ... PI/4].
+   * The arc is equivalent to:
+   * direction * PI/2 + value
+   */
   private static int reducedArcDirection(double x)
   {
     long n = round (INV_PI_2 * x);
     return ((int) n) & 0x0003;
   }
- /**
-  * An arc reduced into the range [-PI/4 ... PI/4].
-  * The arc is equivalent to:
-  * direction * PI/2 + value
-  */
+  /**
+   * An arc reduced into the range [-PI/4 ... PI/4].
+   * The arc is equivalent to:
+   * direction * PI/2 + value
+   */
   private static double reducedArcValue(double x)
   {
     long n = round (INV_PI_2 * x);

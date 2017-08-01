@@ -13,29 +13,29 @@
 
 package tc.tools.converter.ir.web;
 
-import totalcross.util.*;
-import tc.tools.converter.ir.Instruction.*;
+import tc.tools.converter.ir.Instruction.Instruction;
+import totalcross.util.Vector;
 
 public class Web
 {
-   public int type; // opr_regI / opr_regO / opr_regD / opr_regL
-   public int number;
-   public Vector dChain = new Vector(32);
-   public Vector uChain = new Vector(32);
+  public int type; // opr_regI / opr_regO / opr_regD / opr_regL
+  public int number;
+  public Vector dChain = new Vector(32);
+  public Vector uChain = new Vector(32);
 
-   public Web(int t, int n)
-   {
-      type = t;
-      number = n;
-   }
+  public Web(int t, int n)
+  {
+    type = t;
+    number = n;
+  }
 
-   public void addDefinition(Instruction i)
-   {
-      dChain.addElement(i);
-   }
+  public void addDefinition(Instruction i)
+  {
+    dChain.addElement(i);
+  }
 
-   public void addUse(Instruction i)
-   {
-      uChain.addElement(i);
-   }
+  public void addUse(Instruction i)
+  {
+    uChain.addElement(i);
+  }
 }

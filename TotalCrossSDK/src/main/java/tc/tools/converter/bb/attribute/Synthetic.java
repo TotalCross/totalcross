@@ -18,16 +18,19 @@ import totalcross.io.IOException;
 
 public class Synthetic implements AttributeInfo
 {
-   public int length()
-   {
-      return 0;
-   }
+  @Override
+  public int length()
+  {
+    return 0;
+  }
 
-   public void load(DataStream ds) throws IOException
-   {
-   }
+  @Override
+  public void load(DataStream ds) throws IOException
+  {
+  }
 
-   public void save(DataStream ds) throws IOException
-   {
-   }
+  @Override
+  public void save(DataStream ds) throws IOException
+  {
+  }
 }

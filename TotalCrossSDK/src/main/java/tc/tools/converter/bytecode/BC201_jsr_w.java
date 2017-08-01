@@ -15,14 +15,15 @@ package tc.tools.converter.bytecode;
 
 public class BC201_jsr_w extends Branch
 {
-   public BC201_jsr_w()
-   {
-      super(1,readInt32(pc+1));
-      pcInc = 5;
-   }
-   public void exec()
-   {
-      stack[stackPtr].asInt = pc+5;
-      pcInc = jumpTo;
-   }
+  public BC201_jsr_w()
+  {
+    super(1,readInt32(pc+1));
+    pcInc = 5;
+  }
+  @Override
+  public void exec()
+  {
+    stack[stackPtr].asInt = pc+5;
+    pcInc = jumpTo;
+  }
 }

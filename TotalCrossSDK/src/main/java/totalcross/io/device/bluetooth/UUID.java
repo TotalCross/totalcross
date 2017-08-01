@@ -132,124 +132,134 @@ import totalcross.sys.Convert;
  */
 public class UUID
 {
-   private byte[] uuidValue;
-   
-   static final String SHORT_UUID_BASE = "00001000800000805F9B34FB";
+  private byte[] uuidValue;
 
-   /**
-    * Creates a <code>UUID</code> object from <code>long</code> value <code>uuidValue</code>. A UUID is defined as an
-    * unsigned integer whose value can range from [0 to 2<sup>128</sup>-1]. However, this constructor allows only those
-    * values that are in the range of [0 to 2<sup>32</sup> -1]. Negative values and values in the range of
-    * [2<sup>32</sup>, 2<sup>63</sup> -1] are not allowed and will cause an <code>IllegalArgumentException</code> to be
-    * thrown.
-    * 
-    * @param uuidValue
-    *           the 16-bit or 32-bit value of the UUID
-    * @throws IllegalArgumentException
-    *            if <code>uuidValue</code> is not in the range [0, 2<sup>32</sup> -1]
-    * @since TotalCross 1.2
-    */
-   public UUID(long uuidValue)
-   {
-      this(Convert.toString(uuidValue, 16), true);
-      if (uuidValue < 0 || uuidValue > 0xffffffffl)
-         throw new IllegalArgumentException("uuidValue is not in the range [0, 2^32 -1]");
-   }
+  static final String SHORT_UUID_BASE = "00001000800000805F9B34FB";
 
-   /**
-    * Creates a <code>UUID</code> object from the string provided. The characters in the string must be from the
-    * hexadecimal set [0-9, a-f, A-F]. It is important to note that the prefix "0x" generally used for hex
-    * representation of numbers is not allowed. If the string does not have characters from the hexadecimal set, an
-    * exception will be thrown. The string length has to be positive and less than or equal to 32. A string length that
-    * exceeds 32 is illegal and will cause an exception. Finally, a <code>null</code> input is also considered illegal
-    * and causes an exception.
-    * <p>
-    * If <code>shortUUID</code> is <code>true</code>, <code>uuidValue</code>
-    * 
-    * represents a 16-bit or 32-bit UUID. If <code>uuidValue</code> is in the range 0x0000 to 0xFFFF then this
-    * constructor will create a 16-bit UUID. If <code>uuidValue</code> is in the range 0x000010000 to 0xFFFFFFFF, then
-    * this constructor will create a 32-bit UUID. Therefore, <code>uuidValue</code> may only be 8 characters long.
-    * </p>
-    * <p>
-    * On the other hand, if <code>shortUUID</code> is <code>false</code>, then <code>uuidValue</code> represents a
-    * 128-bit UUID. Therefore, <code>uuidValue</code> may only be 32 character long.
-    * </p>
-    * 
-    * @param uuidValue
-    *           the string representation of a 16-bit, 32-bit or 128-bit UUID
-    * @param shortUUID
-    *           indicates the size of the UUID to be constructed; <code>true</code> is used to indicate short UUIDs,
-    *           i.e. either 16-bit or 32-bit; <code>false</code> indicates an 128-bit UUID
-    * @throws IllegalArgumentException
-    *            if <code>uuidValue</code> has characters that are not defined in the hexadecimal set [0-9, a-f, A-F];
-    *            if <code>uuidValue</code> length is zero; if <code>shortUUID</code> is <code>true</code> and
-    *            <code>uuidValue</code>'s length is greater than 8; if <code>shortUUID</code> is <code>false</code> and
-    *            <code>uuidValue</code>'s length is greater than 32
-    * @throws NullPointerException
-    *            if <code>uuidValue</code> is <code>null</code>
-    * @since TotalCross 1.2
-    */
-   public UUID(String uuidValue, boolean shortUUID)
-   {
-      if (uuidValue == null)
-         throw new NullPointerException("uuidValue is null");
+  /**
+   * Creates a <code>UUID</code> object from <code>long</code> value <code>uuidValue</code>. A UUID is defined as an
+   * unsigned integer whose value can range from [0 to 2<sup>128</sup>-1]. However, this constructor allows only those
+   * values that are in the range of [0 to 2<sup>32</sup> -1]. Negative values and values in the range of
+   * [2<sup>32</sup>, 2<sup>63</sup> -1] are not allowed and will cause an <code>IllegalArgumentException</code> to be
+   * thrown.
+   * 
+   * @param uuidValue
+   *           the 16-bit or 32-bit value of the UUID
+   * @throws IllegalArgumentException
+   *            if <code>uuidValue</code> is not in the range [0, 2<sup>32</sup> -1]
+   * @since TotalCross 1.2
+   */
+  public UUID(long uuidValue)
+  {
+    this(Convert.toString(uuidValue, 16), true);
+    if (uuidValue < 0 || uuidValue > 0xffffffffl){
+      throw new IllegalArgumentException("uuidValue is not in the range [0, 2^32 -1]");
+    }
+  }
 
-      int length = uuidValue.length();
-      if (length < 1 || length > 32 || (shortUUID && length > 8))
-         throw new IllegalArgumentException();
+  /**
+   * Creates a <code>UUID</code> object from the string provided. The characters in the string must be from the
+   * hexadecimal set [0-9, a-f, A-F]. It is important to note that the prefix "0x" generally used for hex
+   * representation of numbers is not allowed. If the string does not have characters from the hexadecimal set, an
+   * exception will be thrown. The string length has to be positive and less than or equal to 32. A string length that
+   * exceeds 32 is illegal and will cause an exception. Finally, a <code>null</code> input is also considered illegal
+   * and causes an exception.
+   * <p>
+   * If <code>shortUUID</code> is <code>true</code>, <code>uuidValue</code>
+   * 
+   * represents a 16-bit or 32-bit UUID. If <code>uuidValue</code> is in the range 0x0000 to 0xFFFF then this
+   * constructor will create a 16-bit UUID. If <code>uuidValue</code> is in the range 0x000010000 to 0xFFFFFFFF, then
+   * this constructor will create a 32-bit UUID. Therefore, <code>uuidValue</code> may only be 8 characters long.
+   * </p>
+   * <p>
+   * On the other hand, if <code>shortUUID</code> is <code>false</code>, then <code>uuidValue</code> represents a
+   * 128-bit UUID. Therefore, <code>uuidValue</code> may only be 32 character long.
+   * </p>
+   * 
+   * @param uuidValue
+   *           the string representation of a 16-bit, 32-bit or 128-bit UUID
+   * @param shortUUID
+   *           indicates the size of the UUID to be constructed; <code>true</code> is used to indicate short UUIDs,
+   *           i.e. either 16-bit or 32-bit; <code>false</code> indicates an 128-bit UUID
+   * @throws IllegalArgumentException
+   *            if <code>uuidValue</code> has characters that are not defined in the hexadecimal set [0-9, a-f, A-F];
+   *            if <code>uuidValue</code> length is zero; if <code>shortUUID</code> is <code>true</code> and
+   *            <code>uuidValue</code>'s length is greater than 8; if <code>shortUUID</code> is <code>false</code> and
+   *            <code>uuidValue</code>'s length is greater than 32
+   * @throws NullPointerException
+   *            if <code>uuidValue</code> is <code>null</code>
+   * @since TotalCross 1.2
+   */
+  public UUID(String uuidValue, boolean shortUUID)
+  {
+    if (uuidValue == null){
+      throw new NullPointerException("uuidValue is null");
+    }
 
-      StringBuffer sb = new StringBuffer("00000000000000000000000000000000");
-      sb.setLength((shortUUID ? 8 : 32) - length); //flsobral@tc122_56: fixed length of UUID created from a short value
-      sb.append(uuidValue);
-      if (shortUUID)
-         sb.append(SHORT_UUID_BASE);
+    int length = uuidValue.length();
+    if (length < 1 || length > 32 || (shortUUID && length > 8)){
+      throw new IllegalArgumentException();
+    }
 
-      this.uuidValue = Convert.hexStringToBytes(sb.toString(), false);
-   }
+    StringBuffer sb = new StringBuffer("00000000000000000000000000000000");
+    sb.setLength((shortUUID ? 8 : 32) - length); //flsobral@tc122_56: fixed length of UUID created from a short value
+    sb.append(uuidValue);
+    if (shortUUID){
+      sb.append(SHORT_UUID_BASE);
+    }
 
-   /**
-    * Determines if two <code>UUID</code>s are equal. They are equal if their 128 bit values are the same. This method
-    * will return <code>false</code> if <code>value</code> is <code>null</code> or is not a <code>UUID</code> object.
-    * 
-    * @param value
-    *           the object to compare to
-    * @return <code>true</code> if the 128 bit values of the two objects are equal, otherwise <code>false</code>
-    * @since TotalCross 1.2
-    */
-   public boolean equals(Object value)
-   {
-      if (value == null || !(value instanceof UUID))
-         return false;
+    this.uuidValue = Convert.hexStringToBytes(sb.toString(), false);
+  }
 
-      for (int i = 0; i < 16; i++)
-         if (uuidValue[i] != ((UUID) value).uuidValue[i])
-            return false;
+  /**
+   * Determines if two <code>UUID</code>s are equal. They are equal if their 128 bit values are the same. This method
+   * will return <code>false</code> if <code>value</code> is <code>null</code> or is not a <code>UUID</code> object.
+   * 
+   * @param value
+   *           the object to compare to
+   * @return <code>true</code> if the 128 bit values of the two objects are equal, otherwise <code>false</code>
+   * @since TotalCross 1.2
+   */
+  @Override
+  public boolean equals(Object value)
+  {
+    if (value == null || !(value instanceof UUID)){
+      return false;
+    }
 
-      return true;
-   }
+    for (int i = 0; i < 16; i++) {
+      if (uuidValue[i] != ((UUID) value).uuidValue[i]) {
+        return false;
+      }
+    }
 
-   /**
-    * Computes the hash code for this object. This method retains the same semantic contract as defined in the class
-    * <code>java.lang.Object</code> while overriding the implementation.
-    * 
-    * @return the hash code for this object
-    * @since TotalCross 1.2
-    */
-   public int hashCode()
-   {
-      return uuidValue[12] << 24 & 0xff000000 | uuidValue[13] << 16 & 0x00ff0000 | uuidValue[14] << 8 & 0x0000ff00 | uuidValue[15] & 0x000000ff;
-   }
+    return true;
+  }
 
-   /**
-    * Returns the string representation of the 128-bit UUID object. The string being returned represents a UUID that
-    * contains characters from the hexadecimal set, [0-9, A-F]. It does not include the prefix "0x" that is generally
-    * used for hex representation of numbers. The return value will never be <code>null</code>.
-    * 
-    * @return the string representation of the UUID
-    * @since TotalCross 1.2
-    */
-   public String toString()
-   {
-      return Convert.bytesToHexString(uuidValue, 0, uuidValue.length);
-   }
+  /**
+   * Computes the hash code for this object. This method retains the same semantic contract as defined in the class
+   * <code>java.lang.Object</code> while overriding the implementation.
+   * 
+   * @return the hash code for this object
+   * @since TotalCross 1.2
+   */
+  @Override
+  public int hashCode()
+  {
+    return uuidValue[12] << 24 & 0xff000000 | uuidValue[13] << 16 & 0x00ff0000 | uuidValue[14] << 8 & 0x0000ff00 | uuidValue[15] & 0x000000ff;
+  }
+
+  /**
+   * Returns the string representation of the 128-bit UUID object. The string being returned represents a UUID that
+   * contains characters from the hexadecimal set, [0-9, A-F]. It does not include the prefix "0x" that is generally
+   * used for hex representation of numbers. The return value will never be <code>null</code>.
+   * 
+   * @return the string representation of the UUID
+   * @since TotalCross 1.2
+   */
+  @Override
+  public String toString()
+  {
+    return Convert.bytesToHexString(uuidValue, 0, uuidValue.length);
+  }
 }

@@ -18,25 +18,29 @@ import totalcross.io.IOException;
 
 public class Double implements ConstantInfo
 {
-   public double value;
+  public double value;
 
-   public java.lang.String toString()
-   {
-      return "" + value;
-   }
+  @Override
+  public java.lang.String toString()
+  {
+    return "" + value;
+  }
 
-   public int length()
-   {
-      return 8;
-   }
+  @Override
+  public int length()
+  {
+    return 8;
+  }
 
-   public void load(DataStream ds) throws IOException
-   {
-      value = ds.readDouble();
-   }
+  @Override
+  public void load(DataStream ds) throws IOException
+  {
+    value = ds.readDouble();
+  }
 
-   public void save(DataStream ds) throws IOException
-   {
-      ds.writeDouble(value);
-   }
+  @Override
+  public void save(DataStream ds) throws IOException
+  {
+    ds.writeDouble(value);
+  }
 }

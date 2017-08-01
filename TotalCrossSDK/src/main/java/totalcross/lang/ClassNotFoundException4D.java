@@ -35,14 +35,14 @@ package totalcross.lang;
 
 public class ClassNotFoundException4D extends ReflectiveOperationException
 {
-   /** Constructs an empty Exception. */
-   public ClassNotFoundException4D()
-   {
-   }
+  /** Constructs an empty Exception. */
+  public ClassNotFoundException4D()
+  {
+  }
 
-   /** Constructs an exception with the given message. */
-   public ClassNotFoundException4D(String msg)
-   {
-	   super(msg);
-   }
+  /** Constructs an exception with the given message. */
+  public ClassNotFoundException4D(String msg)
+  {
+    super(msg);
+  }
 }

@@ -15,12 +15,13 @@ package tc.tools.converter.bytecode;
 
 public class BC144_d2f extends Conversion // this conversion should be ignored
 {
-   public BC144_d2f()
-   {
-      super(-1,-1, DOUBLE, FLOAT);
-   }
-   public void exec()
-   {
-      //stack[stackPtr-1].asDouble = (double)stack[stackPtr-1].asDouble;
-   }
+  public BC144_d2f()
+  {
+    super(-1,-1, DOUBLE, FLOAT);
+  }
+  @Override
+  public void exec()
+  {
+    //stack[stackPtr-1].asDouble = (double)stack[stackPtr-1].asDouble;
+  }
 }

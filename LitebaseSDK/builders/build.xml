@@ -285,7 +285,7 @@ target: Linux builds
 <target name="packageLinux" >
 	<java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
 		<classpath>
-			<pathelement location="${base.temp.path}/classes_desktop"/>
+			<pathelement location="${tc.sdk.path}/dist/tc.jar"/>
 			<pathelement location="${tools}/jdeb/lib/ant.jar"/>
 			<pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
 			<pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>

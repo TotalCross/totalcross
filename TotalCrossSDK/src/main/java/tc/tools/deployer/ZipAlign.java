@@ -72,499 +72,507 @@ import java.util.zip.ZipOutputStream;
  */
 public class ZipAlign {
 
-    /**
-     * The minimum size of a ZIP entry's header.
-     */
-    public static final int ZIP_ENTRY_HEADER_LEN = 30;
+  /**
+   * The minimum size of a ZIP entry's header.
+   */
+  public static final int ZIP_ENTRY_HEADER_LEN = 30;
+
+  /**
+   * Default version to work with ZIP files.
+   */
+  public static final int ZIP_ENTRY_VERSION = 20;
+
+  /**
+   * The offset of extra field length in a ZIP entry's header.
+   */
+  public static final int ZIP_ENTRY_OFFSET_EXTRA_LEN = 28;
+
+  /**
+   * The size of field extra length, in a ZIP entry's header.
+   */
+  public static final int ZIP_ENTRY_FIELD_EXTRA_LEN_SIZE = 2;
+
+  /**
+   * @see <a
+   *      href="https://android.googlesource.com/platform/build/+/master/tools/zipalign/ZipEntry.h">ZipEntry.h</a>
+   */
+  public static final int ZIP_ENTRY_USES_DATA_DESCR = 0x0008;
+
+  /**
+   * @see <a
+   *      href="https://android.googlesource.com/platform/build/+/master/tools/zipalign/ZipEntry.h">ZipEntry.h</a>
+   */
+  public static final int ZIP_ENTRY_DATA_DESCRIPTOR_LEN = 16;
+
+  /**
+   * Default alignment value.
+   * <p>
+   * See <a
+   * href="http://developer.android.com/tools/help/zipalign.html">zipalign
+   * </a>.
+   * </p>
+   */
+  public static final int DEFAULT_ALIGNMENT = 4;
+
+  /**
+   * Used to append to newly aligned APK's file name.
+   */
+  public static final String ALIGNED = "ALIGNED";
+
+  /**
+   * Private helper class.
+   * 
+   * @author Hai Bison
+   * @since v1.6.9 beta
+   */
+  class XEntry {
+
+    public final ZipEntry entry;
+    public final long headerOffset;
+    public final int flags;
+    public final int padding;
 
     /**
-     * Default version to work with ZIP files.
-     */
-    public static final int ZIP_ENTRY_VERSION = 20;
-
-    /**
-     * The offset of extra field length in a ZIP entry's header.
-     */
-    public static final int ZIP_ENTRY_OFFSET_EXTRA_LEN = 28;
-
-    /**
-     * The size of field extra length, in a ZIP entry's header.
-     */
-    public static final int ZIP_ENTRY_FIELD_EXTRA_LEN_SIZE = 2;
-
-    /**
-     * @see <a
-     *      href="https://android.googlesource.com/platform/build/+/master/tools/zipalign/ZipEntry.h">ZipEntry.h</a>
-     */
-    public static final int ZIP_ENTRY_USES_DATA_DESCR = 0x0008;
-
-    /**
-     * @see <a
-     *      href="https://android.googlesource.com/platform/build/+/master/tools/zipalign/ZipEntry.h">ZipEntry.h</a>
-     */
-    public static final int ZIP_ENTRY_DATA_DESCRIPTOR_LEN = 16;
-
-    /**
-     * Default alignment value.
-     * <p>
-     * See <a
-     * href="http://developer.android.com/tools/help/zipalign.html">zipalign
-     * </a>.
-     * </p>
-     */
-    public static final int DEFAULT_ALIGNMENT = 4;
-
-    /**
-     * Used to append to newly aligned APK's file name.
-     */
-    public static final String ALIGNED = "ALIGNED";
-
-    /**
-     * Private helper class.
+     * Creates new instance.
      * 
-     * @author Hai Bison
-     * @since v1.6.9 beta
+     * @param entry
+     *            the entry.
+     * @param headerOffset
+     *            the offset of the header.
+     * @param flags
+     *            the flags.
+     * @param padding
+     *            the padding of the "extra" field.
      */
-    class XEntry {
+    public XEntry(ZipEntry entry, long headerOffset, int flags, int padding) {
+      this.entry = entry;
+      this.headerOffset = headerOffset;
+      this.flags = flags;
+      this.padding = padding;
+    }// XEntry()
+  }// XEntry
 
-        public final ZipEntry entry;
-        public final long headerOffset;
-        public final int flags;
-        public final int padding;
+  /**
+   * Extended class of {@link FilterOutputStream}, which has some helper
+   * methods for writing data to ZIP stream.
+   * 
+   * @author Hai Bison
+   * @since v1.6.9 beta
+   */
+  private static class FilterOutputStreamEx extends FilterOutputStream {
 
-        /**
-         * Creates new instance.
-         * 
-         * @param entry
-         *            the entry.
-         * @param headerOffset
-         *            the offset of the header.
-         * @param flags
-         *            the flags.
-         * @param padding
-         *            the padding of the "extra" field.
-         */
-        public XEntry(ZipEntry entry, long headerOffset, int flags, int padding) {
-            this.entry = entry;
-            this.headerOffset = headerOffset;
-            this.flags = flags;
-            this.padding = padding;
-        }// XEntry()
-    }// XEntry
+    private long totalWritten = 0;
 
     /**
-     * Extended class of {@link FilterOutputStream}, which has some helper
-     * methods for writing data to ZIP stream.
+     * Creates new instance.
      * 
-     * @author Hai Bison
-     * @since v1.6.9 beta
+     * @param out
+     *            {@link OutputStream}.
      */
-    private static class FilterOutputStreamEx extends FilterOutputStream {
+    public FilterOutputStreamEx(OutputStream out) {
+      super(out);
+    }// FilterOutputStreamEx()
 
-        private long totalWritten = 0;
 
-        /**
-         * Creates new instance.
-         * 
-         * @param out
-         *            {@link OutputStream}.
-         */
-        public FilterOutputStreamEx(OutputStream out) {
-            super(out);
-        }// FilterOutputStreamEx()
+    @Override
+    public void write(byte[] b) throws IOException {
+      out.write(b);
+      totalWritten += b.length;
+    }// write()
 
-        
-        public void write(byte[] b) throws IOException {
-            out.write(b);
-            totalWritten += b.length;
-        }// write()
 
-        
-        public void write(byte[] b, int off, int len) throws IOException {
-            out.write(b, off, len);
-            totalWritten += len;
-        }// write()
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+      out.write(b, off, len);
+      totalWritten += len;
+    }// write()
 
-        
-        public void write(int b) throws IOException {
-            out.write(b);
-            totalWritten += 1;
-        }// write()
 
-        
-        public void close() throws IOException {
-            // l("\t\tclose() >> totalWritten = %,d", totalWritten);
-            super.close();
-        }// close()
+    @Override
+    public void write(int b) throws IOException {
+      out.write(b);
+      totalWritten += 1;
+    }// write()
 
-        /**
-         * Writes a 32-bit int to the output stream in little-endian byte order.
-         * 
-         * @param v
-         *            the data to write.
-         * @throws IOException
-         */
-        public void writeInt(long v) throws IOException {
-            write((int) ((v >>> 0) & 0xff));
-            write((int) ((v >>> 8) & 0xff));
-            write((int) ((v >>> 16) & 0xff));
-            write((int) ((v >>> 24) & 0xff));
-        }// writeInt()
 
-        /**
-         * Writes a 16-bit short to the output stream in little-endian byte
-         * order.
-         * 
-         * @param v
-         *            the data to write.
-         * @throws IOException
-         */
-        public void writeShort(int v) throws IOException {
-            write((v >>> 0) & 0xff);
-            write((v >>> 8) & 0xff);
-        }// writeShort()
-
-    }// FilterOutputStreamEx
+    @Override
+    public void close() throws IOException {
+      // l("\t\tclose() >> totalWritten = %,d", totalWritten);
+      super.close();
+    }// close()
 
     /**
-     * To align ZIP files :-)
+     * Writes a 32-bit int to the output stream in little-endian byte order.
      * 
-     * @author Hai Bison
-     * @since v1.6.9 beta
+     * @param v
+     *            the data to write.
+     * @throws IOException
      */
-        private File mInputFile;
-        private int mAlignment;
-        private File mOutputFile;
-        private ZipFile mZipFile;
-        private RandomAccessFile mRafInput;
-        private FilterOutputStreamEx mOutputStream;
-        private List<XEntry> mXEntries = new ArrayList<XEntry>();
-        private long mInputFileOffset = 0;
-        private int mTotalPadding = 0;
+    public void writeInt(long v) throws IOException {
+      write((int) ((v >>> 0) & 0xff));
+      write((int) ((v >>> 8) & 0xff));
+      write((int) ((v >>> 16) & 0xff));
+      write((int) ((v >>> 24) & 0xff));
+    }// writeInt()
 
-        /**
-         * Creates new instance with alignment value of
-         * {@link ZipAlign#DEFAULT_ALIGNMENT}.
-         * 
-         * @param input
-         *            the input file.
-         * @param output
-         *            the output file.
+    /**
+     * Writes a 16-bit short to the output stream in little-endian byte
+     * order.
+     * 
+     * @param v
+     *            the data to write.
+     * @throws IOException
+     */
+    public void writeShort(int v) throws IOException {
+      write((v >>> 0) & 0xff);
+      write((v >>> 8) & 0xff);
+    }// writeShort()
+
+  }// FilterOutputStreamEx
+
+  /**
+   * To align ZIP files :-)
+   * 
+   * @author Hai Bison
+   * @since v1.6.9 beta
+   */
+  private File mInputFile;
+  private int mAlignment;
+  private File mOutputFile;
+  private ZipFile mZipFile;
+  private RandomAccessFile mRafInput;
+  private FilterOutputStreamEx mOutputStream;
+  private List<XEntry> mXEntries = new ArrayList<XEntry>();
+  private long mInputFileOffset = 0;
+  private int mTotalPadding = 0;
+
+  /**
+   * Creates new instance with alignment value of
+   * {@link ZipAlign#DEFAULT_ALIGNMENT}.
+   * 
+   * @param input
+   *            the input file.
+   * @param output
+   *            the output file.
+   */
+  public void zipAlign(File input, File output) {
+    mInputFile = input;
+    mAlignment = DEFAULT_ALIGNMENT;
+    mOutputFile = output;
+
+    try {
+      openFiles();
+      copyAllEntries();
+      buildCentralDirectory();
+    } catch (Exception e) {
+      mOutputFile.delete();
+    } finally {
+      try {
+        closeFiles();
+      } catch (Exception e) {
+        mOutputFile.delete();
+      }
+    }
+  }// run()
+
+  /**
+   * Opens files.
+   * <p>
+   * This takes 5% of total.
+   * </p>
+   * 
+   * @throws IOException
+   */
+  private void openFiles() throws IOException {
+    mZipFile = new ZipFile(mInputFile);
+    mRafInput = new RandomAccessFile(mInputFile, "r");
+    mOutputStream = new FilterOutputStreamEx(new BufferedOutputStream(
+        new FileOutputStream(mOutputFile), 32 * 1024));
+  }// openFiles()
+
+  /**
+   * Copies all entries, aligning them if needed.
+   * <p>
+   * This takes 80% of total.
+   * </p>
+   * 
+   * @throws IOException
+   */
+  private void copyAllEntries() throws IOException {
+    final int entryCount = mZipFile.size();
+    if (entryCount == 0) {
+      return;
+    }
+
+    final Enumeration<?> entries = mZipFile.entries();
+    while (entries.hasMoreElements()) {
+      final ZipEntry entry = (ZipEntry)entries.nextElement();
+
+      int flags = entry.getMethod() == ZipEntry.STORED ? 0 : 1 << 3;
+      flags |= 1 << 11;
+
+      final long outputEntryHeaderOffset = mOutputStream.totalWritten;
+
+      final int inputEntryHeaderSize = ZIP_ENTRY_HEADER_LEN
+          + (entry.getExtra() != null ? entry.getExtra().length
+              : 0)
+          + entry.getName().getBytes("UTF-8").length;
+      final long inputEntryDataOffset = mInputFileOffset
+          + inputEntryHeaderSize;
+
+      final int padding;
+
+      if (entry.getMethod() != ZipEntry.STORED) {
+        /*
+         * The entry is compressed, copy it without padding.
          */
-        public void zipAlign(File input, File output) {
-            mInputFile = input;
-            mAlignment = DEFAULT_ALIGNMENT;
-            mOutputFile = output;
-
-            try {
-                openFiles();
-                copyAllEntries();
-                buildCentralDirectory();
-            } catch (Exception e) {
-                mOutputFile.delete();
-            } finally {
-                try {
-                    closeFiles();
-                } catch (Exception e) {
-                    mOutputFile.delete();
-                }
-            }
-        }// run()
-
-        /**
-         * Opens files.
-         * <p>
-         * This takes 5% of total.
-         * </p>
-         * 
-         * @throws IOException
+        padding = 0;
+      } else {
+        /*
+         * Copy the entry, adjusting as required. We assume that the
+         * file position in the new file will be equal to the file
+         * position in the original.
          */
-        private void openFiles() throws IOException {
-            mZipFile = new ZipFile(mInputFile);
-            mRafInput = new RandomAccessFile(mInputFile, "r");
-            mOutputStream = new FilterOutputStreamEx(new BufferedOutputStream(
-                    new FileOutputStream(mOutputFile), 32 * 1024));
-        }// openFiles()
+        long newOffset = inputEntryDataOffset + mTotalPadding;
+        padding = (int) ((mAlignment - (newOffset % mAlignment)) % mAlignment);
+        mTotalPadding += padding;
+      }
 
-        /**
-         * Copies all entries, aligning them if needed.
-         * <p>
-         * This takes 80% of total.
-         * </p>
-         * 
-         * @throws IOException
-         */
-        private void copyAllEntries() throws IOException {
-            final int entryCount = mZipFile.size();
-            if (entryCount == 0) {
-                return;
-            }
+      final XEntry xentry = new XEntry(entry,
+          outputEntryHeaderOffset, flags, padding);
+      mXEntries.add(xentry);
 
-            final Enumeration<?> entries = mZipFile.entries();
-            while (entries.hasMoreElements()) {
-                final ZipEntry entry = (ZipEntry)entries.nextElement();
+      /*
+       * Modify the original header, add padding to `extra` field and
+       * copy it to output.
+       */
+      byte[] extra = entry.getExtra();
+      if (extra == null) {
+        extra = new byte[padding];
+        Arrays.fill(extra, (byte) 0);
+      } else {
+        byte[] newExtra = new byte[extra.length + padding];
+        System.arraycopy(extra, 0, newExtra, 0, extra.length);
+        Arrays.fill(newExtra, extra.length, newExtra.length,
+            (byte) 0);
+        extra = newExtra;
+      }
+      entry.setExtra(extra);
 
-                int flags = entry.getMethod() == ZipEntry.STORED ? 0 : 1 << 3;
-                flags |= 1 << 11;
+      /*
+       * Now write the header to output.
+       */
 
-                final long outputEntryHeaderOffset = mOutputStream.totalWritten;
+      mOutputStream.writeInt(ZipOutputStream.LOCSIG);
+      mOutputStream.writeShort(ZIP_ENTRY_VERSION);
+      mOutputStream.writeShort(flags);
+      mOutputStream.writeShort(entry.getMethod());
 
-                final int inputEntryHeaderSize = ZIP_ENTRY_HEADER_LEN
-                        + (entry.getExtra() != null ? entry.getExtra().length
-                                : 0)
-                        + entry.getName().getBytes("UTF-8").length;
-                final long inputEntryDataOffset = mInputFileOffset
-                        + inputEntryHeaderSize;
+      int modDate;
+      int time;
+      GregorianCalendar cal = new GregorianCalendar();
+      cal.setTime(new Date(entry.getTime()));
+      int year = cal.get(Calendar.YEAR);
+      if (year < 1980) {
+        modDate = 0x21;
+        time = 0;
+      } else {
+        modDate = cal.get(Calendar.DATE);
+        modDate = (cal.get(Calendar.MONTH) + 1 << 5) | modDate;
+        modDate = ((cal.get(Calendar.YEAR) - 1980) << 9) | modDate;
+        time = cal.get(Calendar.SECOND) >> 1;
+        time = (cal.get(Calendar.MINUTE) << 5) | time;
+        time = (cal.get(Calendar.HOUR_OF_DAY) << 11) | time;
+      }
 
-                final int padding;
+      mOutputStream.writeShort(time);
+      mOutputStream.writeShort(modDate);
 
-                if (entry.getMethod() != ZipEntry.STORED) {
-                    /*
-                     * The entry is compressed, copy it without padding.
-                     */
-                    padding = 0;
-                } else {
-                    /*
-                     * Copy the entry, adjusting as required. We assume that the
-                     * file position in the new file will be equal to the file
-                     * position in the original.
-                     */
-                    long newOffset = inputEntryDataOffset + mTotalPadding;
-                    padding = (int) ((mAlignment - (newOffset % mAlignment)) % mAlignment);
-                    mTotalPadding += padding;
-                }
+      mOutputStream.writeInt(entry.getCrc());
+      mOutputStream.writeInt(entry.getCompressedSize());
+      mOutputStream.writeInt(entry.getSize());
 
-                final XEntry xentry = new XEntry(entry,
-                        outputEntryHeaderOffset, flags, padding);
-                mXEntries.add(xentry);
+      mOutputStream
+      .writeShort(entry.getName().getBytes("UTF-8").length);
+      mOutputStream.writeShort(entry.getExtra().length);
+      mOutputStream.write(entry.getName().getBytes("UTF-8"));
+      mOutputStream.write(entry.getExtra(), 0,
+          entry.getExtra().length);
 
-                /*
-                 * Modify the original header, add padding to `extra` field and
-                 * copy it to output.
-                 */
-                byte[] extra = entry.getExtra();
-                if (extra == null) {
-                    extra = new byte[padding];
-                    Arrays.fill(extra, (byte) 0);
-                } else {
-                    byte[] newExtra = new byte[extra.length + padding];
-                    System.arraycopy(extra, 0, newExtra, 0, extra.length);
-                    Arrays.fill(newExtra, extra.length, newExtra.length,
-                            (byte) 0);
-                    extra = newExtra;
-                }
-                entry.setExtra(extra);
+      /*
+       * Copy raw data.
+       */
 
-                /*
-                 * Now write the header to output.
-                 */
+      mInputFileOffset += inputEntryHeaderSize;
 
-                mOutputStream.writeInt(ZipOutputStream.LOCSIG);
-                mOutputStream.writeShort(ZIP_ENTRY_VERSION);
-                mOutputStream.writeShort(flags);
-                mOutputStream.writeShort(entry.getMethod());
+      final long sizeToCopy;
+      if ((flags & ZIP_ENTRY_USES_DATA_DESCR) != 0) {
+        sizeToCopy = (entry.isDirectory() ? 0 : entry
+            .getCompressedSize())
+            + ZIP_ENTRY_DATA_DESCRIPTOR_LEN;
+      } else {
+        sizeToCopy = entry.isDirectory() ? 0 : entry
+            .getCompressedSize();
+      }
 
-                int modDate;
-                int time;
-                GregorianCalendar cal = new GregorianCalendar();
-                cal.setTime(new Date(entry.getTime()));
-                int year = cal.get(Calendar.YEAR);
-                if (year < 1980) {
-                    modDate = 0x21;
-                    time = 0;
-                } else {
-                    modDate = cal.get(Calendar.DATE);
-                    modDate = (cal.get(Calendar.MONTH) + 1 << 5) | modDate;
-                    modDate = ((cal.get(Calendar.YEAR) - 1980) << 9) | modDate;
-                    time = cal.get(Calendar.SECOND) >> 1;
-                    time = (cal.get(Calendar.MINUTE) << 5) | time;
-                    time = (cal.get(Calendar.HOUR_OF_DAY) << 11) | time;
-                }
+      if (sizeToCopy > 0) {
+        mRafInput.seek(mInputFileOffset);
 
-                mOutputStream.writeShort(time);
-                mOutputStream.writeShort(modDate);
+        long totalSizeCopied = 0;
+        final byte[] buf = new byte[32 * 1024];
+        while (totalSizeCopied < sizeToCopy) {
+          int read = mRafInput.read(
+              buf,
+              0,
+              (int) Math.min(32 * 1024, sizeToCopy
+                  - totalSizeCopied));
+          if (read <= 0) {
+            break;
+          }
 
-                mOutputStream.writeInt(entry.getCrc());
-                mOutputStream.writeInt(entry.getCompressedSize());
-                mOutputStream.writeInt(entry.getSize());
+          mOutputStream.write(buf, 0, read);
+          totalSizeCopied += read;
+        }// while
+      }// if
 
-                mOutputStream
-                        .writeShort(entry.getName().getBytes("UTF-8").length);
-                mOutputStream.writeShort(entry.getExtra().length);
-                mOutputStream.write(entry.getName().getBytes("UTF-8"));
-                mOutputStream.write(entry.getExtra(), 0,
-                        entry.getExtra().length);
+      mInputFileOffset += sizeToCopy;
+    }// while
+  }// copyAllEntries()
 
-                /*
-                 * Copy raw data.
-                 */
+  /**
+   * Builds central directory.
+   * <p>
+   * This takes 10% of total.
+   * </p>
+   * 
+   * @throws IOException
+   */
+  private void buildCentralDirectory() throws IOException {
+    final long centralDirOffset = mOutputStream.totalWritten;
 
-                mInputFileOffset += inputEntryHeaderSize;
+    for (int i = 0, n = mXEntries.size(); i < n; i++){
 
-                final long sizeToCopy;
-                if ((flags & ZIP_ENTRY_USES_DATA_DESCR) != 0)
-                    sizeToCopy = (entry.isDirectory() ? 0 : entry
-                            .getCompressedSize())
-                            + ZIP_ENTRY_DATA_DESCRIPTOR_LEN;
-                else
-                    sizeToCopy = entry.isDirectory() ? 0 : entry
-                            .getCompressedSize();
+      XEntry xentry = (XEntry) mXEntries.get(i); 
+      /*
+       * Write entry.
+       */
+      final ZipEntry entry = xentry.entry;
 
-                if (sizeToCopy > 0) {
-                    mRafInput.seek(mInputFileOffset);
+      int modDate;
+      int time;
+      GregorianCalendar cal = new GregorianCalendar();
+      cal.setTime(new Date(entry.getTime()));
+      int year = cal.get(Calendar.YEAR);
+      if (year < 1980) {
+        modDate = 0x21;
+        time = 0;
+      } else {
+        modDate = cal.get(Calendar.DATE);
+        modDate = (cal.get(Calendar.MONTH) + 1 << 5) | modDate;
+        modDate = ((cal.get(Calendar.YEAR) - 1980) << 9) | modDate;
+        time = cal.get(Calendar.SECOND) >> 1;
+        time = (cal.get(Calendar.MINUTE) << 5) | time;
+        time = (cal.get(Calendar.HOUR_OF_DAY) << 11) | time;
+      }
 
-                    long totalSizeCopied = 0;
-                    final byte[] buf = new byte[32 * 1024];
-                    while (totalSizeCopied < sizeToCopy) {
-                        int read = mRafInput.read(
-                                buf,
-                                0,
-                                (int) Math.min(32 * 1024, sizeToCopy
-                                        - totalSizeCopied));
-                        if (read <= 0)
-                            break;
-
-                        mOutputStream.write(buf, 0, read);
-                        totalSizeCopied += read;
-                    }// while
-                }// if
-
-                mInputFileOffset += sizeToCopy;
-            }// while
-        }// copyAllEntries()
-
-        /**
-         * Builds central directory.
-         * <p>
-         * This takes 10% of total.
-         * </p>
-         * 
-         * @throws IOException
-         */
-        private void buildCentralDirectory() throws IOException {
-            final long centralDirOffset = mOutputStream.totalWritten;
-
-            for (int i = 0, n = mXEntries.size(); i < n; i++){
-
-               XEntry xentry = (XEntry) mXEntries.get(i); 
-                /*
-                 * Write entry.
-                 */
-                final ZipEntry entry = xentry.entry;
-
-                int modDate;
-                int time;
-                GregorianCalendar cal = new GregorianCalendar();
-                cal.setTime(new Date(entry.getTime()));
-                int year = cal.get(Calendar.YEAR);
-                if (year < 1980) {
-                    modDate = 0x21;
-                    time = 0;
-                } else {
-                    modDate = cal.get(Calendar.DATE);
-                    modDate = (cal.get(Calendar.MONTH) + 1 << 5) | modDate;
-                    modDate = ((cal.get(Calendar.YEAR) - 1980) << 9) | modDate;
-                    time = cal.get(Calendar.SECOND) >> 1;
-                    time = (cal.get(Calendar.MINUTE) << 5) | time;
-                    time = (cal.get(Calendar.HOUR_OF_DAY) << 11) | time;
-                }
-
-                mOutputStream.writeInt(ZipFile.CENSIG); // CEN header signature
-                mOutputStream.writeShort(ZIP_ENTRY_VERSION); // version made by
-                mOutputStream.writeShort(ZIP_ENTRY_VERSION); // version needed
-                                                             // to
-                // extract
-                mOutputStream.writeShort(xentry.flags); // general purpose bit
-                                                        // flag
-                mOutputStream.writeShort(entry.getMethod()); // compression
-                                                             // method
-                mOutputStream.writeShort(time);
-                mOutputStream.writeShort(modDate);
-                mOutputStream.writeInt(entry.getCrc()); // crc-32
-                mOutputStream.writeInt(entry.getCompressedSize()); // compressed
-                                                                   // size
-                mOutputStream.writeInt(entry.getSize()); // uncompressed size
-                final byte[] nameBytes = entry.getName().getBytes("UTF-8");
-                mOutputStream.writeShort(nameBytes.length);
-                mOutputStream.writeShort(entry.getExtra() != null ? entry
-                        .getExtra().length - xentry.padding : 0);
-                final byte[] commentBytes;
-                if (entry.getComment() != null) {
-                    commentBytes = entry.getComment().getBytes("UTF-8");
-                    mOutputStream.writeShort(Math.min(commentBytes.length,
-                            0xffff));
-                } else {
-                    commentBytes = null;
-                    mOutputStream.writeShort(0);
-                }
-                mOutputStream.writeShort(0); // starting disk number
-                mOutputStream.writeShort(0); // internal file attributes
-                                             // (unused)
-                mOutputStream.writeInt(0); // external file attributes (unused)
-                mOutputStream.writeInt(xentry.headerOffset); // relative offset
-                                                             // of
-                // local
-                // header
-                mOutputStream.write(nameBytes);
-                if (entry.getExtra() != null)
-                    mOutputStream.write(entry.getExtra(), 0,
-                            entry.getExtra().length - xentry.padding);
-                if (commentBytes != null)
-                    mOutputStream.write(commentBytes, 0,
-                            Math.min(commentBytes.length, 0xffff));
-            }// for xentry
+      mOutputStream.writeInt(ZipFile.CENSIG); // CEN header signature
+      mOutputStream.writeShort(ZIP_ENTRY_VERSION); // version made by
+      mOutputStream.writeShort(ZIP_ENTRY_VERSION); // version needed
+      // to
+      // extract
+      mOutputStream.writeShort(xentry.flags); // general purpose bit
+      // flag
+      mOutputStream.writeShort(entry.getMethod()); // compression
+      // method
+      mOutputStream.writeShort(time);
+      mOutputStream.writeShort(modDate);
+      mOutputStream.writeInt(entry.getCrc()); // crc-32
+      mOutputStream.writeInt(entry.getCompressedSize()); // compressed
+      // size
+      mOutputStream.writeInt(entry.getSize()); // uncompressed size
+      final byte[] nameBytes = entry.getName().getBytes("UTF-8");
+      mOutputStream.writeShort(nameBytes.length);
+      mOutputStream.writeShort(entry.getExtra() != null ? entry
+          .getExtra().length - xentry.padding : 0);
+      final byte[] commentBytes;
+      if (entry.getComment() != null) {
+        commentBytes = entry.getComment().getBytes("UTF-8");
+        mOutputStream.writeShort(Math.min(commentBytes.length,
+            0xffff));
+      } else {
+        commentBytes = null;
+        mOutputStream.writeShort(0);
+      }
+      mOutputStream.writeShort(0); // starting disk number
+      mOutputStream.writeShort(0); // internal file attributes
+      // (unused)
+      mOutputStream.writeInt(0); // external file attributes (unused)
+      mOutputStream.writeInt(xentry.headerOffset); // relative offset
+      // of
+      // local
+      // header
+      mOutputStream.write(nameBytes);
+      if (entry.getExtra() != null) {
+        mOutputStream.write(entry.getExtra(), 0,
+            entry.getExtra().length - xentry.padding);
+      }
+      if (commentBytes != null) {
+        mOutputStream.write(commentBytes, 0,
+            Math.min(commentBytes.length, 0xffff));
+      }
+    }// for xentry
 
 
-            /*
-             * Write the end of central directory.
-             */
-            final long centralDirSize = mOutputStream.totalWritten
-                    - centralDirOffset;
+    /*
+     * Write the end of central directory.
+     */
+    final long centralDirSize = mOutputStream.totalWritten
+        - centralDirOffset;
 
-            final int entryCount = mXEntries.size();
+    final int entryCount = mXEntries.size();
 
-            mOutputStream.writeInt(ZipFile.ENDSIG); // END record signature
-            mOutputStream.writeShort(0); // number of this disk
-            mOutputStream.writeShort(0); // central directory start disk
-            mOutputStream.writeShort(entryCount); // number of directory entries
-                                                  // on
-            // disk
-            mOutputStream.writeShort(entryCount); // total number of directory
-                                                  // entries
-            mOutputStream.writeInt(centralDirSize); // length of central
-                                                    // directory
-            mOutputStream.writeInt(centralDirOffset); // offset of central
-            // directory
-/*            if (mZipFile.getComment() != null) { // zip file comment
+    mOutputStream.writeInt(ZipFile.ENDSIG); // END record signature
+    mOutputStream.writeShort(0); // number of this disk
+    mOutputStream.writeShort(0); // central directory start disk
+    mOutputStream.writeShort(entryCount); // number of directory entries
+    // on
+    // disk
+    mOutputStream.writeShort(entryCount); // total number of directory
+    // entries
+    mOutputStream.writeInt(centralDirSize); // length of central
+    // directory
+    mOutputStream.writeInt(centralDirOffset); // offset of central
+    // directory
+    /*            if (mZipFile.getComment() != null) { // zip file comment
                 final byte[] bytes = mZipFile.getComment().getBytes("UTF-8");
                 mOutputStream.writeShort(bytes.length);
                 mOutputStream.write(bytes);
             } else {
-*/                mOutputStream.writeShort(0);
-//            }
+     */                mOutputStream.writeShort(0);
+     //            }
 
-            mOutputStream.flush();
+     mOutputStream.flush();
 
-        }// buildCentralDirectory()
+  }// buildCentralDirectory()
 
-        /**
-         * Closes all files.
-         * <p>
-         * This takes 5% of total.
-         * </p>
-         * 
-         * @throws IOException
-         */
-        private void closeFiles() throws IOException {
-            try {
-                mZipFile.close();
-            } finally {
-                try {
-                    mRafInput.close();
-                } finally {
-                    mOutputStream.close();
-                }
-            }
+  /**
+   * Closes all files.
+   * <p>
+   * This takes 5% of total.
+   * </p>
+   * 
+   * @throws IOException
+   */
+  private void closeFiles() throws IOException {
+    try {
+      mZipFile.close();
+    } finally {
+      try {
+        mRafInput.close();
+      } finally {
+        mOutputStream.close();
+      }
+    }
 
-        }// closeFiles()
+  }// closeFiles()
 }

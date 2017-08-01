@@ -11,11 +11,18 @@
 
 
 
-static void windowSetSIP(int32 sipOption)
+static void windowSetSIP(int32 sipOption, bool numeric)
 {
    JNIEnv* env = getJNIEnv();
-   jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setSIP", "(I)V");
-   (*env)->CallStaticVoidMethod(env, applicationClass, m, (jint) sipOption);
+   jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setSIP", "(IZ)V");
+   (*env)->CallStaticVoidMethod(env, applicationClass, m, (jint) sipOption, numeric);
+}
+
+static bool windowGetSIP()
+{
+   JNIEnv* env = getJNIEnv();
+   jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "getSIP", "()Z");
+   return (*env)->CallStaticBooleanMethod(env, applicationClass, m);
 }
 
 static void windowSetDeviceTitle(TCObject titleObj)

@@ -15,26 +15,26 @@ package tc.test.converter.testfiles;
 
 public class BC002to015
 {
-   public BC002to015()
-   {
-        int i;
-        i = -1;
-        i =  0;
-        i =  1;
-        i =  2;
-        i =  3;
-        i =  4;
-        i =  5;
+  public BC002to015()
+  {
+    int i;
+    i = -1;
+    i =  0;
+    i =  1;
+    i =  2;
+    i =  3;
+    i =  4;
+    i =  5;
 
-        float f;
-        f = 0.0f;
-        f = 1.0f;
-        f = 2.0f;
+    float f;
+    f = 0.0f;
+    f = 1.0f;
+    f = 2.0f;
 
-        double d;
-        d = 0.0;
-        d = 1.0;
+    double d;
+    d = 0.0;
+    d = 1.0;
 
-        if (false) {i+=0; f+=0; d+=0;} // remove warnings
-   }
+    if (false) {i+=0; f+=0; d+=0;} // remove warnings
+  }
 }

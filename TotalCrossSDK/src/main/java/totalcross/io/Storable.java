@@ -78,37 +78,37 @@ package totalcross.io;
  */
 public interface Storable
 {
-   /**
-    * Gets a unique ID for this class. It is up to the user to ensure that the
-    * ID of each class of Storable contained in a single ObjectCatalog is unique
-    * and the ID of each instance in a class is the same. If the ID returned is
-    * zero, no type information will be saved to the catalog and
-    * ObjectCatalog.loadObjectAt(int) cannot be used. It is useful, however when
-    * accessing Catalogs from other programs using the ObjectCatalog model.
-    */
-   public byte getID();
+  /**
+   * Gets a unique ID for this class. It is up to the user to ensure that the
+   * ID of each class of Storable contained in a single ObjectCatalog is unique
+   * and the ID of each instance in a class is the same. If the ID returned is
+   * zero, no type information will be saved to the catalog and
+   * ObjectCatalog.loadObjectAt(int) cannot be used. It is useful, however when
+   * accessing Catalogs from other programs using the ObjectCatalog model.
+   */
+  public byte getID();
 
-   /**
-    * Returns an object of the same class as this object.
-    *
-    * @return a class. Any data is irrelevent.
-    */
-   public Storable getInstance();
+  /**
+   * Returns an object of the same class as this object.
+   *
+   * @return a class. Any data is irrelevent.
+   */
+  public Storable getInstance();
 
-   /**
-    * Send the state information of this object to the given object catalog
-    * using the given DataStream. If any Storable objects need to be saved as
-    * part of the state, their saveState() method can be called too.
-    * @throws totalcross.io.IOException
-    */
-   public void saveState(DataStream ds) throws totalcross.io.IOException;
+  /**
+   * Send the state information of this object to the given object catalog
+   * using the given DataStream. If any Storable objects need to be saved as
+   * part of the state, their saveState() method can be called too.
+   * @throws totalcross.io.IOException
+   */
+  public void saveState(DataStream ds) throws totalcross.io.IOException;
 
-   /**
-    * Load state information from the given DataStream into this object If any
-    * Storable objects need to be loaded as part of the state, their loadState()
-    * method can be called too.
-    *
-    * @throws totalcross.io.IOException
-    */
-   public void loadState(DataStream ds) throws totalcross.io.IOException;
+  /**
+   * Load state information from the given DataStream into this object If any
+   * Storable objects need to be loaded as part of the state, their loadState()
+   * method can be called too.
+   *
+   * @throws totalcross.io.IOException
+   */
+  public void loadState(DataStream ds) throws totalcross.io.IOException;
 }

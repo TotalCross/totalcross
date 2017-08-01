@@ -22,24 +22,24 @@ package totalcross.ui.event;
 
 public interface PenListener
 {
-   /** A PEN_DOWN event was dispatched.
-    * @see PenEvent 
-    */
-   public void penDown(PenEvent e);
-   /** A PEN_UP event was dispatched.
-    * @see PenEvent 
-    */
-   public void penUp(PenEvent e);
-   /** A PEN_DRAG event was dispatched.
-    * @see PenEvent 
-    */
-   public void penDrag(DragEvent e); // guich@tc122_11: now a DragEvent
-   /** A PEN_DRAG_START event was dispatched.
-    * @see PenEvent 
-    */
-   public void penDragStart(DragEvent e); // guich@tc122_11: now a DragEvent
-   /** A PEN_DRAG_END event was dispatched.
-    * @see PenEvent 
-    */
-   public void penDragEnd(DragEvent e); // guich@tc122_11: now a DragEvent
+  /** A PEN_DOWN event was dispatched.
+   * @see PenEvent 
+   */
+  public void penDown(PenEvent e);
+  /** A PEN_UP event was dispatched.
+   * @see PenEvent 
+   */
+  public void penUp(PenEvent e);
+  /** A PEN_DRAG event was dispatched.
+   * @see PenEvent 
+   */
+  public void penDrag(DragEvent e); // guich@tc122_11: now a DragEvent
+  /** A PEN_DRAG_START event was dispatched.
+   * @see PenEvent 
+   */
+  public void penDragStart(DragEvent e); // guich@tc122_11: now a DragEvent
+  /** A PEN_DRAG_END event was dispatched.
+   * @see PenEvent 
+   */
+  public void penDragEnd(DragEvent e); // guich@tc122_11: now a DragEvent
 }

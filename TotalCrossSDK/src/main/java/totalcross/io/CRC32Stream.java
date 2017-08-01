@@ -50,106 +50,113 @@ package totalcross.io;
  */
 public class CRC32Stream extends Stream
 {
-   private Stream stream;
-   private int crc;
+  private Stream stream;
+  private int crc;
 
-   /** The fast CRC table. Computed once when the CRC32 class is loaded. */
-   public static int[] crcTable = make_crc_table();
+  /** The fast CRC table. Computed once when the CRC32 class is loaded. */
+  public static int[] crcTable = make_crc_table();
 
-   /** Make the table for a fast CRC. */
-   private static int[] make_crc_table()
-   {
-      int[] crc_table = new int[256];
-      for (int n = 0; n < 256; n++)
+  /** Make the table for a fast CRC. */
+  private static int[] make_crc_table()
+  {
+    int[] crc_table = new int[256];
+    for (int n = 0; n < 256; n++)
+    {
+      int c = n;
+      for (int k = 8; --k >= 0;)
       {
-         int c = n;
-         for (int k = 8; --k >= 0;)
-         {
-            if ((c & 1) != 0)
-               c = 0xedb88320 ^ (c >>> 1);
-            else
-               c >>>= 1;
-         }
-         crc_table[n] = c;
+        if ((c & 1) != 0) {
+          c = 0xedb88320 ^ (c >>> 1);
+        } else {
+          c >>>= 1;
+        }
       }
-      return crc_table;
-   }
+      crc_table[n] = c;
+    }
+    return crc_table;
+  }
 
-   public CRC32Stream(Stream s)
-   {
-      this.stream = s;
-   }
+  public CRC32Stream(Stream s)
+  {
+    this.stream = s;
+  }
 
-   /**
-    * Returns the CRC32 data checksum computed so far.
-    * You can safely cast it to <code>int</code>, but then the value may be negative.
-    * @return an unsigned crc value in the int range.
-    */
-   public long getValue()
-   {
-      return crc & 0xFFFFFFFFL;
-   }
+  /**
+   * Returns the CRC32 data checksum computed so far.
+   * You can safely cast it to <code>int</code>, but then the value may be negative.
+   * @return an unsigned crc value in the int range.
+   */
+  public long getValue()
+  {
+    return crc & 0xFFFFFFFFL;
+  }
 
-   /**
-    * Resets the CRC32 data checksum so a new CRC32 can be computed.
-    */
-   public void reset()
-   {
-      crc = 0;
-   }
+  /**
+   * Resets the CRC32 data checksum so a new CRC32 can be computed.
+   */
+  public void reset()
+  {
+    crc = 0;
+  }
 
 
-   /** This method does nothing. */
-   public void close()
-   {
-   }
+  /** This method does nothing. */
+  @Override
+  public void close()
+  {
+  }
 
-   /** Updates the CRC32 with the values of the given buffer. */
-   public void update (byte[] buf, int off, int len)
-   {
-     int c = ~crc;
-     while (--len >= 0)
-       c = crcTable[(c ^ buf[off++]) & 0xff] ^ (c >>> 8);
-     crc = ~c;
-   }
+  /** Updates the CRC32 with the values of the given buffer. */
+  public void update (byte[] buf, int off, int len)
+  {
+    int c = ~crc;
+    while (--len >= 0){
+      c = crcTable[(c ^ buf[off++]) & 0xff] ^ (c >>> 8);
+    }
+    crc = ~c;
+  }
 
-   /**
-    * Computes the checksum for the bytes read from the attached stream.
-    * @param buf    the byte array to read data into
-    * @param start  the start position in the array
-    * @param count  the number of bytes to read
-    * @return The number of bytes read from the underlying stream.
-    *
-    * @throws totalcross.io.IOException
-    */
-   public int readBytes(byte[] buf, int start, int count) throws totalcross.io.IOException
-   {
-      int n = stream.readBytes(buf, start, count);
-      int[] crcs = crcTable;
-      int c = ~crc;
-      count = n;
-      while (--count >= 0)
-         c = crcs[(c ^ buf[start++]) & 0xff] ^ (c >>> 8);
-      crc = ~c;
-      return n; // guich@tc100b5_23
-   }
+  /**
+   * Computes the checksum for the bytes read from the attached stream.
+   * @param buf    the byte array to read data into
+   * @param start  the start position in the array
+   * @param count  the number of bytes to read
+   * @return The number of bytes read from the underlying stream.
+   *
+   * @throws totalcross.io.IOException
+   */
+  @Override
+  public int readBytes(byte[] buf, int start, int count) throws totalcross.io.IOException
+  {
+    int n = stream.readBytes(buf, start, count);
+    int[] crcs = crcTable;
+    int c = ~crc;
+    count = n;
+    while (--count >= 0){
+      c = crcs[(c ^ buf[start++]) & 0xff] ^ (c >>> 8);
+    }
+    crc = ~c;
+    return n; // guich@tc100b5_23
+  }
 
-   /** Computes the checksum for the given bytes, then write them to the attached stream.
-    * @param buf    the byte array to write data from
-    * @param start  the start position in the byte array
-    * @param count  the number of bytes to write
-    * @return The number of bytes written to the underlying stream.
-    * @throws totalcross.io.IOException 
-    */
-   public int writeBytes(byte[] buf, int start, int count) throws totalcross.io.IOException
-   {
-      int s = start;
-      int n = count;
-      int[] crcs = crcTable;
-      int c = ~crc;
-      while (--count >= 0)
-         c = crcs[(c ^ buf[start++]) & 0xff] ^ (c >>> 8);
-      crc = ~c;
-      return stream.writeBytes(buf, s, n);
-   }
+  /** Computes the checksum for the given bytes, then write them to the attached stream.
+   * @param buf    the byte array to write data from
+   * @param start  the start position in the byte array
+   * @param count  the number of bytes to write
+   * @return The number of bytes written to the underlying stream.
+   * @throws totalcross.io.IOException 
+   */
+  @Override
+  public int writeBytes(byte[] buf, int start, int count) throws totalcross.io.IOException
+  {
+    int s = start;
+    int n = count;
+    int[] crcs = crcTable;
+    int c = ~crc;
+    while (--count >= 0){
+      c = crcs[(c ^ buf[start++]) & 0xff] ^ (c >>> 8);
+    }
+    crc = ~c;
+    return stream.writeBytes(buf, s, n);
+  }
 }

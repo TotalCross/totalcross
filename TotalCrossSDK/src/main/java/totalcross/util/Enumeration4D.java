@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package totalcross.util;
 
+import java.util.NoSuchElementException;
+
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1.
  * Status:  Believed complete and correct

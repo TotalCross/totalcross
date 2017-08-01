@@ -190,6 +190,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuW_setSIP_icb"), &tuW_setSIP_icb);
    htPutPtr(&htNativeProcAddresses, hashCode("tuW_setDeviceTitle_s"), &tuW_setDeviceTitle_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuW_setOrientation_i"), &tuW_setOrientation_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuW_isSipShown"), &tuW_isSipShown);
    htPutPtr(&htNativeProcAddresses, hashCode("tsCC_bytes2chars_Bii"), &tsCC_bytes2chars_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsCC_chars2bytes_Cii"), &tsCC_chars2bytes_Cii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsUTF8CC_bytes2chars_Bii"), &tsUTF8CC_bytes2chars_Bii);

@@ -18,84 +18,92 @@
 
 package tc.samples.api.util;
 
-import tc.samples.api.*;
-
-import totalcross.io.*;
-import totalcross.sys.*;
-import totalcross.ui.dialog.*;
-import totalcross.util.zip.*;
+import tc.samples.api.BaseContainer;
+import totalcross.io.File;
+import totalcross.io.FileNotFoundException;
+import totalcross.io.IOException;
+import totalcross.sys.Convert;
+import totalcross.ui.dialog.FileChooserBox;
+import totalcross.ui.dialog.InputBox;
+import totalcross.ui.dialog.MessageBox;
+import totalcross.util.zip.CompressedStream;
+import totalcross.util.zip.ZipEntry;
+import totalcross.util.zip.ZipStream;
 
 public class ZipSample extends BaseContainer
 {
-   byte[] buf = new byte[1024];
+  byte[] buf = new byte[1024];
 
-   public void initUI()
-   {
-      super.initUI();
-      try
+  @Override
+  public void initUI()
+  {
+    super.initUI();
+    try
+    {
+      addLog(LEFT,TOP,FILL,FILL,null);
+      FileChooserBox fcb = new FileChooserBox(null);
+      fcb.setTitle("Select the files to Zip");
+      fcb.multipleSelection = true;
+      fcb.mountTree("device/");
+      fcb.popup();
+
+      if (fcb.getPressedButtonIndex() != 0) {
+        log("Cancelled");
+      } else
       {
-         addLog(LEFT,TOP,FILL,FILL,null);
-         FileChooserBox fcb = new FileChooserBox(null);
-         fcb.setTitle("Select the files to Zip");
-         fcb.multipleSelection = true;
-         fcb.mountTree("device/");
-         fcb.popup();
+        String answer = fcb.getAnswer();
+        if (answer == null || answer.length() == 0)
+        {
+          log("No files selected. Operation cancelled");
+          return;
+        }
+        String[] paths = Convert.tokenizeString(answer, ',');
 
-         if (fcb.getPressedButtonIndex() != 0)
-            log("Cancelled");
-         else
-         {
-            String answer = fcb.getAnswer();
-            if (answer == null || answer.length() == 0)
-            {
-               log("No files selected. Operation cancelled");
-               return;
-            }
-            String[] paths = Convert.tokenizeString(answer, ',');
+        InputBox input = new InputBox("Zip file path", "Create new file at:", "device/sample.zip");
+        input.popup();
+        try
+        {
+          if (input.getPressedButtonIndex() == 0)
+          {
+            int original = 0;
+            File destination = new File(input.getValue(), File.CREATE_EMPTY);
+            ZipStream zstream = new ZipStream(destination, CompressedStream.DEFLATE);
 
-            InputBox input = new InputBox("Zip file path", "Create new file at:", "device/sample.zip");
-            input.popup();
-            try
+            for (int i = 0; i < paths.length; i++)
             {
-               if (input.getPressedButtonIndex() == 0)
-               {
-                  int original = 0;
-                  File destination = new File(input.getValue(), File.CREATE_EMPTY);
-                  ZipStream zstream = new ZipStream(destination, ZipStream.DEFLATE);
-
-                  for (int i = 0; i < paths.length; i++)
-                  {
-                     log("Adding "+paths[i]);
-                     File file = new File(paths[i], File.DONT_OPEN);
-                     if (!file.exists())
-                        throw new FileNotFoundException();
-                     zstream.putNextEntry(new ZipEntry(file.getPath().substring(1)));
-                     if (!file.isDir())
-                     {
-                        file = new File(paths[i], File.READ_WRITE);
-                        original += file.getSize();
-                        int n;
-                        while ((n = file.readBytes(buf, 0, 1024)) > 0)
-                           zstream.writeBytes(buf, 0, n);
-                        file.close();
-                     }
-                     zstream.closeEntry();
-                  }
-                  zstream.close();
-                  log("Operation completed.");
-                  log("Original size: "+original);
-                  log("Final size: "+destination.getSize());
-               }
+              log("Adding "+paths[i]);
+              File file = new File(paths[i], File.DONT_OPEN);
+              if (!file.exists()) {
+                throw new FileNotFoundException();
+              }
+              zstream.putNextEntry(new ZipEntry(file.getPath().substring(1)));
+              if (!file.isDir())
+              {
+                file = new File(paths[i], File.READ_WRITE);
+                original += file.getSize();
+                int n;
+                while ((n = file.readBytes(buf, 0, 1024)) > 0) {
+                  zstream.writeBytes(buf, 0, n);
+                }
+                file.close();
+              }
+              zstream.closeEntry();
             }
-            catch (Exception ee)
-            {
-               MessageBox.showException(ee,true);
-            }
-         }
+            zstream.close();
+            log("Operation completed.");
+            log("Original size: "+original);
+            log("Final size: "+destination.getSize());
+          }
+        }
+        catch (Exception ee)
+        {
+          MessageBox.showException(ee,true);
+        }
       }
-      catch (IOException e)
-      {
-         e.printStackTrace();
-      }
-   }
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
+  }
 }

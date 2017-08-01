@@ -18,9 +18,10 @@
 
 package totalcross.io;
 
-import totalcross.sys.*;
-import totalcross.util.*;
-import totalcross.util.zip.*;
+import totalcross.sys.CharacterConverter;
+import totalcross.sys.Convert;
+import totalcross.util.Vector;
+import totalcross.util.zip.ZLib;
 
 /**
  * Creates a compressed byte array stream, saving memory when reading and writting
@@ -119,355 +120,385 @@ import totalcross.util.zip.*;
 
 public class CompressedByteArrayStream extends Stream
 {
-   /** Implements a CharacterConverter that converts from char[] to byte[] which just
-    * casts the char to byte; thus, ignoring any non-ASCII character. */
-   public static class DirectCharConverter extends CharacterConverter
-   {
-      /** Just casts the char to byte; thus, ignoring any non-ASCII character. */
-      public byte[] chars2bytes(char[] chars, int offset, int length)
-      {
-         offset += length;
-         byte[] b = new byte[length];
-         while (--length >= 0)
-            b[length] = (byte) chars[--offset];
-         return b;
+  /** Implements a CharacterConverter that converts from char[] to byte[] which just
+   * casts the char to byte; thus, ignoring any non-ASCII character. */
+  public static class DirectCharConverter extends CharacterConverter
+  {
+    /** Just casts the char to byte; thus, ignoring any non-ASCII character. */
+    @Override
+    public byte[] chars2bytes(char[] chars, int offset, int length)
+    {
+      offset += length;
+      byte[] b = new byte[length];
+      while (--length >= 0) {
+        b[length] = (byte) chars[--offset];
       }
-   }
+      return b;
+    }
+  }
 
-   private static final int       SIZE                  = 16000;
+  private static final int       SIZE                  = 16000;
 
-   /** Used in the setMode method. Turns the mode into READ. */
-   public static final int        READ_MODE             = 1;
-   /** Used in the setMode method. Turns the mode into WRITE. */
-   public static final int        WRITE_MODE            = 0;
-   /**
-    * Used in the setMode method. Turns the mode into READ, and after reading
-    * each buffer, discards it, releasing memory. CompressedByteArrayStream will not be able to
-    * read the buffer again. This is useful when you download data and then want to read from it,
-    * releasing memory on-demand.
-    */
-   public static final int        DESTRUCTIVE_READ_MODE = 2;                         // guich@570_28
+  /** Used in the setMode method. Turns the mode into READ. */
+  public static final int        READ_MODE             = 1;
+  /** Used in the setMode method. Turns the mode into WRITE. */
+  public static final int        WRITE_MODE            = 0;
+  /**
+   * Used in the setMode method. Turns the mode into READ, and after reading
+   * each buffer, discards it, releasing memory. CompressedByteArrayStream will not be able to
+   * read the buffer again. This is useful when you download data and then want to read from it,
+   * releasing memory on-demand.
+   */
+  public static final int        DESTRUCTIVE_READ_MODE = 2;                         // guich@570_28
 
-   /**
-    * Defines the line terminator, which is by default \r\n. To change it to a single \n
-    * use <code>CompressedByteArrayStream.crlf = new byte[]{'\n'};</code>
-    */
-   public static byte[]           crlf                  = {(byte) '\r', (byte) '\n'};
+  /**
+   * Defines the line terminator, which is by default \r\n. To change it to a single \n
+   * use <code>CompressedByteArrayStream.crlf = new byte[]{'\n'};</code>
+   */
+  public static byte[]           crlf                  = {(byte) '\r', (byte) '\n'};
 
-   private int                    mode;                                              // READ or WRITE
-   private int                    compressionLevel;
-   private int                    rSize, cSize;                                      // real and compressed sizes
-   private int                    readIdx;                                           // current buffer under use when reading
-   private Vector                 zbufs                 = new Vector();              // stores the compressed data
-   private ByteArrayStream        buf                   = new ByteArrayStream(SIZE); // current read/write buffer
-   private byte[]                 bufbytes              = buf.getBuffer();           // since buf size won't change, this is safe
-   private static ByteArrayStream temp                  = new ByteArrayStream(SIZE); // used to compress/uncompress
-   private StringBuffer           sbuf;                                              // used in readLine
-   private byte[] writeBuf;                                                          // used in readFully
+  private int                    mode;                                              // READ or WRITE
+  private int                    compressionLevel;
+  private int                    rSize, cSize;                                      // real and compressed sizes
+  private int                    readIdx;                                           // current buffer under use when reading
+  private Vector                 zbufs                 = new Vector();              // stores the compressed data
+  private ByteArrayStream        buf                   = new ByteArrayStream(SIZE); // current read/write buffer
+  private byte[]                 bufbytes              = buf.getBuffer();           // since buf size won't change, this is safe
+  private static ByteArrayStream temp                  = new ByteArrayStream(SIZE); // used to compress/uncompress
+  private StringBuffer           sbuf;                                              // used in readLine
+  private byte[] writeBuf;                                                          // used in readFully
 
-   /**
-    * Creates a new CompressedByteArrayStream, using the given compression level (0 =
-    * no compression, 9 = max compression).
-    */
-   public CompressedByteArrayStream(int compressionLevel) throws IllegalArgumentException
-   {
-      if (compressionLevel < 0 || compressionLevel > 9)
-         throw new IllegalArgumentException("Argument 'compressionLevel' must be >= 0 and <= 9");
-      this.compressionLevel = compressionLevel;
-   }
+  /**
+   * Creates a new CompressedByteArrayStream, using the given compression level (0 =
+   * no compression, 9 = max compression).
+   */
+  public CompressedByteArrayStream(int compressionLevel) throws IllegalArgumentException
+  {
+    if (compressionLevel < 0 || compressionLevel > 9){
+      throw new IllegalArgumentException("Argument 'compressionLevel' must be >= 0 and <= 9");
+    }
+    this.compressionLevel = compressionLevel;
+  }
 
-   /**
-    * Creates a new CompressedByteArrayStream using the maximum compression level (9)
-    */
-   public CompressedByteArrayStream()
-   {
-      this(9);
-   }
+  /**
+   * Creates a new CompressedByteArrayStream using the maximum compression level (9)
+   */
+  public CompressedByteArrayStream()
+  {
+    this(9);
+  }
 
-   /**
-    * After everything was written, call this method to flush the internal buffers 
-    * and prepare the CompressedByteArrayStream for read. It is already called by setMode
-    * when it changes the modes.
-    * @throws IOException 
-    * @see #setMode(int)
-    */
-   public void flush() throws IOException
-   {
-      if (buf.getPos() > 0)
-         saveCurrentBuffer();
-      if (mode == WRITE_MODE) // guich@566_37
-      {
-         mode = -1; // don't let setMode call us again.
-         setMode(READ_MODE);
-      }
-   }
+  /**
+   * After everything was written, call this method to flush the internal buffers 
+   * and prepare the CompressedByteArrayStream for read. It is already called by setMode
+   * when it changes the modes.
+   * @throws IOException 
+   * @see #setMode(int)
+   */
+  public void flush() throws IOException
+  {
+    if (buf.getPos() > 0){
+      saveCurrentBuffer();
+    }
+    if (mode == WRITE_MODE) // guich@566_37
+    {
+      mode = -1; // don't let setMode call us again.
+      setMode(READ_MODE);
+    }
+  }
 
-   /** Changes the mode to the given one, calling <code>flush</code> if in write mode. 
-    * @param newMode the new mode
-    * @throws IOException 
-    * @see #WRITE_MODE
-    * @see #READ_MODE
-    * @see #DESTRUCTIVE_READ_MODE
-    */
-   public void setMode(int newMode) throws IOException
-   {
-      // flsobral@tc100b5_45: Stream was not being reseted when the new mode was the same as the current one.
-      if (mode == WRITE_MODE && mode != newMode)
-         flush();
-      if (newMode == READ_MODE || newMode == DESTRUCTIVE_READ_MODE)
-         readIdx = -1;
-      mode = newMode;
-      loadNextBuffer();      
-   }
-
-   /** Deletes all internal buffers. Do not try to use the object afterwards. */
-   public void close()
-   {
-      buf = null;
-      zbufs.removeAllElements();
-   }
-
-   /** Returns the real (uncompressed) size of data written. */
-   public int getSize()
-   {
-      return rSize; // luciana@572_20 - fixed, it was returning cSize
-   }
-
-   /** Returns the compressed size of the data written. */
-   public int getCompressedSize()
-   {
-      return cSize; // luciana@572_20 - fixed, it was returning rSize
-   }
-
-   /** Compresses the current buffer and add it to the buffer arrays 
-    * @throws IOException */
-   private void saveCurrentBuffer() throws IOException
-   {
-      buf.mark(); // note: unless for the last buffer, all the others will have SIZE bytes
-      temp.reset();
-      cSize += ZLib.deflate(buf, temp, compressionLevel);
-      zbufs.addElement(temp.toByteArray()); // save the compressed buffer
-      //Vm.debug("saved "+buf.count()+" -> "+temp.count());
-      buf.reset();
-   }
-
-   /** Uncompresses the next buffer and load it to memory 
-    * @throws IOException */
-   private boolean loadNextBuffer() throws IOException
-   {
-      if (++readIdx >= zbufs.size())
-         return false;
-      buf.reset();
-      if (readIdx > 0 && mode == DESTRUCTIVE_READ_MODE)
-         zbufs.items[readIdx - 1] = null;
-      byte[] b = (byte[]) zbufs.items[readIdx];
-      ByteArrayStream bas = new ByteArrayStream(b);
-      /* int s = */ZLib.inflate(bas, buf);
-      buf.mark();
-      //Vm.debug("loaded "+b.length+" -> "+s);
-      return true;
-   }
-
-   /**
-    * Transfers count bytes from the internal buffer to the given one.
-    *
-    * @param buffer the byte array to read data into
-    * @param start  the start position in the array
-    * @param count  the number of bytes to read
-    * @return the number of bytes read. If an error occurred, -1 is returned and 
-    * @throws IOException 
-    */
-   public int readBytes(byte buffer[], int start, int count) throws IOException
-   {
-      if (start < 0)
-         throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
-      if (count < 0)
-         throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
-      
-      int orig = count;
-      while (true)
-      {
-         if (buf.available() > 0)
-         {
-            int n = buf.readBytes(buffer, start, count);
-            count -= n;
-            start += n;
-         }
-         if (count == 0)
-            break;
-         if (!loadNextBuffer())
-            break;
-      }
-      return orig - count;
-   }
-
-   /**
-    * This method writes to the byte array, expanding it if necessary. 
-    *
-    * @param buffer the byte array to write data from
-    * @param start  the start position in the byte array
-    * @param count  the number of bytes to write
-    * @return the number of bytes written. If an error occurred, -1 is returned and 
-    * @throws IOException, IllegalArgumentException 
-    * @since SuperWaba 2.0 beta 2
-    */
-   public int writeBytes(byte buffer[], int start, int count) throws IOException, IllegalArgumentException
-   {
-      if (start < 0)
-         throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
-      if (count < 0)
-         throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
-      
-      int orig = count, a;
-      while (true)
-      {
-         if ((a = buf.available()) > 0)
-         {
-            int w = count > a ? a : count;
-            int n = buf.writeBytes(buffer, start, w);
-            count -= n;
-            start += n;
-         }
-         if (count == 0)
-            break;
-         saveCurrentBuffer(); // if failed, this will just abort the program with a OutOfMemoryError
-      }
-      orig -= count;
-      rSize += orig;
-      return orig;
-   }
-
-   /** Reads a String until the next control character (newline, enter, tab, etc) is read.
-    * @return A line of text read from internal buffer or null if no more lines are available.
-    * @throws IOException 
-    */
-   public String readLine() throws IOException
-   {
-      if (sbuf == null)
-         sbuf = new StringBuffer(1024);
-      StringBuffer sb = sbuf;
-      sb.setLength(0);
-      boolean stop = false;
-      while (!stop)
-      {
-         int a = buf.available();
-         if (a == 0)
-         {
-            if (!loadNextBuffer())
-               break;
-            a = buf.available();
-         }
-         int p0 = buf.getPos();
-         int p = p0;
-         byte[] b = bufbytes;
-         while (a > 0 && (b[p] == '\r' || b[p] == '\n')) // skip starting enters - guich@565_10: discard negative values - guich@tc123_31: use only \r and \n as delimiters
-         {
-            if (sb.length() > 0) // guich@570_50: is this the end of the line that was in the prior buffer? return it.
-               return sb.toString();
-            p++;
-            a--;
-         }
-         int i = p;
-         // search for the \r\n
-         for (; a > 0; i++, a--)
-            if (b[i] == '\r' || b[i] == '\n') // guich@565_10: discard negative values - guich@tc123_31
-            {
-               stop = true;
-               break;
-            }
-         int len = i - p;
-         if (len > 0)
-            sb.append(Convert.charConverter.bytes2chars(b, p, len));
-         buf.skipBytes(i - p0);
-      }
-      return sb.length() > 0 ? sb.toString() : null;
-   }
-
-   /**
-    * Reads all data from the input stream into our buffer. Note that
-    * setMode(WRITE) is called prior to writting. When returned, data is ready
-    * to be read.
-    *
-    * @param inputStream The input stream from where data will be read
-    * @param retryCount  The number of times to retry if no data is read. In remote connections, 
-    * use at least 5; for files, it can be 0.
-    * @param bufSize The size of the buffer used to read data.
-    * @throws IOException
-    * @since SuperWaba 5.7
-    */
-   public void readFully(Stream inputStream, int retryCount, int bufSize) throws IOException // guich@570_31
-   {
-      byte[] buf = (writeBuf != null && writeBuf.length >= bufSize) ? writeBuf : (writeBuf = new byte[bufSize]);
-      setMode(WRITE_MODE);
-      while (true)
-      {
-         int n = inputStream.readBytes(buf, 0, buf.length);
-         if (n <= 0 && --retryCount <= 0)
-            break;
-         if (n > 0) // write only if something was read
-            writeBytes(buf, 0, n);
-      }
+  /** Changes the mode to the given one, calling <code>flush</code> if in write mode. 
+   * @param newMode the new mode
+   * @throws IOException 
+   * @see #WRITE_MODE
+   * @see #READ_MODE
+   * @see #DESTRUCTIVE_READ_MODE
+   */
+  public void setMode(int newMode) throws IOException
+  {
+    // flsobral@tc100b5_45: Stream was not being reseted when the new mode was the same as the current one.
+    if (mode == WRITE_MODE && mode != newMode){
       flush();
-   }
+    }
+    if (newMode == READ_MODE || newMode == DESTRUCTIVE_READ_MODE){
+      readIdx = -1;
+    }
+    mode = newMode;
+    loadNextBuffer();      
+  }
 
-   /**
-    * Writes a line of text. The \r\n line terminator is appended to the line.
-    * You can avoid this by setting
-    * <code>CompressedByteArrayStream.crlf = new byte[0];</code>
-    * @param s the String to be written; cannot be null!
-    * @throws IOException 
-    */
-   public void writeLine(String s) throws IOException
-   {
-      byte[] b = s.getBytes();
-      writeBytes(b, 0, b.length);
-      writeBytes(crlf, 0, crlf.length);
-   }
+  /** Deletes all internal buffers. Do not try to use the object afterwards. */
+  @Override
+  public void close()
+  {
+    buf = null;
+    zbufs.removeAllElements();
+  }
 
-   /** Reads the buffer until the given character is found.  
-    * @return A line of text read from internal buffer or null if no more lines are available.
-    * @throws IOException 
-    */
-   public String readUntilNextChar(char c) throws IOException
-   {
-      if (sbuf == null)
-         sbuf = new StringBuffer(1024);
-      StringBuffer sb = sbuf;
-      sb.setLength(0);
+  /** Returns the real (uncompressed) size of data written. */
+  public int getSize()
+  {
+    return rSize; // luciana@572_20 - fixed, it was returning cSize
+  }
 
-      boolean stop = false;
-      while (!stop)
+  /** Returns the compressed size of the data written. */
+  public int getCompressedSize()
+  {
+    return cSize; // luciana@572_20 - fixed, it was returning rSize
+  }
+
+  /** Compresses the current buffer and add it to the buffer arrays 
+   * @throws IOException */
+  private void saveCurrentBuffer() throws IOException
+  {
+    buf.mark(); // note: unless for the last buffer, all the others will have SIZE bytes
+    temp.reset();
+    cSize += ZLib.deflate(buf, temp, compressionLevel);
+    zbufs.addElement(temp.toByteArray()); // save the compressed buffer
+    //Vm.debug("saved "+buf.count()+" -> "+temp.count());
+    buf.reset();
+  }
+
+  /** Uncompresses the next buffer and load it to memory 
+   * @throws IOException */
+  private boolean loadNextBuffer() throws IOException
+  {
+    if (++readIdx >= zbufs.size()){
+      return false;
+    }
+    buf.reset();
+    if (readIdx > 0 && mode == DESTRUCTIVE_READ_MODE){
+      zbufs.items[readIdx - 1] = null;
+    }
+    byte[] b = (byte[]) zbufs.items[readIdx];
+    ByteArrayStream bas = new ByteArrayStream(b);
+    /* int s = */ZLib.inflate(bas, buf);
+    buf.mark();
+    //Vm.debug("loaded "+b.length+" -> "+s);
+    return true;
+  }
+
+  /**
+   * Transfers count bytes from the internal buffer to the given one.
+   *
+   * @param buffer the byte array to read data into
+   * @param start  the start position in the array
+   * @param count  the number of bytes to read
+   * @return the number of bytes read. If an error occurred, -1 is returned and 
+   * @throws IOException 
+   */
+  @Override
+  public int readBytes(byte buffer[], int start, int count) throws IOException
+  {
+    if (start < 0){
+      throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
+    }
+    if (count < 0){
+      throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
+    }
+
+    int orig = count;
+    while (true)
+    {
+      if (buf.available() > 0)
       {
-         int a = buf.available();
-         if (a == 0)
-         {
-            if (!loadNextBuffer())
-               break;
-            a = buf.available();
-         }
-         int p0 = buf.getPos();
-         int p = p0;
-         byte []b = bufbytes;
-         while (a > 0 && (b[p] & 0xFF) == c) // skip starting enters - guich@565_10: discard negative values
-         {
-            if (sb.length() > 0) // guich@570_50: is this the end of the line that was in the prior buffer? return it.
-               return sb.toString();
-            p++;
-            a--;
-         }
-         int i = p;
-         // search for the \r\n
-         for (; a > 0; i++,a--)
-            if ((b[i] & 0xFF) == c) // guich@565_10: discard negative values
-            {
-               stop = true;
-               break;
-            }
-         int len = i-p;
-         if (len > 0)
-            sb.append(Convert.charConverter.bytes2chars(b,p,len));
-         buf.skipBytes(i-p0);
+        int n = buf.readBytes(buffer, start, count);
+        count -= n;
+        start += n;
       }
-      return sb.length() > 0 ? sb.toString() : null;
-   }
+      if (count == 0) {
+        break;
+      }
+      if (!loadNextBuffer()) {
+        break;
+      }
+    }
+    return orig - count;
+  }
+
+  /**
+   * This method writes to the byte array, expanding it if necessary. 
+   *
+   * @param buffer the byte array to write data from
+   * @param start  the start position in the byte array
+   * @param count  the number of bytes to write
+   * @return the number of bytes written. If an error occurred, -1 is returned and 
+   * @throws IOException, IllegalArgumentException 
+   * @since SuperWaba 2.0 beta 2
+   */
+  @Override
+  public int writeBytes(byte buffer[], int start, int count) throws IOException, IllegalArgumentException
+  {
+    if (start < 0){
+      throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
+    }
+    if (count < 0){
+      throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
+    }
+
+    int orig = count, a;
+    while (true)
+    {
+      if ((a = buf.available()) > 0)
+      {
+        int w = count > a ? a : count;
+        int n = buf.writeBytes(buffer, start, w);
+        count -= n;
+        start += n;
+      }
+      if (count == 0) {
+        break;
+      }
+      saveCurrentBuffer(); // if failed, this will just abort the program with a OutOfMemoryError
+    }
+    orig -= count;
+    rSize += orig;
+    return orig;
+  }
+
+  /** Reads a String until the next control character (newline, enter, tab, etc) is read.
+   * @return A line of text read from internal buffer or null if no more lines are available.
+   * @throws IOException 
+   */
+  public String readLine() throws IOException
+  {
+    if (sbuf == null){
+      sbuf = new StringBuffer(1024);
+    }
+    StringBuffer sb = sbuf;
+    sb.setLength(0);
+    boolean stop = false;
+    while (!stop)
+    {
+      int a = buf.available();
+      if (a == 0)
+      {
+        if (!loadNextBuffer()) {
+          break;
+        }
+        a = buf.available();
+      }
+      int p0 = buf.getPos();
+      int p = p0;
+      byte[] b = bufbytes;
+      while (a > 0 && (b[p] == '\r' || b[p] == '\n')) // skip starting enters - guich@565_10: discard negative values - guich@tc123_31: use only \r and \n as delimiters
+      {
+        if (sb.length() > 0) {
+          return sb.toString();
+        }
+        p++;
+        a--;
+      }
+      int i = p;
+      // search for the \r\n
+      for (; a > 0; i++, a--) {
+        if (b[i] == '\r' || b[i] == '\n') // guich@565_10: discard negative values - guich@tc123_31
+        {
+          stop = true;
+          break;
+        }
+      }
+      int len = i - p;
+      if (len > 0) {
+        sb.append(Convert.charConverter.bytes2chars(b, p, len));
+      }
+      buf.skipBytes(i - p0);
+    }
+    return sb.length() > 0 ? sb.toString() : null;
+  }
+
+  /**
+   * Reads all data from the input stream into our buffer. Note that
+   * setMode(WRITE) is called prior to writting. When returned, data is ready
+   * to be read.
+   *
+   * @param inputStream The input stream from where data will be read
+   * @param retryCount  The number of times to retry if no data is read. In remote connections, 
+   * use at least 5; for files, it can be 0.
+   * @param bufSize The size of the buffer used to read data.
+   * @throws IOException
+   * @since SuperWaba 5.7
+   */
+  public void readFully(Stream inputStream, int retryCount, int bufSize) throws IOException // guich@570_31
+  {
+    byte[] buf = (writeBuf != null && writeBuf.length >= bufSize) ? writeBuf : (writeBuf = new byte[bufSize]);
+    setMode(WRITE_MODE);
+    while (true)
+    {
+      int n = inputStream.readBytes(buf, 0, buf.length);
+      if (n <= 0 && --retryCount <= 0) {
+        break;
+      }
+      if (n > 0) {
+        writeBytes(buf, 0, n);
+      }
+    }
+    flush();
+  }
+
+  /**
+   * Writes a line of text. The \r\n line terminator is appended to the line.
+   * You can avoid this by setting
+   * <code>CompressedByteArrayStream.crlf = new byte[0];</code>
+   * @param s the String to be written; cannot be null!
+   * @throws IOException 
+   */
+  public void writeLine(String s) throws IOException
+  {
+    byte[] b = s.getBytes();
+    writeBytes(b, 0, b.length);
+    writeBytes(crlf, 0, crlf.length);
+  }
+
+  /** Reads the buffer until the given character is found.  
+   * @return A line of text read from internal buffer or null if no more lines are available.
+   * @throws IOException 
+   */
+  public String readUntilNextChar(char c) throws IOException
+  {
+    if (sbuf == null){
+      sbuf = new StringBuffer(1024);
+    }
+    StringBuffer sb = sbuf;
+    sb.setLength(0);
+
+    boolean stop = false;
+    while (!stop)
+    {
+      int a = buf.available();
+      if (a == 0)
+      {
+        if (!loadNextBuffer()) {
+          break;
+        }
+        a = buf.available();
+      }
+      int p0 = buf.getPos();
+      int p = p0;
+      byte []b = bufbytes;
+      while (a > 0 && (b[p] & 0xFF) == c) // skip starting enters - guich@565_10: discard negative values
+      {
+        if (sb.length() > 0) {
+          return sb.toString();
+        }
+        p++;
+        a--;
+      }
+      int i = p;
+      // search for the \r\n
+      for (; a > 0; i++,a--) {
+        if ((b[i] & 0xFF) == c) // guich@565_10: discard negative values
+        {
+          stop = true;
+          break;
+        }
+      }
+      int len = i-p;
+      if (len > 0) {
+        sb.append(Convert.charConverter.bytes2chars(b,p,len));
+      }
+      buf.skipBytes(i-p0);
+    }
+    return sb.length() > 0 ? sb.toString() : null;
+  }
 }

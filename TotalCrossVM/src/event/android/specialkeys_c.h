@@ -93,5 +93,6 @@ PortableModifiers privateKeyGetPortableModifiers(int32 mods)
 {                                         
    return ((mods & 1) ? PM_SHIFT   : PM_NONE) |
           ((mods & 4) ? PM_CONTROL : PM_NONE) |
-          ((mods & 2) ? PM_ALT     : PM_NONE) ;
+          ((mods & 2) ? PM_ALT     : PM_NONE) |
+          ((mods & 8) ? PM_SYSTEM  : PM_NONE) ;
 }

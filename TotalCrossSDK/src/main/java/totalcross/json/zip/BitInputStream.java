@@ -1,6 +1,7 @@
 package totalcross.json.zip;
 
-import totalcross.io.*;
+import totalcross.io.IOException;
+import totalcross.io.Stream;
 
 /*
  Copyright (c) 2013 JSON.org
@@ -33,122 +34,126 @@ import totalcross.io.*;
  *
  */
 public class BitInputStream implements BitReader {
-    /**
-     * The number of bits remaining in the current byte.
-     */
-    private int available = 0;
+  /**
+   * The number of bits remaining in the current byte.
+   */
+  private int available = 0;
 
-    /**
-     * Up to a byte's worth of unread bits.
-     */
-    private int unread = 0;
+  /**
+   * Up to a byte's worth of unread bits.
+   */
+  private int unread = 0;
 
-    /**
-     * The source of the bits.
-     */
-    private Stream in;
+  /**
+   * The source of the bits.
+   */
+  private Stream in;
 
-    /**
-     * The number of bits read so far. This is used in padding.
-     */
-    private long nrBits = 0;
+  /**
+   * The number of bits read so far. This is used in padding.
+   */
+  private long nrBits = 0;
 
-    /**
-     * Make a BitReader from an InputStream. The BitReader will take bytes from
-     * the InputStream and unpack them into bits.
-     *
-     * @param in
-     *            An InputStream.
-     */
-    public BitInputStream(Stream in) {
-        this.in = in;
+  /**
+   * Make a BitReader from an InputStream. The BitReader will take bytes from
+   * the InputStream and unpack them into bits.
+   *
+   * @param in
+   *            An InputStream.
+   */
+  public BitInputStream(Stream in) {
+    this.in = in;
+  }
+
+  /**
+   * Read one bit.
+   *
+   * @return true if it is a 1 bit.
+   */
+  @Override
+  public boolean bit() throws IOException {
+    return read(1) != 0;
+  }
+
+  /**
+   * Get the number of bits that have been read from this BitInputStream.
+   * This includes pad bits that have been skipped, but might not include
+   * bytes that have been read from the underlying InputStream that have not
+   * yet been delivered as bits.
+   *
+   * @return The number of bits read so far.
+   */
+  @Override
+  public long nrBits() {
+    return this.nrBits;
+  }
+
+  /**
+   * Check that the rest of the block has been padded with zeroes.
+   *
+   * @param width
+   *            The size of the block to pad in bits.
+   *            This will typically be 8, 16, 32, 64, 128, 256, etc.
+   * @return true if the block was zero padded, or false if the the padding
+   *         contains any one bits.
+   * @throws IOException
+   */
+  @Override
+  public boolean pad(int width) throws IOException {
+    boolean result = true;
+    int gap = (int)this.nrBits % width;
+    if (gap < 0) {
+      gap += width;
     }
-
-    /**
-     * Read one bit.
-     *
-     * @return true if it is a 1 bit.
-     */
-    public boolean bit() throws IOException {
-        return read(1) != 0;
+    if (gap != 0) {
+      int padding = width - gap;
+      while (padding > 0) {
+        if (bit()) {
+          result = false;
+        }
+        padding -= 1;
+      }
     }
+    return result;
+  }
 
-    /**
-     * Get the number of bits that have been read from this BitInputStream.
-     * This includes pad bits that have been skipped, but might not include
-     * bytes that have been read from the underlying InputStream that have not
-     * yet been delivered as bits.
-     *
-     * @return The number of bits read so far.
-     */
-    public long nrBits() {
-        return this.nrBits;
+
+  private byte[] buf = new byte[1];
+  /**
+   * Read some bits.
+   *
+   * @param width
+   *            The number of bits to read. (0..32)
+   * @throws IOException
+   * @return the bits
+   */
+  @Override
+  public int read(int width) throws IOException {
+    if (width == 0) {
+      return 0;
     }
-
-    /**
-     * Check that the rest of the block has been padded with zeroes.
-     *
-     * @param width
-     *            The size of the block to pad in bits.
-     *            This will typically be 8, 16, 32, 64, 128, 256, etc.
-     * @return true if the block was zero padded, or false if the the padding
-     *         contains any one bits.
-     * @throws IOException
-     */
-    public boolean pad(int width) throws IOException {
-        boolean result = true;
-        int gap = (int)this.nrBits % width;
-        if (gap < 0) {
-            gap += width;
-        }
-        if (gap != 0) {
-            int padding = width - gap;
-            while (padding > 0) {
-                if (bit()) {
-                    result = false;
-                }
-                padding -= 1;
-            }
-        }
-        return result;
+    if (width < 0 || width > 32) {
+      throw new IOException("Bad read width.");
     }
-
-    
-    private byte[] buf = new byte[1];
-    /**
-     * Read some bits.
-     *
-     * @param width
-     *            The number of bits to read. (0..32)
-     * @throws IOException
-     * @return the bits
-     */
-    public int read(int width) throws IOException {
-        if (width == 0) {
-            return 0;
-        }
-        if (width < 0 || width > 32) {
-            throw new IOException("Bad read width.");
-        }
-        int result = 0;
-        while (width > 0) {
-            if (this.available == 0) {
-                this.in.readBytes(buf,0,1);/* <= 0) this.unread < 0) {
+    int result = 0;
+    while (width > 0) {
+      if (this.available == 0) {
+        this.in.readBytes(buf,0,1);/* <= 0) this.unread < 0) {
                     throw new IOException("Attempt to read past end.");
                 }*/
-                this.unread = buf[0];
-                this.available = 8;
-            }
-            int take = width;
-            if (take > this.available) {
-                take = this.available;
-            }
-            result |= ((this.unread >>> (this.available - take)) &
-                    ((1 << take) - 1)) << (width - take);
-            this.nrBits += take;
-            this.available -= take;
-            width -= take;
-        }
-        return result;
+        this.unread = buf[0];
+        this.available = 8;
+      }
+      int take = width;
+      if (take > this.available) {
+        take = this.available;
+      }
+      result |= ((this.unread >>> (this.available - take)) &
+          ((1 << take) - 1)) << (width - take);
+      this.nrBits += take;
+      this.available -= take;
+      width -= take;
     }
+    return result;
+  }
 }

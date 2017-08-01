@@ -18,45 +18,48 @@
 
 
 package totalcross.ui.html;
-import totalcross.ui.*;
-import totalcross.ui.gfx.*;
+import totalcross.ui.Control;
+import totalcross.ui.gfx.Graphics;
 
 /**
-* <code>Hr</code> is the Tile associated to the &lt;HR&gt; tag.
-*/
+ * <code>Hr</code> is the Tile associated to the &lt;HR&gt; tag.
+ */
 class Hr extends Control implements Document.CustomLayout
 {
-   /**
+  /**
    * Constructor
    *
    * @param doc containing document
    * @param atts tag attributes
    * @param style associated style
    */
-   Hr()
-   {
-      focusTraversable = false;
-   }
+  Hr()
+  {
+    focusTraversable = false;
+  }
 
-   public void layout(LayoutContext lc)
-   {
-      lc.disjoin();
-      parent.add(this, lc.nextX, lc.nextY, 10, PREFERRED); // the width will be recomputed later
-      lc.disjoin();
-   }
-   
-   public int getPreferredHeight()
-   {
-      return fmH*2;
-   }
+  @Override
+  public void layout(LayoutContext lc)
+  {
+    lc.disjoin();
+    parent.add(this, lc.nextX, lc.nextY, 10, PREFERRED); // the width will be recomputed later
+    lc.disjoin();
+  }
 
-   public void onPaint(Graphics g)
-   {
-      if (parent.getWidth() != width)
-      {
-         setRect(this.x,this.y,parent.getWidth(),this.height);
-         repaintNow();
-      }
-      g.drawLine(0,fmH,width,fmH);
-   }
+  @Override
+  public int getPreferredHeight()
+  {
+    return fmH*2;
+  }
+
+  @Override
+  public void onPaint(Graphics g)
+  {
+    if (parent.getWidth() != width)
+    {
+      setRect(this.x,this.y,parent.getWidth(),this.height);
+      repaintNow();
+    }
+    g.drawLine(0,fmH,width,fmH);
+  }
 }
