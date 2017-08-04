@@ -264,7 +264,11 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
 #define null 0
 
 #define TARGET_SLASH '/'
+#ifdef WINCE
 #define MAX_PATHNAME 256
+#else
+#define MAX_PATHNAME 1024 // guich@20170801 - some sdcards have very big paths
+#endif
 
 #if !defined(MIN)
  #define MIN(x,y) (((x) < (y)) ? (x) : (y))
