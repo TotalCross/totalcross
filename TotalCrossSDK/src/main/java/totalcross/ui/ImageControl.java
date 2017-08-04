@@ -139,12 +139,10 @@ public class ImageControl extends Control
         {
           if (strechImage) {
             this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
-          } else
-            if (width > height) {
-              this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
-            } else {
-              this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
-            }
+          } else {
+            boolean wider = img0.getWidth() > img0.getHeight();
+            this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(wider ? width : height, !wider) : img0.hwScaledFixedAspectRatio(wider ? width : height, !wider);
+          }
           if (this.img != null) {
             this.img.alphaMask = img0.alphaMask;
           }
@@ -278,12 +276,10 @@ public class ImageControl extends Control
         } else
           if (strechImage) {
             this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
-          } else
-            if (width > height) {
-              this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
-            } else {
-              this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
-            }
+          } else {
+            boolean wider = img0.getWidth() > img0.getHeight();
+            this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(wider ? width : height, !wider) : img0.hwScaledFixedAspectRatio(wider ? width : height, !wider);
+          }
         if (this.img != null) {
           this.img.alphaMask = img0.alphaMask;
         }
