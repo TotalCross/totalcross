@@ -301,7 +301,6 @@ bool isMotoQ = false;
 bool isWindowsMobile = false;
 
 #ifdef WINCE
-HINSTANCE aygshellDll;
 HINSTANCE coreDll;
 HINSTANCE cellcoreDll;
 #endif
@@ -322,6 +321,11 @@ DECLARE_MUTEX(mutexes);
  void closeWinsock();
 #endif
 
+#if defined (WINCE)
+ bool initAygshell();
+ void closeAygshell();
+#endif
+
 bool initGlobals()
 {
 	SETUP_MUTEX;
@@ -339,7 +343,7 @@ bool initGlobals()
    initWinsock();
 #endif
 #ifdef WINCE
-   aygshellDll = LoadLibrary(TEXT("aygshell.dll"));
+	initAygshell();
    coreDll = LoadLibrary(TEXT("coredll.dll"));
    cellcoreDll = LoadLibrary(TEXT("cellcore.dll"));
 #endif
@@ -361,7 +365,7 @@ void destroyGlobals()
    closeWinsock();
 #endif
 #ifdef WINCE
-   if (aygshellDll != null) FreeLibrary(aygshellDll);
+  closeAygshell();
    if (coreDll != null) FreeLibrary(coreDll);
    if (cellcoreDll != null) FreeLibrary(cellcoreDll);
 #endif

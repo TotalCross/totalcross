@@ -187,6 +187,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="aygshell.lib"
 				SubSystem="8"
 				OptimizeForWindows98="0"
 				ProfileGuidedDatabase=""
@@ -395,6 +396,7 @@
 				Version="1.27"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames="aygshell.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\TCVM.pdb"
 				SubSystem="8"
@@ -605,6 +607,7 @@
 				Version="1.27"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames="aygshell.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\TCVM.pdb"
 				SubSystem="8"
@@ -813,6 +816,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="aygshell.lib"
 				SubSystem="8"
 				OptimizeForWindows98="0"
 				ProfileGuidedDatabase=""
@@ -1023,6 +1027,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="aygshell.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\TCVM.pdb"
 				SubSystem="8"
@@ -1233,6 +1238,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="aygshell.lib"
 				SubSystem="8"
 				OptimizeForWindows98="0"
 				ProfileGuidedDatabase=""
@@ -1443,6 +1449,7 @@
 				Version="1.27"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames="aygshell.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\TCVM.pdb"
 				SubSystem="8"
@@ -3052,6 +3059,14 @@
 				RelativePath="..\..\src\util\xtypes.c"
 				>
 			</File>
+			<Filter
+				Name="win"
+				>
+				<File
+					RelativePath="..\..\src\util\win\aygshellLib.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="VM Files"

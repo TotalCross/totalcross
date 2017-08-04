@@ -11,10 +11,11 @@
 
 
 
-#if _WIN32_WCE >= 300 && !defined(WIN32_PLATFORM_HPC2000)
+#if _WIN32_WCE >= 300
  #include <Aygshell.h>
- #pragma comment( lib, "aygshell" )   // Link Pocket PC lib for menubar
+ #include "win/aygshellLib.h"
 #endif
+
 
 void markWholeScreenDirty(Context currentContext);
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int hRes, int vRes, bool nothingChanged);
@@ -41,7 +42,7 @@ static void hideWinCEStuff()
    {
       // now make sure task bar/start icon/sip are lower down the z-order so they seem to be removed
       SetForegroundWindow(mainHWnd);
-      SHFullScreen(mainHWnd, SHFS_HIDESTARTICON | SHFS_HIDETASKBAR);
+      _SHFullScreen(mainHWnd, SHFS_HIDESTARTICON | SHFS_HIDETASKBAR);
       if (!isWindowsMobile)
       {
          RECT rect;
@@ -59,7 +60,7 @@ static void hideWinCEStuff()
    switch (*tcSettings.closeButtonTypePtr)
    {
       case CLOSE_BUTTON:
-         SHDoneButton(mainHWnd, SHDB_SHOW);
+         _SHDoneButton(mainHWnd, SHDB_SHOW);
          break;
       case NO_BUTTON: // guich@tc111_3
       {
@@ -67,14 +68,14 @@ static void hideWinCEStuff()
       	if ((dwStyle & WS_MINIMIZEBOX) == 0)
          {
       		SetWindowLong(mainHWnd, GWL_STYLE, dwStyle | WS_MINIMIZEBOX);
-            SHDoneButton(mainHWnd, SHDB_SHOW); // force caption bar redraw
-            SHDoneButton(mainHWnd, SHDB_HIDE);
+            _SHDoneButton(mainHWnd, SHDB_SHOW); // force caption bar redraw
+            _SHDoneButton(mainHWnd, SHDB_HIDE);
          }
          break;
       }
       default: break;
    }
-   SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
+   _SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
 #endif
 }
 

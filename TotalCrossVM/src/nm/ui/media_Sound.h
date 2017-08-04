@@ -15,6 +15,7 @@
 #define MEDIA_SOUND_H
 
 #include "tcvm.h"
+#include "win/aygshellLib.h"
 
 #ifdef WINCE
 
@@ -54,51 +55,7 @@
    #define WAVEFORMAT_MIDI_EXTRASIZE (sizeof(WAVEFORMAT_MIDI)-sizeof(WAVEFORMATEX))
 #endif
 
-#ifndef _SOUNDFILE_H_
-   typedef enum tagSND_SOUNDTYPE
-   {
-       SND_SOUNDTYPE_ON,             // If sound is currently Vibrate or None this will restore the
-                                     // sound to the previous value. This is only valid for the SND_EVENT_ALL
-                                     // SND_EVENT.
-       SND_SOUNDTYPE_FILE,           // Soundfile will be specified by SNDFILEINFO.szPathName
-       SND_SOUNDTYPE_VIBRATE,        // Sound is vibration.  SNDFILEINFO.szPathName is ignored.
-       SND_SOUNDTYPE_NONE,           // No sound (silence).  SNDFILEINFO.szPathName is ignored.
-       SND_SOUNDTYPE_DISABLE,        // Only applies to SND_EVENTs for KNOWNCALLER and ROAMING
-                                     // Sound will be disabled and behavior will revert back to default.
-       SND_SOUNDTYPE_LAST = SND_SOUNDTYPE_DISABLE
-   } SND_SOUNDTYPE;
 
-   typedef struct tagSNDFILEINFO
-   {
-       TCHAR szPathName[MAX_PATH];
-       TCHAR szDisplayName[MAX_PATH];
-       SND_SOUNDTYPE sstType;
-   } SNDFILEINFO;
-
-   typedef enum tagSND_EVENT
-   {
-       SND_EVENT_ALL,                       // This is a special sound event that applies to all sounds
-                                            // on a system wide scale. Currently only supported on Pocket PC, the
-                                            // only valid values for SNDFILEINFO.sstType are SND_SOUNDTYPE_ON,
-                                            // SND_SOUNDTYPE_VIBRATE, and SND_SOUNDTYPE_NONE. Invoking SndSetSound
-                                            // with SND_EVENT_ALL and a SNDFILEINFO struct set to one of the above
-                                            // values will be equivalent to the user using the Pocket PC Volume Bubble
-                                            // on the home screen. If the volume bubble is currently open the change will
-                                            // be reflected in the bubble right away. If the bubble is not open the change
-                                            // will take effect immediately and will be visible the next time the user
-                                            // opens the bubble.
-       SND_EVENT_RINGTONELINE1,             // The ringtone for line 1 of the phone
-       SND_EVENT_RINGTONELINE2,             // The ringtone for line 2 of the phone
-       SND_EVENT_KNOWNCALLERRINGTONELINE1,  // The ringtone to play for a caller in the contact list who has no contact-specific ring tone.
-                                            // This event does not support the "vibrate" and "none" sound types
-                                            // Currently applies to both lines without distinction
-       SND_EVENT_ROAMINGRINGTONELINE1,      // The ringtone to play while roaming.  This has higher priority than other ring tones.
-                                            // This event does not support the "vibrate" and "none" sound types
-                                            // Currently applies to both lines without distinction
-
-       SND_EVENT_LAST = SND_EVENT_ROAMINGRINGTONELINE1
-   } SND_EVENT;
-#endif // #ifndef _SOUNDFILE_H_
 
 extern bool SndGetSoundWM5(SND_EVENT sndEvent, SNDFILEINFO *soundFileInfo);
 extern bool SndSetSoundWM5(SND_EVENT sndEvent, SNDFILEINFO *soundFileInfo);

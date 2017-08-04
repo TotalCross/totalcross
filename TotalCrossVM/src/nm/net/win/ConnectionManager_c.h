@@ -13,6 +13,7 @@
 
 
 #include "winsockLib.h"
+#include "win/aygshellLib.h"
 #if !defined WP8
 #include <Ras.h>
 #endif
@@ -20,8 +21,6 @@
  #include "connmgr_defines.h"
 #endif
 #include "guid.h"
-
-typedef HRESULT (__stdcall *DMProcessConfigXMLProc)( LPCWSTR , DWORD , LPWSTR* );
 
 #define NATIVE_CONNECTION HANDLE
 
@@ -51,7 +50,6 @@ TCHARP parseArgs(TCHARP line, TCHARP argument, TCHARP argValue)
 }
 
 #if defined (WINCE)
-static DMProcessConfigXMLProc _DMProcessConfigXML = null;
 static ConnMgrEstablishConnectionSyncProc _ConnMgrEstablishConnectionSync = null;
 static ConnMgrMapURLProc _ConnMgrMapURL = null;
 static ConnMgrReleaseConnectionProc _ConnMgrReleaseConnection = null;
@@ -395,11 +393,10 @@ static void CmLoadResources(Context currentContext)
 #if defined (WINCE)
    if (isWindowsMobile && *tcSettings.romVersionPtr >= 300)
    {
-      if (!aygshellDll || !cellcoreDll )
+      if (!cellcoreDll )
          throwException(currentContext, RuntimeException, "Could not load the required libraries for the ConnectionManager");
       else
       {
-         _DMProcessConfigXML = (DMProcessConfigXMLProc)GetProcAddress(aygshellDll, TEXT("DMProcessConfigXML"));
          _ConnMgrEstablishConnectionSync = (ConnMgrEstablishConnectionSyncProc) GetProcAddress(cellcoreDll, TEXT("ConnMgrEstablishConnectionSync"));
          _ConnMgrMapURL = (ConnMgrMapURLProc) GetProcAddress(cellcoreDll, TEXT("ConnMgrMapURL"));
          _ConnMgrReleaseConnection = (ConnMgrReleaseConnectionProc) GetProcAddress(cellcoreDll, TEXT("ConnMgrReleaseConnection"));
