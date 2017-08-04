@@ -316,16 +316,6 @@ DECLARE_MUTEX(mutexes);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if defined (WIN32)
- bool initWinsock();
- void closeWinsock();
-#endif
-
-#if defined (WINCE)
- bool initAygshell();
- void closeAygshell();
-#endif
-
 bool initGlobals()
 {
 	SETUP_MUTEX;

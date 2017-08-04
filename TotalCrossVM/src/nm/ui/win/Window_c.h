@@ -13,7 +13,6 @@
 
 #if defined (WINCE) && _WIN32_WCE >= 300
  #include <Sipapi.h>
- #include <aygshell.h>
  #include "win/aygshellLib.h"
 #endif
 #include "../GraphicsPrimitives.h"
