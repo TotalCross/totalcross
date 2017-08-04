@@ -117,6 +117,8 @@ public class File extends RandomAccessStream
    * @see #File(String,int,int)
    */
   public static final int CREATE_EMPTY = 5;
+  
+  public static final int CLOSED = 6;
 
   /**
    * Used in the setTime method, in parameter whichTime. This sets all times at once.
@@ -436,6 +438,9 @@ public class File extends RandomAccessStream
   @Override
   public void close() throws IOException
   {
+    if (mode == CLOSED) {
+      return;
+    }
     if (mode == INVALID){
       throw new IOException("Invalid file handle");
     }
@@ -459,7 +464,7 @@ public class File extends RandomAccessStream
     {
       fileRef = null;
       fileEx = null;
-      mode = INVALID;
+      mode = CLOSED;
     }
   }
 
@@ -469,7 +474,7 @@ public class File extends RandomAccessStream
    */
   public void flush() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -499,7 +504,7 @@ public class File extends RandomAccessStream
 
   final public void createDir() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode != DONT_OPEN){
@@ -533,7 +538,7 @@ public class File extends RandomAccessStream
 
   final public void delete() throws FileNotFoundException, IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == READ_ONLY){
@@ -575,7 +580,7 @@ public class File extends RandomAccessStream
 
   final public boolean exists() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
 
@@ -611,7 +616,7 @@ public class File extends RandomAccessStream
    */
   final public int getSize() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (path.endsWith("/")){
@@ -654,7 +659,7 @@ public class File extends RandomAccessStream
    */
   public File getParent() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (path.equals("/")){
@@ -672,7 +677,7 @@ public class File extends RandomAccessStream
    */
   final public boolean isDir() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode != DONT_OPEN){
@@ -695,7 +700,7 @@ public class File extends RandomAccessStream
    */
   final public String[] listFiles() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode != DONT_OPEN){
@@ -738,7 +743,7 @@ public class File extends RandomAccessStream
    */
   final public boolean isEmpty() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     java.io.File fileRef4Java = (java.io.File) fileRef;
@@ -756,7 +761,7 @@ public class File extends RandomAccessStream
   @Override
   final public int readBytes(byte b[], int off, int len) throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -798,7 +803,7 @@ public class File extends RandomAccessStream
    */
   final public void rename(String path) throws IllegalArgumentIOException, IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == READ_ONLY){
@@ -827,7 +832,7 @@ public class File extends RandomAccessStream
   @Override
   public int getPos() throws totalcross.io.IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -866,7 +871,7 @@ public class File extends RandomAccessStream
   @Override
   final public void setPos(int pos) throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -895,7 +900,7 @@ public class File extends RandomAccessStream
   @Override
   final public void setPos(int offset, int origin) throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -941,7 +946,7 @@ public class File extends RandomAccessStream
   @Override
   final public int writeBytes(byte b[], int off, int len) throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -996,7 +1001,7 @@ public class File extends RandomAccessStream
    */
   final public void setAttributes(int attr) throws IllegalArgumentIOException, IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -1023,7 +1028,7 @@ public class File extends RandomAccessStream
    */
   final public int getAttributes() throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -1058,7 +1063,7 @@ public class File extends RandomAccessStream
    */
   final public void setTime(byte whichTime, totalcross.sys.Time time) throws IllegalArgumentIOException, IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -1099,7 +1104,7 @@ public class File extends RandomAccessStream
    */
   final public totalcross.sys.Time getTime(byte whichTime) throws IllegalArgumentIOException, IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -1145,7 +1150,7 @@ public class File extends RandomAccessStream
    */
   final public void setSize(int newSize) throws IOException
   {
-    if (mode == INVALID){
+    if (mode == INVALID || mode == CLOSED){
       throw new IOException("Invalid file handle");
     }
     if (mode == DONT_OPEN){
@@ -1445,7 +1450,7 @@ public class File extends RandomAccessStream
    */
   public int chmod(int mod) throws IOException // guich@tc126_16
   {
-    if (mode == INVALID)
+    if (mode == INVALID || mode == CLOSED)
     {
       throw new IOException("Invalid file handle"); //flsobral@tc126: object must be valid.
     }
