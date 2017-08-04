@@ -17,6 +17,7 @@
 #endif
 
 #if defined (WINCE)
+ #include "win/aygshellLib.h"
  #include "../nm/io/device/RadioDevice.h"
  #include "../nm/io/device/win/RadioDevice_c.h"
  
@@ -1115,7 +1116,7 @@ static void initSipRect()
 
    SipShowIM(SIPF_OFF);
 #ifdef SHFS_HIDESIPBUTTON
-   SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON); // only supported in 3.0
+   _SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON); // only supported in 3.0
 #endif
    SipEnumIM(&verifyCurrentSip);
    if (mustChangeSip && keybSip.Data1 != 0)

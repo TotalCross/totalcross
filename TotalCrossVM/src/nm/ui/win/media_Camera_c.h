@@ -11,57 +11,12 @@
 
 #if _WIN32_WCE >= 300
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Flags for camera capture UI
-
-typedef enum 
-{
-   CAMERACAPTURE_MODE_STILL = 0,
-   CAMERACAPTURE_MODE_VIDEOONLY,
-   CAMERACAPTURE_MODE_VIDEOWITHAUDIO,
-} CAMERACAPTURE_MODE;
-
-typedef enum 
-{
-   CAMERACAPTURE_STILLQUALITY_DEFAULT = 0,
-   CAMERACAPTURE_STILLQUALITY_LOW,
-   CAMERACAPTURE_STILLQUALITY_NORMAL,
-   CAMERACAPTURE_STILLQUALITY_HIGH,
-} CAMERACAPTURE_STILLQUALITY;
-
-typedef enum 
-{
-   CAMERACAPTURE_VIDEOTYPE_ALL = 0xFFFF,
-   CAMERACAPTURE_VIDEOTYPE_STANDARD = 1,
-   CAMERACAPTURE_VIDEOTYPE_MESSAGING = 2,
-} CAMERACAPTURE_VIDEOTYPES;
-
-typedef struct tagSHCAMERACAPTURE
-{
-   DWORD   cbSize;
-   HWND   hwndOwner;
-   TCHAR   szFile[MAX_PATH];
-   LPCTSTR   pszInitialDir;
-   LPCTSTR   pszDefaultFileName;
-   LPCTSTR   pszTitle;
-   CAMERACAPTURE_STILLQUALITY   StillQuality;
-   CAMERACAPTURE_VIDEOTYPES   VideoTypes;
-   DWORD   nResolutionWidth;
-   DWORD   nResolutionHeight;
-   DWORD   nVideoTimeLimit;
-   CAMERACAPTURE_MODE   Mode;
-} SHCAMERACAPTURE, *PSHCAMERACAPTURE;
-
-
-HRESULT SHCameraCapture(PSHCAMERACAPTURE pshcc, bool useThread);
-
-typedef HRESULT (*SHCameraCaptureFunc)(PSHCAMERACAPTURE pshcc);
+#include "win/aygshellLib.h"
 
 typedef struct
 {
    PSHCAMERACAPTURE pshcc;
-   SHCameraCaptureFunc funcSHCameraCapture;
+   SHCameraCaptureProc funcSHCameraCapture;
    bool done;
    HRESULT ret;
 } CameraThreadParams;
@@ -77,13 +32,9 @@ static DWORD WINAPI privateThreadFunc(VoidP argP)
 HRESULT SHCameraCapture(PSHCAMERACAPTURE pshcc, bool useThread)
 {
    int32 id;
-   SHCameraCaptureFunc funcSHCameraCapture = NULL;
 
-   if (!aygshellDll)
+   if (_SHCameraCapture == NULL)
       return -2;
-   funcSHCameraCapture = (SHCameraCaptureFunc)GetProcAddress(aygshellDll, TEXT("SHCameraCapture"));
-   if (funcSHCameraCapture == NULL)
-      return HRESULT_FROM_WIN32(GetLastError());
    else
    {
       CameraThreadParams* p = (CameraThreadParams*)xmalloc(sizeof(CameraThreadParams));
@@ -92,7 +43,7 @@ HRESULT SHCameraCapture(PSHCAMERACAPTURE pshcc, bool useThread)
       else
       {
          HRESULT ret;
-         p->funcSHCameraCapture = funcSHCameraCapture;
+         p->funcSHCameraCapture = _SHCameraCapture;
          p->pshcc = pshcc;
          if (useThread)
             CreateThread(NULL, 0, privateThreadFunc, p, 0, &id); // guich@tc122_1: must be in a thread

@@ -13,9 +13,7 @@
 
 #if defined (WINCE) && _WIN32_WCE >= 300
  #include <Sipapi.h>
- #ifndef WIN32_PLATFORM_HPC2000
-  #include <aygshell.h>
- #endif
+ #include "win/aygshellLib.h"
 #endif
 #include "../GraphicsPrimitives.h"
 
@@ -43,36 +41,8 @@
  *******************************/
 
 #if defined (WINCE) && _WIN32_WCE >= 300
-typedef enum tagSHIME_MODE
-{
-    SHIME_MODE_NONE                = 0,
-    SHIME_MODE_SPELL               = 1,
-    SHIME_MODE_SPELL_CAPS          = 2,
-    SHIME_MODE_SPELL_CAPS_LOCK     = 3,
-    SHIME_MODE_AMBIGUOUS           = 4,
-    SHIME_MODE_AMBIGUOUS_CAPS      = 5,
-    SHIME_MODE_AMBIGUOUS_CAPS_LOCK = 6,
-    SHIME_MODE_NUMBERS             = 7,
-    SHIME_MODE_CUSTOM              = 8,
-} SHIME_MODE;
 
-typedef HRESULT (__stdcall *SHSetImeModeProc)(HWND hWnd, SHIME_MODE nMode);
-typedef HRESULT (__stdcall *SHGetImeModeProc)(HWND hWnd, SHIME_MODE* pnMode);
-
-SHSetImeModeProc SHSetImeMode;
-SHGetImeModeProc SHGetImeMode;
 static SHIME_MODE oldMode = SHIME_MODE_NONE;
-
-static bool loadSip6()
-{
-   if (aygshellDll && !SHSetImeMode)
-   {
-      SHSetImeMode = (SHSetImeModeProc) GetProcAddress(aygshellDll, TEXT("SHSetImeMode"));
-      SHGetImeMode = (SHGetImeModeProc) GetProcAddress(aygshellDll, TEXT("SHGetImeMode"));
-   }
-   return SHSetImeMode != null && SHGetImeMode != null;
-}
-
 
 #define IM_NUMBERS         2
 #define IME_ESC_PRIVATE_FIRST           0x0800
@@ -127,10 +97,10 @@ static void windowSetSIP(int32 sipOption, bool numeric)
    {
 #ifndef WIN32_PLATFORM_HPC2000
       case SIP_ENABLE_NUMERICPAD:
-         if (loadSip6())
+         if (_SHGetImeMode != null && _SHSetImeMode != null)
          {
-            SHGetImeMode(mainHWnd, &oldMode);
-            SHSetImeMode(mainHWnd, SHIME_MODE_NUMBERS);
+            _SHGetImeMode(mainHWnd, &oldMode);
+            _SHSetImeMode(mainHWnd, SHIME_MODE_NUMBERS);
          }
          else
          {
@@ -141,13 +111,13 @@ static void windowSetSIP(int32 sipOption, bool numeric)
          }
          break;
       case SIP_DISABLE_NUMERICPAD:
-         if (loadSip6())
-            SHSetImeMode(mainHWnd, oldMode);
+         if (_SHSetImeMode != null)
+            _SHSetImeMode(mainHWnd, oldMode);
          break;
 #endif
       case SIP_HIDE:
 #ifndef WIN32_PLATFORM_HPC2000
-         SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
+         _SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
 #endif
          SipShowIM(SIPF_OFF);
          {  //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
@@ -184,7 +154,7 @@ static void windowSetSIP(int32 sipOption, bool numeric)
          vkSettings.changed = true;
 
 #ifndef WIN32_PLATFORM_HPC2000
-         SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
+         _SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
 #endif
          SipSetDefaultRect(&sipRect);
          SipGetCurrentIM(&Clsid);
@@ -199,7 +169,7 @@ static void windowSetSIP(int32 sipOption, bool numeric)
          break;
       case SIP_SHOW:
 #ifndef WIN32_PLATFORM_HPC2000
-         SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
+         _SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
 #endif
          SipShowIM(SIPF_ON);
          {  //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
