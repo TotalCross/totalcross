@@ -42,6 +42,7 @@ public class File4D extends RandomAccessStream
   public static final int READ_ONLY = 3;
   public static final int CREATE = 4;
   public static final int CREATE_EMPTY = 5;
+  public static final int CLOSED = 6;
 
   public static final byte TIME_ALL = (byte) 0xF;
   public static final byte TIME_CREATED = (byte) 1;
@@ -121,6 +122,9 @@ public class File4D extends RandomAccessStream
   @Override
   public void close() throws totalcross.io.IOException
   {
+    if (mode == CLOSED) {
+      return;
+    }
     if (mode == INVALID){
       throw new totalcross.io.IOException("Invalid file object");
     }
