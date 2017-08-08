@@ -937,7 +937,7 @@ public final class Graphics
         }
         continue; // for all other control chars, just skip to next
       }
-      if (ch < font.firstChar || ch > font.lastChar) {
+      if (font.ubase == null || ch < font.firstChar || ch > font.lastChar) {
         this.font.hv_UserFont = font = Launcher.instance.getFont(this.font, ch);
       }
       font.setCharBits(ch, bits);
