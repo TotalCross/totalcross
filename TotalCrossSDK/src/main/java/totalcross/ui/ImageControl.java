@@ -134,24 +134,7 @@ public class ImageControl extends Control
     // test if it is really loaded.
     if (img != null && getImageWidth() > 0)
     {
-      if (scaleToFit) {
-        try
-        {
-          if (strechImage) {
-            this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
-          } else {
-            boolean wider = img0.getWidth() > img0.getHeight();
-            this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(wider ? width : height, !wider) : img0.hwScaledFixedAspectRatio(wider ? width : height, !wider);
-          }
-          if (this.img != null) {
-            this.img.alphaMask = img0.alphaMask;
-          }
-        }
-        catch (ImageException e)
-        {
-          // keep original image
-        }
-      }
+      scaleImage();
       if (centerImage && resetPositions)
       {
         lastX = (width-getImageWidth())/2;
@@ -264,31 +247,50 @@ public class ImageControl extends Control
     return false;
   }
 
+   private static Coord getSize(Image img, int newSize, boolean isHeight)
+   {
+      int w = !isHeight ? newSize : (newSize * img.getWidth() / img.getHeight());
+      int h =  isHeight ? newSize : (newSize * img.getHeight() / img.getWidth());         
+      return new Coord(w,h);
+   }
+   
+   private void scaleImage()
+   {
+      if (scaleToFit)
+         try
+         {
+            if (img0 == null)
+               this.img = null;
+            else
+            if (strechImage)
+               this.img = safeScale(this.width, this.height);
+            else
+            {
+               Coord onW = getSize(img0, width, false);
+               Coord onH = getSize(img0, height, true);
+               if (onW.x <= width && onW.y <= height)
+                  this.img = safeScale(onW.x,onW.y);
+               else
+                  this.img = safeScale(onH.x,onH.y);                     
+            }
+            if (this.img != null) this.img.alphaMask = img0.alphaMask;
+         }
+         catch (ImageException e)
+         {
+            // keep original image
+         }
+   }
+   
+   private Image safeScale(int w, int h) throws ImageException
+   {
+      return Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(w,h) : img0.getHwScaledInstance(w,h);
+   }
+
   @Override
   protected void onBoundsChanged(boolean screenChanged)
   {
     translateFromOrigin(c);
-    if (scaleToFit){
-      try
-      {
-        if (img0 == null) {
-          this.img = null;
-        } else
-          if (strechImage) {
-            this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
-          } else {
-            boolean wider = img0.getWidth() > img0.getHeight();
-            this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(wider ? width : height, !wider) : img0.hwScaledFixedAspectRatio(wider ? width : height, !wider);
-          }
-        if (this.img != null) {
-          this.img.alphaMask = img0.alphaMask;
-        }
-      }
-      catch (ImageException e)
-      {
-        // keep original image
-      }
-    }
+    scaleImage();
     if (centerImage && img != null) // guich@100_1: reset the image's position if bounds changed
     {
       lastX = (width-getImageWidth())/2;
