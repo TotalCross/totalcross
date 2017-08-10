@@ -302,6 +302,9 @@ public final class Time
       if (hasSeconds && idx < parts.length) {
         second = Convert.toInt(parts[idx++]);
       }
+      if (parts.length == 7) {
+        millis = Convert.toInt(parts[idx++]);
+      }
     }
     catch (InvalidNumberException ine) {}
   }
