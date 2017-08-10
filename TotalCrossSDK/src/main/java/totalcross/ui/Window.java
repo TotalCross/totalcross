@@ -861,7 +861,7 @@ public class Window extends Container
           if (_focus != null && _focus != this && (_focus == _dragEvent.target || x == 10000) && type == PenEvent.PEN_UP) {
             _focus.postEvent(_penEvent);
           }
-          if (!onClickedOutside(_penEvent)) {
+          if (x != 10000 && !onClickedOutside(_penEvent)) {
             if (type == PenEvent.PEN_DOWN && beepIfOut && !fadeOtherWindows) {
               Sound.beep();
             }
