@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 4.0.1 - 2017-08-04
+
+### Fixed
+- Fixed crash on `File.listFiles` when crawling very big paths
+- Fixed support for WinCE devices without the aygshell library, like the Compex PM200
+- Fixed `IOException` hierarchy
+- Fixed algorithm for `ImageControl.scaleToFit`
+- Fixed pressed event not being fired when using a popup
+
+### Changes
+- Added `CLOSED` state to `File`, which allows it to be properly used in a try-with-resources
+- Updated dependency dd-plist.jar to version 1.19
 
 ## 4.0.0 - 2017-07-31
 
