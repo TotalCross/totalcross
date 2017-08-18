@@ -53,7 +53,7 @@ public class Throwable4D
    */
   private Throwable4D cause = this;
 
-  private ArrayList<Throwable4D> suppressed = new ArrayList<>();
+  private ArrayList<Throwable4D> suppressed;
   private Throwable4D[] cachedSuppressedArray;
 
   /** Constructs an empty Exception. */
@@ -149,6 +149,9 @@ public class Throwable4D
 
   public final void addSuppressed(Throwable4D exception)
   {
+    if (this.suppressed == null) {
+      this.suppressed = new ArrayList<>();
+    }
     this.suppressed.add(exception);
     cachedSuppressedArray = null;
   }
@@ -157,6 +160,9 @@ public class Throwable4D
   {
     if (cachedSuppressedArray == null)
     {
+      if (this.suppressed == null) {
+        return new Throwable4D[0];
+      }
       cachedSuppressedArray = this.suppressed.toArray(new Throwable4D[0]);
     }
     return cachedSuppressedArray;
