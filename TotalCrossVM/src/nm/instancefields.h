@@ -379,7 +379,6 @@
 
 // totalcross.crypto.signature.PKCS1Signature
 #define PKCS1Signature_digest(o)          getInstanceFieldObject(o, "digest", "totalcross.crypto.signature.PKCS1Signature")
-#define PKCS1Signature_nativeHeap(o)      getInstanceFieldObject(o, "nativeHeap", "totalcross.crypto.signature.PKCS1Signature")
 
 // totalcross.ui.media.Camera
 #define Camera_initialDir(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)

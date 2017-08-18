@@ -18,6 +18,8 @@
 
 package totalcross.phone;
 
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 /** Used to send and receive SMS messages. Currently supports only WP8.
  * See the SmsSample for an example.
  */
@@ -28,6 +30,7 @@ public class SMS
    * @param message The message to send. Note that some phones will strip unicode characters.
    * @throws totalcross.io.IOException if an error occurs.
    */
+  @ReplacedByNativeOnDeploy
   public static void send(String destination, String message) throws totalcross.io.IOException
   {
   }
@@ -37,6 +40,7 @@ public class SMS
    *  @deprecated
    */
   @Deprecated
+  @ReplacedByNativeOnDeploy
   public static String[] receive() throws totalcross.io.IOException
   {
     return null;
