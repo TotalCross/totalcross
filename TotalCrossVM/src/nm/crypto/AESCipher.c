@@ -18,7 +18,7 @@
 #define OPERATION_DECRYPT 1
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tccAESC_nativeCreate(NMParams p) // totalcross/crypto/digest/AESCipher native void nativeCreate();
+TC_API void tccAESC_init(NMParams p) // totalcross/crypto/digest/AESCipher native void init();
 {
    TCObject aesObj = p->obj[0];
    TCObject cipherObj;

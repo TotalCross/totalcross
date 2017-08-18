@@ -18,7 +18,7 @@
 #define OPERATION_DECRYPT 1
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tccRSAC_nativeCreate(NMParams p) // totalcross/crypto/digest/RSACipher native void nativeCreate();
+TC_API void tccRSAC_init(NMParams p) // totalcross/crypto/digest/RSACipher native private void init();
 {
    TCObject rsacObj = p->obj[0];
    TCObject cipherObj;

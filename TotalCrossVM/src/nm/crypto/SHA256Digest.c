@@ -15,7 +15,7 @@
 #include "../../axtls/crypto.h"
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdSHA256D_nativeCreate(NMParams p) // totalcross/crypto/digest/SHA256Digest native void nativeCreate();
+TC_API void tcdSHA256D_init(NMParams p) // totalcross/crypto/digest/SHA256Digest native private void init();
 {
    TCObject sha256dObj = p->obj[0];
    TCObject digestObj;

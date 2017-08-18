@@ -450,20 +450,20 @@ TC_API void txXT_setCdataContents_Bii(NMParams p);
 TC_API void txXT_tokenizeBytes_B(NMParams p);
 TC_API void txXT_endTokenize_B(NMParams p);
 TC_API void txXT_nativeCreate(NMParams p);
-TC_API void tcdMD5D_nativeCreate(NMParams p);
+TC_API void tcdMD5D_init(NMParams p);
 TC_API void tcdMD5D_process_B(NMParams p);
-TC_API void tcdSHA1D_nativeCreate(NMParams p);
+TC_API void tcdSHA1D_init(NMParams p);
 TC_API void tcdSHA1D_process_B(NMParams p);
-TC_API void tcdSHA256D_nativeCreate(NMParams p);
+TC_API void tcdSHA256D_init(NMParams p);
 TC_API void tcdSHA256D_process_B(NMParams p);
-TC_API void tccAESC_nativeCreate(NMParams p);
+TC_API void tccAESC_init(NMParams p);
 TC_API void tccAESC_doReset(NMParams p);
 TC_API void tccAESC_process_B(NMParams p);
-TC_API void tccRSAC_nativeCreate(NMParams p);
+TC_API void tccRSAC_init(NMParams p);
 TC_API void tccRSAC_finalize(NMParams p);
 TC_API void tccRSAC_doReset(NMParams p);
 TC_API void tccRSAC_process_B(NMParams p);
-TC_API void tcsPKCS1S_nativeCreate(NMParams p);
+TC_API void tcsPKCS1S_init(NMParams p);
 TC_API void tcsPKCS1S_finalize(NMParams p);
 TC_API void tcsPKCS1S_doReset(NMParams p);
 TC_API void tcsPKCS1S_doSign_B(NMParams p);
@@ -2360,7 +2360,7 @@ TC_API void txXT_nativeCreate(NMParams p) // totalcross/xml/XmlTokenizer native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdMD5D_nativeCreate(NMParams p) // totalcross/crypto/digest/MD5Digest native void nativeCreate();
+TC_API void tcdMD5D_init(NMParams p) // totalcross/crypto/digest/MD5Digest native void nativeCreate();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2368,7 +2368,7 @@ TC_API void tcdMD5D_process_B(NMParams p) // totalcross/crypto/digest/MD5Digest 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdSHA1D_nativeCreate(NMParams p) // totalcross/crypto/digest/SHA1Digest native void nativeCreate();
+TC_API void tcdSHA1D_init(NMParams p) // totalcross/crypto/digest/SHA1Digest native void nativeCreate();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2376,7 +2376,7 @@ TC_API void tcdSHA1D_process_B(NMParams p) // totalcross/crypto/digest/SHA1Diges
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdSHA256D_nativeCreate(NMParams p) // totalcross/crypto/digest/SHA256Digest native void nativeCreate();
+TC_API void tcdSHA256D_init(NMParams p) // totalcross/crypto/digest/SHA256Digest native void nativeCreate();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2384,7 +2384,7 @@ TC_API void tcdSHA256D_process_B(NMParams p) // totalcross/crypto/digest/SHA256D
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tccAESC_nativeCreate(NMParams p) // totalcross/crypto/cipher/AESCipher native void nativeCreate();
+TC_API void tccAESC_init(NMParams p) // totalcross/crypto/cipher/AESCipher native private void init();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2396,7 +2396,7 @@ TC_API void tccAESC_process_B(NMParams p) // totalcross/crypto/cipher/AESCipher 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tccRSAC_nativeCreate(NMParams p) // totalcross/crypto/cipher/RSACipher native void nativeCreate();
+TC_API void tccRSAC_init(NMParams p) // totalcross/crypto/cipher/RSACipher native void nativeCreate();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2412,7 +2412,7 @@ TC_API void tccRSAC_process_B(NMParams p) // totalcross/crypto/cipher/RSACipher 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcsPKCS1S_nativeCreate(NMParams p) // totalcross/crypto/signature/PKCS1Signature native void nativeCreate();
+TC_API void tcsPKCS1S_init(NMParams p) // totalcross/crypto/signature/PKCS1Signature native void nativeCreate();
 {
 }
 //////////////////////////////////////////////////////////////////////////

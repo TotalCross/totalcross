@@ -18,6 +18,8 @@
 
 package totalcross.io.device;
 
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 /**
  * Provides access to the device's radios and information about their status.
  * 
@@ -57,6 +59,7 @@ final public class RadioDevice
    * @throws IllegalArgumentException
    * @since TotalCross 1.15
    */
+  @ReplacedByNativeOnDeploy
   public static boolean isSupported(int type) throws IllegalArgumentException
   {
     switch (type)
@@ -84,6 +87,7 @@ final public class RadioDevice
    * @throws IllegalArgumentException
    * @since TotalCross 1.15
    */
+  @ReplacedByNativeOnDeploy
   public static int getState(int type) throws IllegalArgumentException
   {
     switch (type)
@@ -112,6 +116,7 @@ final public class RadioDevice
    * @throws IllegalArgumentException
    * @since TotalCross 1.15
    */
+  @ReplacedByNativeOnDeploy
   public static void setState(int type, int state) throws IllegalArgumentException
   {
     if (state < RADIO_STATE_DISABLED || state > BLUETOOTH_STATE_DISCOVERABLE

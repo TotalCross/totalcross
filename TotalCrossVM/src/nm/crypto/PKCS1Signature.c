@@ -192,7 +192,7 @@ static int32 retrieveInfo(Context currentContext, TCObject digest, uint8 *data, 
 }
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcsPKCS1S_nativeCreate(NMParams p) // totalcross/crypto/signature/PKCS1Signature native void nativeCreate();
+TC_API void tcsPKCS1S_init(NMParams p) // totalcross/crypto/signature/PKCS1Signature native private void init();
 {
    TCObject pkcs1Obj = p->obj[0];
    TCObject signatureObj;
