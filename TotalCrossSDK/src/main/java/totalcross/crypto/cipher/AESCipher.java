@@ -14,6 +14,9 @@ package totalcross.crypto.cipher;
 import java.security.GeneralSecurityException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.crypto.CryptoException;
 import totalcross.crypto.NoSuchAlgorithmException;
 
@@ -26,6 +29,10 @@ import totalcross.crypto.NoSuchAlgorithmException;
  */
 public class AESCipher extends Cipher
 {
+  public AESCipher() {
+    init();
+  }
+  
   /**
    * Returns the name of the algorithm.
    * 
@@ -52,6 +59,7 @@ public class AESCipher extends Cipher
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected final void doReset() throws NoSuchAlgorithmException, CryptoException
   {
     String transf = "AES";
@@ -103,6 +111,7 @@ public class AESCipher extends Cipher
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected final byte[] process(byte[] data) throws CryptoException
   {
     try
@@ -132,5 +141,10 @@ public class AESCipher extends Cipher
   protected final boolean isPaddingSupported(int padding)
   {
     return padding == PADDING_PKCS5;
+  }
+  
+  @ReplacedByNativeOnDeploy
+  private void init() {
+
   }
 }

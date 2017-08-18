@@ -17,6 +17,9 @@
 package totalcross.crypto.digest;
 
 import java.security.MessageDigest;
+
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.crypto.NoSuchAlgorithmException;
 
 /**
@@ -29,16 +32,8 @@ public class SHA1Digest extends Digest
    * 
    * @throws NoSuchAlgorithmException If no Provider supports a <code>MessageDigestSpi</code> implementation for the specified algorithm.
    */
-  public SHA1Digest() throws NoSuchAlgorithmException
-  {
-    try
-    {
-      digestRef = MessageDigest.getInstance("SHA-1");
-    }
-    catch (java.security.NoSuchAlgorithmException e) 
-    {
-      throw new NoSuchAlgorithmException(e.getMessage());
-    }
+  public SHA1Digest() throws NoSuchAlgorithmException {
+    init();
   }
 
   /**
@@ -75,6 +70,7 @@ public class SHA1Digest extends Digest
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected final byte[] process(byte[] data)
   {
     MessageDigest digest = (MessageDigest)digestRef;
@@ -82,5 +78,14 @@ public class SHA1Digest extends Digest
     digest.update(data);
 
     return ((MessageDigest)digestRef).digest();
+  }
+  
+  @ReplacedByNativeOnDeploy
+  private void init() throws NoSuchAlgorithmException {
+    try {
+      digestRef = MessageDigest.getInstance("SHA-1");
+    } catch (java.security.NoSuchAlgorithmException e) {
+      throw new NoSuchAlgorithmException(e.getMessage());
+    }
   }
 }

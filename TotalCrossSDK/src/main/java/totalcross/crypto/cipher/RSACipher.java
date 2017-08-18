@@ -17,6 +17,9 @@ import java.security.KeyFactory;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import javax.crypto.spec.IvParameterSpec;
+
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.crypto.CryptoException;
 import totalcross.crypto.NoSuchAlgorithmException;
 
@@ -25,6 +28,10 @@ import totalcross.crypto.NoSuchAlgorithmException;
  */
 public class RSACipher extends Cipher
 {
+  public RSACipher() {
+    init();
+  }
+  
   /**
    * Returns the name of the algorithm.
    * 
@@ -48,6 +55,7 @@ public class RSACipher extends Cipher
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected final void doReset() throws NoSuchAlgorithmException, CryptoException
   {
     String transf = "RSA";
@@ -109,6 +117,7 @@ public class RSACipher extends Cipher
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected final byte[] process(byte[] data) throws CryptoException
   {
     try
@@ -138,5 +147,16 @@ public class RSACipher extends Cipher
   protected final boolean isPaddingSupported(int padding)
   {
     return padding == PADDING_PKCS1;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void init() {
+
+  }
+
+  @Override
+  @ReplacedByNativeOnDeploy
+  protected final void finalize() {
+
   }
 }
