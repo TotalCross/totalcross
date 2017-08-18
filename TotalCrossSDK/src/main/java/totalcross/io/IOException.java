@@ -21,8 +21,10 @@ package totalcross.io;
 /** Base class of all input/output exceptions.
  */
 
-public class IOException extends Exception
+public class IOException extends java.io.IOException
 {
+  private static final long serialVersionUID = 166767434534267900L;
+
   /** Constructs an empty Exception. */
   public IOException()
   {
@@ -44,4 +46,5 @@ public class IOException extends Exception
   {
     super(cause);
   }
+  
 }

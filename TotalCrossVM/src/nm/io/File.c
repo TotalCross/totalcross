@@ -58,6 +58,17 @@ static void invalidate(TCObject file)
    File_dontFinalize(file) = true;
 }
 
+static void mark_closed(TCObject file)
+{
+   if (File_fileRef(file) != null)
+   {
+      setObjectLock(File_fileRef(file), UNLOCKED);
+      File_fileRef(file) = null;
+   }
+   File_mode(file) = CLOSED;
+   File_dontFinalize(file) = true;
+}
+
 #ifdef ANDROID
 bool replacePath(NMParams p, char* szPath, bool throwEx)
 {
@@ -158,7 +169,7 @@ TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private voi
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
       if ((err = fileClose(fref)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
-      invalidate(file);
+      mark_closed(file);
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -211,7 +222,7 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode != DONT_OPEN)
@@ -244,7 +255,7 @@ TC_API void tiF_delete(NMParams p) // totalcross/io/File native public void dele
    TCHAR szPath[MAX_PATHNAME];
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == READ_ONLY)
@@ -264,7 +275,7 @@ TC_API void tiF_delete(NMParams p) // totalcross/io/File native public void dele
          if ((err = fileDelete(fref, szPath, slot, mode != DONT_OPEN)) != NO_ERROR)
             throwExceptionWithCode(p->currentContext, IOException, err);
       }
-      invalidate(file);
+      mark_closed(file);
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -276,7 +287,7 @@ TC_API void tiF_exists(NMParams p) // totalcross/io/File native public boolean e
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    {
@@ -300,7 +311,7 @@ TC_API void tiF_getSize(NMParams p) // totalcross/io/File native public int getS
    int32 size;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    {
@@ -336,7 +347,7 @@ TC_API void tiF_isDir(NMParams p) // totalcross/io/File native public boolean is
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode != DONT_OPEN)
@@ -373,7 +384,7 @@ TC_API void tiF_listFiles(NMParams p) // totalcross/io/File native public String
    Err err;
    volatile Heap h;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode != DONT_OPEN)
@@ -434,7 +445,7 @@ TC_API void tiF_readBytes_Bii(NMParams p) // totalcross/io/File native public in
    int32 bytesRead = 0;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -476,7 +487,7 @@ TC_API void tiF_rename_s(NMParams p) // totalcross/io/File native public boolean
    TCHARP c;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == READ_ONLY)
@@ -512,7 +523,7 @@ TC_API void tiF_rename_s(NMParams p) // totalcross/io/File native public boolean
 
             if ((err = fileRename(*fref, slot, szCurrPath, szNewPath, mode != DONT_OPEN)) != NO_ERROR)
                throwExceptionWithCode(p->currentContext, IOException, err);
-            invalidate(file);
+            mark_closed(file);
          }
       }
    }
@@ -530,7 +541,7 @@ TC_API void tiF_setPos_i(NMParams p) // totalcross/io/File native public void se
    int32 size;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -570,7 +581,7 @@ TC_API void tiF_writeBytes_Bii(NMParams p) // totalcross/io/File native public i
    int32 bytesWritten;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -611,7 +622,7 @@ TC_API void tiF_setAttributes_i(NMParams p) // totalcross/io/File native public 
    TCHAR szPath[MAX_PATHNAME];
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -645,7 +656,7 @@ TC_API void tiF_getAttributes(NMParams p) // totalcross/io/File native public in
    TCHAR szPath[MAX_PATHNAME];
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -676,7 +687,7 @@ TC_API void tiF_setTime_bt(NMParams p) // totalcross/io/File native public void 
    TCHAR szPath[MAX_PATHNAME];
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -714,7 +725,7 @@ TC_API void tiF_getTime_b(NMParams p) // totalcross/io/File native public totalc
    TCObject time;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -748,7 +759,7 @@ TC_API void tiF_setSize_i(NMParams p) // totalcross/io/File native public void s
    NATIVE_FILE* fref;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -793,7 +804,7 @@ TC_API void tiF_flush(NMParams p)
    NATIVE_FILE* fref;
    Err err;
 
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
@@ -865,7 +876,7 @@ TC_API void tiF_isEmpty(NMParams p) // totalcross/io/File native public boolean 
    Err err;
    p->retI = isEmpty;
    
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    {
@@ -895,7 +906,7 @@ TC_API void tiF_chmod_i(NMParams p) // totalcross/io/File native public int chmo
    Err err;
    p->retI = -1;
    
-   if (mode == INVALID)
+   if (mode == INVALID || mode == CLOSED)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    {

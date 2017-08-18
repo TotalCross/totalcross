@@ -473,6 +473,10 @@ static int32 vmGetRemainingBattery()
 #define GETPOWERMANAGEMENT   6148
  
 /* These values must conform with those in ScreenPower.java */
+
+#include "win/aygshellLib.h"
+
+
 typedef enum _VIDEO_POWER_STATE 
 {
     VideoPowerOn = 1,
@@ -522,20 +526,6 @@ static bool vmTurnScreenOn(bool on)
 ////////////////////// guich@tc122_52: added VIBRATION
 
 #ifdef WINCE
-// for Smartphones
-typedef struct 
-{
-  WORD wDuration;
-  BYTE bAmplitude;
-  BYTE bFrequency;
-} VIBRATENOTE;
-
-typedef int (__stdcall *VibratePlayProc)(DWORD cvn, const VIBRATENOTE * rgvn, BOOL fRepeat, DWORD dwTimeout);
-typedef int (__stdcall *VibrateStopProc)();
-
-VibratePlayProc VibratePlay;
-VibrateStopProc VibrateStop;
-
 // for Windows Mobile
 const int NLED_COUNT_INFO_ID = 0;
 const int NLED_SETTINGS_INFO_ID = 2;
@@ -555,10 +545,6 @@ typedef BOOL (__stdcall *NLedSetDeviceProc)(int nID, void* pOutput);
 typedef BOOL (__stdcall *NLedGetDeviceInfoProc)(int nInfoId,  void* pOutput);
 NLedSetDeviceProc NLedSetDevice;
 NLedGetDeviceInfoProc NLedGetDeviceInfo;
-#define VIB_NONE 0
-#define VIB_AYG 1
-#define VIB_CORE 2
-#define VIB_NOTAVAILABLE 3
 
 static int vibtype = VIB_NONE;
 static int vibIndex;
@@ -571,9 +557,9 @@ LRESULT VibrateThread(int32 *ms_)
    {
       case VIB_AYG:
       {
-         VibratePlay(0,NULL,TRUE,INFINITE);
+         _Vibrate(0,NULL,TRUE,INFINITE);
          Sleep(ms);
-         VibrateStop();
+         _VibrateStop();
          break;
       }
       case VIB_CORE:
@@ -609,12 +595,9 @@ void vmVibrate(int32 ms)
             vibIndex--;
          }
       }
-      if (vibtype == VIB_NONE && aygshellDll)
+      if (vibtype == VIB_NONE && _Vibrate && _VibrateStop)
       {
-         VibratePlay = (VibratePlayProc) GetProcAddress(aygshellDll, TEXT("Vibrate"));
-         VibrateStop = (VibrateStopProc) GetProcAddress(aygshellDll, TEXT("VibrateStop"));
-         if (VibratePlay && VibrateStop)
-            vibtype = VIB_AYG;
+        vibtype = VIB_AYG;
       }
       if (vibtype == VIB_NONE)
          vibtype = VIB_NOTAVAILABLE;

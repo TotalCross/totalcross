@@ -45,6 +45,7 @@ enum
    READ_ONLY      = 3,
    CREATE         = 4,
    CREATE_EMPTY   = 5,
+   CLOSED         = 6,
 };
 
 enum

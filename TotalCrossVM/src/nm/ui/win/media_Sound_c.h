@@ -304,30 +304,19 @@ void soundTone(int32 frequency, int32 duration)
 #if defined (WINCE)
 bool SndGetSoundWM5(SND_EVENT sndEvent, SNDFILEINFO *soundFileInfo)
 {
-   typedef HRESULT (__stdcall *SndGetSoundProc)( SND_EVENT, SNDFILEINFO* );
-   SndGetSoundProc procSndGetSound;
-
-   if (!isWindowsMobile || *tcSettings.romVersionPtr < 500 || !aygshellDll)
+   if (!isWindowsMobile || *tcSettings.romVersionPtr < 500 || _SndGetSound == NULL)
       return false;
-
-   if ((procSndGetSound = (SndGetSoundProc) GetProcAddress(aygshellDll, _T("SndGetSound"))) == null)
-      return false;
-   procSndGetSound(sndEvent, soundFileInfo);
-
+   
+   _SndGetSound(sndEvent, soundFileInfo);
    return true;
 }
 
 bool SndSetSoundWM5(SND_EVENT sndEvent, SNDFILEINFO *soundFileInfo)
 {
-   typedef HRESULT (__stdcall *SndSetSoundProc)( SND_EVENT, const SNDFILEINFO*, BOOL );
-   SndSetSoundProc procSndSetSound;
-
-   if (!isWindowsMobile || *tcSettings.romVersionPtr < 500 || !aygshellDll)
+   if (!isWindowsMobile || *tcSettings.romVersionPtr < 500 || _SndSetSound == NULL)
       return false;
-   if ((procSndSetSound = (SndSetSoundProc)GetProcAddress(aygshellDll, _T("SndSetSound"))) == null)
-      return false;
-   procSndSetSound(sndEvent, soundFileInfo, false);
 
+   _SndSetSound(sndEvent, soundFileInfo, false);
    return true;
 }
 #endif

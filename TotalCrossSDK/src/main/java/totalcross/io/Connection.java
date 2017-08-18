@@ -18,10 +18,12 @@
 
 package totalcross.io;
 
+import java.io.Closeable;
+
 /**
  * Base class for I/O connections.
  */
-abstract class Connection implements AutoCloseable
+abstract class Connection implements Closeable
 {
   /**
    * Closes this I/O connection, releasing any associated resources. Once closed a connection is no longer valid.
