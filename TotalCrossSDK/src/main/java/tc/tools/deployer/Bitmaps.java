@@ -703,9 +703,10 @@ class IconStore extends Hashtable
   private static Image whiteImage(int w, int h) throws ImageException
   {
     Image img = new Image(w,h);
-    Graphics g = img.getGraphics();
-    g.backColor = Color.WHITE;
-    g.fillRect(0,0,w,h);
+    int[] pixels = img.getPixels();
+    for (int i = 0; i < pixels.length; i++) {
+      pixels[i] = 0xFFFFFFFF;
+    }
     return img;
   }
 
