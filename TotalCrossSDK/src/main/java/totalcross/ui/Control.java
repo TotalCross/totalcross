@@ -431,7 +431,7 @@ public class Control extends GfxSurface
   /** Releases the screen shot. */
   public void releaseScreenShot()
   {
-    offscreen = null;
+    offscreen = offscreen0 = null;
     Window.needsPaint = true;
   }
 
