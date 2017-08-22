@@ -45,6 +45,9 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
     if (c.offscreen != null){
       c.offscreen.alphaMask = a;
     }
+    if (c.offscreen0 != null){
+      c.offscreen0.alphaMask = _maxFade - a;
+    }
     Window.needsPaint = true;
     if (a == af || speed == 0)
     {
