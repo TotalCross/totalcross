@@ -16,6 +16,7 @@
 
 package totalcross.ui;
 
+import totalcross.ui.gfx.*;
 
 /* A container that checks if the sibling is within the visible area before calling paint on it.
  * 
@@ -102,7 +103,9 @@ public class ClippedContainer extends Container
         if (child.isVisibleAndInside(bagClipX0,bagClipY0,bagClipXf,bagClipYf) && (pw == null || !child.isObscured(pw)))
         {
           if (child.asContainer != null && child.asContainer.offscreen != null) {
-            getGraphics().drawImage(child.asContainer.offscreen,child.x,child.y);
+            Graphics g = getGraphics();
+            g.drawImage(child.asContainer.offscreen,child.x,child.y);
+            if (child.asContainer.offscreen0 != null) g.drawImage(child.asContainer.offscreen0,child.x,child.y);
           } else
           {
             child.onPaint(child.getGraphics());

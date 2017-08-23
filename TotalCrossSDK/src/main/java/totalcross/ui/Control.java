@@ -345,7 +345,7 @@ public class Control extends GfxSurface
 
   /** The offscreen image taken with takeScreenShot. The onPaint will use this shot until the user calls releaseScreenShot.
    */
-  public Image offscreen;
+  public Image offscreen, offscreen0;
 
   /** Keep the control disabled even if enabled is true. */
   public boolean keepDisabled;
@@ -374,23 +374,45 @@ public class Control extends GfxSurface
     textShadowColor = UIColors.textShadowColor;
   }
 
-  /** Take a screen shot of this container and stores it in <code>offscreen</code>.
-   */
-  public void takeScreenShot()
-  {
-    try
-    {
-      offscreen = null;
-      Image offscreen = new Image(width,height);
-      paint2shot(offscreen.getGraphics(),false);
-      this.offscreen = offscreen;
-      this.offscreen.applyChanges();
-    }
-    catch (Throwable t)
-    {
-      this.offscreen = null;
-    }
-  }
+   private void takeScreenShot(int nr)
+   {
+      try
+      {
+         if (nr == 1) // release memory
+           offscreen = null;
+         else
+           offscreen0 = null;
+         Image offscreen = new Image(width,height);
+         paint2shot(offscreen.getGraphics(),false);
+         if (nr == 1)
+           this.offscreen = offscreen;
+         else
+           this.offscreen0 = offscreen;
+         offscreen.applyChanges();
+      }
+      catch (Throwable t)
+      {
+        if (nr == 1)
+          this.offscreen = null;
+        else
+          this.offscreen0 = null;
+      }
+   }
+   
+   /** Take a screen shot of this container and stores it in <code>offscreen0</code>.
+    */
+   public void takeInitialScreenShot()
+   {
+     takeScreenShot(0);
+   }
+   
+   /** Take a screen shot of this container and stores it in <code>offscreen</code>.
+    */
+   public void takeScreenShot()
+   {
+     takeScreenShot(1);
+   }
+   
 
   void paint2shot(Graphics g, boolean shift)
   {
@@ -409,7 +431,7 @@ public class Control extends GfxSurface
   /** Releases the screen shot. */
   public void releaseScreenShot()
   {
-    offscreen = null;
+    offscreen = offscreen0 = null;
     Window.needsPaint = true;
   }
 

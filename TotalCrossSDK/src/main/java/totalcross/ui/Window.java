@@ -1369,6 +1369,7 @@ public class Window extends Container
     Graphics gg = getGraphics();
     if (offscreen != null){
       gg.drawImage(offscreen,0,0);
+      if (offscreen0 != null) gg.drawImage(offscreen0,0,0);
     }else
     {
       // clear background
