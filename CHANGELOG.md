@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
 
+### Fixed
+ - Fixed deploy to iOS in Linux without X11 display
+
 ## 4.0.1 - 2017-08-04
 
 ### Fixed
