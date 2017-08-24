@@ -261,18 +261,20 @@ task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
 
 task dist(dependsOn: build) {
 
-	copy { 
-		from 'build/libs/install/win32/TCUI.tcz'
-		from 'build/libs/install/win32/TCBase.tcz'
-		into 'dist/vm/'
-	}
-
-	copy { 
-		from myProguardTask.outputs.files.singleFile
-		into 'dist/'
-		rename  { String fileName ->
-    				fileName.replace('-' + project.version, '')
-  		}
+	doLast{
+		copy { 
+			from 'build/libs/install/win32/TCUI.tcz'
+			from 'build/libs/install/win32/TCBase.tcz'
+			into 'dist/vm/'
+		}
+	
+		copy { 
+			from myProguardTask.outputs.files.singleFile
+			into 'dist/'
+			rename  { String fileName ->
+	    				fileName.replace('-' + project.version, '')
+	  		}
+		}
 	}
 }
 
