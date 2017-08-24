@@ -136,7 +136,7 @@
             }
             "{BA458234-9B71-4F46-8107-E91156377184}:_EDEDE848805E46F3B2C873A3E237ACBA"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\TotalCrossSDK\\dist\\vm\\TCFont.tcz"
+            "SourcePath" = "8:..\\..\\..\\..\\TotalCrossSDK\\etc\\fonts\\TCFont.tcz"
             "TargetName" = "8:TCFont.tcz"
             "Tag" = "8:"
             "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"
