@@ -197,7 +197,7 @@ target: buildSkeleton - Build the folders
    <mkdir dir="${target.sdk.path}/dist/vm" />
    <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${sdk.path}/docs/html" /></copy>
    <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${sdk.path}/dist/vm" includes="*.tcz" /></copy>
-   <copy todir="${target.sdk.path}/dist" file="${sdk.path}/dist/*.jar" />
+   <copy todir="${target.sdk.path}/dist"> <fileset dir="${sdk.path}/dist" includes="*.jar" /></copy>
 </target>
 
 <target name="buildSamples_sdk" >
