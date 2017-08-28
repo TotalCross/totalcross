@@ -348,7 +348,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    */
   public void setSelectedIndex(int i)
   {
-    setSelectedIndex(i,Settings.sendPressEventOnChange);
+    setSelectedIndex(i, Settings.sendPressEventOnChange, false);
   }
 
   /**
@@ -357,9 +357,14 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
    */
   public void setSelectedIndex(int i, boolean sendPressEvent)
   {
+      setSelectedIndex(i, sendPressEvent, false);
+  }
+
+  private void setSelectedIndex(int i, boolean sendPressEvent, boolean forceSend)
+  {
     int idx = pop.lb.selectedIndex;
     pop.lb.setSelectedIndex(i);
-    if (sendPressEvent && pop.lb.selectedIndex != idx){
+    if (forceSend || (sendPressEvent && pop.lb.selectedIndex != idx)) {
       postPressedEvent();
     }
     animateMaterial(isDisplayed());
@@ -669,7 +674,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
           opened = false;
           int sel = pm.getSelectedIndex();
           if (sel != -1) {
-            setSelectedIndex(sel, true);
+            setSelectedIndex(sel, false, true);
           }
         }
         catch (Exception e)
