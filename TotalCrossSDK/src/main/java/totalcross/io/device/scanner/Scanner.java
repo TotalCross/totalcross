@@ -90,7 +90,8 @@ public class Scanner
         driverLoaded = Vm.attachNativeLibrary("Motorola") || 
             Vm.attachNativeLibrary("Dolphin") || 
             Vm.attachNativeLibrary("Intermec") || 
-            Vm.attachNativeLibrary("Pidion");
+            Vm.attachNativeLibrary("Pidion") || 
+            Vm.attachNativeLibrary("Bematech");
       }
       if (!driverLoaded && tries++ == 0) {
         throw new RuntimeException("Cannot find the native implementation for the scanner library.");

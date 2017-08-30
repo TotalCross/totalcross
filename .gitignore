@@ -38,3 +38,6 @@ TotalCrossVM/builders/droid/src/main/libs/armeabi/
 # Files from vim
 .*.swp
 *.DS_Store
+*.bsc
+*.sbr
+BuildLog.htm
