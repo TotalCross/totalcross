@@ -17,14 +17,12 @@ import tc.tools.deployer.Bitmaps.Bmp;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.File;
 import totalcross.io.IOException;
-import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.Hashtable;
 import totalcross.util.IntHashtable;
-import totalcross.util.IntVector;
 
 public class Bitmaps
 {
@@ -454,87 +452,11 @@ public class Bitmaps
     zos.write(s.getBuffer(), 0, s.getPos());
   }
 
-  private static final int TOLERANCE = 16;
-  private static IntVector fillCoords = new IntVector(10000); // guich@tc110_57: use a stack and static variables instead of a method recursion to avoid stack overflows
-  private static boolean fillVisited[];
-  private static int[] fillPixels;
-  private static int fillW,fillH, fillNewColor,fillOldColor;
-
-  private static int colorDist(int rgb1, int rgb2)
-  {
-    int r1 = Color.getRed(rgb1);
-    int g1 = Color.getGreen(rgb1);
-    int b1 = Color.getBlue(rgb1);
-    int r2 = Color.getRed(rgb2);
-    int g2 = Color.getGreen(rgb2);
-    int b2 = Color.getBlue(rgb2);
-    return (Math.abs(r1-r2) + Math.abs(g1-g2) + Math.abs(b1-b2)) / 3;
-  }
-
-  private static void floodFill() throws Exception
-  {
-    do
-    {
-      int c = fillCoords.pop();
-      int x = c & 0xFFFF;
-      int y = (c >> 16) & 0xFFFF;
-      int dist;
-      int index = x + y * fillW;
-
-      fillVisited[index] = true;
-      c = fillPixels[index];
-      if ((dist=colorDist(c, fillOldColor)) < TOLERANCE && c != fillNewColor)
-      {
-        fillPixels[index] = dist == 0 ? fillNewColor : Color.interpolate(fillNewColor,c);
-
-        addFillPoint(x + 1, y);
-        addFillPoint(x - 1, y);
-        addFillPoint(x, y + 1);
-        addFillPoint(x, y - 1);
-      }
-    }
-    while (!fillCoords.isEmpty());
-  }
-
-  private static void addFillPoint(int x, int y)
-  {
-    int index = x + y * fillW;
-    if (x >= 0 && x < fillW && y >= 0 && y < fillH && !fillVisited[index]){
-      fillCoords.push((y << 16) | x);
-    }
-  }
-
-  private static void floodFill(Image img, int color)
-  {
-    fillCoords.removeAllElements();
-    fillW = img.getWidth();
-    fillH = img.getHeight();
-    fillPixels = (int[])img.getPixels();
-    fillOldColor = /*img.transparentColor != Image.NO_TRANSPARENT_COLOR ? img.transparentColor : */fillPixels[0];
-    fillNewColor = 0;
-    fillVisited = new boolean[fillW*fillH];
-
-    addFillPoint(0,0);
-    addFillPoint(fillW-1,0);
-    addFillPoint(0,fillH-1);
-    addFillPoint(fillW-1,fillH-1);
-    try
-    {
-      floodFill();
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-
   private int[] loadPalette(byte[] bytes, int offset, int numberColors)
   {
     int[] palette = new int[numberColors];
-    for (int i =0; i < numberColors; i++, offset+=4)
-    {
+    for (int i =0; i < numberColors; i++, offset+=4) {
       palette[i] = (((bytes[offset+3]&0xFF) << 24) | ((bytes[offset+2]&0xFF) << 16) | ((bytes[offset+1]&0xFF) << 8) | (bytes[offset+0]&0xFF));
-      //Utils.println(i+" - "+totalcross.sys.Convert.unsigned2hex(palette[i],6));
     }
     return palette;
   }
@@ -584,8 +506,6 @@ public class Bitmaps
       try
       {
         Image img = width == height ? IconStore.getSquareIcon(width) : IconStore.getSplashImage(width, height);
-        // guich@tc100b5_11: flood fill with tolerance
-        floodFill(img, 0);
         ByteArrayStream bas = new ByteArrayStream(width * height);
         img.createPng(bas);
         b = bas.toByteArray();

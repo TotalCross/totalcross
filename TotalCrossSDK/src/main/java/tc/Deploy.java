@@ -441,7 +441,7 @@ public class Deploy
             "   The easiest way to create an icon is to provide an 'appicon.png' file of SQUARED size 256x256" +
             "which will be automatically converted to the target icon sizes. Put the file in the src folder." +
             "If your icon source is VECTOR-based, you may create better icons by exporting to png at the following sizes: " +
-            "icon60x60.png (iPhone), icon72x72.png, icon96x96.png, icon144x144.png, icon192x192 (Android). " + 
+            "icon76x76.png, icon96x96.png, icon120x120.png, icon144x144.png, icon152x152.png, icon192x192. " + 
             "Note that TotalCross' algorithm used to downscale the icons, CATMULL-ROM, is the best of the world for that." +
         "");
   }
