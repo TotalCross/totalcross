@@ -1529,7 +1529,7 @@ public class Control extends GfxSurface
     Window w = asWindow != null ? asWindow : getParentWindow();
     if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
     {
-      if (Settings.isOpenGL)
+      if (Settings.isOpenGL || !w.isTopMost()) // guich@issue#80: if control is not topmost, must repaint all windows
       {
         Window.needsPaint = true; // make sure the whole area is marked to be repainted
         if (MainWindow.isMainThread()) {
