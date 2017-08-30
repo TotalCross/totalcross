@@ -171,7 +171,7 @@ task totalcrossJar(type: Jar) {
     from(sourceSets.desktop.output) {
         exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
     }
-    from new File(project.rootDir, 'dist/vm/TCFont.tcz')
+    from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
     into("META-INF/maven/$project.group/$baseName") {
         from {
             generatePomFileForMavenCustomPublication
