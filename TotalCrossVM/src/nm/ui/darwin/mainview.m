@@ -127,6 +127,7 @@ int isShown;
    // Any new character added is passed in as the "text" parameter
    if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
    {
+      [self addEvent:[[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt:(int)'\n'], @"key", nil]];
       [textView resignFirstResponder];
       [kbd removeFromSuperview];
       return FALSE; // Return FALSE so that the final '\n' character doesn't get added
