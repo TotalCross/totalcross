@@ -712,7 +712,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
 
     Settings.dataPath = newDataPath;
-    if (activationKey == null) {
+    if (isApplication && activationKey == null) {
       activationKey = RegisterSDK.getStoredActivationKey();
     }
     if (activationKey != null && activationKey.length() != 24)
