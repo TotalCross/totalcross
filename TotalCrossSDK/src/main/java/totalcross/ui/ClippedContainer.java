@@ -27,7 +27,7 @@ public class ClippedContainer extends Container
 {
   public boolean verticalOnly;
   protected int bagClipX0,bagClipXf,bagClipY0,bagClipYf;
-  private int lastMid;
+  protected int lastMid;
 
   private int findOneVisible(int y0, int yf, int ini, int end)
   {
