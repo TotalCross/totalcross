@@ -316,6 +316,7 @@ public class ScrollContainer extends Container implements Scrollable
     bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
     bag.setRect(x, y, w, h, null, screenChanged);
     bag.uiAdjustmentsBasedOnFontHeightIsSupported = old;
+    bag.lastMid = -1; // reset sort when bounds change
   }
 
   /** This method resizes the control to the needed bounds, based on added childs. 
