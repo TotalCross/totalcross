@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+- [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
+
+## 4.0.2 - 2017-09-01
+
+### Fixed
+- Methods annotated with `@ReplacedByNativeOnDeploy` and array arguments were not being replaced by their native counterpart on deploy
+- Fixed deploy to iOS in Linux without X11 display
+- Android binaries are now compiled in release mode, because the Play Store no longer allows debug binaries
+- TotalCross should no longer require elevated user access to run on Windows desktop
+- Fixed pressed event not being fired when the re-selecting the same item on a `ComboBox`
+- Fixed crash on WinCE, invalid function references would make the application crash on startup on some devices
+
+### Changes
+- Applied annotation `@ReplacedByNativeOnDeploy` on classes of package `totalcross.crypto`, stack trace line numbers should now be the same either on Java or device
+
 ## 4.0.1 - 2017-08-04
 
 ### Fixed
@@ -10,7 +26,7 @@ All notable changes to this project will be documented in this file.
 - Fixed support for WinCE devices without the aygshell library, like the Compex PM200
 - Fixed `IOException` hierarchy
 - Fixed algorithm for `ImageControl.scaleToFit`
-- Fixed pressed event not being fired when using a popup
+- Fixed pressed event not being fired when using a popup with `ComboBox`
 
 ### Changes
 - Added `CLOSED` state to `File`, which allows it to be properly used in a try-with-resources
