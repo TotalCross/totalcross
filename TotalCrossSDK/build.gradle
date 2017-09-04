@@ -263,6 +263,7 @@ task dist(dependsOn: build) {
 
 	doLast{
 		copy { 
+			from 'etc/fonts/TCFont.tcz'
 			from 'build/libs/install/win32/TCUI.tcz'
 			from 'build/libs/install/win32/TCBase.tcz'
 			into 'dist/vm/'
