@@ -182,8 +182,7 @@ public final class JavaMethod
         methodNode.name
         + Arrays.toString(Type.getArgumentTypes(methodNode.desc))
         .replace(", ", "")
-        .replace('[', '(')
-        .replace(']', ')');
+        .replaceFirst("^\\[(.*)\\]$", "($1)");
 
     if (methodNode.invisibleAnnotations != null && methodNode.invisibleAnnotations.size() > 0) {
       for (AnnotationNode annotation : (List<AnnotationNode>) methodNode.invisibleAnnotations) {

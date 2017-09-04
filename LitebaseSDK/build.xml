@@ -154,7 +154,7 @@ target: compile
      excludes="litebase/android/**"
   >
      <classpath>
-        <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+        <pathelement location="${tcsdk.root}/dist/totalcross-sdk.jar"/>
      </classpath>
   </javac>
 </target>
@@ -178,7 +178,7 @@ target: device
   <echo message="deploy the jar package file: ${dist}/litebase.jar" />
   <java classname="tc.Deploy" fork="yes" dir="${output}">
     <classpath>
-        <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+        <pathelement location="${tcsdk.root}/dist/totalcross-sdk.jar"/>
         <pathelement location="${tcsdk.root}"/>
     </classpath>
     <arg value="${output}/litebase.jar"/>
@@ -300,7 +300,7 @@ target: samples
       <classpath>
            <pathelement location="${output}/classes"/>
            <pathelement location="${sdk.root}"/>
-           <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+           <pathelement location="${tcsdk.root}/dist/totalcross-sdk.jar"/>
        </classpath>
        <arg value="${output}/classes/samples/${app.srcdir}/${app.name}.class"/>
        <arg line="${tcdeploy_line}"/>
@@ -319,7 +319,7 @@ target: samples
 
    <java classname="tc.Deploy" fork="yes" dir="${target.dir}">
       <classpath>
-        <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+        <pathelement location="${tcsdk.root}/dist/totalcross-sdk.jar"/>
         <pathelement location="${sdk.root}"/>
       </classpath>
       <arg value="${app.name}.jar"/>

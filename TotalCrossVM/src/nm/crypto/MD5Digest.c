@@ -15,7 +15,7 @@
 #include "../../axtls/crypto.h"
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdMD5D_nativeCreate(NMParams p) // totalcross/crypto/digest/MD5Digest native void nativeCreate();
+TC_API void tcdMD5D_init(NMParams p) // totalcross/crypto/digest/MD5Digest native private void init();
 {
    TCObject md5dObj = p->obj[0];
    TCObject digestObj;

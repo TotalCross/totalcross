@@ -5,7 +5,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.7
-version = '4.0.1'
+version = '4.0.2'
 group = 'com.totalcross'
 
 // can't be used yet, enconding is a mess
@@ -171,7 +171,7 @@ task totalcrossJar(type: Jar) {
     from(sourceSets.desktop.output) {
         exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
     }
-    from new File(project.rootDir, 'dist/vm/TCFont.tcz')
+    from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
     into("META-INF/maven/$project.group/$baseName") {
         from {
             generatePomFileForMavenCustomPublication
@@ -261,18 +261,21 @@ task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
 
 task dist(dependsOn: build) {
 
-	copy { 
-		from 'build/libs/install/win32/TCUI.tcz'
-		from 'build/libs/install/win32/TCBase.tcz'
-		into 'dist/vm/'
-	}
-
-	copy { 
-		from myProguardTask.outputs.files.singleFile
-		into 'dist/'
-		rename  { String fileName ->
-    				fileName.replace('-' + project.version, '')
-  		}
+	doLast{
+		copy { 
+			from 'etc/fonts/TCFont.tcz'
+			from 'build/libs/install/win32/TCUI.tcz'
+			from 'build/libs/install/win32/TCBase.tcz'
+			into 'dist/vm/'
+		}
+	
+		copy { 
+			from myProguardTask.outputs.files.singleFile
+			into 'dist/'
+			rename  { String fileName ->
+	    				fileName.replace('-' + project.version, '')
+	  		}
+		}
 	}
 }
 

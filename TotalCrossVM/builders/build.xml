@@ -197,7 +197,7 @@ target: buildSkeleton - Build the folders
    <mkdir dir="${target.sdk.path}/dist/vm" />
    <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${sdk.path}/docs/html" /></copy>
    <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${sdk.path}/dist/vm" includes="*.tcz" /></copy>
-   <copy todir="${target.sdk.path}/dist" file="${sdk.path}/dist/tc.jar" />
+   <copy todir="${target.sdk.path}/dist"> <fileset dir="${sdk.path}/dist" includes="*.jar" /></copy>
 </target>
 
 <target name="buildSamples_sdk" >
@@ -469,7 +469,7 @@ target: Linux builds
 <target name="packageLinux" >
     <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
       <classpath>
-      	  <pathelement location="${sdk.path}/dist/tc.jar"/>
+      	  <pathelement location="${sdk.path}/dist/totalcross-sdk.jar"/>
           <pathelement location="${tools}/jdeb/lib/ant.jar"/>
           <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
           <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>

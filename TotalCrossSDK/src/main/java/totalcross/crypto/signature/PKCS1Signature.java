@@ -21,6 +21,9 @@ import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.crypto.CryptoException;
 import totalcross.crypto.NoSuchAlgorithmException;
 import totalcross.crypto.cipher.Key;
@@ -36,6 +39,7 @@ import totalcross.crypto.digest.SHA256Digest;
  */
 public class PKCS1Signature extends Signature
 {
+  protected Digest digest;
   private String algorithm;
 
   /**
@@ -45,26 +49,18 @@ public class PKCS1Signature extends Signature
    * @throws CryptoException If the given message digest is not supported.
    * @throws NoSuchAlgorithmException If no Provider supports a Signature implementation for the specified algorithm.
    */
-  public PKCS1Signature(Digest digest) throws NoSuchAlgorithmException, CryptoException
-  {
-    if (digest instanceof MD5Digest){
+  public PKCS1Signature(Digest digest) throws NoSuchAlgorithmException, CryptoException {
+    this.digest = digest;
+    if (digest instanceof MD5Digest) {
       algorithm = "MD5withRSA";
-    }else if (digest instanceof SHA1Digest){
+    } else if (digest instanceof SHA1Digest) {
       algorithm = "SHA1withRSA";
-    }else if (digest instanceof SHA256Digest){
+    } else if (digest instanceof SHA256Digest) {
       algorithm = "SHA256withRSA";
-    }else {
+    } else {
       throw new CryptoException("Invalid or unsupported signature digest: " + digest.getAlgorithm());
     }
-
-    try
-    {
-      signatureRef = java.security.Signature.getInstance(algorithm);
-    }
-    catch (java.security.NoSuchAlgorithmException e)
-    {
-      throw new CryptoException(e.getMessage());
-    }
+    init();
   }
 
   /**
@@ -85,6 +81,7 @@ public class PKCS1Signature extends Signature
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected void doReset() throws NoSuchAlgorithmException, CryptoException
   {
     try
@@ -118,6 +115,7 @@ public class PKCS1Signature extends Signature
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected byte[] doSign(byte[] data) throws CryptoException
   {
     try
@@ -135,6 +133,7 @@ public class PKCS1Signature extends Signature
   }
 
   @Override
+  @ReplacedByNativeOnDeploy
   protected boolean doVerify(byte[] data, byte[] signature) throws CryptoException
   {
     try
@@ -149,5 +148,20 @@ public class PKCS1Signature extends Signature
     {
       throw new CryptoException(e.getMessage());
     }
+  }
+  
+  @ReplacedByNativeOnDeploy
+  private void init() throws CryptoException {
+    try {
+      signatureRef = java.security.Signature.getInstance(algorithm);
+    } catch (java.security.NoSuchAlgorithmException e) {
+      throw new CryptoException(e.getMessage());
+    }
+  }
+
+  @Override
+  @ReplacedByNativeOnDeploy
+  protected final void finalize() {
+
   }
 }
