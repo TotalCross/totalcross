@@ -251,11 +251,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <!-- totalcross -->
    <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
    
-   <!-- litebase -->
-   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="yes">
-    <zipgroupfileset dir="${target.litebase.path}/dist" includes="litebase.jar"/>
-   </zip>
-
    <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
    <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
       <fileset dir="${target.litebase.path}/dist/samples" />
