@@ -43,8 +43,6 @@
 <property name="lb.src"                 value="${sdk.root}/../LitebaseSDK/src/java"/>
 <property name="sqlite-jdbc"            value="sqlite-jdbc-3.8.7"/>
 
-<!-- defined alxjoin task -->	
-<taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${tools}/ant/tctasks.jar" />
 <!-- define proguard task -->
 <taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpath="${etc}/obfuscator/proguard.jar" />
 	
