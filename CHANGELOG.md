@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 ### Highlights
 - Familiar with the Material design User Experience? Well, you can now give it to your user!
 - `@ReplacedByNativeOnDeploy` annotation to denote every method that runs with a native implementation on device
-  - It's Java implementation is replaced when it is deployed
+  - The Java implementation is replaced by a native call during the deploy
 - `java.util.function.*` functional interfaces of Java 8 to provide a deeper dive into functional programming
   - The project needs to be compiled with Java 8 to works, even if it has been downtargeted by RetroLambda
   - **NOTE**: no default methods nor static methods yet
