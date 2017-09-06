@@ -41,7 +41,6 @@
 <property name="target"                 value="${sdk.root}/../../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 <property name="lb.src"                 value="${sdk.root}/../LitebaseSDK/src/java"/>
-<property name="sqlite-jdbc"            value="sqlite-jdbc-3.8.7"/>
 
 <!-- define proguard task -->
 <taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpath="${etc}/obfuscator/proguard.jar" />
@@ -56,12 +55,6 @@
 <condition property="os.linux" value="true">
  <os family="unix"/>
 </condition>
-
-<property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="7"/>
-<property name="compile.source"          value="7"/>
-<property name="compile.debug"           value="yes"/>
-<property name="compile.optimize"        value="yes"/>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  get-version
@@ -243,57 +236,6 @@ target: javadoc
   <replace dir="${docs}/html/" token="java.lang." value="totalcross.lang."><include name="**/*.html"/></replace>
 
   <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: samples
-
--description:
-        build the TotalCross samples
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="samples" description="build all the samples">
-   <delete dir="${dist}/samples" failonerror="no" />
-   <mkdir dir="${dist}/samples" />
-
-   <property name="samples.includes" value="tc/samples"/>
-   <copy todir="${output}/classes" verbose="true">
-      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.pkg, **/*.mp3, **/*.tcz, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
-   	<fileset dir="${resources}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.pkg, **/*.mp3, **/*.tcz, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
-   </copy>
-
-   <subant target="deploy-app" inheritall="yes">
-      <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
-   </subant>
-</target>
-
-<target name="deploy-app">
-
-   <echo message="deploy the ${app.name} package file" />
-   <property name="target.dir" value="${dist}/samples/${app.name}" />
-   <mkdir dir="${target.dir}" />
-
-   <!-- win32 packaging not supported on Linux -->
-   <condition property="supportedPlatforms" value="-iphone -linux">
-	<os family="unix"/>
-   </condition>
-   <property name="supportedPlatforms" value="-all"/>	
-	
-	<java classname="tc.Deploy" fork="yes" dir="${target.dir}">
-      <classpath>
-           <pathelement location="${output}/classes"/>
-           <pathelement location="${sdk.root}"/>
-	       <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-	       <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-	       <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
- 	       <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-       </classpath>
-       <arg value="${output}/classes/tc/samples/${app.srcdir}/${app.name}.class"/>
-       <arg line="${tcdeploy_line}"/>
-       <arg line="${supportedPlatforms}"/>
-       <arg line="/r 5443444B314891CE3D2DD791"/>
-   </java>
-   <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
 
 </project>
