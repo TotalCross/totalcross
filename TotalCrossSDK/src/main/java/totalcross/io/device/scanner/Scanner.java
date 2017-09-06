@@ -26,6 +26,7 @@ import totalcross.sys.Vm;
 import totalcross.ui.Control;
 import totalcross.ui.Window;
 import totalcross.ui.dialog.InputBox;
+import totalcross.util.concurrent.Lock;
 
 /**
  * Scanner accesses some popular barcode scanners.
@@ -77,16 +78,12 @@ public class Scanner
 
   /** Set this listener to send all Scanner events to its onEvent method. */
   public static Control listener; // maybe theres another better way to do this...
-
-
-  static
-  {
-    if (Settings.isWindowsCE())
-    {
+  
+  private static Runnable scannerLoader = () -> {
+    if (Settings.isWindowsCE()) {
       if ("Marvell".equalsIgnoreCase(Settings.deviceId) || "CipherLab Inc".equalsIgnoreCase(Settings.deviceId)) {
         driverLoaded = Vm.attachNativeLibrary("OpticonH16");
-      }
-      else {
+      } else {
         driverLoaded = Vm.attachNativeLibrary("Motorola") || 
             Vm.attachNativeLibrary("Dolphin") || 
             Vm.attachNativeLibrary("Intermec") || 
@@ -97,7 +94,27 @@ public class Scanner
         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
       }
     }
+  };
+  
+  private static Lock lock = new Lock();
+  private static Runnable doLoad = () -> {
+    synchronized (lock) {
+      doLoad = () -> {};
+      if (scannerLoader != null) {
+        scannerLoader.run();
+        scannerLoader = null;
+      }
+    }
+  };
+  
+  public static void proprietaryScanLoad(Runnable scanLoad) {
+    synchronized (lock) {
+      if (scanLoad != null) {
+        Scanner.scannerLoader = scanLoad;
+      }
+    }
   }
+  
 
   /**
    * Activate the scanner. Return true if the scanner could be activated,
@@ -110,6 +127,7 @@ public class Scanner
    */
   public static boolean activate()
   {
+	doLoad.run();
     isActive = scannerActivate();
     scanManagerVersion = getScanManagerVersion();
     return isActive;

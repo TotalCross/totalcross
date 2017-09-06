@@ -1,10 +1,22 @@
 import java.util.regex.*
 import org.apache.tools.ant.filters.*
 
+buildscript {
+  repositories {
+    maven {
+      url 'https://plugins.gradle.org/m2/'
+    }
+  }
+  dependencies {
+    classpath 'gradle.plugin.me.tatarka:gradle-retrolambda:3.7.0'
+  }
+}
+
+apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.7
+sourceCompatibility = 1.8
 version = '4.0.2'
 group = 'com.totalcross'
 
@@ -13,6 +25,10 @@ compileJava.options.encoding = 'UTF-8'
 
 configurations { 
 	obfuscatedArchive
+}
+
+retrolambda {
+  javaVersion JavaVersion.VERSION_1_7
 }
 
 jar {
