@@ -339,8 +339,8 @@ public class FontGenerator
         pf.rowWords    = ((totalBits+15) / 16);
         pf.rowWords    = (((int)(pf.rowWords+1)/2)*2); // guich@400_67
         pf.owTLoc      = (pf.rowWords*pf.maxHeight+(pf.lastChar-pf.firstChar)+8);
-        pf.debugParams();
         if (detailed>=1) {
+          pf.debugParams();
           println("totalBits: "+totalBits+", rowWords: "+pf.rowWords);
         }
 
