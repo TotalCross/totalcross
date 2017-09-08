@@ -625,6 +625,32 @@ target: buildWinCE
     </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: vs2008
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="buildVisualStudio2008" >
+   <echo message="GENERATING WIN32 and WINCE"/>
+   
+   <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
+   </exec>
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.sln /project Litebase /rebuild "DEMO Release|Win32"'/>
+   </exec>
+	
+    <exec executable="${msvc.path}" failonerror="yes">
+        <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
+    </exec>
+    <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+      <fileset dir="${sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+    </copy>
+    <delete failonerror="no">
+        <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+    </delete>
+</target>
+
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
  
