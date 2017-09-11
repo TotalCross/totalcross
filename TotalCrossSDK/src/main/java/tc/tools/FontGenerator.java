@@ -281,14 +281,14 @@ public class FontGenerator
             int w = r.width+r.height/5; // +1 for interchar spacing - guich@560_15: use java's if monospaced font
 
             // guich@tc126_44: skip chars above normal
-            if (wW == 0 && ch == 'W') {
-              wW = w;
-            } else
-              if (wW > 0 && w > wW)
-              {
-                println("Skipped char "+ch+" "+ characterAsString +": "+w);
+            if (skipBigChars) {
+              if (wW == 0 && ch == 'W') {
+                wW = w;
+              } else if (wW > 0 && w > wW) {
+                println("Skipped char " + ch + " " + characterAsString + ": " + w);
                 continue;
               }
+            }
 
             int h = r.height;
             int gap = x - r.x;
