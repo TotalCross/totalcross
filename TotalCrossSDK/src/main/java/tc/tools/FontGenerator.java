@@ -260,7 +260,7 @@ public class FontGenerator
           g.setColor(java.awt.Color.white);
           g.fillRect(0,0,width,height);
           g.setColor(java.awt.Color.black);
-          if (ch > 255 && !f.canDisplay((char)ch)) // guich@tc115_69
+          if (ch > 255 && !f.canDisplay(ch)) // guich@tc115_69
           {
             System.out.println("Warning! The true type font cannot display the character number "+i+". Character will be replaced by space.");
             ch = ' ';
