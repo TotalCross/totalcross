@@ -256,6 +256,7 @@ public class FontGenerator
         for (i = ini; i <= end; i++)
         {
           int ch = i;
+          final String characterAsString = new String(new int[] { ch }, 0, 1);
           g.setColor(java.awt.Color.white);
           g.fillRect(0,0,width,height);
           g.setColor(java.awt.Color.black);
@@ -264,7 +265,7 @@ public class FontGenerator
             System.out.println("Warning! The true type font cannot display the character number "+i+". Character will be replaced by space.");
             ch = ' ';
           }
-          g.drawString(totalcross.sys.Convert.toString((char)ch), x, height>>2);
+          g.drawString(characterAsString, x, height>>2);
 
           totalcross.ui.gfx.Rect r = computeBounds(getPixels(img, width,height), width);
 
@@ -285,7 +286,7 @@ public class FontGenerator
             } else
               if (wW > 0 && w > wW)
               {
-                println("Skipped char "+ch+" "+(char)ch+": "+w);
+                println("Skipped char "+ch+" "+ characterAsString +": "+w);
                 continue;
               }
 
@@ -296,7 +297,7 @@ public class FontGenerator
             gaps[i] = (byte)gap;//<=0 ? 1 : 0; // most chars Java puts 1 pixel away; some chars Java puts one pixel near; for those chars, we make them one pixel right
             widths[i] = w;
             if (detailed==1) {
-              println("Width of "+(char)ch+" = "+widths[i]+" - gap: "+gap);
+              println("Width of "+ characterAsString +" = "+widths[i]+" - gap: "+gap);
             }
           }
         }
