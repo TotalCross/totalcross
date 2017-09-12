@@ -41,10 +41,7 @@ package tc.tools;
 
 import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStreamLE;
@@ -79,7 +76,7 @@ public class FontGenerator
   String fontName;
   PalmFont pf;
   int antialiased;
-  Vector newRanges;
+  List<Range> newRanges;
   java.awt.Component comp;
   static IntVector sizes = new IntVector(30);
   boolean skipBigChars;
@@ -90,8 +87,8 @@ public class FontGenerator
     String sizesArg=null;
     comp = new java.awt.Frame();
     comp.addNotify();
-    newRanges = new Vector();
-    newRanges.addElement(new Range(32, 255, "u0")); // default range
+    newRanges = new ArrayList<>();
+    newRanges.add(new Range(32, 255, "u0")); // default range
     String jdkversion = System.getProperty("java.version");
     if (jdkversion.startsWith("1.1.") || jdkversion.startsWith("1.2.")){
       throw new Exception("This program requires JDK version greater or equal than 1.3!");
@@ -221,7 +218,7 @@ public class FontGenerator
   }
 
 
-  private void convertFont(Vector v, java.awt.Font f, String fileName, Vector newRanges, boolean isMono)
+  private void convertFont(Vector v, java.awt.Font f, String fileName, List<Range> newRanges, boolean isMono)
   {
     java.awt.FontMetrics fm = comp.getFontMetrics(f);
     final int width = fm.charWidth('@')*4;
@@ -255,7 +252,7 @@ public class FontGenerator
       String backs = ""+back+back+back+back+back+back;
       for (int ri = 0; ri < n; ri++)
       {
-        Range rr = (Range)newRanges.items[ri];
+        Range rr = newRanges.get(ri);
         if (detailed == 0) {
           System.out.print(backs+((ri+1)*100/n)+"% ");
         }
@@ -326,7 +323,7 @@ public class FontGenerator
       // now, for each range, compute the totalbits and the chars
       for (int ri = 0; ri < n; ri++)
       {
-        Range rr = (Range)newRanges.items[ri];
+        Range rr = newRanges.get(ri);
         int ini = rr.s;
         int end = rr.e;
         totalBits = 0;
@@ -493,7 +490,7 @@ public class FontGenerator
   private void processRanges(String[] ranges)
   {
     int n = ranges.length,s,e=0,first,last;
-    newRanges = new Vector();
+    newRanges = new ArrayList<>();
     // first we set all bits defined in the given ranges
     IntVector iv = new IntVector();
     iv.ensureBit(65535);
@@ -529,7 +526,7 @@ public class FontGenerator
       if (first != -1)
       {
         Range rr = new Range(first, last, "u"+s);
-        newRanges.addElement(rr);
+        newRanges.add(rr);
         println("Unicode range "+rr.name+": "+rr.s+" - "+rr.e);
       }
     }
