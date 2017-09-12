@@ -41,7 +41,10 @@ package tc.tools;
 
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStreamLE;
@@ -73,6 +76,11 @@ public class FontGenerator
       s = ss; 
       e = ee; 
       name=nn;
+    }
+    
+    @Override
+    public String toString() {
+      return "Unicode range " + name + ": " + s + " - " + e;
     }
   }
 
@@ -148,7 +156,6 @@ public class FontGenerator
           } catch (RuntimeException e) {
             throw new Exception("Invalid range '" + extraArgs[i] + "' is not in the format 'start-end'", e);
           }
-          newRanges = processRanges(newRanges);
         } else {
           throw new Exception("Invalid argument: " + extraArgs[i]);
         }
@@ -187,14 +194,14 @@ public class FontGenerator
       }
     Vector v = new Vector(30);
 
-    for (i = 0; i < sizes.size(); i++)
-    {
+    for (i = 0; i < sizes.size(); i++) {
       final int s = sizes.items[i];
       final Font f = getFont(fontName, noBold ? java.awt.Font.PLAIN : java.awt.Font.BOLD, s);
-      
-      convertFont(v, f, outName+"$p"+s, newRanges, isMono);
+
+      newRanges = processRanges(f, newRanges);
+      convertFont(v, f, outName + "$p" + s, newRanges, isMono);
       if (!noBold) {
-        convertFont(v, f, outName+"$b"+s, newRanges, isMono);
+        convertFont(v, f, outName + "$b" + s, newRanges, isMono);
       }
     }
 
@@ -489,41 +496,42 @@ public class FontGenerator
    Internal ranges are stored as 0-255, 256-511, 512-767, ...
    So, 160-383 is splitted into 160-255, 256-383
    */
-  private List<Range> processRanges(List<Range> ranges) {
-    List<Range> newRanges = new ArrayList<>();
-    int s, e = 0, first, last;
-    // first we set all bits defined in the given ranges
-    IntVector iv = new IntVector();
-    iv.ensureBit(65535);
-    iv.setBit(' ', true); // MUST include the space in the range
+  private List<Range> processRanges(Font f, List<Range> ranges) {
+    // Generate full integer list, checking each character
+    final Set<Integer> set = new HashSet<>();
     for (Range range : ranges) {
-      s = range.s;
-      e = range.e;
-      while (s <= e) {
-        iv.setBit(s++, true);
-      }
-    }
-    int max = e / 256 + 1;
-    // now we create the ranges in 256-char groups.
-    for (int i = 0; i < max; i++) {
-      s = i * 256;
-      e = (i + 1) * 256 - 1;
-      first = last = -1;
-      // find the first and the last bit set in the range
-      for (int j = s; j <= e; j++) {
-        if (iv.isBitSet(j)) {
-          if (first == -1) {
-            first = j;
-          }
-          last = j;
+      final int first = range.s;
+      final int last = range.e;
+      for (int k = first; k <= last; k++) {
+        if (f.canDisplay(k)) {
+          set.add(Integer.valueOf(k));
         }
       }
-      if (first != -1) {
-        Range rr = new Range(first, last, "u" + s);
-        newRanges.add(rr);
-        println("Unicode range " + rr.name + ": " + rr.s + " - " + rr.e);
+    }
+
+    // Converts the integer set into an ordered list
+    List<Integer> list = new ArrayList<>(set);
+    Collections.sort(list);
+
+    // split list into ranges of size 256
+    int start = 0;
+    final List<Range> newRanges = new ArrayList<>();
+
+    int section = list.get(start) / 256;
+    for (int k = 1; k < list.size(); k++) {
+      if ((list.get(k) / 256) > section) {
+        final Range r = new Range(list.get(start), list.get(k - 1), "u" + (section * 256));
+        newRanges.add(r);
+        println(r.toString());
+        start = k;
+        section = list.get(start) / 256;
       }
     }
+    section = list.get(start) / 256;
+    final Range r = new Range(list.get(start), list.get(list.size() - 1), "u" + (section * 256));
+    newRanges.add(r);
+    println(r.toString());
+
     return newRanges;
   }
 
@@ -562,7 +570,7 @@ public class FontGenerator
         println("range 32-255. Using this option, you can pass ranges in the form");
         println("\"start0-end0 start1-end1 start2-end2 ...\", which creates a file containing the");
         println("characters ranging from \"startN <= c <= endN\". For example:");
-        println("\"/u 32-255 256-383 402-402 20284-40869\". The ranges must be in increased order.");
+        println("\"/u 32-255 256-383 20284-40869 402-402 \". The ranges may be unordered and overlapping ranges (like 32-160 128-255) are correctly handled.");
         println("The /u option must be the LAST option used.");
         println("");
         println("When creating unicode fonts of a wide range, using options /nobold");
