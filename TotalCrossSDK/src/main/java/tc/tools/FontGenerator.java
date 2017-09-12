@@ -40,6 +40,11 @@
 package tc.tools;
 
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStreamLE;
@@ -92,6 +97,7 @@ public class FontGenerator
       throw new Exception("This program requires JDK version greater or equal than 1.3!");
     }
     String outName = fontName; // guich@401_11
+    String[] ranges = null;
     boolean noBold = false;
     boolean isMono = false;
     for (i=1; i < extraArgs.length; i++) {
@@ -137,7 +143,7 @@ public class FontGenerator
                       else
                         if (argLow.startsWith("/u"))
                         {
-                          String[] ranges = new String[extraArgs.length-i-1];
+                          ranges = new String[extraArgs.length-i-1];
                           for (int k =0; ++i < extraArgs.length;) {
                             if ((ranges[k++] = extraArgs[i]).indexOf('-') < 0) {
                               throw new Exception("Invalid range '"+extraArgs[i]+"' is not in the format 'start-end'");
@@ -184,10 +190,12 @@ public class FontGenerator
 
     for (i = 0; i < sizes.size(); i++)
     {
-      int s = sizes.items[i];
-      convertFont(v, getFont(fontName, java.awt.Font.PLAIN, s), outName+"$p"+s, newRanges, isMono);
+      final int s = sizes.items[i];
+      final Font f = getFont(fontName, noBold ? java.awt.Font.PLAIN : java.awt.Font.BOLD, s);
+      
+      convertFont(v, f, outName+"$p"+s, newRanges, isMono);
       if (!noBold) {
-        convertFont(v, getFont(fontName, java.awt.Font.BOLD, s), outName+"$b"+s, newRanges, isMono);
+        convertFont(v, f, outName+"$b"+s, newRanges, isMono);
       }
     }
 
