@@ -67,6 +67,9 @@ public class FontGenerator
 
     Range(int ss, int ee, String nn) 
     {
+      if (ss > ee) {
+        throw new IllegalArgumentException("End must be after start");
+      }
       s = ss; 
       e = ee; 
       name=nn;
@@ -76,7 +79,6 @@ public class FontGenerator
   String fontName;
   PalmFont pf;
   int antialiased;
-  List<Range> newRanges;
   java.awt.Component comp;
   static IntVector sizes = new IntVector(30);
   boolean skipBigChars;
@@ -87,14 +89,13 @@ public class FontGenerator
     String sizesArg=null;
     comp = new java.awt.Frame();
     comp.addNotify();
-    newRanges = new ArrayList<>();
+    List<Range> newRanges = new ArrayList<>();
     newRanges.add(new Range(32, 255, "u0")); // default range
     String jdkversion = System.getProperty("java.version");
     if (jdkversion.startsWith("1.1.") || jdkversion.startsWith("1.2.")){
       throw new Exception("This program requires JDK version greater or equal than 1.3!");
     }
     String outName = fontName; // guich@401_11
-    String[] ranges = null;
     boolean noBold = false;
     boolean isMono = false;
     for (i=1; i < extraArgs.length; i++) {
@@ -137,19 +138,20 @@ public class FontGenerator
                           detailed = 0;
                         }
                       }
-                      else
-                        if (argLow.startsWith("/u"))
-                        {
-                          ranges = new String[extraArgs.length-i-1];
-                          for (int k =0; ++i < extraArgs.length;) {
-                            if ((ranges[k++] = extraArgs[i]).indexOf('-') < 0) {
-                              throw new Exception("Invalid range '"+extraArgs[i]+"' is not in the format 'start-end'");
-                            }
-                          }
-                          processRanges(ranges);
-                        } else {
-                          throw new Exception("Invalid argument: "+extraArgs[i]);
-                        }
+        else if (argLow.startsWith("/u")) {
+          newRanges = new ArrayList<>();
+          try {
+            while (++i < extraArgs.length) {
+              final String[] tokens = extraArgs[i].split("[^0-9]");
+              newRanges.add(new Range(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]), null));
+            }
+          } catch (RuntimeException e) {
+            throw new Exception("Invalid range '" + extraArgs[i] + "' is not in the format 'start-end'", e);
+          }
+          newRanges = processRanges(newRanges);
+        } else {
+          throw new Exception("Invalid argument: " + extraArgs[i]);
+        }
       }
     }
 
@@ -487,49 +489,42 @@ public class FontGenerator
    Internal ranges are stored as 0-255, 256-511, 512-767, ...
    So, 160-383 is splitted into 160-255, 256-383
    */
-  private void processRanges(String[] ranges)
-  {
-    int n = ranges.length,s,e=0,first,last;
-    newRanges = new ArrayList<>();
+  private List<Range> processRanges(List<Range> ranges) {
+    List<Range> newRanges = new ArrayList<>();
+    int s, e = 0, first, last;
     // first we set all bits defined in the given ranges
     IntVector iv = new IntVector();
     iv.ensureBit(65535);
-    iv.setBit(' ',true); // MUST include the space in the range
-    for (int i =0; i < n; i++)
-    {
-      String r = ranges[i];
-      String s1 = r.substring(0,r.indexOf('-'));
-      String s2 = r.substring(r.indexOf('-')+1);
-      s = Integer.parseInt(s1);
-      e = Integer.parseInt(s2);
+    iv.setBit(' ', true); // MUST include the space in the range
+    for (Range range : ranges) {
+      s = range.s;
+      e = range.e;
       while (s <= e) {
-        iv.setBit(s++,true);
+        iv.setBit(s++, true);
       }
     }
-    int max = e/256+1;
+    int max = e / 256 + 1;
     // now we create the ranges in 256-char groups.
-    for (int i =0; i < max; i++)
-    {
+    for (int i = 0; i < max; i++) {
       s = i * 256;
-      e = (i+1)*256-1;
+      e = (i + 1) * 256 - 1;
       first = last = -1;
       // find the first and the last bit set in the range
       for (int j = s; j <= e; j++) {
-        if (iv.isBitSet(j))
-        {
+        if (iv.isBitSet(j)) {
           if (first == -1) {
             first = j;
           }
           last = j;
         }
       }
-      if (first != -1)
-      {
-        Range rr = new Range(first, last, "u"+s);
+      if (first != -1) {
+        Range rr = new Range(first, last, "u" + s);
         newRanges.add(rr);
-        println("Unicode range "+rr.name+": "+rr.s+" - "+rr.e);
+        println("Unicode range " + rr.name + ": " + rr.s + " - " + rr.e);
       }
     }
+    return newRanges;
   }
 
   public static int[] getPixels(java.awt.Image img, int width, int height)
