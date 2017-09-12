@@ -216,8 +216,8 @@ public class FontGenerator
   private void convertFont(Vector v, java.awt.Font f, String fileName, Vector newRanges, boolean isMono)
   {
     java.awt.FontMetrics fm = comp.getFontMetrics(f);
-    int width = fm.charWidth('@')*4;
-    int height = fm.getHeight()*4;
+    final int width = fm.charWidth('@')*4;
+    final int height = fm.getHeight()*4;
 
     java.awt.Image img = comp.createImage(width,height);
     java.awt.Graphics2D g = (java.awt.Graphics2D)img.getGraphics();
