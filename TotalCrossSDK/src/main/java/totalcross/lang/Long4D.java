@@ -73,4 +73,8 @@ public class Long4D extends Number4D implements Comparable<Long4D> {
   public int compareTo(Long4D o) {
     return this.v < o.v ? -1 : (this.v == o.v ? 0 : +1);
   }
+
+  public static String toString(long i, int radix) {
+    return Convert.toString(i, radix);
+  }
 }
