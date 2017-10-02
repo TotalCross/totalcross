@@ -6,7 +6,8 @@ public class SmsManager {
 
   private static SmsManager instance;
 
-  private SmsManager() {}
+  private SmsManager() {
+  }
 
   /** Get the default SmsManager. */
   public static SmsManager getDefault() {

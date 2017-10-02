@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 import totalcross.sys.Vm;
@@ -27,8 +25,7 @@ import totalcross.ui.MainWindow;
  * the addTimer() and removeTimer() methods present in the Control class.
  */
 @Deprecated
-public class PushNotificationEvent extends Event
-{
+public class PushNotificationEvent extends Event {
   /** The event type for a token for this device being received by server */
   public static final int TOKEN_RECEIVED = 360;
   /** The event type for a message being received by server */
@@ -38,15 +35,13 @@ public class PushNotificationEvent extends Event
   public String message;
 
   @Deprecated
-  public PushNotificationEvent(int type, String msg)
-  {
+  public PushNotificationEvent(int type, String msg) {
     super(type, MainWindow.getMainWindow(), Vm.getTimeStamp());
     message = msg;
   }
 
   @Override
-  public String toString()
-  {
-    return (type == TOKEN_RECEIVED ? "TOKEN_RECEIVED" : "MESSAGE_RECEIVED")+": "+message;
+  public String toString() {
+    return (type == TOKEN_RECEIVED ? "TOKEN_RECEIVED" : "MESSAGE_RECEIVED") + ": " + message;
   }
 }

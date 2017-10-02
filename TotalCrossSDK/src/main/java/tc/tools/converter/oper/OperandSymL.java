@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandSymL extends OperandSym
-{
-  public OperandSymL(int index)
-  {
+public class OperandSymL extends OperandSym {
+  public OperandSymL(int index) {
     super(opr_symL, index);
     nWords = 2;
   }

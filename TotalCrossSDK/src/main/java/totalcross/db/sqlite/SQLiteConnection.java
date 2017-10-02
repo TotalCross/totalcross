@@ -47,22 +47,21 @@ import totalcross.sql.ResultSet;
 import totalcross.sql.Statement;
 import totalcross.util.Hashtable;
 
-public class SQLiteConnection implements Connection
-{
+public class SQLiteConnection implements Connection {
   //    private static final String RESOURCE_NAME_PREFIX = ":resource:";
 
   private final String url;
-  private String       fileName;
-  private DB           db                   = null;
-  private MetaData     meta                 = null;
-  private boolean      autoCommit           = true;
-  private int          transactionIsolation = TRANSACTION_SERIALIZABLE;
-  private int          busyTimeout              = 0;
-  private final int    openModeFlags;
-  private SQLiteConfig.TransactionMode transactionMode      = SQLiteConfig.TransactionMode.DEFFERED;
+  private String fileName;
+  private DB db = null;
+  private MetaData meta = null;
+  private boolean autoCommit = true;
+  private int transactionIsolation = TRANSACTION_SERIALIZABLE;
+  private int busyTimeout = 0;
+  private final int openModeFlags;
+  private SQLiteConfig.TransactionMode transactionMode = SQLiteConfig.TransactionMode.DEFFERED;
 
-  private final static Hashtable/*<TransactionMode, String>*/ beginCommandMap =
-      new Hashtable/*<SQLiteConfig.TransactionMode, String>*/(10);
+  private final static Hashtable/*<TransactionMode, String>*/ beginCommandMap = new Hashtable/*<SQLiteConfig.TransactionMode, String>*/(
+      10);
 
   static {
     beginCommandMap.put(SQLiteConfig.TransactionMode.DEFFERED, "begin;");
@@ -108,8 +107,7 @@ public class SQLiteConnection implements Connection
 
     open(openModeFlags, config.busyTimeout);
 
-    if (fileName.startsWith("file:") && fileName.indexOf("cache=") == -1)
-    {   // URI cache overrides flags
+    if (fileName.startsWith("file:") && fileName.indexOf("cache=") == -1) { // URI cache overrides flags
       db.shared_cache(config.isEnabledSharedCache());
     }
     db.enable_load_extension(config.isEnabledLoadExtension());
@@ -131,14 +129,14 @@ public class SQLiteConnection implements Connection
         NativeDB.load();
       }
       db = new NativeDB();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SQLException("Error opening connection", e);
     }
 
     db.open(this, fileName, openModeFlags);
     setBusyTimeout(busyTimeout);
   }
+
   static boolean isLoaded;
 
   /**
@@ -353,9 +351,8 @@ public class SQLiteConnection implements Connection
   public void setReadOnly(boolean ro) throws SQLException {
     // trying to change read-only flag
     if (ro != isReadOnly()) {
-      throw new SQLException(
-          "Cannot change read-only flag after establishing a connection." +
-          " Use SQLiteConfig#setReadOnly and SQLiteConfig.createConnection().");
+      throw new SQLException("Cannot change read-only flag after establishing a connection."
+          + " Use SQLiteConfig#setReadOnly and SQLiteConfig.createConnection().");
     }
   }
 
@@ -385,7 +382,8 @@ public class SQLiteConnection implements Connection
    * @see java.sql.Connection#clearWarnings()
    */
   @Override
-  public void clearWarnings() throws SQLException {}
+  public void clearWarnings() throws SQLException {
+  }
 
   /**
    * @see java.sql.Connection#getWarnings()
@@ -414,7 +412,7 @@ public class SQLiteConnection implements Connection
       return;
     }
     autoCommit = ac;
-    db.exec(autoCommit ? "commit;" : (String)beginCommandMap.get(transactionMode));
+    db.exec(autoCommit ? "commit;" : (String) beginCommandMap.get(transactionMode));
   }
 
   /**
@@ -427,7 +425,7 @@ public class SQLiteConnection implements Connection
       throw new SQLException("database in auto-commit mode");
     }
     db.exec("commit;");
-    db.exec((String)beginCommandMap.get(transactionMode));
+    db.exec((String) beginCommandMap.get(transactionMode));
   }
 
   /**
@@ -440,7 +438,7 @@ public class SQLiteConnection implements Connection
       throw new SQLException("database in auto-commit mode");
     }
     db.exec("rollback;");
-    db.exec((String)beginCommandMap.get(transactionMode));
+    db.exec((String) beginCommandMap.get(transactionMode));
   }
 
   /**
@@ -448,8 +446,7 @@ public class SQLiteConnection implements Connection
    */
   @Override
   public Statement createStatement() throws SQLException {
-    return createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
-        ResultSet.CLOSE_CURSORS_AT_COMMIT);
+    return createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
   }
 
   /**
@@ -522,6 +519,6 @@ public class SQLiteConnection implements Connection
    */
   String getDriverVersion() {
     // Used to supply DatabaseMetaData.getDriverVersion()
-    return  db != null ? "native" : "unloaded";
+    return db != null ? "native" : "unloaded";
   }
 }

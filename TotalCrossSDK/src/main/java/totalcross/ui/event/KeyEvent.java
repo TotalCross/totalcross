@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 import totalcross.sys.SpecialKeys;
@@ -24,8 +22,7 @@ import totalcross.sys.SpecialKeys;
 /**
  * KeyEvent is a key press event.
  */
-public class KeyEvent extends Event
-{
+public class KeyEvent extends Event {
   /** The event type for a key press event. Device keys are handled in the SPECIAL_KEY_PRESS event. */
   public static final int KEY_PRESS = 100;
   /** The event type for a focus being transfered to this control
@@ -73,9 +70,8 @@ public class KeyEvent extends Event
    * @see #ACTION_KEY_PRESS
    * @see #SPECIAL_KEY_PRESS
    */
-  public KeyEvent(int type, int key, int modifiers)
-  {
-    if (type < KEY_PRESS || type > SPECIAL_KEY_PRESS){
+  public KeyEvent(int type, int key, int modifiers) {
+    if (type < KEY_PRESS || type > SPECIAL_KEY_PRESS) {
       throw new IllegalArgumentException();
     }
 
@@ -91,6 +87,7 @@ public class KeyEvent extends Event
   {
     return key == SpecialKeys.ACTION || key == SpecialKeys.ENTER;
   }
+
   /** Returns true if the key press is any kind of the possible ones that means UP.
    * @since SuperWaba 5.5
    */
@@ -98,6 +95,7 @@ public class KeyEvent extends Event
   {
     return key == SpecialKeys.PAGE_UP || key == SpecialKeys.UP;
   }
+
   /** Returns true if the key press is any kind of the possible ones that means Down.
    * @since SuperWaba 5.5
    */
@@ -105,6 +103,7 @@ public class KeyEvent extends Event
   {
     return key == SpecialKeys.PAGE_DOWN || key == SpecialKeys.DOWN;
   }
+
   /** Returns true if the key press is any kind of the possible ones that means forward
    * (TAB, PAGE_DOWN, DOWN, RIGHT, etc).
    * @since SuperWaba 5.5
@@ -113,6 +112,7 @@ public class KeyEvent extends Event
   {
     return key == SpecialKeys.RIGHT || key == SpecialKeys.TAB || isDownKey();
   }
+
   /** Returns true if the key press is any kind of the possible ones that means previous
    * (PAGE_UP, UP, LEFT, etc)
    * @since SuperWaba 5.5
@@ -123,16 +123,19 @@ public class KeyEvent extends Event
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String s = "";
-    switch (type)
-    {
-    case KEY_PRESS: s = "KEY_PRESS"; break;
-    case ACTION_KEY_PRESS: s = "ACTION_KEY_PRESS"; break;
-    case SPECIAL_KEY_PRESS: s = "SPECIAL_KEY_PRESS"; break;
+    switch (type) {
+    case KEY_PRESS:
+      s = "KEY_PRESS";
+      break;
+    case ACTION_KEY_PRESS:
+      s = "ACTION_KEY_PRESS";
+      break;
+    case SPECIAL_KEY_PRESS:
+      s = "SPECIAL_KEY_PRESS";
+      break;
     }
-    return s+" key: "+key+" "+super.toString();
+    return s + " key: " + key + " " + super.toString();
   }
 }
-

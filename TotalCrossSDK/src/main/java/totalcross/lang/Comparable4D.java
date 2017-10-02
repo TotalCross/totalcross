@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.lang;
 
 /**
@@ -68,8 +67,7 @@ package totalcross.lang;
  * @since 1.2
  * @status updated to 1.5
  */
-public interface Comparable4D<T>
-{
+public interface Comparable4D<T> {
   /**
    * Compares this object with another, and returns a numerical result based
    * on the comparison.  If the result is negative, this object sorts less

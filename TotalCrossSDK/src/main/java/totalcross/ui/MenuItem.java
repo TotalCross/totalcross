@@ -14,16 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 /** This class represents a menu item. It is used in conjunction with the MenuBar and MenuBarDropDown classes.
  * @since SuperWaba 5.8
  */
 
-public class MenuItem
-{
+public class MenuItem {
   /** The menu item's caption. */
   public String caption;
 
@@ -34,14 +31,13 @@ public class MenuItem
   public boolean isChecked;
 
   /** True if this item is enabled, false otherwise. */
-  public boolean isEnabled=true;
+  public boolean isEnabled = true;
 
   boolean isCheckable;
   boolean isSeparator;
 
   /** Constructs a separator menu item. */
-  public MenuItem()
-  {
+  public MenuItem() {
     isSeparator = true;
     caption = "";
   }
@@ -50,24 +46,21 @@ public class MenuItem
    * use the other constructor with 2 parameters), but can be enabled/disabled.
    * @see #MenuItem(String, boolean) 
    */
-  public MenuItem(String caption)
-  {
+  public MenuItem(String caption) {
     this.caption = caption;
   }
 
   /** Constructs a menu item with the given caption and the given default state for the check.
    * This item CAN be checked and can be enabled/disabled as well.
    */
-  public MenuItem(String caption, boolean isChecked)
-  {
+  public MenuItem(String caption, boolean isChecked) {
     this.caption = caption;
     this.isCheckable = true;
     this.isChecked = isChecked;
   }
 
   /** Returns true if this menu item is checkable. */
-  public boolean isCheckable()
-  {
+  public boolean isCheckable() {
     return this.isCheckable;
   }
 }

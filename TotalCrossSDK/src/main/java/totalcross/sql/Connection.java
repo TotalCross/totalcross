@@ -3,8 +3,7 @@ package totalcross.sql;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 
-public interface Connection
-{
+public interface Connection {
   public static final int TRANSACTION_NONE = 0;
   public static final int TRANSACTION_READ_UNCOMMITTED = 1;
   public static final int TRANSACTION_READ_COMMITTED = 2;
@@ -47,5 +46,6 @@ public interface Connection
 
   public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException;
 
-  public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException;
+  public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
+      throws SQLException;
 }

@@ -37,8 +37,7 @@ import totalcross.crypto.digest.SHA256Digest;
 /**
  * This class implements the PKCS #1 signature algorithm.
  */
-public class PKCS1Signature extends Signature
-{
+public class PKCS1Signature extends Signature {
   protected Digest digest;
   private String algorithm;
 
@@ -69,87 +68,69 @@ public class PKCS1Signature extends Signature
    * @return The name of the algorithm used. 
    */
   @Override
-  public String getAlgorithm()
-  {
+  public String getAlgorithm() {
     return algorithm;
   }
 
   @Override
-  protected boolean isKeySupported(Key key, int operation)
-  {
-    return (operation == OPERATION_SIGN && key instanceof RSAPrivateKey) || (operation == OPERATION_VERIFY && key instanceof RSAPublicKey);
+  protected boolean isKeySupported(Key key, int operation) {
+    return (operation == OPERATION_SIGN && key instanceof RSAPrivateKey)
+        || (operation == OPERATION_VERIFY && key instanceof RSAPublicKey);
   }
 
   @Override
   @ReplacedByNativeOnDeploy
-  protected void doReset() throws NoSuchAlgorithmException, CryptoException
-  {
-    try
-    {
+  protected void doReset() throws NoSuchAlgorithmException, CryptoException {
+    try {
       KeyFactory factory = KeyFactory.getInstance("RSA");
-      if (operation == OPERATION_SIGN)
-      {
-        RSAPrivateKey privKey = (RSAPrivateKey)key;
+      if (operation == OPERATION_SIGN) {
+        RSAPrivateKey privKey = (RSAPrivateKey) key;
         BigInteger d = new BigInteger(privKey.getPrivateExponent());
         BigInteger n = new BigInteger(privKey.getModulus());
 
         keyRef = factory.generatePrivate(new RSAPrivateKeySpec(n, d));
-      }
-      else
-      {
-        RSAPublicKey pubKey = (RSAPublicKey)key;
+      } else {
+        RSAPublicKey pubKey = (RSAPublicKey) key;
         BigInteger e = new BigInteger(pubKey.getPublicExponent());
         BigInteger n = new BigInteger(pubKey.getModulus());
 
         keyRef = factory.generatePublic(new RSAPublicKeySpec(n, e));
       }
-    }
-    catch (java.security.NoSuchAlgorithmException e)
-    {
+    } catch (java.security.NoSuchAlgorithmException e) {
       throw new CryptoException(e.getMessage());
-    }      
-    catch (GeneralSecurityException e)
-    {
+    } catch (GeneralSecurityException e) {
       throw new CryptoException(e.getMessage());
     }
   }
 
   @Override
   @ReplacedByNativeOnDeploy
-  protected byte[] doSign(byte[] data) throws CryptoException
-  {
-    try
-    {
-      java.security.Signature engine = (java.security.Signature)signatureRef;
-      engine.initSign((java.security.PrivateKey)keyRef);
+  protected byte[] doSign(byte[] data) throws CryptoException {
+    try {
+      java.security.Signature engine = (java.security.Signature) signatureRef;
+      engine.initSign((java.security.PrivateKey) keyRef);
       engine.update(data);
 
       return engine.sign();
-    }
-    catch (GeneralSecurityException e)
-    {
+    } catch (GeneralSecurityException e) {
       throw new CryptoException(e.getMessage());
     }
   }
 
   @Override
   @ReplacedByNativeOnDeploy
-  protected boolean doVerify(byte[] data, byte[] signature) throws CryptoException
-  {
-    try
-    {
-      java.security.Signature engine = (java.security.Signature)signatureRef;
-      engine.initVerify((java.security.PublicKey)keyRef);
+  protected boolean doVerify(byte[] data, byte[] signature) throws CryptoException {
+    try {
+      java.security.Signature engine = (java.security.Signature) signatureRef;
+      engine.initVerify((java.security.PublicKey) keyRef);
       engine.update(data);
 
       return engine.verify(signature);
-    }
-    catch (GeneralSecurityException e)
-    {
+    } catch (GeneralSecurityException e) {
       throw new CryptoException(e.getMessage());
     }
   }
-  
+
   @ReplacedByNativeOnDeploy
   private void init() throws CryptoException {
     try {

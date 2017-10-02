@@ -9,18 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.ir;
 
-import tc.tools.converter.TCConstants;
 import tc.tools.converter.ir.Instruction.Instruction;
 import tc.tools.converter.regalloc.RegAllocation;
 import tc.tools.converter.tclass.TClassConstants;
 import totalcross.util.Vector;
 
-final public class BasicBlock
-{
+final public class BasicBlock {
   public int number;
   public static int nextNumber;
   public String name;
@@ -55,13 +51,11 @@ final public class BasicBlock
   public BitSet inO; // (O) object
   public BitSet outO;
 
-  public static void init()
-  {
+  public static void init() {
     nextNumber = 0;
   }
 
-  public BasicBlock(String n, CFG cfg, Instruction f, Instruction l, Instruction lf, Instruction rt)
-  {
+  public BasicBlock(String n, CFG cfg, Instruction f, Instruction l, Instruction lf, Instruction rt) {
     number = nextNumber++;
     name = n;
     this.cfg = cfg;
@@ -80,20 +74,18 @@ final public class BasicBlock
     useO = new BitSet(cfg.method.oCount);
     defO = new BitSet(cfg.method.oCount);
 
-    inI  = new BitSet(cfg.method.iCount);
+    inI = new BitSet(cfg.method.iCount);
     outI = new BitSet(cfg.method.iCount);
-    inD  = new BitSet(cfg.method.v64Count);
+    inD = new BitSet(cfg.method.v64Count);
     outD = new BitSet(cfg.method.v64Count);
-    inO  = new BitSet(cfg.method.oCount);
+    inO = new BitSet(cfg.method.oCount);
     outO = new BitSet(cfg.method.oCount);
 
   }
 
-  public Instruction[] vector2Array()
-  {
+  public Instruction[] vector2Array() {
     Vector instructions = cfg.method.insts;
-    if (instructions != null)
-    {
+    if (instructions != null) {
       int i = 0;
       while ((Instruction) instructions.items[i] != first) {
         i++;
@@ -103,10 +95,9 @@ final public class BasicBlock
         i++;
       }
       int endIndex = i;
-      Instruction[] ret = new Instruction[endIndex-startIndex+1];
+      Instruction[] ret = new Instruction[endIndex - startIndex + 1];
       int k = 0;
-      for (i=startIndex; i<=endIndex; i++)
-      {
+      for (i = startIndex; i <= endIndex; i++) {
         ret[k++] = (Instruction) instructions.items[i];
       }
       return ret;
@@ -115,8 +106,7 @@ final public class BasicBlock
     return null;
   }
 
-  public void InitializeDefsAndUses()
-  {
+  public void InitializeDefsAndUses() {
     useI.clear();
     defI.clear();
     useD.clear();
@@ -126,8 +116,7 @@ final public class BasicBlock
 
     Instruction[] block = vector2Array();
 
-    for (int k=block.length-1; k>=0; k--)
-    {
+    for (int k = block.length - 1; k >= 0; k--) {
       Instruction i = block[k];
       BitSet[] ud = i.defsAndUses(this, cfg.method.iCount, cfg.method.v64Count, cfg.method.oCount);
 
@@ -156,20 +145,22 @@ final public class BasicBlock
     }
   }
 
-  public void computeLiveUsesAtInstr(int regType)
-  {
+  public void computeLiveUsesAtInstr(int regType) {
     BitSet currout = null;
 
-    switch (regType)
-    {
-    case TClassConstants.RegI : currout = outI; break;
-    case TClassConstants.RegD : currout = outD; break;
-    case TClassConstants.RegO : currout = outO;
+    switch (regType) {
+    case TClassConstants.RegI:
+      currout = outI;
+      break;
+    case TClassConstants.RegD:
+      currout = outD;
+      break;
+    case TClassConstants.RegO:
+      currout = outO;
     }
 
     Instruction[] block = vector2Array();
-    for (int k=block.length-1; k>=0; k--)
-    {
+    for (int k = block.length - 1; k >= 0; k--) {
       Instruction i = block[k];
       BitSet bset = (BitSet) RegAllocation.liveUses.get(i);
       if (bset != null) {
@@ -179,11 +170,19 @@ final public class BasicBlock
       BitSet[] ud = i.defsAndUses(this, cfg.method.iCount, cfg.method.v64Count, cfg.method.oCount);
       BitSet u = null;
       BitSet d = null;
-      switch (regType)
-      {
-      case TClassConstants.RegI : u = ud[0]; d = ud[3]; break;
-      case TClassConstants.RegD : u = ud[1]; d = ud[4]; break;
-      case TClassConstants.RegO : u = ud[2]; d = ud[5]; break;
+      switch (regType) {
+      case TClassConstants.RegI:
+        u = ud[0];
+        d = ud[3];
+        break;
+      case TClassConstants.RegD:
+        u = ud[1];
+        d = ud[4];
+        break;
+      case TClassConstants.RegO:
+        u = ud[2];
+        d = ud[5];
+        break;
       }
 
       currout = new BitSet(currout);
@@ -192,10 +191,8 @@ final public class BasicBlock
     }
   }
 
-  public void addPred(BasicBlock b)
-  {
-    for (int i=0; i<pred.size(); i++)
-    {
+  public void addPred(BasicBlock b) {
+    for (int i = 0; i < pred.size(); i++) {
       BasicBlock bb = (BasicBlock) pred.items[i];
       if (bb == b) {
         return;
@@ -204,10 +201,8 @@ final public class BasicBlock
     pred.addElement(b);
   }
 
-  public void addSucc(BasicBlock b)
-  {
-    for (int i=0; i<succ.size(); i++)
-    {
+  public void addSucc(BasicBlock b) {
+    for (int i = 0; i < succ.size(); i++) {
       BasicBlock bb = (BasicBlock) succ.items[i];
       if (bb == b) {
         return;
@@ -216,8 +211,7 @@ final public class BasicBlock
     succ.addElement(b);
   }
 
-  public void print()
-  {
+  public void print() {
     System.out.println("\nReference: " + this);
     System.out.println("\nnumber: " + number);
     System.out.println("name: " + name);
@@ -226,31 +220,27 @@ final public class BasicBlock
     System.out.println("instLeft: " + instLeft);
     System.out.println("instRigth: " + instRigth);
     System.out.println("instCases: ");
-    if (instCases != null)
-    {
-      for (int i=0; i<instCases.length; i++) {
+    if (instCases != null) {
+      for (int i = 0; i < instCases.length; i++) {
         System.out.print(instCases.toString());
       }
     }
     System.out.print("basic blocks of the cases: ");
-    if (bbOfCases != null)
-    {
-      for (int i=0; i<bbOfCases.length; i++) {
+    if (bbOfCases != null) {
+      for (int i = 0; i < bbOfCases.length; i++) {
         System.out.print(bbOfCases[i].number + ", ");
       }
     }
 
     System.out.print("\nsuccessors: ");
-    for (int i=0; i<succ.size(); i++)
-    {
-      BasicBlock b = (BasicBlock)succ.items[i];
+    for (int i = 0; i < succ.size(); i++) {
+      BasicBlock b = (BasicBlock) succ.items[i];
       System.out.print(b.number + ", ");
     }
 
     System.out.print("\npredecessors: ");
-    for (int i=0; i<pred.size(); i++)
-    {
-      BasicBlock b = (BasicBlock)pred.items[i];
+    for (int i = 0; i < pred.size(); i++) {
+      BasicBlock b = (BasicBlock) pred.items[i];
       System.out.print(b.number + ", ");
     }
 

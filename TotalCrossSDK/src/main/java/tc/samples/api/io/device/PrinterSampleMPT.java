@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.io.device;
 
 import totalcross.io.Stream;
@@ -26,14 +24,11 @@ import totalcross.ui.dialog.MessageBox;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 
-public class PrinterSampleMPT extends PrinterSampleBase
-{
+public class PrinterSampleMPT extends PrinterSampleBase {
   @Override
-  protected void printSample(Stream s) throws Exception
-  {
+  protected void printSample(Stream s) throws Exception {
     MPTPrinter cp = null;
-    try
-    {
+    try {
       cp = new MPTPrinter(s);
       // change the font and print something
       cp.setFont(false, false, false, false);
@@ -42,14 +37,14 @@ public class PrinterSampleMPT extends PrinterSampleBase
 
       // create a dynamic image...
       int k = 100;
-      MonoImage img = new MonoImage(k,k);
+      MonoImage img = new MonoImage(k, k);
       Graphics g = img.getGraphics();
       g.backColor = Color.WHITE;
-      g.fillRect(0,0,k,k);
+      g.fillRect(0, 0, k, k);
       g.foreColor = Color.BLACK;
-      g.drawRect(0,0,k-1,k-1);
-      g.drawLine(0,0,k,k);
-      g.drawLine(k,0,0,k);
+      g.drawRect(0, 0, k - 1, k - 1);
+      g.drawLine(0, 0, k, k);
+      g.drawLine(k, 0, 0, k);
 
       // ...and print it
       cp.print(img);
@@ -61,18 +56,16 @@ public class PrinterSampleMPT extends PrinterSampleBase
       cp.setFont(false, false, false, false);
 
       // print a png file.
-      try
-      {
+      try {
         cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"));
         cp.newLine();
+      } catch (OutOfMemoryError oome) {
+        add(new Label("No memory to load image"), CENTER, AFTER);
       }
-      catch (OutOfMemoryError oome) {add(new Label("No memory to load image"),CENTER,AFTER);}
 
       cp.newLine(6);
-    }
-    catch (Exception e)
-    {
-      MessageBox.showException(e,true);
+    } catch (Exception e) {
+      MessageBox.showException(e, true);
     }
   }
 }

@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 import java.io.IOException;
@@ -50,8 +48,7 @@ import totalcross.sys.Vm;
  * data is fully flushed (which only occurs after Socket.close).
  */
 
-public class Socket extends Stream
-{
+public class Socket extends Stream {
   /**
    * Stores the timeout value for read operations. The value specifies the
    * number of milliseconds to wait from the time of last activity before
@@ -88,8 +85,7 @@ public class Socket extends Stream
   public static final int DEFAULT_WRITE_TIMEOUT = 2000;
 
   /** For internal use only */
-  protected Socket()
-  {
+  protected Socket() {
   }
 
   /**
@@ -99,9 +95,7 @@ public class Socket extends Stream
    * @param port the port number to connect to
    * @see #Socket(String, int, int, String)
    */
-  public Socket(String host, int port)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
+  public Socket(String host, int port) throws totalcross.net.UnknownHostException, totalcross.io.IOException {
     this(host, port, DEFAULT_OPEN_TIMEOUT, null);
   }
 
@@ -114,8 +108,7 @@ public class Socket extends Stream
    * @see #Socket(String, int, int, String)
    */
   public Socket(String host, int port, int timeout)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
+      throws totalcross.net.UnknownHostException, totalcross.io.IOException {
     this(host, port, timeout, null);
   }
 
@@ -141,12 +134,11 @@ public class Socket extends Stream
    * @throws totalcross.io.IOException
    */
   public Socket(String host, int port, int timeout, String params)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
-    if (port < 0 || port > 65535){
+      throws totalcross.net.UnknownHostException, totalcross.io.IOException {
+    if (port < 0 || port > 65535) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'port': " + port);
     }
-    if (timeout < 0){
+    if (timeout < 0) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'timeout': " + timeout);
     }
 
@@ -167,9 +159,8 @@ public class Socket extends Stream
    * @see #Socket(String, int, int, String)
    */
   public Socket(String host, int port, int timeout, boolean noLinger)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
-    this(host, port, timeout, noLinger ? ("nolinger="+noLinger) : null);
+      throws totalcross.net.UnknownHostException, totalcross.io.IOException {
+    this(host, port, timeout, noLinger ? ("nolinger=" + noLinger) : null);
   }
 
   /**
@@ -184,42 +175,28 @@ public class Socket extends Stream
    * @throws totalcross.io.IOException
    */
   final private void socketCreate(final String host, final int port, final int timeout)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
-    try
-    {
+      throws totalcross.net.UnknownHostException, totalcross.io.IOException {
+    try {
       java.net.Socket socket = new java.net.Socket();
       socketRef = socket;
       socket.connect(new java.net.InetSocketAddress(host, port), timeout);
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new totalcross.io.IOException(e.getMessage());
-    }
-    catch (java.net.UnknownHostException e)
-    {
+    } catch (java.net.UnknownHostException e) {
       throw new totalcross.net.UnknownHostException(e.getMessage());
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
 
-    try
-    {
+    try {
       ((java.net.Socket) socketRef).setSoTimeout(readTimeout);
       myInputStream = ((java.net.Socket) socketRef).getInputStream();
       myOutputStream = ((java.net.Socket) socketRef).getOutputStream();
-    }
-    catch (java.io.IOException e1)
-    {
-      try
-      {
+    } catch (java.io.IOException e1) {
+      try {
         ((java.net.Socket) socketRef).close();
         throw new totalcross.io.IOException(e1.getMessage());
-      }
-      catch (java.io.IOException e2)
-      {
+      } catch (java.io.IOException e2) {
         throw new totalcross.io.IOException(e1.getMessage());
       }
     }
@@ -231,18 +208,14 @@ public class Socket extends Stream
    * @throws totalcross.io.IOException If the socket is closed more than once
    */
   @Override
-  public void close() throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public void close() throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is already closed.");
     }
 
-    try
-    {
+    try {
       nativeClose();
-    }
-    finally
-    {
+    } finally {
       socketRef = null;
     }
   }
@@ -253,14 +226,10 @@ public class Socket extends Stream
    *
    * @throws totalcross.io.IOException
    */
-  final private void nativeClose() throws totalcross.io.IOException
-  {
-    try
-    {
+  final private void nativeClose() throws totalcross.io.IOException {
+    try {
       ((java.net.Socket) this.socketRef).close();
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
   }
@@ -280,18 +249,17 @@ public class Socket extends Stream
    * @throws totalcross.io.IOException
    */
   @Override
-  public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new NullPointerException();
     }
-    if (start < 0 || count < 0 || start + count > buf.length){
+    if (start < 0 || count < 0 || start + count > buf.length) {
       throw new IndexOutOfBoundsException();
     }
-    if (count == 0){
+    if (count == 0) {
       return 0;
     }
 
@@ -302,66 +270,42 @@ public class Socket extends Stream
    * Native implementation for reading and writing bytes from a socket.
    * NOTE: All validation was done by the read/write methods.
    */
-  final private int readWriteBytes(byte buf[], int start, int count, boolean isRead)
-      throws totalcross.io.IOException
-  {
-    if (isRead)
-    {
-      if (myInputStream == null)
-      {
-        try
-        {
+  final private int readWriteBytes(byte buf[], int start, int count, boolean isRead) throws totalcross.io.IOException {
+    if (isRead) {
+      if (myInputStream == null) {
+        try {
           myInputStream = ((java.net.Socket) socketRef).getInputStream();
-        }
-        catch (java.io.IOException e)
-        {
+        } catch (java.io.IOException e) {
           throw new totalcross.io.IOException(e.getMessage());
         }
       }
-      try
-      {
+      try {
         ((java.net.Socket) socketRef).setSoTimeout(readTimeout < 0 ? 0 : readTimeout);
-      }
-      catch (java.net.SocketException e)
-      {
+      } catch (java.net.SocketException e) {
         throw new totalcross.io.IOException(e.getMessage());
       }
 
-      try
-      {
+      try {
         int result = ((java.io.InputStream) myInputStream).read(buf, start, count);
         return result == -1 ? 0 : result;
-      }
-      catch (java.net.SocketTimeoutException e)
-      {
+      } catch (java.net.SocketTimeoutException e) {
         throw new totalcross.net.SocketTimeoutException(e.getMessage());
-      }
-      catch (java.io.IOException e)
-      {
+      } catch (java.io.IOException e) {
         throw new totalcross.io.IOException(e.getMessage());
       }
-    }
-    else
-    {
-      if (myOutputStream == null)
-      {
-        try
-        {
+    } else {
+      if (myOutputStream == null) {
+        try {
           myOutputStream = ((java.net.Socket) socketRef).getOutputStream();
-        }
-        catch (java.io.IOException e)
-        {
+        } catch (java.io.IOException e) {
           throw new totalcross.io.IOException(e.getMessage());
         }
       }
 
-      try
-      {
+      try {
         ((java.io.OutputStream) this.myOutputStream).write(buf, start, count);
         return count;
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         throw new totalcross.io.IOException(e.getMessage());
       }
     }
@@ -382,15 +326,14 @@ public class Socket extends Stream
    * @since SuperWaba 5.6
    * @see #readBytes(byte[], int, int)
    */
-  public int readBytes(byte buf[]) throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public int readBytes(byte buf[]) throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new java.lang.NullPointerException();
     }
-    if (buf.length == 0){
+    if (buf.length == 0) {
       return 0;
     }
 
@@ -409,18 +352,17 @@ public class Socket extends Stream
    * @throws totalcross.io.IOException
    */
   @Override
-  public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new NullPointerException();
     }
-    if (start < 0 || count < 0 || start + count > buf.length){
+    if (start < 0 || count < 0 || start + count > buf.length) {
       throw new IndexOutOfBoundsException();
     }
-    if (count == 0){
+    if (count == 0) {
       return 0;
     }
 
@@ -442,24 +384,22 @@ public class Socket extends Stream
    * @see totalcross.io.LineReader
    * @see totalcross.io.BufferedStream
    */
-  public String readLine() throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public String readLine() throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
 
-    if (rlbuf == null){
+    if (rlbuf == null) {
       rlbuf = new byte[256];
     }
 
     byte[] buf = rlbuf;
     int pos = 0;
     int r;
-    while ((r = readWriteBytes(buf, pos, 1, true)) == 1)
-    {
+    while ((r = readWriteBytes(buf, pos, 1, true)) == 1) {
       if (buf[pos] == '\n') // guich@tc123_47
       {
-        if (pos > 0 && buf[pos-1] == '\r') {
+        if (pos > 0 && buf[pos - 1] == '\r') {
           pos--;
         }
         // note that pos must be same of length, otherwise the String will be constructed with one less character
@@ -467,7 +407,7 @@ public class Socket extends Stream
       }
       if (++pos == buf.length) // reached buffer size?
       {
-        byte[] temp = new byte[buf.length+256];
+        byte[] temp = new byte[buf.length + 256];
         Vm.arrayCopy(buf, 0, temp, 0, pos);
         rlbuf = buf = temp;
       }
@@ -476,36 +416,29 @@ public class Socket extends Stream
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       close();
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
     }
   }
 
   /** Used internally by the SSL classes. Not available at the device. */
-  public Object getNativeSocket()
-  {
+  public Object getNativeSocket() {
     return socketRef;
   }
 
   /**
    * Returns the remote host which this socket is connected to, passed in the constructor.
    */
-  public String getHost()
-  {
+  public String getHost() {
     return host;
   }
 
   /**
    * Returns the remote port which this socket is connected to, passed in the constructor.
    */
-  public int getPort()
-  {
+  public int getPort() {
     return port;
   }
 }

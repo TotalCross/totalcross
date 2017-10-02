@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 import java.net.InetAddress;
@@ -73,8 +71,7 @@ import totalcross.io.IllegalArgumentIOException;
  * defined by Socket.<br>
  */
 
-public class ConnectionManager
-{
+public class ConnectionManager {
   static Object connRef;
 
   /**
@@ -100,8 +97,7 @@ public class ConnectionManager
   @Deprecated
   public static final int GPRS = CELLULAR;
 
-  private ConnectionManager()
-  {
+  private ConnectionManager() {
   }
 
   /**
@@ -119,10 +115,8 @@ public class ConnectionManager
    * @deprecated Not used on the newer devices.
    */
   @Deprecated
-  public static void setDefaultConfiguration(int type, String configuration) throws IOException
-  {
-    switch (type)
-    {
+  public static void setDefaultConfiguration(int type, String configuration) throws IOException {
+    switch (type) {
     case CRADLE:
     case WIFI:
     case CELLULAR:
@@ -145,10 +139,8 @@ public class ConnectionManager
    * @see #WIFI
    * @see #CELLULAR
    */
-  public static boolean isAvailable(int type) throws IOException
-  {
-    switch (type)
-    {
+  public static boolean isAvailable(int type) throws IOException {
+    switch (type) {
     case CRADLE:
     case WIFI:
     case CELLULAR:
@@ -166,23 +158,17 @@ public class ConnectionManager
    * @deprecated Not necessary anymore.
    */
   @Deprecated
-  public static void open() throws IOException
-  {
+  public static void open() throws IOException {
     IOException firstEx = null;
     int[] conn = new int[] { CRADLE, WIFI, CELLULAR };
 
-    for (int i = 0; i < conn.length; i++)
-    {
-      try
-      {
-        if (isAvailable(conn[i]))
-        {
+    for (int i = 0; i < conn.length; i++) {
+      try {
+        if (isAvailable(conn[i])) {
           open(conn[i]);
           return; // successfully opened, so just return
         }
-      }
-      catch (IOException ex)
-      {
+      } catch (IOException ex) {
         if (firstEx == null) {
           firstEx = ex;
         }
@@ -206,10 +192,8 @@ public class ConnectionManager
    * @deprecated Not necessary anymore.
    */
   @Deprecated
-  public static void open(int type) throws IOException
-  {
-    switch (type)
-    {
+  public static void open(int type) throws IOException {
+    switch (type) {
     case CRADLE:
     case WIFI:
     case CELLULAR:
@@ -226,8 +210,7 @@ public class ConnectionManager
    * @deprecated Not necessary anymore.
    */
   @Deprecated
-  public static void close() throws IOException
-  {
+  public static void close() throws IOException {
   }
 
   /**
@@ -238,14 +221,10 @@ public class ConnectionManager
    * 
    * @throws UnknownHostException if the given host is unknown or cannot be reached.
    */
-  public static String getHostAddress(String hostName) throws UnknownHostException
-  {
-    try
-    {
+  public static String getHostAddress(String hostName) throws UnknownHostException {
+    try {
       return InetAddress.getByName(hostName).getHostAddress();
-    }
-    catch (java.net.UnknownHostException e)
-    {
+    } catch (java.net.UnknownHostException e) {
       throw new UnknownHostException(e.getMessage());
     }
   }
@@ -258,14 +237,10 @@ public class ConnectionManager
    * 
    * @throws UnknownHostException if the given host is unknown or cannot be reached.
    */
-  public static String getHostName(String hostAddress) throws UnknownHostException
-  {
-    try
-    {
+  public static String getHostName(String hostAddress) throws UnknownHostException {
+    try {
       return InetAddress.getByName(hostAddress).getHostName();
-    }
-    catch (java.net.UnknownHostException e)
-    {
+    } catch (java.net.UnknownHostException e) {
       throw new UnknownHostException(e.getMessage());
     }
   }
@@ -279,14 +254,10 @@ public class ConnectionManager
    * 
    * @throws UnknownHostException if the local host is unknown or cannot be reached.
    */
-  public static String getLocalHost() throws UnknownHostException
-  {
-    try
-    {
+  public static String getLocalHost() throws UnknownHostException {
+    try {
       return InetAddress.getLocalHost().getHostAddress();
-    }
-    catch (java.net.UnknownHostException e)
-    {
+    } catch (java.net.UnknownHostException e) {
       throw new UnknownHostException(e.getMessage());
     }
   }
@@ -298,16 +269,12 @@ public class ConnectionManager
    * 
    * @since TotalCross 1.62
    */
-  public static boolean isInternetAccessible()
-  {
-    try
-    {
-      Socket s = new Socket("www.google.com",80,30*1000);
+  public static boolean isInternetAccessible() {
+    try {
+      Socket s = new Socket("www.google.com", 80, 30 * 1000);
       s.close();
       return true;
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       return false;
     }
   }

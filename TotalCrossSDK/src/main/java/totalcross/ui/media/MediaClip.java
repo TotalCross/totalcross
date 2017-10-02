@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.media;
 
 import totalcross.Launcher;
@@ -67,8 +65,7 @@ import totalcross.ui.MainWindow;
  * <p>
  * The MediaClip events are broadcasted to the MainWindow controls.
  */
-public class MediaClip
-{
+public class MediaClip {
   Object mediaClipRef;
   Launcher.S2IS mediaStream;
   int currentState;
@@ -105,19 +102,15 @@ public class MediaClip
    * @throws IOException
    * @see totalcross.io.RandomAccessStream
    */
-  public MediaClip(RandomAccessStream stream) throws IOException
-  {
-    try
-    {
+  public MediaClip(RandomAccessStream stream) throws IOException {
+    try {
       mediaStream = new Launcher.S2IS(stream);
       mediaClipRef = new sun.audio.AudioStream(mediaStream);
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
 
-    if (mediaClipRef == null){
+    if (mediaClipRef == null) {
       throw new totalcross.io.IOException("Could not load the given file.");
     }
     currentState = PREFETCHED;
@@ -136,15 +129,14 @@ public class MediaClip
    * 
    * @throws IOException
    */
-  final public void start() throws IOException
-  {
-    if (currentState != PREFETCHED){
+  final public void start() throws IOException {
+    if (currentState != PREFETCHED) {
       return;
     }
 
-    if (!Launcher.isApplication){
+    if (!Launcher.isApplication) {
       ((java.applet.AudioClip) mediaClipRef).play();
-    }else {
+    } else {
       sun.audio.AudioPlayer.player.start((sun.audio.AudioStream) mediaClipRef);
     }
     currentState = STARTED;
@@ -160,15 +152,14 @@ public class MediaClip
    * 
    * @throws IOException
    */
-  final public void stop() throws IOException
-  {
-    if (currentState != STARTED){
+  final public void stop() throws IOException {
+    if (currentState != STARTED) {
       return;
     }
 
-    if (!Launcher.isApplication){
+    if (!Launcher.isApplication) {
       ((java.applet.AudioClip) mediaClipRef).stop();
-    }else {
+    } else {
       sun.audio.AudioPlayer.player.stop((sun.audio.AudioStream) mediaClipRef);
     }
     currentState = PREFETCHED;
@@ -180,14 +171,10 @@ public class MediaClip
    * 
    * @throws IOException
    */
-  final public void reset() throws IOException
-  {
-    try
-    {
+  final public void reset() throws IOException {
+    try {
       this.stop();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
     }
   }
 
@@ -201,8 +188,7 @@ public class MediaClip
    * @see #STARTED
    * @see #CLOSED
    */
-  public int getCurrentState()
-  {
+  public int getCurrentState() {
     return currentState;
   }
 
@@ -216,15 +202,13 @@ public class MediaClip
    * 
    * @throws IOException
    */
-  final public void close() throws IOException
-  {
-    if (currentState == CLOSED){
+  final public void close() throws IOException {
+    if (currentState == CLOSED) {
       return;
     }
-    if (!Launcher.isApplication){
+    if (!Launcher.isApplication) {
       ((java.applet.AudioClip) mediaClipRef).stop();
-    }
-    else {
+    } else {
       sun.audio.AudioPlayer.player.stop((sun.audio.AudioStream) mediaClipRef); // guich@582_8
     }
     mediaClipRef = null;
@@ -265,13 +249,12 @@ public class MediaClip
    * @see #MEDIUM
    * @see #HIGH
    */
-  final public void record(int samplesPerSecond, int bitsPerSample, boolean stereo) throws IOException
-  {
+  final public void record(int samplesPerSecond, int bitsPerSample, boolean stereo) throws IOException {
     if (samplesPerSecond != VOICE && samplesPerSecond != LOW && samplesPerSecond != MEDIUM
-        && samplesPerSecond != HIGH){
+        && samplesPerSecond != HIGH) {
       throw new IllegalArgumentException("Invalid value for samplesPerSecond: " + samplesPerSecond);
     }
-    if (bitsPerSample != 8 && bitsPerSample != 16){
+    if (bitsPerSample != 8 && bitsPerSample != 16) {
       throw new IllegalArgumentException("Invalid value for bitsPerSample: " + bitsPerSample);
     }
   }

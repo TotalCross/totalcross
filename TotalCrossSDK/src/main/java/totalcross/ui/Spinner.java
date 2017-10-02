@@ -31,8 +31,7 @@ import totalcross.ui.image.Image;
  * 
  * @since TotalCross 1.3
  */
-public class Spinner extends Control implements Runnable
-{
+public class Spinner extends Control implements Runnable {
   /** Used in the type field */
   public static final int IPHONE = 1;
   /** Used in the type field */
@@ -46,41 +45,30 @@ public class Spinner extends Control implements Runnable
   public static int spinnerType = Settings.isIOS() ? IPHONE : ANDROID;
 
   private static Image[] loaded = new Image[4];
-  private static String[] files =
-    {
-        null,
-        "totalcross/res/spinner_iphone.gif",      
-        "totalcross/res/spinner_android.gif",      
-        "totalcross/res/spinner_sync.gif",      
-    };
+  private static String[] files = { null, "totalcross/res/spinner_iphone.gif", "totalcross/res/spinner_android.gif",
+      "totalcross/res/spinner_sync.gif", };
   private boolean running;
-  private Image anim,anim0;
+  private Image anim, anim0;
 
   /** Creates a spinner with the defined spinnerType. */
-  public Spinner()
-  {
+  public Spinner() {
     this(spinnerType);
   }
 
   /** Creates a spinner of the given type. */
-  public Spinner(int type)
-  {
+  public Spinner(int type) {
     setType(type);
   }
 
   /** Changes the Spinner to one of the predefined types. */
-  public void setType(int t)
-  {
-    if (t < IPHONE || t > SYNC){
+  public void setType(int t) {
+    if (t < IPHONE || t > SYNC) {
       throw new IllegalArgumentException("Invalid type");
     }
-    try 
-    {
+    try {
       anim0 = loaded[t] == null ? loaded[t] = new Image(files[t]) : loaded[t];
       anim = null;
-    } 
-    catch (Exception e) 
-    {
+    } catch (Exception e) {
       if (Settings.onJavaSE) {
         e.printStackTrace();
       }
@@ -107,63 +95,56 @@ public class Spinner extends Control implements Runnable
    * If it appears not filled, try selecting the "Invert colors" option, and use 000000 as foreground color.
    */
 
-  public Spinner(Image anim)
-  {
+  public Spinner(Image anim) {
     this.anim0 = anim;
-    if (UIColors.spinnerBack != -1){
+    if (UIColors.spinnerBack != -1) {
       backColor = UIColors.spinnerBack;
     }
     foreColor = UIColors.spinnerFore;
   }
 
   /** Changes the gif image of this Spinner */
-  public void setImage(Image anim)
-  {
+  public void setImage(Image anim) {
     this.anim0 = anim;
     this.anim = null;
   }
 
   @Override
-  public void onBoundsChanged(boolean screenChanged)
-  {
+  public void onBoundsChanged(boolean screenChanged) {
     anim = null;
   }
 
   @Override
-  public void onColorsChanged(boolean changed)
-  {
+  public void onColorsChanged(boolean changed) {
     anim = null;
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
-    if (!Settings.isOpenGL)
-    {
+  public void onPaint(Graphics g) {
+    if (!Settings.isOpenGL) {
       g.backColor = backColor;
-      g.fillRect(0,0,width,height);
+      g.fillRect(0, 0, width, height);
     }
-    if (anim == null){
+    if (anim == null) {
       checkAnim();
     }
-    if (anim != null){
-      g.drawImage(anim, (width-anim.getWidth())/2,(height-anim.getHeight())/2);
+    if (anim != null) {
+      g.drawImage(anim, (width - anim.getWidth()) / 2, (height - anim.getHeight()) / 2);
     }
   }
 
-  private void checkAnim()
-  {
-    try
-    {
-      anim = anim0.smoothScaledFixedAspectRatio(width < height ? width : height,true);
+  private void checkAnim() {
+    try {
+      anim = anim0.smoothScaledFixedAspectRatio(width < height ? width : height, true);
       anim.applyColor2(getForeColor() | 0xAA000000);
-    } catch (Exception e) {anim = null;}
+    } catch (Exception e) {
+      anim = null;
+    }
   }
 
   /** Starts the spinning thread. */
-  public void start()
-  {
-    if (running){
+  public void start() {
+    if (running) {
       return;
     }
     running = true;
@@ -171,20 +152,17 @@ public class Spinner extends Control implements Runnable
   }
 
   /** Stops the spinning thread. */
-  public void stop()
-  {
+  public void stop() {
     running = false;
   }
 
   /** Returns if the spin is running. */
-  public boolean isRunning()
-  {
+  public boolean isRunning() {
     return running;
   }
 
-  private void step()
-  {
-    if (anim == null){
+  private void step() {
+    if (anim == null) {
       checkAnim();
     }
     if (getParentWindow() == Window.topMost && anim != null) // don't update if we loose focus
@@ -195,19 +173,17 @@ public class Spinner extends Control implements Runnable
   }
 
   @Override
-  public void run()
-  {
-    while (running)
-    {
+  public void run() {
+    while (running) {
       step();
       Vm.sleep(anim != null ? 80 : 120); // with safeSleep, the vm starts to behave slowly and strangely
-    }      
+    }
   }
 
   int last;
+
   /** Updates the spinner; call this when using the spinner inside a loop. */
-  public void update()
-  {
+  public void update() {
     int now = Vm.getTimeStamp();
     if ((now - last) > (anim != null ? 80 : 120)) // prevents calling pumpEvents too fast
     {

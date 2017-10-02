@@ -9,19 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
 public class BC145_i2b extends Conversion // this conversion should be ignored
 {
-  public BC145_i2b()
-  {
-    super(-1,-1, INT, BYTE);
+  public BC145_i2b() {
+    super(-1, -1, INT, BYTE);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-1].asInt = (byte)stack[stackPtr-1].asInt;
+  public void exec() {
+    stack[stackPtr - 1].asInt = (byte) stack[stackPtr - 1].asInt;
   }
 }

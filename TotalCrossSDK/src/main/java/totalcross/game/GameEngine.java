@@ -209,9 +209,8 @@ import totalcross.ui.image.ImageException;
  * @version 1.1
  */
 
-public abstract class GameEngine extends GameEngineMainWindow
-{
-  public final static int GAME_ENGINE_VERSION = 110;   // version 1.1 - remodeled by guich
+public abstract class GameEngine extends GameEngineMainWindow {
+  public final static int GAME_ENGINE_VERSION = 110; // version 1.1 - remodeled by guich
   /**
    * Name of the game. <br>
    * The Highscores/Options databases are prefixed with this name.
@@ -246,7 +245,7 @@ public abstract class GameEngine extends GameEngineMainWindow
    * No automatic refresh. <br>
    * @see #gameRefreshPeriod
    */
-  public final static int NO_AUTO_REFRESH=-1;
+  public final static int NO_AUTO_REFRESH = -1;
 
   /**
    * Automatic refresh period in milliseconds. <br>
@@ -280,71 +279,80 @@ public abstract class GameEngine extends GameEngineMainWindow
    * You can do game initialization at this place. Typically Sprites may be
    * created in the overloaded function.
    */
-  public abstract void onGameInit ();
+  public abstract void onGameInit();
 
   /**
    * Event notication called when the game exits. <br>
    */
-  public void onGameExit () {}
+  public void onGameExit() {
+  }
 
   /**
    * Event notication called when the game mainloop is entered. <br>
    */
-  public void onGameStart () {}
+  public void onGameStart() {
+  }
 
   /**
    * Event notication called when the game mainloop is leaved. <br>
    * @see #stop
    */
-  public void onGameStop () {}
+  public void onGameStop() {
+  }
 
   /**
    * Event notication called when a control event is signaled. <br>
    * @param evt control event that occurred.
    */
-  public void onTimer (TimerEvent evt) {}
+  public void onTimer(TimerEvent evt) {
+  }
 
   /**
    * Event notication called when a key event is signaled. <br>
    * @param evt key event that occurred.
    */
-  public void onKey (KeyEvent evt) {}
+  public void onKey(KeyEvent evt) {
+  }
 
   /**
    * Event notication called when a pen down event is signaled. <br>
    * @param evt pen event that occurred.
    */
-  public void onPenDown (PenEvent evt) {}
+  public void onPenDown(PenEvent evt) {
+  }
 
   /**
    * Event notication called when a pen up event is signaled. <br>
    * @param evt pen event that occurred.
    */
-  public void onPenUp (PenEvent evt) {}
+  public void onPenUp(PenEvent evt) {
+  }
 
   /**
    * Event notication called when a pen drag/move event is signaled. <br>
    * @param evt pen event that occurred.
    */
-  public void onPenDrag (PenEvent evt) {}
+  public void onPenDrag(PenEvent evt) {
+  }
 
   /**
    * Event notication called when any other event is signaled. <br>
    * @param evt event that occurred.
    */
-  public void onOtherEvent (Event evt) {}
+  public void onOtherEvent(Event evt) {
+  }
 
   /** Called at each refresh to draw the current game state */
   @Override
-  public void onPaint(Graphics g) {}
+  public void onPaint(Graphics g) {
+  }
 
   /**
    * Get the game highscores.
    * @return HighScores.
    */
   @Override
-  public HighScores getHighScores()
-  {
+  public HighScores getHighScores() {
     return super.getHighScores();
   }
 
@@ -353,8 +361,7 @@ public abstract class GameEngine extends GameEngineMainWindow
    * @return Options.
    */
   @Override
-  public Options getOptions()
-  {
+  public Options getOptions() {
     return super.getOptions();
   }
 
@@ -370,9 +377,9 @@ public abstract class GameEngine extends GameEngineMainWindow
    * @see TextRenderer TextRenderer for more information
    */
   @Override
-  public final TextRenderer createTextRenderer (Font font,int foreColor, String text,int maxDigits) throws ImageException
-  {
-    return super.createTextRenderer(font,foreColor,text,maxDigits);
+  public final TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits)
+      throws ImageException {
+    return super.createTextRenderer(font, foreColor, text, maxDigits);
   }
 
   /**
@@ -401,15 +408,13 @@ public abstract class GameEngine extends GameEngineMainWindow
 
   /** Must be called to start the game. */
   @Override
-  final public void start()
-  {
+  final public void start() {
     super.start();
   }
 
   /** Must be called to make the game stop. */
   @Override
-  final public void stop()
-  {
+  final public void stop() {
     super.stop();
   }
 
@@ -419,14 +424,12 @@ public abstract class GameEngine extends GameEngineMainWindow
    * the complete screen.
    */
   @Override
-  final public void refresh()
-  {
+  final public void refresh() {
     super.refresh();
   }
 
   /** Creates a new GameEngine */
-  public GameEngine()
-  {
+  public GameEngine() {
     super.setGameEngine(this);
   }
 }

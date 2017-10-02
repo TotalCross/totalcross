@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC053_saload extends LoadArray
-{
-  public BC053_saload()
-  {
-    super(-1,-1,0,-1,SHORT);
+public class BC053_saload extends LoadArray {
+  public BC053_saload() {
+    super(-1, -1, 0, -1, SHORT);
   }
 }

@@ -24,13 +24,11 @@ package totalcross.sys;
  * WARNING: DO NOT CATCH THIS EXCEPTION IN YOUR APP UNLESS YOU KNOW WHAT YOU ARE DOING.
  */
 
-public class AppExitException extends RuntimeException
-{
+public class AppExitException extends RuntimeException {
   /** 
    * Constructs an empty Exception. 
    */
-  public AppExitException()
-  {
+  public AppExitException() {
     super();
   }
 
@@ -39,8 +37,7 @@ public class AppExitException extends RuntimeException
    * 
    * @param msg The error message.
    */
-  public AppExitException(String msg)
-  {
+  public AppExitException(String msg) {
     super(msg);
   }
 }

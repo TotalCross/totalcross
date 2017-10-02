@@ -30,17 +30,12 @@ package totalcross.lang;
  * package that has no correspondence with <code>totalcross.lang</code> will make the <code>tc.Deploy</code> program to abort, informing where the 
  * problem has occurred. A good idea is to always refer to this JavaDoc to know what is and what isn't available.
  */
-public class Array4D implements Cloneable
-{  
+public class Array4D implements Cloneable {
   @Override
-  public Object clone()
-  {
-    try
-    {
+  public Object clone() {
+    try {
       return super.clone();
-    }
-    catch (CloneNotSupportedException e)
-    {
+    } catch (CloneNotSupportedException e) {
       return null; // Never occurs.
     }
   }

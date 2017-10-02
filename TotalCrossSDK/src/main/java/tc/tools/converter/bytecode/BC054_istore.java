@@ -9,20 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC054_istore extends StoreLocal
-{
-  public BC054_istore()
-  {
-    super(readUInt8(pc+1),-1,INT);
+public class BC054_istore extends StoreLocal {
+  public BC054_istore() {
+    super(readUInt8(pc + 1), -1, INT);
     pcInc = 2;
   }
-  public BC054_istore(boolean wide)
-  {
-    super(readUInt16(pc+2),-1,INT); // note: pc+1 stores the opcode
+
+  public BC054_istore(boolean wide) {
+    super(readUInt16(pc + 2), -1, INT); // note: pc+1 stores the opcode
     pcInc = 3;
     bc = ISTORE;
   }

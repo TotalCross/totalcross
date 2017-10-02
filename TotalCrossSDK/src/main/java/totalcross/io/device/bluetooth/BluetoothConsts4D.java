@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.util.Hashtable;

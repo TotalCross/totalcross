@@ -22,8 +22,7 @@ import totalcross.ui.Control;
  * @since SuperWaba 5.54
  * */
 
-public class ListContainerEvent extends Event
-{
+public class ListContainerEvent extends Event {
   /** Event generated when a new item was selected. */
   public static final int ITEM_SELECTED_EVENT = 510;
   /** Event generated when the left image was clicked.
@@ -44,15 +43,19 @@ public class ListContainerEvent extends Event
   public Control source;
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String s = "";
-    switch (type)
-    {
-    case ITEM_SELECTED_EVENT: s = "ITEM_SELECTED_EVENT"; break;
-    case LEFT_IMAGE_CLICKED_EVENT: s = "LEFT_IMAGE_CLICKED_EVENT"; break;
-    case RIGHT_IMAGE_CLICKED_EVENT: s = "RIGHT_IMAGE_CLICKED_EVENT"; break;
+    switch (type) {
+    case ITEM_SELECTED_EVENT:
+      s = "ITEM_SELECTED_EVENT";
+      break;
+    case LEFT_IMAGE_CLICKED_EVENT:
+      s = "LEFT_IMAGE_CLICKED_EVENT";
+      break;
+    case RIGHT_IMAGE_CLICKED_EVENT:
+      s = "RIGHT_IMAGE_CLICKED_EVENT";
+      break;
     }
-    return s+" isImage2:"+isImage2+" "+super.toString();
+    return s + " isImage2:" + isImage2 + " " + super.toString();
   }
 }

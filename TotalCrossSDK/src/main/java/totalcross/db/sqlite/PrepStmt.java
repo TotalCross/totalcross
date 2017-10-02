@@ -32,8 +32,7 @@ import totalcross.sys.Vm;
 import totalcross.util.BigDecimal;
 import totalcross.util.Date;
 
-final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaData, Codes
-{
+final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaData, Codes {
   private int columnCount;
   private int paramCount;
 
@@ -149,8 +148,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
 
     try {
       return db.executeBatch(pointer, batchPos / paramCount, batch);
-    }
-    finally {
+    } finally {
       clearBatch();
     }
   }
@@ -304,23 +302,19 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
    */
   private byte[] readBytes(Stream istream, int length) throws SQLException {
     if (length < 0) {
-      SQLException exception =
-          new SQLException("Error reading stream. Length should be non-negative");
+      SQLException exception = new SQLException("Error reading stream. Length should be non-negative");
 
       throw exception;
-    } 
+    }
 
     byte[] bytes = new byte[length];
 
-    try 
-    {
-      istream.readBytes(bytes,0,bytes.length);
+    try {
+      istream.readBytes(bytes, 0, bytes.length);
 
       return bytes;
-    } 
-    catch (IOException cause)
-    {
-      throw new SQLException("Error reading stream.",cause);
+    } catch (IOException cause) {
+      throw new SQLException("Error reading stream.", cause);
     }
   }
 
@@ -423,42 +417,30 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
   public void setObject(int pos, Object value) throws SQLException {
     if (value == null) {
       batch(pos, null);
-    }
-    else if (value instanceof Date) {
-      batch(pos, ((Date)value).getSQLString());
-    }
-    else if (value instanceof Time) {
-      batch(pos, ((Time)value).getSQLString());
-    }
-    else if (value instanceof Timestamp) {
+    } else if (value instanceof Date) {
+      batch(pos, ((Date) value).getSQLString());
+    } else if (value instanceof Time) {
+      batch(pos, ((Time) value).getSQLString());
+    } else if (value instanceof Timestamp) {
       long l = ((Timestamp) value).getTime();
       batch(pos, new Long(l));
-    }
-    else if (value instanceof Long) {
+    } else if (value instanceof Long) {
       batch(pos, value);
-    }
-    else if (value instanceof Integer) {
+    } else if (value instanceof Integer) {
       batch(pos, value);
-    }
-    else if (value instanceof Short) {
+    } else if (value instanceof Short) {
       batch(pos, new Integer(((Short) value).shortValue()));
-    }
-    else if (value instanceof Float) {
+    } else if (value instanceof Float) {
       batch(pos, value);
-    }
-    else if (value instanceof Double) {
+    } else if (value instanceof Double) {
       batch(pos, value);
-    }
-    else if (value instanceof Boolean) {
+    } else if (value instanceof Boolean) {
       setBoolean(pos, ((Boolean) value).booleanValue());
-    }
-    else if (value instanceof byte[]) {
+    } else if (value instanceof byte[]) {
       batch(pos, value);
-    }
-    else if (value instanceof BigDecimal) {
-      setBigDecimal(pos, (BigDecimal)value);
-    }
-    else {
+    } else if (value instanceof BigDecimal) {
+      setBigDecimal(pos, (BigDecimal) value);
+    } else {
       batch(pos, value.toString());
     }
   }
@@ -511,8 +493,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
 
       // set as string
       setString(pos, sb.toString());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new SQLException("Cannot read from character stream, exception message: " + e.getMessage());
     }
   }

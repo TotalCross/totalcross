@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Collection;
@@ -65,8 +64,7 @@ import java.util.NoSuchElementException;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface ListIterator4D<E> extends Iterator<E>
-{
+public interface ListIterator4D<E> extends Iterator<E> {
   /**
    * Tests whether there are elements remaining in the list in the forward
    * direction. In other words, next() will not fail with a

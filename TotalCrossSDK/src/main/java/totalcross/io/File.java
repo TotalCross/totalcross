@@ -54,8 +54,7 @@ import totalcross.util.Vector;
  * On iOS and Android, if you don't specify a path, the file will be open in device/ path. 
  */
 
-public class File extends RandomAccessStream
-{
+public class File extends RandomAccessStream {
   /** The path that represents this file */
   protected String path;
 
@@ -117,7 +116,7 @@ public class File extends RandomAccessStream
    * @see #File(String,int,int)
    */
   public static final int CREATE_EMPTY = 5;
-  
+
   public static final int CLOSED = 6;
 
   /**
@@ -225,29 +224,26 @@ public class File extends RandomAccessStream
    * @deprecated TotalCross 2 no longer uses slot
    */
   @Deprecated
-  public File(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException
-  {
-    if (mode == 8)
-    {
+  public File(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException {
+    if (mode == 8) {
       mode = CREATE_EMPTY; // keep compatibility
     }
-    if (path == null){
+    if (path == null) {
       throw new java.lang.NullPointerException("Argument 'path' cannot have a null value");
     }
-    if (path.length() == 0 || path.length() > 255){
+    if (path.length() == 0 || path.length() > 255) {
       throw new IllegalArgumentIOException("path", path);
     }
-    if (mode < DONT_OPEN || mode > CREATE_EMPTY){
+    if (mode < DONT_OPEN || mode > CREATE_EMPTY) {
       throw new IllegalArgumentIOException("mode", Convert.toString(mode));
     }
-    if (slot < -1){
+    if (slot < -1) {
       throw new IllegalArgumentIOException("slot", Convert.toString(slot));
     }
 
     path = Convert.normalizePath(path);
-    if (path.startsWith("device/"))
-    {
-      path = Convert.appendPath(Settings.appPath,path.substring(6)); // guich@tc310: in desktop was using the root folder of current drive
+    if (path.startsWith("device/")) {
+      path = Convert.appendPath(Settings.appPath, path.substring(6)); // guich@tc310: in desktop was using the root folder of current drive
     }
 
     this.path = path;
@@ -269,8 +265,7 @@ public class File extends RandomAccessStream
    * @see #File(String)
    * @see #File(String,int,int)
    */
-  public File(String path, int mode) throws IllegalArgumentIOException, FileNotFoundException, IOException
-  {
+  public File(String path, int mode) throws IllegalArgumentIOException, FileNotFoundException, IOException {
     this(path, mode, -1);
   }
 
@@ -285,35 +280,27 @@ public class File extends RandomAccessStream
    * @throws IOException
    * @see #File(String, int, int)
    */
-  public File(String path) throws IllegalArgumentIOException, IOException
-  {
+  public File(String path) throws IllegalArgumentIOException, IOException {
     this(path, DONT_OPEN, -1);
   }
 
-  final private void create() throws FileNotFoundException, IOException
-  {
+  final private void create() throws FileNotFoundException, IOException {
     java.net.URI pathURI = null;
     if (path.length() >= 2 && path.charAt(1) == ':') // absolute path
     {
-      try
-      {
+      try {
         path = path.replaceAll("\"", "");
         pathURI = new java.net.URI(("file:///" + path.replaceAll(" ", "%20")));
-      }
-      catch (URISyntaxException e)
-      {
+      } catch (URISyntaxException e) {
       }
     }
 
     java.io.File fileRef4Java = null;
-    try
-    {
+    try {
       if (pathURI != null) {
         fileRef4Java = new java.io.File(pathURI);
       }
-    }
-    catch (IllegalArgumentException e)
-    {
+    } catch (IllegalArgumentException e) {
       /*
        * The path may contain characters that may not be correctly interpreted when converted to URI. Maybe we can
        * replace them with escape codes, but for now we'll just ignore this error and try again using the path as
@@ -321,30 +308,25 @@ public class File extends RandomAccessStream
        */
     }
 
-    if (fileRef4Java == null){
+    if (fileRef4Java == null) {
       fileRef4Java = new java.io.File(path);
     }
 
-    if (mode != DONT_OPEN)
-    {
+    if (mode != DONT_OPEN) {
       if (mode != CREATE && mode != CREATE_EMPTY && !fileRef4Java.exists()) {
         throw new FileNotFoundException(path);
       }
 
       if (mode == CREATE_EMPTY) {
-        try
-        {
+        try {
           if (fileRef4Java.exists()) {
             fileRef4Java.delete();
           }
-        }
-        catch (java.lang.SecurityException e)
-        {
+        } catch (java.lang.SecurityException e) {
           throw new IOException(e.getMessage());
         }
       }
-      try
-      {
+      try {
         fileEx = new java.io.RandomAccessFile(fileRef4Java, mode == READ_ONLY ? "r" : "rw");
 
         /*
@@ -352,57 +334,45 @@ public class File extends RandomAccessStream
          * ((java.io.RandomAccessFile) fileEx).getChannel().tryLock();
          */
         if (mode != READ_ONLY) {
-          try
-          {
+          try {
             // RandomAccessFile.getChannel()
             java.lang.reflect.Method getChannel = fileEx.getClass().getMethod("getChannel");
             Object fileChannel = getChannel.invoke(fileEx);
             // FileChannel.tryLock() -> returns null if the file is already locked.
             java.lang.reflect.Method tryLock = fileChannel.getClass().getMethod("tryLock");
-            if (tryLock.invoke(fileChannel) == null) 
-            {
+            if (tryLock.invoke(fileChannel) == null) {
               // close everything and throw IOException.
               ((java.io.RandomAccessFile) fileEx).close();
               fileEx = null;
               mode = INVALID;
               throw new IOException("Cannot access the file because it is already in use");
             }
-          }
-          catch (java.lang.NoSuchMethodException e)
-          {
+          } catch (java.lang.NoSuchMethodException e) {
             ((java.io.RandomAccessFile) fileEx).close();
             fileEx = null;
             mode = INVALID;
-            throw new IOException(e.getMessage());               
-          }
-          catch (java.lang.IllegalAccessException e)
-          {
+            throw new IOException(e.getMessage());
+          } catch (java.lang.IllegalAccessException e) {
             ((java.io.RandomAccessFile) fileEx).close();
             fileEx = null;
             mode = INVALID;
-            throw new IOException(e.getMessage());               
-          }
-          catch (java.lang.reflect.InvocationTargetException e)
-          {
+            throw new IOException(e.getMessage());
+          } catch (java.lang.reflect.InvocationTargetException e) {
             ((java.io.RandomAccessFile) fileEx).close();
             fileEx = null;
             mode = INVALID;
             throw new IOException("Cannot access the file because it is already in use");
           }
-        }            
-      }
-      catch (java.io.FileNotFoundException e)
-      {
+        }
+      } catch (java.io.FileNotFoundException e) {
         boolean wasCreate = mode == CREATE || mode == CREATE_EMPTY;
         fileEx = null;
         mode = INVALID;
         if (wasCreate) {
-          throw new IOException("Folder not found or there's already a folder with the same name of the file: "+path);
+          throw new IOException("Folder not found or there's already a folder with the same name of the file: " + path);
         }
         throw new FileNotFoundException(path);
-      }
-      catch (java.io.IOException e)
-      {
+      } catch (java.io.IOException e) {
         fileEx = null;
         mode = INVALID;
         throw new IOException(e.getMessage());
@@ -421,9 +391,8 @@ public class File extends RandomAccessStream
    *           available).
    * @since SuperWaba 5.52
    */
-  final public static boolean isCardInserted(int slot) throws IllegalArgumentIOException
-  {
-    if (slot < -1){
+  final public static boolean isCardInserted(int slot) throws IllegalArgumentIOException {
+    if (slot < -1) {
       throw new IllegalArgumentIOException("slot", Convert.toString(slot));
     }
     return true;
@@ -436,32 +405,24 @@ public class File extends RandomAccessStream
    *            If a file is closed more than once,
    */
   @Override
-  public void close() throws IOException
-  {
+  public void close() throws IOException {
     if (mode == CLOSED) {
       return;
     }
-    if (mode == INVALID){
+    if (mode == INVALID) {
       throw new IOException("Invalid file handle");
     }
 
-    try
-    {
-      if (mode != DONT_OPEN)
-      {
+    try {
+      if (mode != DONT_OPEN) {
         java.io.RandomAccessFile fileEx4Java = (java.io.RandomAccessFile) fileEx;
-        try
-        {
+        try {
           fileEx4Java.close();
-        }
-        catch (java.io.IOException e)
-        {
+        } catch (java.io.IOException e) {
           throw new IOException(e.getMessage());
         }
       }
-    }
-    finally
-    {
+    } finally {
       fileRef = null;
       fileEx = null;
       mode = CLOSED;
@@ -472,15 +433,14 @@ public class File extends RandomAccessStream
    * Flushes a file. This causes any pending data to be written to disk. Calling this method too much may decrease the
    * performance. Has no effect on JavaSE.
    */
-  public void flush() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  public void flush() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_WRITE mode");
     }
 
@@ -502,27 +462,23 @@ public class File extends RandomAccessStream
    * </pre>
    */
 
-  final public void createDir() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void createDir() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode != DONT_OPEN){
+    if (mode != DONT_OPEN) {
       throw new IOException("Operation can ONLY be used in DONT_OPEN mode");
     }
 
     java.io.File fileRef4Java = (java.io.File) fileRef;
-    try
-    {
+    try {
       if (fileRef4Java.exists()) {
         throw new IOException("Directory already exists");
       }
       if (!fileRef4Java.mkdirs()) {
         throw new IOException("Could not create all the directories listed on the path");
       }
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -536,21 +492,19 @@ public class File extends RandomAccessStream
    * </pre>
    */
 
-  final public void delete() throws FileNotFoundException, IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void delete() throws FileNotFoundException, IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_ONLY mode");
     }
 
     java.io.File fileRef4Java = (java.io.File) fileRef;
-    if (mode != DONT_OPEN){
+    if (mode != DONT_OPEN) {
       this.close();
     }
-    try
-    {
+    try {
       if (!fileRef4Java.exists()) {
         throw new FileNotFoundException(path);
       }
@@ -558,9 +512,7 @@ public class File extends RandomAccessStream
         throw new IOException("Could not remove the file. Possible reason: "
             + (fileRef4Java.isDirectory() ? "The directory is not empty" : "The file is in use"));
       }
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -578,19 +530,15 @@ public class File extends RandomAccessStream
    * @throws IOException
    */
 
-  final public boolean exists() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public boolean exists() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
 
     java.io.File fileRef4Java = (java.io.File) fileRef;
-    try
-    {
+    try {
       return fileRef4Java.exists();
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -614,41 +562,33 @@ public class File extends RandomAccessStream
    *    freeSpace = new File(&quot;\\&quot;).getSize(); // WinCE and Posix
    * </pre>
    */
-  final public int getSize() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public int getSize() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (path.endsWith("/")){
-      try
-      {
+    if (path.endsWith("/")) {
+      try {
         long size = ((java.io.File) fileRef).getFreeSpace();
         return (int) (size > 2147483647 ? 2147483647 : size);
-      }
-      catch (Throwable t)
-      {
+      } catch (Throwable t) {
         return 1024 * 1024; // 1mb
       }
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("The file can't be open in the DONT_OPEN mode to get its size.");
     }
 
     java.io.File fileRef4Java = (java.io.File) fileRef;
-    try
-    {
+    try {
       long size = fileRef4Java.length();
       return (int) (size > 2147483647 ? 2147483647 : size);
-    }
-    catch (Throwable t)
-    {
+    } catch (Throwable t) {
       throw new IOException(t.getMessage());
     }
   }
 
   /** Return the file's path passed in the constructor. */
-  public String getPath()
-  {
+  public String getPath() {
     return path;
   }
 
@@ -657,12 +597,11 @@ public class File extends RandomAccessStream
    * 
    * @throws IOException
    */
-  public File getParent() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  public File getParent() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (path.equals("/")){
+    if (path.equals("/")) {
       return null;
     }
 
@@ -675,21 +614,17 @@ public class File extends RandomAccessStream
    * 
    * @throws IOException
    */
-  final public boolean isDir() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public boolean isDir() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode != DONT_OPEN){
+    if (mode != DONT_OPEN) {
       return false;
     }
     java.io.File fileRef4Java = (java.io.File) fileRef;
-    try
-    {
+    try {
       return fileRef4Java.isDirectory();
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -698,41 +633,34 @@ public class File extends RandomAccessStream
    * Lists the files contained in a directory. The strings returned are the names of the files and directories
    * contained within this directory. Paths are suffixed by a slash.
    */
-  final public String[] listFiles() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public String[] listFiles() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode != DONT_OPEN){
+    if (mode != DONT_OPEN) {
       throw new IOException("Operation can ONLY be used in DONT_OPEN mode");
     }
 
     java.io.File fileRef4Java = (java.io.File) fileRef;
-    if (!fileRef4Java.exists()){
+    if (!fileRef4Java.exists()) {
       throw new FileNotFoundException(path);
     }
-    if (!fileRef4Java.isDirectory()){
+    if (!fileRef4Java.isDirectory()) {
       throw new IOException("File is not a directory: " + path);
     }
-    try
-    {
+    try {
       String[] files = fileRef4Java.list();
       path = path.replace('\\', '/');
       String pathWithSlash = path.endsWith("/") ? path : (path + '/'); // guich@564_5: check if the path ends with /
-      if (files != null)
-      {
-        for (int i = 0; i < files.length; i++)
-        {
-          if (new java.io.File(pathWithSlash + files[i]).isDirectory())
-          {
+      if (files != null) {
+        for (int i = 0; i < files.length; i++) {
+          if (new java.io.File(pathWithSlash + files[i]).isDirectory()) {
             files[i] += '/'; // add a / to a directory end
           }
         }
       }
       return files;
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -741,52 +669,43 @@ public class File extends RandomAccessStream
    * no files nor folders inside of it.
    * @since TotalCross 1.27
    */
-  final public boolean isEmpty() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public boolean isEmpty() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
     java.io.File fileRef4Java = (java.io.File) fileRef;
-    if (fileRef4Java.isDirectory())
-    {
+    if (fileRef4Java.isDirectory()) {
       String[] list = fileRef4Java.list();
       return list == null || list.length == 0;
-    }
-    else
-    {
+    } else {
       return fileRef4Java.length() == 0;
-    }      
+    }
   }
 
   @Override
-  final public int readBytes(byte b[], int off, int len) throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public int readBytes(byte b[], int off, int len) throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (b == null){
+    if (b == null) {
       throw new java.lang.NullPointerException("Argument 'b' cannot have a null value");
     }
-    if (off < 0 || len < 0 || off + len > b.length){
+    if (off < 0 || len < 0 || off + len > b.length) {
       throw new java.lang.ArrayIndexOutOfBoundsException();
     }
-    if (len == 0)
-    {
+    if (len == 0) {
       return 0; // flsobral@tc113_43: return 0 if asked to read 0.
     }
 
     java.io.RandomAccessFile fileEx4Java = (java.io.RandomAccessFile) fileEx;
-    try
-    {
+    try {
       int ret = fileEx4Java.read(b, off, len);
       pos += ret;
       return ret;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -801,41 +720,36 @@ public class File extends RandomAccessStream
    * @param path
    *           the new name of the file.
    */
-  final public void rename(String path) throws IllegalArgumentIOException, IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void rename(String path) throws IllegalArgumentIOException, IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_ONLY mode");
     }
-    if (path == null){
+    if (path == null) {
       throw new java.lang.NullPointerException("Argument 'path' cannot have a null value");
     }
-    if (path.length() == 0 || path.length() > 255){
+    if (path.length() == 0 || path.length() > 255) {
       throw new IllegalArgumentIOException("path", path);
     }
 
     path = path.replace('\\', '/');
     java.io.File fileRef4Java = (java.io.File) fileRef;
     this.close();
-    try
-    {
+    try {
       fileRef4Java.renameTo(new java.io.File(path));
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new IOException(e.getMessage());
     }
   }
 
   @Override
-  public int getPos() throws totalcross.io.IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  public int getPos() throws totalcross.io.IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
 
@@ -869,52 +783,44 @@ public class File extends RandomAccessStream
    * </pre>
    */
   @Override
-  final public void setPos(int pos) throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void setPos(int pos) throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (pos < 0){
+    if (pos < 0) {
       throw new IOException("Argument 'pos' cannot be negative");
     }
 
     java.io.RandomAccessFile fileEx4Java = (java.io.RandomAccessFile) fileEx;
-    try
-    {
-      if (pos > fileEx4Java.length())
-      {
+    try {
+      if (pos > fileEx4Java.length()) {
         fileEx4Java.setLength(pos + 1); // suppose the file is empty. seeking to pos 8 makes the file with 9 bytes (0-8).
       }
       fileEx4Java.seek(pos);
       this.pos = pos;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
 
   @Override
-  final public void setPos(int offset, int origin) throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void setPos(int offset, int origin) throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
 
-    try
-    {
+    try {
       java.io.RandomAccessFile fileEx4Java = (java.io.RandomAccessFile) fileEx;
       int newPos;
       int fileLen = (int) fileEx4Java.length();
 
-      switch (origin)
-      {
+      switch (origin) {
       case SEEK_SET:
         newPos = offset;
         break;
@@ -936,44 +842,38 @@ public class File extends RandomAccessStream
       }
       fileEx4Java.seek(newPos);
       pos = newPos;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
 
   @Override
-  final public int writeBytes(byte b[], int off, int len) throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public int writeBytes(byte b[], int off, int len) throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_ONLY mode");
     }
-    if (b == null){
+    if (b == null) {
       throw new java.lang.NullPointerException("Argument 'b' cannot have a null value");
     }
-    if (off < 0 || len < 0 || off + len > b.length){
+    if (off < 0 || len < 0 || off + len > b.length) {
       throw new java.lang.ArrayIndexOutOfBoundsException();
     }
-    if (len == 0){
+    if (len == 0) {
       return 0;
     }
 
     java.io.RandomAccessFile fileEx4Java = (java.io.RandomAccessFile) fileEx;
-    try
-    {
+    try {
       fileEx4Java.write(b, off, len);
       pos += len;
       return len;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -999,18 +899,17 @@ public class File extends RandomAccessStream
    * @see #ATTR_READ_ONLY
    * @see #ATTR_SYSTEM
    */
-  final public void setAttributes(int attr) throws IllegalArgumentIOException, IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void setAttributes(int attr) throws IllegalArgumentIOException, IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_ONLY mode");
     }
-    if (attr < 0 || attr > 15){
+    if (attr < 0 || attr > 15) {
       throw new IllegalArgumentIOException("attr", null);
     }
   }
@@ -1026,12 +925,11 @@ public class File extends RandomAccessStream
    * @see #ATTR_READ_ONLY
    * @see #ATTR_SYSTEM
    */
-  final public int getAttributes() throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public int getAttributes() throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
 
@@ -1061,21 +959,20 @@ public class File extends RandomAccessStream
    * @see #TIME_CREATED
    * @see #TIME_MODIFIED
    */
-  final public void setTime(byte whichTime, totalcross.sys.Time time) throws IllegalArgumentIOException, IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void setTime(byte whichTime, totalcross.sys.Time time) throws IllegalArgumentIOException, IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_ONLY mode");
     }
-    if (time == null){
+    if (time == null) {
       throw new java.lang.NullPointerException("Argument 'time' cannot have a null value");
     }
-    if (whichTime != 0x1 && whichTime != 0x2 && whichTime != 0x4 && whichTime != 0xF){
+    if (whichTime != 0x1 && whichTime != 0x2 && whichTime != 0x4 && whichTime != 0xF) {
       throw new IllegalArgumentIOException("whichTime", null);
     }
   }
@@ -1102,15 +999,14 @@ public class File extends RandomAccessStream
    * @see #TIME_CREATED
    * @see #TIME_MODIFIED
    */
-  final public totalcross.sys.Time getTime(byte whichTime) throws IllegalArgumentIOException, IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public totalcross.sys.Time getTime(byte whichTime) throws IllegalArgumentIOException, IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (whichTime != 0x1 && whichTime != 0x2 && whichTime != 0x4){
+    if (whichTime != 0x1 && whichTime != 0x2 && whichTime != 0x4) {
       throw new IllegalArgumentIOException("whichTime", null);
     }
 
@@ -1118,9 +1014,8 @@ public class File extends RandomAccessStream
     java.io.File fileRef4Java = (java.io.File) fileRef;
     cal.setTime(new java.util.Date(fileRef4Java.lastModified()));
     return new totalcross.sys.Time(cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH) + 1,
-        cal.get(java.util.Calendar.DATE), cal.get(java.util.Calendar.HOUR_OF_DAY),
-        cal.get(java.util.Calendar.MINUTE), cal.get(java.util.Calendar.SECOND),
-        cal.get(java.util.Calendar.MILLISECOND));
+        cal.get(java.util.Calendar.DATE), cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE),
+        cal.get(java.util.Calendar.SECOND), cal.get(java.util.Calendar.MILLISECOND));
   }
 
   /**
@@ -1135,8 +1030,7 @@ public class File extends RandomAccessStream
    * @return The File object which references the volume, ended with backslash, or null if none found.
    * @see #winceVols
    */
-  final public static File getCardVolume() throws IOException
-  {
+  final public static File getCardVolume() throws IOException {
     return null;
   }
 
@@ -1148,26 +1042,22 @@ public class File extends RandomAccessStream
    * 
    * @since SuperWaba 5.83
    */
-  final public void setSize(int newSize) throws IOException
-  {
-    if (mode == INVALID || mode == CLOSED){
+  final public void setSize(int newSize) throws IOException {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle");
     }
-    if (mode == DONT_OPEN){
+    if (mode == DONT_OPEN) {
       throw new IOException("Operation cannot be used in DONT_OPEN mode");
     }
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_ONLY mode");
     }
 
     java.io.RandomAccessFile fileEx4Java = (java.io.RandomAccessFile) fileEx;
-    try
-    {
+    try {
       fileEx4Java.setLength(newSize); // suppose the file is empty. seeking to pos 8 makes the file with 9 bytes (0-8).
       fileEx4Java.seek(newSize);
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -1182,25 +1072,20 @@ public class File extends RandomAccessStream
    *           slot).
    * @since TotalCross 1.0
    */
-  final public static String getCardSerialNumber(int slot) throws IllegalArgumentIOException, IOException
-  {
-    if (slot < -1){
+  final public static String getCardSerialNumber(int slot) throws IllegalArgumentIOException, IOException {
+    if (slot < -1) {
       throw new IllegalArgumentIOException("slot", Convert.toString(slot));
     }
     return null;
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       if (mode != INVALID) {
         this.close();
       }
-    }
-    catch (Throwable t)
-    {
+    } catch (Throwable t) {
     }
   }
 
@@ -1209,17 +1094,15 @@ public class File extends RandomAccessStream
    * 
    * @since TotalCross 1.0
    */
-  public int getSlot()
-  {
+  public int getSlot() {
     return slot;
   }
 
   private static void listFiles(String dir, Vector files, boolean recursive) throws IOException // guich@tc115_92
   {
     String[] list = new File(dir).listFiles();
-    if (list != null){
-      for (int i = 0; i < list.length; i++)
-      {
+    if (list != null) {
+      for (int i = 0; i < list.length; i++) {
         String p = list[i];
         String full = Convert.appendPath(dir, p);
         files.addElement(full);
@@ -1247,8 +1130,7 @@ public class File extends RandomAccessStream
    * @param recursive
    * @throws IOException
    */
-  public static String[] listFiles(String dir, boolean recursive) throws IOException
-  {
+  public static String[] listFiles(String dir, boolean recursive) throws IOException {
     Vector files = new Vector(50);
     dir = Convert.appendPath(dir, "/");
     files.addElement(dir);
@@ -1279,7 +1161,7 @@ public class File extends RandomAccessStream
   public static String[] listRoots() // fabio@tc122_14
   {
     java.io.File[] roots = java.io.File.listRoots();
-    if (roots == null){
+    if (roots == null) {
       return null;
     }
     String[] result = new String[roots.length];
@@ -1307,8 +1189,8 @@ public class File extends RandomAccessStream
   {
     byte[] buf = new byte[4096];
     int n = 0;
-    while ((n=readBytes(buf, 0, buf.length)) > 0){
-      dest.writeBytes(buf,0,n);
+    while ((n = readBytes(buf, 0, buf.length)) > 0) {
+      dest.writeBytes(buf, 0, n);
     }
   }
 
@@ -1328,7 +1210,7 @@ public class File extends RandomAccessStream
    */
   public void moveTo(File dest) throws IOException // guich@tc126_8
   {
-    if (mode == READ_ONLY){
+    if (mode == READ_ONLY) {
       throw new IOException("Operation cannot be used in READ_ONLY mode");
     }
     copyTo(dest);
@@ -1343,21 +1225,24 @@ public class File extends RandomAccessStream
    */
   public static void copy(String src, String dst) throws IOException // guich@tc126_43
   {
-    File fin=null,fout=null;
-    try
-    {
-      fin = new File(src,File.READ_ONLY);
-      fout = new File(dst,File.CREATE_EMPTY);
+    File fin = null, fout = null;
+    try {
+      fin = new File(src, File.READ_ONLY);
+      fout = new File(dst, File.CREATE_EMPTY);
       fin.copyTo(fout);
-    }
-    finally
-    {
-      try {if (fin != null) {
-        fin.close();
-      }} catch (Exception e) {}
-      try {if (fout != null) {
-        fout.close();
-      }} catch (Exception e) {}
+    } finally {
+      try {
+        if (fin != null) {
+          fin.close();
+        }
+      } catch (Exception e) {
+      }
+      try {
+        if (fout != null) {
+          fout.close();
+        }
+      } catch (Exception e) {
+      }
     }
   }
 
@@ -1369,18 +1254,18 @@ public class File extends RandomAccessStream
    */
   public static void move(String src, String dst) throws IOException // guich@tc126_43
   {
-    File fin=null,fout=null;
-    try
-    {
-      fin = new File(src,File.READ_WRITE);
-      fout = new File(dst,File.CREATE_EMPTY);
+    File fin = null, fout = null;
+    try {
+      fin = new File(src, File.READ_WRITE);
+      fout = new File(dst, File.CREATE_EMPTY);
       fin.moveTo(fout);
-    }
-    finally
-    {
-      try {if (fout != null) {
-        fout.close();
-      }} catch (Exception e) {}
+    } finally {
+      try {
+        if (fout != null) {
+          fout.close();
+        }
+      } catch (Exception e) {
+      }
     }
   }
 
@@ -1431,7 +1316,7 @@ public class File extends RandomAccessStream
          // testing in a folder
          File f = new File(Settings.appPath);
          add(new Label("mods of appPath = "+f.chmod(-1)),CENTER,CENTER);
-
+  
          // testing in a file
          String name = "test";
          f = new File(Settings.appPath+'/'+name,File.CREATE_EMPTY);
@@ -1450,29 +1335,24 @@ public class File extends RandomAccessStream
    */
   public int chmod(int mod) throws IOException // guich@tc126_16
   {
-    if (mode == INVALID || mode == CLOSED)
-    {
+    if (mode == INVALID || mode == CLOSED) {
       throw new IOException("Invalid file handle"); //flsobral@tc126: object must be valid.
     }
 
     java.io.File f = (java.io.File) fileRef;
-    if (!f.exists())
-    {
+    if (!f.exists()) {
       throw new FileNotFoundException(path); //flsobral@tc126: throw exception if the file does not exist.
     }
 
-    try
-    {
-      int current = (f.canExecute() ? 1 : 0) | (f.canWrite() ? 2 : 0) | (f.canRead() ? 4 : 0 );
-      current = current + current*10 + current*100;
+    try {
+      int current = (f.canExecute() ? 1 : 0) | (f.canWrite() ? 2 : 0) | (f.canRead() ? 4 : 0);
+      current = current + current * 10 + current * 100;
       mod /= 100; // 753 -> 7
       f.setExecutable((mod & 1) != 0, false);
-      f.setWritable  ((mod & 2) != 0, false);
-      f.setReadable  ((mod & 4) != 0, false);
+      f.setWritable((mod & 2) != 0, false);
+      f.setReadable((mod & 4) != 0, false);
       return current;
-    }
-    catch (java.lang.SecurityException e)
-    {
+    } catch (java.lang.SecurityException e) {
       throw new IOException(e.getMessage()); //flsobral@tc126: throw exception on error.
     }
   }
@@ -1484,14 +1364,10 @@ public class File extends RandomAccessStream
    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
    * @since TotalCross 1.53
    */
-  public byte[] readAndClose() throws IOException
-  {
-    try
-    {
+  public byte[] readAndClose() throws IOException {
+    try {
       return read();
-    }
-    finally
-    {
+    } finally {
       close();
     }
   }
@@ -1503,14 +1379,10 @@ public class File extends RandomAccessStream
    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
    * @since TotalCross 1.53
    */
-  public byte[] readAndDelete() throws IOException
-  {
-    try
-    {
+  public byte[] readAndDelete() throws IOException {
+    try {
       return read();
-    }
-    finally
-    {
+    } finally {
       delete();
     }
   }
@@ -1522,14 +1394,10 @@ public class File extends RandomAccessStream
    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
    * @since TotalCross 1.53
    */
-  public void writeAndClose(byte[] bytes) throws IOException
-  {
-    try
-    {
+  public void writeAndClose(byte[] bytes) throws IOException {
+    try {
       writeBytes(bytes, 0, bytes.length);
-    }
-    finally
-    {
+    } finally {
       close();
     }
   }
@@ -1537,12 +1405,11 @@ public class File extends RandomAccessStream
   /** Reads the file and returns a byte array with its contents.
    * @since TotalCross 3.1
    */
-  public byte[] read() throws IOException
-  {
+  public byte[] read() throws IOException {
     int len = getSize();
     byte[] ret = new byte[len];
     setPos(0);
-    readBytes(ret,0,len);
+    readBytes(ret, 0, len);
     return ret;
   }
 }

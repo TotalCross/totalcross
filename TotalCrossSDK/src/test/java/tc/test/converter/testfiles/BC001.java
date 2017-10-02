@@ -9,20 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC001
-{
-  public BC001()
-  {
+public class BC001 {
+  public BC001() {
     Object x = null;
 
-    if (false)
-    {
+    if (false) {
       x.toString(); // remove warnings
     }
   }
 }
-

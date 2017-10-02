@@ -9,43 +9,35 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.ir.Instruction;
 
 import tc.tools.converter.TCConstants;
 import tc.tools.converter.tclass.TCCode;
 import totalcross.util.Vector;
 
-public class Switch_reg extends MultiInstruction
-{
+public class Switch_reg extends MultiInstruction {
   public int key;
   public int n;
 
-  public Switch_reg(int op, int line, int k, int n)
-  {
+  public Switch_reg(int op, int line, int k, int n) {
     super(op, line);
-    key    = k;
+    key = k;
     this.n = n;
   }
 
-  public Switch_reg(int op, int line)
-  {
+  public Switch_reg(int op, int line) {
     super(op, line);
   }
 
-  public void set(int k, int n)
-  {
-    key    = k;
+  public void set(int k, int n) {
+    key = k;
     this.n = n;
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String print = TCConstants.bcTClassNames[opcode] + " " + key + ", " + n;
-    for (int i=0; i<params.length; i++)
-    {
+    for (int i = 0; i < params.length; i++) {
       Parameter p = params[i];
       print += "\n" + p.toString();
     }
@@ -53,18 +45,15 @@ public class Switch_reg extends MultiInstruction
   }
 
   @Override
-  public void toTCCode(Vector vcode)
-  {
+  public void toTCCode(Vector vcode) {
     TCCode tc = new TCCode(opcode, line);
     tc.len = len;
     tc.switch_reg__key(key);
     tc.switch_reg__n(n);
     vcode.addElement(tc);
-    for (int i=0; i<params.length; i++)
-    {
+    for (int i = 0; i < params.length; i++) {
       Parameter p = params[i];
       p.toTCCode(vcode);
     }
   }
 }
-

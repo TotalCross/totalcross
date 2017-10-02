@@ -9,20 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC017_sipush extends LoadLocal
-{
-  public BC017_sipush()
-  {
-    super(readInt16(pc+1),INT);
+public class BC017_sipush extends LoadLocal {
+  public BC017_sipush() {
+    super(readInt16(pc + 1), INT);
     pcInc = 3;
   }
+
   @Override
-  public void exec()
-  {
+  public void exec() {
     stack[stackPtr].asInt = localIdx;
   }
 }

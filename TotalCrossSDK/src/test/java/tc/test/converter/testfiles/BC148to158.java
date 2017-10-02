@@ -9,30 +9,21 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC148to158
-{
-  public BC148to158()
-  {
+public class BC148to158 {
+  public BC148to158() {
     long a = 1, b = 1, c = 10;
 
-    if (a == b)
-    {
+    if (a == b) {
       a = a + b;
-    }
-    else
-    {
+    } else {
       b = a - b;
     }
 
     a = a * b;
 
-
-    while (a < c)
-    {
+    while (a < c) {
       a = a + 1;
     }
 

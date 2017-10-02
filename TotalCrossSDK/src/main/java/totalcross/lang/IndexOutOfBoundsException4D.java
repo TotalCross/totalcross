@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class IndexOutOfBoundsException4D extends RuntimeException
-{
+public class IndexOutOfBoundsException4D extends RuntimeException {
   /** Constructs an empty Exception. */
-  public IndexOutOfBoundsException4D()
-  {
+  public IndexOutOfBoundsException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public IndexOutOfBoundsException4D(String msg)
-  {
+  public IndexOutOfBoundsException4D(String msg) {
     super(msg);
   }
 }

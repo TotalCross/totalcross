@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter;
 
-public class ConstantPoolLimitReachedException extends RuntimeException
-{
-  public ConstantPoolLimitReachedException(String msg)
-  {
+public class ConstantPoolLimitReachedException extends RuntimeException {
+  public ConstantPoolLimitReachedException(String msg) {
     super(msg);
   }
 }

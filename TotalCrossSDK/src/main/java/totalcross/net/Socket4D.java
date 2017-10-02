@@ -14,15 +14,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 import totalcross.io.Stream;
 import totalcross.sys.Vm;
 
-public class Socket4D extends Stream
-{
+public class Socket4D extends Stream {
   Object socketRef;
 
   public int readTimeout = DEFAULT_READ_TIMEOUT;
@@ -35,42 +32,35 @@ public class Socket4D extends Stream
   public static final int DEFAULT_READ_TIMEOUT = 5000;
   public static final int DEFAULT_WRITE_TIMEOUT = 2000;
 
-  native void socketCreate(final String host, final int port, final int timeout,
-      final boolean noLinger);
+  native void socketCreate(final String host, final int port, final int timeout, final boolean noLinger);
 
   native private void nativeClose() throws totalcross.io.IOException;
 
-  native private int readWriteBytes(byte buf[], int start, int count, boolean isRead)
-      throws totalcross.io.IOException;
+  native private int readWriteBytes(byte buf[], int start, int count, boolean isRead) throws totalcross.io.IOException;
 
-  protected Socket4D()
-  {
+  protected Socket4D() {
   }
 
-  public Socket4D(String host, int port)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
+  public Socket4D(String host, int port) throws totalcross.net.UnknownHostException, totalcross.io.IOException {
     this(host, port, DEFAULT_OPEN_TIMEOUT, null);
   }
 
   public Socket4D(String host, int port, int timeout)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
+      throws totalcross.net.UnknownHostException, totalcross.io.IOException {
     this(host, port, timeout, null);
   }
 
-  public Socket4D(String host, int port, int timeout, boolean noLinger) throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
-    this(host, port, timeout, "nolinger="+noLinger);
+  public Socket4D(String host, int port, int timeout, boolean noLinger)
+      throws totalcross.net.UnknownHostException, totalcross.io.IOException {
+    this(host, port, timeout, "nolinger=" + noLinger);
   }
 
   public Socket4D(String host, int port, int timeout, String params)
-      throws totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
-    if (port < 0 || port > 65535){
+      throws totalcross.net.UnknownHostException, totalcross.io.IOException {
+    if (port < 0 || port > 65535) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'port': " + port);
     }
-    if (timeout < 0){
+    if (timeout < 0) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'timeout': " + timeout);
     }
 
@@ -82,42 +72,39 @@ public class Socket4D extends Stream
   }
 
   @Override
-  public void close() throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public void close() throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is already closed.");
     }
     nativeClose();
   }
 
   @Override
-  public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new NullPointerException();
     }
-    if (start < 0 || count < 0 || start + count > buf.length){
+    if (start < 0 || count < 0 || start + count > buf.length) {
       throw new IndexOutOfBoundsException();
     }
-    if (count == 0){
+    if (count == 0) {
       return 0;
     }
 
     return readWriteBytes(buf, start, count, true);
   }
 
-  public int readBytes(byte buf[]) throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public int readBytes(byte buf[]) throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new java.lang.NullPointerException();
     }
-    if (buf.length == 0){
+    if (buf.length == 0) {
       return 0;
     }
 
@@ -125,18 +112,17 @@ public class Socket4D extends Stream
   }
 
   @Override
-  public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new NullPointerException();
     }
-    if (start < 0 || count < 0 || start + count > buf.length){
+    if (start < 0 || count < 0 || start + count > buf.length) {
       throw new IndexOutOfBoundsException();
     }
-    if (count == 0){
+    if (count == 0) {
       return 0;
     }
 
@@ -145,24 +131,22 @@ public class Socket4D extends Stream
 
   private byte[] rlbuf;
 
-  public String readLine() throws totalcross.io.IOException
-  {
-    if (socketRef == null){
+  public String readLine() throws totalcross.io.IOException {
+    if (socketRef == null) {
       throw new totalcross.io.IOException("The socket is closed.");
     }
 
-    if (rlbuf == null){
+    if (rlbuf == null) {
       rlbuf = new byte[256];
     }
 
     byte[] buf = rlbuf;
     int pos = 0;
     int r;
-    while ((r = readBytes(buf, pos, 1)) == 1)
-    {
+    while ((r = readBytes(buf, pos, 1)) == 1) {
       if (buf[pos] == '\n') // guich@tc123_47
       {
-        if (pos > 0 && buf[pos-1] == '\r') {
+        if (pos > 0 && buf[pos - 1] == '\r') {
           pos--;
         }
         // note that pos must be same of length, otherwise the String will be constructed with one less character
@@ -170,7 +154,7 @@ public class Socket4D extends Stream
       }
       if (++pos == buf.length) // reached buffer size?
       {
-        byte[] temp = new byte[buf.length+256];
+        byte[] temp = new byte[buf.length + 256];
         Vm.arrayCopy(buf, 0, temp, 0, pos);
         rlbuf = buf = temp;
       }
@@ -179,24 +163,18 @@ public class Socket4D extends Stream
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       close();
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
     }
   }
 
-  public String getHost()
-  {
+  public String getHost() {
     return host;
   }
 
-  public int getPort()
-  {
+  public int getPort() {
     return port;
   }
 }

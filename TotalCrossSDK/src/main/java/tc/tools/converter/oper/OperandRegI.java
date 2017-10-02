@@ -9,19 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandRegI extends OperandReg
-{
-  public OperandRegI()
-  {
+public class OperandRegI extends OperandReg {
+  public OperandRegI() {
     super(opr_regI);
   }
 
-  public OperandRegI(int framePosition)
-  {
+  public OperandRegI(int framePosition) {
     super(opr_regI, framePosition);
   }
 
@@ -30,8 +25,7 @@ public class OperandRegI extends OperandReg
     super(kind, framePosition);
   }
 
-  public OperandRegI(String wordIndex, int index)
-  {
+  public OperandRegI(String wordIndex, int index) {
     super(opr_regI, wordIndex, index);
   }
 }

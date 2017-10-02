@@ -11,8 +11,7 @@ public class UtilsInfoProviderImpl implements Utils.UtilsInfoProvider {
   @Override
   public Hashtable getProductInfo() {
     Hashtable info = null;
-    if (ActivationClient.activateOnJDK_DEBUG)
-    {
+    if (ActivationClient.activateOnJDK_DEBUG) {
       info = new Hashtable(10);
       info.put("COMPILATION_DATE", Convert.toString(CompilationDate4D.COMPILATION_DATE ^ 12341234));
 
@@ -25,15 +24,11 @@ public class UtilsInfoProviderImpl implements Utils.UtilsInfoProvider {
   @Override
   public Hashtable getDeviceInfo() throws ActivationException {
     Hashtable info = null;
-    if (ActivationClient.activateOnJDK_DEBUG)
-    {
+    if (ActivationClient.activateOnJDK_DEBUG) {
       MD5Digest md5;
-      try
-      {
+      try {
         md5 = new MD5Digest();
-      }
-      catch (NoSuchAlgorithmException e)
-      {
+      } catch (NoSuchAlgorithmException e) {
         throw new ActivationException(e.getMessage());
       }
       md5.update("1234ABCD".getBytes());

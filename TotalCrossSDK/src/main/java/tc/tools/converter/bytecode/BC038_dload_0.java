@@ -9,15 +9,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC038_dload_0 extends LoadLocal
-{
-  public BC038_dload_0()
-  {
-    super(0,DOUBLE);
+public class BC038_dload_0 extends LoadLocal {
+  public BC038_dload_0() {
+    super(0, DOUBLE);
     stackInc = 2;
   }
 }

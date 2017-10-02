@@ -22,41 +22,35 @@ package totalcross.net.mail;
  * 
  * @since TotalCross 1.13
  */
-public class MessagingException extends Exception
-{
+public class MessagingException extends Exception {
   private Throwable cause;
 
   /** Constructs an empty Exception. */
-  public MessagingException()
-  {
+  public MessagingException() {
     super();
   }
 
   /** Constructs an exception with the given message. */
-  public MessagingException(String msg)
-  {
+  public MessagingException(String msg) {
     super(msg);
   }
 
-  public MessagingException(Throwable cause)
-  {
+  public MessagingException(Throwable cause) {
     super(cause == null ? null : cause.getMessage());
     this.cause = cause;
   }
 
   @Override
-  public void printStackTrace()
-  {
-    if (cause != null){
+  public void printStackTrace() {
+    if (cause != null) {
       cause.printStackTrace();
-    }else {
+    } else {
       super.printStackTrace();
     }
   }
 
   @Override
-  public Throwable getCause()
-  {
+  public Throwable getCause() {
     return cause;
   }
 }

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** A class that represents an event Listener. Holds the type of the event and the listener itself.
@@ -27,7 +25,7 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
   public static final int WINDOW = 2;
   public static final int GRID = 3;
   public static final int FOCUS = 4;
-  public static final int PRESS= 5;
+  public static final int PRESS = 5;
   public static final int TIMER = 6;
   public static final int KEY = 7;
   public static final int HIGHLIGHT = 8;
@@ -51,23 +49,20 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
    */
   public int type;
 
-  /** The control that's listening to the event. */ 
+  /** The control that's listening to the event. */
   public Object listener;
 
   /** The target control. */
   public Object target;
 
-  public Listener(Object target, int type, Object listener)
-  {
+  public Listener(Object target, int type, Object listener) {
     this.target = target;
     this.type = type;
     this.listener = listener;
   }
 
   @Override
-  public boolean equals(Object o)
-  {
-    return o instanceof Listener && ((Listener)o).type == this.type && ((Listener)o).listener == this.listener;
+  public boolean equals(Object o) {
+    return o instanceof Listener && ((Listener) o).type == this.type && ((Listener) o).listener == this.listener;
   }
 }
-

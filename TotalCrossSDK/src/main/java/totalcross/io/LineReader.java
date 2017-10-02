@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import totalcross.io.device.PortConnector;
@@ -44,8 +42,7 @@ import totalcross.sys.Vm;
  * @author Guilherme Campos Hazan (guich)
  * @since SuperWaba 5.12
  */
-public class LineReader
-{
+public class LineReader {
   protected Stream f;
   protected ByteArrayStream readBuf = new ByteArrayStream(!Settings.onJavaSE ? 4096 : 32768); // guich@554_10: increase buffer size on applet
   protected int ofs;
@@ -71,9 +68,8 @@ public class LineReader
    *
    * @throws totalcross.io.IOException
    */
-  public LineReader(Stream f) throws totalcross.io.IOException
-  {
-    this(f, null,0,0);
+  public LineReader(Stream f) throws totalcross.io.IOException {
+    this(f, null, 0, 0);
   }
 
   /**
@@ -87,13 +83,13 @@ public class LineReader
   public LineReader(Stream f, byte[] buffer, int start, int len) throws totalcross.io.IOException // guich@tc125_16
   {
     this.f = f;
-    if ((f instanceof Socket) || (f instanceof PortConnector)){
+    if ((f instanceof Socket) || (f instanceof PortConnector)) {
       maxTries = 10;
-    }else
-      if (f instanceof BufferedStream && Settings.onJavaSE){
-        Vm.warning("Don't use "+getClass().getName()+" with a BufferedStream, because the LineReader class already uses a buffer for faster operation. Pass to LineReader's constructor the Stream you're using with the BufferedStream and discard the BufferedStream");
-      }
-    if (buffer != null && len > 0){
+    } else if (f instanceof BufferedStream && Settings.onJavaSE) {
+      Vm.warning("Don't use " + getClass().getName()
+          + " with a BufferedStream, because the LineReader class already uses a buffer for faster operation. Pass to LineReader's constructor the Stream you're using with the BufferedStream and discard the BufferedStream");
+    }
+    if (buffer != null && len > 0) {
       readBuf.writeBytes(buffer, start, len);
     }
   }
@@ -112,8 +108,7 @@ public class LineReader
   /** Returns the Stream attached to this LineReader.
    * @since TotalCross 1.23
    */
-  public Stream getStream()
-  {
+  public Stream getStream() {
     return f;
   }
 
@@ -121,8 +116,7 @@ public class LineReader
    * Move the buffer to the beginning, in order to preserve the bytes that were
    * not read yet.
    */
-  protected void reuse()
-  {
+  protected void reuse() {
     int pos = readBuf.getPos();
     int stillUnread = pos - ofs;
     readBuf.skipBytes(-pos); // reset the pos to 0
@@ -139,17 +133,14 @@ public class LineReader
    *
    * @throws totalcross.io.IOException
    */
-  protected boolean readMore() throws totalcross.io.IOException
-  {
+  protected boolean readMore() throws totalcross.io.IOException {
     // read more bytes
-    if (readBuf.available() == 0)
-    {
+    if (readBuf.available() == 0) {
       readBuf.setSize(readBuf.getPos() + 1024, true); // grow the buffer if needed
     }
     int r = f.readBytes(readBuf.getBuffer(), readBuf.getPos(), readBuf.available());
-    if (r < 0){
-      for (int i = maxTries - 1; i >= 0; i--)
-      {
+    if (r < 0) {
+      for (int i = maxTries - 1; i >= 0; i--) {
         Vm.sleep(100);
         r = f.readBytes(readBuf.getBuffer(), readBuf.getPos(), readBuf.available());
         if (r > 0) {
@@ -157,8 +148,7 @@ public class LineReader
         }
       }
     }
-    if (r > 0)
-    {
+    if (r > 0) {
       readBuf.skipBytes(r); // mark the size, moving pos to the end.
     }
     return r > 0;
@@ -170,19 +160,17 @@ public class LineReader
    *
    * @throws totalcross.io.IOException
    */
-  public String readLine() throws totalcross.io.IOException
-  {
+  public String readLine() throws totalcross.io.IOException {
     byte[] buf = readBuf.getBuffer();
     int size = readBuf.getPos();
     boolean foundEnter = false;
 
     // skip starting control chars
-    if (!returnEmptyLines){
+    if (!returnEmptyLines) {
       while (ofs < size && (buf[ofs] == '\n' || buf[ofs] == '\r')) {
         ofs++;
       }
-    }else
-    {
+    } else {
       if (ofs < size && buf[ofs] == '\r') {
         ofs++;
       }
@@ -191,27 +179,24 @@ public class LineReader
       }
     }
 
-    while (true)
-    {
+    while (true) {
       int i;
-      for (i = ofs; i < size; i++)
-      {
+      for (i = ofs; i < size; i++) {
         if (buf[i] == '\n') // found an enter? - guich@tc123_31
         {
           foundEnter = true;
           int len = i - ofs; // guich@552_28: verify if the length is not 0
-          if (i > 0 && buf[i-1] == '\r') {
+          if (i > 0 && buf[i - 1] == '\r') {
             len--;
           }
-          if (len > 0 || returnEmptyLines)
-          {
-            int ii = ofs+len;
-            if (doTrim && (buf[ofs] <= ' ' || buf[ii-1] <= ' ')) // guich@tc123_37
+          if (len > 0 || returnEmptyLines) {
+            int ii = ofs + len;
+            if (doTrim && (buf[ofs] <= ' ' || buf[ii - 1] <= ' ')) // guich@tc123_37
             {
               while (ofs < ii && buf[ofs] <= ' ') {
                 ofs++;
               }
-              while (ii > ofs && buf[ii-1] <= ' ') {
+              while (ii > ofs && buf[ii - 1] <= ' ') {
                 ii--;
               }
               len = ii - ofs;
@@ -230,8 +215,7 @@ public class LineReader
       boolean foundMore = readMore();
       size = readBuf.getPos(); // size had changed
       buf = readBuf.getBuffer(); // buffer may have changed
-      if (!foundMore)
-      {
+      if (!foundMore) {
         int len = i - lastOfs;
         if (len > 0 || (foundMore && returnEmptyLines)) // any remaining string on the buffer?
         {
@@ -240,12 +224,12 @@ public class LineReader
           }
           int len0 = len;
           lastOfs = 0;
-          if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len-1] <= ' ')) // guich@tc123_37
+          if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len - 1] <= ' ')) // guich@tc123_37
           {
             while (lastOfs < len && buf[lastOfs] <= ' ') {
               lastOfs++;
             }
-            while (len > lastOfs && buf[len-1] <= ' ') {
+            while (len > lastOfs && buf[len - 1] <= ' ') {
               len--;
             }
           }

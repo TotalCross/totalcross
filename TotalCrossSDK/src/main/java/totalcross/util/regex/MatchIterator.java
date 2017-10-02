@@ -31,8 +31,10 @@ package totalcross.util.regex;
 
 import totalcross.util.ElementNotFoundException;
 
-public interface MatchIterator{
+public interface MatchIterator {
   public boolean hasMore();
+
   public MatchResult nextMatch() throws ElementNotFoundException;
+
   public int count();
 }

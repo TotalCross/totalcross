@@ -15,8 +15,7 @@ import com.dd.plist.NSNumber;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;
 
-public class MobileProvision
-{
+public class MobileProvision {
   public final String applicationIdentifierPrefix;
   public final NSDate creationDate;
   public final Certificate[] developerCertificates;
@@ -34,8 +33,7 @@ public class MobileProvision
 
   private final String content;
 
-  public MobileProvision(String content) throws Exception
-  {
+  public MobileProvision(String content) throws Exception {
     this.content = content;
 
     NSDictionary rootDictionary = (NSDictionary) PropertyListParser.parse(content.getBytes("UTF-8"));
@@ -51,11 +49,9 @@ public class MobileProvision
     CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
     array = (NSArray) rootDictionary.objectForKey("DeveloperCertificates");
     developerCertificates = array != null ? new Certificate[array.count()] : null;
-    if (developerCertificates != null && developerCertificates.length > 0)
-    {
+    if (developerCertificates != null && developerCertificates.length > 0) {
       NSObject[] certificates = array.getArray();
-      for (int i = 0; i < certificates.length; i++)
-      {
+      for (int i = 0; i < certificates.length; i++) {
         ByteArrayInputStream certificateData = new ByteArrayInputStream(((NSData) certificates[i]).bytes());
         developerCertificates[i] = cf.generateCertificate(certificateData);
       }
@@ -78,8 +74,7 @@ public class MobileProvision
     // ProvisionedDevices
     array = (NSArray) rootDictionary.objectForKey("ProvisionedDevices");
     provisionedDevices = array != null ? new String[array.count()] : null;
-    if (provisionedDevices != null && provisionedDevices.length > 0)
-    {
+    if (provisionedDevices != null && provisionedDevices.length > 0) {
       NSObject[] devices = array.getArray();
       for (int i = 0; i < devices.length; i++) {
         provisionedDevices[i] = devices[i].toString();
@@ -89,8 +84,7 @@ public class MobileProvision
     // TeamIdentifier
     array = (NSArray) rootDictionary.objectForKey("TeamIdentifier");
     teamIdentifier = array != null ? new String[array.count()] : null;
-    if (teamIdentifier != null && teamIdentifier.length > 0)
-    {
+    if (teamIdentifier != null && teamIdentifier.length > 0) {
       NSObject[] team = array.getArray();
       for (int i = 0; i < team.length; i++) {
         teamIdentifier[i] = team[i].toString();
@@ -115,17 +109,14 @@ public class MobileProvision
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return content;
   }
 
-  public String GetEntitlementsString()
-  {
+  public String GetEntitlementsString() {
     NSDictionary XCentPList = new NSDictionary();
     String[] keys = entitlements.allKeys();
-    for (int i = 0; i < keys.length; i++)
-    {
+    for (int i = 0; i < keys.length; i++) {
       String key = keys[i];
       NSObject item = entitlements.objectForKey(key);
       XCentPList.put(key, item);
@@ -133,13 +124,12 @@ public class MobileProvision
     return MyNSObjectSerializer.toXMLPropertyList(XCentPList);
   }
 
-  public static MobileProvision readFromFile(File input) throws Exception
-  {
+  public static MobileProvision readFromFile(File input) throws Exception {
     byte[] inputData = FileUtils.readFileToByteArray(input);
     String inputString = new String(inputData, "UTF-8");
 
     int startIdx = inputString.indexOf("<?xml");
-    if (startIdx == -1){
+    if (startIdx == -1) {
       return null;
     }
 

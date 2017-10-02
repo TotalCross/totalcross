@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /**
@@ -52,7 +50,6 @@ package totalcross.lang;
  * available.
  */
 
-public interface Runnable4D
-{
+public interface Runnable4D {
   public void run();
 }

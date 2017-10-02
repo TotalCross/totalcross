@@ -1,7 +1,6 @@
 package totalcross.sql;
 
-public class Types
-{
+public class Types {
   public static final int BIT = -7;
   public static final int TINYINT = -6;
   public static final int SMALLINT = 5;
@@ -39,8 +38,7 @@ public class Types
   public static final int NCLOB = 2011;
   public static final int SQLXML = 2009;
 
-  private Types()
-  {
+  private Types() {
   }
 
 }

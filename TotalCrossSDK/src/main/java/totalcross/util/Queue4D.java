@@ -2,9 +2,9 @@
  * Written by Doug Lea with assistance from members of JCP JSR-166              
  * Expert Group and released to the public domain, as explained at              
  * http://creativecommons.org/licenses/publicdomain                             
- */                                                                             
+ */
 
-package totalcross.util;                                                              
+package totalcross.util;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -116,8 +116,8 @@ import java.util.PriorityQueue;
  * @since 1.5                                                                   
  * @author Doug Lea                                                             
  * @param <E> the type of elements held in this collection                      
- */                                                                             
-public interface Queue4D<E> extends Collection<E> {                               
+ */
+public interface Queue4D<E> extends Collection<E> {
   /**                                                                         
    * Inserts the specified element into this queue if it is possible to do so 
    * immediately without violating capacity restrictions, returning           
@@ -134,9 +134,9 @@ public interface Queue4D<E> extends Collection<E> {
    *         this queue does not permit null elements                         
    * @throws IllegalArgumentException if some property of this element        
    *         prevents it from being added to this queue                       
-   */                                                                         
+   */
   @Override
-  boolean add(E e);                                                           
+  boolean add(E e);
 
   /**                                                                         
    * Inserts the specified element into this queue if it is possible to do    
@@ -154,8 +154,8 @@ public interface Queue4D<E> extends Collection<E> {
    *         this queue does not permit null elements                         
    * @throws IllegalArgumentException if some property of this element        
    *         prevents it from being added to this queue                       
-   */                                                                         
-  boolean offer(E e);                                                         
+   */
+  boolean offer(E e);
 
   /**                                                                         
    * Retrieves and removes the head of this queue.  This method differs       
@@ -164,16 +164,16 @@ public interface Queue4D<E> extends Collection<E> {
    *                                                                          
    * @return the head of this queue                                           
    * @throws NoSuchElementException if this queue is empty                    
-   */                                                                         
-  E remove();                                                                 
+   */
+  E remove();
 
   /**                                                                         
    * Retrieves and removes the head of this queue,                            
    * or returns <tt>null</tt> if this queue is empty.                         
    *                                                                          
    * @return the head of this queue, or <tt>null</tt> if this queue is empty  
-   */                                                                         
-  E poll();                                                                   
+   */
+  E poll();
 
   /**                                                                         
    * Retrieves, but does not remove, the head of this queue.  This method     
@@ -182,14 +182,14 @@ public interface Queue4D<E> extends Collection<E> {
    *                                                                          
    * @return the head of this queue                                           
    * @throws NoSuchElementException if this queue is empty                    
-   */                                                                         
-  E element();                                                                
+   */
+  E element();
 
   /**                                                                         
    * Retrieves, but does not remove, the head of this queue,                  
    * or returns <tt>null</tt> if this queue is empty.                         
    *                                                                          
    * @return the head of this queue, or <tt>null</tt> if this queue is empty  
-   */                                                                         
-  E peek();                                                                   
-}                                                                               
+   */
+  E peek();
+}

@@ -19,10 +19,8 @@ import totalcross.util.regex.Pattern;
  * @author leo
  * 
  */
-public class ExtendedCommand
-{
-  public static interface SQLExtension
-  {
+public class ExtendedCommand {
+  public static interface SQLExtension {
     public void execute(DB db) throws SQLException;
   }
 
@@ -65,8 +63,7 @@ public class ExtendedCommand
     }
   }
 
-  public static class BackupCommand implements SQLExtension
-  {
+  public static class BackupCommand implements SQLExtension {
     public final String srcDB;
     public final String destFile;
 
@@ -80,7 +77,8 @@ public class ExtendedCommand
       this.destFile = destFile;
     }
 
-    private static Pattern backupCmd = Pattern.compile("backup(\\s+(\"[^\"]*\"|'[^\']*\'|\\S+))?\\s+to\\s+(\"[^\"]*\"|'[^\']*\'|\\S+)");
+    private static Pattern backupCmd = Pattern
+        .compile("backup(\\s+(\"[^\"]*\"|'[^\']*\'|\\S+))?\\s+to\\s+(\"[^\"]*\"|'[^\']*\'|\\S+)");
 
     /**
      * Parses SQLite database backup command and creates a BackupCommand object.
@@ -111,10 +109,9 @@ public class ExtendedCommand
 
   }
 
-  public static class RestoreCommand implements SQLExtension
-  {
-    public final String    targetDB;
-    public final String    srcFile;
+  public static class RestoreCommand implements SQLExtension {
+    public final String targetDB;
+    public final String srcFile;
     private static Pattern restoreCmd = Pattern
         .compile("restore(\\s+(\"[^\"]*\"|'[^\']*\'|\\S+))?\\s+from\\s+(\"[^\"]*\"|'[^\']*\'|\\S+)");
 

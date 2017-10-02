@@ -9,23 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class Monitor extends ByteCode
-{
+public class Monitor extends ByteCode {
   public Object locker;
   public int lockerPos;
 
-  public Monitor()
-  {
+  public Monitor() {
     this.lockerPos = -1;
   }
 
   @Override
-  public void exec()
-  {
-    this.locker = stack[stackPtr-1];
+  public void exec() {
+    this.locker = stack[stackPtr - 1];
   }
 }

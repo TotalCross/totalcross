@@ -23,39 +23,32 @@ import totalcross.ui.event.Event;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.gfx.Color;
 
-public class VelocimeterSample extends BaseContainer
-{
+public class VelocimeterSample extends BaseContainer {
   Velocimeter vel;
   TimerEvent tt;
 
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       super.initUI();
       tt = addTimer(50);
       vel = new Velocimeter();
       vel.value = -20;
       vel.max = 40;
       vel.pointerColor = Color.GREEN;
-      add(vel,CENTER,CENTER,PARENTSIZE+50,PARENTSIZE+50);
-    }
-    catch (Exception e)
-    {
-      MessageBox.showException(e,true);
+      add(vel, CENTER, CENTER, PARENTSIZE + 50, PARENTSIZE + 50);
+    } catch (Exception e) {
+      MessageBox.showException(e, true);
       back();
     }
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == TimerEvent.TRIGGERED && tt.triggered)
-    {
+  public void onEvent(Event e) {
+    if (e.type == TimerEvent.TRIGGERED && tt.triggered) {
       vel.value++;
-      if (vel.value > vel.max+20) {
-        vel.value = vel.min-20;
+      if (vel.value > vel.max + 20) {
+        vel.value = vel.min - 20;
       }
       repaint();
     }

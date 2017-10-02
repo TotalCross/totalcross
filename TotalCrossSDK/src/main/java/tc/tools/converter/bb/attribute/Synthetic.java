@@ -9,28 +9,22 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.attribute;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class Synthetic implements AttributeInfo
-{
+public class Synthetic implements AttributeInfo {
   @Override
-  public int length()
-  {
+  public int length() {
     return 0;
   }
 
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
   }
 
   @Override
-  public void save(DataStream ds) throws IOException
-  {
+  public void save(DataStream ds) throws IOException {
   }
 }

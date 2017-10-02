@@ -17,11 +17,9 @@ import java.util.Map;
 
 import totalcross.unit.TestCase;
 
-public class TestLinkedHashMap extends TestCase
-{
+public class TestLinkedHashMap extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test22 test1 = new Test22();
     LinkedHashMap test2 = new Test22(test1);
     HashMap test3 = new Test22(10, 0.1f);
@@ -38,24 +36,19 @@ public class TestLinkedHashMap extends TestCase
     assertEquals(null, test2.get(null));
     assertEquals(null, test3.get(null));
 
-
   }
 }
 
-class Test22 extends LinkedHashMap
-{
-  public Test22()
-  {
+class Test22 extends LinkedHashMap {
+  public Test22() {
     super();
   }
 
-  public Test22(Map m)
-  {
+  public Test22(Map m) {
     super(m);
   }
 
-  public Test22(int initialCapacity, float load)
-  {
+  public Test22(int initialCapacity, float load) {
     super(initialCapacity, load);
   }
 }

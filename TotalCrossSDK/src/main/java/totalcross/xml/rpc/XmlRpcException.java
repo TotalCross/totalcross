@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.rpc;
 
 // Copyright (C) 2004 Nimkathana (www.nimkathana.com), USA
@@ -45,14 +43,11 @@ package totalcross.xml.rpc;
  * @author Maintained by Nimkathana (<a href="http://www.nimkathana.com">www.nimkathana.com</a>)
  * @author Original by IOP GmbH (<a href="http://www.iop.de">www.iop.de</a>)
  */
-public class XmlRpcException extends Exception
-{
-  public XmlRpcException()
-  {
+public class XmlRpcException extends Exception {
+  public XmlRpcException() {
   }
 
-  public XmlRpcException(String msg)
-  {
+  public XmlRpcException(String msg) {
     super(msg);
   }
 }

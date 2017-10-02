@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package jdkcompat.awt.geom;
 
 /**
@@ -47,13 +46,11 @@ package jdkcompat.awt.geom;
  * @since 1.2
  * @status updated to 1.4
  */
-public abstract class Dimension2D4D implements Cloneable
-{
+public abstract class Dimension2D4D implements Cloneable {
   /**
    * The default constructor.
    */
-  protected Dimension2D4D()
-  {
+  protected Dimension2D4D() {
   }
 
   /**
@@ -89,8 +86,7 @@ public abstract class Dimension2D4D implements Cloneable
    *
    * @throws NullPointerException if d is null
    */
-  public void setSize(Dimension2D4D d)
-  {
+  public void setSize(Dimension2D4D d) {
     setSize(d.getWidth(), d.getHeight());
   }
 
@@ -104,15 +100,12 @@ public abstract class Dimension2D4D implements Cloneable
    *
    * @since 1.2
    */
-  public Object clone()
-  {
-    try
-      {
-        return super.clone();
-      }
-    catch (CloneNotSupportedException e)
-      {
-        throw (Error) new InternalError().initCause(e); // Impossible
-      }
+  @Override
+  public Object clone() {
+    try {
+      return super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw (Error) new InternalError().initCause(e); // Impossible
+    }
   }
 } // class Dimension2D

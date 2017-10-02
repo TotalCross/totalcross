@@ -12,12 +12,10 @@ import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 import totalcross.ui.event.KeyEvent;
 
-public class ChatScreen extends Container
-{
+public class ChatScreen extends Container {
   DataStream connection;
 
-  ChatScreen(Stream connection)
-  {
+  ChatScreen(Stream connection) {
     this.connection = new DataStream(connection);
   }
 
@@ -26,11 +24,10 @@ public class ChatScreen extends Container
   Button btSend;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     btSend = new Button(" Send! ");
 
-    add(btSend, RIGHT, BOTTOM,PREFERRED,PREFERRED+fmH);
+    add(btSend, RIGHT, BOTTOM, PREFERRED, PREFERRED + fmH);
 
     msgField = new Edit();
     add(msgField, LEFT, SAME, FIT, PREFERRED);
@@ -43,27 +40,19 @@ public class ChatScreen extends Container
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    if (event.type == KeyEvent.SPECIAL_KEY_PRESS)
-    {
+  public void onEvent(Event event) {
+    if (event.type == KeyEvent.SPECIAL_KEY_PRESS) {
       btSend.simulatePress();
       btSend.postPressedEvent();
-    }
-    else if (event.type == ControlEvent.PRESSED && event.target == btSend)
-    {
+    } else if (event.type == ControlEvent.PRESSED && event.target == btSend) {
       String msg = msgField.getText();
-      if (msg != null && msg.trim().length() > 0)
-      {
-        try
-        {
+      if (msg != null && msg.trim().length() > 0) {
+        try {
           connection.writeString(msg);
           // send message
           chatArea.add(msg);
           chatArea.selectLast();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
           e.printStackTrace();
         }
       }
@@ -71,26 +60,19 @@ public class ChatScreen extends Container
     }
   }
 
-  class Listener implements Runnable
-  {
+  class Listener implements Runnable {
     @Override
-    public void run()
-    {
-      try
-      {
-        while (true)
-        {
+    public void run() {
+      try {
+        while (true) {
           String s = connection.readString();
-          if (s != null)
-          {
+          if (s != null) {
             chatArea.add(s);
             chatArea.selectLast();
           }
           Vm.sleep(50);
         }
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         e.printStackTrace();
       }
     }

@@ -19,7 +19,6 @@ package totalcross.game;
 import totalcross.io.IOException;
 import totalcross.ui.Control;
 import totalcross.ui.MainWindow;
-import totalcross.ui.Window;
 import totalcross.ui.event.Event;
 import totalcross.ui.event.KeyEvent;
 import totalcross.ui.event.PenEvent;
@@ -38,33 +37,29 @@ import totalcross.ui.image.ImageException;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-class GameEngineMainWindow extends MainWindow
-{
+class GameEngineMainWindow extends MainWindow {
   /**
    * TotalCross game API version.
    */
-  private static GameEngine                engine;
+  private static GameEngine engine;
 
-  private Options                          options;
-  private HighScores                       hscores;
+  private Options options;
+  private HighScores hscores;
 
-  private boolean                          isRunning;
-  private Graphics                         graf;
+  private boolean isRunning;
+  private Graphics graf;
 
-  private TimerEvent                       gameTimer;
-  private boolean                          flicker;
+  private TimerEvent gameTimer;
+  private boolean flicker;
 
-  private Control gameTimerControl = new Control()
-  {
+  private Control gameTimerControl = new Control() {
     @Override
-    public final void onEvent(Event e)
-    {
+    public final void onEvent(Event e) {
       if (isRunning) {
         refresh();
       }
 
-      if (!isRunning)
-      {
+      if (!isRunning) {
         removeTimer(gameTimer);
         gameTimer = null;
         _doPaint();
@@ -76,14 +71,12 @@ class GameEngineMainWindow extends MainWindow
   };
 
   /** Do nothing. All attributes must be set by the Game implementor */
-  protected GameEngineMainWindow()
-  {
+  protected GameEngineMainWindow() {
     paintBackground = false;
   }
 
   /** Called just after the GameEngine is constructed */
-  protected void setGameEngine(GameEngine engine)
-  {
+  protected void setGameEngine(GameEngine engine) {
     GameEngineMainWindow.engine = engine;
   }
 
@@ -91,18 +84,16 @@ class GameEngineMainWindow extends MainWindow
    * Returns a Graphics instance for the drawing surface. A new instance is
    * always returned
    */
-  static final Graphics getEngineGraphics()
-  {
-    if (engine == null){
+  static final Graphics getEngineGraphics() {
+    if (engine == null) {
       throw new GameEngineException("GameEngine not initialized");
     }
     return engine.getGraphics();
   }
 
   /** Returns the drawing surface */
-  static final GfxSurface getSurface()
-  {
-    if (engine == null){
+  static final GfxSurface getSurface() {
+    if (engine == null) {
       throw new GameEngineException("GameEngine not initialized");
     }
     return (GfxSurface) engine;
@@ -113,11 +104,10 @@ class GameEngineMainWindow extends MainWindow
    * <B>Could not be overloaded.</B> Notifies onGameInit().<br>
    */
   @Override
-  public final void initUI()
-  {
+  public final void initUI() {
     transparentBackground = true; // guich@tc122_54
     flicker = engine.gameDoClearScreen;
-    if (!engine.gameHasUI){
+    if (!engine.gameHasUI) {
       graf = getGraphics();
     }
 
@@ -131,8 +121,7 @@ class GameEngineMainWindow extends MainWindow
    * <B>Could not be overloaded.</B> Notifies onGameExit().
    */
   @Override
-  public final void onExit()
-  {
+  public final void onExit() {
     engine.onGameExit();
     shutdown();
   }
@@ -142,20 +131,16 @@ class GameEngineMainWindow extends MainWindow
    *
    * @return HighScores.
    */
-  HighScores getHighScores()
-  {
-    if (hscores != null){
+  HighScores getHighScores() {
+    if (hscores != null) {
       return hscores;
     }
-    if (engine.gameHighscoresSize <= 0){
+    if (engine.gameHighscoresSize <= 0) {
       return null;
     }
-    try
-    {
+    try {
       return hscores = new HighScores(engine);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       //         e.printStackTrace();
     }
     return null;
@@ -166,8 +151,7 @@ class GameEngineMainWindow extends MainWindow
    *
    * @return Options.
    */
-  Options getOptions()
-  {
+  Options getOptions() {
     return options != null ? options : (options = new Options(engine));
   }
 
@@ -187,8 +171,7 @@ class GameEngineMainWindow extends MainWindow
    * @throws ImageException
    * @see TextRenderer TextRenderer for more information
    */
-  TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits) throws ImageException
-  {
+  TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits) throws ImageException {
     return new TextRenderer(font, foreColor, backColor, text, maxDigits);
   }
 
@@ -209,7 +192,8 @@ class GameEngineMainWindow extends MainWindow
    * @throws ImageException
    * @see TextRenderer TextRenderer for more information
    */
-  TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits, boolean zeroPadding) throws ImageException //fdie@420_27
+  TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits, boolean zeroPadding)
+      throws ImageException //fdie@420_27
   {
     return new TextRenderer(font, foreColor, backColor, text, maxDigits, zeroPadding);
   }
@@ -217,12 +201,10 @@ class GameEngineMainWindow extends MainWindow
   /*
    * Shutdown the GameEngine and releases its resources.
    */
-  private final void shutdown()
-  {
+  private final void shutdown() {
     engine.gameIsRunning = isRunning = false;
 
-    try
-    {
+    try {
       if (hscores != null) {
         hscores.close();
       }
@@ -232,9 +214,7 @@ class GameEngineMainWindow extends MainWindow
       if (gameTimer != null) {
         removeTimer(gameTimer);
       }
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
     }
   }
 
@@ -243,10 +223,9 @@ class GameEngineMainWindow extends MainWindow
    * start a UI we have to be in the event handling.<br> The game will be
    * interrupted at next timer event.
    */
-  void stop()
-  {
+  void stop() {
     engine.gameIsRunning = isRunning = false;
-    if (engine.gameRefreshPeriod <= 0){
+    if (engine.gameRefreshPeriod <= 0) {
       gameTimer = super.addTimer(gameTimerControl, 10);
     }
   }
@@ -262,8 +241,7 @@ class GameEngineMainWindow extends MainWindow
    *
    * @see #stop
    */
-  void start()
-  {
+  void start() {
     // first let's clean the screen, maybe we can also set the background color
     //refresh();
 
@@ -271,7 +249,7 @@ class GameEngineMainWindow extends MainWindow
     Control.isHighlighting = false; // guich@550_30: support pen less devices
     engine.gameIsRunning = isRunning = true;
 
-    if (engine.gameRefreshPeriod > 0){
+    if (engine.gameRefreshPeriod > 0) {
       gameTimer = super.addTimer(gameTimerControl, engine.gameRefreshPeriod);
     }
 
@@ -288,7 +266,7 @@ class GameEngineMainWindow extends MainWindow
    */
   public Image useBackground(Image bg) throws ImageException //fdie@420_26
   {
-    if (bg != null && (bg.getHeight() != height || bg.getWidth() != width)){
+    if (bg != null && (bg.getHeight() != height || bg.getWidth() != width)) {
       bg = bg.getScaledInstance(width, height);
     }
     bgSurface = bg;
@@ -304,24 +282,18 @@ class GameEngineMainWindow extends MainWindow
    * (GameEngine.hasUI = true) calls the slower _doPaint. Otherwise, just
    * prepares the buffer and repaint it.
    */
-  void refresh()
-  {
-    if (!engine.gameHasUI)
-    {
-      if (flicker && bgSurface == null)
-      {
+  void refresh() {
+    if (!engine.gameHasUI) {
+      if (flicker && bgSurface == null) {
         graf.backColor = backColor;
         graf.fillRect(0, 0, totalcross.sys.Settings.screenWidth, totalcross.sys.Settings.screenHeight);
+      } else if (paintBackground) {
+        graf.drawImage(bgSurface, 0, 0); // tc: replaced copyScreen
+        paintBackground = flicker; // continue background display if "clearscreen" is enabled
       }
-      else
-        if (paintBackground)
-        {
-          graf.drawImage(bgSurface, 0, 0); // tc: replaced copyScreen
-          paintBackground = flicker; // continue background display if "clearscreen" is enabled
-        }
       engine.onPaint(graf);
       updateScreen(); // tc100 g0.copyScreen(isurf, 0,0,this.height);
-    }else {
+    } else {
       _doPaint();
     }
   }
@@ -335,10 +307,8 @@ class GameEngineMainWindow extends MainWindow
    *           event that occurs.
    */
   @Override
-  public final void onEvent(Event evt)
-  {
-    switch (evt.type)
-    {
+  public final void onEvent(Event evt) {
+    switch (evt.type) {
     case TimerEvent.TRIGGERED:
       engine.onTimer((TimerEvent) evt);
       break;

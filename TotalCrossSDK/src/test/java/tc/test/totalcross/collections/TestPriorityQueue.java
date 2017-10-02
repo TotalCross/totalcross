@@ -20,11 +20,9 @@ import java.util.SortedSet;
 
 import totalcross.unit.TestCase;
 
-public class TestPriorityQueue extends TestCase
-{
+public class TestPriorityQueue extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test30 test1 = new Test30();
     PriorityQueue test2 = new Test30(test1);
     AbstractQueue test3 = new Test30(10);
@@ -35,7 +33,7 @@ public class TestPriorityQueue extends TestCase
 
     assertEquals(null, test1.comparator());
     assertEquals(null, test2.comparator());
-    assertEquals(null, ((PriorityQueue)test3).comparator());
+    assertEquals(null, ((PriorityQueue) test3).comparator());
 
     Iterator it1 = test1.iterator();
     Iterator it2 = test2.iterator();
@@ -49,43 +47,37 @@ public class TestPriorityQueue extends TestCase
     assertFalse(it2.hasNext());
     assertFalse(it3.hasNext());
 
-    try
-    {
+    try {
       it1.next();
       fail("1");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       it2.next();
       fail("2");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       it3.next();
       fail("3");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
 
-    try
-    {
+    try {
       it1.remove();
       fail("4");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       it2.remove();
       fail("5");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       it3.remove();
       fail("6");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
 
     assertTrue(test1.offer("a"));
     assertTrue(test2.offer("b"));
@@ -113,30 +105,28 @@ public class TestPriorityQueue extends TestCase
   }
 }
 
-class Test30 extends PriorityQueue
-{
-  public Test30()
-  {
+class Test30 extends PriorityQueue {
+  public Test30() {
     super();
   }
-  public Test30(Collection c)
-  {
+
+  public Test30(Collection c) {
     super(c);
   }
-  public Test30(int cap)
-  {
+
+  public Test30(int cap) {
     super(cap);
   }
-  public Test30(int cap, Comparator comp)
-  {
+
+  public Test30(int cap, Comparator comp) {
     super(cap, comp);
   }
-  public Test30(PriorityQueue q)
-  {
+
+  public Test30(PriorityQueue q) {
     super(q);
   }
-  public Test30(SortedSet s)
-  {
+
+  public Test30(SortedSet s) {
     super(s);
   }
 }

@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.lang.reflect.Array;
@@ -74,14 +73,11 @@ import java.util.Iterator;
  * @since 1.2
  * @status updated to 1.4
  */
-public abstract class AbstractCollection4D<E>
-implements Collection<E>, Iterable<E>
-{
+public abstract class AbstractCollection4D<E> implements Collection<E>, Iterable<E> {
   /**
    * The main constructor, for use by subclasses.
    */
-  protected AbstractCollection4D()
-  {
+  protected AbstractCollection4D() {
   }
 
   /**
@@ -120,8 +116,7 @@ implements Collection<E>, Iterable<E>
    *         it from being added
    */
   @Override
-  public boolean add(E o)
-  {
+  public boolean add(E o) {
     throw new UnsupportedOperationException();
   }
 
@@ -149,12 +144,11 @@ implements Collection<E>, Iterable<E>
    * @see #add(Object)
    */
   @Override
-  public boolean addAll(Collection<? extends E> c)
-  {
+  public boolean addAll(Collection<? extends E> c) {
     Iterator<? extends E> itr = c.iterator();
     boolean modified = false;
     int pos = c.size();
-    while (--pos >= 0){
+    while (--pos >= 0) {
       modified |= add(itr.next());
     }
     return modified;
@@ -173,12 +167,10 @@ implements Collection<E>, Iterable<E>
    * @see Iterator#remove()
    */
   @Override
-  public void clear()
-  {
+  public void clear() {
     Iterator<E> itr = iterator();
     int pos = size();
-    while (--pos >= 0)
-    {
+    while (--pos >= 0) {
       itr.next();
       itr.remove();
     }
@@ -196,12 +188,11 @@ implements Collection<E>, Iterable<E>
    * @return true if this collection contains an object equal to o
    */
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     Iterator<E> itr = iterator();
     int pos = size();
-    while (--pos >= 0){
-      if (equals(o, itr.next())){
+    while (--pos >= 0) {
+      if (equals(o, itr.next())) {
         return true;
       }
     }
@@ -221,12 +212,11 @@ implements Collection<E>, Iterable<E>
    * @see #contains(Object)
    */
   @Override
-  public boolean containsAll(Collection<?> c)
-  {
+  public boolean containsAll(Collection<?> c) {
     Iterator<?> itr = c.iterator();
     int pos = c.size();
-    while (--pos >= 0){
-      if (!contains(itr.next())){
+    while (--pos >= 0) {
+      if (!contains(itr.next())) {
         return false;
       }
     }
@@ -241,8 +231,7 @@ implements Collection<E>, Iterable<E>
    * @see #size()
    */
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return size() == 0;
   }
 
@@ -266,13 +255,11 @@ implements Collection<E>, Iterable<E>
    * @see Iterator#remove()
    */
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     Iterator<E> itr = iterator();
     int pos = size();
-    while (--pos >= 0){
-      if (equals(o, itr.next()))
-      {
+    while (--pos >= 0) {
+      if (equals(o, itr.next())) {
         itr.remove();
         return true;
       }
@@ -296,8 +283,7 @@ implements Collection<E>, Iterable<E>
    * @see Iterator#remove()
    */
   @Override
-  public boolean removeAll(Collection<?> c)
-  {
+  public boolean removeAll(Collection<?> c) {
     return removeAllInternal(c);
   }
 
@@ -318,14 +304,12 @@ implements Collection<E>, Iterable<E>
    * @see Iterator#remove()
    */
   // Package visible for use throughout java.util.
-  boolean removeAllInternal(Collection<?> c)
-  {
+  boolean removeAllInternal(Collection<?> c) {
     Iterator<E> itr = iterator();
     boolean modified = false;
     int pos = size();
-    while (--pos >= 0){
-      if (c.contains(itr.next()))
-      {
+    while (--pos >= 0) {
+      if (c.contains(itr.next())) {
         itr.remove();
         modified = true;
       }
@@ -349,8 +333,7 @@ implements Collection<E>, Iterable<E>
    * @see Iterator#remove()
    */
   @Override
-  public boolean retainAll(Collection<?> c)
-  {
+  public boolean retainAll(Collection<?> c) {
     return retainAllInternal(c);
   }
 
@@ -372,14 +355,12 @@ implements Collection<E>, Iterable<E>
    * @see Iterator#remove()
    */
   // Package visible for use throughout java.util.
-  boolean retainAllInternal(Collection<?> c)
-  {
+  boolean retainAllInternal(Collection<?> c) {
     Iterator<E> itr = iterator();
     boolean modified = false;
     int pos = size();
-    while (--pos >= 0){
-      if (!c.contains(itr.next()))
-      {
+    while (--pos >= 0) {
+      if (!c.contains(itr.next())) {
         itr.remove();
         modified = true;
       }
@@ -397,8 +378,7 @@ implements Collection<E>, Iterable<E>
    * @return an array containing the elements of this collection
    */
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     Iterator<E> itr = iterator();
     int size = size();
     Object[] a = new Object[size];
@@ -431,13 +411,11 @@ implements Collection<E>, Iterable<E>
    *         one of the elements of the Collection
    */
   @Override
-  public <T> T[] toArray(T[] a)
-  {
+  public <T> T[] toArray(T[] a) {
     int size = size();
-    if (a.length < size){
-      a = (T[]) Array.newInstance(a.getClass().getComponentType(),
-          size);
-    }else if (a.length > size){
+    if (a.length < size) {
+      a = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
+    } else if (a.length > size) {
       a[size] = null;
     }
 
@@ -460,17 +438,15 @@ implements Collection<E>, Iterable<E>
    * @return a String representation of the Collection
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     Iterator itr = iterator();
     StringBuffer r = new StringBuffer("[");
     boolean hasNext = itr.hasNext();
-    while (hasNext)
-    {
+    while (hasNext) {
       Object o = itr.next();
-      if (o == this){
+      if (o == this) {
         r.append("<this>");
-      }else {
+      } else {
         r.append(o);
       }
       hasNext = itr.hasNext();
@@ -491,8 +467,7 @@ implements Collection<E>, Iterable<E>
    */
   // Package visible for use throughout java.util.
   // It may be inlined since it is final.
-  static final boolean equals(Object o1, Object o2)
-  {
+  static final boolean equals(Object o1, Object o2) {
     return o1 == null ? o2 == null : o1.equals(o2);
   }
 
@@ -504,8 +479,7 @@ implements Collection<E>, Iterable<E>
    */
   // Package visible for use throughout java.util.
   // It may be inlined since it is final.
-  static final int hashCode(Object o)
-  {
+  static final int hashCode(Object o) {
     return o == null ? 0 : o.hashCode();
   }
 }

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.breakout;
 
 //////////////////////////////// TotalCross Breakout ///////////////////////////////////////
@@ -53,8 +51,7 @@ which were used for this program.
 Sourcecode for this game available under Public Domain license.
  </pre>
  */
-public class Breakout extends GameEngine
-{
+public class Breakout extends GameEngine {
   public int currentLevel = 1;
   private int racketY;
 
@@ -65,15 +62,14 @@ public class Breakout extends GameEngine
   private TextRenderer levelRenderer, tilesRenderer;
   private static final int BACKG = 0x000099;
 
-  private boolean levelChanged=true;
+  private boolean levelChanged = true;
 
-  public Breakout()
-  {
+  public Breakout() {
     setUIStyle(Settings.Flat);
     gameName = "Breakout";
     gameCreatorID = "tCbA";
     gameVersion = 140;
-    gameRefreshPeriod = (Settings.keyboardFocusTraversable?70:50);
+    gameRefreshPeriod = (Settings.keyboardFocusTraversable ? 70 : 50);
     gameDoClearScreen = false;
     gameHasUI = true;
 
@@ -81,21 +77,22 @@ public class Breakout extends GameEngine
   }
 
   private static final int PERC = 10;
-  private int levelX,tilesX;
+  private int levelX, tilesX;
 
   @Override
-  public void onGameInit()
-  {
+  public void onGameInit() {
     setBackColor(BACKG);
 
-    try
-    {
-      levelRenderer=createTextRenderer(getFont(),0x9999FF,"Level: ",1,true);
-      tilesRenderer=createTextRenderer(getFont(),0x9999FF,"Remaining: ",2,true);
+    try {
+      levelRenderer = createTextRenderer(getFont(), 0x9999FF, "Level: ", 1, true);
+      tilesRenderer = createTextRenderer(getFont(), 0x9999FF, "Remaining: ", 2, true);
       racket = new Racket();
       level = new Level(2 + levelRenderer.getHeight());
-      ball = new Ball(this,racket,level);
-    } catch (Exception e) {MessageBox.showException(e,true); MainWindow.exit(0);}
+      ball = new Ball(this, racket, level);
+    } catch (Exception e) {
+      MessageBox.showException(e, true);
+      MainWindow.exit(0);
+    }
 
     levelX = Settings.screenWidth * PERC / 100;
     tilesX = Settings.screenWidth - tilesRenderer.getWidth() - levelX;
@@ -105,10 +102,9 @@ public class Breakout extends GameEngine
   }
 
   @Override
-  public void onGameStart()
-  {
-    racket.setPos(Settings.screenWidth / 2,racketY,false);
-    if (levelChanged){
+  public void onGameStart() {
+    racket.setPos(Settings.screenWidth / 2, racketY, false);
+    if (levelChanged) {
       level.set(currentLevel);
     }
     ball.reinit(level);
@@ -116,10 +112,8 @@ public class Breakout extends GameEngine
   }
 
   @Override
-  public void onGameStop()
-  {
-    if (level.tilesLeft == 0)
-    {
+  public void onGameStop() {
+    if (level.tilesLeft == 0) {
       if (currentLevel < Level.MAX_LEVELS) {
         currentLevel++;
       } else {
@@ -134,19 +128,16 @@ public class Breakout extends GameEngine
   }
 
   @Override
-  public final void onPaint(Graphics gfx)
-  {
-    if (gameIsRunning)
-    {
+  public final void onPaint(Graphics gfx) {
+    if (gameIsRunning) {
       gfx.backColor = BACKG;
-      gfx.fillRect(0,0,Settings.screenWidth, Settings.screenHeight);
+      gfx.fillRect(0, 0, Settings.screenWidth, Settings.screenHeight);
       levelRenderer.display(levelX, 2, currentLevel);
       tilesRenderer.display(tilesX, 2, level.tilesLeft);
       level.show();
       if (level.tilesLeft == 0) {
         stop();
-      } else
-      {
+      } else {
         if (!levelChanged) {
           ball.show();
         }
@@ -158,27 +149,25 @@ public class Breakout extends GameEngine
   }
 
   @Override
-  public final void onPenDown(PenEvent evt)
-  {
-    if (gameIsRunning){
+  public final void onPenDown(PenEvent evt) {
+    if (gameIsRunning) {
       racket.setPos(evt.x, racketY, true);
     }
   }
+
   @Override
-  public final void onPenDrag(PenEvent evt)
-  {
-    if (gameIsRunning){
+  public final void onPenDrag(PenEvent evt) {
+    if (gameIsRunning) {
       racket.setPos(evt.x, racketY, true);
     }
   }
 
   Container blankContainer;
-  public void blankScreen()
-  {
-    if (blankContainer == null)
-    {
+
+  public void blankScreen() {
+    if (blankContainer == null) {
       blankContainer = new Container();
-      blankContainer.setRect(10000,0,0,0); // guich@512_7: we don't want this to overwrite the game's window, so just set all to 0.
+      blankContainer.setRect(10000, 0, 0, 0); // guich@512_7: we don't want this to overwrite the game's window, so just set all to 0.
       blankContainer.setBackColor(backColor);
     }
     swap(blankContainer);

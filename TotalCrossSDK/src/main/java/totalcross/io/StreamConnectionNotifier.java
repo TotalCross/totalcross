@@ -14,15 +14,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 /**
  * Base class for connection notifiers.
  */
-public abstract class StreamConnectionNotifier extends Connection
-{
+public abstract class StreamConnectionNotifier extends Connection {
   /**
    * Returns a Stream that represents a server side connection.
    * 

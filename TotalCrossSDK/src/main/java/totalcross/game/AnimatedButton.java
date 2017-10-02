@@ -45,8 +45,7 @@ import totalcross.ui.image.ImageException;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-public class AnimatedButton extends Animation
-{
+public class AnimatedButton extends Animation {
   /**
    * Defines the frames animation order. In the case of <code>S</code> states button of <code>F</code> frames per state, 
    * <code>FADE_OUT_LAYOUT</code> means that the frames are a <code>S</code> set of <code>F</code> frames that are fading out the state, which means 
@@ -55,14 +54,14 @@ public class AnimatedButton extends Animation
    * Finally the <code>FADE_OUT_IN_LAYOUT</code> is a mix of the two others, because inter-frames represent successively fading out from one state to
    * fading in to next state.
    */
-  public static final int FADE_OUT_LAYOUT   = 0;
+  public static final int FADE_OUT_LAYOUT = 0;
 
   /** 
    * Frames fading in mode.  
    * 
    * @see #FADE_OUT_LAYOUT 
    */
-  public static final int FADE_IN_LAYOUT    = 1;
+  public static final int FADE_IN_LAYOUT = 1;
 
   /** 
    * Frames fading out then fading in mode.
@@ -96,19 +95,20 @@ public class AnimatedButton extends Animation
    * @see #FADE_IN_LAYOUT
    * @see #FADE_OUT_IN_LAYOUT
    */
-  public AnimatedButton(Image frames,int states,int framesPerState,int layoutType, int framePeriod) throws ImageException // fdie@341_2
+  public AnimatedButton(Image frames, int states, int framesPerState, int layoutType, int framePeriod)
+      throws ImageException // fdie@341_2
   {
-    super(frames,states * framesPerState,framePeriod);
+    super(frames, states * framesPerState, framePeriod);
 
     this.framesPerState = framesPerState;
     this.layoutType = layoutType;
     this.maxStates = states;
     statesIndexes = new int[states];
-    for (int s=0; s<states; s++) {
-      statesIndexes[s] = (layoutType==FADE_IN_LAYOUT) ? ((s+1)*framesPerState)-1 : s*framesPerState;
+    for (int s = 0; s < states; s++) {
+      statesIndexes[s] = (layoutType == FADE_IN_LAYOUT) ? ((s + 1) * framesPerState) - 1 : s * framesPerState;
     }
 
-    curFrame = statesIndexes[state=0];
+    curFrame = statesIndexes[state = 0];
     fadeInState = IDLE;
     eventsMask = eventFinish;
   }
@@ -118,16 +118,14 @@ public class AnimatedButton extends Animation
    * 
    * @param state Value between <code>0</code> and <code>states-1</code>.
    */
-  public void setState(int state)
-  {
-    if (isPlaying)
-    {
+  public void setState(int state) {
+    if (isPlaying) {
       stop();
-      fadeInState=IDLE;
+      fadeInState = IDLE;
     }
 
-    this.state=state;
-    curFrame=statesIndexes[state];
+    this.state = state;
+    curFrame = statesIndexes[state];
     repaintNow();
   }
 
@@ -136,8 +134,7 @@ public class AnimatedButton extends Animation
    * 
    * @return Value between <code>0</code> and <code>states-1</code>.
    */
-  public int getState()
-  {
+  public int getState() {
     return state;
   }
 
@@ -147,39 +144,34 @@ public class AnimatedButton extends Animation
    * @param event The event being handled.
    */
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
+  public void onEvent(Event event) {
+    switch (event.type) {
     case PenEvent.PEN_DOWN:
-      if (fadeInState==IDLE) {
-        inc(((PenEvent)event).x >= (width>>1));
+      if (fadeInState == IDLE) {
+        inc(((PenEvent) event).x >= (width >> 1));
       }
       break;
     case KeyEvent.SPECIAL_KEY_PRESS:
-      if (fadeInState==IDLE)
-      {
-        int key = ((KeyEvent)event).key;
+      if (fadeInState == IDLE) {
+        int key = ((KeyEvent) event).key;
         if (key == SpecialKeys.ACTION || key == SpecialKeys.ENTER) {
           inc(true);
         }
       }
       break;
     case AnimationEvent.FINISH:
-      if (fadeInState!=IDLE)
-      {
-        state=fadeInState;
-        fadeInState=IDLE;
-        if (layoutType==FADE_OUT_IN_LAYOUT)
-        {
+      if (fadeInState != IDLE) {
+        state = fadeInState;
+        fadeInState = IDLE;
+        if (layoutType == FADE_OUT_IN_LAYOUT) {
           postPressedEvent();
           return;
         }
-        int dest=statesIndexes[state];
-        if (layoutType!=FADE_IN_LAYOUT) {
-          start(dest+framesPerState-1,dest,-1,1);
+        int dest = statesIndexes[state];
+        if (layoutType != FADE_IN_LAYOUT) {
+          start(dest + framesPerState - 1, dest, -1, 1);
         } else {
-          start(dest-framesPerState+1,dest,1,1);
+          start(dest - framesPerState + 1, dest, 1, 1);
         }
       }
       break;
@@ -196,19 +188,17 @@ public class AnimatedButton extends Animation
    * 
    * @param up Boolean with a <code>true</code> value to increase the value; decrease otherwise.
    */
-  protected void inc(boolean up)
-  {
-    int dir=up ? 1:-1;
-    int dest=(state+maxStates+dir) % maxStates;
-    int src=statesIndexes[state];
-    if (layoutType==FADE_OUT_IN_LAYOUT){
-      start(src,statesIndexes[dest],dir,1);
-    }else
-      if (layoutType!=FADE_IN_LAYOUT){
-        start(src,src+framesPerState-1,1,1);
-      }else {
-        start(src,src-framesPerState+1,-1,1);
-      }
-    fadeInState=dest;
+  protected void inc(boolean up) {
+    int dir = up ? 1 : -1;
+    int dest = (state + maxStates + dir) % maxStates;
+    int src = statesIndexes[state];
+    if (layoutType == FADE_OUT_IN_LAYOUT) {
+      start(src, statesIndexes[dest], dir, 1);
+    } else if (layoutType != FADE_IN_LAYOUT) {
+      start(src, src + framesPerState - 1, 1, 1);
+    } else {
+      start(src, src - framesPerState + 1, -1, 1);
+    }
+    fadeInState = dest;
   }
 }

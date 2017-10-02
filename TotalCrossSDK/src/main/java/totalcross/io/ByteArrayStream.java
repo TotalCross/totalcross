@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import totalcross.sys.Vm;
@@ -28,49 +26,47 @@ import totalcross.sys.Vm;
  * @see CompressedByteArrayStream
  */
 
-public class ByteArrayStream extends RandomAccessStream
-{
-  private byte []buffer;
+public class ByteArrayStream extends RandomAccessStream {
+  private byte[] buffer;
   private int len; // guich@563_5
   private byte[] writeBuf; // flsobral@tc110_71: used by readFully.
 
   /** Creates a ByteArrayStream.
    * @param buffer The initial buffer from where data will be read or written into.
    */
-  public ByteArrayStream(byte []buffer)
-  {
-    if (buffer == null){
+  public ByteArrayStream(byte[] buffer) {
+    if (buffer == null) {
       throw new IllegalArgumentException("Argument 'buffer' cannot be null");
     }
     this.len = buffer.length;
     this.buffer = buffer;
     pos = 0;
   }
+
   /** Creates a ByteArrayStream.
    * @param buffer The initial buffer from where data will be read or written into.
    * @param len The length to read from the buffer.
    */
-  public ByteArrayStream(byte []buffer, int len)
-  {
-    if (buffer == null){
+  public ByteArrayStream(byte[] buffer, int len) {
+    if (buffer == null) {
       throw new IllegalArgumentException("Argument 'buffer' cannot be null");
     }
-    if (len < 0){
+    if (len < 0) {
       throw new IllegalArgumentException("Argument 'len' must be greater or equal than 0");
     }
-    if (len > buffer.length){
+    if (len > buffer.length) {
       throw new IllegalArgumentException("Argument 'len' must not be greater than 'buffer.length'");
     }
     this.len = len;
     this.buffer = buffer;
     pos = 0;
   }
+
   /** Creates a ByteArrayStream.
    * @param size The initial size that the byte array will have.
    */
-  public ByteArrayStream(int size)
-  {
-    if (size < 0){
+  public ByteArrayStream(int size) {
+    if (size < 0) {
       throw new IllegalArgumentException("Argument 'size' must be greater or equal than 0");
     }
     buffer = new byte[size];
@@ -92,15 +88,13 @@ public class ByteArrayStream extends RandomAccessStream
   /** Returns the number of bytes available in the buffer from the actual read position.
    * @since SuperWaba 4.02
    */
-  public int available()
-  {
+  public int available() {
     return len - pos;
   }
 
   /** does nothing.  */
   @Override
-  public void close()
-  {
+  public void close() {
     // dont set buffer to null here or the PDBFile class will stop working!
   }
 
@@ -109,8 +103,7 @@ public class ByteArrayStream extends RandomAccessStream
    * method to get the correct value.
    * @see #count()
    */
-  public byte []getBuffer()
-  {
+  public byte[] getBuffer() {
     return buffer;
   }
 
@@ -118,9 +111,8 @@ public class ByteArrayStream extends RandomAccessStream
    * @param buffer the new internal buffer.
    * @since TotalCross 1.0.
    */
-  public void setBuffer(byte[] buffer)
-  {
-    if (buffer == null){
+  public void setBuffer(byte[] buffer) {
+    if (buffer == null) {
       throw new IllegalArgumentException("Argument 'buffer' cannot be null");
     }
     len = buffer.length;
@@ -133,33 +125,29 @@ public class ByteArrayStream extends RandomAccessStream
    * @deprecated use {@link #getPos()} instead.
    */
   @Deprecated
-  public int count()
-  {
+  public int count() {
     return pos;
   }
 
   @Override
-  public int getPos()
-  {
+  public int getPos() {
     return pos;
   }
 
   @Override
-  public int readBytes(byte buf[], int start, int count)
-  {
+  public int readBytes(byte buf[], int start, int count) {
     int remains = len - pos;
-    if (count < 0){
+    if (count < 0) {
       throw new IllegalArgumentException();
     }
-    if (count > remains)
-    {
+    if (count > remains) {
       if (remains <= 0) {
         return -1; // flsobral@tc111_11: return -1 on EOF.
       } else {
         count = remains;
       }
     }
-    Vm.arrayCopy(buffer,pos,buf,start,count);
+    Vm.arrayCopy(buffer, pos, buf, start, count);
     pos += count;
     return count;
   }
@@ -167,8 +155,7 @@ public class ByteArrayStream extends RandomAccessStream
   /** Resets the position to 0 so the buffer can be reused, and sets the mark to the buffer real limits.
    * @see #mark()
    */
-  public void reset()
-  {
+  public void reset() {
     pos = 0;
     len = buffer.length;
   }
@@ -184,15 +171,14 @@ public class ByteArrayStream extends RandomAccessStream
    * @return the number of bytes actually moved.
    */
   @Override
-  public int skipBytes(int n)
-  {
+  public int skipBytes(int n) {
     int off = pos + n; // This here is for performance reason
 
-    if (off < 0){
+    if (off < 0) {
       off = -pos;
-    }else if (off > len){
+    } else if (off > len) {
       off = len - pos; // jeffque@tc200: skip to the end of the buffer, not the last readable byte
-    }else {
+    } else {
       off = n;
     }
     pos += off;
@@ -207,27 +193,25 @@ public class ByteArrayStream extends RandomAccessStream
   public int reuse() // guich@401_34
   {
     int shifted = pos;
-    if (pos > 0)
-    {
-      Vm.arrayCopy(buffer, pos, buffer, 0, len-pos);
+    if (pos > 0) {
+      Vm.arrayCopy(buffer, pos, buffer, 0, len - pos);
       pos = 0;
     }
     return shifted;
   }
 
   @Override
-  public int writeBytes(byte buf[], int start, int count)
-  {
-    if (len < (count+pos)) // grow the buffer
+  public int writeBytes(byte buf[], int start, int count) {
+    if (len < (count + pos)) // grow the buffer
     {
-      int size = (count+pos)*12/10; // grows 20% above the new needed capacity
-      byte []newBuffer = new byte[size];
-      Vm.arrayCopy(buffer,0,newBuffer,0,pos);
+      int size = (count + pos) * 12 / 10; // grows 20% above the new needed capacity
+      byte[] newBuffer = new byte[size];
+      Vm.arrayCopy(buffer, 0, newBuffer, 0, pos);
       buffer = newBuffer;
       len = buffer.length;
     }
-    if (buf != buffer || start != pos){
-      Vm.arrayCopy(buf,start,buffer,pos,count);
+    if (buf != buffer || start != pos) {
+      Vm.arrayCopy(buf, start, buffer, pos, count);
     }
     pos += count;
     return count;
@@ -242,13 +226,12 @@ public class ByteArrayStream extends RandomAccessStream
    */
   public void setSize(int newSize, boolean copyOldData) // guich@510_15: added method - guich@512_9: added copyOldData
   {
-    if (len < newSize)
-    {
-      byte []buf = buffer;
+    if (len < newSize) {
+      byte[] buf = buffer;
       buffer = new byte[newSize];
       len = buffer.length;
       if (copyOldData) {
-        Vm.arrayCopy(buf,0,buffer,0,pos);
+        Vm.arrayCopy(buf, 0, buffer, 0, pos);
       }
     }
   }
@@ -259,25 +242,30 @@ public class ByteArrayStream extends RandomAccessStream
    */
   public byte[] toByteArray() // guich@510_15
   {
-    byte []b = new byte[pos];
-    Vm.arrayCopy(buffer,0,b,0,pos);
+    byte[] b = new byte[pos];
+    Vm.arrayCopy(buffer, 0, b, 0, pos);
     return b;
   }
 
   @Override
-  public void setPos(int offset, int origin) throws IOException
-  {
+  public void setPos(int offset, int origin) throws IOException {
     int newPos;
 
-    switch (origin)
-    {
-    case SEEK_SET: newPos = offset; break;
-    case SEEK_CUR: newPos = this.pos + offset; break;
-    case SEEK_END: newPos = this.len + offset - 1; break;
-    default: throw new IllegalArgumentException();
+    switch (origin) {
+    case SEEK_SET:
+      newPos = offset;
+      break;
+    case SEEK_CUR:
+      newPos = this.pos + offset;
+      break;
+    case SEEK_END:
+      newPos = this.len + offset - 1;
+      break;
+    default:
+      throw new IllegalArgumentException();
     }
 
-    if (newPos < 0){
+    if (newPos < 0) {
       throw new IOException();
     }
     if (newPos >= this.len) {
@@ -290,7 +278,7 @@ public class ByteArrayStream extends RandomAccessStream
   @Override
   public void setPos(int newPos) throws IOException // flsobral@tc120: now may throw an IOException
   {
-    if (newPos < 0){
+    if (newPos < 0) {
       throw new IOException();
     }
 
@@ -320,8 +308,7 @@ public class ByteArrayStream extends RandomAccessStream
     byte[] buf = (writeBuf != null && writeBuf.length >= bufSize) ? writeBuf : (writeBuf = new byte[bufSize]); // flsobral@tc110_71: readFully now uses an internal buffer to read data before writing.
     reset();
 
-    while (true)
-    {
+    while (true) {
       int n = inputStream.readBytes(buf, 0, buf.length);
       if (n <= 0 && --retryCount <= 0) {
         break;

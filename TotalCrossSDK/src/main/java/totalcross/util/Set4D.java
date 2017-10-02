@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractSet;
@@ -77,8 +76,7 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Set4D<E> extends Collection<E>
-{
+public interface Set4D<E> extends Collection<E> {
   /**
    * Adds the specified element to the set if it is not already present
    * (optional operation). In particular, the comparison algorithm is

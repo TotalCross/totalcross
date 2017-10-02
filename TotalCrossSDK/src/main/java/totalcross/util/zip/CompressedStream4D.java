@@ -14,15 +14,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 
-public abstract class CompressedStream4D extends Stream
-{
+public abstract class CompressedStream4D extends Stream {
   protected Object compressedStream;
   protected int mode;
 
@@ -37,13 +34,12 @@ public abstract class CompressedStream4D extends Stream
 
   protected CompressedStream4D(Stream stream, int mode, int compressionType) //flsobral@tc114_82: Subclasses of CompressedStream4D must now inform the type of compression to be used by the ZLib library.
   {
-    if (stream == null){
+    if (stream == null) {
       throw new NullPointerException("Argument stream cannot have a null value.");
     }
 
     this.mode = mode;
-    switch (mode)
-    {
+    switch (mode) {
     case DEFLATE:
       compressedStream = createDeflate(stream, compressionType);
       break;
@@ -69,16 +65,12 @@ public abstract class CompressedStream4D extends Stream
   native public void close() throws IOException;
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       if (mode != 0) {
         this.close();
       }
-    }
-    catch (Throwable t)
-    {
+    } catch (Throwable t) {
     }
   }
 }

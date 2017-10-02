@@ -28,44 +28,41 @@ import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Color;
 import totalcross.xml.soap.SOAPException;
 
-public class ActivationWindow extends Window
-{
+public class ActivationWindow extends Window {
   private ActivationClient client;
   private ActivationHtml html;
   private TimerEvent startTimer;
   private Bar headerBar;
 
-  public ActivationWindow()
-  {
+  public ActivationWindow() {
     super("", NO_BORDER);
     setBackColor(Color.WHITE);
     this.client = ras.ActivationClient.getInstance();
-    setRect(LEFT,TOP,FILL,FILL);
+    setRect(LEFT, TOP, FILL, FILL);
   }
 
   @Override
-  public void initUI()
-  {
-    if (Settings.keyboardFocusTraversable){
+  public void initUI() {
+    if (Settings.keyboardFocusTraversable) {
       Settings.geographicalFocus = true;
     }
     html = ActivationHtml.getInstance(ActivationHtml.ACTIVATION_START);
-    if (html != null){
+    if (html != null) {
       swap(html);
-    }else
-    {      
+    } else {
       int c1 = 0x0A246A;
-      Font f = font.adjustedBy(2,true);
+      Font f = font.adjustedBy(2, true);
       headerBar = new Bar("Activation");
       headerBar.createSpinner(Color.WHITE);
       headerBar.setFont(f);
-      headerBar.setBackForeColors(c1,Color.WHITE);
-      add(headerBar, LEFT,0,FILL,PREFERRED);
+      headerBar.setBackForeColors(c1, Color.WHITE);
+      add(headerBar, LEFT, 0, FILL, PREFERRED);
 
-      Label l = new Label("The TotalCross virtual machine needs to be activated. This process requires your device's internet connection to be properly set up.");
+      Label l = new Label(
+          "The TotalCross virtual machine needs to be activated. This process requires your device's internet connection to be properly set up.");
       l.autoSplit = true;
       l.align = FILL;
-      add(l,LEFT+5,AFTER+2,FILL-5,PREFERRED);
+      add(l, LEFT + 5, AFTER + 2, FILL - 5, PREFERRED);
 
       headerBar.startSpinner();
 
@@ -74,33 +71,28 @@ public class ActivationWindow extends Window
     }
   }
 
-  private void failure(ActivationException ex)
-  {
+  private void failure(ActivationException ex) {
     Throwable cause = ex.getCause();
     String s = ex.getMessage() + " The activation process cannot continue. The application will be terminated.";
 
-    if (cause instanceof SOAPException || cause instanceof IOException){
+    if (cause instanceof SOAPException || cause instanceof IOException) {
       s += " Try again 2 or 3 times if there's really an internet connection.";
     }
 
-    alert("Failure",s,-1);
+    alert("Failure", s, -1);
     MainWindow.exit(1);
   }
 
-  private void success()
-  {
-    alert("Success", "TotalCross is now activated!",0x008800);
+  private void success() {
+    alert("Success", "TotalCross is now activated!", 0x008800);
     unpop();
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == TimerEvent.TRIGGERED && startTimer != null && startTimer.triggered)
-    {
+  public void onEvent(Event e) {
+    if (e.type == TimerEvent.TRIGGERED && startTimer != null && startTimer.triggered) {
       removeTimer(startTimer);
-      try
-      {
+      try {
         if (client == null) {
           Vm.sleep(3000);
         } else {
@@ -108,58 +100,48 @@ public class ActivationWindow extends Window
         }
         headerBar.stopSpinner();
         success();
-      }
-      catch (ActivationException ex)
-      {
+      } catch (ActivationException ex) {
         headerBar.stopSpinner();
         failure(ex);
       }
-    }
-    else
-      if (e.type == ControlEvent.PRESSED && html != null && e.target == html)
-      {
-        if (html.type != ActivationHtml.ACTIVATION_START)
-        {
-          if (html.type == ActivationHtml.ACTIVATION_SUCCESS) {
-            unpop();
-          } else {
-            MainWindow.exit(1);
-          }
+    } else if (e.type == ControlEvent.PRESSED && html != null && e.target == html) {
+      if (html.type != ActivationHtml.ACTIVATION_START) {
+        if (html.type == ActivationHtml.ACTIVATION_SUCCESS) {
+          unpop();
         } else {
-          try
-          {
-            if (client == null) {
-              Vm.sleep(3000);
-            } else {
-              client.activate();
-            }
-            html = ActivationHtml.getInstance(ActivationHtml.ACTIVATION_SUCCESS);
-            if (html != null) {
-              swap(html);
-            } else {
-              success();
-            }
+          MainWindow.exit(1);
+        }
+      } else {
+        try {
+          if (client == null) {
+            Vm.sleep(3000);
+          } else {
+            client.activate();
           }
-          catch (ActivationException ex)
-          {
-            Throwable cause = ex.getCause();
-            if (cause != null)
-            {
-              cause.printStackTrace();
-              html = ActivationHtml.getInstance(cause instanceof SOAPException || cause instanceof IOException ? ActivationHtml.ACTIVATION_NOINTERNET : ActivationHtml.ACTIVATION_ERROR);
-            }   
-            if (html != null) {
-              swap(html);
-            } else {
-              failure(ex);
-            }
+          html = ActivationHtml.getInstance(ActivationHtml.ACTIVATION_SUCCESS);
+          if (html != null) {
+            swap(html);
+          } else {
+            success();
+          }
+        } catch (ActivationException ex) {
+          Throwable cause = ex.getCause();
+          if (cause != null) {
+            cause.printStackTrace();
+            html = ActivationHtml.getInstance(cause instanceof SOAPException || cause instanceof IOException
+                ? ActivationHtml.ACTIVATION_NOINTERNET : ActivationHtml.ACTIVATION_ERROR);
+          }
+          if (html != null) {
+            swap(html);
+          } else {
+            failure(ex);
           }
         }
       }
+    }
   }
 
-  private void alert(String tit, String s, int bg)
-  {
+  private void alert(String tit, String s, int bg) {
     MessageBox mb = new MessageBox(tit, s.replace('\n', ' '), new String[] { "  Close  " });
     mb.setTextAlignment(LEFT);
     mb.titleColor = Color.WHITE;
@@ -169,17 +151,14 @@ public class ActivationWindow extends Window
   }
 
   @Override
-  public void screenResized()
-  {
-    if (html != null && Settings.isLandscape())
-    {
+  public void screenResized() {
+    if (html != null && Settings.isLandscape()) {
       // make sure that the MessageBox takes the whole screen
-      MessageBox mb = new MessageBox("Attention","This program must be run in portrait mode.\nPlease rotate back the device.",null)
-      {
+      MessageBox mb = new MessageBox("Attention",
+          "This program must be run in portrait mode.\nPlease rotate back the device.", null) {
         @Override
-        public void setRect(int x, int y, int w, int h)
-        {
-          super.setRect(x,y,Settings.screenWidth,Settings.screenHeight);
+        public void setRect(int x, int y, int w, int h) {
+          super.setRect(x, y, Settings.screenWidth, Settings.screenHeight);
         }
       };
       mb.transitionEffect = TRANSITION_NONE;
@@ -188,7 +167,7 @@ public class ActivationWindow extends Window
         pumpEvents();
       }
       mb.unpop();
-    }else {
+    } else {
       super.screenResized();
     }
   }

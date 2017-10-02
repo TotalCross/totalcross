@@ -14,18 +14,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Focus events. */
 
-public interface FocusListener
-{
+public interface FocusListener {
   /** A FOCUS_IN event was dispatched.
    * @see ControlEvent 
    */
   public void focusIn(ControlEvent e);
+
   /** A FOCUS_OUT event was dispatched. 
    * @see ControlEvent 
    */

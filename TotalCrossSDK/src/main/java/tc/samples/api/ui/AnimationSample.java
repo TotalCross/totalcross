@@ -29,52 +29,45 @@ import totalcross.ui.event.Event;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.image.Image;
 
-public class AnimationSample extends BaseContainer
-{
+public class AnimationSample extends BaseContainer {
   private Button btnStartStop;
   private Animation anim;
   private ComboBox cbEffect;
   private int effect;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     setTitle("Image Animation");
 
-    add(btnStartStop = new Button(" Start/Stop "), CENTER, TOP+gap);
-    add(new Label("Effect: "), LEFT+gap, BOTTOM-gap);
-    String[] items  = {"normal","scaledBy","smoothScaledBy","getRotatedScaledInstance","getTouchedUpInstance","changeColors","fadedInstance","applyColor2/dither"};
+    add(btnStartStop = new Button(" Start/Stop "), CENTER, TOP + gap);
+    add(new Label("Effect: "), LEFT + gap, BOTTOM - gap);
+    String[] items = { "normal", "scaledBy", "smoothScaledBy", "getRotatedScaledInstance", "getTouchedUpInstance",
+        "changeColors", "fadedInstance", "applyColor2/dither" };
     ComboBox.usePopupMenu = false;
-    add(cbEffect = new ComboBox(items), AFTER+gap,SAME,FILL-gap,PREFERRED);
+    add(cbEffect = new ComboBox(items), AFTER + gap, SAME, FILL - gap, PREFERRED);
     cbEffect.setSelectedIndex(0);
     next(false);
   }
 
   @Override
-  public void onAddAgain()
-  {
+  public void onAddAgain() {
     next(false);
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
-    case ControlEvent.PRESSED:
-    {
+  public void onEvent(Event event) {
+    switch (event.type) {
+    case ControlEvent.PRESSED: {
       if (event.target == cbEffect && effect != cbEffect.getSelectedIndex()) {
         next(true);
-      } else
-        if (event.target == btnStartStop)
-        {
-          if (anim.isPaused) {
-            anim.resume();
-          } else {
-            anim.pause();
-          }
+      } else if (event.target == btnStartStop) {
+        if (anim.isPaused) {
+          anim.resume();
+        } else {
+          anim.pause();
         }
+      }
       break;
     }
     }
@@ -83,46 +76,54 @@ public class AnimationSample extends BaseContainer
   /**
    * shows next frame
    */
-  private void next(boolean changeEffect)
-  {
-    try
-    {
+  private void next(boolean changeEffect) {
+    try {
       onRemove();
       Image img = new Image("ui/images/alligator.gif");
       effect = cbEffect.getSelectedIndex();
       int ini = Vm.getTimeStamp();
       double scale = Settings.isIOS() ? 1.5 : 2; // ios has less opengl memory
-      switch (effect)
-      {
-      case 1: img = img.scaledBy(scale,scale); break;
-      case 2: img = img.smoothScaledBy(scale,scale); break;
-      case 3: img = img.getRotatedScaledInstance(50,90, -1); break;
-      case 4: img = img.getTouchedUpInstance((byte)50,(byte)100); break;
-      case 5: img.changeColors(0xFF31CE31, 0xFFFF00FF); break;
-      case 6: img = img.getFadedInstance(); break;
-      case 7: img.applyColor2(Color.RED); img.getGraphics().dither(0,0,img.getWidth(),img.getHeight()); break;
+      switch (effect) {
+      case 1:
+        img = img.scaledBy(scale, scale);
+        break;
+      case 2:
+        img = img.smoothScaledBy(scale, scale);
+        break;
+      case 3:
+        img = img.getRotatedScaledInstance(50, 90, -1);
+        break;
+      case 4:
+        img = img.getTouchedUpInstance((byte) 50, (byte) 100);
+        break;
+      case 5:
+        img.changeColors(0xFF31CE31, 0xFFFF00FF);
+        break;
+      case 6:
+        img = img.getFadedInstance();
+        break;
+      case 7:
+        img.applyColor2(Color.RED);
+        img.getGraphics().dither(0, 0, img.getWidth(), img.getHeight());
+        break;
       }
       if (Settings.isOpenGL) {
         img.applyChanges();
       }
       int fim = Vm.getTimeStamp();
-      setInfo((fim-ini)+"ms");
+      setInfo((fim - ini) + "ms");
       anim = new Animation(img, 200);
       anim.pauseIfNotVisible = true;
-      add(anim, CENTER,CENTER,PREFERRED,PREFERRED);
+      add(anim, CENTER, CENTER, PREFERRED, PREFERRED);
       anim.start(Animation.LOOPS_UNLIMITED);
-    }
-    catch (Throwable e)
-    {
+    } catch (Throwable e) {
       MessageBox.showException(e, true);
     }
   }
 
   @Override
-  public void onRemove()
-  {
-    if (anim != null)
-    {
+  public void onRemove() {
+    if (anim != null) {
       anim.stop();
       remove(anim);
       anim = null;

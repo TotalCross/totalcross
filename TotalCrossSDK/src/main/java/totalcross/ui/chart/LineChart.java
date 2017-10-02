@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.chart;
 
 import totalcross.ui.Insets;
@@ -25,23 +23,20 @@ import totalcross.util.Vector;
 
 /** This class represents a line chart. */
 
-public class LineChart extends PointLineChart
-{
+public class LineChart extends PointLineChart {
   /**
    * Creates a new line chart
    * @param categories The categories that will be used.
    */
-  public LineChart(String[] categories)
-  {
+  public LineChart(String[] categories) {
     setXAxis(categories);
     border = new Insets(5, 5, 5, 5);
     showLines = true;
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
-    if (!draw(g)){
+  public void onPaint(Graphics g) {
+    if (!draw(g)) {
       return;
     }
 
@@ -49,7 +44,7 @@ public class LineChart extends PointLineChart
     int sCount = series.size();
     int off = (getXValuePos(1.0) - getXValuePos(0.0)) / 2;
     int psize = points.size();
-    for (int i = 0; i < sCount; i ++) // for each series
+    for (int i = 0; i < sCount; i++) // for each series
     {
       if (i >= psize) {
         points.addElement(new Vector());
@@ -62,7 +57,7 @@ public class LineChart extends PointLineChart
       }
       double[] yValues = s.yValues;
 
-      for (int j = 0; j < xAxisSteps; j ++) // for each category
+      for (int j = 0; j < xAxisSteps; j++) // for each category
       {
         if (j >= v.size()) {
           v.addElement(new Coord());

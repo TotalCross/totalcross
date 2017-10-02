@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.font;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -41,8 +39,7 @@ import totalcross.util.Hashtable;
  * </ol>
  */
 
-public final class Font
-{
+public final class Font {
   /** Read only field that contains the font's name. Note that changing this directly will have no effect. */
   public String name;
   /** Read only field that contains the font's style. Note that changing this directly will have no effect. For bold fonts, style == 1. */
@@ -68,65 +65,59 @@ public final class Font
 
   /** Returns the default font size, based on the screen's size.
    */
-  public static int getDefaultFontSize()
-  {
+  public static int getDefaultFontSize() {
     int fontSize = Settings.onJavaSE ? returnUserSize() : -1;
-    if (fontSize != -1){
+    if (fontSize != -1) {
       return fontSize;
     }
 
     // determine fonts as if we were in portrait mode
-    int w,h;
-    w = Math.min(Settings.screenWidth,Settings.screenHeight);
-    h = Math.max(Settings.screenWidth,Settings.screenHeight);
+    int w, h;
+    w = Math.min(Settings.screenWidth, Settings.screenHeight);
+    h = Math.max(Settings.screenWidth, Settings.screenHeight);
 
-    if (Settings.WINDOWSPHONE.equals(Settings.platform) || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT)){
+    if (Settings.WINDOWSPHONE.equals(Settings.platform)
+        || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT)) {
       fontSize = Settings.deviceFontHeight;
-    }else
-      if (Settings.isWindowsCE()){
-        fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 14; // added this exception to get the right font when running in the WM phone in landscape mode
-      }else
-        if (Settings.ANDROID.equals(Settings.platform)){
-          fontSize = 20 * Settings.deviceFontHeight / 14;
-        }else
-          if (Settings.isIOS() && Settings.deviceFontHeight != 0){
-            fontSize = Settings.deviceFontHeight;
-          }else {
-            switch (w)
-            {
-            // some predefined device screen sizes
-            case 480:
-            case 360:
-            case 320:
-              if (h < 240) {
-                fontSize = 13;
-              } else if(h == 240) {
-                fontSize = 14;
-              } else {
-                fontSize = 18;
-              }
-              break;
-            case 640:
-            case 240:
-            case 220:
-            case 200:
-              fontSize = 12;
-              break;
-            default :
-              if (w >= 600 || h >= 800) {
-                fontSize = 23;
-              }
-              else {
-                fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
-              }
-            }
-          }
-    if (fontSize < MIN_FONT_SIZE){
-      fontSize = MIN_FONT_SIZE;
-    }else
-      if (!Settings.isOpenGL && fontSize > MAX_FONT_SIZE){
-        fontSize = MAX_FONT_SIZE;
+    } else if (Settings.isWindowsCE()) {
+      fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 14; // added this exception to get the right font when running in the WM phone in landscape mode
+    } else if (Settings.ANDROID.equals(Settings.platform)) {
+      fontSize = 20 * Settings.deviceFontHeight / 14;
+    } else if (Settings.isIOS() && Settings.deviceFontHeight != 0) {
+      fontSize = Settings.deviceFontHeight;
+    } else {
+      switch (w) {
+      // some predefined device screen sizes
+      case 480:
+      case 360:
+      case 320:
+        if (h < 240) {
+          fontSize = 13;
+        } else if (h == 240) {
+          fontSize = 14;
+        } else {
+          fontSize = 18;
+        }
+        break;
+      case 640:
+      case 240:
+      case 220:
+      case 200:
+        fontSize = 12;
+        break;
+      default:
+        if (w >= 600 || h >= 800) {
+          fontSize = 23;
+        } else {
+          fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
+        }
       }
+    }
+    if (fontSize < MIN_FONT_SIZE) {
+      fontSize = MIN_FONT_SIZE;
+    } else if (!Settings.isOpenGL && fontSize > MAX_FONT_SIZE) {
+      fontSize = MAX_FONT_SIZE;
+    }
 
     return fontSize;
   }
@@ -139,7 +130,7 @@ public final class Font
   /** A normal-sized font */
   public static final int NORMAL_SIZE = getDefaultFontSize();
   /** A big-sized font (2 above the normal size) */
-  public static final int BIG_SIZE = NORMAL_SIZE+2;
+  public static final int BIG_SIZE = NORMAL_SIZE + 2;
 
   /** When the vm draws a character and founds the tab char, it will draw a set of spaces. 
    * You can define the number of spaces that will be drawn setting this field. 
@@ -151,7 +142,7 @@ public final class Font
 
   private Font(String name, boolean boldStyle, int size) // guich@580_10
   {
-    if (size == 0){
+    if (size == 0) {
       throw new RuntimeException("Font size cannot be 0!");
     }
     this.name = name;
@@ -204,18 +195,17 @@ public final class Font
   public static Font getFont(String name, boolean boldStyle, int size) // guich@580_10
   {
     char st = boldStyle ? 'B' : 'P';
-    String key = name+'$'+st+size;
-    Font f = baseChar == ' ' ? (Font)htFonts.get(key) : null;
-    if (f == null){
+    String key = name + '$' + st + size;
+    Font f = baseChar == ' ' ? (Font) htFonts.get(key) : null;
+    if (f == null) {
       htFonts.put(key, f = new Font(name, boldStyle, size));
     }
     return f;
   }
 
   /** Returns this font as Bold */
-  public Font asBold()
-  {
-    return getFont(name,true,size); // guich@450_36: cache the bolded font - guich@580_10: cached now in the Hashtable.
+  public Font asBold() {
+    return getFont(name, true, size); // guich@450_36: cache the bolded font - guich@580_10: cached now in the Hashtable.
   }
 
   /** Returns a font with the size changed with that delta. 
@@ -223,9 +213,8 @@ public final class Font
    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
    * @since TotalCross 1.3
    */
-  public Font adjustedBy(int delta)
-  {
-    return getFont(name,style == 1, size + delta);
+  public Font adjustedBy(int delta) {
+    return getFont(name, style == 1, size + delta);
   }
 
   /** Returns a font with the size changed with that delta and the given bold style. 
@@ -233,57 +222,50 @@ public final class Font
    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
    * @since TotalCross 1.3
    */
-  public Font adjustedBy(int delta, boolean bold)
-  {
-    return getFont(name,bold, size + delta);
+  public Font adjustedBy(int delta, boolean bold) {
+    return getFont(name, bold, size + delta);
   }
 
   /** Returns a font with the size changed with that percentage. 
    * The new size is thisFont.size * percent / 100.
    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
    */
-  public Font percentBy(int percent)
-  {
-    return getFont(name,style == 1, size * percent / 100);
+  public Font percentBy(int percent) {
+    return getFont(name, style == 1, size * percent / 100);
   }
 
   /** Returns a font with the size changed with that percentage and the given bold style. 
    * The new size is thisFont.size * percent / 100.
    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
    */
-  public Font percentBy(int percent, boolean bold)
-  {
-    return getFont(name,bold, size * percent / 100);
+  public Font percentBy(int percent, boolean bold) {
+    return getFont(name, bold, size * percent / 100);
   }
 
   /** Returns if this font is bold.
    * @since TotalCross 1.53
    */
-  public boolean isBold()
-  {
+  public boolean isBold() {
     return style == 1;
   }
 
   @ReplacedByNativeOnDeploy
-  void fontCreate()
-  {
-    hv_UserFont = Launcher.instance.getFont(this, (char)baseChar);
+  void fontCreate() {
+    hv_UserFont = Launcher.instance.getFont(this, (char) baseChar);
   }
 
   /** Used internally. */
-  public void removeFromCache()
-  {
-    char st = style==1 ? 'B' : 'P';
-    String key = name+'$'+st+size;
+  public void removeFromCache() {
+    char st = style == 1 ? 'B' : 'P';
+    String key = name + '$' + st + size;
     htFonts.remove(key);
   }
-  public void removeFromCache4D()
-  {
+
+  public void removeFromCache4D() {
   }
 
   @Override
-  public String toString()
-  {
-    return name+"$"+(style==1?"B":"N")+size;
+  public String toString() {
+    return name + "$" + (style == 1 ? "B" : "N") + size;
   }
 }

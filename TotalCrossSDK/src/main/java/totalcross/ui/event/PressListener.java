@@ -14,14 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Press events. */
 
-public interface PressListener
-{
+public interface PressListener {
   /** A PRESSED event was dispatched.
    * @see ControlEvent 
    */

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util;
 
 import totalcross.sys.Convert;
@@ -43,16 +41,14 @@ import totalcross.sys.Vm;
  * <br>For efficiency, get and set is made directly through the <items> public array.
  * <b>Please use the add and remove methods to manipulate the IntVector.</b>
  */
-public class IntVector
-{
+public class IntVector {
   /** This member is public for fast access. Always use the correct methods
    * for add and remove, otherwise you'll be in trouble. */
   public int items[];
   protected int count;
 
   /** Constructs an empty vector. */
-  public IntVector()
-  {
+  public IntVector() {
     this(20);
   }
 
@@ -61,9 +57,8 @@ public class IntVector
    * the initial size of the vector's internal int array. The vector
    * will grow as needed when ints are added. SIZE CANNOT BE 0!
    */
-  public IntVector(int size)
-  {
-    if (size < 0){
+  public IntVector(int size) {
+    if (size < 0) {
       throw new IllegalArgumentException("The argument 'size' must be non-negative");
     }
     items = new int[size];
@@ -73,7 +68,7 @@ public class IntVector
    * original array will reflect the items of this array and vice-versa.
    * @since SuperWaba 5.11
    */
-  public IntVector(int []items) // guich@511_11
+  public IntVector(int[] items) // guich@511_11
   {
     count = items.length; // flsobral@tc100b4: fail-fast policy - throws NPE if items is null.
     this.items = items;
@@ -87,13 +82,11 @@ public class IntVector
    */
   public void ensureBit(int index) // guich@400_5
   {
-    int newCount = (index >> 5)+1; // convert from bits to int
-    if (newCount >= items.length)
-    {
+    int newCount = (index >> 5) + 1; // convert from bits to int
+    if (newCount >= items.length) {
       if (count == 0) {
         items = new int[newCount];
-      } else
-      {
+      } else {
         int newItems[] = new int[newCount];
         Vm.arrayCopy(items, 0, newItems, 0, count);
         items = newItems;
@@ -107,7 +100,7 @@ public class IntVector
    */
   public boolean isBitSet(int index) // guich@400_5
   {
-    return (items[index>>5] & ((int)1 << (index & 31))) != 0; // guich@321_7
+    return (items[index >> 5] & ((int) 1 << (index & 31))) != 0; // guich@321_7
   }
 
   /** Used to let this int vector act like a bit vector.
@@ -115,22 +108,20 @@ public class IntVector
    */
   public void setBit(int index, boolean on) // guich@400_5
   {
-    if (on){
-      items[index>>5] |= ((int)1 << (index & 31));  // set
-    }
-    else {
-      items[index>>5] &= ~((int)1 << (index & 31)); // reset
+    if (on) {
+      items[index >> 5] |= ((int) 1 << (index & 31)); // set
+    } else {
+      items[index >> 5] &= ~((int) 1 << (index & 31)); // reset
     }
   }
 
   // methods to let the vector act like a stack
 
   /** Pushes an int. */
-  public void push(int obj)
-  {
-    if (count < items.length){
+  public void push(int obj) {
+    if (count < items.length) {
       items[count++] = obj;
-    }else {
+    } else {
       insertElementAt(obj, count);
     }
   }
@@ -141,7 +132,7 @@ public class IntVector
   public void pop(int howMany) // guich@500_4
   {
     this.count -= howMany;
-    if (this.count < 0){
+    if (this.count < 0) {
       this.count = 0;
     }
   }
@@ -149,9 +140,8 @@ public class IntVector
   /** Returns the last int, removing it.
    * @throws totalcross.util.ElementNotFoundException When the stack is empty.
    */
-  public int pop() throws ElementNotFoundException
-  {
-    if (count > 0){
+  public int pop() throws ElementNotFoundException {
+    if (count > 0) {
       return items[--count];
     }
     throw new ElementNotFoundException("Empty stack");
@@ -160,10 +150,9 @@ public class IntVector
   /** Returns the last int, without removing it.
    * @throws totalcross.util.ElementNotFoundException When the stack is empty.
    */
-  public int peek() throws ElementNotFoundException
-  {
-    if (count > 0){
-      return items[count-1];
+  public int peek() throws ElementNotFoundException {
+    if (count > 0) {
+      return items[count - 1];
     }
     throw new ElementNotFoundException("Empty stack");
   }
@@ -171,14 +160,12 @@ public class IntVector
   /** Returns if this IntVector is empty.
    * @since TotalCross 1.0.
    */
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return count == 0;
   }
 
   /** Returns the number of ints in the vector. */
-  public int size()
-  {
+  public int size() {
     return count;
   }
 
@@ -187,8 +174,7 @@ public class IntVector
    * search through all the ints in the vector.
    * @return -1 if the object is not found.
    */
-  public int indexOf(int elem)
-  {
+  public int indexOf(int elem) {
     return indexOf(elem, 0);
   }
 
@@ -197,8 +183,7 @@ public class IntVector
    * search starting in startIndex up through all the ints in the vector.
    * @return -1 if the object is not found.
    */
-  public int indexOf(int elem, int index)
-  {
+  public int indexOf(int elem, int index) {
     int n = count;
     for (int i = index; i < n; i++) {
       if (items[i] == elem) {
@@ -209,8 +194,7 @@ public class IntVector
   }
 
   /** Deletes the int reference at the given index. */
-  public void removeElementAt(int index)
-  {
+  public void removeElementAt(int index) {
     if (0 <= index && index < count) // guich@566_33
     {
       if (index != count - 1) {
@@ -222,21 +206,18 @@ public class IntVector
   }
 
   /** Inserts the object at the given index. If index is less than 0 or above the number of elements, it is inserted at the end. */
-  public void insertElementAt(int obj, int index)
-  {
-    if (index < 0 || index > count)
-    {
+  public void insertElementAt(int obj, int index) {
+    if (index < 0 || index > count) {
       index = count; // guich@200b3: check if index is valid
     }
-    if (count == items.length)
-    {
+    if (count == items.length) {
       // On device, grows 20% + 1. On Java, grows 100% + 1.
-      int newSize = (Settings.onJavaSE ? items.length*2 : items.length*12/10) + 1; // flsobral@tc110_5: new size is >= current size + 1. - guich@tc112_6: +1 in both cases
+      int newSize = (Settings.onJavaSE ? items.length * 2 : items.length * 12 / 10) + 1; // flsobral@tc110_5: new size is >= current size + 1. - guich@tc112_6: +1 in both cases
       int newItems[] = new int[newSize];
       Vm.arrayCopy(items, 0, newItems, 0, count);
       items = newItems;
     }
-    if (index != count){
+    if (index != count) {
       Vm.arrayCopy(items, index, items, index + 1, count - index);
     }
     items[index] = obj;
@@ -244,11 +225,10 @@ public class IntVector
   }
 
   /** Adds an int to the end of the vector. */
-  public void addElement(int obj)
-  {
-    if (count < items.length){
+  public void addElement(int obj) {
+    if (count < items.length) {
       items[count++] = obj;
-    }else {
+    } else {
       insertElementAt(obj, count);
     }
   }
@@ -263,8 +243,7 @@ public class IntVector
   public void addElements(int[] elements) // flsobral@tc120_34: new method to add array of integers.
   {
     int newSize = count + elements.length;
-    if (items.length < newSize)
-    {
+    if (items.length < newSize) {
       int newItems[] = new int[newSize];
       Vm.arrayCopy(items, 0, newItems, 0, count);
       items = newItems;
@@ -274,43 +253,37 @@ public class IntVector
   }
 
   /** Deletes the given integer from this vector. */
-  public void removeElement(int obj)
-  {
+  public void removeElement(int obj) {
     removeElementAt(indexOf(obj, 0));
   }
 
   /** Sets all elements in this vector to 0 and its size to 0. */
-  public void removeAllElements()
-  {
+  public void removeAllElements() {
     Convert.fill(items, 0, count, 0);
     count = 0;
   }
 
   /** Does a quick sort in the elements of this IntVector */
-  public void qsort()
-  {
-    qsort(0, count-1);
+  public void qsort() {
+    qsort(0, count - 1);
   }
 
-  private void qsort(int first, int last)
-  {
+  private void qsort(int first, int last) {
     int[] items = this.items;
     int low = first;
     int high = last;
-    if (first >= last){
+    if (first >= last) {
       return;
     }
-    int mid = items[(first+last) >> 1];
-    while (true)
-    {
+    int mid = items[(first + last) >> 1];
+    while (true) {
       while (high >= low && items[low] < mid) {
         low++;
       }
       while (high >= low && items[high] > mid) {
         high--;
       }
-      if (low <= high)
-      {
+      if (low <= high) {
         int temp = items[low];
         items[low++] = items[high];
         items[high--] = temp;
@@ -318,11 +291,11 @@ public class IntVector
         break;
       }
     }
-    if (first < high){
-      qsort(first,high);
+    if (first < high) {
+      qsort(first, high);
     }
-    if (low < last){
-      qsort(low,last);
+    if (low < last) {
+      qsort(low, last);
     }
   }
 
@@ -349,25 +322,24 @@ public class IntVector
    */
   public void setSize(int newSize) throws ArrayIndexOutOfBoundsException //flsobral@tc112_11: removed boolean argument "copyOldData". The original content is always kept now.
   {
-    if (newSize < 0){
+    if (newSize < 0) {
       throw new ArrayIndexOutOfBoundsException("Argument 'newSize' must be positive.");
     }
 
     if (newSize > items.length) // grow buffer to reach newSize
     {
-      int newItems[] = new int[((int)(newSize * 1.2) + 1)];
+      int newItems[] = new int[((int) (newSize * 1.2) + 1)];
       Vm.arrayCopy(items, 0, newItems, 0, count);
       items = newItems;
     }
-    count = newSize;      
+    count = newSize;
   }
 
   /** Copies the items of this vector into the given array, which must have at least the current size of this vector.
    * If the out vector is greater than the current size, the remaining positions will remain unchanged.
    * @since TotalCross 1.0 beta 4
    */
-  public void copyInto(int[] out)
-  {
+  public void copyInto(int[] out) {
     Vm.arrayCopy(items, 0, out, 0, count);
   }
 
@@ -379,10 +351,9 @@ public class IntVector
    * @return true if this vector contains the specified element
    * @since TotalCross 1.15
    */
-  public boolean contains(int v)
-  {
+  public boolean contains(int v) {
     return indexOf(v) >= 0;
-  }   
+  }
 
   /**
    * Reverses the order of the elements in this vector.<br>
@@ -393,8 +364,7 @@ public class IntVector
    */
   public void reverse() // guich@tc115_70
   {
-    for (int i = 0, j = count - 1; i < j; i++, j--)
-    {
+    for (int i = 0, j = count - 1; i < j; i++, j--) {
       int temp = items[i];
       items[i] = items[j];
       items[j] = temp;

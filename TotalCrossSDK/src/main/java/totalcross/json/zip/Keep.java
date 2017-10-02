@@ -147,9 +147,8 @@ class Keep implements None, PostMortem {
         b = o.equals(q);
       }
       if (!b) {
-        JSONzip.log("\n[" + i + "]\n " + this.list[i] + "\n "
-            + that.list[i] + "\n " + this.ticks[i] + "\n "
-            + that.ticks[i]);
+        JSONzip.log(
+            "\n[" + i + "]\n " + this.list[i] + "\n " + that.list[i] + "\n " + this.ticks[i] + "\n " + that.ticks[i]);
         return false;
       }
     }

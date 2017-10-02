@@ -34,7 +34,6 @@ this exception to your version of the library, but you are not
 obligated to do so. If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.sql;
 
 /**
@@ -43,8 +42,7 @@ package totalcross.sql;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public class DriverPropertyInfo
-{
+public class DriverPropertyInfo {
   /**
    * The name of the property.
    */
@@ -79,8 +77,7 @@ public class DriverPropertyInfo
    * @param name The name of the property.
    * @param value The value to assign to the property.
    */
-  public DriverPropertyInfo(String name, String value)
-  {
+  public DriverPropertyInfo(String name, String value) {
     this.name = name;
     this.value = value;
   }

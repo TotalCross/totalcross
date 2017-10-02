@@ -26,19 +26,16 @@ import totalcross.ui.dialog.MessageBox;
 import totalcross.ui.dialog.TimeBox;
 import totalcross.ui.gfx.Color;
 
-public class EditSample extends BaseContainer
-{
+public class EditSample extends BaseContainer {
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       Settings.is24Hour = true;
 
       super.initUI();
       ScrollContainer sc = new ScrollContainer(false, true);
-      sc.setInsets(gap,gap,gap,gap);
-      add(sc,LEFT,TOP,FILL,FILL);
+      sc.setInsets(gap, gap, gap, gap);
+      add(sc, LEFT, TOP, FILL, FILL);
       Edit e;
 
       int focusColor = Color.WHITE;
@@ -48,20 +45,17 @@ public class EditSample extends BaseContainer
       e.captionIcon = getAwesomeImage('\uf12d', fmH, Color.BLACK);
       e.focusColor = focusColor;
       e.setBackColor(Color.darker(Color.YELLOW));
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
       final Edit e1 = e;
-      e.captionPress = new CaptionPress()
-      {
+      e.captionPress = new CaptionPress() {
         @Override
-        public void onIconPress()
-        {
+        public void onIconPress() {
           Vm.debug("on icon press");
           e1.clear();
         }
 
         @Override
-        public void onCaptionPress()
-        {
+        public void onCaptionPress() {
           Vm.debug("on caption press");
           e1.clear();
         }
@@ -71,60 +65,58 @@ public class EditSample extends BaseContainer
       e.caption = "Currency mode with Calculator (masked)";
       e.focusColor = focusColor;
       e.setBackColor(Color.darker(Color.MAGENTA));
-      e.setMode(Edit.CURRENCY,true); 
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      e.setMode(Edit.CURRENCY, true);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
 
       e = new Edit();
       e.caption = "Currency mode with Calculator (unmasked)";
       e.focusColor = focusColor;
       e.setBackColor(Color.darker(Color.BLUE));
-      e.setKeyboard(Edit.KBD_CALCULATOR); 
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      e.setKeyboard(Edit.KBD_CALCULATOR);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
 
       e = new Edit();
       e.caption = "Currency mode with NumericBox";
       e.focusColor = focusColor;
-      e.setMode(Edit.CURRENCY); 
+      e.setMode(Edit.CURRENCY);
       e.setBackColor(Color.darker(Color.CYAN));
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
       e.setKeyboard(Edit.KBD_NUMERIC);
 
       e = new Edit("99/99/99");
       e.caption = "Date mode with Calendar";
       e.focusColor = focusColor;
-      e.setMode(Edit.DATE,true); 
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      e.setMode(Edit.DATE, true);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
 
-      e = new Edit("99"+Settings.timeSeparator+"99"+Settings.timeSeparator+"99");
+      e = new Edit("99" + Settings.timeSeparator + "99" + Settings.timeSeparator + "99");
       e.caption = "Hour with TimeBox (24-hour format)";
       TimeBox.hideIfInvalid = false;
       e.setValidChars("0123456789AMP");
       e.setBackColor(Color.darker(Color.RED));
-      e.setMode(Edit.NORMAL,true);
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      e.setMode(Edit.NORMAL, true);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
       e.setKeyboard(Edit.KBD_TIME);
 
       e = new Edit("");
       e.caption = "Password (last character is shown)";
-      e.setMode(Edit.PASSWORD); 
+      e.setMode(Edit.PASSWORD);
       e.setBackColor(Color.darker(Color.GREEN));
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
 
       e = new Edit("");
       e.caption = "Password (all characters are hidden)";
-      e.setMode(Edit.PASSWORD_ALL); 
+      e.setMode(Edit.PASSWORD_ALL);
       e.setBackColor(Color.darker(Color.BLUE));
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
 
       e = new Edit("99.999-999");
       e.setValidChars(Edit.numbersSet);
       e.caption = "Brazilian's 8-digit postal code";
-      e.setMode(Edit.NORMAL,true);
-      sc.add(e,LEFT,AFTER,FILL,PREFERRED);
-    }
-    catch (Exception ee)
-    {
-      MessageBox.showException(ee,true);
+      e.setMode(Edit.NORMAL, true);
+      sc.add(e, LEFT, AFTER, FILL, PREFERRED);
+    } catch (Exception ee) {
+      MessageBox.showException(ee, true);
     }
   }
 }

@@ -9,38 +9,31 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.constant;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class Float implements ConstantInfo
-{
+public class Float implements ConstantInfo {
   public double value;
 
   @Override
-  public java.lang.String toString()
-  {
+  public java.lang.String toString() {
     return "" + value;
   }
 
   @Override
-  public int length()
-  {
+  public int length() {
     return 4;
   }
 
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
     value = ds.readFloat();
   }
 
   @Override
-  public void save(DataStream ds) throws IOException
-  {
+  public void save(DataStream ds) throws IOException {
     ds.writeFloat(value);
   }
 }

@@ -7,82 +7,70 @@
 
 package totalcross.util.pdf;
 
-public class EnclosedContent extends Base
-{
+public class EnclosedContent extends Base {
 
   private String mBegin;
   private String mEnd;
   protected StringBuilder mContent;
 
-  public EnclosedContent()
-  {
+  public EnclosedContent() {
     clear();
   }
 
-  public void setBeginKeyword(String Value, boolean NewLineBefore, boolean NewLineAfter)
-  {
-    if (NewLineBefore){
+  public void setBeginKeyword(String Value, boolean NewLineBefore, boolean NewLineAfter) {
+    if (NewLineBefore) {
       mBegin = "\n" + Value;
-    }else {
+    } else {
       mBegin = Value;
     }
-    if (NewLineAfter){
+    if (NewLineAfter) {
       mBegin += "\n";
     }
   }
 
-  public void setEndKeyword(String Value, boolean NewLineBefore, boolean NewLineAfter)
-  {
-    if (NewLineBefore){
+  public void setEndKeyword(String Value, boolean NewLineBefore, boolean NewLineAfter) {
+    if (NewLineBefore) {
       mEnd = "\n" + Value;
-    }else {
+    } else {
       mEnd = Value;
     }
-    if (NewLineAfter){
+    if (NewLineAfter) {
       mEnd += "\n";
     }
   }
 
-  public boolean hasContent()
-  {
+  public boolean hasContent() {
     return mContent.length() > 0;
   }
 
-  public void setContent(String Value)
-  {
+  public void setContent(String Value) {
     clear();
     mContent.append(Value);
   }
 
-  public String getContent()
-  {
+  public String getContent() {
     return mContent.toString();
   }
 
-  public void addContent(String Value)
-  {
+  public void addContent(String Value) {
     mContent.append(Value);
   }
 
-  public void addNewLine()
-  {
+  public void addNewLine() {
     mContent.append("\n");
   }
 
-  public void addSpace()
-  {
+  public void addSpace() {
     mContent.append(" ");
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
     mContent = new StringBuilder();
   }
 
   @Override
-  public String toPDFString()
-  {
+  public String toPDFString() {
     return mBegin + mContent.toString() + mEnd;
   }
 

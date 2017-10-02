@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 /**
@@ -58,7 +57,6 @@ package totalcross.util;
  * @since 1.4
  * @status updated to 1.4
  */
-public interface RandomAccess4D
-{
+public interface RandomAccess4D {
   // Tagging interface only.
 }

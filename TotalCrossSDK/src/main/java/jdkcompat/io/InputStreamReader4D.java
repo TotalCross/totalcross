@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package jdkcompat.io;
 
 import java.io.BufferedReader;
@@ -103,8 +102,7 @@ import totalcross.sys.Vm;
  * @author Per Bothner (bothner@cygnus.com)
  * @date April 22, 1998.
  */
-public class InputStreamReader4D extends Reader
-{
+public class InputStreamReader4D extends Reader {
   boolean eos = false;
 
   private static final int BYTES_ENCODED_SIZE = 4 * 1024;
@@ -168,9 +166,8 @@ public class InputStreamReader4D extends Reader
    *
    * @param in The <code>InputStream</code> to read from
    */
-  public InputStreamReader4D(InputStream in)
-  {
-    if (in == null){
+  public InputStreamReader4D(InputStream in) {
+    if (in == null) {
       throw new NullPointerException();
     }
     this.in = in;
@@ -320,10 +317,8 @@ public class InputStreamReader4D extends Reader
    * @exception IOException If an error occurs
    */
   @Override
-  public void close() throws java.io.IOException
-  {
-    synchronized (lock)
-    {
+  public void close() throws java.io.IOException {
+    synchronized (lock) {
       // Makes sure all intermediate data is released by the decoder.
       //        if (decoder != null)
       //           decoder.reset();
@@ -360,9 +355,8 @@ public class InputStreamReader4D extends Reader
    * @exception IOException If an error occurs
    */
   @Override
-  public boolean ready() throws java.io.IOException
-  {
-    if (in == null){
+  public boolean ready() throws java.io.IOException {
+    if (in == null) {
       throw new java.io.IOException("Reader has been closed");
     }
 
@@ -430,8 +424,7 @@ public class InputStreamReader4D extends Reader
    * @exception IOException If an error occurs
    */
   @Override
-  public int read() throws java.io.IOException
-  {
+  public int read() throws java.io.IOException {
     char[] buf = new char[1];
     int count = read(buf, 0, 1);
     return count > 0 ? buf[0] : -1;
@@ -449,9 +442,8 @@ public class InputStreamReader4D extends Reader
    * @exception IOException If an error occurs
    */
   @Override
-  public long skip(long count) throws java.io.IOException
-  {
-    if (in == null){
+  public long skip(long count) throws java.io.IOException {
+    if (in == null) {
       throw new java.io.IOException("Reader has been closed");
     }
 
@@ -491,5 +483,5 @@ public class InputStreamReader4D extends Reader
     eos = true;
     decodedReadPos = -1;
     decodedSize = -1;
-  }	
+  }
 }

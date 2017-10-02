@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractCollection;
@@ -95,8 +94,7 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Collection4D<E> extends Iterable<E>
-{
+public interface Collection4D<E> extends Iterable<E> {
   /**
    * Add an element to this collection.
    *

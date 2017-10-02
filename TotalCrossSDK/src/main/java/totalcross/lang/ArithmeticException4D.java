@@ -29,13 +29,11 @@ package totalcross.lang;
  * package that has no correspondence with <code>totalcross.lang</code> will make the <code>tc.Deploy</code> program to abort, informing where the 
  * problem has occurred. A good idea is to always refer to this JavaDoc to know what is and what isn't available.
  */
-public class ArithmeticException4D extends RuntimeException
-{
+public class ArithmeticException4D extends RuntimeException {
   /** 
    * Constructs an empty exception. 
    */
-  public ArithmeticException4D()
-  {
+  public ArithmeticException4D() {
   }
 
   /** 
@@ -43,8 +41,7 @@ public class ArithmeticException4D extends RuntimeException
    * 
    * @param msg The error message.
    */
-  public ArithmeticException4D(String msg)
-  {
+  public ArithmeticException4D(String msg) {
     super(msg);
   }
 }

@@ -39,9 +39,7 @@ import java.util.Queue;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
-public abstract class AbstractQueue4D<E>
-extends AbstractCollection<E>
-implements Queue<E> {
+public abstract class AbstractQueue4D<E> extends AbstractCollection<E> implements Queue<E> {
 
   /**
    * Constructor for use by subclasses.
@@ -129,7 +127,8 @@ implements Queue<E> {
    */
   @Override
   public void clear() {
-    while (poll() != null) {;
+    while (poll() != null) {
+      ;
     }
   }
 

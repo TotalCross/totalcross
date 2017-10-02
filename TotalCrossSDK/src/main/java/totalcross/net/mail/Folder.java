@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.util.Hashtable;
@@ -26,8 +24,7 @@ import totalcross.util.Hashtable;
  * 
  * @since TotalCross 1.13
  */
-public abstract class Folder
-{
+public abstract class Folder {
   protected Store store;
   protected Hashtable messagesByUidl;
   protected Hashtable messagesByNumber;
@@ -45,8 +42,7 @@ public abstract class Folder
    *           the Store that holds this folder
    * @since TotalCross 1.13
    */
-  protected Folder(Store store)
-  {
+  protected Folder(Store store) {
     this.store = store;
   }
 
@@ -72,13 +68,11 @@ public abstract class Folder
    *         closed folder.
    * @since TotalCross 1.13
    */
-  public int getMessageCount() throws MessagingException
-  {
+  public int getMessageCount() throws MessagingException {
     return messageCount;
   }
 
-  public int getDeleteMessageCount() throws MessagingException
-  {
+  public int getDeleteMessageCount() throws MessagingException {
     return deletedMessageCount;
   }
 
@@ -94,9 +88,8 @@ public abstract class Folder
    * @throws MessagingException
    * @since TotalCross 1.13
    */
-  public Message[] getMessages() throws MessagingException
-  {
-    if (messageCount == -1){
+  public Message[] getMessages() throws MessagingException {
+    if (messageCount == -1) {
       return null;
     }
 
@@ -125,12 +118,11 @@ public abstract class Folder
    * @throws MessagingException
    * @since TotalCross 1.13
    */
-  public Message[] getMessages(int start, int end) throws MessagingException
-  {
-    if (messageCount == -1){
+  public Message[] getMessages(int start, int end) throws MessagingException {
+    if (messageCount == -1) {
       return null;
     }
-    if (start < 1 || end > messageCount){
+    if (start < 1 || end > messageCount) {
       throw new IndexOutOfBoundsException();
     }
 
@@ -180,9 +172,8 @@ public abstract class Folder
    * @param b
    * @since TotalCross 1.13
    */
-  public void close(boolean b)
-  {
-    if (messageCount == -1){
+  public void close(boolean b) {
+    if (messageCount == -1) {
       return;
     }
     messageCount = -1;

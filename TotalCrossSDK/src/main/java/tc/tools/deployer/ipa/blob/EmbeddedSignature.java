@@ -4,8 +4,7 @@ import java.io.IOException;
 
 import org.bouncycastle.cms.CMSException;
 
-public class EmbeddedSignature extends SuperBlob
-{
+public class EmbeddedSignature extends SuperBlob {
   /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
   public static final long CSMAGIC_EMBEDDED_SIGNATURE = 0xfade0cc0;
 
@@ -19,14 +18,12 @@ public class EmbeddedSignature extends SuperBlob
   Requirements requirements;
   BlobWrapper blobWrapper;
 
-  public EmbeddedSignature()
-  {
+  public EmbeddedSignature() {
     super(CSMAGIC_EMBEDDED_SIGNATURE);
   }
 
   public EmbeddedSignature(CodeDirectory codeDirectory, Entitlements entitlements, Requirements requirements,
-      BlobWrapper blobWrapper)
-  {
+      BlobWrapper blobWrapper) {
     this();
     add(new BlobIndex(CSSLOT_CODEDIRECTORY, codeDirectory));
     add(new BlobIndex(CSSLOT_REQUIREMENTS, requirements));
@@ -35,30 +32,27 @@ public class EmbeddedSignature extends SuperBlob
   }
 
   @Override
-  public void add(BlobIndex blobIndex)
-  {
-    switch ((int) blobIndex.blobType)
-    {
+  public void add(BlobIndex blobIndex) {
+    switch ((int) blobIndex.blobType) {
     case (int) CSSLOT_CODEDIRECTORY:
       codeDirectory = (CodeDirectory) blobIndex.blob;
-    break;
+      break;
     case (int) CSSLOT_REQUIREMENTS:
       requirements = (Requirements) blobIndex.blob;
-    break;
+      break;
     case (int) CSSLOT_ENTITLEMENTS:
       entitlements = (Entitlements) blobIndex.blob;
-    break;
+      break;
     case (int) CSSLOT_BLOBWRAPPER:
       blobWrapper = (BlobWrapper) blobIndex.blob;
-    break;
+      break;
     default:
       return;
     }
     super.add(blobIndex);
   }
 
-  public void sign() throws IOException, CMSException
-  {
+  public void sign() throws IOException, CMSException {
     blobWrapper.sign();
   }
 }

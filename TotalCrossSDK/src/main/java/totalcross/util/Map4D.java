@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Collection;
@@ -86,8 +85,7 @@ import java.util.TreeMap;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Map4D<K, V>
-{
+public interface Map4D<K, V> {
   /**
    * Remove all entries from this Map (optional operation).
    *
@@ -283,8 +281,7 @@ public interface Map4D<K, V>
    * @since 1.2
    * @status updated to 1.4
    */
-  interface Entry<K, V>
-  {
+  interface Entry<K, V> {
     /**
      * Get the key corresponding to this entry.
      *
@@ -315,14 +312,13 @@ public interface Map4D<K, V>
      */
     V setValue(V value);
 
-
     /**
      * Returns the hash code of the entry.  This is defined as the
      * exclusive-or of the hashcodes of the key and value (using 0 for
      * <code>null</code>). In other words, this must be:
      * 
-<p><pre>(getKey() == null ? 0 : getKey().hashCode())
-^ (getValue() == null ? 0 : getValue().hashCode())</pre>
+    <p><pre>(getKey() == null ? 0 : getKey().hashCode())
+    ^ (getValue() == null ? 0 : getValue().hashCode())</pre>
      *
      * @return the hash code
      */
@@ -334,10 +330,10 @@ public interface Map4D<K, V>
      * the object is a mapping of identical key and value. In other words,
      * this must be:
      * 
-<p><pre>(o instanceof Map.Entry)
-&& (getKey() == null ? ((Map.Entry) o).getKey() == null
+    <p><pre>(o instanceof Map.Entry)
+    && (getKey() == null ? ((Map.Entry) o).getKey() == null
                      : getKey().equals(((Map.Entry) o).getKey()))
-&& (getValue() == null ? ((Map.Entry) o).getValue() == null
+    && (getValue() == null ? ((Map.Entry) o).getValue() == null
                        : getValue().equals(((Map.Entry) o).getValue()))</pre>
      *
      * @param o the object to compare

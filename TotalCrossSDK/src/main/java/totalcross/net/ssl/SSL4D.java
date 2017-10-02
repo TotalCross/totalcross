@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /*
  *  Copyright(C) 2006 Cameron Rich
  *
@@ -50,8 +48,7 @@ package totalcross.net.ssl;
 /**
  * A representation of an SSL connection.
  */
-public class SSL4D
-{
+public class SSL4D {
   /** A pointer to the real SSL type. For internal use only. */
   long ssl;
   boolean dontFinalize;
@@ -62,8 +59,7 @@ public class SSL4D
    * Store the reference to an SSL context.
    * @param ssl [in] A reference to an SSL object.
    */
-  protected SSL4D()
-  {
+  protected SSL4D() {
   }
 
   /**
@@ -140,8 +136,7 @@ public class SSL4D
    * @param out_data [in] The data to be written
    * @return The number of bytes sent, or if < 0 if an error.
    */
-  final public int write(byte[] out_data)
-  {
+  final public int write(byte[] out_data) {
     return write4D(out_data, out_data.length);
   }
 
@@ -170,14 +165,12 @@ public class SSL4D
    */
   native public int renegotiate4D();
 
-  public final Exception getLastException()
-  {
+  public final Exception getLastException() {
     return null;
   }
 
   @Override
-  protected void finalize()
-  {
+  protected void finalize() {
     dispose4D();
   }
 }

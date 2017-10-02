@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.regalloc;
 
 import tc.tools.converter.ConverterException;
@@ -28,8 +26,7 @@ import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 import totalcross.util.Hashtable;
 
-public class RegAllocation
-{
+public class RegAllocation {
   public BitSet[] adjMatrix;
   public AdjListNode[] adjList;
   public Stack stack;
@@ -41,18 +38,16 @@ public class RegAllocation
   public int maxColor;
   public int maxColorI, maxColorD, maxColorO;
 
-  public static void makeRegAllocation(TCMethod[] methods)
-  {
+  public static void makeRegAllocation(TCMethod[] methods) {
     int len = methods.length;
-    for (int i=0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
       if (methods[i] != null) {
         new RegAllocation(methods[i].cfg);
       }
     }
   }
 
-  private RegAllocation(CFG cfg)
-  {
+  private RegAllocation(CFG cfg) {
     J2TC.currentMethod = GlobalConstantPool.getMethodFieldName(cfg.method.cpName);
     adjListI = null;
     adjListD = null;
@@ -62,87 +57,79 @@ public class RegAllocation
     maxColorD = 0;
     maxColorO = 0;
 
-    if (cfg.iCount() > 64)
-    {
+    if (cfg.iCount() > 64) {
       stack = new Stack();
       cfg.livenessAnalysis(TClassConstants.RegI);
       maxColor = 0;
-      if (allocateRegisters(cfg, TClassConstants.RegI))
-      {
+      if (allocateRegisters(cfg, TClassConstants.RegI)) {
         adjListI = createCopyOf(adjList);
         maxColorI = maxColor + 1;
       } else {
-        throw new ConverterException("The maximum number of integer registers has been reached. Please split your method and try again.");
+        throw new ConverterException(
+            "The maximum number of integer registers has been reached. Please split your method and try again.");
       }
       cleanData();
     }
 
-    if (cfg.v64Count() > 64)
-    {
+    if (cfg.v64Count() > 64) {
       stack = new Stack();
       cfg.livenessAnalysis(TClassConstants.RegD);
       maxColor = 0;
-      if (allocateRegisters(cfg, TClassConstants.RegD))
-      {
+      if (allocateRegisters(cfg, TClassConstants.RegD)) {
         adjListD = createCopyOf(adjList);
         maxColorD = maxColor + 1;
       } else {
-        throw new ConverterException("The maximum number of floating registers has been reached. Please split your method and try again.");
+        throw new ConverterException(
+            "The maximum number of floating registers has been reached. Please split your method and try again.");
       }
       cleanData();
     }
 
-    if (cfg.oCount() > 64)
-    {
+    if (cfg.oCount() > 64) {
       stack = new Stack();
       cfg.livenessAnalysis(TClassConstants.RegO);
       maxColor = 0;
-      if (allocateRegisters(cfg, TClassConstants.RegO))
-      {
+      if (allocateRegisters(cfg, TClassConstants.RegO)) {
         adjListO = createCopyOf(adjList);
         maxColorO = maxColor + 1;
       } else {
-        throw new ConverterException("The maximum number of object registers has been reached. Please split your method and try again.");
+        throw new ConverterException(
+            "The maximum number of object registers has been reached. Please split your method and try again.");
       }
     }
 
-    if (adjListI == null){
+    if (adjListI == null) {
       adjListI = defaultAdjList();
     }
-    if (adjListD == null){
+    if (adjListD == null) {
       adjListD = defaultAdjList();
     }
-    if (adjListO == null){
+    if (adjListO == null) {
       adjListO = defaultAdjList();
     }
 
     cfg.method.modifyCode(adjListI, adjListD, adjListO);
     updateRegOExceptionHandler(cfg.method.exceptionHandlers, adjListO);
 
-    cfg.method.iCount   = Math.max(maxColorI, cfg.method.iParamCount);
+    cfg.method.iCount = Math.max(maxColorI, cfg.method.iParamCount);
     cfg.method.v64Count = Math.max(maxColorD, cfg.method.v64ParamCount);
-    cfg.method.oCount   = Math.max(maxColorO, cfg.method.oParamCount);
+    cfg.method.oCount = Math.max(maxColorO, cfg.method.oParamCount);
     J2TC.currentMethod = null;
   }
 
-  public void updateRegOExceptionHandler(TCException[] tces, AdjListNode[] adjList)
-  {
+  public void updateRegOExceptionHandler(TCException[] tces, AdjListNode[] adjList) {
     TCException e;
-    if (tces != null)
-    {
-      for (int i=0; i<tces.length; i++)
-      {
+    if (tces != null) {
+      for (int i = 0; i < tces.length; i++) {
         e = tces[i];
         e.regO = adjList[e.regO].color;
       }
     }
   }
 
-  private AdjListNode[] defaultAdjList()
-  {
+  private AdjListNode[] defaultAdjList() {
     AdjListNode[] v = new AdjListNode[TCConstants.PHYSICALREGCOUNT];
-    for (int i=0; i<TCConstants.PHYSICALREGCOUNT; i++)
-    {
+    for (int i = 0; i < TCConstants.PHYSICALREGCOUNT; i++) {
       v[i] = new AdjListNode(1);
       v[i].color = i;
     }
@@ -150,10 +137,8 @@ public class RegAllocation
     return v;
   }
 
-  private AdjListNode[] createCopyOf(AdjListNode[] list)
-  {
-    if (list != null && list.length > 0)
-    {
+  private AdjListNode[] createCopyOf(AdjListNode[] list) {
+    if (list != null && list.length > 0) {
       AdjListNode[] v = new AdjListNode[list.length];
       Vm.arrayCopy(list, 0, v, 0, v.length);
       return v;
@@ -161,72 +146,83 @@ public class RegAllocation
     return null;
   }
 
-  public boolean allocateRegisters(CFG cfg, int regType)
-  {
+  public boolean allocateRegisters(CFG cfg, int regType) {
     buildAdjMtx(cfg, regType);
     buildAdjList(cfg, regType);
-    switch (regType)
-    {
-    case TClassConstants.RegI: pruneGraph(cfg.iCount()); break;
-    case TClassConstants.RegD: pruneGraph(cfg.v64Count()); break;
-    case TClassConstants.RegO: pruneGraph(cfg.oCount()); break;
+    switch (regType) {
+    case TClassConstants.RegI:
+      pruneGraph(cfg.iCount());
+      break;
+    case TClassConstants.RegD:
+      pruneGraph(cfg.v64Count());
+      break;
+    case TClassConstants.RegO:
+      pruneGraph(cfg.oCount());
+      break;
     }
     return assignRegs();
   }
 
-  public void buildAdjMtx(CFG cfg, int regType)
-  {
-    switch (regType)
-    {
-    case TClassConstants.RegI: createMatrix(cfg.iCount()); break;
-    case TClassConstants.RegD: createMatrix(cfg.v64Count()); break;
-    case TClassConstants.RegO: createMatrix(cfg.oCount()); /*reserveRegOZero();*/ break;
+  public void buildAdjMtx(CFG cfg, int regType) {
+    switch (regType) {
+    case TClassConstants.RegI:
+      createMatrix(cfg.iCount());
+      break;
+    case TClassConstants.RegD:
+      createMatrix(cfg.v64Count());
+      break;
+    case TClassConstants.RegO:
+      createMatrix(cfg.oCount());
+      /*reserveRegOZero();*/ break;
     }
 
-    for(int i=0;i<cfg.order.length;i++)
-    {
+    for (int i = 0; i < cfg.order.length; i++) {
       BasicBlock bb = cfg.DFSOrderNode(i);
       Instruction[] insts = bb.vector2Array();
-      if (insts != null)
-      {
-        for(int j=0;j<insts.length;j++)
-        {
+      if (insts != null) {
+        for (int j = 0; j < insts.length; j++) {
           BitSet[] ud = insts[j].defsAndUses(bb, cfg.method.iCount, cfg.method.v64Count, cfg.method.oCount);
           BitSet def = null;
-          switch (regType)
-          {
-          case TClassConstants.RegI: def = ud[3]; break;
-          case TClassConstants.RegD: def = ud[4]; break;
-          case TClassConstants.RegO: def = ud[5];
-          }               
+          switch (regType) {
+          case TClassConstants.RegI:
+            def = ud[3];
+            break;
+          case TClassConstants.RegD:
+            def = ud[4];
+            break;
+          case TClassConstants.RegO:
+            def = ud[5];
+          }
           makeInterferences(def.first(), insts[j]);
         }
       }
     }
   }
 
-  public void buildAdjList(CFG cfg, int regType)
-  {
+  public void buildAdjList(CFG cfg, int regType) {
     int len = 0;
-    switch (regType)
-    {
-    case TClassConstants.RegI: len = cfg.iCount(); break;
-    case TClassConstants.RegD: len = cfg.v64Count(); break;
-    case TClassConstants.RegO: len = cfg.oCount(); break;
+    switch (regType) {
+    case TClassConstants.RegI:
+      len = cfg.iCount();
+      break;
+    case TClassConstants.RegD:
+      len = cfg.v64Count();
+      break;
+    case TClassConstants.RegO:
+      len = cfg.oCount();
+      break;
     }
     createAdjList(len);
-    for (int i=0;i<len;i++)
-    {
+    for (int i = 0; i < len; i++) {
       adjList[i] = new AdjListNode(len);
-      if(i<TCConstants.PHYSICALREGCOUNT) {
+      if (i < TCConstants.PHYSICALREGCOUNT) {
         adjList[i].color = i;
       }
     }
 
-    for (int i=0;i<len;i++) {
-      for (int j=0;j<i;j++) {
-        if (adjMatrix[i].isOn(j))
-        {
+    for (int i = 0; i < len; i++) {
+      for (int j = 0; j < i; j++) {
+        if (adjMatrix[i].isOn(j)) {
           adjList[i].addInterf(j);
           adjList[j].addInterf(i);
         }
@@ -236,18 +232,14 @@ public class RegAllocation
 
   public static Hashtable liveUses = new Hashtable(31);
 
-  private void makeInterferences(int regDef, Instruction inst)
-  {
-    if (regDef != -1)
-    {
+  private void makeInterferences(int regDef, Instruction inst) {
+    if (regDef != -1) {
       BitSet use = (BitSet) liveUses.get(inst);
-      if (use.elems != null)
-      {
+      if (use.elems != null) {
         int k = use.first(), in = use.nBits;
         if (k != -1) {
-          for (;k < in; k++) {
-            if (use.isOn(k))
-            {
+          for (; k < in; k++) {
+            if (use.isOn(k)) {
               int regLive = k;
               if (regDef != regLive) {
                 adjMatrix[Math.max(regDef, regLive)].on(Math.min(regDef, regLive));
@@ -259,40 +251,34 @@ public class RegAllocation
     }
   }
 
-  private void createMatrix(int length)
-  {
+  private void createMatrix(int length) {
     adjMatrix = new BitSet[length];
-    for (int i=0; i<length; i++) {
-      adjMatrix[i] = new BitSet(i+1);
+    for (int i = 0; i < length; i++) {
+      adjMatrix[i] = new BitSet(i + 1);
     }
 
-    for (int l=0;l<TCConstants.PHYSICALREGCOUNT;l++) {
+    for (int l = 0; l < TCConstants.PHYSICALREGCOUNT; l++) {
       adjMatrix[l].set(0, l);
     }
   }
 
-  public void reserveRegOZero()
-  {
-    for (int i=TCConstants.PHYSICALREGCOUNT; i<adjMatrix.length; i++) {
+  public void reserveRegOZero() {
+    for (int i = TCConstants.PHYSICALREGCOUNT; i < adjMatrix.length; i++) {
       adjMatrix[i].on(0);
     }
   }
 
-  public void createAdjList(int len)
-  {
+  public void createAdjList(int len) {
     adjList = new AdjListNode[len];
   }
 
-  public void pruneGraph(int len)
-  {
+  public void pruneGraph(int len) {
     int nodes = len - TCConstants.PHYSICALREGCOUNT;
     boolean sucess = false;
-    while(!sucess)
-    {
+    while (!sucess) {
       sucess = true;
-      for(int i = TCConstants.PHYSICALREGCOUNT; i < len; i++) {
-        if(!adjList[i].pushed && adjList[i].nInts() < TCConstants.PHYSICALREGCOUNT)
-        {
+      for (int i = TCConstants.PHYSICALREGCOUNT; i < len; i++) {
+        if (!adjList[i].pushed && adjList[i].nInts() < TCConstants.PHYSICALREGCOUNT) {
           sucess = false;
           stack.push(i);
           adjustNeighbors(i);
@@ -302,8 +288,7 @@ public class RegAllocation
       }
     }
 
-    if (nodes > 0)
-    {
+    if (nodes > 0) {
       throw new ConverterException("This method is too big and must be splitted into two or more parts.");
       /*for (int l=0; l<cfg.iCount(); l++)
          {
@@ -317,16 +302,13 @@ public class RegAllocation
     }
   }
 
-  public void adjustNeighbors(int n)
-  {
+  public void adjustNeighbors(int n) {
     BitSet neighbors = adjList[n].adjs;
-    if (neighbors.elems != null)
-    {
+    if (neighbors.elems != null) {
       int i = neighbors.first(), in = neighbors.nBits;
       if (i != -1) {
-        for (;i < in; i++) {
-          if (neighbors.isOn(i))
-          {
+        for (; i < in; i++) {
+          if (neighbors.isOn(i)) {
             adjList[i].removeInterf(n);
             adjList[i].addRemovedAdjs(n);
           }
@@ -336,21 +318,18 @@ public class RegAllocation
     }
   }
 
-  public boolean assignRegs()
-  {
+  public boolean assignRegs() {
     boolean sucess = true;
 
-    while (!stack.isEmpty())
-    {
+    while (!stack.isEmpty()) {
       int r = stack.pop();
       int c = minColor(r, TCConstants.PHYSICALREGCOUNT);
       if (c > maxColor) {
         maxColor = c;
       }
-      if (c!=-1) {
+      if (c != -1) {
         adjList[r].color = c;
-      } else
-      {
+      } else {
         sucess = false;
         break;
       }
@@ -359,20 +338,17 @@ public class RegAllocation
     return sucess;
   }
 
-  public int minColor(int n, int count)
-  {
+  public int minColor(int n, int count) {
     BitSet minColor = new BitSet(count);
-    minColor.set(0,count);
+    minColor.set(0, count);
     BitSet nodes = adjList[n].removedAdjs;
-    if (nodes.elems != null)
-    {
+    if (nodes.elems != null) {
       int i = nodes.first(), in = nodes.nBits;
       if (i != -1) {
-        for (;i < in; i++) {
-          if (nodes.isOn(i))
-          {
+        for (; i < in; i++) {
+          if (nodes.isOn(i)) {
             int color = adjList[i].color;
-            if (color!=-1) {
+            if (color != -1) {
               minColor.off(color);
             }
           }
@@ -380,30 +356,27 @@ public class RegAllocation
       }
     }
 
-    if (adjList[n].color!=-1 && !minColor.isOn(adjList[n].color)){
+    if (adjList[n].color != -1 && !minColor.isOn(adjList[n].color)) {
       minColor.clear();
     }
 
     return minColor.first();
   }
 
-  public void cleanData()
-  {
+  public void cleanData() {
     deleteMatrix();
     deleteAdjList();
     stack.erase();
     liveUses.clear();
   }
 
-  public void deleteMatrix()
-  {
-    for (int l=0; l<adjMatrix.length; l++) {
+  public void deleteMatrix() {
+    for (int l = 0; l < adjMatrix.length; l++) {
       adjMatrix[l].clear();
     }
   }
 
-  public void deleteAdjList()
-  {
+  public void deleteAdjList() {
     Convert.fill(adjList, 0, adjList.length, null);
   }
 }

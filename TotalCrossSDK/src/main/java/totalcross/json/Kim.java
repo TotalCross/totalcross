@@ -2,7 +2,6 @@ package totalcross.json;
 
 import totalcross.sys.Vm;
 
-
 /*
  Copyright (c) 2013 JSON.org
 
@@ -207,8 +206,7 @@ public class Kim {
         } else {
           if (character >= 0xD800 && character <= 0xDBFF) {
             i += 1;
-            character = (((character & 0x3FF) << 10) | (string
-                .charAt(i) & 0x3FF)) + 65536;
+            character = (((character & 0x3FF) << 10) | (string.charAt(i) & 0x3FF)) + 65536;
           }
           b = 0x80 | (character >>> 14);
           bytes[at] = (byte) b;

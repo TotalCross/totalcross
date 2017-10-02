@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.phone;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -31,8 +29,7 @@ import totalcross.sys.Vm;
  * @since TotalCross 1.22
  */
 
-public class CellInfo
-{
+public class CellInfo {
   public static String cellId;
   public static String mnc;
   public static String mcc;
@@ -41,34 +38,28 @@ public class CellInfo
 
   static CellInfo instance = new CellInfo();
 
-  private CellInfo()
-  {
+  private CellInfo() {
     loadResources();
   }
 
   @ReplacedByNativeOnDeploy
-  public static void update()
-  {
+  public static void update() {
   }
 
   @ReplacedByNativeOnDeploy
-  private void loadResources()
-  {
+  private void loadResources() {
   }
 
   @ReplacedByNativeOnDeploy
-  private void releaseResources()
-  {
+  private void releaseResources() {
   }
 
   @Override
-  protected void finalize()
-  {
+  protected void finalize() {
     releaseResources();
-  }   
+  }
 
-  public static boolean isSupported()
-  {
+  public static boolean isSupported() {
     return Settings.isWindowsCE() || Settings.platform.equals(Settings.ANDROID);
   }
 
@@ -78,11 +69,10 @@ public class CellInfo
    * This method requires direct connection to the internet and uses the google mmap service.
    * @since TotalCross 1.3
    */
-  public static double[] toCoordinates() throws Exception
-  {
-    double []ret = null;
+  public static double[] toCoordinates() throws Exception {
+    double[] ret = null;
 
-    if (cellId == null || lac == null){
+    if (cellId == null || lac == null) {
       return null;
     }
 
@@ -95,23 +85,27 @@ public class CellInfo
     ds.writeBytes("\r\n");
     ds.writeShort(21);
     ds.writeLong(0);
-    ds.writeShort(2); ds.writeBytes("en");
-    ds.writeShort(7); ds.writeBytes("Android");
-    ds.writeShort(3); ds.writeBytes("1.0");
-    ds.writeShort(3); ds.writeBytes("Web");
+    ds.writeShort(2);
+    ds.writeBytes("en");
+    ds.writeShort(7);
+    ds.writeBytes("Android");
+    ds.writeShort(3);
+    ds.writeBytes("1.0");
+    ds.writeShort(3);
+    ds.writeBytes("Web");
     ds.writeByte(27);
     ds.writeInt(0);
     ds.writeInt(0);
     ds.writeInt(3);
     ds.writeShort(0);
     ds.writeInt(Convert.toInt(cellId));
-    ds.writeInt(Convert.toInt(lac));  
+    ds.writeInt(Convert.toInt(lac));
     ds.writeInt(0);
     ds.writeInt(0);
     ds.writeInt(0);
     ds.writeInt(0);
 
-    totalcross.net.Socket sock = new totalcross.net.Socket("www.google.com",80,20000);
+    totalcross.net.Socket sock = new totalcross.net.Socket("www.google.com", 80, 20000);
     sock.writeBytes(bas.toByteArray());
 
     Vm.sleep(250); // wait for a response
@@ -125,31 +119,26 @@ public class CellInfo
     LineReader lr = new LineReader(bas);
     lr.returnEmptyLines = true;
     String line = lr.readLine(); // first must be HTTP/1.1 200 OK
-    if (line != null && line.indexOf(" 200 ") >= 0)
-    {
+    if (line != null && line.indexOf(" 200 ") >= 0) {
       // find out the length of the data-chunk
       int len = 0;
-      while ((line=lr.readLine()) != null) // skip all other header information
+      while ((line = lr.readLine()) != null) // skip all other header information
       {
-        if (line.toLowerCase().startsWith("content-length:"))
-        {
+        if (line.toLowerCase().startsWith("content-length:")) {
           len = Convert.toInt(line.substring(16).trim());
           break;
+        } else if (line.equals("")) {
+          break;
         }
-        else
-          if (line.equals("")) {
-            break;
-          }
       }
-      if (len > 0)
-      {
+      if (len > 0) {
         // point to the data
-        bas.setPos(total-len);
+        bas.setPos(total - len);
         ds.readShort();
         ds.readByte();
         int code = ds.readInt();
         if (code == 0) {
-          ret = new double[]{ds.readInt()/1e6d,ds.readInt()/1e6d};
+          ret = new double[] { ds.readInt() / 1e6d, ds.readInt() / 1e6d };
         }
       }
     }

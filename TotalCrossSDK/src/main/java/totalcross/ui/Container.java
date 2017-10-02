@@ -35,17 +35,16 @@ import totalcross.util.Vector;
  * Container is a control that contains child controls.
  */
 
-public class Container extends Control
-{
+public class Container extends Control {
   /** The children of the container. */
   protected Control children;
   /** The tail of the children list. */
   protected Control tail;
   /** The type of border of this Container */
   byte borderStyle = BORDER_NONE;
-  private int []fourColors = new int[4];
+  private int[] fourColors = new int[4];
   private Vector childControls;
-  private int pressColor=-1;
+  private int pressColor = -1;
   private PenListener pe;
   private boolean cpressed;
 
@@ -64,13 +63,13 @@ public class Container extends Control
   public int backgroundStyle = BACKGROUND_SOLID;
 
   /** used in the setBorderStyle method */
-  static public final byte BORDER_NONE=0;
+  static public final byte BORDER_NONE = 0;
   /** used in the setBorderStyle method */
-  static public final byte BORDER_LOWERED=2;
+  static public final byte BORDER_LOWERED = 2;
   /** used in the setBorderStyle method */
-  static public final byte BORDER_RAISED=3;
+  static public final byte BORDER_RAISED = 3;
   /** used in the setBorderStyle method */
-  static public final byte BORDER_SIMPLE=5;
+  static public final byte BORDER_SIMPLE = 5;
   /** used in the setBorderStyle method */
   static public final byte BORDER_TOP = 1;
   /** used in the setBorderStyle method.
@@ -96,7 +95,6 @@ public class Container extends Control
   public static final int TRANSITION_CLOSE = 2;
   /** Used when animating the exhibition of a container. */
   public static final int TRANSITION_FADE = 3;
-
 
   /** The color used in the border.
    * @since TotalCross 2.0
@@ -128,11 +126,11 @@ public class Container extends Control
 
   static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
 
-  protected int lastX=-999999,lastY,lastW,lastH; // guich@200b4_100
+  protected int lastX = -999999, lastY, lastW, lastH; // guich@200b4_100
   int numChildren;
   protected boolean started; // guich@340_15
   /** Set to true to avoid calling the methods onRemove or onAddAgain */
-  protected boolean ignoreOnRemove,ignoreOnAddAgain;
+  protected boolean ignoreOnRemove, ignoreOnAddAgain;
   protected boolean finishedStart; // guich@450_36: avoid repaints while we're creating our controls for the first time
   /** Holds the controls that will be used to transfer focus when the tab key is pressed.
    * You can add or remove controls from here, but be careful not to add repeated controls.
@@ -168,53 +166,54 @@ public class Container extends Control
    * constructor, you may come into problems if you don't set the bounds
    * as the first thing.
    */ // guich@300_58
-  public Container()
-  {
+  public Container() {
     asContainer = this;
     focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
   }
 
-  public void setPressColor(int color)
-  {
+  public void setPressColor(int color) {
     this.pressColor = color;
-    if (color == -1 && pe != null)
-    {
+    if (color == -1 && pe != null) {
       removePenListener(pe);
       pe = null;
       callListenersOnAllTargets = cpressed = false;
     }
-    if (color != -1 && pe == null)
-    {
+    if (color != -1 && pe == null) {
       callListenersOnAllTargets = true;
-      addPenListener(pe = new PenListener()
-      {
+      addPenListener(pe = new PenListener() {
         @Override
-        public void penUp(PenEvent e)
-        {
-          if (e.type == PenEvent.PEN_UP && isEnabled() && !hadParentScrolled())
-          {
+        public void penUp(PenEvent e) {
+          if (e.type == PenEvent.PEN_UP && isEnabled() && !hadParentScrolled()) {
             setPressed(!cpressed);
             postPressedEvent();
           }
         }
+
         @Override
-        public void penDown(PenEvent e) {}   
+        public void penDown(PenEvent e) {
+        }
+
         @Override
-        public void penDrag(DragEvent e) {}  
+        public void penDrag(DragEvent e) {
+        }
+
         @Override
-        public void penDragStart(DragEvent e) {}   
+        public void penDragStart(DragEvent e) {
+        }
+
         @Override
-        public void penDragEnd(DragEvent e) {}
+        public void penDragEnd(DragEvent e) {
+        }
       });
     }
   }
-  public void setPressed(boolean p)
-  {
+
+  public void setPressed(boolean p) {
     cpressed = p;
     Window.needsPaint = true;
   }
-  public boolean isPressed()
-  {
+
+  public boolean isPressed() {
     return cpressed;
   }
 
@@ -227,80 +226,73 @@ public class Container extends Control
    * @see #TRANSITION_CLOSE
    * @see #TRANSITION_FADE
    */
-  public static void setNextTransitionEffect(int t)
-  {
+  public static void setNextTransitionEffect(int t) {
     nextTransitionEffect = t;
-    if (t != TRANSITION_NONE){
+    if (t != TRANSITION_NONE) {
       screen0 = MainWindow.getScreenShot();
     }
   }
 
   static Image screen0;
 
-  public static void applyTransitionEffect()
-  {
+  public static void applyTransitionEffect() {
     int transitionEffect = nextTransitionEffect;
     nextTransitionEffect = TRANSITION_NONE;
-    if (transitionEffect == -1){
+    if (transitionEffect == -1) {
       transitionEffect = TRANSITION_NONE;
     }
 
     if (screen0 != null) // only when transitionEffect is not NONE
     {
-      try
-      {
+      try {
         int ini0 = Vm.getTimeStamp();
         Image screen1 = MainWindow.getScreenShot();
         screen1.lockChanges();
         Graphics g = MainWindow.mainWindowInstance.getGraphics();
 
-        if (transitionEffect == TRANSITION_FADE)
-        {
+        if (transitionEffect == TRANSITION_FADE) {
           int ini = Vm.getTimeStamp();
-          for (int i = 1; i <= 255; i++)
-          {
-            screen1.alphaMask = (Vm.getTimeStamp() - ini) * 255 / TRANSITION_TIME; 
+          for (int i = 1; i <= 255; i++) {
+            screen1.alphaMask = (Vm.getTimeStamp() - ini) * 255 / TRANSITION_TIME;
             if (screen1.alphaMask > 255) {
               break;
             }
-            g.drawImage(screen0, 0,0);
-            g.drawImage(screen1, 0,0);
+            g.drawImage(screen0, 0, 0);
+            g.drawImage(screen1, 0, 0);
             updateScreen();
             Vm.sleep(1);
           }
-        }
-        else
-        {
+        } else {
           int w = totalcross.sys.Settings.screenWidth;
           int h = totalcross.sys.Settings.screenHeight;
-          int remainingFrames = Math.min(w,h)/2;
-          int mx = w/2;
-          int my = h/2;
-          double incX=1,incY=1;
+          int remainingFrames = Math.min(w, h) / 2;
+          int mx = w / 2;
+          int my = h / 2;
+          double incX = 1, incY = 1;
           if (w > h) {
-            incX = (double)w/h;
+            incX = (double) w / h;
           } else {
-            incY = (double)h/w;
+            incY = (double) h / w;
           }
-          int step=1;
+          int step = 1;
           boolean isClose = transitionEffect == TRANSITION_CLOSE;
           Image s0 = isClose ? screen1 : screen0;
           Image s1 = isClose ? screen0 : screen1;
           boolean noDelay = Settings.platform.equals(Settings.WIN32); // the delay does not work well on win32
-          for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
-          {
+          for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i += isClose ? -step
+              : step, remainingFrames -= step) {
             int ini = Vm.getTimeStamp();
             g.clearClip();
-            g.drawImage(s0,0,0);
-            int minx = (int)(mx - i*incX);
-            int miny = (int)(my - i*incY);
-            int maxx = (int)(mx + i*incX);
-            int maxy = (int)(my + i*incY);
-            g.setClip(minx,miny,maxx-minx,maxy-miny);
-            g.drawImage(s1,0,0);
+            g.drawImage(s0, 0, 0);
+            int minx = (int) (mx - i * incX);
+            int miny = (int) (my - i * incY);
+            int maxx = (int) (mx + i * incX);
+            int maxy = (int) (my + i * incY);
+            g.setClip(minx, miny, maxx - minx, maxy - miny);
+            g.drawImage(s1, 0, 0);
             updateScreen();
-            int frameElapsed = Vm.getTimeStamp()-ini;
-            int totalElapsed = Vm.getTimeStamp()-ini0;
+            int frameElapsed = Vm.getTimeStamp() - ini;
+            int totalElapsed = Vm.getTimeStamp() - ini0;
             int remainingTime = TRANSITION_TIME - totalElapsed;
             if (remainingTime <= 0) {
               break;
@@ -309,15 +301,13 @@ public class Container extends Control
             {
               Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
               step = 1;
-            }
-            else
-            {
+            } else {
               step = frameElapsed * remainingFrames / remainingTime;
             }
-          }                  
+          }
         }
+      } catch (Throwable e) {
       }
-      catch (Throwable e) {}
       screen0 = null;
     }
   }
@@ -327,8 +317,7 @@ public class Container extends Control
    */
   public void setInsets(int left, int right, int top, int bottom) // guich@tc110_87
   {
-    int gap = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 :
-      borderStyle == BORDER_SIMPLE ? 1 : 2;
+    int gap = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
     insets.left = left + gap;
     insets.right = right + gap;
     insets.top = top + gap;
@@ -356,10 +345,9 @@ public class Container extends Control
    * </pre>
    * @see Control#setRect(int, int, int, int, Control, boolean)
    */
-  public void add(Control control, int x, int y, int w, int h)
-  {
+  public void add(Control control, int x, int y, int w, int h) {
     add(control);
-    control.setRect(x,y,w,h, null,false);
+    control.setRect(x, y, w, h, null, false);
   }
 
   /** Adds the control to this container, using the given bounds, relative to the given control.
@@ -373,7 +361,7 @@ public class Container extends Control
   public void add(Control control, int x, int y, int w, int h, Control relative) // guich@200b4_138
   {
     add(control);
-    control.setRect(x,y,w,h, relative,false);
+    control.setRect(x, y, w, h, relative, false);
   }
 
   /** Add the control to this container and set its rect
@@ -386,10 +374,9 @@ public class Container extends Control
    * </pre>
    * @see Control#setRect(int, int, int, int, Control, boolean)
    */
-  public void add(Control control, int x, int y)
-  {
+  public void add(Control control, int x, int y) {
     add(control);
-    control.setRect(x,y,PREFERRED,PREFERRED, null,false);
+    control.setRect(x, y, PREFERRED, PREFERRED, null, false);
   }
 
   /** Add the control to this container and set its rect
@@ -405,7 +392,7 @@ public class Container extends Control
   public void add(Control control, int x, int y, Control relative) // guich@200b4_138
   {
     add(control);
-    control.setRect(x,y,PREFERRED,PREFERRED, relative,false);
+    control.setRect(x, y, PREFERRED, PREFERRED, relative, false);
   }
 
   /**
@@ -414,57 +401,50 @@ public class Container extends Control
    * that you set the focus on the new container after calling this add method.
    * Otherwise, a MenuBar will not work. Or, use the handy method Window.swap
    */
-  public void add(Control control)
-  {
-    if (control.uiAdjustmentsBasedOnFontHeightIsSupported == Settings.uiAdjustmentsBasedOnFontHeight){
+  public void add(Control control) {
+    if (control.uiAdjustmentsBasedOnFontHeightIsSupported == Settings.uiAdjustmentsBasedOnFontHeight) {
       control.uiAdjustmentsBasedOnFontHeightIsSupported = this.uiAdjustmentsBasedOnFontHeightIsSupported;
     }
-    if (control.parent != null){
+    if (control.parent != null) {
       control.parent.remove(control);
     }
-    if (control.asWindow != null){
+    if (control.asWindow != null) {
       throw new RuntimeException("A Window can't be added to a container: use popup instead.");
     }
     // set children, next, prev, tail and parent
     addToList(control);
-    if (foreColor < 0)
-    {
+    if (foreColor < 0) {
       foreColor = UIColors.controlsFore; // assign the default colors
     }
-    if (backColor < 0){
+    if (backColor < 0) {
       backColor = UIColors.controlsBack;
-    } 
-    if (control.foreColor < 0/* || control.foreColor == UIColors.controlsFore - if the user set the container's color to something else and the control's color to black, this test overrides the black color*/)
-    {
+    }
+    if (control.foreColor < 0/* || control.foreColor == UIColors.controlsFore - if the user set the container's color to something else and the control's color to black, this test overrides the black color*/) {
       control.foreColor = this.foreColor; // guich@200b4_125
     }
-    if (control.backColor < 0/* || control.backColor == UIColors.controlsBack*/)
-    {
+    if (control.backColor < 0/* || control.backColor == UIColors.controlsBack*/) {
       control.backColor = this.backColor; // guich@200b4_125
     }
-    if (this.font != MainWindow.defaultFont && control.font == MainWindow.defaultFont){
+    if (this.font != MainWindow.defaultFont && control.font == MainWindow.defaultFont) {
       control.setFont(this.font);
     }
     control.onColorsChanged(true);
-    if (control.width > 0 && finishedStart)
-    {
+    if (control.width > 0 && finishedStart) {
       Window.needsPaint = true; // guich@450_36: only repaint here if the setRect was already called; otherwise, repaint will be called on setRect
     }
-    if (control.asContainer != null && !control.asContainer.ignoreOnAddAgain && control.asContainer.started)
-    {
+    if (control.asContainer != null && !control.asContainer.ignoreOnAddAgain && control.asContainer.started) {
       control.asContainer.onAddAgain(); // guich@402_5
     }
-    if (control.asContainer != null || (control.focusTraversable && !control.focusLess)){
+    if (control.asContainer != null || (control.focusTraversable && !control.focusLess)) {
       tabOrder.addElement(control);
     }
   }
 
-  void addToList(Control control)
-  {
+  void addToList(Control control) {
     control.next = null;
-    if (children == null){
+    if (children == null) {
       children = control;
-    }else {
+    } else {
       tail.next = control;
     }
     control.prev = tail;
@@ -476,46 +456,45 @@ public class Container extends Control
   /**
    * Removes a child control from the container.
    */
-  public void remove(Control control)
-  {
-    if (control.parent != this){
+  public void remove(Control control) {
+    if (control.parent != this) {
       return;
     }
 
     // first of all, check if we are removing the focused control
     Window w = getParentWindow();
-    if (w == null){
+    if (w == null) {
       w = Window.getTopMost();
     }
     Control c = w._focus;
-    while (c != null && c != control){
+    while (c != null && c != control) {
       c = c.getParent();
     }
-    if (c == control){
+    if (c == control) {
       w.removeFocus();
     }
 
     // second, check if we are removing the highlighted control
     c = w.highlighted;
-    while (c != null && c != control){
+    while (c != null && c != control) {
       c = c.getParent();
     }
-    if (c == control){
+    if (c == control) {
       w.setHighlighted(null);
     }
 
     // finally, remove the control: set children, next, prev, tail and parent
     Control prev = control.prev;
     Control next = control.next;
-    if (prev == null){
+    if (prev == null) {
       children = next;
-    }else {
+    } else {
       prev.next = next;
     }
-    if (next != null){
+    if (next != null) {
       next.prev = prev;
     }
-    if (tail == control){
+    if (tail == control) {
       tail = prev;
     }
     control.next = null;
@@ -523,8 +502,7 @@ public class Container extends Control
     numChildren--;
     Window.needsPaint = true; // guich@200b4_16: invalidate the hole container's area
     control.parent = null;
-    if (control.asContainer != null && !control.asContainer.ignoreOnRemove)
-    {
+    if (control.asContainer != null && !control.asContainer.ignoreOnRemove) {
       control.asContainer.onRemove(); // guich@402_5
     }
     tabOrder.removeElement(control); // kmeehl@tc100: remove the element from the Vector, if it is there
@@ -535,19 +513,16 @@ public class Container extends Control
    * In this case, controlFound is set to false.
    * @see #controlFound
    * */
-  public Control findChild(int x, int y)
-  {
+  public Control findChild(int x, int y) {
     controlFound = true;
     Container container = this;
-    while (true)
-    {
+    while (true) {
       // search tail to head since paint goes head to tail
       Control child = container.tail;
       while (child != null && (!child.visible || !child.contains(x, y))) {
         child = child.prev;
       }
-      if (child == null)
-      {
+      if (child == null) {
         controlFound = container.focusTraversable;
         return container;
       }
@@ -565,18 +540,16 @@ public class Container extends Control
     int minDistance0 = minDistance;
     Container container = this;
     Control minControl = null;
-    while (true)
-    {
+    while (true) {
       boolean found = false;
       // search tail to head since paint goes head to tail
       Control child = container.tail;
       while (child != null) // guich@240_8: fixed when adding two controls in the same location but one of them was not visible (!child.visible)
       {
-        if (child.visible)
-        {
-          int dist = (int)(Convert.getDistancePoint2Rect(x,y, child.x, child.y, child.x+child.width, child.y+child.height) + 0.5);
-          if (dist < minDistance)
-          {
+        if (child.visible) {
+          int dist = (int) (Convert.getDistancePoint2Rect(x, y, child.x, child.y, child.x + child.width,
+              child.y + child.height) + 0.5);
+          if (dist < minDistance) {
             found = true;
             minControl = child;
             if (dist == 0) {
@@ -587,8 +560,7 @@ public class Container extends Control
         }
         child = child.prev;
       }
-      if (child == null)
-      {
+      if (child == null) {
         if (!found && minControl != null) {
           return minControl;
         }
@@ -608,35 +580,30 @@ public class Container extends Control
   }
 
   /** Return an array of Controls that are added to this Container. If there are no Controls, returns null. */
-  public Control []getChildren()
-  {
-    if (numChildren == 0){
+  public Control[] getChildren() {
+    if (numChildren == 0) {
       return null;
     }
-    Control []ac = new Control[numChildren];
+    Control[] ac = new Control[numChildren];
     Control child = this.tail;
-    for (int i=0; child != null; i++,child = child.prev) {
+    for (int i = 0; child != null; i++, child = child.prev) {
       ac[i] = child;
     }
     return ac;
   }
 
-  public Control getFirstChild()
-  {
+  public Control getFirstChild() {
     return children;
   }
 
-  public int getChildrenCount()
-  {
+  public int getChildrenCount() {
     return numChildren;
   }
 
   /** Sets if this container and all childrens can or not accept events */
   @Override
-  public void setEnabled(boolean enabled)
-  {
-    if (internalSetEnabled(enabled, false))
-    {
+  public void setEnabled(boolean enabled) {
+    if (internalSetEnabled(enabled, false)) {
       for (Control child = children; child != null; child = child.next) {
         child.setEnabled(enabled);
       }
@@ -646,11 +613,9 @@ public class Container extends Control
 
   /** Posts an event to the children of this container and to all containers inside this containers; recursively.
    @since SuperWaba 2.0 beta 4 */
-  public void broadcastEvent(Event e)
-  {
+  public void broadcastEvent(Event e) {
     _onEvent(e); // guich@200b4_110: make sure this container receive this event.
-    for (Control child = children; child != null; child = child.next)
-    {
+    for (Control child = children; child != null; child = child.next) {
       child._onEvent(e);
       if (child.asContainer != null) {
         child.asContainer.broadcastEvent(e);
@@ -659,17 +624,17 @@ public class Container extends Control
   }
 
   /** Called by the system to draw the children of the container. */
-  public void paintChildren()
-  {
+  public void paintChildren() {
     for (Control child = children; child != null; child = child.next) {
       if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
       {
         if (child.offscreen != null) {
           Graphics g = getGraphics();
-          g.drawImage(child.offscreen,child.x,child.y);
-          if (child.offscreen0 != null) g.drawImage(child.offscreen0,child.x,child.y);
-        } else
-        {
+          g.drawImage(child.offscreen, child.x, child.y);
+          if (child.offscreen0 != null) {
+            g.drawImage(child.offscreen0, child.x, child.y);
+          }
+        } else {
           child.onPaint(child.getGraphics());
           if (child.asContainer != null) {
             child.asContainer.paintChildren();
@@ -691,9 +656,9 @@ public class Container extends Control
   public void setBorderStyle(byte border) // guich@200final_16
   {
     int gap = border == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
-    setInsets(gap,gap,gap,gap);
+    setInsets(gap, gap, gap, gap);
     this.borderStyle = border;
-    if (border == BORDER_ROUNDED){
+    if (border == BORDER_ROUNDED) {
       transparentBackground = true;
     }
     onColorsChanged(false);
@@ -717,33 +682,31 @@ public class Container extends Control
    */
   protected void getClientRect(Rect r) // guich@450_36
   {
-    r.set(insets.left,insets.top,width-insets.left-insets.right,height-insets.top-insets.bottom);
+    r.set(insets.left, insets.top, width - insets.left - insets.right, height - insets.top - insets.bottom);
   }
 
   @Override
-  protected void onColorsChanged(boolean colorsChanged)
-  {
-    if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP && borderStyle != BORDER_ROUNDED){
+  protected void onColorsChanged(boolean colorsChanged) {
+    if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP
+        && borderStyle != BORDER_ROUNDED) {
       Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
     }
   }
 
-  protected void fillBackground(Graphics g, int b)
-  {
-    switch (backgroundStyle)
-    {
+  protected void fillBackground(Graphics g, int b) {
+    switch (backgroundStyle) {
     case BACKGROUND_SOLID:
       g.backColor = b;
-      g.fillRect(0,0,width,height);
+      g.fillRect(0, 0, width, height);
       break;
     case BACKGROUND_SHADED:
-      g.fillShadedRect(0,0,width,height,true,false,foreColor,b,UIColors.shadeFactor);
+      g.fillShadedRect(0, 0, width, height, true, false, foreColor, b, UIColors.shadeFactor);
       break;
     case BACKGROUND_SHADED_INV:
-      g.fillShadedRect(0,0,width,height,false,false,foreColor,b,UIColors.shadeFactor);
+      g.fillShadedRect(0, 0, width, height, false, false, foreColor, b, UIColors.shadeFactor);
       break;
     case BACKGROUND_CYLINDRIC_SHADED:
-      g.drawCylindricShade(foreColor,b,0,0,width,height);
+      g.drawCylindricShade(foreColor, b, 0, 0, width, height);
       break;
     }
   }
@@ -752,35 +715,35 @@ public class Container extends Control
    * <code>super.onPaint(g);</code>, or the border will not be drawn.
    */
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     int b = pressColor != -1 && cpressed ? pressColor : backColor;
-    if (drawTranslucentBackground(g, alphaValue)){;
-    }else
-      if (!transparentBackground && (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground))){
-        fillBackground(g, b);
-      }
-    switch (borderStyle)
-    {
+    if (drawTranslucentBackground(g, alphaValue)) {
+      ;
+    } else if (!transparentBackground
+        && (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground))) {
+      fillBackground(g, b);
+    }
+    switch (borderStyle) {
     case BORDER_NONE:
       break;
 
     case BORDER_TOP:
       g.foreColor = borderColor != -1 ? borderColor : getForeColor();
-      g.drawRect(0,0,width,0);
+      g.drawRect(0, 0, width, 0);
       break;
 
     case BORDER_SIMPLE:
       g.foreColor = borderColor != -1 ? borderColor : getForeColor();
-      g.drawRect(0,0,width,height);
+      g.drawRect(0, 0, width, height);
       break;
 
     case BORDER_ROUNDED:
-      g.drawWindowBorder(0,0,width,height,0,0,borderColor != -1 ? borderColor : getForeColor(),b,b,b,2,false);
+      g.drawWindowBorder(0, 0, width, height, 0, 0, borderColor != -1 ? borderColor : getForeColor(), b, b, b, 2,
+          false);
       break;
 
     default:
-      g.draw3dRect(0,0,width,height,borderStyle,false,false,fourColors);
+      g.draw3dRect(0, 0, width, height, borderStyle, false, false, fourColors);
     }
   }
 
@@ -796,8 +759,7 @@ public class Container extends Control
    *
    * @since SuperWaba 4.1
    */
-  protected void onAddAgain()
-  {
+  protected void onAddAgain() {
   }
 
   /** Called when this container is removed from the parent. Note that, if this
@@ -808,8 +770,7 @@ public class Container extends Control
    *
    * @since SuperWaba 4.1
    */
-  protected void onRemove()
-  {
+  protected void onRemove() {
   }
 
   /** Called to initialize the User Interface of this container. This differs from the onAddAgain
@@ -824,8 +785,7 @@ public class Container extends Control
 
   /** Called by the event dispatcher to set highlighting back to true.
    * A class may extend this to decide when its time to turn it on again or not. */
-  public void setHighlighting()
-  {
+  public void setHighlighting() {
     isHighlighting = true;
   }
 
@@ -873,28 +833,24 @@ public class Container extends Control
    */
   public void getFocusableControls(Vector v) //kmeehl@tc100
   {
-    if (!visible || !isEnabled()){
+    if (!visible || !isEnabled()) {
       return;
     }
     Control child = children;
-    for (int i = 0; i < numChildren; i++, child = child.next)
-    {
-      if (child.focusTraversable && !child.focusLess)
-      {
-        if (child.asContainer != null && !child.focusHandler)
-        {
-          ((Container)child).getFocusableControls(v);         // Note that calling this function directly on the focus handler in question will yield its focusable controls.
+    for (int i = 0; i < numChildren; i++, child = child.next) {
+      if (child.focusTraversable && !child.focusLess) {
+        if (child.asContainer != null && !child.focusHandler) {
+          ((Container) child).getFocusableControls(v); // Note that calling this function directly on the focus handler in question will yield its focusable controls.
         }
         if (child.isVisible() && child.isEnabled() && child.height > 0 && child.width > 0) {
           v.addElement(child);
         }
+      } else if (child.asContainer != null) {
+        ((Container) child).getFocusableControls(v);
       }
-      else
-        if (child.asContainer != null) {
-          ((Container)child).getFocusableControls(v);
-        }
     }
   }
+
   /**
    * Finds the next control that should receive focus based on the direction with respect to c.
    * @param c The reference control from which to find the next control.
@@ -911,30 +867,26 @@ public class Container extends Control
     int closestControlCoordValue = 999999;
     int closestOverlapCoordValue = 999999;
 
-    if (direction == SpecialKeys.UP || direction == SpecialKeys.LEFT)
-    {
+    if (direction == SpecialKeys.UP || direction == SpecialKeys.LEFT) {
       closestControlCoordValue = -1;
       closestOverlapCoordValue = -1;
     }
 
-    if (childControls == null){
+    if (childControls == null) {
       childControls = new Vector(2);
-    }else {
+    } else {
       childControls.removeAllElements();
     }
     getFocusableControls(childControls);
 
     int controlPastTestCoord;
     boolean vertical = (direction == SpecialKeys.UP || direction == SpecialKeys.DOWN);
-    if (vertical)
-    {
+    if (vertical) {
       controlPastTestCoord = controlRect.y;
       if (direction == SpecialKeys.DOWN) {
         controlPastTestCoord += controlRect.height;
       }
-    }
-    else
-    {
+    } else {
       controlPastTestCoord = controlRect.x;
       if (direction == SpecialKeys.RIGHT) {
         controlPastTestCoord += controlRect.width;
@@ -942,9 +894,11 @@ public class Container extends Control
     }
 
     Control closestControl = null, closestOverlap = null, childControl = null;
-    try {childControl = (Control) childControls.pop();} catch (ElementNotFoundException e) {}
-    while (childControl != null)
-    {
+    try {
+      childControl = (Control) childControls.pop();
+    } catch (ElementNotFoundException e) {
+    }
+    while (childControl != null) {
       Rect childRect = childControl.getAbsoluteRect();
       int childRight = childRect.x + childRect.width;
       int childBottom = childRect.y + childRect.height;
@@ -953,15 +907,12 @@ public class Container extends Control
       boolean isChildPast = false;
       int childCoordValue = 0;
 
-      if (vertical)
-      {
+      if (vertical) {
         childCoordValue = childRect.y;
         if (direction == SpecialKeys.UP) {
           childCoordValue += childRect.height;
         }
-      }
-      else
-      {
+      } else {
         childCoordValue = childRect.x;
         if (direction == SpecialKeys.LEFT) {
           childCoordValue += childRect.width;
@@ -974,56 +925,54 @@ public class Container extends Control
         isChildPast = childCoordValue <= controlPastTestCoord;
       }
 
-      if (isChildPast)
-      {
+      if (isChildPast) {
         // does this child control overlap the current control
-        boolean childOverlaps = ( vertical && childRect.x <= controlRight  && childRight  >= controlRect.x) ||
-            (!vertical && childRect.y <= controlBottom && childBottom >= controlRect.y);
-        if (closestControl == null)
-        {
+        boolean childOverlaps = (vertical && childRect.x <= controlRight && childRight >= controlRect.x)
+            || (!vertical && childRect.y <= controlBottom && childBottom >= controlRect.y);
+        if (closestControl == null) {
+          closestControl = childControl;
+          closestControlCoordValue = childCoordValue;
+        } else if (isCloser(childCoordValue, closestControlCoordValue, closestControl, vertical, childRect.x,
+            childRect.y, direction)) {
           closestControl = childControl;
           closestControlCoordValue = childCoordValue;
         }
-        else
-          if (isCloser(childCoordValue,closestControlCoordValue,closestControl,vertical,childRect.x,childRect.y,direction) )
-          {
-            closestControl = childControl;
-            closestControlCoordValue = childCoordValue;
-          }
-        if (childOverlaps && (closestOverlap == null || isCloser(childCoordValue,closestOverlapCoordValue,closestOverlap,vertical,childRect.x,childRect.y,direction)))
-        {
+        if (childOverlaps && (closestOverlap == null || isCloser(childCoordValue, closestOverlapCoordValue,
+            closestOverlap, vertical, childRect.x, childRect.y, direction))) {
           closestOverlap = childControl;
           closestOverlapCoordValue = childCoordValue;
         }
       }
-      try {childControl = (Control) childControls.pop();}catch (ElementNotFoundException e){childControl = null;}
+      try {
+        childControl = (Control) childControls.pop();
+      } catch (ElementNotFoundException e) {
+        childControl = null;
+      }
     }
 
-    if (closestOverlap != null){
+    if (closestOverlap != null) {
       return closestOverlap;
     }
-    if (closestControl == null && (direction == SpecialKeys.LEFT || direction == SpecialKeys.RIGHT)){
-      return findNextFocusControl(c, direction == SpecialKeys.LEFT?SpecialKeys.UP:SpecialKeys.DOWN);
+    if (closestControl == null && (direction == SpecialKeys.LEFT || direction == SpecialKeys.RIGHT)) {
+      return findNextFocusControl(c, direction == SpecialKeys.LEFT ? SpecialKeys.UP : SpecialKeys.DOWN);
     }
     return closestControl;
   }
 
-  private boolean isCloser(int childCoordValue, int nextControlCoordValue, Control nextControl, boolean vertical, int childX, int childY, int direction) // kmeehl@tc100
+  private boolean isCloser(int childCoordValue, int nextControlCoordValue, Control nextControl, boolean vertical,
+      int childX, int childY, int direction) // kmeehl@tc100
   {
-    if (childCoordValue == nextControlCoordValue)
-    {
+    if (childCoordValue == nextControlCoordValue) {
       //  this control is at the same coordinate as the prior selected control.
       //  check if this child control is more to the left/top than the previous child.
-      if ((vertical && childX < nextControl.getAbsoluteRect().x) || (!vertical && childY < nextControl.getAbsoluteRect().y)) {
+      if ((vertical && childX < nextControl.getAbsoluteRect().x)
+          || (!vertical && childY < nextControl.getAbsoluteRect().y)) {
         return true;
       }
-    }
-    else
-    {
+    } else {
       boolean toPrev = direction == SpecialKeys.DOWN || direction == SpecialKeys.RIGHT;
       // is new closest control?
-      if ((toPrev && childCoordValue < nextControlCoordValue) || (!toPrev && childCoordValue > nextControlCoordValue))
-      {
+      if ((toPrev && childCoordValue < nextControlCoordValue) || (!toPrev && childCoordValue > nextControlCoordValue)) {
         nextControlCoordValue = childCoordValue;
         return true;
       }
@@ -1032,33 +981,29 @@ public class Container extends Control
   }
 
   /** Returns the border style. */
-  public byte getBorderStyle()
-  {
+  public byte getBorderStyle() {
     return borderStyle;
   }
 
   /** Removes all controls inside this container.
    * @since TotalCross 1.0
    */
-  public void removeAll()
-  {
+  public void removeAll() {
     Control[] c = getChildren();
-    if (c != null){
-      for (int i =0; i < c.length; i++) {
+    if (c != null) {
+      for (int i = 0; i < c.length; i++) {
         remove(c[i]);
       }
     }
   }
 
   /** Increments the lastX, used in relative positioning. */
-  public void incLastX(int n)
-  {
+  public void incLastX(int n) {
     lastX += n;
   }
 
   /** Increments the lastY, used in relative positioning. */
-  public void incLastY(int n)
-  {
+  public void incLastY(int n) {
     lastY += n;
   }
 
@@ -1106,10 +1051,10 @@ public class Container extends Control
   {
     int maxX = 0;
     for (Control child = children; child != null; child = child.next) {
-      maxX = Math.max(maxX,child.x+child.width);
+      maxX = Math.max(maxX, child.x + child.width);
     }
-    int hborder = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0: borderStyle == BORDER_SIMPLE ? 1 : 2;
-    setW = width = maxX+insets.right+hborder/2;
+    int hborder = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
+    setW = width = maxX + insets.right + hborder / 2;
     updateTemporary(); // guich@tc114_68
   }
 
@@ -1134,10 +1079,10 @@ public class Container extends Control
   {
     int maxY = 0;
     for (Control child = children; child != null; child = child.next) {
-      maxY = Math.max(maxY,child.y+child.height);
+      maxY = Math.max(maxY, child.y + child.height);
     }
     int hborder = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
-    setH = height= maxY+insets.bottom+hborder/2;
+    setH = height = maxY + insets.bottom + hborder / 2;
     updateTemporary(); // guich@tc114_68
   }
 
@@ -1147,27 +1092,24 @@ public class Container extends Control
    */
   public Control moveFocusToNextEditable(Control control, boolean forward) // guich@tc125_26
   {
-    if (control.nextTabControl != null && changeTo(control.nextTabControl)){
+    if (control.nextTabControl != null && changeTo(control.nextTabControl)) {
       return control.nextTabControl;
     }
 
     Vector v = tabOrder;
     int idx = v.indexOf(control);
     int n = v.size();
-    if ((idx == -1 && n >= 0) || n > 1)
-    {
+    if ((idx == -1 && n >= 0) || n > 1) {
       if (idx == -1 && !forward) {
         idx = n;
       }
-      for (int i = n-1; i >= 0; i--)
-      {
+      for (int i = n - 1; i >= 0; i--) {
         if (forward && ++idx == n) {
           idx = 0;
-        } else
-          if (!forward && --idx < 0) {
-            idx = n-1;
-          }
-        Control c = (Control)v.items[idx];
+        } else if (!forward && --idx < 0) {
+          idx = n - 1;
+        }
+        Control c = (Control) v.items[idx];
         if (changeTo(c)) {
           return c;
         }
@@ -1176,17 +1118,16 @@ public class Container extends Control
     return parent != null ? parent.moveFocusToNextEditable(control, forward) : null;
   }
 
-  private boolean changeTo(Control c)
-  {
-    if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
+  private boolean changeTo(Control c) {
+    if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit) c).editable)
+        || (c instanceof MultiEdit && ((MultiEdit) c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
     {
       c.requestFocus();
-      if (Settings.virtualKeyboard && Settings.enableVirtualKeyboard)
-      {
+      if (Settings.virtualKeyboard && Settings.enableVirtualKeyboard) {
         if (c instanceof Edit) {
-          ((Edit)c).popupKCC();
+          ((Edit) c).popupKCC();
         } else {
-          ((MultiEdit)c).popupKCC();
+          ((MultiEdit) c).popupKCC();
         }
       }
       return true;
@@ -1204,19 +1145,15 @@ public class Container extends Control
     Vector v = tabOrder;
     int idx = v.indexOf(control);
     int n = v.size();
-    if (idx >= 0 && n > 1)
-    {
-      for (int i = n-1; i >= 0; i--)
-      {
+    if (idx >= 0 && n > 1) {
+      for (int i = n - 1; i >= 0; i--) {
         if (forward && ++idx == n) {
           idx = 0;
-        } else
-          if (!forward && --idx < 0) {
-            idx = n-1;
-          }
-        Control c = (Control)v.items[idx];
-        if (c != this && c.isEnabled() && c.visible)
-        {
+        } else if (!forward && --idx < 0) {
+          idx = n - 1;
+        }
+        Control c = (Control) v.items[idx];
+        if (c != this && c.isEnabled() && c.visible) {
           c.requestFocus();
           return c;
         }
@@ -1226,11 +1163,9 @@ public class Container extends Control
   }
 
   /** Changes the focusTraversable property for this container and all controls, recursively */
-  public void setFocusTraversable(boolean b)
-  {
+  public void setFocusTraversable(boolean b) {
     focusTraversable = b;
-    for (Control cc = children; cc != null; cc = cc.next)
-    {
+    for (Control cc = children; cc != null; cc = cc.next) {
       cc.focusTraversable = true;
       if (cc.asContainer != null) {
         cc.asContainer.setFocusTraversable(b);
@@ -1241,7 +1176,6 @@ public class Container extends Control
   /** Called when this container has been swapped into the Window and the swap is done.
    * @since TotalCross 2.0
    */
-  public void onSwapFinished()
-  {
+  public void onSwapFinished() {
   }
 }

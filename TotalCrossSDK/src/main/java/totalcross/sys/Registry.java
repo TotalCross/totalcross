@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.sys;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -169,16 +167,15 @@ import totalcross.util.ElementNotFoundException;
  * @since TotalCross 1.0
  */
 
-public class Registry
-{
+public class Registry {
   /** Windows-specific value to be used in the hk parameter. */
-  public static final int HKEY_CLASSES_ROOT  = 0x80000000;
+  public static final int HKEY_CLASSES_ROOT = 0x80000000;
   /** Windows-specific value to be used in the hk parameter. */
-  public static final int HKEY_CURRENT_USER  = 0x80000001;
+  public static final int HKEY_CURRENT_USER = 0x80000001;
   /** Windows-specific value to be used in the hk parameter. */
   public static final int HKEY_LOCAL_MACHINE = 0x80000002;
   /** Windows-specific value to be used in the hk parameter. */
-  public static final int HKEY_USERS         = 0x80000003;
+  public static final int HKEY_USERS = 0x80000003;
 
   /** PalmOS-specific value to be used in the hk parameter. Note that the Features database is read-only,
    * and trying to write to it will throw an exception. */
@@ -199,8 +196,8 @@ public class Registry
    * @throws Exception if there was an error when retrieving the data.
    */
   @ReplacedByNativeOnDeploy
-  public static int getInt(int hk, String key, String value) throws totalcross.util.ElementNotFoundException, Exception
-  {
+  public static int getInt(int hk, String key, String value)
+      throws totalcross.util.ElementNotFoundException, Exception {
     return 0;
   }
 
@@ -215,8 +212,8 @@ public class Registry
    * @throws Exception if there was an error when retrieving the data.
    */
   @ReplacedByNativeOnDeploy
-  public static String getString(int hk, String key, String value) throws totalcross.util.ElementNotFoundException, Exception
-  {
+  public static String getString(int hk, String key, String value)
+      throws totalcross.util.ElementNotFoundException, Exception {
     return null;
   }
 
@@ -233,8 +230,8 @@ public class Registry
    * @throws Exception if there was an error when retrieving the data.
    */
   @ReplacedByNativeOnDeploy
-  public static byte[] getBlob(int hk, String key, String value) throws totalcross.util.ElementNotFoundException, Exception
-  {
+  public static byte[] getBlob(int hk, String key, String value)
+      throws totalcross.util.ElementNotFoundException, Exception {
     return null;
   }
 
@@ -249,8 +246,7 @@ public class Registry
    * @throws Exception if there was an error when setting the data.
    */
   @ReplacedByNativeOnDeploy
-  public static void set(int hk, String key, String value, int data) throws Exception
-  {
+  public static void set(int hk, String key, String value, int data) throws Exception {
   }
 
   /** Sets a String value at the given location. If the key or value doesn't exists, it is created. Note that the String is created
@@ -265,8 +261,7 @@ public class Registry
    * @throws Exception if there was an error when setting the data.
    */
   @ReplacedByNativeOnDeploy
-  public static void set(int hk, String key, String value, String data) throws Exception
-  {
+  public static void set(int hk, String key, String value, String data) throws Exception {
   }
 
   /** Sets a byte array (blob) value at the given location. If the key or value doesn't exists, it is created.
@@ -280,20 +275,17 @@ public class Registry
    * @throws Exception if there was an error when setting the data.
    */
   @ReplacedByNativeOnDeploy
-  public static void set(int hk, String key, String value, byte[] data) throws Exception
-  {
+  public static void set(int hk, String key, String value, byte[] data) throws Exception {
   }
 
   /** Deletes a specific value. */
   @ReplacedByNativeOnDeploy
-  public static boolean delete(int hk, String key, String value)
-  {
+  public static boolean delete(int hk, String key, String value) {
     return true;
   }
 
   /** Deletes a key with all its values. Does not work on Palm OS, which requires that you pass the value number too. */
-  public static boolean delete(int hk, String key)
-  {
+  public static boolean delete(int hk, String key) {
     return delete(hk, key, null);
   }
 
@@ -303,8 +295,7 @@ public class Registry
    * @param key In Windows, its the full path to the key (E.G.: "Software\\TotalCross\\appSettings\\Test".
    */
   @ReplacedByNativeOnDeploy
-  public static String[] list(int hk, String key)
-  {
+  public static String[] list(int hk, String key) {
     return null;
   }
 }

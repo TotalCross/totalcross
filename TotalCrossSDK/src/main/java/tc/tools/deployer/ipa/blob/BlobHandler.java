@@ -7,12 +7,10 @@ import java.util.Map;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
 import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
-public abstract class BlobHandler
-{
+public abstract class BlobHandler {
   private static Map<Long, Class<?>> knownBlobs = new HashMap<Long, Class<?>>();
 
-  static
-  {
+  static {
     knownBlobs.put(Long.valueOf(EmbeddedSignature.CSMAGIC_EMBEDDED_SIGNATURE), EmbeddedSignature.class);
     knownBlobs.put(Long.valueOf(Requirements.CSMAGIC_REQUIREMENTS), Requirements.class);
     knownBlobs.put(Long.valueOf(Entitlements.CSMAGIC_EMBEDDED_ENTITLEMENTS), Entitlements.class);
@@ -20,17 +18,16 @@ public abstract class BlobHandler
     knownBlobs.put(Long.valueOf(CodeDirectory.CSMAGIC_CODEDIRECTORY), CodeDirectory.class);
   }
 
-  public static BlobCore readBlob(ElephantMemoryReader reader) throws IOException, InstantiationException,
-  IllegalAccessException
-  {
+  public static BlobCore readBlob(ElephantMemoryReader reader)
+      throws IOException, InstantiationException, IllegalAccessException {
     BlobCore blob;
     long magic = reader.readUnsignedInt();
     long length = reader.readUnsignedInt();
 
     Class<?> blobClass = (Class<?>) knownBlobs.get(Long.valueOf((int) magic));
-    if (blobClass == null){
+    if (blobClass == null) {
       blob = new BlobCore(magic);
-    }else {
+    } else {
       blob = (BlobCore) blobClass.newInstance();
     }
     blob.length = length;
@@ -40,8 +37,7 @@ public abstract class BlobHandler
     return blob;
   }
 
-  public static void writeBlob(BlobCore blob, ElephantMemoryWriter writer) throws IOException
-  {
+  public static void writeBlob(BlobCore blob, ElephantMemoryWriter writer) throws IOException {
     blob.offset = writer.pos;
     writer.writeUnsignedInt(blob.magic);
     writer.pos += 4L;

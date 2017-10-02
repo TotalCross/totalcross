@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class NegativeArraySizeException4D extends RuntimeException
-{
+public class NegativeArraySizeException4D extends RuntimeException {
   /** Constructs an empty Exception. */
-  public NegativeArraySizeException4D()
-  {
+  public NegativeArraySizeException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public NegativeArraySizeException4D(String msg)
-  {
+  public NegativeArraySizeException4D(String msg) {
     super(msg);
   }
 }

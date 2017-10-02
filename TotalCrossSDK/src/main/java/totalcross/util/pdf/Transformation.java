@@ -7,8 +7,7 @@
 
 package totalcross.util.pdf;
 
-public interface Transformation
-{
+public interface Transformation {
 
   public static final String DEGREES_0_ROTATION = "1 0 0 1";
   public static final String DEGREES_45_ROTATION = "1 -1 1 1";

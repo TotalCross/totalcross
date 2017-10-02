@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC125_lushr extends Logical
-{
-  public BC125_lushr()
-  {
-    super(-1,-2,-1,LONG);
+public class BC125_lushr extends Logical {
+  public BC125_lushr() {
+    super(-1, -2, -1, LONG);
   }
+
   @Override
-  public void exec()
-  {
+  public void exec() {
     stack[-2].asLong >>>= stack[-1].asLong & 0x1F;
   }
 }

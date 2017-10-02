@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.scape;
 
 import totalcross.game.Sprite;
@@ -23,8 +21,7 @@ import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Random;
 
-public final class Block extends Sprite
-{
+public final class Block extends Sprite {
   // random generator for the starting speeds
   private static Random rand = new Random(1);
 
@@ -42,9 +39,8 @@ public final class Block extends Sprite
   private int ix, iy;
   private int isx, isy;
 
-  public Block(int ispeed, int ix, int iy, int isx, int isy, Image images,
-      Ball ball) throws IllegalArgumentException, IllegalStateException, ImageException
-  {
+  public Block(int ispeed, int ix, int iy, int isx, int isy, Image images, Ball ball)
+      throws IllegalArgumentException, IllegalStateException, ImageException {
     super(images, -1, false, null);
 
     // reduce the playfield by the level & score display zone
@@ -60,8 +56,7 @@ public final class Block extends Sprite
     this.ball = ball;
   }
 
-  public void reinit()
-  {
+  public void reinit() {
     setPos(ix, iy, false);
     speedx = ispeed + rand.nextDouble() * 1.5f * ispeed;
     speedy = (ispeed >> 1) + rand.nextDouble() * ispeed;
@@ -71,27 +66,25 @@ public final class Block extends Sprite
     increaseSpeed(0);
   }
 
-  public void increaseSpeed(int perc)
-  {
+  public void increaseSpeed(int perc) {
     speedx *= (100.0 + perc) / 100;
     speedy *= (100.0 + perc) / 100;
 
-    if (ispeedx >= 0){
+    if (ispeedx >= 0) {
       ispeedx = (int) speedx;
-    }else {
+    } else {
       ispeedx = -(int) speedx;
     }
 
-    if (ispeedy >= 0){
+    if (ispeedy >= 0) {
       ispeedy = (int) speedy;
-    }else {
+    } else {
       ispeedy = -(int) speedy;
     }
   }
 
   @Override
-  public boolean onPositionChange()
-  {
+  public boolean onPositionChange() {
     boolean pval = true;
 
     image.nextFrame();
@@ -101,8 +94,7 @@ public final class Block extends Sprite
       centerX = regionMinx;
       ispeedx = -ispeedx;
       pval = false;
-    }
-    else if (centerX > regionMaxx) // hits right border
+    } else if (centerX > regionMaxx) // hits right border
     {
       centerX = regionMaxx;
       ispeedx = -ispeedx;
@@ -114,18 +106,15 @@ public final class Block extends Sprite
       centerY = regionMiny;
       ispeedy = -ispeedy;
       pval = false;
-    }
-    else if (centerY > regionMaxy) // hits bottom border
+    } else if (centerY > regionMaxy) // hits bottom border
     {
       centerY = regionMaxy;
       ispeedy = -ispeedy;
       pval = false;
     }
 
-    if (collide(ball))
-    {
-      if (!ProdConfig.NEVER_LOSE)
-      {
+    if (collide(ball)) {
+      if (!ProdConfig.NEVER_LOSE) {
         Scape.game.stop();
         return false;
       }
@@ -133,8 +122,7 @@ public final class Block extends Sprite
     return pval;
   }
 
-  public void move()
-  {
+  public void move() {
     towardPos(centerX + ispeedx, centerY + ispeedy, true);
   }
 }

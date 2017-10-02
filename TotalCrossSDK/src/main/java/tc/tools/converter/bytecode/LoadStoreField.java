@@ -9,22 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
 import tc.tools.converter.java.JavaConstantInfo;
 
-public class LoadStoreField extends ByteCode
-{
+public class LoadStoreField extends ByteCode {
   public String fieldName, fieldTypeClass;
   public String classInstance;
   /** Class name where this field is declared */
   public String className;
 
-  public LoadStoreField(int idx)
-  {
-    JavaConstantInfo jci = (JavaConstantInfo)cp.constants[idx];
+  public LoadStoreField(int idx) {
+    JavaConstantInfo jci = (JavaConstantInfo) cp.constants[idx];
     int classIndex = jci.index1;
     int nameAndTypeIndex = jci.index2;
     className = cp.getString1(classIndex);

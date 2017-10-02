@@ -35,21 +35,20 @@ import totalcross.util.regex.Pattern;
 /**
  * Implements a JDBC ResultSet.
  */
-final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
-{
+final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes {
   private final Stmt stmt;
-  private final DB   db;
+  private final DB db;
 
-  boolean            open; // true means have results and can iterate them
-  int                maxRows;         // max. number of rows as set by a Statement
-  private String[]   cols; // if null, the RS is closed()
-  boolean[]          dotCols;
-  String[]           colsMeta; // same as cols, but used by Meta interface
-  boolean[][]        meta;
+  boolean open; // true means have results and can iterate them
+  int maxRows; // max. number of rows as set by a Statement
+  private String[] cols; // if null, the RS is closed()
+  boolean[] dotCols;
+  String[] colsMeta; // same as cols, but used by Meta interface
+  boolean[][] meta;
 
-  private int        limitRows;       // 0 means no limit, must check against maxRows
-  private int        row;    // number of current row, starts at 1 (0 is for before loading data)
-  private int        lastCol;         // last column accessed, for wasNull(). -1 if none
+  private int limitRows; // 0 means no limit, must check against maxRows
+  private int row; // number of current row, starts at 1 (0 is for before loading data)
+  private int lastCol; // last column accessed, for wasNull(). -1 if none
 
   boolean closeStmt;
 
@@ -136,25 +135,21 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     row = 0;
     lastCol = -1;
 
-    if (stmt != null && stmt.pointer != 0) 
-    {
+    if (stmt != null && stmt.pointer != 0) {
       db.reset(stmt.pointer);
 
-      if (closeStmt) 
-      {
+      if (closeStmt) {
         closeStmt = false; // break recursive call
         stmt.close();
       }
     }
   }
 
-  void setCols(String[] cols)
-  {
+  void setCols(String[] cols) {
     this.cols = new String[cols.length];
     this.dotCols = new boolean[cols.length];
 
-    for (int i = cols.length; --i >= 0;)
-    {
+    for (int i = cols.length; --i >= 0;) {
       this.cols[i] = cols[i].toUpperCase();
       dotCols[i] = cols[i].indexOf('.') != -1;
     }
@@ -172,20 +167,18 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     col = col.toUpperCase();
     int lcol = col.length();
     for (int i = 0; i < cols.length; i++) {
-      if (col.equals(cols[i]) || (dotCols[i] && cols[i].endsWith(col) && cols[i].charAt(cols[i].length() - lcol) == '.')) 
-      {
+      if (col.equals(cols[i])
+          || (dotCols[i] && cols[i].endsWith(col) && cols[i].charAt(cols[i].length() - lcol) == '.')) {
         if (c == -1) {
           c = i;
-        }
-        else {
+        } else {
           throw new SQLException("ambiguous column: '" + col0 + "'");
         }
       }
     }
     if (c == -1) {
       throw new SQLException("no such column: '" + col0 + "'");
-    }
-    else {
+    } else {
       return c + 1;
     }
   }
@@ -195,8 +188,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
    */
   @Override
   public boolean next() throws SQLException {
-    if (!open)
-    {
+    if (!open) {
       return false; // finished ResultSet
     }
     lastCol = -1;
@@ -303,7 +295,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
    * @see java.sql.ResultSet#isLast()
    */
   @Override
-  public boolean isLast() throws SQLException { 
+  public boolean isLast() throws SQLException {
     throw new SQLException("function not yet implemented for SQLite");
   }
 
@@ -342,12 +334,10 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     final String stringValue = getString(col);
     if (stringValue == null) {
       return null;
-    }
-    else {
+    } else {
       try {
         return new BigDecimal(stringValue);
-      }
-      catch (totalcross.sys.InvalidNumberException e) {
+      } catch (totalcross.sys.InvalidNumberException e) {
         throw new SQLException("Bad value for type BigDecimal : " + stringValue);
       }
     }
@@ -387,6 +377,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
   /**
    * @see java.sql.ResultSet#getBinaryStream(java.lang.String)
    */
+
   /*    public InputStream getBinaryStream(String col) throws SQLException {
         return getBinaryStream(findColumn(col));
     }
@@ -443,13 +434,10 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
   @Override
   public Date getDate(int col) throws SQLException {
     Time t = getTime(col);
-    try
-    {
+    try {
       return t == null ? null : new Date(t);
-    }
-    catch (InvalidDateException e)
-    {
-      throw new SQLException("Invalid date from time "+t.getTimeLong(),e);
+    } catch (InvalidDateException e) {
+      throw new SQLException("Invalid date from time " + t.getTimeLong(), e);
     }
   }
 
@@ -549,30 +537,26 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
    */
   @Override
   public Time getTime(int col) throws SQLException {
-    switch(db.column_type(stmt.pointer, markCol(col))) 
-    {
+    switch (db.column_type(stmt.pointer, markCol(col))) {
     case SQLITE_NULL:
       return null;
     case SQLITE_TEXT:
       String ss = "";
-      try 
-      {
+      try {
         ss = db.column_text(stmt.pointer, markCol(col));
         return ss != null && !ss.isEmpty() ? new Time(ss.toCharArray()) : null;
-      }
-      catch (Exception e)
-      {
-        throw new SQLException("Error parsing date '"+ss+"'",e);
+      } catch (Exception e) {
+        throw new SQLException("Error parsing date '" + ss + "'", e);
       }
     default:
       // guich: always store as long
       long l = db.column_long(stmt.pointer, markCol(col));
       int millis = 0;
-      //if (db.conn.datePrecision == DatePrecision.MILLISECONDS)
-      {
-        millis = (int)(l % 1000);
-        l /= 1000;
-      }
+    //if (db.conn.datePrecision == DatePrecision.MILLISECONDS)
+    {
+      millis = (int) (l % 1000);
+      l /= 1000;
+    }
       Time t = new Time(l);
       t.millis = millis;
       return t;
@@ -581,7 +565,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /*       switch(db.column_type(stmt.pointer, markCol(col))) {
           case SQLITE_NULL:
               return null;
-
+    
           case SQLITE_TEXT:
               try 
               {
@@ -593,7 +577,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
               catch (Exception e) {
                   throw new SQLException("Error parsing date"+initCause(e));
               }
-
+    
           case SQLITE_FLOAT:
           {
              Time t = julianDateToCalendar(db.column_double(stmt.pointer, markCol(col)));
@@ -609,7 +593,6 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
       }*/
   }
 
-
   /**
    * @see java.sql.ResultSet#getTime(java.lang.String)
    */
@@ -623,8 +606,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
    */
   @Override
   public Timestamp getTimestamp(int col) throws SQLException {
-    switch(db.column_type(stmt.pointer, markCol(col))) 
-    {
+    switch (db.column_type(stmt.pointer, markCol(col))) {
     case SQLITE_NULL:
       return null;
     default:
@@ -650,8 +632,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
       long val = getLong(col);
       if (val > Integer.MAX_VALUE || val < Integer.MIN_VALUE) {
         return new Long(val);
-      }
-      else {
+      } else {
         return new Integer((int) val);
       }
     case SQLITE_FLOAT:
@@ -702,7 +683,8 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
    * @see java.sql.ResultSet#clearWarnings()
    */
   @Override
-  public void clearWarnings() throws SQLException {}
+  public void clearWarnings() throws SQLException {
+  }
 
   // ResultSetMetaData Functions //////////////////////////////////
 
@@ -803,19 +785,16 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         return Types.SMALLINT;
       }
 
-      if ("BIGINT".equals(typeName) || "INT8".equals(typeName) ||
-          "UNSIGNED BIG INT".equals(typeName)) {
-        return  Types.BIGINT;
+      if ("BIGINT".equals(typeName) || "INT8".equals(typeName) || "UNSIGNED BIG INT".equals(typeName)) {
+        return Types.BIGINT;
       }
 
       if ("DATE".equals(typeName) || "DATETIME".equals(typeName)) {
         return Types.DATE;
       }
 
-      if (valueType == SQLITE_INTEGER ||
-          "INT".equals(typeName) ||
-          "INTEGER".equals(typeName) ||
-          "MEDIUMINT".equals(typeName)) {
+      if (valueType == SQLITE_INTEGER || "INT".equals(typeName) || "INTEGER".equals(typeName)
+          || "MEDIUMINT".equals(typeName)) {
         return Types.INTEGER;
       }
     }
@@ -837,15 +816,13 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         return Types.REAL;
       }
 
-      if (valueType == SQLITE_FLOAT ||
-          "FLOAT".equals(typeName)) {
+      if (valueType == SQLITE_FLOAT || "FLOAT".equals(typeName)) {
         return Types.FLOAT;
       }
     }
 
     if (valueType == SQLITE_TEXT || valueType == SQLITE_NULL) {
-      if ("CHARACTER".equals(typeName) || "NCHAR".equals(typeName) ||
-          "NATIVE CHARACTER".equals(typeName)) {
+      if ("CHARACTER".equals(typeName) || "NCHAR".equals(typeName) || "NATIVE CHARACTER".equals(typeName)) {
         return Types.CHAR;
       }
 
@@ -857,11 +834,8 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         return Types.DATE;
       }
 
-      if (valueType == SQLITE_TEXT ||
-          "VARCHAR".equals(typeName) ||
-          "VARYING CHARACTER".equals(typeName) ||
-          "NVARCHAR".equals(typeName) ||
-          "TEXT".equals(typeName)) {
+      if (valueType == SQLITE_TEXT || "VARCHAR".equals(typeName) || "VARYING CHARACTER".equals(typeName)
+          || "NVARCHAR".equals(typeName) || "TEXT".equals(typeName)) {
         return Types.VARCHAR;
       }
     }
@@ -871,8 +845,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         return Types.BINARY;
       }
 
-      if (valueType == SQLITE_BLOB ||
-          "BLOB".equals(typeName)) {
+      if (valueType == SQLITE_BLOB || "BLOB".equals(typeName)) {
         return Types.BLOB;
       }
     }
@@ -921,13 +894,10 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     if (declType != null) {
       Matcher matcher = COLUMN_PRECISION.matcher(declType);
 
-      try
-      {
+      try {
         return matcher.find() ? Convert.toInt(matcher.group(1).split(",")[0].trim()) : 0;
-      }
-      catch (InvalidNumberException ine)
-      {
-        throw new SQLException("Invalid precision.",ine);
+      } catch (InvalidNumberException ine) {
+        throw new SQLException("Invalid precision.", ine);
       }
     }
 
@@ -944,6 +914,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
 
     return declType;
   }
+
   /**
    * @see java.sql.ResultSetMetaData#getScale(int)
    */
@@ -958,13 +929,10 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         String array[] = matcher.group(1).split(",");
 
         if (array.length == 2) {
-          try
-          {
+          try {
             return Convert.toInt(array[1].trim());
-          }
-          catch (InvalidNumberException ine)
-          {
-            throw new SQLException("Invalid scale.",ine);
+          } catch (InvalidNumberException ine) {
+            throw new SQLException("Invalid scale.", ine);
           }
         }
       }

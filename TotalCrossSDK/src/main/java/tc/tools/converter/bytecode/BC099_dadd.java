@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC099_dadd extends Arithmetic
-{
-  public BC099_dadd()
-  {
-    super(-1,-2,-1,DOUBLE);
+public class BC099_dadd extends Arithmetic {
+  public BC099_dadd() {
+    super(-1, -2, -1, DOUBLE);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-2].asDouble += stack[stackPtr-1].asDouble;
+  public void exec() {
+    stack[stackPtr - 2].asDouble += stack[stackPtr - 1].asDouble;
   }
 }

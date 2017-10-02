@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
 /**
@@ -26,16 +24,14 @@ package totalcross.game;
  * @see HighScores
  */
 
-public class HighScoreEntry
-{
+public class HighScoreEntry {
   private HighScores parent;
   /** The performer's name. */
   public String name;
   /** The performer's s*/
-  public int    score;
+  public int score;
 
-  protected HighScoreEntry(HighScores parent)
-  {
+  protected HighScoreEntry(HighScores parent) {
     this.parent = parent;
   }
 
@@ -43,16 +39,14 @@ public class HighScoreEntry
    * Get the rank of this Entry in the HighScores table.
    * @return score rank.
    */
-  public int getRank()
-  {
+  public int getRank() {
     // should be computed because entries may me messed up by inserts.
     int n = parent.entries.length;
-    for (int i=0; i < n; i++) {
-      if (parent.entries[i]==this) {
+    for (int i = 0; i < n; i++) {
+      if (parent.entries[i] == this) {
         return i;
       }
     }
     return -1;
   }
 }
-

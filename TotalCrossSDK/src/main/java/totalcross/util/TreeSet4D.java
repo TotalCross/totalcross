@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractSet;
@@ -90,9 +89,7 @@ import java.util.TreeMap;
  * @since 1.2
  * @status updated to 1.6
  */
-public class TreeSet4D<T> extends AbstractSet<T>
-implements NavigableSet<T>, Cloneable
-{
+public class TreeSet4D<T> extends AbstractSet<T> implements NavigableSet<T>, Cloneable {
   /**
    * The NavigableMap which backs this Set.
    */
@@ -107,8 +104,7 @@ implements NavigableSet<T>, Cloneable
    *
    * @see Comparable
    */
-  public TreeSet4D()
-  {
+  public TreeSet4D() {
     map = new TreeMap4D<T, String>();
   }
 
@@ -119,8 +115,7 @@ implements NavigableSet<T>, Cloneable
    *
    * @param comparator the Comparator this Set will use
    */
-  public TreeSet4D(Comparator<? super T> comparator)
-  {
+  public TreeSet4D(Comparator<? super T> comparator) {
     map = new TreeMap<T, String>(comparator);
   }
 
@@ -136,8 +131,7 @@ implements NavigableSet<T>, Cloneable
    * @throws NullPointerException if the collection is null
    * @see Comparable
    */
-  public TreeSet4D(Collection<? extends T> collection)
-  {
+  public TreeSet4D(Collection<? extends T> collection) {
     map = new TreeMap<T, String>();
     addAll(collection);
   }
@@ -151,12 +145,10 @@ implements NavigableSet<T>, Cloneable
    *        and will initialize itself with all its elements
    * @throws NullPointerException if sortedSet is null
    */
-  public TreeSet4D(SortedSet<T> sortedSet)
-  {
+  public TreeSet4D(SortedSet<T> sortedSet) {
     Iterator<T> itr;
 
-    map = new TreeMap4D<T, String>
-    ((Comparator<? super T>)sortedSet.comparator());
+    map = new TreeMap4D<T, String>((Comparator<? super T>) sortedSet.comparator());
     itr = ((SortedSet<T>) sortedSet).iterator();
     ((TreeMap4D<T, String>) map).putKeysLinear(itr, sortedSet.size());
   }
@@ -167,8 +159,7 @@ implements NavigableSet<T>, Cloneable
    *
    * @param backingMap the submap
    */
-  private TreeSet4D(NavigableMap<T,String> backingMap)
-  {
+  private TreeSet4D(NavigableMap<T, String> backingMap) {
     map = backingMap;
   }
 
@@ -181,8 +172,7 @@ implements NavigableSet<T>, Cloneable
    *         already in the set
    */
   @Override
-  public boolean add(T obj)
-  {
+  public boolean add(T obj) {
     return map.put(obj, "") == null;
   }
 
@@ -196,12 +186,11 @@ implements NavigableSet<T>, Cloneable
    *         objects already in the set
    */
   @Override
-  public boolean addAll(Collection<? extends T> c)
-  {
+  public boolean addAll(Collection<? extends T> c) {
     boolean result = false;
     int pos = c.size();
     Iterator<? extends T> itr = c.iterator();
-    while (--pos >= 0){
+    while (--pos >= 0) {
       result |= (map.put(itr.next(), "") == null);
     }
     return result;
@@ -211,8 +200,7 @@ implements NavigableSet<T>, Cloneable
    * Removes all elements in this Set.
    */
   @Override
-  public void clear()
-  {
+  public void clear() {
     map.clear();
   }
 
@@ -222,17 +210,13 @@ implements NavigableSet<T>, Cloneable
    * @return the cloned set
    */
   @Override
-  public Object clone()
-  {
+  public Object clone() {
     TreeSet4D<T> copy = null;
-    try
-    {
+    try {
       copy = (TreeSet4D<T>) super.clone();
       // Map may be either TreeMap or TreeMap.SubMap, hence the ugly casts.
       copy.map = (NavigableMap<T, String>) ((AbstractMap4D<T, String>) map).clone();
-    }
-    catch (CloneNotSupportedException x)
-    {
+    } catch (CloneNotSupportedException x) {
       // Impossible result.
     }
     return copy;
@@ -244,8 +228,7 @@ implements NavigableSet<T>, Cloneable
    * @return the comparator, or null if the set uses natural ordering
    */
   @Override
-  public Comparator<? super T> comparator()
-  {
+  public Comparator<? super T> comparator() {
     return map.comparator();
   }
 
@@ -258,8 +241,7 @@ implements NavigableSet<T>, Cloneable
    *         already in the set
    */
   @Override
-  public boolean contains(Object obj)
-  {
+  public boolean contains(Object obj) {
     return map.containsKey(obj);
   }
 
@@ -270,8 +252,7 @@ implements NavigableSet<T>, Cloneable
    * @throws NoSuchElementException if the set is empty
    */
   @Override
-  public T first()
-  {
+  public T first() {
     return map.firstKey();
   }
 
@@ -293,8 +274,7 @@ implements NavigableSet<T>, Cloneable
    *         tolerate null elements
    */
   @Override
-  public SortedSet<T> headSet(T to)
-  {
+  public SortedSet<T> headSet(T to) {
     return headSet(to, false);
   }
 
@@ -315,8 +295,7 @@ implements NavigableSet<T>, Cloneable
    *         tolerate null elements
    */
   @Override
-  public NavigableSet<T> headSet(T to, boolean inclusive)
-  {
+  public NavigableSet<T> headSet(T to, boolean inclusive) {
     return new TreeSet4D<T>(map.headMap(to, inclusive));
   }
 
@@ -326,8 +305,7 @@ implements NavigableSet<T>, Cloneable
    * @return true if the set is empty
    */
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return map.isEmpty();
   }
 
@@ -338,8 +316,7 @@ implements NavigableSet<T>, Cloneable
    * @return an iterator
    */
   @Override
-  public Iterator<T> iterator()
-  {
+  public Iterator<T> iterator() {
     return map.keySet().iterator();
   }
 
@@ -350,8 +327,7 @@ implements NavigableSet<T>, Cloneable
    * @throws NoSuchElementException if the set is empty
    */
   @Override
-  public T last()
-  {
+  public T last() {
     return map.lastKey();
   }
 
@@ -364,8 +340,7 @@ implements NavigableSet<T>, Cloneable
    * @throws ClassCastException if obj cannot be compared to set elements
    */
   @Override
-  public boolean remove(Object obj)
-  {
+  public boolean remove(Object obj) {
     return map.remove(obj) != null;
   }
 
@@ -375,8 +350,7 @@ implements NavigableSet<T>, Cloneable
    * @return the set size
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return map.size();
   }
 
@@ -401,8 +375,7 @@ implements NavigableSet<T>, Cloneable
    * @throws IllegalArgumentException if from is greater than to
    */
   @Override
-  public SortedSet<T> subSet(T from, T to)
-  {
+  public SortedSet<T> subSet(T from, T to) {
     return subSet(from, true, to, false);
   }
 
@@ -426,11 +399,8 @@ implements NavigableSet<T>, Cloneable
    * @throws IllegalArgumentException if from is greater than to
    */
   @Override
-  public NavigableSet<T> subSet(T from, boolean fromInclusive,
-      T to, boolean toInclusive)
-  {
-    return new TreeSet4D<T>(map.subMap(from, fromInclusive,
-        to, toInclusive));
+  public NavigableSet<T> subSet(T from, boolean fromInclusive, T to, boolean toInclusive) {
+    return new TreeSet4D<T>(map.subMap(from, fromInclusive, to, toInclusive));
   }
 
   /**
@@ -451,8 +421,7 @@ implements NavigableSet<T>, Cloneable
    *         does not tolerate null elements
    */
   @Override
-  public SortedSet<T> tailSet(T from)
-  {
+  public SortedSet<T> tailSet(T from) {
     return tailSet(from, true);
   }
 
@@ -472,8 +441,7 @@ implements NavigableSet<T>, Cloneable
    *         does not tolerate null elements
    */
   @Override
-  public NavigableSet<T> tailSet(T from, boolean inclusive)
-  {
+  public NavigableSet<T> tailSet(T from, boolean inclusive) {
     return new TreeSet4D<T>(map.tailMap(from, inclusive));
   }
 
@@ -495,8 +463,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T ceiling(T e)
-  {
+  public T ceiling(T e) {
     return map.ceilingKey(e);
   }
 
@@ -509,8 +476,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public Iterator<T> descendingIterator()
-  {
+  public Iterator<T> descendingIterator() {
     return descendingSet().iterator();
   }
 
@@ -529,8 +495,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public NavigableSet<T> descendingSet()
-  {
+  public NavigableSet<T> descendingSet() {
     return map.descendingKeySet();
   }
 
@@ -552,8 +517,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T floor(T e)
-  {
+  public T floor(T e) {
     return map.floorKey(e);
   }
 
@@ -575,8 +539,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T higher(T e)
-  {
+  public T higher(T e) {
     return map.higherKey(e);
   }
 
@@ -598,8 +561,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T lower(T e)
-  {
+  public T lower(T e) {
     return map.lowerKey(e);
   }
 
@@ -612,8 +574,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T pollFirst()
-  {
+  public T pollFirst() {
     return map.pollFirstEntry().getKey();
   }
 
@@ -626,8 +587,7 @@ implements NavigableSet<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T pollLast()
-  {
+  public T pollLast() {
     return map.pollLastEntry().getKey();
   }
 

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.sys.Vm;
@@ -25,8 +23,7 @@ import totalcross.util.Vector;
  * This class is defined by the JSR-82 specification <em>Java&trade; APIs for Bluetooth&trade; Wireless Technology,
  * Version 1.1.</em>
  */
-public class DataElement
-{
+public class DataElement {
   public static final int NULL = 0x0000;
 
   public static final int U_INT_1 = 0x0008;
@@ -79,10 +76,8 @@ public class DataElement
    */
   private Object miscValue;
 
-  public DataElement(int valueType)
-  {
-    switch (valueType)
-    {
+  public DataElement(int valueType) {
+    switch (valueType) {
     case NULL: /* miscValue = null in this case. */
       break;
     case DATALT: /* falls through */
@@ -95,19 +90,16 @@ public class DataElement
     this.valueType = valueType;
   }
 
-  public DataElement(boolean bool)
-  {
+  public DataElement(boolean bool) {
     valueType = BOOL;
     booleanValue = bool;
   }
 
-  public DataElement(int valueType, long value)
-  {
+  public DataElement(int valueType, long value) {
     long min = 0;
     long max = 0;
 
-    switch (valueType)
-    {
+    switch (valueType) {
     case U_INT_1:
       max = 0xffL;
       break;
@@ -138,19 +130,17 @@ public class DataElement
     }
 
     // check if value in the valid range for this type
-    if (value < min || value > max){
+    if (value < min || value > max) {
       throw new IllegalArgumentException("Invalid 'value' (" + value + ") for the specified type (" + valueType + ")");
     }
     this.valueType = valueType;
     this.longValue = value;
   }
 
-  public DataElement(int valueType, Object value)
-  {
+  public DataElement(int valueType, Object value) {
     boolean isCorrectValue = true;
 
-    switch (valueType)
-    {
+    switch (valueType) {
     case URL: /* falls through */
     case STRING:
       isCorrectValue = value instanceof String;
@@ -170,35 +160,33 @@ public class DataElement
     }
 
     // check if value in the valid range for this type
-    if (!isCorrectValue){
+    if (!isCorrectValue) {
       throw new IllegalArgumentException("Invalid 'value' for specified type: " + value);
     }
     this.valueType = valueType;
     this.miscValue = value;
   }
 
-  public synchronized void addElement(DataElement elem)
-  {
+  public synchronized void addElement(DataElement elem) {
     /*
      * We can't optimize this by invoking the this.insertElementAt(elem, getSize()), because the ClassCastException
      * may be thrown from getSize() which gives us improper stack trace.
      */
 
-    if (valueType != DATSEQ && valueType != DATALT){
+    if (valueType != DATSEQ && valueType != DATALT) {
       throw new ClassCastException("Invalid element type for this method: " + valueType);
     }
-    if (elem == null){
+    if (elem == null) {
       throw new NullPointerException("Specified element is null");
     }
     ((Vector) miscValue).addElement(elem);
   }
 
-  public synchronized void insertElementAt(DataElement elem, int index)
-  {
-    if (valueType != DATSEQ && valueType != DATALT){
+  public synchronized void insertElementAt(DataElement elem, int index) {
+    if (valueType != DATSEQ && valueType != DATALT) {
       throw new ClassCastException("Invalid element type for this method: " + valueType);
     }
-    if (elem == null){
+    if (elem == null) {
       throw new NullPointerException("Specified element is null");
     }
 
@@ -206,26 +194,24 @@ public class DataElement
      * We can't use the Vector.insertElementAt check for out of bounds, because Vector throws
      * ArrayIndexOutOfBoundsException in this case.
      */
-    if (index < 0 || index > ((Vector) miscValue).size()){
+    if (index < 0 || index > ((Vector) miscValue).size()) {
       throw new IndexOutOfBoundsException("Specified index is out of range");
     }
     ((Vector) miscValue).insertElementAt(elem, index);
   }
 
-  public synchronized int getSize()
-  {
-    if (valueType != DATSEQ && valueType != DATALT){
+  public synchronized int getSize() {
+    if (valueType != DATSEQ && valueType != DATALT) {
       throw new ClassCastException("Invalid element type for this method: " + valueType);
     }
     return ((Vector) miscValue).size();
   }
 
-  public boolean removeElement(DataElement elem)
-  {
-    if (valueType != DATSEQ && valueType != DATALT){
+  public boolean removeElement(DataElement elem) {
+    if (valueType != DATSEQ && valueType != DATALT) {
       throw new ClassCastException("Invalid element type for this method: " + valueType);
     }
-    if (elem == null){
+    if (elem == null) {
       throw new NullPointerException("Specified element is null");
     }
 
@@ -237,15 +223,12 @@ public class DataElement
     return ((Vector) miscValue).removeElement(elem);
   }
 
-  public int getDataType()
-  {
+  public int getDataType() {
     return valueType;
   }
 
-  public long getLong()
-  {
-    switch (valueType)
-    {
+  public long getLong() {
+    switch (valueType) {
     case U_INT_1: /* falls through */
     case U_INT_2: /* falls through */
     case U_INT_4: /* falls through */
@@ -260,16 +243,14 @@ public class DataElement
     return longValue;
   }
 
-  public boolean getBoolean()
-  {
-    if (valueType != BOOL){
+  public boolean getBoolean() {
+    if (valueType != BOOL) {
       throw new ClassCastException("Invalid element type for this method: " + valueType);
     }
     return booleanValue;
   }
 
-  public synchronized Object getValue()
-  {
+  public synchronized Object getValue() {
     Object retValue = miscValue;
 
     /*
@@ -280,19 +261,17 @@ public class DataElement
      * 
      * The array may be modified by reference, so we have to return a clone.
      */
-    switch (valueType)
-    {
+    switch (valueType) {
     case URL: /* falls through */
     case STRING: /* falls through */
     case UUID:
       break;
     case DATALT: /* falls through */
-    case DATSEQ:
-    {
+    case DATSEQ: {
       retValue = new DataElement[((Vector) miscValue).size()];
       ((Vector) miscValue).copyInto((Object[]) retValue);
     }
-    break;
+      break;
     case U_INT_8: /* falls through */
     case U_INT_16: /* falls through */
     case INT_16:

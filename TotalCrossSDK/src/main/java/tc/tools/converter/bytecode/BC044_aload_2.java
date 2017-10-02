@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC044_aload_2 extends LoadLocal
-{
-  public BC044_aload_2()
-  {
-    super(2,OBJECT);
+public class BC044_aload_2 extends LoadLocal {
+  public BC044_aload_2() {
+    super(2, OBJECT);
   }
 }

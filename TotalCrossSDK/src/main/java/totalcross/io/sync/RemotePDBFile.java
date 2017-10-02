@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.sync;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -30,8 +28,7 @@ import totalcross.sys.Convert;
  * Allows you to access a pdb file on the device from the desktop during the conduit synchronization.<br>
  * On PalmOS it may only be used to handle files on the device's internal memory.
  */
-public final class RemotePDBFile
-{
+public final class RemotePDBFile {
   protected String name; // guich@572_4: made all fields protected so they are not removed by the obfuscator.
   protected int mode;
   protected boolean open;
@@ -73,19 +70,18 @@ public final class RemotePDBFile
    * @throws totalcross.io.FileNotFoundException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public RemotePDBFile(String name, int mode, int recordSize) throws totalcross.io.IllegalArgumentIOException,
-  totalcross.io.FileNotFoundException, totalcross.io.IOException
-  {
-    if (!idle){
+  public RemotePDBFile(String name, int mode, int recordSize)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException {
+    if (!idle) {
       throw new RuntimeException("Only one database can be open at a time!");
     }
 
-    if (name == null){
+    if (name == null) {
       throw new java.lang.NullPointerException("Argument 'name' cannot have a null value.");
     }
 
     String[] st = Convert.tokenizeString(name, '.');
-    if (st == null || st.length != 3 || st[0].length() > 31 || st[1].length() != 4 || st[2].length() != 4){
+    if (st == null || st.length != 3 || st[0].length() > 31 || st[1].length() != 4 || st[2].length() != 4) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'name' " + name);
     }
 
@@ -97,8 +93,8 @@ public final class RemotePDBFile
   }
 
   @ReplacedByNativeOnDeploy
-  private void create() throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
-  {
+  private void create()
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException {
     pdbHandle = new PDBFile(name, mode);
     open = true;
   }
@@ -113,8 +109,8 @@ public final class RemotePDBFile
    *
    * @see #RemotePDBFile(String, int, int)
    */
-  public RemotePDBFile(String name) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
-  {
+  public RemotePDBFile(String name)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException {
     this(name, PDBFile.READ_WRITE, 0);
   }
 
@@ -128,8 +124,8 @@ public final class RemotePDBFile
    *
    * @see #RemotePDBFile(String, int, int)
    */
-  public RemotePDBFile(String name, int mode) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
-  {
+  public RemotePDBFile(String name, int mode)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException {
     this(name, mode, 0);
   }
 
@@ -139,8 +135,7 @@ public final class RemotePDBFile
    * @throws totalcross.io.IOException
    */
   @ReplacedByNativeOnDeploy
-  final public void delete() throws totalcross.io.IOException
-  {
+  final public void delete() throws totalcross.io.IOException {
     ((PDBFile) pdbHandle).delete();
     idle = true;
   }
@@ -151,8 +146,7 @@ public final class RemotePDBFile
    * @throws totalcross.io.IOException
    */
   @ReplacedByNativeOnDeploy
-  final public int getRecordCount() throws totalcross.io.IOException
-  {
+  final public int getRecordCount() throws totalcross.io.IOException {
     return ((PDBFile) pdbHandle).getRecordCount();
   }
 
@@ -163,8 +157,8 @@ public final class RemotePDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public boolean readRecord(int index, RemotePDBRecord rec) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  public boolean readRecord(int index, RemotePDBRecord rec)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
 
     rec.rc = this; // assign fields to the custom record
     if ((rec.size = rwRecord(index, rwbas, true)) > 0) // fetch and fill our buffer
@@ -186,8 +180,8 @@ public final class RemotePDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public boolean writeRecord(int index, RemotePDBRecord rec) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  public boolean writeRecord(int index, RemotePDBRecord rec)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     rwbas.reset(); // reset the buffer
     rec.write(ds); // write to it
     return rwRecord(index, rwbas, false) > 0; // send it to the pda
@@ -200,25 +194,21 @@ public final class RemotePDBFile
    * @throws totalcross.io.IllegalArgumentIOException
    */
   @ReplacedByNativeOnDeploy
-  int rwRecord(int idx, ByteArrayStream bas, boolean read) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  int rwRecord(int idx, ByteArrayStream bas, boolean read)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     recIndex = idx;
     PDBFile pdbFile = ((PDBFile) pdbHandle);
-    if (read)
-    {
+    if (read) {
       pdbFile.setRecordPos(idx);
       int size = pdbFile.getRecordSize();
       bas.setSize(size, false);
       pdbFile.readBytes(bas.getBuffer(), 0, size);
       return size;
-    }
-    else
-    {
+    } else {
       int size = bas.getPos();
       if (idx < 0) {
         pdbFile.addRecord(size);
-      } else
-      {
+      } else {
         pdbFile.setRecordPos(idx);
         pdbFile.resizeRecord(size);
       }
@@ -233,8 +223,7 @@ public final class RemotePDBFile
   }
 
   /** Returns the current record position or -1 if there is no current record. */
-  public int getRecordPos()
-  {
+  public int getRecordPos() {
     return recIndex;
   }
 
@@ -250,8 +239,7 @@ public final class RemotePDBFile
    * @throws totalcross.io.IllegalArgumentIOException
    */
   @ReplacedByNativeOnDeploy
-  final public void deleteRecord(int index) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  final public void deleteRecord(int index) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     ((PDBFile) pdbHandle).setRecordPos(index);
     ((PDBFile) pdbHandle).deleteRecord();
   }
@@ -266,8 +254,7 @@ public final class RemotePDBFile
    *           the number of bytes to move.
    * @return the number of bytes actually moved.
    */
-  public int skipBytes(int n)
-  {
+  public int skipBytes(int n) {
     return rwbas.skipBytes(n);
   }
 
@@ -278,8 +265,7 @@ public final class RemotePDBFile
    * @throws totalcross.io.IOException
    */
   @ReplacedByNativeOnDeploy
-  final public int getNextModifiedRecordIndex() throws totalcross.io.IOException
-  {
+  final public int getNextModifiedRecordIndex() throws totalcross.io.IOException {
     PDBFile pdbFile = ((PDBFile) pdbHandle);
     int n = pdbFile.getRecordCount();
     for (int i = pdbFile.getRecordPos(); i < n; i++) {
@@ -296,8 +282,7 @@ public final class RemotePDBFile
    * @throws totalcross.io.IOException
    */
   @ReplacedByNativeOnDeploy
-  final public void close() throws totalcross.io.IOException
-  {
+  final public void close() throws totalcross.io.IOException {
     idle = true; // guich@tc114_95: set it here before close, because if close throws an exception the user will never be able to sync again.
     ((PDBFile) pdbHandle).close();
   }
@@ -312,12 +297,11 @@ public final class RemotePDBFile
    *         matched the criteria.
    */
   @ReplacedByNativeOnDeploy
-  public static String[] listPDBs(int crtr, int type)
-  {
+  public static String[] listPDBs(int crtr, int type) {
     // get the list
     String[] list = PDBFile.listPDBs(crtr, type);
     // now strip the first _ so that the user gets the expected name of a RemotePDBFile
-    if (list != null){
+    if (list != null) {
       for (int i = list.length - 1; i >= 0; i--) {
         if (list[i].charAt(0) == '_') {
           list[i] = list[i].substring(1);
@@ -328,14 +312,10 @@ public final class RemotePDBFile
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       close();
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
     }
   }
 }

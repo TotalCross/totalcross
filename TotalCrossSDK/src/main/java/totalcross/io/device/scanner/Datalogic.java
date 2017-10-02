@@ -1,27 +1,26 @@
 package totalcross.io.device.scanner;
 
-public interface Datalogic
-{
+public interface Datalogic {
   /** To be used with Datalogic scanners, in the setParam method: scanning timeout, expressed in terms of milliseconds */
-  public final static int SCAN_PARAM_TIMEOUT             = 0x4000001;
+  public final static int SCAN_PARAM_TIMEOUT = 0x4000001;
   /** To be used with Datalogic scanners, in the setParam method: beeper duration on barcode event, expressed in terms of milliseconds */
-  public final static int SCAN_PARAM_BEEPER_DURATION     = 0x4000002;
+  public final static int SCAN_PARAM_BEEPER_DURATION = 0x4000002;
   /** To be used with Datalogic scanners, in the setParam method: beeper frequency on barcode event, expressed in terms of hertz */
-  public final static int SCAN_PARAM_BEEPER_FREQUENCY    = 0x4000003;
+  public final static int SCAN_PARAM_BEEPER_FREQUENCY = 0x4000003;
   /** To be used with Datalogic scanners, in the setParam method: how many pulses we blink the led on barcode event */
-  public final static int SCAN_PARAM_LED_NUM_OF_PULSES   = 0x4000004;
+  public final static int SCAN_PARAM_LED_NUM_OF_PULSES = 0x4000004;
   /** To be used with Datalogic scanners, in the setParam method: duration of each pulse on barcode event, expressed in terms of milliseconds */
-  public final static int SCAN_PARAM_LED_PULSE_DURATION  = 0x4000005;
+  public final static int SCAN_PARAM_LED_PULSE_DURATION = 0x4000005;
   /** To be used with Datalogic scanners, in the setParam method: disable/enable the scanning continous mode, the scanning doesn't stop on barcode event */
-  public final static int SCAN_PARAM_CONTINUOUS_MODE     = 0x4000006;
+  public final static int SCAN_PARAM_CONTINUOUS_MODE = 0x4000006;
   /** To be used with Datalogic scanners, in the setParam method: disable/enable the keyborad emulation, all scanned data are translated to keyboard events */
-  public final static int SCAN_PARAM_KEYBOARD_EMULATION  = 0x4000007;
+  public final static int SCAN_PARAM_KEYBOARD_EMULATION = 0x4000007;
   /** To be used with Datalogic scanners, in the setParam method: disable/enable the soft trigger functions. if enabled, allows the scanner to read, even if the scan button is not pressed */
-  public final static int SCAN_PARAM_SOFT_TRIGGER        = 0x4000008;
+  public final static int SCAN_PARAM_SOFT_TRIGGER = 0x4000008;
   /** To be used with Datalogic scanners, in the setParam method: if enabled, allows the scanner to read, even if the active() function has not been called. */
   public final static int SCAN_PARAM_SCAN_ALWAYS_ENABLED = 0x4000009;
   /** To be used with Datalogic scanners, in the setParam method: beeper type, dual-tone (0), monotone (1) */
-  public final static int SCAN_PARAM_BEEPER_TYPE         = 0x400000A;
+  public final static int SCAN_PARAM_BEEPER_TYPE = 0x400000A;
 
   /** To be used with Datalogic scanners, in the setParam method. */
   public final static int BCD_PARAM_PREAMBLE_STRING = 0;

@@ -15,7 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package totalcross.io;
 
 import java.io.IOException;
@@ -26,8 +25,7 @@ import totalcross.sys.Convert;
 /**
  * Stream is the base class for all stream-based I/O classes.
  */
-public abstract class Stream extends Connection
-{
+public abstract class Stream extends Connection {
   protected static byte skipBuffer[] = new byte[128];
 
   /**
@@ -68,10 +66,8 @@ public abstract class Stream extends Connection
    * @return the number of bytes actually written
    * @throws totalcross.io.IOException
    */
-  public int writeBytes(byte buf[]) throws totalcross.io.IOException
-  {
-    if (buf.length == 0)
-    {
+  public int writeBytes(byte buf[]) throws totalcross.io.IOException {
+    if (buf.length == 0) {
       return 0; // nothing to write, just return 0.
     }
     return writeBytes(buf, 0, buf.length);
@@ -87,11 +83,9 @@ public abstract class Stream extends Connection
    * @return the number of bytes actually written
    * @throws totalcross.io.IOException
    */
-  public int writeBytes(String string) throws totalcross.io.IOException
-  {
+  public int writeBytes(String string) throws totalcross.io.IOException {
     byte buf[] = string.getBytes(); // throws NPE if null.
-    if (buf.length == 0)
-    {
+    if (buf.length == 0) {
       return 0; // nothing to write, just return 0.
     }
     return writeBytes(buf, 0, buf.length);
@@ -110,8 +104,7 @@ public abstract class Stream extends Connection
   final public int writeBytes(StringBuffer sb) throws totalcross.io.IOException // guich@tc123_44
   {
     byte[] b = Convert.getBytes(sb); // throws NPE if null.
-    if (b.length == 0)
-    {
+    if (b.length == 0) {
       return 0; // nothing to write, just return 0.
     }
     return writeBytes(b, 0, b.length);
@@ -134,13 +127,11 @@ public abstract class Stream extends Connection
    * @throws totalcross.io.IOException
    *            if the stream does not support skip, or if some other I/O error occurs.
    */
-  public int skipBytes(int n) throws totalcross.io.IOException
-  {
+  public int skipBytes(int n) throws totalcross.io.IOException {
     int readBytesRet;
     int bytesSkipped = 0;
 
-    while (n > 0)
-    {
+    while (n > 0) {
       int c = n > skipBuffer.length ? skipBuffer.length : n;
       readBytesRet = readBytes(skipBuffer, 0, c);
       if (readBytesRet <= 0) {
@@ -300,7 +291,6 @@ class WrapFromInputStream extends Stream {
       throw new totalcross.io.IOException(e);
     }
   }
-
 
 }
 

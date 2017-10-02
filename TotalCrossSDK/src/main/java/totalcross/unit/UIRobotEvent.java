@@ -23,8 +23,7 @@ import totalcross.ui.event.Event;
 /** Event sent when a Robot runs.
  * The target is always the MainWindow's instance.
  */
-public class UIRobotEvent extends Event
-{
+public class UIRobotEvent extends Event {
   /** Event indicating that the robot has succeed. */
   public static final int ROBOT_SUCCEED = 350;
   /** Event indicating that the robot has failed. Check the failureReason field for more information. */
@@ -38,8 +37,7 @@ public class UIRobotEvent extends Event
   /** The reason of the failure, if any. */
   public String failureReason;
 
-  UIRobotEvent(int type, String robotName, String reason)
-  {
+  UIRobotEvent(int type, String robotName, String reason) {
     super(type, MainWindow.getMainWindow(), Vm.getTimeStamp());
     this.robotName = robotName;
     this.failureReason = reason;

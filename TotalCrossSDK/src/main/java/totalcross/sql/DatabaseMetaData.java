@@ -2,8 +2,7 @@ package totalcross.sql;
 
 import java.sql.SQLException;
 
-public interface DatabaseMetaData
-{
+public interface DatabaseMetaData {
   int procedureResultUnknown = 0;
   int procedureNoResult = 1;
   int procedureReturnsResult = 2;
@@ -552,8 +551,7 @@ public interface DatabaseMetaData
    * <code>false</code> otherwise.
    * @see Types
    */
-  boolean supportsConvert(int fromType, int toType) throws
-  SQLException;
+  boolean supportsConvert(int fromType, int toType) throws SQLException;
 
   /**
    * This method tests whether or not table correlation names are
@@ -1252,8 +1250,7 @@ public interface DatabaseMetaData
    * is supported, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean supportsTransactionIsolationLevel(int level) throws
-  SQLException;
+  boolean supportsTransactionIsolationLevel(int level) throws SQLException;
 
   /**
    * This method tests whether or not DDL and DML statements allowed within
@@ -1263,8 +1260,7 @@ public interface DatabaseMetaData
    * same transaction, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean supportsDataDefinitionAndDataManipulationTransactions()
-      throws SQLException;
+  boolean supportsDataDefinitionAndDataManipulationTransactions() throws SQLException;
 
   /**
    * This method tests whether or not only DML statement are allowed
@@ -1274,8 +1270,7 @@ public interface DatabaseMetaData
    * transactions, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  boolean supportsDataManipulationTransactionsOnly() throws
-  SQLException;
+  boolean supportsDataManipulationTransactionsOnly() throws SQLException;
 
   /**
    * This method tests whether or not a DDL statement will cause the
@@ -1326,8 +1321,7 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested procedures.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getProcedures(String catalog, String schemaPattern, String
-      procedurePattern) throws SQLException;
+  ResultSet getProcedures(String catalog, String schemaPattern, String procedurePattern) throws SQLException;
 
   /**
    * This method returns a list of the parameter and result columns for
@@ -1368,9 +1362,8 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested procedures.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getProcedureColumns(String catalog, String schemaPattern,
-      String procedurePattern, String columnPattern) throws
-  SQLException;
+  ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedurePattern, String columnPattern)
+      throws SQLException;
 
   /**
    * This method returns a list of the requested table as a
@@ -1394,8 +1387,7 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested tables.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getTables(String catalog, String schemaPattern, String
-      tablePattern, String[] types) throws SQLException;
+  ResultSet getTables(String catalog, String schemaPattern, String tablePattern, String[] types) throws SQLException;
 
   /**
    * This method returns the list of database schemas as a
@@ -1468,8 +1460,8 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested tables.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getColumns(String catalog, String schemaPattern, String
-      tablePattern, String columnPattern) throws SQLException;
+  ResultSet getColumns(String catalog, String schemaPattern, String tablePattern, String columnPattern)
+      throws SQLException;
 
   /**
    * This method returns the access rights that have been granted to the
@@ -1500,8 +1492,8 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with all the requested privileges.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getColumnPrivileges(String catalog, String schema, String
-      tableName, String columnPattern) throws SQLException;
+  ResultSet getColumnPrivileges(String catalog, String schema, String tableName, String columnPattern)
+      throws SQLException;
 
   /**
    * This method returns the access rights that have been granted to the
@@ -1531,8 +1523,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with all the requested privileges.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getTablePrivileges(String catalog, String schemaPattern,
-      String tablePattern) throws SQLException;
+  ResultSet getTablePrivileges(String catalog, String schemaPattern, String tablePattern) throws SQLException;
 
   /**
    * This method returns the best set of columns for uniquely identifying
@@ -1568,8 +1559,8 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the best row identifier.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getBestRowIdentifier(String catalog, String schema,
-      String tableName, int scope, boolean nullable) throws SQLException;
+  ResultSet getBestRowIdentifier(String catalog, String schema, String tableName, int scope, boolean nullable)
+      throws SQLException;
 
   /**
    * This method returns the set of columns that are automatically updated
@@ -1600,8 +1591,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the version columns.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getVersionColumns(String catalog, String schema,
-      String tableName) throws SQLException;
+  ResultSet getVersionColumns(String catalog, String schema, String tableName) throws SQLException;
 
   /**
    * This method returns a list of a table's primary key columns. These
@@ -1625,8 +1615,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the primary key columns.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getPrimaryKeys(String catalog, String schema, String tableName)
-      throws SQLException;
+  ResultSet getPrimaryKeys(String catalog, String schema, String tableName) throws SQLException;
 
   /**
    * This method returns a list of the table's foreign keys. These are
@@ -1668,8 +1657,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the foreign key columns.
    * @exception SQLException If an error occurs.
    */
-  ResultSet getImportedKeys(String catalog, String schema,
-      String tableName) throws SQLException;
+  ResultSet getImportedKeys(String catalog, String schema, String tableName) throws SQLException;
 
   /**
    * This method returns a list of the table's which use this table's
@@ -1712,8 +1700,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested information
    * @exception SQLException If an error occurs.
    */
-  ResultSet getExportedKeys(String catalog, String schema,
-      String tableName) throws SQLException;
+  ResultSet getExportedKeys(String catalog, String schema, String tableName) throws SQLException;
 
   /**
    * This method returns a description of how one table imports another
@@ -1768,9 +1755,8 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested information
    * @exception SQLException If an error occurs.
    */
-  ResultSet getCrossReference(String primaryCatalog, String
-      primarySchema, String primaryTableName, String foreignCatalog, String
-      foreignSchema, String foreignTableName) throws SQLException;
+  ResultSet getCrossReference(String primaryCatalog, String primarySchema, String primaryTableName,
+      String foreignCatalog, String foreignSchema, String foreignTableName) throws SQLException;
 
   /**
    * This method returns a list of the SQL types supported by this
@@ -1855,8 +1841,8 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested index information
    * @exception SQLException If an error occurs.
    */
-  ResultSet getIndexInfo(String catalog, String schema, String tableName,
-      boolean unique, boolean approximate) throws SQLException;
+  ResultSet getIndexInfo(String catalog, String schema, String tableName, boolean unique, boolean approximate)
+      throws SQLException;
 
   /**
    * This method tests whether or not the datbase supports the specified
@@ -1887,8 +1873,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  boolean supportsResultSetConcurrency(int type, int concurrency)
-      throws SQLException;
+  boolean supportsResultSetConcurrency(int type, int concurrency) throws SQLException;
 
   /**
    * This method tests whether or not the specified result set type sees its
@@ -2042,8 +2027,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested type information
    * @exception SQLException If an error occurs.
    */
-  ResultSet getUDTs(String catalog, String schemaPattern, String
-      typePattern, int[] types) throws SQLException;
+  ResultSet getUDTs(String catalog, String schemaPattern, String typePattern, int[] types) throws SQLException;
 
   /**
    * This method returns the <code>Connection</code> object that was used
@@ -2093,20 +2077,18 @@ public interface DatabaseMetaData
   /**
    * @since 1.4
    */
-  ResultSet getSuperTypes(String catalog, String schemaPattern,
-      String typePattern) throws SQLException;
+  ResultSet getSuperTypes(String catalog, String schemaPattern, String typePattern) throws SQLException;
 
   /**
    * @since 1.4
    */
-  ResultSet getSuperTables(String catalog, String schemaPattern,
-      String tablePattern) throws SQLException;
+  ResultSet getSuperTables(String catalog, String schemaPattern, String tablePattern) throws SQLException;
 
   /**
    * @since 1.4
    */
-  ResultSet getAttributes(String catalog, String schemaPattern, String
-      typePattern, String attributePattern) throws SQLException;
+  ResultSet getAttributes(String catalog, String schemaPattern, String typePattern, String attributePattern)
+      throws SQLException;
 
   /**
    * This method tests if the database supports the specified holdability type.
@@ -2120,8 +2102,7 @@ public interface DatabaseMetaData
    * @see ResultSet
    * @since 1.4
    */
-  boolean supportsResultSetHoldability(int holdability)
-      throws SQLException;
+  boolean supportsResultSetHoldability(int holdability) throws SQLException;
 
   /**
    * This method returns the default holdability type of <code>ResultSet</code>S

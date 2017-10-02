@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.ir;
 
 import tc.tools.converter.GlobalConstantPool;
@@ -31,8 +29,7 @@ import totalcross.util.Vector;
  * @author SuperWaba
  *
  */
-final public class CFG implements TCConstants
-{
+final public class CFG implements TCConstants {
   // the method of this CFG
   public TCMethod method;
   // the list of instructions
@@ -42,43 +39,34 @@ final public class CFG implements TCConstants
   // the topological order
   public int order[];
 
-  public CFG(TCMethod mt)
-  {
+  public CFG(TCMethod mt) {
     method = mt;
     BasicBlock.init();
     Vector methodCode = method.insts;
     instructions = methodCode;
-    if (methodCode != null)
-    {
+    if (methodCode != null) {
       Vector v = new Vector(64);
       int len = methodCode.size();
       Instruction first = (Instruction) methodCode.items[0];
       Instruction tc = first;
-      for (int i=0, ind=0; i<len; i++)
-      {
+      for (int i = 0, ind = 0; i < len; i++) {
         tc = (Instruction) methodCode.items[i];
         int op = tc.opcode;
-        switch (op)
-        {
-        case SWITCH:
-        {
+        switch (op) {
+        case SWITCH: {
           Switch_reg inst = (Switch_reg) tc;
           BasicBlock bb = new BasicBlock("SWITCH", this, first, tc, null, null);
-          bb.instCases = new Instruction[inst.n+1];
+          bb.instCases = new Instruction[inst.n + 1];
           int target = ((Two16) inst.params[0]).v1;
           bb.instCases[0] = getInstruction(methodCode, ind + target);
-          for (int k=0, m=inst.n+1; k<inst.n; k++)
-          {
+          for (int k = 0, m = inst.n + 1; k < inst.n; k++) {
             target = 0;
-            if ((k & 1) == 1)
-            {
-              target = ((Two16)inst.params[m++]).v2;
+            if ((k & 1) == 1) {
+              target = ((Two16) inst.params[m++]).v2;
+            } else {
+              target = ((Two16) inst.params[m]).v1;
             }
-            else
-            {
-              target = ((Two16)inst.params[m]).v1;
-            }
-            bb.instCases[k+1] = getInstruction(methodCode, ind + target);
+            bb.instCases[k + 1] = getInstruction(methodCode, ind + target);
           }
           first = getInstruction(methodCode, ind + inst.len);
           v.addElement(bb);
@@ -103,8 +91,7 @@ final public class CFG implements TCConstants
         case JLT_regD_regD:
         case JLE_regD_regD:
         case JGT_regD_regD:
-        case JGE_regD_regD:
-        {
+        case JGE_regD_regD: {
           Reg_reg_s12 inst = (Reg_reg_s12) tc;
           int branch = inst.s12;
           Instruction instLeft = getInstruction(methodCode, ind + branch);
@@ -122,11 +109,10 @@ final public class CFG implements TCConstants
         case JGT_regI_s6:
         case JGE_regI_s6:
         case JEQ_regO_null:
-        case JNE_regO_null:
-        {
+        case JNE_regO_null: {
           Reg_s6_desloc inst = (Reg_s6_desloc) tc;
           int branch = inst.desloc;
-          Instruction instLeft  = getInstruction(methodCode, ind + branch);
+          Instruction instLeft = getInstruction(methodCode, ind + branch);
           Instruction instRigth = getInstruction(methodCode, ind + 1);
           BasicBlock bb = new BasicBlock("NORMAL", this, first, tc, instLeft, instRigth);
           first = instRigth;
@@ -136,11 +122,10 @@ final public class CFG implements TCConstants
 
         case JEQ_regI_sym:
         case JNE_regI_sym:
-        case JGE_regI_arlen:
-        {
+        case JGE_regI_arlen: {
           Reg_sym_sdesloc inst = (Reg_sym_sdesloc) tc;
           int branch = inst.desloc;
-          Instruction instLeft  = getInstruction(methodCode, ind + branch);
+          Instruction instLeft = getInstruction(methodCode, ind + branch);
           Instruction instRigth = getInstruction(methodCode, ind + 1);
           BasicBlock bb = new BasicBlock("NORMAL", this, first, tc, instLeft, instRigth);
           first = instRigth;
@@ -148,8 +133,7 @@ final public class CFG implements TCConstants
           break;
         }
 
-        case JUMP_s24:
-        {
+        case JUMP_s24: {
           S24 inst = (S24) tc;
           int branch = inst.s24;
           Instruction instLeft = getInstruction(methodCode, ind + branch);
@@ -160,8 +144,7 @@ final public class CFG implements TCConstants
           break;
         }
 
-        case JUMP_regI:
-        {                  
+        case JUMP_regI: {
           BasicBlock bb = new BasicBlock("NORMAL", this, first, tc, null, null);
           first = getInstruction(methodCode, ind + 1);
           v.addElement(bb);
@@ -180,8 +163,7 @@ final public class CFG implements TCConstants
         case RETURN_symI:
         case RETURN_symO:
         case RETURN_symD:
-        case RETURN_symL:
-        {
+        case RETURN_symL: {
           BasicBlock bb = new BasicBlock("NORMAL", this, first, tc, null, null);
           first = getInstruction(methodCode, ind + 1);
           v.addElement(bb);
@@ -192,22 +174,19 @@ final public class CFG implements TCConstants
       }
 
       BasicBlock bb;
-      if (first != null)
-      {
+      if (first != null) {
         bb = new BasicBlock("NORMAL", this, first, tc, null, null);
         v.addElement(bb);
       }
 
       len = v.size();
-      for (int i=0; i<len; i++)
-      {
+      for (int i = 0; i < len; i++) {
         bb = (BasicBlock) v.items[i];
 
         if (bb.last.opcode == JUMP_regI) // this basic block ends with the JUMP_regI instruction ? 
         {
           // If so, it is predecessor of all basic blocks.
-          for (int k=0; k<len; k++)
-          {
+          for (int k = 0; k < len; k++) {
             BasicBlock b2 = (BasicBlock) v.items[k];
             bb.addSucc(b2);
             b2.addPred(bb);
@@ -215,22 +194,18 @@ final public class CFG implements TCConstants
         }
 
         BasicBlock b2 = getBasicBlock(bb.instLeft, v, methodCode);
-        if (b2 != null)
-        {
+        if (b2 != null) {
           bb.addSucc(b2);
           b2.addPred(bb);
         }
         b2 = getBasicBlock(bb.instRigth, v, methodCode);
-        if (b2 != null)
-        {
+        if (b2 != null) {
           bb.addSucc(b2);
           b2.addPred(bb);
         }
-        if (bb.instCases != null)
-        {
+        if (bb.instCases != null) {
           bb.bbOfCases = new BasicBlock[bb.instCases.length];
-          for (int x=0; x<bb.instCases.length; x++)
-          {
+          for (int x = 0; x < bb.instCases.length; x++) {
             bb.bbOfCases[x] = getBasicBlock(bb.instCases[x], v, methodCode);
             bb.bbOfCases[x].addPred(bb);
           }
@@ -243,12 +218,10 @@ final public class CFG implements TCConstants
     }
   }
 
-  public static void buildCFG(TCMethod[] methods)
-  {
+  public static void buildCFG(TCMethod[] methods) {
     int len = methods.length;
-    for (int i=0; i < len; i++) {
-      if (methods[i] != null)
-      {
+    for (int i = 0; i < len; i++) {
+      if (methods[i] != null) {
         methods[i].cfg = new CFG(methods[i]);
         handlesExceptions(methods[i]);
         topologicalOrder(methods[i].cfg);
@@ -256,29 +229,25 @@ final public class CFG implements TCConstants
     }
   }
 
-  private static void topologicalOrder(CFG cfg)
-  {
+  private static void topologicalOrder(CFG cfg) {
     cfg.order = null;
-    if (cfg.blocks != null)
-    {
+    if (cfg.blocks != null) {
       int nNodes = cfg.blocks.length;
       boolean mark[] = new boolean[nNodes];
       int sorted[] = new int[nNodes];
-      TCValue v = new TCValue(nNodes-1);
+      TCValue v = new TCValue(nNodes - 1);
       DFS(sorted, mark, cfg.blocks[0], v);
 
-      for (int i=0; i<=v.asInt; i++) {
-        for (int j=1; j<nNodes-i; j++) {
-          sorted[j-1] = sorted[j];
+      for (int i = 0; i <= v.asInt; i++) {
+        for (int j = 1; j < nNodes - i; j++) {
+          sorted[j - 1] = sorted[j];
         }
       }
 
-      int j = nNodes-v.asInt-1;
+      int j = nNodes - v.asInt - 1;
 
-      for (int i=0; i<nNodes; i++)
-      {
-        if (!mark[i])
-        {
+      for (int i = 0; i < nNodes; i++) {
+        if (!mark[i]) {
           BasicBlock bb = (BasicBlock) cfg.blocks[i];
           sorted[j++] = bb.number;
         }
@@ -287,21 +256,18 @@ final public class CFG implements TCConstants
     }
   }
 
-  private static void DFS(int sorted[], boolean mark[], BasicBlock bb, TCValue nNodes)
-  {
-    if (!mark[bb.number])
-    {
+  private static void DFS(int sorted[], boolean mark[], BasicBlock bb, TCValue nNodes) {
+    if (!mark[bb.number]) {
       mark[bb.number] = true;
-      for (int i=0; i<bb.succ.size(); i++)
-      {
+      for (int i = 0; i < bb.succ.size(); i++) {
         BasicBlock b2 = (BasicBlock) bb.succ.items[i];
         if (b2 != bb) {
           DFS(sorted, mark, b2, nNodes);
         }
       }
       if (bb.bbOfCases != null) {
-        for (int i=0; i<bb.bbOfCases.length; i++) {
-          if (bb.bbOfCases[i]!= bb) {
+        for (int i = 0; i < bb.bbOfCases.length; i++) {
+          if (bb.bbOfCases[i] != bb) {
             DFS(sorted, mark, bb.bbOfCases[i], nNodes);
           }
         }
@@ -311,17 +277,13 @@ final public class CFG implements TCConstants
     }
   }
 
-  public static void handlesExceptions(TCMethod m)
-  {
-    if (m.exceptionHandlers != null)
-    {
-      for (int i=0; i<m.exceptionHandlers.length; i++)
-      {
+  public static void handlesExceptions(TCMethod m) {
+    if (m.exceptionHandlers != null) {
+      for (int i = 0; i < m.exceptionHandlers.length; i++) {
         TCException tce = m.exceptionHandlers[i];
         Instruction inst = getInstruction(m.insts, tce.handlerPC);
         BasicBlock bbCatch = getBasicBlockOfInstruction(inst, m.cfg.blocks, m.insts);
-        for (int j=tce.startPC; j<=tce.endPC;)
-        {
+        for (int j = tce.startPC; j <= tce.endPC;) {
           inst = getInstruction(m.insts, j);
           inst.belongsTry = true;
           BasicBlock bbTry = getBasicBlockOfInstruction(inst, m.cfg.blocks, m.insts);
@@ -333,11 +295,9 @@ final public class CFG implements TCConstants
     }
   }
 
-  private static Instruction getInstruction(Vector code, int pos)
-  {
+  private static Instruction getInstruction(Vector code, int pos) {
     int len = code.size();
-    for (int i=0, p=0; i<len; i++)
-    {
+    for (int i = 0, p = 0; i < len; i++) {
       Instruction c = (Instruction) code.items[i];
       if (p == pos) {
         return c;
@@ -347,12 +307,9 @@ final public class CFG implements TCConstants
     return null;
   }
 
-  public BasicBlock getBasicBlock(Instruction code, Vector blocks, Vector methodCode)
-  {
-    if (code != null)
-    {
-      for (int i=0; i<blocks.size(); i++)
-      {
+  public BasicBlock getBasicBlock(Instruction code, Vector blocks, Vector methodCode) {
+    if (code != null) {
+      for (int i = 0; i < blocks.size(); i++) {
         BasicBlock bb = (BasicBlock) blocks.items[i];
         if (code == bb.first) {
           return bb;
@@ -364,12 +321,9 @@ final public class CFG implements TCConstants
     return null;
   }
 
-  public static BasicBlock getBasicBlock(Instruction code, BasicBlock[] blocks, Vector methodCode)
-  {
-    if (code != null)
-    {
-      for (int i=0; i<blocks.length; i++)
-      {
+  public static BasicBlock getBasicBlock(Instruction code, BasicBlock[] blocks, Vector methodCode) {
+    if (code != null) {
+      for (int i = 0; i < blocks.length; i++) {
         BasicBlock bb = blocks[i];
         bb.print();
         if (code == bb.first) {
@@ -381,16 +335,12 @@ final public class CFG implements TCConstants
     return null;
   }
 
-  public static BasicBlock getBasicBlockOfInstruction(Instruction code, BasicBlock[] blocks, Vector methodCode)
-  {
-    if (code != null)
-    {
-      for (int i=0; i<blocks.length; i++)
-      {
+  public static BasicBlock getBasicBlockOfInstruction(Instruction code, BasicBlock[] blocks, Vector methodCode) {
+    if (code != null) {
+      for (int i = 0; i < blocks.length; i++) {
         BasicBlock bb = blocks[i];
         Instruction[] block = bb.vector2Array();
-        for (int j=0; j<block.length; j++)
-        {
+        for (int j = 0; j < block.length; j++) {
           Instruction inst = block[j];
           if (inst == code) {
             return bb;
@@ -402,16 +352,13 @@ final public class CFG implements TCConstants
     return null;
   }
 
-  public BasicBlock newBasicBlock(Vector blocks, Vector methodCode, Instruction code)
-  {
+  public BasicBlock newBasicBlock(Vector blocks, Vector methodCode, Instruction code) {
     Instruction tc = null;
-    int i=-1, ind=0;
-    do
-    {
+    int i = -1, ind = 0;
+    do {
       tc = (Instruction) methodCode.items[++i];
       ind += tc.len;
-    }
-    while (tc != code);
+    } while (tc != code);
 
     ind -= tc.len;
 
@@ -419,31 +366,24 @@ final public class CFG implements TCConstants
     int len = methodCode.size();
     boolean notFoundGoto = true;
     BasicBlock bb = null;
-    for (; i<len && notFoundGoto; i++)
-    {
+    for (; i < len && notFoundGoto; i++) {
       tc = (Instruction) methodCode.items[i];
       int op = tc.opcode;
-      switch (op)
-      {
-      case SWITCH:
-      {
+      switch (op) {
+      case SWITCH: {
         Switch_reg inst = (Switch_reg) tc;
         bb = new BasicBlock("SWITCH", this, first, tc, null, null);
-        bb.instCases = new Instruction[inst.n+1];
+        bb.instCases = new Instruction[inst.n + 1];
         int target = ((Two16) inst.params[0]).v1;
         bb.instCases[0] = getInstruction(methodCode, ind + target);
-        for (int k=0, m=inst.n+1; k<inst.n; k++)
-        {
+        for (int k = 0, m = inst.n + 1; k < inst.n; k++) {
           target = 0;
-          if ((k & 1) == 1)
-          {
-            target = ((Two16)inst.params[m++]).v2;
+          if ((k & 1) == 1) {
+            target = ((Two16) inst.params[m++]).v2;
+          } else {
+            target = ((Two16) inst.params[m]).v1;
           }
-          else
-          {
-            target = ((Two16)inst.params[m]).v1;
-          }
-          bb.instCases[k+1] = getInstruction(methodCode, ind + target);
+          bb.instCases[k + 1] = getInstruction(methodCode, ind + target);
         }
         blocks.addElement(bb);
         notFoundGoto = false;
@@ -468,8 +408,7 @@ final public class CFG implements TCConstants
       case JLT_regD_regD:
       case JLE_regD_regD:
       case JGT_regD_regD:
-      case JGE_regD_regD:
-      {
+      case JGE_regD_regD: {
         Reg_reg_s12 inst = (Reg_reg_s12) tc;
         int branch = inst.s12;
         Instruction instLeft = getInstruction(methodCode, ind + branch);
@@ -487,11 +426,10 @@ final public class CFG implements TCConstants
       case JGT_regI_s6:
       case JGE_regI_s6:
       case JEQ_regO_null:
-      case JNE_regO_null:
-      {
+      case JNE_regO_null: {
         Reg_s6_desloc inst = (Reg_s6_desloc) tc;
         int branch = inst.desloc;
-        Instruction instLeft  = getInstruction(methodCode, ind + branch);
+        Instruction instLeft = getInstruction(methodCode, ind + branch);
         Instruction instRigth = getInstruction(methodCode, ind + 1);
         bb = new BasicBlock("NORMAL", this, first, tc, instLeft, instRigth);
         blocks.addElement(bb);
@@ -501,11 +439,10 @@ final public class CFG implements TCConstants
 
       case JEQ_regI_sym:
       case JNE_regI_sym:
-      case JGE_regI_arlen:
-      {
+      case JGE_regI_arlen: {
         Reg_sym_sdesloc inst = (Reg_sym_sdesloc) tc;
         int branch = inst.desloc;
-        Instruction instLeft  = getInstruction(methodCode, ind + branch);
+        Instruction instLeft = getInstruction(methodCode, ind + branch);
         Instruction instRigth = getInstruction(methodCode, ind + 1);
         bb = new BasicBlock("NORMAL", this, first, tc, instLeft, instRigth);
         blocks.addElement(bb);
@@ -513,8 +450,7 @@ final public class CFG implements TCConstants
         break;
       }
 
-      case JUMP_s24:
-      {
+      case JUMP_s24: {
         S24 inst = (S24) tc;
         int branch = inst.s24;
         Instruction instLeft = getInstruction(methodCode, ind + branch);
@@ -524,8 +460,7 @@ final public class CFG implements TCConstants
         break;
       }
 
-      case JUMP_regI:
-      {
+      case JUMP_regI: {
         bb = new BasicBlock("NORMAL", this, first, tc, null, null);
         blocks.addElement(bb);
         notFoundGoto = false;
@@ -544,8 +479,7 @@ final public class CFG implements TCConstants
       case RETURN_symI:
       case RETURN_symO:
       case RETURN_symD:
-      case RETURN_symL:
-      {
+      case RETURN_symL: {
         bb = new BasicBlock("NORMAL", this, first, tc, null, null);
         blocks.addElement(bb);
         notFoundGoto = false;
@@ -555,30 +489,25 @@ final public class CFG implements TCConstants
       ind += tc.len;
     }
 
-    if (notFoundGoto)
-    {
+    if (notFoundGoto) {
       bb = new BasicBlock("ANORMAL", this, first, tc, null, null);
       blocks.addElement(bb);
     }
 
     BasicBlock b2 = getBasicBlock(bb.instLeft, blocks, methodCode);
-    if (b2 != null)
-    {
+    if (b2 != null) {
       bb.addSucc(b2);
       b2.addPred(bb);
     }
 
     b2 = getBasicBlock(bb.instRigth, blocks, methodCode);
-    if (b2 != null)
-    {
+    if (b2 != null) {
       bb.addSucc(b2);
       b2.addPred(bb);
     }
-    if (bb.instCases != null)
-    {
+    if (bb.instCases != null) {
       bb.bbOfCases = new BasicBlock[bb.instCases.length];
-      for (int x=0; x<bb.instCases.length; x++)
-      {
+      for (int x = 0; x < bb.instCases.length; x++) {
         bb.bbOfCases[x] = getBasicBlock(bb.instCases[x], blocks, methodCode);
         bb.bbOfCases[x].addPred(bb);
       }
@@ -586,97 +515,77 @@ final public class CFG implements TCConstants
     return bb;
   }
 
-  public void print()
-  {
-    if (blocks != null)
-    {
+  public void print() {
+    if (blocks != null) {
       int len = blocks.length;
-      for (int i=0; i < len; i++)
-      {
+      for (int i = 0; i < len; i++) {
         blocks[i].print();
       }
     }
   }
 
-  public static void printAllMethods(TCMethod[] methods)
-  {
+  public static void printAllMethods(TCMethod[] methods) {
     int len = methods.length;
-    for (int i=0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
       System.out.println("\nMethod: " + GlobalConstantPool.getMethodFieldName(methods[i].cpName));
       methods[i].cfg.print();
     }
   }
 
-  public BasicBlock DFSOrderNode(int i)
-  {
+  public BasicBlock DFSOrderNode(int i) {
     return blocks[order[i]];
   }
 
-  public BasicBlock RDFSOrderNode(int i)
-  {
-    return blocks[order[order.length-i-1]];
+  public BasicBlock RDFSOrderNode(int i) {
+    return blocks[order[order.length - i - 1]];
   }
 
-  public int iCount()
-  {
+  public int iCount() {
     return method.iCount;
   }
 
-  public int oCount()
-  {
+  public int oCount() {
     return method.oCount;
   }
 
-  public int v64Count()
-  {
+  public int v64Count() {
     return method.v64Count;
   }
 
-  public void livenessAnalysis(int regType)
-  {
-    if (blocks != null)
-    {
+  public void livenessAnalysis(int regType) {
+    if (blocks != null) {
       int nNodes = blocks.length;
-      for (int i=0; i<nNodes; i++)
-      {
+      for (int i = 0; i < nNodes; i++) {
         BasicBlock bb = (BasicBlock) blocks[i];
         bb.InitializeDefsAndUses();
       }
       computeInsOuts();
       // compute Live Uses
-      for(int i=0;i<order.length;i++)
-      {
+      for (int i = 0; i < order.length; i++) {
         BasicBlock bb = RDFSOrderNode(i);
         bb.computeLiveUsesAtInstr(regType);
       }
     }
   }
 
-  public void computeInsOuts()
-  {
+  public void computeInsOuts() {
     boolean change = true;
 
-    while(change)
-    {
+    while (change) {
       change = false;
-      for(int i=0;i<order.length;i++)
-      {
+      for (int i = 0; i < order.length; i++) {
         BasicBlock bb = RDFSOrderNode(i);
         BitSet otmpI = new BitSet(bb.useI.nBits);
         BitSet otmpD = new BitSet(bb.useD.nBits);
         BitSet otmpO = new BitSet(bb.useO.nBits);
-        for (int j=0; j<bb.succ.size(); j++)
-        {
+        for (int j = 0; j < bb.succ.size(); j++) {
           BasicBlock b2 = (BasicBlock) bb.succ.items[j];
           otmpI.on(b2.inI);
           otmpD.on(b2.inD);
           otmpO.on(b2.inO);
         }
-        if (bb.bbOfCases != null)
-        {
-          for (int j=0; j<bb.bbOfCases.length; j++)
-          {
+        if (bb.bbOfCases != null) {
+          for (int j = 0; j < bb.bbOfCases.length; j++) {
             otmpI.on(bb.bbOfCases[j].inI);
             otmpD.on(bb.bbOfCases[j].inD);
             otmpO.on(bb.bbOfCases[j].inO);

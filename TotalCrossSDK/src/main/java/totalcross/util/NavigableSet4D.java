@@ -201,8 +201,7 @@ public interface NavigableSet4D<E> extends SortedSet<E> {
    *         has a restricted range, and {@code fromElement} or
    *         {@code toElement} lies outside the bounds of the range.
    */
-  NavigableSet<E> subSet(E fromElement, boolean fromInclusive,
-      E toElement,   boolean toInclusive);
+  NavigableSet<E> subSet(E fromElement, boolean fromInclusive, E toElement, boolean toInclusive);
 
   /**
    * Returns a view of the portion of this set whose elements are less than
@@ -282,7 +281,7 @@ public interface NavigableSet4D<E> extends SortedSet<E> {
    * @throws ClassCastException       {@inheritDoc}
    * @throws NullPointerException     {@inheritDoc}
    * @throws IllegalArgumentException {@inheritDoc}
-na     */
+  na     */
   @Override
   SortedSet<E> headSet(E toElement);
 

@@ -22,8 +22,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.x509.X509Store;
 
-public class BlobWrapper extends BlobCore
-{
+public class BlobWrapper extends BlobCore {
   /**
    * https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h
    * http://www.opensource.apple.com/source/libsecurity_utilities/libsecurity_utilities-55010/lib/blob.h
@@ -34,15 +33,13 @@ public class BlobWrapper extends BlobCore
 
   private CMSSignedDataGenerator signedDataGenerator;
 
-  public BlobWrapper()
-  {
+  public BlobWrapper() {
     super(CSMAGIC_BLOB_WRAPPER);
   }
 
   public BlobWrapper(KeyStore keyStore, X509Store certStore, CodeDirectory codeDirectory)
       throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException,
-      OperatorCreationException, IOException, CMSException
-  {
+      OperatorCreationException, IOException, CMSException {
     super(CSMAGIC_BLOB_WRAPPER);
     this.codeDirectory = codeDirectory;
 
@@ -61,8 +58,7 @@ public class BlobWrapper extends BlobCore
     sign();
   }
 
-  public void sign() throws IOException, CMSException
-  {
+  public void sign() throws IOException, CMSException {
     byte[] rawData = codeDirectory.getBytes();
     CMSProcessableByteArray content = (rawData != null) ? new CMSProcessableByteArray(rawData) : null;
     CMSSignedData sign = signedDataGenerator.generate(content, false);

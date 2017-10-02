@@ -36,8 +36,7 @@ import tc.tools.deployer.ipa.AppleBinary;
 import tc.tools.deployer.ipa.MobileProvision;
 import tc.tools.deployer.ipa.MyNSObjectSerializer;
 
-public class InvalidateIPA
-{
+public class InvalidateIPA {
   private Map<String, TFile> ipaContents = new HashMap<String, TFile>();
 
   private MobileProvision Provision;
@@ -47,21 +46,18 @@ public class InvalidateIPA
   private File appleCertStore;
   private File dummyProvision;
 
-  private InvalidateIPA(String etcDir)
-  {
+  private InvalidateIPA(String etcDir) {
     this.etcDir = etcDir;
   }
 
-  public static void main(String[] args) throws Exception
-  {
+  public static void main(String[] args) throws Exception {
     InvalidateIPA invalidator = new InvalidateIPA(args[0]);
     for (int i = 1; i < args.length; i++) {
       invalidator.invalidate(args[i]);
     }
   }
 
-  private void invalidate(String ipaPath) throws Exception
-  {
+  private void invalidate(String ipaPath) throws Exception {
     // initialize bouncy castle
     Security.addProvider(new BouncyCastleProvider());
 
@@ -81,11 +77,9 @@ public class InvalidateIPA
     TFile targetZip = new TFile(targetFile);
 
     // get the payload folder from the zip
-    targetZip.listFiles(new FilenameFilter()
-    {
+    targetZip.listFiles(new FilenameFilter() {
       @Override
-      public boolean accept(File dir, String name)
-      {
+      public boolean accept(File dir, String name) {
         ipaContents.put(name, new TFile(dir, name));
         return false;
       }
@@ -93,11 +87,9 @@ public class InvalidateIPA
     TFile payload = (TFile) ipaContents.get("Payload");
 
     // get the template appFolder - TotalCross.app
-    payload.listFiles(new FilenameFilter()
-    {
+    payload.listFiles(new FilenameFilter() {
       @Override
-      public boolean accept(File dir, String name)
-      {
+      public boolean accept(File dir, String name) {
         ipaContents.put(name, new TFile(dir, name));
         return false;
       }
@@ -105,11 +97,9 @@ public class InvalidateIPA
     TFile appFolder = (TFile) ipaContents.get("TotalCross.app");
 
     // get references to the contents of the appFolder
-    appFolder.list(new FilenameFilter()
-    {
+    appFolder.list(new FilenameFilter() {
       @Override
-      public boolean accept(File dir, String name)
-      {
+      public boolean accept(File dir, String name) {
         ipaContents.put(name, new TFile(dir, name));
         return false;
       }
@@ -119,23 +109,20 @@ public class InvalidateIPA
     // install certificates
     CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
     X509CertificateHolder[] certs = new X509CertificateHolder[3];
-    certs[0] = new X509CertificateHolder(cf.generateCertificate(
-        new ByteArrayInputStream(FileUtils.readFileToByteArray(appleRootCA))).getEncoded());
-    certs[1] = new X509CertificateHolder(cf.generateCertificate(
-        new ByteArrayInputStream(FileUtils.readFileToByteArray(appleWWDRCA))).getEncoded());
+    certs[0] = new X509CertificateHolder(
+        cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(appleRootCA))).getEncoded());
+    certs[1] = new X509CertificateHolder(
+        cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(appleWWDRCA))).getEncoded());
 
     KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
     ks.load(new FileInputStream(appleCertStore), "".toCharArray());
 
     String keyAlias = (String) ks.aliases().nextElement();
     Certificate storecert = ks.getCertificate(keyAlias);
-    if (storecert == null)
-    {
-      File[] certsInPath = appleCertStore.getParentFile().listFiles(new FilenameFilter()
-      {
+    if (storecert == null) {
+      File[] certsInPath = appleCertStore.getParentFile().listFiles(new FilenameFilter() {
         @Override
-        public boolean accept(File arg0, String arg1)
-        {
+        public boolean accept(File arg0, String arg1) {
           return arg1.endsWith(".cer");
         }
       });
@@ -146,16 +133,13 @@ public class InvalidateIPA
       storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
       PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
       ks.deleteEntry(keyAlias);
-      ks.setEntry(
-          keyAlias,
-          new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
-          new KeyStore.PasswordProtection("".toCharArray())
-          );
+      ks.setEntry(keyAlias, new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
+          new KeyStore.PasswordProtection("".toCharArray()));
     }
     certs[2] = new X509CertificateHolder(storecert.getEncoded());
 
-    X509Store certStore = X509Store.getInstance(
-        "CERTIFICATE/Collection", new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
+    X509Store certStore = X509Store.getInstance("CERTIFICATE/Collection",
+        new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
 
     /** PROCESS MOBILE PROVISION **/
     // update the mobile provision
@@ -189,7 +173,8 @@ public class InvalidateIPA
 
     AppleBinary file = AppleBinary.create(appStream.toByteArray());
     // executable
-    executable.input(new ByteArrayInputStream(file.resign(ks, certStore, bundleIdentifier, Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
+    executable.input(new ByteArrayInputStream(file.resign(ks, certStore, bundleIdentifier,
+        Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
 
     TVFS.umount(targetZip);
 
@@ -197,8 +182,7 @@ public class InvalidateIPA
   }
 
   private byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification,
-      final String executableName) throws UnsupportedEncodingException, IOException
-  {
+      final String executableName) throws UnsupportedEncodingException, IOException {
     NSDictionary root = new NSDictionary();
 
     NSDictionary rules = new NSDictionary();
@@ -208,7 +192,8 @@ public class InvalidateIPA
     root.put("rules", rules);
 
     TFile bundleResourceSpecificationFile = (TFile) ipaContents.get(bundleResourceSpecification);
-    bundleResourceSpecificationFile.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
+    bundleResourceSpecificationFile
+        .input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
 
     NSDictionary files = new NSDictionary();
     SHA1Digest digest = new SHA1Digest();
@@ -234,8 +219,7 @@ public class InvalidateIPA
     return rootBytes;
   }
 
-  private NSDictionary createOmitAndWeight(boolean omit, double weight)
-  {
+  private NSDictionary createOmitAndWeight(boolean omit, double weight) {
     NSDictionary dictionary = new NSDictionary();
     dictionary.put("omit", true);
     dictionary.put("weight", weight);
@@ -243,25 +227,19 @@ public class InvalidateIPA
   }
 
   private void fillCodeResourcesFiles(TFile rootFile, final Set<String> ignoredFiles, final NSDictionary files,
-      final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest)
-  {
-    rootFile.listFiles(new FilenameFilter()
-    {
+      final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest) {
+    rootFile.listFiles(new FilenameFilter() {
       @Override
-      public boolean accept(File arg0, String arg1)
-      {
+      public boolean accept(File arg0, String arg1) {
         TFile parent = (TFile) arg0;
         TFile file = new TFile(parent, arg1);
         String realFilePath = file.getPath().substring(removePrefix.length() + 1).replace('\\', '/');
 
-        if (!ignoredFiles.contains(realFilePath))
-        {
-          try
-          {
+        if (!ignoredFiles.contains(realFilePath)) {
+          try {
             if (file.isDirectory()) {
               fillCodeResourcesFiles(file, ignoredFiles, files, removePrefix, aux, digest);
-            } else
-            {
+            } else {
               aux.reset();
               digest.reset();
               file.output(aux);
@@ -272,9 +250,7 @@ public class InvalidateIPA
               files.put(realFilePath, new NSData(new String(org.bouncycastle.util.encoders.Base64.encode(b))));
             }
             return true;
-          }
-          catch (IOException e)
-          {
+          } catch (IOException e) {
             e.printStackTrace();
           }
         }

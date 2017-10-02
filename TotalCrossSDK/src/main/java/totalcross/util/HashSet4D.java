@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractSet;
@@ -81,9 +80,7 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.4
  */
-public class HashSet4D<T> extends AbstractSet<T>
-implements Set<T>, Cloneable
-{
+public class HashSet4D<T> extends AbstractSet<T> implements Set<T>, Cloneable {
   /**
    * The HashMap which backs this Set.
    */
@@ -93,8 +90,7 @@ implements Set<T>, Cloneable
    * Construct a new, empty HashSet whose backing HashMap has the default
    * capacity (11) and loadFacor (0.75).
    */
-  public HashSet4D()
-  {
+  public HashSet4D() {
     this(HashMap4D.DEFAULT_CAPACITY, HashMap4D.DEFAULT_LOAD_FACTOR);
   }
 
@@ -105,8 +101,7 @@ implements Set<T>, Cloneable
    * @param initialCapacity the initial capacity of the backing HashMap
    * @throws IllegalArgumentException if the capacity is negative
    */
-  public HashSet4D(int initialCapacity)
-  {
+  public HashSet4D(int initialCapacity) {
     this(initialCapacity, HashMap4D.DEFAULT_LOAD_FACTOR);
   }
 
@@ -119,8 +114,7 @@ implements Set<T>, Cloneable
    * @throws IllegalArgumentException if either argument is negative, or
    *         if loadFactor is POSITIVE_INFINITY or NaN
    */
-  public HashSet4D(int initialCapacity, double loadFactor)
-  {
+  public HashSet4D(int initialCapacity, double loadFactor) {
     map = init(initialCapacity, loadFactor);
   }
 
@@ -133,8 +127,7 @@ implements Set<T>, Cloneable
    * @param c a collection of initial set elements
    * @throws NullPointerException if c is null
    */
-  public HashSet4D(Collection<? extends T> c)
-  {
+  public HashSet4D(Collection<? extends T> c) {
     this(Math.max(2 * c.size(), HashMap4D.DEFAULT_CAPACITY));
     addAll(c);
   }
@@ -147,8 +140,7 @@ implements Set<T>, Cloneable
    * @return true if the set did not already contain o
    */
   @Override
-  public boolean add(T o)
-  {
+  public boolean add(T o) {
     return map.put(o, "") == null;
   }
 
@@ -156,8 +148,7 @@ implements Set<T>, Cloneable
    * Empties this Set of all elements; this takes constant time.
    */
   @Override
-  public void clear()
-  {
+  public void clear() {
     map.clear();
   }
 
@@ -168,15 +159,11 @@ implements Set<T>, Cloneable
    * @return a shallow clone of the set
    */
   @Override
-  public Object clone()
-  {
+  public Object clone() {
     HashSet4D<T> copy = null;
-    try
-    {
+    try {
       copy = (HashSet4D<T>) super.clone();
-    }
-    catch (CloneNotSupportedException x)
-    {
+    } catch (CloneNotSupportedException x) {
       // Impossible to get here.
     }
     copy.map = (HashMap4D<T, String>) map.clone();
@@ -190,8 +177,7 @@ implements Set<T>, Cloneable
    * @return true if it is in the set
    */
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     return map.containsKey(o);
   }
 
@@ -201,8 +187,7 @@ implements Set<T>, Cloneable
    * @return <code>size() == 0</code>.
    */
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return map.size == 0;
   }
 
@@ -216,8 +201,7 @@ implements Set<T>, Cloneable
    * @see ConcurrentModificationException
    */
   @Override
-  public Iterator<T> iterator()
-  {
+  public Iterator<T> iterator() {
     // Avoid creating intermediate keySet() object by using non-public API.
     return map.iterator(AbstractMap4D.KEYS);
   }
@@ -229,8 +213,7 @@ implements Set<T>, Cloneable
    * @return true if an element was removed
    */
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     return (map.remove(o) != null);
   }
 
@@ -240,8 +223,7 @@ implements Set<T>, Cloneable
    * @return the size of the set
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return map.size;
   }
 
@@ -253,8 +235,7 @@ implements Set<T>, Cloneable
    * @param load the initial load factor
    * @return the backing HashMap
    */
-  HashMap4D init(int capacity, double load)
-  {
+  HashMap4D init(int capacity, double load) {
     return new HashMap4D(capacity, load);
   }
 }

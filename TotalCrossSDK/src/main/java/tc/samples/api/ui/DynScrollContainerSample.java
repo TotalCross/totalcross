@@ -30,8 +30,7 @@ import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 import totalcross.ui.gfx.Color;
 
-public class DynScrollContainerSample extends BaseContainer
-{
+public class DynScrollContainerSample extends BaseContainer {
   /**
    * Test DynamicScrollContainer and it's ability to display thousands of rows.
    * 
@@ -47,24 +46,22 @@ public class DynScrollContainerSample extends BaseContainer
   private Edit rowCountEdit;
   private DynamicScrollContainer vsc;
   private Check dynamicChk;
-  private int rowCount0,oddHeight0,evenHeight0;
+  private int rowCount0, oddHeight0, evenHeight0;
 
-  private Edit add(String text)
-  {
-    add(new Label(text), LEFT, AFTER, PARENTSIZE+80, PREFERRED);
+  private Edit add(String text) {
+    add(new Label(text), LEFT, AFTER, PARENTSIZE + 80, PREFERRED);
     Edit ed = new Edit();
     ed.setKeyboard(Edit.KBD_NUMERIC);
-    add(ed, RIGHT, SAME, PARENTSIZE+20, PREFERRED);
+    add(ed, RIGHT, SAME, PARENTSIZE + 20, PREFERRED);
     return ed;
   }
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     setTitle("Dynamic ScrollContainer");
 
-    add(new Spacer(0,0),LEFT,TOP+gap); // reset after position
+    add(new Spacer(0, 0), LEFT, TOP + gap); // reset after position
     rowCountEdit = add("Number of rows to create: ");
     oddHeightEdit = add("Odd view height:");
     evenHeightEdit = add("Even view height:");
@@ -79,43 +76,32 @@ public class DynScrollContainerSample extends BaseContainer
     vsc = new DynamicScrollContainer();
     vsc.setBackColor(Color.WHITE);
     vsc.setBorderStyle(BORDER_SIMPLE);
-    add(vsc, LEFT, AFTER+gap, FILL, FILL-1);
+    add(vsc, LEFT, AFTER + gap, FILL, FILL - 1);
 
-    rowCountEdit.setText(String.valueOf(rowCount0=2000));
-    oddHeightEdit.setText(String.valueOf(oddHeight0=fmH));
-    evenHeightEdit.setText(String.valueOf(evenHeight0=fmH*3/2));
+    rowCountEdit.setText(String.valueOf(rowCount0 = 2000));
+    oddHeightEdit.setText(String.valueOf(oddHeight0 = fmH));
+    evenHeightEdit.setText(String.valueOf(evenHeight0 = fmH * 3 / 2));
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    if (event.type == ControlEvent.PRESSED && event.target == goButton)
-    {
+  public void onEvent(Event event) {
+    if (event.type == ControlEvent.PRESSED && event.target == goButton) {
       int rowCount = rowCount0;
       int oddHeight = oddHeight0;
       int evenHeight = evenHeight0;
-      try
-      {
+      try {
         rowCount = Convert.toInt(rowCountEdit.getText());
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
         rowCountEdit.setText(rowCount + "");
       }
-      try
-      {
+      try {
         oddHeight = Convert.toInt(oddHeightEdit.getText());
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
         oddHeightEdit.setText(oddHeight + "");
       }
-      try
-      {
+      try {
         evenHeight = Convert.toInt(evenHeightEdit.getText());
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
         evenHeightEdit.setText(evenHeight + "");
       }
 
@@ -124,8 +110,7 @@ public class DynScrollContainerSample extends BaseContainer
       DynamicScrollContainer.DataSource datasource = new DynamicScrollContainer.DataSource(rowCount);
 
       int start = Vm.getTimeStamp();
-      for (int i = 0; i < rowCount; i++)
-      {
+      for (int i = 0; i < rowCount; i++) {
         DynSCTestView view = new DynSCTestView(i, font);
         view.height = i % 2 == 0 ? evenHeight : oddHeight;
         datasource.addView(view);
@@ -134,10 +119,9 @@ public class DynScrollContainerSample extends BaseContainer
       pb.unpop();
       vsc.setDataSource(datasource);
       vsc.scrollToView(datasource.getView(0));
-      setInfo("Time to create datasource: " + (Vm.getTimeStamp() - start)+" ms");
+      setInfo("Time to create datasource: " + (Vm.getTimeStamp() - start) + " ms");
     }
-    if (event.type == ControlEvent.PRESSED && event.target == dynamicChk)
-    {
+    if (event.type == ControlEvent.PRESSED && event.target == dynamicChk) {
       DynSCTestView.dynamicHeight = dynamicChk.isChecked();
 
     }

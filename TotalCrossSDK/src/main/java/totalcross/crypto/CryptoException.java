@@ -19,13 +19,11 @@ package totalcross.crypto;
  * Cryptography Extension" and follow the instructions. 
  */
 
-public class CryptoException extends Exception
-{
+public class CryptoException extends Exception {
   /** 
    * Constructs an empty Exception. 
    */
-  public CryptoException()
-  {
+  public CryptoException() {
   }
 
   /** 
@@ -33,8 +31,7 @@ public class CryptoException extends Exception
    *
    * @param msg The exception message.
    */
-  public CryptoException(String msg)
-  {
+  public CryptoException(String msg) {
     super(msg);
   }
 }

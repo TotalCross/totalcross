@@ -37,17 +37,15 @@ import totalcross.ui.Spinner;
  * @since TotalCross 1.3
  */
 
-public class ProgressBox extends MessageBox
-{
+public class ProgressBox extends MessageBox {
   private Spinner spinner;
 
   /**
    * Constructs a progress box with the text and one "Ok" button. The text may be separated by '\n' as the line
    * delimiters; otherwise, it is automatically splitted if its too big to fit on screen.
    */
-  public ProgressBox(String title, String msg)
-  {
-    super(title,msg);
+  public ProgressBox(String title, String msg) {
+    super(title, msg);
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
   }
 
@@ -57,8 +55,7 @@ public class ProgressBox extends MessageBox
    * null, no buttons are displayed and you must dismiss the dialog by calling unpop or by setting the delay using
    * setUnpopDelay method
    */
-  public ProgressBox(String title, String text, String[] buttonCaptions)
-  {
+  public ProgressBox(String title, String text, String[] buttonCaptions) {
     super(title, text, buttonCaptions);
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
   }
@@ -68,9 +65,8 @@ public class ProgressBox extends MessageBox
    * line delimiters; otherwise, it is automatically splitted if its too big to fit on screen. If buttonCaptions is
    * null, no buttons are displayed and you must dismiss the dialog by calling unpop or by setting the delay using
    * setUnpopDelay method. The parameters allSameWidth is the same as in the constructor for PushButtonGroup.
-   */   
-  public ProgressBox(String title, String text, String[] buttonCaptions, boolean allSameWidth)
-  {
+   */
+  public ProgressBox(String title, String text, String[] buttonCaptions, boolean allSameWidth) {
     super(title, text, buttonCaptions, allSameWidth);
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
   }
@@ -80,9 +76,8 @@ public class ProgressBox extends MessageBox
    * line delimiters; otherwise, it is automatically splitted if its too big to fit on screen. If buttonCaptions is
    * null, no buttons are displayed and you must dismiss the dialog by calling unpop or by setting the delay using
    * setUnpopDelay method. The new parameters gap and insideGap are the same as in the constructor for PushButtonGroup.
-   */   
-  public ProgressBox(String title, String text, String[] buttonCaptions, int gap, int insideGap)
-  {
+   */
+  public ProgressBox(String title, String text, String[] buttonCaptions, int gap, int insideGap) {
     super(title, text, buttonCaptions, gap, insideGap);
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
   }
@@ -100,30 +95,28 @@ public class ProgressBox extends MessageBox
   }
 
   @Override
-  public void onPopup()
-  {
-    lgap = fmH * 2 + fmH/4; // gap of fmH/8 at left and at right
+  public void onPopup() {
+    lgap = fmH * 2 + fmH / 4; // gap of fmH/8 at left and at right
     super.onPopup();
-    if (spinner != null){
+    if (spinner != null) {
       spinner.stop();
     }
     spinner = new Spinner();
     spinner.setBackForeColors(backColor, foreColor);
     boolean multiline = msg.getLineCount() > 1;
-    int s = multiline ? fmH*2 : fmH;
-    int y = btns == null ? CENTER : titleGap == 0 ? TOP+androidBorderThickness : TOP;
-    if (multiline){
-      msg.setRect(KEEP,y,KEEP,KEEP);
-    }else {
-      msg.setRect(msg.getX()-fmH/2,y,KEEP,KEEP);
+    int s = multiline ? fmH * 2 : fmH;
+    int y = btns == null ? CENTER : titleGap == 0 ? TOP + androidBorderThickness : TOP;
+    if (multiline) {
+      msg.setRect(KEEP, y, KEEP, KEEP);
+    } else {
+      msg.setRect(msg.getX() - fmH / 2, y, KEEP, KEEP);
     }
-    add(spinner,LEFT+fmH/2,CENTER_OF+2,s,s,msg);
+    add(spinner, LEFT + fmH / 2, CENTER_OF + 2, s, s, msg);
     spinner.start();
   }
 
   @Override
-  protected void onUnpop()
-  {
+  protected void onUnpop() {
     spinner.stop();
     totalcross.sys.Vm.sleep(150); // wait the thread die 
     super.onUnpop();

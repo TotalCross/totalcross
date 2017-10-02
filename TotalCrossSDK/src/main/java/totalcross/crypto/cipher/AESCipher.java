@@ -27,20 +27,18 @@ import totalcross.crypto.NoSuchAlgorithmException;
  * site. In order to do that, go to the ReadMe file whole link is below the download link. In this file, search for "Unlimited Strength Java 
  * Cryptography Extension" and follow the instructions. 
  */
-public class AESCipher extends Cipher
-{
+public class AESCipher extends Cipher {
   public AESCipher() {
     init();
   }
-  
+
   /**
    * Returns the name of the algorithm.
    * 
    * @return "AES".
    */
   @Override
-  public final String getAlgorithm()
-  {
+  public final String getAlgorithm() {
     return "AES";
   }
 
@@ -50,8 +48,7 @@ public class AESCipher extends Cipher
    * @return Always returns 16.
    */
   @Override
-  public final int getBlockLength()
-  {
+  public final int getBlockLength() {
     // Applet may support 16 or 32, like axtls
     // javax.crypto.Cipher cipher = (javax.crypto.Cipher)cipherRef;
     // return (cipher != null) ? cipher.getBlockSize() : 16;
@@ -60,11 +57,9 @@ public class AESCipher extends Cipher
 
   @Override
   @ReplacedByNativeOnDeploy
-  protected final void doReset() throws NoSuchAlgorithmException, CryptoException
-  {
+  protected final void doReset() throws NoSuchAlgorithmException, CryptoException {
     String transf = "AES";
-    switch (chaining)
-    {
+    switch (chaining) {
     case CHAINING_NONE:
       transf += "/NONE";
       break;
@@ -75,8 +70,7 @@ public class AESCipher extends Cipher
       transf += "/CBC";
       break;
     }
-    switch (padding)
-    {
+    switch (padding) {
     case PADDING_NONE:
       transf += "/NoPadding";
       break;
@@ -87,62 +81,50 @@ public class AESCipher extends Cipher
       transf += "/PKCS5Padding";
     }
 
-    try
-    {
+    try {
       javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance(transf);
       cipherRef = cipher;
 
-      keyRef = new SecretKeySpec(((AESKey)key).getData(), "AES");
+      keyRef = new SecretKeySpec(((AESKey) key).getData(), "AES");
 
       int mode = operation == OPERATION_ENCRYPT ? javax.crypto.Cipher.ENCRYPT_MODE : javax.crypto.Cipher.DECRYPT_MODE;
-      cipher.init(mode, (java.security.Key)keyRef, iv == null ? null : new IvParameterSpec(iv));
+      cipher.init(mode, (java.security.Key) keyRef, iv == null ? null : new IvParameterSpec(iv));
       if (iv == null) {
         iv = cipher.getIV();
       }
-    }
-    catch (java.security.NoSuchAlgorithmException e)
-    {
+    } catch (java.security.NoSuchAlgorithmException e) {
       throw new NoSuchAlgorithmException(e.getMessage());
-    }
-    catch (GeneralSecurityException e)
-    {
+    } catch (GeneralSecurityException e) {
       throw new CryptoException(e.getMessage());
     }
   }
 
   @Override
   @ReplacedByNativeOnDeploy
-  protected final byte[] process(byte[] data) throws CryptoException
-  {
-    try
-    {
-      javax.crypto.Cipher cipher = (javax.crypto.Cipher)cipherRef;
+  protected final byte[] process(byte[] data) throws CryptoException {
+    try {
+      javax.crypto.Cipher cipher = (javax.crypto.Cipher) cipherRef;
       return cipher.doFinal(data);
-    }
-    catch (GeneralSecurityException e)
-    {
+    } catch (GeneralSecurityException e) {
       throw new CryptoException(e.getMessage());
     }
   }
 
   @Override
-  protected final boolean isKeySupported(Key key, int operation)
-  {
+  protected final boolean isKeySupported(Key key, int operation) {
     return key instanceof AESKey;
   }
 
   @Override
-  protected final boolean isChainingSupported(int chaining)
-  {
+  protected final boolean isChainingSupported(int chaining) {
     return chaining == CHAINING_ECB || chaining == CHAINING_CBC;
   }
 
   @Override
-  protected final boolean isPaddingSupported(int padding)
-  {
+  protected final boolean isPaddingSupported(int padding) {
     return padding == PADDING_PKCS5;
   }
-  
+
   @ReplacedByNativeOnDeploy
   private void init() {
 

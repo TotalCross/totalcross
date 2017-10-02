@@ -31,42 +31,42 @@ package totalcross.util.regex;
 
 import totalcross.sys.Convert;
 
-interface UnicodeConstants{
-  int CATEGORY_COUNT=32;
-  int Cc=Character.CONTROL;
-  int Cf=Character.FORMAT;
-  int Co=Character.PRIVATE_USE;
-  int Cn=Character.UNASSIGNED;
-  int Lu=Character.UPPERCASE_LETTER;
-  int Ll=Character.LOWERCASE_LETTER;
-  int Lt=Character.TITLECASE_LETTER;
-  int Lm=Character.MODIFIER_LETTER;
-  int Lo=Character.OTHER_LETTER;
-  int Mn=Character.NON_SPACING_MARK;
-  int Me=Character.ENCLOSING_MARK;
-  int Mc=Character.COMBINING_SPACING_MARK;
-  int Nd=Character.DECIMAL_DIGIT_NUMBER;
-  int Nl=Character.LETTER_NUMBER;
-  int No=Character.OTHER_NUMBER;
-  int Zs=Character.SPACE_SEPARATOR;
-  int Zl=Character.LINE_SEPARATOR;
-  int Zp=Character.PARAGRAPH_SEPARATOR;
-  int Cs=Character.SURROGATE;
-  int Pd=Character.DASH_PUNCTUATION;
-  int Ps=Character.START_PUNCTUATION;
-  int Pi=Character.START_PUNCTUATION;
-  int Pe=Character.END_PUNCTUATION;
-  int Pf=Character.END_PUNCTUATION;
-  int Pc=Character.CONNECTOR_PUNCTUATION;
-  int Po=Character.OTHER_PUNCTUATION;
-  int Sm=Character.MATH_SYMBOL;
-  int Sc=Character.CURRENCY_SYMBOL;
-  int Sk=Character.MODIFIER_SYMBOL;
-  int So=Character.OTHER_SYMBOL;
+interface UnicodeConstants {
+  int CATEGORY_COUNT = 32;
+  int Cc = Character.CONTROL;
+  int Cf = Character.FORMAT;
+  int Co = Character.PRIVATE_USE;
+  int Cn = Character.UNASSIGNED;
+  int Lu = Character.UPPERCASE_LETTER;
+  int Ll = Character.LOWERCASE_LETTER;
+  int Lt = Character.TITLECASE_LETTER;
+  int Lm = Character.MODIFIER_LETTER;
+  int Lo = Character.OTHER_LETTER;
+  int Mn = Character.NON_SPACING_MARK;
+  int Me = Character.ENCLOSING_MARK;
+  int Mc = Character.COMBINING_SPACING_MARK;
+  int Nd = Character.DECIMAL_DIGIT_NUMBER;
+  int Nl = Character.LETTER_NUMBER;
+  int No = Character.OTHER_NUMBER;
+  int Zs = Character.SPACE_SEPARATOR;
+  int Zl = Character.LINE_SEPARATOR;
+  int Zp = Character.PARAGRAPH_SEPARATOR;
+  int Cs = Character.SURROGATE;
+  int Pd = Character.DASH_PUNCTUATION;
+  int Ps = Character.START_PUNCTUATION;
+  int Pi = Character.START_PUNCTUATION;
+  int Pe = Character.END_PUNCTUATION;
+  int Pf = Character.END_PUNCTUATION;
+  int Pc = Character.CONNECTOR_PUNCTUATION;
+  int Po = Character.OTHER_PUNCTUATION;
+  int Sm = Character.MATH_SYMBOL;
+  int Sc = Character.CURRENCY_SYMBOL;
+  int Sk = Character.MODIFIER_SYMBOL;
+  int So = Character.OTHER_SYMBOL;
 
-  int BLOCK_COUNT=256;
-  int BLOCK_SIZE=256;
+  int BLOCK_COUNT = 256;
+  int BLOCK_SIZE = 256;
 
-  int MAX_WEIGHT=Convert.MAX_CHAR_VALUE+1;
-  int[] CATEGORY_WEIGHTS=new int[CATEGORY_COUNT];
+  int MAX_WEIGHT = Convert.MAX_CHAR_VALUE + 1;
+  int[] CATEGORY_WEIGHTS = new int[CATEGORY_COUNT];
 }

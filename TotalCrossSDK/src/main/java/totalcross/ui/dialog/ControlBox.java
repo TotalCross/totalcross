@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.dialog;
 
 import totalcross.sys.Convert;
@@ -31,13 +29,12 @@ import totalcross.ui.event.KeyEvent;
 
 /** A popup window that displays any Control, given as parameter to the constructor. */
 
-public class ControlBox extends Window
-{
+public class ControlBox extends Window {
   protected Label msg;
   private PushButtonGroup btns;
   protected Control cb;
   private int selected = -1;
-  protected int prefW,prefH;
+  protected int prefW, prefH;
   private String originalText;
   /** Defines the y position on screen where this window opens. Can be changed to TOP or BOTTOM. Defaults to CENTER.
    * @see #CENTER
@@ -64,10 +61,9 @@ public class ControlBox extends Window
    * @param text The text that will be displayed in a Label above the control.
    * @param cb The control that will be used to get input from the user.
    */
-  public ControlBox(String title, String text, Control cb)
-  {
-    this(title, text, cb, PREFERRED, PREFERRED, new String[]{"Ok","Cancel"}, 1);
-    buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
+  public ControlBox(String title, String text, Control cb) {
+    this(title, text, cb, PREFERRED, PREFERRED, new String[] { "Ok", "Cancel" }, 1);
+    buttonKeys = new int[] { SpecialKeys.ENTER, SpecialKeys.ESCAPE };
   }
 
   /** Constructs a ControlBox with the given parameters.
@@ -77,8 +73,7 @@ public class ControlBox extends Window
    * @param cb The control that will be used to get input from the user.
    * @param buttonCaptions The button captions that will be used in the PushButtonGroup.
    */
-  public ControlBox(String title, String text, Control cb, String[] buttonCaptions)
-  {
+  public ControlBox(String title, String text, Control cb, String[] buttonCaptions) {
     this(title, text, cb, PREFERRED, PREFERRED, buttonCaptions, 1);
   }
 
@@ -91,9 +86,8 @@ public class ControlBox extends Window
    * @param prefW The preferred width for the control. You can also use FILL or PREFERREED
    * @param prefH The preferred height for the control.
    */
-  public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions)
-  {
-    this(title, text,cb,prefW,prefH,buttonCaptions,1);
+  public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions) {
+    this(title, text, cb, prefW, prefH, buttonCaptions, 1);
   }
 
   /** Constructs a ControlBox with the given parameters.
@@ -106,16 +100,17 @@ public class ControlBox extends Window
    * @param prefH The preferred height for the control.
    * @param buttonRows The number of rows for the buttons.
    */
-  public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions, int buttonRows)
-  {
-    super(title,ROUND_BORDER);
+  public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions,
+      int buttonRows) {
+    super(title, ROUND_BORDER);
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
     fadeOtherWindows = Settings.fadeOtherWindows;
     transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-    if (buttonCaptions != null){
-      btns = new PushButtonGroup(buttonCaptions,false,-1,uiAndroid?fmH/2:4,6,buttonRows,uiAndroid,PushButtonGroup.BUTTON);
+    if (buttonCaptions != null) {
+      btns = new PushButtonGroup(buttonCaptions, false, -1, uiAndroid ? fmH / 2 : 4, 6, buttonRows, uiAndroid,
+          PushButtonGroup.BUTTON);
     }
-    msg = new Label(originalText = text,Control.CENTER);
+    msg = new Label(originalText = text, Control.CENTER);
     this.cb = cb;
     this.prefW = prefW;
     this.prefH = prefH;
@@ -124,67 +119,65 @@ public class ControlBox extends Window
   @Override
   protected void onPopup() // guich@tc100b5_28
   {
-    if (children != null){
+    if (children != null) {
       return;
     }
 
-    if (btns != null){
+    if (btns != null) {
       btns.setFont(font);
     }
     cb.setFont(font);
     msg.setFont(font);
-    int maxW = Settings.screenWidth-fmH*2;
+    int maxW = Settings.screenWidth - fmH * 2;
     String text = originalText;
-    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW){
-      text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
+    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) {
+      text = Convert.insertLineBreak(maxW, fm, text.replace('\n', ' '));
     }
     msg.setText(text);
     int wb = btns == null ? 0 : btns.getPreferredWidth();
     int hb = btns == null ? 0 : btns.getPreferredHeight();
-    if (uiAndroid && wb > 0)
-    {wb += fmH*btns.names.length; hb += fmH;}
-    int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
+    if (uiAndroid && wb > 0) {
+      wb += fmH * btns.names.length;
+      hb += fmH;
+    }
+    int wm = Math.min(msg.getPreferredWidth() + 1, Settings.screenWidth - 6);
     int hm = msg.getPreferredHeight();
     int we = prefW == PREFERRED ? cb.getPreferredWidth() : prefW;
-    int he = prefH == PREFERRED ? cb.getPreferredHeight(): prefH;
-    int captionH = titleFont.fm.height+10;
+    int he = prefH == PREFERRED ? cb.getPreferredHeight() : prefH;
+    int captionH = titleFont.fm.height + 10;
 
     int h = captionH + hb + hm + he + fmH;
-    if (uiAndroid){
+    if (uiAndroid) {
       h += fmH;
     }
-    int w = Convert.max(wb,wm,we,titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
-    w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
-    h = Math.min(h,Settings.screenHeight);
-    setRect(CENTER,yPosition,w,h);
+    int w = Convert.max(wb, wm, we, titleFont.fm.stringWidth(title != null ? title : "")) + 6; // guich@200b4_29
+    w = Math.min(w, Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
+    h = Math.min(h, Settings.screenHeight);
+    setRect(CENTER, yPosition, w, h);
     add(msg);
-    if (btns != null){
+    if (btns != null) {
       add(btns);
     }
     add(cb);
-    msg.setRect(LEFT,TOP,FILL,hm);
-    if (btns != null){
-      btns.setRect(CENTER,BOTTOM-(uiAndroid?fmH/2:2),wb,hb);
+    msg.setRect(LEFT, TOP, FILL, hm);
+    if (btns != null) {
+      btns.setRect(CENTER, BOTTOM - (uiAndroid ? fmH / 2 : 2), wb, hb);
     }
     msg.setBackForeColors(backColor, foreColor);
-    int gap = we == FILL ? fmH/2 : 0;
-    cb.setRect(we==FILL ? LEFT+gap : CENTER,AFTER+fmH/2,we-gap,he,msg);
+    int gap = we == FILL ? fmH / 2 : 0;
+    cb.setRect(we == FILL ? LEFT + gap : CENTER, AFTER + fmH / 2, we - gap, he, msg);
   }
 
   /** handle scroll buttons and normal buttons */
   @Override
-  public void onEvent(Event e)
-  {
-    switch (e.type)
-    {
+  public void onEvent(Event e) {
+    switch (e.type) {
     case KeyEvent.KEY_PRESS:
     case KeyEvent.SPECIAL_KEY_PRESS:
-      if (buttonKeys != null)
-      {
-        int k = ((KeyEvent)e).key;
+      if (buttonKeys != null) {
+        int k = ((KeyEvent) e).key;
         for (int i = buttonKeys.length; --i >= 0;) {
-          if (buttonKeys[i] == k)
-          {
+          if (buttonKeys[i] == k) {
             btns.setSelectedIndex(selected = i);
             unpop();
             break;
@@ -193,8 +186,7 @@ public class ControlBox extends Window
       }
       break;
     case ControlEvent.PRESSED:
-      if (e.target == btns && (selected=btns.getSelectedIndex()) != -1)
-      {
+      if (e.target == btns && (selected = btns.getSelectedIndex()) != -1) {
         btns.setSelectedIndex(-1);
         unpop();
       }
@@ -203,21 +195,18 @@ public class ControlBox extends Window
   }
 
   /** Returns the pressed button index, starting from 0 */
-  public int getPressedButtonIndex()
-  {
+  public int getPressedButtonIndex() {
     return selected;
   }
 
   /** returns the control associated */
-  public Control getControl()
-  {
+  public Control getControl() {
     return cb;
   }
 
   @Override
-  protected void postUnpop()
-  {
-    if (selected != -1){
+  protected void postUnpop() {
+    if (selected != -1) {
       postPressedEvent();
     }
   }

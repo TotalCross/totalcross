@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.totalcross.ui.gfx;
 
 import totalcross.sys.Settings;
@@ -24,8 +22,7 @@ import totalcross.ui.image.ImageException;
 import totalcross.unit.ImageComparisionTest;
 import totalcross.unit.ImageTester;
 
-public class GraphicsTest extends ImageComparisionTest
-{
+public class GraphicsTest extends ImageComparisionTest {
   private Graphics g;
 
   private static int back = Color.YELLOW;
@@ -101,520 +98,514 @@ public class GraphicsTest extends ImageComparisionTest
   private String drawArrow_256 = "58C3BDD14B0EC0200804508ECD89E71CFD50A38B61C6A469D9C90B0A18F144B238D38A2F4FC1B767CFE5D972F6955F78682773AC19B6872541F738CF41FFE1DFF947403BB4433BB403EFEAEDFBB6FF9A1F667F7589723887736CD41FD23EA168";
 
   // void drawEllipse(int xc, int yc, int rx, int ry);
-  private void testDrawEllipse()
-  {
+  private void testDrawEllipse() {
     resetImage();
-    g.drawEllipse(15,15,15,15);
-    g.drawEllipse(10,10,1,1);
-    g.drawEllipse(10,20,1,0);
-    g.drawEllipse(20,10,0,1);
-    g.drawEllipse(-5,22,10,5);
+    g.drawEllipse(15, 15, 15, 15);
+    g.drawEllipse(10, 10, 1, 1);
+    g.drawEllipse(10, 20, 1, 0);
+    g.drawEllipse(20, 10, 0, 1);
+    g.drawEllipse(-5, 22, 10, 5);
   }
 
   // void fillEllipse(int xc, int yc, int rx, int ry);
-  private void testFillEllipse()
-  {
+  private void testFillEllipse() {
     resetImage();
-    g.fillEllipse(15,15,5,5);
-    g.fillEllipse(8,8,1,1);
-    g.fillEllipse(10,22,1,0);
-    g.fillEllipse(22,12,0,1);
-    g.fillEllipse(-5,22,10,5);
+    g.fillEllipse(15, 15, 5, 5);
+    g.fillEllipse(8, 8, 1, 1);
+    g.fillEllipse(10, 22, 1, 0);
+    g.fillEllipse(22, 12, 0, 1);
+    g.fillEllipse(-5, 22, 10, 5);
   }
 
   // void drawArc(int xc, int yc, int r, double startAngle, double endAngle);
-  private void testDrawArc()
-  {
+  private void testDrawArc() {
     resetImage();
-    g.drawArc(15,15, 15,0,360);
-    g.drawArc(15,15, 12, -15,15);
-    g.drawArc(15,15, 9, 300,360);
-    g.drawArc(15,15, 6, -700,800);
-    g.drawArc(15,15, 3, -180,140);
-    g.drawArc(15,15, 1, 1,1);
-    g.drawArc(18,18, 1, 10,10);
-    g.drawArc(8,8, 0, 10,10);
-    g.drawArc(-18,8, 20, 0,360);
+    g.drawArc(15, 15, 15, 0, 360);
+    g.drawArc(15, 15, 12, -15, 15);
+    g.drawArc(15, 15, 9, 300, 360);
+    g.drawArc(15, 15, 6, -700, 800);
+    g.drawArc(15, 15, 3, -180, 140);
+    g.drawArc(15, 15, 1, 1, 1);
+    g.drawArc(18, 18, 1, 10, 10);
+    g.drawArc(8, 8, 0, 10, 10);
+    g.drawArc(-18, 8, 20, 0, 360);
   }
 
   // void drawPie(int xc, int yc, int r, double startAngle, double endAngle);
-  private void testDrawPie()
-  {
+  private void testDrawPie() {
     resetImage();
-    g.drawPie(15,15, 15,0,360);
-    g.drawPie(15,15, 12, -15,15);
-    g.drawPie(15,15, 9, 300,360);
-    g.drawPie(15,15, 6, -700,800);
-    g.drawPie(15,15, 3, -180,140);
-    g.drawPie(15,15, 1, 1,1);
-    g.drawPie(18,18, 1, 10,10);
-    g.drawPie(-18,8, 20, 0,360);
+    g.drawPie(15, 15, 15, 0, 360);
+    g.drawPie(15, 15, 12, -15, 15);
+    g.drawPie(15, 15, 9, 300, 360);
+    g.drawPie(15, 15, 6, -700, 800);
+    g.drawPie(15, 15, 3, -180, 140);
+    g.drawPie(15, 15, 1, 1, 1);
+    g.drawPie(18, 18, 1, 10, 10);
+    g.drawPie(-18, 8, 20, 0, 360);
   }
 
   // void fillPie(int xc, int yc, int r, double startAngle, double endAngle);
-  private void testFillPie()
-  {
+  private void testFillPie() {
     resetImage();
-    g.fillPie(15,15, 12, -15,15);
+    g.fillPie(15, 15, 12, -15, 15);
     g.backColor = Color.BLACK;
-    g.fillPie(15,15, 9, 300,360);
+    g.fillPie(15, 15, 9, 300, 360);
     g.backColor = Color.WHITE;
-    g.fillPie(15,15, 6, -700,800);
+    g.fillPie(15, 15, 6, -700, 800);
     g.backColor = Color.BLACK;
-    g.fillPie(15,15, 3, -180,140);
+    g.fillPie(15, 15, 3, -180, 140);
     g.backColor = Color.WHITE;
-    g.fillPie(15,15, 1, 1,1);
+    g.fillPie(15, 15, 1, 1, 1);
     g.backColor = Color.BLACK;
-    g.fillPie(18,18, 1, 10,10);
+    g.fillPie(18, 18, 1, 10, 10);
     g.backColor = Color.WHITE;
-    g.fillPie(-18,8, 20, 0,360);
+    g.fillPie(-18, 8, 20, 0, 360);
   }
 
   // void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-  private void testDrawEllipticalArc()
-  {
+  private void testDrawEllipticalArc() {
     resetImage();
-    g.drawEllipticalArc(15,15, 15,20,0,360);
-    g.drawEllipticalArc(15,15, 12,17, -15,15);
-    g.drawEllipticalArc(15,15, 9,14, 300,360);
-    g.drawEllipticalArc(15,15, 6,11, -700,800);
-    g.drawEllipticalArc(15,15, 3,8, -180,140);
-    g.drawEllipticalArc(15,15, 1,1, 1,1);
-    g.drawEllipticalArc(18,18, 1,1, 10,10);
-    g.drawEllipticalArc(8,8, 0,0, 10,10);
-    g.drawEllipticalArc(-18,8, 20,14, 0,360);
+    g.drawEllipticalArc(15, 15, 15, 20, 0, 360);
+    g.drawEllipticalArc(15, 15, 12, 17, -15, 15);
+    g.drawEllipticalArc(15, 15, 9, 14, 300, 360);
+    g.drawEllipticalArc(15, 15, 6, 11, -700, 800);
+    g.drawEllipticalArc(15, 15, 3, 8, -180, 140);
+    g.drawEllipticalArc(15, 15, 1, 1, 1, 1);
+    g.drawEllipticalArc(18, 18, 1, 1, 10, 10);
+    g.drawEllipticalArc(8, 8, 0, 0, 10, 10);
+    g.drawEllipticalArc(-18, 8, 20, 14, 0, 360);
   }
 
   // void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-  private void testDrawEllipticalPie()
-  {
+  private void testDrawEllipticalPie() {
     resetImage();
-    g.drawEllipticalPie(15,15, 15,20,0,360);
-    g.drawEllipticalPie(15,15, 12,17, -15,15);
-    g.drawEllipticalPie(15,15, 9,14, 300,360);
-    g.drawEllipticalPie(15,15, 6,11, -700,800);
-    g.drawEllipticalPie(15,15, 3,8, -180,140);
-    g.drawEllipticalPie(15,15, 1,1, 1,1);
-    g.drawEllipticalPie(18,18, 1,1, 10,10);
-    g.drawEllipticalPie(8,8, 0,0, 10,10);
-    g.drawEllipticalPie(-18,8, 20,14, 0,360);
+    g.drawEllipticalPie(15, 15, 15, 20, 0, 360);
+    g.drawEllipticalPie(15, 15, 12, 17, -15, 15);
+    g.drawEllipticalPie(15, 15, 9, 14, 300, 360);
+    g.drawEllipticalPie(15, 15, 6, 11, -700, 800);
+    g.drawEllipticalPie(15, 15, 3, 8, -180, 140);
+    g.drawEllipticalPie(15, 15, 1, 1, 1, 1);
+    g.drawEllipticalPie(18, 18, 1, 1, 10, 10);
+    g.drawEllipticalPie(8, 8, 0, 0, 10, 10);
+    g.drawEllipticalPie(-18, 8, 20, 14, 0, 360);
   }
 
   // void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-  private void testFillEllipticalPie()
-  {
+  private void testFillEllipticalPie() {
     resetImage();
-    g.fillEllipticalPie(15,15, 12,17, -15,15);
+    g.fillEllipticalPie(15, 15, 12, 17, -15, 15);
     g.backColor = Color.BLACK;
-    g.fillEllipticalPie(15,15, 9,14, 300,360);
+    g.fillEllipticalPie(15, 15, 9, 14, 300, 360);
     g.backColor = Color.WHITE;
-    g.fillEllipticalPie(15,15, 6,11, -700,800);
+    g.fillEllipticalPie(15, 15, 6, 11, -700, 800);
     g.backColor = Color.BLACK;
-    g.fillEllipticalPie(15,15, 3,8, -180,140);
+    g.fillEllipticalPie(15, 15, 3, 8, -180, 140);
     g.backColor = Color.WHITE;
-    g.fillEllipticalPie(15,15, 1,1, 1,1);
+    g.fillEllipticalPie(15, 15, 1, 1, 1, 1);
     g.backColor = Color.BLACK;
-    g.fillEllipticalPie(18,18, 1,1, 10,10);
+    g.fillEllipticalPie(18, 18, 1, 1, 10, 10);
     g.backColor = Color.WHITE;
-    g.fillEllipticalPie(-18,8, 20,14, 0,360);
+    g.fillEllipticalPie(-18, 8, 20, 14, 0, 360);
   }
 
   // void drawCircle(int xc, int yc, int r);
-  private void testDrawCircle()
-  {
+  private void testDrawCircle() {
     resetImage();
-    g.drawCircle(15,15, 15);
-    g.drawCircle(15,15, 20);
-    g.drawCircle(15,15, 12);
-    g.drawCircle(15,15, 9);
-    g.drawCircle(15,15, 6);
-    g.drawCircle(15,15, 3);
-    g.drawCircle(15,15, 1);
-    g.drawCircle(18,18, 1);
-    g.drawCircle(8,8, 0);
-    g.drawCircle(-18,8, 20);
+    g.drawCircle(15, 15, 15);
+    g.drawCircle(15, 15, 20);
+    g.drawCircle(15, 15, 12);
+    g.drawCircle(15, 15, 9);
+    g.drawCircle(15, 15, 6);
+    g.drawCircle(15, 15, 3);
+    g.drawCircle(15, 15, 1);
+    g.drawCircle(18, 18, 1);
+    g.drawCircle(8, 8, 0);
+    g.drawCircle(-18, 8, 20);
   }
 
   // void fillCircle(int xc, int yc, int r);
-  private void testFillCircle()
-  {
+  private void testFillCircle() {
     resetImage();
-    g.fillCircle(15,15, 12);
+    g.fillCircle(15, 15, 12);
     g.backColor = Color.BLACK;
-    g.fillCircle(15,15, 9);
+    g.fillCircle(15, 15, 9);
     g.backColor = Color.WHITE;
-    g.fillCircle(15,15, 6);
+    g.fillCircle(15, 15, 6);
     g.backColor = Color.BLACK;
-    g.fillCircle(15,15, 3);
+    g.fillCircle(15, 15, 3);
     g.backColor = Color.WHITE;
-    g.fillCircle(15,15, 1);
+    g.fillCircle(15, 15, 1);
     g.backColor = Color.BLACK;
-    g.fillCircle(18,18, 0);
+    g.fillCircle(18, 18, 0);
     g.backColor = Color.WHITE;
-    g.fillCircle(-18,8, 20);
+    g.fillCircle(-18, 8, 20);
   }
 
   // int getPixel(int x, int y);
-  private void testGetPixel()
-  {
-    assertEquals(-1, g.getPixel(-1,-1));
-    assertEquals(-1, g.getPixel(40,40));
+  private void testGetPixel() {
+    assertEquals(-1, g.getPixel(-1, -1));
+    assertEquals(-1, g.getPixel(40, 40));
   }
 
   // void setPixel(int x, int y);
-  private void testSetPixel()
-  {
+  private void testSetPixel() {
     resetImage();
     for (int i = -10; i < 40; i++) {
-      g.setPixel(i,i);
+      g.setPixel(i, i);
     }
   }
 
   // void drawLine(int Ax, int Ay, int Bx, int By);
-  private void testDrawLine()
-  {
+  private void testDrawLine() {
     resetImage();
-    g.drawLine(0,0,30,30);
-    g.drawLine(0,0,30,0);
-    g.drawLine(0,0,0,30);
-    g.drawLine(30-1,0,30-1,30);
-    g.drawLine(0,30-1,30,30-1);
-    g.drawLine(30,0,0,30);
-    g.drawLine(5,10,5,10); // a single pixel
-    g.drawLine(5,15,6,16); // two pixels
+    g.drawLine(0, 0, 30, 30);
+    g.drawLine(0, 0, 30, 0);
+    g.drawLine(0, 0, 0, 30);
+    g.drawLine(30 - 1, 0, 30 - 1, 30);
+    g.drawLine(0, 30 - 1, 30, 30 - 1);
+    g.drawLine(30, 0, 0, 30);
+    g.drawLine(5, 10, 5, 10); // a single pixel
+    g.drawLine(5, 15, 6, 16); // two pixels
   }
 
   // void clearScreen();
-  private void testClearScreen()
-  {
+  private void testClearScreen() {
     resetImage();
-    g.fillRect(0,0,totalcross.sys.Settings.screenWidth,totalcross.sys.Settings.screenHeight);
+    g.fillRect(0, 0, totalcross.sys.Settings.screenWidth, totalcross.sys.Settings.screenHeight);
   }
 
   // void drawDots(int Ax, int Ay, int Bx, int By);
-  private void testDrawDots()
-  {
+  private void testDrawDots() {
     resetImage();
-    g.drawDots(0,0,30,30);
-    g.drawDots(0,0,30,0);
-    g.drawDots(0,0,0,30);
-    g.drawDots(30-1,0,30-1,30);
-    g.drawDots(0,30-1,30,30-1);
-    g.drawDots(30,0,0,30);
-    g.drawDots(5,10,5,10);
-    g.drawDots(5,15,6,16);
+    g.drawDots(0, 0, 30, 30);
+    g.drawDots(0, 0, 30, 0);
+    g.drawDots(0, 0, 0, 30);
+    g.drawDots(30 - 1, 0, 30 - 1, 30);
+    g.drawDots(0, 30 - 1, 30, 30 - 1);
+    g.drawDots(30, 0, 0, 30);
+    g.drawDots(5, 10, 5, 10);
+    g.drawDots(5, 15, 6, 16);
   }
 
   // void drawRect(int x, int y, int w, int h);
-  private void testDrawRect()
-  {
+  private void testDrawRect() {
     resetImage();
-    g.drawRect(0,0,30,30);
-    g.drawRect(0,0,0,0);
-    g.drawRect(5,5,5,5);
-    g.drawRect(10,10,11,11);
-    g.drawRect(40,40,10,10);
-    g.drawRect(-1,10,4,3);
-    g.drawRect(-8,-8,10,10);
+    g.drawRect(0, 0, 30, 30);
+    g.drawRect(0, 0, 0, 0);
+    g.drawRect(5, 5, 5, 5);
+    g.drawRect(10, 10, 11, 11);
+    g.drawRect(40, 40, 10, 10);
+    g.drawRect(-1, 10, 4, 3);
+    g.drawRect(-8, -8, 10, 10);
   }
 
   // void fillRect(int x, int y, int w, int h);
-  private void testFillRect()
-  {
+  private void testFillRect() {
     resetImage();
-    g.fillRect(0,0,0,0);
-    g.fillRect(5,5,5,5);
-    g.fillRect(10,10,11,11);
-    g.fillRect(40,40,10,10);
-    g.fillRect(-1,10,4,3);
-    g.fillRect(-8,-8,10,10);
+    g.fillRect(0, 0, 0, 0);
+    g.fillRect(5, 5, 5, 5);
+    g.fillRect(10, 10, 11, 11);
+    g.fillRect(40, 40, 10, 10);
+    g.fillRect(-1, 10, 4, 3);
+    g.fillRect(-8, -8, 10, 10);
   }
 
   // void drawDottedRect(int x, int y, int w, int h);
-  private void testDrawDottedRect()
-  {
+  private void testDrawDottedRect() {
     resetImage();
-    g.drawDottedRect(0,0,30,30);
-    g.drawDottedRect(10,10,1,1);
-    g.drawDottedRect(10,20,1,0);
-    g.drawDottedRect(20,10,0,1);
-    g.drawDottedRect(-5,22,10,5);
+    g.drawDottedRect(0, 0, 30, 30);
+    g.drawDottedRect(10, 10, 1, 1);
+    g.drawDottedRect(10, 20, 1, 0);
+    g.drawDottedRect(20, 10, 0, 1);
+    g.drawDottedRect(-5, 22, 10, 5);
   }
 
   // void fillPolygon(int []xPoints, int []yPoints, int nPoints);
-  private void testFillPolygon()
-  {
+  private void testFillPolygon() {
     resetImage();
 
-    int []x = {0,0,10,10,5};
-    int []y = {10,5,5,10,0};
+    int[] x = { 0, 0, 10, 10, 5 };
+    int[] y = { 10, 5, 5, 10, 0 };
     g.fillPolygon(x, y, 5);
   }
 
   // void drawPolygon(int []xPoints, int []yPoints, int nPoints);
-  private void testDrawPolygon()
-  {
+  private void testDrawPolygon() {
     resetImage();
-    int []x = {0,0,10,10,5};
-    int []y = {10,5,5,10,0};
+    int[] x = { 0, 0, 10, 10, 5 };
+    int[] y = { 10, 5, 5, 10, 0 };
     g.drawPolygon(x, y, 5);
   }
 
   // void drawPolyline(int []xPoints, int []yPoints, int nPoints);
-  private void testDrawPolyline()
-  {
+  private void testDrawPolyline() {
     resetImage();
-    int []x = {0,0,10,10,5};
-    int []y = {10,5,5,10,0};
+    int[] x = { 0, 0, 10, 10, 5 };
+    int[] y = { 10, 5, 5, 10, 0 };
     g.drawPolyline(x, y, 5);
   }
 
   // void drawText(String text, int x, int y);
-  private void testDrawTextStr()
-  {
+  private void testDrawTextStr() {
     resetImage();
     // i hope that nothing will be drawn by these tests
-    g.drawText("Michelle", -100,-100);
-    g.drawText("",10,10);
+    g.drawText("Michelle", -100, -100);
+    g.drawText("", 10, 10);
   }
 
   // void drawText(char chars[], int start, int count, int x, int y);
-  private void testDrawTextChars()
-  {
+  private void testDrawTextChars() {
     resetImage();
-    g.drawText("Michelle".toCharArray(),2,6, -100,-100);
-    g.drawText(new char[]{},0,0,10,10);
+    g.drawText("Michelle".toCharArray(), 2, 6, -100, -100);
+    g.drawText(new char[] {}, 0, 0, 10, 10);
   }
 
   // void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
-  private void testDrawHatchedRect()
-  {
+  private void testDrawHatchedRect() {
     resetImage();
-    g.drawHatchedRect(0,0,30,30,true,true);
-    g.drawHatchedRect(0,0,0,0,true,true);
-    g.drawHatchedRect(5,5,5,5,true,false);
-    g.drawHatchedRect(10,10,11,11,false,true);
-    g.drawHatchedRect(40,40,10,10,true,false);
-    g.drawHatchedRect(-1,10,4,3,false,true);
-    g.drawHatchedRect(-8,-8,10,10,true,true);
+    g.drawHatchedRect(0, 0, 30, 30, true, true);
+    g.drawHatchedRect(0, 0, 0, 0, true, true);
+    g.drawHatchedRect(5, 5, 5, 5, true, false);
+    g.drawHatchedRect(10, 10, 11, 11, false, true);
+    g.drawHatchedRect(40, 40, 10, 10, true, false);
+    g.drawHatchedRect(-1, 10, 4, 3, false, true);
+    g.drawHatchedRect(-8, -8, 10, 10, true, true);
   }
 
   // void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
-  private void testFillHatchedRect()
-  {
+  private void testFillHatchedRect() {
     resetImage();
-    g.fillHatchedRect(0,0,30,30,true,true);
+    g.fillHatchedRect(0, 0, 30, 30, true, true);
     g.backColor = Color.WHITE;
-    g.fillHatchedRect(5,5,5,5,true,false);
-    g.fillHatchedRect(10,10,11,11,false,true);
-    g.fillHatchedRect(40,40,10,10,true,false);
-    g.fillHatchedRect(-1,10,4,4,false,true);
-    g.fillHatchedRect(-8,-8,10,10,true,true);
+    g.fillHatchedRect(5, 5, 5, 5, true, false);
+    g.fillHatchedRect(10, 10, 11, 11, false, true);
+    g.fillHatchedRect(40, 40, 10, 10, true, false);
+    g.fillHatchedRect(-1, 10, 4, 4, false, true);
+    g.fillHatchedRect(-8, -8, 10, 10, true, true);
   }
 
   // void drawRoundRect(int x, int y, int width, int height, int r);
-  private void testDrawRoundRect()
-  {
+  private void testDrawRoundRect() {
     resetImage();
-    g.drawRoundRect(0,0,30,30,5);
-    g.drawRoundRect(0,0,0,0,2);
-    g.drawRoundRect(5,5,5,5,1);
-    g.drawRoundRect(10,10,11,11,0);
-    g.drawRoundRect(40,40,10,10,5);
-    g.drawRoundRect(-1,10,4,3,10);
-    g.drawRoundRect(-8,-8,10,10,10);
+    g.drawRoundRect(0, 0, 30, 30, 5);
+    g.drawRoundRect(0, 0, 0, 0, 2);
+    g.drawRoundRect(5, 5, 5, 5, 1);
+    g.drawRoundRect(10, 10, 11, 11, 0);
+    g.drawRoundRect(40, 40, 10, 10, 5);
+    g.drawRoundRect(-1, 10, 4, 3, 10);
+    g.drawRoundRect(-8, -8, 10, 10, 10);
   }
 
   // void fillRoundRect(int x, int y, int width, int height, int r);
-  private void testFillRoundRect()
-  {
+  private void testFillRoundRect() {
     resetImage();
-    g.fillRoundRect(0,0,30,30,5);
+    g.fillRoundRect(0, 0, 30, 30, 5);
     g.backColor = Color.WHITE;
-    g.fillRoundRect(0,0,0,0,2);
-    g.fillRoundRect(5,5,5,5,1);
-    g.fillRoundRect(10,10,11,11,0);
-    g.fillRoundRect(40,40,10,10,5);
-    g.fillRoundRect(-1,10,4,3,10);
-    g.fillRoundRect(-8,-8,10,10,10);
+    g.fillRoundRect(0, 0, 0, 0, 2);
+    g.fillRoundRect(5, 5, 5, 5, 1);
+    g.fillRoundRect(10, 10, 11, 11, 0);
+    g.fillRoundRect(40, 40, 10, 10, 5);
+    g.fillRoundRect(-1, 10, 4, 3, 10);
+    g.fillRoundRect(-8, -8, 10, 10, 10);
   }
 
   // void setClip(int x, int y, int w, int h);
   private void testSetClip() // also tests clearClip
   {
     resetImage();
-    g.setClip(0,0,15,15);
-    g.fillRect(0,0,30,30);
+    g.setClip(0, 0, 15, 15);
+    g.fillRect(0, 0, 30, 30);
     g.clearClip();
-    g.fillRect(10,10,20,20);
+    g.fillRect(10, 10, 20, 20);
   }
 
   // boolean clip(Rect r);
   private void testClip() // also tests getClip
   {
-    assertTrue(g.clip(new Rect(10,10,10,10)));
-    assertFalse(g.clip(new Rect(-10,-10,10,10)));
+    assertTrue(g.clip(new Rect(10, 10, 10, 10)));
+    assertFalse(g.clip(new Rect(-10, -10, 10, 10)));
   }
 
   // void translate(int dx, int dy);
   private void testTranslate() // also tests getTranslation
   {
-    resetImage();         assertEquals(new Coord(0,0), g.getTranslation());
-    g.translate(10,10);   assertEquals(new Coord(10,10), g.getTranslation());
-    g.drawCircle(0,0,10);
-    g.translate(-10,-10);
-    g.drawCircle(0,0,10);
-    g.translate(35,35);
-    g.drawCircle(0,0,10);
+    resetImage();
+    assertEquals(new Coord(0, 0), g.getTranslation());
+    g.translate(10, 10);
+    assertEquals(new Coord(10, 10), g.getTranslation());
+    g.drawCircle(0, 0, 10);
+    g.translate(-10, -10);
+    g.drawCircle(0, 0, 10);
+    g.translate(35, 35);
+    g.drawCircle(0, 0, 10);
   }
 
   // void copyRect(ISurface surface, int x, int y, int width, int height, int dstX, int dstY);
-  private void testCopyRect()
-  {
+  private void testCopyRect() {
     resetImage();
     // prepare image to be copied
     Image img = createBall();
 
-    g.copyRect(img, 0, -10, 20, 20, 0,0);
-    g.copyRect(img, 10,10, 10,10, 20,20);
-    g.copyRect(img, 10,10, 10,10, -5,-5);
+    g.copyRect(img, 0, -10, 20, 20, 0, 0);
+    g.copyRect(img, 10, 10, 10, 10, 20, 20);
+    g.copyRect(img, 10, 10, 10, 10, -5, -5);
     // TODO TAKE THE PROBLEMS OUT OF GFORGE AND TEST HERE
   }
 
   // void copyImageRect(waba.fx.Image image, int x, int y, int width, int height, int drawOp, waba.fx.Color backColor, boolean doClip);
-  private void testCopyImageRect()
-  {
+  private void testCopyImageRect() {
     resetImage();
     ImageTester ball = createBall();
-    g.copyImageRect(ball, 0,0,10,10, false);
+    g.copyImageRect(ball, 0, 0, 10, 10, false);
   }
 
   // void setClip(Rect r)
-  private void testSetClipR()
-  {
+  private void testSetClipR() {
     resetImage();
-    g.setClip(new Rect(0,0,15,15));
-    g.fillRect(0,0,30,30);
+    g.setClip(new Rect(0, 0, 15, 15));
+    g.fillRect(0, 0, 30, 30);
     g.clearClip();
-    g.fillRect(10,10,20,20);
+    g.fillRect(10, 10, 20, 20);
   }
 
   // void drawImage(waba.fx.Image image, int x, int y)
-  private void testDrawImage()
-  {
+  private void testDrawImage() {
     resetImage();
     Image ball = createBall();
-    g.drawImage(ball, 10,10);
-    g.drawImage(ball, 20,20);
+    g.drawImage(ball, 10, 10);
+    g.drawImage(ball, 20, 20);
   }
 
   // void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, Color []fourColors)
   private void testDraw3dRect() // also tests compute3dColors
   {
     resetImage();
-    int []fourColors = new int[4];
-    Graphics.compute3dColors(true,Color.BLACK,Color.WHITE,fourColors);
-    g.draw3dRect(0,0,30,30,Graphics.R3D_LOWERED,false,false,fourColors);
-    g.draw3dRect(10,10,10,10,Graphics.R3D_RAISED,false,false,fourColors);
+    int[] fourColors = new int[4];
+    Graphics.compute3dColors(true, Color.BLACK, Color.WHITE, fourColors);
+    g.draw3dRect(0, 0, 30, 30, Graphics.R3D_LOWERED, false, false, fourColors);
+    g.draw3dRect(10, 10, 10, 10, Graphics.R3D_RAISED, false, false, fourColors);
   }
 
   // void drawArrow(int x, int y, int h, byte type, boolean pressed, boolean enabled, Color fore)
-  private void testDrawArrow()
-  {
+  private void testDrawArrow() {
     resetImage();
     int w = 5;
-    g.drawArrow(0,0,w,Graphics.ARROW_DOWN,false,Color.WHITE); // here is h regardless the case
-    g.drawArrow(8,8,w,Graphics.ARROW_UP,false,Color.WHITE); // here is h regardless the case
-    g.drawArrow(16,16,w,Graphics.ARROW_LEFT,false,Color.BLACK); // here is h regardless the case
-    g.drawArrow(24,24,w,Graphics.ARROW_RIGHT,false,Color.BLACK); // here is h regardless the case
+    g.drawArrow(0, 0, w, Graphics.ARROW_DOWN, false, Color.WHITE); // here is h regardless the case
+    g.drawArrow(8, 8, w, Graphics.ARROW_UP, false, Color.WHITE); // here is h regardless the case
+    g.drawArrow(16, 16, w, Graphics.ARROW_LEFT, false, Color.BLACK); // here is h regardless the case
+    g.drawArrow(24, 24, w, Graphics.ARROW_RIGHT, false, Color.BLACK); // here is h regardless the case
   }
 
-  private ImageTester createBall()
-  {
-    ImageTester img=null;
-    try
-    {
-      img = new ImageTester(20,20);
-    }
-    catch (ImageException e)
-    {
+  private ImageTester createBall() {
+    ImageTester img = null;
+    try {
+      img = new ImageTester(20, 20);
+    } catch (ImageException e) {
       fail(e.getMessage());
     }
     Graphics gg = img.getGraphics();
     gg.backColor = back;
-    gg.fillRect(0,0,20,20);
+    gg.fillRect(0, 0, 20, 20);
     gg.backColor = Color.RED;
-    gg.fillCircle(10,10,10);
+    gg.fillCircle(10, 10, 10);
     return img;
   }
 
-  private void resetImage()
-  {
-    if (debuggingOnScreen)
-    {
+  private void resetImage() {
+    if (debuggingOnScreen) {
       g = MainWindow.getMainWindow().getGraphics();
-      g.setClip(0,0,30,30);
+      g.setClip(0, 0, 30, 30);
     }
     g.backColor = back;
-    g.fillRect(0,0,30,30);
+    g.fillRect(0, 0, 30, 30);
     g.backColor = Color.BLACK;
     g.foreColor = Color.WHITE;
   }
 
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     //recording = true;
     super.testRun(); // important!
 
-    try
-    {
-      it = new ImageTester(30,30);
-    }
-    catch (ImageException e)
-    {
+    try {
+      it = new ImageTester(30, 30);
+    } catch (ImageException e) {
       fail(e.getMessage());
     }
     g = it.g;
 
     // trouble
-    if (Settings.onJavaSE){
+    if (Settings.onJavaSE) {
       testSetPixel();
-    }           assertOK(setPixel_256,setPixel_65536,                      "setPixel");
-    testDrawLine();           assertOK(drawLine_256,drawLine_65536,                      "drawLine");
-    testDrawRect();           assertOK(drawRect_256,drawRect_65536,                      "drawRect");
-    testFillRect();           assertOK(fillRect_256,fillRect_65536,                      "fillRect");
-    testFillPie();            assertOK(fillPie_256,fillPie_65536,                        "fillPie");
-    testFillEllipticalPie();  assertOK(fillEllipticalPie_256,fillEllipticalPie_65536,    "fillEllipticalPie");
-    testFillPolygon();        assertOK(fillPolygon_256,fillPolygon_65536,                "fillPolygon");
-    testDrawRoundRect();      assertOK(drawRoundRect_256,drawRoundRect_65536,            "drawRoundRect");
-    testFillRoundRect();      assertOK(fillRoundRect_256,fillRoundRect_65536,            "fillRoundRect");
-    testDraw3dRect();         assertOK(draw3dRect_256,draw3dRect_65536,                  "draw3dRect");
-    testDrawCircle();         assertOK(drawCircle_256,drawCircle_65536,                  "drawCircle");
-    testFillCircle();         assertOK(fillCircle_256,fillCircle_65536,                  "fillCircle");
-    testDrawDots();           assertOK(drawDots_256,drawDots_65536,                      "drawDots");
-    testDrawDottedRect();     assertOK(drawDottedRect_256,drawDottedRect_65536,          "drawDottedRect");
+    }
+    assertOK(setPixel_256, setPixel_65536, "setPixel");
+    testDrawLine();
+    assertOK(drawLine_256, drawLine_65536, "drawLine");
+    testDrawRect();
+    assertOK(drawRect_256, drawRect_65536, "drawRect");
+    testFillRect();
+    assertOK(fillRect_256, fillRect_65536, "fillRect");
+    testFillPie();
+    assertOK(fillPie_256, fillPie_65536, "fillPie");
+    testFillEllipticalPie();
+    assertOK(fillEllipticalPie_256, fillEllipticalPie_65536, "fillEllipticalPie");
+    testFillPolygon();
+    assertOK(fillPolygon_256, fillPolygon_65536, "fillPolygon");
+    testDrawRoundRect();
+    assertOK(drawRoundRect_256, drawRoundRect_65536, "drawRoundRect");
+    testFillRoundRect();
+    assertOK(fillRoundRect_256, fillRoundRect_65536, "fillRoundRect");
+    testDraw3dRect();
+    assertOK(draw3dRect_256, draw3dRect_65536, "draw3dRect");
+    testDrawCircle();
+    assertOK(drawCircle_256, drawCircle_65536, "drawCircle");
+    testFillCircle();
+    assertOK(fillCircle_256, fillCircle_65536, "fillCircle");
+    testDrawDots();
+    assertOK(drawDots_256, drawDots_65536, "drawDots");
+    testDrawDottedRect();
+    assertOK(drawDottedRect_256, drawDottedRect_65536, "drawDottedRect");
     testClip();
-    testSetClip();            assertOK(setClip_256,setClip_65536,                        "setClip");
-    testTranslate();          assertOK(translate_256,translate_65536,                    "translate");
-    testDrawEllipse();        assertOK(drawEllipse_256,drawEllipse_65536,                "drawEllipse");
-    testFillEllipse();        assertOK(fillEllipse_256,fillEllipse_65536,                "fillEllipse");
-    testDrawArc();            assertOK(drawArc_256,drawArc_65536,                        "drawArc");
-    testDrawPie();            assertOK(drawPie_256,drawPie_65536,                        "drawPie");
-    testDrawEllipticalArc();  assertOK(drawEllipticalArc_256,drawEllipticalArc_65536,    "drawEllipticalArc");
-    testDrawEllipticalPie();  assertOK(drawEllipticalPie_256,drawEllipticalPie_65536,    "drawEllipticalPie");
+    testSetClip();
+    assertOK(setClip_256, setClip_65536, "setClip");
+    testTranslate();
+    assertOK(translate_256, translate_65536, "translate");
+    testDrawEllipse();
+    assertOK(drawEllipse_256, drawEllipse_65536, "drawEllipse");
+    testFillEllipse();
+    assertOK(fillEllipse_256, fillEllipse_65536, "fillEllipse");
+    testDrawArc();
+    assertOK(drawArc_256, drawArc_65536, "drawArc");
+    testDrawPie();
+    assertOK(drawPie_256, drawPie_65536, "drawPie");
+    testDrawEllipticalArc();
+    assertOK(drawEllipticalArc_256, drawEllipticalArc_65536, "drawEllipticalArc");
+    testDrawEllipticalPie();
+    assertOK(drawEllipticalPie_256, drawEllipticalPie_65536, "drawEllipticalPie");
     testGetPixel();
-    testClearScreen();        assertOK(clearScreen_256,clearScreen_65536,                "clearScreen");
-    testDrawPolygon();        assertOK(drawPolygon_256,drawPolygon_65536,                "drawPolygon");
-    testDrawPolyline();       assertOK(drawPolyline_256,drawPolyline_65536,              "drawPolyline");
-    testDrawTextStr();        assertOK(drawTextStr_256,drawTextStr_65536,                "drawTextStr");
-    testDrawTextChars();      assertOK(drawTextChars_256,drawTextChars_65536,            "drawTextChars");
-    testDrawHatchedRect();    assertOK(drawHatchedRect_256,drawHatchedRect_65536,        "drawHatchedRect");
-    testFillHatchedRect();    assertOK(fillHatchedRect_256,fillHatchedRect_65536,        "fillHatchedRect");
-    testCopyRect();           assertOK(copyRect_256,copyRect_65536,                      "copyRect");
-    testCopyImageRect();      assertOK(copyImageRect_256,copyImageRect_65536,            "copyImageRect");
-    testSetClipR();           assertOK(setClipR_256,setClipR_65536,                      "setClipR");
-    testDrawImage();          assertOK(drawImage_256,drawImage_65536,                    "drawImage");
-    testDrawArrow();          assertOK(drawArrow_256,drawArrow_65536,                    "drawArrow");
+    testClearScreen();
+    assertOK(clearScreen_256, clearScreen_65536, "clearScreen");
+    testDrawPolygon();
+    assertOK(drawPolygon_256, drawPolygon_65536, "drawPolygon");
+    testDrawPolyline();
+    assertOK(drawPolyline_256, drawPolyline_65536, "drawPolyline");
+    testDrawTextStr();
+    assertOK(drawTextStr_256, drawTextStr_65536, "drawTextStr");
+    testDrawTextChars();
+    assertOK(drawTextChars_256, drawTextChars_65536, "drawTextChars");
+    testDrawHatchedRect();
+    assertOK(drawHatchedRect_256, drawHatchedRect_65536, "drawHatchedRect");
+    testFillHatchedRect();
+    assertOK(fillHatchedRect_256, fillHatchedRect_65536, "fillHatchedRect");
+    testCopyRect();
+    assertOK(copyRect_256, copyRect_65536, "copyRect");
+    testCopyImageRect();
+    assertOK(copyImageRect_256, copyImageRect_65536, "copyImageRect");
+    testSetClipR();
+    assertOK(setClipR_256, setClipR_65536, "setClipR");
+    testDrawImage();
+    assertOK(drawImage_256, drawImage_65536, "drawImage");
+    testDrawArrow();
+    assertOK(drawArrow_256, drawArrow_65536, "drawArrow");
   }
 }

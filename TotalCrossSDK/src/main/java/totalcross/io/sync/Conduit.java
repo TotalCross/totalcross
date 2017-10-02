@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.sync;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -42,8 +40,7 @@ import totalcross.ui.gfx.Color;
  * </ul>
  * <p>
  */
-public abstract class Conduit extends totalcross.ui.MainWindow
-{
+public abstract class Conduit extends totalcross.ui.MainWindow {
   public static final int TARGETING_WINCE = 1;
   public static final int TARGETING_PALMOS = 2;
   public static final int TARGETING_ALL = 127;
@@ -64,17 +61,16 @@ public abstract class Conduit extends totalcross.ui.MainWindow
   /**
    * Creates a conduit with a title and a border. This is the only constructor that your MainWindow class may call.
    */
-  public Conduit(String conduitName, String targetApplicationId, String targetAppPath, byte style)
-  {
+  public Conduit(String conduitName, String targetApplicationId, String targetAppPath, byte style) {
     super(conduitName, style);
 
-    if (conduitName == null){
+    if (conduitName == null) {
       throw new NullPointerException("Argument 'conduitName' cannot be null");
     }
-    if (targetApplicationId == null){
+    if (targetApplicationId == null) {
       throw new NullPointerException("Argument 'targetApplicationId' cannot be null");
     }
-    if (targetApplicationId.length() != 4){
+    if (targetApplicationId.length() != 4) {
       throw new IllegalArgumentException("Illegal creator id");
     }
 
@@ -96,79 +92,79 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    * a - targets all supported platforms.<br>
    */
   @Override
-  public final void initUI()
-  {
+  public final void initUI() {
     String cmd = getCommandLine();
 
-    if (cmd != null && cmd.length() == 3 && cmd.charAt(0) == '/'){
+    if (cmd != null && cmd.length() == 3 && cmd.charAt(0) == '/') {
       init(cmd);
-    }else // show an UI so the user can register/unregister
+    } else // show an UI so the user can register/unregister
     {
       setBorderStyle(HORIZONTAL_GRADIENT);
       gradientTitleStartColor = 0x0000CC;
       gradientTitleEndColor = Color.CYAN;
       setTitle("Register/Unregister");
-      Label l = new Label("Please use the buttons below to register\nor unregister your conduit. Note that\nthis can also be done from the\ncommandline, with the options provided\nbetween parenthesis. The app exits after\nthe task finishes with success.");
+      Label l = new Label(
+          "Please use the buttons below to register\nor unregister your conduit. Note that\nthis can also be done from the\ncommandline, with the options provided\nbetween parenthesis. The app exits after\nthe task finishes with success.");
       l.align = FILL;
-      add(l,LEFT,TOP);
+      add(l, LEFT, TOP);
       l = new Label("Palm OS (requires Palm Desktop)");
       l.setHighlighted(true);
       Button.commonGap = 2;
-      add(l, LEFT, AFTER+2);
-      add(l = new Label("  "),CENTER,AFTER);
-      add(btnRP = new Button("Register (/rp)"), BEFORE,SAME,l);  btnRP.appObj = "/rp";
-      add(btnUP = new Button("Unregister (/up)"), AFTER,SAME,l); btnUP.appObj = "/up";
+      add(l, LEFT, AFTER + 2);
+      add(l = new Label("  "), CENTER, AFTER);
+      add(btnRP = new Button("Register (/rp)"), BEFORE, SAME, l);
+      btnRP.appObj = "/rp";
+      add(btnUP = new Button("Unregister (/up)"), AFTER, SAME, l);
+      btnUP.appObj = "/up";
       l = new Label("Windows CE (requires ActiveSync)");
       l.setHighlighted(true);
-      add(l, LEFT, AFTER+2);
-      add(l = new Label("  "),CENTER,AFTER);
-      add(btnRW = new Button("Register (/rw)"), BEFORE,SAME,l);  btnRW.appObj = "/rw";
-      add(btnUW = new Button("Unregister (/uw)"), AFTER,SAME,l); btnUW.appObj = "/uw";
+      add(l, LEFT, AFTER + 2);
+      add(l = new Label("  "), CENTER, AFTER);
+      add(btnRW = new Button("Register (/rw)"), BEFORE, SAME, l);
+      btnRW.appObj = "/rw";
+      add(btnUW = new Button("Unregister (/uw)"), AFTER, SAME, l);
+      btnUW.appObj = "/uw";
       Button.commonGap = 0;
       repaintNow();
     }
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == ControlEvent.PRESSED && ((Control)e.target).appObj != null){
-      init((String)((Control)e.target).appObj);
+  public void onEvent(Event e) {
+    if (e.type == ControlEvent.PRESSED && ((Control) e.target).appObj != null) {
+      init((String) ((Control) e.target).appObj);
     }
   }
 
-  private void init(String cmd)
-  {
+  private void init(String cmd) {
     MessageBox mb = null;
-    try
-    {
+    try {
       String lcmd = cmd.toLowerCase();
       syncTarget = 0;
       if (lcmd.charAt(2) == 'p') {
         syncTarget = TARGETING_PALMOS;
-      } else
-        if (lcmd.charAt(2) == 'w') {
-          syncTarget = TARGETING_WINCE;
-        } else
-          if (lcmd.charAt(2) == 'a') {
-            syncTarget = TARGETING_ALL;
-          }
-
-      if (!Vm.attachNativeLibrary("TCSync")) {
-        throw new RuntimeException("Could not load native library\nTCSync.dll.\n\nPlease add its location\nto the path.");
+      } else if (lcmd.charAt(2) == 'w') {
+        syncTarget = TARGETING_WINCE;
+      } else if (lcmd.charAt(2) == 'a') {
+        syncTarget = TARGETING_ALL;
       }
 
-      if (syncTarget != 0)
-      {
-        switch (lcmd.charAt(1))
-        {
+      if (!Vm.attachNativeLibrary("TCSync")) {
+        throw new RuntimeException(
+            "Could not load native library\nTCSync.dll.\n\nPlease add its location\nto the path.");
+      }
+
+      if (syncTarget != 0) {
+        switch (lcmd.charAt(1)) {
         case 'r': // register
         {
-          mb = new MessageBox("Message",(syncTarget == TARGETING_PALMOS) ? "Registering the conduit\nfor PalmOS and\nrestarting hotsync...":"Registering the conduit\nfor WinCE...",null); // guich@511_4
+          mb = new MessageBox("Message",
+              (syncTarget == TARGETING_PALMOS) ? "Registering the conduit\nfor PalmOS and\nrestarting hotsync..."
+                  : "Registering the conduit\nfor WinCE...",
+              null); // guich@511_4
           mb.popupNonBlocking();
-          int error = register(2)?0:1;
-          if (error == 0)
-          {
+          int error = register(2) ? 0 : 1;
+          if (error == 0) {
             setSyncingEnabled(true);
             onRegister();
           }
@@ -177,9 +173,12 @@ public abstract class Conduit extends totalcross.ui.MainWindow
         }
         case 'u': // unregister
         {
-          mb = new MessageBox("Message",(syncTarget == TARGETING_PALMOS) ? "Unregistering the conduit\nfor PalmOS and\nand restarting hotsync...":"Unregistering the conduit\nfor WinCE...",null); // guich@511_4
+          mb = new MessageBox("Message",
+              (syncTarget == TARGETING_PALMOS) ? "Unregistering the conduit\nfor PalmOS and\nand restarting hotsync..."
+                  : "Unregistering the conduit\nfor WinCE...",
+              null); // guich@511_4
           mb.popupNonBlocking();
-          int ret = unregister()?0:1;
+          int ret = unregister() ? 0 : 1;
           if (ret == 0) {
             onUnregister();
           }
@@ -204,30 +203,25 @@ public abstract class Conduit extends totalcross.ui.MainWindow
         } // no break here!
         }
       }
-    }
-    catch (Exception e)
-    {
-      if (mb != null)
-      {
+    } catch (Exception e) {
+      if (mb != null) {
         mb.unpop();
         mb = null;
       }
       new MessageBox("Error", e.getMessage()).popup();
     }
-    if (mb != null){
+    if (mb != null) {
       mb.unpop();
     }
   }
 
   @ReplacedByNativeOnDeploy
-  private boolean initSync()
-  {
+  private boolean initSync() {
     return true;
   }
 
   @ReplacedByNativeOnDeploy
-  private boolean finishSync()
-  {
+  private boolean finishSync() {
     return true;
   }
 
@@ -236,8 +230,7 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    * When synchronizing Windows CE devices, the text is logged on the debug console instead.
    */
   @ReplacedByNativeOnDeploy
-  public static void log(String text)
-  {
+  public static void log(String text) {
     Vm.debug(text);
   }
 
@@ -246,8 +239,7 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    * device and the desktop might be lost during long operations.
    */
   @ReplacedByNativeOnDeploy
-  public static void yield()
-  {
+  public static void yield() {
     Vm.sleep(10);
   }
 
@@ -258,7 +250,6 @@ public abstract class Conduit extends totalcross.ui.MainWindow
 
   /** Called when the user wants to configure this conduit. */
   protected abstract void doConfig();
-
 
   /**
    * This method must be used so that a conduit will be called when the synchronization occurs. Note that you cannot
@@ -272,8 +263,7 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    * Note that, to the conduit be called by HotSync, the corresponding program must be installed on the PDA.
    */
   @ReplacedByNativeOnDeploy
-  private boolean register(int priority)
-  {
+  private boolean register(int priority) {
     return true;
   }
 
@@ -287,21 +277,18 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    *
    */
   @ReplacedByNativeOnDeploy
-  private boolean unregister()
-  {
+  private boolean unregister() {
     return true;
   }
 
-  private static String getClassName()
-  {
+  private static String getClassName() {
     String name = getMainWindow().getClass().toString();
     int dot = name.lastIndexOf('.');
-    if (dot < 0)
-    {
+    if (dot < 0) {
       dot = name.lastIndexOf('/'); // desktop
     }
-    if (dot >= 0){
-      name = name.substring(dot+1);
+    if (dot >= 0) {
+      name = name.substring(dot + 1);
     }
     return name;
   }
@@ -311,27 +298,19 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    * <p>
    * Note that disabling a conduit is NOT the same as unregistering.
    */
-  public static void setSyncingEnabled(boolean enable)
-  {
-    try
-    {
-      Registry.set(Registry.HKEY_CURRENT_USER, "Software\\TotalCross\\EnableSync",getClassName(),enable ? 1 : 0);
-    }
-    catch (Exception e)
-    {
+  public static void setSyncingEnabled(boolean enable) {
+    try {
+      Registry.set(Registry.HKEY_CURRENT_USER, "Software\\TotalCross\\EnableSync", getClassName(), enable ? 1 : 0);
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
   /** Returns whether the conduit is enabled or not. */
-  public static boolean isSyncingEnabled()
-  {
-    try
-    {
-      return Registry.getInt(Registry.HKEY_CURRENT_USER, "Software\\TotalCross\\EnableSync",getClassName()) == 1;
-    }
-    catch (Exception e)
-    {
+  public static boolean isSyncingEnabled() {
+    try {
+      return Registry.getInt(Registry.HKEY_CURRENT_USER, "Software\\TotalCross\\EnableSync", getClassName()) == 1;
+    } catch (Exception e) {
       return false;
     }
   }
@@ -353,12 +332,11 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    */
   public static void setConduitRect(int x, int y, int w, int h, boolean config) // guich@tc110_27
   {
-    try
-    {
-      Registry.set(Registry.HKEY_CURRENT_USER, config?"Software\\TotalCross\\ConduitCfgRect":"Software\\TotalCross\\ConduitSyncRect",getClassName(), x+","+y+","+w+","+h);
-    }
-    catch (Exception e)
-    {
+    try {
+      Registry.set(Registry.HKEY_CURRENT_USER,
+          config ? "Software\\TotalCross\\ConduitCfgRect" : "Software\\TotalCross\\ConduitSyncRect", getClassName(),
+          x + "," + y + "," + w + "," + h);
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }

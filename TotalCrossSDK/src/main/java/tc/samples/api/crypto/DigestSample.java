@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.crypto;
 
 import tc.samples.api.BaseContainer;
@@ -26,28 +24,22 @@ import totalcross.ui.Edit;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 
-public class DigestSample extends BaseContainer
-{
+public class DigestSample extends BaseContainer {
   private Edit edtInput;
   private ComboBox cboDigests;
   private Button btnGo;
   private Object[] comboItems;
 
-  public DigestSample()
-  {
-    try
-    {
-      comboItems = new Object[] {new MD5Digest(), new SHA1Digest(), new SHA256Digest()};
-    }
-    catch (NoSuchAlgorithmException e)
-    {
+  public DigestSample() {
+    try {
+      comboItems = new Object[] { new MD5Digest(), new SHA1Digest(), new SHA256Digest() };
+    } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     }
   }
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     edtInput = new Edit();
     edtInput.setText("0123456789ABCDEF");
@@ -55,21 +47,19 @@ public class DigestSample extends BaseContainer
     cboDigests.setSelectedIndex(0);
     btnGo = new Button(" Go! ");
 
-    add(edtInput, LEFT + 2, TOP + fmH/4, FILL - (btnGo.getPreferredWidth() + cboDigests.getPreferredWidth() + 6), PREFERRED);
+    add(edtInput, LEFT + 2, TOP + fmH / 4, FILL - (btnGo.getPreferredWidth() + cboDigests.getPreferredWidth() + 6),
+        PREFERRED);
     add(cboDigests, AFTER + 2, SAME, PREFERRED, PREFERRED);
     add(btnGo, AFTER + 2, SAME, PREFERRED, PREFERRED);
-    addLog(LEFT + 2, AFTER + 2, FILL - 2, FILL - 2,null);
+    addLog(LEFT + 2, AFTER + 2, FILL - 2, FILL - 2, null);
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    switch (e.type)
-    {
+  public void onEvent(Event e) {
+    switch (e.type) {
     case ControlEvent.PRESSED:
-      if (e.target == btnGo)
-      {
-        Digest alg = (Digest)cboDigests.getSelectedItem();
+      if (e.target == btnGo) {
+        Digest alg = (Digest) cboDigests.getSelectedItem();
         String message = edtInput.getText();
 
         alg.reset();

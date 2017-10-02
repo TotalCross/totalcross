@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /**
@@ -26,8 +24,7 @@ package totalcross.ui.event;
  * @since TotalCross 1.27
  */
 
-public class MouseEvent extends PenEvent
-{
+public class MouseEvent extends PenEvent {
   /** @see totalcross.ui.event.DragEvent 
    */
   public int wheelDirection;
@@ -52,4 +49,3 @@ public class MouseEvent extends PenEvent
    */
   public static final int MOUSE_WHEEL = 208;
 }
-

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.breakout;
 
 import totalcross.sys.Settings;
@@ -27,28 +25,24 @@ import totalcross.ui.event.Event;
 import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Color;
 
-final class Introduction extends Container
-{
+final class Introduction extends Container {
   private Breakout game;
   private Button button;
   private static Introduction singleton;
 
-  static void swapTo(Breakout game)
-  {
-    if (singleton==null) {
-      singleton=new Introduction(game);
+  static void swapTo(Breakout game) {
+    if (singleton == null) {
+      singleton = new Introduction(game);
     }
     game.swap(singleton);
   }
 
-  protected Introduction(Breakout game)
-  {
-    this.game=game;
+  protected Introduction(Breakout game) {
+    this.game = game;
   }
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     setRect(game.getRect());
 
     int bgColor = 0x999900;
@@ -62,20 +56,18 @@ final class Introduction extends Container
     Font bigFont = Font.getFont(font.name, true, Font.BIG_SIZE);
     label1.setFont(bigFont); // FONT MUST BE SET ***BEFORE*** ADDING THE CONTROL TO THE SCREEN
 
-    add(label1,CENTER,TOP+15);
-    add(label2,CENTER,AFTER+5);
-    add(label3,CENTER,AFTER+5);
+    add(label1, CENTER, TOP + 15);
+    add(label2, CENTER, AFTER + 5);
+    add(label3, CENTER, AFTER + 5);
 
-    add(button=new Button("Start Game"));
-    button.setRect(CENTER,BOTTOM-15,PREFERRED+Settings.screenWidth/16,PREFERRED+Settings.screenWidth/16);
+    add(button = new Button("Start Game"));
+    button.setRect(CENTER, BOTTOM - 15, PREFERRED + Settings.screenWidth / 16, PREFERRED + Settings.screenWidth / 16);
     setBackColor(bgColor);
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    if (event.type == ControlEvent.PRESSED && event.target==button)
-    {
+  public void onEvent(Event event) {
+    if (event.type == ControlEvent.PRESSED && event.target == button) {
       game.blankScreen();
       game.start();
     }

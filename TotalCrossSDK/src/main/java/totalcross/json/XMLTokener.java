@@ -32,7 +32,6 @@ SOFTWARE.
  */
 public class XMLTokener extends JSONTokener {
 
-
   /** The table of entity values. It initially contains Character values for
    * amp, apos, gt, lt, quot.
    */
@@ -40,10 +39,10 @@ public class XMLTokener extends JSONTokener {
 
   static {
     entity = new java.util.HashMap<String, Character>(8);
-    entity.put("amp",  XML.AMP);
+    entity.put("amp", XML.AMP);
     entity.put("apos", XML.APOS);
-    entity.put("gt",   XML.GT);
-    entity.put("lt",   XML.LT);
+    entity.put("gt", XML.GT);
+    entity.put("lt", XML.LT);
     entity.put("quot", XML.QUOT);
   }
 
@@ -61,8 +60,8 @@ public class XMLTokener extends JSONTokener {
    * @throws JSONException If the <code>]]&gt;</code> is not found.
    */
   public String nextCDATA() throws JSONException {
-    char         c;
-    int          i;
+    char c;
+    int i;
     StringBuilder sb = new StringBuilder();
     for (;;) {
       c = next();
@@ -71,14 +70,12 @@ public class XMLTokener extends JSONTokener {
       }
       sb.append(c);
       i = sb.length() - 3;
-      if (i >= 0 && sb.charAt(i) == ']' &&
-          sb.charAt(i + 1) == ']' && sb.charAt(i + 2) == '>') {
+      if (i >= 0 && sb.charAt(i) == ']' && sb.charAt(i + 1) == ']' && sb.charAt(i + 2) == '>') {
         sb.setLength(i);
         return sb.toString();
       }
     }
   }
-
 
   /**
    * Get the next XML outer token, trimming whitespace. There are two kinds
@@ -90,7 +87,7 @@ public class XMLTokener extends JSONTokener {
    * @throws JSONException
    */
   public Object nextContent() throws JSONException {
-    char         c;
+    char c;
     StringBuilder sb;
     do {
       c = next();
@@ -116,7 +113,6 @@ public class XMLTokener extends JSONTokener {
     }
   }
 
-
   /**
    * Return the next entity. These entities are translated to Characters:
    *     <code>&amp;  &apos;  &gt;  &lt;  &quot;</code>.
@@ -140,7 +136,6 @@ public class XMLTokener extends JSONTokener {
     Object object = entity.get(string);
     return object != null ? object : ampersand + string + ";";
   }
-
 
   /**
    * Returns the next XML meta token. This is used for skipping over <!...>
@@ -207,7 +202,6 @@ public class XMLTokener extends JSONTokener {
     }
   }
 
-
   /**
    * Get the next XML Token. These tokens are found inside of angle
    * brackets. It may be one of these characters: <code>/ > = ! ?</code> or it
@@ -239,7 +233,7 @@ public class XMLTokener extends JSONTokener {
     case '?':
       return XML.QUEST;
 
-      // Quoted string
+    // Quoted string
 
     case '"':
     case '\'':
@@ -290,7 +284,6 @@ public class XMLTokener extends JSONTokener {
       }
     }
   }
-
 
   /**
    * Skip characters until past the requested string.

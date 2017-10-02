@@ -22,31 +22,29 @@ import totalcross.ui.MultiButton;
 import totalcross.ui.ScrollContainer;
 import totalcross.ui.gfx.Color;
 
-public class MultiButtonSample extends BaseContainer
-{
+public class MultiButtonSample extends BaseContainer {
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     ScrollContainer sc = new ScrollContainer(false, true);
     sc.borderColor = 0x00AA00;//headerBar.getBackColor();
     sc.setBorderStyle(BORDER_ROUNDED); // sample of the new rounded border
     sc.setInsets(gap, gap, gap, gap);
 
-    sc.add(new Label("Normal"),LEFT,TOP+fmH/2);
-    MultiButton b = new MultiButton(new String[]{"+","-"});
+    sc.add(new Label("Normal"), LEFT, TOP + fmH / 2);
+    MultiButton b = new MultiButton(new String[] { "+", "-" });
     b.setBackColor(Color.ORANGE);
     b.is3dText = true;
-    sc.add(b,SAME,AFTER,PREFERRED,FONTSIZE+150);
+    sc.add(b, SAME, AFTER, PREFERRED, FONTSIZE + 150);
 
-    sc.add(new Label("Sticky, 3d text, center disabled"),LEFT,AFTER+fmH);
-    b = new MultiButton(new String[]{"Left","Center","Right"});
+    sc.add(new Label("Sticky, 3d text, center disabled"), LEFT, AFTER + fmH);
+    b = new MultiButton(new String[] { "Left", "Center", "Right" });
     b.setBackColor(Color.GREEN);
     b.isSticky = b.is3dText = true;
-    sc.add(b,SAME,AFTER,PREFERRED+fmH*2,FONTSIZE+200);
+    sc.add(b, SAME, AFTER, PREFERRED + fmH * 2, FONTSIZE + 200);
 
-    b.setEnabled(1,false);
+    b.setEnabled(1, false);
 
-    add(sc, LEFT+fmH, TOP+fmH, FILL-fmH, FILL-fmH);
+    add(sc, LEFT + fmH, TOP + fmH, FILL - fmH, FILL - fmH);
   }
 }

@@ -9,19 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC168to169
-{
-  public BC168to169()
-  {
+public class BC168to169 {
+  public BC168to169() {
     m1();
   }
 
-  public void m1()
-  {
+  public void m1() {
 
   }
 }

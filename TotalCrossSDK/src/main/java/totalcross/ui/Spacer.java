@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 /** Control used to add a space between controls. It shows nothing on screen.
@@ -38,20 +36,17 @@ package totalcross.ui;
  * @since TotalCross 1.22
  */
 
-public class Spacer extends Control
-{
+public class Spacer extends Control {
   private int prefW, prefH;
   private String s;
 
   /** Constructs a new Spacer with width and height = 0. */
-  public Spacer()
-  {
-    this(0,0);
+  public Spacer() {
+    this(0, 0);
   }
 
   /** Constructs a new Spacer using the given x and y values. */
-  public Spacer(int x, int y)
-  {
+  public Spacer(int x, int y) {
     this.prefW = x;
     this.prefH = y;
     eventsEnabled = false;
@@ -59,22 +54,19 @@ public class Spacer extends Control
   }
 
   /** Constructs a new Spacer using the given String, whose width will be the horizontal spacement. The vertical spacement will be the font's height. */
-  public Spacer(String s)
-  {
+  public Spacer(String s) {
     this.s = s;
     eventsEnabled = false;
     focusTraversable = false; // guich@tc123_12
   }
 
   @Override
-  public int getPreferredWidth()
-  {
+  public int getPreferredWidth() {
     return s == null ? prefW : fm.stringWidth(s);
   }
 
   @Override
-  public int getPreferredHeight()
-  {
+  public int getPreferredHeight() {
     return s == null ? prefH : fmH;
   }
 }

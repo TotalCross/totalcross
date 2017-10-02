@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class NoSuchMethodError4D extends Error
-{
+public class NoSuchMethodError4D extends Error {
   /** Constructs an empty Exception. */
-  public NoSuchMethodError4D()
-  {
+  public NoSuchMethodError4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public NoSuchMethodError4D(String msg)
-  {
+  public NoSuchMethodError4D(String msg) {
     super(msg);
   }
 }

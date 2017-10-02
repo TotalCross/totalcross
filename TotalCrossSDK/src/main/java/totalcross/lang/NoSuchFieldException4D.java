@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class NoSuchFieldException4D extends ReflectiveOperationException
-{
+public class NoSuchFieldException4D extends ReflectiveOperationException {
   /** Constructs an empty Exception. */
-  public NoSuchFieldException4D()
-  {
+  public NoSuchFieldException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public NoSuchFieldException4D(String msg)
-  {
+  public NoSuchFieldException4D(String msg) {
     super(msg);
   }
 }

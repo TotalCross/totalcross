@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.io.IOException;
@@ -27,17 +25,14 @@ import totalcross.sys.Convert;
  * 
  * @since TotalCross 1.13
  */
-public class TextContentHandler extends DataContentHandler
-{
+public class TextContentHandler extends DataContentHandler {
   @Override
-  public void writeTo(Object obj, String mimeType, Stream stream) throws IOException
-  {
+  public void writeTo(Object obj, String mimeType, Stream stream) throws IOException {
     String text;
-    if (obj instanceof Part)
-    {
+    if (obj instanceof Part) {
       Part part = (Part) obj;
       text = (String) part.content;
-    }else {
+    } else {
       text = obj.toString();
     }
     stream.writeBytes(Convert.CRLF_BYTES);

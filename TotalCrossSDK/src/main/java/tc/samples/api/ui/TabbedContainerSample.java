@@ -27,23 +27,21 @@ import totalcross.ui.event.PressListener;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.image.Image;
 
-public class TabbedContainerSample extends BaseContainer
-{
+public class TabbedContainerSample extends BaseContainer {
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       super.initUI();
 
       ScrollContainer sc = new ScrollContainer(false, true);
-      sc.setInsets(gap,gap,gap,gap);
-      add(sc,LEFT,TOP,FILL,FILL);
+      sc.setInsets(gap, gap, gap, gap);
+      add(sc, LEFT, TOP, FILL, FILL);
       final Check ch = new Check("Disable last tab");
-      sc.add(ch, LEFT+2,TOP);
+      sc.add(ch, LEFT + 2, TOP);
 
-      String[] caps = {"juju","dedé","babi"};
-      Image [] icons = {new Image("ui/images/ic_dialog_alert.png"),new Image("ui/images/ic_dialog_usb.png"),new Image("ui/images/ic_dialog_info.png")};
+      String[] caps = { "juju", "dedé", "babi" };
+      Image[] icons = { new Image("ui/images/ic_dialog_alert.png"), new Image("ui/images/ic_dialog_usb.png"),
+          new Image("ui/images/ic_dialog_info.png") };
       final TabbedContainer tc = new TabbedContainer(caps);
       tc.setBackColor(Color.DARK);
       tc.getContainer(0).setBackColor(0x088608);
@@ -53,8 +51,8 @@ public class TabbedContainerSample extends BaseContainer
       tc.pressedColor = Color.ORANGE;
       tc.activeTabBackColor = 0xDDDDDD;
       tc.allSameWidth = true;
-      tc.extraTabHeight = fmH*2;
-      sc.add(tc,LEFT,AFTER+fmH,FILL,SCREENSIZE+30);
+      tc.extraTabHeight = fmH * 2;
+      sc.add(tc, LEFT, AFTER + fmH, FILL, SCREENSIZE + 30);
 
       final TabbedContainer tc2 = new TabbedContainer(caps);
       tc2.setType(TabbedContainer.TABS_BOTTOM);
@@ -64,11 +62,11 @@ public class TabbedContainerSample extends BaseContainer
       tc2.getContainer(2).setBackColor(0x080C84);
       tc2.useOnTabTheContainerColor = true;
       tc2.allSameWidth = true;
-      tc2.extraTabHeight = fmH/2;
-      sc.add(tc2,LEFT,AFTER+fmH,FILL,SCREENSIZE+30);
+      tc2.extraTabHeight = fmH / 2;
+      sc.add(tc2, LEFT, AFTER + fmH, FILL, SCREENSIZE + 30);
 
       Image[] images = new Image[3];
-      Image empty  = new Image("ui/images/bullet_empty.png").getSmoothScaledInstance(fmH, fmH); 
+      Image empty = new Image("ui/images/bullet_empty.png").getSmoothScaledInstance(fmH, fmH);
       Image filled = new Image("ui/images/bullet_full.png").getSmoothScaledInstance(fmH, fmH);
       filled.applyColor2(Color.ORANGE);
 
@@ -84,24 +82,20 @@ public class TabbedContainerSample extends BaseContainer
       tc3.getContainer(1).setBackColor(0x840C08);
       tc3.getContainer(2).setBackColor(0x080C84);
       tc3.allSameWidth = true;
-      tc3.extraTabHeight = fmH/2;
+      tc3.extraTabHeight = fmH / 2;
       tc3.setBorderStyle(Container.BORDER_NONE);
       tc3.transparentBackground = true;
-      sc.add(tc3,LEFT,AFTER+fmH,FILL,SCREENSIZE+30);
+      sc.add(tc3, LEFT, AFTER + fmH, FILL, SCREENSIZE + 30);
 
-      ch.addPressListener(new PressListener()
-      {
+      ch.addPressListener(new PressListener() {
         @Override
-        public void controlPressed(ControlEvent e)
-        {
-          tc.setEnabled(2,!ch.isChecked());
-          tc2.setEnabled(2,!ch.isChecked());
+        public void controlPressed(ControlEvent e) {
+          tc.setEnabled(2, !ch.isChecked());
+          tc2.setEnabled(2, !ch.isChecked());
         }
       });
-    }
-    catch (Exception ee)
-    {
-      MessageBox.showException(ee,true);
+    } catch (Exception ee) {
+      MessageBox.showException(ee, true);
     }
   }
 }

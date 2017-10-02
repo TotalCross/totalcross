@@ -101,7 +101,7 @@ public class BitInputStream implements BitReader {
   @Override
   public boolean pad(int width) throws IOException {
     boolean result = true;
-    int gap = (int)this.nrBits % width;
+    int gap = (int) this.nrBits % width;
     if (gap < 0) {
       gap += width;
     }
@@ -117,8 +117,8 @@ public class BitInputStream implements BitReader {
     return result;
   }
 
-
   private byte[] buf = new byte[1];
+
   /**
    * Read some bits.
    *
@@ -138,9 +138,9 @@ public class BitInputStream implements BitReader {
     int result = 0;
     while (width > 0) {
       if (this.available == 0) {
-        this.in.readBytes(buf,0,1);/* <= 0) this.unread < 0) {
-                    throw new IOException("Attempt to read past end.");
-                }*/
+        this.in.readBytes(buf, 0, 1);/* <= 0) this.unread < 0) {
+                                     throw new IOException("Attempt to read past end.");
+                                     }*/
         this.unread = buf[0];
         this.available = 8;
       }
@@ -148,8 +148,7 @@ public class BitInputStream implements BitReader {
       if (take > this.available) {
         take = this.available;
       }
-      result |= ((this.unread >>> (this.available - take)) &
-          ((1 << take) - 1)) << (width - take);
+      result |= ((this.unread >>> (this.available - take)) & ((1 << take) - 1)) << (width - take);
       this.nrBits += take;
       this.available -= take;
       width -= take;

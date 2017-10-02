@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
 
 import totalcross.io.Stream;
@@ -48,28 +46,26 @@ import totalcross.io.Stream;
  *
  * @author Pierre G. Richard
  */
-public class XmlReader extends XmlTokenizer
-{
-  private static final int     SPRING_STATE    = 0;
-  private static final int     START_TAG_STATE = 1;
-  private static final int     END_TAG_STATE   = 2;
-  private static final int     PCDATA_STATE    = 3;
+public class XmlReader extends XmlTokenizer {
+  private static final int SPRING_STATE = 0;
+  private static final int START_TAG_STATE = 1;
+  private static final int END_TAG_STATE = 2;
+  private static final int PCDATA_STATE = 3;
 
   /**
    * hash ID of current tag name, set by <code>foundStartTagName</code> or
    * <code>foundEndTagName</code>
    */
-  protected int                tagNameHashId;
+  protected int tagNameHashId;
 
-  private StringBuffer         pcdata;                                                //CKC
-  private int                  state;
-  private int                  newlineSignificant;
-  private AttributeList        attList;
-  private String               attrName;
-  private ContentHandler       cntHandler;
+  private StringBuffer pcdata; //CKC
+  private int state;
+  private int newlineSignificant;
+  private AttributeList attList;
+  private String attrName;
+  private ContentHandler cntHandler;
 
-  public XmlReader()
-  {
+  public XmlReader() {
     attList = new AttributeList();
     pcdata = new StringBuffer(1000);
   }
@@ -98,8 +94,7 @@ public class XmlReader extends XmlTokenizer
    *               If the cntHandler argument is null.
    * @see #getContentHandler
    */
-  public void setContentHandler(ContentHandler cntHandler)
-  {
+  public void setContentHandler(ContentHandler cntHandler) {
     this.cntHandler = cntHandler;
   }
 
@@ -112,8 +107,7 @@ public class XmlReader extends XmlTokenizer
    *           AttributeList filter must be removed
    * @return The previous AttributeList.Filter or null if none was set
    */
-  public AttributeList.Filter setAttributeListFilter(AttributeList.Filter filter)
-  {
+  public AttributeList.Filter setAttributeListFilter(AttributeList.Filter filter) {
     return attList.setFilter(filter);
   }
 
@@ -124,8 +118,7 @@ public class XmlReader extends XmlTokenizer
    *         registered.
    * @see #setContentHandler
    */
-  public ContentHandler getContentHandler()
-  {
+  public ContentHandler getContentHandler() {
     return cntHandler;
   }
 
@@ -158,11 +151,10 @@ public class XmlReader extends XmlTokenizer
    * @throws totalcross.io.IOException
    * @see #setContentHandler
    */
-  public final void parse(Stream input) throws SyntaxException, totalcross.io.IOException
-  {
+  public final void parse(Stream input) throws SyntaxException, totalcross.io.IOException {
     newlineSignificant = 0;
     state = SPRING_STATE;
-    if (cntHandler != null){
+    if (cntHandler != null) {
       tokenize(input);
     }
   }
@@ -189,12 +181,11 @@ public class XmlReader extends XmlTokenizer
    * @exception SyntaxException
    * @throws totalcross.io.IOException
    */
-  public final void parse(Stream input, byte[] buffer, int start, int end, int pos) throws SyntaxException,
-  totalcross.io.IOException
-  {
+  public final void parse(Stream input, byte[] buffer, int start, int end, int pos)
+      throws SyntaxException, totalcross.io.IOException {
     newlineSignificant = 0;
     state = SPRING_STATE;
-    if (cntHandler != null){
+    if (cntHandler != null) {
       tokenize(input, buffer, start, end, pos);
     }
   }
@@ -208,8 +199,7 @@ public class XmlReader extends XmlTokenizer
    *           The input source for the top-level XML document.
    * @throws totalcross.io.IOException
    */
-  public final void parse(XmlReadable input) throws SyntaxException, totalcross.io.IOException
-  {
+  public final void parse(XmlReadable input) throws SyntaxException, totalcross.io.IOException {
     input.readXml(this);
   }
 
@@ -226,11 +216,10 @@ public class XmlReader extends XmlTokenizer
    *           number of bytes to parse
    * @exception SyntaxException
    */
-  public final void parse(byte[] input, int offset, int count) throws SyntaxException
-  {
+  public final void parse(byte[] input, int offset, int count) throws SyntaxException {
     newlineSignificant = 0;
     state = SPRING_STATE;
-    if (cntHandler != null){
+    if (cntHandler != null) {
       tokenize(input);
     }
   }
@@ -274,8 +263,7 @@ public class XmlReader extends XmlTokenizer
    *           true if newline characters must be significant, false if they
    *           must be collapsed according to HTML rules.
    */
-  public void setNewlineSignificant(boolean val)
-  {
+  public void setNewlineSignificant(boolean val) {
     newlineSignificant += (val ? 1 : -1);
   }
 
@@ -296,18 +284,14 @@ public class XmlReader extends XmlTokenizer
    *           number of bytes to be hashed
    * @return the corresponding hash code
    */
-  protected int getTagCode(byte b[], int offset, int count)
-  {
+  protected int getTagCode(byte b[], int offset, int count) {
     int i = b[offset];
-    if ('a' <= i)
-    {
+    if ('a' <= i) {
       i -= ('a' - 'A'); // fast toUpper
     }
-    while (--count > 0)
-    {
+    while (--count > 0) {
       byte ch = b[++offset];
-      if ('a' <= ch)
-      {
+      if ('a' <= ch) {
         ch -= ('a' - 'A'); // fast toUpper
       }
       i = (i << 5) - i + ch;
@@ -319,10 +303,8 @@ public class XmlReader extends XmlTokenizer
    * Override of XmlTokenizer
    */
   @Override
-  public void foundStartTagName(byte buffer[], int offset, int count)
-  {
-    switch (state)
-    {
+  public void foundStartTagName(byte buffer[], int offset, int count) {
+    switch (state) {
     case START_TAG_STATE:
       reportStartTag();
       break;
@@ -338,10 +320,8 @@ public class XmlReader extends XmlTokenizer
    * Override of XmlTokenizer
    */
   @Override
-  public void foundEndTagName(byte buffer[], int offset, int count)
-  {
-    switch (state)
-    {
+  public void foundEndTagName(byte buffer[], int offset, int count) {
+    switch (state) {
     case START_TAG_STATE:
       reportStartTag();
       break;
@@ -360,8 +340,7 @@ public class XmlReader extends XmlTokenizer
    * Override of XmlTokenizer
    */
   @Override
-  public final void foundEndEmptyTag()
-  {
+  public final void foundEndEmptyTag() {
     reportStartTag();
     cntHandler.endElement(tagNameHashId); // <BR/> is like "<BR></BR>"
     state = SPRING_STATE;
@@ -371,9 +350,8 @@ public class XmlReader extends XmlTokenizer
    * Override of XmlTokenizer
    */
   @Override
-  public final void foundCharacterData(byte buffer[], int offset, int count)
-  {
-    if (state == START_TAG_STATE){
+  public final void foundCharacterData(byte buffer[], int offset, int count) {
+    if (state == START_TAG_STATE) {
       reportStartTag();
     }
     storeData(buffer, offset, count, (state == START_TAG_STATE) || (state == SPRING_STATE));
@@ -386,9 +364,8 @@ public class XmlReader extends XmlTokenizer
    * later, we will need the appropriate encoder
    */
   @Override
-  public final void foundCharacter(char charFound)
-  {
-    if (state == START_TAG_STATE){
+  public final void foundCharacter(char charFound) {
+    if (state == START_TAG_STATE) {
       reportStartTag();
     }
     pcdata.append(charFound); // kcchan@554_39
@@ -397,26 +374,22 @@ public class XmlReader extends XmlTokenizer
 
   /** Override of XmlTokenizer */
   @Override
-  public final void foundAttributeName(byte buffer[], int offset, int count)
-  {
+  public final void foundAttributeName(byte buffer[], int offset, int count) {
     flushAttribute();
     attrName = new String(buffer, offset, count);
   }
 
   /** Override of XmlTokenizer */
   @Override
-  public final void foundAttributeValue(byte buffer[], int offset, int count, byte dlm)
-  {
+  public final void foundAttributeValue(byte buffer[], int offset, int count, byte dlm) {
     attList.addAttribute(attrName, new String(buffer, offset, count), dlm);
     attrName = null;
   }
 
   /** Override of XmlTokenizer */
   @Override
-  public final void foundComment(byte buffer[], int offset, int count)
-  {
-    switch (state)
-    {
+  public final void foundComment(byte buffer[], int offset, int count) {
+    switch (state) {
     case START_TAG_STATE:
       reportStartTag();
       break;
@@ -430,10 +403,8 @@ public class XmlReader extends XmlTokenizer
 
   /** Override of XmlTokenizer */
   @Override
-  public final void foundEndOfInput(int count)
-  {
-    switch (state)
-    {
+  public final void foundEndOfInput(int count) {
+    switch (state) {
     case START_TAG_STATE:
       reportStartTag();
       break;
@@ -449,13 +420,12 @@ public class XmlReader extends XmlTokenizer
    * @since TotalCross 1.27
    */
   @Override
-  protected void foundDeclaration(byte[] input, int offset, int count)
-  {
+  protected void foundDeclaration(byte[] input, int offset, int count) {
     flushAttribute();
     cntHandler.startElement(tagNameHashId, attList);
     attList.clear();
 
-    if (count > 7 && new String(totalcross.sys.Convert.charConverter.bytes2chars(input, offset, 7)).equals("[CDATA[")){
+    if (count > 7 && new String(totalcross.sys.Convert.charConverter.bytes2chars(input, offset, 7)).equals("[CDATA[")) {
       cntHandler.cdata(tagNameHashId,
           new String(totalcross.sys.Convert.charConverter.bytes2chars(input, offset + 7, count - 9)));
     }
@@ -491,35 +461,25 @@ public class XmlReader extends XmlTokenizer
    * @param count
    *           number of bytes to ws-coalesce
    */
-  private void storeData(byte input[], int offset, int count, boolean stripLeadingSpaces)
-  {
-    if (newlineSignificant > 0)
-    {
-      if (stripLeadingSpaces)
-      {
-        while ((count > 0) && (input[offset] & 0xFF) <= ' ')
-        {
+  private void storeData(byte input[], int offset, int count, boolean stripLeadingSpaces) {
+    if (newlineSignificant > 0) {
+      if (stripLeadingSpaces) {
+        while ((count > 0) && (input[offset] & 0xFF) <= ' ') {
           --count;
           ++offset;
         }
       }
-      if (count > 0)
-      {
+      if (count > 0) {
         pcdata.append(totalcross.sys.Convert.charConverter.bytes2chars(input, offset, count)); // kcchan@554_39
       }
-    }
-    else
-    {
+    } else {
       int from = offset - 1;
-      if ((!stripLeadingSpaces) && (count > 0) && (input[offset] & 0xFF) <= ' ')
-      {
+      if ((!stripLeadingSpaces) && (count > 0) && (input[offset] & 0xFF) <= ' ') {
         pcdata.append(' '); // kcchan@554_39
       }
       ++count;
-      while (--count > 0)
-      {
-        if ((input[++from]&0xFF) > ' ')
-        {
+      while (--count > 0) {
+        if ((input[++from] & 0xFF) > ' ') {
           int fromOrig = from++;
           while ((--count > 0) && (input[from] & 0xFF) > ' ') {
             ++from;
@@ -527,8 +487,7 @@ public class XmlReader extends XmlTokenizer
           pcdata.append(totalcross.sys.Convert.charConverter.bytes2chars(input, fromOrig, from - fromOrig)); // kcchan@554_39
           if (count == 0) {
             break;
-          }
-          else {
+          } else {
             pcdata.append(' '); // kcchan@554_39
           }
         }
@@ -543,11 +502,9 @@ public class XmlReader extends XmlTokenizer
    *           if false, the data will be followed by a space had the source data ended with one or more white spaces;
    *           if true, the data ends at the last non-space character.
    */
-  private void reportData(boolean stripTrailingSpaces)
-  {
+  private void reportData(boolean stripTrailingSpaces) {
     int count = pcdata.length(); // kcchan@554_39
-    if (count > 0)
-    {
+    if (count > 0) {
       String s = pcdata.toString();
       if (stripTrailingSpaces) {
         s = s.trim();
@@ -563,10 +520,8 @@ public class XmlReader extends XmlTokenizer
    * Note that an attribute name not followed by a value assignment (Ex: <code>&gt;dl compact&gt;</code> is perfectly
    * legal HTML/SGML.
    */
-  private void flushAttribute()
-  {
-    if (attrName != null)
-    {
+  private void flushAttribute() {
+    if (attrName != null) {
       attList.addAttribute(attrName, "", (byte) 0);
       attrName = null;
     }
@@ -575,8 +530,7 @@ public class XmlReader extends XmlTokenizer
   /**
    * Called when a start tag has been completely tokenized.
    */
-  private void reportStartTag()
-  {
+  private void reportStartTag() {
     flushAttribute();
     cntHandler.startElement(tagNameHashId, attList);
     attList.clear();

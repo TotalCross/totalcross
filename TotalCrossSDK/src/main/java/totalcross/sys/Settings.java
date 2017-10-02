@@ -14,22 +14,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.sys;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 import totalcross.ui.IVirtualKeyboard;
 import totalcross.util.Hashtable;
 
-
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
  * the VM to crash.
  */
 
-public final class Settings
-{
+public final class Settings {
   /**
    * Field that represents the version of the TotalCross Virtual Machine. The major version is
    * base 100. For example, version 1.0 has value 100. version 4 has a
@@ -76,10 +72,9 @@ public final class Settings
    * @see #appProps
    * @since TotalCross 3.1
    */
-  public static String appBuildNumber()
-  {
-    String ret = Settings.appProps == null ? null : (String)Settings.appProps.get("build.number");
-    if (ret == null){
+  public static String appBuildNumber() {
+    String ret = Settings.appProps == null ? null : (String) Settings.appProps.get("build.number");
+    if (ret == null) {
       ret = "0";
     }
     return ret;
@@ -126,25 +121,25 @@ public final class Settings
   public static int romVersion = 0x02000000;
 
   /** Underlying platform is Java. To be used with the <code>platform</code> member. */
-  public static final String JAVA          = "Java";
+  public static final String JAVA = "Java";
   /** Underlying platform is Windows CE. To be used with the <code>platform</code> member. */
-  public static final String WINDOWSCE     = "WindowsCE";
+  public static final String WINDOWSCE = "WindowsCE";
   /** Underlying platform is Pocket PC. To be used with the <code>platform</code> member. */
-  public static final String POCKETPC      = "PocketPC";
+  public static final String POCKETPC = "PocketPC";
   /** Underlying platform is Windows Mobile. To be used with the <code>platform</code> member. */
   public static final String WINDOWSMOBILE = "WindowsMobile";
   /** Underlying platform is desktop Windows. To be used with the <code>platform</code> member. */
-  public static final String WIN32         = "Win32";
+  public static final String WIN32 = "Win32";
   /** Underlying platform is Windows Phone. To be used with the <code>platform</code> member. */
-  public static final String WINDOWSPHONE  = "WindowsPhone";
+  public static final String WINDOWSPHONE = "WindowsPhone";
   /** Underlying platform is Linux. To be used with the <code>platform</code> member. */
-  public static final String LINUX         = "Linux";
+  public static final String LINUX = "Linux";
   /** Underlying platform is iPhone. To be used with the <code>platform</code> member. */
-  public static final String IPHONE        = "iPhone";
+  public static final String IPHONE = "iPhone";
   /** Underlying platform is Android. To be used with the <code>platform</code> member. */
-  public static final String ANDROID       = "Android";
-  /** Underlying platform is iPad. To be used with the <code>platform</code> member. */   
-  public static final String IPAD          = "iPad";
+  public static final String ANDROID = "Android";
+  /** Underlying platform is iPad. To be used with the <code>platform</code> member. */
+  public static final String IPAD = "iPad";
 
   /** Field that returns the current platform name.
    * The possible return values are the constants described below.
@@ -204,7 +199,7 @@ public final class Settings
        unsaved preferences database, which is not backed up during hot-sync.
        Use this to save small strings, up to 2 or 4 kb maximum.
        At desktop, a file named settings4crtr.pdb stores the appSettings for the current running TotalCross programs.
-
+  
    * This property is saved only at application's exit; you can force an update by calling <code>Settings.refresh()</code>.
    * @see #refresh()
    */
@@ -218,7 +213,7 @@ public final class Settings
        The String is stored in the saved preferences with a creator id different of your application's (but
        calculated based in it), so it will never be deleted and will be restored even after a hard-reset.
        <p>In Windows CE, the key is stored in the registry.
-
+  
    * This property is saved only at application's exit; you can force an update by calling <code>Settings.refresh()</code>.
    * @see #refresh()
    */
@@ -466,7 +461,7 @@ public final class Settings
   /** To be used in the closeButtonType. An OK button is placed, and the application is closed when its pressed. */
   public static final int CLOSE_BUTTON = 1;
   /** To be used in the closeButtonType. A X button is placed, and the application is minimized when its pressed. */
-  public static final int MINIMIZE_BUTTON  = 2;
+  public static final int MINIMIZE_BUTTON = 2;
 
   /** Set it at the application's static initializer.
    * If set to MINIMIZE_BUTTON, replaces the ok button in Windows CE devices, which closes the application,
@@ -568,7 +563,7 @@ public final class Settings
   /** Set it at the application's static initializer. Specifies a namespace for the WebService provided by the user.<br>
    * See the TotalCross Companion for more information about this feature. 
    * @since TotalCross 1.15 
-   */   
+   */
   public static String activationServerNamespace;
 
   /** Set to false to hide all messages that are sent to the console when running at the desktop.
@@ -660,7 +655,7 @@ public final class Settings
    * want to let it on when deploying your application to your costumers.
    * <br>Note that the log messages will still be dumped to the console. 
    * @since TotalCross 1.14
-   */   
+   */
   public static boolean showMemoryMessagesAtExit = true; // guich@tc114_44
 
   /** Shows the mouse position in the Window's title when running as Java SE application.
@@ -723,7 +718,7 @@ public final class Settings
    * @see totalcross.ui.Container#transitionEffect
    * @since TotalCross 1.2 
    */
-  public static boolean enableWindowTransitionEffects=true;
+  public static boolean enableWindowTransitionEffects = true;
 
   /** Set to true to debug all events that are received at Window._postEvent. */
   public static boolean debugEvents; // guich@tc125_14
@@ -739,24 +734,22 @@ public final class Settings
   /** Returns true if the current platform is Windows Mobile or Windows Phone. Note that Windows Desktop (aka WIN32)
    * returns false.
    */
-  public static boolean isWindowsDevice()
-  {
-    return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform) || WINDOWSPHONE.equals(platform);
+  public static boolean isWindowsDevice() {
+    return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform)
+        || WINDOWSPHONE.equals(platform);
   }
 
   /** Returns true if the current platform is Windows Mobile or Windows Phone. Note that Windows Desktop (aka WIN32)
    * returns false.
    */
-  public static boolean isWindowsCE()
-  {
+  public static boolean isWindowsCE() {
     return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);
   }
 
   /** Returns true if this is an iPad or an iPhone.
    * @since TotalCross 1.53
    */
-  public static boolean isIOS()
-  {
+  public static boolean isIOS() {
     return IPAD.equals(platform) || IPHONE.equals(platform);
   }
 
@@ -772,8 +765,7 @@ public final class Settings
    * @since TotalCross 1.15
    */
   @ReplacedByNativeOnDeploy
-  public static void refresh()
-  {
+  public static void refresh() {
     totalcross.Launcher.instance.settingsRefresh(true);
   }
 
@@ -912,7 +904,7 @@ public final class Settings
   /** Defines the window font size when running in a desktop computer.
    * Must be set in the static initializer.
    * @deprecated Use at the application's constructor: if (Settings.platform.equals(Settings.WIN32)) setDefaultFont(Font.getFont(false,NN)); where NN is the desired font size
-
+  
    * @since TotalCross 1.53
    * @see #WINDOWFONT_12
    * @see #WINDOWFONT_DEFAULT
@@ -930,8 +922,7 @@ public final class Settings
   public static String lineNumber;
 
   /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
-  public static boolean isLandscape()
-  {
+  public static boolean isLandscape() {
     return screenWidth > screenHeight;
   }
 
@@ -953,16 +944,14 @@ public final class Settings
    */
   public static boolean optimizeScroll = Settings.isOpenGL;
 
-
   // this class can't be instantiated
-  private Settings()
-  {
+  private Settings() {
   }
 
   /** Dumb field to keep compilation compatibility with TC 1 */
-  public static String PALMOS        = "PalmOS";
+  public static String PALMOS = "PalmOS";
   /** Dumb field to keep compilation compatibility with TC 1 */
-  public static String BLACKBERRY    = "BlackBerry";
+  public static String BLACKBERRY = "BlackBerry";
   /** Dumb field to keep compilation compatibility with TC 1 */
   public static int nvfsVolume = -1;
   /** Dumb field to keep compilation compatibility with TC 1 */

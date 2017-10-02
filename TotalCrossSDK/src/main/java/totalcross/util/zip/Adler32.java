@@ -95,8 +95,7 @@ package totalcross.util.zip;
  * @author John Leuner, Per Bothner
  * @since JDK 1.1
  */
-public class Adler32 extends Checksum
-{
+public class Adler32 extends Checksum {
   /** 
    * The largest prime smaller than 65536. 
    */
@@ -112,8 +111,7 @@ public class Adler32 extends Checksum
   /**
    * Creates a new instance of the <code>Adler32</code> class. The checksum starts off with a value of 1.
    */
-  public Adler32()
-  {
+  public Adler32() {
     reset();
   }
 
@@ -121,8 +119,7 @@ public class Adler32 extends Checksum
    * Resets the Adler-32 checksum to the initial value.
    */
   @Override
-  public void reset()
-  {
+  public void reset() {
     checksum = 1; //Initialize to 1    
   }
 
@@ -132,8 +129,7 @@ public class Adler32 extends Checksum
    * @param bval The data value to add. The higher byte of the integer is ignored.
    */
   @Override
-  public void update(int bval)
-  {
+  public void update(int bval) {
     //We could make a length 1 byte array and call update again, but I
     //would rather not have that overhead
     int s1 = checksum & 0xffff;
@@ -150,8 +146,7 @@ public class Adler32 extends Checksum
    * 
    * @param buffer An array of bytes.
    */
-  public void update(byte[] buffer)
-  {
+  public void update(byte[] buffer) {
     update(buffer, 0, buffer.length);
   }
 
@@ -163,14 +158,12 @@ public class Adler32 extends Checksum
    * @param len The number of bytes to use for this update.
    */
   @Override
-  public void update(byte[] buf, int off, int len)
-  {
+  public void update(byte[] buf, int off, int len) {
     //(By Per Bothner)
     int s1 = checksum & 0xffff;
     int s2 = checksum >>> 16;
 
-    while (len > 0)
-    {
+    while (len > 0) {
       // We can defer the modulo operation:
       // s1 maximally grows from 65521 to 65521 + 255 * 3800
       // s2 maximally grows by 3800 * median(s1) = 2090079800 < 2^31
@@ -179,8 +172,7 @@ public class Adler32 extends Checksum
         n = len;
       }
       len -= n;
-      while (--n >= 0)
-      {
+      while (--n >= 0) {
         s1 = s1 + (buf[off++] & 0xFF);
         s2 = s2 + s1;
       }
@@ -190,9 +182,9 @@ public class Adler32 extends Checksum
 
     /*Old implementation, borrowed from somewhere:
       int n;
-
+    
       while (len-- > 0) {
-
+    
         s1 = (s1 + (bs[offset++] & 0xff)) % BASE; 
         s2 = (s2 + s1) % BASE;
       }*/
@@ -206,8 +198,7 @@ public class Adler32 extends Checksum
    * @return A <code>long</code> with the data checksum computed so far.
    */
   @Override
-  public long getValue()
-  {
+  public long getValue() {
     return (long) checksum & 0xffffffffL;
   }
 }

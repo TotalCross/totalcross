@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Enumeration;
@@ -64,13 +63,11 @@ import java.util.Enumeration;
  * @since 1.0
  * @status updated to 1.4
  */
-public class NoSuchElementException4D extends RuntimeException
-{
+public class NoSuchElementException4D extends RuntimeException {
   /**
    * Constructs a NoSuchElementException with no detail message.
    */
-  public NoSuchElementException4D()
-  {
+  public NoSuchElementException4D() {
   }
 
   /**
@@ -78,8 +75,7 @@ public class NoSuchElementException4D extends RuntimeException
    *
    * @param detail the detail message for the exception
    */
-  public NoSuchElementException4D(String detail)
-  {
+  public NoSuchElementException4D(String detail) {
     super(detail);
   }
 }

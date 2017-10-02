@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class ReflectiveOperationException4D extends Exception
-{
+public class ReflectiveOperationException4D extends Exception {
   /** Constructs an empty Exception. */
-  public ReflectiveOperationException4D()
-  {
+  public ReflectiveOperationException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public ReflectiveOperationException4D(String msg)
-  {
+  public ReflectiveOperationException4D(String msg) {
     super(msg);
   }
 

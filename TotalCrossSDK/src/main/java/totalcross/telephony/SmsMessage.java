@@ -6,7 +6,8 @@ public class SmsMessage {
   String displayOriginatingAddress;
   String displayMessageBody;
 
-  private SmsMessage() {}
+  private SmsMessage() {
+  }
 
   /**
    * Returns the originating address, or email from address if this message was from an email

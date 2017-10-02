@@ -4,23 +4,21 @@ import totalcross.sys.Convert;
 
 /** A Float value in TotalCross is actually a Double value. */
 
-public class Float4D extends Double4D
-{
+public class Float4D extends Double4D {
   public static final Class<Float> TYPE = Float.class;
   double v;
 
-  public Float4D(double v)
-  {
+  public Float4D(double v) {
     super(v);
   }
-  public double floatValue()
-  {
+
+  public double floatValue() {
     return v;
   }
+
   @Override
-  public boolean equals(Object o)
-  {
-    return o != null && o instanceof Float4D && ((Float4D)o).v == this.v; 
+  public boolean equals(Object o) {
+    return o != null && o instanceof Float4D && ((Float4D) o).v == this.v;
   }
 
   /**
@@ -36,11 +34,10 @@ public class Float4D extends Double4D
    * @return the bits of the <code>float</code>
    * @see #intBitsToFloat(int)
    */
-  public static int floatToIntBits(double value)
-  {
-    if (isNaN(value)){
+  public static int floatToIntBits(double value) {
+    if (isNaN(value)) {
       return 0x7fc00000;
-    }else {
+    } else {
       return floatToRawIntBits(value);
     }
   }
@@ -58,8 +55,7 @@ public class Float4D extends Double4D
    * @return the bits of the <code>float</code>
    * @see #intBitsToFloat(int)
    */
-  public static int floatToRawIntBits(double value)
-  {
+  public static int floatToRawIntBits(double value) {
     return Convert.doubleToIntBits(value);
   }
 
@@ -73,27 +69,26 @@ public class Float4D extends Double4D
    * @return the comparison
    * @since 1.4
    */
-  public static int compare(double x, double y)
-  {
+  public static int compare(double x, double y) {
     // handle the easy cases:
-    if (x < y){
+    if (x < y) {
       return -1;
     }
-    if (x > y){
+    if (x > y) {
       return 1;
     }
 
     // handle equality respecting that 0.0 != -0.0 (hence not using x == y):
     int ix = floatToRawIntBits(x);
     int iy = floatToRawIntBits(y);
-    if (ix == iy){
+    if (ix == iy) {
       return 0;
     }
 
     // handle NaNs:
-    if (x != x){
+    if (x != x) {
       return (y != y) ? 0 : 1;
-    }else if (y != y){
+    } else if (y != y) {
       return -1;
     }
 
@@ -102,8 +97,7 @@ public class Float4D extends Double4D
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return String.valueOf(v);
   }
 }

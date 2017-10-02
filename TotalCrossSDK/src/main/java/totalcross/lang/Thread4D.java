@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 import totalcross.util.concurrent.Lock;
@@ -39,8 +37,7 @@ import totalcross.util.concurrent.Lock;
  * available.
  * @see Runnable
  */
-public abstract class Thread4D implements Runnable
-{
+public abstract class Thread4D implements Runnable {
   byte[] taskID;
   private Runnable r;
   int priority = 5;
@@ -64,8 +61,7 @@ public abstract class Thread4D implements Runnable
    * Creates a new thread using a newly generated name in the format "Thread-n",
    * where "n" is the thread's ID.
    */
-  public Thread4D()
-  {
+  public Thread4D() {
     this(null, null);
   }
 
@@ -75,8 +71,7 @@ public abstract class Thread4D implements Runnable
    * generated name in the format "Thread-n", where "n" is the thread's ID.
    * @since TotalCross 1.22
    */
-  public Thread4D(String name)
-  {
+  public Thread4D(String name) {
     this(null, name);
   }
 
@@ -85,8 +80,7 @@ public abstract class Thread4D implements Runnable
    * name in the format "Thread-n", where "n" is the thread's ID.
    * @param r the object whose run method is called.
    */
-  public Thread4D(Runnable r)
-  {
+  public Thread4D(Runnable r) {
     this(r, null);
   }
 
@@ -97,10 +91,8 @@ public abstract class Thread4D implements Runnable
    * generated name in the format "Thread-n", where "n" is the thread's ID.
    * @since TotalCross 1.22
    */
-  public Thread4D(Runnable r, String name)
-  {
-    synchronized (threadSeqNumberLock)
-    {
+  public Thread4D(Runnable r, String name) {
+    synchronized (threadSeqNumberLock) {
       tid = ++threadSeqNumber;
     }
 
@@ -109,8 +101,7 @@ public abstract class Thread4D implements Runnable
   }
 
   /** Returns the thread id, which is a number generated automatically. */
-  public long getId()
-  {
+  public long getId() {
     return tid;
   }
 
@@ -120,8 +111,7 @@ public abstract class Thread4D implements Runnable
    * @return a string representation of this thread.
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return "Thread[" + name + "," + priority + "]";
   }
 
@@ -130,8 +120,7 @@ public abstract class Thread4D implements Runnable
    * @return this thread's name.
    * @since TotalCross 1.22
    */
-  public final String getName()
-  {
+  public final String getName() {
     return name;
   }
 
@@ -140,8 +129,7 @@ public abstract class Thread4D implements Runnable
    * @param name the new name for this thread.
    * @since TotalCross 1.22
    */
-  public final void setName(String name)
-  {
+  public final void setName(String name) {
     this.name = name;
   }
 
@@ -150,8 +138,7 @@ public abstract class Thread4D implements Runnable
    * @return this thread's priority.
    * @since TotalCross 1.22
    */
-  public final int getPriority()
-  {
+  public final int getPriority() {
     return priority;
   }
 
@@ -162,22 +149,19 @@ public abstract class Thread4D implements Runnable
    * @see #NORM_PRIORITY
    * @see #MAX_PRIORITY
    */
-  public final void setPriority(int priority)
-  {
+  public final void setPriority(int priority) {
     this.priority = priority;
   }
 
   /** Returns true if this thread is alive. */
-  public final boolean isAlive()
-  {
+  public final boolean isAlive() {
     return alive;
   }
 
   /** Called by the vm to run the thread. */
   @Override
-  public void run()
-  {
-    if (r != null){
+  public void run() {
+    if (r != null) {
       r.run();
     }
   }

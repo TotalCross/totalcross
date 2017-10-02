@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import java.util.HashSet;
@@ -62,8 +60,7 @@ import totalcross.ui.gfx.Rect;
  * </pre>
  */
 
-public class ScrollContainer extends Container implements Scrollable
-{
+public class ScrollContainer extends Container implements Scrollable {
   /** Returns the scrollbar for this ScrollContainer. With it, you can directly
    * set its parameters, like blockIncrement, unitIncrement and liveScrolling.
    * But be careful, don't mess with the minimum, maximum and visibleItems.
@@ -72,7 +69,7 @@ public class ScrollContainer extends Container implements Scrollable
    * by the ScrollPosition. If you set <code>sbV.transparentBackground=true</code> 
    * (or for sbH), you will expand the client area to over the ScrollPosition's area.
    */
-  public ScrollBar sbH,sbV;
+  public ScrollBar sbH, sbV;
 
   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
   protected Flick flick;
@@ -80,7 +77,7 @@ public class ScrollContainer extends Container implements Scrollable
   protected ClippedContainer bag;
   protected Container bag0; // used to make sure that the clipping will work
   boolean changed;
-  protected int lastV=0, lastH=0; // eliminate duplicate events
+  protected int lastV = 0, lastH = 0; // eliminate duplicate events
   /** Set to true, to make the surrounding container shrink to its size. */
   public boolean shrink2size;
   private boolean isScrolling;
@@ -105,8 +102,7 @@ public class ScrollContainer extends Container implements Scrollable
 
   /** Standard constructor for a new ScrollContainer, with both scrollbars enabled.
    */
-  public ScrollContainer()
-  {
+  public ScrollContainer() {
     this(true);
   }
 
@@ -117,7 +113,7 @@ public class ScrollContainer extends Container implements Scrollable
     Rect r = new Rect();
     bag.getClientRect(r);
     boolean showScroll = !Settings.fingerTouch || !ScrollPosition.AUTO_HIDE;
-    int sbVsize = showScroll && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth()  : 0;
+    int sbVsize = showScroll && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth() : 0;
     int sbHsize = showScroll && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0;
     r.width -= sbVsize;
     r.height -= sbHsize;
@@ -133,8 +129,7 @@ public class ScrollContainer extends Container implements Scrollable
   }
 
   /** Constructor used to specify when both scrollbars are enabled or not. */
-  public ScrollContainer(boolean allowScrollBars)
-  {
+  public ScrollContainer(boolean allowScrollBars) {
     this(allowScrollBars, allowScrollBars);
   }
 
@@ -143,103 +138,97 @@ public class ScrollContainer extends Container implements Scrollable
    * By disabling the vertical scrollbar, you can use BOTTOM and CENTER on the y parameter of a control that is added.
    * @since TotalCross 1.27 
    */
-  public ScrollContainer(boolean allowHScrollBar, boolean allowVScrollBar)
-  {
+  public ScrollContainer(boolean allowHScrollBar, boolean allowVScrollBar) {
     super.add(bag0 = new Container());
     bag0.add(bag = new ClippedContainer());
     bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
     bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
-    bag.setRect(0,0,getBagInitialWidth(),getBagInitialHeight()); // set an arbitrary size
+    bag.setRect(0, 0, getBagInitialWidth(), getBagInitialHeight()); // set an arbitrary size
     bag.setX = SETX_NOT_SET; // ignore this setX and use the next one
-    if (allowHScrollBar)
-    {
+    if (allowHScrollBar) {
       sbH = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
       sbH.setLiveScrolling(true);
       sbH.setMaximum(0);
     }
-    if (allowVScrollBar)
-    {
+    if (allowVScrollBar) {
       sbV = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL);
       sbV.setLiveScrolling(true);
       sbV.setMaximum(0);
     }
-    if (Settings.fingerTouch){
+    if (Settings.fingerTouch) {
       flick = new Flick(this);
     }
   }
 
   /** Overwrite this method to define a custom height for the scrolling area */
-  protected int getBagInitialHeight()
-  {
+  protected int getBagInitialHeight() {
     return 20000;
   }
 
   /** Overwrite this method to define a custom width for the scrolling area */
-  protected int getBagInitialWidth()
-  {
+  protected int getBagInitialWidth() {
     return 4000;
   }
 
   @Override
-  public boolean flickStarted()
-  {
+  public boolean flickStarted() {
     return true;//isScrolling; // flick1.robot fails with this
   }
 
   @Override
-  public void flickEnded(boolean atPenDown)
-  {
+  public void flickEnded(boolean atPenDown) {
     bag.releaseScreenShot();
   }
 
   @Override
-  public boolean canScrollContent(int direction, Object target)
-  {
-    if (direction == 4){
+  public boolean canScrollContent(int direction, Object target) {
+    if (direction == 4) {
       direction = 4;
     }
     boolean ret = false;
-    if (Settings.fingerTouch){
-      switch (direction)
-      {
-      case DragEvent.UP   : ret = sbV != null && sbV.value > sbV.minimum; break;
-      case DragEvent.DOWN : ret = sbV != null && (sbV.value + sbV.visibleItems) < sbV.maximum; break;
-      case DragEvent.LEFT : ret = sbH != null && sbH.value > sbH.minimum; break;
-      case DragEvent.RIGHT: ret = sbH != null && (sbH.value + sbH.visibleItems) < sbH.maximum; break;
+    if (Settings.fingerTouch) {
+      switch (direction) {
+      case DragEvent.UP:
+        ret = sbV != null && sbV.value > sbV.minimum;
+        break;
+      case DragEvent.DOWN:
+        ret = sbV != null && (sbV.value + sbV.visibleItems) < sbV.maximum;
+        break;
+      case DragEvent.LEFT:
+        ret = sbH != null && sbH.value > sbH.minimum;
+        break;
+      case DragEvent.RIGHT:
+        ret = sbH != null && (sbH.value + sbH.visibleItems) < sbH.maximum;
+        break;
       }
     }
     return ret;
   }
 
   @Override
-  public boolean scrollContent(int dx, int dy, boolean fromFlick)
-  {
+  public boolean scrollContent(int dx, int dy, boolean fromFlick) {
     boolean scrolled = false;
 
-    if (dx != 0 && sbH != null)
-    {
+    if (dx != 0 && sbH != null) {
       int oldValue = sbH.value;
       sbH.setValue(oldValue + dx);
       lastH = sbH.value;
 
-      if (oldValue != lastH)
-      {
-        bagSetRect(LEFT - lastH, KEEP,KEEP,KEEP,false);
+      if (oldValue != lastH) {
+        bagSetRect(LEFT - lastH, KEEP, KEEP, KEEP, false);
         scrolled = true;
         if (!fromFlick) {
           sbH.tempShow();
         }
       }
     }
-    if (dy != 0 && sbV != null)
-    {
+    if (dy != 0 && sbV != null) {
       int oldValue = sbV.value;
       sbV.setValue(oldValue + dy);
       lastV = sbV.value;
 
-      if (oldValue != lastV)
-      {
-        bagSetRect(KEEP, TOP - lastV, KEEP, KEEP,false);
+      if (oldValue != lastV) {
+        bagSetRect(KEEP, TOP - lastV, KEEP, KEEP, false);
         scrolled = true;
         if (!fromFlick) {
           sbV.tempShow();
@@ -247,32 +236,28 @@ public class ScrollContainer extends Container implements Scrollable
       }
     }
 
-    if (scrolled)
-    {
+    if (scrolled) {
       Window.needsPaint = true;
       return true;
-    }else {
+    } else {
       return false;
     }
   }
 
   @Override
-  public int getScrollPosition(int direction)
-  {
+  public int getScrollPosition(int direction) {
     return direction == DragEvent.LEFT || direction == DragEvent.RIGHT ? lastH : lastV;
   }
 
   /** Adds a child control to the bag container. */
   @Override
-  public void add(Control control)
-  {
+  public void add(Control control) {
     changed = true;
     bag.add(control);
   }
 
   /** Adds a control to the ScrollContainer itself. Used internally. */
-  void addToSC(Control c)
-  {
+  void addToSC(Control c) {
     bag0.add(c);
   }
 
@@ -280,38 +265,33 @@ public class ScrollContainer extends Container implements Scrollable
    * Removes a child control from the bag container.
    */
   @Override
-  public void remove(Control control)
-  {
+  public void remove(Control control) {
     changed = true;
     bag.remove(control);
   }
 
   @Override
-  protected void onBoundsChanged(boolean screenChanged)
-  {
+  protected void onBoundsChanged(boolean screenChanged) {
     bag0.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
     bagSetRect(LEFT, TOP, FILL, FILL, screenChanged);
   }
 
   @Override
-  protected void onColorsChanged(boolean colorsChanged)
-  {
+  protected void onColorsChanged(boolean colorsChanged) {
     super.onColorsChanged(colorsChanged);
-    if (colorsChanged)
-    {
+    if (colorsChanged) {
       bag.setBackForeColors(backColor, foreColor);
       bag0.setBackForeColors(backColor, foreColor);
       if (sbV != null) {
         sbV.setBackForeColors(backColor, foreColor);
       }
       if (sbH != null) {
-        sbH.setBackForeColors(backColor,foreColor);
+        sbH.setBackForeColors(backColor, foreColor);
       }
     }
   }
 
-  protected void bagSetRect(int x, int y, int w, int h, boolean screenChanged)
-  {
+  protected void bagSetRect(int x, int y, int w, int h, boolean screenChanged) {
     boolean old = bag.uiAdjustmentsBasedOnFontHeightIsSupported;
     bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
     bag.setRect(x, y, w, h, null, screenChanged);
@@ -322,24 +302,22 @@ public class ScrollContainer extends Container implements Scrollable
   /** This method resizes the control to the needed bounds, based on added childs. 
    * Must be called if you're controlling reposition by your own, after you repositioned the controls inside of it. */
   @Override
-  public void resize()
-  {
+  public void resize() {
     int maxX = 0;
     int maxY = 0;
     boolean hasFillH = false;
-    for (Control child = bag.children; child != null; child = child.next)
-    {
-      int m = child.x+child.width;
+    for (Control child = bag.children; child != null; child = child.next) {
+      int m = child.x + child.width;
       if (m > maxX) {
         maxX = m;
       }
       int hh = child.height;
-      if (!hasFillH && sbV != null && (FILL-RANGE) <= child.setH && child.setH <= (FILL+RANGE)) // if control has fill on the height, don't take it into consideration
+      if (!hasFillH && sbV != null && (FILL - RANGE) <= child.setH && child.setH <= (FILL + RANGE)) // if control has fill on the height, don't take it into consideration
       {
         hasFillH = true;
-        hh = 0; 
+        hh = 0;
       }
-      m = child.y+hh;
+      m = child.y + hh;
       if (m > maxY) {
         maxY = m;
       }
@@ -348,9 +326,9 @@ public class ScrollContainer extends Container implements Scrollable
     {
       maxY = super.getClientRect().height;
       for (Control child = bag.children; child != null; child = child.next) {
-        if ((FILL-RANGE) <= child.setH && child.setH <= (FILL+RANGE))
-        {
-          child.height = maxY-child.y + (uiAdjustmentsBasedOnFontHeightIsSupported ? (child.setH-FILL)*fmH/100 : (child.setH-FILL));
+        if ((FILL - RANGE) <= child.setH && child.setH <= (FILL + RANGE)) {
+          child.height = maxY - child.y
+              + (uiAdjustmentsBasedOnFontHeightIsSupported ? (child.setH - FILL) * fmH / 100 : (child.setH - FILL));
           child.onBoundsChanged(true);
         }
       }
@@ -359,28 +337,24 @@ public class ScrollContainer extends Container implements Scrollable
   }
 
   /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
-  public void resize(int maxX, int maxY)
-  {
-    bagSetRect(bag.x, bag.y, maxX, maxY,false);
-    if (sbV != null){
+  public void resize(int maxX, int maxY) {
+    bagSetRect(bag.x, bag.y, maxX, maxY, false);
+    if (sbV != null) {
       super.remove(sbV);
     }
-    if (sbH != null){
+    if (sbH != null) {
       super.remove(sbH);
     }
     // check if we need horizontal or vertical or both scrollbars
-    boolean needX = false, needY = false, changed=false;
+    boolean needX = false, needY = false, changed = false;
     Rect r = super.getClientRect();
     int availX = r.width;
     int availY = r.height;
-    boolean finger = ((sbH != null && sbH instanceof ScrollPosition) ||
-        (sbV != null && sbV instanceof ScrollPosition));
-    if (sbH != null || sbV != null){
-      do
-      {
+    boolean finger = ((sbH != null && sbH instanceof ScrollPosition) || (sbV != null && sbV instanceof ScrollPosition));
+    if (sbH != null || sbV != null) {
+      do {
         changed = false;
-        if (!needY && maxY > availY)
-        {
+        if (!needY && maxY > availY) {
           changed = needY = true;
           if (finger && sbH != null && sbV != null) {
             availX -= sbV.getPreferredWidth();
@@ -389,8 +363,7 @@ public class ScrollContainer extends Container implements Scrollable
         if (!needX && maxX > availX) // do we need an horizontal scrollbar?
         {
           changed = needX = true;
-          if (finger && sbV != null && sbH != null)
-          {
+          if (finger && sbV != null && sbH != null) {
             availY -= sbH.getPreferredHeight(); // remove the horizbar area from the avail Y area
           }
         }
@@ -398,71 +371,59 @@ public class ScrollContainer extends Container implements Scrollable
     }
 
     boolean showScroll = !Settings.fingerTouch || !ScrollPosition.AUTO_HIDE;
-    int sbVsize = needY && showScroll && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth()  : 0;
+    int sbVsize = needY && showScroll && sbV != null && !sbV.transparentBackground ? sbV.getPreferredWidth() : 0;
     int sbHsize = needX && showScroll && sbH != null && !sbH.transparentBackground ? sbH.getPreferredHeight() : 0;
-    if (sbH != null || sbV != null || !shrink2size){
-      bag0.setRect(r.x,r.y,r.width-sbVsize, r.height-sbHsize);
-    }else
-    {
-      bag0.setRect(r.x,r.y,maxX,maxY);
-      setRect(this.x,this.y,maxX,maxY);
+    if (sbH != null || sbV != null || !shrink2size) {
+      bag0.setRect(r.x, r.y, r.width - sbVsize, r.height - sbHsize);
+    } else {
+      bag0.setRect(r.x, r.y, maxX, maxY);
+      setRect(this.x, this.y, maxX, maxY);
     }
-    if (needX && sbH != null)
-    {
+    if (needX && sbH != null) {
       super.add(sbH);
       sbH.setMaximum(maxX);
       sbH.setVisibleItems(bag0.width);
-      sbH.setRect(LEFT,BOTTOM,FILL-sbVsize,PREFERRED);
+      sbH.setRect(LEFT, BOTTOM, FILL - sbVsize, PREFERRED);
       sbH.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fm.charWidth('@'));
       lastH = 0;
-    }
-    else if (sbH != null)
-    {
+    } else if (sbH != null) {
       sbH.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
     }
-    if (needY && sbV != null)
-    {
+    if (needY && sbV != null) {
       super.add(sbV);
       sbV.setMaximum(maxY);
       sbV.setVisibleItems(bag0.height);
-      sbV.setRect(RIGHT,TOP,PREFERRED,FILL);
-      sbV.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fmH+Edit.prefH);
+      sbV.setRect(RIGHT, TOP, PREFERRED, FILL);
+      sbV.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fmH + Edit.prefH);
       lastV = 0;
-    }
-    else if (sbV != null)
-    {
+    } else if (sbV != null) {
       sbV.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
     }
     Window.needsPaint = true;
   }
 
   /** Override this method to return the correct scroll distance. Defaults to the container's width. */
-  public int getScrollDistance()
-  {
+  public int getScrollDistance() {
     return this.width;
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     int vx = bag.x, vy = bag.y; // keep position when changing size
     int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
     super.reposition();
     resize();
-    if (flick != null && flick.scrollDistance != 0){
+    if (flick != null && flick.scrollDistance != 0) {
       flick.setScrollDistance(getScrollDistance());
     }
-    if (curPage != 0){
+    if (curPage != 0) {
       scrollToPage(curPage);
-    }else
-    {
-      if (sbH != null)
-      {
+    } else {
+      if (sbH != null) {
         sbH.setValue(sbH.maximum == 0 ? 0 : -vx);
         bag.x = -sbH.getValue();
       }
-      if (sbV != null)
-      {
+      if (sbV != null) {
         sbV.setValue(sbV.maximum == 0 ? 0 : -vy); // if we're scrolled but we don't need scroll, move to origin
         bag.y = -sbV.getValue();
       }
@@ -474,8 +435,7 @@ public class ScrollContainer extends Container implements Scrollable
    * maximum size of the container to hold all controls.
    */
   @Override
-  public int getPreferredWidth()
-  {
+  public int getPreferredWidth() {
     int horizontalMax = sbH == null ? 0 : sbH.maximum;
     return sbV == null ? bag.width : horizontalMax + (sbV.maximum == 0 ? 0 : sbV.getPreferredWidth());
   }
@@ -485,17 +445,14 @@ public class ScrollContainer extends Container implements Scrollable
    * maximum size of the container to hold all controls.
    */
   @Override
-  public int getPreferredHeight()
-  {
+  public int getPreferredHeight() {
     int verticalMax = sbV == null ? 0 : sbV.maximum;
     return sbH == null ? bag.height : verticalMax + (sbH.maximum == 0 ? 0 : sbH.getPreferredWidth());
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
-    if (changed)
-    {
+  public void onPaint(Graphics g) {
+    if (changed) {
       resize();
       changed = false;
     }
@@ -503,28 +460,23 @@ public class ScrollContainer extends Container implements Scrollable
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
+  public void onEvent(Event event) {
+    switch (event.type) {
     case ControlEvent.PRESSED:
-      if (event.target == sbV && sbV.value != lastV)
-      {
+      if (event.target == sbV && sbV.value != lastV) {
         lastV = sbV.value;
-        bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
+        bagSetRect(bag.x, TOP - lastV, bag.width, bag.height, false);
+      } else if (event.target == sbH && sbH.value != lastH) {
+        lastH = sbH.value;
+        bagSetRect(LEFT - lastH, bag.y, bag.width, bag.height, false);
       }
-      else
-        if (event.target == sbH && sbH.value != lastH)
-        {
-          lastH = sbH.value;
-          bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
-        }
       break;
     case PenEvent.PEN_DOWN:
       scScrolled = false;
       break;
     case PenEvent.PEN_DRAG_START:
-      if (Settings.optimizeScroll && ((DragEvent)event).direction != 0 && isFirstBag((Control)event.target) && bag.offscreen == null && Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) {
+      if (Settings.optimizeScroll && ((DragEvent) event).direction != 0 && isFirstBag((Control) event.target)
+          && bag.offscreen == null && Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) {
         bag.takeScreenShot();
       }
       break;
@@ -537,24 +489,20 @@ public class ScrollContainer extends Container implements Scrollable
       if (event.target == sbV || event.target == sbH) {
         break;
       }
-      if (Settings.fingerTouch)
-      {
+      if (Settings.fingerTouch) {
         Window w = getParentWindow();
         if (w != null && w._focus == w.focusOnPenUp) {
           break;
         }
 
-        DragEvent de = (DragEvent)event;               
+        DragEvent de = (DragEvent) event;
         int dx = -de.xDelta;
         int dy = -de.yDelta;
-        if (isScrolling)
-        {
+        if (isScrolling) {
           scrollContent(dx, dy, true);
           event.consumed = true;
           //Event.clearQueue(PenEvent.PEN_DRAG);
-        }
-        else
-        {
+        } else {
           int direction = DragEvent.getInverseDirection(de.direction);
           if (!flick.isValidDirection(direction)) {
             break;
@@ -567,46 +515,42 @@ public class ScrollContainer extends Container implements Scrollable
       break;
     case PenEvent.PEN_UP:
       isScrolling = false;
-      if (autoScroll && event.target instanceof Control && event.target != lastScrolled && !hsIgnoreAutoScroll.contains(event.target.getClass()) && ((Control)event.target).isChildOf(this) && !((Control)event.target).hadParentScrolled())
-      {
-        Control c = (Control)event.target;
+      if (autoScroll && event.target instanceof Control && event.target != lastScrolled
+          && !hsIgnoreAutoScroll.contains(event.target.getClass()) && ((Control) event.target).isChildOf(this)
+          && !((Control) event.target).hadParentScrolled()) {
+        Control c = (Control) event.target;
         lastScrolled = c;
         Rect r = c.getAbsoluteRect();
         boolean scrolled = false;
-        if (sbV != null)
-        {
-          int k = this.height/3;
+        if (sbV != null) {
+          int k = this.height / 3;
           r.y -= this.getAbsoluteRect().y;
-          if (r.y > 2*k) {
-            scrolled = scrollContent(0, k,false);
-          } else
-            if (r.y2() < k) {
-              scrolled = scrollContent(0,-k,false);
-            }
+          if (r.y > 2 * k) {
+            scrolled = scrollContent(0, k, false);
+          } else if (r.y2() < k) {
+            scrolled = scrollContent(0, -k, false);
+          }
         }
-        if (sbH != null && !scrolled)
-        {
-          int k = this.width/3;
+        if (sbH != null && !scrolled) {
+          int k = this.width / 3;
           r.x -= this.getAbsoluteRect().x;
-          if (r.x > 2*k) {
-            scrollContent(k,0,false);
-          } else
-            if (r.x2() < k) {
-              scrollContent(-k,0,false);
-            }
+          if (r.x > 2 * k) {
+            scrollContent(k, 0, false);
+          } else if (r.x2() < k) {
+            scrollContent(-k, 0, false);
+          }
         }
       }
       break;
     case ControlEvent.HIGHLIGHT_IN:
       if (event.target != this) {
-        scrollToControl((Control)event.target);
+        scrollToControl((Control) event.target);
       }
       break;
     }
   }
 
-  private boolean isFirstBag(Control c)
-  {
+  private boolean isFirstBag(Control c) {
     for (; c != null; c = c.parent) {
       if (c instanceof ClippedContainer) {
         return c == bag;
@@ -618,71 +562,59 @@ public class ScrollContainer extends Container implements Scrollable
   /** Scrolls to the given page, which is the flick's scrollDistance (if set), or the control's height.
    * @since TotalCross 1.53
    */
-  public void scrollToPage(int p)
-  {
+  public void scrollToPage(int p) {
     int pageH = flick != null && flick.scrollDistance != 0 ? flick.scrollDistance : this.height;
-    int val = (p-1) * pageH;
-    if (sbH != null)
-    {
+    int val = (p - 1) * pageH;
+    if (sbH != null) {
       lastH = sbH.value;
       sbH.setValue(val);
-      if (lastH != sbH.value)
-      {
+      if (lastH != sbH.value) {
         lastH = sbH.value;
-        bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
+        bagSetRect(LEFT - lastH, bag.y, bag.width, bag.height, false);
       }
-    }
-    else
-    {
+    } else {
       lastV = sbV.value;
       sbV.setValue(val);
-      if (lastV != sbV.value)
-      {
+      if (lastV != sbV.value) {
         lastV = sbV.value;
-        bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
+        bagSetRect(bag.x, TOP - lastV, bag.width, bag.height, false);
       }
     }
-    if (flick != null && flick.pagepos != null){
+    if (flick != null && flick.pagepos != null) {
       flick.pagepos.setPosition(p);
     }
   }
 
   /** Scrolls a page to left or right. Works only if it has a flick and a page position.
    */
-  public void scrollPage(boolean left)
-  {
+  public void scrollPage(boolean left) {
     int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
-    scrollToPage(left ? curPage-1 : curPage+1);
+    scrollToPage(left ? curPage - 1 : curPage + 1);
   }
 
   /** Scrolls to the given control. */
   public void scrollToControl(Control c) // kmeehl@tc100
   {
-    if (c != null && (sbH != null || sbV != null))
-    {
+    if (c != null && (sbH != null || sbV != null)) {
       Rect r = c.getRect();
       Control f = c.parent;
-      while (f.parent != this)
-      {
+      while (f.parent != this) {
         r.x += f.x;
         r.y += f.y;
         f = f.parent;
-        if (f == null)
-        {
+        if (f == null) {
           return;// either c is not in this container, or it has since been removed from the UI
         }
       }
 
       // horizontal
-      if (sbH != null && (r.x < 0 || r.x2() > bag0.width))
-      {
+      if (sbH != null && (r.x < 0 || r.x2() > bag0.width)) {
         lastH = sbH.value;
-        int val = lastH + (r.x <= 0 || r.width > bag0.width ? r.x : (r.x2()-bag0.width));
+        int val = lastH + (r.x <= 0 || r.width > bag0.width ? r.x : (r.x2() - bag0.width));
         setHValue(val);
       }
       // vertical
-      if (sbV != null && (r.y < 0 || r.y2() > bag0.height))
-      {
+      if (sbV != null && (r.y < 0 || r.y2() > bag0.height)) {
         lastV = sbV.value;
         int val = lastV + (r.y <= 0 || r.height > bag0.height ? r.y : (r.y2() - bag0.height));
         setVValue(val);
@@ -691,70 +623,60 @@ public class ScrollContainer extends Container implements Scrollable
   }
 
   /** Scroll the container to origin position 0,0 */
-  public void scrollToOrigin()
-  {
-    if (sbH != null){
+  public void scrollToOrigin() {
+    if (sbH != null) {
       setHValue(0);
     }
-    if (sbV != null){
+    if (sbV != null) {
       setVValue(0);
     }
     bag.reposition();
   }
 
   /** Sets the vertical's ScrollBar value to the given one. */
-  protected void setVValue(int val)
-  {
-    if (sbV != null)
-    {
+  protected void setVValue(int val) {
+    if (sbV != null) {
       sbV.setValue(val);
       if (val < sbV.minimum) {
         val = sbV.minimum;
       }
-      if (lastV != sbV.value)
-      {
+      if (lastV != sbV.value) {
         lastV = sbV.value;
-        bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
+        bagSetRect(bag.x, TOP - lastV, bag.width, bag.height, false);
       }
     }
   }
 
   /** Sets the horizontal's ScrollBar value to the given one. */
-  protected void setHValue(int val)
-  {
-    if (sbH != null)
-    {
+  protected void setHValue(int val) {
+    if (sbH != null) {
       if (val < sbH.minimum) {
         val = sbH.minimum;
       }
       sbH.setValue(val);
-      if (lastH != sbH.value)
-      {
+      if (lastH != sbH.value) {
         lastH = sbH.value;
-        bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
+        bagSetRect(LEFT - lastH, bag.y, bag.width, bag.height, false);
       }
     }
   }
 
   @Override
-  public void setBorderStyle(byte border)
-  {
-    if (shrink2size){
+  public void setBorderStyle(byte border) {
+    if (shrink2size) {
       bag.setBorderStyle(border);
-    }else {
+    } else {
       super.setBorderStyle(border);
     }
   }
 
   @Override
-  public Flick getFlick()
-  {
+  public Flick getFlick() {
     return flick;
   }
 
   @Override
-  public boolean wasScrolled()
-  {
+  public boolean wasScrolled() {
     return scScrolled;
   }
 
@@ -762,8 +684,7 @@ public class ScrollContainer extends Container implements Scrollable
    * Removes all controls from the ScrollContainer.
    */
   @Override
-  public void removeAll()
-  {
+  public void removeAll() {
     bag.removeAll();
   }
 
@@ -771,14 +692,12 @@ public class ScrollContainer extends Container implements Scrollable
    * the controls added to the ScrollContainer, since they are actually added to the bag.
    * @since TotalCross 1.5
    */
-  public Control[] getBagChildren()
-  {
+  public Control[] getBagChildren() {
     return bag.getChildren();
   }
 
   @Override
-  public void onFontChanged()
-  {
+  public void onFontChanged() {
     bag.setFont(font);
   }
 
@@ -786,5 +705,5 @@ public class ScrollContainer extends Container implements Scrollable
   public Control moveFocusToNextControl(Control control, boolean forward) // guich@tc125_26
   {
     return bag.moveFocusToNextControl(control, forward);
-  }    
+  }
 }

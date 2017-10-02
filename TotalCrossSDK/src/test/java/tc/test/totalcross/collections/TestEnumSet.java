@@ -17,21 +17,19 @@ import java.util.Iterator;
 
 import totalcross.unit.TestCase;
 
-public class TestEnumSet extends TestCase
-{
+public class TestEnumSet extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     EnumSet test1 = EnumSet.allOf(TestEnum2.class);
     EnumSet test2 = EnumSet.noneOf(TestEnum2.class);
     EnumSet test3 = EnumSet.complementOf(test1);
     EnumSet test4 = EnumSet.of(TestEnum2.One);
     EnumSet test5 = EnumSet.of(TestEnum2.One, TestEnum2.Two);
     EnumSet test6 = EnumSet.of(TestEnum2.One, TestEnum2.Two, TestEnum2.Three);
-    EnumSet test7 = EnumSet.of(TestEnum2.One, TestEnum2.Two, TestEnum2.Three, TestEnum2.Four); 
-    EnumSet test8 = EnumSet.of(TestEnum2.One, TestEnum2.Two, TestEnum2.Three, TestEnum2.Four, TestEnum2.Five);      
-    EnumSet test9 = EnumSet.of(TestEnum2.One, TestEnum2.Two, TestEnum2.Three, TestEnum2.Four, TestEnum2.Five, TestEnum2.Six, TestEnum2.Seven, 
-        TestEnum2.Eight, TestEnum2.Nine);
+    EnumSet test7 = EnumSet.of(TestEnum2.One, TestEnum2.Two, TestEnum2.Three, TestEnum2.Four);
+    EnumSet test8 = EnumSet.of(TestEnum2.One, TestEnum2.Two, TestEnum2.Three, TestEnum2.Four, TestEnum2.Five);
+    EnumSet test9 = EnumSet.of(TestEnum2.One, TestEnum2.Two, TestEnum2.Three, TestEnum2.Four, TestEnum2.Five,
+        TestEnum2.Six, TestEnum2.Seven, TestEnum2.Eight, TestEnum2.Nine);
     EnumSet test10 = EnumSet.range(TestEnum2.One, TestEnum2.Nine);
 
     assertEquals(test1, test1.clone());
@@ -56,10 +54,10 @@ public class TestEnumSet extends TestCase
     assertEquals(test9, EnumSet.copyOf(test9));
     assertEquals(test10, EnumSet.copyOf(test10));
 
-    assertEquals(test1, EnumSet.copyOf((Collection)test1));
-    assertEquals(test2, EnumSet.copyOf((Collection)test2));
-    assertEquals(test3, EnumSet.copyOf((Collection)test3));
-    assertEquals(test4, EnumSet.copyOf((Collection)test4));
+    assertEquals(test1, EnumSet.copyOf((Collection) test1));
+    assertEquals(test2, EnumSet.copyOf((Collection) test2));
+    assertEquals(test3, EnumSet.copyOf((Collection) test3));
+    assertEquals(test4, EnumSet.copyOf((Collection) test4));
 
     assertTrue(test4.add(TestEnum2.Ten));
     assertTrue(test5.add(TestEnum2.Ten));
@@ -117,91 +115,77 @@ public class TestEnumSet extends TestCase
     assertFalse(iterator6.hasNext());
     assertFalse(iterator7.hasNext());
 
-    try
-    {
+    try {
       iterator1.next();
       fail("1");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator2.next();
       fail("2");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator3.next();
       fail("3");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator4.next();
       fail("4");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator5.next();
       fail("5");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator6.next();
       fail("6");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator7.next();
       fail("7");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
 
-    try
-    {
+    try {
       iterator1.remove();
       fail("8");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator2.remove();
       fail("9");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator3.remove();
       fail("10");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator4.remove();
       fail("11");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator5.remove();
       fail("12");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator6.remove();
       fail("13");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator7.remove();
       fail("14");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
 
     assertFalse(test4.remove(TestEnum2.One));
     assertFalse(test5.remove(TestEnum2.One));
@@ -238,16 +222,6 @@ public class TestEnumSet extends TestCase
 
 }
 
-enum TestEnum2
-{
-  One,
-  Two,
-  Three,
-  Four,
-  Five,
-  Six, 
-  Seven,
-  Eight,
-  Nine,
-  Ten
+enum TestEnum2 {
+  One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten
 }

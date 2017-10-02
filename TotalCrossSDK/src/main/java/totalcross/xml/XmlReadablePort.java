@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
 
 import totalcross.io.device.PortConnector;
@@ -31,8 +29,7 @@ import totalcross.net.URI;
  *    rdr.parse(new XmlReadablePort(PortConnector.DEFAULT, 19200));
  * </PRE>
  */
-public class XmlReadablePort extends XmlReadableByteArray
-{
+public class XmlReadablePort extends XmlReadableByteArray {
   private static final int BUFSIZE = 4096;
   private PortConnector stream;
   private int ofsEnd;
@@ -48,8 +45,7 @@ public class XmlReadablePort extends XmlReadableByteArray
    *           URI for this XmlReadable
    * @throws totalcross.io.IOException
    */
-  public XmlReadablePort(int number, int baudRate, URI baseURI) throws totalcross.io.IOException
-  {
+  public XmlReadablePort(int number, int baudRate, URI baseURI) throws totalcross.io.IOException {
     this(new PortConnector(number, baudRate), baseURI);
   }
 
@@ -61,21 +57,19 @@ public class XmlReadablePort extends XmlReadableByteArray
    *           URI for this XmlReadable
    * @throws totalcross.io.IOException
    */
-  public XmlReadablePort(PortConnector port, URI baseURI) throws totalcross.io.IOException
-  {
+  public XmlReadablePort(PortConnector port, URI baseURI) throws totalcross.io.IOException {
     stream = port;
     this.baseURI = baseURI;
     buf = new byte[BUFSIZE];
     ofsEnd = stream.readBytes(buf, 0, BUFSIZE);
-    if (ofsEnd == -1){
+    if (ofsEnd == -1) {
       buf = null;
     }
     stream.close();
   }
 
   @Override
-  public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException
-  {
+  public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException {
     rdr.parse(stream, buf, 0, ofsEnd, 0);
     stream.close();
     buf = null;

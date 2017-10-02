@@ -9,22 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC155_iflt extends ConditionalBranch
-{
-  public BC155_iflt()
-  {
-    super(-1,-1,0,readInt16(pc+1),INT);
+public class BC155_iflt extends ConditionalBranch {
+  public BC155_iflt() {
+    super(-1, -1, 0, readInt16(pc + 1), INT);
   }
+
   @Override
-  public void exec()
-  {
-    if (stack[stackPtr-1].asInt < 0){
+  public void exec() {
+    if (stack[stackPtr - 1].asInt < 0) {
       pcInc = jumpIfTrue;
-    }else {
+    } else {
       pcInc = jumpIfFalse;
     }
   }

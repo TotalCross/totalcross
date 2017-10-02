@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC067_fstore_0 extends StoreLocal
-{
-  public BC067_fstore_0()
-  {
-    super(0,-1,FLOAT);
+public class BC067_fstore_0 extends StoreLocal {
+  public BC067_fstore_0() {
+    super(0, -1, FLOAT);
   }
 }

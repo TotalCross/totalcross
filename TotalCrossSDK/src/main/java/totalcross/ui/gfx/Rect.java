@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.gfx;
 
 import totalcross.sys.Convert;
@@ -25,8 +23,7 @@ import totalcross.sys.Convert;
  * Rect represents a rectangle.
  */
 
-public class Rect
-{
+public class Rect {
   /** x position */
   public int x;
   /** y position */
@@ -37,14 +34,12 @@ public class Rect
   public int height;
 
   /** Constructs a rectangle with x = y = width = height = 0. */
-  public Rect()
-  {
+  public Rect() {
     // they are already 0 as default.
   }
 
   /** Constructs a rectangle with the given x, y, width and height. */
-  public Rect(int x, int y, int width, int height)
-  {
+  public Rect(int x, int y, int width, int height) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -52,8 +47,7 @@ public class Rect
   }
 
   /** Constructs a rectangle with the given rectangle coordinates. */
-  public Rect(Rect r)
-  {
+  public Rect(Rect r) {
     this.x = r.x;
     this.y = r.y;
     this.width = r.width;
@@ -61,14 +55,12 @@ public class Rect
   }
 
   /** Constructs a rectangle with the given coords */
-  public Rect(Coord topleft, Coord bottomright)
-  {
-    set(topleft.x,topleft.y,bottomright.x-topleft.x+1,bottomright.y-topleft.y+1);
+  public Rect(Coord topleft, Coord bottomright) {
+    set(topleft.x, topleft.y, bottomright.x - topleft.x + 1, bottomright.y - topleft.y + 1);
   }
 
   /** Sets the properties of this rect. */
-  public void set(int x, int y, int width, int height)
-  {
+  public void set(int x, int y, int width, int height) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -85,33 +77,28 @@ public class Rect
   }
 
   /** Returns true if the point xx,yy is inside this rect. */
-  public boolean contains(int xx, int yy)
-  {
-    return x <= xx && xx < x+width && y <= yy && yy < y+height;
+  public boolean contains(int xx, int yy) {
+    return x <= xx && xx < x + width && y <= yy && yy < y + height;
   }
 
   @Override
-  public String toString()
-  {
-    return Convert.toString(x)+','+y+','+width+','+height;
+  public String toString() {
+    return Convert.toString(x) + ',' + y + ',' + width + ',' + height;
   }
 
   /** Translates this rect. The new positions will be this.x+deltaX, this.y+deltaY. */
-  public void translate(int deltaX, int deltaY)
-  {
+  public void translate(int deltaX, int deltaY) {
     this.x += deltaX;
     this.y += deltaY;
   }
 
   /** Returns a new rect modified by the specified parameters. */
-  public Rect modifiedBy(int deltaX, int deltaY, int deltaW, int deltaH)
-  {
-    return new Rect(x+deltaX, y+deltaY, width+deltaW, height+deltaH);
+  public Rect modifiedBy(int deltaX, int deltaY, int deltaW, int deltaH) {
+    return new Rect(x + deltaX, y + deltaY, width + deltaW, height + deltaH);
   }
 
   /** Modifies this rect by the specified parameters. */
-  public void modify(int deltaX, int deltaY, int deltaW, int deltaH)
-  {
+  public void modify(int deltaX, int deltaY, int deltaW, int deltaH) {
     x += deltaX;
     y += deltaY;
     width += deltaW;
@@ -119,47 +106,42 @@ public class Rect
   }
 
   /** Returns x+width-1 */
-  public int x2()
-  {
-    return x+width-1;
+  public int x2() {
+    return x + width - 1;
   }
 
   /** Returns y+height-1 */
-  public int y2()
-  {
-    return y+height-1;
+  public int y2() {
+    return y + height - 1;
   }
 
   /** Returns true if this rectangle intersects with the given one */
-  public boolean intersects(Rect r)
-  {
+  public boolean intersects(Rect r) {
     return !((r.x + r.width <= x) || (r.y + r.height <= y) || (r.x >= x + width) || (r.y >= y + height));
   }
 
   /** Modify this Rect by doing the intersection with the given rect. Returns <code>this</code> rect. */
-  public Rect intersectWith(Rect r)
-  {
+  public Rect intersectWith(Rect r) {
     int x1 = Math.max(x, r.x);
     int x2 = Math.min(x + width, r.x + r.width);
     int y1 = Math.max(y, r.y);
     int y2 = Math.min(y + height, r.y + r.height);
     this.x = x1;
     this.y = y1;
-    this.width  = x2 - x1;
+    this.width = x2 - x1;
     this.height = y2 - y1;
     return this;
   }
 
   /** Modify this Rect by doing an union with the given rect. Returns <code>this</code> rect. */
-  public Rect unionWith(Rect r)
-  {
+  public Rect unionWith(Rect r) {
     int x1 = Math.min(x, r.x);
     int x2 = Math.max(x + width, r.x + r.width);
     int y1 = Math.min(y, r.y);
     int y2 = Math.max(y + height, r.y + r.height);
     this.x = x1;
     this.y = y1;
-    this.width  = x2 - x1;
+    this.width = x2 - x1;
     this.height = y2 - y1;
     return this;
   }
@@ -168,9 +150,8 @@ public class Rect
   @Override
   public boolean equals(Object other) // guich@240_2
   {
-    if (other instanceof Rect)
-    {
-      Rect r = (Rect)other;
+    if (other instanceof Rect) {
+      Rect r = (Rect) other;
       return r.x == this.x && r.y == this.y && r.width == this.width && r.height == this.height;
     }
     return false;

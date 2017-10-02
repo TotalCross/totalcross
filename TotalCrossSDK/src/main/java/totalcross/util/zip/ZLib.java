@@ -14,7 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package totalcross.util.zip;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -36,8 +35,7 @@ import totalcross.io.Stream;
  * </p>
  * </blockquote>
  */
-final public class ZLib
-{
+final public class ZLib {
   /** Compression level for no compression, which is 0 in a scale from 0 (no compression) to 9 (best compression) */
   public static final int NO_COMPRESSION = 0;
 
@@ -74,8 +72,7 @@ final public class ZLib
    * @throws IOException
    * @see #DEFAULT_COMPRESSION
    */
-  public static int deflate(Stream in, Stream out) throws IOException
-  {
+  public static int deflate(Stream in, Stream out) throws IOException {
     return deflate(in, out, DEFAULT_COMPRESSION, DEFAULT_STRATEGY, false);
   }
 
@@ -95,8 +92,7 @@ final public class ZLib
    * @see #BEST_SPEED
    * @see #BEST_COMPRESSION
    */
-  public static int deflate(Stream in, Stream out, int compressionLevel) throws IOException
-  {
+  public static int deflate(Stream in, Stream out, int compressionLevel) throws IOException {
     return deflate(in, out, compressionLevel, DEFAULT_STRATEGY, false);
   }
 
@@ -116,12 +112,11 @@ final public class ZLib
    * @see #BEST_SPEED
    * @see #BEST_COMPRESSION
    * @deprecated use #deflate(Stream, Stream, int) instead
-   */   
+   */
   @Deprecated
-  public static int deflate(int compressionLevel, Stream in, Stream out) throws IOException
-  {
+  public static int deflate(int compressionLevel, Stream in, Stream out) throws IOException {
     return deflate(in, out, compressionLevel, DEFAULT_STRATEGY, false);
-  }   
+  }
 
   /**
    * Deflates the given stream 'in' using the specified strategy and compression level, writing the result to the given
@@ -145,29 +140,27 @@ final public class ZLib
    * @see #BEST_COMPRESSION
    */
   @ReplacedByNativeOnDeploy
-  public static int deflate(Stream in, Stream out, int compressionLevel, int strategy, boolean noWrap) throws IOException
-  {
-    if (in == null){
+  public static int deflate(Stream in, Stream out, int compressionLevel, int strategy, boolean noWrap)
+      throws IOException {
+    if (in == null) {
       throw new NullPointerException("Argument 'in' cannot have a null value");
     }
-    if (out == null){
+    if (out == null) {
       throw new NullPointerException("Argument 'out' cannot have a null value");
     }
-    if (compressionLevel < -1 || compressionLevel > 9){
+    if (compressionLevel < -1 || compressionLevel > 9) {
       throw new IllegalArgumentException("Argument 'compressionLevel' must be between -1 and 9.");
     }
 
     Deflater deflater = null;
-    try
-    {
+    try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
       deflater = new Deflater(compressionLevel, noWrap);
       deflater.setStrategy(strategy);
       DeflaterOutputStream dos = new DeflaterOutputStream(baos, deflater, 8192);
       byte[] bin = new byte[1024];
       int r;
-      while (true)
-      {
+      while (true) {
         r = in.readBytes(bin, 0, bin.length);
         if (r > 0) {
           dos.write(bin, 0, r);
@@ -179,13 +172,9 @@ final public class ZLib
       byte[] bout = baos.toByteArray();
       out.writeBytes(bout, 0, bout.length);
       return bout.length;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
-    }
-    finally
-    {
+    } finally {
       /*
        * "Sun's Deflater class allocates some non-heap memory, which is only cleared with its end() call, or when its
        * finalizer is called. It's possible to fill up the non-heap memory when the deflater is used frequently
@@ -208,8 +197,7 @@ final public class ZLib
    * @throws IOException
    * @throws ZipException
    */
-  public static int inflate(Stream in, Stream out) throws IOException, ZipException
-  {
+  public static int inflate(Stream in, Stream out) throws IOException, ZipException {
     return inflate(in, out, -1, false);
   }
 
@@ -227,8 +215,7 @@ final public class ZLib
    * @throws ZipException
    * @throws IOException
    */
-  public static int inflate(Stream in, Stream out, int sizeIn) throws IOException, ZipException
-  {
+  public static int inflate(Stream in, Stream out, int sizeIn) throws IOException, ZipException {
     return inflate(in, out, sizeIn, false);
   }
 
@@ -253,18 +240,17 @@ final public class ZLib
    * @throws IOException
    */
   @ReplacedByNativeOnDeploy
-  public static int inflate(Stream in, Stream out, int sizeIn, boolean noWrap) throws IOException, ZipException
-  {
-    if (in == null){
+  public static int inflate(Stream in, Stream out, int sizeIn, boolean noWrap) throws IOException, ZipException {
+    if (in == null) {
       throw new NullPointerException("Argument 'in' cannot have a null value");
     }
-    if (out == null){
+    if (out == null) {
       throw new NullPointerException("Argument 'out' cannot have a null value");
     }
-    if (sizeIn < -1){
+    if (sizeIn < -1) {
       throw new IllegalArgumentException("Argument 'sizeIn' cannot have a value lower than -1.");
     }
-    if (sizeIn == 0){
+    if (sizeIn == 0) {
       return 0;
     }
 
@@ -274,20 +260,15 @@ final public class ZLib
     int r = 0, w, rt = 0, wt = 0;
     int s = sizeIn;
 
-    try
-    {
-      while (true)
-      {
+    try {
+      while (true) {
         int tor = sizeIn == -1 ? bin.length : Math.min(bin.length, s);
-        if (tor > 0)
-        {
+        if (tor > 0) {
           r = in.readBytes(bin, 0, tor); // if tor == 0 and the stream does not quietly accept requests of size 0 (such as File stream) this call will throw exception
         }
-        if (r > 0)
-        {
+        if (r > 0) {
           inf.setInput(bin, 0, r);
-          while (true)
-          {
+          while (true) {
             w = inf.inflate(bout);
             if (w <= 0) {
               break;
@@ -305,22 +286,17 @@ final public class ZLib
           break;
         }
       }
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
       throw new IOException(e.getMessage());
-    }
-    catch (java.util.zip.DataFormatException e)
-    {
+    } catch (java.util.zip.DataFormatException e) {
       throw new ZipException(e.getMessage());
     }
-    if (rt > 0 && (wt == 0 || (sizeIn > 0 && s > 0))){
+    if (rt > 0 && (wt == 0 || (sizeIn > 0 && s > 0))) {
       throw new ZipException("Inflate error: " + "Read " + rt + " but could not decompress it.");
     }
     return wt;
   }
 
-  private ZLib()
-  {
+  private ZLib() {
   } // cannot instantiate
 }

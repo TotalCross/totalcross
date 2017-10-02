@@ -9,19 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandRegD32 extends OperandRegD
-{
-  public OperandRegD32()
-  {
+public class OperandRegD32 extends OperandRegD {
+  public OperandRegD32() {
     super();
   }
 
-  public OperandRegD32(int framePosition)
-  {
+  public OperandRegD32(int framePosition) {
     super(framePosition);
   }
 }

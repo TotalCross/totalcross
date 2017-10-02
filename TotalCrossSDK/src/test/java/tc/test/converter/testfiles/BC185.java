@@ -9,29 +9,25 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC185 implements BC185_A
-{
-  public void test()
-  {
+public class BC185 implements BC185_A {
+  public void test() {
     BC185 thisClass = new BC185();
     BC185_A superInterface = new BC185();
     int x = 1;
 
-    mOverloading(1);  // this is not INVOKEINTERFACE
+    mOverloading(1); // this is not INVOKEINTERFACE
     thisClass.mOverloading(1); // this is not INVOKEINTERFACE
     superInterface.mOverloading(x); // INVOKEINTERFACE
     superInterface.mOverloading(x); // INVOKEINTERFACE (Repeated intentionally)
   }
 
   @Override
-  public void mOverloading(int i) {}
+  public void mOverloading(int i) {
+  }
 }
 
-interface BC185_A
-{
+interface BC185_A {
   public void mOverloading(int i);
 }

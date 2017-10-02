@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC190
-{
-  public BC190()
-  {
+public class BC190 {
+  public BC190() {
     int len = 0;
 
     int arInt[] = new int[4];

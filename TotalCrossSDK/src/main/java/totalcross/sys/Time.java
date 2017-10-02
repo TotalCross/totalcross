@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.sys;
 
 import java.util.Calendar;
@@ -38,8 +36,7 @@ import totalcross.util.InvalidDateException;
  * You can also call the update method to update the time with the current system values.
  */
 
-public final class Time
-{
+public final class Time {
   /** The year as its full set of digits (year 2010 is 2010). */
   public int year;
 
@@ -68,8 +65,7 @@ public final class Time
   /**
    * Constructs a time object set to the current date and time.
    */
-  public Time()
-  {
+  public Time() {
     update();
   }
 
@@ -92,36 +88,44 @@ public final class Time
   /** Constructs a time object from a Date, zeroing the hour/minute/second and millis
    * @since TotalCross 2.0
    */
-  public Time(Date d)
-  {
-    this(d.getDateInt(),0);
+  public Time(Date d) {
+    this(d.getDateInt(), 0);
   }
+
   /** Constructs a time object from the given value. 
    * @see #getTimeLong
    * @since SuperWaba 4.0
    */
-  public Time(long yyyymmddhhmmss)
-  {
-    second = (int)(yyyymmddhhmmss % 100); yyyymmddhhmmss /= 100;
-    minute = (int)(yyyymmddhhmmss % 100); yyyymmddhhmmss /= 100;
-    hour   = (int)(yyyymmddhhmmss % 100); yyyymmddhhmmss /= 100;
-    day    = (int)(yyyymmddhhmmss % 100); yyyymmddhhmmss /= 100;
-    month  = (int)(yyyymmddhhmmss % 100); yyyymmddhhmmss /= 100;
-    year   = (int)yyyymmddhhmmss;
+  public Time(long yyyymmddhhmmss) {
+    second = (int) (yyyymmddhhmmss % 100);
+    yyyymmddhhmmss /= 100;
+    minute = (int) (yyyymmddhhmmss % 100);
+    yyyymmddhhmmss /= 100;
+    hour = (int) (yyyymmddhhmmss % 100);
+    yyyymmddhhmmss /= 100;
+    day = (int) (yyyymmddhhmmss % 100);
+    yyyymmddhhmmss /= 100;
+    month = (int) (yyyymmddhhmmss % 100);
+    yyyymmddhhmmss /= 100;
+    year = (int) yyyymmddhhmmss;
   }
 
   /** Constructs a time object from the given date and time values. 
    * @since TotalCross 1.0 beta 4
    */
-  public Time(int yyyymmdd, int hhmmssmmm)
-  {
-    millis =  hhmmssmmm % 1000; hhmmssmmm /= 1000;
-    second = (hhmmssmmm % 100); hhmmssmmm /= 100;
-    minute = (hhmmssmmm % 100); hhmmssmmm /= 100;
-    hour   = (hhmmssmmm % 100); 
-    day    = (yyyymmdd % 100); yyyymmdd /= 100;
-    month  = (yyyymmdd % 100); yyyymmdd /= 100;
-    year   = yyyymmdd;
+  public Time(int yyyymmdd, int hhmmssmmm) {
+    millis = hhmmssmmm % 1000;
+    hhmmssmmm /= 1000;
+    second = (hhmmssmmm % 100);
+    hhmmssmmm /= 100;
+    minute = (hhmmssmmm % 100);
+    hhmmssmmm /= 100;
+    hour = (hhmmssmmm % 100);
+    day = (yyyymmdd % 100);
+    yyyymmdd /= 100;
+    month = (yyyymmdd % 100);
+    yyyymmdd /= 100;
+    year = yyyymmdd;
   }
 
   /** Creates a Time object with a String in the given Iso8601 format: <pre>YYYYMMDDTHH:MM:SS</pre>.
@@ -130,7 +134,7 @@ public final class Time
   public Time(String iso8601) throws InvalidNumberException // guich@561_4
   {
     char chars[] = iso8601.toCharArray();
-    year = Convert.toInt(new String(chars,0,4));
+    year = Convert.toInt(new String(chars, 0, 4));
     month = Convert.toInt(new String(chars, 4, 2));
     day = Convert.toInt(new String(chars, 6, 2));
     hour = Convert.toInt(new String(chars, 9, 2));
@@ -142,22 +146,18 @@ public final class Time
    * based that the sequence is always YY-MM-DD hh:mm:ss.mmm.
    * @since TotalCross 3.1
    */
-  public Time(char[] sqlTime) throws InvalidDateException
-  {
-    try
-    {
+  public Time(char[] sqlTime) throws InvalidDateException {
+    try {
       int[] parts = new int[7];
-      int[] pow = {10000,1000,100,10,1};
-      int nr = 0,p=0,ni=4;
-      for (int i = sqlTime.length; --i >= 0;)
-      {
+      int[] pow = { 10000, 1000, 100, 10, 1 };
+      int nr = 0, p = 0, ni = 4;
+      for (int i = sqlTime.length; --i >= 0;) {
         char ch = sqlTime[i];
         boolean isNumber = '0' <= ch && ch <= '9';
         if (isNumber) {
-          nr += (ch-'0') * pow[ni--];
+          nr += (ch - '0') * pow[ni--];
         }
-        if (i == 0 || (!isNumber && ni != 4))
-        {
+        if (i == 0 || (!isNumber && ni != 4)) {
           parts[p++] = nr;
           ni = 4;
           nr = 0;
@@ -165,16 +165,16 @@ public final class Time
       }
 
       if (--p >= 0) {
-        this.year   = parts[p];
+        this.year = parts[p];
       }
       if (--p >= 0) {
-        this.month  = parts[p];
+        this.month = parts[p];
       }
       if (--p >= 0) {
-        this.day    = parts[p];
+        this.day = parts[p];
       }
       if (--p >= 0) {
-        this.hour   = parts[p];
+        this.hour = parts[p];
       }
       if (--p >= 0) {
         this.minute = parts[p];
@@ -185,10 +185,8 @@ public final class Time
       if (--p >= 0) {
         this.millis = parts[p];
       }
-    }
-    catch (Exception e)
-    {
-      InvalidDateException ide = new InvalidDateException("Invalid date: \""+new String(sqlTime)+"\"");
+    } catch (Exception e) {
+      InvalidDateException ide = new InvalidDateException("Invalid date: \"" + new String(sqlTime) + "\"");
       ide.initCause(e);
       throw ide;
     }
@@ -200,18 +198,21 @@ public final class Time
    * @throws InvalidDateException 
    * @since TotalCross 2.1
    */
-  public Time(long time, boolean b) throws InvalidDateException
-  {
-    millis = (int)(time % 1000); time /= 1000;
-    second = (int)(time % 60); time /= 60;
-    minute = (int)(time % 60); time /= 60;
-    hour   = (int)(time % 24); time /= 24;
-    hour  += Settings.timeZoneMinutes/60;
-    if (hour < 0){
+  public Time(long time, boolean b) throws InvalidDateException {
+    millis = (int) (time % 1000);
+    time /= 1000;
+    second = (int) (time % 60);
+    time /= 60;
+    minute = (int) (time % 60);
+    time /= 60;
+    hour = (int) (time % 24);
+    time /= 24;
+    hour += Settings.timeZoneMinutes / 60;
+    if (hour < 0) {
       hour += 24;
     }
     Date d = new Date(Date.SQL_EPOCH.getDateInt());
-    d.advance((int)time);
+    d.advance((int) time);
     day = d.getDay();
     month = d.getMonth();
     year = d.getYear();
@@ -220,9 +221,9 @@ public final class Time
   /** Returns the number of millis since 1/1/1970
    * @since TotalCross 2.1 
    */
-  public long getTime() throws InvalidDateException
-  {
-    return new Date(this).getTime() + hour*60L*60L*1000L + (minute - Settings.timeZoneMinutes)*60L*1000L + second*1000L + millis;
+  public long getTime() throws InvalidDateException {
+    return new Date(this).getTime() + hour * 60L * 60L * 1000L + (minute - Settings.timeZoneMinutes) * 60L * 1000L
+        + second * 1000L + millis;
   }
 
   /** Constructs a Time object, parsing the String and placing the fields depending on
@@ -232,8 +233,8 @@ public final class Time
    * AM/PM is supported.
    * @since TotalCross 1.3
    */
-  public Time(String time, boolean hasYear, boolean hasMonth, boolean hasDay, boolean hasHour, boolean hasMinute, boolean hasSeconds) throws InvalidNumberException
-  {
+  public Time(String time, boolean hasYear, boolean hasMonth, boolean hasDay, boolean hasHour, boolean hasMinute,
+      boolean hasSeconds) throws InvalidNumberException {
     this(time, hasYear, hasMonth, hasDay, hasHour, hasMinute, hasSeconds, Settings.dateFormat);
   }
 
@@ -245,23 +246,19 @@ public final class Time
    * AM/PM is supported.
    * @since TotalCross 2.1
    */
-  public Time(String time, boolean hasYear, boolean hasMonth, boolean hasDay, boolean hasHour, boolean hasMinute, boolean hasSeconds, byte dateFormat) throws InvalidNumberException
-  {
+  public Time(String time, boolean hasYear, boolean hasMonth, boolean hasDay, boolean hasHour, boolean hasMinute,
+      boolean hasSeconds, byte dateFormat) throws InvalidNumberException {
     String timeLow = time.toLowerCase();
-    if (timeLow.endsWith("AM")){
-      time = time.substring(0,time.length()-2).trim();
-    }else
-      if (timeLow.endsWith("PM"))
-      {
-        time = time.substring(0,time.length()-2).trim();
-        hour += 12;
-      }
+    if (timeLow.endsWith("AM")) {
+      time = time.substring(0, time.length() - 2).trim();
+    } else if (timeLow.endsWith("PM")) {
+      time = time.substring(0, time.length() - 2).trim();
+      hour += 12;
+    }
 
-    try
-    {
+    try {
       StringBuffer seps = new StringBuffer(2); // guich@sqlite: accept any kind of separator
-      for (int i = 0, n = time.length(); i < n; i++)
-      {
+      for (int i = 0, n = time.length(); i < n; i++) {
         char ch = time.charAt(i);
         if (!('0' <= ch && ch <= '9')) {
           seps.append(ch);
@@ -269,34 +266,42 @@ public final class Time
       }
       String[] parts = Convert.tokenizeString(time, seps.toString().toCharArray());
       int idx = 0;
-      if (hasYear && hasMonth && hasDay)
-      {
+      if (hasYear && hasMonth && hasDay) {
         int p1 = Convert.toInt(parts[idx++]);
         int p2 = Convert.toInt(parts[idx++]);
         int p3 = Convert.toInt(parts[idx++]);
-        switch (dateFormat)
-        {
-        case Settings.DATE_DMY: day = p1; month = p2; year = p3; break;
-        case Settings.DATE_MDY: day = p2; month = p1; year = p3; break;
-        case Settings.DATE_YMD: day = p3; month = p2; year = p1; break;
+        switch (dateFormat) {
+        case Settings.DATE_DMY:
+          day = p1;
+          month = p2;
+          year = p3;
+          break;
+        case Settings.DATE_MDY:
+          day = p2;
+          month = p1;
+          year = p3;
+          break;
+        case Settings.DATE_YMD:
+          day = p3;
+          month = p2;
+          year = p1;
+          break;
         }
-      }
-      else
-      {
-        if (hasYear  && idx < parts.length) {
-          year  = Convert.toInt(parts[idx++]);
+      } else {
+        if (hasYear && idx < parts.length) {
+          year = Convert.toInt(parts[idx++]);
         }
         if (hasMonth && idx < parts.length) {
           month = Convert.toInt(parts[idx++]);
         }
-        if (hasDay   && idx < parts.length) {
-          day   = Convert.toInt(parts[idx++]);
+        if (hasDay && idx < parts.length) {
+          day = Convert.toInt(parts[idx++]);
         }
       }
-      if (hasHour    && idx < parts.length) {
+      if (hasHour && idx < parts.length) {
         hour += Convert.toInt(parts[idx++]);
       }
-      if (hasMinute  && idx < parts.length) {
+      if (hasMinute && idx < parts.length) {
         minute = Convert.toInt(parts[idx++]);
       }
       if (hasSeconds && idx < parts.length) {
@@ -305,16 +310,15 @@ public final class Time
       if (parts.length == 7) {
         millis = Convert.toInt(parts[idx++]);
       }
+    } catch (InvalidNumberException ine) {
     }
-    catch (InvalidNumberException ine) {}
   }
 
   /** Returns the time in the format YYYYMMDDHHMMSS as a long value. It does
    * not include the millis.
    * @since SuperWaba 4.0
    */
-  public long getTimeLong()
-  {
+  public long getTimeLong() {
     int i = hour * 10000 + minute * 100 + second;
     return year * 10000000000L + month * 100000000L + day * 1000000 + i;
   }
@@ -323,9 +327,9 @@ public final class Time
    * include the millis.
    * @since TotalCross 2.0
    */
-  public long getSQLLong()
-  {
-    return year * 10000000000000L + month * 100000000000L + day * 1000000000L + hour * 10000000L + minute * 100000L + second * 1000L + millis;
+  public long getSQLLong() {
+    return year * 10000000000000L + month * 100000000000L + day * 1000000000L + hour * 10000000L + minute * 100000L
+        + second * 1000L + millis;
   }
 
   /** Returns this date in the format <code>YYYY-MM-DD HH:mm:SS.mmm</code>
@@ -344,13 +348,15 @@ public final class Time
   {
     sb.append(year);
     sb.append('-');
-    if (month < 10){
+    if (month < 10) {
       sb.append('0');
-    } sb.append(month);
+    }
+    sb.append(month);
     sb.append('-');
-    if (day   < 10){
+    if (day < 10) {
       sb.append('0');
-    } sb.append(day);
+    }
+    sb.append(day);
     sb.append(' ');
     return dump(sb, ":", true).toString();
   }
@@ -358,8 +364,7 @@ public final class Time
   /** Constructs a new time with the given values. The values are not checked.
    * @since SuperWaba 3.5
    */
-  public Time(int year, int month, int day, int hour, int minute, int second, int millis)
-  {
+  public Time(int year, int month, int day, int hour, int minute, int second, int millis) {
     this.year = year;
     this.month = month;
     this.day = day;
@@ -405,61 +410,53 @@ public final class Time
     {
       if (hour == 0 || hour == 12) {
         sb.append("12");
-      } else
-      {
-        int h = hour < 12 ? hour : (hour-12);
+      } else {
+        int h = hour < 12 ? hour : (hour - 12);
         if (h < 10) {
           sb.append('0');
         }
         sb.append(h);
       }
-    }
-    else
-    {
+    } else {
       if (hour < 10) {
         sb.append('0');
       }
       sb.append(hour);
     }
     sb.append(timeSeparator);
-    if (minute < 10){
+    if (minute < 10) {
       sb.append('0');
     }
     sb.append(minute);
     sb.append(timeSeparator);
-    if (second < 10){
+    if (second < 10) {
       sb.append('0');
     }
     sb.append(second);
-    if (includeMillis)
-    {
+    if (includeMillis) {
       sb.append(".");
       if (millis < 10) {
         sb.append("00");
-      } else
-        if (millis < 100) {
-          sb.append("0");
-        }
+      } else if (millis < 100) {
+        sb.append("0");
+      }
       sb.append(millis);
     }
-    if (useAmPm)
-    {
-      sb.append(hour >= 12 ? " PM":" AM"); // guich@566_40: 12 is already pm
+    if (useAmPm) {
+      sb.append(hour >= 12 ? " PM" : " AM"); // guich@566_40: 12 is already pm
     }
     return sb;
   }
 
   @Override
-  public boolean equals(Object o)
-  {
-    if (o == this){
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
     }
-    if (o instanceof Time)
-    {
+    if (o instanceof Time) {
       Time t = (Time) o;
-      return year == t.year && month == t.month && day == t.day &&
-          hour == t.hour && minute == t.minute && second == t.second && millis == t.millis;
+      return year == t.year && month == t.month && day == t.day && hour == t.hour && minute == t.minute
+          && second == t.second && millis == t.millis;
     }
     return false;
   }
@@ -472,19 +469,19 @@ public final class Time
     StringBuffer sb = new StringBuffer(20);
     sb.setLength(0);
     // flsobral@tc100b4: calculate first part, instead of creating a Date object to call getDateInt.
-    sb.append((year * 10000)+ (month*100) + day);
+    sb.append((year * 10000) + (month * 100) + day);
     sb.append('T');
-    if (hour < 10){
+    if (hour < 10) {
       sb.append('0');
     }
     sb.append(hour);
     sb.append(':');
-    if (minute < 10){
+    if (minute < 10) {
       sb.append('0');
     }
     sb.append(minute);
     sb.append(':');
-    if (second < 10){
+    if (second < 10) {
       sb.append('0');
     }
     sb.append(second);
@@ -494,9 +491,9 @@ public final class Time
   /** Returns true if the time is valid. Note that the date part is NOT checked, only hour, minute, second and millis are checked against valid ranges.
    * @since TotalCross 1.22
    */
-  public boolean isValid()
-  {
-    return 0 <= hour && hour <= 23 && 0 <= minute && minute <= 59 && 0 <= second && second <= 59 && 0 <= millis && millis <= 999;
+  public boolean isValid() {
+    return 0 <= hour && hour <= 23 && 0 <= minute && minute <= 59 && 0 <= second && second <= 59 && 0 <= millis
+        && millis <= 999;
   }
 
   /** Increments or decrements the fields below. Note that this method DOES update the 
@@ -512,30 +509,27 @@ public final class Time
     int ts = this.second + this.minute * 60 + this.hour * 3600;
     int s = ts + is;
     int days = is / SECONDS_PER_DAY; // dont use s!
-    if (s > SECONDS_PER_DAY){
+    if (s > SECONDS_PER_DAY) {
       s %= SECONDS_PER_DAY;
-    }else
-      if (s < 0){
-        s = SECONDS_PER_DAY - (-s % SECONDS_PER_DAY);
-      }
-    this.second = s % 60; s = s / 60;
-    this.minute = s % 60; s = s / 60;
-    this.hour   = s;
-    if (days != 0)
-    {
+    } else if (s < 0) {
+      s = SECONDS_PER_DAY - (-s % SECONDS_PER_DAY);
+    }
+    this.second = s % 60;
+    s = s / 60;
+    this.minute = s % 60;
+    s = s / 60;
+    this.hour = s;
+    if (days != 0) {
       if (date == null) {
         date = new Date();
       }
-      try
-      {
+      try {
         date.set(this.day, this.month, this.year);
         date.advance(days);
         this.day = date.getDay();
         this.month = date.getMonth();
         this.year = date.getYear();
-      }
-      catch (InvalidDateException e)
-      {
+      } catch (InvalidDateException e) {
         e.printStackTrace();
       }
     }

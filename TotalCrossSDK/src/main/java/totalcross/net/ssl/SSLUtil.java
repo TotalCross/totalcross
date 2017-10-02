@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /*
  *  Copyright(C) 2006 Cameron Rich
  *
@@ -46,16 +44,13 @@ import totalcross.sys.Vm;
 /**
  * Some global helper functions.
  */
-public class SSLUtil
-{
+public class SSLUtil {
   public static final int CONFIG_SSL_MAX_CERTS = 16;
   public static final int CONFIG_X509_MAX_CA_CERTS = 128;
 
   @ReplacedByNativeOnDeploy
-  public static int getConfig(int which)
-  {
-    switch (which)
-    {
+  public static int getConfig(int which) {
+    switch (which) {
     /* return the appropriate build mode */
     case Constants.SSL_BUILD_MODE:
       return Constants.SSL_BUILD_FULL_MODE;
@@ -77,8 +72,7 @@ public class SSLUtil
    * - SSL_BUILD_ENABLE_CLIENT
    * - SSL_BUILD_FULL_MODE
    */
-  public static int buildMode()
-  {
+  public static int buildMode() {
     return getConfig(Constants.SSL_BUILD_MODE);
   }
 
@@ -87,8 +81,7 @@ public class SSLUtil
    * supports.
    * @return The number of supported client/server certificates.
    */
-  public static int maxCerts()
-  {
+  public static int maxCerts() {
     return getConfig(Constants.SSL_MAX_CERT_CFG_OFFSET);
   }
 
@@ -97,8 +90,7 @@ public class SSLUtil
    * supports.
    * @return The number of supported CA certificates.
    */
-  public static int maxCACerts()
-  {
+  public static int maxCACerts() {
     return getConfig(Constants.SSL_MAX_CA_CERT_CFG_OFFSET);
   }
 
@@ -106,8 +98,7 @@ public class SSLUtil
    * Indicate if PEM is supported.
    * @return true if PEM supported.
    */
-  public static boolean hasPEM()
-  {
+  public static boolean hasPEM() {
     return getConfig(Constants.SSL_HAS_PEM) > 0;
   }
 
@@ -117,8 +108,7 @@ public class SSLUtil
    * @param error_code [in] The integer error code.
    */
   @ReplacedByNativeOnDeploy
-  public static void displayError(int error_code)
-  {
+  public static void displayError(int error_code) {
     Vm.debug("ssl error: " + error_code);
   }
 
@@ -126,8 +116,7 @@ public class SSLUtil
    * Return the version of the axTLS project.
    */
   @ReplacedByNativeOnDeploy
-  public static String version()
-  {
+  public static String version() {
     return "1.0/1.1.5";
   }
 }

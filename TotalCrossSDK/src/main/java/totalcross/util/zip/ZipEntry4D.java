@@ -14,12 +14,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
-public class ZipEntry4D
-{
+public class ZipEntry4D {
   String name; // entry name
   int dostime = -1; // modification time (in DOS time)
   int crc = -1; // crc-32 of entry data
@@ -44,21 +41,18 @@ public class ZipEntry4D
   /**
    * Default constructor is used by native code.
    */
-  ZipEntry4D()
-  {
+  ZipEntry4D() {
   }
 
-  public ZipEntry4D(String name)
-  {
+  public ZipEntry4D(String name) {
     int length = name.length();
-    if (length > 65535){
+    if (length > 65535) {
       throw new IllegalArgumentException("name length is " + length);
     }
     this.name = name;
   }
 
-  public ZipEntry4D(ZipEntry e)
-  {
+  public ZipEntry4D(ZipEntry e) {
     name = e.name;
     known = e.known;
     size = e.size;
@@ -70,8 +64,7 @@ public class ZipEntry4D
     comment = e.comment;
   }
 
-  public String getName()
-  {
+  public String getName() {
     return name;
   }
 
@@ -79,133 +72,107 @@ public class ZipEntry4D
 
   native public long getTime();
 
-  public void setSize(long size)
-  {
-    if ((size & 0xffffffff00000000L) != 0){
+  public void setSize(long size) {
+    if ((size & 0xffffffff00000000L) != 0) {
       throw new IllegalArgumentException();
     }
     this.size = (int) size;
   }
 
-  public long getSize()
-  {
+  public long getSize() {
     return size;
   }
 
-  public void setCompressedSize(long csize)
-  {
-    if ((csize & 0xffffffff00000000L) != 0){
+  public void setCompressedSize(long csize) {
+    if ((csize & 0xffffffff00000000L) != 0) {
       throw new IllegalArgumentException();
     }
     this.csize = (int) csize;
   }
 
-  public long getCompressedSize()
-  {
+  public long getCompressedSize() {
     return csize != -1 ? csize & 0xffffffffL : -1L;
   }
 
-  public void setCrc(long crc)
-  {
-    if ((crc & 0xffffffff00000000L) != 0){
+  public void setCrc(long crc) {
+    if ((crc & 0xffffffff00000000L) != 0) {
       throw new IllegalArgumentException();
     }
     this.crc = (int) crc;
   }
 
-  public long getCrc()
-  {
+  public long getCrc() {
     return crc != -1 ? crc & 0xffffffffL : -1L;
   }
 
-  public void setMethod(int method)
-  {
-    if (method != STORED && method != DEFLATED){
+  public void setMethod(int method) {
+    if (method != STORED && method != DEFLATED) {
       throw new IllegalArgumentException();
     }
     this.method = (short) method;
   }
 
-  public int getMethod()
-  {
+  public int getMethod() {
     return method;
   }
 
-  public void setExtra(byte[] extra)
-  {
-    if (extra == null){
+  public void setExtra(byte[] extra) {
+    if (extra == null) {
       this.extra = null;
-    }else if (extra.length > 0xffff){
+    } else if (extra.length > 0xffff) {
       throw new IllegalArgumentException();
-    }else
-    {
+    } else {
       this.extra = extra;
-      try
-      {
+      try {
         int pos = 0;
-        while (pos < extra.length)
-        {
-          int sig = (extra[pos++] & 0xff)
-              | (extra[pos++] & 0xff) << 8;
-          int len = (extra[pos++] & 0xff)
-              | (extra[pos++] & 0xff) << 8;
-          if (sig == 0x5455)
-          {
+        while (pos < extra.length) {
+          int sig = (extra[pos++] & 0xff) | (extra[pos++] & 0xff) << 8;
+          int len = (extra[pos++] & 0xff) | (extra[pos++] & 0xff) << 8;
+          if (sig == 0x5455) {
             /* extended time stamp */
             int flags = extra[pos];
-            if ((flags & 1) != 0)
-            {
-              long time = ((extra[pos + 1] & 0xff)
-                  | (extra[pos + 2] & 0xff) << 8
-                  | (extra[pos + 3] & 0xff) << 16
+            if ((flags & 1) != 0) {
+              long time = ((extra[pos + 1] & 0xff) | (extra[pos + 2] & 0xff) << 8 | (extra[pos + 3] & 0xff) << 16
                   | (extra[pos + 4] & 0xff) << 24);
               setTime(time);
             }
           }
           pos += len;
         }
-      }
-      catch (ArrayIndexOutOfBoundsException ex)
-      {
+      } catch (ArrayIndexOutOfBoundsException ex) {
         /* be lenient */
         return;
       }
     }
   }
 
-  public byte[] getExtra()
-  {
+  public byte[] getExtra() {
     return extra;
   }
 
-  public void setComment(String comment)
-  {
-    if (comment != null && comment.length() > 0xffff){
+  public void setComment(String comment) {
+    if (comment != null && comment.length() > 0xffff) {
       throw new IllegalArgumentException();
     }
     this.comment = comment;
   }
 
-  public String getComment()
-  {
+  public String getComment() {
     return comment;
   }
 
-  public boolean isDirectory()
-  {
+  public boolean isDirectory() {
     int nlen = name.length();
     return nlen > 0 && name.charAt(nlen - 1) == '/';
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return name;
   }
 
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     return name.hashCode();
   }
 }

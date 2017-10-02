@@ -5,15 +5,14 @@ import totalcross.io.IOException;
 import totalcross.sys.Vm;
 import totalcross.unit.TestCase;
 
-public class TestByteArrayStream extends TestCase
-{
+public class TestByteArrayStream extends TestCase {
   protected static byte[] bufferConst = new byte[10];
   protected static byte[] bufferCopy;
   protected boolean buggousBehavior = true;
 
   protected void copyTheBuffer() {
     bufferCopy = new byte[bufferConst.length];
-    Vm.arrayCopy(bufferConst,0,bufferCopy,0,bufferConst.length);
+    Vm.arrayCopy(bufferConst, 0, bufferCopy, 0, bufferConst.length);
   }
 
   private void testConstruct() {
@@ -71,7 +70,7 @@ public class TestByteArrayStream extends TestCase
     int sizes[] = new int[nTests];
     int i;
 
-    for (i = 0; i < nTests; i += nTests/2) {
+    for (i = 0; i < nTests; i += nTests / 2) {
       sizes[0 + i] = -1;
       sizes[1 + i] = 0;
       sizes[2 + i] = sizeBuff - 1;
@@ -80,7 +79,7 @@ public class TestByteArrayStream extends TestCase
     }
 
     for (i = 0; i < nTests; i++) {
-      if (i < nTests/2) {
+      if (i < nTests / 2) {
         testBuff[i] = null;
       } else {
         testBuff[i] = buff;
@@ -94,55 +93,52 @@ public class TestByteArrayStream extends TestCase
       assertEquals(0, bas.getPos());
       assertEquals(sizes[i], bas.available());
       fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
-    } catch (IllegalArgumentException ex) {}
-    i++;
-
-    try {
-      bas = new ByteArrayStream(testBuff[i], sizes[i]);
-      assertEquals(0, bas.getPos());
-      assertEquals(sizes[i], bas.available());
-      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
-    } catch (IllegalArgumentException ex) {}
-    i++;
-
-    try {
-      bas = new ByteArrayStream(testBuff[i], sizes[i]);
-      assertEquals(0, bas.getPos());
-      assertEquals(sizes[i], bas.available());
-      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
-    } catch (IllegalArgumentException ex) {}
-    i++;
-
-    try {
-      bas = new ByteArrayStream(testBuff[i], sizes[i]);
-      assertEquals(0, bas.getPos());
-      assertEquals(sizes[i], bas.available());
-      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
-    } catch (IllegalArgumentException ex) {}
-    i++;
-
-    try {
-      bas = new ByteArrayStream(testBuff[i], sizes[i]);
-      assertEquals(0, bas.getPos());
-      assertEquals(sizes[i], bas.available());
-      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
-    } catch (IllegalArgumentException ex) {}
-    i++;
-
-    try {
-      bas = new ByteArrayStream(testBuff[i], sizes[i]);
-      assertEquals(0, bas.getPos());
-      assertEquals(sizes[i], bas.available());
-      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
-    } catch (IllegalArgumentException ex) {}
-    i++;
-
-    try {
-      bas = new ByteArrayStream(testBuff[i], sizes[i]);
-      assertEquals(0, bas.getPos());
-      assertEquals(sizes[i], bas.available());
     } catch (IllegalArgumentException ex) {
+    }
+    i++;
+
+    try {
+      bas = new ByteArrayStream(testBuff[i], sizes[i]);
+      assertEquals(0, bas.getPos());
+      assertEquals(sizes[i], bas.available());
       fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
+    } catch (IllegalArgumentException ex) {
+    }
+    i++;
+
+    try {
+      bas = new ByteArrayStream(testBuff[i], sizes[i]);
+      assertEquals(0, bas.getPos());
+      assertEquals(sizes[i], bas.available());
+      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
+    } catch (IllegalArgumentException ex) {
+    }
+    i++;
+
+    try {
+      bas = new ByteArrayStream(testBuff[i], sizes[i]);
+      assertEquals(0, bas.getPos());
+      assertEquals(sizes[i], bas.available());
+      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
+    } catch (IllegalArgumentException ex) {
+    }
+    i++;
+
+    try {
+      bas = new ByteArrayStream(testBuff[i], sizes[i]);
+      assertEquals(0, bas.getPos());
+      assertEquals(sizes[i], bas.available());
+      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
+    } catch (IllegalArgumentException ex) {
+    }
+    i++;
+
+    try {
+      bas = new ByteArrayStream(testBuff[i], sizes[i]);
+      assertEquals(0, bas.getPos());
+      assertEquals(sizes[i], bas.available());
+      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
+    } catch (IllegalArgumentException ex) {
     }
     i++;
 
@@ -168,8 +164,18 @@ public class TestByteArrayStream extends TestCase
       bas = new ByteArrayStream(testBuff[i], sizes[i]);
       assertEquals(0, bas.getPos());
       assertEquals(sizes[i], bas.available());
+    } catch (IllegalArgumentException ex) {
       fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
-    } catch (IllegalArgumentException ex) {}
+    }
+    i++;
+
+    try {
+      bas = new ByteArrayStream(testBuff[i], sizes[i]);
+      assertEquals(0, bas.getPos());
+      assertEquals(sizes[i], bas.available());
+      fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
+    } catch (IllegalArgumentException ex) {
+    }
     i++;
   }
 
@@ -177,7 +183,8 @@ public class TestByteArrayStream extends TestCase
     try {
       new ByteArrayStream(null);
       fail("Constructor (null), test " + 1);
-    } catch (IllegalArgumentException ex) {}
+    } catch (IllegalArgumentException ex) {
+    }
     try {
       ByteArrayStream bas = new ByteArrayStream(new byte[10]);
       assertEquals(0, bas.getPos());
@@ -294,7 +301,8 @@ public class TestByteArrayStream extends TestCase
     try {
       bytesRead = bas.readBytes(ba, 0, -10);
       fail();
-    } catch (IllegalArgumentException ex) {}
+    } catch (IllegalArgumentException ex) {
+    }
     assertEquals(1, bas.getPos());
 
     bytesRead = bas.readBytes(ba, 0, 10);
@@ -415,7 +423,7 @@ public class TestByteArrayStream extends TestCase
 
     ba = bas.getBuffer();
 
-    assertEquals((Object)bufferConst, (Object)ba);
+    assertEquals((Object) bufferConst, (Object) ba);
 
     ba = bas.toByteArray();
     assertEquals(0, bas.getPos());
@@ -426,7 +434,7 @@ public class TestByteArrayStream extends TestCase
     ba = bas.toByteArray();
     assertEquals(3, bas.getPos());
     assertEquals(3, ba.length);
-    for (i = 0; i < 3;i++) {
+    for (i = 0; i < 3; i++) {
       assertEquals(bufferConst[i], ba[i]);
     }
 
@@ -438,7 +446,7 @@ public class TestByteArrayStream extends TestCase
 
     ba[9] = (byte) -1;
     assertNotEquals(bufferConst, ba);
-    for (i = 0; i < 9;i++) {
+    for (i = 0; i < 9; i++) {
       assertEquals(bufferConst[i], ba[i]);
     }
 
@@ -451,7 +459,8 @@ public class TestByteArrayStream extends TestCase
     try {
       bas.setBuffer(null);
       fail();
-    } catch (IllegalArgumentException ex) {}
+    } catch (IllegalArgumentException ex) {
+    }
 
     bas.setBuffer(br);
     assertEquals(0, bas.getPos());
@@ -505,9 +514,9 @@ public class TestByteArrayStream extends TestCase
           break;
         case totalcross.io.RandomAccessStream.SEEK_END:
           if (buggousBehavior) {
-            expectedPos =  bas.getPos() + bas.available() + i - 1;
+            expectedPos = bas.getPos() + bas.available() + i - 1;
           } else {
-            expectedPos =  bas.getPos() + bas.available() + i;
+            expectedPos = bas.getPos() + bas.available() + i;
           }
           break;
         default:
@@ -570,7 +579,7 @@ public class TestByteArrayStream extends TestCase
     bas = new ByteArrayStream(bufferCopy, 5);
     assertEquals(5, bas.available());
 
-    bas.setSize(3,  true);
+    bas.setSize(3, true);
     assertEquals(0, bas.getPos());
     assertEquals(5, bas.available());
 
@@ -614,7 +623,7 @@ public class TestByteArrayStream extends TestCase
 
   @Override
   public void testRun() {
-    for (int i = 0; i  < 10; i++) {
+    for (int i = 0; i < 10; i++) {
       bufferConst[i] = (byte) i;
     }
 

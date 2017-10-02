@@ -1,7 +1,6 @@
 package tc.test.totalcross.lang;
 
-public class Support_Field
-{
+public class Support_Field {
   protected Object objectField;
   protected boolean booleanField;
   protected byte byteField;

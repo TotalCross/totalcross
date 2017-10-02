@@ -6,30 +6,25 @@ import java.util.Vector;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
 import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
-public class SuperBlob extends BlobCore
-{
+public class SuperBlob extends BlobCore {
   Vector<BlobIndex> index = new Vector<BlobIndex>();
 
-  protected SuperBlob(long magic)
-  {
+  protected SuperBlob(long magic) {
     super(magic);
   }
 
-  public void add(BlobIndex blobIndex)
-  {
+  public void add(BlobIndex blobIndex) {
     index.addElement(blobIndex);
   }
 
   @Override
-  protected void writeToStream(ElephantMemoryWriter writer) throws IOException
-  {
+  protected void writeToStream(ElephantMemoryWriter writer) throws IOException {
     int count = index.size();
     writer.writeUnsignedInt(count);
 
     long idxPos = writer.pos;
     writer.pos += count * 8L;
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
       BlobIndex item = (BlobIndex) index.elementAt(i);
       item.offset = writer.pos - offset;
       writer.memorize();
@@ -43,12 +38,10 @@ public class SuperBlob extends BlobCore
   }
 
   @Override
-  protected void readFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
-  IllegalAccessException
-  {
+  protected void readFromStream(ElephantMemoryReader reader)
+      throws IOException, InstantiationException, IllegalAccessException {
     long count = reader.readUnsignedInt();
-    for (long i = 0; i < count; i++)
-    {
+    for (long i = 0; i < count; i++) {
       long blobType = reader.readUnsignedInt();
       long blobOffset = reader.readUnsignedInt();
 

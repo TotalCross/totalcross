@@ -57,8 +57,7 @@ import totalcross.util.Vector;
 /**
  * Generates IPhone application packages.
  */
-public class Deployer4IPhoneIPA
-{
+public class Deployer4IPhoneIPA {
   // iOS IPA required files
   public static boolean buildIPA;
   public static String certStorePath;
@@ -74,9 +73,9 @@ public class Deployer4IPhoneIPA
 
   static MobileProvision Provision;
 
-  public Deployer4IPhoneIPA() throws Exception
-  {
-    if (mobileProvision == null || appleCertStore == null || iosKeyStore == null || iosDistributionCertificate == null){
+  public Deployer4IPhoneIPA() throws Exception {
+    if (mobileProvision == null || appleCertStore == null || iosKeyStore == null
+        || iosDistributionCertificate == null) {
       throw new DeployerException("Missing one of required files to build the IPA!");
     }
 
@@ -94,11 +93,9 @@ public class Deployer4IPhoneIPA
     TFile targetZip = new TFile(targetFile);
 
     // get the payload folder from the zip
-    targetZip.listFiles(new FilenameFilter()
-    {
+    targetZip.listFiles(new FilenameFilter() {
       @Override
-      public boolean accept(File dir, String name)
-      {
+      public boolean accept(File dir, String name) {
         ipaContents.put(name, new TFile(dir, name));
         return false;
       }
@@ -106,11 +103,9 @@ public class Deployer4IPhoneIPA
     TFile payload = (TFile) ipaContents.get("Payload");
 
     // get the template appFolder - TotalCross.app
-    payload.listFiles(new FilenameFilter()
-    {
+    payload.listFiles(new FilenameFilter() {
       @Override
-      public boolean accept(File dir, String name)
-      {
+      public boolean accept(File dir, String name) {
         ipaContents.put(name, new TFile(dir, name));
         return false;
       }
@@ -131,7 +126,8 @@ public class Deployer4IPhoneIPA
     new TFile(DeploySettings.folderTotalCross3DistVM, "TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
     new TFile(DeploySettings.folderTotalCross3DistVM, "TCUI.tcz").cp(new TFile(appFolder, "TCUI.tcz"));
     // TCFont
-    new TFile(DeploySettings.folderTotalCross3DistVM, DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
+    new TFile(DeploySettings.folderTotalCross3DistVM, DeploySettings.fontTCZ)
+        .cp(new TFile(appFolder, DeploySettings.fontTCZ));
     // Litebase
     new TFile(DeploySettings.folderTotalCross3DistVM, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
 
@@ -139,28 +135,24 @@ public class Deployer4IPhoneIPA
     Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22
     String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
     Vector v = new Vector(extras);
-    Utils.preprocessPKG(v,true);
-    if (extras.length > 0)
-    {
+    Utils.preprocessPKG(v, true);
+    if (extras.length > 0) {
       TFile pkgFolder = new TFile(appFolder, "pkg");
       pkgFolder.mkdir();
-      for (int i = 0; i < extras.length; i++)
-      {
+      for (int i = 0; i < extras.length; i++) {
         String fname = extras[i];
         File ff = new File(fname);
         if (!ff.exists()) {
-          ff = new File(Utils.findPath(fname,true));
-        }            
+          ff = new File(Utils.findPath(fname, true));
+        }
         new TFile(ff.getPath()).cp(new TFile(fname.endsWith(".tcz") ? appFolder : pkgFolder, Utils.getFileName(fname))); // guich@tc310: keep all tczs at the same parent folder
       }
     }
 
     // get references to the contents of the appFolder
-    appFolder.list(new FilenameFilter()
-    {
+    appFolder.list(new FilenameFilter() {
       @Override
-      public boolean accept(File dir, String name)
-      {
+      public boolean accept(File dir, String name) {
         ipaContents.put(name, new TFile(dir, name));
         return false;
       }
@@ -180,8 +172,7 @@ public class Deployer4IPhoneIPA
     // update the application name
     rootDict.put("CFBundleName", DeploySettings.filePrefix);
     rootDict.put("CFBundleDisplayName", DeploySettings.appTitle);
-    if (DeploySettings.appVersion != null)
-    {
+    if (DeploySettings.appVersion != null) {
       rootDict.put("CFBundleVersion", DeploySettings.appVersion);
       rootDict.put("CFBundleShortVersionString", DeploySettings.appVersion);
     }
@@ -189,13 +180,13 @@ public class Deployer4IPhoneIPA
     //rootDict.put("CFBundleSignature", DeploySettings.applicationId);
 
     String bundleIdentifier = Provision.bundleIdentifier;
-    if (Settings.iosCFBundleIdentifier != null){
+    if (Settings.iosCFBundleIdentifier != null) {
       bundleIdentifier = Settings.iosCFBundleIdentifier;
-    }else
-      if (bundleIdentifier.equals("*")){
-        bundleIdentifier = "com." + DeploySettings.applicationId + "." + DeploySettings.appTitle.replace(" ","").trim().toLowerCase();
-      }
-    Utils.println("Package suffix id (CFBundleIdentifier): "+bundleIdentifier);
+    } else if (bundleIdentifier.equals("*")) {
+      bundleIdentifier = "com." + DeploySettings.applicationId + "."
+          + DeploySettings.appTitle.replace(" ", "").trim().toLowerCase();
+    }
+    Utils.println("Package suffix id (CFBundleIdentifier): " + bundleIdentifier);
 
     rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
@@ -207,14 +198,16 @@ public class Deployer4IPhoneIPA
     // install certificates
     CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
     X509CertificateHolder[] certs = new X509CertificateHolder[3];
-    certs[0] = new X509CertificateHolder(cf.generateCertificate(
-        new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(appleRootCA)))).getEncoded());
-    certs[1] = new X509CertificateHolder(cf.generateCertificate(
-        new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(appleWWDRCA)))).getEncoded());
+    certs[0] = new X509CertificateHolder(
+        cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(appleRootCA))))
+            .getEncoded());
+    certs[1] = new X509CertificateHolder(
+        cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(appleWWDRCA))))
+            .getEncoded());
     certs[2] = iosDistributionCertificate;
 
-    X509Store certStore = X509Store.getInstance(
-        "CERTIFICATE/Collection", new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
+    X509Store certStore = X509Store.getInstance("CERTIFICATE/Collection",
+        new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
 
     // provision
     TFile mobileProvision = (TFile) ipaContents.get("embedded.mobileprovision");
@@ -229,21 +222,21 @@ public class Deployer4IPhoneIPA
 
     AppleBinary file = AppleBinary.create(appStream.toByteArray());
     // executable
-    executable.input(new ByteArrayInputStream(file.resign(iosKeyStore, certStore, bundleIdentifier, Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
+    executable.input(new ByteArrayInputStream(file.resign(iosKeyStore, certStore, bundleIdentifier,
+        Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
 
-    TVFS.umount(targetZip);      
+    TVFS.umount(targetZip);
 
-    FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/ios/" + DeploySettings.filePrefix + ".ipa")));
+    FileUtils.copyFile(targetFile,
+        new File(Convert.appendPath(DeploySettings.targetDir, "/ios/" + DeploySettings.filePrefix + ".ipa")));
 
-    System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/ios/"));
+    System.out.println("... Files written to folder " + Convert.appendPath(DeploySettings.targetDir, "/ios/"));
   }
 
-  private void addIcons(TFile appFolder, NSDictionary rootDict) throws IOException
-  {
+  private void addIcons(TFile appFolder, NSDictionary rootDict) throws IOException {
     NSString[] icons = new NSString[Bitmaps.IOS_ICONS.length];
 
-    for (int i = icons.length - 1; i >= 0; i--)
-    {
+    for (int i = icons.length - 1; i >= 0; i--) {
       TFile icon = new TFile(appFolder, Bitmaps.IOS_ICONS[i].name);
       icon.input(new ByteArrayInputStream(Bitmaps.IOS_ICONS[i].getImage()));
       icons[i] = new NSString(Bitmaps.IOS_ICONS[i].name);
@@ -253,8 +246,8 @@ public class Deployer4IPhoneIPA
     rootDict.put("CFBundleIconFiles", iconBundle);
   }
 
-  protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification, final String executableName) throws UnsupportedEncodingException, IOException
-  {
+  protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification,
+      final String executableName) throws UnsupportedEncodingException, IOException {
     NSDictionary root = new NSDictionary();
 
     NSDictionary rules = new NSDictionary();
@@ -290,33 +283,27 @@ public class Deployer4IPhoneIPA
     return rootBytes;
   }
 
-  private NSDictionary createOmitAndWeight(boolean omit, double weight)
-  {
+  private NSDictionary createOmitAndWeight(boolean omit, double weight) {
     NSDictionary dictionary = new NSDictionary();
     dictionary.put("omit", true);
     dictionary.put("weight", weight);
     return dictionary;
   }
 
-  private void fillCodeResourcesFiles(TFile rootFile, final Set<String> ignoredFiles, final NSDictionary files, final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest)
-  {
-    rootFile.listFiles(new FilenameFilter()
-    {
+  private void fillCodeResourcesFiles(TFile rootFile, final Set<String> ignoredFiles, final NSDictionary files,
+      final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest) {
+    rootFile.listFiles(new FilenameFilter() {
       @Override
-      public boolean accept(File arg0, String arg1)
-      {
+      public boolean accept(File arg0, String arg1) {
         TFile parent = (TFile) arg0;
         TFile file = new TFile(parent, arg1);
         String realFilePath = file.getPath().substring(removePrefix.length() + 1).replace('\\', '/');
 
-        if (!ignoredFiles.contains(realFilePath))
-        {
-          try
-          {
+        if (!ignoredFiles.contains(realFilePath)) {
+          try {
             if (file.isDirectory()) {
               fillCodeResourcesFiles(file, ignoredFiles, files, removePrefix, aux, digest);
-            } else
-            {
+            } else {
               aux.reset();
               digest.reset();
               file.output(aux);
@@ -327,19 +314,16 @@ public class Deployer4IPhoneIPA
               files.put(realFilePath, new NSData(new String(org.bouncycastle.util.encoders.Base64.encode(b))));
             }
             return true;
-          }
-          catch (IOException e)
-          {
+          } catch (IOException e) {
             e.printStackTrace();
           }
         }
         return false;
       }
     });
-  }   
+  }
 
-  public static void iosKeystoreInit() throws Exception 
-  {
+  public static void iosKeystoreInit() throws Exception {
     // initialize bouncy castle
     Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     if (appleCertStore != null) {
@@ -349,13 +333,10 @@ public class Deployer4IPhoneIPA
 
       String keyAlias = (String) ks.aliases().nextElement();
       Certificate storecert = ks.getCertificate(keyAlias);
-      if (storecert == null)
-      {
-        java.io.File[] certsInPath = appleCertStore.getParentFile().listFiles(new FilenameFilter()
-        {
+      if (storecert == null) {
+        java.io.File[] certsInPath = appleCertStore.getParentFile().listFiles(new FilenameFilter() {
           @Override
-          public boolean accept(java.io.File arg0, String arg1)
-          {
+          public boolean accept(java.io.File arg0, String arg1) {
             return arg1.endsWith(".cer");
           }
         });
@@ -366,17 +347,14 @@ public class Deployer4IPhoneIPA
         storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
         PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
         ks.deleteEntry(keyAlias);
-        ks.setEntry(
-            keyAlias,
-            new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
-            new KeyStore.PasswordProtection("".toCharArray())
-            );
+        ks.setEntry(keyAlias, new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
+            new KeyStore.PasswordProtection("".toCharArray()));
       }
       iosKeyStore = ks;
       iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
       Provision = MobileProvision.readFromFile(mobileProvision);
       Settings.iosCertDate = new Time(Provision.expirationDate.getDate().getTime(), false);
-      Utils.println("iOS Certificate expiration date: "+Settings.iosCertDate.getSQLString());
+      Utils.println("iOS Certificate expiration date: " + Settings.iosCertDate.getSQLString());
     }
   }
 }

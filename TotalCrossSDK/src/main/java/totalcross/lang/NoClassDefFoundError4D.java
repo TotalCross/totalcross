@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class NoClassDefFoundError4D extends Error
-{
+public class NoClassDefFoundError4D extends Error {
   /** Constructs an empty Exception. */
-  public NoClassDefFoundError4D()
-  {
+  public NoClassDefFoundError4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public NoClassDefFoundError4D(String msg)
-  {
+  public NoClassDefFoundError4D(String msg) {
     super(msg);
   }
 }

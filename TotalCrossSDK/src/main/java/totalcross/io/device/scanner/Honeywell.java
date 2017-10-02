@@ -1,7 +1,6 @@
 package totalcross.io.device.scanner;
 
-public class Honeywell
-{
+public class Honeywell {
   /** Starts the definition of the barcode parameters. */
   public static final String START_BATCH = "***START_BATCH***";
   /** Ends the definition of the barcode parameters. */

@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractCollection;
@@ -77,8 +76,7 @@ import java.util.WeakHashMap;
  * @since 1.2
  * @status updated to 1.4
  */
-public abstract class AbstractMap4D<K, V> implements Map<K, V>
-{
+public abstract class AbstractMap4D<K, V> implements Map<K, V> {
   /** 
    * A class containing an immutable key and value.  The
    * implementation of {@link Entry#setValue(V)} for this class
@@ -88,47 +86,38 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    *
    * @since 1.6 
    */
-  public static class SimpleImmutableEntry<K, V>
-  implements Entry<K, V>
-  {
+  public static class SimpleImmutableEntry<K, V> implements Entry<K, V> {
     K key;
     V value;
 
-    public SimpleImmutableEntry(K key, V value)
-    {
+    public SimpleImmutableEntry(K key, V value) {
       this.key = key;
       this.value = value;
     }
 
-    public SimpleImmutableEntry(Entry<? extends K, ? extends V> entry)
-    {
+    public SimpleImmutableEntry(Entry<? extends K, ? extends V> entry) {
       this(entry.getKey(), entry.getValue());
     }
 
     @Override
-    public K getKey()
-    {
+    public K getKey() {
       return key;
     }
 
     @Override
-    public V getValue()
-    {
+    public V getValue() {
       return value;
     }
 
     @Override
-    public V setValue(V value)
-    {
+    public V setValue(V value) {
       throw new UnsupportedOperationException("setValue not supported on immutable entry");
     }
   }
 
   /** An "enum" of iterator types. */
   // Package visible for use by subclasses.
-  static final int KEYS = 0,
-      VALUES = 1,
-      ENTRIES = 2;
+  static final int KEYS = 0, VALUES = 1, ENTRIES = 2;
 
   /**
    * The cache for {@link #keySet()}.
@@ -145,8 +134,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
   /**
    * The main constructor, for use by subclasses.
    */
-  protected AbstractMap4D()
-  {
+  protected AbstractMap4D() {
   }
 
   /**
@@ -177,8 +165,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see Set#clear()
    */
   @Override
-  public void clear()
-  {
+  public void clear() {
     entrySet().clear();
   }
 
@@ -192,8 +179,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see Object#clone()
    */
   @Override
-  protected Object clone() throws CloneNotSupportedException
-  {
+  protected Object clone() throws CloneNotSupportedException {
     AbstractMap4D<K, V> copy = (AbstractMap4D<K, V>) super.clone();
     // Clear out the caches; they are stale.
     copy.keys = null;
@@ -215,12 +201,11 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #containsValue(Object)
    */
   @Override
-  public boolean containsKey(Object key)
-  {
+  public boolean containsKey(Object key) {
     Iterator<Map.Entry<K, V>> entries = entrySet().iterator();
     int pos = size();
-    while (--pos >= 0){
-      if (equals(key, entries.next().getKey())){
+    while (--pos >= 0) {
+      if (equals(key, entries.next().getKey())) {
         return true;
       }
     }
@@ -241,12 +226,11 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #containsKey(Object)
    */
   @Override
-  public boolean containsValue(Object value)
-  {
+  public boolean containsValue(Object value) {
     Iterator<Map.Entry<K, V>> entries = entrySet().iterator();
     int pos = size();
-    while (--pos >= 0){
-      if (equals(value, entries.next().getValue())){
+    while (--pos >= 0) {
+      if (equals(value, entries.next().getValue())) {
         return true;
       }
     }
@@ -264,11 +248,8 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see Set#equals(Object)
    */
   @Override
-  public boolean equals(Object o)
-  {
-    return (o == this
-        || (o instanceof Map
-            && entrySet().equals(((Map<K, V>) o).entrySet())));
+  public boolean equals(Object o) {
+    return (o == this || (o instanceof Map && entrySet().equals(((Map<K, V>) o).entrySet())));
   }
 
   /**
@@ -284,12 +265,10 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #containsKey(Object)
    */
   @Override
-  public V get(Object key)
-  {
+  public V get(Object key) {
     Iterator<Map.Entry<K, V>> entries = entrySet().iterator();
     int pos = size();
-    while (--pos >= 0)
-    {
+    while (--pos >= 0) {
       Map.Entry<K, V> entry = entries.next();
       if (equals(key, entry.getKey())) {
         return entry.getValue();
@@ -308,8 +287,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see Set#hashCode()
    */
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     return entrySet().hashCode();
   }
 
@@ -321,8 +299,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #size()
    */
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return size() == 0;
   }
 
@@ -346,19 +323,16 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #values()
    */
   @Override
-  public Set<K> keySet()
-  {
-    if (keys == null){
-      keys = new AbstractSet<K>()
-      {
+  public Set<K> keySet() {
+    if (keys == null) {
+      keys = new AbstractSet<K>() {
         /**
          * Retrieves the number of keys in the backing map.
          *
          * @return The number of keys.
          */
         @Override
-        public int size()
-        {
+        public int size() {
           return AbstractMap4D.this.size();
         }
 
@@ -370,8 +344,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
          * @return True if the key was found, false otherwise.
          */
         @Override
-        public boolean contains(Object key)
-        {
+        public boolean contains(Object key) {
           return containsKey(key);
         }
 
@@ -383,15 +356,12 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
          * @return An iterator over the keys.
          */
         @Override
-        public Iterator<K> iterator()
-        {
-          return new Iterator<K>()
-          {
+        public Iterator<K> iterator() {
+          return new Iterator<K>() {
             /**
              * The iterator returned by <code>entrySet()</code>.
              */
-            private final Iterator<Map.Entry<K, V>> map_iterator
-            = entrySet().iterator();
+            private final Iterator<Map.Entry<K, V>> map_iterator = entrySet().iterator();
 
             /**
              * Returns true if a call to <code>next()</code> will
@@ -401,8 +371,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
              *         the last key.
              */
             @Override
-            public boolean hasNext()
-            {
+            public boolean hasNext() {
               return map_iterator.hasNext();
             }
 
@@ -411,10 +380,9 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
              * by the underlying <code>entrySet()</code> iterator.
              *
              * @return The next key.
-             */ 
+             */
             @Override
-            public K next()
-            {
+            public K next() {
               return map_iterator.next().getKey();
             }
 
@@ -427,8 +395,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
              *         map doesn't support removal.
              */
             @Override
-            public void remove()
-            {
+            public void remove() {
               map_iterator.remove();
             }
           };
@@ -456,8 +423,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #containsKey(Object)
    */
   @Override
-  public V put(K key, V value)
-  {
+  public V put(K key, V value) {
     throw new UnsupportedOperationException();
   }
 
@@ -479,15 +445,12 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #put(Object, Object)
    */
   @Override
-  public void putAll(Map<? extends K, ? extends V> m)
-  {
+  public void putAll(Map<? extends K, ? extends V> m) {
     // FIXME: bogus circumlocution.
     Iterator entries2 = m.entrySet().iterator();
-    Iterator<Map.Entry<? extends K, ? extends V>> entries
-    = (Iterator<Map.Entry<? extends K, ? extends V>>) entries2;
+    Iterator<Map.Entry<? extends K, ? extends V>> entries = (Iterator<Map.Entry<? extends K, ? extends V>>) entries2;
     int pos = m.size();
-    while (--pos >= 0)
-    {
+    while (--pos >= 0) {
       Map.Entry<? extends K, ? extends V> entry = entries.next();
       put(entry.getKey(), entry.getValue());
     }
@@ -511,15 +474,12 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see Iterator#remove()
    */
   @Override
-  public V remove(Object key)
-  {
+  public V remove(Object key) {
     Iterator<Map.Entry<K, V>> entries = entrySet().iterator();
     int pos = size();
-    while (--pos >= 0)
-    {
+    while (--pos >= 0) {
       Map.Entry<K, V> entry = entries.next();
-      if (equals(key, entry.getKey()))
-      {
+      if (equals(key, entry.getKey())) {
         // Must get the value before we remove it from iterator.
         V r = entry.getValue();
         entries.remove();
@@ -538,8 +498,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see Set#size()
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return entrySet().size();
   }
 
@@ -556,12 +515,10 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see Map.Entry#toString()
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     Iterator<Map.Entry<K, V>> entries = entrySet().iterator();
     StringBuffer r = new StringBuffer("{");
-    for (int pos = size(); pos > 0; pos--)
-    {
+    for (int pos = size(); pos > 0; pos--) {
       Map.Entry<K, V> entry = entries.next();
       r.append(entry.getKey());
       r.append('=');
@@ -595,11 +552,9 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * @see #keySet()
    */
   @Override
-  public Collection<V> values()
-  {
-    if (values == null){
-      values = new AbstractCollection<V>()
-      {
+  public Collection<V> values() {
+    if (values == null) {
+      values = new AbstractCollection<V>() {
         /**
          * Returns the number of values stored in
          * the backing map.
@@ -607,8 +562,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
          * @return The number of values.
          */
         @Override
-        public int size()
-        {
+        public int size() {
           return AbstractMap4D.this.size();
         }
 
@@ -620,8 +574,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
          * @return True if the value was found, false otherwise.
          */
         @Override
-        public boolean contains(Object value)
-        {
+        public boolean contains(Object value) {
           return containsValue(value);
         }
 
@@ -633,15 +586,12 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
          * @return An iterator over the values.
          */
         @Override
-        public Iterator<V> iterator()
-        {
-          return new Iterator<V>()
-          {
+        public Iterator<V> iterator() {
+          return new Iterator<V>() {
             /**
              * The iterator returned by <code>entrySet()</code>.
              */
-            private final Iterator<Map.Entry<K, V>> map_iterator
-            = entrySet().iterator();
+            private final Iterator<Map.Entry<K, V>> map_iterator = entrySet().iterator();
 
             /**
              * Returns true if a call to <code>next()</call> will
@@ -651,8 +601,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
              * the last value.
              */
             @Override
-            public boolean hasNext()
-            {
+            public boolean hasNext() {
               return map_iterator.hasNext();
             }
 
@@ -663,8 +612,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
              * @return The next value.
              */
             @Override
-            public V next()
-            {
+            public V next() {
               return map_iterator.next().getValue();
             }
 
@@ -677,8 +625,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
              *         map doesn't support removal.
              */
             @Override
-            public void remove()
-            {
+            public void remove() {
               map_iterator.remove();
             }
           };
@@ -697,8 +644,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    */
   // Package visible for use throughout java.util.
   // It may be inlined since it is final.
-  public static final boolean equals(Object o1, Object o2)
-  {
+  public static final boolean equals(Object o1, Object o2) {
     return o1 == o2 || (o1 != null && o1.equals(o2));
   }
 
@@ -710,8 +656,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    */
   // Package visible for use throughout java.util.
   // It may be inlined since it is final.
-  public static final int hashCode(Object o)
-  {
+  public static final int hashCode(Object o) {
     return o == null ? 0 : o.hashCode();
   }
 
@@ -725,8 +670,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    * 
    * @since 1.6
    */
-  public static class SimpleEntry<K, V> implements Entry<K, V>
-  {
+  public static class SimpleEntry<K, V> implements Entry<K, V> {
     /**
      * The key. Package visible for direct manipulation.
      */
@@ -742,14 +686,12 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
      * @param newKey the key
      * @param newValue the value
      */
-    public SimpleEntry(K newKey, V newValue)
-    {
+    public SimpleEntry(K newKey, V newValue) {
       key = newKey;
       value = newValue;
     }
 
-    public SimpleEntry(Entry<? extends K, ? extends V> entry)
-    {
+    public SimpleEntry(Entry<? extends K, ? extends V> entry) {
       this(entry.getKey(), entry.getValue());
     }
 
@@ -767,21 +709,17 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
      * @return <code>true</code> if it is equal
      */
     @Override
-    public boolean equals(Object o)
-    {
-      if (! (o instanceof Map.Entry)){
+    public boolean equals(Object o) {
+      if (!(o instanceof Map.Entry)) {
         return false;
       }
       // Optimize for our own entries.
-      if (o instanceof SimpleEntry)
-      {
+      if (o instanceof SimpleEntry) {
         SimpleEntry e = (SimpleEntry) o;
-        return (AbstractMap4D.equals(key, e.key)
-            && AbstractMap4D.equals(value, e.value));
+        return (AbstractMap4D.equals(key, e.key) && AbstractMap4D.equals(value, e.value));
       }
       Map.Entry e = (Map.Entry) o;
-      return (AbstractMap4D.equals(key, e.getKey())
-          && AbstractMap4D.equals(value, e.getValue()));
+      return (AbstractMap4D.equals(key, e.getKey()) && AbstractMap4D.equals(value, e.getValue()));
     }
 
     /**
@@ -790,8 +728,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
      * @return the key
      */
     @Override
-    public K getKey()
-    {
+    public K getKey() {
       return key;
     }
 
@@ -802,8 +739,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
      * @return the value
      */
     @Override
-    public V getValue()
-    {
+    public V getValue() {
       return value;
     }
 
@@ -817,8 +753,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
      * @return the hash code
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return (AbstractMap4D.hashCode(key) ^ AbstractMap4D.hashCode(value));
     }
 
@@ -838,8 +773,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
      *         value prevents it being stored in the map.
      */
     @Override
-    public V setValue(V newVal)
-    {
+    public V setValue(V newVal) {
       V r = value;
       value = newVal;
       return r;
@@ -852,11 +786,9 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
      * @return the string representation
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return key + "=" + value;
     }
   } // class SimpleEntry
-
 
 }

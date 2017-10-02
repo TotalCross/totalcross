@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.sys;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -35,46 +33,41 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  * @see totalcross.sys.UTF8CharacterConverter 
  */
 
-public class CharacterConverter
-{
+public class CharacterConverter {
   /** Converts the given byte array range to a char array. */
   @ReplacedByNativeOnDeploy
-  public char[] bytes2chars(byte bytes[], int offset, int length)
-  {
-    char []value = new char[length];
+  public char[] bytes2chars(byte bytes[], int offset, int length) {
+    char[] value = new char[length];
     for (int i = 0; length-- > 0;) {
-      value[i++] = (char)(bytes[offset++] & 0xFF);
+      value[i++] = (char) (bytes[offset++] & 0xFF);
     }
     return value;
   }
 
   /** Converts the given char array range to a byte array. */
   @ReplacedByNativeOnDeploy
-  public byte[] chars2bytes(char chars[], int offset, int length)
-  {
-    byte []bytes = new byte[length];
-    int end = offset+length-1;
+  public byte[] chars2bytes(char chars[], int offset, int length) {
+    byte[] bytes = new byte[length];
+    int end = offset + length - 1;
     int i = 0;
-    for (; offset <= end; offset++)
-    {
+    for (; offset <= end; offset++) {
       char c = chars[offset];
       if (c <= '\377') {
-        bytes[i++] = (byte)c;
-      } else
-      {
+        bytes[i++] = (byte) c;
+      } else {
         if ('\uD800' <= c && c <= '\uDBFF') // two-byte characters?
         {
           if (offset < end) {
             offset++;
           }
         }
-        bytes[i++] = (byte)'?';
+        bytes[i++] = (byte) '?';
       }
     }
     if (i != length) // will never be greater, always smaller, if unicode chars were found
     {
-      byte []temp = new byte[i];
-      Vm.arrayCopy(bytes,0,temp,0,i);
+      byte[] temp = new byte[i];
+      Vm.arrayCopy(bytes, 0, temp, 0, i);
       bytes = temp;
     }
     return bytes;

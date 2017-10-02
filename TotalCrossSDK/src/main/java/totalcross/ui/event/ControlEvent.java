@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 import totalcross.ui.Control;
@@ -25,8 +23,7 @@ import totalcross.ui.Control;
  * ControlEvent is an event posted by a control.
  */
 
-public class ControlEvent extends Event
-{
+public class ControlEvent extends Event {
   /** The event type for a pressed event. */
   public static final int PRESSED = 300;
   /** The event type for a focus in event. */
@@ -50,8 +47,7 @@ public class ControlEvent extends Event
   public static final int CURSOR_CHANGED = 307;
 
   /** Constructs an empty ControlEvent. */
-  public ControlEvent()
-  {
+  public ControlEvent() {
   }
 
   /**
@@ -59,8 +55,7 @@ public class ControlEvent extends Event
    * @param type the type of event
    * @param c the target control
    */
-  public ControlEvent(int type, Control c)
-  {
+  public ControlEvent(int type, Control c) {
     this.type = type;
     target = c;
     timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.
@@ -69,8 +64,7 @@ public class ControlEvent extends Event
   /** Updates the control event setting the timestamp, consumed and target.
    * @since TotalCross 1.0
    */
-  public ControlEvent update(Control c)
-  {
+  public ControlEvent update(Control c) {
     timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.
     consumed = false;
     target = c;
@@ -78,18 +72,28 @@ public class ControlEvent extends Event
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String s = "";
-    switch (type)
-    {
-    case PRESSED      : s = "PRESSED"; break;
-    case FOCUS_IN     : s = "FOCUS_IN"; break;
-    case FOCUS_OUT    : s = "FOCUS_OUT"; break;
-    case WINDOW_CLOSED: s = "WINDOW_CLOSED"; break;
-    case HIGHLIGHT_IN : s = "HIGHLIGHT_IN"; break;
-    case HIGHLIGHT_OUT: s = "HIGHLIGHT_OUT"; break;
+    switch (type) {
+    case PRESSED:
+      s = "PRESSED";
+      break;
+    case FOCUS_IN:
+      s = "FOCUS_IN";
+      break;
+    case FOCUS_OUT:
+      s = "FOCUS_OUT";
+      break;
+    case WINDOW_CLOSED:
+      s = "WINDOW_CLOSED";
+      break;
+    case HIGHLIGHT_IN:
+      s = "HIGHLIGHT_IN";
+      break;
+    case HIGHLIGHT_OUT:
+      s = "HIGHLIGHT_OUT";
+      break;
     }
-    return s+" "+super.toString();
+    return s + " " + super.toString();
   }
 }

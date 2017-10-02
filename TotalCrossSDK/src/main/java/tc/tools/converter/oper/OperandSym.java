@@ -9,23 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandSym extends Operand
-{
+public class OperandSym extends Operand {
   public int index;
 
-  public OperandSym(int kind, int index)
-  {
+  public OperandSym(int kind, int index) {
     super(kind);
     this.index = index;
   }
 
   @Override
-  public boolean isSym()
-  {
+  public boolean isSym() {
     return true;
   }
 }

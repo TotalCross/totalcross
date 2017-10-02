@@ -9,42 +9,35 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.ir.Instruction;
 
 import tc.tools.converter.tclass.TCCode;
 import totalcross.util.Vector;
 
-public class U32 extends Parameter
-{
+public class U32 extends Parameter {
   public int u32;
-  public U32(int line, int v)
-  {
+
+  public U32(int line, int v) {
     super(line);
     u32 = v;
   }
 
-  public U32(int line)
-  {
+  public U32(int line) {
     super(line);
   }
 
-  public void set(int v)
-  {
+  public void set(int v) {
     u32 = v;
   }
 
   @Override
-  public String toString()
-  {
-    String print = ""+u32;
+  public String toString() {
+    String print = "" + u32;
     return print;
   }
 
   @Override
-  public void toTCCode(Vector vcode)
-  {
+  public void toTCCode(Vector vcode) {
     TCCode tc = new TCCode(line);
     tc.len = 0;
     tc.u32__u32(u32);

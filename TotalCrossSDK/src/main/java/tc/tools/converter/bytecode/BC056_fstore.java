@@ -9,20 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC056_fstore extends StoreLocal
-{
-  public BC056_fstore()
-  {
-    super(readUInt8(pc+1),-1,FLOAT);
+public class BC056_fstore extends StoreLocal {
+  public BC056_fstore() {
+    super(readUInt8(pc + 1), -1, FLOAT);
     pcInc = 2;
   }
-  public BC056_fstore(boolean wide)
-  {
-    super(readUInt16(pc+2),-1,FLOAT); // note: pc+1 stores the opcode
+
+  public BC056_fstore(boolean wide) {
+    super(readUInt16(pc + 2), -1, FLOAT); // note: pc+1 stores the opcode
     pcInc = 3;
     bc = FSTORE;
   }

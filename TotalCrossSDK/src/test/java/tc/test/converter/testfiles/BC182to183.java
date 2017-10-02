@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC182to183 extends A
-{
-  public void test()
-  {
+public class BC182to183 extends A {
+  public void test() {
     BC182to183 thisClass;
     A superClass1;
     B superClass2;
@@ -50,34 +46,57 @@ public class BC182to183 extends A
     // testing external method call -::- object of the same type of current class
     thisClass.m3();
 
-    if (false) {Object o = superClass1; o = superClass2; o.toString(); x+=2;} // remove warnings
+    if (false) {
+      Object o = superClass1;
+      o = superClass2;
+      o.toString();
+      x += 2;
+    } // remove warnings
   }
 
-  public BC182to183()   {  }
-  public BC182to183(int x, int y, int z)  {   }
-  public BC182to183(int a, int b, int c, int d, int e, int f)  {  }
-
-  public void m1(int a, int b, int c, int d)   { }
-  public int m2(int a, int b)
-  {
-    return (a+b);
+  public BC182to183() {
   }
-  public void m3() {}
+
+  public BC182to183(int x, int y, int z) {
+  }
+
+  public BC182to183(int a, int b, int c, int d, int e, int f) {
+  }
+
+  public void m1(int a, int b, int c, int d) {
+  }
+
+  public int m2(int a, int b) {
+    return (a + b);
+  }
+
+  public void m3() {
+  }
+
   @Override
-  public void overloading() {}
+  public void overloading() {
+  }
 }
 
-class A extends B
-{
+class A extends B {
   @Override
-  public void overloading() {}
-  public void ma1()  { }
-  public void ma2(int a)  { }
-  public void ma3(int a, int b, int c, int d)  { }
+  public void overloading() {
+  }
+
+  public void ma1() {
+  }
+
+  public void ma2(int a) {
+  }
+
+  public void ma3(int a, int b, int c, int d) {
+  }
 }
 
-class B
-{
-  public void overloading() {}
-  public void mb1()  { }
+class B {
+  public void overloading() {
+  }
+
+  public void mb1() {
+  }
 }

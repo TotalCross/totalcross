@@ -49,17 +49,9 @@ public class BarcodeInter25 extends Barcode {
 
   /** The bars to generate the code.
    */
-  static byte BARS[][] = { { 0, 0, 1, 1, 0 }, {
-    1, 0, 0, 0, 1 }, {
-      0, 1, 0, 0, 1 }, {
-        1, 1, 0, 0, 0 }, {
-          0, 0, 1, 0, 1 }, {
-            1, 0, 1, 0, 0 }, {
-              0, 1, 1, 0, 0 }, {
-                0, 0, 0, 1, 1 }, {
-                  1, 0, 0, 1, 0 }, {
-                    0, 1, 0, 1, 0 }
-  };
+  static byte BARS[][] = { { 0, 0, 1, 1, 0 }, { 1, 0, 0, 0, 1 }, { 0, 1, 0, 0, 1 }, { 1, 1, 0, 0, 0 },
+      { 0, 0, 1, 0, 1 }, { 1, 0, 1, 0, 0 }, { 0, 1, 1, 0, 0 }, { 0, 0, 0, 1, 1 }, { 1, 0, 0, 1, 0 },
+      { 0, 1, 0, 1, 0 } };
 
   /** Creates new BarcodeInter25 */
   public BarcodeInter25() {
@@ -76,6 +68,7 @@ public class BarcodeInter25 extends Barcode {
     checksumText = false;
 
   }
+
   /** Gets the maximum width that the barcode will occupy.
    *  The lower left corner is always (0, 0).
    * @return the size the barcode occupies.
@@ -98,6 +91,7 @@ public class BarcodeInter25 extends Barcode {
 
     return fullWidth;
   }
+
   /** Creates the bars for the barcode.
    * @param text the text. It can contain non numeric characters
    * @return the barcode
@@ -126,6 +120,7 @@ public class BarcodeInter25 extends Barcode {
     bars[pb++] = 0;
     return bars;
   }
+
   /** Calculates the checksum.
    * @param text the numeric text
    * @return the checksum
@@ -140,6 +135,7 @@ public class BarcodeInter25 extends Barcode {
     }
     return (char) (((10 - (total % 10)) % 10) + '0');
   }
+
   /** Deletes all the non numeric characters from <CODE>text</CODE>.
    * @param text the text
    * @return a <CODE>String</CODE> with only numeric characters
@@ -154,6 +150,7 @@ public class BarcodeInter25 extends Barcode {
     }
     return sb.toString();
   }
+
   /** Places the barcode in a Image. The
    * The bars and text are written in the following colors:<p>
    * <P><TABLE BORDER=1>
@@ -188,10 +185,7 @@ public class BarcodeInter25 extends Barcode {
    * @param textColor the color of the text. It can be <CODE>-1</CODE>
    */
   @Override
-  public void placeBarcode(
-      Image image,
-      int barColor,
-      int textColor) {
+  public void placeBarcode(Image image, int barColor, int textColor) {
     Graphics g = image.getGraphics();
     int imageX = image.getWidth();
     int imageY = image.getHeight();
@@ -218,12 +212,12 @@ public class BarcodeInter25 extends Barcode {
     int barStartX = 0;
     int textStartX = 0;
     switch (textAlignment) {
-    case Barcode.ALIGN_LEFT :
+    case Barcode.ALIGN_LEFT:
       break;
-    case Barcode.ALIGN_RIGHT :
+    case Barcode.ALIGN_RIGHT:
       textStartX = imageX - fontX;
       break;
-    default :
+    default:
       textStartX = (imageX - fontX) / 2;
       break;
     }
@@ -246,11 +240,8 @@ public class BarcodeInter25 extends Barcode {
     for (int k = 0; k < bars.length; ++k) {
       int w = (bars[k] == 0 ? x : x * n);
       if (print) {
-        g.fillRect(
-            quietZone + scale(imageX, fullWidth, barStartX),
-            scale(imageY, barHeight, barStartY),
-            scale(imageX, fullWidth, w),
-            Math.round(barHeight));
+        g.fillRect(quietZone + scale(imageX, fullWidth, barStartX), scale(imageY, barHeight, barStartY),
+            scale(imageX, fullWidth, w), Math.round(barHeight));
       }
       print = !print;
       barStartX += w;

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /**
@@ -37,26 +35,24 @@ package totalcross.lang;
  * available.
  */
 
-public class Object4D
-{
+public class Object4D {
   // Note: The TotalCross Object class cannot have a constructor neither fields, because the VM relies in this to make some important optimizations.
 
   /** Returns the string representation of the object, that is full_class_name@internal_address_hex. Note that, differently from JDK, the package separator is / instead of .
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return toStringNative();
   }
 
   /** Returns the hashcode of this object. */
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     return nativeHashCode();
   }
 
   native private String toStringNative();
+
   native private int nativeHashCode();
 
   /** The equals method for class Object implements the most discriminating
@@ -65,8 +61,7 @@ public class Object4D
    object (x==y has the value true).
    @since SuperWaba 2.0 */
   @Override
-  public boolean equals(Object other)
-  {
+  public boolean equals(Object other) {
     return this == other;
   }
 

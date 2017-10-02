@@ -35,28 +35,28 @@ import java.util.Iterator;
 public class XML {
 
   /** The Character '&amp;'. */
-  public static final Character AMP   = '&';
+  public static final Character AMP = '&';
 
   /** The Character '''. */
-  public static final Character APOS  = '\'';
+  public static final Character APOS = '\'';
 
   /** The Character '!'. */
-  public static final Character BANG  = '!';
+  public static final Character BANG = '!';
 
   /** The Character '='. */
-  public static final Character EQ    = '=';
+  public static final Character EQ = '=';
 
   /** The Character '>'. */
-  public static final Character GT    = '>';
+  public static final Character GT = '>';
 
   /** The Character '&lt;'. */
-  public static final Character LT    = '<';
+  public static final Character LT = '<';
 
   /** The Character '?'. */
   public static final Character QUEST = '?';
 
   /** The Character '"'. */
-  public static final Character QUOT  = '"';
+  public static final Character QUOT = '"';
 
   /** The Character '/'. */
   public static final Character SLASH = '/';
@@ -112,8 +112,7 @@ public class XML {
     }
     for (i = 0; i < length; i += 1) {
       if (Character.isWhitespace(string.charAt(i))) {
-        throw new JSONException("'" + string +
-            "' contains a space character.");
+        throw new JSONException("'" + string + "' contains a space character.");
       }
     }
   }
@@ -126,14 +125,13 @@ public class XML {
    * @return true if the close tag is processed.
    * @throws JSONException
    */
-  private static boolean parse(XMLTokener x, JSONObject context,
-      String name) throws JSONException {
-    char       c;
-    int        i;
+  private static boolean parse(XMLTokener x, JSONObject context, String name) throws JSONException {
+    char c;
+    int i;
     JSONObject jsonobject = null;
-    String     string;
-    String     tagName;
-    Object     token;
+    String string;
+    String tagName;
+    Object token;
 
     // Test for and skip past these forms:
     //      <!-- ... -->
@@ -210,7 +208,7 @@ public class XML {
       // Open tag <
 
     } else {
-      tagName = (String)token;
+      tagName = (String) token;
       token = null;
       jsonobject = new JSONObject();
       for (;;) {
@@ -221,15 +219,14 @@ public class XML {
         // attribute = value
 
         if (token instanceof String) {
-          string = (String)token;
+          string = (String) token;
           token = x.nextToken();
           if (token == EQ) {
             token = x.nextToken();
             if (!(token instanceof String)) {
               throw x.syntaxError("Missing value");
             }
-            jsonobject.accumulate(string,
-                XML.stringToValue((String)token));
+            jsonobject.accumulate(string, XML.stringToValue((String) token));
             token = null;
           } else {
             jsonobject.accumulate(string, "");
@@ -259,10 +256,9 @@ public class XML {
               }
               return false;
             } else if (token instanceof String) {
-              string = (String)token;
+              string = (String) token;
               if (string.length() > 0) {
-                jsonobject.accumulate("content",
-                    XML.stringToValue(string));
+                jsonobject.accumulate("content", XML.stringToValue(string));
               }
 
               // Nested element
@@ -271,10 +267,8 @@ public class XML {
               if (parse(x, jsonobject, tagName)) {
                 if (jsonobject.length() == 0) {
                   context.accumulate(tagName, "");
-                } else if (jsonobject.length() == 1 &&
-                    jsonobject.opt("content") != null) {
-                  context.accumulate(tagName,
-                      jsonobject.opt("content"));
+                } else if (jsonobject.length() == 1 && jsonobject.opt("content") != null) {
+                  context.accumulate(tagName, jsonobject.opt("content"));
                 } else {
                   context.accumulate(tagName, jsonobject);
                 }
@@ -288,7 +282,6 @@ public class XML {
       }
     }
   }
-
 
   /**
    * Try to convert a string into a number, boolean, or null. If the string
@@ -321,18 +314,17 @@ public class XML {
           return value;
         }
       }
-    }  catch (Exception ignore) {
+    } catch (Exception ignore) {
       try {
         Double value = new Double(string);
         if (value.toString().equals(string)) {
           return value;
         }
-      }  catch (Exception ignoreAlso) {
+      } catch (Exception ignoreAlso) {
       }
     }
     return string;
   }
-
 
   /**
    * Convert a well-formed (but not necessarily valid) XML string into a
@@ -357,7 +349,6 @@ public class XML {
     return jo;
   }
 
-
   /**
    * Convert a JSONObject into a well-formed, element-normal XML string.
    * @param object A JSONObject.
@@ -368,7 +359,6 @@ public class XML {
     return toString(object, null);
   }
 
-
   /**
    * Convert a JSONObject into a well-formed, element-normal XML string.
    * @param object A JSONObject.
@@ -376,17 +366,16 @@ public class XML {
    * @return A string.
    * @throws JSONException
    */
-  public static String toString(Object object, String tagName)
-      throws JSONException {
-    StringBuilder       sb = new StringBuilder();
-    int                 i;
-    JSONArray           ja;
-    JSONObject          jo;
-    String              key;
-    Iterator<String>    keys;
-    int                 length;
-    String              string;
-    Object              value;
+  public static String toString(Object object, String tagName) throws JSONException {
+    StringBuilder sb = new StringBuilder();
+    int i;
+    JSONArray ja;
+    JSONObject jo;
+    String key;
+    Iterator<String> keys;
+    int length;
+    String string;
+    Object value;
     if (object instanceof JSONObject) {
 
       // Emit <tagName>
@@ -399,7 +388,7 @@ public class XML {
 
       // Loop thru the keys.
 
-      jo = (JSONObject)object;
+      jo = (JSONObject) object;
       keys = jo.keys();
       while (keys.hasNext()) {
         key = keys.next();
@@ -407,13 +396,13 @@ public class XML {
         if (value == null) {
           value = "";
         }
-        string = value instanceof String ? (String)value : null;
+        string = value instanceof String ? (String) value : null;
 
         // Emit content in body
 
         if ("content".equals(key)) {
           if (value instanceof JSONArray) {
-            ja = (JSONArray)value;
+            ja = (JSONArray) value;
             length = ja.length();
             for (i = 0; i < length; i += 1) {
               if (i > 0) {
@@ -428,7 +417,7 @@ public class XML {
           // Emit an array of similar keys
 
         } else if (value instanceof JSONArray) {
-          ja = (JSONArray)value;
+          ja = (JSONArray) value;
           length = ja.length();
           for (i = 0; i < length; i += 1) {
             value = ja.get(i);
@@ -473,7 +462,7 @@ public class XML {
         object = new JSONArray(object);
       }
       if (object instanceof JSONArray) {
-        ja = (JSONArray)object;
+        ja = (JSONArray) object;
         length = ja.length();
         for (i = 0; i < length; i += 1) {
           sb.append(toString(ja.opt(i), tagName == null ? "array" : tagName));
@@ -481,9 +470,8 @@ public class XML {
         return sb.toString();
       } else {
         string = (object == null) ? "null" : escape(object.toString());
-        return (tagName == null) ? "\"" + string + "\"" :
-          (string.length() == 0) ? "<" + tagName + "/>" :
-            "<" + tagName + ">" + string + "</" + tagName + ">";
+        return (tagName == null) ? "\"" + string + "\""
+            : (string.length() == 0) ? "<" + tagName + "/>" : "<" + tagName + ">" + string + "</" + tagName + ">";
       }
     }
   }

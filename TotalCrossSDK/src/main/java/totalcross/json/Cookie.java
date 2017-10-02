@@ -45,10 +45,10 @@ public class Cookie {
    * @return       The escaped result.
    */
   public static String escape(String string) {
-    char            c;
-    String          s = string.trim();
-    int             length = s.length();
-    StringBuilder   sb = new StringBuilder(length);
+    char c;
+    String s = string.trim();
+    int length = s.length();
+    StringBuilder sb = new StringBuilder(length);
     for (int i = 0; i < length; i += 1) {
       c = s.charAt(i);
       if (c < ' ' || c == '+' || c == '%' || c == '=' || c == ';') {
@@ -61,7 +61,6 @@ public class Cookie {
     }
     return sb.toString();
   }
-
 
   /**
    * Convert a cookie specification string into a JSONObject. The string
@@ -79,9 +78,9 @@ public class Cookie {
    * @throws JSONException
    */
   public static JSONObject toJSONObject(String string) throws JSONException {
-    String         name;
-    JSONObject     jo = new JSONObject();
-    Object         value;
+    String name;
+    JSONObject jo = new JSONObject();
+    Object value;
     JSONTokener x = new JSONTokener(string);
     jo.put("name", x.nextTo('='));
     x.next('=');
@@ -103,7 +102,6 @@ public class Cookie {
     }
     return jo;
   }
-
 
   /**
    * Convert a JSONObject into a cookie specification string. The JSONObject
@@ -158,7 +156,7 @@ public class Cookie {
         int d = JSONTokener.dehexchar(string.charAt(i + 1));
         int e = JSONTokener.dehexchar(string.charAt(i + 2));
         if (d >= 0 && e >= 0) {
-          c = (char)(d * 16 + e);
+          c = (char) (d * 16 + e);
           i += 2;
         }
       }

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -27,8 +25,7 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  * 
  * @since TotalCross 1.15
  */
-final public class RadioDevice
-{
+final public class RadioDevice {
   // types
   public static final int WIFI = 0;
   public static final int PHONE = 1;
@@ -42,8 +39,7 @@ final public class RadioDevice
   public static final int BLUETOOTH_STATE_DISCOVERABLE = 2;
 
   /** Cannot be instantiated */
-  private RadioDevice()
-  {
+  private RadioDevice() {
   }
 
   /**
@@ -60,10 +56,8 @@ final public class RadioDevice
    * @since TotalCross 1.15
    */
   @ReplacedByNativeOnDeploy
-  public static boolean isSupported(int type) throws IllegalArgumentException
-  {
-    switch (type)
-    {
+  public static boolean isSupported(int type) throws IllegalArgumentException {
+    switch (type) {
     case WIFI:
       return false;
     case PHONE:
@@ -88,10 +82,8 @@ final public class RadioDevice
    * @since TotalCross 1.15
    */
   @ReplacedByNativeOnDeploy
-  public static int getState(int type) throws IllegalArgumentException
-  {
-    switch (type)
-    {
+  public static int getState(int type) throws IllegalArgumentException {
+    switch (type) {
     case WIFI:
       return RADIO_STATE_DISABLED;
     case PHONE:
@@ -117,13 +109,12 @@ final public class RadioDevice
    * @since TotalCross 1.15
    */
   @ReplacedByNativeOnDeploy
-  public static void setState(int type, int state) throws IllegalArgumentException
-  {
+  public static void setState(int type, int state) throws IllegalArgumentException {
     if (state < RADIO_STATE_DISABLED || state > BLUETOOTH_STATE_DISCOVERABLE
-        || (type != BLUETOOTH && state > RADIO_STATE_ENABLED)){
+        || (type != BLUETOOTH && state > RADIO_STATE_ENABLED)) {
       throw new IllegalArgumentException();
     }
-    if (type < WIFI || type > BLUETOOTH){
+    if (type < WIFI || type > BLUETOOTH) {
       throw new IllegalArgumentException();
     }
   }

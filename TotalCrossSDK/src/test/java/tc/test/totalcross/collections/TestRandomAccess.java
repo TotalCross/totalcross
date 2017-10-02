@@ -15,16 +15,13 @@ import java.util.RandomAccess;
 
 import totalcross.unit.TestCase;
 
-public class TestRandomAccess extends TestCase
-{
+public class TestRandomAccess extends TestCase {
   @Override
-  public void testRun()
-  {
-    Test13 test1 = new Test13();
-    RandomAccess test2 = new Test13();
+  public void testRun() {
+    new Test13();
+    new Test13();
   }
 }
 
-class Test13 implements RandomAccess
-{  
+class Test13 implements RandomAccess {
 }

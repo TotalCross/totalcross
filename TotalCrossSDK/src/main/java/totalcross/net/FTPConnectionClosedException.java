@@ -14,18 +14,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 /** This Exception is thrown when a FTP connection is closed, maybe explicitly or
  * by timeout.
  */
-public class FTPConnectionClosedException extends Exception
-{
+public class FTPConnectionClosedException extends Exception {
   /** Constructs an exception with the given message. */
-  public FTPConnectionClosedException(String msg)
-  {
+  public FTPConnectionClosedException(String msg) {
     super(msg);
   }
 }

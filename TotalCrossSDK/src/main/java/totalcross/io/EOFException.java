@@ -8,13 +8,11 @@ package totalcross.io;
  * 
  * @since TotalCross 1.62
  */
-public class EOFException extends IOException
-{
+public class EOFException extends IOException {
   /**
    * Constructs an EOFException with null as its error detail message.
    */
-  public EOFException()
-  {
+  public EOFException() {
     super();
   }
 
@@ -24,8 +22,7 @@ public class EOFException extends IOException
    * @param msg
    *           the detail message.
    */
-  public EOFException(String msg)
-  {
+  public EOFException(String msg) {
     super(msg);
   }
 }

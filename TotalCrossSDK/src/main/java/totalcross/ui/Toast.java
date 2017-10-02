@@ -9,8 +9,7 @@ import totalcross.ui.gfx.Color;
 
 /** Class used to show a message on screen.
  */
-public class Toast
-{
+public class Toast {
   /** Back color used in the toast. */
   public static int backColor = 0x303030;
   /** Fore color used in the toast. */
@@ -40,8 +39,7 @@ public class Toast
   /** Shows a toast message using the given parameters on the top most window.
    * @see #show(String, int, Window)
    */
-  public static void show(String message, int delay)
-  {
+  public static void show(String message, int delay) {
     show(message, delay, Window.getTopMost());
   }
 
@@ -59,16 +57,12 @@ public class Toast
    * If delay is INFINITE, it will wait forever until you call show(null,0).
    * If delay is INFINITE_NOANIM, it will wait forever until you call show(null,0) and will not use animation.
    */
-  public static void show(final String message, final int delay, final Window parentWindow)
-  {
-    MainWindow.getMainWindow().runOnMainThread(new Runnable()
-    {
+  public static void show(final String message, final int delay, final Window parentWindow) {
+    MainWindow.getMainWindow().runOnMainThread(new Runnable() {
       @Override
-      public void run()
-      {
+      public void run() {
         final Window parent = parentWindow;
-        if (btn != null && btn.parent != null)
-        {
+        if (btn != null && btn.parent != null) {
           btn.parent.remove(btn);
           btn = null;
           if (animation != null) {
@@ -76,8 +70,7 @@ public class Toast
           }
           animation = null;
         }
-        if (message != null)
-        {
+        if (message != null) {
           String msg = message;
           if (message.indexOf('\n') == -1) {
             msg = Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, font.fm, message);
@@ -88,18 +81,16 @@ public class Toast
           btn.setBorder(Button.BORDER_ROUND);
           btn.setBackForeColors(backColor, foreColor);
           btn.setFont(font);
-          parent.add(btn, posX, posY, width + extraW * (parent.uiAdjustmentsBasedOnFontHeightIsSupported ? 100 : btn.fmH), height);
-          if (delay != INFINITE_NOANIM)
-          {
+          parent.add(btn, posX, posY,
+              width + extraW * (parent.uiAdjustmentsBasedOnFontHeightIsSupported ? 100 : btn.fmH), height);
+          if (delay != INFINITE_NOANIM) {
             FadeAnimation.maxFade = fade;
             animation = FadeAnimation.create(btn, true, null, -1);
             animation.delayAfterFinish = delay;
             final Button thisBtn = btn;
-            animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished()
-            {
+            animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished() {
               @Override
-              public void onAnimationFinished(ControlAnimation anim)
-              {
+              public void onAnimationFinished(ControlAnimation anim) {
                 if (btn != null && btn.parent != null) {
                   btn.parent.remove(btn);
                 }
@@ -114,7 +105,7 @@ public class Toast
           }
         }
       }
-    },true);
+    }, true);
 
   }
 }

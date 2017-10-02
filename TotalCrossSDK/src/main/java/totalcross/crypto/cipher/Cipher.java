@@ -22,8 +22,7 @@ import totalcross.io.ByteArrayStream;
  * site. In order to do that, go to the ReadMe file whole link is below the download link. In this file, search for "Unlimited Strength Java 
  * Cryptography Extension" and follow the instructions. 
  */
-public abstract class Cipher
-{
+public abstract class Cipher {
   Object cipherRef;
   Object keyRef;
 
@@ -94,8 +93,7 @@ public abstract class Cipher
    * @return The name of the algorithm whose class heirs from Cipher. 
    */
   @Override
-  public final String toString()
-  {
+  public final String toString() {
     return getAlgorithm();
   }
 
@@ -105,8 +103,7 @@ public abstract class Cipher
    * @return The initialization vector in a new buffer, or <code>null</code> if the underlying algorithm does not use an IV, or if the IV has not 
    * been set yet.
    */
-  public final byte[] getIV()
-  {
+  public final byte[] getIV() {
     return iv;
   }
 
@@ -119,8 +116,7 @@ public abstract class Cipher
    * 
    * @throws CryptoException If one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters. 
    */
-  public final void reset(int operation, Key key) throws CryptoException
-  {
+  public final void reset(int operation, Key key) throws CryptoException {
     reset(operation, key, CHAINING_NONE, null, PADDING_NONE);
   }
 
@@ -135,8 +131,7 @@ public abstract class Cipher
    * 
    * @throws CryptoException If one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters.
    */
-  public final void reset(int operation, Key key, int chaining) throws CryptoException
-  {
+  public final void reset(int operation, Key key, int chaining) throws CryptoException {
     reset(operation, key, chaining, null, PADDING_NONE);
   }
 
@@ -153,8 +148,7 @@ public abstract class Cipher
    * 
    * @throws CryptoException if one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters.
    */
-  public final void reset(int operation, Key key, int chaining, byte[] iv) throws CryptoException
-  {
+  public final void reset(int operation, Key key, int chaining, byte[] iv) throws CryptoException {
     reset(operation, key, chaining, iv, PADDING_NONE);
   }
 
@@ -173,21 +167,20 @@ public abstract class Cipher
    * 
    * @throws CryptoException if one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters.
    */
-  public final void reset(int operation, Key key, int chaining, byte[] iv, int padding) throws CryptoException
-  {
-    if (operation < OPERATION_ENCRYPT || operation > OPERATION_DECRYPT){
+  public final void reset(int operation, Key key, int chaining, byte[] iv, int padding) throws CryptoException {
+    if (operation < OPERATION_ENCRYPT || operation > OPERATION_DECRYPT) {
       throw new CryptoException("Invalid or unsupported cipher operation: " + operation);
     }
-    if (key == null || !isKeySupported(key, operation)){
+    if (key == null || !isKeySupported(key, operation)) {
       throw new CryptoException("Invalid or unsupported cipher key: " + key);
     }
-    if (chaining < CHAINING_NONE || chaining > CHAINING_CBC || !isChainingSupported(chaining)){
+    if (chaining < CHAINING_NONE || chaining > CHAINING_CBC || !isChainingSupported(chaining)) {
       throw new CryptoException("Invalid or unsupported cipher chaining: " + chaining);
     }
-    if (padding < PADDING_NONE || padding > PADDING_PKCS5 || !isPaddingSupported(padding)){
+    if (padding < PADDING_NONE || padding > PADDING_PKCS5 || !isPaddingSupported(padding)) {
       throw new CryptoException("Invalid or unsupported cipher padding: " + padding);
     }
-    if (operation == OPERATION_DECRYPT && chaining == CHAINING_CBC && iv == null){
+    if (operation == OPERATION_DECRYPT && chaining == CHAINING_CBC && iv == null) {
       throw new CryptoException("The initialization vector must be specified in the CBC DECRYPT mode.");
     }
 
@@ -207,9 +200,8 @@ public abstract class Cipher
    * 
    * @param data The input data.
    */
-  public final void update(int data)
-  {
-    oneByte[0] = (byte)(data & 0xFF);
+  public final void update(int data) {
+    oneByte[0] = (byte) (data & 0xFF);
     input.writeBytes(oneByte, 0, 1);
   }
 
@@ -219,8 +211,7 @@ public abstract class Cipher
    * 
    * @param data The input data.
    */
-  public final void update(byte[] data)
-  {
+  public final void update(byte[] data) {
     input.writeBytes(data, 0, data.length);
   }
 
@@ -232,8 +223,7 @@ public abstract class Cipher
    * @param start The offset in <code>data</code> where the data starts.
    * @param count The input length.
    */
-  public final void update(byte[] data, int start, int count)
-  {
+  public final void update(byte[] data, int start, int count) {
     input.writeBytes(data, start, count);
   }
 
@@ -243,9 +233,8 @@ public abstract class Cipher
    * 
    * @return The operation result in a new buffer.
    */
-  public byte[] getOutput() throws CryptoException
-  {
-    if (operation != OPERATION_ENCRYPT && operation != OPERATION_DECRYPT){
+  public byte[] getOutput() throws CryptoException {
+    if (operation != OPERATION_ENCRYPT && operation != OPERATION_DECRYPT) {
       throw new CryptoException("Cipher is not initialized");
     }
 

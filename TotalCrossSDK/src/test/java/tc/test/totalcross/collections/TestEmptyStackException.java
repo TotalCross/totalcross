@@ -15,17 +15,12 @@ import java.util.EmptyStackException;
 
 import totalcross.unit.TestCase;
 
-public class TestEmptyStackException extends TestCase
-{
+public class TestEmptyStackException extends TestCase {
   @Override
-  public void testRun()
-  {
-    try
-    {
+  public void testRun() {
+    try {
       throw new EmptyStackException();
-    }
-    catch (EmptyStackException exception)
-    {
+    } catch (EmptyStackException exception) {
       assertTrue(exception instanceof EmptyStackException);
     }
 

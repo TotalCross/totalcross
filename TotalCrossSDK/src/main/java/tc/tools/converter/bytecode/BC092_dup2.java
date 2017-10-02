@@ -9,20 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC092_dup2 extends StackManipulation
-{
-  public BC092_dup2()
-  {
-    super(2,true);
+public class BC092_dup2 extends StackManipulation {
+  public BC092_dup2() {
+    super(2, true);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr+1].copyFrom(stack[stackPtr-1]);
-    stack[stackPtr  ].copyFrom(stack[stackPtr-2]);
+  public void exec() {
+    stack[stackPtr + 1].copyFrom(stack[stackPtr - 1]);
+    stack[stackPtr].copyFrom(stack[stackPtr - 2]);
   }
 }

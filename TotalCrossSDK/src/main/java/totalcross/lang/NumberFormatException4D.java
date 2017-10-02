@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class NumberFormatException4D extends IllegalArgumentException
-{
+public class NumberFormatException4D extends IllegalArgumentException {
   /** Constructs an empty Exception. */
-  public NumberFormatException4D()
-  {
+  public NumberFormatException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public NumberFormatException4D(String message)
-  {
+  public NumberFormatException4D(String message) {
     super(message);
   }
 }

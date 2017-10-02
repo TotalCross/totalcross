@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 import java.util.ArrayList;
@@ -35,8 +33,7 @@ import java.util.ArrayList;
  * available.
  */
 
-public class Throwable4D
-{
+public class Throwable4D {
   /** Stores the message given when constructing this Throwable object */
   protected String msg;
 
@@ -57,14 +54,12 @@ public class Throwable4D
   private Throwable4D[] cachedSuppressedArray;
 
   /** Constructs an empty Exception. */
-  public Throwable4D()
-  {
+  public Throwable4D() {
     this(null, null);
   }
 
   /** Constructs an exception with the given message. */
-  public Throwable4D(String msg)
-  {
+  public Throwable4D(String msg) {
     this(msg, null);
   }
 
@@ -80,7 +75,7 @@ public class Throwable4D
     this(message, cause, true, true);
   }
 
-  public Throwable4D(String message, Throwable4D cause,  boolean enableSuppression, boolean writableStackTrace) {
+  public Throwable4D(String message, Throwable4D cause, boolean enableSuppression, boolean writableStackTrace) {
     this.msg = message;
     this.cause = cause;
   }
@@ -92,22 +87,19 @@ public class Throwable4D
    * @param cause the cause, may be null
    * @since 1.4
    */
-  public Throwable4D(Throwable4D cause)
-  {
+  public Throwable4D(Throwable4D cause) {
     this(cause == null ? null : cause.toString(), cause);
   }
 
   /** Returns the message passed on the constructor. May be null. */
-  public String getMessage()
-  {
+  public String getMessage() {
     return msg;
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String ret = getClass().getName();
-    if (msg != null){
+    if (msg != null) {
       ret += ": " + msg;
     }
     return ret;
@@ -120,8 +112,7 @@ public class Throwable4D
   {
     totalcross.sys.Vm.warning(toString());
     printStackTraceNative();
-    if (cause != null && cause != this)
-    {
+    if (cause != null && cause != this) {
       totalcross.sys.Vm.warning("Caused by ");
       cause.printStackTrace(); // allows recursion
     }
@@ -129,14 +120,14 @@ public class Throwable4D
 
   native private void printStackTraceNative();
 
-  public void printStackTrace(Object o) {} // guich@582_6: just a place-holder to let it build-device
+  public void printStackTrace(Object o) {
+  } // guich@582_6: just a place-holder to let it build-device
 
-  public Throwable4D getCause()
-  {
+  public Throwable4D getCause() {
     return (cause == this ? null : cause);
   }
-  public Throwable4D initCause(Throwable4D cause)
-  {
+
+  public Throwable4D initCause(Throwable4D cause) {
     if (this.cause != this) {
       throw new IllegalStateException("Can't overwrite cause");
     }
@@ -147,8 +138,7 @@ public class Throwable4D
     return this;
   }
 
-  public final void addSuppressed(Throwable4D exception)
-  {
+  public final void addSuppressed(Throwable4D exception) {
     if (this.suppressed == null) {
       this.suppressed = new ArrayList<>();
     }
@@ -156,10 +146,8 @@ public class Throwable4D
     cachedSuppressedArray = null;
   }
 
-  public final Throwable4D[] getSuppressed()
-  {
-    if (cachedSuppressedArray == null)
-    {
+  public final Throwable4D[] getSuppressed() {
+    if (cachedSuppressedArray == null) {
       if (this.suppressed == null) {
         return new Throwable4D[0];
       }

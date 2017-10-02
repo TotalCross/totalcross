@@ -11,8 +11,7 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.x509.X509Store;
 
-public class FatBinaryEntry
-{
+public class FatBinaryEntry {
   protected long cputype;
   protected long cpusubtype;
   protected long offset;
@@ -20,8 +19,8 @@ public class FatBinaryEntry
   protected long alignment;
   protected AppleBinary file;
 
-  public FatBinaryEntry(ElephantMemoryReader reader) throws IOException, InstantiationException, IllegalAccessException
-  {
+  public FatBinaryEntry(ElephantMemoryReader reader)
+      throws IOException, InstantiationException, IllegalAccessException {
     cputype = reader.readUnsignedInt();
     cpusubtype = reader.readUnsignedInt();
     offset = reader.readUnsignedInt();
@@ -32,18 +31,16 @@ public class FatBinaryEntry
   }
 
   public void resign(ElephantMemoryWriter writer, KeyStore ks, X509Store certStore, String bundleIdentifier,
-      byte[] entitlementsBytes, byte[] info, byte[] sourceData) throws UnrecoverableKeyException,
-  CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, IOException,
-  CMSException
-  {
+      byte[] entitlementsBytes, byte[] info, byte[] sourceData)
+      throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException,
+      OperatorCreationException, IOException, CMSException {
     writer.align((int) offset);
     byte[] resignedFile = file.resign(ks, certStore, bundleIdentifier, entitlementsBytes, info, sourceData);
     size = resignedFile.length;
     writer.write(resignedFile);
   }
 
-  public void writeHeader(ElephantMemoryWriter writer) throws IOException
-  {
+  public void writeHeader(ElephantMemoryWriter writer) throws IOException {
     writer.writeUnsignedInt(cputype);
     writer.writeUnsignedInt(cpusubtype);
     writer.writeUnsignedInt(offset);

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.Settings;
@@ -32,7 +30,8 @@ import totalcross.ui.gfx.Color;
  */
 public final class UIColors // guich@564_6
 {
-  private UIColors() {}
+  private UIColors() {
+  }
 
   /** The border color of all windows. */
   public static int windowBorder = Color.BLACK;
@@ -101,80 +100,80 @@ public final class UIColors // guich@564_6
 
   /** These are the colors used to draw the highlight rectangle. */
   public static int[] highlightColors = (Settings.screenWidth > 200) // guich@573_23  - guich@580_
-      ? new int[]{Color.GREEN,Color.GREEN,Color.CYAN,Color.CYAN,Color.WHITE,Color.WHITE}
-  : new int[]{Color.GREEN,Color.CYAN,Color.WHITE};
-      /** The default step used on Vista buttons to make the fade. Decrease the step to make the button lighter. */
-      public static int vistaFadeStep = Settings.screenBPP == 16 ? 8 : 5;
+      ? new int[] { Color.GREEN, Color.GREEN, Color.CYAN, Color.CYAN, Color.WHITE, Color.WHITE }
+      : new int[] { Color.GREEN, Color.CYAN, Color.WHITE };
+  /** The default step used on Vista buttons to make the fade. Decrease the step to make the button lighter. */
+  public static int vistaFadeStep = Settings.screenBPP == 16 ? 8 : 5;
 
-      /** FileChooser foreground color. */
-      public static int fileChooserFore = Color.BLACK;
-      /** FileChooser background color. */
-      public static int fileChooserBack = 0xEEEEAA;
+  /** FileChooser foreground color. */
+  public static int fileChooserFore = Color.BLACK;
+  /** FileChooser background color. */
+  public static int fileChooserBack = 0xEEEEAA;
 
-      /** HtmlContainer background color for the Form controls. */
-      public static int htmlContainerControlsFore = Color.BLACK;
-      /** HtmlContainer foreground color for the Form controls. */
-      public static int htmlContainerControlsBack = Color.WHITE;
-      /** HtmlContainer link foreground color. */
-      public static int htmlContainerLink = Color.BLUE;
+  /** HtmlContainer background color for the Form controls. */
+  public static int htmlContainerControlsFore = Color.BLACK;
+  /** HtmlContainer foreground color for the Form controls. */
+  public static int htmlContainerControlsBack = Color.WHITE;
+  /** HtmlContainer link foreground color. */
+  public static int htmlContainerLink = Color.BLUE;
 
-      /** TimeBox visor's background color. */
-      public static int timeboxVisorBack = Color.WHITE;
-      /** TimeBox visor's cursor color. */
-      public static int timeboxVisorCursor = Color.YELLOW;
-      /** TimeBox OK button color. */
-      public static int timeboxOk = Color.GREEN;
-      /** TimeBox Clear button color. */
-      public static int timeboxClear = Color.RED;   
-      /** TimeBox background color. */
-      public static int timeboxBack = keyboardBack;
+  /** TimeBox visor's background color. */
+  public static int timeboxVisorBack = Color.WHITE;
+  /** TimeBox visor's cursor color. */
+  public static int timeboxVisorCursor = Color.YELLOW;
+  /** TimeBox OK button color. */
+  public static int timeboxOk = Color.GREEN;
+  /** TimeBox Clear button color. */
+  public static int timeboxClear = Color.RED;
+  /** TimeBox background color. */
+  public static int timeboxBack = keyboardBack;
 
-      /** Default value to be used in all textShadowColor(s) set in the constructor of a control. Defaults to -1.
-       * Note that it does not affect the shadow when you call setBackColor or setForeColor.
-       * @see Control#BRIGHTER_BACKGROUND
-       * @see Control#DARKER_BACKGROUND
-       * @since TotalCross 1.27
-       */
-      public static int textShadowColor = -1;
+  /** Default value to be used in all textShadowColor(s) set in the constructor of a control. Defaults to -1.
+   * Note that it does not affect the shadow when you call setBackColor or setForeColor.
+   * @see Control#BRIGHTER_BACKGROUND
+   * @see Control#DARKER_BACKGROUND
+   * @since TotalCross 1.27
+   */
+  public static int textShadowColor = -1;
 
-      /** The color of the PositionBar for all places that use it. */
-      public static int positionbarColor = Color.DARK;
+  /** The color of the PositionBar for all places that use it. */
+  public static int positionbarColor = Color.DARK;
 
-      /** The color to fill the background of the PositionBar. Defaults to -1 (don't fill). */
-      public static int positionbarBackgroundColor = -1;
+  /** The color to fill the background of the PositionBar. Defaults to -1 (don't fill). */
+  public static int positionbarBackgroundColor = -1;
 
-      /** Spinner foreground color. */
-      public static int spinnerFore = controlsFore;
-      /** Spinner background color. */
-      public static int spinnerBack = -1;
+  /** Spinner foreground color. */
+  public static int spinnerFore = controlsFore;
+  /** Spinner background color. */
+  public static int spinnerBack = -1;
 
-      /** The shaded factor (0 - 100) used to fill a background when the backgroundStyle is BACKGROUND_SHADED */
-      public static int shadeFactor = 30;
+  /** The shaded factor (0 - 100) used to fill a background when the backgroundStyle is BACKGROUND_SHADED */
+  public static int shadeFactor = 30;
 
-      /** NumericBox background color. */
-      public static int numericboxBack = keyboardBack;
-      /** NumericBox foreground color. */
-      public static int numericboxFore = keyboardFore;
-      /** NumericBox action color. */
-      public static int numericboxAction = keyboardAction;
+  /** NumericBox background color. */
+  public static int numericboxBack = keyboardBack;
+  /** NumericBox foreground color. */
+  public static int numericboxFore = keyboardFore;
+  /** NumericBox action color. */
+  public static int numericboxAction = keyboardAction;
 
-      /** The color that will be used to paint the disabled area when a screen shift occurs. 
-       * @since TotalCross 1.3
-       */
-      public static int shiftScreenColor = 0x808080;
+  /** The color that will be used to paint the disabled area when a screen shift occurs. 
+   * @since TotalCross 1.3
+   */
+  public static int shiftScreenColor = 0x808080;
 
-      /** Background color of the clipboard menu that is opened at Edit and MultiEdit. */
-      public static int clipboardBack = Color.YELLOW;
-      /** Foreground color of the clipboard menu that is opened at Edit and MultiEdit. */
-      public static int clipboardFore = Color.BLACK;
+  /** Background color of the clipboard menu that is opened at Edit and MultiEdit. */
+  public static int clipboardBack = Color.YELLOW;
+  /** Foreground color of the clipboard menu that is opened at Edit and MultiEdit. */
+  public static int clipboardFore = Color.BLACK;
 
-      /** Background color of the TopMenu */
-      public static int topmenuBack = 0x2C3337;
-      /** Foreground color of the TopMenu */
-      public static int topmenuFore = Color.WHITE;
-      /** Separator color of the TopMenu */
-      public static int separatorFore = 0x61666A;
+  /** Background color of the TopMenu */
+  public static int topmenuBack = 0x2C3337;
+  /** Foreground color of the TopMenu */
+  public static int topmenuFore = Color.WHITE;
+  /** Separator color of the TopMenu */
+  public static int separatorFore = 0x61666A;
 
-      /** The selected color for material UI */
-      public static int materialSelectedColor = Color.BLUE;
+  /** The selected color for material UI */
+  public static int materialSelectedColor = Color.BLUE;
 }

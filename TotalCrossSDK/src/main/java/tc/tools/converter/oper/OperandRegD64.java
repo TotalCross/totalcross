@@ -9,26 +9,20 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandRegD64 extends OperandRegD
-{
-  public OperandRegD64()
-  {
+public class OperandRegD64 extends OperandRegD {
+  public OperandRegD64() {
     super();
     this.nWords = 2;
   }
 
-  public OperandRegD64(int framePosition)
-  {
+  public OperandRegD64(int framePosition) {
     super(framePosition);
     this.nWords = 2;
   }
 
-  public OperandRegD64(String wordIndex, int index)
-  {
+  public OperandRegD64(String wordIndex, int index) {
     super(wordIndex, index);
     nWords = 2;
   }

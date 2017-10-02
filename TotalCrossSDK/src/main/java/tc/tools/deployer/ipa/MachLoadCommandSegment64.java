@@ -2,11 +2,9 @@ package tc.tools.deployer.ipa;
 
 import java.io.IOException;
 
-public class MachLoadCommandSegment64 extends MachLoadCommandSegment
-{
+public class MachLoadCommandSegment64 extends MachLoadCommandSegment {
   @Override
-  void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException
-  {
+  void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException {
     this.filesize = filesize;
     writer.memorize();
     writer.moveTo(offset2FileSize);
@@ -15,8 +13,7 @@ public class MachLoadCommandSegment64 extends MachLoadCommandSegment
   }
 
   @Override
-  protected void parseFromStream(ElephantMemoryReader reader) throws IOException
-  {
+  protected void parseFromStream(ElephantMemoryReader reader) throws IOException {
     this.segname = reader.readString(16);
     this.vmaddr = reader.readUnsignedLongLE();
     this.vmsize = reader.readUnsignedLongLE();

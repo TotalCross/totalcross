@@ -5,16 +5,14 @@ import java.io.IOException;
 import tc.tools.deployer.ipa.blob.BlobHandler;
 import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
-public class MachLoadCommandCodeSignature extends MachLoadCommand
-{
+public class MachLoadCommandCodeSignature extends MachLoadCommand {
   protected EmbeddedSignature signature;
   protected long blobFileOffset;
   protected long blobFileSize;
 
   private int offset2FileSize;
 
-  void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException
-  {
+  void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException {
     this.blobFileSize = filesize;
     writer.memorize();
     writer.moveTo(offset2FileSize);
@@ -23,9 +21,8 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
   }
 
   @Override
-  protected void parseFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
-  IllegalAccessException
-  {
+  protected void parseFromStream(ElephantMemoryReader reader)
+      throws IOException, InstantiationException, IllegalAccessException {
     this.blobFileOffset = (int) reader.readUnsignedIntLE();
     this.offset2FileSize = reader.getPos();
     this.blobFileSize = (int) reader.readUnsignedIntLE();

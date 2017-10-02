@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package jdkcompat.lang;
 
 /**
@@ -46,8 +45,7 @@ package jdkcompat.lang;
  * @author Tom Tromey (tromey@cygnus.com)
  * @status updated to 1.4
  */
-public class InternalError4D extends VirtualMachineError
-{
+public class InternalError4D extends VirtualMachineError {
   /**
    * Compatible with JDK 1.0+.
    */
@@ -56,8 +54,7 @@ public class InternalError4D extends VirtualMachineError
   /**
    * Create an error without a message.
    */
-  public InternalError4D()
-  {
+  public InternalError4D() {
   }
 
   /**
@@ -65,8 +62,7 @@ public class InternalError4D extends VirtualMachineError
    *
    * @param s the message
    */
-  public InternalError4D(String s)
-  {
+  public InternalError4D(String s) {
     super(s);
   }
 }

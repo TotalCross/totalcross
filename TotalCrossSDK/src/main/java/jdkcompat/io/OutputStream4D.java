@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package jdkcompat.io;
 
 import java.io.Closeable;
@@ -57,8 +56,7 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    * This is the default no-argument constructor for this class.  This method
    * does nothing in this class.
    */
-  public OutputStream4D ()
-  {
+  public OutputStream4D() {
   }
 
   /**
@@ -72,7 +70,7 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    *
    * @exception IOException If an error occurs
    */
-  public abstract void write (int b) throws IOException;
+  public abstract void write(int b) throws IOException;
 
   /**
    * This method all the writes bytes from the passed array to the
@@ -84,9 +82,8 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    *
    * @exception IOException If an error occurs
    */
-  public void write (byte[] b) throws IOException, NullPointerException
-  {
-    write (b, 0, b.length);
+  public void write(byte[] b) throws IOException, NullPointerException {
+    write(b, 0, b.length);
   }
 
   /**
@@ -104,14 +101,12 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    *
    * @exception IOException If an error occurs
    */
-  public void write (byte[] b, int off, int len)
-      throws IOException, NullPointerException, IndexOutOfBoundsException
-  {
-    if (off < 0 || len < 0 || off + len > b.length){
-      throw new ArrayIndexOutOfBoundsException ();
+  public void write(byte[] b, int off, int len) throws IOException, NullPointerException, IndexOutOfBoundsException {
+    if (off < 0 || len < 0 || off + len > b.length) {
+      throw new ArrayIndexOutOfBoundsException();
     }
     for (int i = 0; i < len; ++i) {
-      write (b[off + i]);
+      write(b[off + i]);
     }
   }
 
@@ -127,8 +122,7 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    * @exception IOException If an error occurs
    */
   @Override
-  public void flush () throws IOException
-  {
+  public void flush() throws IOException {
   }
 
   /**
@@ -141,7 +135,6 @@ public abstract class OutputStream4D implements Closeable, Flushable {
    * @exception IOException If an error occurs
    */
   @Override
-  public void close () throws IOException
-  {
+  public void close() throws IOException {
   }
 }

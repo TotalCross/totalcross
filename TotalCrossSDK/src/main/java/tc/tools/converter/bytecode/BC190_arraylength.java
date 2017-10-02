@@ -9,28 +9,24 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
 import tc.tools.converter.TCValue;
 
-public class BC190_arraylength extends ByteCode
-{
+public class BC190_arraylength extends ByteCode {
   public int resultPos, objPos;
 
-  public BC190_arraylength()
-  {
+  public BC190_arraylength() {
     objPos = resultPos = -1;
     stackInc = 0;
   }
+
   @Override
-  public void exec()
-  {
-    TCValue v = stack[stackPtr-1];
-    if (!"array".equals(v.asObj)){
+  public void exec() {
+    TCValue v = stack[stackPtr - 1];
+    if (!"array".equals(v.asObj)) {
       System.out.println("Not an array!");
     }
-    stack[stackPtr-1].asInt = v.asInt;
+    stack[stackPtr - 1].asInt = v.asInt;
   }
 }

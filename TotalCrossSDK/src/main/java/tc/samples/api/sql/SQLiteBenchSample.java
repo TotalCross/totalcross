@@ -31,8 +31,7 @@ import totalcross.ui.ProgressBar;
 /**
  * Performs a benchmark in the SQLite.
  */
-public class SQLiteBenchSample extends BaseContainer
-{
+public class SQLiteBenchSample extends BaseContainer {
 
   /**
    * The connection with SQLite.
@@ -77,9 +76,8 @@ public class SQLiteBenchSample extends BaseContainer
   /**
    * The constructor.
    */
-  public SQLiteBenchSample()
-  {
-    if (Settings.onJavaSE){
+  public SQLiteBenchSample() {
+    if (Settings.onJavaSE) {
       Settings.showDesktopMessages = false;
     }
     Vm.tweak(Vm.TWEAK_DUMP_MEM_STATS, true);
@@ -91,8 +89,7 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private void createTable() throws Exception
-  {
+  private void createTable() throws Exception {
     driver = DriverManager.getConnection("jdbc:sqlite:" + Convert.appendPath(Settings.appPath, "person.db"));
 
     log("Creating tables...", false);
@@ -107,20 +104,15 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int insertWithPS() throws Exception
-  {
+  private int insertWithPS() throws Exception {
     StringBuffer sb = new StringBuffer("a"); // Savea some gc() time.
-    int refresh = REFRESH_MOD,
-        time = Vm.getTimeStamp(),
-        i = 0;
+    int refresh = REFRESH_MOD, time = Vm.getTimeStamp(), i = 0;
     PreparedStatement ps = driver.prepareStatement("insert into person values (?)");
 
-    while (++i <= NRECSBYOPERATION)
-    {
+    while (++i <= NRECSBYOPERATION) {
       ps.setString(1, sb.append(i).toString());
       ps.executeUpdate();
-      if (--refresh == 0)
-      {
+      if (--refresh == 0) {
         int pbInsertsValue = ((pbTotal.getValue() - 1) * NRECSBYOPERATION) + i;
         pbInserts.setValue(pbInsertsValue);
         refresh = REFRESH_MOD;
@@ -139,20 +131,15 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int insertWithBatch() throws Exception
-  {
+  private int insertWithBatch() throws Exception {
     StringBuffer sb = new StringBuffer("a"); // Savea some gc() time.
-    int refresh = REFRESH_MOD,
-        time = Vm.getTimeStamp(),
-        i = 0;
+    int refresh = REFRESH_MOD, time = Vm.getTimeStamp(), i = 0;
     PreparedStatement ps = driver.prepareStatement("insert into person values (?)");
 
-    while (++i <= NRECSBYOPERATION)
-    {
+    while (++i <= NRECSBYOPERATION) {
       ps.setString(1, sb.append(i).toString());
       ps.addBatch();
-      if (--refresh == 0)
-      {
+      if (--refresh == 0) {
         int pbInsertsValue = ((pbTotal.getValue() - 1) * NRECSBYOPERATION) + i;
         pbInserts.setValue(pbInsertsValue);
         refresh = REFRESH_MOD;
@@ -172,21 +159,16 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int insertNormal() throws Exception
-  {
+  private int insertNormal() throws Exception {
     StringBuffer sb = new StringBuffer("a"); // Saves some gc() time.
-    int refresh = REFRESH_MOD,
-        i = 0,
-        time = Vm.getTimeStamp();
+    int refresh = REFRESH_MOD, i = 0, time = Vm.getTimeStamp();
 
     sb.setLength(0);
     sb.append("insert into person values ('a");
-    while (++i <= NRECSBYOPERATION)
-    {
+    while (++i <= NRECSBYOPERATION) {
       sb.setLength(29);
       statement.executeUpdate(sb.append(i).append("')").toString());
-      if (--refresh == 0)
-      {
+      if (--refresh == 0) {
         int pbInsertsValue = ((pbTotal.getValue() - 1) * NRECSBYOPERATION) + i;
         pbInserts.setValue(pbInsertsValue);
         refresh = REFRESH_MOD;
@@ -204,8 +186,7 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int selectBeforeLast() throws Exception
-  {
+  private int selectBeforeLast() throws Exception {
     Vm.gc();
     log("Select name = 'a" + (NRECS - 1) + "'", false);
 
@@ -215,13 +196,12 @@ public class SQLiteBenchSample extends BaseContainer
 
     time = Vm.getTimeStamp() - time;
 
-    while (resultSet.next())
-    {
+    while (resultSet.next()) {
       log("-> Found: " + resultSet.getString(1));
       count++;
     }
 
-    if (count == 0){
+    if (count == 0) {
       log("*** Not found...", false);
     }
     log("-> Found " + count + " elements", false);
@@ -236,21 +216,19 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int selectLikeA9() throws Exception
-  {
+  private int selectLikeA9() throws Exception {
     Vm.gc();
     log("Select like 'a9%'", false);
     StringBuffer sb = new StringBuffer();
-    int time = Vm.getTimeStamp(),
-        i = -1;
+    int time = Vm.getTimeStamp(), i = -1;
     ResultSet resultSet = statement.executeQuery("select * from person where name like 'a9%'");
 
     time = Vm.getTimeStamp() - time;
 
-    while (++i < 5 && resultSet.next()){
+    while (++i < 5 && resultSet.next()) {
       sb.append(' ').append(resultSet.getString(1));
     }
-    while (resultSet.next()){
+    while (resultSet.next()) {
       i++;
     }
     log("-> Found " + i + " elements", false);
@@ -266,8 +244,7 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int createIndex() throws Exception
-  {
+  private int createIndex() throws Exception {
     int time = Vm.getTimeStamp();
 
     statement.execute("CREATE INDEX IDX_NAME ON PERSON(NAME)");
@@ -283,8 +260,7 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int selectStar() throws Exception
-  {
+  private int selectStar() throws Exception {
     Vm.gc();
     log("Select star", false);
     int time = Vm.getTimeStamp();
@@ -292,16 +268,15 @@ public class SQLiteBenchSample extends BaseContainer
     ResultSet resultSet = statement.executeQuery("select * from person");
 
     time = Vm.getTimeStamp() - time;
-    if (resultSet.next())
-    {
+    if (resultSet.next()) {
       log("-> Found: " + resultSet.getString(1));
       count++;
     }
-    while (resultSet.next()){
+    while (resultSet.next()) {
       count++;
     }
 
-    if (count == 0){
+    if (count == 0) {
       log("*** Not found...", false);
     }
     log("-> Found " + count + " elements", false);
@@ -316,8 +291,7 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int selectCountStar() throws Exception
-  {
+  private int selectCountStar() throws Exception {
     Vm.gc();
     log("Select count(*)", false);
     int time = Vm.getTimeStamp();
@@ -325,13 +299,12 @@ public class SQLiteBenchSample extends BaseContainer
     ResultSet resultSet = statement.executeQuery("select count(*) as number from person");
 
     time = Vm.getTimeStamp() - time;
-    while (resultSet.next())
-    {
+    while (resultSet.next()) {
       log("-> Found: " + resultSet.getString(1));
       count++;
     }
 
-    if (count == 0){
+    if (count == 0) {
       log("*** Not found...", false);
     }
     log("-> Found " + count + " elements", false);
@@ -346,8 +319,7 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int selectMax() throws Exception
-  {
+  private int selectMax() throws Exception {
     Vm.gc();
     log("Select max()", false);
     int time = Vm.getTimeStamp();
@@ -355,13 +327,12 @@ public class SQLiteBenchSample extends BaseContainer
     ResultSet resultSet = statement.executeQuery("select max(name) as mname from person where name >= 'a0'");
 
     time = Vm.getTimeStamp() - time;
-    while (resultSet.next())
-    {
+    while (resultSet.next()) {
       log("-> Found: " + resultSet.getString(1));
       count++;
     }
 
-    if (count == 0){
+    if (count == 0) {
       log("*** Not found...", false);
     }
     log("-> Found " + count + " elements", false);
@@ -376,8 +347,7 @@ public class SQLiteBenchSample extends BaseContainer
    * @throws Exception
    *         If an internal method throws it.
    */
-  private int selectOrderBy() throws Exception
-  {
+  private int selectOrderBy() throws Exception {
     Vm.gc();
     log("Select with order by", false);
     int time = Vm.getTimeStamp();
@@ -385,16 +355,15 @@ public class SQLiteBenchSample extends BaseContainer
     ResultSet resultSet = statement.executeQuery("select * from person order by name");
 
     time = Vm.getTimeStamp() - time;
-    if (resultSet.next())
-    {
+    if (resultSet.next()) {
       log("-> Found: " + resultSet.getString(1));
       count++;
     }
-    while (resultSet.next()){
+    while (resultSet.next()) {
       count++;
     }
 
-    if (count == 0){
+    if (count == 0) {
       log("*** Not found...", false);
     }
     log("-> Found " + count + " elements", false);
@@ -406,8 +375,7 @@ public class SQLiteBenchSample extends BaseContainer
    * Initializes the user interface.
    */
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     add(new Label("Try also BenchLitebase, in the samples folder"), CENTER, TOP);
     // User interface.
@@ -420,8 +388,7 @@ public class SQLiteBenchSample extends BaseContainer
 
     // Executes the bench operations.
     repaintNow();
-    try
-    {
+    try {
       createTable();
 
       driver.setAutoCommit(false);
@@ -495,10 +462,9 @@ public class SQLiteBenchSample extends BaseContainer
       log(time7 + " " + time8 + " " + time9);
       log(time10 + " " + time11 + " " + time12);
       int totalInserts = (time1 + time2 + timeInsertsUsingBatch + time1b + time2b + timeInsertsUsingBatchb);
-      log("total: " + (totalInserts + time3 + time4 + time5 + time6 + time7 + time8 + time9 + time10 + time11 + time12));
-    }
-    catch (Exception exception)
-    {
+      log("total: "
+          + (totalInserts + time3 + time4 + time5 + time6 + time7 + time8 + time9 + time10 + time11 + time12));
+    } catch (Exception exception) {
       exception.printStackTrace();
       log(exception.getMessage());
     }

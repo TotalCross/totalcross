@@ -25,8 +25,7 @@ import totalcross.crypto.NoSuchAlgorithmException;
 /**
  * This class implements the SHA-256 message digest algorithm.
  */
-public class SHA256Digest extends Digest
-{
+public class SHA256Digest extends Digest {
   /**
    * Creates a new SHA256Digest object.
    * 
@@ -42,8 +41,7 @@ public class SHA256Digest extends Digest
    * @return "SHA-256".
    */
   @Override
-  public final String getAlgorithm()
-  {
+  public final String getAlgorithm() {
     return "SHA-256";
   }
 
@@ -53,8 +51,7 @@ public class SHA256Digest extends Digest
    * @return 64.
    */
   @Override
-  public final int getBlockLength()
-  {
+  public final int getBlockLength() {
     return 64;
   }
 
@@ -64,22 +61,20 @@ public class SHA256Digest extends Digest
    * @return 32.
    */
   @Override
-  public final int getDigestLength()
-  {
+  public final int getDigestLength() {
     return 32;
   }
 
   @Override
   @ReplacedByNativeOnDeploy
-  protected final byte[] process(byte[] data)
-  {
-    MessageDigest digest = (MessageDigest)digestRef;
+  protected final byte[] process(byte[] data) {
+    MessageDigest digest = (MessageDigest) digestRef;
     digest.reset();
     digest.update(data);
 
-    return ((MessageDigest)digestRef).digest();
+    return ((MessageDigest) digestRef).digest();
   }
-  
+
   @ReplacedByNativeOnDeploy
   private void init() throws NoSuchAlgorithmException {
     try {

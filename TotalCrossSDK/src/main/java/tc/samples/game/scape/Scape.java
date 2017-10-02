@@ -37,8 +37,7 @@ import totalcross.util.Properties;
 /**
  * Scape game
  */
-public class Scape extends GameEngine implements ProdConfig
-{
+public class Scape extends GameEngine implements ProdConfig {
   protected final static boolean ARCADE_GAME = true;
 
   protected final static boolean CLEAR_SCREEN = true;
@@ -46,7 +45,7 @@ public class Scape extends GameEngine implements ProdConfig
   protected final static boolean HAS_UI = false;
 
   protected final static int BLOCKS = 4;
-  protected final static int RADIUS = Settings.screenWidth/2;
+  protected final static int RADIUS = Settings.screenWidth / 2;
   protected final static int PEN_OFFSET = 24;
 
   protected final static int MAX_DIFFICULTIES = 3;
@@ -95,18 +94,16 @@ public class Scape extends GameEngine implements ProdConfig
 
   protected static Scape game;
 
-  public Scape()
-  {
+  public Scape() {
     setUIStyle(Settings.Android);
 
     // adjust attributes
     gameName = "Scape";
     // when not run on device, appCreatorId does not always return the same value.
-    gameCreatorID = !Settings.onJavaSE ? totalcross.sys.Settings.applicationId
-        : PC_CREATOR_ID;
+    gameCreatorID = !Settings.onJavaSE ? totalcross.sys.Settings.applicationId : PC_CREATOR_ID;
     gameVersion = 100;
     gameHighscoresSize = 0;
-    gameRefreshPeriod = ARCADE_GAME ? (Settings.keyboardFocusTraversable?100:100) : NO_AUTO_REFRESH;
+    gameRefreshPeriod = ARCADE_GAME ? (Settings.keyboardFocusTraversable ? 100 : 100) : NO_AUTO_REFRESH;
     gameDoClearScreen = CLEAR_SCREEN;
     gameHasUI = HAS_UI;
     setBackColor(0x66FFFF);
@@ -116,16 +113,14 @@ public class Scape extends GameEngine implements ProdConfig
   }
 
   @Override
-  public void onOtherEvent(Event evt)
-  {
-    if (evt.type == MediaClipEvent.END_OF_MEDIA){
+  public void onOtherEvent(Event evt) {
+    if (evt.type == MediaClipEvent.END_OF_MEDIA) {
       showIntroduction();
     }
   }
 
   @Override
-  public void onGameInit()
-  {
+  public void onGameInit() {
     // access the game settings
     settings = getOptions();
 
@@ -133,14 +128,11 @@ public class Scape extends GameEngine implements ProdConfig
     optSound = settings.declareBoolean("sound", false);
     optDifficulty = settings.declareInteger("difficulty", 0);
 
-    try
-    {
+    try {
       levelRenderer = createTextRenderer(getFont(), Color.BLACK, "level: ", 2, false);
       scoreRenderer = createTextRenderer(getFont(), Color.BLACK, "score: ", 5, true);
-    }
-    catch (ImageException e)
-    {
-      MessageBox.showException(e,true);
+    } catch (ImageException e) {
+      MessageBox.showException(e, true);
     }
 
     // set the screen dimensions
@@ -156,13 +148,16 @@ public class Scape extends GameEngine implements ProdConfig
     maxh -= miny;
 
     frameSizes = new int[MAX_DIFFICULTIES];
-    for (int i = 0; i < MAX_DIFFICULTIES; i++)
-    {
+    for (int i = 0; i < MAX_DIFFICULTIES; i++) {
       frameSizes[i] = maxw * i / 16;
     }
 
     // this is the hunted object
-    try {ball = new Ball();} catch (ImageException e) {} catch (IOException e) {}
+    try {
+      ball = new Ball();
+    } catch (ImageException e) {
+    } catch (IOException e) {
+    }
 
     //      try
     //      {
@@ -179,13 +174,15 @@ public class Scape extends GameEngine implements ProdConfig
   private static int frameSizes[];
 
   @Override
-  public void onGameStart()
-  {
-    if (blocks == null){
-      try
-      {
+  public void onGameStart() {
+    if (blocks == null) {
+      try {
         Image blockImg;
-        try {blockImg = new Image("tc/samples/game/scape/block.png");} catch (Exception e) {blockImg = new Image(40,40);}
+        try {
+          blockImg = new Image("tc/samples/game/scape/block.png");
+        } catch (Exception e) {
+          blockImg = new Image(40, 40);
+        }
 
         int baseSize = Math.min(maxw, maxh);
         int blockSize = baseSize * blockSizePerc / 100;
@@ -193,12 +190,10 @@ public class Scape extends GameEngine implements ProdConfig
 
         // these are the hunting blocks
         blocks = new Block[BLOCKS];
-        for (int i = 0; i < BLOCKS; i++)
-        {
+        for (int i = 0; i < BLOCKS; i++) {
           int q = (i << 1) + 1;
           int vecx = (int) (RADIUS * Math.cos(2 * Math.PI * q / (BLOCKS << 1)));
           int vecy = (int) (RADIUS * Math.sin(2 * Math.PI * q / (BLOCKS << 1)));
-
 
           int xx = (int) (midx + vecx);
           int yy = (int) (midy + vecy);
@@ -209,19 +204,17 @@ public class Scape extends GameEngine implements ProdConfig
           int sx = bs4 + i * bs4;
           int sy = bs4 + bs4 * (BLOCKS - 1 - i);
 
-          blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getHwScaledInstance(sx, sy), ball);
+          blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1,
+              blockImg.getHwScaledInstance(sx, sy), ball);
         }
-      }
-      catch (ImageException e)
-      {
-        MessageBox.showException(e,true);
+      } catch (ImageException e) {
+        MessageBox.showException(e, true);
       }
     }
 
     ball.reduceZone(frameSizes[optDifficulty.value]);
 
-    for (int i = 0; i < BLOCKS; i++)
-    {
+    for (int i = 0; i < BLOCKS; i++) {
       blocks[i].reinit();
     }
     ball.place(midx, midy, false);
@@ -231,22 +224,15 @@ public class Scape extends GameEngine implements ProdConfig
   }
 
   @Override
-  public void onGameStop()
-  {
-    if (Scape.optSound.value)
-    {
-      if (lostClip != null)
-      {
-        try
-        {
+  public void onGameStop() {
+    if (Scape.optSound.value) {
+      if (lostClip != null) {
+        try {
           lostClip.start();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
           MessageBox.showException(e, true);
         }
-        if (!Settings.onJavaSE)
-        {
+        if (!Settings.onJavaSE) {
           return; // showIntroduction will be displayed when the sound stops - in Java, stop is never called
         }
       }
@@ -258,25 +244,20 @@ public class Scape extends GameEngine implements ProdConfig
   private boolean setcolor;
 
   @Override
-  public final void onPaint(Graphics gfx)
-  {
-    if (gameIsRunning)
-    {
-      if (!setcolor)
-      {
+  public final void onPaint(Graphics gfx) {
+    if (gameIsRunning) {
+      if (!setcolor) {
         setcolor = true;
         gfx.foreColor = 0x0000FF;
       }
 
-      for (int i = borderWidth; i >= 1; i--)
-      {
+      for (int i = borderWidth; i >= 1; i--) {
         int o = i + frameSizes[optDifficulty.value];
         int w = o << 1;
         gfx.drawRect(o, miny + o, maxw - w, maxh - w);
       }
 
-      for (int i = 0; i < BLOCKS; i++)
-      {
+      for (int i = 0; i < BLOCKS; i++) {
         Block b = blocks[i];
         b.move();
         b.show();
@@ -287,8 +268,7 @@ public class Scape extends GameEngine implements ProdConfig
       score++;
 
       // Increase the game level each time the scores is a multiple of SCORE_NEXT_LEVEL
-      if ((score & SCORE_NEXT_LEVEL) == 0)
-      {
+      if ((score & SCORE_NEXT_LEVEL) == 0) {
         // increase the level and the ball speed
         level++;
         for (int i = 0; i < BLOCKS; i++) {
@@ -303,35 +283,32 @@ public class Scape extends GameEngine implements ProdConfig
   }
 
   @Override
-  public final void onPenDown(PenEvent evt)
-  {
-    if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true)){
+  public final void onPenDown(PenEvent evt) {
+    if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true)) {
       stop();
     }
     // if non arcade game is selected, redrawings have to be called explicitly
-    if (!ARCADE_GAME){
+    if (!ARCADE_GAME) {
       refresh();
     }
   }
 
   @Override
-  public final void onPenDrag(PenEvent evt)
-  {
-    if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true)){
+  public final void onPenDrag(PenEvent evt) {
+    if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true)) {
       stop();
     }
     // if non arcade game is selected, redrawings have to be called explicitly
-    if (!ARCADE_GAME){
+    if (!ARCADE_GAME) {
       refresh();
     }
   }
 
   Container blankContainer;
+
   /** Creates and places a blank container in the screen. */
-  public void blankScreen()
-  {
-    if (blankContainer == null)
-    {
+  public void blankScreen() {
+    if (blankContainer == null) {
       blankContainer = new Container();
       blankContainer.setRect(getRect());
       blankContainer.setBackColor(backColor);
@@ -342,8 +319,7 @@ public class Scape extends GameEngine implements ProdConfig
   /**
    * display the game introduction screen.
    */
-  public final void showIntroduction()
-  {
+  public final void showIntroduction() {
     Introduction.swapTo();
   }
 }

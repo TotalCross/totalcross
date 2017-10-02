@@ -9,26 +9,20 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.constant;
 
 import tc.tools.converter.bb.JavaClass;
 
-public class NameAndType extends DoubleReference
-{
-  public NameAndType(JavaClass jclass)
-  {
+public class NameAndType extends DoubleReference {
+  public NameAndType(JavaClass jclass) {
     super(jclass);
   }
 
-  public UTF8 getValue1AsName()
-  {
-    return (UTF8)value1.info;
+  public UTF8 getValue1AsName() {
+    return (UTF8) value1.info;
   }
 
-  public UTF8 getValue2AsDescriptor()
-  {
-    return (UTF8)value2.info;
+  public UTF8 getValue2AsDescriptor() {
+    return (UTF8) value2.info;
   }
 }

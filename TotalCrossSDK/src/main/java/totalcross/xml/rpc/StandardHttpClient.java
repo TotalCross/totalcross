@@ -55,8 +55,7 @@ import totalcross.util.Hashtable;
  * Original by IOP GmbH
  * (<a href="http://www.iop.de">www.iop.de</a>)
  */
-public class StandardHttpClient
-{
+public class StandardHttpClient {
   protected int port;
   protected String uri;
   protected String host;
@@ -86,31 +85,26 @@ public class StandardHttpClient
    * @throws XmlRpcException
    *            If the connection to the server could not be made
    */
-  public StandardHttpClient(String hostname, int port, String uri, int openTimeout, int readTimeout, int writeTimeout) throws UnknownHostException, XmlRpcException
-  {
+  public StandardHttpClient(String hostname, int port, String uri, int openTimeout, int readTimeout, int writeTimeout)
+      throws UnknownHostException, XmlRpcException {
     this.hostname = hostname;
     this.port = port;
-    if (port < 1){
+    if (port < 1) {
       port = 80;
     }
-    if (uri == null || uri.length() == 0){
+    if (uri == null || uri.length() == 0) {
       uri = "/RPC2";
     }
     this.uri = uri; // guich@570_33: moved to here
     host = (port == 80) ? hostname : (hostname + ":" + port);
-    try
-    {
+    try {
       socket = new Socket(hostname, port, openTimeout);
       socket.readTimeout = readTimeout;
       socket.writeTimeout = writeTimeout;
       reader = new BufferedStream(socket, BufferedStream.READ);
-    }
-    catch (totalcross.net.UnknownHostException e)
-    {
+    } catch (totalcross.net.UnknownHostException e) {
       throw e;
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new XmlRpcException(e.getMessage());
     }
   }
@@ -125,8 +119,7 @@ public class StandardHttpClient
    * @throws XmlRpcException
    *            If the connection to the server could not be made
    */
-  public StandardHttpClient(String hostname, int port, String uri) throws UnknownHostException, XmlRpcException
-  {
+  public StandardHttpClient(String hostname, int port, String uri) throws UnknownHostException, XmlRpcException {
     this(hostname, port, uri, Socket.DEFAULT_OPEN_TIMEOUT, Socket.DEFAULT_READ_TIMEOUT, Socket.DEFAULT_WRITE_TIMEOUT);
   }
 
@@ -141,11 +134,10 @@ public class StandardHttpClient
    *           The password for the username account on the server. Passing
    *           null disables authentication.
    */
-  public void setBasicAuthentication(String user, String password)
-  {
-    if (user == null || password == null){
+  public void setBasicAuthentication(String user, String password) {
+    if (user == null || password == null) {
       auth = null;
-    }else {
+    } else {
       auth = Base64.encode((user + ":" + password).getBytes()).trim();
     }
   }
@@ -155,15 +147,13 @@ public class StandardHttpClient
    *
    * @throws IOException
    */
-  protected void writeRequest(byte []requestBody, int len) throws IOException
-  {
+  protected void writeRequest(byte[] requestBody, int len) throws IOException {
     StringBuffer header = writeRequestHeader(len).append(Convert.CRLF);
     byte[] requestHeader = Convert.getBytes(header);
     int written = 0;
     int writeRet;
     int requestHeaderLen = requestHeader.length;
-    do
-    {
+    do {
       writeRet = socket.writeBytes(requestHeader, 0 + written, requestHeaderLen - written);
       if (writeRet > 0) {
         written += writeRet;
@@ -171,8 +161,7 @@ public class StandardHttpClient
     } while (written < requestHeaderLen);
 
     written = 0;
-    do
-    {
+    do {
       writeRet = socket.writeBytes(requestBody, 0 + written, len - written); // write the given body
       if (writeRet > 0) {
         written += writeRet;
@@ -205,21 +194,20 @@ public class StandardHttpClient
    *
    * @throws IOException
    */
-  protected void checkResponse() throws XmlRpcException, IOException
-  {
+  protected void checkResponse() throws XmlRpcException, IOException {
     String line = readLine();
-    if (line == null){
+    if (line == null) {
       throw new XmlRpcException("Could not read response from Server.");
     }
     String[] tokens = Convert.tokenizeString(line, ' ');
-    if (tokens.length != 3){
+    if (tokens.length != 3) {
       throw new XmlRpcException("Unexpected Response from Server: " + line);
     }
     String httpversion = tokens[0];
     String statusCode = tokens[1];
     String statusMsg = tokens[2];
     keepAlive &= "HTTP/1.1".equals(httpversion);
-    if (!"200".equals(statusCode)){
+    if (!"200".equals(statusCode)) {
       throw new XmlRpcException("Unexpected Response from Server: " + statusMsg);
     }
   }
@@ -230,23 +218,19 @@ public class StandardHttpClient
    *
    * @throws IOException
    */
-  protected void parseHeader() throws IOException
-  {
+  protected void parseHeader() throws IOException {
     Hashtable ht = new Hashtable(13);
-    while (true)
-    {
+    while (true) {
       String line = reader.readLine();
       if (line == null) {
         break;
       }
       int dp = line.indexOf(':'); //  xxxx: yyyy
-      if (dp >= 0)
-      {
-        String key = line.substring(0,dp).toLowerCase();
-        String value = line.substring(dp+2).toLowerCase();
-        ht.put(key,value);
-      }
-      else {
+      if (dp >= 0) {
+        String key = line.substring(0, dp).toLowerCase();
+        String value = line.substring(dp + 2).toLowerCase();
+        ht.put(key, value);
+      } else {
         break; // guich@585_4: end of Http Response Header properties.
       }
     }
@@ -255,13 +239,11 @@ public class StandardHttpClient
   }
 
   /** Used internally by readResponse and readResponseBytes. */
-  protected StringBuffer privateReadResponse() throws XmlRpcException, IOException
-  {
+  protected StringBuffer privateReadResponse() throws XmlRpcException, IOException {
     StringBuffer xmlBuffer = sb;
     xmlBuffer.setLength(0);
 
-    while (true)
-    {
+    while (true) {
       String line = reader.readLine();
       if (line == null) {
         break;
@@ -276,8 +258,7 @@ public class StandardHttpClient
    * @param returnAsBytes If true, the result can be casted to <code>byte[]</code>, otherwise, it can be casted to <code>String</code>.
    * @throws IOException
    */
-  protected String readResponse() throws XmlRpcException, IOException
-  {
+  protected String readResponse() throws XmlRpcException, IOException {
     return privateReadResponse().toString();
   }
 
@@ -286,8 +267,7 @@ public class StandardHttpClient
    * @param returnAsBytes If true, the result can be casted to <code>byte[]</code>, otherwise, it can be casted to <code>String</code>.
    * @throws IOException
    */
-  protected Object readResponseBytes() throws XmlRpcException, IOException
-  {
+  protected Object readResponseBytes() throws XmlRpcException, IOException {
     return Convert.getBytes(privateReadResponse());
   }
 
@@ -301,13 +281,12 @@ public class StandardHttpClient
    *            If the server returns a status code other than 200 OK
    * @throws IOException
    */
-  public String execute(byte[] requestBody) throws XmlRpcException, IOException
-  {
+  public String execute(byte[] requestBody) throws XmlRpcException, IOException {
     writeRequest(requestBody, requestBody.length);
     checkResponse();
     parseHeader();
     /* nothing to do with the header here */
-    return (String)readResponse();
+    return (String) readResponse();
   }
 
   /**
@@ -321,13 +300,12 @@ public class StandardHttpClient
    * @throws IOException
    * @since TotalCross 1.23
    */
-  public byte[] executeReturnBytes(byte[] requestBody) throws XmlRpcException, IOException
-  {
+  public byte[] executeReturnBytes(byte[] requestBody) throws XmlRpcException, IOException {
     writeRequest(requestBody, requestBody.length);
     checkResponse();
     parseHeader();
     /* nothing to do with the header here */
-    return (byte[])readResponseBytes();
+    return (byte[]) readResponseBytes();
   }
 
   /**
@@ -335,9 +313,8 @@ public class StandardHttpClient
    *
    * @throws IOException
    */
-  protected void closeConnection() throws IOException
-  {
-    if (socket != null){
+  protected void closeConnection() throws IOException {
+    if (socket != null) {
       socket.close();
     }
     socket = null;
@@ -351,8 +328,7 @@ public class StandardHttpClient
    * The headers correctly formatted in a StringBuffer.
    * The payload of the request can be appended to this StringBuffer.
    */
-  protected StringBuffer writeRequestHeader(int requestLength)
-  {
+  protected StringBuffer writeRequestHeader(int requestLength) {
     StringBuffer requestHeader = new StringBuffer(256);
     requestHeader.append("POST " + uri + " HTTP/1.0\r\n");
     requestHeader.append("Accept-Encoding: identity\r\n");
@@ -360,10 +336,10 @@ public class StandardHttpClient
     requestHeader.append("Host: " + host + Convert.CRLF);
     requestHeader.append("Content-Type: text/xml\r\n");
     requestHeader.append("User-Agent: IOP SWX XML-RPC 0.1\r\n");
-    if (keepAlive){
+    if (keepAlive) {
       requestHeader.append("Connection: Keep-Alive\r\n");
     }
-    if (auth != null){
+    if (auth != null) {
       requestHeader.append("Authorization: Basic " + auth + Convert.CRLF);
     }
     // do not close with \r\n! This will be done later

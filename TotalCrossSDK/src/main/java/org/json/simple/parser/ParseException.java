@@ -41,7 +41,7 @@ public class ParseException extends Exception {
   /**
    * @param errorType description omitted.
    */
-  public ParseException(int errorType){
+  public ParseException(int errorType) {
     this(-1, errorType, null);
   }
 
@@ -49,7 +49,7 @@ public class ParseException extends Exception {
    * @param errorType description omitted.
    * @param unexpectedObject description omitted.
    */
-  public ParseException(int errorType, Object unexpectedObject){
+  public ParseException(int errorType, Object unexpectedObject) {
     this(-1, errorType, unexpectedObject);
   }
 
@@ -58,7 +58,7 @@ public class ParseException extends Exception {
    * @param errorType description omitted.
    * @param unexpectedObject description omitted.
    */
-  public ParseException(int position, int errorType, Object unexpectedObject){
+  public ParseException(int position, int errorType, Object unexpectedObject) {
     this.position = position;
     this.errorType = errorType;
     this.unexpectedObject = unexpectedObject;
@@ -125,9 +125,10 @@ public class ParseException extends Exception {
   public String getMessage() {
     StringBuffer sb = new StringBuffer();
 
-    switch(errorType){
+    switch (errorType) {
     case ERROR_UNEXPECTED_CHAR:
-      sb.append("Unexpected character (").append(unexpectedObject).append(") at position ").append(position).append(".");
+      sb.append("Unexpected character (").append(unexpectedObject).append(") at position ").append(position)
+          .append(".");
       break;
     case ERROR_UNEXPECTED_TOKEN:
       sb.append("Unexpected token ").append(unexpectedObject).append(" at position ").append(position).append(".");

@@ -7,8 +7,7 @@
 
 package totalcross.util.pdf;
 
-public interface PaperSize
-{
+public interface PaperSize {
 
   public static final int A0_WIDTH = 2384;
   public static final int A0_HEIGHT = 3371;

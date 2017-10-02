@@ -9,13 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC202_breakpoint extends ByteCode
-{
-  public BC202_breakpoint()
-  {
+public class BC202_breakpoint extends ByteCode {
+  public BC202_breakpoint() {
   }
 }

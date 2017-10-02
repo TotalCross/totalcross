@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class IllegalArgumentException4D extends RuntimeException
-{
+public class IllegalArgumentException4D extends RuntimeException {
   /** Constructs an empty Exception. */
-  public IllegalArgumentException4D()
-  {
+  public IllegalArgumentException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public IllegalArgumentException4D(String message)
-  {
+  public IllegalArgumentException4D(String message) {
     super(message);
   }
 }

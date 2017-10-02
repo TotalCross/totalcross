@@ -9,19 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC132
-{
-  public BC132()
-  {
-    int x=0, y=0, z=0; // regs(32) 1 2 3
-
-    x++; // ADD_regI_s12_regI
-    y--; // ADD_regI_s12_regI
-    --z; // ADD_regI_s12_regI
-    ++y; // ADD_regI_s12_regI
+public class BC132 {
+  public BC132() {
   }
 }

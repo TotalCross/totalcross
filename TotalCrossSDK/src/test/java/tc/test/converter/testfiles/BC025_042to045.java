@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC025_042to045
-{
-  public BC025_042to045()
-  {
+public class BC025_042to045 {
+  public BC025_042to045() {
     Object o1 = null, o2 = null, o3 = null, o4 = null, o;
 
     o = o1;
@@ -24,8 +20,7 @@ public class BC025_042to045
     o = o3;
     o = o4;
 
-    if (false)
-    {
+    if (false) {
       o1 = o; // remove warnings
     }
   }

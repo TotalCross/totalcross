@@ -9,42 +9,34 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package ras.comm.v1;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class ActivationFailure extends ActivationResponse
-{
+public class ActivationFailure extends ActivationResponse {
   private String reason;
 
-  public ActivationFailure()
-  {
+  public ActivationFailure() {
   }
 
-  public ActivationFailure(ActivationRequest request, String reason)
-  {
+  public ActivationFailure(ActivationRequest request, String reason) {
     super(request);
     this.reason = reason;
   }
 
-  public String getReason()
-  {
+  public String getReason() {
     return reason;
   }
 
   @Override
-  protected void read(DataStream ds) throws IOException
-  {
+  protected void read(DataStream ds) throws IOException {
     super.read(ds);
     reason = ds.readString();
   }
 
   @Override
-  protected void write(DataStream ds) throws IOException
-  {
+  protected void write(DataStream ds) throws IOException {
     super.write(ds);
     ds.writeString(reason);
   }

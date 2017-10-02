@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.lang;
 
 // We only need Iterator, but we import * to support lib/mkcollections.pl
@@ -49,12 +48,11 @@ import java.util.Iterator;
  * @author Tom Tromey <tromey@redhat.com>
  * @since 1.5
  */
-public interface Iterable4D<E>
-{
+public interface Iterable4D<E> {
   /**
    * Returns an iterator for the collection.
    *
    * @return an iterator.
    */
-  Iterator<E> iterator ();
+  Iterator<E> iterator();
 }

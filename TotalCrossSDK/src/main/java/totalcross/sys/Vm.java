@@ -30,8 +30,7 @@ import totalcross.util.Hashtable;
  * many other things.
  */
 
-public final class Vm
-{
+public final class Vm {
   /** Internal use only. Used only at desktop. */
   public static int[] keysBeingIntercepted;
 
@@ -53,8 +52,7 @@ public final class Vm
 
   private static long startTS = System.currentTimeMillis(); // guich@567_15
 
-  private Vm()
-  {
+  private Vm() {
   }
 
   /**
@@ -70,28 +68,21 @@ public final class Vm
    * @param length the number of elements to copy
    * @throws ArrayStoreException If the source array and destination array are not compatible
    */
-  public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length)
-  {
-    if (length < 0 || srcArray == null || dstArray == null){
+  public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length) {
+    if (length < 0 || srcArray == null || dstArray == null) {
       // check if null
       return false;
     }
-    try
-    {
+    try {
       if (length > 0) {
         System.arraycopy(srcArray, srcStart, dstArray, dstStart, length);
       }
-    }
-    catch (ArrayIndexOutOfBoundsException aioobe)
-    {
+    } catch (ArrayIndexOutOfBoundsException aioobe) {
       throw aioobe; // guich@566_27: do the same thing as the device.
-    }
-    catch (ArrayStoreException ase) // this one must be passed along
+    } catch (ArrayStoreException ase) // this one must be passed along
     {
       throw ase;
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       if (e.getMessage() != null) {
         Launcher.print("Exception thrown in arrayCopy: " + e.getMessage());
       }
@@ -105,8 +96,7 @@ public final class Vm
    * maximum time stamp value is (1 << 30) which represents near 14 days of continuous use, and when it is reached,
    * the timer will reset to 0 and will continue counting from there.
    */
-  public static int getTimeStamp()
-  {
+  public static int getTimeStamp() {
     return (int) (System.currentTimeMillis() - startTS);
   }
 
@@ -118,8 +108,7 @@ public final class Vm
    * @deprecated It won't work on most devices.
    */
   @Deprecated
-  public static void setTime(Time t)
-  {
+  public static void setTime(Time t) {
     //startTS = System.currentTimeMillis() - t.getTimeLong(); - guich@tc100b5_18: prevent timer problems when running in Java
   }
 
@@ -130,8 +119,7 @@ public final class Vm
    *
    * @since SuperWaba 4.01
    */
-  public static void exitAndReboot()
-  {
+  public static void exitAndReboot() {
     MainWindow.exit(0);
   }
 
@@ -246,49 +234,40 @@ public final class Vm
    * not be called. In Android, if you're calling a TotalCross program, the wait parameter is ignored (and defaults to false). 
    * @return Usually is 0 if no error occured, or a system error code. -999 means that the file was not found. In Android, is always 0.
    */
-  public static int exec(String command, String args, int launchCode, boolean wait)
-  {
+  public static int exec(String command, String args, int launchCode, boolean wait) {
     // guich@tc: if (!wait) totalcross.ui.MainWindow.getMainWindow().killThreads();
     int status = -1;
-    try
-    {
+    try {
       if (launchCode == -1) // guich@120
       {
         // guich@120: the ideal were that all classes should be re-instantiated, because any static methods that
         // used the last MainWindow are now pointing to invalid data.
         Launcher.instance.setNewMainWindow((totalcross.ui.MainWindow) Class.forName(command).newInstance(), args);
         status = 0;
-      }
-      else
-        if (command.equals("running process"))
-        {
-          int ret = 0;
-          try
-          {
-            String line;
-            Process p =Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
-            java.io.BufferedReader input =  new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
+      } else if (command.equals("running process")) {
+        int ret = 0;
+        try {
+          String line;
+          Process p = Runtime.getRuntime().exec(System.getenv("windir") + "\\system32\\" + "tasklist.exe");
+          java.io.BufferedReader input = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
 
-            args = args.toLowerCase();
-            while ((line = input.readLine()) != null) {
-              if (line.toLowerCase().startsWith(args))
-              {
-                ret = 1;
-                break;
-              }
+          args = args.toLowerCase();
+          while ((line = input.readLine()) != null) {
+            if (line.toLowerCase().startsWith(args)) {
+              ret = 1;
+              break;
             }
-
-            input.close();
           }
-          catch (Exception e) {e.printStackTrace();}
-          return ret;
+
+          input.close();
+        } catch (Exception e) {
+          e.printStackTrace();
         }
-      if (command.equals("viewer"))
-      {
-        java.awt.Desktop.getDesktop().browse(new java.net.URI(args.replace(' ','+')));
+        return ret;
       }
-      else
-      {
+      if (command.equals("viewer")) {
+        java.awt.Desktop.getDesktop().browse(new java.net.URI(args.replace(' ', '+')));
+      } else {
         java.lang.Runtime runtime = java.lang.Runtime.getRuntime();
         if (args != null) {
           command = command + " " + args;
@@ -300,9 +279,7 @@ public final class Vm
           status = 0;
         }
       }
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
     }
     return status;
@@ -313,8 +290,7 @@ public final class Vm
    * auto-off, the original auto-off time will be restored automatically when the program exits. Keeping the device
    * always on is desired only when you're working with Sockets. Use it carefully, because it drains the battery.
    */
-  public static void setAutoOff(boolean enabled)
-  {
+  public static void setAutoOff(boolean enabled) {
   }
 
   /**
@@ -322,14 +298,10 @@ public final class Vm
    *
    * @param millis time to sleep in milliseconds
    */
-  public static void sleep(int millis)
-  {
-    try
-    {
+  public static void sleep(int millis) {
+    try {
       java.lang.Thread.sleep(millis);
-    }
-    catch (InterruptedException e)
-    {
+    } catch (InterruptedException e) {
     }
   }
 
@@ -350,15 +322,16 @@ public final class Vm
    * @param millis time to sleep in milliseconds
    * @since TotalCross 1.3.4
    */
-  public static void safeSleep(int millis)
-  {
+  public static void safeSleep(int millis) {
     int cur = getTimeStamp();
     int end = cur + millis;
-    while (cur <= end)
-    {
+    while (cur <= end) {
       millis = end - cur;
       int s = millis > 100 ? 100 : millis;
-      try {java.lang.Thread.sleep(s);} catch (InterruptedException e) {}
+      try {
+        java.lang.Thread.sleep(s);
+      } catch (InterruptedException e) {
+      }
       //if (Event.isAvailable()) // always call pumpEvents, otherwise a thread that use this method will not be able to update the screen
       Window.pumpEvents();
       cur = getTimeStamp();
@@ -371,8 +344,7 @@ public final class Vm
    * 
    * @since TotalCross 1.22
    */
-  public static void vibrate(int millis)
-  {
+  public static void vibrate(int millis) {
     Launcher.instance.vibrate(millis);
   }
 
@@ -382,8 +354,7 @@ public final class Vm
    *
    * @since SuperWaba 2.0 beta 4
    */
-  public static int getFreeMemory()
-  {
+  public static int getFreeMemory() {
     return (int) Runtime.getRuntime().freeMemory();
   }
 
@@ -391,8 +362,7 @@ public final class Vm
    * Calls the Garbage Collector. Usually, this isn't necessary; the gc is called everytime theres
    * no more memory to allocate, but you may call it before running a memory-consuming routine.
    */
-  public static void gc()
-  {
+  public static void gc() {
     Runtime.getRuntime().gc();
     System.runFinalization();
   }
@@ -405,8 +375,7 @@ public final class Vm
    *
    * @since TotalCross 1.0
    */
-  public static void interceptSpecialKeys(int[] keys)
-  {
+  public static void interceptSpecialKeys(int[] keys) {
     keysBeingIntercepted = keys; // for desktop
   }
 
@@ -419,14 +388,10 @@ public final class Vm
    * @see #interceptSpecialKeys
    * @since TotalCross 1.0
    */
-  public static boolean isKeyDown(int key)
-  {
-    try
-    {
+  public static boolean isKeyDown(int key) {
+    try {
       return Launcher.instance.keysPressed.get(key) == 1;
-    }
-    catch (ElementNotFoundException e)
-    {
+    } catch (ElementNotFoundException e) {
       return false;
     }
   }
@@ -447,19 +412,18 @@ public final class Vm
    * @see #disableDebug
    * @see #ERASE_DEBUG
    */
-  public static void debug(String s)
-  {
-    if (disableDebug){
+  public static void debug(String s) {
+    if (disableDebug) {
       return;
     }
-    if (s == null){
+    if (s == null) {
       s = "null";
     }
-    if (!ERASE_DEBUG.equals(s)){
+    if (!ERASE_DEBUG.equals(s)) {
       System.err.println(Settings.showDebugTimestamp ? (getTimeStamp() + " - " + s) : s); // alexmuc@400_63 - guich@567_16: now using getTimeStamp - guich@tc115_50: don't display timestamp if user don't want
-    }
-    else {
-      System.err.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"); // just scroll the screen
+    } else {
+      System.err.println(
+          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"); // just scroll the screen
     }
     System.err.flush(); // guich@570_36
   }
@@ -471,9 +435,8 @@ public final class Vm
    *
    * @since TotalCross 1.0
    */
-  public static void alert(String s)
-  {
-    if (s == null){
+  public static void alert(String s) {
+    if (s == null) {
       throw new NullPointerException("Argument 's' cannot have a null value");
     }
     Launcher.instance.alert(s);
@@ -493,11 +456,9 @@ public final class Vm
     debug("Warning! " + s);
   }
 
-  private static class ClipboardObserver implements java.awt.datatransfer.ClipboardOwner
-  {
+  private static class ClipboardObserver implements java.awt.datatransfer.ClipboardOwner {
     @Override
-    public void lostOwnership(java.awt.datatransfer.Clipboard clipboard, java.awt.datatransfer.Transferable contents)
-    {
+    public void lostOwnership(java.awt.datatransfer.Clipboard clipboard, java.awt.datatransfer.Transferable contents) {
     }
   }
 
@@ -505,23 +466,20 @@ public final class Vm
 
   /** Copies the specific string to the clipboard. 
    */
-  public static void clipboardCopy(String s)
-  {
-    java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new java.awt.datatransfer.StringSelection(s), defaultClipboardOwner);
+  public static void clipboardCopy(String s) {
+    java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new java.awt.datatransfer.StringSelection(s),
+        defaultClipboardOwner);
   }
 
   /** Gets the last string from the clipboard. if none, returns "". 
    */
-  public static String clipboardPaste()
-  {
-    java.awt.datatransfer.Transferable content = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().getContents(defaultClipboardOwner);
-    if (content != null){
-      try
-      {
+  public static String clipboardPaste() {
+    java.awt.datatransfer.Transferable content = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+        .getContents(defaultClipboardOwner);
+    if (content != null) {
+      try {
         return (String) (content.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor));
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
       }
     }
     return "";
@@ -550,8 +508,7 @@ public final class Vm
    * @see totalcross.ui.image.Image#loadFrom
    */
   @Deprecated
-  public static boolean attachLibrary(String name)
-  {
+  public static boolean attachLibrary(String name) {
     return false;
   }
 
@@ -565,22 +522,19 @@ public final class Vm
    * <br><br>Does not work on Android.
    * @param name the library's name. The suffix 'Lib' is not mandatory. Cannot contain a creator neither a type.
    */
-  public static boolean attachNativeLibrary(String name)
-  {
-    if (htLoadedNatLibs.exists(name)){
+  public static boolean attachNativeLibrary(String name) {
+    if (htLoadedNatLibs.exists(name)) {
       return true;
     }
 
-    if (privateAttachNativeLibrary(name))
-    {
+    if (privateAttachNativeLibrary(name)) {
       htLoadedNatLibs.put(name, name);
       return true;
     }
     return false;
   }
 
-  private static boolean privateAttachNativeLibrary(String name)
-  {
+  private static boolean privateAttachNativeLibrary(String name) {
     return true;
   }
 
@@ -602,8 +556,7 @@ public final class Vm
    *           insensitive, while in device it is CASE SENSITIVE.
    * @return a byte array with the file or null if file not found
    */
-  public static byte[] getFile(String name)
-  {
+  public static byte[] getFile(String name) {
     return Launcher.instance.readBytes(name);
   }
 
@@ -615,8 +568,7 @@ public final class Vm
    *
    * @since SuperWaba 4.21
    */
-  public static int getRemainingBattery()
-  {
+  public static int getRemainingBattery() {
     return 100;
   }
 
@@ -738,16 +690,19 @@ public final class Vm
     java.io.StringWriter sw = new java.io.StringWriter(); // guich@tc100b4_6: with StringWriter it always works
     t.printStackTrace(new java.io.PrintWriter(sw));
     String stacktrace = sw.toString();
-    if (stacktrace != null){
-      stacktrace = Convert.replace(stacktrace, Convert.CRLF, "\n").replace("\tat ","");
+    if (stacktrace != null) {
+      stacktrace = Convert.replace(stacktrace, Convert.CRLF, "\n").replace("\tat ", "");
     }
     return stacktrace;
   }
 
   /** A shortcut for <code>try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}</code> */
-  public static String getStackTrace()
-  {
-    try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}      
+  public static String getStackTrace() {
+    try {
+      throw new Exception();
+    } catch (Exception e) {
+      return getStackTrace(e);
+    }
   }
 
   /**
@@ -759,8 +714,7 @@ public final class Vm
    *
    * @since TotalCross 1.0
    */
-  public static void showKeyCodes(boolean on)
-  {
+  public static void showKeyCodes(boolean on) {
     Launcher.instance.showKeyCodes = on;
   }
 
@@ -768,7 +722,7 @@ public final class Vm
    * Turns the screen on or off, but keeps the device running. This greatly improves battery performance.
    * @return If the method succeed.
    * @since TotalCross 1.15
-   */ 
+   */
   public static boolean turnScreenOn(boolean on) // guich@tc115_75
   {
     return true;
@@ -788,27 +742,19 @@ public final class Vm
    * </pre>
    * @since TotalCross 1.3
    */
-  public static void printStackTrace()
-  {
-    try 
-    {
+  public static void printStackTrace() {
+    try {
       throw new Exception("Stack trace");
-    } 
-    catch (Exception e) 
-    {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
-  /** Prints the stack trace to the debug console file with the given message. */ 
-  public static void printStackTrace(String msg)
-  {
-    try 
-    {
+  /** Prints the stack trace to the debug console file with the given message. */
+  public static void printStackTrace(String msg) {
+    try {
       throw new Exception(msg);
-    } 
-    catch (Exception e) 
-    {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -836,8 +782,7 @@ public final class Vm
    * 
    * @since TotalCross 1.5
    */
-  public static void preallocateArray(Object sample, int length)
-  {
+  public static void preallocateArray(Object sample, int length) {
   }
 
   /**
@@ -848,14 +793,12 @@ public final class Vm
    * @param object Object for which the hash code is to be calculated.
    * @return The desired hash code.
    */
-  public static int identityHashCode(Object object)
-  {
+  public static int identityHashCode(Object object) {
     return System.identityHashCode(object);
   }
 
   /** used internally for enum */
-  static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length)
-  {
-    arrayCopy(src,srcPos,dest,destPos,length);
+  static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length) {
+    arrayCopy(src, srcPos, dest, destPos, length);
   }
 }

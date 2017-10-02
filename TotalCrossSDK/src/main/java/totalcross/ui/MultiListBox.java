@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.Convert;
@@ -50,17 +48,16 @@ import totalcross.util.IntVector;
  * @since TotalCross 1.0.
  */
 
-public class MultiListBox extends ListBox
-{
+public class MultiListBox extends ListBox {
   protected static final int NO_OLD_SELECTION = -99;
   protected int maxSelections = 10000000;
-  protected int oldSelection=NO_OLD_SELECTION;
+  protected int oldSelection = NO_OLD_SELECTION;
   protected IntHashtable selectedIndexes = new IntHashtable(5);
   protected IntVector order;
   /** Internal use only. */
   public boolean changed;
   private boolean drawingSel, hasFocus;
-  private int cursorColor,mixedCursorColor;
+  private int cursorColor, mixedCursorColor;
   /** Fill this IntVector with the values that will be selected when the clear method is called. 
    */
   public IntVector clearValues = new IntVector(1); // guich@tc112_33
@@ -85,14 +82,12 @@ public class MultiListBox extends ListBox
   public int tipDelay = 250;
 
   /** Constructs an empty MultiListBox. */
-  public MultiListBox()
-  {
+  public MultiListBox() {
     useFullWidthOnSelection = true; // required
   }
 
   /** Constructs a MultiListBox with the given items. */
-  public MultiListBox(Object[] items)
-  {
+  public MultiListBox(Object[] items) {
     super(items);
     useFullWidthOnSelection = true; // required
   }
@@ -100,54 +95,50 @@ public class MultiListBox extends ListBox
   /** Call this method if you want to keep track of the order in which the items were selected.
    * Note that this makes the listbox slower. Calling this method clears all selected items.
    */
-  public void setOrderIsImportant(boolean set)
-  {
+  public void setOrderIsImportant(boolean set) {
     order = set ? new IntVector(50) : null;
     selectedIndexes.clear();
   }
 
   /** Returns true if you requested that the order is important. */
-  public boolean isOrderImportant()
-  {
+  public boolean isOrderImportant() {
     return order != null;
   }
 
   /** Returns the selected index. If more than one item is selected, returns the last one. */
   @Override
-  public int getSelectedIndex()
-  {
-    try
-    {
-      return /*Settings.keyboardFocusTraversable ? selectedIndex : */order != null ? order.peek() : selectedIndexes.size() > 0 ? selectedIndexes.getKey(0) : -1; // guich@tc110_100: fixed problem in penless mode: a highlighted item was shown in the combobox instead of the selected item
+  public int getSelectedIndex() {
+    try {
+      return /*Settings.keyboardFocusTraversable ? selectedIndex : */order != null ? order.peek()
+          : selectedIndexes.size() > 0 ? selectedIndexes.getKey(0) : -1; // guich@tc110_100: fixed problem in penless mode: a highlighted item was shown in the combobox instead of the selected item
+    } catch (ElementNotFoundException e) {
+      return -1;
     }
-    catch (ElementNotFoundException e) {return -1;}
   }
 
   /** Returns the last selected item if you had set <i>order is important</i>, otherwise returns null. */
-  public Object getLastSelectedItem()
-  {
-    if (order == null){
+  public Object getLastSelectedItem() {
+    if (order == null) {
       return null;
     }
     int n = selectedIndexes.size();
-    if (n == 0){
+    if (n == 0) {
       return null;
     }
-    try
-    {
+    try {
       return items.items[order.peek()];
-    } catch (ElementNotFoundException e) {return null;}
+    } catch (ElementNotFoundException e) {
+      return null;
+    }
   }
 
   /** Defines the maximum number of items that can be selected.
    * If currently there are more selected than the allowed, all
    * selections are cleared.
    */
-  public void setMaxSelections(int max)
-  {
+  public void setMaxSelections(int max) {
     this.maxSelections = max;
-    if (selectedIndexes.size() > max)
-    {
+    if (selectedIndexes.size() > max) {
       selectedIndexes.clear();
       if (order != null) {
         order.removeAllElements();
@@ -162,91 +153,75 @@ public class MultiListBox extends ListBox
    * If order is important, then the order intvector is returned (caution: do not change the returned array!).
    * Note that the indexes are not in order; to order them, call <code>qsort</code>.
    */
-  public IntVector getSelectedIndexes()
-  {
+  public IntVector getSelectedIndexes() {
     return order != null ? order : selectedIndexes.getKeys();
   }
 
   /** Returns if given index is selected. */
-  public boolean isSelected(int index)
-  {
+  public boolean isSelected(int index) {
     return selectedIndexes.exists(index);
   }
 
   @Override
-  public void removeAll()
-  {
+  public void removeAll() {
     selectedIndexes.clear();
-    if (order != null){
+    if (order != null) {
       order.removeAllElements();
     }
     super.removeAll();
   }
 
   @Override
-  protected void onColorsChanged(boolean colorsChanged)
-  {
+  protected void onColorsChanged(boolean colorsChanged) {
     super.onColorsChanged(colorsChanged);
-    if (colorsChanged)
-    {
-      cursorColor = Color.brighter(back1,48);
+    if (colorsChanged) {
+      cursorColor = Color.brighter(back1, 48);
       if (cursorColor == Color.WHITE) {
         cursorColor = Color.BRIGHT;
       }
-      mixedCursorColor = Color.interpolate(back1,cursorColor);
+      mixedCursorColor = Color.interpolate(back1, cursorColor);
     }
   }
 
   /** Draw all selected indexes */
   @Override
-  protected void drawSelectedItem(Graphics g, int from, int to)
-  {
+  protected void drawSelectedItem(Graphics g, int from, int to) {
     drawingSel = true;
     for (int i = from; i < to; i++) {
       if (selectedIndexes.exists(i)) {
-        drawCursor(g,i,true);
+        drawCursor(g, i, true);
       }
     }
     drawingSel = false;
-    if (Settings.keyboardFocusTraversable){
+    if (Settings.keyboardFocusTraversable) {
       super.drawSelectedItem(g, from, to);
     }
   }
 
   @Override
-  protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex)
-  {
-    for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))
-    {
-      if (!selectedIndexes.exists(i))
-      {
-        drawItem(g,i,dx,dy); // guich@200b4: let the user extend ListBox and draw the items himself
+  protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex) {
+    for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++)) {
+      if (!selectedIndexes.exists(i)) {
+        drawItem(g, i, dx, dy); // guich@200b4: let the user extend ListBox and draw the items himself
       }
     }
     drawSelectedItem(g, offset, greatestVisibleItemIndex);
   }
 
   @Override
-  protected int getCursorColor(int index)
-  {
+  protected int getCursorColor(int index) {
     boolean exists = selectedIndexes.exists(index);
-    if (Settings.keyboardFocusTraversable && !drawingSel)
-    {
-      if (!hasFocus)
-      {
+    if (Settings.keyboardFocusTraversable && !drawingSel) {
+      if (!hasFocus) {
         if (!exists) {
           return back0;
         }
+      } else if (index == selectedIndex && exists) {
+        return mixedCursorColor;
       }
-      else
-        if (index == selectedIndex && exists) {
-          return mixedCursorColor;
-        }
+    } else if (!exists) {
+      return back1;
     }
-    else
-      if (!exists){
-        return back1;
-      }
     return cursorColor;
   }
 
@@ -254,25 +229,22 @@ public class MultiListBox extends ListBox
    * @see #setSelectedIndex(int, boolean)
    */
   @Override
-  public void setSelectedIndex(int index)
-  {
-    if (!Settings.keyboardFocusTraversable){
+  public void setSelectedIndex(int index) {
+    if (!Settings.keyboardFocusTraversable) {
       handleClick(index);
     }
-    if (index == -1)
-    {
+    if (index == -1) {
       oldSelection = NO_OLD_SELECTION; // no old selection after unselecting everything
       selectedIndexes.clear();
       if (order != null) {
         order.removeAllElements();
       }
     }
-    super.setSelectedIndex(index,false);
+    super.setSelectedIndex(index, false);
   }
 
   @Override
-  protected void leftReached()
-  {
+  protected void leftReached() {
     handleClick(selectedIndex);
   }
 
@@ -280,116 +252,99 @@ public class MultiListBox extends ListBox
    * Both operations are limited by the defined max selections.
    */
   @Override
-  public void setSelectedIndex(int index, boolean set)
-  {
-    if (0 <= index && index < itemCount)
-    {
+  public void setSelectedIndex(int index, boolean set) {
+    if (0 <= index && index < itemCount) {
       if (set != isSelected(index)) {
         setSelectedIndex(index);
       }
-    }
-    else // clear or set all
-      if (index < 0)
-      {
-        if (!set) {
-          setSelectedIndex(-1);
-        } else
-        {
-          selectedIndexes.clear();
-          if (order != null) {
-            order.removeAllElements();
-          }
-          if (unselectFirstWhenMaxIsReached && order != null && selectedIndexes.size() == maxSelections) {
-            setSelectedIndex(order.items[0], false);
-          }
-          int n = Math.min(itemCount, maxSelections);
-          for (int i = 0; i < n; i++)
-          {
-            selectedIndexes.put(i, selectedIndexes.size());
-            if (order != null) {
-              order.addElement(i);
-            }
-          }
-
+    } else // clear or set all
+    if (index < 0) {
+      if (!set) {
+        setSelectedIndex(-1);
+      } else {
+        selectedIndexes.clear();
+        if (order != null) {
+          order.removeAllElements();
         }
-        oldSelection = NO_OLD_SELECTION;
+        if (unselectFirstWhenMaxIsReached && order != null && selectedIndexes.size() == maxSelections) {
+          setSelectedIndex(order.items[0], false);
+        }
+        int n = Math.min(itemCount, maxSelections);
+        for (int i = 0; i < n; i++) {
+          selectedIndexes.put(i, selectedIndexes.size());
+          if (order != null) {
+            order.addElement(i);
+          }
+        }
+
       }
+      oldSelection = NO_OLD_SELECTION;
+    }
     Window.needsPaint = true;
   }
 
   @Override
-  protected void handleSelection(int newSelection)
-  {
-    if (newSelection != oldSelection && newSelection < itemCount)   // then they dragged outside the current selection
+  protected void handleSelection(int newSelection) {
+    if (newSelection != oldSelection && newSelection < itemCount) // then they dragged outside the current selection
     {
       handleClick(newSelection);
       oldSelection = selectedIndex = newSelection;
-      drawCursor(getGraphics(),newSelection,selectedIndexes.exists(newSelection));
+      drawCursor(getGraphics(), newSelection, selectedIndexes.exists(newSelection));
     }
   }
 
   /** Called by ComboBoxDropDown when its being popped. */
-  protected void cbddOnPopup()
-  {
+  protected void cbddOnPopup() {
     changed = false;
   }
 
   /** Called by ComboBoxDropDown when its being unpopped. Sends a PRESSED event if a change was made in the selected indexes. */
-  protected void cbddOnUnpop()
-  {
-    if ((Settings.geographicalFocus || !Settings.keyboardFocusTraversable) && changed){
+  protected void cbddOnUnpop() {
+    if ((Settings.geographicalFocus || !Settings.keyboardFocusTraversable) && changed) {
       super.postPressedEvent();
     }
   }
 
   @Override
-  public void postPressedEvent()
-  {
-    if (Settings.keyboardFocusTraversable || !(parent instanceof ComboBoxDropDown)){
+  public void postPressedEvent() {
+    if (Settings.keyboardFocusTraversable || !(parent instanceof ComboBoxDropDown)) {
       super.postPressedEvent();
     }
   }
 
   @Override
-  protected void endSelection()
-  {
+  protected void endSelection() {
     oldSelection = NO_OLD_SELECTION; // reset this for next pen down/drag
   }
 
-  protected void handleClick(int index)
-  {
-    if (index >= 0)
-    {
+  protected void handleClick(int index) {
+    if (index >= 0) {
       if (!selectedIndexes.exists(index)) // not yet selected?
       {
         if (unselectFirstWhenMaxIsReached && order != null && selectedIndexes.size() == maxSelections) {
           setSelectedIndex(order.items[0], false);
         }
-        if (selectedIndexes.size() < maxSelections)
-        {
-          selectedIndexes.put(index,0);
-          if (order != null) 
-          {
+        if (selectedIndexes.size() < maxSelections) {
+          selectedIndexes.put(index, 0);
+          if (order != null) {
             order.addElement(index);
             if (showOrderInTip) {
-              showTip(this, Convert.toString(order.size()),tipDelay,getIndexY(index));
+              showTip(this, Convert.toString(order.size()), tipDelay, getIndexY(index));
             }
           }
           changed = true;
         }
       } else {
-        try
-        {
+        try {
           selectedIndexes.remove(index);
           if (order != null) {
             order.removeElement(index);
           }
           changed = true;
-        } catch (ElementNotFoundException e) {}
+        } catch (ElementNotFoundException e) {
+        }
       }
-    }
-    else
-    {
+    } else {
       selectedIndexes.clear(); // reset everything
       if (order != null) {
         order.removeAllElements();
@@ -404,23 +359,20 @@ public class MultiListBox extends ListBox
    * If order is important, returns the last selected item.
    */
   @Override
-  public String getText()
-  {
+  public String getText() {
     int size = selectedIndexes.size();
-    if (size <= 1){
+    if (size <= 1) {
       return super.getText();
     }
-    if (order != null){
+    if (order != null) {
       return getLastSelectedItem().toString();
     }
-    return Convert.toString(size)+(localItemsText != null ? localItemsText : itemsText);
+    return Convert.toString(size) + (localItemsText != null ? localItemsText : itemsText);
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.target == this)
-    {
+  public void onEvent(Event e) {
+    if (e.target == this) {
       if (e instanceof PenEvent && Settings.keyboardFocusTraversable) // if in kft and the user clicked in the control, handle the event as if we were not in kft
       {
         Settings.keyboardFocusTraversable = false;
@@ -428,18 +380,15 @@ public class MultiListBox extends ListBox
         Settings.keyboardFocusTraversable = true;
         return;
       }
-      switch (e.type)
-      {
+      switch (e.type) {
       case KeyEvent.KEY_PRESS:
-        if (((KeyEvent)e).key == ' ')
-        {
-          setSelectedIndex(-1,selectedIndexes.size() <= 1);
+        if (((KeyEvent) e).key == ' ') {
+          setSelectedIndex(-1, selectedIndexes.size() <= 1);
           e.consumed = true;
         } // no break here!
       case ControlEvent.FOCUS_IN:
       case KeyEvent.SPECIAL_KEY_PRESS:
-        if (!hasFocus)
-        {
+        if (!hasFocus) {
           changed = false;
           hasFocus = true;
         }
@@ -454,10 +403,8 @@ public class MultiListBox extends ListBox
   }
 
   @Override
-  public Control handleGeographicalFocusChangeKeys(KeyEvent ke)
-  {
-    if ((ke.isPrevKey() && !ke.isUpKey()) || (ke.isNextKey() && !ke.isDownKey()))
-    {
+  public Control handleGeographicalFocusChangeKeys(KeyEvent ke) {
+    if ((ke.isPrevKey() && !ke.isUpKey()) || (ke.isNextKey() && !ke.isDownKey())) {
       if (!hasFocus) {
         changed = false;
       }
@@ -472,7 +419,7 @@ public class MultiListBox extends ListBox
       cbddOnUnpop(); // return the event
       return null;
     }
-    if ((ke.isUpKey() && selectedIndex <= 0) || (ke.isDownKey() && selectedIndex == itemCount -1)){
+    if ((ke.isUpKey() && selectedIndex <= 0) || (ke.isDownKey() && selectedIndex == itemCount - 1)) {
       return null;
     }
     _onEvent(ke);
@@ -480,15 +427,13 @@ public class MultiListBox extends ListBox
   }
 
   @Override
-  public void clear()
-  {
-    if (clearValues.isEmpty()){
+  public void clear() {
+    if (clearValues.isEmpty()) {
       super.clear();
-    }else
-    {
+    } else {
       setSelectedIndex(-1, false);
       for (int i = clearValues.size(); --i >= 0;) {
-        setSelectedIndex(clearValues.items[i],true);
+        setSelectedIndex(clearValues.items[i], true);
       }
     }
   }

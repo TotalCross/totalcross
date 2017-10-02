@@ -15,11 +15,9 @@ import java.util.Iterator;
 
 import totalcross.unit.TestCase;
 
-public class TestIterator extends TestCase
-{
+public class TestIterator extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test4 test1 = new Test4();
     Iterator test2 = new Test4();
 
@@ -31,22 +29,18 @@ public class TestIterator extends TestCase
   }
 }
 
-class Test4 implements Iterator
-{
+class Test4 implements Iterator {
   @Override
-  public boolean hasNext()
-  {
+  public boolean hasNext() {
     return this instanceof Iterator;
   }
 
   @Override
-  public Object next()
-  {
+  public Object next() {
     return new Object();
   }
 
   @Override
-  public void remove()
-  {
+  public void remove() {
   }
 }

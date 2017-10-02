@@ -14,14 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 import totalcross.io.IOException;
 
-public class ConnectionManager4D
-{
+public class ConnectionManager4D {
   static Object connRef;
 
   static ConnectionManager4D CmInstance = new ConnectionManager4D();
@@ -31,8 +28,7 @@ public class ConnectionManager4D
   public static final int CELLULAR = 3;
   public static final int GPRS = CELLULAR;
 
-  private ConnectionManager4D()
-  {
+  private ConnectionManager4D() {
     loadResources();
   }
 
@@ -42,23 +38,17 @@ public class ConnectionManager4D
 
   native public static boolean isAvailable(int type) throws IOException;
 
-  public static void open() throws IOException
-  {
+  public static void open() throws IOException {
     IOException firstEx = null;
     int[] conn = new int[] { CRADLE, WIFI, CELLULAR };
 
-    for (int i = 0; i < conn.length; i++)
-    {
-      try
-      {
-        if (isAvailable(conn[i]))
-        {
+    for (int i = 0; i < conn.length; i++) {
+      try {
+        if (isAvailable(conn[i])) {
           open(conn[i]);
           return; // successfully opened, so just return
         }
-      }
-      catch (IOException ex)
-      {
+      } catch (IOException ex) {
         if (firstEx == null) {
           firstEx = ex;
         }
@@ -75,8 +65,7 @@ public class ConnectionManager4D
    *    fixed bug in ConnectionManager.close implementation for PalmOS: Using this method without first closing all
    *    open socket connections would eventually lead to an unrecoverable error, usually causing the device to reset.
    */
-  public static void close() throws IOException
-  {
+  public static void close() throws IOException {
     nativeClose();
   }
 
@@ -85,8 +74,7 @@ public class ConnectionManager4D
   native private void releaseResources();
 
   @Override
-  protected void finalize()
-  {
+  protected void finalize() {
     releaseResources();
   }
 
@@ -96,16 +84,12 @@ public class ConnectionManager4D
 
   native public static String getLocalHost() throws UnknownHostException;
 
-  public static boolean isInternetAccessible()
-  {
-    try
-    {
-      Socket s = new Socket("www.google.com",80,30*1000);
+  public static boolean isInternetAccessible() {
+    try {
+      Socket s = new Socket("www.google.com", 80, 30 * 1000);
       s.close();
       return true;
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       return false;
     }
   }

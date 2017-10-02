@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.sys.Convert;
@@ -130,8 +128,7 @@ import totalcross.sys.Convert;
  * 
  * @since TotalCross 1.2
  */
-public class UUID
-{
+public class UUID {
   private byte[] uuidValue;
 
   static final String SHORT_UUID_BASE = "00001000800000805F9B34FB";
@@ -149,10 +146,9 @@ public class UUID
    *            if <code>uuidValue</code> is not in the range [0, 2<sup>32</sup> -1]
    * @since TotalCross 1.2
    */
-  public UUID(long uuidValue)
-  {
+  public UUID(long uuidValue) {
     this(Convert.toString(uuidValue, 16), true);
-    if (uuidValue < 0 || uuidValue > 0xffffffffl){
+    if (uuidValue < 0 || uuidValue > 0xffffffffl) {
       throw new IllegalArgumentException("uuidValue is not in the range [0, 2^32 -1]");
     }
   }
@@ -190,21 +186,20 @@ public class UUID
    *            if <code>uuidValue</code> is <code>null</code>
    * @since TotalCross 1.2
    */
-  public UUID(String uuidValue, boolean shortUUID)
-  {
-    if (uuidValue == null){
+  public UUID(String uuidValue, boolean shortUUID) {
+    if (uuidValue == null) {
       throw new NullPointerException("uuidValue is null");
     }
 
     int length = uuidValue.length();
-    if (length < 1 || length > 32 || (shortUUID && length > 8)){
+    if (length < 1 || length > 32 || (shortUUID && length > 8)) {
       throw new IllegalArgumentException();
     }
 
     StringBuffer sb = new StringBuffer("00000000000000000000000000000000");
     sb.setLength((shortUUID ? 8 : 32) - length); //flsobral@tc122_56: fixed length of UUID created from a short value
     sb.append(uuidValue);
-    if (shortUUID){
+    if (shortUUID) {
       sb.append(SHORT_UUID_BASE);
     }
 
@@ -221,9 +216,8 @@ public class UUID
    * @since TotalCross 1.2
    */
   @Override
-  public boolean equals(Object value)
-  {
-    if (value == null || !(value instanceof UUID)){
+  public boolean equals(Object value) {
+    if (value == null || !(value instanceof UUID)) {
       return false;
     }
 
@@ -244,9 +238,9 @@ public class UUID
    * @since TotalCross 1.2
    */
   @Override
-  public int hashCode()
-  {
-    return uuidValue[12] << 24 & 0xff000000 | uuidValue[13] << 16 & 0x00ff0000 | uuidValue[14] << 8 & 0x0000ff00 | uuidValue[15] & 0x000000ff;
+  public int hashCode() {
+    return uuidValue[12] << 24 & 0xff000000 | uuidValue[13] << 16 & 0x00ff0000 | uuidValue[14] << 8 & 0x0000ff00
+        | uuidValue[15] & 0x000000ff;
   }
 
   /**
@@ -258,8 +252,7 @@ public class UUID
    * @since TotalCross 1.2
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return Convert.bytesToHexString(uuidValue, 0, uuidValue.length);
   }
 }

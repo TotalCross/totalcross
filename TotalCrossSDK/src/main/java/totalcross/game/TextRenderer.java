@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
 import totalcross.ui.font.Font;
@@ -97,15 +95,14 @@ import totalcross.util.Hashtable;
  * @version 1.1
  */
 
-public class TextRenderer
-{
+public class TextRenderer {
   /*
    * share all digit renderings by font.
    */
-  private static Hashtable byFont=new Hashtable(13);
-  private static String strDigits[]={"0","1","2","3","4","5","6","7","8","9"};
+  private static Hashtable byFont = new Hashtable(13);
+  private static String strDigits[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
-  private Image []digits;
+  private Image[] digits;
   private Image textImg;
   private int w0;
 
@@ -143,7 +140,8 @@ public class TextRenderer
    *           pad with leading zeros.
    * @throws ImageException
    */
-  protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits, boolean zeroPadding) throws ImageException // fdie@420_27
+  protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits, boolean zeroPadding)
+      throws ImageException // fdie@420_27
   {
     this(font, foreColor, backColor, text, maxDigits);
     this.zeroPadding = zeroPadding;
@@ -164,8 +162,7 @@ public class TextRenderer
    *           the number of digits to display. E.g.: 4 means the max value shown will be 9999.
    * @throws ImageException
    */
-  protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits) throws ImageException
-  {
+  protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits) throws ImageException {
     this.maxDigits = maxDigits;
 
     gfx = GameEngineMainWindow.getEngineGraphics();
@@ -181,15 +178,13 @@ public class TextRenderer
 
     // lookup the digits in the shared space or build a new digits rendering
     Object o = byFont.get(font);
-    if (o == null)
-    {
+    if (o == null) {
       // store the new digits renderings
       o = buildDigits(font, backColor, foreColor);
       byFont.put(font, o);
     }
     digits = (Image[]) o;
-    if (text != null)
-    {
+    if (text != null) {
       textImg = render(text, textWidth, font, backColor, foreColor); // guich@340_10
     }
   }
@@ -203,10 +198,9 @@ public class TextRenderer
    * @param transparent should the background be preserved.
    */
 
-  public void display(int x, int y, boolean transparent)
-  {
-    if (textImg!=null){
-      gfx.drawImage(textImg,x,y,false);
+  public void display(int x, int y, boolean transparent) {
+    if (textImg != null) {
+      gfx.drawImage(textImg, x, y, false);
     }
   }
 
@@ -220,17 +214,16 @@ public class TextRenderer
    * @param value positive integer value to draw next to the text.
    */
 
-  public void display(int x,int y,int value)
-  {
-    if (maxDigits < 1){
+  public void display(int x, int y, int value) {
+    if (maxDigits < 1) {
       return;
     }
 
-    if (textImg != null){
-      gfx.drawImage(textImg,x,y,false);
+    if (textImg != null) {
+      gfx.drawImage(textImg, x, y, false);
     }
 
-    if (value < 0){
+    if (value < 0) {
       value = 0;
     }
     int numDigits = 0;
@@ -238,48 +231,41 @@ public class TextRenderer
     if (zeroPadding) // fdie@420_27
     {
       numDigits = maxDigits;
-    }
-    else
-    {
+    } else {
       // compute how many digits intValue has so we can left justify the text
       int tempValue = value;
-      do
-      {
+      do {
         numDigits++;
         tempValue /= 10;
-      }
-      while (tempValue != 0);
+      } while (tempValue != 0);
     }
 
     x += textWidth + numDigits * w0;
 
     // scan from least to most significant digit
-    while (numDigits-- > 0)
-    {
+    while (numDigits-- > 0) {
       x -= w0;
       int d = value % 10;
-      gfx.drawImage(digits[d],x,y,false);
+      gfx.drawImage(digits[d], x, y, false);
       value /= 10;
-      if (value == 0 && !zeroPadding){
+      if (value == 0 && !zeroPadding) {
         break;
       }
     }
   }
 
-  private Image[] buildDigits(Font font, int backColor, int foreColor) throws ImageException
-  {
+  private Image[] buildDigits(Font font, int backColor, int foreColor) throws ImageException {
     Image array[] = new Image[10];
-    for (int i = 0 ; i < 10 ; i++) {
+    for (int i = 0; i < 10; i++) {
       array[i] = render(strDigits[i], w0, font, backColor, foreColor);
     }
     return array;
   }
 
-  private Image render(String text, int w, Font font, int backColor, int foreColor) throws ImageException
-  {
+  private Image render(String text, int w, Font font, int backColor, int foreColor) throws ImageException {
     Image image = new Image(w, fmH);
     Graphics gfx = image.getGraphics();
-    if (backColor != -1){
+    if (backColor != -1) {
       gfx.backColor = backColor;
     }
     gfx.fillRect(0, 0, totalcross.sys.Settings.screenWidth, totalcross.sys.Settings.screenHeight);
@@ -290,13 +276,12 @@ public class TextRenderer
   }
 
   /** Returns the maximum width of the text plus the number of digits */
-  public int getWidth()
-  {
-    return textWidth + (maxDigits*w0);
+  public int getWidth() {
+    return textWidth + (maxDigits * w0);
   }
+
   /** Returns the height of the current font */
-  public int getHeight()
-  {
+  public int getHeight() {
     return fmH;
   }
 }

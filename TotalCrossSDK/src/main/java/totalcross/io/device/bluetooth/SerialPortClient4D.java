@@ -19,12 +19,10 @@ package totalcross.io.device.bluetooth;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 
-public class SerialPortClient4D extends Stream
-{
+public class SerialPortClient4D extends Stream {
   Object nativeHandle;
 
-  public SerialPortClient4D(String address, int port, String[] params) throws IOException
-  {
+  public SerialPortClient4D(String address, int port, String[] params) throws IOException {
     createSerialPortClient(address, port, params);
   }
 
@@ -40,16 +38,11 @@ public class SerialPortClient4D extends Stream
   native public void close() throws IOException;
 
   @Override
-  protected void finalize()
-  {
-    if (nativeHandle != null)
-    {
-      try
-      {
+  protected void finalize() {
+    if (nativeHandle != null) {
+      try {
         this.close();
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
       }
     }
   }

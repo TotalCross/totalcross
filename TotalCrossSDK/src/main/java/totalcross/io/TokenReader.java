@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import totalcross.util.Vector;
@@ -133,8 +131,7 @@ import totalcross.util.Vector;
  * @author Guilherme Campos Hazan (guich)
  * @since TotalCross 1.23
  */
-public class TokenReader extends LineReader
-{
+public class TokenReader extends LineReader {
   protected char delimiter;
   private Vector lines = new Vector(10);
 
@@ -144,8 +141,7 @@ public class TokenReader extends LineReader
    *
    * @throws totalcross.io.IOException
    */
-  public TokenReader(Stream f, char delimiter) throws totalcross.io.IOException
-  {
+  public TokenReader(Stream f, char delimiter) throws totalcross.io.IOException {
     super(f);
     this.delimiter = delimiter;
   }
@@ -168,8 +164,7 @@ public class TokenReader extends LineReader
    * @see #readTokens
    */
   @Override
-  public String readLine()
-  {
+  public String readLine() {
     throw new RuntimeException("Use readTokens instead of readLine!");
   }
 
@@ -179,37 +174,34 @@ public class TokenReader extends LineReader
    *
    * @throws totalcross.io.IOException
    */
-  public String[] readTokens() throws totalcross.io.IOException
-  {
+  public String[] readTokens() throws totalcross.io.IOException {
     byte[] buf = readBuf.getBuffer();
     int size = readBuf.getPos();
-    byte delimiter = (byte)this.delimiter;
+    byte delimiter = (byte) this.delimiter;
 
     // skip starting control chars
-    while (ofs < size && (buf[ofs] == '\n' || buf[ofs] == '\r')){
+    while (ofs < size && (buf[ofs] == '\n' || buf[ofs] == '\r')) {
       ofs++;
     }
 
     lines.removeAllElements();
 
-    while (true)
-    {
+    while (true) {
       int i;
-      for (i = ofs; i < size; i++)
-      {
+      for (i = ofs; i < size; i++) {
         if (buf[i] == delimiter || buf[i] == '\n') // found a token or a linefeed?
         {
           int len = i - ofs;
-          if (i > 0 && buf[i-1] == '\r') {
+          if (i > 0 && buf[i - 1] == '\r') {
             len--;
           }
-          int ii = ofs+len;
-          if (doTrim && len > 0 && (buf[ofs] <= ' ' || buf[ii-1] <= ' ')) // guich@tc123_37
+          int ii = ofs + len;
+          if (doTrim && len > 0 && (buf[ofs] <= ' ' || buf[ii - 1] <= ' ')) // guich@tc123_37
           {
             while (ofs < ii && buf[ofs] <= ' ') {
               ofs++;
             }
-            while (ii > ofs && buf[ii-1] <= ' ') {
+            while (ii > ofs && buf[ii - 1] <= ' ') {
               ii--;
             }
             len = ii - ofs;
@@ -219,37 +211,36 @@ public class TokenReader extends LineReader
           ofs = i;
           lines.addElement(s);
           if (buf[i] == '\n') {
-            return (String[])lines.toObjectArray();
+            return (String[]) lines.toObjectArray();
           }
           ofs++; // strip the cr/lf from the string
         }
       }
       // no enter found; fetch more data
-      int lastOfs = ofs; 
+      int lastOfs = ofs;
       reuse();
       boolean foundMore = readMore();
       size = readBuf.getPos(); // size had changed
       buf = readBuf.getBuffer(); // buffer may have changed
-      if (!foundMore)
-      {
+      if (!foundMore) {
         int len = i - lastOfs;
         if (len == 0 && lines.size() == 0) {
           return null;
         }
         ofs = len;
         lastOfs = 0;
-        if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len-1] <= ' ')) // guich@tc123_37
+        if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len - 1] <= ' ')) // guich@tc123_37
         {
           while (lastOfs < len && buf[lastOfs] <= ' ') {
             lastOfs++;
           }
-          while (len > lastOfs && buf[len-1] <= ' ') {
+          while (len > lastOfs && buf[len - 1] <= ' ') {
             len--;
           }
         }
-        String s = new String(buf, lastOfs, len-lastOfs);
+        String s = new String(buf, lastOfs, len - lastOfs);
         lines.addElement(s);
-        return (String[])lines.toObjectArray();
+        return (String[]) lines.toObjectArray();
       }
     }
   }

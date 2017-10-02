@@ -20,11 +20,9 @@ import java.util.Set;
 
 import totalcross.unit.TestCase;
 
-public class TestEnumMap extends TestCase
-{
+public class TestEnumMap extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test34 test1 = new Test34(TestEnum1.class);
     AbstractMap test2 = new Test34(test1);
     EnumMap test3 = new Test34(test2);
@@ -77,43 +75,37 @@ public class TestEnumMap extends TestCase
     assertFalse(iterator2.hasNext());
     assertFalse(iterator3.hasNext());
 
-    try
-    {
+    try {
       iterator1.next();
       fail("1");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
-    try
-    {
+    try {
       iterator3.next();
       fail("2");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
-    try
-    {
+    try {
       iterator3.next();
       fail("3");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
 
-    try
-    {
+    try {
       iterator1.remove();
       fail("4");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator2.remove();
       fail("5");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator3.remove();
       fail("6");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
 
     set1.clear();
     set2.clear();
@@ -139,43 +131,37 @@ public class TestEnumMap extends TestCase
     assertFalse((iterator2 = collection2.iterator()).hasNext());
     assertFalse((iterator3 = collection3.iterator()).hasNext());
 
-    try
-    {
+    try {
       iterator1.next();
       fail("7");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
-    try
-    {
+    try {
       iterator3.next();
       fail("8");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
-    try
-    {
+    try {
       iterator3.next();
       fail("9");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
 
-    try
-    {
+    try {
       iterator1.remove();
       fail("10");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator2.remove();
       fail("11");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator3.remove();
       fail("12");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
 
     collection1.clear();
     collection2.clear();
@@ -189,43 +175,37 @@ public class TestEnumMap extends TestCase
     assertFalse((iterator2 = set2.iterator()).hasNext());
     assertFalse((iterator3 = set3.iterator()).hasNext());
 
-    try
-    {
+    try {
       iterator1.next();
       fail("13");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
-    try
-    {
+    try {
       iterator3.next();
       fail("14");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
-    try
-    {
+    try {
       iterator3.next();
       fail("15");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {} 
 
-    try
-    {
+    try {
       iterator1.remove();
       fail("16");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator2.remove();
       fail("17");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator3.remove();
       fail("18");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
 
     set1.clear();
     set2.clear();
@@ -244,30 +224,25 @@ public class TestEnumMap extends TestCase
     assertTrue(test3.equals(test2));
 
     assertTrue(test1.equals(test1.clone()));
-    assertTrue(test2.equals(((EnumMap)test2).clone()));
+    assertTrue(test2.equals(((EnumMap) test2).clone()));
     assertTrue(test3.equals(test3.clone()));
   }
 }
 
-class Test34 extends EnumMap implements Cloneable
-{
-  public Test34(Class keyType)
-  {
+class Test34 extends EnumMap implements Cloneable {
+  public Test34(Class keyType) {
     super(keyType);
   }
-  public Test34(EnumMap map)
-  {
+
+  public Test34(EnumMap map) {
     super(map);
   }
-  public Test34(Map map)
-  {
+
+  public Test34(Map map) {
     super(map);
   }
 }
 
-enum TestEnum1
-{
-  One,
-  Two,
-  Three;
+enum TestEnum1 {
+  One, Two, Three;
 }

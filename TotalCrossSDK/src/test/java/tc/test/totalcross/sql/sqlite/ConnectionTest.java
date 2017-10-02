@@ -14,82 +14,60 @@ import totalcross.unit.TestCase;
 /**
  * These tests check whether access to files is working correctly and some Connection.close() cases.
  */
-public class ConnectionTest extends TestCase
-{
-  public void executeUpdateOnClosedDB()
-  {
-    try
-    {
+public class ConnectionTest extends TestCase {
+  public void executeUpdateOnClosedDB() {
+    try {
       Connection conn = DriverManager.getConnection("jdbc:sqlite:");
       Statement stat = conn.createStatement();
       conn.close();
       stat.executeUpdate("create table A(id, name)");
-    }
-    catch (SQLException e)
-    {
+    } catch (SQLException e) {
       return; // successfully detect the operation on the closed DB
     }
     fail("should not reach here");
   }
 
-  public void openMemory()
-  {
-    try
-    {
+  public void openMemory() {
+    try {
       Connection conn = DriverManager.getConnection("jdbc:sqlite:");
       conn.close();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       fail(e);
     }
   }
 
-  public void isClosed()
-  {
-    try
-    {
+  public void isClosed() {
+    try {
       Connection conn = DriverManager.getConnection("jdbc:sqlite:");
       conn.close();
       assertTrue(conn.isClosed());
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       fail(e);
     }
   }
 
-  public void closeTest()
-  {
-    try
-    {
+  public void closeTest() {
+    try {
       Connection conn = DriverManager.getConnection("jdbc:sqlite:");
       PreparedStatement prep = conn.prepareStatement("select null;");
       prep.executeQuery();
       conn.close();
       prep.clearParameters();
       fail("should raise exception");
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
     }
   }
 
-  public void openInvalidLocation()
-  {
-    try
-    {
+  public void openInvalidLocation() {
+    try {
       Connection conn = DriverManager.getConnection("jdbc:sqlite:/");
       conn.close();
       fail("should raise exception");
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
     }
   }
 
-  public void openFile() throws Exception
-  {
+  public void openFile() throws Exception {
     File testDB = copyToTemp("g:\\TotalCross\\TotalCross3\\src\\tc\\test\\totalcross\\sql\\sqlite\\", "sample.db");
     new TempFile(testDB);
     assertTrue(testDB.exists());
@@ -97,11 +75,10 @@ public class ConnectionTest extends TestCase
     conn.close();
   }
 
-  public static File copyToTemp(String folder, String fileName) throws IOException
-  {
+  public static File copyToTemp(String folder, String fileName) throws IOException {
     String sdir = folder + "/target/";
     File dir = new File(sdir);
-    if (!dir.exists()){
+    if (!dir.exists()) {
       dir.createDir();
     }
 
@@ -113,13 +90,14 @@ public class ConnectionTest extends TestCase
     return tmp;
   }
 
-  public void URIFilenames()
-  {
-    try
-    {
+  public void URIFilenames() {
+    try {
       Connection conn1 = DriverManager.getConnection("jdbc:sqlite:file:memdb1?mode=memory&cache=shared");
       Statement stmt1 = conn1.createStatement();
-      try {stmt1.executeUpdate("drop table tbl");} catch (Exception e) {}
+      try {
+        stmt1.executeUpdate("drop table tbl");
+      } catch (Exception e) {
+      }
       stmt1.executeUpdate("create table tbl (col int)");
       stmt1.executeUpdate("insert into tbl values(100)");
       stmt1.close();
@@ -149,16 +127,13 @@ public class ConnectionTest extends TestCase
       rs.close();
       stmt4.close();
       conn4.close();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       fail(e);
     }
   }
 
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     URIFilenames();
     openMemory();
     isClosed();

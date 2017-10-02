@@ -7,8 +7,7 @@
 
 package totalcross.util.pdf;
 
-public class IndirectObject extends Base
-{
+public class IndirectObject extends Base {
 
   private EnclosedContent mContent;
   private Dictionary mDictionaryContent;
@@ -17,109 +16,88 @@ public class IndirectObject extends Base
   private int mByteOffset;
   private boolean mInUse;
 
-  public IndirectObject()
-  {
+  public IndirectObject() {
     clear();
   }
 
-  public void setNumberID(int Value)
-  {
+  public void setNumberID(int Value) {
     mID.setNumber(Value);
   }
 
-  public int getNumberID()
-  {
+  public int getNumberID() {
     return mID.getNumber();
   }
 
-  public void setGeneration(int Value)
-  {
+  public void setGeneration(int Value) {
     mID.setGeneration(Value);
   }
 
-  public int getGeneration()
-  {
+  public int getGeneration() {
     return mID.getGeneration();
   }
 
-  public String getIndirectReference()
-  {
+  public String getIndirectReference() {
     return mID.toPDFString() + " R";
   }
 
-  public void setByteOffset(int Value)
-  {
+  public void setByteOffset(int Value) {
     mByteOffset = Value;
   }
 
-  public int getByteOffset()
-  {
+  public int getByteOffset() {
     return mByteOffset;
   }
 
-  public void setInUse(boolean Value)
-  {
+  public void setInUse(boolean Value) {
     mInUse = Value;
   }
 
-  public boolean getInUse()
-  {
+  public boolean getInUse() {
     return mInUse;
   }
 
-  public void addContent(String Value)
-  {
+  public void addContent(String Value) {
     mContent.addContent(Value);
   }
 
-  public void setContent(String Value)
-  {
+  public void setContent(String Value) {
     mContent.setContent(Value);
   }
 
-  public String getContent()
-  {
+  public String getContent() {
     return mContent.getContent();
   }
 
-  public void addDictionaryContent(String Value)
-  {
+  public void addDictionaryContent(String Value) {
     mDictionaryContent.addContent(Value);
   }
 
-  public void setDictionaryContent(String Value)
-  {
+  public void setDictionaryContent(String Value) {
     mDictionaryContent.setContent(Value);
   }
 
-  public String getDictionaryContent()
-  {
+  public String getDictionaryContent() {
     return mDictionaryContent.getContent();
   }
 
-  public void addStreamContent(String Value)
-  {
+  public void addStreamContent(String Value) {
     mStreamContent.addContent(Value);
   }
 
-  public void setStreamContent(String Value)
-  {
+  public void setStreamContent(String Value) {
     mStreamContent.setContent(Value);
   }
 
-  public String getStreamContent()
-  {
+  public String getStreamContent() {
     return mStreamContent.getContent();
   }
 
-  protected String render()
-  {
+  protected String render() {
     StringBuilder sb = new StringBuilder();
     sb.append(mID.toPDFString());
     sb.append(" ");
     // j-a-s-d: this can be performed in inherited classes DictionaryObject and StreamObject
-    if (mDictionaryContent.hasContent())
-    {
+    if (mDictionaryContent.hasContent()) {
       mContent.setContent(mDictionaryContent.toPDFString());
       if (mStreamContent.hasContent()) {
         mContent.addContent(mStreamContent.toPDFString());
@@ -130,8 +108,7 @@ public class IndirectObject extends Base
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
     mID = new IndirectIdentifier();
     mByteOffset = 0;
     mInUse = false;
@@ -143,8 +120,7 @@ public class IndirectObject extends Base
   }
 
   @Override
-  public String toPDFString()
-  {
+  public String toPDFString() {
     return render();
   }
 

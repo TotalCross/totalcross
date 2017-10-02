@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC103_dsub extends Arithmetic
-{
-  public BC103_dsub()
-  {
-    super(-1,-2,-1,DOUBLE);
+public class BC103_dsub extends Arithmetic {
+  public BC103_dsub() {
+    super(-1, -2, -1, DOUBLE);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-2].asDouble -= stack[stackPtr-1].asDouble;
+  public void exec() {
+    stack[stackPtr - 2].asDouble -= stack[stackPtr - 1].asDouble;
   }
 }

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import totalcross.sys.CharacterConverter;
@@ -118,16 +116,13 @@ import totalcross.util.zip.ZLib;
  * accentuation.
  */
 
-public class CompressedByteArrayStream extends Stream
-{
+public class CompressedByteArrayStream extends Stream {
   /** Implements a CharacterConverter that converts from char[] to byte[] which just
    * casts the char to byte; thus, ignoring any non-ASCII character. */
-  public static class DirectCharConverter extends CharacterConverter
-  {
+  public static class DirectCharConverter extends CharacterConverter {
     /** Just casts the char to byte; thus, ignoring any non-ASCII character. */
     @Override
-    public byte[] chars2bytes(char[] chars, int offset, int length)
-    {
+    public byte[] chars2bytes(char[] chars, int offset, int length) {
       offset += length;
       byte[] b = new byte[length];
       while (--length >= 0) {
@@ -137,44 +132,43 @@ public class CompressedByteArrayStream extends Stream
     }
   }
 
-  private static final int       SIZE                  = 16000;
+  private static final int SIZE = 16000;
 
   /** Used in the setMode method. Turns the mode into READ. */
-  public static final int        READ_MODE             = 1;
+  public static final int READ_MODE = 1;
   /** Used in the setMode method. Turns the mode into WRITE. */
-  public static final int        WRITE_MODE            = 0;
+  public static final int WRITE_MODE = 0;
   /**
    * Used in the setMode method. Turns the mode into READ, and after reading
    * each buffer, discards it, releasing memory. CompressedByteArrayStream will not be able to
    * read the buffer again. This is useful when you download data and then want to read from it,
    * releasing memory on-demand.
    */
-  public static final int        DESTRUCTIVE_READ_MODE = 2;                         // guich@570_28
+  public static final int DESTRUCTIVE_READ_MODE = 2; // guich@570_28
 
   /**
    * Defines the line terminator, which is by default \r\n. To change it to a single \n
    * use <code>CompressedByteArrayStream.crlf = new byte[]{'\n'};</code>
    */
-  public static byte[]           crlf                  = {(byte) '\r', (byte) '\n'};
+  public static byte[] crlf = { (byte) '\r', (byte) '\n' };
 
-  private int                    mode;                                              // READ or WRITE
-  private int                    compressionLevel;
-  private int                    rSize, cSize;                                      // real and compressed sizes
-  private int                    readIdx;                                           // current buffer under use when reading
-  private Vector                 zbufs                 = new Vector();              // stores the compressed data
-  private ByteArrayStream        buf                   = new ByteArrayStream(SIZE); // current read/write buffer
-  private byte[]                 bufbytes              = buf.getBuffer();           // since buf size won't change, this is safe
-  private static ByteArrayStream temp                  = new ByteArrayStream(SIZE); // used to compress/uncompress
-  private StringBuffer           sbuf;                                              // used in readLine
-  private byte[] writeBuf;                                                          // used in readFully
+  private int mode; // READ or WRITE
+  private int compressionLevel;
+  private int rSize, cSize; // real and compressed sizes
+  private int readIdx; // current buffer under use when reading
+  private Vector zbufs = new Vector(); // stores the compressed data
+  private ByteArrayStream buf = new ByteArrayStream(SIZE); // current read/write buffer
+  private byte[] bufbytes = buf.getBuffer(); // since buf size won't change, this is safe
+  private static ByteArrayStream temp = new ByteArrayStream(SIZE); // used to compress/uncompress
+  private StringBuffer sbuf; // used in readLine
+  private byte[] writeBuf; // used in readFully
 
   /**
    * Creates a new CompressedByteArrayStream, using the given compression level (0 =
    * no compression, 9 = max compression).
    */
-  public CompressedByteArrayStream(int compressionLevel) throws IllegalArgumentException
-  {
-    if (compressionLevel < 0 || compressionLevel > 9){
+  public CompressedByteArrayStream(int compressionLevel) throws IllegalArgumentException {
+    if (compressionLevel < 0 || compressionLevel > 9) {
       throw new IllegalArgumentException("Argument 'compressionLevel' must be >= 0 and <= 9");
     }
     this.compressionLevel = compressionLevel;
@@ -183,8 +177,7 @@ public class CompressedByteArrayStream extends Stream
   /**
    * Creates a new CompressedByteArrayStream using the maximum compression level (9)
    */
-  public CompressedByteArrayStream()
-  {
+  public CompressedByteArrayStream() {
     this(9);
   }
 
@@ -195,9 +188,8 @@ public class CompressedByteArrayStream extends Stream
    * @throws IOException 
    * @see #setMode(int)
    */
-  public void flush() throws IOException
-  {
-    if (buf.getPos() > 0){
+  public void flush() throws IOException {
+    if (buf.getPos() > 0) {
       saveCurrentBuffer();
     }
     if (mode == WRITE_MODE) // guich@566_37
@@ -214,43 +206,38 @@ public class CompressedByteArrayStream extends Stream
    * @see #READ_MODE
    * @see #DESTRUCTIVE_READ_MODE
    */
-  public void setMode(int newMode) throws IOException
-  {
+  public void setMode(int newMode) throws IOException {
     // flsobral@tc100b5_45: Stream was not being reseted when the new mode was the same as the current one.
-    if (mode == WRITE_MODE && mode != newMode){
+    if (mode == WRITE_MODE && mode != newMode) {
       flush();
     }
-    if (newMode == READ_MODE || newMode == DESTRUCTIVE_READ_MODE){
+    if (newMode == READ_MODE || newMode == DESTRUCTIVE_READ_MODE) {
       readIdx = -1;
     }
     mode = newMode;
-    loadNextBuffer();      
+    loadNextBuffer();
   }
 
   /** Deletes all internal buffers. Do not try to use the object afterwards. */
   @Override
-  public void close()
-  {
+  public void close() {
     buf = null;
     zbufs.removeAllElements();
   }
 
   /** Returns the real (uncompressed) size of data written. */
-  public int getSize()
-  {
+  public int getSize() {
     return rSize; // luciana@572_20 - fixed, it was returning cSize
   }
 
   /** Returns the compressed size of the data written. */
-  public int getCompressedSize()
-  {
+  public int getCompressedSize() {
     return cSize; // luciana@572_20 - fixed, it was returning rSize
   }
 
   /** Compresses the current buffer and add it to the buffer arrays 
    * @throws IOException */
-  private void saveCurrentBuffer() throws IOException
-  {
+  private void saveCurrentBuffer() throws IOException {
     buf.mark(); // note: unless for the last buffer, all the others will have SIZE bytes
     temp.reset();
     cSize += ZLib.deflate(buf, temp, compressionLevel);
@@ -261,13 +248,12 @@ public class CompressedByteArrayStream extends Stream
 
   /** Uncompresses the next buffer and load it to memory 
    * @throws IOException */
-  private boolean loadNextBuffer() throws IOException
-  {
-    if (++readIdx >= zbufs.size()){
+  private boolean loadNextBuffer() throws IOException {
+    if (++readIdx >= zbufs.size()) {
       return false;
     }
     buf.reset();
-    if (readIdx > 0 && mode == DESTRUCTIVE_READ_MODE){
+    if (readIdx > 0 && mode == DESTRUCTIVE_READ_MODE) {
       zbufs.items[readIdx - 1] = null;
     }
     byte[] b = (byte[]) zbufs.items[readIdx];
@@ -288,20 +274,17 @@ public class CompressedByteArrayStream extends Stream
    * @throws IOException 
    */
   @Override
-  public int readBytes(byte buffer[], int start, int count) throws IOException
-  {
-    if (start < 0){
+  public int readBytes(byte buffer[], int start, int count) throws IOException {
+    if (start < 0) {
       throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
     }
-    if (count < 0){
+    if (count < 0) {
       throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
     }
 
     int orig = count;
-    while (true)
-    {
-      if (buf.available() > 0)
-      {
+    while (true) {
+      if (buf.available() > 0) {
         int n = buf.readBytes(buffer, start, count);
         count -= n;
         start += n;
@@ -327,20 +310,17 @@ public class CompressedByteArrayStream extends Stream
    * @since SuperWaba 2.0 beta 2
    */
   @Override
-  public int writeBytes(byte buffer[], int start, int count) throws IOException, IllegalArgumentException
-  {
-    if (start < 0){
+  public int writeBytes(byte buffer[], int start, int count) throws IOException, IllegalArgumentException {
+    if (start < 0) {
       throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
     }
-    if (count < 0){
+    if (count < 0) {
       throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
     }
 
     int orig = count, a;
-    while (true)
-    {
-      if ((a = buf.available()) > 0)
-      {
+    while (true) {
+      if ((a = buf.available()) > 0) {
         int w = count > a ? a : count;
         int n = buf.writeBytes(buffer, start, w);
         count -= n;
@@ -360,19 +340,16 @@ public class CompressedByteArrayStream extends Stream
    * @return A line of text read from internal buffer or null if no more lines are available.
    * @throws IOException 
    */
-  public String readLine() throws IOException
-  {
-    if (sbuf == null){
+  public String readLine() throws IOException {
+    if (sbuf == null) {
       sbuf = new StringBuffer(1024);
     }
     StringBuffer sb = sbuf;
     sb.setLength(0);
     boolean stop = false;
-    while (!stop)
-    {
+    while (!stop) {
       int a = buf.available();
-      if (a == 0)
-      {
+      if (a == 0) {
         if (!loadNextBuffer()) {
           break;
         }
@@ -423,8 +400,7 @@ public class CompressedByteArrayStream extends Stream
   {
     byte[] buf = (writeBuf != null && writeBuf.length >= bufSize) ? writeBuf : (writeBuf = new byte[bufSize]);
     setMode(WRITE_MODE);
-    while (true)
-    {
+    while (true) {
       int n = inputStream.readBytes(buf, 0, buf.length);
       if (n <= 0 && --retryCount <= 0) {
         break;
@@ -443,8 +419,7 @@ public class CompressedByteArrayStream extends Stream
    * @param s the String to be written; cannot be null!
    * @throws IOException 
    */
-  public void writeLine(String s) throws IOException
-  {
+  public void writeLine(String s) throws IOException {
     byte[] b = s.getBytes();
     writeBytes(b, 0, b.length);
     writeBytes(crlf, 0, crlf.length);
@@ -454,20 +429,17 @@ public class CompressedByteArrayStream extends Stream
    * @return A line of text read from internal buffer or null if no more lines are available.
    * @throws IOException 
    */
-  public String readUntilNextChar(char c) throws IOException
-  {
-    if (sbuf == null){
+  public String readUntilNextChar(char c) throws IOException {
+    if (sbuf == null) {
       sbuf = new StringBuffer(1024);
     }
     StringBuffer sb = sbuf;
     sb.setLength(0);
 
     boolean stop = false;
-    while (!stop)
-    {
+    while (!stop) {
       int a = buf.available();
-      if (a == 0)
-      {
+      if (a == 0) {
         if (!loadNextBuffer()) {
           break;
         }
@@ -475,7 +447,7 @@ public class CompressedByteArrayStream extends Stream
       }
       int p0 = buf.getPos();
       int p = p0;
-      byte []b = bufbytes;
+      byte[] b = bufbytes;
       while (a > 0 && (b[p] & 0xFF) == c) // skip starting enters - guich@565_10: discard negative values
       {
         if (sb.length() > 0) {
@@ -486,18 +458,18 @@ public class CompressedByteArrayStream extends Stream
       }
       int i = p;
       // search for the \r\n
-      for (; a > 0; i++,a--) {
+      for (; a > 0; i++, a--) {
         if ((b[i] & 0xFF) == c) // guich@565_10: discard negative values
         {
           stop = true;
           break;
         }
       }
-      int len = i-p;
+      int len = i - p;
       if (len > 0) {
-        sb.append(Convert.charConverter.bytes2chars(b,p,len));
+        sb.append(Convert.charConverter.bytes2chars(b, p, len));
       }
-      buf.skipBytes(i-p0);
+      buf.skipBytes(i - p0);
     }
     return sb.length() > 0 ? sb.toString() : null;
   }

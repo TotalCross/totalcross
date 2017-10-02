@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.unit;
 
 import totalcross.sys.Settings;
@@ -28,8 +26,7 @@ import totalcross.ui.gfx.Graphics;
  * one running at device.
  */
 
-public class ImageComparisionTest extends TestCase
-{
+public class ImageComparisionTest extends TestCase {
   // set to true to record the compressed strings
   protected boolean recording;
   // set to true to debug, sending all output to the screen.
@@ -39,27 +36,22 @@ public class ImageComparisionTest extends TestCase
   protected ImageTester it;
 
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     maing = MainWindow.getMainWindow().getGraphics();
   }
 
-  protected void assertOK(String in256, String in65536, String title)
-  {
-    if (debuggingOnScreen){;
-    }else
-      if (recording)
-      {
-        maing.drawImage(it,0,0);
-        if (!Settings.onJavaSE) {
-          Vm.sleep(10000);
-        }
-        Vm.debug("private String "+title+"_"+Settings.screenBPP+" = \""+it.toString()+"\";");
+  protected void assertOK(String in256, String in65536, String title) {
+    if (debuggingOnScreen) {
+      ;
+    } else if (recording) {
+      maing.drawImage(it, 0, 0);
+      if (!Settings.onJavaSE) {
+        Vm.sleep(10000);
       }
-      else
-      {
-        it.title = title;
-        assertEquals(it, Settings.screenBPP == 8 ? in256 : in65536);
-      }
+      Vm.debug("private String " + title + "_" + Settings.screenBPP + " = \"" + it.toString() + "\";");
+    } else {
+      it.title = title;
+      assertEquals(it, Settings.screenBPP == 8 ? in256 : in65536);
+    }
   }
 }

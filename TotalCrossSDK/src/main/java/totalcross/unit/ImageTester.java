@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.unit;
 
 import totalcross.io.ByteArrayStream;
@@ -90,48 +88,42 @@ public class ImageTester extends Image // guich@565_7
   public String title;
   public String name;
 
-  private byte []bytes;
-  private static int []rgbs;
+  private byte[] bytes;
+  private static int[] rgbs;
   private static StringBuffer sbuf = new StringBuffer(10000);
   private static ByteArrayStream normal = new ByteArrayStream(65000);
   private static byte[] normalBytes = normal.getBuffer();
   private static ByteArrayStream compressed = new ByteArrayStream(65000);
   private static byte[] compressedBytes = compressed.getBuffer();
 
-  public ImageTester(int width, int height) throws ImageException
-  {
+  public ImageTester(int width, int height) throws ImageException {
     super(width, height);
     create();
   }
 
-  public ImageTester(String name) throws ImageException, IOException
-  {
+  public ImageTester(String name) throws ImageException, IOException {
     super(name);
     this.name = name;
     create();
   }
 
-  private void create()
-  {
+  private void create() {
     bytes = new byte[getNrBytes()];
     g = getGraphics();
   }
 
-  private int getNrBytes()
-  {
+  private int getNrBytes() {
     int bpp = Settings.screenBPP;
     int div = 32 / bpp;
-    return ((width+div-1) / div)*div;
+    return ((width + div - 1) / div) * div;
   }
 
   /** This testthod is the reason for the creation of this class.
    * It compares two images byte per byte. */
   @Override
-  public boolean equals(Object originalObj)
-  {
-    if (originalObj instanceof ImageTester)
-    {
-      ImageTester original = (ImageTester)originalObj;
+  public boolean equals(Object originalObj) {
+    if (originalObj instanceof ImageTester) {
+      ImageTester original = (ImageTester) originalObj;
       if (this.width != original.getWidth() || this.height != original.getHeight()) {
         return false;
       }
@@ -146,8 +138,7 @@ public class ImageTester extends Image // guich@565_7
       int n = testb.length;
       int h = height;
 
-      for (int j = 0; j < h; j++)
-      {
+      for (int j = 0; j < h; j++) {
         super.getPixelRow(testb, j);
         original.getPixelRow(originalb, j);
         for (int i = 0; i < n; i++) {
@@ -161,14 +152,11 @@ public class ImageTester extends Image // guich@565_7
     if (originalObj instanceof String) // created with the toString below?
     {
       normal.reset();
-      hex2bytes((String)originalObj, compressed);
+      hex2bytes((String) originalObj, compressed);
       int whoriginal = 0;
-      try
-      {
+      try {
         whoriginal = ZLib.inflate(compressed, normal);
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         e.printStackTrace(); // not the best, better let the user handle it!
         return false;
       }
@@ -184,22 +172,19 @@ public class ImageTester extends Image // guich@565_7
       int n = testbytes.length;
       int ofs = 0;
       int h = height;
-      int test=0,orig=0,i=0,j;
+      int test = 0, orig = 0, i = 0, j;
       int w = width;
 
       int skip = n - width;
 
-      for (j = 0; j < h; j++)
-      {
+      for (j = 0; j < h; j++) {
         super.getPixelRow(testbytes, j);
-        for (i = 0; i < w; i++)
-        {
+        for (i = 0; i < w; i++) {
           orig = palme[originalbytes[ofs++] & 0xFF];
           test = palme[testbytes[i] & 0xFF];
-          if (test != orig)
-          {
+          if (test != orig) {
             new CompareBox(title, rgbs, orig, test, i, j, n, originalbytes, this).popup();
-            TestCase.output(title+" failed");
+            TestCase.output(title + " failed");
             MainWindow.getMainWindow().repaintNow();
             return false;
           }
@@ -211,24 +196,22 @@ public class ImageTester extends Image // guich@565_7
     return super.equals(originalObj);
   }
 
-  public static void hex2bytes(String str, ByteArrayStream bas)
-  {
-    byte []in = str.getBytes();
+  public static void hex2bytes(String str, ByteArrayStream bas) {
+    byte[] in = str.getBytes();
     int size = in.length >> 1;
-        byte []out = bas.getBuffer();
-        int ofs = 0;
-        for (int i = 0; i < size; i++) {
-          out[i] = (byte)(Convert.digitOf((char)in[ofs++], 16) << 4 | Convert.digitOf((char)in[ofs++], 16));
-        }
-        bas.reset();
-        bas.skipBytes(size);
-        bas.mark();
+    byte[] out = bas.getBuffer();
+    int ofs = 0;
+    for (int i = 0; i < size; i++) {
+      out[i] = (byte) (Convert.digitOf((char) in[ofs++], 16) << 4 | Convert.digitOf((char) in[ofs++], 16));
+    }
+    bas.reset();
+    bas.skipBytes(size);
+    bas.mark();
   }
 
   /** Converts this image to String, as a string of hexadecimal numbers. */
   @Override
-  public String toString()
-  {
+  public String toString() {
     StringBuffer sb = sbuf;
     sb.setLength(0);
     byte[] b = bytes;
@@ -236,25 +219,21 @@ public class ImageTester extends Image // guich@565_7
     compressed.reset();
     normal.reset();
     int h = height;
-    for (int j = 0; j < h; j++)
-    {
+    for (int j = 0; j < h; j++) {
       super.getPixelRow(b, j);
       normal.writeBytes(b, 0, n);
     }
     normal.mark();
     int len = 0;
-    try
-    {
+    try {
       len = ZLib.deflate(normal, compressed, 9);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       e.printStackTrace(); // not the best, better let the user handle it!
       return sb.toString();
     }
-    byte []out = compressedBytes;
+    byte[] out = compressedBytes;
     for (int i = 0; i < len; i++) {
-      sb.append(Convert.unsigned2hex(out[i],2));
+      sb.append(Convert.unsigned2hex(out[i], 2));
     }
     return sb.toString();
   }

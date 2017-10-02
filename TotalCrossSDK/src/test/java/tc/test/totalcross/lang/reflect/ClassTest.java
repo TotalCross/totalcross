@@ -11,35 +11,27 @@ import totalcross.unit.TestCase;
 // svn.apache.org/repos/asf/harmony/enhanced/java/trunk/classlib/modules/luni/src/test/api/common/org/apache/harmony/luni/tests/java/lang/reflect/ClassTest.java
 
 @SuppressWarnings("rawtypes")
-public class ClassTest extends TestCase
-{
-  public ClassTest()
-  {
+public class ClassTest extends TestCase {
+  public ClassTest() {
   }
 
-  public ClassTest(String s)
-  {
+  public ClassTest(String s) {
   }
 
   public static final String FILENAME = "ClassTest/test#.properties";
 
-  static class StaticMember$Class
-  {
-    class Member2$A
-    {
+  static class StaticMember$Class {
+    class Member2$A {
     }
   }
 
-  class Member$Class
-  {
-    class Member3$B
-    {
+  class Member$Class {
+    class Member3$B {
     }
   }
 
   @SuppressWarnings("unused")
-  public static class TestClass
-  {
+  public static class TestClass {
     private int privField = 1;
 
     public int pubField = 2;
@@ -48,137 +40,99 @@ public class ClassTest extends TestCase
 
     public Object ack = new Object();
 
-    private int privMethod()
-    {
+    private int privMethod() {
       return 1;
     }
 
-    public int pubMethod()
-    {
+    public int pubMethod() {
       return 2;
     }
 
-    public Object cValue()
-    {
+    public Object cValue() {
       return cValue;
     }
 
-    public TestClass()
-    {
+    public TestClass() {
     }
 
-    private TestClass(Object o)
-    {
+    private TestClass(Object o) {
     }
   }
 
-  public static class SubTestClass extends TestClass
-  {
+  public static class SubTestClass extends TestClass {
   }
 
   /**
    * @tests java.lang.Class#forName(java.lang.String)
    */
-  public void test_forNameLjava_lang_String() throws Exception
-  {
+  public void test_forNameLjava_lang_String() throws Exception {
     assertEquals(Object.class, Class.forName("java.lang.Object"));
     assertEquals(Object[][].class, Class.forName("[[Ljava.lang.Object;"));
 
     assertEquals(int[].class, Class.forName("[I"));
 
-    try
-    {
+    try {
       Class.forName("int");
       fail("");
-    }
-    catch (ClassNotFoundException e)
-    {
+    } catch (ClassNotFoundException e) {
     }
 
-    try
-    {
+    try {
       Class.forName("byte");
       fail("");
+    } catch (ClassNotFoundException e) {
     }
-    catch (ClassNotFoundException e)
-    {
-    }
-    try
-    {
+    try {
       Class.forName("char");
       fail("");
-    }
-    catch (ClassNotFoundException e)
-    {
+    } catch (ClassNotFoundException e) {
     }
 
-    try
-    {
+    try {
       Class.forName("void");
       fail("");
-    }
-    catch (ClassNotFoundException e)
-    {
+    } catch (ClassNotFoundException e) {
     }
 
-    try
-    {
+    try {
       Class.forName("short");
       fail("");
+    } catch (ClassNotFoundException e) {
     }
-    catch (ClassNotFoundException e)
-    {
-    }
-    try
-    {
+    try {
       Class.forName("long");
       fail("");
-    }
-    catch (ClassNotFoundException e)
-    {
+    } catch (ClassNotFoundException e) {
     }
 
-    try
-    {
+    try {
       Class.forName("boolean");
       fail("");
+    } catch (ClassNotFoundException e) {
     }
-    catch (ClassNotFoundException e)
-    {
-    }
-    try
-    {
+    try {
       Class.forName("float");
       fail("");
+    } catch (ClassNotFoundException e) {
     }
-    catch (ClassNotFoundException e)
-    {
-    }
-    try
-    {
+    try {
       Class.forName("double");
       fail("");
-    }
-    catch (ClassNotFoundException e)
-    {
+    } catch (ClassNotFoundException e) {
     }
 
     // regression test for JIRA 2162
-    try
-    {
+    try {
       Class.forName("%");
       fail("should throw ClassNotFoundException.");
-    }
-    catch (ClassNotFoundException e)
-    {
+    } catch (ClassNotFoundException e) {
     }
   }
 
   /**
    * @tests java.lang.Class#getComponentType()
    */
-  public void test_getComponentType()
-  {
+  public void test_getComponentType() {
     assertEquals(int.class, int[].class.getComponentType());
     assertEquals(Object.class, Object[].class.getComponentType());
     assertNull(Object.class.getComponentType());
@@ -187,16 +141,12 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getConstructor(java.lang.Class[])
    */
-  public void test_getConstructor$Ljava_lang_Class() throws NoSuchMethodException
-  {
+  public void test_getConstructor$Ljava_lang_Class() throws NoSuchMethodException {
     TestClass.class.getConstructor(new Class[0]);
-    try
-    {
+    try {
       TestClass.class.getConstructor(new Class[] { Object.class });
       fail("Found private constructor");
-    }
-    catch (NoSuchMethodException e)
-    {
+    } catch (NoSuchMethodException e) {
       // Correct - constructor with obj is private
     }
   }
@@ -204,8 +154,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getConstructors()
    */
-  public void test_getConstructors() throws Exception
-  {
+  public void test_getConstructors() throws Exception {
     Constructor[] c = TestClass.class.getConstructors();
     assertEquals(1, c.length);
   }
@@ -213,18 +162,16 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getDeclaredConstructor(java.lang.Class[])
    */
-  public void test_getDeclaredConstructor$Ljava_lang_Class() throws Exception
-  {
+  public void test_getDeclaredConstructor$Ljava_lang_Class() throws Exception {
     Constructor c = TestClass.class.getDeclaredConstructor(new Class[0]);
-    assertNull(((TestClass) c.newInstance((Object)new Class[0])).cValue());
+    assertNull(((TestClass) c.newInstance((Object) new Class[0])).cValue());
     c = TestClass.class.getDeclaredConstructor(new Class[] { Object.class });
   }
 
   /**
    * @tests java.lang.Class#getDeclaredConstructors()
    */
-  public void test_getDeclaredConstructors() throws Exception
-  {
+  public void test_getDeclaredConstructors() throws Exception {
     Constructor[] c = TestClass.class.getDeclaredConstructors();
     assertEquals(2, c.length);
   }
@@ -232,8 +179,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getDeclaredField(java.lang.String)
    */
-  public void test_getDeclaredFieldLjava_lang_String() throws Exception
-  {
+  public void test_getDeclaredFieldLjava_lang_String() throws Exception {
     Field f = TestClass.class.getDeclaredField("pubField");
     assertEquals(2, f.getInt(new TestClass()));
   }
@@ -241,8 +187,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getDeclaredFields()
    */
-  public void test_getDeclaredFields() throws Exception
-  {
+  public void test_getDeclaredFields() throws Exception {
     Field[] f = TestClass.class.getDeclaredFields();
     assertEquals(4, f.length);
     f = SubTestClass.class.getDeclaredFields();
@@ -253,18 +198,16 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getDeclaredMethod(java.lang.String, java.lang.Class[])
    */
-  public void test_getDeclaredMethodLjava_lang_String$Ljava_lang_Class() throws Exception
-  {
+  public void test_getDeclaredMethodLjava_lang_String$Ljava_lang_Class() throws Exception {
     Method m = TestClass.class.getDeclaredMethod("pubMethod", new Class[0]);
-    assertEquals(2, ((Integer) (m.invoke((Object)new TestClass(), (Object)new Class[0]))).intValue());
+    assertEquals(2, ((Integer) (m.invoke((Object) new TestClass(), (Object) new Class[0]))).intValue());
     m = TestClass.class.getDeclaredMethod("privMethod", new Class[0]);
   }
 
   /**
    * @tests java.lang.Class#getDeclaredMethods()
    */
-  public void test_getDeclaredMethods() throws Exception
-  {
+  public void test_getDeclaredMethods() throws Exception {
     Method[] m = TestClass.class.getDeclaredMethods();
     assertEquals(3, m.length);
     m = SubTestClass.class.getDeclaredMethods();
@@ -274,17 +217,13 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getField(java.lang.String)
    */
-  public void test_getFieldLjava_lang_String() throws Exception
-  {
+  public void test_getFieldLjava_lang_String() throws Exception {
     Field f = TestClass.class.getField("pubField");
     assertEquals(2, f.getInt(new TestClass()));
-    try
-    {
+    try {
       f = TestClass.class.getField("privField");
       fail("Private field access failed to throw exception");
-    }
-    catch (NoSuchFieldException e)
-    {
+    } catch (NoSuchFieldException e) {
       // Correct
     }
   }
@@ -292,8 +231,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getFields()
    */
-  public void test_getFields() throws Exception
-  {
+  public void test_getFields() throws Exception {
     Field[] f = TestClass.class.getFields();
     assertEquals(2, f.length);
     f = SubTestClass.class.getFields();
@@ -301,23 +239,19 @@ public class ClassTest extends TestCase
     assertEquals(2, f.length);
   }
 
-  interface I1
-  {
+  interface I1 {
   }
 
-  interface I2
-  {
+  interface I2 {
   }
 
-  class TestInterf implements I1, I2
-  {
+  class TestInterf implements I1, I2 {
   }
 
   /**
    * @tests java.lang.Class#getInterfaces()
    */
-  public void test_getInterfaces()
-  {
+  public void test_getInterfaces() {
     Class[] interfaces;
     interfaces = Object.class.getInterfaces();
     assertEquals(0, interfaces.length);
@@ -327,17 +261,13 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getMethod(java.lang.String, java.lang.Class[])
    */
-  public void test_getMethodLjava_lang_String$Ljava_lang_Class() throws Exception
-  {
+  public void test_getMethodLjava_lang_String$Ljava_lang_Class() throws Exception {
     Method m = TestClass.class.getMethod("pubMethod", new Class[0]);
-    assertEquals(2, ((Integer) (m.invoke((Object)new TestClass(), (Object)new Class[0]))).intValue());
-    try
-    {
+    assertEquals(2, ((Integer) (m.invoke((Object) new TestClass(), (Object) new Class[0]))).intValue());
+    try {
       m = TestClass.class.getMethod("privMethod", new Class[0]);
       fail("Failed to throw exception accessing private method");
-    }
-    catch (NoSuchMethodException e)
-    {
+    } catch (NoSuchMethodException e) {
       // Correct
       return;
     }
@@ -346,8 +276,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getMethods()
    */
-  public void test_getMethods() throws Exception
-  {
+  public void test_getMethods() throws Exception {
     Method[] m = TestClass.class.getMethods();
     assertEquals(2 + Object.class.getMethods().length, m.length);
     m = SubTestClass.class.getMethods();
@@ -355,15 +284,13 @@ public class ClassTest extends TestCase
     // Number of inherited methods
   }
 
-  private static final class PrivateClass
-  {
+  private static final class PrivateClass {
   }
 
   /**
    * @tests java.lang.Class#getModifiers()
    */
-  public void test_getModifiers()
-  {
+  public void test_getModifiers() {
     int dcm = PrivateClass.class.getModifiers();
     assertFalse(Modifier.isPublic(dcm));
     assertFalse(Modifier.isProtected(dcm));
@@ -378,8 +305,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getName()
    */
-  public void test_getName() throws Exception
-  {
+  public void test_getName() throws Exception {
     String className = Class.forName("java.lang.Object").getName();
     assertNotNull(className);
 
@@ -398,8 +324,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#getSuperclass()
    */
-  public void test_getSuperclass()
-  {
+  public void test_getSuperclass() {
     assertNull(Object.class.getSuperclass());
     assertEquals(Object.class, totalcross.io.File[].class.getSuperclass());
     assertNull(int.class.getSuperclass());
@@ -408,8 +333,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#isArray()
    */
-  public void test_isArray() throws ClassNotFoundException
-  {
+  public void test_isArray() throws ClassNotFoundException {
     assertTrue(!int.class.isArray());
     Class clazz = null;
     clazz = Class.forName("[I");
@@ -425,8 +349,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#isAssignableFrom(java.lang.Class)
    */
-  public void test_isAssignableFromLjava_lang_Class()
-  {
+  public void test_isAssignableFromLjava_lang_Class() {
     Class<?> clazz1 = null;
     Class<?> clazz2 = null;
 
@@ -445,8 +368,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#isInterface()
    */
-  public void test_isInterface() throws ClassNotFoundException
-  {
+  public void test_isInterface() throws ClassNotFoundException {
     assertTrue(!int.class.isInterface());
     Class clazz = null;
     clazz = Class.forName("[I");
@@ -464,8 +386,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#isPrimitive()
    */
-  public void test_isPrimitive()
-  {
+  public void test_isPrimitive() {
     assertFalse(Runnable.class.isPrimitive());
     assertFalse(Object.class.isPrimitive());
     assertFalse(int[].class.isPrimitive());
@@ -477,8 +398,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#newInstance()
    */
-  public void test_newInstance() throws Exception
-  {
+  public void test_newInstance() throws Exception {
     Class clazz = null;
     clazz = Class.forName("java.lang.Object");
     assertNotNull(clazz.newInstance());
@@ -487,13 +407,10 @@ public class ClassTest extends TestCase
     assertEquals(clazz, clazz.newInstance().getClass());
 
     clazz = Class.forName("java.lang.Integer");
-    try
-    {
+    try {
       clazz.newInstance();
       fail("Exception for instantiating a newInstance with no default constructor is not thrown");
-    }
-    catch (InstantiationException e)
-    {
+    } catch (InstantiationException e) {
       // expected
     }
   }
@@ -501,8 +418,7 @@ public class ClassTest extends TestCase
   /**
    * @tests java.lang.Class#toString()
    */
-  public void test_toString() throws ClassNotFoundException
-  {
+  public void test_toString() throws ClassNotFoundException {
     assertEquals("int", int.class.toString());
     Class clazz = null;
     clazz = Class.forName("[I");
@@ -518,8 +434,7 @@ public class ClassTest extends TestCase
   /*
    * Regression test for HARMONY-2644: Load system and non-system array classes via Class.forName()
    */
-  public void test_forName_arrays() throws Exception
-  {
+  public void test_forName_arrays() throws Exception {
     Class<? extends ClassTest> c1 = getClass();
     String s = c1.getName();
     Class a1 = Class.forName("[L" + s + ";");
@@ -529,61 +444,41 @@ public class ClassTest extends TestCase
     Class l4 = Class.forName("[[[[[J");
     assertEquals(long[][][][][].class, l4);
 
-    try
-    {
+    try {
       output("" + Class.forName("[;"));
       fail("1");
+    } catch (ClassNotFoundException ok) {
     }
-    catch (ClassNotFoundException ok)
-    {
-    }
-    try
-    {
+    try {
       output("" + Class.forName("[["));
       fail("2");
+    } catch (ClassNotFoundException ok) {
     }
-    catch (ClassNotFoundException ok)
-    {
-    }
-    try
-    {
+    try {
       output("" + Class.forName("[L"));
       fail("3");
+    } catch (ClassNotFoundException ok) {
     }
-    catch (ClassNotFoundException ok)
-    {
-    }
-    try
-    {
+    try {
       output("" + Class.forName("[L;"));
       fail("4");
+    } catch (ClassNotFoundException ok) {
     }
-    catch (ClassNotFoundException ok)
-    {
-    }
-    try
-    {
+    try {
       output("" + Class.forName(";"));
       fail("5");
+    } catch (ClassNotFoundException ok) {
     }
-    catch (ClassNotFoundException ok)
-    {
-    }
-    try
-    {
+    try {
       output("" + Class.forName(""));
       fail("6");
-    }
-    catch (ClassNotFoundException ok)
-    {
+    } catch (ClassNotFoundException ok) {
     }
   }
 
   @Override
-  public void testRun()
-  {
-    try
-    {
+  public void testRun() {
+    try {
       test_forNameLjava_lang_String();
       test_getComponentType();
       test_getConstructor$Ljava_lang_Class();
@@ -609,9 +504,7 @@ public class ClassTest extends TestCase
       test_newInstance();
       test_toString();
       test_forName_arrays();
-    }
-    catch (Throwable e)
-    {
+    } catch (Throwable e) {
       throw new AssertionFailedError(getClass().getName() + " - " + e.getMessage());
     }
   }

@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package jdkcompat.awt;
 
 import java.awt.geom.Dimension2D;
@@ -61,8 +60,7 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.14
  */
-public class Dimension4D extends Dimension2D implements Serializable
-{
+public class Dimension4D extends Dimension2D implements Serializable {
   /**
    * Compatible with JDK 1.0+.
    */
@@ -89,8 +87,7 @@ public class Dimension4D extends Dimension2D implements Serializable
   /**
    * Create a new Dimension with a width and height of zero.
    */
-  public Dimension4D()
-  {
+  public Dimension4D() {
   }
 
   /**
@@ -100,8 +97,7 @@ public class Dimension4D extends Dimension2D implements Serializable
    * @param d the Dimension to copy
    * @throws NullPointerException if d is null
    */
-  public Dimension4D(Dimension4D d)
-  {
+  public Dimension4D(Dimension4D d) {
     width = d.width;
     height = d.height;
   }
@@ -112,8 +108,7 @@ public class Dimension4D extends Dimension2D implements Serializable
    * @param w the width of this object
    * @param h the height of this object
    */
-  public Dimension4D(int w, int h)
-  {
+  public Dimension4D(int w, int h) {
     width = w;
     height = h;
   }
@@ -123,8 +118,8 @@ public class Dimension4D extends Dimension2D implements Serializable
    *
    * @return the width, as a double
    */
-  public double getWidth()
-  {
+  @Override
+  public double getWidth() {
     return width;
   }
 
@@ -133,8 +128,8 @@ public class Dimension4D extends Dimension2D implements Serializable
    *
    * @return the height, as a double
    */
-  public double getHeight()
-  {
+  @Override
+  public double getHeight() {
     return height;
   }
 
@@ -145,8 +140,8 @@ public class Dimension4D extends Dimension2D implements Serializable
    * @param h the new height
    * @since 1.2
    */
-  public void setSize(double w, double h)
-  {
+  @Override
+  public void setSize(double w, double h) {
     width = (int) w;
     height = (int) h;
   }
@@ -159,8 +154,7 @@ public class Dimension4D extends Dimension2D implements Serializable
    * @see #setSize(Dimension4D)
    * @since 1.1
    */
-  public Dimension4D getSize()
-  {
+  public Dimension4D getSize() {
     return new Dimension4D(width, height);
   }
 
@@ -173,8 +167,7 @@ public class Dimension4D extends Dimension2D implements Serializable
    * @see #getSize()
    * @since 1.1
    */
-  public void setSize(Dimension4D d)
-  {
+  public void setSize(Dimension4D d) {
     width = d.width;
     height = d.height;
   }
@@ -185,8 +178,7 @@ public class Dimension4D extends Dimension2D implements Serializable
    * @param w the new width value
    * @param h the new height value
    */
-  public void setSize(int w, int h)
-  {
+  public void setSize(int w, int h) {
     width = w;
     height = h;
   }
@@ -199,10 +191,11 @@ public class Dimension4D extends Dimension2D implements Serializable
    * @param obj the object to test against
    * @return true if the object is equal to this
    */
-  public boolean equals(Object obj)
-  {
-    if (! (obj instanceof Dimension4D))
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Dimension4D)) {
       return false;
+    }
     Dimension4D dim = (Dimension4D) obj;
     return height == dim.height && width == dim.width;
   }
@@ -213,8 +206,8 @@ public class Dimension4D extends Dimension2D implements Serializable
    *
    * @return the hashcode
    */
-  public int hashCode()
-  {
+  @Override
+  public int hashCode() {
     // Reverse engineering this was fun!
     return (width + height) * (width + height + 1) / 2 + width;
   }
@@ -226,9 +219,8 @@ public class Dimension4D extends Dimension2D implements Serializable
    *
    * @return a string representation of this object
    */
-  public String toString()
-  {
-    return getClass().getName()
-      + "[width=" + width + ",height=" + height + ']';
+  @Override
+  public String toString() {
+    return getClass().getName() + "[width=" + width + ",height=" + height + ']';
   }
 } // class Dimension

@@ -14,26 +14,22 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
 import totalcross.io.IOException;
 import totalcross.io.RandomAccessStream;
 import totalcross.io.Stream;
 
-public abstract class ZipStream4D extends CompressedStream4D
-{
+public abstract class ZipStream4D extends CompressedStream4D {
   Object nativeZip;
   ZipEntry lastEntry;
 
   int defaultMethod = DEFLATED;
 
   public final static int STORED = 0;
-  public final static int DEFLATED = 8;   
+  public final static int DEFLATED = 8;
 
-  public ZipStream4D(RandomAccessStream stream, int mode)
-  {
+  public ZipStream4D(RandomAccessStream stream, int mode) {
     super(stream, mode, ZIP_COMPRESSION);
   }
 
@@ -61,16 +57,12 @@ public abstract class ZipStream4D extends CompressedStream4D
   native public void close() throws IOException;
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       if (mode != 0) {
         this.close();
       }
-    }
-    catch (Throwable t)
-    {
+    } catch (Throwable t) {
     }
   }
 }

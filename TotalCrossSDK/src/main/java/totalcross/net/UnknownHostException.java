@@ -14,17 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 /** Thrown when you try to connect to a host that was not found. */
 
-public class UnknownHostException extends totalcross.io.IOException
-{
+public class UnknownHostException extends totalcross.io.IOException {
   /** Constructs an exception with the given message. */
-  public UnknownHostException(String msg)
-  {
+  public UnknownHostException(String msg) {
     super(msg);
   }
 }

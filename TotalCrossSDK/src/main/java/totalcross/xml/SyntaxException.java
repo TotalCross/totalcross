@@ -15,15 +15,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
 
 /**
  * Exception thrown by the XmlTokenizer when a syntax error is found.
  */
-public class SyntaxException extends Exception
-{
+public class SyntaxException extends Exception {
   /**
    * Get a human readable explaination from the code
    *
@@ -31,10 +28,8 @@ public class SyntaxException extends Exception
    * @return an explanatory message
    * Impl Note: this is set apart for future localization
    */
-  private static String getMessageFromCode(int code)
-  {
-    switch (code)
-    {
+  private static String getMessageFromCode(int code) {
+    switch (code) {
     case 1:
     case 2:
       return "invalid tag name";
@@ -82,8 +77,7 @@ public class SyntaxException extends Exception
    * @param code exception code
    * @param offset absolute offset (seek pos) at which the error occurred
    */
-  SyntaxException(int code, int offset)
-  {
+  SyntaxException(int code, int offset) {
     super("Error " + code + " at offset " + offset + ": " + getMessageFromCode(code));
   }
 }

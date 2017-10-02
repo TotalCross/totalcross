@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class NoSuchFieldError4D extends Error
-{
+public class NoSuchFieldError4D extends Error {
   /** Constructs an empty Exception. */
-  public NoSuchFieldError4D()
-  {
+  public NoSuchFieldError4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public NoSuchFieldError4D(String msg)
-  {
+  public NoSuchFieldError4D(String msg) {
     super(msg);
   }
 }

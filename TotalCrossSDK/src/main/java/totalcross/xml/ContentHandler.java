@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
 
 /**
@@ -42,8 +40,7 @@ package totalcross.xml;
  * the startElement event and the corresponding endElement event.</p>
  */
 
-public abstract class ContentHandler
-{
+public abstract class ContentHandler {
   /**
    * Receive notification of the beginning of an element.
    *
@@ -91,7 +88,8 @@ public abstract class ContentHandler
    *
    * @param s The string of characters from the XML document.
    */
-  public void comment(String s) {}
+  public void comment(String s) {
+  }
 
   /**
    * Receive notification of cdata.
@@ -107,7 +105,6 @@ public abstract class ContentHandler
    *           unparsed data from the XML document.
    * @since TotalCross 1.27
    */
-  public void cdata(int tag, String cdata)
-  {
+  public void cdata(int tag, String cdata) {
   }
 }

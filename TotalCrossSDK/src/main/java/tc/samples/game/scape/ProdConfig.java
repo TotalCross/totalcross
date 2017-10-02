@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.scape;
 
 /**
@@ -24,8 +22,7 @@ package tc.samples.game.scape;
  * See <a href='http://www.javaworld.com/javaworld/javatips/jw-javatip5.html'>this</a>.
  */
 
-interface ProdConfig
-{
+interface ProdConfig {
   static final String PC_VERSION = "0.9";
   static final String PC_CREATOR_ID = "Scpe";
 

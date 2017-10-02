@@ -83,8 +83,7 @@ import totalcross.util.Hashtable;
 import totalcross.util.IntHashtable;
 import totalcross.util.Vector;
 
-public class Bytecode2TCCode implements JConstants, TCConstants
-{
+public class Bytecode2TCCode implements JConstants, TCConstants {
   public static int[] isTargetOfGoto; // if zero, it is not target of goto. Otherwise, it is target of goto.
   public static int nextGotoIndex = 1;
   public static JavaClass currentJClass;
@@ -107,8 +106,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
   public static JavaCode javaCodeCurrent;
   private static int lineOfPC;
 
-  public static void init(ByteCode[] bcs)
-  {
+  public static void init(ByteCode[] bcs) {
     nextGotoIndex = 1;
     setGotos(bcs);
     indexOfCurrentBytecode = 0;
@@ -121,23 +119,21 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     newInsts.removeAllElements();
   }
 
-  public static int setGotoIndex(int BCIndex)
-  {
-    if (isTargetOfGoto[BCIndex] == 0){
+  public static int setGotoIndex(int BCIndex) {
+    if (isTargetOfGoto[BCIndex] == 0) {
       isTargetOfGoto[BCIndex] = nextGotoIndex++;
     }
 
     return isTargetOfGoto[BCIndex];
   }
 
-  private static Instruction processIINC(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    BC132_iinc ji = (BC132_iinc)i;
+  private static Instruction processIINC(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    BC132_iinc ji = (BC132_iinc) i;
     OperandRegI target = new OperandRegI(ji.result);
     Operand opr = new OperandConstant32(ji.operand, type_Int);
     OperandRegI regI = stack.lookupOperandRegI(target.index);
-    if (regI != null)
-    {
+    if (regI != null) {
       OperandRegI r = new OperandRegI();
       GenerateInstruction.newInstruction(vcode, pref_MOV, r, regI, lineOfPC);
       regI.index = r.index;
@@ -145,47 +141,46 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return GenerateInstruction.newInstruction(vcode, pref_ADD, target, target, opr, lineOfPC);
   }
 
-  private static void processILOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    LoadLocal ji = (LoadLocal)i;
+  private static void processILOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    LoadLocal ji = (LoadLocal) i;
     stack.push(new OperandRegI(ji.localIdx));
   }
 
-  private static void processLLOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    LoadLocal ji = (LoadLocal)i;
+  private static void processLLOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    LoadLocal ji = (LoadLocal) i;
     stack.push(new OperandRegL(ji.localIdx));
   }
 
-  private static void processFLOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    LoadLocal ji = (LoadLocal)i;
+  private static void processFLOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    LoadLocal ji = (LoadLocal) i;
     stack.push(new OperandRegD32(ji.localIdx));
   }
 
-  private static void processDLOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    LoadLocal ji = (LoadLocal)i;
+  private static void processDLOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    LoadLocal ji = (LoadLocal) i;
     stack.push(new OperandRegD64(ji.localIdx));
   }
 
-  private static void processALOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    LoadLocal ji = (LoadLocal)i;
+  private static void processALOAD(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    LoadLocal ji = (LoadLocal) i;
     stack.push(new OperandRegO(ji.localIdx));
   }
 
-  private static Instruction processISTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    StoreLocal ji = (StoreLocal)i;
+  private static Instruction processISTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    StoreLocal ji = (StoreLocal) i;
     Operand opr = stack.pop();
     OperandReg target = new OperandRegI(ji.targetIdx);
     // Check if there is another reference this target register in the stack.
     // If so, replace the slot this reference by a copy of it.
     // (fixed bug in instructions x++/x-- and ++x/--x)
     OperandRegI regI = stack.lookupOperandRegI(target.index);
-    if (regI != null)
-    {
+    if (regI != null) {
       OperandRegI r = new OperandRegI();
       GenerateInstruction.newInstruction(vcode, pref_MOV, r, regI, lineOfPC);
       regI.index = r.index;
@@ -193,17 +188,16 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return GenerateInstruction.newInstruction(vcode, pref_MOV, target, opr, lineOfPC);
   }
 
-  private static Instruction processLSTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    StoreLocal ji = (StoreLocal)i;
+  private static Instruction processLSTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    StoreLocal ji = (StoreLocal) i;
     Operand opr = stack.pop();
     OperandReg target = new OperandRegL(ji.targetIdx);
     // Check if there is another reference this target register in the stack.
     // If so, replace the slot this reference by a copy of it.
     // (fixed bug in instructions x++/x-- and ++x/--x)
     OperandRegL regL = stack.lookupOperandRegL(target.index);
-    if (regL != null)
-    {
+    if (regL != null) {
       OperandReg r = new OperandRegL();
       GenerateInstruction.newInstruction(vcode, pref_MOV, r, regL, lineOfPC);
       regL.index = r.index;
@@ -211,47 +205,46 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return GenerateInstruction.newInstruction(vcode, pref_MOV, target, opr, lineOfPC);
   }
 
-  private static Instruction processFSTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    StoreLocal ji = (StoreLocal)i;
+  private static Instruction processFSTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    StoreLocal ji = (StoreLocal) i;
     Operand opr = stack.pop();
     OperandReg target = new OperandRegD32(ji.targetIdx);
     return GenerateInstruction.newInstruction(vcode, pref_MOV, target, opr, lineOfPC);
   }
 
-  private static Instruction processDSTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    StoreLocal ji = (StoreLocal)i;
+  private static Instruction processDSTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    StoreLocal ji = (StoreLocal) i;
     Operand opr = stack.pop();
     OperandReg target = new OperandRegD64(ji.targetIdx);
     return GenerateInstruction.newInstruction(vcode, pref_MOV, target, opr, lineOfPC);
   }
 
-  private static Instruction processASTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    StoreLocal ji = (StoreLocal)i;
+  private static Instruction processASTORE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    StoreLocal ji = (StoreLocal) i;
     int regIndex = -1;
-    try {regIndex = htFinally.get(indexOfCurrentBytecode);} catch(Exception e) {}
-    if (regIndex != -1)
-    {
+    try {
+      regIndex = htFinally.get(indexOfCurrentBytecode);
+    } catch (Exception e) {
+    }
+    if (regIndex != -1) {
       int reg = -1;
-      try {reg = htForBytecodeRet.get(ji.targetIdx);} catch(Exception e) {}
+      try {
+        reg = htForBytecodeRet.get(ji.targetIdx);
+      } catch (Exception e) {
+      }
       if (reg == -1) {
         htForBytecodeRet.put(ji.targetIdx, regIndex);
       }
-    }
-    else
-    { 
+    } else {
       OperandReg target = new OperandRegO(ji.targetIdx);
-      if ( setExceptionHandler(currentExceptionHandlers, isTargetOfGoto[indexOfCurrentBytecode], target.index))
-      {
-        return GenerateInstruction.newInstruction(vcode, pref_MOV, target, target, lineOfPC);  
-      }
-      else
-      {
+      if (setExceptionHandler(currentExceptionHandlers, isTargetOfGoto[indexOfCurrentBytecode], target.index)) {
+        return GenerateInstruction.newInstruction(vcode, pref_MOV, target, target, lineOfPC);
+      } else {
         // even excluding the handler of exception, the java compiler can leave dirt, which should be discarded.
-        if (! stack.empty())
-        {
+        if (!stack.empty()) {
           Operand opr = stack.pop();
           return GenerateInstruction.newInstruction(vcode, pref_MOV, target, opr, lineOfPC);
         }
@@ -261,52 +254,76 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return null;
   }
 
-  private static Instruction processRET(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
-    BC169_ret ji = (BC169_ret)i;
+  private static Instruction processRET(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
+    BC169_ret ji = (BC169_ret) i;
     int regIndex = -1;
-    try {regIndex = htForBytecodeRet.get(ji.answer);} catch(Exception e) {}
+    try {
+      regIndex = htForBytecodeRet.get(ji.answer);
+    } catch (Exception e) {
+    }
     Reg code = new Reg(JUMP_regI, lineOfPC, regIndex);
     vcode.addElement(code);
     return code;
   }
 
-  private static Instruction processWIDE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer)
-  {
+  private static Instruction processWIDE(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer) {
     Instruction tc = null;
     int op = i.bc;
-    switch (op)
-    {
-    case ILOAD : processILOAD(bcs, i, stack, vcode, isStaticInitializer);     break;
-    case LLOAD : processLLOAD(bcs, i, stack, vcode, isStaticInitializer);     break;
-    case FLOAD : processFLOAD(bcs, i, stack, vcode, isStaticInitializer);     break;
-    case DLOAD : processDLOAD(bcs, i, stack, vcode, isStaticInitializer);     break;
-    case ALOAD : processALOAD(bcs, i, stack, vcode, isStaticInitializer);     break;
-    case ISTORE: processISTORE(bcs, i, stack, vcode, isStaticInitializer);    break;
-    case LSTORE: processLSTORE(bcs, i, stack, vcode, isStaticInitializer);    break;
-    case FSTORE: processFSTORE(bcs, i, stack, vcode, isStaticInitializer);    break;
-    case DSTORE: processDSTORE(bcs, i, stack, vcode, isStaticInitializer);    break;
-    case ASTORE: processASTORE(bcs, i, stack, vcode, isStaticInitializer);    break;
-    case RET   : processRET(bcs, i, stack, vcode, isStaticInitializer);       break;
-    case IINC  : tc = processIINC(bcs, i, stack, vcode, isStaticInitializer); break;
+    switch (op) {
+    case ILOAD:
+      processILOAD(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case LLOAD:
+      processLLOAD(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case FLOAD:
+      processFLOAD(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case DLOAD:
+      processDLOAD(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case ALOAD:
+      processALOAD(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case ISTORE:
+      processISTORE(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case LSTORE:
+      processLSTORE(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case FSTORE:
+      processFSTORE(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case DSTORE:
+      processDSTORE(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case ASTORE:
+      processASTORE(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case RET:
+      processRET(bcs, i, stack, vcode, isStaticInitializer);
+      break;
+    case IINC:
+      tc = processIINC(bcs, i, stack, vcode, isStaticInitializer);
+      break;
     }
     return tc;
   }
 
-  public static Instruction convert(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode, boolean isStaticInitializer, String signature)
-  {
+  public static Instruction convert(ByteCode[] bcs, ByteCode i, OperandStack stack, Vector vcode,
+      boolean isStaticInitializer, String signature) {
     TCValue v;
     Instruction tc = null;
     int op = i.bc;
     CheckIfIsGotoTarget(indexOfCurrentBytecode, i, stack, vcode);
-    if (isTargetOfGoto[indexOfCurrentBytecode] != 0){
+    if (isTargetOfGoto[indexOfCurrentBytecode] != 0) {
       htBytecodeIndex.put(isTargetOfGoto[indexOfCurrentBytecode], countOfTCCode(vcode));
     }
     lineOfPC = getLineOfPC(indexOfCurrentBytecode);
-    switch (op)
-    {
-    case NOP:
-    {
+    switch (op) {
+    case NOP: {
       break; // do nothing.
     }
     case ACONST_NULL: //1
@@ -387,53 +404,47 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     case BIPUSH: //16
     case SIPUSH: //17
     {
-      LoadLocal ji =(LoadLocal)i;
+      LoadLocal ji = (LoadLocal) i;
       stack.push(new OperandConstant32(ji.localIdx, type_Int));
       break;
     }
     case LDC: //18
     case LDC_W: //19
     {
-      if (op == LDC)
-      {
-        BC018_ldc ji = (BC018_ldc)i;
+      if (op == LDC) {
+        BC018_ldc ji = (BC018_ldc) i;
         v = ji.val;
-      }
-      else
-      {
-        BC019_ldc_w ji = (BC019_ldc_w)i;
+      } else {
+        BC019_ldc_w ji = (BC019_ldc_w) i;
         v = ji.val;
       }
       if (v.type == INT) {
         stack.push(new OperandConstant32(v.asInt, type_Int));
-      } else
-        if (v.type == DOUBLE) // this constant is a float
-        {
-          if (OperandConstant.fitsIn18Bits(v.asDouble)) {
-            stack.push(new OperandConstant32((int)v.asDouble, type_Double));
-          } else {
-            stack.push(new OperandSymD32(GlobalConstantPool.put(v.asDouble)));
-          }
+      } else if (v.type == DOUBLE) // this constant is a float
+      {
+        if (OperandConstant.fitsIn18Bits(v.asDouble)) {
+          stack.push(new OperandConstant32((int) v.asDouble, type_Double));
         } else {
-          stack.push(new OperandSymO(GlobalConstantPool.putStr((String)v.asObj)));
+          stack.push(new OperandSymD32(GlobalConstantPool.put(v.asDouble)));
         }
+      } else {
+        stack.push(new OperandSymO(GlobalConstantPool.putStr((String) v.asObj)));
+      }
       break;
     }
     case LDC2_W: //20
     {
-      BC020_ldc2_w ji = (BC020_ldc2_w)i;
+      BC020_ldc2_w ji = (BC020_ldc2_w) i;
       v = ji.val;
       if (v.type == LONG) {
         stack.push(new OperandConstant64(v.asLong, type_Long));
-      } else
-        if (v.type == DOUBLE)
-        {
-          if (OperandConstant.fitsIn18Bits(v.asDouble)) {
-            stack.push(new OperandConstant64((int)v.asDouble, type_Double));
-          } else {
-            stack.push(new OperandSymD64(GlobalConstantPool.put(v.asDouble)));
-          }
+      } else if (v.type == DOUBLE) {
+        if (OperandConstant.fitsIn18Bits(v.asDouble)) {
+          stack.push(new OperandConstant64((int) v.asDouble, type_Double));
+        } else {
+          stack.push(new OperandSymD64(GlobalConstantPool.put(v.asDouble)));
         }
+      }
       break;
     }
     case ILOAD: //21
@@ -492,12 +503,19 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       OperandArrayAccess base = new OperandArrayAccess(opr_arcI, regO, regIndex);
 
       OperandReg reg = null;
-      switch (op)
-      {
-      case IALOAD: reg = new OperandRegI(); break;
-      case BALOAD: reg = new OperandRegIb(); break;
-      case CALOAD: reg = new OperandRegIc(); break;
-      case SALOAD: reg = new OperandRegIs(); break;
+      switch (op) {
+      case IALOAD:
+        reg = new OperandRegI();
+        break;
+      case BALOAD:
+        reg = new OperandRegIb();
+        break;
+      case CALOAD:
+        reg = new OperandRegIc();
+        break;
+      case SALOAD:
+        reg = new OperandRegIs();
+        break;
       }
 
       tc = GenerateInstruction.newInstruction(vcode, pref_MOV, reg, base, lineOfPC);
@@ -566,7 +584,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       tc = processLSTORE(bcs, i, stack, vcode, isStaticInitializer);
       break;
     }
-    case FSTORE:   //56
+    case FSTORE: //56
     case FSTORE_0: //67
     case FSTORE_1: //68
     case FSTORE_2: //69
@@ -575,7 +593,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       tc = processFSTORE(bcs, i, stack, vcode, isStaticInitializer);
       break;
     }
-    case DSTORE:   //57
+    case DSTORE: //57
     case DSTORE_0: //71
     case DSTORE_1: //72
     case DSTORE_2: //73
@@ -602,11 +620,16 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       Operand index = stack.pop();
       OperandRegO regO = (OperandRegO) stack.pop();
       int kind = opr_arcI;
-      switch (op)
-      {
-      case BASTORE: kind = opr_arcIb; break;
-      case CASTORE: kind = opr_arcIc; break;
-      case SASTORE: kind = opr_arcIs; break;
+      switch (op) {
+      case BASTORE:
+        kind = opr_arcIb;
+        break;
+      case CASTORE:
+        kind = opr_arcIc;
+        break;
+      case SASTORE:
+        kind = opr_arcIs;
+        break;
       }
       OperandReg regIndex = (OperandReg) GenerateInstruction.promoteOperand(vcode, index, opr_regI, lineOfPC);
       OperandArrayAccess base = new OperandArrayAccess(kind, regO, regIndex);
@@ -679,8 +702,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       Operand w2 = stack.pop();
       if (w2.nWords == 2) {
         stack.push(w1);
-      } else
-      {
+      } else {
         Operand w3 = stack.pop();
         stack.push(w1);
         stack.push(w3);
@@ -694,8 +716,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       Operand w1 = stack.pop();
       if (w1.nWords == 2) {
         stack.push(w1);
-      } else
-      {
+      } else {
         Operand w2 = stack.pop();
         stack.push(w2);
         stack.push(w1);
@@ -707,14 +728,11 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     case DUP2_X1: //93
     {
       Operand w1 = stack.pop();
-      if (w1.nWords == 2)
-      {
+      if (w1.nWords == 2) {
         Operand w3 = stack.pop();
         stack.push(w1);
         stack.push(w3);
-      }
-      else
-      {
+      } else {
         Operand w2 = stack.pop();
         Operand w3 = stack.pop();
         stack.push(w2);
@@ -728,32 +746,23 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     case DUP2_X2: //94
     {
       Operand w1 = stack.pop();
-      if (w1.nWords == 2)
-      {
+      if (w1.nWords == 2) {
         Operand w3 = stack.pop();
-        if (w3.nWords == 2)
-        {
+        if (w3.nWords == 2) {
           stack.push(w1);
-        }
-        else
-        {
+        } else {
           Operand w4 = stack.pop();
           stack.push(w1);
           stack.push(w4);
         }
         stack.push(w3);
-      }
-      else
-      {
+      } else {
         Operand w2 = stack.pop();
         Operand w3 = stack.pop();
-        if (w3.nWords == 2)
-        {
+        if (w3.nWords == 2) {
           stack.push(w2);
           stack.push(w1);
-        }
-        else
-        {
+        } else {
           Operand w4 = stack.pop();
           stack.push(w2);
           stack.push(w1);
@@ -812,23 +821,19 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       Operand opr2 = stack.pop();
       Operand opr1 = stack.pop();
       OperandReg target = new OperandRegI();
-      if (opr2.isConstantInt())
-      {
+      if (opr2.isConstantInt()) {
         OperandConstant c = (OperandConstant) opr2;
-        if (c.value >= -2047 && c.value <= 2048)
-        {
-          c.value = - c.value;
+        if (c.value >= -2047 && c.value <= 2048) {
+          c.value = -c.value;
           c.kind = opr_s12I;
           tc = GenerateInstruction.newInstruction(vcode, pref_ADD, target, opr1, c, lineOfPC);
+        } else if (c.value != -2147483648) // integer minimum
+        {
+          c.value = -c.value;
+          tc = GenerateInstruction.newInstruction(vcode, pref_ADD, target, opr1, c, lineOfPC);
+        } else {
+          tc = GenerateInstruction.newInstruction(vcode, pref_SUB, target, opr1, c, lineOfPC);
         }
-        else
-          if (c.value != -2147483648) // integer minimum
-          {
-            c.value = - c.value;
-            tc = GenerateInstruction.newInstruction(vcode, pref_ADD, target, opr1, c, lineOfPC);
-          } else {
-            tc = GenerateInstruction.newInstruction(vcode, pref_SUB, target, opr1, c, lineOfPC);
-          }
       } else {
         tc = GenerateInstruction.newInstruction(vcode, pref_SUB, target, opr1, opr2, lineOfPC);
       }
@@ -1188,28 +1193,36 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     case IFGT: //157
     case IFLE: //158
     {
-      ConditionalBranch ji = (ConditionalBranch)i;
+      ConditionalBranch ji = (ConditionalBranch) i;
       Operand v1, v2, opr = stack.pop();
-      if (opr.kind == opr_cmp)
-      {
+      if (opr.kind == opr_cmp) {
         v1 = ((OperandCmp) opr).v1;
         v2 = ((OperandCmp) opr).v2;
-      }
-      else
-      {
+      } else {
         v1 = opr;
         v2 = new OperandConstant32(0, type_Int);
       }
       OperandConstant target = new OperandConstant32(isTargetOfGoto[ji.jumpIfTrue], type_Int);
       int prefix = 0;
-      switch(op)
-      {
-      case IFEQ: prefix = pref_JEQ; break;
-      case IFNE: prefix = pref_JNE; break;
-      case IFLT: prefix = pref_JLT; break;
-      case IFGE: prefix = pref_JGE; break;
-      case IFGT: prefix = pref_JGT; break;
-      case IFLE: prefix = pref_JLE; break;
+      switch (op) {
+      case IFEQ:
+        prefix = pref_JEQ;
+        break;
+      case IFNE:
+        prefix = pref_JNE;
+        break;
+      case IFLT:
+        prefix = pref_JLT;
+        break;
+      case IFGE:
+        prefix = pref_JGE;
+        break;
+      case IFGT:
+        prefix = pref_JGT;
+        break;
+      case IFLE:
+        prefix = pref_JLE;
+        break;
       }
       stackOfBranch(vcode, bcs, stack, ji.jumpIfTrue);
       tc = GenerateInstruction.newInstruction(vcode, prefix, v1, v2, target, lineOfPC);
@@ -1224,30 +1237,45 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     case IF_ACMPEQ: //165
     case IF_ACMPNE: //166
     {
-      ConditionalBranch ji = (ConditionalBranch)i;
+      ConditionalBranch ji = (ConditionalBranch) i;
       Operand value2 = stack.pop();
       Operand value1 = stack.pop();
       OperandConstant target = new OperandConstant32(isTargetOfGoto[ji.jumpIfTrue], type_Int);
       int prefix = 0;
-      switch(op)
-      {
-      case IF_ICMPEQ: prefix = pref_JEQ; break;
-      case IF_ICMPNE: prefix = pref_JNE; break;
-      case IF_ICMPLT: prefix = pref_JLT; break;
-      case IF_ICMPGE: prefix = pref_JGE; break;
-      case IF_ICMPGT: prefix = pref_JGT; break;
-      case IF_ICMPLE: prefix = pref_JLE; break;
-      case IF_ACMPEQ: prefix = pref_JEQ; break;
-      case IF_ACMPNE: prefix = pref_JNE; break;
+      switch (op) {
+      case IF_ICMPEQ:
+        prefix = pref_JEQ;
+        break;
+      case IF_ICMPNE:
+        prefix = pref_JNE;
+        break;
+      case IF_ICMPLT:
+        prefix = pref_JLT;
+        break;
+      case IF_ICMPGE:
+        prefix = pref_JGE;
+        break;
+      case IF_ICMPGT:
+        prefix = pref_JGT;
+        break;
+      case IF_ICMPLE:
+        prefix = pref_JLE;
+        break;
+      case IF_ACMPEQ:
+        prefix = pref_JEQ;
+        break;
+      case IF_ACMPNE:
+        prefix = pref_JNE;
+        break;
       }
       stackOfBranch(vcode, bcs, stack, ji.jumpIfTrue);
       tc = GenerateInstruction.newInstruction(vcode, prefix, value1, value2, target, lineOfPC);
       break;
     }
-    case GOTO:   //167
+    case GOTO: //167
     case GOTO_W: //200
     {
-      Branch ji = (Branch)i;
+      Branch ji = (Branch) i;
       OperandConstant branch = new OperandConstant32(isTargetOfGoto[ji.jumpTo], type_Int);
       stackOfBranch(vcode, bcs, stack, ji.jumpTo);
       tc = GenerateInstruction.newInstruction(vcode, pref_JUMP, branch, lineOfPC);
@@ -1256,11 +1284,13 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     case JSR: //168
     case JSR_W: //201
     {
-      Branch ji = (Branch)i;
+      Branch ji = (Branch) i;
       int regIndex = -1;
-      try {regIndex = htFinally.get(ji.jumpTo);} catch(Exception e) {}
-      if (regIndex == -1)
-      {
+      try {
+        regIndex = htFinally.get(ji.jumpTo);
+      } catch (Exception e) {
+      }
+      if (regIndex == -1) {
         OperandRegI reg = new OperandRegI();
         regIndex = reg.index;
         htFinally.put(ji.jumpTo, regIndex);
@@ -1287,14 +1317,14 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case TABLESWITCH: //170
     {
-      BC170_tableswitch ji = (BC170_tableswitch)i;
+      BC170_tableswitch ji = (BC170_tableswitch) i;
       Operand index = stack.pop();
       GenerateInstruction.newInstruction(vcode, ji.def, index, ji, lineOfPC);
       break;
     }
     case LOOKUPSWITCH: //171
     {
-      BC171_lookupswitch ji = (BC171_lookupswitch)i;
+      BC171_lookupswitch ji = (BC171_lookupswitch) i;
       Operand key = stack.pop();
       GenerateInstruction.newInstruction(vcode, ji.def + indexOfCurrentBytecode, key, ji, lineOfPC);
       break;
@@ -1336,27 +1366,39 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case GETSTATIC: //178
     {
-      BC178_getstatic ji = (BC178_getstatic)i;
+      BC178_getstatic ji = (BC178_getstatic) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
       ji.className = removeSuffix4D(ji.className);
-      if (currentJClass.className.equals(ji.className) && !existsField(currentJClass.fields, ji.fieldName))
-      {
+      if (currentJClass.className.equals(ji.className) && !existsField(currentJClass.fields, ji.fieldName)) {
         ji.className = currentTCClass.superClass;
       }
       OperandReg target = null;
       int kind = 0;
-      switch (ji.fieldTypeClass.charAt(0))
-      {
-      case 'Z': case 'C': case 'B': case 'S': case 'I': // boolean, char, byte, short, int
-        kind = opr_staticI; target = new OperandRegI(); break;
+      switch (ji.fieldTypeClass.charAt(0)) {
+      case 'Z':
+      case 'C':
+      case 'B':
+      case 'S':
+      case 'I': // boolean, char, byte, short, int
+        kind = opr_staticI;
+        target = new OperandRegI();
+        break;
       case 'J': // long
-        kind = opr_staticL; target = new OperandRegL(); break;
+        kind = opr_staticL;
+        target = new OperandRegL();
+        break;
       case 'F': // float
-        kind = opr_staticD; target = new OperandRegD32(); break;
+        kind = opr_staticD;
+        target = new OperandRegD32();
+        break;
       case 'D': // double
-        kind = opr_staticD; target = new OperandRegD64(); break;
+        kind = opr_staticD;
+        target = new OperandRegD64();
+        break;
       default: // *** case 'L':  case '[': ***  object
-        kind = opr_staticO; target = new OperandRegO(); break;
+        kind = opr_staticO;
+        target = new OperandRegO();
+        break;
       }
       int index = GlobalConstantPool.putStaticField(ji.className, ji.fieldName); // external fields require the class and the field name
       if (!isStaticInitializer) {
@@ -1369,24 +1411,31 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case PUTSTATIC: //179
     {
-      BC179_putstatic ji = (BC179_putstatic)i;
+      BC179_putstatic ji = (BC179_putstatic) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
       ji.className = removeSuffix4D(ji.className);
-      if (currentJClass.className.equals(ji.className) && !existsField(currentJClass.fields, ji.fieldName))
-      {
+      if (currentJClass.className.equals(ji.className) && !existsField(currentJClass.fields, ji.fieldName)) {
         ji.className = currentTCClass.superClass;
       }
       int kind = 0;
-      switch (ji.fieldTypeClass.charAt(0))
-      {
-      case 'Z': case 'C': case 'B': case 'S': case 'I': // boolean, char, byte, short, int
-        kind = opr_staticI; break;
+      switch (ji.fieldTypeClass.charAt(0)) {
+      case 'Z':
+      case 'C':
+      case 'B':
+      case 'S':
+      case 'I': // boolean, char, byte, short, int
+        kind = opr_staticI;
+        break;
       case 'J': // long
-        kind = opr_staticL; break;
-      case 'F': case 'D': // float, double
-        kind = opr_staticD; break;
+        kind = opr_staticL;
+        break;
+      case 'F':
+      case 'D': // float, double
+        kind = opr_staticD;
+        break;
       default: // *** case 'L':  case '[': ***  object
-        kind = opr_staticO; break;
+        kind = opr_staticO;
+        break;
       }
       int index = GlobalConstantPool.putStaticField(ji.className, ji.fieldName);
       if (!isStaticInitializer) {
@@ -1399,24 +1448,37 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case GETFIELD: //180
     {
-      BC180_getfield ji = (BC180_getfield)i;
+      BC180_getfield ji = (BC180_getfield) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
       ji.className = removeSuffix4D(ji.className);
       OperandReg regO = (OperandReg) stack.pop();
       OperandReg target = null;
       int kind = 0;
-      switch (ji.fieldTypeClass.charAt(0))
-      {
-      case 'Z': case 'C': case 'B': case 'S': case 'I': // boolean, char, byte, short, int
-        kind = opr_fieldI; target = new OperandRegI(); break;
+      switch (ji.fieldTypeClass.charAt(0)) {
+      case 'Z':
+      case 'C':
+      case 'B':
+      case 'S':
+      case 'I': // boolean, char, byte, short, int
+        kind = opr_fieldI;
+        target = new OperandRegI();
+        break;
       case 'J': // long
-        kind = opr_fieldL; target = new OperandRegL(); break;
+        kind = opr_fieldL;
+        target = new OperandRegL();
+        break;
       case 'F': // float
-        kind = opr_fieldD; target = new OperandRegD32(); break;
+        kind = opr_fieldD;
+        target = new OperandRegD32();
+        break;
       case 'D': // double
-        kind = opr_fieldD; target = new OperandRegD64(); break;
+        kind = opr_fieldD;
+        target = new OperandRegD64();
+        break;
       default: // *** case 'L':  case '[': ***  object
-        kind = opr_fieldO; target = new OperandRegO(); break;
+        kind = opr_fieldO;
+        target = new OperandRegO();
+        break;
       }
       int index = GlobalConstantPool.putInstanceField(ji.className, ji.fieldName);
       htInstanceFieldIndexes.put(index, index);
@@ -1427,22 +1489,30 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case PUTFIELD: //181
     {
-      BC181_putfield ji = (BC181_putfield)i;
+      BC181_putfield ji = (BC181_putfield) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
       ji.className = removeSuffix4D(ji.className);
       Operand value = stack.pop();
       OperandReg regO = (OperandReg) stack.pop();
       int kind = 0;
-      switch (ji.fieldTypeClass.charAt(0))
-      {
-      case 'Z': case 'C': case 'B': case 'S': case 'I': // boolean, char, byte, short, int
-        kind = opr_fieldI; break;
+      switch (ji.fieldTypeClass.charAt(0)) {
+      case 'Z':
+      case 'C':
+      case 'B':
+      case 'S':
+      case 'I': // boolean, char, byte, short, int
+        kind = opr_fieldI;
+        break;
       case 'J': // long
-        kind = opr_fieldL; break;
-      case 'F': case 'D': // float, double
-        kind = opr_fieldD; break;
+        kind = opr_fieldL;
+        break;
+      case 'F':
+      case 'D': // float, double
+        kind = opr_fieldD;
+        break;
       default: // *** case 'L':  case '[': ***  object
-        kind = opr_fieldO; break;
+        kind = opr_fieldO;
+        break;
       }
       int index = GlobalConstantPool.putInstanceField(ji.className, ji.fieldName);
       htInstanceFieldIndexes.put(index, index);
@@ -1455,14 +1525,13 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     case INVOKESTATIC: //184
     case INVOKEINTERFACE: //185
     {
-      MethodCall ji = (MethodCall)i;
+      MethodCall ji = (MethodCall) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
       ji.className = removeSuffix4D(ji.className);
       String name = ji.name;
       ji.name = removeSuffix4D(name);
       ji.signature = removeSuffix4D(name, ji.signature);
-      if (ji.className.equals("java/lang/Object") && ji.signature.equals("<init>()"))
-      {
+      if (ji.className.equals("java/lang/Object") && ji.signature.equals("<init>()")) {
         stack.pop();
         break;
       }
@@ -1471,45 +1540,52 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       int notVoid;
       int retType = type_Void;
       OperandReg ret = null;
-      if (ji.targetType == VOID)
-      {
+      if (ji.targetType == VOID) {
         retAndParams = new Operand[paramCount];
         notVoid = 0;
         retType = type_Void;
-      }
-      else
-      {
+      } else {
         retAndParams = new Operand[paramCount + 1];
         notVoid = 1;
-        switch (ji.targetType)
-        {
-        case INT: case SHORT: case CHAR: case BYTE: case BOOLEAN:
-          ret = new OperandRegI(); retType = type_Int; break;
+        switch (ji.targetType) {
+        case INT:
+        case SHORT:
+        case CHAR:
+        case BYTE:
+        case BOOLEAN:
+          ret = new OperandRegI();
+          retType = type_Int;
+          break;
         case FLOAT:
-          ret = new OperandRegD32(); retType = type_Double; break;
+          ret = new OperandRegD32();
+          retType = type_Double;
+          break;
         case LONG:
-          ret = new OperandRegL(); retType = type_Long; break;
+          ret = new OperandRegL();
+          retType = type_Long;
+          break;
         case DOUBLE:
-          ret = new OperandRegD64();  retType = type_Double; break;
+          ret = new OperandRegD64();
+          retType = type_Double;
+          break;
         case OBJECT:
-          ret = new OperandRegO();  retType = type_Obj; break;
+          ret = new OperandRegO();
+          retType = type_Obj;
+          break;
         }
         retAndParams[0] = ret;
       }
 
       int len = paramCount + notVoid;
-      for (int j=len-1; j>=notVoid; j--) {
+      for (int j = len - 1; j >= notVoid; j--) {
         retAndParams[j] = stack.pop();
       }
 
       OperandReg _this;
-      if (op == INVOKESTATIC)
-      {
+      if (op == INVOKESTATIC) {
         _this = new OperandReg(TCConstants.opr_regO);
         _this.index = 0;
-      }
-      else
-      {
+      } else {
         Operand obj = stack.pop();
         _this = (OperandRegO) GenerateInstruction.promoteOperand(vcode, obj, opr_regO, lineOfPC);
       }
@@ -1518,20 +1594,18 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       OperandSym sym = new OperandSymO(idx);
       if (ji.name.equals("forName")) // keep track of the list of classes used in forName
       {
-        if (retAndParams != null && retAndParams[1] instanceof OperandSymO)
-        {
+        if (retAndParams != null && retAndParams[1] instanceof OperandSymO) {
           OperandSymO s = (OperandSymO) retAndParams[1];
           String n = GlobalConstantPool.getString(s.index);
           J2TC.callForName.addElement(n);
+        } else if (!signature.equals("class$(Ljava/lang/String;)")) {
+          J2TC.notResolvedForNameFound = true;
         }
-        else
-          if (!signature.equals("class$(Ljava/lang/String;)")) {
-            J2TC.notResolvedForNameFound = true;
-          }
       }
-      Call call = (Call) GenerateInstruction.newInstruction(vcode, op == INVOKEVIRTUAL ? CALL_virtual : CALL_normal, sym, _this, retAndParams, retType == type_Void, lineOfPC);
+      Call call = (Call) GenerateInstruction.newInstruction(vcode, op == INVOKEVIRTUAL ? CALL_virtual : CALL_normal,
+          sym, _this, retAndParams, retType == type_Void, lineOfPC);
       call.isStatic = op == INVOKESTATIC;
-      tc= call;
+      tc = call;
       if (ret != null) {
         stack.push(ret);
       }
@@ -1539,7 +1613,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case NEW: //187 (186 is not used)
     {
-      BC187_new ji = (BC187_new)i;
+      BC187_new ji = (BC187_new) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
       ji.className = removeSuffix4D(ji.className);
       Operand regO = new OperandRegO();
@@ -1551,18 +1625,33 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case NEWARRAY: //188
     {
-      BC188_newarray ji = (BC188_newarray)i;
+      BC188_newarray ji = (BC188_newarray) i;
       int symIdx = 0;
-      switch (ji.arrayType)
-      {
-      case 4 : symIdx = Type_BooleanArray; break; // boolean array
-      case 5 : symIdx = Type_CharArray;    break; // char array
-      case 6 : symIdx = Type_FloatArray;   break; // float array
-      case 7 : symIdx = Type_DoubleArray;  break; // double array
-      case 8 : symIdx = Type_ByteArray;    break; // byte array
-      case 9 : symIdx = Type_ShortArray;   break; // short array
-      case 10: symIdx = Type_IntArray;     break; // int array
-      case 11: symIdx = Type_LongArray;    break; // long array
+      switch (ji.arrayType) {
+      case 4:
+        symIdx = Type_BooleanArray;
+        break; // boolean array
+      case 5:
+        symIdx = Type_CharArray;
+        break; // char array
+      case 6:
+        symIdx = Type_FloatArray;
+        break; // float array
+      case 7:
+        symIdx = Type_DoubleArray;
+        break; // double array
+      case 8:
+        symIdx = Type_ByteArray;
+        break; // byte array
+      case 9:
+        symIdx = Type_ShortArray;
+        break; // short array
+      case 10:
+        symIdx = Type_IntArray;
+        break; // int array
+      case 11:
+        symIdx = Type_LongArray;
+        break; // long array
       }
       Operand len = stack.pop();
       Operand sym = new OperandSymO(symIdx);
@@ -1573,8 +1662,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case ANEWARRAY: //189
     {
-      BC189_anewarray ji = (BC189_anewarray)i;
-      String classType = ji.classType.charAt(0) == '[' ? "["+ji.classType : "[L"+ji.classType+";";
+      BC189_anewarray ji = (BC189_anewarray) i;
+      String classType = ji.classType.charAt(0) == '[' ? "[" + ji.classType : "[L" + ji.classType + ";";
       int symIdx = GlobalConstantPool.putClsOrParam(classType);
       Operand len = stack.pop();
       Operand sym = new OperandSymO(symIdx);
@@ -1596,23 +1685,23 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     {
       /*
              With this code:
-
+      
                Lock objectLock = new Lock();
                String connection = "";
-
+      
                public String recoverTable() {
                   synchronized (objectLock) {
                       return connection;
                   }
                }
-
+      
              Eclipse has an optimization that removes an extra move of the lock from the local
              variables to the stack. This is the code it generates:
-
+      
              14: aload_1
              15: monitorexit
              16: athrow
-
+      
              At line 14, the stack holds the exception at top, and the lock at local variable 1.
              However, the TC converter isn't aware that the exception is at the top of the stack,
              so we check it and provide that extra operand that tells it.
@@ -1625,7 +1714,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case JCHECKCAST: //192
     {
-      BC192_checkcast ji = (BC192_checkcast)i;
+      BC192_checkcast ji = (BC192_checkcast) i;
       Operand regO = stack.pop();
       int index = GlobalConstantPool.putClsOrParam(ji.targetClass);
       OperandSymO sym = new OperandSymO(index);
@@ -1635,7 +1724,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case JINSTANCEOF: //193
     {
-      BC193_instanceof ji = (BC193_instanceof)i;
+      BC193_instanceof ji = (BC193_instanceof) i;
       Operand regO = stack.pop();
       OperandReg regI = new OperandRegI();
       int index = GlobalConstantPool.putClsOrParam(ji.targetClass);
@@ -1650,9 +1739,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       Reg code;
 
       if (reg instanceof OperandReg) {
-        code = new Reg(MONITOR_Enter, lineOfPC, ((OperandReg)reg).index);
+        code = new Reg(MONITOR_Enter, lineOfPC, ((OperandReg) reg).index);
       } else {
-        code = new Reg(MONITOR_Enter2, lineOfPC, ((OperandSymO)reg).index);
+        code = new Reg(MONITOR_Enter2, lineOfPC, ((OperandSymO) reg).index);
       }
       vcode.addElement(code);
       tc = code;
@@ -1664,9 +1753,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       Reg code;
 
       if (reg instanceof OperandReg) {
-        code = new Reg(MONITOR_Exit, lineOfPC, ((OperandReg)reg).index);
+        code = new Reg(MONITOR_Exit, lineOfPC, ((OperandReg) reg).index);
       } else {
-        code = new Reg(MONITOR_Exit2, lineOfPC, ((OperandSymO)reg).index);
+        code = new Reg(MONITOR_Exit2, lineOfPC, ((OperandSymO) reg).index);
       }
       vcode.addElement(code);
       tc = code;
@@ -1674,38 +1763,41 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
     case WIDE: //196
     {
-      BC196_wide ji = (BC196_wide)i;
+      BC196_wide ji = (BC196_wide) i;
       tc = processWIDE(bcs, ji.widen, stack, vcode, isStaticInitializer);
       break;
     }
     case MULTIANEWARRAY: //197
     {
-      BC197_multinewarray ji = (BC197_multinewarray)i;
+      BC197_multinewarray ji = (BC197_multinewarray) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
       ji.className = removeSuffix4D(ji.className);
       int symIdx = GlobalConstantPool.putClsOrParam(ji.className);
       OperandSym sym = new OperandSymO(symIdx);
       OperandReg reg = new OperandRegO();
       Operand dims[] = new Operand[ji.dimCount];
-      for (int j=ji.dimCount-1; j>=0; j--) {
+      for (int j = ji.dimCount - 1; j >= 0; j--) {
         dims[j] = stack.pop();
       }
       tc = GenerateInstruction.newInstruction(vcode, reg, sym, dims, lineOfPC);
       stack.push(reg);
       break;
     }
-    case IFNULL:    //198
+    case IFNULL: //198
     case IFNONNULL: //199
     {
-      ConditionalBranch ji = (ConditionalBranch)i;
+      ConditionalBranch ji = (ConditionalBranch) i;
       Operand value1 = stack.pop();
       Operand value2 = new OperandNull();
       OperandConstant target = new OperandConstant32(isTargetOfGoto[ji.jumpIfTrue], type_Int);
       int prefix = 0;
-      switch(op)
-      {
-      case IFNULL   : prefix = pref_JEQ; break;
-      case IFNONNULL: prefix = pref_JNE; break;
+      switch (op) {
+      case IFNULL:
+        prefix = pref_JEQ;
+        break;
+      case IFNONNULL:
+        prefix = pref_JNE;
+        break;
       }
       stackOfBranch(vcode, bcs, stack, ji.jumpIfTrue);
       tc = GenerateInstruction.newInstruction(vcode, prefix, value1, value2, target, lineOfPC);
@@ -1722,40 +1814,33 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return tc;
   }
 
-  private static int newInstructionsCount(Vector v, int index1, int index2)
-  {
-    if (index1 > index2)
-    {
+  private static int newInstructionsCount(Vector v, int index1, int index2) {
+    if (index1 > index2) {
       int aux = index1;
       index1 = index2;
       index2 = aux;
     }
 
     int count = 0;
-    for (int i=0; i<v.size(); i++)
-    {
+    for (int i = 0; i < v.size(); i++) {
       TCValue e = (TCValue) v.items[i];
       int value = e.asInt;
-      if (value >= index1 && value <index2) {
+      if (value >= index1 && value < index2) {
         count++;
       }
     }
     return count;
   }
 
-  public static void updateBranchs(Vector vcode) throws Exception
-  {
+  public static void updateBranchs(Vector vcode) throws Exception {
     Vector vc = new Vector(64);
 
-    try
-    {
+    try {
       int tccodeCount = 0;
-      for (int j = 0; j < vcode.size(); j++)
-      {
+      for (int j = 0; j < vcode.size(); j++) {
         Instruction tc = (Instruction) vcode.items[j];
         int op = tc.opcode;
-        switch (op)
-        {
+        switch (op) {
         case JEQ_regO_regO:
         case JNE_regO_regO:
         case JEQ_regI_regI:
@@ -1775,12 +1860,11 @@ public class Bytecode2TCCode implements JConstants, TCConstants
         case JLT_regD_regD:
         case JLE_regD_regD:
         case JGT_regD_regD:
-        case JGE_regD_regD:
-        {
+        case JGE_regD_regD: {
           Reg_reg_s12 i = (Reg_reg_s12) tc;
           int branch = i.s12;
           branch = htBytecodeIndex.get(branch);
-          i.s12 = branch-tccodeCount;
+          i.s12 = branch - tccodeCount;
           vc.addElement(tc);
           break;
         }
@@ -1792,68 +1876,65 @@ public class Bytecode2TCCode implements JConstants, TCConstants
         case JGT_regI_s6:
         case JGE_regI_s6:
         case JEQ_regO_null:
-        case JNE_regO_null:
-        {
+        case JNE_regO_null: {
           Reg_s6_desloc i = (Reg_s6_desloc) tc;
           int branch = i.desloc;
           branch = htBytecodeIndex.get(branch);
-          i.desloc = branch-tccodeCount;
+          i.desloc = branch - tccodeCount;
           vc.addElement(tc);
           break;
         }
 
         case JEQ_regI_sym:
-        case JNE_regI_sym:
-        {
+        case JNE_regI_sym: {
           Reg_sym_sdesloc i = (Reg_sym_sdesloc) tc;
           int branch = i.desloc;
           branch = htBytecodeIndex.get(branch);
-          int desloc = branch-tccodeCount;
-          if (desloc < -32 || desloc > 31)
-          {
+          int desloc = branch - tccodeCount;
+          if (desloc < -32 || desloc > 31) {
             newInsts.addElement(new TCValue(j));
             OperandRegI target = new OperandRegI();
             OperandSym sym = new OperandSymI(i.sym);
             GenerateInstruction.newInstruction(vc, pref_MOV, target, sym, tc.line);
             int reg = i.reg;
-            switch (op)
-            {
-            case JEQ_regI_sym  : op = JEQ_regI_regI; break;
-            case JNE_regI_sym  : op = JNE_regI_regI; break;
-            case JGE_regI_arlen: op = JGE_regI_regI; break;
+            switch (op) {
+            case JEQ_regI_sym:
+              op = JEQ_regI_regI;
+              break;
+            case JNE_regI_sym:
+              op = JNE_regI_regI;
+              break;
+            case JGE_regI_arlen:
+              op = JGE_regI_regI;
+              break;
             }
             Reg_reg_s12 i2 = new Reg_reg_s12(op, i.line, reg, target.index, desloc);
             tc = i2;
-          }
-          else
-          {
+          } else {
             i.desloc = desloc;
           }
           vc.addElement(tc);
           break;
         }
 
-        case JGE_regI_arlen:
-        {
+        case JGE_regI_arlen: {
           Reg_sym_sdesloc i = (Reg_sym_sdesloc) tc;
           int branch = i.desloc;
           branch = htBytecodeIndex.get(branch);
-          int desloc = branch-tccodeCount;
+          int desloc = branch - tccodeCount;
           i.desloc = desloc;
           vc.addElement(tc);
           break;
         }
-        case JUMP_s24:
-        {
+        case JUMP_s24: {
           S24 i = (S24) tc;
           int branch = i.s24;
           branch = htBytecodeIndex.get(branch);
-          i.s24 = branch-tccodeCount;
+          i.s24 = branch - tccodeCount;
           vc.addElement(tc);
           break;
         }
-        case SWITCH:
-        {
+        case SWITCH: {
           Switch_reg i = (Switch_reg) tc;
           vc.addElement(tc);
           int switchIdx = tccodeCount;
@@ -1862,24 +1943,20 @@ public class Bytecode2TCCode implements JConstants, TCConstants
           Two16 p1 = (Two16) i.params[0];
           int v1 = p1.v1;
           int branch = htBytecodeIndex.get(v1);
-          int target = branch-switchIdx;
+          int target = branch - switchIdx;
           p1.v1 = target;
 
           int k = n;
-          for (int x=0; x<n; x++)
-          {
-            if ((x & 1) == 1)
-            {
+          for (int x = 0; x < n; x++) {
+            if ((x & 1) == 1) {
               p1 = (Two16) i.params[k];
               branch = htBytecodeIndex.get(p1.v2);
-              target = branch-switchIdx;
+              target = branch - switchIdx;
               p1.v2 = target;
-            }
-            else
-            {
+            } else {
               p1 = (Two16) i.params[++k];
               branch = htBytecodeIndex.get(p1.v1);
-              target = branch-switchIdx;
+              target = branch - switchIdx;
               p1.v1 = target;
             }
           }
@@ -1890,25 +1967,20 @@ public class Bytecode2TCCode implements JConstants, TCConstants
         }
         tccodeCount += tc.len;
       }
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
     }
 
     vcode.removeAllElements();
-    for (int j = 0; j<vc.size(); j++)
-    {
+    for (int j = 0; j < vc.size(); j++) {
       vcode.addElement(vc.items[j]);
     }
 
     int tccodeCount = 0;
-    for (int j = 0; j < vcode.size(); j++)
-    {
+    for (int j = 0; j < vcode.size(); j++) {
       Instruction tc = (Instruction) vcode.items[j];
       int op = tc.opcode;
-      switch (op)
-      {
+      switch (op) {
       case JEQ_regO_regO:
       case JNE_regO_regO:
       case JEQ_regI_regI:
@@ -1928,8 +2000,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       case JLT_regD_regD:
       case JLE_regD_regD:
       case JGT_regD_regD:
-      case JGE_regD_regD:
-      {
+      case JGE_regD_regD: {
         Reg_reg_s12 i = (Reg_reg_s12) tc;
         int branch = i.s12;
         i.s12 = newInstructionsCount(newInsts, tccodeCount, tccodeCount + branch) + branch;
@@ -1943,8 +2014,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       case JGT_regI_s6:
       case JGE_regI_s6:
       case JEQ_regO_null:
-      case JNE_regO_null:
-      {
+      case JNE_regO_null: {
         Reg_s6_desloc i = (Reg_s6_desloc) tc;
         int branch = i.desloc;
         i.desloc = newInstructionsCount(newInsts, tccodeCount, tccodeCount + branch) + branch;
@@ -1953,42 +2023,35 @@ public class Bytecode2TCCode implements JConstants, TCConstants
 
       case JEQ_regI_sym:
       case JNE_regI_sym:
-      case JGE_regI_arlen:
-      {
+      case JGE_regI_arlen: {
         Reg_sym_sdesloc i = (Reg_sym_sdesloc) tc;
         int branch = i.desloc;
         i.desloc = newInstructionsCount(newInsts, tccodeCount, tccodeCount + branch) + branch;
         break;
       }
-      case JUMP_s24:
-      {
+      case JUMP_s24: {
         S24 i = (S24) tc;
         int branch = i.s24;
         i.s24 = newInstructionsCount(newInsts, tccodeCount, tccodeCount + branch) + branch;
         break;
       }
-      case SWITCH:
-      {
+      case SWITCH: {
         Switch_reg i = (Switch_reg) tc;
         int n = i.n;
         // default address
         Two16 p1 = (Two16) i.params[0];
         int v1 = p1.v1;
         int target = v1;
-        p1.v1 = newInstructionsCount(newInsts, tccodeCount+1, tccodeCount+1+target) + target;
+        p1.v1 = newInstructionsCount(newInsts, tccodeCount + 1, tccodeCount + 1 + target) + target;
 
         // destionation address
         int k = n;
-        for (int x=0; x<n; x++)
-        {
-          if ((x & 1) == 1)
-          {
+        for (int x = 0; x < n; x++) {
+          if ((x & 1) == 1) {
             p1 = (Two16) i.params[k];
             target = p1.v2;
             p1.v2 = newInstructionsCount(newInsts, tccodeCount + k, tccodeCount + k + target) + target;
-          }
-          else
-          {
+          } else {
             p1 = (Two16) i.params[++k];
             target = p1.v1;
             p1.v1 = newInstructionsCount(newInsts, tccodeCount + k, tccodeCount + k + target) + target;
@@ -2001,13 +2064,10 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
   }
 
-  private static boolean existsField(JavaField[] jfs, String name)
-  {
-    if (jfs != null)
-    {
+  private static boolean existsField(JavaField[] jfs, String name) {
+    if (jfs != null) {
       int fieldCount = jfs.length;
-      for (int i=0; i<fieldCount; i++)
-      {
+      for (int i = 0; i < fieldCount; i++) {
         JavaField jf = jfs[i];
         if (jf.name.equals(name)) {
           return true;
@@ -2017,11 +2077,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return false;
   }
 
-  public static int getMtdIndex(String sign)
-  {
+  public static int getMtdIndex(String sign) {
     int methodCount = methodIndexes.size();
-    for (int i=0; i<methodCount; i++)
-    {
+    for (int i = 0; i < methodCount; i++) {
       String name = (String) methodIndexes.items[i];
       if (name.equals(sign)) {
         return i;
@@ -2031,15 +2089,11 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return -1;
   }
 
-  private static boolean setExceptionHandler(TCException[] e, int pc, int regO)
-  {
+  private static boolean setExceptionHandler(TCException[] e, int pc, int regO) {
     boolean found = false;
-    if (e != null)
-    {
-      for (int i=0; i<e.length; i++)
-      {
-        if (e[i].handlerPC == pc)
-        {
+    if (e != null) {
+      for (int i = 0; i < e.length; i++) {
+        if (e[i].handlerPC == pc) {
           e[i].regO = regO;
           found = true;
         }
@@ -2048,13 +2102,10 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return found;
   }
 
-  public static TCException[] updatePCsOfExceptionHandler(TCException[] tces) throws Exception
-  {
-    if (tces != null)
-    {
-      Vector excp = new Vector (8);                  
-      for (int j = 0; j < tces.length; j++)
-      {
+  public static TCException[] updatePCsOfExceptionHandler(TCException[] tces) throws Exception {
+    if (tces != null) {
+      Vector excp = new Vector(8);
+      for (int j = 0; j < tces.length; j++) {
         TCException e = tces[j];
         int pc = htBytecodeIndex.get(e.startPC);
         e.startPC = pc + newInstructionsCount(newInsts, 0, pc);
@@ -2064,14 +2115,12 @@ public class Bytecode2TCCode implements JConstants, TCConstants
         e.handlerPC = pc + newInstructionsCount(newInsts, 0, pc);
 
         // stores only the valid exceptions (startPC <= endPC)
-        if (e.startPC <= e.endPC)
-        {
+        if (e.startPC <= e.endPC) {
           excp.addElement(e);
-        }   
-      }                 
+        }
+      }
 
-      if (excp.size() > 0)
-      {
+      if (excp.size() > 0) {
         tces = new TCException[excp.size()];
         Vm.arrayCopy(excp.items, 0, tces, 0, excp.size());
       }
@@ -2080,12 +2129,10 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return tces;
   }
 
-  public static boolean hasMethodWith4D(JavaClass jc, String sign)
-  {
+  public static boolean hasMethodWith4D(JavaClass jc, String sign) {
     JavaMethod[] jms = jc.methods;
     int methodCount = jms.length;
-    for (int i=0; i<methodCount; i++)
-    {
+    for (int i = 0; i < methodCount; i++) {
       JavaMethod jm = jms[i];
       if (jm.signature.equals(sign)) {
         return true;
@@ -2095,182 +2142,149 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     return false;
   }
 
-  public static String removeSuffix4D(String name)
-  {
+  public static String removeSuffix4D(String name) {
     int i;
-    if (name.endsWith("4D")){
-      return name.substring(0,name.length()-2);
-    }else
-      if ((i=name.indexOf("4D$")) >= 0){
-        name = name.substring(0,i).concat(name.substring(i+2));
-      }
+    if (name.endsWith("4D")) {
+      return name.substring(0, name.length() - 2);
+    } else if ((i = name.indexOf("4D$")) >= 0) {
+      name = name.substring(0, i).concat(name.substring(i + 2));
+    }
     return name;
   }
 
-  public static String removeSuffix4D(String name, String sign)
-  {
-    int i,len=name.length();
-    if (name.endsWith("4D")){
-      return name.substring(0,len-2) + sign.substring(len);
-    }else
-      if ((i=name.indexOf("4D$")) >= 0){
-        name = name.substring(0,i).concat(name.substring(i+2)) + sign.substring(len);
-      }
+  public static String removeSuffix4D(String name, String sign) {
+    int i, len = name.length();
+    if (name.endsWith("4D")) {
+      return name.substring(0, len - 2) + sign.substring(len);
+    } else if ((i = name.indexOf("4D$")) >= 0) {
+      name = name.substring(0, i).concat(name.substring(i + 2)) + sign.substring(len);
+    }
     return sign;
   }
 
-  public static String replaceTotalCrossLangToJavaLang(String name)
-  {
-    if (name.startsWith("totalcross/lang/")){
+  public static String replaceTotalCrossLangToJavaLang(String name) {
+    if (name.startsWith("totalcross/lang/")) {
       return "java/lang/" + name.substring(16);
     }
-    if (name.startsWith("totalcross/util/") && name.contains("4D") && !name.contains("/zip/")){
+    if (name.startsWith("totalcross/util/") && name.contains("4D") && !name.contains("/zip/")) {
       return name.replace("totalcross", "java");
     }
-    if (name.startsWith("jdkcompat") && name.contains("4D")){
+    if (name.startsWith("jdkcompat") && name.contains("4D")) {
       return name.replaceFirst("jdkcompat", "java");
     }
     return name;
   }
 
-  public static void CheckIfIsGotoTarget(int BCIndex, ByteCode bc, OperandStack stack, Vector vcode)
-  {
+  public static void CheckIfIsGotoTarget(int BCIndex, ByteCode bc, OperandStack stack, Vector vcode) {
     OperandStack s = null;
-    try {s = (OperandStack) htStackOfBranch.get(bc);} catch (Exception e) {}
-    if (s != null)
-    {
-      if (lastBytecode.bc == GOTO)
-      {
+    try {
+      s = (OperandStack) htStackOfBranch.get(bc);
+    } catch (Exception e) {
+    }
+    if (s != null) {
+      if (lastBytecode.bc == GOTO) {
         stack.copy(s);
-      }
-      else
-      {
+      } else {
         OperandStack s2 = stack.cloneStack();
         OperandStack s3 = s.cloneStack();
         while (s2.count() > s3.count()) {
           s2.pop();
         }
         stack.clear();
-        if (s2.count() > 0)
-        {
-          do
-          {
+        if (s2.count() > 0) {
+          do {
             Operand source = s2.pop();
             Operand target = s3.pop();
             GenerateInstruction.newInstruction(vcode, pref_MOV, target, source, lineOfPC);
             stack.push(target);
-          }
-          while ( ! s3.empty());
+          } while (!s3.empty());
         }
         stack.invert();
       }
+    } else if (isTargetOfGoto[BCIndex] != 0 && (!stack.empty())) {
+      OperandStack s2 = stack.cloneStack();
+      stack.clear();
+      OperandReg reg = null;
+      do {
+        Operand opr = s2.pop();
+        if (OperandKind.isTypeI(opr.kind)) {
+          reg = new OperandRegI();
+        } else if (OperandKind.isTypeO(opr.kind)) {
+          reg = new OperandRegO();
+        } else if (OperandKind.isTypeD(opr.kind)) {
+          reg = new OperandRegD64();
+        } else if (OperandKind.isTypeL(opr.kind)) {
+          reg = new OperandRegL();
+        }
+
+        GenerateInstruction.newInstruction(vcode, pref_MOV, reg, opr, lineOfPC);
+        stack.push(reg);
+      } while (!s2.empty());
+
+      stack.invert();
+      htStackOfBranch.put(bc, stack.cloneStack());
     }
-    else
-      if (isTargetOfGoto[BCIndex] != 0 && (! stack.empty()))
-      {
-        OperandStack s2 = stack.cloneStack();
-        stack.clear();
-        OperandReg reg = null;
-        do
-        {
-          Operand opr = s2.pop();
-          if (OperandKind.isTypeI(opr.kind)) {
-            reg = new OperandRegI();
-          } else
-            if (OperandKind.isTypeO(opr.kind)) {
-              reg = new OperandRegO();
-            } else
-              if (OperandKind.isTypeD(opr.kind)) {
-                reg = new OperandRegD64();
-              } else
-                if (OperandKind.isTypeL(opr.kind)) {
-                  reg = new OperandRegL();
-                }
-
-          GenerateInstruction.newInstruction(vcode, pref_MOV, reg, opr, lineOfPC);
-          stack.push(reg);
-        }
-        while ( ! s2.empty());
-
-        stack.invert();
-        htStackOfBranch.put(bc, stack.cloneStack());
-      }
   }
 
-  private static void stackOfBranch(Vector vcode, ByteCode[] bcs, OperandStack stack, int BCIndex)
-  {
+  private static void stackOfBranch(Vector vcode, ByteCode[] bcs, OperandStack stack, int BCIndex) {
     int i = 0;
     int count = 0;
-    while (count < BCIndex)
-    {
+    while (count < BCIndex) {
       count += bcs[i++].pcInc;
     }
 
-    if ( ! stack.empty())
-    {
+    if (!stack.empty()) {
       OperandStack s = null;
-      try {s = (OperandStack) htStackOfBranch.get(bcs[i]);} catch (Exception e) {}
+      try {
+        s = (OperandStack) htStackOfBranch.get(bcs[i]);
+      } catch (Exception e) {
+      }
 
       OperandStack s2 = stack.cloneStack();
       stack.clear();
 
       OperandReg reg = null;
-      if (s == null)
-      {
-        do
-        {
+      if (s == null) {
+        do {
           Operand opr = s2.pop();
           if (OperandKind.isTypeI(opr.kind)) {
             reg = new OperandRegI();
-          } else
-            if (OperandKind.isTypeO(opr.kind)) {
-              reg = new OperandRegO();
-            } else
-              if (OperandKind.isTypeD(opr.kind)) {
-                reg = new OperandRegD64();
-              } else
-                if (OperandKind.isTypeL(opr.kind)) {
-                  reg = new OperandRegL();
-                }
+          } else if (OperandKind.isTypeO(opr.kind)) {
+            reg = new OperandRegO();
+          } else if (OperandKind.isTypeD(opr.kind)) {
+            reg = new OperandRegD64();
+          } else if (OperandKind.isTypeL(opr.kind)) {
+            reg = new OperandRegL();
+          }
 
           GenerateInstruction.newInstruction(vcode, pref_MOV, reg, opr, lineOfPC);
           stack.push(reg);
-        }
-        while ( ! s2.empty());
+        } while (!s2.empty());
 
         stack.invert();
         htStackOfBranch.put(bcs[i], stack.cloneStack());
-      }
-      else
-      {
+      } else {
         OperandStack s3 = s.cloneStack();
-        if (s2.count() > 0 && s3.count() > 0)
-        {
-          do
-          {
+        if (s2.count() > 0 && s3.count() > 0) {
+          do {
             Operand source = s2.pop();
             Operand target = s3.pop();
             GenerateInstruction.newInstruction(vcode, pref_MOV, target, source, lineOfPC);
             stack.push(target);
-          }
-          while ( ! s3.empty());
+          } while (!s3.empty());
         }
         stack.invert();
       }
-    }
-    else
-    {
+    } else {
       htStackOfBranch.put(bcs[i], stack.cloneStack());
     }
   }
 
-  public static void setGotos(ByteCode[] bcs)
-  {
+  public static void setGotos(ByteCode[] bcs) {
     int codeLength = 0;
     int length = bcs.length;
 
-    for (int i=0; i<length; i++)
-    {
+    for (int i = 0; i < length; i++) {
       ByteCode bc = bcs[i];
       codeLength += bc.pcInc;
     }
@@ -2278,12 +2292,10 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     isTargetOfGoto = new int[codeLength];
     totalcross.sys.Convert.fill(isTargetOfGoto, 0, codeLength, 0);
 
-    for (int i=0; i<length; i++)
-    {
+    for (int i = 0; i < length; i++) {
       ByteCode bc = bcs[i];
       int op = bc.bc;
-      switch (op)
-      {
+      switch (op) {
       case IFEQ: //153
       case IFNE: //154
       case IFLT: //155
@@ -2291,7 +2303,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       case IFGT: //157
       case IFLE: //158
       {
-        ConditionalBranch ji = (ConditionalBranch)bc;
+        ConditionalBranch ji = (ConditionalBranch) bc;
         setGotoIndex(ji.jumpIfTrue);
         break;
       }
@@ -2304,28 +2316,28 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       case IF_ACMPEQ: //165
       case IF_ACMPNE: //166
       {
-        ConditionalBranch ji = (ConditionalBranch)bc;
+        ConditionalBranch ji = (ConditionalBranch) bc;
         setGotoIndex(ji.jumpIfTrue);
         break;
       }
-      case GOTO:   //167
+      case GOTO: //167
       case GOTO_W: //200
       {
-        Branch ji = (Branch)bc;
+        Branch ji = (Branch) bc;
         setGotoIndex(ji.jumpTo);
         break;
       }
       case JSR: //168
       case JSR_W: //201
       {
-        Branch ji = (Branch)bc;
+        Branch ji = (Branch) bc;
         setGotoIndex(ji.jumpTo);
         break;
       }
-      case IFNULL:    //198
+      case IFNULL: //198
       case IFNONNULL: //199
       {
-        ConditionalBranch ji = (ConditionalBranch)bc;
+        ConditionalBranch ji = (ConditionalBranch) bc;
         setGotoIndex(ji.jumpIfTrue);
         break;
       }
@@ -2333,11 +2345,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
   }
 
-  private static int getLineOfPC(int pc)
-  {
-    if (javaCodeCurrent.lineNumberPC != null)
-    {
-      int [] pcs = javaCodeCurrent.lineNumberPC;
+  private static int getLineOfPC(int pc) {
+    if (javaCodeCurrent.lineNumberPC != null) {
+      int[] pcs = javaCodeCurrent.lineNumberPC;
       int i = 0;
       while (i < pcs.length && pcs[i] < pc) {
         i++;
@@ -2345,24 +2355,20 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       if (i < pcs.length && pc == pcs[i]) {
         return javaCodeCurrent.lineNumberLine[i];
       }
-      return javaCodeCurrent.lineNumberLine[i-1];
+      return javaCodeCurrent.lineNumberLine[i - 1];
     }
     return 0;
   }
 
-  public static void generateLineNumbers(TCMethod tcm)
-  {
-    if (tcm.code != null)
-    {
+  public static void generateLineNumbers(TCMethod tcm) {
+    if (tcm.code != null) {
       Vector v = new Vector(64);
       int li = -1;
-      for (int i=0; i<tcm.code.length; i++)
-      {
+      for (int i = 0; i < tcm.code.length; i++) {
         TCCode tc = (TCCode) tcm.code[i];
-        if (tc.line != li)
-        {
+        if (tc.line != li) {
           li = tc.line;
-          v.addElement(new TCLineNumber(i,li));
+          v.addElement(new TCLineNumber(i, li));
         }
       }
       tcm.lineNumbers = new TCLineNumber[v.size()];
@@ -2370,11 +2376,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants
     }
   }
 
-  public static int countOfTCCode(Vector vcode)
-  {
+  public static int countOfTCCode(Vector vcode) {
     int count = 0;
-    for (int j=0; j<vcode.size(); j++)
-    {
+    for (int j = 0; j < vcode.size(); j++) {
       Instruction i = (Instruction) vcode.items[j];
       count += i.len;
     }

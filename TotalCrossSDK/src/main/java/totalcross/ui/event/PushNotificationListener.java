@@ -14,14 +14,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Push notification events. */
 
-public interface PushNotificationListener
-{
+public interface PushNotificationListener {
   public void tokenReceived(PushNotificationEvent e);
+
   public void messageReceived(PushNotificationEvent e);
 }

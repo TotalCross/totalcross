@@ -12,8 +12,7 @@ import tc.tools.deployer.ipa.ElephantMemoryWriter;
 /**
  * http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-32568/lib/codedirectory.h
  */
-public class CodeDirectory extends BlobCore
-{
+public class CodeDirectory extends BlobCore {
   /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
   public static final long CSMAGIC_CODEDIRECTORY = 0xfade0c02;
 
@@ -54,13 +53,11 @@ public class CodeDirectory extends BlobCore
 
   protected GeneralDigest hashDigest = new SHA1Digest();
 
-  public CodeDirectory()
-  {
+  public CodeDirectory() {
     super(CSMAGIC_CODEDIRECTORY);
   }
 
-  public CodeDirectory(String identifier, long codeLimit)
-  {
+  public CodeDirectory(String identifier, long codeLimit) {
     super(CSMAGIC_CODEDIRECTORY);
     this.scatterOffset = 0;
     this.spare2 = 0;
@@ -79,8 +76,8 @@ public class CodeDirectory extends BlobCore
     this.hashes = new byte[(int) ((this.nSpecialSlots + this.nCodeSlots) * this.hashSize)];
   }
 
-  public void setSpecialSlotsHashes(byte[] info, byte[] requirements, byte[] resourceDir, byte[] application, byte[] entitlements)
-  {
+  public void setSpecialSlotsHashes(byte[] info, byte[] requirements, byte[] resourceDir, byte[] application,
+      byte[] entitlements) {
     setSpecialSlotHash(cdInfoSlot, info);
     setSpecialSlotHash(cdRequirementsSlot, requirements);
     setSpecialSlotHash(cdResourceDirSlot, resourceDir);
@@ -88,23 +85,19 @@ public class CodeDirectory extends BlobCore
     setSpecialSlotHash(cdEntitlementsSlot, entitlements);
   }
 
-  public void setSpecialSlotHash(int slotIndex, byte[] data)
-  {
+  public void setSpecialSlotHash(int slotIndex, byte[] data) {
     int startIndex = (int) ((this.nSpecialSlots - slotIndex) * this.hashSize);
-    if (data == null){
+    if (data == null) {
       Arrays.fill(this.hashes, startIndex, startIndex + this.hashSize, (byte) 0);
-    }else
-    {
+    } else {
       hashDigest.reset();
       hashDigest.update(data, 0, data.length);
       hashDigest.doFinal(this.hashes, startIndex);
     }
   }
 
-  public void setCodeSlotsHashes(byte[] data)
-  {
-    for (int i = 0; i < this.nCodeSlots; i++)
-    {
+  public void setCodeSlotsHashes(byte[] data) {
+    for (int i = 0; i < this.nCodeSlots; i++) {
       int offset = i * actualPageSize;
       int pageSize = Math.min((int) (this.codeLimit - offset), actualPageSize);
       hashDigest.reset();
@@ -114,8 +107,7 @@ public class CodeDirectory extends BlobCore
   }
 
   @Override
-  protected void writeToStream(ElephantMemoryWriter writer) throws IOException
-  {
+  protected void writeToStream(ElephantMemoryWriter writer) throws IOException {
     // identOffset starts after the next 40 bytes;
     this.identOffset = (writer.pos - offset) + 40;
     // hashOffset starts after the identifier and the hashes of the special slots
@@ -139,8 +131,7 @@ public class CodeDirectory extends BlobCore
   }
 
   @Override
-  protected void readFromStream(ElephantMemoryReader reader) throws IOException
-  {
+  protected void readFromStream(ElephantMemoryReader reader) throws IOException {
     this.version = reader.readUnsignedInt();
     this.flags = reader.readUnsignedInt();
     this.hashOffset = reader.readUnsignedInt();
@@ -164,8 +155,7 @@ public class CodeDirectory extends BlobCore
     this.hashes = new byte[(int) (num4 * this.hashSize)];
     reader.memorize();
     reader.moveTo((offset + hashOffset) - (this.hashSize * this.nSpecialSlots));
-    for (long i = 0L; i < num4; i += 1L)
-    {
+    for (long i = 0L; i < num4; i += 1L) {
       byte[] b = new byte[(int) this.hashSize];
       reader.read(b);
       System.arraycopy(b, 0, this.hashes, (int) (i * this.hashSize), (int) this.hashSize);

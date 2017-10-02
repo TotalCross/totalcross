@@ -24,8 +24,7 @@ import totalcross.util.Vector;
  * 
  * This class is for internal use. You should use the ScrollContainer class instead.
  */
-public class Flick implements PenListener, TimerListener
-{
+public class Flick implements PenListener, TimerListener {
   public static final int BOTH_DIRECTIONS = 0;
   public static final int HORIZONTAL_DIRECTION_ONLY = 1;
   public static final int VERTICAL_DIRECTION_ONLY = 2;
@@ -66,11 +65,12 @@ public class Flick implements PenListener, TimerListener
    * Flick acceleration in inches/second^2. This value simulates friction to slow the flick motion.
    * Defaults to 2.95 for screen height > 320, or 1.6 otherwise.
    */
-  public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE/(Settings.platform.equals(Settings.ANDROID) ? 10.0 : 5.0);
+  public static double defaultFlickAcceleration = Math.max(Settings.screenWidth, Settings.screenHeight)
+      / Font.NORMAL_SIZE / (Settings.platform.equals(Settings.ANDROID) ? 10.0 : 5.0);
   public double flickAcceleration = defaultFlickAcceleration;
 
   // Device pixel densities in dpi.
-  private int resX,resY;
+  private int resX, resY;
 
   // Controls flick initialization and the physical drag that started it.
   private int dragId;
@@ -123,7 +123,7 @@ public class Flick implements PenListener, TimerListener
   private int lastDragDirection;
   private double lastA;
   private boolean calledFlickStarted;
-  private int initialRealPosX,initialRealPosY;
+  private int initialRealPosX, initialRealPosY;
 
   /** True if the user is dragging a control that owns a Flick but the flick didn't started yet 
    * (in that case, currentFlick would not be null). 
@@ -136,10 +136,9 @@ public class Flick implements PenListener, TimerListener
   /**
    * Create a Flick animation object for a FlickableContainer.
    */
-  public Flick(Scrollable s)
-  {
+  public Flick(Scrollable s) {
     target = s;
-    addEvents((Control)s);
+    addEvents((Control) s);
     timer = new TimerEvent();
   }
 
@@ -147,8 +146,7 @@ public class Flick implements PenListener, TimerListener
    * as the flick occurs. It must have all properties already set, since the Flick will only change
    * the current position.
    */
-  public void setPagePosition(PagePosition pp)
-  {
+  public void setPagePosition(PagePosition pp) {
     this.pagepos = pp;
   }
 
@@ -157,8 +155,7 @@ public class Flick implements PenListener, TimerListener
    * Also updates distanceToAbortScroll.
    * @see #setDistanceToAbortScroll(int) 
    */
-  public void setScrollDistance(int v)
-  {
+  public void setScrollDistance(int v) {
     scrollDistance = v;
     distanceToAbortScroll = v / (Control.isTablet ? 10 : 5);
   }
@@ -169,28 +166,24 @@ public class Flick implements PenListener, TimerListener
    * Be sure to call the method setScrollDistance before calling this one.
    * @see #setScrollDistance(int)
    */
-  public void setDistanceToAbortScroll(int v)
-  {
+  public void setDistanceToAbortScroll(int v) {
     distanceToAbortScroll = v;
   }
 
   /** Adds another listener of Scrollable events. */
-  public void addScrollableListener(Scrollable s)
-  {
-    if (listeners == null){
+  public void addScrollableListener(Scrollable s) {
+    if (listeners == null) {
       listeners = new Vector(3);
     }
     listeners.addElement(s);
   }
 
   /** Adds an event source to whom this flick will grab pen events. */
-  public void addEventSource(Control c)
-  {
+  public void addEventSource(Control c) {
     addEvents(c);
   }
 
-  private void addEvents(Control c)
-  {
+  private void addEvents(Control c) {
     c.addPenListener(this);
     c.addTimerListener(this);
     // So a container event listener can listen to events targeting the container's children.
@@ -198,26 +191,23 @@ public class Flick implements PenListener, TimerListener
   }
 
   /** Remove a previously added event source. */
-  public void removeEventSource(Control c)
-  {
+  public void removeEventSource(Control c) {
     c.removePenListener(this);
     c.removeTimerListener(this);
     // So a container event listener can listen to events targeting the container's children.
     c.callListenersOnAllTargets = false;
   }
 
-  private void initialize(int dragId, int x, int y, int t)
-  {
+  private void initialize(int dragId, int x, int y, int t) {
     lastFlickDirection = flickDirection;
     stop(false);
     this.dragId = dragId;
 
     // Adjust resolutions, which can change during rotation. some devices don't report properly.
     resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
-    resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
+    resY = Settings.screenHeightInDPI <= 0 ? 96 : Settings.screenHeightInDPI;
 
-    if (Control.isTablet)
-    {
+    if (Control.isTablet) {
       // Prefer high density on high res screens
       resX = (resX < 150) ? 240 : resX;
       resY = (resY < 150) ? 240 : resY;
@@ -238,46 +228,39 @@ public class Flick implements PenListener, TimerListener
    * Indicates the start of a simple tap or a drag.
    */
   @Override
-  public void penDown(PenEvent e)
-  {
-    if (scrollDistance != 0)
-    {
+  public void penDown(PenEvent e) {
+    if (scrollDistance != 0) {
       initialRealPosX = target.getScrollPosition(DragEvent.LEFT);
       initialRealPosY = target.getScrollPosition(DragEvent.DOWN);
     }
-    if (currentFlick == this && scrollDistance == 0){
+    if (currentFlick == this && scrollDistance == 0) {
       stop(true);
     }
   }
 
-  public boolean isValidDirection(int direction)
-  {
+  public boolean isValidDirection(int direction) {
     boolean isHoriz = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
-    return forcedFlickDirection == BOTH_DIRECTIONS ||
-        (isHoriz && forcedFlickDirection == Flick.HORIZONTAL_DIRECTION_ONLY) ||
-        (!isHoriz && forcedFlickDirection == Flick.VERTICAL_DIRECTION_ONLY);
+    return forcedFlickDirection == BOTH_DIRECTIONS
+        || (isHoriz && forcedFlickDirection == Flick.HORIZONTAL_DIRECTION_ONLY)
+        || (!isHoriz && forcedFlickDirection == Flick.VERTICAL_DIRECTION_ONLY);
   }
 
   /**
    * Indicates the start of a drag.
    */
   @Override
-  public void penDragStart(DragEvent e)
-  {
-    if (e.direction != lastDragDirection)
-    {
+  public void penDragStart(DragEvent e) {
+    if (e.direction != lastDragDirection) {
       consecutiveDragCount = 0;
       lastDragDirection = e.direction;
+    } else if (++consecutiveDragCount > maximumAccelerationMultiplier) {
+      consecutiveDragCount = maximumAccelerationMultiplier;
     }
-    else
-      if (++consecutiveDragCount > maximumAccelerationMultiplier){
-        consecutiveDragCount = maximumAccelerationMultiplier;
-      }
 
     isDragging = true;
-    if (e.target instanceof ScrollBar){
+    if (e.target instanceof ScrollBar) {
       stop(false);
-    }else {
+    } else {
       initialize(e.dragId, e.absoluteX, e.absoluteY, Vm.getTimeStamp());
     }
   }
@@ -286,9 +269,8 @@ public class Flick implements PenListener, TimerListener
    * Resets the drag start parameters if the direction changes.
    */
   @Override
-  public void penDrag(DragEvent e)
-  {
-    if (dragId != e.dragId){
+  public void penDrag(DragEvent e) {
+    if (dragId != e.dragId) {
       return;
     }
 
@@ -296,7 +278,7 @@ public class Flick implements PenListener, TimerListener
 
     // If this penDrag event was sent too fast, assume it was sent 1 millisecond
     // after the start of the drag so we can do our computations here.
-    if (t <= dragT0){
+    if (t <= dragT0) {
       t = dragT0 + 1;
     }
 
@@ -312,55 +294,43 @@ public class Flick implements PenListener, TimerListener
     double v;
 
     // if user specified a single direction, ignore other directions
-    if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY){
+    if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY) {
       return;//deltaY = absDeltaY = 0;
-    }else
-      if (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY)
-      {
-        return;//deltaX = absDeltaX = 0;
-      }
+    } else if (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY) {
+      return;//deltaX = absDeltaX = 0;
+    }
 
     dragX = x;
     dragY = y;
     a = 0;
 
-    if (absDeltaX > absDeltaY)
-    {
+    if (absDeltaX > absDeltaY) {
       v = (double) deltaX / (t - dragT0);
 
-      if (deltaX > 0)
-      {
+      if (deltaX > 0) {
         direction = DragEvent.RIGHT;
         a = -pixelAccelerationX;
-      }
-      else if (deltaX < 0)
-      {
+      } else if (deltaX < 0) {
         direction = DragEvent.LEFT;
         a = pixelAccelerationX;
       }
-    }
-    else
-    {
+    } else {
       v = (double) deltaY / (t - dragT0);
 
-      if (deltaY > 0)
-      {
+      if (deltaY > 0) {
         direction = DragEvent.DOWN;
         a = -pixelAccelerationY;
-      }
-      else if (deltaY < 0)
-      {
+      } else if (deltaY < 0) {
         direction = DragEvent.UP;
         a = pixelAccelerationY;
       }
     }
 
-    if (a == 0){
+    if (a == 0) {
       return;
     }
 
-    if (direction != 0)
-    {
+    if (direction != 0) {
       if ((flickDirection != 0 && direction != flickDirection) || (-v / a) < shortestFlick) // if flick direction changed or movement was too slow, reset flick start
       {
         dragT0 = t;
@@ -375,11 +345,10 @@ public class Flick implements PenListener, TimerListener
    * Checks whether or not to start a flick animation.
    */
   @Override
-  public void penDragEnd(DragEvent e)
-  {
+  public void penDragEnd(DragEvent e) {
     boolean cancelFlick = false;
     isDragging = false;
-    if (currentFlick != null || dragId != e.dragId){
+    if (currentFlick != null || dragId != e.dragId) {
       return;
     }
 
@@ -388,7 +357,7 @@ public class Flick implements PenListener, TimerListener
 
     // If this penUp event was sent too fast, assume it was sent 1 millisecond
     // after the start of the drag so we can do our computations here.
-    if (t0 <= dragT0){
+    if (t0 <= dragT0) {
       t0 = dragT0 + 1;
     }
 
@@ -401,48 +370,36 @@ public class Flick implements PenListener, TimerListener
 
     // If we could not compute the flick direction before, try to compute
     // the direction at the penUp event
-    if (flickDirection == 0)
-    {
+    if (flickDirection == 0) {
       a = 0;
-      cancelFlick = (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY) ||
-          (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY);
+      cancelFlick = (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
+          || (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY);
 
-      if (absDeltaX > absDeltaY)
-      {
-        if (deltaX > 0)
-        {
+      if (absDeltaX > absDeltaY) {
+        if (deltaX > 0) {
           flickDirection = cancelFlick ? DragEvent.DOWN : DragEvent.RIGHT;
           a = -pixelAccelerationX;
-        }
-        else if (deltaX < 0)
-        {
+        } else if (deltaX < 0) {
           flickDirection = cancelFlick ? DragEvent.UP : DragEvent.LEFT;
           a = pixelAccelerationX;
         }
-      }
-      else
-      {
-        if (deltaY > 0)
-        {
+      } else {
+        if (deltaY > 0) {
           flickDirection = cancelFlick ? DragEvent.RIGHT : DragEvent.DOWN;
           a = -pixelAccelerationY;
-        }
-        else if (deltaY < 0)
-        {
+        } else if (deltaY < 0) {
           flickDirection = cancelFlick ? DragEvent.LEFT : DragEvent.UP;
           a = pixelAccelerationY;
         }
       }
     }
 
-    if (scrollDistance != 0)
-    {
+    if (scrollDistance != 0) {
       boolean isHorizontal = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.LEFT;
       boolean forward = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.DOWN;
       // case where a flick was started in a single direction but the user made a new drag in a non-valid direction
       // e.g.: was flicking to left but user moved to up
-      if (a != 0) 
-      {
+      if (a != 0) {
         lastA = a;
         if ((forward && a < 0) || (!forward && a > 0)) {
           lastA = -a;
@@ -464,7 +421,7 @@ public class Flick implements PenListener, TimerListener
       if (realPos < 0) {
         realPos = -realPos;
       }
-      int runnedDistance    = realPos % scrollDistance;
+      int runnedDistance = realPos % scrollDistance;
       int remainingDistance = scrollDistance - runnedDistance;
 
       // how much the user dragged. used to go back
@@ -475,114 +432,100 @@ public class Flick implements PenListener, TimerListener
       int initialRealPos = isHorizontal ? initialRealPosX : initialRealPosY;
 
       // not enough to move?
-      if (cancelFlick || (consecutiveDragCount <= 1 && distanceToAbortScroll > 0 && dragged < distanceToAbortScroll))
-      {
+      if (cancelFlick || (consecutiveDragCount <= 1 && distanceToAbortScroll > 0 && dragged < distanceToAbortScroll)) {
         int s0 = initialRealPos < 0 ? -initialRealPos : initialRealPos;
         int sf = rpos < 0 ? -rpos : rpos;
 
         if ((s0 % scrollDistance) != 0) {
           scrollDistanceRemaining = forward ? runnedDistance : remainingDistance;
-        } else
-        {
-          if (s0 == sf) {;
-          } else
-            if (s0 < sf)
-            {
-              if (a > 0) {
-                a = -a;
-              }
-              forward = false;
-              lastFlickDirection = flickDirection = isHorizontal ? DragEvent.LEFT : DragEvent.UP;
-              scrollDistanceRemaining = sf-s0;
+        } else {
+          if (s0 == sf) {
+            ;
+          } else if (s0 < sf) {
+            if (a > 0) {
+              a = -a;
             }
-            else
-            {
-              if (a < 0) {
-                a = -a;
-              }
-              forward = true;
-              lastFlickDirection = flickDirection = isHorizontal ? DragEvent.RIGHT : DragEvent.DOWN;
-              scrollDistanceRemaining = s0-sf;
+            forward = false;
+            lastFlickDirection = flickDirection = isHorizontal ? DragEvent.LEFT : DragEvent.UP;
+            scrollDistanceRemaining = sf - s0;
+          } else {
+            if (a < 0) {
+              a = -a;
             }
+            forward = true;
+            lastFlickDirection = flickDirection = isHorizontal ? DragEvent.RIGHT : DragEvent.DOWN;
+            scrollDistanceRemaining = s0 - sf;
+          }
           consecutiveDragCount = 0;
         }
       } else {
         scrollDistanceRemaining = forward ? runnedDistance : remainingDistance;
       }
-      if (consecutiveDragCount > 1)
-      {
-        scrollDistanceRemaining += (consecutiveDragCount-1) * scrollDistance; // acceleration
+      if (consecutiveDragCount > 1) {
+        scrollDistanceRemaining += (consecutiveDragCount - 1) * scrollDistance; // acceleration
       }
 
       v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
       if (a > 0) {
         v0 = -v0;
       }
-    }
-    else
-      if (cancelFlick){
+    } else if (cancelFlick) {
+      return;
+    } else {
+      if (a == 0) {
         return;
-      }else
-      {
-        if (a == 0) {
-          return;
-        }
-        // Compute v0.
-        switch (flickDirection)
-        {
-        case DragEvent.UP:
-        case DragEvent.DOWN:
-          v0 = (double) deltaY / (t0 - dragT0);
-          break;
-
-        case DragEvent.LEFT:
-        case DragEvent.RIGHT:
-          v0 = (double) deltaX / (t0 - dragT0);
-          break;
-
-        default:
-          return;
-        }
-
-        // When the flick ends. No rounding is done, the maximum rounding error is 1 millisecond.
-        t1 = (int) (-v0 / a);
-
-        // Reject animations that are too slow and apply the speed limit.
-        if (t1 < shortestFlick) {
-          return;
-        }
-        if (t1 > longestFlick)
-        {
-          t1 = longestFlick;
-          v0 = -t1 * a;
-        }
       }
+      // Compute v0.
+      switch (flickDirection) {
+      case DragEvent.UP:
+      case DragEvent.DOWN:
+        v0 = (double) deltaY / (t0 - dragT0);
+        break;
+
+      case DragEvent.LEFT:
+      case DragEvent.RIGHT:
+        v0 = (double) deltaX / (t0 - dragT0);
+        break;
+
+      default:
+        return;
+      }
+
+      // When the flick ends. No rounding is done, the maximum rounding error is 1 millisecond.
+      t1 = (int) (-v0 / a);
+
+      // Reject animations that are too slow and apply the speed limit.
+      if (t1 < shortestFlick) {
+        return;
+      }
+      if (t1 > longestFlick) {
+        t1 = longestFlick;
+        v0 = -t1 * a;
+      }
+    }
 
     // Start the animation
     int scrollDirection = DragEvent.getInverseDirection(flickDirection);
     calledFlickStarted = false;
-    if (target.canScrollContent(scrollDirection, e.target))
-    {
+    if (target.canScrollContent(scrollDirection, e.target)) {
       calledFlickStarted = true;
-      if (target.flickStarted())
-      {
-        callListeners(true,false);
+      if (target.flickStarted()) {
+        callListeners(true, false);
         currentFlick = this;
         flickPos = 0;
-        ((Control)target).addTimer(timer, 1000 / frameRate);
+        ((Control) target).addTimer(timer, 1000 / frameRate);
       }
     }
   }
 
   /** Calls the listeners of this flick. */
-  public void callListeners(boolean started, boolean atPenDown)
-  {
-    if (listeners != null){
+  public void callListeners(boolean started, boolean atPenDown) {
+    if (listeners != null) {
       for (int i = listeners.size(); --i >= 0;) {
         if (started) {
-          ((Scrollable)listeners.items[i]).flickStarted();
+          ((Scrollable) listeners.items[i]).flickStarted();
         } else {
-          ((Scrollable)listeners.items[i]).flickEnded(atPenDown);
+          ((Scrollable) listeners.items[i]).flickEnded(atPenDown);
         }
       }
     }
@@ -591,28 +534,24 @@ public class Flick implements PenListener, TimerListener
   /**
    * Stops a flick animation if one is running.
    */
-  void stop(boolean atPenDown)
-  {
-    if (currentFlick == null){
+  void stop(boolean atPenDown) {
+    if (currentFlick == null) {
       dragId = -1;
-    }else 
-      if (currentFlick == this){
-        currentFlick = null;
-      }
+    } else if (currentFlick == this) {
+      currentFlick = null;
+    }
 
-    if (calledFlickStarted)
-    {
+    if (calledFlickStarted) {
       calledFlickStarted = false;
-      ((Control)target).removeTimer(timer);
+      ((Control) target).removeTimer(timer);
       callListeners(false, atPenDown);
       target.flickEnded(atPenDown);
     }
   }
 
   @Override
-  public void penUp(PenEvent e)
-  {
-    if (currentFlick == null){
+  public void penUp(PenEvent e) {
+    if (currentFlick == null) {
       stop(false);
     }
   }
@@ -621,10 +560,8 @@ public class Flick implements PenListener, TimerListener
    * Processes timer ticks to run the animation.
    */
   @Override
-  public void timerTriggered(TimerEvent e)
-  {
-    if (e == timer && !totalcross.unit.UIRobot.abort)
-    {
+  public void timerTriggered(TimerEvent e) {
+    if (e == timer && !totalcross.unit.UIRobot.abort) {
       double t = Vm.getTimeStamp() - t0;
 
       // No rounding is done, the maximum rounding error is 1 pixel.
@@ -639,13 +576,12 @@ public class Flick implements PenListener, TimerListener
       boolean endReached = flickMotion == 0;
 
       if (!endReached) {
-        switch (flickDirection)
-        {
+        switch (flickDirection) {
         case DragEvent.UP:
         case DragEvent.DOWN:
           if (listeners != null) {
             for (int i = listeners.size(); --i >= 0;) {
-              ((Scrollable)listeners.items[i]).scrollContent(0, -flickMotion, true);
+              ((Scrollable) listeners.items[i]).scrollContent(0, -flickMotion, true);
             }
           }
           if (!target.scrollContent(0, -flickMotion, true)) {
@@ -657,7 +593,7 @@ public class Flick implements PenListener, TimerListener
         case DragEvent.RIGHT:
           if (listeners != null) {
             for (int i = listeners.size(); --i >= 0;) {
-              ((Scrollable)listeners.items[i]).scrollContent(-flickMotion, 0, true);
+              ((Scrollable) listeners.items[i]).scrollContent(-flickMotion, 0, true);
             }
           }
           if (!target.scrollContent(-flickMotion, 0, true)) {
@@ -671,13 +607,12 @@ public class Flick implements PenListener, TimerListener
         lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
         stop(false);
       }
-      if (pagepos != null)
-      {
+      if (pagepos != null) {
         int p = target.getScrollPosition(flickDirection);
         if (p < 0) {
           p = -p;
         }
-        pagepos.setPosition((p/scrollDistance)+1);
+        pagepos.setPosition((p / scrollDistance) + 1);
       }
 
       e.consumed = true;

@@ -16,8 +16,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.scanner;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -67,8 +65,7 @@ import totalcross.util.concurrent.Lock;
  * Note: to generate an installation for the SYMBOL MC32, you must deploy using -WINCE (creates cab without compression), and not -WINMO (creates cab with compression).
  */
 
-public class Scanner
-{
+public class Scanner {
   public static boolean isActive; // guich@200b4: avoid activate the scanner again
   private static String barcode;
   private static int tries;
@@ -78,35 +75,34 @@ public class Scanner
 
   /** Set this listener to send all Scanner events to its onEvent method. */
   public static Control listener; // maybe theres another better way to do this...
-  
+
   private static Runnable scannerLoader = () -> {
     if (Settings.isWindowsCE()) {
       if ("Marvell".equalsIgnoreCase(Settings.deviceId) || "CipherLab Inc".equalsIgnoreCase(Settings.deviceId)) {
         driverLoaded = Vm.attachNativeLibrary("OpticonH16");
       } else {
-        driverLoaded = Vm.attachNativeLibrary("Motorola") || 
-            Vm.attachNativeLibrary("Dolphin") || 
-            Vm.attachNativeLibrary("Intermec") || 
-            Vm.attachNativeLibrary("Pidion") || 
-            Vm.attachNativeLibrary("Bematech");
+        driverLoaded = Vm.attachNativeLibrary("Motorola") || Vm.attachNativeLibrary("Dolphin")
+            || Vm.attachNativeLibrary("Intermec") || Vm.attachNativeLibrary("Pidion")
+            || Vm.attachNativeLibrary("Bematech");
       }
       if (!driverLoaded && tries++ == 0) {
         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
       }
     }
   };
-  
+
   private static Lock lock = new Lock();
   private static Runnable doLoad = () -> {
     synchronized (lock) {
-      doLoad = () -> {};
+      doLoad = () -> {
+      };
       if (scannerLoader != null) {
         scannerLoader.run();
         scannerLoader = null;
       }
     }
   };
-  
+
   public static void proprietaryScanLoad(Runnable scanLoad) {
     synchronized (lock) {
       if (scanLoad != null) {
@@ -114,7 +110,6 @@ public class Scanner
       }
     }
   }
-  
 
   /**
    * Activate the scanner. Return true if the scanner could be activated,
@@ -125,18 +120,16 @@ public class Scanner
    * virtual wedge settings off and then try to use the scanner. Even though your app won't crash or hang, the device might not behave properly. 
    * There is no way to check if the device settings are off in the settings or in the app. 
    */
-  public static boolean activate()
-  {
-	doLoad.run();
+  public static boolean activate() {
+    doLoad.run();
     isActive = scannerActivate();
     scanManagerVersion = getScanManagerVersion();
     return isActive;
   }
 
   @ReplacedByNativeOnDeploy
-  static boolean scannerActivate()
-  {
-    InputBox id = new InputBox("Barcode emulation","Please enter the barcode:","");
+  static boolean scannerActivate() {
+    InputBox id = new InputBox("Barcode emulation", "Please enter the barcode:", "");
     id.popup();
     barcode = id.getValue();
     _onEvent(ScanEvent.SCANNED);
@@ -152,8 +145,7 @@ public class Scanner
    * <p><b>Note</b>: On Android Intermec, you CAN'T set enable a barcode type the scanner is not activate. In this case, this method will return false.
    */
   @ReplacedByNativeOnDeploy
-  public static boolean setBarcodeParam(int barcodeType, boolean enable)
-  {
+  public static boolean setBarcodeParam(int barcodeType, boolean enable) {
     return true;
   }
 
@@ -238,8 +230,7 @@ public class Scanner
    *
    */
   @ReplacedByNativeOnDeploy
-  public static boolean commitBarcodeParams()
-  {
+  public static boolean commitBarcodeParams() {
     return true;
   }
 
@@ -267,8 +258,7 @@ public class Scanner
    * <p><b>Note</b>: On Android Intermec, you should first set some parameters before fetching data or else it might crash after 10 or 15 reads.
    */
   @ReplacedByNativeOnDeploy
-  public static String getData()
-  {
+  public static String getData() {
     return barcode;
   }
 
@@ -277,8 +267,7 @@ public class Scanner
    * is called before the Scanner is initialized, a null String will be returned.
    */
   @ReplacedByNativeOnDeploy
-  public static String getScanManagerVersion()
-  {
+  public static String getScanManagerVersion() {
     return "Scanner emulation";
   }
 
@@ -287,8 +276,7 @@ public class Scanner
    * is called before the Scanner is initialized, a null string will be returned.
    */
   @ReplacedByNativeOnDeploy
-  public static String getScanPortDriverVersion()
-  {
+  public static String getScanPortDriverVersion() {
     return null;
   }
 
@@ -297,8 +285,7 @@ public class Scanner
    * and false, otherwise.
    */
   @ReplacedByNativeOnDeploy
-  public static boolean deactivate()
-  {
+  public static boolean deactivate() {
     isActive = false;
     return true;
   }
@@ -310,16 +297,13 @@ public class Scanner
    * If there are no assigned listeners, the event is sent to the top most window,
    * and the window is validated.
    */
-  protected static void _onEvent(int type)
-  {
+  protected static void _onEvent(int type) {
     Control dest = listener;
-    if (dest == null){
+    if (dest == null) {
       dest = Window.getTopMost();
     }
     // convert from the type to the internal event id
-    int id = type == 2 ? ScanEvent.BATTERY_ERROR :
-      type == 1 ? ScanEvent.SCANNED
-          /* 0 */ : ScanEvent.TRIGGERED;
+    int id = type == 2 ? ScanEvent.BATTERY_ERROR : type == 1 ? ScanEvent.SCANNED/* 0 */ : ScanEvent.TRIGGERED;
     // dispatch to the listener
     se.update(id);
     dest.postEvent(se);
@@ -339,8 +323,7 @@ public class Scanner
    *  See the TotalCross API / Scanner Camera sample.
    */
   @ReplacedByNativeOnDeploy
-  public static String readBarcode(String mode)
-  {
+  public static String readBarcode(String mode) {
     return null;
   }
 
@@ -359,7 +342,6 @@ public class Scanner
    * For integer parameters, use the integer passed as String.
    */
   @ReplacedByNativeOnDeploy
-  public static void setParam(String what, String value)
-  {
+  public static void setParam(String what, String value) {
   }
 }

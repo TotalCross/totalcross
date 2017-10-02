@@ -22,8 +22,7 @@ import totalcross.ui.gfx.Graphics;
 /** 
  * A class used to display a Button with an arrow inside. 
  */
-public class ArrowButton extends Button
-{
+public class ArrowButton extends Button {
   /**
    * <code>Graphics.ARROW_UP</code>, <code>Graphics.ARROW_DOWN</code>, <code>Graphics.ARROW_LEFT</code>, or <code>Graphics.ARROW_RIGHT</code>.
    */
@@ -71,9 +70,8 @@ public class ArrowButton extends Button
    * @param prefWH The desired arrow width/height. The effective arrow's size will be computed based in the current width/height.
    * @param arrowColor The arrow color. Can be changed by setting the <code>arrowColor</code> field. 
    */
-  public ArrowButton(byte direction, int prefWH, int arrowColor)
-  {
-    super((String)null);
+  public ArrowButton(byte direction, int prefWH, int arrowColor) {
+    super((String) null);
     this.direction = direction;
     this.arrowColor = arrowColor;
     this.prefWH = prefWH;
@@ -86,9 +84,8 @@ public class ArrowButton extends Button
    * @return The preferred width of this control.
    */
   @Override
-  public int getPreferredWidth()
-  {
-    return super.getPreferredWidth() + (horiz && border==BORDER_NONE ? prefWH : prefWH*2) - 1;
+  public int getPreferredWidth() {
+    return super.getPreferredWidth() + (horiz && border == BORDER_NONE ? prefWH : prefWH * 2) - 1;
   }
 
   /**
@@ -97,9 +94,8 @@ public class ArrowButton extends Button
    * @return The preferred height of this control.
    */
   @Override
-  public int getPreferredHeight()
-  {
-    return super.getPreferredHeight() + (!horiz && border==BORDER_NONE ? prefWH : prefWH*2) - 1;
+  public int getPreferredHeight() {
+    return super.getPreferredHeight() + (!horiz && border == BORDER_NONE ? prefWH : prefWH * 2) - 1;
   }
 
   /**
@@ -109,35 +105,28 @@ public class ArrowButton extends Button
    * <code>Button.BORDER_3D_HORIZONTAL_GRADIENT</code>, <code>Button.BORDER_3D_VERTICAL_GRADIENT</code>, or <code>Button.BORDER_GRAY_IMAGE</code>.
    */
   @Override
-  public void setBorder(byte border)
-  {
+  public void setBorder(byte border) {
     super.setBorder(border);
     recomputeParameters();
   }
 
-  private void recomputeParameters()
-  {
-    if (dkk != 0){
+  private void recomputeParameters() {
+    if (dkk != 0) {
       kk = dkk;
-    }else
-      if (border != BORDER_NONE){
-        kk = Math.min(width,height)/2-1;
-      }else
-      {
-        if ((width > height && horiz) || (height > width && !horiz)) {
-          kk = Math.min(width,height)/2+1;
-        } else {
-          kk = Math.max(width,height)/2;
-        }
+    } else if (border != BORDER_NONE) {
+      kk = Math.min(width, height) / 2 - 1;
+    } else {
+      if ((width > height && horiz) || (height > width && !horiz)) {
+        kk = Math.min(width, height) / 2 + 1;
+      } else {
+        kk = Math.max(width, height) / 2;
       }
-    if (horiz)
-    {
-      xx = (width - kk) / 2;
-      yy = height/2 -kk + 1;
     }
-    else
-    {
-      xx = width/2 - kk + 1;
+    if (horiz) {
+      xx = (width - kk) / 2;
+      yy = height / 2 - kk + 1;
+    } else {
+      xx = width / 2 - kk + 1;
       yy = (height - kk) / 2;
     }
   }
@@ -147,8 +136,7 @@ public class ArrowButton extends Button
    *
    * @param kk The new size.
    */
-  public void setArrowSize(int kk)
-  {
+  public void setArrowSize(int kk) {
     dkk = kk;
     recomputeParameters();
   }
@@ -159,8 +147,7 @@ public class ArrowButton extends Button
    * @param screenChanged If the bounds was changed due to a screen change (rotation, collapse).
    */
   @Override
-  protected void onBoundsChanged(boolean screenChanged)
-  {
+  protected void onBoundsChanged(boolean screenChanged) {
     super.onBoundsChanged(screenChanged);
     recomputeParameters();
   }
@@ -171,10 +158,9 @@ public class ArrowButton extends Button
    * @param g The graphics object for drawing. 
    */
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     super.onPaint(g);
-    g.drawArrow(xx,yy,kk,direction,!uiAndroid && armed,isEnabled() ? arrowColor : Color.brighter(arrowColor,128)); // here is h regardless the case
+    g.drawArrow(xx, yy, kk, direction, !uiAndroid && armed, isEnabled() ? arrowColor : Color.brighter(arrowColor, 128)); // here is h regardless the case
   }
 
   /**
@@ -183,8 +169,7 @@ public class ArrowButton extends Button
    * @return The string representation of the haired button plus its direction.
    */
   @Override
-  public String toString()
-  {
-    return super.toString()+", dir: "+direction;
+  public String toString() {
+    return super.toString() + ", dir: " + direction;
   }
 }

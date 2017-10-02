@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 import java.text.Collator;
@@ -42,8 +40,7 @@ import totalcross.util.regex.Pattern;
  * available.
  */
 
-public final class String4D implements Comparable<String4D>, CharSequence
-{
+public final class String4D implements Comparable<String4D>, CharSequence {
   char chars[];
 
   private static char[] charSequence2charArryay(CharSequence cs) {
@@ -54,8 +51,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
   }
 
   /** Creates an empty string. */
-  public String4D()
-  {
+  public String4D() {
     chars = new char[0];
   }
 
@@ -64,18 +60,16 @@ public final class String4D implements Comparable<String4D>, CharSequence
   }
 
   /** Creates a copy of the given string. */
-  public String4D(String4D s)
-  {
+  public String4D(String4D s) {
     chars = s.chars;
   }
 
   /** Creates a string from the given character array. */
-  public String4D(char c[])
-  {
+  public String4D(char c[]) {
     int count = c.length;
     this.chars = new char[count];
     // prevent null access error if len = 0 or ac is null. (added by dgecawich 7/9/01)
-    if (count > 0){
+    if (count > 0) {
       copyChars(c, 0, this.chars, 0, count);
     }
   }
@@ -91,15 +85,14 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @param count  the length.
    * @throws IndexOutOfBoundsException If the offset and count arguments index characters outside the bounds of the value array.
    */
-  public String4D(char value[], int offset, int count)
-  {
-    if (offset < 0 || count < 0 || offset + count > value.length){
+  public String4D(char value[], int offset, int count) {
+    if (offset < 0 || count < 0 || offset + count > value.length) {
       throw new IndexOutOfBoundsException();
     }
 
     this.chars = new char[count];
     // prevent null access error if len = 0 or ac is null. (added by dgecawich 7/9/01)
-    if (count > 0){
+    if (count > 0) {
       copyChars(value, offset, this.chars, 0, count);
     }
   }
@@ -110,15 +103,13 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @see totalcross.sys.CharacterConverter
    * @see totalcross.sys.UTF8CharacterConverter 
    */
-  public String4D(byte []value, int offset, int count)
-  {
-    try
+  public String4D(byte[] value, int offset, int count) {
+    try {
+      chars = Convert.charConverter.bytes2chars(value, offset, count);
+    } catch (ArrayIndexOutOfBoundsException aioobe) // guich@tc123_33
     {
-      chars = Convert.charConverter.bytes2chars(value,offset,count);
-    }
-    catch (ArrayIndexOutOfBoundsException aioobe) // guich@tc123_33
-    {
-      throw new StringIndexOutOfBoundsException("value: "+value.length+" bytes length, offset: "+offset+", count: "+count);
+      throw new StringIndexOutOfBoundsException(
+          "value: " + value.length + " bytes length, offset: " + offset + ", count: " + count);
     }
   }
 
@@ -128,13 +119,10 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @see totalcross.sys.CharacterConverter
    * @see totalcross.sys.UTF8CharacterConverter 
    */
-  public String4D(byte []value)
-  {
-    try
-    {
-      chars = Convert.charConverter.bytes2chars(value,0,value.length);
-    }
-    catch (ArrayIndexOutOfBoundsException aioobe) // guich@tc123_33
+  public String4D(byte[] value) {
+    try {
+      chars = Convert.charConverter.bytes2chars(value, 0, value.length);
+    } catch (ArrayIndexOutOfBoundsException aioobe) // guich@tc123_33
     {
       throw new StringIndexOutOfBoundsException(aioobe.getMessage());
     }
@@ -155,34 +143,28 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @param buffer StringBuffer to copy
    * @throws NullPointerException if buffer is null
    */
-  public String4D(StringBuffer4D buffer)
-  {
+  public String4D(StringBuffer4D buffer) {
     chars = new char[buffer.count];
     String4D.copyChars(buffer.charbuf, 0, chars, 0, chars.length);
   }
 
-
-
   /** Returns the length of the string in characters. */
   @Override
-  public int length()
-  {
+  public int length() {
     return chars.length;
   }
 
   /** Returns the character at the given position. */
   @Override
-  public char charAt(int i)
-  {
+  public char charAt(int i) {
     return chars[i];
   }
 
   /** Concatenates the given string to this string and returns the result. */
-  public String4D concat(String4D s)
-  {
+  public String4D concat(String4D s) {
     // changed by dgecawich on 5/14/01 because a = a + "something" or a += "something" caused a stack overflow
     int otherLen = s != null ? s.chars.length : 0;
-    if (otherLen == 0){
+    if (otherLen == 0) {
       return this;
     }
     int curLength = chars.length;
@@ -196,26 +178,23 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * Returns this string as a character array. The array returned is allocated 
    * by this method and is a copy of the string's internal character array.
    */
-  public char[] toCharArray()
-  {
+  public char[] toCharArray() {
     char chars[] = new char[this.chars.length];
     copyChars(this.chars, 0, chars, 0, chars.length);
     return chars;
   }
 
   /** Returns this string. */
-  public String4D toString4D()
-  {
+  public String4D toString4D() {
     return this;
   }
 
   /**
    * Returns the string representation of the given object.
    */
-  public static String valueOf(Object obj)
-  {
+  public static String valueOf(Object obj) {
     // this method is called for EVERY string literal in the applicaiton
-    return obj != null ? obj instanceof String ? (String)obj : obj.toString() : "null";
+    return obj != null ? obj instanceof String ? (String) obj : obj.toString() : "null";
   }
 
   /**
@@ -228,8 +207,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @param start the first character of the substring
    * @param end the character after the last character of the substring
    */
-  public String4D substring(int start, int end)
-  {
+  public String4D substring(int start, int end) {
     return new String4D(chars, start, end - start);
   }
 
@@ -237,8 +215,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * Returns a substring starting from <i>start</i> to the end of the string.
    * @param start the first character of the substring
    */
-  public String4D substring(int start)
-  {
+  public String4D substring(int start) {
     return new String4D(chars, start, chars.length - start);
   }
 
@@ -311,8 +288,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @author David Gecawich
    * @since SuperWaba 2.0
    */
-  public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin)
-  {
+  public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
     copyChars(chars, srcBegin, dst, dstBegin, srcEnd - srcBegin);
   }
 
@@ -323,9 +299,8 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @see totalcross.sys.UTF8CharacterConverter 
    * @since SuperWaba 2.0 beta 4 
    */
-  public byte []getBytes()
-  {
-    return Convert.charConverter.chars2bytes(chars,0,chars.length);
+  public byte[] getBytes() {
+    return Convert.charConverter.chars2bytes(chars, 0, chars.length);
   }
 
   /** Returns a new instance of this string converted to upper case */
@@ -341,9 +316,8 @@ public final class String4D implements Comparable<String4D>, CharSequence
   native public static String valueOf(long l);
 
   /** Converts the given boolean to a String (in lowercase). */
-  public static String valueOf(boolean b)
-  {
-    return b?"true":"false";
+  public static String valueOf(boolean b) {
+    return b ? "true" : "false";
   }
 
   // guich@320_4: made all those methods native to improve performance
@@ -377,7 +351,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
   native public int compareTo(String4D s);
 
   /** Copies the specified srcArray to dstArray */
-  native static boolean copyChars(char []srcArray, int srcStart, char[] dstArray, int dstStart, int length);
+  native static boolean copyChars(char[] srcArray, int srcStart, char[] dstArray, int dstStart, int length);
 
   /** Returns the index of the specified string in this string starting from the given index, or -1 if not found. */
   native public int indexOf(String4D c, int startIndex);
@@ -386,16 +360,13 @@ public final class String4D implements Comparable<String4D>, CharSequence
   @Override
   native public int hashCode();
 
-  public boolean contains(String4D part)
-  {
+  public boolean contains(String4D part) {
     return indexOf(part) != -1;
   }
 
-  public boolean contains(CharSequence part)
-  {
+  public boolean contains(CharSequence part) {
     return contains(new String4D(part));
   }
-
 
   /**
    * Compares the given StringBuffer to this String. This is true if the
@@ -406,20 +377,18 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @throws NullPointerException if the given StringBuffer is null
    * @since 1.4
    */
-  public boolean contentEquals(StringBuffer4D buffer)
-  {
-    if (chars.length != buffer.count){
+  public boolean contentEquals(StringBuffer4D buffer) {
+    if (chars.length != buffer.count) {
       return false;
     }
     int i = chars.length;
-    while (--i >= 0){
+    while (--i >= 0) {
       if (chars[i] != buffer.charbuf[i]) {
         return false;
       }
     }
     return true;
   }
-
 
   /**
    * Compares this String and another String (case insensitive). This
@@ -434,8 +403,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @see Collator#compare(String, String)
    * @since 1.2
    */
-  public int compareToIgnoreCase(String4D str)
-  {
+  public int compareToIgnoreCase(String4D str) {
     return toUpperCase().compareTo(str.toUpperCase()); // TODO optimize
   }
 
@@ -452,8 +420,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @return true if regions match (case sensitive)
    * @throws NullPointerException if other is null
    */
-  public boolean regionMatches(int toffset, String4D other, int ooffset, int len)
-  {
+  public boolean regionMatches(int toffset, String4D other, int ooffset, int len) {
     return regionMatches(false, toffset, other, ooffset, len);
   }
 
@@ -474,18 +441,16 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @return true if regions match, false otherwise
    * @throws NullPointerException if other is null
    */
-  public boolean regionMatches(boolean ignoreCase, int toffset, String4D other, int ooffset, int len)
-  {
-    if (toffset < 0 || ooffset < 0 || toffset + len > chars.length || ooffset + len > other.chars.length){
+  public boolean regionMatches(boolean ignoreCase, int toffset, String4D other, int ooffset, int len) {
+    if (toffset < 0 || ooffset < 0 || toffset + len > chars.length || ooffset + len > other.chars.length) {
       return false;
     }
-    while (--len >= 0)
-    {
+    while (--len >= 0) {
       char c1 = chars[toffset++];
       char c2 = other.chars[ooffset++];
       // Note that checking c1 != c2 is redundant when ignoreCase is true,
       // but it avoids method calls.
-      if (c1 != c2 && (! ignoreCase || (Convert.toLowerCase(c1) != Convert.toLowerCase(c2)
+      if (c1 != c2 && (!ignoreCase || (Convert.toLowerCase(c1) != Convert.toLowerCase(c2)
           && (Convert.toUpperCase(c1) != Convert.toUpperCase(c2))))) {
         return false;
       }
@@ -502,8 +467,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @throws NullPointerException if regex is null
    * @throws PatternSyntaxException if regex is invalid
    */
-  public boolean matches(String regex)
-  {
+  public boolean matches(String regex) {
     return Pattern.compile(regex).matches(this.toString());
   }
 
@@ -557,8 +521,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @throws PatternSyntaxException if regex is invalid
    * @see Pattern#compile(String)
    */
-  public String replaceAll(String regex, String replacement)
-  {
+  public String replaceAll(String regex, String replacement) {
     return Pattern.compile(regex).replacer(replacement).replace(this.toString());
   }
 
@@ -612,16 +575,12 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @throws PatternSyntaxException if regex is invalid
    * @see Pattern#compile(String)
    */
-  public String[] split(String regex)
-  {
+  public String[] split(String regex) {
     for (int i = 0, n = regex.length(); i < n; i++) {
       if ("^$.[]{}()\\|?+*".indexOf(regex.charAt(i)) >= 0) {
-        try
-        {
+        try {
           return Pattern.compile(regex).tokenizer(this.toString()).split();
-        }
-        catch (totalcross.util.ElementNotFoundException e)
-        {
+        } catch (totalcross.util.ElementNotFoundException e) {
           return null;
         }
       }
@@ -638,8 +597,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @throws NullPointerException if data is null
    * @see #valueOf(char[], int, int)
    */
-  public static String4D valueOf(char[] data)
-  {
+  public static String4D valueOf(char[] data) {
     return valueOf(data, 0, data.length);
   }
 
@@ -657,8 +615,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
-  public static String4D valueOf(char[] data, int offset, int count)
-  {
+  public static String4D valueOf(char[] data, int offset, int count) {
     return new String4D(data, offset, count);
   }
 
@@ -669,8 +626,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @return true if the length of the string is zero.
    * @since 1.6
    */
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return chars.length == 0;
   }
 
@@ -682,7 +638,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    * @param replacement the sequence used as the replacement
    * @return the string constructed as above
    */
-  public String replace (CharSequence targetcs, CharSequence replacementcs) // NOTE: the original version uses CharSequence
+  public String replace(CharSequence targetcs, CharSequence replacementcs) // NOTE: the original version uses CharSequence
   {
     String target = targetcs.toString();
     String replacement = replacementcs.toString();
@@ -691,8 +647,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
 
     int startPos = this.toString().indexOf(target);
     StringBuilder result = new StringBuilder(this.toString());
-    while (startPos != -1)
-    {
+    while (startPos != -1) {
       // Replace the target with the replacement
       result.replace(startPos, startPos + targetLength, replacement);
 

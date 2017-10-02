@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 /*
@@ -48,8 +46,7 @@ package totalcross.io;
  *
  * @author Per Bothner
  */
-public class CRC32Stream extends Stream
-{
+public class CRC32Stream extends Stream {
   private Stream stream;
   private int crc;
 
@@ -57,14 +54,11 @@ public class CRC32Stream extends Stream
   public static int[] crcTable = make_crc_table();
 
   /** Make the table for a fast CRC. */
-  private static int[] make_crc_table()
-  {
+  private static int[] make_crc_table() {
     int[] crc_table = new int[256];
-    for (int n = 0; n < 256; n++)
-    {
+    for (int n = 0; n < 256; n++) {
       int c = n;
-      for (int k = 8; --k >= 0;)
-      {
+      for (int k = 8; --k >= 0;) {
         if ((c & 1) != 0) {
           c = 0xedb88320 ^ (c >>> 1);
         } else {
@@ -76,8 +70,7 @@ public class CRC32Stream extends Stream
     return crc_table;
   }
 
-  public CRC32Stream(Stream s)
-  {
+  public CRC32Stream(Stream s) {
     this.stream = s;
   }
 
@@ -86,31 +79,26 @@ public class CRC32Stream extends Stream
    * You can safely cast it to <code>int</code>, but then the value may be negative.
    * @return an unsigned crc value in the int range.
    */
-  public long getValue()
-  {
+  public long getValue() {
     return crc & 0xFFFFFFFFL;
   }
 
   /**
    * Resets the CRC32 data checksum so a new CRC32 can be computed.
    */
-  public void reset()
-  {
+  public void reset() {
     crc = 0;
   }
 
-
   /** This method does nothing. */
   @Override
-  public void close()
-  {
+  public void close() {
   }
 
   /** Updates the CRC32 with the values of the given buffer. */
-  public void update (byte[] buf, int off, int len)
-  {
+  public void update(byte[] buf, int off, int len) {
     int c = ~crc;
-    while (--len >= 0){
+    while (--len >= 0) {
       c = crcTable[(c ^ buf[off++]) & 0xff] ^ (c >>> 8);
     }
     crc = ~c;
@@ -126,13 +114,12 @@ public class CRC32Stream extends Stream
    * @throws totalcross.io.IOException
    */
   @Override
-  public int readBytes(byte[] buf, int start, int count) throws totalcross.io.IOException
-  {
+  public int readBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
     int n = stream.readBytes(buf, start, count);
     int[] crcs = crcTable;
     int c = ~crc;
     count = n;
-    while (--count >= 0){
+    while (--count >= 0) {
       c = crcs[(c ^ buf[start++]) & 0xff] ^ (c >>> 8);
     }
     crc = ~c;
@@ -147,13 +134,12 @@ public class CRC32Stream extends Stream
    * @throws totalcross.io.IOException 
    */
   @Override
-  public int writeBytes(byte[] buf, int start, int count) throws totalcross.io.IOException
-  {
+  public int writeBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
     int s = start;
     int n = count;
     int[] crcs = crcTable;
     int c = ~crc;
-    while (--count >= 0){
+    while (--count >= 0) {
       c = crcs[(c ^ buf[start++]) & 0xff] ^ (c >>> 8);
     }
     crc = ~c;

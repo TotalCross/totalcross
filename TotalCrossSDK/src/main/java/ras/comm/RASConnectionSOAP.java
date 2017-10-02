@@ -14,8 +14,7 @@ import totalcross.util.Hashtable;
 import totalcross.xml.soap.SOAP;
 import totalcross.xml.soap.SOAPException;
 
-public class RASConnectionSOAP extends RASConnection
-{
+public class RASConnectionSOAP extends RASConnection {
   private String uri = ActivationClient.defaultServerURI;
   private String namespace;
   private int openTimeout;
@@ -27,10 +26,8 @@ public class RASConnectionSOAP extends RASConnection
 
   private Hashtable userDefinedParams;
 
-  RASConnectionSOAP(int openTimeout, int readWriteTimeout) throws IOException
-  {
-    if (Settings.activationServerURI != null)
-    {
+  RASConnectionSOAP(int openTimeout, int readWriteTimeout) throws IOException {
+    if (Settings.activationServerURI != null) {
       this.uri = Settings.activationServerURI;
       this.namespace = Settings.activationServerNamespace;
       this.userDefinedParams = ActivationHtml.getUserDefinedParams();
@@ -55,26 +52,23 @@ public class RASConnectionSOAP extends RASConnection
   }
 
   @Override
-  public void sayHello() throws CommException
-  {
+  public void sayHello() throws CommException {
     Hello hello = new Hello(ActivationClient.version);
     helloHashCode = hello.getClass().getName().hashCode();
     version = hello.getVersion();
   }
 
   @Override
-  public void send(Packet packet) throws CommException
-  {
+  public void send(Packet packet) throws CommException {
     SOAP soap = new SOAP(packet.webServiceMethod, uri);
     soap.openTimeout = openTimeout;
     soap.readTimeout = readWriteTimeout;
     soap.writeTimeout = readWriteTimeout;
-    if (namespace != null){
+    if (namespace != null) {
       soap.namespace = namespace;
     }
 
-    try
-    {
+    try {
       ByteArrayStream bas = new ByteArrayStream(256);
       DataStream ds = new DataStream(bas, true);
 
@@ -86,32 +80,27 @@ public class RASConnectionSOAP extends RASConnection
       String encodedPacket = Base64.encode(bas.toByteArray());
       soap.setParam(encodedPacket, "request");
 
-      if (uri != ActivationClient.defaultServerURI && userDefinedParams != null)
-      {
+      if (uri != ActivationClient.defaultServerURI && userDefinedParams != null) {
         soap.setParam((String[]) userDefinedParams.getKeys().toObjectArray(), "keys");
         soap.setParam((String[]) userDefinedParams.getValues().toObjectArray(), "values");
       }
 
-      try
-      {
+      try {
         soap.execute();
-      }
-      catch (SOAPException firstException) // on wince, if the first execute fails, check for proxy configuration and try again.
+      } catch (SOAPException firstException) // on wince, if the first execute fails, check for proxy configuration and try again.
       {
         if (Settings.isWindowsCE()) //flsobral@tc126: check for proxy availability
         {
-          try
-          {
+          try {
             String workNetworkKey = "Comm\\ConnMgr\\Providers\\{EF097F4C-DC4B-4c98-8FF6-AEF805DC0E8E}\\HTTP-{18AD9FBD-F716-ACB6-FD8A-1965DB95B814}";
             int enabled = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "Enable");
             String destination = Registry.getString(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "DestId");
             String username = Registry.getString(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "Username");
             String proxy = Registry.getString(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "Proxy");
-            if (enabled == 1 && destination.equals("{436EF144-B4FB-4863-A041-8F905A62C572}"))
-            {
+            if (enabled == 1 && destination.equals("{436EF144-B4FB-4863-A041-8F905A62C572}")) {
               int portIdx = proxy.indexOf(':');
               int port = portIdx == -1 ? 80 : Convert.toInt(proxy.substring(portIdx + 1));
-              InputBox input = new InputBox("Proxy", "Proxy password for "+username, null);
+              InputBox input = new InputBox("Proxy", "Proxy password for " + username, null);
               input.getEdit().setMode(totalcross.ui.Edit.PASSWORD);
               input.popup();
               String password = input.getValue();
@@ -120,18 +109,14 @@ public class RASConnectionSOAP extends RASConnection
               }
             }
             soap.execute();
-          }
-          catch (Exception e2)
-          {
+          } catch (Exception e2) {
             throw firstException;
           }
         } else {
           throw firstException;
         }
-      }         
-    }
-    catch (Exception ex)
-    {
+      }
+    } catch (Exception ex) {
       ex.printStackTrace();
       throw new CommException("Cannot send packet", ex);
     }
@@ -149,18 +134,15 @@ public class RASConnectionSOAP extends RASConnection
       } else {
         encodedResponse = result[1];
       }
-    }
-    else
-    {
+    } else {
       if (answer instanceof String) {
         encodedResponse = (String) answer;
-      } 
+      }
     }
   }
 
   @Override
-  public Packet receive() throws CommException
-  {
+  public Packet receive() throws CommException {
     byte[] decodedResponse = Base64.decode(encodedResponse);
     ByteArrayStream bas = new ByteArrayStream(decodedResponse);
 
@@ -170,8 +152,7 @@ public class RASConnectionSOAP extends RASConnection
 
     // Receive packet
     DataStream ds = new DataStream(bas);
-    try
-    {
+    try {
       id = ds.readInt();
       packetClass = (Class<?>) Packet.packetClasses.get(id);
       if (packetClass == null) {
@@ -179,9 +160,7 @@ public class RASConnectionSOAP extends RASConnection
       }
       packet = (Packet) packetClass.newInstance();
       packet.read(ds);
-    }
-    catch (Exception ex)
-    {
+    } catch (Exception ex) {
       ex.printStackTrace();
       throw new CommException("Cannot receive packet", ex);
     }

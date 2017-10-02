@@ -14,8 +14,7 @@ import totalcross.sys.Vm;
  * The initial handshake on this connection is initiated by calling startHandshake which explicitly begins handshakes.
  * If handshaking fails for any reason, the SSLSocket is closed, and no further communications can be done.
  */
-public class SSLSocket extends Socket
-{
+public class SSLSocket extends Socket {
   private SSLClient sslClient;
   private SSL sslConnection;
   private SSLReadHolder sslReader;
@@ -36,8 +35,7 @@ public class SSLSocket extends Socket
    * @throws IOException
    *            if an I/O error occurs when creating the socket
    */
-  public SSLSocket(String host, int port, int timeout) throws UnknownHostException, IOException
-  {
+  public SSLSocket(String host, int port, int timeout) throws UnknownHostException, IOException {
     super(host, port, timeout);
   }
 
@@ -49,8 +47,7 @@ public class SSLSocket extends Socket
    * @return a SSLClient initialized with the objects required to perform the validation for this socket.
    * @throws CryptoException
    */
-  protected SSLClient prepareContext() throws CryptoException
-  {
+  protected SSLClient prepareContext() throws CryptoException {
     return new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
   }
 
@@ -60,10 +57,8 @@ public class SSLSocket extends Socket
    * @throws IOException
    *            on a network level error
    */
-  public void startHandshake() throws IOException
-  {
-    try
-    {
+  public void startHandshake() throws IOException {
+    try {
       sslClient = prepareContext();
       sslConnection = sslClient.connect(this, null);
       Exception e = sslConnection.getLastException();
@@ -71,7 +66,8 @@ public class SSLSocket extends Socket
         throw new IOException(e.getMessage());
       }
       int status;
-      for (int elapsedTime = 0 ; (status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS && elapsedTime < super.readTimeout ; elapsedTime += 25) {
+      for (int elapsedTime = 0; (status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS
+          && elapsedTime < super.readTimeout; elapsedTime += 25) {
         Vm.sleep(25);
       }
       if (status != Constants.SSL_OK) {
@@ -80,15 +76,10 @@ public class SSLSocket extends Socket
       sslReader = new SSLReadHolder();
       buffer = new ByteArrayStream(256);
       buffer.mark();
-    }
-    catch (Exception e)
-    {
-      try
-      {
+    } catch (Exception e) {
+      try {
         this.close();
-      }
-      catch (IOException e2)
-      {
+      } catch (IOException e2) {
       }
       if (e instanceof IOException) {
         throw (IOException) e;
@@ -98,13 +89,11 @@ public class SSLSocket extends Socket
   }
 
   @Override
-  public int readBytes(byte[] buf, int start, int count) throws IOException
-  {
-    if (buffer == null){
+  public int readBytes(byte[] buf, int start, int count) throws IOException {
+    if (buffer == null) {
       return super.readBytes(buf, start, count);
     }
-    if (buffer.available() == 0)
-    {
+    if (buffer.available() == 0) {
       int sslReadBytes = sslConnection.read(sslReader);
       buffer.reuse();
       if (sslReadBytes > 0) {
@@ -118,19 +107,16 @@ public class SSLSocket extends Socket
   }
 
   @Override
-  public int readBytes(byte[] buf) throws IOException
-  {
+  public int readBytes(byte[] buf) throws IOException {
     return this.readBytes(buf, 0, buf.length);
   }
 
   @Override
-  public int writeBytes(byte[] buf, int start, int count) throws IOException
-  {
-    if (buffer == null){
+  public int writeBytes(byte[] buf, int start, int count) throws IOException {
+    if (buffer == null) {
       return super.writeBytes(buf, start, count);
     }
-    if (start > 0)
-    {
+    if (start > 0) {
       byte[] buf2 = new byte[count];
       Vm.arrayCopy(buf, start, buf2, 0, count);
       buf = buf2;
@@ -139,15 +125,14 @@ public class SSLSocket extends Socket
   }
 
   @Override
-  public void close() throws IOException
-  {
-    if (buffer != null){
+  public void close() throws IOException {
+    if (buffer != null) {
       buffer = null;
     }
-    if (sslConnection != null){
+    if (sslConnection != null) {
       sslConnection.dispose();
     }
-    if (sslClient != null){
+    if (sslClient != null) {
       sslClient.dispose();
     }
     super.close();

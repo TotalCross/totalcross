@@ -88,7 +88,8 @@ public final class IOUtils {
    * @throws NullPointerException if the input or output is null
    * @throws IOException          if an I/O error occurs
    */
-  public static long copyLarge(final InputStream input, final OutputStream output, final long inputOffset, final long length) throws IOException {
+  public static long copyLarge(final InputStream input, final OutputStream output, final long inputOffset,
+      final long length) throws IOException {
     return copyLarge(input, output, inputOffset, length, new byte[DEFAULT_BUFFER_SIZE]);
   }
 
@@ -126,7 +127,8 @@ public final class IOUtils {
    * @throws NullPointerException if the input or output is null
    * @throws IOException          if an I/O error occurs
    */
-  public static long copyLarge(final InputStream input, final OutputStream output, final byte[] buffer) throws IOException {
+  public static long copyLarge(final InputStream input, final OutputStream output, final byte[] buffer)
+      throws IOException {
     long count = 0;
     int n;
     while (EOF != (n = input.read(buffer))) {
@@ -159,7 +161,8 @@ public final class IOUtils {
    * @throws NullPointerException if the input or output is null
    * @throws IOException          if an I/O error occurs
    */
-  public static long copyLarge(final InputStream input, final OutputStream output, final long inputOffset, final long length, final byte[] buffer) throws IOException {
+  public static long copyLarge(final InputStream input, final OutputStream output, final long inputOffset,
+      final long length, final byte[] buffer) throws IOException {
     if (inputOffset > 0) {
       skipFully(input, inputOffset);
     }

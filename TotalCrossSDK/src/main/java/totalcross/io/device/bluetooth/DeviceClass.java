@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 /**
@@ -70,8 +68,7 @@ package totalcross.io.device.bluetooth;
  * 
  * @since TotalCross 1.2
  */
-public class DeviceClass
-{
+public class DeviceClass {
   /** record of this class of device. */
   private int record;
 
@@ -90,9 +87,8 @@ public class DeviceClass
    *            if record has any bits between 24 and 31 set
    * @since TotalCross 1.2
    */
-  public DeviceClass(int record) throws IllegalArgumentException
-  {
-    if ((record & 0xFF000000) != 0){
+  public DeviceClass(int record) throws IllegalArgumentException {
+    if ((record & 0xFF000000) != 0) {
       throw new IllegalArgumentException();
     }
     this.record = record;
@@ -104,8 +100,7 @@ public class DeviceClass
    * @return the major device class
    * @since TotalCross 1.2
    */
-  public int getMajorDeviceClass()
-  {
+  public int getMajorDeviceClass() {
     return record & MAJOR_DEVICE_CLASS_MASK;
   }
 
@@ -115,8 +110,7 @@ public class DeviceClass
    * @return the minor device class
    * @since TotalCross 1.2
    */
-  public int getMinorDeviceClass()
-  {
+  public int getMinorDeviceClass() {
     return record & MINOR_DEVICE_CLASS_MASK;
   }
 
@@ -127,8 +121,7 @@ public class DeviceClass
    * @return the major service classes
    * @since TotalCross 1.2
    */
-  public int getServiceClasses()
-  {
+  public int getServiceClasses() {
     return record & SERVICE_CLASS_MASK;
   }
 }

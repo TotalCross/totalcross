@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.html;
 
 import totalcross.sys.SpecialKeys;
@@ -38,8 +36,7 @@ import totalcross.ui.event.KeyEvent;
  * @see totalcross.ui.UIColors#htmlContainerControlsFore
  * @see totalcross.ui.UIColors#htmlContainerControlsBack
  */
-public class HtmlContainer extends Container
-{
+public class HtmlContainer extends Container {
   protected Document doc;
 
   public String pressedLink;
@@ -47,13 +44,11 @@ public class HtmlContainer extends Container
   /**
    * Constructor
    */
-  public HtmlContainer()
-  {
+  public HtmlContainer() {
     this.focusTraversable = true; // kmeehl@tc100
   }
 
-  public Document getDocument()
-  {
+  public Document getDocument() {
     return doc;
   }
 
@@ -61,16 +56,14 @@ public class HtmlContainer extends Container
    * Sets the document to be displayed in this HtmlContainer.
    * @param doc document to be rendered.
    */
-  public void setDocument(Document doc)
-  {
+  public void setDocument(Document doc) {
     this.doc = doc;
     this.backColor = doc.getBackColor(); //flsobral@tc126_36: added support to bgcolor attribute in body tag.
     removeAll();
-    add(doc,LEFT,TOP,FILL,FILL);
+    add(doc, LEFT, TOP, FILL, FILL);
   }
 
-  static HtmlContainer getHtmlContainer(Control c)
-  {
+  static HtmlContainer getHtmlContainer(Control c) {
     for (Control control = c.getParent(); control != null; control = control.getParent()) {
       if (control instanceof HtmlContainer) {
         return (HtmlContainer) control;
@@ -79,41 +72,33 @@ public class HtmlContainer extends Container
     return null;
   }
 
-  void postLinkEvent(String link)
-  {
+  void postLinkEvent(String link) {
     pressedLink = link;
     postEvent(new ControlEvent(ControlEvent.PRESSED, this));
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == KeyEvent.SPECIAL_KEY_PRESS && e.target == this)
-    {
-      KeyEvent ke = (KeyEvent)e;
+  public void onEvent(Event e) {
+    if (e.type == KeyEvent.SPECIAL_KEY_PRESS && e.target == this) {
+      KeyEvent ke = (KeyEvent) e;
       if (ke.isActionKey()) {
         setHighlighting();
-      } else
-        if (ke.key == SpecialKeys.RIGHT) {
-          doc.scroll(RIGHT);
-        } else
-          if (ke.key == SpecialKeys.LEFT) {
-            doc.scroll(LEFT);
-          } else
-            if (ke.isUpKey()) {
-              doc.scroll(TOP);
-            } else
-              if (ke.isDownKey()) {
-                doc.scroll(BOTTOM);
-              }         
+      } else if (ke.key == SpecialKeys.RIGHT) {
+        doc.scroll(RIGHT);
+      } else if (ke.key == SpecialKeys.LEFT) {
+        doc.scroll(LEFT);
+      } else if (ke.isUpKey()) {
+        doc.scroll(TOP);
+      } else if (ke.isDownKey()) {
+        doc.scroll(BOTTOM);
+      }
     }
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     super.reposition(false);
-    if (doc != null){
+    if (doc != null) {
       doc.reposition();
     }
   }
@@ -123,7 +108,7 @@ public class HtmlContainer extends Container
    */
   public void resetWith(String url) // guich@tc114_28
   {
-    if (doc != null){
+    if (doc != null) {
       doc.resetWith(url);
     }
   }

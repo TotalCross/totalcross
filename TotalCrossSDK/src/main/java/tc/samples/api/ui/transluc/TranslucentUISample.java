@@ -18,11 +18,9 @@ package tc.samples.api.ui.transluc;
 
 import tc.samples.api.BaseContainer;
 
-public class TranslucentUISample extends BaseContainer
-{
+public class TranslucentUISample extends BaseContainer {
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     new MenuScreen(this).show();
-  }  
+  }
 }

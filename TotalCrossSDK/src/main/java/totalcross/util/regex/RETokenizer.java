@@ -59,112 +59,110 @@ public class RETokenizer {
   private boolean checked;
   private boolean hasToken;
   private String token;
-  private boolean endReached=false;
-  private boolean emptyTokensEnabnled=false;
+  private boolean endReached = false;
+  private boolean emptyTokensEnabnled = false;
 
-  public RETokenizer(Pattern pattern,String text){
-    this(pattern.matcher(text),false);
+  public RETokenizer(Pattern pattern, String text) {
+    this(pattern.matcher(text), false);
   }
 
-  public RETokenizer(Pattern pattern,char[] chars,int off,int len){
-    this(pattern.matcher(chars,off,len),false);
+  public RETokenizer(Pattern pattern, char[] chars, int off, int len) {
+    this(pattern.matcher(chars, off, len), false);
   }
 
-  public RETokenizer(Pattern pattern,CharStream r,int len) throws IOException{
-    this(pattern.matcher(r,len),false);
+  public RETokenizer(Pattern pattern, CharStream r, int len) throws IOException {
+    this(pattern.matcher(r, len), false);
   }
 
-  public RETokenizer(Matcher m, boolean emptyEnabled){
-    matcher=m;
-    emptyTokensEnabnled=emptyEnabled;
+  public RETokenizer(Matcher m, boolean emptyEnabled) {
+    matcher = m;
+    emptyTokensEnabnled = emptyEnabled;
   }
 
-  public void setEmptyEnabled(boolean b){
-    emptyTokensEnabnled=b;
+  public void setEmptyEnabled(boolean b) {
+    emptyTokensEnabnled = b;
   }
 
-  public boolean isEmptyEnabled(){
+  public boolean isEmptyEnabled() {
     return emptyTokensEnabnled;
   }
 
-  public boolean hasMore(){
-    if(!checked){
+  public boolean hasMore() {
+    if (!checked) {
       check();
     }
     return hasToken;
   }
 
-  public String nextToken() throws ElementNotFoundException{
-    if(!checked){
+  public String nextToken() throws ElementNotFoundException {
+    if (!checked) {
       check();
     }
-    if(!hasToken){
+    if (!hasToken) {
       throw new ElementNotFoundException("");
     }
-    checked=false;
+    checked = false;
     return token;
   }
 
-  public String[] split() throws ElementNotFoundException{
+  public String[] split() throws ElementNotFoundException {
     return collect(this);
   }
 
-  public void reset(){
+  public void reset() {
     matcher.setPosition(0);
   }
 
-  private static final String[] collect(RETokenizer tok) throws ElementNotFoundException{
+  private static final String[] collect(RETokenizer tok) throws ElementNotFoundException {
     java.util.ArrayList<String> ll = new java.util.ArrayList<String>(50);//<String> ll = new java.util.LinkedList<String>();
-    while (tok.hasMore()){
+    while (tok.hasMore()) {
       ll.add(tok.nextToken());
     }
-    return (String[])ll.toArray(new String[ll.size()]);
+    return (String[]) ll.toArray(new String[ll.size()]);
   }
 
-  private void check(){
-    final boolean emptyOk=this.emptyTokensEnabnled;
-    checked=true;
-    if(endReached){
-      hasToken=false;
+  private void check() {
+    final boolean emptyOk = this.emptyTokensEnabnled;
+    checked = true;
+    if (endReached) {
+      hasToken = false;
       return;
     }
-    Matcher m=matcher;
-    boolean hasMatch=false;
-    while(m.find()){
-      if(m.start()>0){
-        hasMatch=true;
+    Matcher m = matcher;
+    boolean hasMatch = false;
+    while (m.find()) {
+      if (m.start() > 0) {
+        hasMatch = true;
         break;
-      }
-      else if(m.end()>0){
-        if(emptyOk){
-          hasMatch=true;
+      } else if (m.end() > 0) {
+        if (emptyOk) {
+          hasMatch = true;
           break;
         } else {
-          m.setTarget(m,MatchResult.SUFFIX);
+          m.setTarget(m, MatchResult.SUFFIX);
         }
       }
     }
-    if(!hasMatch){
-      endReached=true;
-      if(m.length(MatchResult.TARGET)==0 && !emptyOk){
-        hasToken=false;
-      }
-      else{
-        hasToken=true;
-        token=m.target();
+    if (!hasMatch) {
+      endReached = true;
+      if (m.length(MatchResult.TARGET) == 0 && !emptyOk) {
+        hasToken = false;
+      } else {
+        hasToken = true;
+        token = m.target();
       }
       return;
     }
     //System.out.println(m.target()+": "+m.groupv());
     //System.out.println("prefix: "+m.prefix());
     //System.out.println("suffix: "+m.suffix());
-    hasToken=true;
-    token=m.prefix();
-    m.setTarget(m,MatchResult.SUFFIX);
+    hasToken = true;
+    token = m.prefix();
+    m.setTarget(m, MatchResult.SUFFIX);
     //m.setTarget(m.suffix());
   }
 
-  public boolean hasMoreElements(){
+  public boolean hasMoreElements() {
     return hasMore();
   }
 
@@ -172,7 +170,7 @@ public class RETokenizer {
    * @return a next token as a String
    * @throws ElementNotFoundException 
    */
-  public Object nextElement() throws ElementNotFoundException{
+  public Object nextElement() throws ElementNotFoundException {
     return nextToken();
   }
 

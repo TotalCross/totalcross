@@ -427,11 +427,11 @@ public class Zipper extends JSONzip {
           one();
           if (longer < int7) {
             zero();
-            write((int)(longer - int4), 7);
+            write((int) (longer - int4), 7);
             return;
           }
           one();
-          write((int)(longer - int7), 14);
+          write((int) (longer - int7), 14);
           return;
         }
       }

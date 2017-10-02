@@ -106,8 +106,7 @@ import totalcross.util.Vector;
     6. Sign the APK.
  */
 
-public class Deployer4Android
-{
+public class Deployer4Android {
   private static final boolean DEBUG = false;
   private static String targetDir, sourcePackage, targetPackage, targetTCZ, jarOut, fileName;
   private String tcFolder;
@@ -115,91 +114,84 @@ public class Deployer4Android
 
   byte[] buf = new byte[8192];
 
-  public Deployer4Android() throws Exception
-  {
-    targetDir = DeploySettings.targetDir+"android/";
+  public Deployer4Android() throws Exception {
+    targetDir = DeploySettings.targetDir + "android/";
     fileName = DeploySettings.filePrefix;
-    if (fileName.indexOf(' ') >= 0){
-      fileName = fileName.replace(" ","");
+    if (fileName.indexOf(' ') >= 0) {
+      fileName = fileName.replace(" ", "");
     }
     // create the output folder
     File f = new File(targetDir);
-    if (!f.exists()){
+    if (!f.exists()) {
       f.mkdirs();
     }
     singleApk = DeploySettings.packageVM;
-    if (!singleApk)
-    {
-      targetPackage = "totalcross/app/"+fileName.toLowerCase();
+    if (!singleApk) {
+      targetPackage = "totalcross/app/" + fileName.toLowerCase();
       if (!DeploySettings.quiet) {
-        System.out.println("Android application folder: /data/data/"+(targetPackage.replace('/','.')));
+        System.out.println("Android application folder: /data/data/" + (targetPackage.replace('/', '.')));
       }
-    }
-    else
-    {
-      tcFolder = DeploySettings.folderTotalCross3DistVM+"android/";
+    } else {
+      tcFolder = DeploySettings.folderTotalCross3DistVM + "android/";
       // source and target packages must have the exact length
       sourcePackage = "totalcross/android";
-      targetTCZ = "app"+DeploySettings.applicationId.toLowerCase();
-      targetPackage = "totalcross/"+targetTCZ;
-      System.out.println("Android application folder: /data/data/"+(targetPackage.replace('/','.')));
+      targetTCZ = "app" + DeploySettings.applicationId.toLowerCase();
+      targetPackage = "totalcross/" + targetTCZ;
+      System.out.println("Android application folder: /data/data/" + (targetPackage.replace('/', '.')));
     }
 
-    if (!singleApk)
-    {
-      createLauncher();  // 1
-      jar2dex();         // 2
+    if (!singleApk) {
+      createLauncher(); // 1
+      jar2dex(); // 2
     }
     updateResources(); // 3+4+5
-    Utils.jarSigner(fileName+".apk", targetDir);         // 6
-    new ZipAlign().zipAlign(new File(targetDir+"/"+fileName+".apk"),new File(targetDir+"/"+fileName+"_.apk"));
-    String apk = targetDir+"/"+fileName+".apk";
-    Utils.copyFile(targetDir+"/"+fileName+"_.apk",apk,true); 
+    Utils.jarSigner(fileName + ".apk", targetDir); // 6
+    new ZipAlign().zipAlign(new File(targetDir + "/" + fileName + ".apk"),
+        new File(targetDir + "/" + fileName + "_.apk"));
+    String apk = targetDir + "/" + fileName + ".apk";
+    Utils.copyFile(targetDir + "/" + fileName + "_.apk", apk, true);
 
     String extraMsg = "";
-    if (DeploySettings.installPlatforms.indexOf("android,") >= 0){
+    if (DeploySettings.installPlatforms.indexOf("android,") >= 0) {
       extraMsg = callADB(apk);
     }
 
-    System.out.println("... Files written to folder "+targetDir+extraMsg);
+    System.out.println("... Files written to folder " + targetDir + extraMsg);
 
   }
 
-  private String callADB(String apk) throws Exception
-  {
-    String adb = Utils.findPath(DeploySettings.etcDir+"tools/android/adb.exe",false);
-    if (adb == null){
+  private String callADB(String apk) throws Exception {
+    String adb = Utils.findPath(DeploySettings.etcDir + "tools/android/adb.exe", false);
+    if (adb == null) {
       throw new DeployerException("File android/adb.exe not found!");
     }
-    String message = Utils.exec(new String[]{adb,"install","-r",apk},targetDir);
-    if (message != null && message.indexOf("INPUT:Success") >= 0){
+    String message = Utils.exec(new String[] { adb, "install", "-r", apk }, targetDir);
+    if (message != null && message.indexOf("INPUT:Success") >= 0) {
       return " (installed)";
     }
     System.out.println(message);
     return " (error on installl)";
   }
 
-  private void createLauncher() throws Exception
-  {
-    String jarIn = Utils.findPath(DeploySettings.etcDir+"launchers/android/Launcher.jar",false);
-    if (jarIn == null){
+  private void createLauncher() throws Exception {
+    String jarIn = Utils.findPath(DeploySettings.etcDir + "launchers/android/Launcher.jar", false);
+    if (jarIn == null) {
       throw new DeployerException("File android/Launcher.jar not found!");
     }
-    jarOut = targetDir+fileName+".jar";
+    jarOut = targetDir + fileName + ".jar";
 
     ZipFile zipf = new ZipFile(jarIn);
     ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(jarOut));
 
-    for (ZipEntry ze: zipf)
-    {
+    for (ZipEntry ze : zipf) {
       String name = convertName(ze.getName());
       if (DEBUG) {
-        System.out.println("=== Entry: "+name);
+        System.out.println("=== Entry: " + name);
       }
       InputStream zis = zipf.getInputStream(ze);
       zos.putNextEntry(new ZipEntry(name));
       if (name.endsWith(".class")) {
-        convertConstantPool(zis,zos);
+        convertConstantPool(zis, zos);
       }
       zos.closeEntry();
       zis.close();
@@ -209,110 +201,92 @@ public class Deployer4Android
     zos.close();
   }
 
-  private void jar2dex() throws Exception
-  {
+  private void jar2dex() throws Exception {
     // java -classpath P:\TotalCross3\etc\tools\android\dx.jar com.android.dx.command.Main --dex --output=classes.dex UIGadgets.jar
-    String dxjar = Utils.findPath(DeploySettings.etcDir+"tools/android/dx.jar",false);
-    if (dxjar == null){
+    String dxjar = Utils.findPath(DeploySettings.etcDir + "tools/android/dx.jar", false);
+    if (dxjar == null) {
       throw new DeployerException("File android/dx.jar not found!");
     }
     String javaExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("java"));
-    String []cmd = {javaExe,"-classpath",DeploySettings.pathAddQuotes(dxjar),"com.android.dx.command.Main","--dex","--output=classes.dex",new File(jarOut).getAbsolutePath()}; // guich@tc124_3: use the absolute path for the file
+    String[] cmd = { javaExe, "-classpath", DeploySettings.pathAddQuotes(dxjar), "com.android.dx.command.Main", "--dex",
+        "--output=classes.dex", new File(jarOut).getAbsolutePath() }; // guich@tc124_3: use the absolute path for the file
     String out = Utils.exec(cmd, targetDir);
-    if (!new File(targetDir+"classes.dex").exists()){
-      throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+Utils.toString(cmd)+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
+    if (!new File(targetDir + "classes.dex").exists()) {
+      throw new DeployerException(
+          "An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"
+              + Utils.toString(cmd) + "' at the folder '" + targetDir + "'\nThe output of the command is " + out);
     }
     new File(jarOut).delete(); // delete the jar
   }
 
-  private void updateResources() throws Exception
-  {
-    String ap = Utils.findPath(DeploySettings.etcDir+"launchers/android/resources.ap_",false);
-    if (ap == null){
+  private void updateResources() throws Exception {
+    String ap = Utils.findPath(DeploySettings.etcDir + "launchers/android/resources.ap_", false);
+    if (ap == null) {
       throw new DeployerException("File android/resources.ap_ not found!");
     }
-    String apk = targetDir+fileName+".apk";
+    String apk = targetDir + fileName + ".apk";
     ZipFile inf = new ZipFile(ap);
     ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
 
     // search the input zip file, convert and write each entry to the output zip file
-    for (ZipEntry ze: inf)
-    {
+    for (ZipEntry ze : inf) {
       ZipEntry ze2;
       String name = ze.getName();
 
       // keep all the metadata if possible
-      if (ze.getMethod() != ZipEntry.STORED)
-      {
+      if (ze.getMethod() != ZipEntry.STORED) {
         ze2 = ze;
         // little trick to make the entry reusable
         ze2.setCompressedSize(-1);
-      }
-      else
-      {
+      } else {
         // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
         ze2 = new ZipEntry(ze.getName());
       }
       InputStream zis = inf.getInputStream(ze2);
-      if (name.indexOf("tcfiles.zip") >= 0)
-      {
+      if (name.indexOf("tcfiles.zip") >= 0) {
         insertTCFiles_zip(ze2, zos);
-      }
-      else
-        if (name.indexOf("resources.arsc") >= 0)
+      } else if (name.indexOf("resources.arsc") >= 0) {
+        zos.putNextEntry(ze2);
+        insertResources_arsc(zis, zos);
+      } else if (name.indexOf("icon.png") >= 0) {
+        zos.putNextEntry(ze2);
+        insertIcon_png(zos, name);
+      } else if (name.indexOf("AndroidManifest.xml") >= 0) {
+        zos.putNextEntry(ze2);
+        insertAndroidManifest_xml(zis, zos);
+      } else if (singleApk) {
+        byte[] bytes = Utils.readJavaInputStream(zis);
+        if (name.endsWith(".ogg")) // for zxing beep.ogg file 
         {
-          zos.putNextEntry(ze2);
-          insertResources_arsc(zis, zos);
+          setEntryAsStored(ze2, bytes);
         }
-        else
-          if (name.indexOf("icon.png") >= 0)
-          {
-            zos.putNextEntry(ze2);
-            insertIcon_png(zos, name);
-          }
-          else
-            if (name.indexOf("AndroidManifest.xml") >= 0)
-            {
-              zos.putNextEntry(ze2);
-              insertAndroidManifest_xml(zis,zos);
-            }
-            else if (singleApk)
-            {
-              byte[] bytes = Utils.readJavaInputStream(zis);
-              if (name.endsWith(".ogg")) // for zxing beep.ogg file 
-              {
-                setEntryAsStored(ze2, bytes);
-              }
-              zos.putNextEntry(ze2);
-              zos.write(bytes,0,bytes.length);
-            }
+        zos.putNextEntry(ze2);
+        zos.write(bytes, 0, bytes.length);
+      }
       zos.closeEntry();
       zis.close();
     }
-    if (singleApk)
-    {
-      processClassesDexes(tcFolder+"TotalCross.apk", zos);
-      copyZipEntries(tcFolder+"TotalCross.apk", "res", zos);
-    }
-    else
-    {
+    if (singleApk) {
+      processClassesDexes(tcFolder + "TotalCross.apk", zos);
+      copyZipEntries(tcFolder + "TotalCross.apk", "res", zos);
+    } else {
       // add classes.dex
       zos.putNextEntry(new ZipEntry("classes.dex"));
-      totalcross.io.File f = new totalcross.io.File(targetDir+"classes.dex",totalcross.io.File.READ_WRITE);
+      totalcross.io.File f = new totalcross.io.File(targetDir + "classes.dex", totalcross.io.File.READ_WRITE);
       int n;
-      while ((n=f.readBytes(buf,0,buf.length)) > 0) {
+      while ((n = f.readBytes(buf, 0, buf.length)) > 0) {
         zos.write(buf, 0, n);
       }
       zos.closeEntry();
       f.delete(); // delete original file
     }
     try {
-      String google_services_json_path = Utils.findPath("google-services.json",true);
+      String google_services_json_path = Utils.findPath("google-services.json", true);
 
       if (google_services_json_path == null) {
         throw new FileNotFoundException("can't find google-services.json in TotalCross deploy path");
       }
-      File google_services_json_file = new File(Utils.findPath("google-services.json",true));
+      File google_services_json_file = new File(Utils.findPath("google-services.json", true));
 
       FileInputStream jsonStream = new FileInputStream(google_services_json_file);
       zos.putNextEntry(new ZipEntry("assets/google-services.json"));
@@ -324,8 +298,8 @@ public class Deployer4Android
       System.out.println("Could not find 'google-services.json', thus Firebase will be ignored further on");
     }
     // include the vm and litebase
-    if (tcFolder != null){
-      copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
+    if (tcFolder != null) {
+      copyZipEntry(tcFolder + "TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
     }
 
     zos.close();
@@ -346,7 +320,7 @@ public class Deployer4Android
 
   private void copyZipEntries(String srcZip, String initPath, ZipOutputStream zos) throws IOException {
     ZipFile zipf = new ZipFile(srcZip);
-    for (ZipEntry zEntry: zipf) {
+    for (ZipEntry zEntry : zipf) {
       String zentryName = zEntry.getName();
       InputStream zIn = zipf.getInputStream(zEntry);
       if (zentryName.endsWith("/") || zentryName.endsWith("\\") || zentryName.indexOf("icon.png") >= 0) {
@@ -363,73 +337,62 @@ public class Deployer4Android
   }
 
   // http://strazzere.com/blog/?p=3
-  private static void calcSignature(byte bytes[]) 
-  { 
-    java.security.MessageDigest md; 
-    try 
-    { 
-      md = java.security.MessageDigest.getInstance("SHA-1"); 
-    } 
-    catch(java.security.NoSuchAlgorithmException ex) 
-    { 
-      throw new RuntimeException(ex); 
-    } 
-    md.update(bytes, 32, bytes.length - 32); 
-    try 
-    { 
-      int amt = md.digest(bytes, 12, 20); 
+  private static void calcSignature(byte bytes[]) {
+    java.security.MessageDigest md;
+    try {
+      md = java.security.MessageDigest.getInstance("SHA-1");
+    } catch (java.security.NoSuchAlgorithmException ex) {
+      throw new RuntimeException(ex);
+    }
+    md.update(bytes, 32, bytes.length - 32);
+    try {
+      int amt = md.digest(bytes, 12, 20);
       if (amt != 20) {
-        throw new RuntimeException((new StringBuilder()).append("unexpected digest write:").append(amt).append("bytes").toString());
-      } 
-    } 
-    catch(java.security.DigestException ex) 
-    { 
-      throw new RuntimeException(ex); 
-    } 
-  } 
+        throw new RuntimeException(
+            (new StringBuilder()).append("unexpected digest write:").append(amt).append("bytes").toString());
+      }
+    } catch (java.security.DigestException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
 
-  private static void calcChecksum(byte bytes[]) 
-  { 
-    Adler32 a32 = new Adler32(); 
-    a32.update(bytes, 12, bytes.length - 12); 
-    int sum = (int)a32.getValue(); 
-    bytes[8] = (byte)sum; 
-    bytes[9] = (byte)(sum >> 8); 
-    bytes[10] = (byte)(sum >> 16); 
-    bytes[11] = (byte)(sum >> 24); 
-  }  
+  private static void calcChecksum(byte bytes[]) {
+    Adler32 a32 = new Adler32();
+    a32.update(bytes, 12, bytes.length - 12);
+    int sum = (int) a32.getValue();
+    bytes[8] = (byte) sum;
+    bytes[9] = (byte) (sum >> 8);
+    bytes[10] = (byte) (sum >> 16);
+    bytes[11] = (byte) (sum >> 24);
+  }
 
-  private void processClassesDex(String srcZip, ZipEntry dexEntry, ZipOutputStream dstZip) throws Exception
-  {
+  private void processClassesDex(String srcZip, ZipEntry dexEntry, ZipOutputStream dstZip) throws Exception {
     String fileName = dexEntry.getName();
     dstZip.putNextEntry(new ZipEntry(fileName));
-    byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
+    byte[] bytes = Utils.loadZipEntry(srcZip, fileName);
 
     replaceBytes(bytes, sourcePackage.getBytes(), targetPackage.getBytes());
-    if (DeploySettings.autoStart || DeploySettings.isService)
-    {
+    if (DeploySettings.autoStart || DeploySettings.isService) {
       System.out.println("Is service.");
-      replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, DeploySettings.isService ? new byte[]{1,0,0,0} : new byte[]{0,0,0,0});
+      replaceBytes(bytes, new byte[] { (byte) 0x71, (byte) 0xC3, (byte) 0x5B, (byte) 0x07 },
+          DeploySettings.isService ? new byte[] { 1, 0, 0, 0 } : new byte[] { 0, 0, 0, 0 });
     }
     calcSignature(bytes);
     calcChecksum(bytes);
-    dstZip.write(bytes,0,bytes.length);
+    dstZip.write(bytes, 0, bytes.length);
     dstZip.closeEntry();
   }
 
-  private void replaceBytes(byte[] bytes, byte[] fromBytes, byte[] toBytes)
-  {
-    int ofs=0;
-    while ((ofs = Utils.indexOf(bytes, fromBytes, false, ofs)) != -1)
-    {
+  private void replaceBytes(byte[] bytes, byte[] fromBytes, byte[] toBytes) {
+    int ofs = 0;
+    while ((ofs = Utils.indexOf(bytes, fromBytes, false, ofs)) != -1) {
       totalcross.sys.Vm.arrayCopy(toBytes, 0, bytes, ofs, toBytes.length);
       ofs += toBytes.length;
     }
   }
 
-  private void copyZipEntry(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
-  {
-    byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
+  private void copyZipEntry(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception {
+    byte[] bytes = Utils.loadZipEntry(srcZip, fileName);
     ZipEntry ze = new ZipEntry(fileName);
 
     copyEntryBytes(ze, bytes, dstZip);
@@ -444,42 +407,36 @@ public class Deployer4Android
     }
 
     dstZip.putNextEntry(ze);
-    dstZip.write(bytes,0,bytes.length);
+    dstZip.write(bytes, 0, bytes.length);
   }
 
-  private void insertIcon_png(ZipOutputStream zos, String name) throws Exception
-  {
-    if (DeploySettings.bitmaps != null)
-    {
+  private void insertIcon_png(ZipOutputStream zos, String name) throws Exception {
+    if (DeploySettings.bitmaps != null) {
       int res;
       if (name.startsWith("res/drawable-xhdpi") && name.endsWith("icon.png")) {
         res = 96;
-      } else
-        if (name.startsWith("res/drawable-xxhdpi") && name.endsWith("icon.png")) {
-          res = 144;
-        } else
-          if (name.startsWith("res/drawable-xxxhdpi") && name.endsWith("icon.png")) {
-            res = 192;
-          } else {
-            res = 72;
-          }
-      DeploySettings.bitmaps.saveAndroidIcon(zos,res); // libraries don't have icons
+      } else if (name.startsWith("res/drawable-xxhdpi") && name.endsWith("icon.png")) {
+        res = 144;
+      } else if (name.startsWith("res/drawable-xxxhdpi") && name.endsWith("icon.png")) {
+        res = 192;
+      } else {
+        res = 72;
+      }
+      DeploySettings.bitmaps.saveAndroidIcon(zos, res); // libraries don't have icons
     }
   }
 
-  private totalcross.io.ByteArrayStream readInputStream(java.io.InputStream is)
-  {
+  private totalcross.io.ByteArrayStream readInputStream(java.io.InputStream is) {
     totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(2048);
     int len;
-    while (true)
-    {
-      try
-      {
+    while (true) {
+      try {
         len = is.read(buf);
+      } catch (java.io.IOException e) {
+        break;
       }
-      catch (java.io.IOException e) {break;}
       if (len > 0) {
-        bas.writeBytes(buf,0,len);
+        bas.writeBytes(buf, 0, len);
       } else {
         break;
       }
@@ -487,14 +444,12 @@ public class Deployer4Android
     return bas;
   }
 
-  private void insertAndroidManifest_xml(InputStream zis, OutputStream zos) throws Exception
-  {
+  private void insertAndroidManifest_xml(InputStream zis, OutputStream zos) throws Exception {
     totalcross.io.ByteArrayStream bas;
-    if (!singleApk){
+    if (!singleApk) {
       bas = readInputStream(zis);
-    }else
-    {
-      byte[] bytes = Utils.loadFile(DeploySettings.etcDir+"tools/android/AndroidManifest_singleapk.xml",true);
+    } else {
+      byte[] bytes = Utils.loadFile(DeploySettings.etcDir + "tools/android/AndroidManifest_singleapk.xml", true);
       bas = new totalcross.io.ByteArrayStream(bytes);
       bas.skipBytes(bytes.length);
     }
@@ -502,39 +457,36 @@ public class Deployer4Android
     totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
     String oldPackage, oldTitle, oldActivity;
 
-    if (singleApk)
-    {
-      oldPackage  = sourcePackage.replace('/','.');
-      oldTitle    = "Stub";
+    if (singleApk) {
+      oldPackage = sourcePackage.replace('/', '.');
+      oldTitle = "Stub";
       oldActivity = null;
-    }
-    else
-    {
-      oldPackage  = "totalcross.app.stub";
-      oldTitle    = "Stub";
+    } else {
+      oldPackage = "totalcross.app.stub";
+      oldTitle = "Stub";
       oldActivity = ".Stub";
     }
 
-    String oldVersion  = "!1.0!";
+    String oldVersion = "!1.0!";
     String oldSharedId = singleApk ? "totalcross.app.sharedid" : null;
 
-    String newPackage  = targetPackage.replace('/','.');
-    String newVersion  = DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0";
-    String newTitle    = DeploySettings.appTitle;
-    String newActivity = singleApk ? null : "."+fileName;
-    String newSharedId = singleApk ? "totalcross.app.app"+DeploySettings.applicationId.toLowerCase() : null;
+    String newPackage = targetPackage.replace('/', '.');
+    String newVersion = DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0";
+    String newTitle = DeploySettings.appTitle;
+    String newActivity = singleApk ? null : "." + fileName;
+    String newSharedId = singleApk ? "totalcross.app.app" + DeploySettings.applicationId.toLowerCase() : null;
 
     int oldSize = bas.available();
-    int difPackage  = (newPackage .length() - oldPackage .length()) * 2;
-    int difVersion  = (newVersion .length() - oldVersion .length()) * 2;
-    int difTitle    = (newTitle   .length() - oldTitle   .length()) * 2;
+    int difPackage = (newPackage.length() - oldPackage.length()) * 2;
+    int difVersion = (newVersion.length() - oldVersion.length()) * 2;
+    int difTitle = (newTitle.length() - oldTitle.length()) * 2;
     int difActivity = singleApk ? 0 : (newActivity.length() - oldActivity.length()) * 2;
     int difSharedId = !singleApk ? 0 : (newSharedId.length() - oldSharedId.length()) * 2;
     int dif = difPackage + difVersion + difTitle + difActivity + difSharedId;
-    String newTcPackage = "totalcross.and"+DeploySettings.applicationId.toLowerCase(); // totalcross.android -> totalcross.app.tctestwin
+    String newTcPackage = "totalcross.and" + DeploySettings.applicationId.toLowerCase(); // totalcross.android -> totalcross.app.tctestwin
 
     // get the xml size
-    bas.setPos(12); 
+    bas.setPos(12);
     int xmlsize = ds.readInt();
     xmlsize += dif;
     int gap = ((xmlsize + 3) & ~3) - xmlsize;
@@ -542,47 +494,48 @@ public class Deployer4Android
     int newSize = oldSize + dif + gap;
 
     // update new size and position of 
-    bas.setPos(4);  ds.writeInt(newSize);
-    bas.setPos(12); ds.writeInt(xmlsize + gap);
+    bas.setPos(4);
+    ds.writeInt(newSize);
+    bas.setPos(12);
+    ds.writeInt(xmlsize + gap);
     int len = ds.readInt();
 
     bas.setPos(40);
-    int[] positions = new int[len+1];
-    for (int i =0,last=len-1; i <= last; i++)
-    {
+    int[] positions = new int[len + 1];
+    for (int i = 0, last = len - 1; i <= last; i++) {
       if (i < last) {
-        positions[i+1] = ds.readInt();
+        positions[i + 1] = ds.readInt();
       }
       if (DEBUG) {
-        System.out.println(i+" "+positions[i]+" ("+(positions[i+1]-positions[i])+")");
+        System.out.println(i + " " + positions[i] + " (" + (positions[i + 1] - positions[i]) + ")");
       }
     }
 
     String[] strings = new String[len];
     int pos0 = bas.getPos();
-    for (int i =0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
       int pos = bas.getPos();
       String s = new String(ds.readChars());
       if (DEBUG) {
-        System.out.println(i+" #"+pos+" ("+(pos-pos0)+") "+s+" ("+s.length()+" - "+(s.length()*2+2+2)+")");
+        System.out.println(i + " #" + pos + " (" + (pos - pos0) + ") " + s + " (" + s.length() + " - "
+            + (s.length() * 2 + 2 + 2) + ")");
       }
-      strings[i] = s;         
+      strings[i] = s;
       bas.skipBytes(2); // skip 0-terminated string
     }
 
     // read the rest of the resource (other kinds of data)
     int resSize = bas.available();
     byte[] res = new byte[resSize];
-    bas.readBytes(res,0,resSize);
+    bas.readBytes(res, 0, resSize);
     int ofs;
 
     // now the "versionCode" is used to store some properties of the application
     // search and replace the value of versionCode="305419896" (0x12345678) with the application properties
     // note that currently there's no application properties!
-    byte[] versionCodeMark = {(byte)0x78,(byte)0x56,(byte)0x34,(byte)0x12};
+    byte[] versionCodeMark = { (byte) 0x78, (byte) 0x56, (byte) 0x34, (byte) 0x12 };
     ofs = Utils.indexOf(res, versionCodeMark, false);
-    if (ofs == -1){
+    if (ofs == -1) {
       throw new DeployerException("Error: could not find position for versionCode");
     }
     totalcross.io.ByteArrayStream dtbas = new totalcross.io.ByteArrayStream(res);
@@ -593,131 +546,123 @@ public class Deployer4Android
 
     boolean isFullScreen = DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID); // guich@tc120_59
     // now, change the names accordingly
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
       String s = strings[i];
       if (isFullScreen && s.equals("fullscreen:0")) {
         strings[i] = "fullscreen:1";
-      } else
-        if (s.startsWith(oldPackage))
-        {
-          if (singleApk) {
-            strings[i] = newPackage+s.substring(oldPackage.length());
-          } else
-            if (s.endsWith("google_measurement_service")) {
-              strings[i] = newTcPackage+s.substring(oldPackage.length());
-            }
+      } else if (s.startsWith(oldPackage)) {
+        if (singleApk) {
+          strings[i] = newPackage + s.substring(oldPackage.length());
+        } else if (s.endsWith("google_measurement_service")) {
+          strings[i] = newTcPackage + s.substring(oldPackage.length());
         }
+      }
       if (oldPackage != null && s.equals(oldPackage)) {
         strings[i] = newPackage;
-      } else
-        if (oldVersion != null && s.equals(oldVersion)) {
-          strings[i] = newVersion;
-        } else
-          if (oldTitle != null && s.equals(oldTitle)) {
-            strings[i] = newTitle;
-          } else
-            if (oldActivity != null && s.equals(oldActivity)) {
-              strings[i] = newActivity;
-            } else
-              if (oldSharedId != null && s.equals(oldSharedId)) {
-                strings[i] = newSharedId;
-              }
+      } else if (oldVersion != null && s.equals(oldVersion)) {
+        strings[i] = newVersion;
+      } else if (oldTitle != null && s.equals(oldTitle)) {
+        strings[i] = newTitle;
+      } else if (oldActivity != null && s.equals(oldActivity)) {
+        strings[i] = newActivity;
+      } else if (oldSharedId != null && s.equals(oldSharedId)) {
+        strings[i] = newSharedId;
+      }
     }
     // update the offsets table
-    for (int i = 0; i < len; i++)
-    {
-      positions[i+1] = positions[i] + (strings[i].length()*2+2+2); // 2 for the positions, and 2 for the 0 termination
+    for (int i = 0; i < len; i++) {
+      positions[i + 1] = positions[i] + (strings[i].length() * 2 + 2 + 2); // 2 for the positions, and 2 for the 0 termination
     }
 
     // now write everything again
     bas.setPos(36);
-    for (int i =0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
       ds.writeInt(positions[i]);
     }
-    for (int i =0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
       String s = strings[i];
       ds.writeChars(s, s.length());
       ds.writeShort(0);
     }
-    if (gap > 0){
-      for (int i =0; i < gap; i++) {
+    if (gap > 0) {
+      for (int i = 0; i < gap; i++) {
         ds.writeByte(0);
       }
     }
 
     ds.writeBytes(res);
     int nn = bas.getPos();
-    if (nn != newSize){
-      throw new DeployerException("Something went wrong when parsing AndroidManifest.xml. Expected size is "+newSize+", but got "+nn);
-    } 
+    if (nn != newSize) {
+      throw new DeployerException(
+          "Something went wrong when parsing AndroidManifest.xml. Expected size is " + newSize + ", but got " + nn);
+    }
 
     zos.write(bas.getBuffer(), 0, newSize);
   }
 
-  private void insertResources_arsc(InputStream zis, OutputStream zos) throws Exception
-  {
+  private void insertResources_arsc(InputStream zis, OutputStream zos) throws Exception {
     byte[] all;
     byte[] key;
-    if (singleApk)
-    {
-      key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'n',(byte)0,'d',(byte)0,'r',(byte)0,'o',(byte)0,'i',(byte)0,'d',(byte)0};
-      all = Utils.loadFile(DeploySettings.etcDir+"tools/android/resources_singleapk.arsc",true);
-    }
-    else
-    {
-      key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'p',(byte)0,'p',(byte)0,'.',(byte)0,'s',(byte)0,'t',(byte)0,'u',(byte)0,'b',(byte)0};
+    if (singleApk) {
+      key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
+          (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'n', (byte) 0, 'd',
+          (byte) 0, 'r', (byte) 0, 'o', (byte) 0, 'i', (byte) 0, 'd', (byte) 0 };
+      all = Utils.loadFile(DeploySettings.etcDir + "tools/android/resources_singleapk.arsc", true);
+    } else {
+      key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
+          (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'p', (byte) 0, 'p',
+          (byte) 0, '.', (byte) 0, 's', (byte) 0, 't', (byte) 0, 'u', (byte) 0, 'b', (byte) 0 };
       all = readInputStream(zis).toByteArray();
     }
     int ofs = Utils.indexOf(all, key, false);
-    if (ofs == -1){
+    if (ofs == -1) {
       throw new DeployerException("Could not find position for totalcross.android in arsc.");
     }
     // write the name
-    char[] chars = targetPackage.replace('/','.').toCharArray();
-    if (chars.length > 0x7F){
-      throw new DeployerException("The package name length can't be bigger than "+0x7F);
+    char[] chars = targetPackage.replace('/', '.').toCharArray();
+    if (chars.length > 0x7F) {
+      throw new DeployerException("The package name length can't be bigger than " + 0x7F);
     }
-    int i =0,n = ofs + 0x7F * 2;
+    int i = 0, n = ofs + 0x7F * 2;
     for (; i < chars.length; i++, ofs += 2) {
-      all[ofs] = (byte)chars[i];
+      all[ofs] = (byte) chars[i];
     }
-    while (ofs < n){
-      all[ofs++] = (byte)0;
+    while (ofs < n) {
+      all[ofs++] = (byte) 0;
     }
     zos.write(all);
   }
 
-  private void insertTCFiles_zip(ZipEntry ze, ZipOutputStream z) throws Exception
-  {
+  private void insertTCFiles_zip(ZipEntry ze, ZipOutputStream z) throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(8192);
 
     // parse the android.pkg
     Hashtable ht = new Hashtable(13);
     Utils.processInstallFile("android.pkg", ht);
 
-    Vector vLocals  = (Vector)ht.get("[L]"); if (vLocals == null){
-      vLocals  = new Vector();
+    Vector vLocals = (Vector) ht.get("[L]");
+    if (vLocals == null) {
+      vLocals = new Vector();
     }
-    Vector vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null){
+    Vector vGlobals = (Vector) ht.get("[G]");
+    if (vGlobals == null) {
       vGlobals = new Vector();
     }
     vLocals.addElements(DeploySettings.tczs);
-    if (vGlobals.size() > 0){
+    if (vGlobals.size() > 0) {
       vLocals.addElements(vGlobals.toObjectArray());
     }
     if (singleApk) // include the vm?
     {
       // tc is always included
       // include non-binary files
-      vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCBase.tcz");
-      vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCUI.tcz");
-      vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
-      vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
-    }         
+      vLocals.addElement(DeploySettings.folderTotalCross3DistVM + "TCBase.tcz");
+      vLocals.addElement(DeploySettings.folderTotalCross3DistVM + "TCUI.tcz");
+      vLocals.addElement(DeploySettings.folderTotalCross3DistVM + DeploySettings.fontTCZ);
+      vLocals.addElement(DeploySettings.folderTotalCross3DistVM + "LitebaseLib.tcz");
+    }
 
-    Utils.preprocessPKG(vLocals,true);
+    Utils.preprocessPKG(vLocals, true);
     writeVlocals(baos, vector2list(vLocals, new ArrayList<String>()));
 
     // add the file UNCOMPRESSED
@@ -728,7 +673,7 @@ public class Deployer4Android
   }
 
   public static <E> List<E> vector2list(Vector vec, List<E> list) {
-    for (int i = 0,n = vec.size(); i < n; i++) {
+    for (int i = 0, n = vec.size(); i < n; i++) {
       @SuppressWarnings("unchecked")
       E item = (E) vec.items[i];
       list.add(item);
@@ -738,7 +683,7 @@ public class Deployer4Android
 
   private void writeVlocals(ByteArrayOutputStream baos, List<String> vLocals) throws IOException {
     ZipOutputStream zos = new ZipOutputStream(baos);
-    for (String item: vLocals) {
+    for (String item : vLocals) {
       String[] pathnames = totalcross.sys.Convert.tokenizeString(item, ',');
       String pathname = pathnames[0];
       String name = Utils.getFileName(pathname);
@@ -778,7 +723,7 @@ public class Deployer4Android
       // tcz files will be stored without
       // compression so they can be read
       // directly
-      if (name.endsWith(".tcz")) { 
+      if (name.endsWith(".tcz")) {
         setEntryAsStored(zze, bytes);
       }
       zos.putNextEntry(zze);
@@ -797,13 +742,12 @@ public class Deployer4Android
     entry.setSize(content.length);
   }
 
-  private void convertConstantPool(InputStream is, ZipOutputStream os) throws Exception
-  {
+  private void convertConstantPool(InputStream is, ZipOutputStream os) throws Exception {
     totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(1024);
     totalcross.io.DataStream ds = new totalcross.io.DataStream(bas);
     int n;
 
-    while ((n = is.read(buf)) > 0){
+    while ((n = is.read(buf)) > 0) {
       bas.writeBytes(buf, 0, n);
     }
     bas.setPos(0);
@@ -817,89 +761,84 @@ public class Deployer4Android
     os.write(bas.getBuffer(), 0, bas.getPos());
   }
 
-  private static void checkConstantPool(JavaClass jclass)
-  {
+  private static void checkConstantPool(JavaClass jclass) {
     UTF8 descriptor;
     // Check all class and name/type constants
-    if (DEBUG){
+    if (DEBUG) {
       System.out.println("Constant pool");
     }
     int count = jclass.constantPool.size();
-    for (int i = 1; i < count; i++)
-    {
-      JavaConstant constant = (JavaConstant)jclass.constantPool.items[i];
+    for (int i = 1; i < count; i++) {
+      JavaConstant constant = (JavaConstant) jclass.constantPool.items[i];
       i += constant.slots() - 1; // skip empty slots
 
-      switch (constant.tag)
-      {
+      switch (constant.tag) {
       case JavaConstant.CONSTANT_INTEGER:
         String cla = jclass.getClassName();
-        if ((DeploySettings.autoStart || DeploySettings.isService) && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
-        {
+        if ((DeploySettings.autoStart || DeploySettings.isService) && cla.endsWith("/StartupIntentReceiver")
+            && ((Integer) constant.info).value == 123454321) {
           Integer it = new Integer();
           it.value = DeploySettings.isService ? 1 : 0;
           constant.info = it;
         }
         break;
       case JavaConstant.CONSTANT_CLASS:
-        descriptor = ((Class)constant.info).getValueAsName();
+        descriptor = ((Class) constant.info).getValueAsName();
         descriptor.value = convertName(descriptor.value);
         break;
       case JavaConstant.CONSTANT_NAME_AND_TYPE:
-        descriptor = ((NameAndType)constant.info).getValue2AsDescriptor();
+        descriptor = ((NameAndType) constant.info).getValue2AsDescriptor();
         descriptor.value = convertName(descriptor.value);
         break;
       }
     }
 
     // Check class fields
-    if (DEBUG){
+    if (DEBUG) {
       System.out.println("Fields");
     }
     count = jclass.fields.size();
-    for (int i = 0; i < count; i ++)
-    {
-      JavaField field = (JavaField)jclass.fields.items[i];
+    for (int i = 0; i < count; i++) {
+      JavaField field = (JavaField) jclass.fields.items[i];
 
-      descriptor = (UTF8)field.descriptor.info;
+      descriptor = (UTF8) field.descriptor.info;
       descriptor.value = convertName(descriptor.value);
 
       // Check field attributes
       int count2 = field.attributes.size();
-      for (int j = 0; j < count2; j ++) {
-        checkAttribute((JavaAttribute)field.attributes.items[j]);
+      for (int j = 0; j < count2; j++) {
+        checkAttribute((JavaAttribute) field.attributes.items[j]);
       }
     }
 
     // Check class methods
-    if (DEBUG){
+    if (DEBUG) {
       System.out.println("Methods");
     }
     count = jclass.methods.size();
-    for (int i = 0; i < count; i ++)
-    {
-      JavaMethod method = (JavaMethod)jclass.methods.items[i];
+    for (int i = 0; i < count; i++) {
+      JavaMethod method = (JavaMethod) jclass.methods.items[i];
 
-      descriptor = (UTF8)method.descriptor.info;
+      descriptor = (UTF8) method.descriptor.info;
       descriptor.value = convertName(descriptor.value);
 
       // Check method attributes
       int count2 = method.attributes.size();
-      for (int j = 0; j < count2; j ++) {
-        checkAttribute((JavaAttribute)method.attributes.items[j]);
+      for (int j = 0; j < count2; j++) {
+        checkAttribute((JavaAttribute) method.attributes.items[j]);
       }
     }
 
     // Check class attributes
-    if (DEBUG){
+    if (DEBUG) {
       System.out.println("Atributes");
     }
     count = jclass.attributes.size();
-    for (int i = 0; i < count; i ++) {
-      checkAttribute((JavaAttribute)jclass.attributes.items[i]);
+    for (int i = 0; i < count; i++) {
+      checkAttribute((JavaAttribute) jclass.attributes.items[i]);
     }
 
-    if (DEBUG){
+    if (DEBUG) {
       System.out.println("FINISHED");
     }
   }
@@ -908,42 +847,33 @@ public class Deployer4Android
    * @param attribute
    * @param classes
    */
-  private static void checkAttribute(JavaAttribute attribute)
-  {
-    if (attribute.info instanceof SourceFile)
-    {
-      JavaConstant source = ((SourceFile)attribute.info).sourceFile;
-      UTF8 descriptor = (UTF8)source.info;
+  private static void checkAttribute(JavaAttribute attribute) {
+    if (attribute.info instanceof SourceFile) {
+      JavaConstant source = ((SourceFile) attribute.info).sourceFile;
+      UTF8 descriptor = (UTF8) source.info;
       descriptor.value = convertName(descriptor.value);
+    } else if (attribute.info instanceof LocalVariableTable) {
+      Vector variables = ((LocalVariableTable) attribute.info).variables;
+      int count = variables.size();
+      for (int i = 0; i < count; i++) {
+        UTF8 descriptor = (UTF8) ((LocalVariableTable.LocalVariable) variables.items[i]).descriptor.info;
+        descriptor.value = convertName(descriptor.value);
+      }
+    } else if (attribute.info instanceof Code) {
+      Code code = (Code) attribute.info;
+      Vector attributes = code.attributes;
+      int count = attributes.size();
+      for (int i = 0; i < count; i++) {
+        checkAttribute((JavaAttribute) attributes.items[i]);
+      }
     }
-    else
-      if (attribute.info instanceof LocalVariableTable)
-      {
-        Vector variables = ((LocalVariableTable)attribute.info).variables;
-        int count = variables.size();
-        for (int i = 0; i < count; i ++)
-        {
-          UTF8 descriptor = (UTF8)((LocalVariableTable.LocalVariable)variables.items[i]).descriptor.info;
-          descriptor.value = convertName(descriptor.value);
-        }
-      }
-      else if (attribute.info instanceof Code)
-      {
-        Code code = (Code)attribute.info;
-        Vector attributes = code.attributes;
-        int count = attributes.size();
-        for (int i = 0; i < count; i ++) {
-          checkAttribute((JavaAttribute)attributes.items[i]);
-        }
-      }
   }
 
-  private static String convertName(String name)
-  {
+  private static String convertName(String name) {
     String value = name.replace("totalcross/app/stub", targetPackage); // totalcross/app/stub/R -> totalcross/app/uigadgets/R
-    value = value.replace("Stub",fileName); // totalcross/app/stub/Stub -> totalcross/app/uigadgets/Stub
-    if (DEBUG){
-      System.out.println(name+" -> "+value);
+    value = value.replace("Stub", fileName); // totalcross/app/stub/Stub -> totalcross/app/uigadgets/Stub
+    if (DEBUG) {
+      System.out.println(name + " -> " + value);
     }
     return value;
   }

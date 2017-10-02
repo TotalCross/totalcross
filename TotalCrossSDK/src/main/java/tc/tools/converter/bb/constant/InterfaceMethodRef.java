@@ -9,26 +9,20 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.constant;
 
 import tc.tools.converter.bb.JavaClass;
 
-public class InterfaceMethodRef extends DoubleReference
-{
-  public InterfaceMethodRef(JavaClass jclass)
-  {
+public class InterfaceMethodRef extends DoubleReference {
+  public InterfaceMethodRef(JavaClass jclass) {
     super(jclass);
   }
 
-  public Class getValue1AsClass()
-  {
-    return (Class)value1.info;
+  public Class getValue1AsClass() {
+    return (Class) value1.info;
   }
 
-  public NameAndType getValue2AsNameAndType()
-  {
-    return (NameAndType)value2.info;
+  public NameAndType getValue2AsNameAndType() {
+    return (NameAndType) value2.info;
   }
 }

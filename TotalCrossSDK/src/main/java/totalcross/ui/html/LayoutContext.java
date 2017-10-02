@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.html;
 
 import totalcross.ui.Container;
@@ -28,11 +26,10 @@ import totalcross.util.IntVector;
  * rely upon.
  */
 
-final class LayoutContext
-{
-  public int nextX,nextY;
+final class LayoutContext {
+  public int nextX, nextY;
   public Style lastStyle;
-  public int x,maxWidth;
+  public int x, maxWidth;
   public int incY;
   public Control lastControl;
   int gap;
@@ -46,9 +43,8 @@ final class LayoutContext
    */
   Container parentContainer;
 
-  public LayoutContext(int maxWidth, Container parentContainer)
-  {
-    if (parentContainer == null){
+  public LayoutContext(int maxWidth, Container parentContainer) {
+    if (parentContainer == null) {
       throw new NullPointerException("Argument 'parentContainer' cannot be null");
     }
     this.maxWidth = maxWidth;
@@ -56,47 +52,40 @@ final class LayoutContext
     disjoin();
   }
 
-  public void setIdentation(int gap, boolean set)
-  {
-    if (set)
-    {
+  public void setIdentation(int gap, boolean set) {
+    if (set) {
       nextX -= this.gap;
       idents.push(this.gap);
       this.gap = gap;
       nextX += gap;
-    }else {
-      try
-      {
+    } else {
+      try {
         nextX -= this.gap;
         this.gap = idents.pop();
-      } catch (Exception e) {gap = 0;}
+      } catch (Exception e) {
+        gap = 0;
+      }
     }
   }
 
-  public boolean atStart()
-  {
+  public boolean atStart() {
     return x == gap;
   }
 
   /** Verify if there's enough space to add this control and do a disjoin otherwise. */
-  void verify(int width)
-  {
-    if (x + width >= maxWidth || incY > 0){
+  void verify(int width) {
+    if (x + width >= maxWidth || incY > 0) {
       disjoin();
     }
   }
 
   /** Prepare the layout to add a new control right after the last one. */
-  void update(int width)
-  {
+  void update(int width) {
     x += width;
-    if (x >= maxWidth)
-    {
+    if (x >= maxWidth) {
       disjoin();
       x = gap;
-    }
-    else
-    {
+    } else {
       wasDisjoin = false;
       //System.err.println("update");
       nextX = Control.AFTER;
@@ -106,15 +95,14 @@ final class LayoutContext
   }
 
   /** Prepare the layout context for entering into a new clear area. */
-  void disjoin()
-  {
-    if (wasDisjoin){
+  void disjoin() {
+    if (wasDisjoin) {
       return;
     }
     wasDisjoin = true;
     //System.err.println("disjoin "+incY);
     x = gap;
-    nextX = Control.LEFT+gap;
+    nextX = Control.LEFT + gap;
     nextY = Control.AFTER + incY;
     incY = 0;
   }

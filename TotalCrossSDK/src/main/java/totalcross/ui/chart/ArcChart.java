@@ -38,10 +38,9 @@ import totalcross.ui.gfx.Rect;
  * serie's value.
  */
 
-public class ArcChart extends Chart
-{
+public class ArcChart extends Chart {
   /** Specifies the selected pie. */
-  public int selectedSeries=-1;
+  public int selectedSeries = -1;
   /** The suffix used in the legend to display the values. E.G.: "%". Defaults to blank.
    */
   public String legendValueSuffix = "";
@@ -55,18 +54,17 @@ public class ArcChart extends Chart
   public int borderGap;
 
   private ToolTip tip;
-  private int lastPenX,lastPenY;
+  private int lastPenX, lastPenY;
   private Rect rect = new Rect();
   private double sum;
-  private int currentSelection=-1;
-  private int xx,yy,rr;
+  private int currentSelection = -1;
+  private int xx, yy, rr;
 
   /**
    * Creates a new Pie chart.
    * The yDecimalPlaces defines the number of decimal places used to display the value in the legend.
    */
-  public ArcChart()
-  {
+  public ArcChart() {
     drawAxis = false;
     //distanceOfSelectedPie = fmH*2;
     setXAxis(0, 100, 1);
@@ -79,8 +77,7 @@ public class ArcChart extends Chart
   }
 
   @Override
-  protected void getCustomInsets(Insets r)
-  {
+  protected void getCustomInsets(Insets r) {
     r.top += borderGap;
     r.bottom += borderGap;
     r.top += borderGap;
@@ -89,48 +86,46 @@ public class ArcChart extends Chart
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     // compute sum and the values
     sum = 0;
     int sCount = series.size();
-    if (showValuesOnLegend && (legendValues == null || legendValues.length != sCount)){
+    if (showValuesOnLegend && (legendValues == null || legendValues.length != sCount)) {
       legendValues = new String[sCount];
     }
-    for (int i = 0; i < sCount; i ++) // for each series
+    for (int i = 0; i < sCount; i++) // for each series
     {
-      double v = ((Series)series.items[i]).yValues[0];
+      double v = ((Series) series.items[i]).yValues[0];
       sum += v;
       if (showValuesOnLegend) {
-        legendValues[i] = " "+Convert.toCurrencyString(v,yDecimalPlaces) + legendValueSuffix;
+        legendValues[i] = " " + Convert.toCurrencyString(v, yDecimalPlaces) + legendValueSuffix;
       }
     }
 
-    if (!draw(g)){
+    if (!draw(g)) {
       return;
     }
 
     // Update points
-    int xx = clientRect.x + clientRect.width/2;
-    int yy = clientRect.y + clientRect.height/2;
-    int rr = Math.min(clientRect.width, clientRect.height)/2;
-    if (rr > 0)
-    {
+    int xx = clientRect.x + clientRect.width / 2;
+    int yy = clientRect.y + clientRect.height / 2;
+    int rr = Math.min(clientRect.width, clientRect.height) / 2;
+    if (rr > 0) {
       this.rr = rr;
       drawPie(g, xx, yy, rr, false);
     }
   }
 
-  int distanceOfSelectedPie; 
-  private void drawPie(Graphics g, int xx, int yy, int rr, boolean is3d)
-  {
-    if (sum == 0){
+  int distanceOfSelectedPie;
+
+  private void drawPie(Graphics g, int xx, int yy, int rr, boolean is3d) {
+    if (sum == 0) {
       return;
     }
 
     g.foreColor = 0;
     int sCount = series.size();
-    double last=0,current;
+    double last = 0, current;
     this.xx = xx;
     this.yy = yy;
 
@@ -141,21 +136,22 @@ public class ArcChart extends Chart
       yy = this.yy;
 
       Series s = (Series) series.items[i];
-      int color = i == currentSelection ? Color.darker(s.color,32) : is3d ? Color.darker(s.color) : s.color;
+      int color = i == currentSelection ? Color.darker(s.color, 32) : is3d ? Color.darker(s.color) : s.color;
       //if (is3d) color = Color.interpolate(backColor,color);
 
       double v = s.yValues[0];
-      current = last+(v*360/sum);
+      current = last + (v * 360 / sum);
 
-      if (last == current) {;
-      } else
-      {
-        int bc = parent.getBackColor();;
+      if (last == current) {
+        ;
+      } else {
+        int bc = parent.getBackColor();
+        ;
         g.foreColor = bc; // fixed color when only 1 serie has value > 0
         g.backColor = color;
         g.fillPie(xx, yy, rr, last, current);
         g.foreColor = bc;
-        g.drawCircleAA(xx,yy,rr*fillPerc/100,true,true,true,true,true);
+        g.drawCircleAA(xx, yy, rr * fillPerc / 100, true, true, true, true, true);
         Control.safeUpdateScreen();
       }
       last = current;
@@ -163,66 +159,61 @@ public class ArcChart extends Chart
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    switch (e.type)
-    {
+  public void onEvent(Event e) {
+    switch (e.type) {
     case PenEvent.PEN_DOWN:
-    case PenEvent.PEN_DRAG:
-    {
-      PenEvent pe = (PenEvent)e;
+    case PenEvent.PEN_DRAG: {
+      PenEvent pe = (PenEvent) e;
       lastPenX = pe.x;
       lastPenY = pe.y;
       break;
     }
     case ControlEvent.PRESSED:
-      if (e.target == tip)
-      {
+      if (e.target == tip) {
         if (currentSelection != -1) {
-          setTipText((Series)series.items[currentSelection]);
-        } else
-        {
+          setTipText((Series) series.items[currentSelection]);
+        } else {
           // get the angle
           int deltax = lastPenX - xx;
           int deltay = lastPenY - yy;
-          int distance = (int)Math.sqrt(deltax*deltax + deltay*deltay);
+          int distance = (int) Math.sqrt(deltax * deltax + deltay * deltay);
           double tan;
-          try {tan = (double)deltay / (double)deltax;} catch (ArithmeticException e1) {tan = 0;} // guich@tc123_4: prevent divide by 0 to close the program
+          try {
+            tan = (double) deltay / (double) deltax;
+          } catch (ArithmeticException e1) {
+            tan = 0;
+          } // guich@tc123_4: prevent divide by 0 to close the program
           double degree = Math.atan(tan) * 180 / Math.PI;
           if (degree < 0) {
             degree = -degree;
           }
-          if (deltax >= 0)
-          {
+          if (deltax >= 0) {
             if (deltay > 0) {
               degree = 360 - degree;
             }
+          } else if (deltay < 0) {
+            degree = 180 - degree;
+          } else {
+            degree += 180;
           }
-          else
-            if (deltay < 0) {
-              degree = 180 - degree;
-            } else {
-              degree += 180;
-            }
           // find the slice that contains this angle
           if (sum == 0) {
             break;
           }
-          int sCount = series.size(),i;
-          double last=0,current;
+          int sCount = series.size(), i;
+          double last = 0, current;
           for (i = 0; i < sCount; i++) // for each series
           {
             Series s = (Series) series.items[i];
             double v = s.yValues[0];
-            current = last+(v*360/sum);
-            if (last <= degree && degree <= current)
-            {
+            current = last + (v * 360 / sum);
+            if (last <= degree && degree <= current) {
               int r = i == selectedSeries ? (rr + distanceOfSelectedPie) : rr;
               if (r < distance) {
                 i = sCount; // don't show anything
               } else {
                 setTipText(s);
-                this.selectedSeries = i;	// make the slice user tapped on be the 'selected' one
+                this.selectedSeries = i; // make the slice user tapped on be the 'selected' one
               }
               break;
             }
@@ -235,8 +226,8 @@ public class ArcChart extends Chart
       }
       break;
     case ControlEvent.FOCUS_IN:
-      lastPenX = width/8-10;
-      lastPenY = 0-10;
+      lastPenX = width / 8 - 10;
+      lastPenY = 0 - 10;
       currentSelection = -1; // don't change!
       Window.needsPaint = true;
       break;
@@ -244,12 +235,10 @@ public class ArcChart extends Chart
       currentSelection = -1;
       Window.needsPaint = true;
       break;
-    case KeyEvent.SPECIAL_KEY_PRESS:
-    {
-      KeyEvent ke = (KeyEvent)e;
+    case KeyEvent.SPECIAL_KEY_PRESS: {
+      KeyEvent ke = (KeyEvent) e;
 
-      if (ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ENTER)
-      {
+      if (ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ENTER) {
         parent.setHighlighting();
         tip.penUp(null);
       }
@@ -259,17 +248,17 @@ public class ArcChart extends Chart
     }
   }
 
-  private void setTipText(Series s)
-  {
-    tip.setText(Convert.toCurrencyString(legendValueSuffix.indexOf('%') >= 0 ? (s.yValues[0]/sum*100) : s.yValues[0],yDecimalPlaces) + legendValueSuffix);
+  private void setTipText(Series s) {
+    tip.setText(
+        Convert.toCurrencyString(legendValueSuffix.indexOf('%') >= 0 ? (s.yValues[0] / sum * 100) : s.yValues[0],
+            yDecimalPlaces) + legendValueSuffix);
     Rect r = getAbsoluteRect();
-    rect.set(r.x+lastPenX+10,r.y+lastPenY+10,0,0);
+    rect.set(r.x + lastPenX + 10, r.y + lastPenY + 10, 0, 0);
     tip.setControlRect(rect);
   }
 
   @Override
-  public void onFontChanged()
-  {
+  public void onFontChanged() {
     tip.setFont(this.font);
   }
 }

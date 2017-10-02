@@ -9,18 +9,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.deployer;
 
-public class DeployerException extends RuntimeException
-{
-  public DeployerException()
-  {
+public class DeployerException extends RuntimeException {
+  public DeployerException() {
   }
 
-  public DeployerException(String msg)
-  {
+  public DeployerException(String msg) {
     super(msg);
   }
 }

@@ -21,13 +21,11 @@ package totalcross.net.mail;
  * 
  * @since TotalCross 1.13
  */
-public class AddressException extends Exception
-{
+public class AddressException extends Exception {
   /** 
    * Constructs an empty Exception. 
    */
-  public AddressException()
-  {
+  public AddressException() {
     super();
   }
 
@@ -36,8 +34,7 @@ public class AddressException extends Exception
    *
    * @param msg The error message.
    */
-  public AddressException(String msg)
-  {
+  public AddressException(String msg) {
     super(msg);
   }
 }

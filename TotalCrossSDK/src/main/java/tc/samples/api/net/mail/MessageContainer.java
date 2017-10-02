@@ -17,8 +17,7 @@ import totalcross.ui.dialog.MessageBox;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 
-public class MessageContainer extends Window
-{
+public class MessageContainer extends Window {
   Button btBack;
   Button btReply;
   Button btDelete;
@@ -27,21 +26,18 @@ public class MessageContainer extends Window
 
   Message msg;
 
-  public MessageContainer(Message msg)
-  {
+  public MessageContainer(Message msg) {
     this.msg = msg;
-    setRect(CENTER,CENTER,SCREENSIZE+80,SCREENSIZE+80);
+    setRect(CENTER, CENTER, SCREENSIZE + 80, SCREENSIZE + 80);
   }
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     add(new Label("From: "), LEFT, TOP);
     add(edFrom = new Edit(), AFTER, SAME);
     Address[] from = msg.getFrom();
     StringBuffer fromBuffer = new StringBuffer(30);
-    for (int i = 0 ; i < from.length ; i++)
-    {
+    for (int i = 0; i < from.length; i++) {
       fromBuffer.append(from[i].personal != null ? from[i].personal : from[i].address);
       if (i < from.length - 1) {
         fromBuffer.append(", ");
@@ -59,8 +55,7 @@ public class MessageContainer extends Window
     add(btReply = new Button("Reply"), LEFT, BOTTOM);
 
     Object content = msg.getContent();
-    if (content instanceof String)
-    {
+    if (content instanceof String) {
       MultiEdit me = new MultiEdit();
       add(me, LEFT, AFTER, FILL, FIT, edSubject);
       me.setText((String) content);
@@ -68,31 +63,20 @@ public class MessageContainer extends Window
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    if (event.target == btBack && event.type == ControlEvent.PRESSED)
-    {
+  public void onEvent(Event event) {
+    if (event.target == btBack && event.type == ControlEvent.PRESSED) {
       MainWindow.getMainWindow().swap(null);
-    }
-    else if (event.target == btReply && event.type == ControlEvent.PRESSED)
-    {
-      try
-      {
+    } else if (event.target == btReply && event.type == ControlEvent.PRESSED) {
+      try {
         Message reply = msg.reply(false);
         reply.setText("Reply prototype");
         Transport.send(reply);
         new MessageBox("Reply test", "Reply sent").popup();
-      }
-      catch (AddressException e)
-      {
+      } catch (AddressException e) {
         MessageBox.showException(e, true);
-      }
-      catch (MessagingException e)
-      {
+      } catch (MessagingException e) {
         MessageBox.showException(e, true);
-      }
-      catch (AuthenticationException e)
-      {
+      } catch (AuthenticationException e) {
         MessageBox.showException(e, true);
       }
     }

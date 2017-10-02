@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class IllegalAccessException4D extends ReflectiveOperationException
-{
+public class IllegalAccessException4D extends ReflectiveOperationException {
   /** Constructs an empty Exception. */
-  public IllegalAccessException4D()
-  {
+  public IllegalAccessException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public IllegalAccessException4D(String msg)
-  {
+  public IllegalAccessException4D(String msg) {
     super(msg);
   }
 }

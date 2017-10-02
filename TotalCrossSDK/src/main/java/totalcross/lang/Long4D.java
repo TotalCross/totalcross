@@ -3,82 +3,74 @@ package totalcross.lang;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 
-public class Long4D extends Number4D implements Comparable<Long4D>
-{
+public class Long4D extends Number4D implements Comparable<Long4D> {
   public static final Class<Long> TYPE = Long.class;
   long v;
 
-  public Long4D(long v)
-  {
+  public Long4D(long v) {
     this.v = v;
   }
-  public Long4D(String s) throws NumberFormatException
-  {
+
+  public Long4D(String s) throws NumberFormatException {
     v = parseLong(s);
   }
+
   @Override
-  public long longValue()
-  {
+  public long longValue() {
     return v;
   }
+
   @Override
-  public boolean equals(Object o)
-  {
-    return o != null && o instanceof Long4D && ((Long4D)o).v == this.v; 
+  public boolean equals(Object o) {
+    return o != null && o instanceof Long4D && ((Long4D) o).v == this.v;
   }
+
   @Override
-  public int hashCode()
-  {
-    return (int)(v ^ (v >>> 32));
+  public int hashCode() {
+    return (int) (v ^ (v >>> 32));
   }
-  public String toString(long l)
-  {
+
+  public String toString(long l) {
     return Convert.toString(l);
   }
+
   @Override
-  public String toString()
-  {
+  public String toString() {
     return String.valueOf(v);
   }
-  public Long4D valueOf(long l)
-  {
+
+  public Long4D valueOf(long l) {
     return new Long4D(l);
   }
-  public static Long4D valueOf(String s) throws NumberFormatException
-  {
-    try
-    {
+
+  public static Long4D valueOf(String s) throws NumberFormatException {
+    try {
       return new Long4D(Convert.toLong(s));
-    }
-    catch (InvalidNumberException ine)
-    {
+    } catch (InvalidNumberException ine) {
       throw new NumberFormatException(ine.getMessage());
     }
   }
-  public static long parseLong(String s) throws NumberFormatException
-  {
-    try
-    {
+
+  public static long parseLong(String s) throws NumberFormatException {
+    try {
       return Convert.toLong(s);
-    }
-    catch (InvalidNumberException ine)
-    {
+    } catch (InvalidNumberException ine) {
       throw new NumberFormatException(ine.getMessage());
     }
   }
+
   @Override
-  public int intValue()
-  {
+  public int intValue() {
     return (int) v;
   }
+
   @Override
-  public double doubleValue()
-  {
-    return (double)v;
+  public double doubleValue() {
+    return (double) v;
   }
+
   @Override
-  public int compareTo(Long4D o)
-  {
-    return this.v < o.v? -1: (this.v == o.v? 0: +1);
+  public int compareTo(Long4D o) {
+    return this.v < o.v ? -1 : (this.v == o.v ? 0 : +1);
   }
 }

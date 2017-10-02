@@ -4,8 +4,7 @@ package totalcross.io.device.scanner;
  * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method.
  */
 
-public interface Intermec
-{
+public interface Intermec {
   /**
    * To be used in the <code>setBarcodeParam()</code> method, to enable or disable Australian Post barcode type.
    */
@@ -119,22 +118,22 @@ public interface Intermec
   /**
    * To be used in the <code>setBarcodeParam()</code> method, to enable or disable GS1 DataBar Expanded barcode type.
    */
-  public final static int GS1_DATA_BAR_EXPANDED = 23;            
+  public final static int GS1_DATA_BAR_EXPANDED = 23;
 
   /**
    * To be used in the <code>setBarcodeParam()</code> method, to enable or disable GS1 DataBar Limited barcode type.
    */
-  public final static int GS1_DATA_BAR_LIMITED = 24;            
+  public final static int GS1_DATA_BAR_LIMITED = 24;
 
   /**
    * To be used in the <code>setBarcodeParam()</code> method, to enable or disable GS1 DataBar Omnidirectional barcode type.
    */
-  public final static int GS1_OMINI_DIRECTIONAL = 25;            
+  public final static int GS1_OMINI_DIRECTIONAL = 25;
 
   /**
    * To be used in the <code>setBarcodeParam()</code> method, to enable or disable HanXin barcode type.
    */
-  public final static int HAN_XIN = 26;            
+  public final static int HAN_XIN = 26;
 
   /**
    * To be used in the <code>setBarcodeParam()</code> method, to enable or disable Infomail barcode type.

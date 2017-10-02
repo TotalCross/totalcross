@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.phone;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -23,16 +21,14 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 /** Used to send and receive SMS messages. Currently supports only WP8.
  * See the SmsSample for an example.
  */
-public class SMS
-{
+public class SMS {
   /** Sends the given message to the destination.
    * @param destination The number to send to.
    * @param message The message to send. Note that some phones will strip unicode characters.
    * @throws totalcross.io.IOException if an error occurs.
    */
   @ReplacedByNativeOnDeploy
-  public static void send(String destination, String message) throws totalcross.io.IOException
-  {
+  public static void send(String destination, String message) throws totalcross.io.IOException {
   }
 
   /** Supposed to block until a message becomes available.
@@ -41,8 +37,7 @@ public class SMS
    */
   @Deprecated
   @ReplacedByNativeOnDeploy
-  public static String[] receive() throws totalcross.io.IOException
-  {
+  public static String[] receive() throws totalcross.io.IOException {
     return null;
   }
 }

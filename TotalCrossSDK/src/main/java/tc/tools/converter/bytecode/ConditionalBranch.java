@@ -9,16 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class ConditionalBranch extends Branch
-{
+public class ConditionalBranch extends Branch {
   public int left, right, jumpIfTrue, jumpIfFalse;
 
-  public ConditionalBranch(int stackInc, int left, int right, int jumpIfTrue, int type)
-  {
+  public ConditionalBranch(int stackInc, int left, int right, int jumpIfTrue, int type) {
     super(stackInc, jumpIfTrue);
     this.left = left;
     this.right = right;

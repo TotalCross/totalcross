@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -26,8 +24,7 @@ import totalcross.ui.Window;
  * Event is the base class for all events.
  */
 
-public class Event
-{
+public class Event {
   /** The type of event. */
   public int type;
 
@@ -49,22 +46,19 @@ public class Event
   public boolean consumed;
 
   /** Constructs a new event based in the given parameters. */
-  public Event(int type, Object target, int timeStamp)
-  {
+  public Event(int type, Object target, int timeStamp) {
     this.type = type;
     this.target = target;
     this.timeStamp = timeStamp;
   }
 
   /** Constructs a new event with the current time stamp */
-  public Event()
-  {
+  public Event() {
     timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.
   }
 
   /** Updates the timeStamp parameter with the current time */
-  public void touch()
-  {
+  public void touch() {
     timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.
   }
 
@@ -73,22 +67,19 @@ public class Event
 
   /** Register a new event with the system. Use it to avoid
    * conflict of events created by multiple Applications. */
-  public static int getNextAvailableEventId()
-  {
+  public static int getNextAvailableEventId() {
     return nextAvailableEventId++;
   }
 
   /** Returns true if there is an event available in the VM event queue. */
   @ReplacedByNativeOnDeploy
-  public static boolean isAvailable()
-  {
+  public static boolean isAvailable() {
     return totalcross.Launcher.instance.eventIsAvailable();
   }
 
   @Override
-  public String toString()
-  {
-    return "target: "+target+" ("+super.toString()+")";
+  public String toString() {
+    return "target: " + target + " (" + super.toString() + ")";
   }
 
   /** Clears the event queue. 
@@ -99,7 +90,7 @@ public class Event
   public static void clearQueue(int type) // guich@tc120_44
   {
     Window.ignoreEventOfType = type;
-    while (isAvailable()){
+    while (isAvailable()) {
       Window.pumpEvents();
     }
     Window.ignoreEventOfType = -1;

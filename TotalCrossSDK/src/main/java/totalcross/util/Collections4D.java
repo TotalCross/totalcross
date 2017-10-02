@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.lang.Comparable;
@@ -95,8 +94,7 @@ import totalcross.util.concurrent.Lock;
  * @since 1.2
  * @status updated to 1.5
  */
-public class Collections4D
-{
+public class Collections4D {
   /**
    * Constant used to decide cutoff for when a non-RandomAccess list should
    * be treated as sequential-access. Basically, quadratic behavior is
@@ -115,16 +113,14 @@ public class Collections4D
    * @param l the list to check
    * @return <code>true</code> if it should be treated as sequential-access
    */
-  private static boolean isSequential(List<?> l)
-  {
-    return ! (l instanceof RandomAccess) && l.size() > LARGE_LIST_SIZE;
+  private static boolean isSequential(List<?> l) {
+    return !(l instanceof RandomAccess) && l.size() > LARGE_LIST_SIZE;
   }
 
   /**
    * This class is non-instantiable.
    */
-  private Collections4D()
-  {
+  private Collections4D() {
   }
 
   /**
@@ -141,8 +137,7 @@ public class Collections4D
    * @return an empty parameterized set.
    * @since 1.5
    */
-  public static final <T> Set<T> emptySet()
-  {
+  public static final <T> Set<T> emptySet() {
     /* FIXME: Could this be optimized? */
     return new EmptySet<T>();
   }
@@ -153,13 +148,11 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class EmptySet<T> extends AbstractSet<T>
-  {
+  private static final class EmptySet<T> extends AbstractSet<T> {
     /**
      * A private constructor adds overhead.
      */
-    EmptySet()
-    {
+    EmptySet() {
     }
 
     /**
@@ -167,8 +160,7 @@ public class Collections4D
      * @return 0.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return 0;
     }
 
@@ -178,8 +170,7 @@ public class Collections4D
      */
     // This is really cheating! I think it's perfectly valid, though.
     @Override
-    public Iterator<T> iterator()
-    {
+    public Iterator<T> iterator() {
       return (Iterator<T>) EMPTY_LIST.iterator();
     }
 
@@ -191,8 +182,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return false;
     }
 
@@ -203,8 +193,7 @@ public class Collections4D
      * @return <code>true</code> if c is empty.
      */
     @Override
-    public boolean containsAll(Collection<?> c)
-    {
+    public boolean containsAll(Collection<?> c) {
       return c.isEmpty();
     }
 
@@ -214,8 +203,7 @@ public class Collections4D
      * @return <code>true</code> if o is an empty instance of <code>Set</code>.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return o instanceof Set && ((Set) o).isEmpty();
     }
 
@@ -224,8 +212,7 @@ public class Collections4D
      * @return 0.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return 0;
     }
 
@@ -235,8 +222,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean remove(Object o)
-    {
+    public boolean remove(Object o) {
       return false;
     }
 
@@ -247,8 +233,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean removeAll(Collection<?> c)
-    {
+    public boolean removeAll(Collection<?> c) {
       return false;
     }
 
@@ -259,8 +244,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean retainAll(Collection<?> c)
-    {
+    public boolean retainAll(Collection<?> c) {
       return false;
     }
 
@@ -269,8 +253,7 @@ public class Collections4D
      * @return A new array with a size of 0.
      */
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       return new Object[0];
     }
 
@@ -281,9 +264,8 @@ public class Collections4D
      *         initial element set to null.
      */
     @Override
-    public <E> E[] toArray(E[] a)
-    {
-      if (a.length > 0){
+    public <E> E[] toArray(E[] a) {
+      if (a.length > 0) {
         a[0] = null;
       }
       return a;
@@ -295,8 +277,7 @@ public class Collections4D
      * @return the string "[]".
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return "[]";
     }
   } // class EmptySet
@@ -316,8 +297,7 @@ public class Collections4D
    * @return an empty parameterized list.
    * @since 1.5
    */
-  public static final <T> List<T> emptyList()
-  {
+  public static final <T> List<T> emptyList() {
     /* FIXME: Could this be optimized? */
     return new EmptyList<T>();
   }
@@ -328,14 +308,11 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class EmptyList<T> extends AbstractList<T>
-  implements RandomAccess
-  {
+  private static final class EmptyList<T> extends AbstractList<T> implements RandomAccess {
     /**
      * A private constructor adds overhead.
      */
-    EmptyList()
-    {
+    EmptyList() {
     }
 
     /**
@@ -343,8 +320,7 @@ public class Collections4D
      * @return 0.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return 0;
     }
 
@@ -358,8 +334,7 @@ public class Collections4D
      *         is outside the bounds of an empty array.
      */
     @Override
-    public T get(int index)
-    {
+    public T get(int index) {
       throw new IndexOutOfBoundsException();
     }
 
@@ -371,8 +346,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return false;
     }
 
@@ -383,8 +357,7 @@ public class Collections4D
      * @return <code>true</code> if c is also empty.
      */
     @Override
-    public boolean containsAll(Collection<?> c)
-    {
+    public boolean containsAll(Collection<?> c) {
       return c.isEmpty();
     }
 
@@ -395,8 +368,7 @@ public class Collections4D
      *         <code>List</code>.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return o instanceof List && ((List) o).isEmpty();
     }
 
@@ -405,8 +377,7 @@ public class Collections4D
      * @return 1.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return 1;
     }
 
@@ -416,8 +387,7 @@ public class Collections4D
      * @return -1.
      */
     @Override
-    public int indexOf(Object o)
-    {
+    public int indexOf(Object o) {
       return -1;
     }
 
@@ -427,8 +397,7 @@ public class Collections4D
      * @return -1.
      */
     @Override
-    public int lastIndexOf(Object o)
-    {
+    public int lastIndexOf(Object o) {
       return -1;
     }
 
@@ -438,8 +407,7 @@ public class Collections4D
      * @return -1.
      */
     @Override
-    public boolean remove(Object o)
-    {
+    public boolean remove(Object o) {
       return false;
     }
 
@@ -450,8 +418,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean removeAll(Collection<?> c)
-    {
+    public boolean removeAll(Collection<?> c) {
       return false;
     }
 
@@ -462,8 +429,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean retainAll(Collection<?> c)
-    {
+    public boolean retainAll(Collection<?> c) {
       return false;
     }
 
@@ -472,8 +438,7 @@ public class Collections4D
      * @return A new array with a size of 0.
      */
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       return new Object[0];
     }
 
@@ -484,9 +449,8 @@ public class Collections4D
      *         initial element set to null.
      */
     @Override
-    public <E> E[] toArray(E[] a)
-    {
-      if (a.length > 0){
+    public <E> E[] toArray(E[] a) {
+      if (a.length > 0) {
         a[0] = null;
       }
       return a;
@@ -498,8 +462,7 @@ public class Collections4D
      * @return the string "[]".
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return "[]";
     }
   } // class EmptyList
@@ -518,10 +481,9 @@ public class Collections4D
    * @return an empty parameterized map.
    * @since 1.5
    */
-  public static final <K,V> Map<K,V> emptyMap()
-  {
+  public static final <K, V> Map<K, V> emptyMap() {
     /* FIXME: Could this be optimized? */
-    return new EmptyMap<K,V>();
+    return new EmptyMap<K, V>();
   }
 
   /**
@@ -530,13 +492,11 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class EmptyMap<K, V> extends AbstractMap<K, V>
-  {
+  private static final class EmptyMap<K, V> extends AbstractMap<K, V> {
     /**
      * A private constructor adds overhead.
      */
-    EmptyMap()
-    {
+    EmptyMap() {
     }
 
     /**
@@ -544,8 +504,7 @@ public class Collections4D
      * @return The empty set.
      */
     @Override
-    public Set<Map.Entry<K, V>> entrySet()
-    {
+    public Set<Map.Entry<K, V>> entrySet() {
       return EMPTY_SET;
     }
 
@@ -557,8 +516,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean containsKey(Object key)
-    {
+    public boolean containsKey(Object key) {
       return false;
     }
 
@@ -568,8 +526,7 @@ public class Collections4D
      * @return <code>false</code>.
      */
     @Override
-    public boolean containsValue(Object value)
-    {
+    public boolean containsValue(Object value) {
       return false;
     }
 
@@ -580,8 +537,7 @@ public class Collections4D
      *         <code>Map</code>.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return o instanceof Map && ((Map) o).isEmpty();
     }
 
@@ -591,8 +547,7 @@ public class Collections4D
      * @return null.
      */
     @Override
-    public V get(Object o)
-    {
+    public V get(Object o) {
       return null;
     }
 
@@ -601,8 +556,7 @@ public class Collections4D
      * @return 0.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return 0;
     }
 
@@ -611,8 +565,7 @@ public class Collections4D
      * @return The empty set.
      */
     @Override
-    public Set<K> keySet()
-    {
+    public Set<K> keySet() {
       return EMPTY_SET;
     }
 
@@ -622,8 +575,7 @@ public class Collections4D
      * @return null, as there is never a mapping for o.
      */
     @Override
-    public V remove(Object o)
-    {
+    public V remove(Object o) {
       return null;
     }
 
@@ -632,8 +584,7 @@ public class Collections4D
      * @return 0.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return 0;
     }
 
@@ -643,8 +594,7 @@ public class Collections4D
      * @return The empty set.
      */
     @Override
-    public Collection<V> values()
-    {
+    public Collection<V> values() {
       return EMPTY_SET;
     }
 
@@ -654,12 +604,10 @@ public class Collections4D
      * @return the string "[]".
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return "{}";
     }
   } // class EmptyMap
-
 
   /**
    * Compare two objects with or without a Comparator. If c is null, uses the
@@ -667,8 +615,7 @@ public class Collections4D
    * clever, but worth it for removing a duplicate of the search code.
    * Note: This code is also used in Arrays (for sort as well as search).
    */
-  static final <T> int compare(T o1, T o2, Comparator<? super T> c)
-  {
+  static final <T> int compare(T o1, T o2, Comparator<? super T> c) {
     return c == null ? ((Comparable) o1).compareTo(o2) : c.compare(o1, o2);
   }
 
@@ -696,9 +643,7 @@ public class Collections4D
    * @throws NullPointerException if a null element has compareTo called
    * @see #sort(List)
    */
-  public static <T> int binarySearch(List<? extends Comparable<? super T>> l,
-      T key)
-  {
+  public static <T> int binarySearch(List<? extends Comparable<? super T>> l, T key) {
     return binarySearch(l, key, null);
   }
 
@@ -729,41 +674,34 @@ public class Collections4D
    *         ordering (only possible when c is null)
    * @see #sort(List, Comparator)
    */
-  public static <T> int binarySearch(List<? extends T> l, T key,
-      Comparator<? super T> c)
-  {
+  public static <T> int binarySearch(List<? extends T> l, T key, Comparator<? super T> c) {
     int pos = 0;
     int low = 0;
     int hi = l.size() - 1;
 
     // We use a linear search with log(n) comparisons using an iterator
     // if the list is sequential-access.
-    if (isSequential(l))
-    {
+    if (isSequential(l)) {
       ListIterator<T> itr = ((List<T>) l).listIterator();
       int i = 0;
       T o = itr.next(); // Assumes list is not empty (see isSequential)
       boolean forward = true;
-      while (low <= hi)
-      {
+      while (low <= hi) {
         pos = (low + hi) >>> 1;
-        if (i < pos)
-        {
-          if (!forward)
-          {
+        if (i < pos) {
+          if (!forward) {
             itr.next(); // Changing direction first.
           }
-          for ( ; i != pos; i++, o = itr.next()) {;
+          for (; i != pos; i++, o = itr.next()) {
+            ;
           }
           forward = true;
-        }
-        else
-        {
-          if (forward)
-          {
+        } else {
+          if (forward) {
             itr.previous(); // Changing direction first.
           }
-          for ( ; i != pos; i--, o = itr.previous()) {;
+          for (; i != pos; i--, o = itr.previous()) {
+            ;
           }
           forward = false;
         }
@@ -777,11 +715,8 @@ public class Collections4D
           low = ++pos;
         }
       }
-    }
-    else
-    {
-      while (low <= hi)
-      {
+    } else {
+      while (low <= hi) {
         pos = (low + hi) >>> 1;
         final int d = compare(((List<T>) l).get(pos), key, c);
         if (d == 0) {
@@ -811,18 +746,16 @@ public class Collections4D
    * @throws UnsupportedOperationException if dest.listIterator() does not
    *         support the set operation
    */
-  public static <T> void copy(List<? super T> dest, List<? extends T> source)
-  {
+  public static <T> void copy(List<? super T> dest, List<? extends T> source) {
     int pos = source.size();
-    if (dest.size() < pos){
+    if (dest.size() < pos) {
       throw new IndexOutOfBoundsException("Source does not fit in dest");
     }
 
     Iterator<? extends T> i1 = source.iterator();
     ListIterator<? super T> i2 = dest.listIterator();
 
-    while (--pos >= 0)
-    {
+    while (--pos >= 0) {
       i2.next();
       i2.set(i1.next());
     }
@@ -835,11 +768,9 @@ public class Collections4D
    * @param c the Collection to iterate over
    * @return an Enumeration backed by an Iterator over c
    */
-  public static <T> Enumeration<T> enumeration(Collection<T> c)
-  {
+  public static <T> Enumeration<T> enumeration(Collection<T> c) {
     final Iterator<T> i = c.iterator();
-    return new Enumeration<T>()
-    {
+    return new Enumeration<T>() {
       /**
        * Returns <code>true</code> if there are more elements to
        * be enumerated.
@@ -848,8 +779,7 @@ public class Collections4D
        *         called on the underlying iterator.
        */
       @Override
-      public final boolean hasMoreElements()
-      {
+      public final boolean hasMoreElements() {
         return i.hasNext();
       }
 
@@ -860,8 +790,7 @@ public class Collections4D
        *         called on the underlying iterator.
        */
       @Override
-      public final T nextElement()
-      {
+      public final T nextElement() {
         return i.next();
       }
     };
@@ -876,11 +805,9 @@ public class Collections4D
    * @throws UnsupportedOperationException if l.listIterator() does not
    *         support the set operation.
    */
-  public static <T> void fill(List<? super T> l, T val)
-  {
+  public static <T> void fill(List<? super T> l, T val) {
     ListIterator<? super T> itr = l.listIterator();
-    for (int i = l.size() - 1; i >= 0; --i)
-    {
+    for (int i = l.size() - 1; i >= 0; --i) {
       itr.next();
       itr.set(val);
     }
@@ -899,11 +826,10 @@ public class Collections4D
    * @return the index where found, or -1
    * @since 1.4
    */
-  public static int indexOfSubList(List<?> source, List<?> target)
-  {
+  public static int indexOfSubList(List<?> source, List<?> target) {
     int ssize = source.size();
     for (int i = 0, j = target.size(); j <= ssize; i++, j++) {
-      if (source.subList(i, j).equals(target)){
+      if (source.subList(i, j).equals(target)) {
         return i;
       }
     }
@@ -923,11 +849,10 @@ public class Collections4D
    * @return the index where found, or -1
    * @since 1.4
    */
-  public static int lastIndexOfSubList(List<?> source, List<?> target)
-  {
+  public static int lastIndexOfSubList(List<?> source, List<?> target) {
     int ssize = source.size();
     for (int i = ssize - target.size(), j = ssize; i >= 0; i--, j--) {
-      if (source.subList(i, j).equals(target)){
+      if (source.subList(i, j).equals(target)) {
         return i;
       }
     }
@@ -944,10 +869,9 @@ public class Collections4D
    * @see ArrayList
    * @since 1.4
    */
-  public static <T> ArrayList<T> list(Enumeration<T> e)
-  {
+  public static <T> ArrayList<T> list(Enumeration<T> e) {
     ArrayList<T> l = new ArrayList<T>();
-    while (e.hasMoreElements()){
+    while (e.hasMoreElements()) {
       l.add(e.nextElement());
     }
     return l;
@@ -964,9 +888,7 @@ public class Collections4D
    * @exception ClassCastException if elements in c are not mutually comparable
    * @exception NullPointerException if null.compareTo is called
    */
-  public static <T extends Object & Comparable<? super T>>
-  T max(Collection<? extends T> c)
-  {
+  public static <T extends Object & Comparable<? super T>> T max(Collection<? extends T> c) {
     return max(c, null);
   }
 
@@ -984,14 +906,11 @@ public class Collections4D
    * @throws NullPointerException if null is compared by natural ordering
    *        (only possible when order is null)
    */
-  public static <T> T max(Collection<? extends T> c,
-      Comparator<? super T> order)
-  {
+  public static <T> T max(Collection<? extends T> c, Comparator<? super T> order) {
     Iterator<? extends T> itr = c.iterator();
     T max = itr.next(); // throws NoSuchElementException
     int csize = c.size();
-    for (int i = 1; i < csize; i++)
-    {
+    for (int i = 1; i < csize; i++) {
       T o = itr.next();
       if (compare(max, o, order) < 0) {
         max = o;
@@ -1011,9 +930,7 @@ public class Collections4D
    * @throws ClassCastException if elements in c are not mutually comparable
    * @throws NullPointerException if null.compareTo is called
    */
-  public static <T extends Object & Comparable<? super T>>
-  T min(Collection<? extends T> c)
-  {
+  public static <T extends Object & Comparable<? super T>> T min(Collection<? extends T> c) {
     return min(c, null);
   }
 
@@ -1031,14 +948,11 @@ public class Collections4D
    * @throws NullPointerException if null is compared by natural ordering
    *        (only possible when order is null)
    */
-  public static <T> T min(Collection<? extends T> c,
-      Comparator<? super T> order)
-  {
+  public static <T> T min(Collection<? extends T> c, Comparator<? super T> order) {
     Iterator<? extends T> itr = c.iterator();
     T min = itr.next(); // throws NoSuchElementExcception
     int csize = c.size();
-    for (int i = 1; i < csize; i++)
-    {
+    for (int i = 1; i < csize; i++) {
       T o = itr.next();
       if (compare(min, o, order) > 0) {
         min = o;
@@ -1062,8 +976,7 @@ public class Collections4D
    * 
    * @see RandomAccess
    */
-  public static <T> List<T> nCopies(final int n, final T o)
-  {
+  public static <T> List<T> nCopies(final int n, final T o) {
     return new CopiesList<T>(n, o);
   }
 
@@ -1073,9 +986,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class CopiesList<T> extends AbstractList4D<T>
-  implements RandomAccess
-  {
+  private static final class CopiesList<T> extends AbstractList4D<T> implements RandomAccess {
     /**
      * The count of elements in this list.
      * @serial the list size
@@ -1095,9 +1006,8 @@ public class Collections4D
      * @param o the object
      * @throws IllegalArgumentException if n &lt; 0
      */
-    CopiesList(int n, T o)
-    {
-      if (n < 0){
+    CopiesList(int n, T o) {
+      if (n < 0) {
         throw new IllegalArgumentException();
       }
       this.n = n;
@@ -1109,8 +1019,7 @@ public class Collections4D
      * @return The size of the list.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return n;
     }
 
@@ -1121,9 +1030,8 @@ public class Collections4D
      * @return The element used by this list.
      */
     @Override
-    public T get(int index)
-    {
-      if (index < 0 || index >= n){
+    public T get(int index) {
+      if (index < 0 || index >= n) {
         throw new IndexOutOfBoundsException();
       }
       return element;
@@ -1137,8 +1045,7 @@ public class Collections4D
      * @return <code>true</code> if o is the element used by this list.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return n > 0 && AbstractCollection4D.equals(o, element);
     }
 
@@ -1148,8 +1055,7 @@ public class Collections4D
      * @return 0 if <code>o == element</code>, -1 if not.
      */
     @Override
-    public int indexOf(Object o)
-    {
+    public int indexOf(Object o) {
       return (n > 0 && AbstractCollection4D.equals(o, element)) ? 0 : -1;
     }
 
@@ -1160,8 +1066,7 @@ public class Collections4D
      *         -1 if not.
      */
     @Override
-    public int lastIndexOf(Object o)
-    {
+    public int lastIndexOf(Object o) {
       return AbstractCollection4D.equals(o, element) ? n - 1 : -1;
     }
 
@@ -1174,9 +1079,8 @@ public class Collections4D
      *         used by this list.
      */
     @Override
-    public List<T> subList(int from, int to)
-    {
-      if (from < 0 || to > n){
+    public List<T> subList(int from, int to) {
+      if (from < 0 || to > n) {
         throw new IndexOutOfBoundsException();
       }
       return new CopiesList<T>(to - from, element);
@@ -1188,8 +1092,7 @@ public class Collections4D
      *         the element used by this list.
      */
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       Object[] a = new Object[n];
       Arrays.fill(a, element);
       return a;
@@ -1200,10 +1103,9 @@ public class Collections4D
      * @return A string representation of the list.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       StringBuffer r = new StringBuffer("{");
-      for (int i = n; --i > 0; ) {
+      for (int i = n; --i > 0;) {
         r.append(element).append(", ");
       }
       r.append(element).append("}");
@@ -1228,13 +1130,11 @@ public class Collections4D
    *         it being added to the list
    * @since 1.4
    */
-  public static <T> boolean replaceAll(List<T> list, T oldval, T newval)
-  {
+  public static <T> boolean replaceAll(List<T> list, T oldval, T newval) {
     ListIterator<T> itr = list.listIterator();
     boolean replace_occured = false;
-    for (int i = list.size(); --i >= 0; ) {
-      if (AbstractCollection4D.equals(oldval, itr.next()))
-      {
+    for (int i = list.size(); --i >= 0;) {
+      if (AbstractCollection4D.equals(oldval, itr.next())) {
         itr.set(newval);
         replace_occured = true;
       }
@@ -1249,14 +1149,12 @@ public class Collections4D
    * @throws UnsupportedOperationException if l.listIterator() does not
    *         support the set operation
    */
-  public static void reverse(List<?> l)
-  {
+  public static void reverse(List<?> l) {
     ListIterator i1 = l.listIterator();
     int pos1 = 1;
     int pos2 = l.size();
     ListIterator i2 = l.listIterator(pos2);
-    while (pos1 < pos2)
-    {
+    while (pos1 < pos2) {
       Object o1 = i1.next();
       Object o2 = i2.previous();
       i1.set(o2);
@@ -1280,17 +1178,14 @@ public class Collections4D
    *
    * @since 1.5
    */
-  public static <T> Comparator<T> reverseOrder(final Comparator<T> c)
-  {
-    if (c == null){
+  public static <T> Comparator<T> reverseOrder(final Comparator<T> c) {
+    if (c == null) {
       return (Comparator<T>) rcInstance;
     }
-    return new ReverseComparator<T> ()
-    {
+    return new ReverseComparator<T>() {
       @Override
-      public int compare(T a, T b)
-      {
-        return - c.compare(a, b);
+      public int compare(T a, T b) {
+        return -c.compare(a, b);
       }
     };
   }
@@ -1306,8 +1201,7 @@ public class Collections4D
    * @see Comparable
    * 
    */
-  public static <T> Comparator<T> reverseOrder()
-  {
+  public static <T> Comparator<T> reverseOrder() {
     return (Comparator<T>) rcInstance;
   }
 
@@ -1322,14 +1216,11 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class ReverseComparator<T>
-  implements Comparator<T>
-  {
+  private static class ReverseComparator<T> implements Comparator<T> {
     /**
      * A private constructor adds overhead.
      */
-    ReverseComparator()
-    {
+    ReverseComparator() {
     }
 
     /**
@@ -1340,8 +1231,7 @@ public class Collections4D
      * @return &lt;, ==, or &gt; 0 according to b.compareTo(a)
      */
     @Override
-    public int compare(T a, T b)
-    {
+    public int compare(T a, T b) {
       return ((Comparable) b).compareTo(a);
     }
   }
@@ -1376,35 +1266,30 @@ public class Collections4D
    * @throws UnsupportedOperationException if the list does not support set
    * @since 1.4
    */
-  public static void rotate(List<?> list, int distance)
-  {
+  public static void rotate(List<?> list, int distance) {
     int size = list.size();
-    if (size == 0){
+    if (size == 0) {
       return;
     }
     distance %= size;
-    if (distance == 0){
+    if (distance == 0) {
       return;
     }
-    if (distance < 0){
+    if (distance < 0) {
       distance += size;
     }
 
-    if (isSequential(list))
-    {
+    if (isSequential(list)) {
       reverse(list);
       reverse(list.subList(0, distance));
       reverse(list.subList(distance, size));
-    }
-    else
-    {
+    } else {
       // Determine the least common multiple of distance and size, as there
       // are (distance / LCM) loops to cycle through.
       int a = size;
       int lcm = distance;
       int b = a % lcm;
-      while (b != 0)
-      {
+      while (b != 0) {
         a = lcm;
         lcm = b;
         b = a % lcm;
@@ -1413,8 +1298,7 @@ public class Collections4D
       // Now, make the swaps. We must take the remainder every time through
       // the inner loop so that we don't overflow i to negative values.
       List<Object> objList = (List<Object>) list;
-      while (--lcm >= 0)
-      {
+      while (--lcm >= 0) {
         Object o = objList.get(lcm);
         for (int i = lcm + distance; i != lcm; i = (i + distance) % size) {
           o = objList.set(i, o);
@@ -1447,12 +1331,9 @@ public class Collections4D
    * @throws UnsupportedOperationException if l.listIterator() does not
    *         support the set operation
    */
-  public static void shuffle(List<?> l)
-  {
-    if (defaultRandom == null)
-    {
-      synchronized (lock)
-      {
+  public static void shuffle(List<?> l) {
+    if (defaultRandom == null) {
+      synchronized (lock) {
         if (defaultRandom == null) {
           defaultRandom = new Random();
         }
@@ -1491,28 +1372,25 @@ public class Collections4D
    * @throws UnsupportedOperationException if l.listIterator() does not
    *         support the set operation
    */
-  public static void shuffle(List<?> l, Random r)
-  {
+  public static void shuffle(List<?> l, Random r) {
     int lsize = l.size();
     List<Object> list = (List<Object>) l;
     ListIterator<Object> i = list.listIterator(lsize);
     boolean sequential = isSequential(l);
     Object[] a = null; // stores a copy of the list for the sequential case
 
-    if (sequential){
+    if (sequential) {
       a = list.toArray();
     }
 
-    for (int pos = lsize - 1; pos > 0; --pos)
-    {
+    for (int pos = lsize - 1; pos > 0; --pos) {
       // Obtain a random position to swap with. pos + 1 is used so that the
       // range of the random number includes the current position.
       int swap = r.nextInt(pos + 1);
 
       // Swap the desired element.
       Object o;
-      if (sequential)
-      {
+      if (sequential) {
         o = a[swap];
         a[swap] = i.previous();
       } else {
@@ -1534,12 +1412,10 @@ public class Collections4D
    * @throws NullPointerException if the collection is <code>null</code>.
    * @since 1.5
    */
-  public static int frequency (Collection<?> c, Object o)
-  {
+  public static int frequency(Collection<?> c, Object o) {
     int result = 0;
     final Iterator<?> it = c.iterator();
-    while (it.hasNext())
-    {
+    while (it.hasNext()) {
       Object v = it.next();
       if (AbstractCollection4D.equals(o, v)) {
         ++result;
@@ -1573,12 +1449,10 @@ public class Collections4D
    *                                  to be added for some other reason.
    * @since 1.5
    */
-  public static <T> boolean addAll(Collection<? super T> c, T... a)
-  {
+  public static <T> boolean addAll(Collection<? super T> c, T... a) {
     boolean overall = false;
 
-    for (T element : a)
-    {
+    for (T element : a) {
       boolean result = c.add(element);
       if (result) {
         overall = true;
@@ -1600,18 +1474,16 @@ public class Collections4D
    * @throws NullPointerException if either collection is null.
    * @since 1.5
    */
-  public static boolean disjoint(Collection<?> c1, Collection<?> c2)
-  {
+  public static boolean disjoint(Collection<?> c1, Collection<?> c2) {
     Collection<Object> oc1 = (Collection<Object>) c1;
     final Iterator<Object> it = oc1.iterator();
-    while (it.hasNext()){
-      if (c2.contains(it.next())){
+    while (it.hasNext()) {
+      if (c2.contains(it.next())) {
         return false;
       }
     }
     return true;
   }
-
 
   /**
    * Obtain an immutable Set consisting of a single element. The return value
@@ -1621,8 +1493,7 @@ public class Collections4D
    * @return an immutable Set containing only o
    * 
    */
-  public static <T> Set<T> singleton(T o)
-  {
+  public static <T> Set<T> singleton(T o) {
     return new SingletonSet<T>(o);
   }
 
@@ -1632,8 +1503,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class SingletonSet<T> extends AbstractSet4D<T>
-  {
+  private static final class SingletonSet<T> extends AbstractSet4D<T> {
     /**
      * The single element; package visible for use in nested class.
      * @serial the singleton
@@ -1644,8 +1514,7 @@ public class Collections4D
      * Construct a singleton.
      * @param o the element
      */
-    SingletonSet(T o)
-    {
+    SingletonSet(T o) {
       element = o;
     }
 
@@ -1654,8 +1523,7 @@ public class Collections4D
      * @return 1.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return 1;
     }
 
@@ -1663,10 +1531,8 @@ public class Collections4D
      * Returns an iterator over the lone element.
      */
     @Override
-    public Iterator<T> iterator()
-    {
-      return new Iterator<T>()
-      {
+    public Iterator<T> iterator() {
+      return new Iterator<T>() {
         /**
          * Flag to indicate whether or not the element has
          * been retrieved.
@@ -1680,8 +1546,7 @@ public class Collections4D
          * @return <code>true</code> if the element has not yet been returned.
          */
         @Override
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
           return hasNext;
         }
 
@@ -1693,10 +1558,8 @@ public class Collections4D
          *         has already been retrieved.
          */
         @Override
-        public T next()
-        {
-          if (hasNext)
-          {
+        public T next() {
+          if (hasNext) {
             hasNext = false;
             return element;
           } else {
@@ -1714,8 +1577,7 @@ public class Collections4D
          *         <code>remove()</code>.
          */
         @Override
-        public void remove()
-        {
+        public void remove() {
           throw new UnsupportedOperationException();
         }
       };
@@ -1730,8 +1592,7 @@ public class Collections4D
      * @return <code>true</code> if o == the element of the singleton.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return AbstractCollection4D.equals(o, element);
     }
 
@@ -1743,12 +1604,11 @@ public class Collections4D
      *         elements equal to the element in this singleton.
      */
     @Override
-    public boolean containsAll(Collection<?> c)
-    {
+    public boolean containsAll(Collection<?> c) {
       Iterator<?> i = c.iterator();
       int pos = c.size();
-      while (--pos >= 0){
-        if (! AbstractCollection4D.equals(i.next(), element)) {
+      while (--pos >= 0) {
+        if (!AbstractCollection4D.equals(i.next(), element)) {
           return false;
         }
       }
@@ -1761,8 +1621,7 @@ public class Collections4D
      * @return The hashcode of the element.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return AbstractCollection4D.hashCode(element);
     }
 
@@ -1772,9 +1631,8 @@ public class Collections4D
      * @return An array containing the element.
      */
     @Override
-    public Object[] toArray()
-    {
-      return new Object[] {element};
+    public Object[] toArray() {
+      return new Object[] { element };
     }
 
     /**
@@ -1784,8 +1642,7 @@ public class Collections4D
      *         square brackets.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return "[" + element + "]";
     }
   } // class SingletonSet
@@ -1800,8 +1657,7 @@ public class Collections4D
    * @see RandomAccess
    * @since 1.3
    */
-  public static <T> List<T> singletonList(T o)
-  {
+  public static <T> List<T> singletonList(T o) {
     return new SingletonList<T>(o);
   }
 
@@ -1811,9 +1667,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class SingletonList<T> extends AbstractList4D<T>
-  implements RandomAccess
-  {
+  private static final class SingletonList<T> extends AbstractList4D<T> implements RandomAccess {
     /**
      * The single element.
      * @serial the singleton
@@ -1824,8 +1678,7 @@ public class Collections4D
      * Construct a singleton.
      * @param o the element
      */
-    SingletonList(T o)
-    {
+    SingletonList(T o) {
       element = o;
     }
 
@@ -1834,8 +1687,7 @@ public class Collections4D
      * @return 1.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return 1;
     }
 
@@ -1849,9 +1701,8 @@ public class Collections4D
      *         index is not 0.
      */
     @Override
-    public T get(int index)
-    {
-      if (index == 0){
+    public T get(int index) {
+      if (index == 0) {
         return element;
       }
       throw new IndexOutOfBoundsException();
@@ -1866,8 +1717,7 @@ public class Collections4D
      * @return <code>true</code> if o == the singleton element.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return AbstractCollection4D.equals(o, element);
     }
 
@@ -1879,12 +1729,11 @@ public class Collections4D
      *         elements equal to the element in this singleton.
      */
     @Override
-    public boolean containsAll(Collection<?> c)
-    {
+    public boolean containsAll(Collection<?> c) {
       Iterator<?> i = c.iterator();
       int pos = c.size();
-      while (--pos >= 0){
-        if (! AbstractCollection4D.equals(i.next(), element)) {
+      while (--pos >= 0) {
+        if (!AbstractCollection4D.equals(i.next(), element)) {
           return false;
         }
       }
@@ -1898,8 +1747,7 @@ public class Collections4D
      *         on the hashcode of the singleton element.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return 31 + AbstractCollection4D.hashCode(element);
     }
 
@@ -1910,8 +1758,7 @@ public class Collections4D
      * @return 0 if o is the singleton element, -1 if not.
      */
     @Override
-    public int indexOf(Object o)
-    {
+    public int indexOf(Object o) {
       return AbstractCollection4D.equals(o, element) ? 0 : -1;
     }
 
@@ -1922,8 +1769,7 @@ public class Collections4D
      * @return 0 if o is the singleton element, -1 if not.
      */
     @Override
-    public int lastIndexOf(Object o)
-    {
+    public int lastIndexOf(Object o) {
       return AbstractCollection4D.equals(o, element) ? 0 : -1;
     }
 
@@ -1939,15 +1785,14 @@ public class Collections4D
      *         than 1.
      */
     @Override
-    public List<T> subList(int from, int to)
-    {
-      if (from == to && (to == 0 || to == 1)){
+    public List<T> subList(int from, int to) {
+      if (from == to && (to == 0 || to == 1)) {
         return EMPTY_LIST;
       }
-      if (from == 0 && to == 1){
+      if (from == 0 && to == 1) {
         return this;
       }
-      if (from > to){
+      if (from > to) {
         throw new IllegalArgumentException();
       }
       throw new IndexOutOfBoundsException();
@@ -1959,9 +1804,8 @@ public class Collections4D
      * @return An array containing the element.
      */
     @Override
-    public Object[] toArray()
-    {
-      return new Object[] {element};
+    public Object[] toArray() {
+      return new Object[] { element };
     }
 
     /**
@@ -1971,8 +1815,7 @@ public class Collections4D
      *         square brackets.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return "[" + element + "]";
     }
   } // class SingletonList
@@ -1987,8 +1830,7 @@ public class Collections4D
    * 
    * @since 1.3
    */
-  public static <K, V> Map<K, V> singletonMap(K key, V value)
-  {
+  public static <K, V> Map<K, V> singletonMap(K key, V value) {
     return new SingletonMap<K, V>(key, value);
   }
 
@@ -1998,8 +1840,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class SingletonMap<K, V> extends AbstractMap4D<K, V>
-  {
+  private static final class SingletonMap<K, V> extends AbstractMap4D<K, V> {
     /**
      * The single key.
      * @serial the singleton key
@@ -2022,8 +1863,7 @@ public class Collections4D
      * @param key the key
      * @param value the value
      */
-    SingletonMap(K key, V value)
-    {
+    SingletonMap(K key, V value) {
       k = key;
       v = value;
     }
@@ -2034,12 +1874,9 @@ public class Collections4D
      * @return A singleton containing the map entry.
      */
     @Override
-    public Set<Map.Entry<K, V>> entrySet()
-    {
-      if (entries == null)
-      {
-        Map.Entry<K,V> entry = new AbstractMap.SimpleEntry<K, V>(k, v)
-        {
+    public Set<Map.Entry<K, V>> entrySet() {
+      if (entries == null) {
+        Map.Entry<K, V> entry = new AbstractMap.SimpleEntry<K, V>(k, v) {
           /**
            * Sets the value of the map entry to the supplied value.
            * An exception is always thrown, as the map is immutable.
@@ -2050,8 +1887,7 @@ public class Collections4D
            *         is not supported.
            */
           @Override
-          public V setValue(V o)
-          {
+          public V setValue(V o) {
             throw new UnsupportedOperationException();
           }
         };
@@ -2070,8 +1906,7 @@ public class Collections4D
      *         this map.
      */
     @Override
-    public boolean containsKey(Object key)
-    {
+    public boolean containsKey(Object key) {
       return equals(key, k);
     }
 
@@ -2083,8 +1918,7 @@ public class Collections4D
      *         this map.
      */
     @Override
-    public boolean containsValue(Object value)
-    {
+    public boolean containsValue(Object value) {
       return equals(value, v);
     }
 
@@ -2096,8 +1930,7 @@ public class Collections4D
      *         singleton key, null otherwise.
      */
     @Override
-    public V get(Object key)
-    {
+    public V get(Object key) {
       return equals(key, k) ? v : null;
     }
 
@@ -2108,8 +1941,7 @@ public class Collections4D
      *         and the singleton value.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return AbstractMap4D.hashCode(k) ^ AbstractMap4D.hashCode(v);
     }
 
@@ -2119,9 +1951,8 @@ public class Collections4D
      * @return A singleton containing the key.
      */
     @Override
-    public Set<K> keySet()
-    {
-      if (keys == null){
+    public Set<K> keySet() {
+      if (keys == null) {
         keys = singleton(k);
       }
       return keys;
@@ -2133,8 +1964,7 @@ public class Collections4D
      * @return 1.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return 1;
     }
 
@@ -2145,9 +1975,8 @@ public class Collections4D
      * @return A singleton containing the value.
      */
     @Override
-    public Collection<V> values()
-    {
-      if (values == null){
+    public Collection<V> values() {
+      if (values == null) {
         values = singleton(v);
       }
       return values;
@@ -2160,8 +1989,7 @@ public class Collections4D
      *         and its associated value.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return "{" + k + "=" + v + "}";
     }
   } // class SingletonMap
@@ -2181,8 +2009,7 @@ public class Collections4D
    *     some element that is <code>null</code>.
    * @see Arrays#sort(Object[])
    */
-  public static <T extends Comparable<? super T>> void sort(List<T> l)
-  {
+  public static <T extends Comparable<? super T>> void sort(List<T> l) {
     sort(l, null);
   }
 
@@ -2205,13 +2032,11 @@ public class Collections4D
    *
    * @see Arrays#sort(Object[], Comparator)
    */
-  public static <T> void sort(List<T> l, Comparator<? super T> c)
-  {
+  public static <T> void sort(List<T> l, Comparator<? super T> c) {
     T[] a = (T[]) l.toArray();
     Arrays.sort(a, c);
     ListIterator<T> i = l.listIterator();
-    for (int pos = 0, alen = a.length;  pos < alen;  pos++)
-    {
+    for (int pos = 0, alen = a.length; pos < alen; pos++) {
       i.next();
       i.set(a[pos]);
     }
@@ -2229,12 +2054,10 @@ public class Collections4D
    *         list.size()
    * @since 1.4
    */
-  public static void swap(List<?> l, int i, int j)
-  {
+  public static void swap(List<?> l, int i, int j) {
     List<Object> list = (List<Object>) l;
     list.set(i, list.set(j, list.get(i)));
   }
-
 
   /**
    * Returns a synchronized (thread-safe) collection wrapper backed by the
@@ -2263,8 +2086,7 @@ public class Collections4D
    * @return a synchronized view of the collection
    * 
    */
-  public static <T> Collection<T> synchronizedCollection(Collection<T> c)
-  {
+  public static <T> Collection<T> synchronizedCollection(Collection<T> c) {
     return new SynchronizedCollection<T>(c);
   }
 
@@ -2276,9 +2098,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  static class SynchronizedCollection<T>
-  implements Collection<T>
-  {
+  static class SynchronizedCollection<T> implements Collection<T> {
     /**
      * The wrapped collection. Package visible for use by subclasses.
      * @serial the real collection
@@ -2298,11 +2118,10 @@ public class Collections4D
      * @param c the collection to wrap
      * @throws NullPointerException if c is null
      */
-    SynchronizedCollection(Collection<T> c)
-    {
+    SynchronizedCollection(Collection<T> c) {
       this.c = c;
       mutex = new Lock();
-      if (c == null){
+      if (c == null) {
         throw new NullPointerException();
       }
     }
@@ -2313,8 +2132,7 @@ public class Collections4D
      * @param sync the mutex
      * @param c the collection
      */
-    SynchronizedCollection(Lock sync, Collection<T> c)
-    {
+    SynchronizedCollection(Lock sync, Collection<T> c) {
       this.c = c;
       mutex = sync;
     }
@@ -2336,10 +2154,8 @@ public class Collections4D
      *         collection for some other reason.
      */
     @Override
-    public boolean add(T o)
-    {
-      synchronized (mutex)
-      {
+    public boolean add(T o) {
+      synchronized (mutex) {
         return c.add(o);
       }
     }
@@ -2362,10 +2178,8 @@ public class Collections4D
      *         to this collection for some other reason.
      */
     @Override
-    public boolean addAll(Collection<? extends T> col)
-    {
-      synchronized (mutex)
-      {
+    public boolean addAll(Collection<? extends T> col) {
+      synchronized (mutex) {
         return c.addAll(col);
       }
     }
@@ -2378,10 +2192,8 @@ public class Collections4D
      *         support the clear operation.
      */
     @Override
-    public void clear()
-    {
-      synchronized (mutex)
-      {
+    public void clear() {
+      synchronized (mutex) {
         c.clear();
       }
     }
@@ -2399,10 +2211,8 @@ public class Collections4D
      *         support null values.
      */
     @Override
-    public boolean contains(Object o)
-    {
-      synchronized (mutex)
-      {
+    public boolean contains(Object o) {
+      synchronized (mutex) {
         return c.contains(o);
       }
     }
@@ -2422,10 +2232,8 @@ public class Collections4D
      * @throws NullPointerException if cl itself is null.
      */
     @Override
-    public boolean containsAll(Collection<?> c1)
-    {
-      synchronized (mutex)
-      {
+    public boolean containsAll(Collection<?> c1) {
+      synchronized (mutex) {
         return c.containsAll(c1);
       }
     }
@@ -2438,10 +2246,8 @@ public class Collections4D
      * @return <code>true</code> if this collection contains no elements.
      */
     @Override
-    public boolean isEmpty()
-    {
-      synchronized (mutex)
-      {
+    public boolean isEmpty() {
+      synchronized (mutex) {
         return c.isEmpty();
       }
     }
@@ -2455,10 +2261,8 @@ public class Collections4D
      *         which returns each element in any order.
      */
     @Override
-    public Iterator<T> iterator()
-    {
-      synchronized (mutex)
-      {
+    public Iterator<T> iterator() {
+      synchronized (mutex) {
         return new SynchronizedIterator<T>(mutex, c.iterator());
       }
     }
@@ -2478,10 +2282,8 @@ public class Collections4D
      *         support null values.
      */
     @Override
-    public boolean remove(Object o)
-    {
-      synchronized (mutex)
-      {
+    public boolean remove(Object o) {
+      synchronized (mutex) {
         return c.remove(o);
       }
     }
@@ -2503,10 +2305,8 @@ public class Collections4D
      * @throws NullPointerException if c itself is null.
      */
     @Override
-    public boolean removeAll(Collection<?> col)
-    {
-      synchronized (mutex)
-      {
+    public boolean removeAll(Collection<?> col) {
+      synchronized (mutex) {
         return c.removeAll(col);
       }
     }
@@ -2529,10 +2329,8 @@ public class Collections4D
      * @throws NullPointerException if c itself is null.
      */
     @Override
-    public boolean retainAll(Collection<?> col)
-    {
-      synchronized (mutex)
-      {
+    public boolean retainAll(Collection<?> col) {
+      synchronized (mutex) {
         return c.retainAll(col);
       }
     }
@@ -2545,10 +2343,8 @@ public class Collections4D
      * @return The size of the collection.
      */
     @Override
-    public int size()
-    {
-      synchronized (mutex)
-      {
+    public int size() {
+      synchronized (mutex) {
         return c.size();
       }
     }
@@ -2562,10 +2358,8 @@ public class Collections4D
      *         elements occur in any order.
      */
     @Override
-    public Object[] toArray()
-    {
-      synchronized (mutex)
-      {
+    public Object[] toArray() {
+      synchronized (mutex) {
         return c.toArray();
       }
     }
@@ -2588,10 +2382,8 @@ public class Collections4D
      *         collection is not a subtype of the element type of a.
      */
     @Override
-    public <T> T[] toArray(T[] a)
-    {
-      synchronized (mutex)
-      {
+    public <T> T[] toArray(T[] a) {
+      synchronized (mutex) {
         return c.toArray(a);
       }
     }
@@ -2603,10 +2395,8 @@ public class Collections4D
      * @return A string representation of the collection.
      */
     @Override
-    public String toString()
-    {
-      synchronized (mutex)
-      {
+    public String toString() {
+      synchronized (mutex) {
         return c.toString();
       }
     }
@@ -2619,8 +2409,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class SynchronizedIterator<T> implements Iterator<T>
-  {
+  private static class SynchronizedIterator<T> implements Iterator<T> {
     /**
      * The object to synchronize on. Package visible for use by subclass.
      */
@@ -2636,8 +2425,7 @@ public class Collections4D
      * @param sync the mutex
      * @param i the wrapped iterator
      */
-    SynchronizedIterator(Object sync, Iterator<T> i)
-    {
+    SynchronizedIterator(Object sync, Iterator<T> i) {
       this.i = i;
       mutex = sync;
     }
@@ -2650,10 +2438,8 @@ public class Collections4D
      * @throws NoSuchElementException if there are no more elements
      */
     @Override
-    public T next()
-    {
-      synchronized (mutex)
-      {
+    public T next() {
+      synchronized (mutex) {
         return i.next();
       }
     }
@@ -2667,10 +2453,8 @@ public class Collections4D
      *         <code>next()</code>.
      */
     @Override
-    public boolean hasNext()
-    {
-      synchronized (mutex)
-      {
+    public boolean hasNext() {
+      synchronized (mutex) {
         return i.hasNext();
       }
     }
@@ -2691,10 +2475,8 @@ public class Collections4D
      *         the remove operation.
      */
     @Override
-    public void remove()
-    {
-      synchronized (mutex)
-      {
+    public void remove() {
+      synchronized (mutex) {
         i.remove();
       }
     }
@@ -2726,9 +2508,8 @@ public class Collections4D
    * 
    * @see RandomAccess
    */
-  public static <T> List<T> synchronizedList(List<T> l)
-  {
-    if (l instanceof RandomAccess){
+  public static <T> List<T> synchronizedList(List<T> l) {
+    if (l instanceof RandomAccess) {
       return new SynchronizedRandomAccessList<T>(l);
     }
     return new SynchronizedList<T>(l);
@@ -2742,9 +2523,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  static class SynchronizedList<T> extends SynchronizedCollection<T>
-  implements List<T>
-  {
+  static class SynchronizedList<T> extends SynchronizedCollection<T> implements List<T> {
     /**
      * The wrapped list; stored both here and in the superclass to avoid
      * excessive casting. Package visible for use by subclass.
@@ -2757,8 +2536,7 @@ public class Collections4D
      * @param l the list to wrap
      * @throws NullPointerException if l is null
      */
-    SynchronizedList(List<T> l)
-    {
+    SynchronizedList(List<T> l) {
       super(l);
       list = l;
     }
@@ -2768,8 +2546,7 @@ public class Collections4D
      * @param sync the mutex
      * @param l the list
      */
-    SynchronizedList(Lock sync, List<T> l)
-    {
+    SynchronizedList(Lock sync, List<T> l) {
       super(sync, l);
       list = l;
     }
@@ -2794,10 +2571,8 @@ public class Collections4D
      *         the addition of null values.
      */
     @Override
-    public void add(int index, T o)
-    {
-      synchronized (mutex)
-      {
+    public void add(int index, T o) {
+      synchronized (mutex) {
         list.add(index, o);
       }
     }
@@ -2821,10 +2596,8 @@ public class Collections4D
      *         the addition of null values.
      */
     @Override
-    public boolean addAll(int index, Collection<? extends T> c)
-    {
-      synchronized (mutex)
-      {
+    public boolean addAll(int index, Collection<? extends T> c) {
+      synchronized (mutex) {
         return list.addAll(index, c);
       }
     }
@@ -2842,10 +2615,8 @@ public class Collections4D
      *         definition.
      */
     @Override
-    public boolean equals(Object o)
-    {
-      synchronized (mutex)
-      {
+    public boolean equals(Object o) {
+      synchronized (mutex) {
         return list.equals(o);
       }
     }
@@ -2859,10 +2630,8 @@ public class Collections4D
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
      */
     @Override
-    public T get(int index)
-    {
-      synchronized (mutex)
-      {
+    public T get(int index) {
+      synchronized (mutex) {
         return list.get(index);
       }
     }
@@ -2877,10 +2646,8 @@ public class Collections4D
      * @see List#hashCode()
      */
     @Override
-    public int hashCode()
-    {
-      synchronized (mutex)
-      {
+    public int hashCode() {
+      synchronized (mutex) {
         return list.hashCode();
       }
     }
@@ -2900,10 +2667,8 @@ public class Collections4D
      */
 
     @Override
-    public int indexOf(Object o)
-    {
-      synchronized (mutex)
-      {
+    public int indexOf(Object o) {
+      synchronized (mutex) {
         return list.indexOf(o);
       }
     }
@@ -2921,10 +2686,8 @@ public class Collections4D
      *         list does not support null values.
      */
     @Override
-    public int lastIndexOf(Object o)
-    {
-      synchronized (mutex)
-      {
+    public int lastIndexOf(Object o) {
+      synchronized (mutex) {
         return list.lastIndexOf(o);
       }
     }
@@ -2940,10 +2703,8 @@ public class Collections4D
      *         standard iterator.
      */
     @Override
-    public ListIterator<T> listIterator()
-    {
-      synchronized (mutex)
-      {
+    public ListIterator<T> listIterator() {
+      synchronized (mutex) {
         return new SynchronizedListIterator<T>(mutex, list.listIterator());
       }
     }
@@ -2966,12 +2727,9 @@ public class Collections4D
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
      */
     @Override
-    public ListIterator<T> listIterator(int index)
-    {
-      synchronized (mutex)
-      {
-        return new SynchronizedListIterator<T>(mutex,
-            list.listIterator(index));
+    public ListIterator<T> listIterator(int index) {
+      synchronized (mutex) {
+        return new SynchronizedListIterator<T>(mutex, list.listIterator(index));
       }
     }
 
@@ -2987,10 +2745,8 @@ public class Collections4D
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
      */
     @Override
-    public T remove(int index)
-    {
-      synchronized (mutex)
-      {
+    public T remove(int index) {
+      synchronized (mutex) {
         return list.remove(index);
       }
     }
@@ -3014,10 +2770,8 @@ public class Collections4D
      *         list does not support null values.
      */
     @Override
-    public T set(int index, T o)
-    {
-      synchronized (mutex)
-      {
+    public T set(int index, T o) {
+      synchronized (mutex) {
         return list.set(index, o);
       }
     }
@@ -3041,12 +2795,9 @@ public class Collections4D
      *         || toIndex &gt; size() || fromIndex &gt; toIndex
      */
     @Override
-    public List<T> subList(int fromIndex, int toIndex)
-    {
-      synchronized (mutex)
-      {
-        return new SynchronizedList<T>(mutex,
-            list.subList(fromIndex, toIndex));
+    public List<T> subList(int fromIndex, int toIndex) {
+      synchronized (mutex) {
+        return new SynchronizedList<T>(mutex, list.subList(fromIndex, toIndex));
       }
     }
   } // class SynchronizedList
@@ -3058,16 +2809,13 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class SynchronizedRandomAccessList<T>
-  extends SynchronizedList<T> implements RandomAccess
-  {
+  private static final class SynchronizedRandomAccessList<T> extends SynchronizedList<T> implements RandomAccess {
     /**
      * Wrap a given list.
      * @param l the list to wrap
      * @throws NullPointerException if l is null
      */
-    SynchronizedRandomAccessList(List<T> l)
-    {
+    SynchronizedRandomAccessList(List<T> l) {
       super(l);
     }
 
@@ -3077,8 +2825,7 @@ public class Collections4D
      * @param sync the mutex
      * @param l the list
      */
-    SynchronizedRandomAccessList(Lock sync, List<T> l)
-    {
+    SynchronizedRandomAccessList(Lock sync, List<T> l) {
       super(sync, l);
     }
 
@@ -3102,13 +2849,9 @@ public class Collections4D
      *         || toIndex &gt; size() || fromIndex &gt; toIndex
      */
     @Override
-    public List<T> subList(int fromIndex, int toIndex)
-    {
-      synchronized (mutex)
-      {
-        return new SynchronizedRandomAccessList<T>(mutex,
-            list.subList(fromIndex,
-                toIndex));
+    public List<T> subList(int fromIndex, int toIndex) {
+      synchronized (mutex) {
+        return new SynchronizedRandomAccessList<T>(mutex, list.subList(fromIndex, toIndex));
       }
     }
   } // class SynchronizedRandomAccessList
@@ -3119,9 +2862,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class SynchronizedListIterator<T>
-  extends SynchronizedIterator<T> implements ListIterator<T>
-  {
+  private static final class SynchronizedListIterator<T> extends SynchronizedIterator<T> implements ListIterator<T> {
     /**
      * The wrapped iterator, stored both here and in the superclass to
      * avoid excessive casting.
@@ -3133,8 +2874,7 @@ public class Collections4D
      * @param sync the mutex
      * @param li the wrapped iterator
      */
-    SynchronizedListIterator(Object sync, ListIterator<T> li)
-    {
+    SynchronizedListIterator(Object sync, ListIterator<T> li) {
       super(sync, li);
       this.li = li;
     }
@@ -3158,10 +2898,8 @@ public class Collections4D
      *         support the add operation.
      */
     @Override
-    public void add(T o)
-    {
-      synchronized (mutex)
-      {
+    public void add(T o) {
+      synchronized (mutex) {
         li.add(o);
       }
     }
@@ -3175,10 +2913,8 @@ public class Collections4D
      * @return <code>true</code> if the list continues in the reverse direction
      */
     @Override
-    public boolean hasPrevious()
-    {
-      synchronized (mutex)
-      {
+    public boolean hasPrevious() {
+      synchronized (mutex) {
         return li.hasPrevious();
       }
     }
@@ -3192,10 +2928,8 @@ public class Collections4D
      * @return the index of the element that would be returned by next()
      */
     @Override
-    public int nextIndex()
-    {
-      synchronized (mutex)
-      {
+    public int nextIndex() {
+      synchronized (mutex) {
         return li.nextIndex();
       }
     }
@@ -3211,10 +2945,8 @@ public class Collections4D
      * @throws NoSuchElementException if there are no more elements
      */
     @Override
-    public T previous()
-    {
-      synchronized (mutex)
-      {
+    public T previous() {
+      synchronized (mutex) {
         return li.previous();
       }
     }
@@ -3227,10 +2959,8 @@ public class Collections4D
      * @return the index of the element that would be returned by previous()
      */
     @Override
-    public int previousIndex()
-    {
-      synchronized (mutex)
-      {
+    public int previousIndex() {
+      synchronized (mutex) {
         return li.previousIndex();
       }
     }
@@ -3255,10 +2985,8 @@ public class Collections4D
      *         support the set operation
      */
     @Override
-    public void set(T o)
-    {
-      synchronized (mutex)
-      {
+    public void set(T o) {
+      synchronized (mutex) {
         li.set(o);
       }
     }
@@ -3289,8 +3017,7 @@ public class Collections4D
    * @return a synchronized view of the map
    * 
    */
-  public static <K, V> Map<K, V> synchronizedMap(Map<K, V> m)
-  {
+  public static <K, V> Map<K, V> synchronizedMap(Map<K, V> m) {
     return new SynchronizedMap<K, V>(m);
   }
 
@@ -3300,8 +3027,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class SynchronizedMap<K, V> implements Map<K, V>
-  {
+  private static class SynchronizedMap<K, V> implements Map<K, V> {
     /**
      * The wrapped map.
      * @serial the real map
@@ -3337,11 +3063,10 @@ public class Collections4D
      * @param m the map to wrap
      * @throws NullPointerException if m is null
      */
-    SynchronizedMap(Map<K, V> m)
-    {
+    SynchronizedMap(Map<K, V> m) {
       this.m = m;
       mutex = new Lock();
-      if (m == null){
+      if (m == null) {
         throw new NullPointerException();
       }
     }
@@ -3351,8 +3076,7 @@ public class Collections4D
      * @param sync the mutex
      * @param m the map
      */
-    SynchronizedMap(Lock sync, Map<K, V> m)
-    {
+    SynchronizedMap(Lock sync, Map<K, V> m) {
       this.m = m;
       mutex = sync;
     }
@@ -3364,10 +3088,8 @@ public class Collections4D
      * @throws UnsupportedOperationException if clear is not supported
      */
     @Override
-    public void clear()
-    {
-      synchronized (mutex)
-      {
+    public void clear() {
+      synchronized (mutex) {
         m.clear();
       }
     }
@@ -3383,10 +3105,8 @@ public class Collections4D
      *         does not permit null keys.
      */
     @Override
-    public boolean containsKey(Object key)
-    {
-      synchronized (mutex)
-      {
+    public boolean containsKey(Object key) {
+      synchronized (mutex) {
         return m.containsKey(key);
       }
     }
@@ -3406,10 +3126,8 @@ public class Collections4D
      *         support null values.
      */
     @Override
-    public boolean containsValue(Object value)
-    {
-      synchronized (mutex)
-      {
+    public boolean containsValue(Object value) {
+      synchronized (mutex) {
         return m.containsValue(value);
       }
     }
@@ -3419,14 +3137,12 @@ public class Collections4D
     // returns an SynchronizedIterator whose next() method returns a
     // synchronized wrapper around its normal return value".
     @Override
-    public Set<Map.Entry<K, V>> entrySet()
-    {
+    public Set<Map.Entry<K, V>> entrySet() {
       // Define this here to spare some nesting.
-      class SynchronizedMapEntry<K, V> implements Map.Entry<K, V>
-      {
+      class SynchronizedMapEntry<K, V> implements Map.Entry<K, V> {
         final Map.Entry<K, V> e;
-        SynchronizedMapEntry(Map.Entry<K, V> o)
-        {
+
+        SynchronizedMapEntry(Map.Entry<K, V> o) {
           e = o;
         }
 
@@ -3439,10 +3155,8 @@ public class Collections4D
          * @return <code>true</code> if o is equivalent to the underlying map entry.
          */
         @Override
-        public boolean equals(Object o)
-        {
-          synchronized (mutex)
-          {
+        public boolean equals(Object o) {
+          synchronized (mutex) {
             return e.equals(o);
           }
         }
@@ -3454,10 +3168,8 @@ public class Collections4D
          * @return The key of the underlying map entry.
          */
         @Override
-        public K getKey()
-        {
-          synchronized (mutex)
-          {
+        public K getKey() {
+          synchronized (mutex) {
             return e.getKey();
           }
         }
@@ -3469,10 +3181,8 @@ public class Collections4D
          * @return The value of the underlying map entry.
          */
         @Override
-        public V getValue()
-        {
-          synchronized (mutex)
-          {
+        public V getValue() {
+          synchronized (mutex) {
             return e.getValue();
           }
         }
@@ -3487,10 +3197,8 @@ public class Collections4D
          * @see Map#hashCode()
          */
         @Override
-        public int hashCode()
-        {
-          synchronized (mutex)
-          {
+        public int hashCode() {
+          synchronized (mutex) {
             return e.hashCode();
           }
         }
@@ -3512,10 +3220,8 @@ public class Collections4D
          * @throws NullPointerException if the map forbids null values.
          */
         @Override
-        public V setValue(V value)
-        {
-          synchronized (mutex)
-          {
+        public V setValue(V value) {
+          synchronized (mutex) {
             return e.setValue(value);
           }
         }
@@ -3527,21 +3233,17 @@ public class Collections4D
          * @return The contents of the map entry in <code>String</code> form.
          */
         @Override
-        public String toString()
-        {
-          synchronized (mutex)
-          {
+        public String toString() {
+          synchronized (mutex) {
             return e.toString();
           }
         }
       } // class SynchronizedMapEntry
 
       // Now the actual code.
-      if (entries == null){
-        synchronized (mutex)
-        {
-          entries = new SynchronizedSet<Map.Entry<K, V>>(mutex, m.entrySet())
-          {
+      if (entries == null) {
+        synchronized (mutex) {
+          entries = new SynchronizedSet<Map.Entry<K, V>>(mutex, m.entrySet()) {
             /**
              * Returns an iterator over the set.  The iterator has no specific order,
              * unless further specified.  A lock is obtained on the set's mutex
@@ -3551,13 +3253,9 @@ public class Collections4D
              * @return A synchronized set iterator.
              */
             @Override
-            public Iterator<Map.Entry<K, V>> iterator()
-            {
-              synchronized (super.mutex)
-              {
-                return new SynchronizedIterator<Map.Entry<K, V>>(super.mutex,
-                    c.iterator())
-                {
+            public Iterator<Map.Entry<K, V>> iterator() {
+              synchronized (super.mutex) {
+                return new SynchronizedIterator<Map.Entry<K, V>>(super.mutex, c.iterator()) {
                   /**
                    * Retrieves the next map entry from the iterator.
                    * A lock is obtained on the iterator's mutex before
@@ -3567,10 +3265,8 @@ public class Collections4D
                    * @return A synchronized map entry.
                    */
                   @Override
-                  public Map.Entry<K, V> next()
-                  {
-                    synchronized (super.mutex)
-                    {
+                  public Map.Entry<K, V> next() {
+                    synchronized (super.mutex) {
                       return new SynchronizedMapEntry<K, V>(super.next());
                     }
                   }
@@ -3594,10 +3290,8 @@ public class Collections4D
      * @return <code>true</code> if o and the underlying map are equivalent.
      */
     @Override
-    public boolean equals(Object o)
-    {
-      synchronized (mutex)
-      {
+    public boolean equals(Object o) {
+      synchronized (mutex) {
         return m.equals(o);
       }
     }
@@ -3618,10 +3312,8 @@ public class Collections4D
      * @throws NullPointerException if this map does not accept null keys.
      */
     @Override
-    public V get(Object key)
-    {
-      synchronized (mutex)
-      {
+    public V get(Object key) {
+      synchronized (mutex) {
         return m.get(key);
       }
     }
@@ -3634,10 +3326,8 @@ public class Collections4D
      * @return The hash code of the underlying map.
      */
     @Override
-    public int hashCode()
-    {
-      synchronized (mutex)
-      {
+    public int hashCode() {
+      synchronized (mutex) {
         return m.hashCode();
       }
     }
@@ -3649,10 +3339,8 @@ public class Collections4D
      * @return <code>true</code> if the map is empty.
      */
     @Override
-    public boolean isEmpty()
-    {
-      synchronized (mutex)
-      {
+    public boolean isEmpty() {
+      synchronized (mutex) {
         return m.isEmpty();
       }
     }
@@ -3671,11 +3359,9 @@ public class Collections4D
      * @return A synchronized set containing the keys of the underlying map.
      */
     @Override
-    public Set<K> keySet()
-    {
-      if (keys == null){
-        synchronized (mutex)
-        {
+    public Set<K> keySet() {
+      if (keys == null) {
+        synchronized (mutex) {
           keys = new SynchronizedSet<K>(mutex, m.keySet());
         }
       }
@@ -3701,10 +3387,8 @@ public class Collections4D
      * @see #containsKey(Object)
      */
     @Override
-    public V put(K key, V value)
-    {
-      synchronized (mutex)
-      {
+    public V put(K key, V value) {
+      synchronized (mutex) {
         return m.put(key, value);
       }
     }
@@ -3724,10 +3408,8 @@ public class Collections4D
      * @see #put(Object, Object)
      */
     @Override
-    public void putAll(Map<? extends K, ? extends V> map)
-    {
-      synchronized (mutex)
-      {
+    public void putAll(Map<? extends K, ? extends V> map) {
+      synchronized (mutex) {
         m.putAll(map);
       }
     }
@@ -3748,10 +3430,8 @@ public class Collections4D
      *         for this map.
      */
     @Override
-    public V remove(Object o)
-    {
-      synchronized (mutex)
-      {
+    public V remove(Object o) {
+      synchronized (mutex) {
         return m.remove(o);
       }
     }
@@ -3765,10 +3445,8 @@ public class Collections4D
      * @return The size of the underlying map.
      */
     @Override
-    public int size()
-    {
-      synchronized (mutex)
-      {
+    public int size() {
+      synchronized (mutex) {
         return m.size();
       }
     }
@@ -3781,10 +3459,8 @@ public class Collections4D
      * @return The map in <code>String</code> form.
      */
     @Override
-    public String toString()
-    {
-      synchronized (mutex)
-      {
+    public String toString() {
+      synchronized (mutex) {
         return m.toString();
       }
     }
@@ -3804,11 +3480,9 @@ public class Collections4D
      * @return the collection of all values in the underlying map.
      */
     @Override
-    public Collection<V> values()
-    {
-      if (values == null){
-        synchronized (mutex)
-        {
+    public Collection<V> values() {
+      if (values == null) {
+        synchronized (mutex) {
           values = new SynchronizedCollection<V>(mutex, m.values());
         }
       }
@@ -3840,8 +3514,7 @@ public class Collections4D
    * @return a synchronized view of the set
    * 
    */
-  public static <T> Set<T> synchronizedSet(Set<T> s)
-  {
+  public static <T> Set<T> synchronizedSet(Set<T> s) {
     return new SynchronizedSet<T>(s);
   }
 
@@ -3853,16 +3526,13 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  static class SynchronizedSet<T> extends SynchronizedCollection<T>
-  implements Set<T>
-  {
+  static class SynchronizedSet<T> extends SynchronizedCollection<T> implements Set<T> {
     /**
      * Wrap a given set.
      * @param s the set to wrap
      * @throws NullPointerException if s is null
      */
-    SynchronizedSet(Set<T> s)
-    {
+    SynchronizedSet(Set<T> s) {
       super(s);
     }
 
@@ -3871,8 +3541,7 @@ public class Collections4D
      * @param sync the mutex
      * @param s the set
      */
-    SynchronizedSet(Lock sync, Set<T> s)
-    {
+    SynchronizedSet(Lock sync, Set<T> s) {
       super(sync, s);
     }
 
@@ -3887,10 +3556,8 @@ public class Collections4D
      * @return <code>true</code> if o is an equivalent set.
      */
     @Override
-    public boolean equals(Object o)
-    {
-      synchronized (mutex)
-      {
+    public boolean equals(Object o) {
+      synchronized (mutex) {
         return c.equals(o);
       }
     }
@@ -3904,10 +3571,8 @@ public class Collections4D
      * @return The hash code for the underlying set.
      */
     @Override
-    public int hashCode()
-    {
-      synchronized (mutex)
-      {
+    public int hashCode() {
+      synchronized (mutex) {
         return c.hashCode();
       }
     }
@@ -3943,8 +3608,7 @@ public class Collections4D
    * @return a synchronized view of the sorted map
    * 
    */
-  public static <K, V> SortedMap<K, V> synchronizedSortedMap(SortedMap<K, V> m)
-  {
+  public static <K, V> SortedMap<K, V> synchronizedSortedMap(SortedMap<K, V> m) {
     return new SynchronizedSortedMap<K, V>(m);
   }
 
@@ -3954,10 +3618,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class SynchronizedSortedMap<K, V>
-  extends SynchronizedMap<K, V>
-  implements SortedMap<K, V>
-  {
+  private static final class SynchronizedSortedMap<K, V> extends SynchronizedMap<K, V> implements SortedMap<K, V> {
     /**
      * The wrapped map; stored both here and in the superclass to avoid
      * excessive casting.
@@ -3970,8 +3631,7 @@ public class Collections4D
      * @param sm the map to wrap
      * @throws NullPointerException if sm is null
      */
-    SynchronizedSortedMap(SortedMap<K, V> sm)
-    {
+    SynchronizedSortedMap(SortedMap<K, V> sm) {
       super(sm);
       this.sm = sm;
     }
@@ -3981,8 +3641,7 @@ public class Collections4D
      * @param sync the mutex
      * @param sm the map
      */
-    SynchronizedSortedMap(Lock sync, SortedMap<K, V> sm)
-    {
+    SynchronizedSortedMap(Lock sync, SortedMap<K, V> sm) {
       super(sync, sm);
       this.sm = sm;
     }
@@ -3995,10 +3654,8 @@ public class Collections4D
      * @return the sorting comparator.
      */
     @Override
-    public Comparator<? super K> comparator()
-    {
-      synchronized (mutex)
-      {
+    public Comparator<? super K> comparator() {
+      synchronized (mutex) {
         return sm.comparator();
       }
     }
@@ -4011,10 +3668,8 @@ public class Collections4D
      * @throws NoSuchElementException if this map is empty.
      */
     @Override
-    public K firstKey()
-    {
-      synchronized (mutex)
-      {
+    public K firstKey() {
+      synchronized (mutex) {
         return sm.firstKey();
       }
     }
@@ -4039,10 +3694,8 @@ public class Collections4D
      *         null keys.
      */
     @Override
-    public SortedMap<K, V> headMap(K toKey)
-    {
-      synchronized (mutex)
-      {
+    public SortedMap<K, V> headMap(K toKey) {
+      synchronized (mutex) {
         return new SynchronizedSortedMap<K, V>(mutex, sm.headMap(toKey));
       }
     }
@@ -4055,10 +3708,8 @@ public class Collections4D
      * @throws NoSuchElementException if this map is empty.
      */
     @Override
-    public K lastKey()
-    {
-      synchronized (mutex)
-      {
+    public K lastKey() {
+      synchronized (mutex) {
         return sm.lastKey();
       }
     }
@@ -4082,12 +3733,9 @@ public class Collections4D
      *         not allow  null keys.
      */
     @Override
-    public SortedMap<K, V> subMap(K fromKey, K toKey)
-    {
-      synchronized (mutex)
-      {
-        return new SynchronizedSortedMap<K, V>(mutex,
-            sm.subMap(fromKey, toKey));
+    public SortedMap<K, V> subMap(K fromKey, K toKey) {
+      synchronized (mutex) {
+        return new SynchronizedSortedMap<K, V>(mutex, sm.subMap(fromKey, toKey));
       }
     }
 
@@ -4108,10 +3756,8 @@ public class Collections4D
      *         null keys.
      */
     @Override
-    public SortedMap<K, V> tailMap(K fromKey)
-    {
-      synchronized (mutex)
-      {
+    public SortedMap<K, V> tailMap(K fromKey) {
+      synchronized (mutex) {
         return new SynchronizedSortedMap<K, V>(mutex, sm.tailMap(fromKey));
       }
     }
@@ -4142,8 +3788,7 @@ public class Collections4D
    * @return a synchronized view of the sorted set
    * 
    */
-  public static <T> SortedSet<T> synchronizedSortedSet(SortedSet<T> s)
-  {
+  public static <T> SortedSet<T> synchronizedSortedSet(SortedSet<T> s) {
     return new SynchronizedSortedSet<T>(s);
   }
 
@@ -4153,10 +3798,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class SynchronizedSortedSet<T>
-  extends SynchronizedSet<T>
-  implements SortedSet<T>
-  {
+  private static final class SynchronizedSortedSet<T> extends SynchronizedSet<T> implements SortedSet<T> {
     /**
      * The wrapped set; stored both here and in the superclass to avoid
      * excessive casting.
@@ -4169,8 +3811,7 @@ public class Collections4D
      * @param ss the set to wrap
      * @throws NullPointerException if ss is null
      */
-    SynchronizedSortedSet(SortedSet<T> ss)
-    {
+    SynchronizedSortedSet(SortedSet<T> ss) {
       super(ss);
       this.ss = ss;
     }
@@ -4180,8 +3821,7 @@ public class Collections4D
      * @param sync the mutex
      * @param ss the set
      */
-    SynchronizedSortedSet(Lock sync, SortedSet<T> ss)
-    {
+    SynchronizedSortedSet(Lock sync, SortedSet<T> ss) {
       super(sync, ss);
       this.ss = ss;
     }
@@ -4194,10 +3834,8 @@ public class Collections4D
      * @return the sorting comparator.
      */
     @Override
-    public Comparator<? super T> comparator()
-    {
-      synchronized (mutex)
-      {
+    public Comparator<? super T> comparator() {
+      synchronized (mutex) {
         return ss.comparator();
       }
     }
@@ -4210,10 +3848,8 @@ public class Collections4D
      * @throws NoSuchElementException if this set is empty.
      */
     @Override
-    public T first()
-    {
-      synchronized (mutex)
-      {
+    public T first() {
+      synchronized (mutex) {
         return ss.first();
       }
     }
@@ -4238,10 +3874,8 @@ public class Collections4D
      *         null elements.
      */
     @Override
-    public SortedSet<T> headSet(T toElement)
-    {
-      synchronized (mutex)
-      {
+    public SortedSet<T> headSet(T toElement) {
+      synchronized (mutex) {
         return new SynchronizedSortedSet<T>(mutex, ss.headSet(toElement));
       }
     }
@@ -4254,10 +3888,8 @@ public class Collections4D
      * @throws NoSuchElementException if this set is empty.
      */
     @Override
-    public T last()
-    {
-      synchronized (mutex)
-      {
+    public T last() {
+      synchronized (mutex) {
         return ss.last();
       }
     }
@@ -4281,13 +3913,9 @@ public class Collections4D
      *         not allow null elements.
      */
     @Override
-    public SortedSet<T> subSet(T fromElement, T toElement)
-    {
-      synchronized (mutex)
-      {
-        return new SynchronizedSortedSet<T>(mutex,
-            ss.subSet(fromElement,
-                toElement));
+    public SortedSet<T> subSet(T fromElement, T toElement) {
+      synchronized (mutex) {
+        return new SynchronizedSortedSet<T>(mutex, ss.subSet(fromElement, toElement));
       }
     }
 
@@ -4308,15 +3936,12 @@ public class Collections4D
      *         null elements.
      */
     @Override
-    public SortedSet<T> tailSet(T fromElement)
-    {
-      synchronized (mutex)
-      {
+    public SortedSet<T> tailSet(T fromElement) {
+      synchronized (mutex) {
         return new SynchronizedSortedSet<T>(mutex, ss.tailSet(fromElement));
       }
     }
   } // class SynchronizedSortedSet
-
 
   /**
    * Returns an unmodifiable view of the given collection. This allows
@@ -4337,8 +3962,7 @@ public class Collections4D
    * @return a read-only view of the collection
    * 
    */
-  public static <T> Collection<T> unmodifiableCollection(Collection<? extends T> c)
-  {
+  public static <T> Collection<T> unmodifiableCollection(Collection<? extends T> c) {
     return new UnmodifiableCollection<T>(c);
   }
 
@@ -4348,9 +3972,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class UnmodifiableCollection<T>
-  implements Collection<T>
-  {
+  private static class UnmodifiableCollection<T> implements Collection<T> {
     /**
      * The wrapped collection. Package visible for use by subclasses.
      * @serial the real collection
@@ -4362,10 +3984,9 @@ public class Collections4D
      * @param c the collection to wrap
      * @throws NullPointerException if c is null
      */
-    UnmodifiableCollection(Collection<? extends T> c)
-    {
+    UnmodifiableCollection(Collection<? extends T> c) {
       this.c = c;
-      if (c == null){
+      if (c == null) {
         throw new NullPointerException();
       }
     }
@@ -4380,8 +4001,7 @@ public class Collections4D
      *         support the add operation.
      */
     @Override
-    public boolean add(T o)
-    {
+    public boolean add(T o) {
       throw new UnsupportedOperationException();
     }
 
@@ -4395,8 +4015,7 @@ public class Collections4D
      *         support the <code>addAll</code> operation.
      */
     @Override
-    public boolean addAll(Collection<? extends T> c)
-    {
+    public boolean addAll(Collection<? extends T> c) {
       throw new UnsupportedOperationException();
     }
 
@@ -4408,8 +4027,7 @@ public class Collections4D
      *         not support the <code>clear()</code> operation.
      */
     @Override
-    public void clear()
-    {
+    public void clear() {
       throw new UnsupportedOperationException();
     }
 
@@ -4427,8 +4045,7 @@ public class Collections4D
      *         doesn't support null values.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return c.contains(o);
     }
 
@@ -4446,8 +4063,7 @@ public class Collections4D
      * @throws NullPointerException if c itself is null.
      */
     @Override
-    public boolean containsAll(Collection<?> c1)
-    {
+    public boolean containsAll(Collection<?> c1) {
       return c.containsAll(c1);
     }
 
@@ -4458,8 +4074,7 @@ public class Collections4D
      * @return <code>true</code> if this collection contains no elements.
      */
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return c.isEmpty();
     }
 
@@ -4471,8 +4086,7 @@ public class Collections4D
      *         collection, in any order.
      */
     @Override
-    public Iterator<T> iterator()
-    {
+    public Iterator<T> iterator() {
       return new UnmodifiableIterator<T>(c.iterator());
     }
 
@@ -4487,8 +4101,7 @@ public class Collections4D
      *         does not support the <code>remove()</code> operation.
      */
     @Override
-    public boolean remove(Object o)
-    {
+    public boolean remove(Object o) {
       throw new UnsupportedOperationException();
     }
 
@@ -4503,8 +4116,7 @@ public class Collections4D
      *         does not support the <code>removeAll()</code> operation.
      */
     @Override
-    public boolean removeAll(Collection<?> c)
-    {
+    public boolean removeAll(Collection<?> c) {
       throw new UnsupportedOperationException();
     }
 
@@ -4519,8 +4131,7 @@ public class Collections4D
      *         does not support the <code>retainAll()</code> operation.
      */
     @Override
-    public boolean retainAll(Collection<?> c)
-    {
+    public boolean retainAll(Collection<?> c) {
       throw new UnsupportedOperationException();
     }
 
@@ -4530,8 +4141,7 @@ public class Collections4D
      * @return the number of elements in the collection.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return c.size();
     }
 
@@ -4543,8 +4153,7 @@ public class Collections4D
      *         the underlying collection, in any order.
      */
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       return c.toArray();
     }
 
@@ -4566,8 +4175,7 @@ public class Collections4D
      *         collection is not a subtype of the element type of a.
      */
     @Override
-    public <S> S[] toArray(S[] a)
-    {
+    public <S> S[] toArray(S[] a) {
       return c.toArray(a);
     }
 
@@ -4577,8 +4185,7 @@ public class Collections4D
      * @return The unmodifiable collection in the form of a <code>String</code>.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return c.toString();
     }
   } // class UnmodifiableCollection
@@ -4589,8 +4196,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class UnmodifiableIterator<T> implements Iterator<T>
-  {
+  private static class UnmodifiableIterator<T> implements Iterator<T> {
     /**
      * The wrapped iterator.
      */
@@ -4600,8 +4206,7 @@ public class Collections4D
      * Only trusted code creates a wrapper.
      * @param i the wrapped iterator
      */
-    UnmodifiableIterator(Iterator<? extends T> i)
-    {
+    UnmodifiableIterator(Iterator<? extends T> i) {
       this.i = i;
     }
 
@@ -4612,8 +4217,7 @@ public class Collections4D
      * @throws NoSuchElementException if there are no more elements.
      */
     @Override
-    public T next()
-    {
+    public T next() {
       return i.next();
     }
 
@@ -4627,8 +4231,7 @@ public class Collections4D
      *         collection.
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return i.hasNext();
     }
 
@@ -4640,8 +4243,7 @@ public class Collections4D
      *         does not support the removal of elements by its iterator.
      */
     @Override
-    public void remove()
-    {
+    public void remove() {
       throw new UnsupportedOperationException();
     }
   } // class UnmodifiableIterator
@@ -4665,9 +4267,8 @@ public class Collections4D
    * 
    * @see RandomAccess
    */
-  public static <T> List<T> unmodifiableList(List<? extends T> l)
-  {
-    if (l instanceof RandomAccess){
+  public static <T> List<T> unmodifiableList(List<? extends T> l) {
+    if (l instanceof RandomAccess) {
       return new UnmodifiableRandomAccessList<T>(l);
     }
     return new UnmodifiableList<T>(l);
@@ -4680,9 +4281,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class UnmodifiableList<T> extends UnmodifiableCollection<T>
-  implements List<T>
-  {
+  private static class UnmodifiableList<T> extends UnmodifiableCollection<T> implements List<T> {
     /**
      * The wrapped list; stored both here and in the superclass to avoid
      * excessive casting. Package visible for use by subclass.
@@ -4695,8 +4294,7 @@ public class Collections4D
      * @param l the list to wrap
      * @throws NullPointerException if l is null
      */
-    UnmodifiableList(List<? extends T> l)
-    {
+    UnmodifiableList(List<? extends T> l) {
       super(l);
       list = (List<T>) l;
     }
@@ -4712,8 +4310,7 @@ public class Collections4D
      *         list doesn't support the <code>add()</code> operation.
      */
     @Override
-    public void add(int index, T o)
-    {
+    public void add(int index, T o) {
       throw new UnsupportedOperationException();
     }
 
@@ -4728,8 +4325,7 @@ public class Collections4D
      *         list doesn't support the <code>addAll()</code> operation.
      */
     @Override
-    public boolean addAll(int index, Collection<? extends T> c)
-    {
+    public boolean addAll(int index, Collection<? extends T> c) {
       throw new UnsupportedOperationException();
     }
 
@@ -4742,8 +4338,7 @@ public class Collections4D
      * @return <code>true</code> if o is equivalent to the underlying list.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return list.equals(o);
     }
 
@@ -4755,8 +4350,7 @@ public class Collections4D
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
      */
     @Override
-    public T get(int index)
-    {
+    public T get(int index) {
       return list.get(index);
     }
 
@@ -4769,8 +4363,7 @@ public class Collections4D
      * @see List#hashCode()
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return list.hashCode();
     }
 
@@ -4787,8 +4380,7 @@ public class Collections4D
      *         list does not support null values.
      */
     @Override
-    public int indexOf(Object o)
-    {
+    public int indexOf(Object o) {
       return list.indexOf(o);
     }
 
@@ -4804,8 +4396,7 @@ public class Collections4D
      *         list does not support null values.
      */
     @Override
-    public int lastIndexOf(Object o)
-    {
+    public int lastIndexOf(Object o) {
       return list.lastIndexOf(o);
     }
 
@@ -4817,8 +4408,7 @@ public class Collections4D
      *         underlying list, in order, starting at the beginning.
      */
     @Override
-    public ListIterator<T> listIterator()
-    {
+    public ListIterator<T> listIterator() {
       return new UnmodifiableListIterator<T>(list.listIterator());
     }
 
@@ -4837,8 +4427,7 @@ public class Collections4D
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
      */
     @Override
-    public ListIterator<T> listIterator(int index)
-    {
+    public ListIterator<T> listIterator(int index) {
       return new UnmodifiableListIterator<T>(list.listIterator(index));
     }
 
@@ -4853,8 +4442,7 @@ public class Collections4D
      *         operation.
      */
     @Override
-    public T remove(int index)
-    {
+    public T remove(int index) {
       throw new UnsupportedOperationException();
     }
 
@@ -4870,8 +4458,7 @@ public class Collections4D
      *         operation.
      */
     @Override
-    public T set(int index, T o)
-    {
+    public T set(int index, T o) {
       throw new UnsupportedOperationException();
     }
 
@@ -4891,8 +4478,7 @@ public class Collections4D
      *         || toIndex &gt; size() || fromIndex &gt; toIndex.
      */
     @Override
-    public List<T> subList(int fromIndex, int toIndex)
-    {
+    public List<T> subList(int fromIndex, int toIndex) {
       return unmodifiableList(list.subList(fromIndex, toIndex));
     }
   } // class UnmodifiableList
@@ -4904,16 +4490,13 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class UnmodifiableRandomAccessList<T>
-  extends UnmodifiableList<T> implements RandomAccess
-  {
+  private static final class UnmodifiableRandomAccessList<T> extends UnmodifiableList<T> implements RandomAccess {
     /**
      * Wrap a given list.
      * @param l the list to wrap
      * @throws NullPointerException if l is null
      */
-    UnmodifiableRandomAccessList(List<? extends T> l)
-    {
+    UnmodifiableRandomAccessList(List<? extends T> l) {
       super(l);
     }
   } // class UnmodifiableRandomAccessList
@@ -4923,9 +4506,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class UnmodifiableListIterator<T>
-  extends UnmodifiableIterator<T> implements ListIterator<T>
-  {
+  private static final class UnmodifiableListIterator<T> extends UnmodifiableIterator<T> implements ListIterator<T> {
     /**
      * The wrapped iterator, stored both here and in the superclass to
      * avoid excessive casting.
@@ -4936,8 +4517,7 @@ public class Collections4D
      * Only trusted code creates a wrapper.
      * @param li the wrapped iterator
      */
-    UnmodifiableListIterator(ListIterator<T> li)
-    {
+    UnmodifiableListIterator(ListIterator<T> li) {
       super(li);
       this.li = li;
     }
@@ -4951,8 +4531,7 @@ public class Collections4D
      *         list does not support the <code>add()</code> operation.
      */
     @Override
-    public void add(T o)
-    {
+    public void add(T o) {
       throw new UnsupportedOperationException();
     }
 
@@ -4966,8 +4545,7 @@ public class Collections4D
      *         current position in the underlying list.
      */
     @Override
-    public boolean hasPrevious()
-    {
+    public boolean hasPrevious() {
       return li.hasPrevious();
     }
 
@@ -4979,8 +4557,7 @@ public class Collections4D
      *         <code>next()</code>.
      */
     @Override
-    public int nextIndex()
-    {
+    public int nextIndex() {
       return li.nextIndex();
     }
 
@@ -4991,8 +4568,7 @@ public class Collections4D
      * @throws NoSuchElementException if there are no more prior elements.
      */
     @Override
-    public T previous()
-    {
+    public T previous() {
       return li.previous();
     }
 
@@ -5005,8 +4581,7 @@ public class Collections4D
      *         <code>previous()</code>.
      */
     @Override
-    public int previousIndex()
-    {
+    public int previousIndex() {
       return li.previousIndex();
     }
 
@@ -5019,8 +4594,7 @@ public class Collections4D
      *         list does not support the <code>set()</code> operation.
      */
     @Override
-    public void set(T o)
-    {
+    public void set(T o) {
       throw new UnsupportedOperationException();
     }
   } // class UnmodifiableListIterator
@@ -5042,9 +4616,7 @@ public class Collections4D
    * @return a read-only view of the map
    * 
    */
-  public static <K, V> Map<K, V> unmodifiableMap(Map<? extends K,
-      ? extends V> m)
-  {
+  public static <K, V> Map<K, V> unmodifiableMap(Map<? extends K, ? extends V> m) {
     return new UnmodifiableMap<K, V>(m);
   }
 
@@ -5054,8 +4626,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class UnmodifiableMap<K, V> implements Map<K, V>
-  {
+  private static class UnmodifiableMap<K, V> implements Map<K, V> {
     /**
      * The wrapped map.
      * @serial the real map
@@ -5082,10 +4653,9 @@ public class Collections4D
      * @param m the map to wrap
      * @throws NullPointerException if m is null
      */
-    UnmodifiableMap(Map<? extends K, ? extends V> m)
-    {
-      this.m = (Map<K,V>) m;
-      if (m == null){
+    UnmodifiableMap(Map<? extends K, ? extends V> m) {
+      this.m = (Map<K, V>) m;
+      if (m == null) {
         throw new NullPointerException();
       }
     }
@@ -5098,8 +4668,7 @@ public class Collections4D
      *         map does not support the <code>clear()</code> operation.
      */
     @Override
-    public void clear()
-    {
+    public void clear() {
       throw new UnsupportedOperationException();
     }
 
@@ -5114,8 +4683,7 @@ public class Collections4D
      *         does not permit null keys
      */
     @Override
-    public boolean containsKey(Object key)
-    {
+    public boolean containsKey(Object key) {
       return m.containsKey(key);
     }
 
@@ -5133,8 +4701,7 @@ public class Collections4D
      *         support null values.
      */
     @Override
-    public boolean containsValue(Object value)
-    {
+    public boolean containsValue(Object value) {
       return m.containsValue(value);
     }
 
@@ -5150,10 +4717,9 @@ public class Collections4D
      * @see Map.Entry
      */
     @Override
-    public Set<Map.Entry<K, V>> entrySet()
-    {
-      if (entries == null){
-        entries = new UnmodifiableEntrySet<K,V>(m.entrySet());
+    public Set<Map.Entry<K, V>> entrySet() {
+      if (entries == null) {
+        entries = new UnmodifiableEntrySet<K, V>(m.entrySet());
       }
       return entries;
     }
@@ -5164,18 +4730,13 @@ public class Collections4D
      *
      * @author Eric Blake (ebb9@email.byu.edu)
      */
-    private static final class UnmodifiableEntrySet<K,V>
-    extends UnmodifiableSet<Map.Entry<K,V>>
-    {
+    private static final class UnmodifiableEntrySet<K, V> extends UnmodifiableSet<Map.Entry<K, V>> {
       // Unmodifiable implementation of Map.Entry used as return value for
       // UnmodifiableEntrySet accessors (iterator, toArray, toArray(Object[]))
-      private static final class UnmodifiableMapEntry<K,V>
-      implements Map.Entry<K,V>
-      {
-        private final Map.Entry<K,V> e;
+      private static final class UnmodifiableMapEntry<K, V> implements Map.Entry<K, V> {
+        private final Map.Entry<K, V> e;
 
-        private UnmodifiableMapEntry(Map.Entry<K,V> e)
-        {
+        private UnmodifiableMapEntry(Map.Entry<K, V> e) {
           super();
           this.e = e;
         }
@@ -5188,8 +4749,7 @@ public class Collections4D
          * @return <code>true</code> if o is an equivalent map entry.
          */
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
           return e.equals(o);
         }
 
@@ -5199,8 +4759,7 @@ public class Collections4D
          * @return the key.
          */
         @Override
-        public K getKey()
-        {
+        public K getKey() {
           return e.getKey();
         }
 
@@ -5210,8 +4769,7 @@ public class Collections4D
          * @return the value.
          */
         @Override
-        public V getValue()
-        {
+        public V getValue() {
           return e.getValue();
         }
 
@@ -5223,8 +4781,7 @@ public class Collections4D
          * @see Map#hashCode()
          */
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
           return e.hashCode();
         }
 
@@ -5237,8 +4794,7 @@ public class Collections4D
          *           does not support the <code>setValue()</code> operation.
          */
         @Override
-        public V setValue(V value)
-        {
+        public V setValue(V value) {
           throw new UnsupportedOperationException();
         }
 
@@ -5248,8 +4804,7 @@ public class Collections4D
          * @return The map entry as a <code>String</code>.
          */
         @Override
-        public String toString()
-        {
+        public String toString() {
           return e.toString();
         }
       }
@@ -5258,17 +4813,14 @@ public class Collections4D
        * Wrap a given set.
        * @param s the set to wrap
        */
-      UnmodifiableEntrySet(Set<Map.Entry<K,V>> s)
-      {
+      UnmodifiableEntrySet(Set<Map.Entry<K, V>> s) {
         super(s);
       }
 
       // The iterator must return unmodifiable map entries.
       @Override
-      public Iterator<Map.Entry<K,V>> iterator()
-      {
-        return new UnmodifiableIterator<Map.Entry<K,V>>(c.iterator())
-        {
+      public Iterator<Map.Entry<K, V>> iterator() {
+        return new UnmodifiableIterator<Map.Entry<K, V>>(c.iterator()) {
           /**
            * Obtains the next element from the underlying set of
            * map entries.
@@ -5277,10 +4829,9 @@ public class Collections4D
            * @throws NoSuchElementException if there are no more elements.
            */
           @Override
-          public Map.Entry<K,V> next()
-          {
-            final Map.Entry<K,V> e = super.next();
-            return new UnmodifiableMapEntry<K,V>(e);
+          public Map.Entry<K, V> next() {
+            final Map.Entry<K, V> e = super.next();
+            return new UnmodifiableMapEntry<K, V>(e);
           }
         };
       }
@@ -5288,17 +4839,14 @@ public class Collections4D
       // The array returned is an array of UnmodifiableMapEntry instead of
       // Map.Entry
       @Override
-      public Object[] toArray()
-      {
+      public Object[] toArray() {
         Object[] mapEntryResult = super.toArray();
-        UnmodifiableMapEntry<K,V> result[] = null;
+        UnmodifiableMapEntry<K, V> result[] = null;
 
-        if (mapEntryResult != null)
-        {
-          result = (UnmodifiableMapEntry<K,V>[])
-              new UnmodifiableMapEntry[mapEntryResult.length];
+        if (mapEntryResult != null) {
+          result = (UnmodifiableMapEntry<K, V>[]) new UnmodifiableMapEntry[mapEntryResult.length];
           for (int i = 0; i < mapEntryResult.length; ++i) {
-            result[i] = new UnmodifiableMapEntry<K,V>((Map.Entry<K,V>)mapEntryResult[i]);
+            result[i] = new UnmodifiableMapEntry<K, V>((Map.Entry<K, V>) mapEntryResult[i]);
           }
         }
         return result;
@@ -5307,19 +4855,16 @@ public class Collections4D
       // The array returned is an array of UnmodifiableMapEntry instead of
       // Map.Entry
       @Override
-      public <S> S[] toArray(S[] array)
-      {
+      public <S> S[] toArray(S[] array) {
         S[] result = super.toArray(array);
 
         if (result != null) {
           for (int i = 0; i < result.length; i++) {
-            array[i] =
-                (S) new UnmodifiableMapEntry<K,V>((Map.Entry<K,V>) result[i]);
+            array[i] = (S) new UnmodifiableMapEntry<K, V>((Map.Entry<K, V>) result[i]);
           }
         }
         return array;
       }
-
 
     } // class UnmodifiableEntrySet
 
@@ -5331,8 +4876,7 @@ public class Collections4D
      * @return <code>true</code> if o is an equivalent map.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return m.equals(o);
     }
 
@@ -5350,8 +4894,7 @@ public class Collections4D
      * @see #containsKey(Object)
      */
     @Override
-    public V get(Object key)
-    {
+    public V get(Object key) {
       return m.get(key);
     }
 
@@ -5366,8 +4909,7 @@ public class Collections4D
      *         map does not support the <code>put()</code> operation.
      */
     @Override
-    public V put(K key, V value)
-    {
+    public V put(K key, V value) {
       throw new UnsupportedOperationException();
     }
 
@@ -5379,8 +4921,7 @@ public class Collections4D
      * @see Map.Entry#hashCode()
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return m.hashCode();
     }
 
@@ -5390,8 +4931,7 @@ public class Collections4D
      * @return <code>true</code> if the map is empty.
      */
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return m.isEmpty();
     }
 
@@ -5405,9 +4945,8 @@ public class Collections4D
      * @return the set view of all keys.
      */
     @Override
-    public Set<K> keySet()
-    {
-      if (keys == null){
+    public Set<K> keySet() {
+      if (keys == null) {
         keys = new UnmodifiableSet<K>(m.keySet());
       }
       return keys;
@@ -5423,8 +4962,7 @@ public class Collections4D
      *         map does not support the <code>putAll</code> operation.
      */
     @Override
-    public void putAll(Map<? extends K, ? extends V> m)
-    {
+    public void putAll(Map<? extends K, ? extends V> m) {
       throw new UnsupportedOperationException();
     }
 
@@ -5440,11 +4978,9 @@ public class Collections4D
      *         map does not support the <code>remove</code> operation.
      */
     @Override
-    public V remove(Object o)
-    {
+    public V remove(Object o) {
       throw new UnsupportedOperationException();
     }
-
 
     /**
      * Returns the number of key-value mappings in the underlying map.
@@ -5454,8 +4990,7 @@ public class Collections4D
      * @return the number of mappings.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return m.size();
     }
 
@@ -5465,8 +5000,7 @@ public class Collections4D
      * @return The map in the form of a <code>String</code>.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return m.toString();
     }
 
@@ -5480,9 +5014,8 @@ public class Collections4D
      * @return the collection view of all values.
      */
     @Override
-    public Collection<V> values()
-    {
-      if (values == null){
+    public Collection<V> values() {
+      if (values == null) {
         values = new UnmodifiableCollection<V>(m.values());
       }
       return values;
@@ -5506,8 +5039,7 @@ public class Collections4D
    * @return a read-only view of the set
    * 
    */
-  public static <T> Set<T> unmodifiableSet(Set<? extends T> s)
-  {
+  public static <T> Set<T> unmodifiableSet(Set<? extends T> s) {
     return new UnmodifiableSet<T>(s);
   }
 
@@ -5517,16 +5049,13 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class UnmodifiableSet<T> extends UnmodifiableCollection<T>
-  implements Set<T>
-  {
+  private static class UnmodifiableSet<T> extends UnmodifiableCollection<T> implements Set<T> {
     /**
      * Wrap a given set.
      * @param s the set to wrap
      * @throws NullPointerException if s is null
      */
-    UnmodifiableSet(Set<? extends T> s)
-    {
+    UnmodifiableSet(Set<? extends T> s) {
       super(s);
     }
 
@@ -5537,8 +5066,7 @@ public class Collections4D
      * @return <code>true</code> if o is an equivalent set.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return c.equals(o);
     }
 
@@ -5549,8 +5077,7 @@ public class Collections4D
      * @return the hash code of the set.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return c.hashCode();
     }
   } // class UnmodifiableSet
@@ -5572,9 +5099,7 @@ public class Collections4D
    * @return a read-only view of the map
    * 
    */
-  public static <K, V> SortedMap<K, V> unmodifiableSortedMap(SortedMap<K,
-      ? extends V> m)
-  {
+  public static <K, V> SortedMap<K, V> unmodifiableSortedMap(SortedMap<K, ? extends V> m) {
     return new UnmodifiableSortedMap<K, V>(m);
   }
 
@@ -5584,10 +5109,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class UnmodifiableSortedMap<K, V>
-  extends UnmodifiableMap<K, V>
-  implements SortedMap<K, V>
-  {
+  private static class UnmodifiableSortedMap<K, V> extends UnmodifiableMap<K, V> implements SortedMap<K, V> {
     /**
      * The wrapped map; stored both here and in the superclass to avoid
      * excessive casting.
@@ -5600,10 +5122,9 @@ public class Collections4D
      * @param sm the map to wrap
      * @throws NullPointerException if sm is null
      */
-    UnmodifiableSortedMap(SortedMap<K, ? extends V> sm)
-    {
+    UnmodifiableSortedMap(SortedMap<K, ? extends V> sm) {
       super(sm);
-      this.sm = (SortedMap<K,V>) sm;
+      this.sm = (SortedMap<K, V>) sm;
     }
 
     /**
@@ -5613,8 +5134,7 @@ public class Collections4D
      * @return the sorting comparator.
      */
     @Override
-    public Comparator<? super K> comparator()
-    {
+    public Comparator<? super K> comparator() {
       return sm.comparator();
     }
 
@@ -5625,8 +5145,7 @@ public class Collections4D
      * @throws NoSuchElementException if this map is empty.
      */
     @Override
-    public K firstKey()
-    {
+    public K firstKey() {
       return sm.firstKey();
     }
 
@@ -5653,8 +5172,7 @@ public class Collections4D
      *         null keys.
      */
     @Override
-    public SortedMap<K, V> headMap(K toKey)
-    {
+    public SortedMap<K, V> headMap(K toKey) {
       return new UnmodifiableSortedMap<K, V>(sm.headMap(toKey));
     }
 
@@ -5665,8 +5183,7 @@ public class Collections4D
      * @throws NoSuchElementException if this map is empty.
      */
     @Override
-    public K lastKey()
-    {
+    public K lastKey() {
       return sm.lastKey();
     }
 
@@ -5697,8 +5214,7 @@ public class Collections4D
      *         does not allow null keys.
      */
     @Override
-    public SortedMap<K, V> subMap(K fromKey, K toKey)
-    {
+    public SortedMap<K, V> subMap(K fromKey, K toKey) {
       return new UnmodifiableSortedMap<K, V>(sm.subMap(fromKey, toKey));
     }
 
@@ -5725,8 +5241,7 @@ public class Collections4D
      *         null keys
      */
     @Override
-    public SortedMap<K, V> tailMap(K fromKey)
-    {
+    public SortedMap<K, V> tailMap(K fromKey) {
       return new UnmodifiableSortedMap<K, V>(sm.tailMap(fromKey));
     }
   } // class UnmodifiableSortedMap
@@ -5748,8 +5263,7 @@ public class Collections4D
    * @return a read-only view of the set
    * 
    */
-  public static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> s)
-  {
+  public static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> s) {
     return new UnmodifiableSortedSet<T>(s);
   }
 
@@ -5759,9 +5273,7 @@ public class Collections4D
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class UnmodifiableSortedSet<T> extends UnmodifiableSet<T>
-  implements SortedSet<T>
-  {
+  private static class UnmodifiableSortedSet<T> extends UnmodifiableSet<T> implements SortedSet<T> {
     /**
      * The wrapped set; stored both here and in the superclass to avoid
      * excessive casting.
@@ -5774,8 +5286,7 @@ public class Collections4D
      * @param ss the set to wrap
      * @throws NullPointerException if ss is null
      */
-    UnmodifiableSortedSet(SortedSet<T> ss)
-    {
+    UnmodifiableSortedSet(SortedSet<T> ss) {
       super(ss);
       this.ss = ss;
     }
@@ -5787,8 +5298,7 @@ public class Collections4D
      * @return the sorting comparator
      */
     @Override
-    public Comparator<? super T> comparator()
-    {
+    public Comparator<? super T> comparator() {
       return ss.comparator();
     }
 
@@ -5800,8 +5310,7 @@ public class Collections4D
      * @throws NoSuchElementException if the set is empty.
      */
     @Override
-    public T first()
-    {
+    public T first() {
       return ss.first();
     }
 
@@ -5829,8 +5338,7 @@ public class Collections4D
      *         allow null elements.
      */
     @Override
-    public SortedSet<T> headSet(T toElement)
-    {
+    public SortedSet<T> headSet(T toElement) {
       return new UnmodifiableSortedSet<T>(ss.headSet(toElement));
     }
 
@@ -5842,8 +5350,7 @@ public class Collections4D
      * @throws NoSuchElementException if the set is empty.
      */
     @Override
-    public T last()
-    {
+    public T last() {
       return ss.last();
     }
 
@@ -5874,8 +5381,7 @@ public class Collections4D
      *         set does not allow null elements.
      */
     @Override
-    public SortedSet<T> subSet(T fromElement, T toElement)
-    {
+    public SortedSet<T> subSet(T fromElement, T toElement) {
       return new UnmodifiableSortedSet<T>(ss.subSet(fromElement, toElement));
     }
 
@@ -5901,8 +5407,7 @@ public class Collections4D
      *         allow null elements.
      */
     @Override
-    public SortedSet<T> tailSet(T fromElement)
-    {
+    public SortedSet<T> tailSet(T fromElement) {
       return new UnmodifiableSortedSet<T>(ss.tailSet(fromElement));
     }
   } // class UnmodifiableSortedSet
@@ -5939,9 +5444,7 @@ public class Collections4D
    * 
    * @since 1.5
    */
-  public static <E> Collection<E> checkedCollection(Collection<E> c,
-      Class<E> type)
-  {
+  public static <E> Collection<E> checkedCollection(Collection<E> c, Class<E> type) {
     return new CheckedCollection<E>(c, type);
   }
 
@@ -5952,9 +5455,7 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static class CheckedCollection<E>
-  implements Collection<E>
-  {
+  private static class CheckedCollection<E> implements Collection<E> {
     /**
      * The wrapped collection. Package visible for use by subclasses.
      * @serial the real collection
@@ -5973,11 +5474,10 @@ public class Collections4D
      * @param type the type to wrap
      * @throws NullPointerException if c is null
      */
-    CheckedCollection(Collection<E> c, Class<E> type)
-    {
+    CheckedCollection(Collection<E> c, Class<E> type) {
       this.c = c;
       this.type = type;
-      if (c == null){
+      if (c == null) {
         throw new NullPointerException();
       }
     }
@@ -5992,11 +5492,10 @@ public class Collections4D
      * @throws ClassCastException if the object is not of the correct type.
      */
     @Override
-    public boolean add(E o)
-    {
-      if (type.isInstance(o)){
+    public boolean add(E o) {
+      if (type.isInstance(o)) {
         return c.add(o);
-      }else {
+      } else {
         throw new ClassCastException("The element is of the incorrect type.");
       }
     }
@@ -6012,12 +5511,10 @@ public class Collections4D
      *                            incorrect type.
      */
     @Override
-    public boolean addAll(Collection<? extends E> coll)
-    {
+    public boolean addAll(Collection<? extends E> coll) {
       Collection<E> typedColl = (Collection<E>) c;
       final Iterator<E> it = typedColl.iterator();
-      while (it.hasNext())
-      {
+      while (it.hasNext()) {
         final E element = it.next();
         if (!type.isInstance(element)) {
           throw new ClassCastException("A member of the collection is not of the correct type.");
@@ -6030,8 +5527,7 @@ public class Collections4D
      * Removes all elements from the underlying collection.
      */
     @Override
-    public void clear()
-    {
+    public void clear() {
       c.clear();
     }
 
@@ -6049,8 +5545,7 @@ public class Collections4D
      *         doesn't support null values.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return c.contains(o);
     }
 
@@ -6069,8 +5564,7 @@ public class Collections4D
      * @throws NullPointerException if c itself is null.
      */
     @Override
-    public boolean containsAll(Collection<?> coll)
-    {
+    public boolean containsAll(Collection<?> coll) {
       return c.containsAll(coll);
     }
 
@@ -6081,8 +5575,7 @@ public class Collections4D
      * @return <code>true</code> if this collection contains no elements.
      */
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return c.isEmpty();
     }
 
@@ -6094,8 +5587,7 @@ public class Collections4D
      *         collection, in any order.
      */
     @Override
-    public Iterator<E> iterator()
-    {
+    public Iterator<E> iterator() {
       return new CheckedIterator<E>(c.iterator(), type);
     }
 
@@ -6107,8 +5599,7 @@ public class Collections4D
      *         collection returned 1 or more instances of o).
      */
     @Override
-    public boolean remove(Object o)
-    {
+    public boolean remove(Object o) {
       return c.remove(o);
     }
 
@@ -6120,8 +5611,7 @@ public class Collections4D
      * @return <code>true</code> if the collection was modified.
      */
     @Override
-    public boolean removeAll(Collection<?> coll)
-    {
+    public boolean removeAll(Collection<?> coll) {
       return c.removeAll(coll);
     }
 
@@ -6133,8 +5623,7 @@ public class Collections4D
      * @return <code>true</code> if the collection was modified.
      */
     @Override
-    public boolean retainAll(Collection<?> coll)
-    {
+    public boolean retainAll(Collection<?> coll) {
       return c.retainAll(coll);
     }
 
@@ -6144,8 +5633,7 @@ public class Collections4D
      * @return the number of elements in the collection.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return c.size();
     }
 
@@ -6157,8 +5645,7 @@ public class Collections4D
      *         the underlying collection, in any order.
      */
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       return c.toArray();
     }
 
@@ -6187,8 +5674,7 @@ public class Collections4D
      *         collection is not a subtype of the element type of a.
      */
     @Override
-    public <S> S[] toArray(S[] a)
-    {
+    public <S> S[] toArray(S[] a) {
       return c.toArray(a);
     }
 
@@ -6198,8 +5684,7 @@ public class Collections4D
      * @return The checked collection in the form of a <code>String</code>.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return c.toString();
     }
   } // class CheckedCollection
@@ -6211,9 +5696,7 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static class CheckedIterator<E>
-  implements Iterator<E>
-  {
+  private static class CheckedIterator<E> implements Iterator<E> {
     /**
      * The wrapped iterator.
      */
@@ -6230,8 +5713,7 @@ public class Collections4D
      * @param i the wrapped iterator
      * @param type the type of the elements within the checked list.
      */
-    CheckedIterator(Iterator<E> i, Class<E> type)
-    {
+    CheckedIterator(Iterator<E> i, Class<E> type) {
       this.i = i;
       this.type = type;
     }
@@ -6243,8 +5725,7 @@ public class Collections4D
      * @throws NoSuchElementException if there are no more elements.
      */
     @Override
-    public E next()
-    {
+    public E next() {
       return i.next();
     }
 
@@ -6258,8 +5739,7 @@ public class Collections4D
      *         underlying collection.
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return i.hasNext();
     }
 
@@ -6267,8 +5747,7 @@ public class Collections4D
      * Removes the next element from the collection.
      */
     @Override
-    public void remove()
-    {
+    public void remove() {
       i.remove();
     }
   } // class CheckedIterator
@@ -6302,9 +5781,8 @@ public class Collections4D
    * 
    * @see RandomAccess
    */
-  public static <E> List<E> checkedList(List<E> l, Class<E> type)
-  {
-    if (l instanceof RandomAccess){
+  public static <E> List<E> checkedList(List<E> l, Class<E> type) {
+    if (l instanceof RandomAccess) {
       return new CheckedRandomAccessList<E>(l, type);
     }
     return new CheckedList<E>(l, type);
@@ -6318,10 +5796,7 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static class CheckedList<E>
-  extends CheckedCollection<E>
-  implements List<E>
-  {
+  private static class CheckedList<E> extends CheckedCollection<E> implements List<E> {
     /**
      * The wrapped list; stored both here and in the superclass to avoid
      * excessive casting. Package visible for use by subclass.
@@ -6335,8 +5810,7 @@ public class Collections4D
      * @param type the type of the elements within the checked list.
      * @throws NullPointerException if l is null
      */
-    CheckedList(List<E> l, Class<E> type)
-    {
+    CheckedList(List<E> l, Class<E> type) {
       super(l, type);
       list = l;
     }
@@ -6351,11 +5825,10 @@ public class Collections4D
      *                            valid type for the underlying collection.
      */
     @Override
-    public void add(int index, E o)
-    {
-      if (type.isInstance(o)){
+    public void add(int index, E o) {
+      if (type.isInstance(o)) {
         list.add(index, o);
-      }else {
+      } else {
         throw new ClassCastException("The object is of the wrong type.");
       }
     }
@@ -6371,12 +5844,10 @@ public class Collections4D
      *                            valid type for the underlying collection.
      */
     @Override
-    public boolean addAll(int index, Collection<? extends E> coll)
-    {
+    public boolean addAll(int index, Collection<? extends E> coll) {
       Collection<E> typedColl = (Collection<E>) coll;
       final Iterator<E> it = typedColl.iterator();
-      while (it.hasNext())
-      {
+      while (it.hasNext()) {
         if (!type.isInstance(it.next())) {
           throw new ClassCastException("A member of the collection is not of the correct type.");
         }
@@ -6393,8 +5864,7 @@ public class Collections4D
      * @return <code>true</code> if o is equivalent to the underlying list.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return list.equals(o);
     }
 
@@ -6406,8 +5876,7 @@ public class Collections4D
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
      */
     @Override
-    public E get(int index)
-    {
+    public E get(int index) {
       return list.get(index);
     }
 
@@ -6420,8 +5889,7 @@ public class Collections4D
      * @see List#hashCode()
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return list.hashCode();
     }
 
@@ -6438,8 +5906,7 @@ public class Collections4D
      *         list does not support null values.
      */
     @Override
-    public int indexOf(Object o)
-    {
+    public int indexOf(Object o) {
       return list.indexOf(o);
     }
 
@@ -6456,8 +5923,7 @@ public class Collections4D
      *         list does not support null values.
      */
     @Override
-    public int lastIndexOf(Object o)
-    {
+    public int lastIndexOf(Object o) {
       return list.lastIndexOf(o);
     }
 
@@ -6469,8 +5935,7 @@ public class Collections4D
      *         underlying list, in order, starting at the beginning.
      */
     @Override
-    public ListIterator<E> listIterator()
-    {
+    public ListIterator<E> listIterator() {
       return new CheckedListIterator<E>(list.listIterator(), type);
     }
 
@@ -6488,8 +5953,7 @@ public class Collections4D
      * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
      */
     @Override
-    public ListIterator<E> listIterator(int index)
-    {
+    public ListIterator<E> listIterator(int index) {
       return new CheckedListIterator<E>(list.listIterator(index), type);
     }
 
@@ -6500,8 +5964,7 @@ public class Collections4D
      * @return the removed element.
      */
     @Override
-    public E remove(int index)
-    {
+    public E remove(int index) {
       return list.remove(index);
     }
 
@@ -6514,8 +5977,7 @@ public class Collections4D
      * @return the replaced element.
      */
     @Override
-    public E set(int index, E o)
-    {
+    public E set(int index, E o) {
       return list.set(index, o);
     }
 
@@ -6536,8 +5998,7 @@ public class Collections4D
      *         || toIndex &gt; size() || fromIndex &gt; toIndex.
      */
     @Override
-    public List<E> subList(int fromIndex, int toIndex)
-    {
+    public List<E> subList(int fromIndex, int toIndex) {
       return checkedList(list.subList(fromIndex, toIndex), type);
     }
   } // class CheckedList
@@ -6550,18 +6011,14 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static final class CheckedRandomAccessList<E>
-  extends CheckedList<E>
-  implements RandomAccess
-  {
+  private static final class CheckedRandomAccessList<E> extends CheckedList<E> implements RandomAccess {
     /**
      * Wrap a given list.
      * @param l the list to wrap
      * @param type the type of the elements within the checked list.
      * @throws NullPointerException if l is null
      */
-    CheckedRandomAccessList(List<E> l, Class<E> type)
-    {
+    CheckedRandomAccessList(List<E> l, Class<E> type) {
       super(l, type);
     }
   } // class CheckedRandomAccessList
@@ -6572,10 +6029,7 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static final class CheckedListIterator<E>
-  extends CheckedIterator<E>
-  implements ListIterator<E>
-  {
+  private static final class CheckedListIterator<E> extends CheckedIterator<E> implements ListIterator<E> {
     /**
      * The wrapped iterator, stored both here and in the superclass to
      * avoid excessive casting.
@@ -6586,8 +6040,7 @@ public class Collections4D
      * Only trusted code creates a wrapper.
      * @param li the wrapped iterator
      */
-    CheckedListIterator(ListIterator<E> li, Class<E> type)
-    {
+    CheckedListIterator(ListIterator<E> li, Class<E> type) {
       super(li, type);
       this.li = li;
     }
@@ -6601,11 +6054,10 @@ public class Collections4D
      *                            valid type for the underlying collection.
      */
     @Override
-    public void add(E o)
-    {
-      if (type.isInstance(o)){
+    public void add(E o) {
+      if (type.isInstance(o)) {
         li.add(o);
-      }else {
+      } else {
         throw new ClassCastException("The object is of the wrong type.");
       }
     }
@@ -6620,8 +6072,7 @@ public class Collections4D
      *         to the current position in the underlying list.
      */
     @Override
-    public boolean hasPrevious()
-    {
+    public boolean hasPrevious() {
       return li.hasPrevious();
     }
 
@@ -6634,8 +6085,7 @@ public class Collections4D
      *         <code>next()</code>.
      */
     @Override
-    public int nextIndex()
-    {
+    public int nextIndex() {
       return li.nextIndex();
     }
 
@@ -6646,8 +6096,7 @@ public class Collections4D
      * @throws NoSuchElementException if there are no more prior elements.
      */
     @Override
-    public E previous()
-    {
+    public E previous() {
       return li.previous();
     }
 
@@ -6660,8 +6109,7 @@ public class Collections4D
      *         <code>previous()</code>.
      */
     @Override
-    public int previousIndex()
-    {
+    public int previousIndex() {
       return li.previousIndex();
     }
 
@@ -6674,11 +6122,10 @@ public class Collections4D
      *                            valid type for the underlying collection.
      */
     @Override
-    public void set(E o)
-    {
-      if (type.isInstance(o)){
+    public void set(E o) {
+      if (type.isInstance(o)) {
         li.set(o);
-      }else {
+      } else {
         throw new ClassCastException("The object is of the wrong type.");
       }
     }
@@ -6712,9 +6159,7 @@ public class Collections4D
    * @return a dynamically typesafe view of the map
    * 
    */
-  public static <K, V> Map<K, V> checkedMap(Map<K, V> m, Class<K> keyType,
-      Class<V> valueType)
-  {
+  public static <K, V> Map<K, V> checkedMap(Map<K, V> m, Class<K> keyType, Class<V> valueType) {
     return new CheckedMap<K, V>(m, keyType, valueType);
   }
 
@@ -6725,9 +6170,7 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static class CheckedMap<K, V>
-  implements Map<K, V>
-  {
+  private static class CheckedMap<K, V> implements Map<K, V> {
     /**
      * The wrapped map.
      * @serial the real map
@@ -6768,12 +6211,11 @@ public class Collections4D
      * @param valueType the dynamic type of the map's values.
      * @throws NullPointerException if m is null
      */
-    CheckedMap(Map<K, V> m, Class<K> keyType, Class<V> valueType)
-    {
+    CheckedMap(Map<K, V> m, Class<K> keyType, Class<V> valueType) {
       this.m = m;
       this.keyType = keyType;
       this.valueType = valueType;
-      if (m == null){
+      if (m == null) {
         throw new NullPointerException();
       }
     }
@@ -6782,8 +6224,7 @@ public class Collections4D
      * Clears all pairs from the map.
      */
     @Override
-    public void clear()
-    {
+    public void clear() {
       m.clear();
     }
 
@@ -6798,8 +6239,7 @@ public class Collections4D
      *         does not permit null keys
      */
     @Override
-    public boolean containsKey(Object key)
-    {
+    public boolean containsKey(Object key) {
       return m.containsKey(key);
     }
 
@@ -6818,8 +6258,7 @@ public class Collections4D
      *         support null values.
      */
     @Override
-    public boolean containsValue(Object value)
-    {
+    public boolean containsValue(Object value) {
       return m.containsValue(value);
     }
 
@@ -6839,16 +6278,10 @@ public class Collections4D
      * @see Map.Entry
      */
     @Override
-    public Set<Map.Entry<K, V>> entrySet()
-    {
-      if (entries == null)
-      {
-        Class<Map.Entry<K,V>> klass =
-            (Class<Map.Entry<K,V>>) (Class) Map.Entry.class;
-        entries = new CheckedEntrySet<Map.Entry<K,V>,K,V>(m.entrySet(),
-            klass,
-            keyType,
-            valueType);
+    public Set<Map.Entry<K, V>> entrySet() {
+      if (entries == null) {
+        Class<Map.Entry<K, V>> klass = (Class<Map.Entry<K, V>>) (Class) Map.Entry.class;
+        entries = new CheckedEntrySet<Map.Entry<K, V>, K, V>(m.entrySet(), klass, keyType, valueType);
       }
       return entries;
     }
@@ -6860,9 +6293,7 @@ public class Collections4D
      * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
      * @since 1.5
      */
-    private static final class CheckedEntrySet<E,SK,SV>
-    extends CheckedSet<E>
-    {
+    private static final class CheckedEntrySet<E, SK, SV> extends CheckedSet<E> {
       /**
        * The type of the map's keys.
        * @serial the key type.
@@ -6883,9 +6314,7 @@ public class Collections4D
        * @param keyType the type of the map's keys.
        * @param valueType the type of the map's values.
        */
-      CheckedEntrySet(Set<E> s, Class<E> type, Class<SK> keyType,
-          Class<SV> valueType)
-      {
+      CheckedEntrySet(Set<E> s, Class<E> type, Class<SK> keyType, Class<SV> valueType) {
         super(s, type);
         this.keyType = keyType;
         this.valueType = valueType;
@@ -6893,10 +6322,8 @@ public class Collections4D
 
       // The iterator must return checked map entries.
       @Override
-      public Iterator<E> iterator()
-      {
-        return new CheckedIterator<E>(c.iterator(), type)
-        {
+      public Iterator<E> iterator() {
+        return new CheckedIterator<E>(c.iterator(), type) {
           /**
            * Obtains the next element from the underlying set of
            * map entries.
@@ -6905,11 +6332,9 @@ public class Collections4D
            * @throws NoSuchElementException if there are no more elements.
            */
           @Override
-          public E next()
-          {
+          public E next() {
             final Map.Entry e = (Map.Entry) super.next();
-            return (E) new Map.Entry()
-            {
+            return (E) new Map.Entry() {
               /**
                * Returns <code>true</code> if the object, o, is also a map
                * entry with an identical key and value.
@@ -6918,8 +6343,7 @@ public class Collections4D
                * @return <code>true</code> if o is an equivalent map entry.
                */
               @Override
-              public boolean equals(Object o)
-              {
+              public boolean equals(Object o) {
                 return e.equals(o);
               }
 
@@ -6929,8 +6353,7 @@ public class Collections4D
                * @return the key.
                */
               @Override
-              public Object getKey()
-              {
+              public Object getKey() {
                 return e.getKey();
               }
 
@@ -6940,8 +6363,7 @@ public class Collections4D
                * @return the value.
                */
               @Override
-              public Object getValue()
-              {
+              public Object getValue() {
                 return e.getValue();
               }
 
@@ -6954,8 +6376,7 @@ public class Collections4D
                * @see Map#hashCode()
                */
               @Override
-              public int hashCode()
-              {
+              public int hashCode() {
                 return e.hashCode();
               }
 
@@ -6969,8 +6390,7 @@ public class Collections4D
                *                             map.
                */
               @Override
-              public Object setValue(Object value)
-              {
+              public Object setValue(Object value) {
                 if (valueType.isInstance(value)) {
                   return e.setValue(value);
                 } else {
@@ -6984,8 +6404,7 @@ public class Collections4D
                * @return The map entry as a <code>String</code>.
                */
               @Override
-              public String toString()
-              {
+              public String toString() {
                 return e.toString();
               }
             };
@@ -7002,8 +6421,7 @@ public class Collections4D
      * @return <code>true</code> if o is an equivalent map.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return m.equals(o);
     }
 
@@ -7021,8 +6439,7 @@ public class Collections4D
      * @see #containsKey(Object)
      */
     @Override
-    public V get(Object key)
-    {
+    public V get(Object key) {
       return m.get(key);
     }
 
@@ -7037,12 +6454,10 @@ public class Collections4D
      *                            not a valid type for the underlying map.
      */
     @Override
-    public V put(K key, V value)
-    {
-      if (keyType.isInstance(key))
-      {
+    public V put(K key, V value) {
+      if (keyType.isInstance(key)) {
         if (valueType.isInstance(value)) {
-          return m.put(key,value);
+          return m.put(key, value);
         } else {
           throw new ClassCastException("The value is of the wrong type.");
         }
@@ -7058,8 +6473,7 @@ public class Collections4D
      * @see Map.Entry#hashCode()
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return m.hashCode();
     }
 
@@ -7069,8 +6483,7 @@ public class Collections4D
      * @return <code>true</code> if the map is empty.
      */
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return m.isEmpty();
     }
 
@@ -7089,9 +6502,8 @@ public class Collections4D
      * @return the set view of all keys.
      */
     @Override
-    public Set<K> keySet()
-    {
-      if (keys == null){
+    public Set<K> keySet() {
+      if (keys == null) {
         keys = new CheckedSet<K>(m.keySet(), keyType);
       }
       return keys;
@@ -7107,13 +6519,11 @@ public class Collections4D
      *                            not a valid type for the underlying map.
      */
     @Override
-    public void putAll(Map<? extends K, ? extends V> map)
-    {
-      Map<K,V> typedMap = (Map<K,V>) map;
-      final Iterator<Map.Entry<K,V>> it = typedMap.entrySet().iterator();
-      while (it.hasNext())
-      {
-        final Map.Entry<K,V> entry = it.next();
+    public void putAll(Map<? extends K, ? extends V> map) {
+      Map<K, V> typedMap = (Map<K, V>) map;
+      final Iterator<Map.Entry<K, V>> it = typedMap.entrySet().iterator();
+      while (it.hasNext()) {
+        final Map.Entry<K, V> entry = it.next();
         if (!keyType.isInstance(entry.getKey())) {
           throw new ClassCastException("A key is of the wrong type.");
         }
@@ -7135,11 +6545,9 @@ public class Collections4D
      *         map does not support the <code>remove</code> operation.
      */
     @Override
-    public V remove(Object o)
-    {
+    public V remove(Object o) {
       return m.remove(o);
     }
-
 
     /**
      * Returns the number of key-value mappings in the underlying map.
@@ -7149,8 +6557,7 @@ public class Collections4D
      * @return the number of mappings.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return m.size();
     }
 
@@ -7160,8 +6567,7 @@ public class Collections4D
      * @return The map in the form of a <code>String</code>.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
       return m.toString();
     }
 
@@ -7180,9 +6586,8 @@ public class Collections4D
      * @return the collection view of all values.
      */
     @Override
-    public Collection<V> values()
-    {
-      if (values == null){
+    public Collection<V> values() {
+      if (values == null) {
         values = new CheckedCollection<V>(m.values(), valueType);
       }
       return values;
@@ -7216,8 +6621,7 @@ public class Collections4D
    * @return a dynamically typesafe view of the set
    * 
    */
-  public static <E> Set<E> checkedSet(Set<E> s, Class<E> type)
-  {
+  public static <E> Set<E> checkedSet(Set<E> s, Class<E> type) {
     return new CheckedSet<E>(s, type);
   }
 
@@ -7228,18 +6632,14 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static class CheckedSet<E>
-  extends CheckedCollection<E>
-  implements Set<E>
-  {
+  private static class CheckedSet<E> extends CheckedCollection<E> implements Set<E> {
     /**
      * Wrap a given set.
      *
      * @param s the set to wrap
      * @throws NullPointerException if s is null
      */
-    CheckedSet(Set<E> s, Class<E> type)
-    {
+    CheckedSet(Set<E> s, Class<E> type) {
       super(s, type);
     }
 
@@ -7250,8 +6650,7 @@ public class Collections4D
      * @return <code>true</code> if o is an equivalent set.
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return c.equals(o);
     }
 
@@ -7262,8 +6661,7 @@ public class Collections4D
      * @return the hash code of the set.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return c.hashCode();
     }
   } // class CheckedSet
@@ -7296,10 +6694,7 @@ public class Collections4D
    * @return a dynamically typesafe view of the map
    * 
    */
-  public static <K, V> SortedMap<K, V> checkedSortedMap(SortedMap<K, V> m,
-      Class<K> keyType,
-      Class<V> valueType)
-  {
+  public static <K, V> SortedMap<K, V> checkedSortedMap(SortedMap<K, V> m, Class<K> keyType, Class<V> valueType) {
     return new CheckedSortedMap<K, V>(m, keyType, valueType);
   }
 
@@ -7310,10 +6705,7 @@ public class Collections4D
    *
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private static class CheckedSortedMap<K, V>
-  extends CheckedMap<K, V>
-  implements SortedMap<K, V>
-  {
+  private static class CheckedSortedMap<K, V> extends CheckedMap<K, V> implements SortedMap<K, V> {
     /**
      * The wrapped map; stored both here and in the superclass to avoid
      * excessive casting.
@@ -7329,8 +6721,7 @@ public class Collections4D
      * @param valueType the dynamic type of the map's values.
      * @throws NullPointerException if sm is null
      */
-    CheckedSortedMap(SortedMap<K, V> sm, Class<K> keyType, Class<V> valueType)
-    {
+    CheckedSortedMap(SortedMap<K, V> sm, Class<K> keyType, Class<V> valueType) {
       super(sm, keyType, valueType);
       this.sm = sm;
     }
@@ -7342,8 +6733,7 @@ public class Collections4D
      * @return the sorting comparator.
      */
     @Override
-    public Comparator<? super K> comparator()
-    {
+    public Comparator<? super K> comparator() {
       return sm.comparator();
     }
 
@@ -7354,8 +6744,7 @@ public class Collections4D
      * @throws NoSuchElementException if this map is empty.
      */
     @Override
-    public K firstKey()
-    {
+    public K firstKey() {
       return sm.firstKey();
     }
 
@@ -7385,8 +6774,7 @@ public class Collections4D
      *         null keys.
      */
     @Override
-    public SortedMap<K, V> headMap(K toKey)
-    {
+    public SortedMap<K, V> headMap(K toKey) {
       return new CheckedSortedMap<K, V>(sm.headMap(toKey), keyType, valueType);
     }
 
@@ -7397,8 +6785,7 @@ public class Collections4D
      * @throws NoSuchElementException if this map is empty.
      */
     @Override
-    public K lastKey()
-    {
+    public K lastKey() {
       return sm.lastKey();
     }
 
@@ -7431,10 +6818,8 @@ public class Collections4D
      *         does not allow null keys.
      */
     @Override
-    public SortedMap<K, V> subMap(K fromKey, K toKey)
-    {
-      return new CheckedSortedMap<K, V>(sm.subMap(fromKey, toKey), keyType,
-          valueType);
+    public SortedMap<K, V> subMap(K fromKey, K toKey) {
+      return new CheckedSortedMap<K, V>(sm.subMap(fromKey, toKey), keyType, valueType);
     }
 
     /**
@@ -7463,10 +6848,8 @@ public class Collections4D
      *                              allow null keys
      */
     @Override
-    public SortedMap<K, V> tailMap(K fromKey)
-    {
-      return new CheckedSortedMap<K, V>(sm.tailMap(fromKey), keyType,
-          valueType);
+    public SortedMap<K, V> tailMap(K fromKey) {
+      return new CheckedSortedMap<K, V>(sm.tailMap(fromKey), keyType, valueType);
     }
   } // class CheckedSortedMap
 
@@ -7497,9 +6880,7 @@ public class Collections4D
    * @return a dynamically typesafe view of the set
    * 
    */
-  public static <E> SortedSet<E> checkedSortedSet(SortedSet<E> s,
-      Class<E> type)
-  {
+  public static <E> SortedSet<E> checkedSortedSet(SortedSet<E> s, Class<E> type) {
     return new CheckedSortedSet<E>(s, type);
   }
 
@@ -7510,10 +6891,7 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.5
    */
-  private static class CheckedSortedSet<E>
-  extends CheckedSet<E>
-  implements SortedSet<E>
-  {
+  private static class CheckedSortedSet<E> extends CheckedSet<E> implements SortedSet<E> {
     /**
      * The wrapped set; stored both here and in the superclass to avoid
      * excessive casting.
@@ -7529,8 +6907,7 @@ public class Collections4D
      * @param type the type of the set's elements.
      * @throws NullPointerException if ss is null
      */
-    CheckedSortedSet(SortedSet<E> ss, Class<E> type)
-    {
+    CheckedSortedSet(SortedSet<E> ss, Class<E> type) {
       super(ss, type);
       this.ss = ss;
     }
@@ -7542,8 +6919,7 @@ public class Collections4D
      * @return the sorting comparator
      */
     @Override
-    public Comparator<? super E> comparator()
-    {
+    public Comparator<? super E> comparator() {
       return ss.comparator();
     }
 
@@ -7555,8 +6931,7 @@ public class Collections4D
      * @throws NoSuchElementException if the set is empty.
      */
     @Override
-    public E first()
-    {
+    public E first() {
       return ss.first();
     }
 
@@ -7587,8 +6962,7 @@ public class Collections4D
      *         allow null elements.
      */
     @Override
-    public SortedSet<E> headSet(E toElement)
-    {
+    public SortedSet<E> headSet(E toElement) {
       return new CheckedSortedSet<E>(ss.headSet(toElement), type);
     }
 
@@ -7600,8 +6974,7 @@ public class Collections4D
      * @throws NoSuchElementException if the set is empty.
      */
     @Override
-    public E last()
-    {
+    public E last() {
       return ss.last();
     }
 
@@ -7634,8 +7007,7 @@ public class Collections4D
      *         set does not allow null elements.
      */
     @Override
-    public SortedSet<E> subSet(E fromElement, E toElement)
-    {
+    public SortedSet<E> subSet(E fromElement, E toElement) {
       return new CheckedSortedSet<E>(ss.subSet(fromElement, toElement), type);
     }
 
@@ -7665,8 +7037,7 @@ public class Collections4D
      *         allow null elements.
      */
     @Override
-    public SortedSet<E> tailSet(E fromElement)
-    {
+    public SortedSet<E> tailSet(E fromElement) {
       return new CheckedSortedSet<E>(ss.tailSet(fromElement), type);
     }
   } // class CheckedSortedSet
@@ -7682,8 +7053,7 @@ public class Collections4D
    * @return a LIFO queue.
    * @since 1.6
    */
-  public static <T> Queue<T> asLifoQueue(Deque<T> deque)
-  {
+  public static <T> Queue<T> asLifoQueue(Deque<T> deque) {
     return new LIFOQueue<T>(deque);
   }
 
@@ -7701,8 +7071,7 @@ public class Collections4D
    * @throws IllegalArgumentException if the map is not empty.
    * @since 1.6
    */
-  public static <E> Set<E> newSetFromMap(Map<E,Boolean> map)
-  {
+  public static <E> Set<E> newSetFromMap(Map<E, Boolean> map) {
     return new MapSet<E>(map);
   }
 
@@ -7712,9 +7081,7 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.6
    */
-  private static class LIFOQueue<T>
-  extends AbstractQueue<T>
-  {
+  private static class LIFOQueue<T> extends AbstractQueue<T> {
 
     /**
      * The backing deque.
@@ -7727,67 +7094,57 @@ public class Collections4D
      *
      * @param deque the backing deque.
      */
-    public LIFOQueue(Deque<T> deque)
-    {
+    public LIFOQueue(Deque<T> deque) {
       this.deque = deque;
     }
 
     @Override
-    public boolean add(T e)
-    {
+    public boolean add(T e) {
       return deque.offerFirst(e);
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c)
-    {
+    public boolean addAll(Collection<? extends T> c) {
       boolean result = false;
       final Iterator<? extends T> it = c.iterator();
-      while (it.hasNext()){
+      while (it.hasNext()) {
         result |= deque.offerFirst(it.next());
       }
       return result;
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
       deque.clear();
     }
 
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return deque.isEmpty();
     }
 
     @Override
-    public Iterator<T> iterator()
-    {
+    public Iterator<T> iterator() {
       return deque.iterator();
     }
 
     @Override
-    public boolean offer(T e)
-    {
+    public boolean offer(T e) {
       return deque.offerFirst(e);
     }
 
     @Override
-    public T peek()
-    {
+    public T peek() {
       return deque.peek();
     }
 
     @Override
-    public T poll()
-    {
+    public T poll() {
       return deque.poll();
     }
 
     @Override
-    public int size()
-    {
+    public int size() {
       return deque.size();
     }
   } // class LIFOQueue
@@ -7798,14 +7155,12 @@ public class Collections4D
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    * @since 1.6
    */
-  private static class MapSet<E>
-  extends AbstractSet<E>
-  {
+  private static class MapSet<E> extends AbstractSet<E> {
 
     /**
      * The backing map.
      */
-    private Map<E,Boolean> map;
+    private Map<E, Boolean> map;
 
     /**
      * Constructs a new {@link MapSet} using the specified
@@ -7814,64 +7169,55 @@ public class Collections4D
      * @param map the backing map.
      * @throws IllegalArgumentException if the map is not empty.
      */
-    public MapSet(Map<E,Boolean> map)
-    {
-      if (!map.isEmpty()){
+    public MapSet(Map<E, Boolean> map) {
+      if (!map.isEmpty()) {
         throw new IllegalArgumentException("The map must be empty.");
       }
       this.map = map;
     }
 
     @Override
-    public boolean add(E e)
-    {
+    public boolean add(E e) {
       return map.put(e, true) == null;
     }
 
     @Override
-    public boolean addAll(Collection<? extends E> c)
-    {
+    public boolean addAll(Collection<? extends E> c) {
       boolean result = false;
       final Iterator<? extends E> it = c.iterator();
-      while (it.hasNext()){
+      while (it.hasNext()) {
         result |= (map.put(it.next(), true) == null);
       }
       return result;
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
       map.clear();
     }
 
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return map.containsKey(o);
     }
 
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return map.isEmpty();
     }
 
     @Override
-    public Iterator<E> iterator()
-    {
+    public Iterator<E> iterator() {
       return map.keySet().iterator();
     }
 
     @Override
-    public boolean remove(Object o)
-    {
+    public boolean remove(Object o) {
       return map.remove(o) != null;
     }
 
     @Override
-    public int size()
-    {
+    public int size() {
       return map.size();
     }
   } // class MapSet

@@ -23,15 +23,13 @@ import totalcross.sql.DriverManager;
 import totalcross.sql.DriverPropertyInfo;
 import totalcross.util.Hashtable;
 
-public class JDBC implements Driver
-{
+public class JDBC implements Driver {
   public static final String PREFIX = "jdbc:sqlite:";
 
   static {
     try {
       DriverManager.registerDriver(new JDBC());
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       e.printStackTrace();
     }
   }

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /* Checksum.java - Interface to compute a data checksum
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
@@ -72,8 +70,7 @@ package totalcross.util.zip;
  * @author Per Bothner
  * @author Jochen Hoenicke
  */
-public abstract class Checksum
-{
+public abstract class Checksum {
   /**
    * Returns the data checksum computed so far.
    */

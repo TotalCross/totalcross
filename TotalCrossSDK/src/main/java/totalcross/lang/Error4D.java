@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class Error4D extends Throwable
-{
+public class Error4D extends Throwable {
   /** Constructs an empty Exception. */
-  public Error4D()
-  {
+  public Error4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public Error4D(String msg)
-  {
+  public Error4D(String msg) {
     super(msg);
   }
 
@@ -50,4 +45,3 @@ public class Error4D extends Throwable
     super(msg, cause);
   }
 }
-

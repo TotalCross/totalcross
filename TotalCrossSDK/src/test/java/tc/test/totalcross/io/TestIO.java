@@ -13,10 +13,8 @@ package tc.test.totalcross.io;
 
 import totalcross.unit.TestSuite;
 
-public class TestIO extends TestSuite
-{
-  public TestIO()
-  {
+public class TestIO extends TestSuite {
+  public TestIO() {
     super("Test IO");
     addTestCase(TestBufferedStream.class);
     addTestCase(TestByteArrayStream.class);

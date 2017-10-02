@@ -15,17 +15,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net; // this should better go into a kinda util pkg.
+
 import totalcross.sys.Vm;
 
 /**
  * String of bytes. Used by the Network classes to avoid converting the byte array
  * received from a Socket into Strings.
  */
-public class ByteString
-{
+public class ByteString {
   protected byte[] base;
   protected int pos;
   protected int len;
@@ -44,8 +42,7 @@ public class ByteString
    * @see ByteString#ByteString(byte[] base, int pos, int len) if
    * you want a safe constructor.
    */
-  ByteString(int pos, int len, byte[] base)
-  {
+  ByteString(int pos, int len, byte[] base) {
     this.base = base;
     this.pos = pos;
     this.len = len;
@@ -58,8 +55,7 @@ public class ByteString
    * @param start    where this ByteString starts in the byte array
    * @param len      length of this ByteString
    */
-  ByteString(byte[] base, int pos, int len)
-  {
+  ByteString(byte[] base, int pos, int len) {
     this.base = new byte[len];
     Vm.arrayCopy(base, pos, this.base, 0, len);
     this.pos = 0;
@@ -72,9 +68,8 @@ public class ByteString
    *
    * @param source   ByteString to be copied
    */
-  public static ByteString copy(ByteString source)
-  {
-    if (source == null){
+  public static ByteString copy(ByteString source) {
+    if (source == null) {
       return null;
     }
     return new ByteString(source.pos, source.len, source.base);
@@ -87,9 +82,8 @@ public class ByteString
    * @param end the character after the last character of the substring
    * @return the ByteString substring
    */
-  public ByteString substring(int start, int end)
-  {
-    return new ByteString(pos+start, end-start, base);
+  public ByteString substring(int start, int end) {
+    return new ByteString(pos + start, end - start, base);
   }
 
   /**
@@ -100,27 +94,21 @@ public class ByteString
    * @param len length of the value to check against
    * @return true if this ByteString matches, false otherwise
    */
-  public final boolean equalsIgnoreCase(byte[] b, int pos, int len)
-  {
-    if (this.len == len)
-    {
+  public final boolean equalsIgnoreCase(byte[] b, int pos, int len) {
+    if (this.len == len) {
       int thisPos = this.pos;
-      for (int i=0; ; ++i, ++thisPos, ++pos)
-      {
+      for (int i = 0;; ++i, ++thisPos, ++pos) {
         if (i == len) {
           return true;
         }
-        if (base[thisPos] != b[pos])
-        {
+        if (base[thisPos] != b[pos]) {
           byte c1 = base[thisPos];
           byte c2 = b[pos];
-          if ('a' <= c1)
-          {
-            c1 -= ('a'-'A'); // fast toUpper
+          if ('a' <= c1) {
+            c1 -= ('a' - 'A'); // fast toUpper
           }
-          if ('a' <= c2)
-          {
-            c2 -= ('a'-'A'); // fast toUpper
+          if ('a' <= c2) {
+            c2 -= ('a' - 'A'); // fast toUpper
           }
           if (c1 != c2) {
             break;
@@ -138,8 +126,7 @@ public class ByteString
    * @return true if this ByteString is equal
    *         to the <code>c</code> ByteString, false otherwise.
    */
-  public final boolean equalsIgnoreCase(ByteString c)
-  {
+  public final boolean equalsIgnoreCase(ByteString c) {
     return equalsIgnoreCase(c.base, c.pos, c.len);
   }
 
@@ -154,12 +141,11 @@ public class ByteString
    * @param at first byte in this ByteString
    * @return true if this ByteString matches, false otherwise
    */
-  public final boolean equalsAtIgnoreCase(byte[] b, int at)
-  {
-    if ((at + b.length) > len){
+  public final boolean equalsAtIgnoreCase(byte[] b, int at) {
+    if ((at + b.length) > len) {
       return false;
     }
-    int len = this.len;  // save!
+    int len = this.len; // save!
     this.pos += at;
     this.len = b.length;
     boolean isEqual = equalsIgnoreCase(b, 0, this.len);
@@ -174,8 +160,7 @@ public class ByteString
    * @return a String representation of this ByteString
    */
   @Override
-  public final String toString()
-  {
+  public final String toString() {
     return new String(base, pos, len);
   }
 
@@ -186,10 +171,9 @@ public class ByteString
    * @param start where to start from
    * @return the offset of the byte, if found; -1 if not found
    */
-  public final int indexOf(byte b, int start)
-  {
-    for (int i=start; i < len; ++i) {
-      if (base[i+pos] == b) {
+  public final int indexOf(byte b, int start) {
+    for (int i = start; i < len; ++i) {
+      if (base[i + pos] == b) {
         return i;
       }
     }
@@ -202,12 +186,12 @@ public class ByteString
    * @param b byte to find
    * @return the offset of the byte, if found; -1 if not found
    */
-  public final int lastIndexOf(byte b)
-  {
+  public final int lastIndexOf(byte b) {
     int i;
-    for (i=len+pos-1; (i >= pos) && (base[i] != b); --i) {;
+    for (i = len + pos - 1; (i >= pos) && (base[i] != b); --i) {
+      ;
     }
-    return i-pos;
+    return i - pos;
   }
 
   /**
@@ -217,20 +201,17 @@ public class ByteString
    * @param start where to start from
    * @return the offset of the byte array, if found; -1 if not found
    */
-  public final int indexOf(byte[] b, int start)
-  {
-    while (true)
-    {
+  public final int indexOf(byte[] b, int start) {
+    while (true) {
       start = indexOf(b[0], start);
       if (start == -1) {
         return -1;
       }
-      for (int i=start+1, k=1; ; ++i, ++k)
-      {
+      for (int i = start + 1, k = 1;; ++i, ++k) {
         if (k == b.length) {
           return start;
         }
-        if ((i == len) || (base[pos+i] != b[k])) {
+        if ((i == len) || (base[pos + i] != b[k])) {
           break;
         }
       }
@@ -246,15 +227,12 @@ public class ByteString
    * @param end      where it ends
    * @return the integer value, or -1 if wrong representation.
    */
-  public static int convertToInt(byte[] b, int start, int end)
-  {
-    if (end > start)
-    {
+  public static int convertToInt(byte[] b, int start, int end) {
+    if (end > start) {
       int res = 0;
-      while (true)
-      {
+      while (true) {
         byte ch = b[start];
-        if ((ch > (byte)'9') || (ch < (byte)'0')) {
+        if ((ch > (byte) '9') || (ch < (byte) '0')) {
           return -1;
         }
         res += (ch & 0xF);
@@ -273,8 +251,7 @@ public class ByteString
    * @param start    where the int represenation starts in this ByteString
    * @return the integer value, or -1 if wrong representation.
    */
-  public int convertToInt(int start)
-  {
-    return convertToInt(base, start+pos, pos+len);
+  public int convertToInt(int start) {
+    return convertToInt(base, start + pos, pos + len);
   }
 }

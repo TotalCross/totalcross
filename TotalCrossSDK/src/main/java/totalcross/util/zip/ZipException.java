@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /* ZipException.java - exception representing a zip related error
    Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
@@ -60,8 +58,7 @@ import totalcross.io.IOException;
 /**
  * Signals that a Zip exception of some sort has occurred.
  */
-public class ZipException extends IOException
-{
+public class ZipException extends IOException {
   /**
    * Compatible with JDK 1.0+.
    */
@@ -70,8 +67,7 @@ public class ZipException extends IOException
   /**
    * Create an exception without a message.
    */
-  public ZipException()
-  {
+  public ZipException() {
   }
 
   /**
@@ -80,8 +76,7 @@ public class ZipException extends IOException
    * @param msg
    *           the message
    */
-  public ZipException(String msg)
-  {
+  public ZipException(String msg) {
     super(msg);
   }
 }

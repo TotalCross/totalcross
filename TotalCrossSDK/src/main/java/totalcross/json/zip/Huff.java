@@ -367,8 +367,7 @@ public class Huff implements None, PostMortem {
    *            The bitwriter to write it to.
    * @throws JSONException
    */
-  private void write(Symbol symbol, BitWriter bitwriter)
-      throws JSONException {
+  private void write(Symbol symbol, BitWriter bitwriter) throws JSONException {
     try {
       Symbol back = symbol.back;
       if (back != null) {

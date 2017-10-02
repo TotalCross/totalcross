@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.io.IOException;
@@ -30,8 +28,7 @@ import totalcross.util.Properties;
  * 
  * @since TotalCross 1.13
  */
-public class POP3Store extends Store
-{
+public class POP3Store extends Store {
   private Folder inbox;
 
   private String host;
@@ -49,8 +46,7 @@ public class POP3Store extends Store
   static final String UIDL = "UIDL ";
   static final String QUIT = "QUIT \r\n";
 
-  protected POP3Store(MailSession session)
-  {
+  protected POP3Store(MailSession session) {
     super(session);
     host = session.get(MailSession.POP3_HOST).toString();
     port = ((Properties.Int) session.get(MailSession.POP3_PORT)).value;
@@ -59,41 +55,28 @@ public class POP3Store extends Store
   }
 
   @Override
-  public void connect() throws AuthenticationException, MessagingException
-  {
-    try
-    {
+  public void connect() throws AuthenticationException, MessagingException {
+    try {
       socketFactory = (SocketFactory) Class.forName("totalcross.net.SocketFactory").newInstance();
       connection = socketFactory.createSocket(host, port);
       connection.readLine();
 
       authenticate(user, pass);
-    }
-    catch (InstantiationException e)
-    {
+    } catch (InstantiationException e) {
       throw new MessagingException(e);
-    }
-    catch (IllegalAccessException e)
-    {
+    } catch (IllegalAccessException e) {
       throw new MessagingException(e);
-    }
-    catch (ClassNotFoundException e)
-    {
+    } catch (ClassNotFoundException e) {
       throw new MessagingException(e);
-    }
-    catch (UnknownHostException e)
-    {
+    } catch (UnknownHostException e) {
       throw new MessagingException(e);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
   @Override
-  public Folder getDefaultFolder()
-  {
+  public Folder getDefaultFolder() {
     return new POP3Folder(this);
   }
 
@@ -101,44 +84,38 @@ public class POP3Store extends Store
    * Only the name "INBOX" is supported.
    */
   @Override
-  public Folder getFolder(String name)
-  {
-    if (!name.equals(ROOT)){
+  public Folder getFolder(String name) {
+    if (!name.equals(ROOT)) {
       return null;
     }
     return new POP3Folder(this);
   }
 
   @Override
-  public void close() throws MessagingException
-  {
-    if (inbox != null){
+  public void close() throws MessagingException {
+    if (inbox != null) {
       inbox.close(false);
     }
 
-    try
-    {
+    try {
       connection.writeBytes(QUIT);
       connection.readLine();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
-  private void authenticate(String user, String pass) throws IOException, AuthenticationException
-  {
+  private void authenticate(String user, String pass) throws IOException, AuthenticationException {
     String reply;
     connection.writeBytes(USER + user + Convert.CRLF);
     reply = connection.readLine();
-    if (!reply.startsWith("+OK")){
+    if (!reply.startsWith("+OK")) {
       throw new AuthenticationException();
     }
 
     connection.writeBytes(PASS + pass + Convert.CRLF);
     reply = connection.readLine();
-    if (!reply.startsWith("+OK")){
+    if (!reply.startsWith("+OK")) {
       throw new AuthenticationException();
     }
   }

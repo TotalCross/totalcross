@@ -9,26 +9,20 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.constant;
 
 import tc.tools.converter.bb.JavaClass;
 
-public class FieldRef extends DoubleReference
-{
-  public FieldRef(JavaClass jclass)
-  {
+public class FieldRef extends DoubleReference {
+  public FieldRef(JavaClass jclass) {
     super(jclass);
   }
 
-  public Class getValue1AsClass()
-  {
-    return (Class)value1.info;
+  public Class getValue1AsClass() {
+    return (Class) value1.info;
   }
 
-  public NameAndType getValue2AsNameAndType()
-  {
-    return (NameAndType)value2.info;
+  public NameAndType getValue2AsNameAndType() {
+    return (NameAndType) value2.info;
   }
 }

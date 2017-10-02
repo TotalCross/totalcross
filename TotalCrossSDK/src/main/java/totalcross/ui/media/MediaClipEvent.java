@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.media;
 
 import totalcross.sys.Vm;
@@ -25,8 +23,7 @@ import totalcross.sys.Vm;
  * @since SuperWaba 5.66
  */
 
-public class MediaClipEvent extends totalcross.ui.event.Event
-{
+public class MediaClipEvent extends totalcross.ui.event.Event {
   /** The event type when the play starts. */
   public static final int STARTED = 550;
   /** The event type when the play ends. */
@@ -37,13 +34,11 @@ public class MediaClipEvent extends totalcross.ui.event.Event
   public static final int END_OF_MEDIA = 554;
 
   /** Constructs a MediaClipEvent, setting the type and target to the given parameters. */
-  public MediaClipEvent(int type, Object target)
-  {
-    super(type,target,Vm.getTimeStamp());
+  public MediaClipEvent(int type, Object target) {
+    super(type, target, Vm.getTimeStamp());
   }
 
   /** Constructs an empty MediaClipEvent. */
-  public MediaClipEvent()
-  {
+  public MediaClipEvent() {
   }
 }

@@ -9,15 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.cipher;
 
 /**
  * This class implements the AES cryptographic cipher key.
  */
-public class AESKey extends Key
-{
+public class AESKey extends Key {
   private byte[] data;
 
   /**
@@ -25,8 +22,7 @@ public class AESKey extends Key
    * 
    * @param data A byte array containing the key data.
    */
-  public AESKey(byte[] data)
-  {
+  public AESKey(byte[] data) {
     this.data = data;
   }
 
@@ -35,8 +31,7 @@ public class AESKey extends Key
    * 
    * @return A copy of the byte array containing the key data.
    */
-  public byte[] getData()
-  {
+  public byte[] getData() {
     return data;
   }
 }

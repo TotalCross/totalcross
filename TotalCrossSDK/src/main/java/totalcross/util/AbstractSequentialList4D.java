@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractCollection;
@@ -79,13 +78,11 @@ import java.util.ListIterator;
  * @since 1.2
  * @status updated to 1.4
  */
-public abstract class AbstractSequentialList4D<E> extends AbstractList<E>
-{
+public abstract class AbstractSequentialList4D<E> extends AbstractList<E> {
   /**
    * The main constructor, for use by subclasses.
    */
-  protected AbstractSequentialList4D()
-  {
+  protected AbstractSequentialList4D() {
   }
 
   /**
@@ -119,8 +116,7 @@ public abstract class AbstractSequentialList4D<E> extends AbstractList<E>
    *         the addition of null values.
    */
   @Override
-  public void add(int index, E o)
-  {
+  public void add(int index, E o) {
     listIterator(index).add(o);
   }
 
@@ -154,8 +150,7 @@ public abstract class AbstractSequentialList4D<E> extends AbstractList<E>
    * @see #add(int, Object)
    */
   @Override
-  public boolean addAll(int index, Collection<? extends E> c)
-  {
+  public boolean addAll(int index, Collection<? extends E> c) {
     Iterator<? extends E> ci = c.iterator();
     int size = c.size();
     ListIterator<E> i = listIterator(index);
@@ -174,12 +169,10 @@ public abstract class AbstractSequentialList4D<E> extends AbstractList<E>
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   @Override
-  public E get(int index)
-  {
+  public E get(int index) {
     // This is a legal listIterator position, but an illegal get.
-    if (index == size()){
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-          + size());
+    if (index == size()) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + size());
     }
     return listIterator(index).next();
   }
@@ -191,8 +184,7 @@ public abstract class AbstractSequentialList4D<E> extends AbstractList<E>
    * @return an Iterator over the elements of this list, in order
    */
   @Override
-  public Iterator<E> iterator()
-  {
+  public Iterator<E> iterator() {
     return listIterator();
   }
 
@@ -208,12 +200,10 @@ public abstract class AbstractSequentialList4D<E> extends AbstractList<E>
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   @Override
-  public E remove(int index)
-  {
+  public E remove(int index) {
     // This is a legal listIterator position, but an illegal remove.
-    if (index == size()){
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-          + size());
+    if (index == size()) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + size());
     }
     ListIterator<E> i = listIterator(index);
     E removed = i.next();
@@ -239,12 +229,10 @@ public abstract class AbstractSequentialList4D<E> extends AbstractList<E>
    *         a value to be set to null.
    */
   @Override
-  public E set(int index, E o)
-  {
+  public E set(int index, E o) {
     // This is a legal listIterator position, but an illegal set.
-    if (index == size()){
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-          + size());
+    if (index == size()) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + size());
     }
     ListIterator<E> i = listIterator(index);
     E old = i.next();

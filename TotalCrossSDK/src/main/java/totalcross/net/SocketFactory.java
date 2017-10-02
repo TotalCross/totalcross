@@ -42,13 +42,11 @@ import totalcross.io.IOException;
  * 
  * @since TotalCross 1.13
  */
-public class SocketFactory
-{
+public class SocketFactory {
   private static SocketFactory instance;
 
-  public static SocketFactory getDefault()
-  {
-    if (instance == null){
+  public static SocketFactory getDefault() {
+    if (instance == null) {
       instance = new SocketFactory();
     }
     return instance;
@@ -70,8 +68,7 @@ public class SocketFactory
    * @see totalcross.net.Socket#Socket(String, int)
    * @since TotalCross 1.13
    */
-  public Socket createSocket(String host, int port) throws UnknownHostException, IOException
-  {
+  public Socket createSocket(String host, int port) throws UnknownHostException, IOException {
     return new Socket(host, port);
   }
 
@@ -91,8 +88,7 @@ public class SocketFactory
    * @see totalcross.net.Socket#Socket(String, int)
    * @since TotalCross 1.22
    */
-  public Socket createSocket(String host, int port, int timeout) throws UnknownHostException, IOException
-  {
+  public Socket createSocket(String host, int port, int timeout) throws UnknownHostException, IOException {
     return new Socket(host, port, timeout);
   }
 }

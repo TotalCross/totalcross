@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.Settings;
@@ -110,34 +108,31 @@ import totalcross.ui.gfx.Graphics;
  * bacause they will show up only the next time the menu bar opens.
  */
 
-public class MenuBar extends Window
-{
-  protected MenuItem [][]items;
-  private int []xpos;
-  private int xmin,xmax;
+public class MenuBar extends Window {
+  protected MenuItem[][] items;
+  private int[] xpos;
+  private int xmin, xmax;
   /** Note: if you want to change the spacement between the menu items (maybe to make more items fit in the row), change this gap value. Default is 3 (3 pixels at left and 3 at right). */
   public int gap = 3; // guich@200b4_89
-  private int selected=0;
+  private int selected = 0;
   private int menuItemSelected;
   private boolean switching;
   private MenuBarDropDown pop;
-  private int eColor,dColor,bColor,cursorColor=-1;
+  private int eColor, dColor, bColor, cursorColor = -1;
   private int fourColors[] = new int[4];
-  private int popFore=-1,popBack=-1,popCursor=-1;
+  private int popFore = -1, popBack = -1, popCursor = -1;
 
   /** Converts a String matrix into a MenuItem matrix. */
-  public static MenuItem[][] strings2items(String[][] items)
-  {
+  public static MenuItem[][] strings2items(String[][] items) {
     MenuItem[][] its = new MenuItem[items.length][];
-    for (int i =0; i < its.length; i++) {
+    for (int i = 0; i < its.length; i++) {
       its[i] = MenuBarDropDown.strings2items(items[i]);
     }
     return its;
   }
 
   /** Create a MenuBar with the given menu items. */
-  public MenuBar(MenuItem [][]items)
-  {
+  public MenuBar(MenuItem[][] items) {
     started = true; // avoid calling the initUI method
     canDrag = false;
     setBackColor(Color.WHITE);
@@ -148,8 +143,7 @@ public class MenuBar extends Window
   }
 
   /** Returns the matrix of Menuitems passed in the constructor. */
-  public MenuItem[][] getMenuItems()
-  {
+  public MenuItem[][] getMenuItems() {
     return this.items;
   }
 
@@ -158,16 +152,14 @@ public class MenuBar extends Window
    * MenuItem file = mbar.getMenuItem(102);
    * </pre>
    */
-  public MenuItem getMenuItem(int index)
-  {
+  public MenuItem getMenuItem(int index) {
     return items[index / 100][index % 100];
   }
 
   /** Set the colors for the popup windows. You can pass <code>-1</code>
    * to any parameter to keep the current settings.
    */
-  public void setPopColors(int back, int fore, int cursor)
-  {
+  public void setPopColors(int back, int fore, int cursor) {
     this.popFore = fore;
     this.popBack = back;
     this.popCursor = cursor;
@@ -181,11 +173,9 @@ public class MenuBar extends Window
 
   /** Called by the Window class to popup this MenuBar */
   @Override
-  public void setVisible(boolean b)
-  {
-    if (b)
-    {
-      setRect(0,0,FILL,fmH+4+titleGap); // update the bounds, because the screen may have been changed
+  public void setVisible(boolean b) {
+    if (b) {
+      setRect(0, 0, FILL, fmH + 4 + titleGap); // update the bounds, because the screen may have been changed
       popupNonBlocking();
     }
   }
@@ -196,13 +186,12 @@ public class MenuBar extends Window
   {
     // all this is recalculated because the font had changed
     int n = items.length;
-    xpos = new int[n+1];
+    xpos = new int[n + 1];
     xpos[0] = xmax = xmin = 4;
-    int temp = (gap<<1)-1;
-    for (int i=0; i < n; i++)
-    {
-      xmax += fm.stringWidth(items[i][0].caption)+temp;
-      xpos[i+1] = xmax;
+    int temp = (gap << 1) - 1;
+    for (int i = 0; i < n; i++) {
+      xmax += fm.stringWidth(items[i][0].caption) + temp;
+      xpos[i + 1] = xmax;
     }
     xmax--;
   }
@@ -214,40 +203,35 @@ public class MenuBar extends Window
    * EG: suppose that the col1/"Cut" of the
    * example at the top of this page was clicked, then 102 is returned.
    */
-  public int getSelectedIndex()
-  {
+  public int getSelectedIndex() {
     return menuItemSelected;
   }
 
   /** Setup some important variables */
   @Override
-  protected void onPopup()
-  {
+  protected void onPopup() {
     menuItemSelected = -1;
     enableUpdateScreen = false; // avoid flicker
   }
 
   /** Close the popup list with a click outside its bounds */
   @Override
-  protected boolean onClickedOutside(PenEvent event)
-  {
+  protected boolean onClickedOutside(PenEvent event) {
     close();
     return true;
   }
 
-  void close()
-  {
-    if (pop != null){
+  void close() {
+    if (pop != null) {
       pop.unpop();
     }
     unpop();
   }
 
-  private int getItemAt(int x)
-  {
-    int n = xpos.length-1;
-    for (int i=0; i < n; i++) {
-      if (xpos[i] <= x && x < xpos[i+1] && items[i][0].isEnabled) {
+  private int getItemAt(int x) {
+    int n = xpos.length - 1;
+    for (int i = 0; i < n; i++) {
+      if (xpos[i] <= x && x < xpos[i + 1] && items[i][0].isEnabled) {
         return i;
       }
     }
@@ -255,18 +239,15 @@ public class MenuBar extends Window
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
+  public void onEvent(Event event) {
+    switch (event.type) {
     case KeyEvent.SPECIAL_KEY_PRESS:
-      if (((KeyEvent)event).key == SpecialKeys.MENU) {
+      if (((KeyEvent) event).key == SpecialKeys.MENU) {
         close();
       }
       break;
     case ControlEvent.WINDOW_CLOSED:
-      if (!switching && event.target == pop)
-      {
+      if (!switching && event.target == pop) {
         int row = pop.getSelectedIndex();
         pop = null;
         if (row != -1) // closed bc a item was clicked?
@@ -284,69 +265,59 @@ public class MenuBar extends Window
       break;
     case PenEvent.PEN_DOWN:
     case PenEvent.PEN_DRAG:
-      PenEvent pe = (PenEvent)event;
-      if (xmin <= pe.x && pe.x <= xmax)
-      {
+      PenEvent pe = (PenEvent) event;
+      if (xmin <= pe.x && pe.x <= xmax) {
         int newSelected = getItemAt(pe.x);
-        if (newSelected != selected)
-        {
+        if (newSelected != selected) {
           switchTo(newSelected);
         }
+      } else if (selected != -1) // outside valid area?
+      {
+        selected = -1;
+        switchTo(selected);
       }
-      else
-        if (selected != -1) // outside valid area?
-        {
-          selected = -1;
-          switchTo(selected);
-        }
       break;
     }
   }
 
   @Override
-  protected void postUnpop()
-  {
-    if (menuItemSelected != -1){
+  protected void postUnpop() {
+    if (menuItemSelected != -1) {
       postPressedEvent();
     }
   }
 
   @Override
-  protected void postPopup()
-  {
-    if ( selected != -1 ){
+  protected void postPopup() {
+    if (selected != -1) {
       switchTo(selected);
     }
   }
 
-  protected void switchTo(int index)
-  {
+  protected void switchTo(int index) {
     enableUpdateScreen = false; // avoid flicker
     selected = index;
 
     switching = true;
-    if (pop != null)
-    {
+    if (pop != null) {
       pop.unpop();
       Window.repaintActiveWindows();
     }
 
-    if (index != -1)
-    {
-      pop = new MenuBarDropDown(xpos[index],height-2,items[index]);
+    if (index != -1) {
+      pop = new MenuBarDropDown(xpos[index], height - 2, items[index]);
       pop.titleGap = this.titleGap; // propagate to the drop down since user may change our's
       pop.setTextShadowColor(textShadowColor);
       pop.setFont(this.font); // guich@350_8: added a fix when the user changes the font
       if (borderStyle == NO_BORDER) {
         pop.setBorderStyle(NO_BORDER);
       }
-      pop.setBackForeColors(popBack!=-1?popBack:backColor, popFore!=-1?popFore:foreColor);
-      if (popCursor != -1)
-      {
+      pop.setBackForeColors(popBack != -1 ? popBack : backColor, popFore != -1 ? popFore : foreColor);
+      if (popCursor != -1) {
         pop.setCursorColor(popCursor); // guich@220_49
       }
       pop.popupNonBlocking();
-    }else {
+    } else {
       pop = null;
     }
     enableUpdateScreen = true;
@@ -354,14 +325,12 @@ public class MenuBar extends Window
   }
 
   @Override
-  protected void onColorsChanged(boolean colorsChanged)
-  {
+  protected void onColorsChanged(boolean colorsChanged) {
     eColor = getForeColor();
     dColor = Color.getCursorColor(eColor);
     bColor = getBackColor();
-    if (colorsChanged)
-    {
-      Graphics.compute3dColors(true,backColor,foreColor,fourColors);
+    if (colorsChanged) {
+      Graphics.compute3dColors(true, backColor, foreColor, fourColors);
       if (cursorColor == -1) {
         cursorColor = 0x0000E0;
       }
@@ -369,68 +338,61 @@ public class MenuBar extends Window
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     // changed drawing of menu border to look more native
     // PMD 25Oct2001
     g.foreColor = eColor;
     g.backColor = bColor;
-    switch (borderStyle)
-    {
+    switch (borderStyle) {
     case -1:
-      g.draw3dRect(0,0,width,height,Graphics.R3D_SHADED,false,false,fourColors); // guich@220_48
+      g.draw3dRect(0, 0, width, height, Graphics.R3D_SHADED, false, false, fourColors); // guich@220_48
       break;
     case RECT_BORDER:
-      g.drawRect(0,0,width,height); // guich@402_60
+      g.drawRect(0, 0, width, height); // guich@402_60
       break;
-    case BORDER_NONE:          
+    case BORDER_NONE:
       if (uiVista) {
-        g.fillVistaRect(0,0,width,height,backColor, false,false);
+        g.fillVistaRect(0, 0, width, height, backColor, false, false);
       }
       break;
     }
     // paint border
     g.foreColor = eColor;
     g.setFont(font);
-    if (selected != -1)
-    {
-      if (!uiAndroid && uiVista && borderStyle == BORDER_NONE)
-      {
-        g.backColor = popCursor != -1 ? popCursor : popBack; 
-        g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
-      }
-      else
-      {
+    if (selected != -1) {
+      if (!uiAndroid && uiVista && borderStyle == BORDER_NONE) {
+        g.backColor = popCursor != -1 ? popCursor : popBack;
+        g.fillRect(xpos[selected], 1, xpos[selected + 1] - xpos[selected], height - 2);
+      } else {
         g.backColor = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
-        g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
+        g.fillRect(xpos[selected], 1, xpos[selected + 1] - xpos[selected], height - 2);
       }
     }
     // paint captions
-    int yy = (height-fmH)/2;
-    for (int i =0; i < items.length; i++)
-    {
+    int yy = (height - fmH) / 2;
+    for (int i = 0; i < items.length; i++) {
       MenuItem mi = items[i][0];
       if (mi.isEnabled) {
-        g.drawText(mi.caption,xpos[i]+gap,yy, textShadowColor != -1, textShadowColor);
-      } else
-      {
+        g.drawText(mi.caption, xpos[i] + gap, yy, textShadowColor != -1, textShadowColor);
+      } else {
         g.foreColor = dColor;
-        g.drawText(mi.caption,xpos[i]+gap,yy, textShadowColor != -1, textShadowColor);
+        g.drawText(mi.caption, xpos[i] + gap, yy, textShadowColor != -1, textShadowColor);
         g.foreColor = eColor;
       }
     }
   }
 
   /** Moves to the MenuItem array at left or right depending on the passed value (-1 or +1). */
-  public void moveBy(int i)
-  {
+  public void moveBy(int i) {
     int newSelected;
-    if (i > 0){
-      newSelected = Settings.circularNavigation ? (selected+1) % items.length : Math.min(selected+1,items.length-1);
-    }else {
-      newSelected = Settings.circularNavigation ? (selected<=0 ? items.length-1 : selected-1) : Math.max(selected-1,0);
+    if (i > 0) {
+      newSelected = Settings.circularNavigation ? (selected + 1) % items.length
+          : Math.min(selected + 1, items.length - 1);
+    } else {
+      newSelected = Settings.circularNavigation ? (selected <= 0 ? items.length - 1 : selected - 1)
+          : Math.max(selected - 1, 0);
     }
-    if (selected != newSelected){
+    if (selected != newSelected) {
       switchTo(newSelected);
     }
   }
@@ -438,17 +400,15 @@ public class MenuBar extends Window
   @Override
   protected boolean handleFocusChangeKeys(KeyEvent ke) // guich@512_1: transfer focus on tab keys - fdie@550_15 : transfer also on arrow keys
   {
-    if (ke.isActionKey() || ke.isUpKey() || ke.isDownKey()){
+    if (ke.isActionKey() || ke.isUpKey() || ke.isDownKey()) {
       close();
-    }else
-      if (ke.key == SpecialKeys.LEFT){
-        moveBy(-1);
-      }else
-        if (ke.key == SpecialKeys.RIGHT || ke.key == SpecialKeys.TAB){
-          moveBy(1);
-        }else {
-          return false;
-        }
+    } else if (ke.key == SpecialKeys.LEFT) {
+      moveBy(-1);
+    } else if (ke.key == SpecialKeys.RIGHT || ke.key == SpecialKeys.TAB) {
+      moveBy(1);
+    } else {
+      return false;
+    }
     return true;
   }
 
@@ -468,12 +428,11 @@ public class MenuBar extends Window
    * </pre>
    * @since TotalCross 1.0 beta 4
    */
-  public void setAlternativeStyle(int back, int fore)
-  {
+  public void setAlternativeStyle(int back, int fore) {
     setBackForeColors(back, fore);
-    int c1,c2;
-    setCursorColor(Color.interpolate(back,fore));
+    int c1, c2;
+    setCursorColor(Color.interpolate(back, fore));
     setBorderStyle(NO_BORDER);
-    setPopColors(c1=Color.brighter(back,32), c2=Color.darker(fore,32), Color.interpolate(c1,c2)); // use the default cursor color for the popup menu (last null param)
+    setPopColors(c1 = Color.brighter(back, 32), c2 = Color.darker(fore, 32), Color.interpolate(c1, c2)); // use the default cursor color for the popup menu (last null param)
   }
 }

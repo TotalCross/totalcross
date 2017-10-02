@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import totalcross.sys.Convert;
@@ -48,10 +46,9 @@ import totalcross.sys.Vm;
  * href='http://www.webopedia.com/TERM/b/big_endian.html'>this</a>.
  * @see DataStreamLE
  */
-public class DataStream extends Stream
-{
+public class DataStream extends Stream {
   /** The underlying stream, from where bytes are read and written. */
-  protected Stream      stream;
+  protected Stream stream;
 
   /** a four byte array for reading and writing numbers */
   protected byte[] buffer = new byte[256]; // starts with 256 bytes since readSmallString uses it
@@ -69,8 +66,7 @@ public class DataStream extends Stream
    *
    * @param stream the base stream, from where bytes are read and written.
    */
-  public DataStream(Stream stream)
-  {
+  public DataStream(Stream stream) {
     this(stream, false);
   }
 
@@ -82,14 +78,13 @@ public class DataStream extends Stream
    * @param ensureWrite
    *           if true, write operations are blocked until all the requested data is written to the underlying stream.
    */
-  public DataStream(Stream stream, boolean ensureWrite)
-  {
-    if (stream == null){
+  public DataStream(Stream stream, boolean ensureWrite) {
+    if (stream == null) {
       throw new NullPointerException("Argument 'stream' cannot be null");
     }
     this.stream = stream;
     this.ensureWrite = ensureWrite;
-  } 
+  }
 
   /**
    * Closes the stream. This just calls the close method of the attached stream,
@@ -101,9 +96,8 @@ public class DataStream extends Stream
    * @throws IOException
    */
   @Override
-  public void close() throws totalcross.io.IOException
-  {
-    if (stream != null){
+  public void close() throws totalcross.io.IOException {
+    if (stream != null) {
       stream.close();
     }
   }
@@ -111,10 +105,8 @@ public class DataStream extends Stream
   /** Pads the stream writing 0 the given number of times.
    * @param n The number of zeros to be written
    * @throws totalcross.io.IOException */
-  final public int pad(int n) throws totalcross.io.IOException
-  {
-    if (zeros.length < n)
-    {
+  final public int pad(int n) throws totalcross.io.IOException {
+    if (zeros.length < n) {
       zeros = new byte[n + 16]; // guich@200 grows the buffer if necessary - corrected by mike roberts
     }
     return writeBytesInternal(zeros, 0, n);
@@ -128,8 +120,7 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  final public boolean readBoolean() throws EOFException, totalcross.io.IOException
-  {
+  final public boolean readBoolean() throws EOFException, totalcross.io.IOException {
     readBytesInternal(buffer, 0, 1, true);
     return buffer[0] != 0;
   }
@@ -142,15 +133,13 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  final public byte readByte() throws EOFException, totalcross.io.IOException
-  {
+  final public byte readByte() throws EOFException, totalcross.io.IOException {
     readBytesInternal(buffer, 0, 1, true);
     return buffer[0];
   }
 
   @Override
-  final public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
+  final public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
     return readBytesInternal(buf, start, count, false);
   }
 
@@ -160,8 +149,7 @@ public class DataStream extends Stream
    * @param buf the byte array to read data into
    * @throws totalcross.io.IOException  If an error prevented the read operation from occurring.
    */
-  final public int readBytes(byte buf[]) throws totalcross.io.IOException
-  {
+  final public int readBytes(byte buf[]) throws totalcross.io.IOException {
     readBytesInternal(buf, 0, buf.length, false);
     return buf.length;
   }
@@ -173,8 +161,7 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public double readFloat() throws EOFException, totalcross.io.IOException
-  {
+  public double readFloat() throws EOFException, totalcross.io.IOException {
     return Convert.intBitsToDouble(readInt());
   }
 
@@ -186,8 +173,7 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public int readInt() throws EOFException, totalcross.io.IOException
-  {
+  public int readInt() throws EOFException, totalcross.io.IOException {
     byte[] b = buffer;
     readBytesInternal(b, 0, 4, true);
     return (((b[0] & 0xFF) << 24) | ((b[1] & 0xFF) << 16) | ((b[2] & 0xFF) << 8) | (b[3] & 0xFF));
@@ -201,11 +187,10 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public short readShort() throws EOFException, totalcross.io.IOException
-  {
+  public short readShort() throws EOFException, totalcross.io.IOException {
     byte[] b = buffer;
     readBytesInternal(b, 0, 2, true);
-    return (short)(((b[0] & 0xFF) << 8) | (b[1] & 0xFF));
+    return (short) (((b[0] & 0xFF) << 8) | (b[1] & 0xFF));
   }
 
   /**
@@ -216,8 +201,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since SuperWaba 2.0
    */
-  public double readDouble() throws EOFException, totalcross.io.IOException
-  {
+  public double readDouble() throws EOFException, totalcross.io.IOException {
     return Convert.longBitsToDouble(readLong());
   }
 
@@ -229,8 +213,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since SuperWaba 2.0
    */
-  public long readLong() throws EOFException, totalcross.io.IOException
-  {
+  public long readLong() throws EOFException, totalcross.io.IOException {
     long l1 = (long) readInt() & 0xFFFFFFFFL;
     long l2 = (long) readInt() & 0xFFFFFFFFL;
     return (l1 << 32) | l2;
@@ -245,8 +228,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @see #writeByte(int)
    */
-  final public int readUnsignedByte() throws EOFException, totalcross.io.IOException
-  {
+  final public int readUnsignedByte() throws EOFException, totalcross.io.IOException {
     readBytesInternal(buffer, 0, 1, true);
     return buffer[0] & 0xFF;
   }
@@ -260,8 +242,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @see #writeShort(int)
    */
-  public int readUnsignedShort() throws EOFException, totalcross.io.IOException
-  {
+  public int readUnsignedShort() throws EOFException, totalcross.io.IOException {
     byte[] b = buffer;
     readBytesInternal(b, 0, 2, true);
     return (((b[0] & 0xFF) << 8) | (b[1] & 0xFF));
@@ -276,12 +257,11 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.27
    */
-  public long readUnsignedInt() throws EOFException, totalcross.io.IOException
-  {
+  public long readUnsignedInt() throws EOFException, totalcross.io.IOException {
     byte[] b = buffer;
     readBytesInternal(b, 0, 4, true);
-    return ((((long)(b[0] & 0xFF)) << 24) | (((long)(b[1] & 0xFF)) << 16) | ((b[2] & 0xFF) << 8) | (b[3] & 0xFF));
-  }   
+    return ((((long) (b[0] & 0xFF)) << 24) | (((long) (b[1] & 0xFF)) << 16) | ((b[2] & 0xFF) << 8) | (b[3] & 0xFF));
+  }
 
   /**
    * Writes a boolean to the stream as a byte. True values are written as 1 and
@@ -291,8 +271,7 @@ public class DataStream extends Stream
    * @return the number of bytes written: 1
    * @throws totalcross.io.IOException
    */
-  final public int writeBoolean(boolean bool) throws totalcross.io.IOException
-  {
+  final public int writeBoolean(boolean bool) throws totalcross.io.IOException {
     buffer[0] = (bool ? (byte) 1 : (byte) 0);
     return writeBytesInternal(buffer, 0, 1);
   }
@@ -305,8 +284,7 @@ public class DataStream extends Stream
    * @return the number of bytes written: 1
    * @throws totalcross.io.IOException
    */
-  final public int writeByte(byte by) throws totalcross.io.IOException
-  {
+  final public int writeByte(byte by) throws totalcross.io.IOException {
     buffer[0] = by;
     return writeBytesInternal(buffer, 0, 1);
   }
@@ -319,15 +297,13 @@ public class DataStream extends Stream
    * @return the number of bytes written: 1
    * @throws totalcross.io.IOException
    */
-  final public int writeByte(int by) throws totalcross.io.IOException
-  {
-    buffer[0] = (byte)by;
+  final public int writeByte(int by) throws totalcross.io.IOException {
+    buffer[0] = (byte) by;
     return writeBytesInternal(buffer, 0, 1);
   }
 
   @Override
-  final public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
+  final public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
     return writeBytesInternal(buf, start, count);
   }
 
@@ -339,8 +315,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    */
   @Override
-  final public int writeBytes(byte buf[]) throws totalcross.io.IOException
-  {
+  final public int writeBytes(byte buf[]) throws totalcross.io.IOException {
     return writeBytesInternal(buf, 0, buf.length);
   }
 
@@ -351,8 +326,7 @@ public class DataStream extends Stream
    * @return the number of bytes written: 4
    * @throws totalcross.io.IOException
    */
-  public int writeFloat(double f) throws totalcross.io.IOException
-  {
+  public int writeFloat(double f) throws totalcross.io.IOException {
     return writeInt(Convert.doubleToIntBits(f));
   }
 
@@ -364,16 +338,15 @@ public class DataStream extends Stream
    * @return the number of bytes written: 4
    * @throws totalcross.io.IOException
    */
-  public int writeInt(int i) throws totalcross.io.IOException
-  {
+  public int writeInt(int i) throws totalcross.io.IOException {
     byte[] b = buffer;
-    b[3] = (byte)i;
+    b[3] = (byte) i;
     i >>= 8; // guich@300_40
-    b[2] = (byte)i;
+    b[2] = (byte) i;
     i >>= 8;
-    b[1] = (byte)i;
+    b[1] = (byte) i;
     i >>= 8;
-    b[0] = (byte)i;
+    b[0] = (byte) i;
     return writeBytesInternal(b, 0, 4);
   }
 
@@ -385,12 +358,11 @@ public class DataStream extends Stream
    * @return the number of bytes written: 2
    * @throws totalcross.io.IOException
    */
-  public int writeShort(int i) throws totalcross.io.IOException
-  {
+  public int writeShort(int i) throws totalcross.io.IOException {
     byte[] b = buffer;
-    b[1] = (byte)i;
+    b[1] = (byte) i;
     i >>= 8; // guich@300_40
-    b[0] = (byte)i;
+    b[0] = (byte) i;
     return writeBytesInternal(b, 0, 2);
   }
 
@@ -403,15 +375,13 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public String readString() throws EOFException, totalcross.io.IOException
-  {
+  public String readString() throws EOFException, totalcross.io.IOException {
     int len = readUnsignedShort(); // guich@341_2
-    if (len == 0){
+    if (len == 0) {
       return "";
     }
 
-    if (buffer.length < len)
-    {
+    if (buffer.length < len) {
       buffer = new byte[len + 16]; // guich@200 grows the buffer if necessary - corrected by mike mcroberts
     }
 
@@ -429,15 +399,13 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.0
    */
-  public String readBigString() throws EOFException, totalcross.io.IOException
-  {
+  public String readBigString() throws EOFException, totalcross.io.IOException {
     int len = readInt(); // guich@341_2
-    if (len == 0){
+    if (len == 0) {
       return "";
     }
 
-    if (buffer.length < len)
-    {
+    if (buffer.length < len) {
       buffer = new byte[len + 16]; // guich@200 grows the buffer if necessary - corrected by mike mcroberts
     }
 
@@ -453,11 +421,10 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public String[] readStringArray() throws EOFException, totalcross.io.IOException
-  {
-    int size = (int) readUnsignedShort(),i=0;
+  public String[] readStringArray() throws EOFException, totalcross.io.IOException {
+    int size = (int) readUnsignedShort(), i = 0;
     String[] a = new String[size];
-    while (--size >= 0){
+    while (--size >= 0) {
       a[i++] = readString();
     }
     return a;
@@ -471,11 +438,10 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public String[] readStringArray(int size) throws EOFException, totalcross.io.IOException
-  {
+  public String[] readStringArray(int size) throws EOFException, totalcross.io.IOException {
     int i = 0;
     String[] a = new String[size];
-    while (--size >= 0){
+    while (--size >= 0) {
       a[i++] = readString();
     }
     return a;
@@ -489,19 +455,18 @@ public class DataStream extends Stream
    * @return the number of bytes written.
    * @throws totalcross.io.IOException
    */
-  public int writeString(String s) throws totalcross.io.IOException
-  {
-    int n = 0,l;
-    if (s != null && (l=s.length()) > 0) // eisvogel@421_70: don't let write more than the pdb can handle
+  public int writeString(String s) throws totalcross.io.IOException {
+    int n = 0, l;
+    if (s != null && (l = s.length()) > 0) // eisvogel@421_70: don't let write more than the pdb can handle
     {
       char[] ac = s.toCharArray();
       if (l > 65535) {
-        throw new IOException("String size "+l+" is too big to use with writeString!");
+        throw new IOException("String size " + l + " is too big to use with writeString!");
       }
       byte[] c = totalcross.sys.Convert.charConverter.chars2bytes(ac, 0, ac.length); // eisvogel@450_17
       n += writeShort(c.length);
       n += writeBytesInternal(c, 0, c.length);
-    }else {
+    } else {
       n += writeShort(0);
     }
     return n;
@@ -516,8 +481,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.0
    */
-  public int writeBigString(String s) throws totalcross.io.IOException
-  {
+  public int writeBigString(String s) throws totalcross.io.IOException {
     int n = 0;
     if (s != null && s.length() > 0) // eisvogel@421_70: don't let write more than the pdb can handle
     {
@@ -525,7 +489,7 @@ public class DataStream extends Stream
       byte[] c = totalcross.sys.Convert.charConverter.chars2bytes(ac, 0, ac.length); // eisvogel@450_17
       n += writeInt(c.length);
       n += writeBytesInternal(c, 0, c.length);
-    }else {
+    } else {
       n += writeInt(0);
     }
     return n;
@@ -537,13 +501,11 @@ public class DataStream extends Stream
    * @return the number of bytes written.
    * @throws totalcross.io.IOException
    */
-  public int writeStringArray(String[] v) throws totalcross.io.IOException
-  {
+  public int writeStringArray(String[] v) throws totalcross.io.IOException {
     int n = 0;
-    if (v == null || v.length == 0){
+    if (v == null || v.length == 0) {
       n += writeShort(0);
-    }else
-    {
+    } else {
       n += writeShort(v.length);
       for (int i = 0; i < v.length; i++) {
         n += writeString(v[i]);
@@ -559,8 +521,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since SuperWaba 2.0
    */
-  public int writeDouble(double d) throws totalcross.io.IOException
-  {
+  public int writeDouble(double d) throws totalcross.io.IOException {
     return writeLong(Convert.doubleToLongBits(d));
   }
 
@@ -570,9 +531,8 @@ public class DataStream extends Stream
    *
    * @since SuperWaba 2.0
    */
-  public int writeLong(long l) throws totalcross.io.IOException
-  {
-    return writeInt((int)(l >> 32)) + writeInt((int)l);
+  public int writeLong(long l) throws totalcross.io.IOException {
+    return writeInt((int) (l >> 32)) + writeInt((int) l);
   }
 
   /**
@@ -586,14 +546,12 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public String readCString() throws EOFException, totalcross.io.IOException
-  {
+  public String readCString() throws EOFException, totalcross.io.IOException {
     // we have to read one character at a time.
     byte b[] = buffer, c;
     byte[] buf = new byte[1];
     int size = 0;
-    while (true)
-    {
+    while (true) {
       readBytesInternal(buf, 0, 1, true);
       c = buf[0];
       if (c == 0) {
@@ -619,9 +577,8 @@ public class DataStream extends Stream
    * @return the number of bytes written.
    * @throws totalcross.io.IOException
    */
-  final public int writeCString(String s) throws totalcross.io.IOException
-  {
-    if (s == null){
+  final public int writeCString(String s) throws totalcross.io.IOException {
+    if (s == null) {
       return writeByte(0);
     }
 
@@ -644,7 +601,7 @@ public class DataStream extends Stream
   {
     byte[] b = buffer;
     readBytesInternal(b, 0, 2, true);
-    return (char)(((b[0] & 0xFF) << 8) | (b[1] & 0xFF));
+    return (char) (((b[0] & 0xFF) << 8) | (b[1] & 0xFF));
   }
 
   /**
@@ -658,9 +615,9 @@ public class DataStream extends Stream
   public int writeChar(char c) throws totalcross.io.IOException // guich@421_31
   {
     byte[] b = buffer;
-    b[1] = (byte)c;
+    b[1] = (byte) c;
     c >>= 8;
-    b[0] = (byte)c;
+    b[0] = (byte) c;
     return writeBytesInternal(b, 0, 2);
   }
 
@@ -673,8 +630,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since SuperWaba 3.5
    */
-  public char[] readChars() throws EOFException, totalcross.io.IOException
-  {
+  public char[] readChars() throws EOFException, totalcross.io.IOException {
     return readChars(readUnsignedShort());
   }
 
@@ -687,17 +643,15 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.01 
    */
-  public void readChars(char[] chars, int len) throws EOFException, totalcross.io.IOException
-  {
+  public void readChars(char[] chars, int len) throws EOFException, totalcross.io.IOException {
     byte[] bytes = buffer;
     int buflen = bytes.length / 2, start = 0;
 
-    while (len > 0)
-    {
+    while (len > 0) {
       int avail = (len > buflen ? buflen : len) * 2;
       readBytesInternal(bytes, 0, avail, true);
-      for (int i =0; i < avail; i += 2) {
-        chars[start++] = (char) (((bytes[i] & 0xFF) << 8) | (bytes[i+1] & 0xFF));
+      for (int i = 0; i < avail; i += 2) {
+        chars[start++] = (char) (((bytes[i] & 0xFF) << 8) | (bytes[i + 1] & 0xFF));
       }
       len -= avail / 2;
     }
@@ -716,24 +670,22 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    * @since TotalCross 1.15
-   */   
-  public int readChars(char[] chars, int start, int count) throws EOFException, totalcross.io.IOException
-  {
+   */
+  public int readChars(char[] chars, int start, int count) throws EOFException, totalcross.io.IOException {
     byte[] bytes = buffer;
     int buflen = bytes.length / 2;
     int current = start;
 
-    while (count > 0)
-    {
+    while (count > 0) {
       int avail = (count > buflen ? buflen : count) * 2;
       readBytesInternal(bytes, 0, avail, true);
-      for (int i =0; i < avail; i += 2) {
-        chars[current++] = (char) (((bytes[i] & 0xFF) << 8) | (bytes[i+1] & 0xFF));
+      for (int i = 0; i < avail; i += 2) {
+        chars[current++] = (char) (((bytes[i] & 0xFF) << 8) | (bytes[i + 1] & 0xFF));
       }
       count -= avail / 2;
     }
     return current - start;
-  }   
+  }
 
   /**
    * Reads an array of chars, where its length is stored in the first four bytes
@@ -744,8 +696,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.0 beta3
    */
-  public char[] readBigChars() throws EOFException, totalcross.io.IOException
-  {
+  public char[] readBigChars() throws EOFException, totalcross.io.IOException {
     return readChars(readInt());
   }
 
@@ -758,17 +709,15 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.0 beta3
    */
-  protected char[] readChars(int len) throws EOFException, totalcross.io.IOException
-  {
+  protected char[] readChars(int len) throws EOFException, totalcross.io.IOException {
     char[] chars = new char[len];
     byte[] bytes = buffer;
     int buflen = bytes.length / 2, start = 0;
-    while (len > 0)
-    {
+    while (len > 0) {
       int avail = (len > buflen ? buflen : len) * 2;
       readBytesInternal(bytes, 0, avail, true);
-      for (int i =0; i < avail; i += 2) {
-        chars[start++] = (char) (((bytes[i] & 0xFF) << 8) | (bytes[i+1] & 0xFF));
+      for (int i = 0; i < avail; i += 2) {
+        chars[start++] = (char) (((bytes[i] & 0xFF) << 8) | (bytes[i + 1] & 0xFF));
       }
       len -= avail / 2;
     }
@@ -787,8 +736,7 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since SuperWaba 3.5
    */
-  public int writeChars(char[] chars, int start, int len) throws totalcross.io.IOException
-  {
+  public int writeChars(char[] chars, int start, int len) throws totalcross.io.IOException {
     return writeChars(chars, start, len, 2);
   }
 
@@ -804,53 +752,43 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.0 beta3
    */
-  public int writeBigChars(char[] chars, int start, int len) throws totalcross.io.IOException
-  {
+  public int writeBigChars(char[] chars, int start, int len) throws totalcross.io.IOException {
     return writeChars(chars, start, len, 4);
   }
 
   /** Writes the given char array, writting the length as an int or as a short or as a byte or don't
    * writting the length, depending on the number of bytes given (4,2,1,0). */
-  public int writeChars(char[] chars, int start, int len, int lenSize) throws totalcross.io.IOException
-  {
-    int n=0,c;
-    if (len < 0){
+  public int writeChars(char[] chars, int start, int len, int lenSize) throws totalcross.io.IOException {
+    int n = 0, c;
+    if (len < 0) {
       len = chars == null ? 0 : chars.length;
     }
     len -= start;
-    if (len < 0)
-    {
+    if (len < 0) {
       len = 0; // eisvogel@421_70
     }
-    if (lenSize == 2)
-    {
+    if (lenSize == 2) {
       if (len > 65535) {
-        throw new IOException("String size "+len+" is too big to use with writeChars!");
+        throw new IOException("String size " + len + " is too big to use with writeChars!");
       }
       n = writeShort(len);
+    } else if (lenSize == 4) {
+      n = writeInt(len);
+    } else if (lenSize == 1) {
+      if (len > 255) {
+        throw new IOException("String size " + len + " is too big to use with writeChars!");
+      }
+      n = writeByte(len);
     }
-    else
-      if (lenSize == 4){
-        n = writeInt(len);
-      }else
-        if (lenSize == 1)
-        {
-          if (len > 255) {
-            throw new IOException("String size "+len+" is too big to use with writeChars!");
-          }
-          n = writeByte(len);
-        }
     byte[] bytes = buffer;
     int buflen = bytes.length / 2;
-    while (len > 0)
-    {
-      int avail = (len > buflen ? buflen : len) * 2; 
-      for (int i =0; i < avail; i += 2)
-      {
+    while (len > 0) {
+      int avail = (len > buflen ? buflen : len) * 2;
+      for (int i = 0; i < avail; i += 2) {
         c = chars[start++];
-        bytes[i+1] = (byte)c;
-        bytes[i] = (byte)(c>>8);
-      }         
+        bytes[i + 1] = (byte) c;
+        bytes[i] = (byte) (c >> 8);
+      }
       n += writeBytesInternal(bytes, 0, avail);
       len -= avail / 2;
     }
@@ -864,25 +802,22 @@ public class DataStream extends Stream
    * @param len The maximum number of chars to be written. Must be less than the String's length.
    * @since TotalCross 1.0 beta 4
    */
-  public int writeChars(String s, int len) throws totalcross.io.IOException
-  {
-    if (len > 65535){
-      throw new IOException("String size "+len+" is too big to use with writeChars!");
+  public int writeChars(String s, int len) throws totalcross.io.IOException {
+    if (len > 65535) {
+      throw new IOException("String size " + len + " is too big to use with writeChars!");
     }
     int c;
     int start = 0;
     int n = writeShort(len);
     byte[] bytes = buffer;
     int buflen = bytes.length / 2;
-    while (len > 0)
-    {
-      int avail = (len > buflen ? buflen : len) * 2; 
-      for (int i =0; i < avail; i += 2)
-      {
+    while (len > 0) {
+      int avail = (len > buflen ? buflen : len) * 2;
+      for (int i = 0; i < avail; i += 2) {
         c = s.charAt(start++);
-        bytes[i+1] = (byte)c;
-        bytes[i] = (byte)(c>>8);
-      }         
+        bytes[i + 1] = (byte) c;
+        bytes[i] = (byte) (c >> 8);
+      }
       n += writeBytesInternal(bytes, 0, avail);
       len -= avail / 2;
     }
@@ -890,8 +825,7 @@ public class DataStream extends Stream
   }
 
   /** Returns the base stream attached to this stream. */
-  public Stream getStream()
-  {
+  public Stream getStream() {
     return stream;
   }
 
@@ -904,9 +838,8 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  public String readFixedString(int length) throws EOFException, totalcross.io.IOException
-  {
-    if (buffer.length < length){
+  public String readFixedString(int length) throws EOFException, totalcross.io.IOException {
+    if (buffer.length < length) {
       buffer = new byte[length];
     }
 
@@ -923,8 +856,7 @@ public class DataStream extends Stream
    * @param length the length of the fixed string
    * @throws totalcross.io.IOException
    */
-  public void writeFixedString(String s, int length) throws totalcross.io.IOException
-  {
+  public void writeFixedString(String s, int length) throws totalcross.io.IOException {
     writeFixedString(s, length, ' ');
   }
 
@@ -938,18 +870,16 @@ public class DataStream extends Stream
    * @param pad    the character to pad if the string is shorter than the length
    * @throws totalcross.io.IOException
    */
-  public void writeFixedString(String s, int length, char pad) throws totalcross.io.IOException
-  {
-    if (length == 0){
+  public void writeFixedString(String s, int length, char pad) throws totalcross.io.IOException {
+    if (length == 0) {
       return;
     }
-    if (buffer.length < length){
+    if (buffer.length < length) {
       buffer = new byte[length];
     }
     byte[] b = buffer;
     int slen = 0;
-    if (s != null)
-    {
+    if (s != null) {
       char[] c = s.toCharArray();
       slen = c.length;
       for (int i = 0; i < slen && i < length; i++) {
@@ -963,8 +893,7 @@ public class DataStream extends Stream
   /** Write the given Object using the Storable class.
    * @see Storable 
    */
-  public void writeObject(Storable s) throws totalcross.io.IOException
-  {
+  public void writeObject(Storable s) throws totalcross.io.IOException {
     writeString(s.getClass().getName());
     s.saveState(this);
   }
@@ -979,9 +908,8 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @see Storable
    */
-  public Object readObject() throws ClassNotFoundException, InstantiationException, IllegalAccessException, EOFException,
-  totalcross.io.IOException
-  {
+  public Object readObject() throws ClassNotFoundException, InstantiationException, IllegalAccessException,
+      EOFException, totalcross.io.IOException {
     String className = readString();
     Class<?> c = Class.forName(className);
     Object o = c.newInstance();
@@ -999,10 +927,9 @@ public class DataStream extends Stream
    * @throws totalcross.io.IOException
    * @since TotalCross 1.0
    */
-  public String readSmallString() throws EOFException, totalcross.io.IOException
-  {
+  public String readSmallString() throws EOFException, totalcross.io.IOException {
     int len = readUnsignedByte();
-    if (len == 0){
+    if (len == 0) {
       return "";
     }
     readBytesInternal(buffer, 0, len, true);
@@ -1014,15 +941,14 @@ public class DataStream extends Stream
    * <p>The String size is limited to 255 characters.
    * @since TotalCross 1.0
    */
-  public int writeSmallString(String s) throws totalcross.io.IOException
-  {
+  public int writeSmallString(String s) throws totalcross.io.IOException {
     int len = s == null ? 0 : s.length();
-    if (len > 255){
-      throw new IOException("String size "+s.length()+" is too big to use with writeSmallString!");
+    if (len > 255) {
+      throw new IOException("String size " + s.length() + " is too big to use with writeSmallString!");
     }
     writeByte(len);
-    int ret = len+1;
-    if (len > 0){
+    int ret = len + 1;
+    if (len > 0) {
       for (int i = 0; len-- > 0; i++) {
         writeByte(s.charAt(i));
       }
@@ -1034,15 +960,14 @@ public class DataStream extends Stream
    * The maximum allowed length is 65536.
    * @since TotalCross 1.52
    */
-  public int writeSmallString8(String s) throws IOException
-  {
+  public int writeSmallString8(String s) throws IOException {
     int len = s == null ? 0 : s.length();
-    if (len > 65536){
-      throw new IOException("String size "+s.length()+" is too big to use with writeSmallString8!");
+    if (len > 65536) {
+      throw new IOException("String size " + s.length() + " is too big to use with writeSmallString8!");
     }
     writeShort(len);
-    int ret = len+2;
-    if (len > 0){
+    int ret = len + 2;
+    if (len > 0) {
       for (int i = 0; len-- > 0; i++) {
         writeByte(s.charAt(i));
       }
@@ -1050,13 +975,10 @@ public class DataStream extends Stream
     return ret;
   }
 
-  protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
-  {
+  protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException {
     int written = stream.writeBytes(buf, start, count);
-    if (ensureWrite && written < count)
-    {
-      do
-      {
+    if (ensureWrite && written < count) {
+      do {
         written += stream.writeBytes(buf, start + written, count - written);
       } while (written < count);
     }
@@ -1076,21 +998,19 @@ public class DataStream extends Stream
    * @throws EOFException
    * @throws totalcross.io.IOException
    */
-  protected int readBytesInternal(byte[] buf, int start, int count, boolean throwEOF) throws EOFException, totalcross.io.IOException
-  {
-    if (count == 0){
+  protected int readBytesInternal(byte[] buf, int start, int count, boolean throwEOF)
+      throws EOFException, totalcross.io.IOException {
+    if (count == 0) {
       return 0;
     }
     int r = stream.readBytes(buf, start, count);
-    if (r == count){
+    if (r == count) {
       return r;
     }
 
     int bytesRead = r;
-    if (r != -1)
-    {
-      while (bytesRead < count)
-      {
+    if (r != -1) {
+      while (bytesRead < count) {
         r = stream.readBytes(buf, start + bytesRead, count - bytesRead); // stop after we finish reading or at eos
         if (r == -1) {
           break;
@@ -1098,7 +1018,7 @@ public class DataStream extends Stream
         bytesRead += r;
       }
     }
-    if (r == -1 && throwEOF){
+    if (r == -1 && throwEOF) {
       throw new EOFException(EOSMessage);
     }
     return bytesRead;
@@ -1106,8 +1026,7 @@ public class DataStream extends Stream
 
   /** @deprecated Use skipBytes instead. */
   @Deprecated
-  public int skip(int n) throws IOException
-  {
+  public int skip(int n) throws IOException {
     return skipBytes(n);
   }
 }

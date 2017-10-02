@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.res.Resources;
@@ -56,14 +54,13 @@ import totalcross.ui.image.ImageException;
  * </pre>
  */
 
-public class Check extends Control implements TextControl, MaterialEffect.SideEffect
-{
+public class Check extends Control implements TextControl, MaterialEffect.SideEffect {
   private String text;
-  private boolean checked,checked0;
+  private boolean checked, checked0;
   private int cbColor, cfColor;
   private int fourColors[] = new int[4];
-  private String []lines = Label.emptyStringArray;
-  private int []linesW;
+  private String[] lines = Label.emptyStringArray;
+  private int[] linesW;
   private int lastASW;
   private String originalText;
   private int alphaSel = 255;
@@ -94,36 +91,32 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   public boolean autoSplit; // guich@tc114_74
 
   /** Creates a check control displaying the given text. */
-  public Check(String text)
-  {
+  public Check(String text) {
     setText(text);
     effect = UIEffects.get(this);
   }
 
   /** Called by the system to pass events to the check control. */
   @Override
-  public void onEvent(Event event)
-  {
-    if (event.target != this || !isEnabled()){
+  public void onEvent(Event event) {
+    if (event.target != this || !isEnabled()) {
       return;
     }
-    switch (event.type)
-    {
+    switch (event.type) {
     case KeyEvent.ACTION_KEY_PRESS:
       checked = !checked;
       repaintNow();
       postPressedEvent();
       break;
-    default: 
+    default:
       if (uiMaterial && event.type == PenEvent.PEN_DOWN) {
         checked0 = checked;
       }
       if (!isActionEvent(event)) {
         break;
       }
-      PenEvent pe = (PenEvent)event;
-      if (isInsideOrNear(pe.x,pe.y))
-      {
+      PenEvent pe = (PenEvent) event;
+      if (isInsideOrNear(pe.x, pe.y)) {
         Window.needsPaint = true;
         checked0 = checked;
         checked = !checked;
@@ -137,37 +130,33 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
 
   /** Sets the text that is displayed in the check. */
   @Override
-  public void setText(String text)
-  {
+  public void setText(String text) {
     originalText = text;
     this.text = text;
-    lines = text.equals("") ? new String[]{""} : Convert.tokenizeString(text,'\n'); // guich@tc100: now we use \n
+    lines = text.equals("") ? new String[] { "" } : Convert.tokenizeString(text, '\n'); // guich@tc100: now we use \n
     onFontChanged();
     Window.needsPaint = true;
   }
+
   /** Gets the text displayed in the check. */
   @Override
-  public String getText()
-  {
+  public String getText() {
     return text;
   }
 
   /** Returns the checked state of the control. */
-  public boolean isChecked()
-  {
+  public boolean isChecked() {
     return checked;
   }
 
   /** Sets the checked state of the control. */
-  public void setChecked(boolean checked)
-  {
-    setChecked(checked,Settings.sendPressEventOnChange); 
+  public void setChecked(boolean checked) {
+    setChecked(checked, Settings.sendPressEventOnChange);
   }
+
   /** Sets the checked state of the control, and send the press event if desired. */
-  public void setChecked(boolean checked, boolean sendPress)
-  {
-    if (this.checked != checked)
-    {
+  public void setChecked(boolean checked, boolean sendPress) {
+    if (this.checked != checked) {
       checked0 = this.checked;
       this.checked = checked;
       Window.needsPaint = true;
@@ -181,10 +170,9 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   }
 
   /** Returns the maximum text width for the lines of this Label. */
-  public int getMaxTextWidth()
-  {
+  public int getMaxTextWidth() {
     int w = 0;
-    for (int i =lines.length-1; i >= 0; i--) {
+    for (int i = lines.length - 1; i >= 0; i--) {
       if (linesW[i] > w) {
         w = linesW[i];
       }
@@ -194,91 +182,88 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
 
   /** returns the preffered width of this control. */
   @Override
-  public int getPreferredWidth()
-  {
-    return getMaxTextWidth() + fmH+Edit.prefH+2;
+  public int getPreferredWidth() {
+    return getMaxTextWidth() + fmH + Edit.prefH + 2;
   }
 
   /** returns the preffered height of this control. */
   @Override
-  public int getPreferredHeight()
-  {
-    return fmH*lines.length+Edit.prefH;
+  public int getPreferredHeight() {
+    return fmH * lines.length + Edit.prefH;
   }
 
   @Override
-  protected void onColorsChanged(boolean colorsChanged)
-  {
+  protected void onColorsChanged(boolean colorsChanged) {
     cbColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
     cfColor = getForeColor();
-    if (!uiAndroid){
-      Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
+    if (!uiAndroid) {
+      Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
     }
   }
 
   /** Called by the system to draw the check control. */
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     boolean enabled = isEnabled();
-    int wh0 = lines.length == 1 ? height : fmH+Edit.prefH;
-    int wh = uiMaterial ? fmH+Edit.prefH : wh0;
-    if (wh == height){
+    int wh0 = lines.length == 1 ? height : fmH + Edit.prefH;
+    int wh = uiMaterial ? fmH + Edit.prefH : wh0;
+    if (wh == height) {
       wh -= Edit.prefH;
     }
-    int xx,yy;
+    int xx, yy;
 
     // guich@200b4_126: repaint the background of the whole control
     g.backColor = backColor;
-    if (!transparentBackground){
-      g.fillRect(0,0,width,height);
+    if (!transparentBackground) {
+      g.fillRect(0, 0, width, height);
     }
     // square paint
-    if (!uiAndroid && uiVista && enabled){
-      g.fillVistaRect(0,0,wh,wh,cbColor,true,false);
-    }else
-      if (!uiAndroid || !transparentBackground)
-      {
-        g.backColor = uiAndroid ? backColor : cbColor;
-        g.fillRect(0,0,wh,wh); // guich@220_28
-      }
+    if (!uiAndroid && uiVista && enabled) {
+      g.fillVistaRect(0, 0, wh, wh, cbColor, true, false);
+    } else if (!uiAndroid || !transparentBackground) {
+      g.backColor = uiAndroid ? backColor : cbColor;
+      g.fillRect(0, 0, wh, wh); // guich@220_28
+    }
 
-    if (effect != null){
+    if (effect != null) {
       effect.paintEffect(g);
     }
 
-    if (uiAndroid){
-      try 
-      {
-        Image img = uiMaterial ? Resources.checkBkg.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled) : enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor);
+    if (uiAndroid) {
+      try {
+        Image img = uiMaterial
+            ? Resources.checkBkg.getPressedInstance(wh, wh, backColor, checkColor != -1 ? checkColor : foreColor,
+                enabled)
+            : enabled ? Resources.checkBkg.getNormalInstance(wh, wh, foreColor)
+                : Resources.checkBkg.getDisabledInstance(wh, wh, foreColor);
         img.alphaMask = alphaValue;
         if (!uiMaterial || !checked || animating) {
-          NinePatch.tryDrawImage(g, img,0,(height-wh)/2);
+          NinePatch.tryDrawImage(g, img, 0, (height - wh) / 2);
         }
         img.alphaMask = 255;
-        if (checked || animating)
-        {
-          img = Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
+        if (checked || animating) {
+          img = Resources.checkSel.getPressedInstance(wh, wh, backColor, checkColor != -1 ? checkColor : foreColor,
+              enabled);
           img.alphaMask = alphaSel;
-          NinePatch.tryDrawImage(g, img,0,(height-wh)/2);
+          NinePatch.tryDrawImage(g, img, 0, (height - wh) / 2);
           img.alphaMask = 255;
         }
-      } catch (ImageException ie) {}
-    }
-    else {
-      g.draw3dRect(0,0,wh,wh,Graphics.R3D_CHECK,false,false,fourColors); // guich@220_28
+      } catch (ImageException ie) {
+      }
+    } else {
+      g.draw3dRect(0, 0, wh, wh, Graphics.R3D_CHECK, false, false, fourColors); // guich@220_28
     }
     g.foreColor = checkColor != -1 ? checkColor : uiAndroid ? foreColor : cfColor;
 
-    if (!uiAndroid && checked){
+    if (!uiAndroid && checked) {
       paintCheck(g, fmH, wh);
     }
 
     // draw label
-    yy = (this.height - fmH*lines.length) >> 1;
-    xx = wh0+2; // guich@300_69
-    g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cfColor;
-    for (int i =0; i < lines.length; i++,yy+=fmH) {
+    yy = (this.height - fmH * lines.length) >> 1;
+    xx = wh0 + 2; // guich@300_69
+    g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor, backColor)) : cfColor;
+    for (int i = 0; i < lines.length; i++, yy += fmH) {
       g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
     }
   }
@@ -291,30 +276,26 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
    */
   public static void paintCheck(Graphics g, int fmH, int height) // guich@550_29
   {
-    if (uiAndroid){
-      try 
-      {
-        g.drawImage(Resources.checkSel.getPressedInstance(height,height,0,g.foreColor,true),0,0);
-      } 
-      catch (ImageException ie) // just paint something 
+    if (uiAndroid) {
+      try {
+        g.drawImage(Resources.checkSel.getPressedInstance(height, height, 0, g.foreColor, true), 0, 0);
+      } catch (ImageException ie) // just paint something 
       {
         g.backColor = g.foreColor;
-        g.fillRect(0,0,height,height);
+        g.fillRect(0, 0, height, height);
       }
-    }else
-    {
+    } else {
       int wh = height;
-      int m = 2*wh/5;
+      int m = 2 * wh / 5;
       int yy = m;
       int xx = 3;
       wh -= xx;
       if (fmH <= 10) // guich@tc110_18
       {
         g.backColor = g.foreColor;
-        g.fillRect(2,2,wh+xx-4,wh+xx-4);
+        g.fillRect(2, 2, wh + xx - 4, wh + xx - 4);
       } else {
-        for (int i = xx; i < wh; i++)
-        {
+        for (int i = xx; i < wh; i++) {
           g.drawLine(xx, yy, xx, yy + 2);
           xx++;
           if (i < m) {
@@ -326,6 +307,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
       }
     }
   }
+
   /** Clears this control, checking it if clearValueInt is 1. */
   @Override
   public void clear() // guich@572_19
@@ -346,52 +328,48 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   }
 
   @Override
-  protected void onFontChanged()
-  {
+  protected void onFontChanged() {
     int i;
-    if (linesW == null || linesW.length != lines.length){
+    if (linesW == null || linesW.length != lines.length) {
       linesW = new int[lines.length];
     }
-    int []linesW = this.linesW; // guich@450_36: use local var
-    for (i = lines.length-1; i >= 0; i--) {
+    int[] linesW = this.linesW; // guich@450_36: use local var
+    for (i = lines.length - 1; i >= 0; i--) {
       linesW[i] = fm.stringWidth(lines[i]);
     }
   }
 
   @Override
-  protected void onBoundsChanged(boolean screenChanged)
-  {
+  protected void onBoundsChanged(boolean screenChanged) {
     if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
     {
       lastASW = this.width;
-      int wh = lines.length == 1 ? height : fmH+Edit.prefH;
-      split(this.width-wh-2);
-      if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) {
-        setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);
+      int wh = lines.length == 1 ? height : fmH + Edit.prefH;
+      split(this.width - wh - 2);
+      if (PREFERRED - RANGE <= setH && setH <= PREFERRED + RANGE) {
+        setRect(KEEP, KEEP, KEEP, getPreferredHeight() + setH - PREFERRED);
       }
     }
   }
 
   @Override
-  public void sideStart()
-  {
+  public void sideStart() {
     animating = true;
   }
+
   @Override
-  public void sideStop()
-  {
-    if (animating)
-    {
+  public void sideStop() {
+    if (animating) {
       animating = false;
       postPressedEvent();
     }
   }
+
   @Override
-  public void sidePaint(Graphics g, int alpha)
-  {
-    if (!checked0){
+  public void sidePaint(Graphics g, int alpha) {
+    if (!checked0) {
       alpha = 255 - alpha;
     }
-    alphaSel  = alpha * alphaValue / 255; // limits on current alpha set by user
+    alphaSel = alpha * alphaValue / 255; // limits on current alpha set by user
   }
 }

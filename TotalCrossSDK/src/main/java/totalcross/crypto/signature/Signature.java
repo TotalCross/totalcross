@@ -24,8 +24,7 @@ import totalcross.io.ByteArrayStream;
 /**
  * This class provides the functionality of a signature algorithm for signing and verifying.
  */
-public abstract class Signature
-{
+public abstract class Signature {
   Object signatureRef;
   Object keyRef;
 
@@ -51,8 +50,7 @@ public abstract class Signature
    * @return The name of the algorithm used. 
    */
   @Override
-  public final String toString()
-  {
+  public final String toString() {
     return getAlgorithm();
   }
 
@@ -65,12 +63,11 @@ public abstract class Signature
    * @throws CryptoException If one or more initialization parameters are invalid or the signature algorithm fails to initialize with the given 
    * parameters. 
    */
-  public final void reset(int operation, Key key) throws CryptoException
-  {
-    if (operation < OPERATION_SIGN || operation > OPERATION_VERIFY){
+  public final void reset(int operation, Key key) throws CryptoException {
+    if (operation < OPERATION_SIGN || operation > OPERATION_VERIFY) {
       throw new CryptoException("Invalid or unsupported signature operation: " + operation);
     }
-    if (key == null || !isKeySupported(key, operation)){
+    if (key == null || !isKeySupported(key, operation)) {
       throw new CryptoException("Invalid or unsupported signature key: " + key);
     }
 
@@ -87,9 +84,8 @@ public abstract class Signature
    * 
    * @param data The input data.
    */
-  public final void update(int data)
-  {
-    oneByte[0] = (byte)(data & 0xFF);
+  public final void update(int data) {
+    oneByte[0] = (byte) (data & 0xFF);
     input.writeBytes(oneByte, 0, 1);
   }
 
@@ -99,8 +95,7 @@ public abstract class Signature
    * 
    * @param data The input data.
    */
-  public final void update(byte[] data)
-  {
+  public final void update(byte[] data) {
     input.writeBytes(data, 0, data.length);
   }
 
@@ -112,8 +107,7 @@ public abstract class Signature
    * @param start The offset in <code>data</code> where the data starts.
    * @param count The input length.
    */
-  public final void update(byte[] data, int start, int count)
-  {
+  public final void update(byte[] data, int start, int count) {
     input.writeBytes(data, start, count);
   }
 
@@ -123,9 +117,8 @@ public abstract class Signature
    * 
    * @return The signature in a new buffer.
    */
-  public byte[] sign() throws CryptoException
-  {
-    if (operation != OPERATION_SIGN){
+  public byte[] sign() throws CryptoException {
+    if (operation != OPERATION_SIGN) {
       throw new CryptoException("Signature is not in sign mode");
     }
 
@@ -138,9 +131,8 @@ public abstract class Signature
    * 
    * @return the signature comparison result.
    */
-  public boolean verify(byte[] signature) throws CryptoException
-  {
-    if (operation != OPERATION_VERIFY){
+  public boolean verify(byte[] signature) throws CryptoException {
+    if (operation != OPERATION_VERIFY) {
       throw new CryptoException("Signature is not in verify mode");
     }
 

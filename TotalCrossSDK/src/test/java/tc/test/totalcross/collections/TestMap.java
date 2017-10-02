@@ -17,11 +17,9 @@ import java.util.Set;
 
 import totalcross.unit.TestCase;
 
-public class TestMap extends TestCase
-{
+public class TestMap extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test7 test1 = new Test7();
     Map test2 = new Test7();
 
@@ -46,37 +44,25 @@ public class TestMap extends TestCase
     assertEquals(null, test1.remove(null));
     assertEquals(null, test2.remove(null));
 
-    try
-    {
+    try {
       test1.putAll(test2);
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("1");
     }
-    try
-    {
+    try {
       test2.putAll(test1);
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("2");
     }
 
-    try
-    {
+    try {
       test1.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("3");
     }
-    try
-    {
+    try {
       test2.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("4");
     }
 
@@ -91,75 +77,62 @@ public class TestMap extends TestCase
   }
 }
 
-class Test7 implements Map
-{
+class Test7 implements Map {
   @Override
-  public int size()
-  {
+  public int size() {
     return 0;
   }
 
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return true;
   }
 
   @Override
-  public boolean containsKey(Object key)
-  {
+  public boolean containsKey(Object key) {
     return false;
   }
 
   @Override
-  public boolean containsValue(Object value)
-  {
+  public boolean containsValue(Object value) {
     return false;
   }
 
   @Override
-  public Object get(Object key)
-  {
+  public Object get(Object key) {
     return null;
   }
 
   @Override
-  public Object put(Object key, Object value)
-  {
+  public Object put(Object key, Object value) {
     return null;
   }
 
   @Override
-  public Object remove(Object key)
-  {
+  public Object remove(Object key) {
     return null;
   }
 
   @Override
-  public void putAll(Map m)
-  {
+  public void putAll(Map m) {
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
   }
 
   @Override
-  public Set keySet()
-  {
+  public Set keySet() {
     return null;
   }
 
   @Override
-  public Collection values()
-  {
+  public Collection values() {
     return null;
   }
 
   @Override
-  public Set entrySet()
-  {
+  public Set entrySet() {
     return null;
   }
 }

@@ -14,23 +14,19 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
 /**
  * This exception may be dispatched by zLib routines.
  */
 
-public class ZLibException extends Exception
-{
+public class ZLibException extends Exception {
   // Stores the position where the error was found.
   private String internalError = "";
 
   /** Default constructor.
    */
-  public ZLibException()
-  {
+  public ZLibException() {
     super();
   }
 
@@ -38,8 +34,7 @@ public class ZLibException extends Exception
    *
    * @param msg the error message
    */
-  public ZLibException(String msg, String internalError)
-  {
+  public ZLibException(String msg, String internalError) {
     super(msg);
     this.internalError = internalError;
   }
@@ -48,16 +43,14 @@ public class ZLibException extends Exception
    * Returns the position where the error was found.
    * @return the position where the error was found.
    */
-  public String getInternalError()
-  {
+  public String getInternalError() {
     return internalError;
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String s = super.toString();
-    if (internalError != null && internalError.length() > 0){
+    if (internalError != null && internalError.length() > 0) {
       s += "; cause: " + internalError;
     }
 

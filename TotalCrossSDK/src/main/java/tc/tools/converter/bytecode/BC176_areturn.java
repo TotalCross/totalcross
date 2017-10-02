@@ -9,20 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC176_areturn extends Return
-{
-  public BC176_areturn()
-  {
-    super(1,-1,OBJECT);
+public class BC176_areturn extends Return {
+  public BC176_areturn() {
+    super(1, -1, OBJECT);
   }
+
   @Override
-  public void exec()
-  {
-    returnValue.asObj = stack[stackPtr-1].asObj;
+  public void exec() {
+    returnValue.asObj = stack[stackPtr - 1].asObj;
     returnValue.type = OBJECT;
   }
 }

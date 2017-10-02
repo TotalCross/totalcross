@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.io.IOException;
@@ -31,54 +29,44 @@ import totalcross.util.Vector;
  * 
  * @since TotalCross 1.13
  */
-public class POP3Folder extends Folder
-{
-  protected POP3Folder(Store store)
-  {
+public class POP3Folder extends Folder {
+  protected POP3Folder(Store store) {
     super(store);
   }
 
   @Override
-  public void open() throws MessagingException
-  {
-    if (messageCount != -1){
+  public void open() throws MessagingException {
+    if (messageCount != -1) {
       return;
     }
 
-    try
-    {
-      msgHeaderBuffer = new byte[Math.min(256*1024,HEADER_BUFFER_SIZE)];
-      store.connection.writeBytes("STAT "+Convert.CRLF);
+    try {
+      msgHeaderBuffer = new byte[Math.min(256 * 1024, HEADER_BUFFER_SIZE)];
+      store.connection.writeBytes("STAT " + Convert.CRLF);
       String stat = store.connection.readLine();
       messageCount = Convert.toInt(stat.substring(4, stat.indexOf(' ', 4)));
       messagesByUidl = new Hashtable(messageCount);
       messagesByNumber = new Hashtable(messageCount);
       expungedMessages = new Hashtable(messageCount / 10);
-    }
-    catch (InvalidNumberException e)
-    {
+    } catch (InvalidNumberException e) {
       throw new MessagingException(e);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
   @Override
-  public Message getMessage(int msgNumber) throws MessagingException
-  {
-    if (messageCount == -1){
+  public Message getMessage(int msgNumber) throws MessagingException {
+    if (messageCount == -1) {
       return null;
     }
 
     Message msgRet = (Message) messagesByNumber.get(msgNumber);
-    if (msgRet != null){
+    if (msgRet != null) {
       return msgRet;
     }
 
-    try
-    {
+    try {
       String reply;
       String uidl;
       store.connection.writeBytes("UIDL " + msgNumber + Convert.CRLF);
@@ -89,12 +77,11 @@ public class POP3Folder extends Folder
 
       uidl = reply.substring(reply.lastIndexOf(' ') + 1);
       msgRet = (Message) messagesByUidl.get(uidl);
-      if (msgRet == null)
-      {
+      if (msgRet == null) {
         store.connection.writeBytes("LIST " + msgNumber + Convert.CRLF);
         reply = store.connection.readLine();
         if (!reply.startsWith("+OK")) {
-          throw new MessagingException("Server replied: "+reply);
+          throw new MessagingException("Server replied: " + reply);
         }
         int msgSize = Convert.toInt(reply.substring(reply.lastIndexOf(' ') + 1)) + 3;
         int top = msgSize <= HEADER_BUFFER_SIZE ? msgSize : 0;
@@ -103,12 +90,9 @@ public class POP3Folder extends Folder
 
         int bytesRead;
         int totalRead = 0;
-        try
-        {
-          do
-          {
-            if (totalRead == HEADER_BUFFER_SIZE)
-            {
+        try {
+          do {
+            if (totalRead == HEADER_BUFFER_SIZE) {
               HEADER_BUFFER_SIZE *= 1.1;
               byte[] newBuf = new byte[HEADER_BUFFER_SIZE];
               Vm.arrayCopy(msgHeaderBuffer, 0, newBuf, 0, totalRead);
@@ -119,9 +103,7 @@ public class POP3Folder extends Folder
               totalRead += bytesRead;
             }
           } while (!new String(msgHeaderBuffer, totalRead - 5, 5).equals("\r\n.\r\n"));
-        }
-        catch (SocketTimeoutException e)
-        {
+        } catch (SocketTimeoutException e) {
           if (!new String(msgHeaderBuffer, totalRead - 5, 5).equals("\r\n.\r\n")) {
             throw new MessagingException(e);
           }
@@ -129,8 +111,7 @@ public class POP3Folder extends Folder
         msgRet = new Message(this, msgNumber, uidl, msgSize, totalRead);
         String s = new String(msgHeaderBuffer, 0, totalRead - 5);
 
-        if (top > 0)
-        {
+        if (top > 0) {
           int msgIndex = s.indexOf("\r\n\r\n");
           msgRet.parseHeader(s.substring(0, msgIndex));
           msgRet.parseContent(s.substring(msgIndex + 4)); // +4 to skip double CRLF
@@ -140,78 +121,69 @@ public class POP3Folder extends Folder
         messagesByUidl.put(uidl, msgRet);
         messagesByNumber.put(msgNumber, msgRet);
       }
-    }
-    catch (InvalidNumberException e)
-    {
-      try {store.connection.close();} catch (IOException ee) {}
+    } catch (InvalidNumberException e) {
+      try {
+        store.connection.close();
+      } catch (IOException ee) {
+      }
       throw new MessagingException(e);
-    }
-    catch (AddressException e)
-    {
-      try {store.connection.close();} catch (IOException ee) {}
+    } catch (AddressException e) {
+      try {
+        store.connection.close();
+      } catch (IOException ee) {
+      }
       throw new MessagingException(e);
-    }
-    catch (IOException e)
-    {
-      try {store.connection.close();} catch (IOException ee) {}
+    } catch (IOException e) {
+      try {
+        store.connection.close();
+      } catch (IOException ee) {
+      }
       throw new MessagingException(e);
     }
     return msgRet;
   }
 
   @Override
-  public Message getMessage(String uidl) throws MessagingException
-  {
-    if (messageCount == -1){
+  public Message getMessage(String uidl) throws MessagingException {
+    if (messageCount == -1) {
       return null;
     }
     return (Message) messagesByUidl.get(uidl);
   }
 
   @Override
-  public void reset() throws MessagingException
-  {
-    try
-    {
+  public void reset() throws MessagingException {
+    try {
       String reply;
-      store.connection.writeBytes("RSET "+Convert.CRLF);
+      store.connection.writeBytes("RSET " + Convert.CRLF);
       reply = store.connection.readLine();
-      if (reply.startsWith("+OK"))
-      {
+      if (reply.startsWith("+OK")) {
         Vector keys = expungedMessages.getKeys();
-        for (int i = keys.size() - 1; i >= 0; i--)
-        {
+        for (int i = keys.size() - 1; i >= 0; i--) {
           Message msg = (Message) expungedMessages.remove(keys.items[i]);
           msg.expunged = false;
           messagesByUidl.put(msg.uidl, msg);
           deletedMessageCount = 0;
         }
       }
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
   @Override
-  void deleteMessage(Message message) throws MessagingException
-  {
-    try
-    {
+  void deleteMessage(Message message) throws MessagingException {
+    try {
       String reply;
       store.connection.writeBytes("DELE " + message.msgNumber + Convert.CRLF);
       reply = store.connection.readLine();
-      if (reply.startsWith("+OK"))
-      {
+      if (reply.startsWith("+OK")) {
         message.expunged = true;
         messagesByUidl.remove(message.uidl);
         expungedMessages.put(message.uidl, message);
         deletedMessageCount++;
       }
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }

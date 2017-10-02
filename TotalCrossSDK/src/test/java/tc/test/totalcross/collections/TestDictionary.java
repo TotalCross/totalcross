@@ -16,11 +16,9 @@ import java.util.Enumeration;
 
 import totalcross.unit.TestCase;
 
-public class TestDictionary extends TestCase
-{
+public class TestDictionary extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test17 test1 = new Test17();
     Dictionary test2 = new Test17();
 
@@ -47,46 +45,39 @@ public class TestDictionary extends TestCase
   }
 }
 
-class Test17 extends Dictionary
-{
+class Test17 extends Dictionary {
   @Override
-  public int size()
-  {
+  public int size() {
     return 0;
   }
 
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return false;
   }
 
   @Override
-  public Enumeration keys()
-  {
+  public Enumeration keys() {
     return null;
   }
 
   @Override
-  public Enumeration elements()
-  {
+  public Enumeration elements() {
     return null;
   }
 
   @Override
-  public Object get(Object key)
-  {
+  public Object get(Object key) {
     return null;
   }
 
   @Override
-  public Object put(Object key, Object value)
-  {
+  public Object put(Object key, Object value) {
     return null;
   }
+
   @Override
-  public Object remove(Object key)
-  {
+  public Object remove(Object key) {
     return null;
-  } 
+  }
 }

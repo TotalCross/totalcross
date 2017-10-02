@@ -1,7 +1,6 @@
 package totalcross.lang.reflect;
 
-public class Modifier4D
-{
+public class Modifier4D {
   public static final int PUBLIC = 1;
   public static final int PRIVATE = 2;
   public static final int PROTECTED = 4;
@@ -13,55 +12,87 @@ public class Modifier4D
   public static final int NATIVE = 256;
   public static final int INTERFACE = 512;
   public static final int ABSTRACT = 1024;
-  public Modifier4D()
-  {
-  }
-  public static boolean isPublic(int mod) {return (mod & PUBLIC) != 0;}
-  public static boolean isPrivate(int mod) {return (mod & PRIVATE) != 0;}
-  public static boolean isProtected(int mod) {return (mod & PROTECTED) != 0;}
-  public static boolean isStatic(int mod) {return (mod & STATIC) != 0;}
-  public static boolean isFinal(int mod) {return (mod & FINAL) != 0;}
-  public static boolean isSynchronized(int mod) {return (mod & SYNCHRONIZED) != 0;}
-  public static boolean isVolatile(int mod) {return (mod & VOLATILE) != 0;}
-  public static boolean isTransient(int mod) {return (mod & TRANSIENT) != 0;}
-  public static boolean isNative(int mod) {return (mod & NATIVE) != 0;}
-  public static boolean isInterface(int mod) {return (mod & INTERFACE) != 0;}
-  public static boolean isAbstract(int mod) {return (mod & ABSTRACT) != 0;}
 
-  public static String toString(int mod) 
-  {
+  public Modifier4D() {
+  }
+
+  public static boolean isPublic(int mod) {
+    return (mod & PUBLIC) != 0;
+  }
+
+  public static boolean isPrivate(int mod) {
+    return (mod & PRIVATE) != 0;
+  }
+
+  public static boolean isProtected(int mod) {
+    return (mod & PROTECTED) != 0;
+  }
+
+  public static boolean isStatic(int mod) {
+    return (mod & STATIC) != 0;
+  }
+
+  public static boolean isFinal(int mod) {
+    return (mod & FINAL) != 0;
+  }
+
+  public static boolean isSynchronized(int mod) {
+    return (mod & SYNCHRONIZED) != 0;
+  }
+
+  public static boolean isVolatile(int mod) {
+    return (mod & VOLATILE) != 0;
+  }
+
+  public static boolean isTransient(int mod) {
+    return (mod & TRANSIENT) != 0;
+  }
+
+  public static boolean isNative(int mod) {
+    return (mod & NATIVE) != 0;
+  }
+
+  public static boolean isInterface(int mod) {
+    return (mod & INTERFACE) != 0;
+  }
+
+  public static boolean isAbstract(int mod) {
+    return (mod & ABSTRACT) != 0;
+  }
+
+  public static String toString(int mod) {
     StringBuffer sb = new StringBuffer(128);
-    if (isPublic(mod)){
+    if (isPublic(mod)) {
       sb.append("public ");
     }
-    if (isPrivate(mod)){
+    if (isPrivate(mod)) {
       sb.append("private ");
     }
-    if (isProtected(mod)){
+    if (isProtected(mod)) {
       sb.append("protected ");
     }
-    if (isStatic(mod)){
+    if (isStatic(mod)) {
       sb.append("static ");
     }
-    if (isFinal(mod)){
+    if (isFinal(mod)) {
       sb.append("final ");
     }
-    if (isSynchronized(mod)){
+    if (isSynchronized(mod)) {
       sb.append("synchronized ");
     }
-    if (isVolatile(mod)){
+    if (isVolatile(mod)) {
       sb.append("volatile ");
     }
-    if (isTransient(mod)){
+    if (isTransient(mod)) {
       sb.append("transient ");
     }
-    if (isNative(mod)){
+    if (isNative(mod)) {
       sb.append("native ");
     }
-    if (isInterface(mod)){
+    if (isInterface(mod)) {
       sb.append("interface ");
     }
-    if (isAbstract(mod)){
+    if (isAbstract(mod)) {
       sb.append("abstract ");
     }
     return sb.toString().trim();

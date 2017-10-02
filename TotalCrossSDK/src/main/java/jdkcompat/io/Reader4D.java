@@ -57,8 +57,7 @@ import totalcross.io.IOException;
  * @date April 21, 1998.
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public abstract class Reader4D implements java.io.Closeable
-{
+public abstract class Reader4D implements java.io.Closeable {
   /**
    * This is the <code>Object</code> used for synchronizing critical code
    * sections.  Subclasses should use this variable instead of a
@@ -70,8 +69,7 @@ public abstract class Reader4D implements java.io.Closeable
    * Unitializes a <code>Reader</code> that will use the object
    * itself for synchronization of critical code sections.
    */
-  protected Reader4D()
-  {
+  protected Reader4D() {
     this.lock = this;
   }
 
@@ -81,8 +79,7 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @param lock The <code>Object</code> to use for synchronization
    */
-  protected Reader4D(Object lock)
-  {
+  protected Reader4D(Object lock) {
     this.lock = lock;
   }
 
@@ -113,8 +110,7 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs.
    */
-  public abstract int read(char buf[], int offset, int count)
-      throws java.io.IOException;
+  public abstract int read(char buf[], int offset, int count) throws java.io.IOException;
 
   /**
    * Reads chars from a stream and stores them into a caller
@@ -133,8 +129,7 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs.
    */
-  public int read(char buf[]) throws java.io.IOException
-  {
+  public int read(char buf[]) throws java.io.IOException {
     return read(buf, 0, buf.length);
   }
 
@@ -149,8 +144,7 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs
    */
-  public int read() throws java.io.IOException
-  {
+  public int read() throws java.io.IOException {
     char[] buf = new char[1];
     int count = read(buf, 0, 1);
     return count > 0 ? buf[0] : -1;
@@ -192,8 +186,7 @@ public abstract class Reader4D implements java.io.Closeable
    *         <code>false</code> otherwise
    *
    */
-  public boolean markSupported()
-  {
+  public boolean markSupported() {
     return false;
   }
 
@@ -213,8 +206,7 @@ public abstract class Reader4D implements java.io.Closeable
    * @exception IOException If an error occurs such as mark not being
    *            supported for this class
    */
-  public void mark(int readLimit) throws java.io.IOException
-  {
+  public void mark(int readLimit) throws java.io.IOException {
     throw new java.io.IOException("mark not supported");
   }
 
@@ -228,8 +220,7 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @exception IOException Always thrown for this class
    */
-  public void reset() throws java.io.IOException
-  {
+  public void reset() throws java.io.IOException {
     throw new java.io.IOException("reset not supported");
   }
 
@@ -245,8 +236,7 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs
    */
-  public boolean ready() throws java.io.IOException
-  {
+  public boolean ready() throws java.io.IOException {
     return false;
   }
 
@@ -267,18 +257,15 @@ public abstract class Reader4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs
    */
-  public long skip(long count) throws java.io.IOException
-  {
-    if (count <= 0){
+  public long skip(long count) throws java.io.IOException {
+    if (count <= 0) {
       return 0;
     }
     int bsize = count > 1024 ? 1024 : (int) count;
     char[] buffer = new char[bsize];
     long todo = count;
-    synchronized (lock)
-    {
-      while (todo > 0)
-      {
+    synchronized (lock) {
+      while (todo > 0) {
         int skipped = read(buffer, 0, bsize > todo ? (int) todo : bsize);
         if (skipped <= 0) {
           break;

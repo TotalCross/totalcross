@@ -9,16 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC018to020
-{
-  public BC018to020()
-  {
+public class BC018to020 {
+  public BC018to020() {
     int i;
-    i = - 2147483648;
+    i = -2147483648;
     i = 2147483647;
 
     float f;
@@ -35,6 +31,12 @@ public class BC018to020
 
     String s = "testing java opcode";
 
-    if (false) {i+=0; f+=0; l+=0; d+=0; s+=0;} // remove warnings
+    if (false) {
+      i += 0;
+      f += 0;
+      l += 0;
+      d += 0;
+      s += 0;
+    } // remove warnings
   }
 }

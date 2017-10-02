@@ -4,9 +4,8 @@ import totalcross.ui.Control;
 import totalcross.ui.Window;
 import totalcross.ui.event.TimerListener;
 
-public class FadeAnimation extends ControlAnimation implements TimerListener
-{
-  private int a,at,af,_maxFade;
+public class FadeAnimation extends ControlAnimation implements TimerListener {
+  private int a, at, af, _maxFade;
   private boolean fadeIn;
   public static int DEFAULT_MAX_FADE = 255;
   /** Change this will affect all fade animations until you reset it to DEFAULT_MAX_FADE.
@@ -14,9 +13,8 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    */
   public static int maxFade = 255;
 
-  private FadeAnimation(Control c, boolean fadeIn, AnimationFinished animFinish, int totalTime)
-  {
-    super(c,animFinish, totalTime);
+  private FadeAnimation(Control c, boolean fadeIn, AnimationFinished animFinish, int totalTime) {
+    super(c, animFinish, totalTime);
     this.fadeIn = fadeIn;
     at = _maxFade = maxFade;
     a = fadeIn ? 0 : maxFade;
@@ -25,32 +23,29 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
   }
 
   @Override
-  public void start()
-  {
+  public void start() {
     super.start();
     c.offscreen.alphaMask = a;
   }
 
   @Override
-  protected void animate()
-  {
-    int speed = (int)computeSpeed(at);
+  protected void animate() {
+    int speed = (int) computeSpeed(at);
     at -= speed;
     a += fadeIn ? speed : -speed;
-    if (a > _maxFade){
+    if (a > _maxFade) {
       a = _maxFade;
-    }else if (a < 0){
+    } else if (a < 0) {
       a = 0;
     }
-    if (c.offscreen != null){
+    if (c.offscreen != null) {
       c.offscreen.alphaMask = a;
     }
-    if (c.offscreen0 != null){
+    if (c.offscreen0 != null) {
       c.offscreen0.alphaMask = _maxFade - a;
     }
     Window.needsPaint = true;
-    if (a == af || speed == 0)
-    {
+    if (a == af || speed == 0) {
       a = af;
       stop(false);
     }
@@ -62,14 +57,10 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    * @param animFinish An interface method to be called when the animation finished, or null if none.
    * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
    */
-  public static FadeAnimation create(Control c, boolean fadeIn, AnimationFinished animFinish, int totalTime)
-  {
-    try
-    {
-      return new FadeAnimation(c,fadeIn, animFinish, totalTime);
-    }
-    catch (Exception e)
-    {
+  public static FadeAnimation create(Control c, boolean fadeIn, AnimationFinished animFinish, int totalTime) {
+    try {
+      return new FadeAnimation(c, fadeIn, animFinish, totalTime);
+    } catch (Exception e) {
       e.printStackTrace();
     }
     return null;

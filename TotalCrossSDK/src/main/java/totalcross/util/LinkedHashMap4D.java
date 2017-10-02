@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Collection;
@@ -116,8 +115,7 @@ import java.util.TreeMap;
  * @since 1.4
  * @status updated to 1.4
  */
-public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
-{
+public class LinkedHashMap4D<K, V> extends HashMap4D<K, V> {
   /**
    * The oldest Entry to begin iteration at.
    */
@@ -135,16 +133,15 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * Class to represent an entry in the hash table. Holds a single key-value
    * pair and the doubly-linked insertion order list.
    */
-  class LinkedHashEntry<K,V> extends HashEntry<K,V>
-  {
+  class LinkedHashEntry<K, V> extends HashEntry<K, V> {
     /**
      * The predecessor in the iteration list. If this entry is the root
      * (eldest), pred points to the newest entry.
      */
-    LinkedHashEntry<K,V> pred;
+    LinkedHashEntry<K, V> pred;
 
     /** The successor in the iteration list, null if this is the newest. */
-    LinkedHashEntry<K,V> succ;
+    LinkedHashEntry<K, V> succ;
 
     /**
      * Simple constructor.
@@ -152,16 +149,12 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
      * @param key the key
      * @param value the value
      */
-    LinkedHashEntry(K key, V value)
-    {
+    LinkedHashEntry(K key, V value) {
       super(key, value);
-      if (root == null)
-      {
+      if (root == null) {
         root = this;
         pred = this;
-      }
-      else
-      {
+      } else {
         pred = root.pred;
         pred.succ = this;
         root.pred = this;
@@ -174,19 +167,14 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
      * after moving this element to the newest position in access order.
      */
     @Override
-    void access()
-    {
-      if (accessOrder && succ != null)
-      {
+    void access() {
+      if (accessOrder && succ != null) {
         modCount++;
-        if (this == root)
-        {
+        if (this == root) {
           root = succ;
           pred.succ = this;
           succ = null;
-        }
-        else
-        {
+        } else {
           pred.succ = succ;
           succ.pred = pred;
           succ = null;
@@ -204,22 +192,16 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
      * @return the value of this key as it is removed
      */
     @Override
-    V cleanup()
-    {
-      if (this == root)
-      {
+    V cleanup() {
+      if (this == root) {
         root = succ;
         if (succ != null) {
           succ.pred = pred;
         }
-      }
-      else if (succ == null)
-      {
+      } else if (succ == null) {
         pred.succ = null;
         root.pred = pred;
-      }
-      else
-      {
+      } else {
         pred.succ = succ;
         succ.pred = pred;
       }
@@ -231,8 +213,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * Construct a new insertion-ordered LinkedHashMap with the default
    * capacity (11) and the default load factor (0.75).
    */
-  public LinkedHashMap4D()
-  {
+  public LinkedHashMap4D() {
     super();
     accessOrder = false;
   }
@@ -251,8 +232,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    *          are not cloned in this constructor.</b>
    * @throws NullPointerException if m is null
    */
-  public LinkedHashMap4D(Map<? extends K, ? extends V> m)
-  {
+  public LinkedHashMap4D(Map<? extends K, ? extends V> m) {
     super(m);
     accessOrder = false;
   }
@@ -264,8 +244,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @param initialCapacity the initial capacity of this HashMap (&gt;= 0)
    * @throws IllegalArgumentException if (initialCapacity &lt; 0)
    */
-  public LinkedHashMap4D(int initialCapacity)
-  {
+  public LinkedHashMap4D(int initialCapacity) {
     super(initialCapacity);
     accessOrder = false;
   }
@@ -279,8 +258,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public LinkedHashMap4D(int initialCapacity, double loadFactor)
-  {
+  public LinkedHashMap4D(int initialCapacity, double loadFactor) {
     super(initialCapacity, loadFactor);
     accessOrder = false;
   }
@@ -295,9 +273,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public LinkedHashMap4D(int initialCapacity, double loadFactor,
-      boolean accessOrder)
-  {
+  public LinkedHashMap4D(int initialCapacity, double loadFactor, boolean accessOrder) {
     super(initialCapacity, loadFactor);
     this.accessOrder = accessOrder;
   }
@@ -306,8 +282,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * Clears the Map so it has no keys. This is O(1).
    */
   @Override
-  public void clear()
-  {
+  public void clear() {
     super.clear();
     root = null;
   }
@@ -320,11 +295,9 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @return <code>true</code> if at least one key maps to the value
    */
   @Override
-  public boolean containsValue(Object value)
-  {
+  public boolean containsValue(Object value) {
     LinkedHashEntry e = root;
-    while (e != null)
-    {
+    while (e != null) {
       if (equals(value, e.value)) {
         return true;
       }
@@ -347,14 +320,11 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @see #containsKey(Object)
    */
   @Override
-  public V get(Object key)
-  {
+  public V get(Object key) {
     int idx = hash(key);
-    HashEntry<K,V> e = buckets[idx];
-    while (e != null)
-    {
-      if (equals(key, e.key))
-      {
+    HashEntry<K, V> e = buckets[idx];
+    while (e != null) {
+      if (equals(key, e.key)) {
         e.access();
         return e.value;
       }
@@ -402,8 +372,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    *        earliest element inserted.
    * @return true if <code>eldest</code> should be removed
    */
-  protected boolean removeEldestEntry(Map.Entry<K,V> eldest)
-  {
+  protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
     return false;
   }
 
@@ -420,12 +389,11 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @see LinkedHashEntry#LinkedHashEntry(Object, Object)
    */
   @Override
-  void addEntry(K key, V value, int idx, boolean callRemove)
-  {
+  void addEntry(K key, V value, int idx, boolean callRemove) {
     LinkedHashEntry e = new LinkedHashEntry(key, value);
     e.next = buckets[idx];
     buckets[idx] = e;
-    if (callRemove && removeEldestEntry(root)){
+    if (callRemove && removeEldestEntry(root)) {
       remove(root.key);
     }
   }
@@ -437,8 +405,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @see #clone()
    */
   @Override
-  void putAllInternal(Map m)
-  {
+  void putAllInternal(Map m) {
     root = null;
     super.putAllInternal(m);
   }
@@ -451,10 +418,8 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @return the appropriate iterator
    */
   @Override
-  Iterator iterator(final int type)
-  {
-    return new Iterator()
-    {
+  Iterator iterator(final int type) {
+    return new Iterator() {
       /** The current Entry. */
       LinkedHashEntry current = root;
 
@@ -470,8 +435,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
        * @return true if there are more elements
        */
       @Override
-      public boolean hasNext()
-      {
+      public boolean hasNext() {
         return current != null;
       }
 
@@ -483,8 +447,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
        * @throws NoSuchElementException if there is none
        */
       @Override
-      public Object next()
-      {
+      public Object next() {
         if (knownMod != modCount) {
           throw new ConcurrentModificationException();
         }
@@ -504,8 +467,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
        * @throws IllegalStateException if called when there is no last element
        */
       @Override
-      public void remove()
-      {
+      public void remove() {
         if (knownMod != modCount) {
           throw new ConcurrentModificationException();
         }

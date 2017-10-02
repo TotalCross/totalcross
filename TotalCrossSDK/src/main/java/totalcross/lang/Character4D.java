@@ -3,36 +3,34 @@ package totalcross.lang;
 import totalcross.sys.Convert;
 import totalcross.util.concurrent.Lock;
 
-public class Character4D
-{
+public class Character4D {
   public static final Class<Character> TYPE = Character.class;
   char v;
 
-  public Character4D(char v)
-  {
+  public Character4D(char v) {
     this.v = v;
   }
-  public char charValue()
-  {
+
+  public char charValue() {
     return v;
   }
+
   @Override
-  public boolean equals(Object o)
-  {
-    return o != null && o instanceof Character4D && ((Character4D)o).v == this.v; 
+  public boolean equals(Object o) {
+    return o != null && o instanceof Character4D && ((Character4D) o).v == this.v;
   }
+
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     return v;
   }
-  public static Character4D valueOf(char c)
-  {
+
+  public static Character4D valueOf(char c) {
     return new Character4D(c);
   }
+
   @Override
-  public String toString()
-  {
+  public String toString() {
     return String.valueOf(v);
   }
 
@@ -70,7 +68,7 @@ public class Character4D
    29: 6
    30: 4
    31: 0
-
+  
          try
          {
             byte[] v = new byte[65536];
@@ -119,159 +117,110 @@ public class Character4D
   public static final int MAX_VALUE = 65535;
   private static final int TYPE_MASK = 0x1F;
   private static final int NO_BREAK_MASK = 0x20;
-  
+
   private static interface TypesSupplier<T> {
-	  T get();
+    T get();
   }
-  
+
   private static Lock lock = new Lock();
-  private static TypesSupplier<byte[]> genTypes = new TypesSupplier<byte[]>()
-  {
-     @Override
-     public byte[] get()
-     {
-        synchronized (lock)
-        {
-           if (types == null)
-           {
-               genTypes = new TypesSupplier<byte[]>()
-               {
-                  @Override
-                  public byte[] get()
-                  {
-                     return types;
-                  }
-              };
-              return types = totalcross.sys.Vm.getFile("totalcross/chartypes.bin");
-           }
-		}
-        
-        return types;
-     }
+  private static TypesSupplier<byte[]> genTypes = new TypesSupplier<byte[]>() {
+    @Override
+    public byte[] get() {
+      synchronized (lock) {
+        if (types == null) {
+          genTypes = new TypesSupplier<byte[]>() {
+            @Override
+            public byte[] get() {
+              return types;
+            }
+          };
+          return types = totalcross.sys.Vm.getFile("totalcross/chartypes.bin");
+        }
+      }
+
+      return types;
+    }
   };
 
   static byte[] types;
 
-  public static int getType(int i)
-  {
+  public static int getType(int i) {
     return genTypes.get()[i];
   }
 
-  public static int getType(char i)
-  {
+  public static int getType(char i) {
     return genTypes.get()[i];
   }
 
-  public static boolean isDigit(char i)
-  {
+  public static boolean isDigit(char i) {
     return genTypes.get()[i] == DECIMAL_DIGIT_NUMBER;
   }
 
-  public static char toLowerCase(char c)
-  {
+  public static char toLowerCase(char c) {
     return Convert.toLowerCase(c);
   }
 
-  public static char toUpperCase(char c)
-  {
+  public static char toUpperCase(char c) {
     return Convert.toUpperCase(c);
   }
 
-  public static char toTitleCase(char ch)
-  {
+  public static char toTitleCase(char ch) {
     return Convert.toTitleCase(ch);
   }
 
-  public static boolean isWhitespace(char ch)
-  {
+  public static boolean isWhitespace(char ch) {
     int codePoint = ch;
     int attr = genTypes.get()[codePoint];
     return ((((1 << (attr & TYPE_MASK))
-        & ((1 << SPACE_SEPARATOR)
-            | (1 << LINE_SEPARATOR)
-            | (1 << PARAGRAPH_SEPARATOR))) != 0)
+        & ((1 << SPACE_SEPARATOR) | (1 << LINE_SEPARATOR) | (1 << PARAGRAPH_SEPARATOR))) != 0)
         && (attr & NO_BREAK_MASK) == 0)
-        || (codePoint <= '\u001F' && ((1 << codePoint)
-            & ((1 << '\t')
-                | (1 << '\n')
-                | (1 << '\u000B')
-                | (1 << '\u000C')
-                | (1 << '\r')
-                | (1 << '\u001C')
-                | (1 << '\u001D')
-                | (1 << '\u001E')
-                | (1 << '\u001F'))) != 0);
+        || (codePoint <= '\u001F' && ((1 << codePoint) & ((1 << '\t') | (1 << '\n') | (1 << '\u000B') | (1 << '\u000C')
+            | (1 << '\r') | (1 << '\u001C') | (1 << '\u001D') | (1 << '\u001E') | (1 << '\u001F'))) != 0);
   }
 
-  public static boolean isJavaIdentifierStart(char ch)
-  {
+  public static boolean isJavaIdentifierStart(char ch) {
     int codePoint = ch;
     return ((1 << genTypes.get()[codePoint])
-        & ((1 << UPPERCASE_LETTER)
-            | (1 << LOWERCASE_LETTER)
-            | (1 << TITLECASE_LETTER)
-            | (1 << MODIFIER_LETTER)
-            | (1 << OTHER_LETTER)
-            | (1 << LETTER_NUMBER)
-            | (1 << CURRENCY_SYMBOL)
-            | (1 << CONNECTOR_PUNCTUATION))) != 0;
+        & ((1 << UPPERCASE_LETTER) | (1 << LOWERCASE_LETTER) | (1 << TITLECASE_LETTER) | (1 << MODIFIER_LETTER)
+            | (1 << OTHER_LETTER) | (1 << LETTER_NUMBER) | (1 << CURRENCY_SYMBOL) | (1 << CONNECTOR_PUNCTUATION))) != 0;
   }
 
-  public static boolean isJavaIdentifierPart(char ch)
-  {
+  public static boolean isJavaIdentifierPart(char ch) {
     int codePoint = ch;
     int category = genTypes.get()[codePoint];
-    return ((1 << category)
-        & ((1 << UPPERCASE_LETTER)
-            | (1 << LOWERCASE_LETTER)
-            | (1 << TITLECASE_LETTER)
-            | (1 << MODIFIER_LETTER)
-            | (1 << OTHER_LETTER)
-            | (1 << NON_SPACING_MARK)
-            | (1 << COMBINING_SPACING_MARK)
-            | (1 << DECIMAL_DIGIT_NUMBER)
-            | (1 << LETTER_NUMBER)
-            | (1 << CURRENCY_SYMBOL)
-            | (1 << CONNECTOR_PUNCTUATION)
-            | (1 << FORMAT))) != 0
-            || (category == CONTROL && isIdentifierIgnorable(ch));
+    return ((1 << category) & ((1 << UPPERCASE_LETTER) | (1 << LOWERCASE_LETTER) | (1 << TITLECASE_LETTER)
+        | (1 << MODIFIER_LETTER) | (1 << OTHER_LETTER) | (1 << NON_SPACING_MARK) | (1 << COMBINING_SPACING_MARK)
+        | (1 << DECIMAL_DIGIT_NUMBER) | (1 << LETTER_NUMBER) | (1 << CURRENCY_SYMBOL) | (1 << CONNECTOR_PUNCTUATION)
+        | (1 << FORMAT))) != 0 || (category == CONTROL && isIdentifierIgnorable(ch));
   }
-  public static boolean isIdentifierIgnorable(char ch)
-  {
+
+  public static boolean isIdentifierIgnorable(char ch) {
     int codePoint = ch;
-    if ((codePoint >= 0 && codePoint <= 0x0008)
-        || (codePoint >= 0x000E && codePoint <= 0x001B)
-        || (codePoint >= 0x007F && codePoint <= 0x009F)
-        || genTypes.get()[codePoint] == FORMAT){
+    if ((codePoint >= 0 && codePoint <= 0x0008) || (codePoint >= 0x000E && codePoint <= 0x001B)
+        || (codePoint >= 0x007F && codePoint <= 0x009F) || genTypes.get()[codePoint] == FORMAT) {
       return true;
     }
     return false;
   }
 
-  public static boolean isLowerCase(int codePoint)
-  {
+  public static boolean isLowerCase(int codePoint) {
     return getType(codePoint) == LOWERCASE_LETTER;
   }
-  public static boolean isUpperCase(int codePoint)
-  {
+
+  public static boolean isUpperCase(int codePoint) {
     return getType(codePoint) == UPPERCASE_LETTER;
   }
-  public static boolean isLowerCase(char codePoint)
-  {
+
+  public static boolean isLowerCase(char codePoint) {
     return getType(codePoint) == LOWERCASE_LETTER;
   }
-  public static boolean isUpperCase(char codePoint)
-  {
+
+  public static boolean isUpperCase(char codePoint) {
     return getType(codePoint) == UPPERCASE_LETTER;
   }
-  public static boolean isLetterOrDigit(char codePoint)
-  {
-    return ((1 << getType(codePoint))
-        & ((1 << UPPERCASE_LETTER)
-            | (1 << LOWERCASE_LETTER)
-            | (1 << TITLECASE_LETTER)
-            | (1 << MODIFIER_LETTER)
-            | (1 << OTHER_LETTER)
-            | (1 << DECIMAL_DIGIT_NUMBER))) != 0;
+
+  public static boolean isLetterOrDigit(char codePoint) {
+    return ((1 << getType(codePoint)) & ((1 << UPPERCASE_LETTER) | (1 << LOWERCASE_LETTER) | (1 << TITLECASE_LETTER)
+        | (1 << MODIFIER_LETTER) | (1 << OTHER_LETTER) | (1 << DECIMAL_DIGIT_NUMBER))) != 0;
   }
 }

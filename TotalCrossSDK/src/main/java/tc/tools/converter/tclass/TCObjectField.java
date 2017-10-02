@@ -9,13 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.tclass;
 
 /* This structure represents a class field. */
-public final class TCObjectField extends TCField
-{
+public final class TCObjectField extends TCField {
   // Current value (used only by J2TC)
   public String value;
 }

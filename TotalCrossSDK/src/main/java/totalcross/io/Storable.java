@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 /**
@@ -76,8 +74,7 @@ package totalcross.io;
  * @author <A HREF="mailto:rnielsen@cygnus.uwa.edu.au">Robert Nielsen</A>,
  * @version 1.1.0 16 October 1999
  */
-public interface Storable
-{
+public interface Storable {
   /**
    * Gets a unique ID for this class. It is up to the user to ensure that the
    * ID of each class of Storable contained in a single ObjectCatalog is unique

@@ -3,87 +3,80 @@ package totalcross.lang;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 
-public class Double4D extends Number4D
-{
+public class Double4D extends Number4D {
   public static final Class<Double> TYPE = Double.class;
   double v;
 
-  public Double4D(double v)
-  {
+  public Double4D(double v) {
     this.v = v;
   }
-  public Double4D(String s) throws NumberFormatException
-  {
+
+  public Double4D(String s) throws NumberFormatException {
     this.v = parseDouble(s);
   }
+
   @Override
-  public double doubleValue()
-  {
+  public double doubleValue() {
     return v;
   }
+
   @Override
-  public boolean equals(Object o)
-  {
-    return o != null && o instanceof Double4D && ((Double4D)o).v == this.v; 
+  public boolean equals(Object o) {
+    return o != null && o instanceof Double4D && ((Double4D) o).v == this.v;
   }
+
   @Override
   public int hashCode() // same of java to keep compatibility
   {
     long r = Convert.doubleToLongBits(v);
-    if ((r & 0x7FF0000000000000L) == 0x7FF0000000000000L && (r & 0x000FFFFFFFFFFFFFL) != 0L){
+    if ((r & 0x7FF0000000000000L) == 0x7FF0000000000000L && (r & 0x000FFFFFFFFFFFFFL) != 0L) {
       r = 0x7ff8000000000000L;
     }
-    return (int)(r ^ (r >>> 32));
+    return (int) (r ^ (r >>> 32));
   }
+
   @Override
-  public String toString()
-  {
+  public String toString() {
     return String.valueOf(v);
   }
-  public static Double4D valueOf(double d)
-  {
+
+  public static Double4D valueOf(double d) {
     return new Double4D(d);
   }
-  public static Double4D valueOf(String s) throws NumberFormatException
-  {
-    try
-    {
+
+  public static Double4D valueOf(String s) throws NumberFormatException {
+    try {
       return new Double4D(Convert.toDouble(s));
-    }
-    catch (InvalidNumberException ine)
-    {
+    } catch (InvalidNumberException ine) {
       throw new NumberFormatException(ine.getMessage());
     }
   }
-  public static double parseDouble(String str) throws NumberFormatException
-  {
-    try
-    {
+
+  public static double parseDouble(String str) throws NumberFormatException {
+    try {
       return Convert.toDouble(str);
-    }
-    catch (InvalidNumberException e)
-    {
+    } catch (InvalidNumberException e) {
       throw new NumberFormatException(e.getMessage());
     }
   }
-  public static boolean isNaN(double v)
-  {
+
+  public static boolean isNaN(double v) {
     return v == Convert.DOUBLE_NAN_VALUE;
   }
-  public static boolean isInfinite(double v)
-  {
+
+  public static boolean isInfinite(double v) {
     return v == Convert.DOUBLE_POSITIVE_INFINITY_VALUE || v == Convert.DOUBLE_NEGATIVE_INFINITY_VALUE;
   }
-  public static String toString(double d)
-  {
+
+  public static String toString(double d) {
     return Convert.toString(d);
   }
-  public boolean isInfinite()
-  {
+
+  public boolean isInfinite() {
     return v == Convert.DOUBLE_POSITIVE_INFINITY_VALUE || v == Convert.DOUBLE_NEGATIVE_INFINITY_VALUE;
   }
-  public boolean isNaN()
-  {
+
+  public boolean isNaN() {
     return v == Convert.DOUBLE_NAN_VALUE;
   }
 
@@ -101,11 +94,10 @@ public class Double4D extends Number4D
    * @return the bits of the <code>double</code>
    * @see #longBitsToDouble(long)
    */
-  public static long doubleToLongBits(double value)
-  {
-    if (isNaN(value)){
+  public static long doubleToLongBits(double value) {
+    if (isNaN(value)) {
       return 0x7ff8000000000000L;
-    }else {
+    } else {
       return doubleToRawLongBits(value);
     }
   }
@@ -124,8 +116,7 @@ public class Double4D extends Number4D
    * @return the bits of the <code>double</code>
    * @see #longBitsToDouble(long)
    */
-  public static long doubleToRawLongBits(double value)
-  {
+  public static long doubleToRawLongBits(double value) {
     return Convert.doubleToLongBits(value);
   }
 
@@ -139,41 +130,40 @@ public class Double4D extends Number4D
    * @return the comparison
    * @since 1.4
    */
-  public static int compare(double x, double y)
-  {
+  public static int compare(double x, double y) {
     // handle the easy cases:
-    if (x < y){
+    if (x < y) {
       return -1;
     }
-    if (x > y){
+    if (x > y) {
       return 1;
     }
 
     // handle equality respecting that 0.0 != -0.0 (hence not using x == y):
     long lx = doubleToRawLongBits(x);
     long ly = doubleToRawLongBits(y);
-    if (lx == ly){
+    if (lx == ly) {
       return 0;
     }
 
     // handle NaNs:
-    if (x != x){
+    if (x != x) {
       return (y != y) ? 0 : 1;
-    }else if (y != y){
+    } else if (y != y) {
       return -1;
     }
 
     // handle +/- 0.0
     return (lx < ly) ? -1 : 1;
   }
+
   @Override
-  public int intValue()
-  {
-    return (int)v;
+  public int intValue() {
+    return (int) v;
   }
+
   @Override
-  public long longValue()
-  {
-    return (long)v;
+  public long longValue() {
+    return (long) v;
   }
 }

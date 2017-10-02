@@ -14,6 +14,5 @@ package totalcross.crypto.cipher;
 /**
  * This class defines a cryptographic cipher key for type safety.
  */
-public abstract class Key
-{
+public abstract class Key {
 }

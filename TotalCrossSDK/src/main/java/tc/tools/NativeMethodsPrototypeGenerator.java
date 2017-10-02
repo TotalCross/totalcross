@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools;
 
 import java.io.File;
@@ -24,61 +22,55 @@ import java.util.Vector;
 
 /** Created by guich to help the implementation of native methods in the TotalCross vm. */
 
-public class NativeMethodsPrototypeGenerator
-{
-  public static void main(String []argv)
-  {
-    try
-    {
+public class NativeMethodsPrototypeGenerator {
+  public static void main(String[] argv) {
+    try {
       if (argv.length < 1) // guich@330_10
       {
         System.out.println("Format: NativeMethodsPrototypeGenerator <input-file> <testcase>");
         System.out.println("<input-file>: the file to be parsed");
         System.out.println("<testcase>: if true, creates the stubs for the test cases");
-      }
-      else
-      {
+      } else {
         Vector<String> v = new Vector<String>(100);
-        if (argv[0].equals("makeNativeHT"))
-        {
+        if (argv[0].equals("makeNativeHT")) {
           nativeHTSuffix = argv[1];
           nativeHTPath = argv[2];
           readFile(v, new FileInputStream(argv[3]));
           makeNativeHT = true;
-        }
-        else
-        {
+        } else {
           readFile(v, new FileInputStream(argv[0]));
-          makeTestCases = argv.length >= 2 && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
+          makeTestCases = argv.length >= 2
+              && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
         }
         int n = v.size();
         if (n == 0) {
-          throw new Exception(argv[0]+" is an empty file");
+          throw new Exception(argv[0] + " is an empty file");
         }
 
-        for (int i =0; i < n; i++)
-        {
-          String line = (String)v.elementAt(i);
+        for (int i = 0; i < n; i++) {
+          String line = (String) v.elementAt(i);
           if (line.trim().length() == 0) {
             continue;
           }
           int i4d = line.indexOf("4D");
-          if (i4d >= 0 && !Character.isLetter(line.charAt(i4d+2))) {
-            throw new Exception("Invalid signature with 4D suffix detected: "+line);
+          if (i4d >= 0 && !Character.isLetter(line.charAt(i4d + 2))) {
+            throw new Exception("Invalid signature with 4D suffix detected: " + line);
           }
           String[] parts = split(line, "|");
-          parseNative(parts[0],parts[1]);
+          parseNative(parts[0], parts[1]);
         }
         go();
       }
-    } catch (Exception e) {e.printStackTrace();};
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    ;
   }
 
-  private static String[] split(String s, String p)
-  {
+  private static String[] split(String s, String p) {
     StringTokenizer st = new StringTokenizer(s, p);
     String[] as = new String[st.countTokens()];
-    for (int i= 0; i < as.length; i++) {
+    for (int i = 0; i < as.length; i++) {
       as[i] = st.nextToken();
     }
     return as;
@@ -89,7 +81,7 @@ public class NativeMethodsPrototypeGenerator
   private static Vector<String> prototypesH = new Vector<String>(500);
   private static Vector<String> testcases = new Vector<String>(500);
   private static Vector<String> iosarray = new Vector<String>(500);
-  private static Hashtable<String,String> htNames = new Hashtable<String,String>(1023);
+  private static Hashtable<String, String> htNames = new Hashtable<String, String>(1023);
   private static int errorCount;
   private static boolean makeTestCases;
   private static boolean makeNativeHT;
@@ -98,61 +90,60 @@ public class NativeMethodsPrototypeGenerator
 
   //////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////
-  private static Hashtable<String,String> htTypes = new Hashtable<String,String>(31);
-  static
-  {
-    htTypes.put("int[","[I");
-    htTypes.put("long[","[J");
-    htTypes.put("boolean[","[Z");
-    htTypes.put("byte[","[B");
-    htTypes.put("char[","[C");
-    htTypes.put("short[","[S");
-    htTypes.put("float[","[F");
-    htTypes.put("double[","[D");
-    htTypes.put("string[","[Ljava/lang/String;");
+  private static Hashtable<String, String> htTypes = new Hashtable<String, String>(31);
+  static {
+    htTypes.put("int[", "[I");
+    htTypes.put("long[", "[J");
+    htTypes.put("boolean[", "[Z");
+    htTypes.put("byte[", "[B");
+    htTypes.put("char[", "[C");
+    htTypes.put("short[", "[S");
+    htTypes.put("float[", "[F");
+    htTypes.put("double[", "[D");
+    htTypes.put("string[", "[Ljava/lang/String;");
 
-    htTypes.put("int","I");
-    htTypes.put("long","J");
-    htTypes.put("boolean","Z");
-    htTypes.put("byte","B");
-    htTypes.put("char","C");
-    htTypes.put("short","S");
-    htTypes.put("float","F");
-    htTypes.put("double","D");
-    htTypes.put("string","Ljava/lang/String;");
-    htTypes.put("stringbuffer","Ljava/lang/StringBuffer;");
-    htTypes.put("object","Ljava/lang/Object;"); // guich@200b4: include the object class
-    htTypes.put("class","Ljava/lang/Class;");
-    htTypes.put("throwable","Ljava/lang/Throwable;");
-    htTypes.put("void","V");
+    htTypes.put("int", "I");
+    htTypes.put("long", "J");
+    htTypes.put("boolean", "Z");
+    htTypes.put("byte", "B");
+    htTypes.put("char", "C");
+    htTypes.put("short", "S");
+    htTypes.put("float", "F");
+    htTypes.put("double", "D");
+    htTypes.put("string", "Ljava/lang/String;");
+    htTypes.put("stringbuffer", "Ljava/lang/StringBuffer;");
+    htTypes.put("object", "Ljava/lang/Object;"); // guich@200b4: include the object class
+    htTypes.put("class", "Ljava/lang/Class;");
+    htTypes.put("throwable", "Ljava/lang/Throwable;");
+    htTypes.put("void", "V");
     //case 'L': // object
     //case '[': // array
   }
+
   //////////////////////////////////////////////////////////////////////////////////
-  private static void createFunctionPrototype(String funcName, String originalFuncDesc)
-  {
+  private static void createFunctionPrototype(String funcName, String originalFuncDesc) {
     String s = "";
-    String sn = "TC_API void "+funcName+"(NMParams p)";
+    String sn = "TC_API void " + funcName + "(NMParams p)";
     s += "//////////////////////////////////////////////////////////////////////////";
-    s += CRLF+sn+" // "+originalFuncDesc;
-    s += CRLF+"{";
-    s += CRLF+"}"+CRLF;
+    s += CRLF + sn + " // " + originalFuncDesc;
+    s += CRLF + "{";
+    s += CRLF + "}" + CRLF;
 
-    iosarray.addElement("htPutPtr(&htNativeProcAddresses, hashCode(\""+funcName+"\"), &"+funcName+");\n");
+    iosarray.addElement("htPutPtr(&htNativeProcAddresses, hashCode(\"" + funcName + "\"), &" + funcName + ");\n");
     prototypes.addElement(s);
-    prototypesH.addElement(CRLF+sn+";");
+    prototypesH.addElement(CRLF + sn + ";");
 
-    if (makeTestCases)
-    {
+    if (makeTestCases) {
       s = "";
-      s += CRLF+"TESTCASE("+funcName+") // "+originalFuncDesc;
-      s += CRLF+"{";
-      s += CRLF+"   TEST_SKIP;";
-      s += CRLF+"   finish: ;";
-      s += CRLF+"}";
+      s += CRLF + "TESTCASE(" + funcName + ") // " + originalFuncDesc;
+      s += CRLF + "{";
+      s += CRLF + "   TEST_SKIP;";
+      s += CRLF + "   finish: ;";
+      s += CRLF + "}";
       testcases.addElement(s);
     }
   }
+
   //////////////////////////////////////////////////////////////////////////////////
   /** convert the method to methodName and methodDesc;
    * it supports array parameters;
@@ -162,20 +153,19 @@ public class NativeMethodsPrototypeGenerator
    * If you need to specify the function name to avoid conflicts, use this method. Otherwise, to get the
    * function name automatically generated, use the method parseNative(className,method) defined above.
    */
-  private static void parseNative(String className, String method)
-  {
+  private static void parseNative(String className, String method) {
     String origMethod = method;
-    if (method.indexOf("throws") >= 0){
-      method = method.substring(0,method.indexOf("throws")-1);
+    if (method.indexOf("throws") >= 0) {
+      method = method.substring(0, method.indexOf("throws") - 1);
     }
-    StringTokenizer st = new StringTokenizer(method," (),;]"); // DONT ADD '[' !
+    StringTokenizer st = new StringTokenizer(method, " (),;]"); // DONT ADD '[' !
     String methodName = "";
     String methodDesc = "(";
     String methodRet = "";
     // parse the return type
     String tok = st.nextToken();
-    while (tok.equalsIgnoreCase("private") || tok.equalsIgnoreCase("public") || tok.equalsIgnoreCase("protected") ||
-        tok.equalsIgnoreCase("static")  || tok.equalsIgnoreCase("native") || tok.equalsIgnoreCase("final")){
+    while (tok.equalsIgnoreCase("private") || tok.equalsIgnoreCase("public") || tok.equalsIgnoreCase("protected")
+        || tok.equalsIgnoreCase("static") || tok.equalsIgnoreCase("native") || tok.equalsIgnoreCase("final")) {
       tok = st.nextToken();
     }
     if (tok.indexOf(".") != -1) // does it have a package?
@@ -184,18 +174,17 @@ public class NativeMethodsPrototypeGenerator
       if (tok.endsWith("[")) // case totalcross.ui.gfx.Rect[]
       {
         isArray = true;
-        tok = new String(tok.toCharArray(),0,tok.length()-1);
+        tok = new String(tok.toCharArray(), 0, tok.length() - 1);
       }
-      methodRet = "L"+tok+";";
+      methodRet = "L" + tok + ";";
       if (isArray) {
-        methodRet = "["+methodRet;
+        methodRet = "[" + methodRet;
       }
-    }
-    else
-    {
-      methodRet = (String)htTypes.get(tok.toLowerCase());
+    } else {
+      methodRet = (String) htTypes.get(tok.toLowerCase());
       if (methodRet == null) {
-        System.out.println(errorCount++ + " - unrecognized return token: "+tok+"    in "+method+" ("+className+")");
+        System.out.println(
+            errorCount++ + " - unrecognized return token: " + tok + "    in " + method + " (" + className + ")");
       }
     }
 
@@ -203,22 +192,22 @@ public class NativeMethodsPrototypeGenerator
     methodName = st.nextToken();
     if (methodName.equals("[")) // case int []getInts()
     {
-      methodRet = "["+methodRet;
+      methodRet = "[" + methodRet;
       methodName = st.nextToken();
     }
     // parse the parameters
-    String last="";
+    String last = "";
     int count = 0;
-    while (st.hasMoreTokens())
-    {
+    while (st.hasMoreTokens()) {
       tok = st.nextToken();
       count++;
-      if (count == 1 && htTypes.get(tok.toLowerCase()) == null && methodName.toLowerCase().startsWith(tok.toLowerCase())) // guich@200b4: is the first parameter the class name? windowXXXXX(Window yyyy)
+      if (count == 1 && htTypes.get(tok.toLowerCase()) == null
+          && methodName.toLowerCase().startsWith(tok.toLowerCase())) // guich@200b4: is the first parameter the class name? windowXXXXX(Window yyyy)
       {
         // get the package name
-        String s = className.replace('/','.');
-        s = s.substring(0,s.lastIndexOf('.')+1);
-        tok = s+tok;
+        String s = className.replace('/', '.');
+        s = s.substring(0, s.lastIndexOf('.') + 1);
+        tok = s + tok;
       }
       if (tok.indexOf('.') != -1) // does it have a package?
       {
@@ -226,44 +215,39 @@ public class NativeMethodsPrototypeGenerator
         if (tok.endsWith("[")) // case totalcross.ui.gfx.Rect[]
         {
           isArray = true;
-          tok = new String(tok.toCharArray(),0,tok.length()-1);
+          tok = new String(tok.toCharArray(), 0, tok.length() - 1);
         }
-        last = "L"+tok+";";
+        last = "L" + tok + ";";
         if (isArray) {
-          last = "["+last;
+          last = "[" + last;
         }
         methodDesc += last;
+      } else if (tok.indexOf("[") != -1) // is (the last parameter) an array? case int []a
+      {
+        if (tok.indexOf("[") > 0) {
+          System.out.println(
+              errorCount++ + " - Please write arrays like 'char []c' instead of 'char[] c'. Error in " + method);
+          break;
+        }
+        int len = last.length();
+        // take the last param off and insert it again as array
+        methodDesc = new String(methodDesc.toCharArray(), 0, methodDesc.length() - len);
+        methodDesc += "[" + last;
+      } else {
+        String s = (String) htTypes.get(tok.toLowerCase());
+        if (s != null && s.length() > 0 && !s.equals("V")) // void is valid only in return
+        {
+          last = s;
+          methodDesc += s;
+        } else if (Character.isUpperCase(tok.charAt(0))) {
+          System.out.println(
+              errorCount++ + " - unrecognized token: " + tok + "    in " + methodName + " (" + className + ")");
+        }
       }
-      else
-        if (tok.indexOf("[") != -1) // is (the last parameter) an array? case int []a
-        {
-          if (tok.indexOf("[") > 0)
-          {
-            System.out.println(errorCount++ + " - Please write arrays like 'char []c' instead of 'char[] c'. Error in "+method);
-            break;
-          }
-          int len = last.length();
-          // take the last param off and insert it again as array
-          methodDesc = new String(methodDesc.toCharArray(),0,methodDesc.length()-len);
-          methodDesc += "["+last;
-        }
-        else
-        {
-          String s = (String)htTypes.get(tok.toLowerCase());
-          if (s != null && s.length() > 0 && !s.equals("V")) // void is valid only in return
-          {
-            last = s;
-            methodDesc += s;
-          }
-          else
-            if (Character.isUpperCase(tok.charAt(0))) {
-              System.out.println(errorCount++ + " - unrecognized token: "+tok+"    in "+methodName+" ("+className+")");
-            }
-        }
     }
-    methodDesc += ")"+methodRet;
+    methodDesc += ")" + methodRet;
     // convert all . to / (for package names)
-    methodDesc = methodDesc.replace('.','/');
+    methodDesc = methodDesc.replace('.', '/');
 
     // prepare the function name
     // java/lang/StringBuffer|StringBuffer append(char []str, int offset, int len)
@@ -271,18 +255,19 @@ public class NativeMethodsPrototypeGenerator
     String functionName = createMethodSignature(className, methodName, methodDesc);
 
     // check if there's already another function with this signature
-    String lastfn = (String)htNames.get(functionName);
-    if (lastfn != null){
-      System.out.println(errorCount++ + " - duplicate function name "+functionName+": \n   "+lastfn+"\n   "+className+" "+method);
-    }else {
-      htNames.put(functionName,className+" "+method);
+    String lastfn = (String) htNames.get(functionName);
+    if (lastfn != null) {
+      System.out.println(errorCount++ + " - duplicate function name " + functionName + ": \n   " + lastfn + "\n   "
+          + className + " " + method);
+    } else {
+      htNames.put(functionName, className + " " + method);
     }
-    createFunctionPrototype(functionName, className+" "+origMethod);
+    createFunctionPrototype(functionName, className + " " + origMethod);
   }
+
   //////////////////////////////////////////////////////////////////////////////////
   // (Lsuperwaba/ext/xplat/io/search/CatalogSearch;[BII)I -> cBii
-  private static String createMethodSignature(String className, String methodName, String d)
-  {
+  private static String createMethodSignature(String className, String methodName, String d) {
     StringBuffer fn = new StringBuffer(32);
     appendFirstLetter(fn, split(className, "/"));
     fn.append('_');
@@ -292,25 +277,21 @@ public class NativeMethodsPrototypeGenerator
     int n = d.length();
     boolean isUp = false;
     char c;
-    for (int i =0; i < n; i++)
-    {
-      switch (d.charAt(i))
-      {
+    for (int i = 0; i < n; i++) {
+      switch (d.charAt(i)) {
       case '(':
         continue;
       case ')':
         i = n;
         continue;
-      case '[':
-      {
-        isUp = true;  // use upper case for arrays
+      case '[': {
+        isUp = true; // use upper case for arrays
         continue;
       }
-      case 'L':
-      {
+      case 'L': {
         for (c = d.charAt(++i); d.charAt(i) != ';'; i++) {
           if (d.charAt(i) == '/') {
-            c = d.charAt(i+1);
+            c = d.charAt(i + 1);
           }
         }
         break;
@@ -320,39 +301,37 @@ public class NativeMethodsPrototypeGenerator
         // convert java types to tc types
         if (c == 'J') {
           c = 'L';
-        } else
-          if (c == 'Z') {
-            c = 'b';
-          }
+        } else if (c == 'Z') {
+          c = 'b';
+        }
       }
       fn.append(isUp ? Character.toUpperCase(c) : Character.toLowerCase(c));
       isUp = false;
     }
-    if (fn.charAt(fn.length()-1) == '_'){
-      fn.setLength(fn.length()-1);
+    if (fn.charAt(fn.length() - 1) == '_') {
+      fn.setLength(fn.length() - 1);
     }
-    if (fn.length() > 32){
+    if (fn.length() > 32) {
       fn.setLength(32);
     }
     return fn.toString();
   }
+
   //////////////////////////////////////////////////////////////////////////////////
-  private static void appendFirstLetter(StringBuffer fn, String[] pack)
-  {
-    int i,n;
+  private static void appendFirstLetter(StringBuffer fn, String[] pack) {
+    int i, n;
     char c;
-    for (i =0; i < pack.length; i++) // take the first letter of each name
+    for (i = 0; i < pack.length; i++) // take the first letter of each name
     {
       String s = pack[i];
       if (s.indexOf('/') > 0) {
-        s = s.substring(s.lastIndexOf('/')+1);
+        s = s.substring(s.lastIndexOf('/') + 1);
       }
       n = s.length();
-      if (i < pack.length-1) {
+      if (i < pack.length - 1) {
         fn.append(Character.toLowerCase(s.charAt(0))); // for the middle package names, use only the first letter
       } else {
-        for (int j = 0; j < n; j++)
-        {
+        for (int j = 0; j < n; j++) {
           c = s.charAt(j);
           if (('A' <= c && c <= 'Z') || ('0' <= c && c <= '9')) {
             fn.append(c);
@@ -361,29 +340,30 @@ public class NativeMethodsPrototypeGenerator
       }
     }
   }
+
   //////////////////////////////////////////////////////////////////////////////////
   private static FileOutputStream fos;
-  private static void println(String s)
-  {
-    try
-    {
+
+  private static void println(String s) {
+    try {
       if (fos == null) {
         fos = new FileOutputStream("NativeMethodsPrototypes.txt");
       }
       fos.write(s.getBytes());
       //System.out.println(s);
-    } catch (Exception e) {e.printStackTrace();}
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
+
   //////////////////////////////////////////////////////////////////////////////////
-  private static void go() throws Exception
-  {
-    if (errorCount > 0){
-      System.out.println("\nClasses that are not part of the method description must be preceded with the full name (package + classname)");
-    }else
-    {
+  private static void go() throws Exception {
+    if (errorCount > 0) {
+      System.out.println(
+          "\nClasses that are not part of the method description must be preceded with the full name (package + classname)");
+    } else {
       // ios prototypes
-      if (makeNativeHT)
-      {
+      if (makeNativeHT) {
         FileWriter fw = new FileWriter(new File(nativeHTPath, "nativeProcAddresses" + nativeHTSuffix + ".c"));
         fw.write("#include \"tcvm.h\"\n");
         fw.write("#include \"NativeMethods.h\"\n");
@@ -397,9 +377,7 @@ public class NativeMethodsPrototypeGenerator
         fw.write("}\n");
 
         fw.close();
-      }
-      else
-      {
+      } else {
         // prototype headers
         for (int i = 0; i < prototypesH.size(); i++) {
           println(prototypesH.elementAt(i).toString());
@@ -420,42 +398,38 @@ public class NativeMethodsPrototypeGenerator
         if (fos != null) {
           fos.close();
         }
-        System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
+        System.out.println("\n\noutput sent to " + System.getProperty("user.dir") + System.getProperty("file.separator")
+            + "NativeMethodsPrototypes.txt");
       }
     }
     System.exit(0);
   }
+
   //////////////////////////////////////////////////////////////////////////////////
   // reads a text file
-  private static void readFile(Vector<String> v, InputStream is) throws Exception
-  {
+  private static void readFile(Vector<String> v, InputStream is) throws Exception {
     v.removeAllElements();
-    try
-    {
+    try {
       int b = is.read();
       char c;
       String s = "";
-      while (b >= 0)
-      {
-        c = (char)b;
-        if (c == '\n')
-        {
+      while (b >= 0) {
+        c = (char) b;
+        if (c == '\n') {
           v.addElement(s);
           s = "";
         } else {
           s += c;
         }
         b = is.read();
-        if ((char)b == '\r') {
+        if ((char) b == '\r') {
           b = is.read();
         }
       }
       if (s.length() > 0) {
         v.addElement(s);
       }
-    }
-    finally
-    {
+    } finally {
       is.close();
     }
   }

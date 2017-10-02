@@ -9,37 +9,30 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.attribute;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class Generic implements AttributeInfo
-{
+public class Generic implements AttributeInfo {
   public byte[] bytes;
 
-  public Generic(int length)
-  {
+  public Generic(int length) {
     bytes = new byte[length];
   }
 
   @Override
-  public int length()
-  {
+  public int length() {
     return bytes.length;
   }
 
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
     ds.readBytes(bytes);
   }
 
   @Override
-  public void save(DataStream ds) throws IOException
-  {
+  public void save(DataStream ds) throws IOException {
     ds.writeBytes(bytes);
   }
 }

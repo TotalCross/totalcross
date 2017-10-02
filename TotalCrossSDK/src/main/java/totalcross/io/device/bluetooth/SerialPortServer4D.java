@@ -14,20 +14,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 import totalcross.io.StreamConnectionNotifier;
 
-public class SerialPortServer4D extends StreamConnectionNotifier
-{
+public class SerialPortServer4D extends StreamConnectionNotifier {
   Object nativeHandle;
 
-  public SerialPortServer4D(String uuid, String[] params) throws IOException
-  {
+  public SerialPortServer4D(String uuid, String[] params) throws IOException {
     createSerialPortServer(uuid, params);
   }
 
@@ -40,16 +36,11 @@ public class SerialPortServer4D extends StreamConnectionNotifier
   native public void close() throws IOException;
 
   @Override
-  protected void finalize()
-  {
-    if (nativeHandle != null)
-    {
-      try
-      {
+  protected void finalize() {
+    if (nativeHandle != null) {
+      try {
         this.close();
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
       }
     }
   }

@@ -14,13 +14,11 @@ package totalcross.crypto;
 /**
  * This exception is thrown when a particular cryptographic algorithm is requested but is not available in the environment.
  */
-public class NoSuchAlgorithmException extends CryptoException
-{
+public class NoSuchAlgorithmException extends CryptoException {
   /**
    * Constructs a NoSuchAlgorithmException with no detail message. A detail message is a string that describes this particular exception.
    */
-  public NoSuchAlgorithmException()
-  {
+  public NoSuchAlgorithmException() {
   }
 
   /**
@@ -29,8 +27,7 @@ public class NoSuchAlgorithmException extends CryptoException
    *
    * @param msg The exception message.
    */
-  public NoSuchAlgorithmException(String msg)
-  {
+  public NoSuchAlgorithmException(String msg) {
     super(msg);
   }
 }

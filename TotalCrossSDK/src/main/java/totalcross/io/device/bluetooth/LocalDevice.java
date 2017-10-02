@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.io.IOException;
@@ -33,8 +31,7 @@ import totalcross.sys.Settings;
  * 
  * @since TotalCross 1.15
  */
-public class LocalDevice
-{
+public class LocalDevice {
   /** Singleton object */
   private static LocalDevice instance;
 
@@ -42,8 +39,7 @@ public class LocalDevice
   static DeviceClass deviceClass;
 
   /** This class produces a singleton object. */
-  private LocalDevice() throws IOException
-  {
+  private LocalDevice() throws IOException {
     deviceClass = new DeviceClass(5898500); // major = computer, minor = desktop, services = Networking & Capturing & Object Transfer.
     discoveryAgent = new DiscoveryAgent();
   }
@@ -55,8 +51,7 @@ public class LocalDevice
    * @return the Bluetooth address of the local device
    * @since TotalCross 1.2
    */
-  public String getBluetoothAddress()
-  {
+  public String getBluetoothAddress() {
     return "111111111111";
   }
 
@@ -69,8 +64,7 @@ public class LocalDevice
    *         if the service classes, major device class or minor device class could not be determined
    * @since TotalCross 1.2
    */
-  public DeviceClass getDeviceClass()
-  {
+  public DeviceClass getDeviceClass() {
     return deviceClass;
   }
 
@@ -82,8 +76,7 @@ public class LocalDevice
    * @return the discoverable mode the device is presently in
    * @since TotalCross 1.2
    */
-  public int getDiscoverable()
-  {
+  public int getDiscoverable() {
     return DiscoveryAgent.NOT_DISCOVERABLE; // not supported on JDK, always returns not discoverable.
   }
 
@@ -94,8 +87,7 @@ public class LocalDevice
    * @return the discovery agent for the local device
    * @since TotalCross 1.15
    */
-  public DiscoveryAgent getDiscoveryAgent()
-  {
+  public DiscoveryAgent getDiscoveryAgent() {
     return discoveryAgent;
   }
 
@@ -106,8 +98,7 @@ public class LocalDevice
    * @return the name of the local device; <code>null</code> if the name could not be retrieved
    * @since TotalCross 1.2
    */
-  public String getFriendlyName()
-  {
+  public String getFriendlyName() {
     return Settings.deviceId; // not supported on JDK, always returns the device name.
   }
 
@@ -120,16 +111,14 @@ public class LocalDevice
    *            if the Bluetooth system could not be initialized
    * @since TotalCross 1.15
    */
-  public static LocalDevice getLocalDevice() throws IOException
-  {
-    if (instance == null){
+  public static LocalDevice getLocalDevice() throws IOException {
+    if (instance == null) {
       instance = new LocalDevice();
     }
     return instance;
   }
 
-  public static String getProperty(String property)
-  {
+  public static String getProperty(String property) {
     return null;
   }
 
@@ -140,8 +129,7 @@ public class LocalDevice
    *         device is off.
    * @since TotalCross 1.2
    */
-  public static boolean isPowerOn()
-  {
+  public static boolean isPowerOn() {
     return RadioDevice.getState(RadioDevice.BLUETOOTH) != RadioDevice.RADIO_STATE_DISABLED;
   }
 
@@ -178,17 +166,15 @@ public class LocalDevice
    * @exception IOException
    *               if the Bluetooth system is in a state that does not allow the discoverable mode to be changed
    */
-  public boolean setDiscoverable(int mode) throws IOException
-  {
+  public boolean setDiscoverable(int mode) throws IOException {
     if ((mode != DiscoveryAgent.GIAC) && (mode != DiscoveryAgent.LIAC) && (mode != DiscoveryAgent.NOT_DISCOVERABLE)
-        && (mode < 0x9E8B00 || mode > 0x9E8B3F)){
+        && (mode < 0x9E8B00 || mode > 0x9E8B3F)) {
       throw new IllegalArgumentException("Invalid discoverable mode");
     }
     return false; // not supported on JDK, always returns false.
   }
 
-  public void updateRecord(ServiceRecord srvRecord)
-  {
+  public void updateRecord(ServiceRecord srvRecord) {
   }
 
   /**
@@ -222,12 +208,11 @@ public class LocalDevice
    * @exception NullPointerException
    *               if <code>notifier</code> is <code>null</code>
    */
-  public ServiceRecord getRecord(StreamConnectionNotifier notifier)
-  {
-    if (notifier == null){
+  public ServiceRecord getRecord(StreamConnectionNotifier notifier) {
+    if (notifier == null) {
       throw new NullPointerException();
     }
-    if (!(notifier instanceof totalcross.io.device.bluetooth.SerialPortServer)){
+    if (!(notifier instanceof totalcross.io.device.bluetooth.SerialPortServer)) {
       throw new IllegalArgumentException();
     }
     return null;

@@ -31,12 +31,13 @@ package totalcross.util.regex;
 
 import totalcross.util.Hashtable;
 
-class TreeInfo{
+class TreeInfo {
   int memregs;
   int counters;
   int lookaheadCount;
-  Term root,optimized;
+  Term root, optimized;
   Hashtable groupMap;
 
-  TreeInfo(){}
+  TreeInfo() {
+  }
 }

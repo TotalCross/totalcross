@@ -85,8 +85,7 @@ public class Unzipper extends JSONzip {
    * @return The value associated with the number.
    * @throws JSONException
    */
-  private Object getAndTick(Keep keep, BitReader bitreader)
-      throws JSONException {
+  private Object getAndTick(Keep keep, BitReader bitreader) throws JSONException {
     try {
       int width = keep.bitsize();
       int integer = bitreader.read(width);
@@ -194,9 +193,7 @@ public class Unzipper extends JSONzip {
    */
   private JSONArray readArray(boolean stringy) throws JSONException {
     JSONArray jsonarray = new JSONArray();
-    jsonarray.put(stringy
-        ? read(this.stringhuff, this.stringhuffext, this.stringkeep)
-            : readValue());
+    jsonarray.put(stringy ? read(this.stringhuff, this.stringhuffext, this.stringkeep) : readValue());
     while (true) {
       if (probe) {
         log();
@@ -205,15 +202,9 @@ public class Unzipper extends JSONzip {
         if (!bit()) {
           return jsonarray;
         }
-        jsonarray.put(stringy
-            ? readValue()
-                : read(this.stringhuff, this.stringhuffext,
-                    this.stringkeep));
+        jsonarray.put(stringy ? readValue() : read(this.stringhuff, this.stringhuffext, this.stringkeep));
       } else {
-        jsonarray.put(stringy
-            ? read(this.stringhuff, this.stringhuffext,
-                this.stringkeep)
-                : readValue());
+        jsonarray.put(stringy ? read(this.stringhuff, this.stringhuffext, this.stringkeep) : readValue());
       }
     }
   }
@@ -255,9 +246,7 @@ public class Unzipper extends JSONzip {
       if (jsonobject.opt(name) != null) {
         throw new JSONException("Duplicate key.");
       }
-      jsonobject.put(name, !bit()
-          ? read(this.stringhuff, this.stringhuffext, this.stringkeep)
-              : readValue());
+      jsonobject.put(name, !bit() ? read(this.stringhuff, this.stringhuffext, this.stringkeep) : readValue());
       if (!bit()) {
         return jsonobject;
       }

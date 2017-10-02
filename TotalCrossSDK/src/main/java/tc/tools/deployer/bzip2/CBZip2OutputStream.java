@@ -58,7 +58,6 @@
  * great code.
  */
 
-
 // http://www.kohsuke.org/bzip2/
 
 package tc.tools.deployer.bzip2;
@@ -108,14 +107,13 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     }
   }
 
-  protected static void hbMakeCodeLengths(char[] len, int[] freq,
-      int alphaSize, int maxLen) {
+  protected static void hbMakeCodeLengths(char[] len, int[] freq, int alphaSize, int maxLen) {
     /*
           Nodes and heap entries run from 1.  Entry 0
           for both the heap and nodes is a sentinel.
      */
     int nNodes, nHeap, n1, n2, i, j, k;
-    boolean  tooLong;
+    boolean tooLong;
 
     int[] heap = new int[MAX_ALPHA_SIZE + 2];
     int[] weight = new int[MAX_ALPHA_SIZE * 2];
@@ -165,8 +163,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
             if (yy > nHeap) {
               break;
             }
-            if (yy < nHeap
-                && weight[heap[yy + 1]] < weight[heap[yy]]) {
+            if (yy < nHeap && weight[heap[yy + 1]] < weight[heap[yy]]) {
               yy++;
             }
             if (weight[tmp] < weight[heap[yy]]) {
@@ -189,8 +186,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
             if (yy > nHeap) {
               break;
             }
-            if (yy < nHeap
-                && weight[heap[yy + 1]] < weight[heap[yy]]) {
+            if (yy < nHeap && weight[heap[yy + 1]] < weight[heap[yy]]) {
               yy++;
             }
             if (weight[tmp] < weight[heap[yy]]) {
@@ -204,12 +200,9 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         nNodes++;
         parent[n1] = parent[n2] = nNodes;
 
-        weight[nNodes] = ((weight[n1] & 0xffffff00)
-            + (weight[n2] & 0xffffff00))
-            | (1 + (((weight[n1] & 0x000000ff) >
-            (weight[n2] & 0x000000ff)) ?
-                (weight[n1] & 0x000000ff) :
-                  (weight[n2] & 0x000000ff)));
+        weight[nNodes] = ((weight[n1] & 0xffffff00) + (weight[n2] & 0xffffff00))
+            | (1 + (((weight[n1] & 0x000000ff) > (weight[n2] & 0x000000ff)) ? (weight[n1] & 0x000000ff)
+                : (weight[n2] & 0x000000ff)));
 
         parent[nNodes] = -1;
         nHeap++;
@@ -249,8 +242,8 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
 
       for (i = 1; i < alphaSize; i++) {
         j = weight[i] >> 8;
-      j = 1 + (j / 2);
-      weight[i] = j << 8;
+        j = 1 + (j / 2);
+        weight[i] = j << 8;
       }
     }
   }
@@ -315,8 +308,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     this(inStream, 9);
   }
 
-  public CBZip2OutputStream(OutputStream inStream, int inBlockSize)
-      throws IOException {
+  public CBZip2OutputStream(OutputStream inStream, int inBlockSize) throws IOException {
     block = null;
     quadrant = null;
     zptr = null;
@@ -533,8 +525,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     bsFinishedWithStream();
   }
 
-  private void hbAssignCodes (int[] code, char[] length, int minLen,
-      int maxLen, int alphaSize) {
+  private void hbAssignCodes(int[] code, char[] length, int minLen, int maxLen, int alphaSize) {
     int n, vec, i;
 
     vec = 0;
@@ -544,7 +535,8 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
           code[i] = vec;
           vec++;
         }
-      };
+      }
+      ;
       vec <<= 1;
     }
   }
@@ -562,7 +554,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
       try {
         bsStream.write(ch); // write 8-bit
       } catch (IOException e) {
-        throw  e;
+        throw e;
       }
       bsBuff <<= 8;
       bsLive -= 8;
@@ -593,8 +585,8 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
   private void bsPutint(int u) throws IOException {
     bsW(8, (u >> 24) & 0xff);
     bsW(8, (u >> 16) & 0xff);
-    bsW(8, (u >>  8) & 0xff);
-    bsW(8,  u        & 0xff);
+    bsW(8, (u >> 8) & 0xff);
+    bsW(8, u & 0xff);
   }
 
   private void bsPutIntVS(int numBits, int c) throws IOException {
@@ -636,7 +628,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
       int nPart, remF, tFreq, aFreq;
 
       nPart = nGroups;
-      remF  = nMTF;
+      remF = nMTF;
       gs = 0;
       while (nPart > 0) {
         tFreq = remF / nPart;
@@ -647,8 +639,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
           aFreq += mtfFreq[ge];
         }
 
-        if (ge > gs && nPart != nGroups && nPart != 1
-            && ((nGroups - nPart) % 2 == 1)) {
+        if (ge > gs && nPart != nGroups && nPart != 1 && ((nGroups - nPart) % 2 == 1)) {
           aFreq -= mtfFreq[ge];
           ge--;
         }
@@ -743,7 +734,8 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
             bc = cost[t];
             bt = t;
           }
-        };
+        }
+        ;
         fave[bt]++;
         selector[nSelectors] = (char) bt;
         nSelectors++;
@@ -776,7 +768,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     if (!(nSelectors < 32768 && nSelectors <= (2 + (900000 / G_SIZE)))) {
       panic();
     }
-
 
     /* Compute MTF values for the selectors. */
     {
@@ -858,8 +849,8 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     }
 
     /* Now the selectors. */
-    bsW (3, nGroups);
-    bsW (15, nSelectors);
+    bsW(3, nGroups);
+    bsW(15, nSelectors);
     for (i = 0; i < nSelectors; i++) {
       for (j = 0; j < selectorMtf[i]; j++) {
         bsW(1, 1);
@@ -881,7 +872,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
           bsW(2, 3);
           curr--; /* 11 */
         }
-        bsW (1, 0);
+        bsW(1, 0);
       }
     }
 
@@ -897,8 +888,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         ge = nMTF - 1;
       }
       for (i = gs; i <= ge; i++) {
-        bsW(len[selector[selCtr]][szptr[i]],
-            code[selector[selCtr]][szptr[i]]);
+        bsW(len[selector[selCtr]][szptr[i]], code[selector[selCtr]][szptr[i]]);
       }
 
       gs = ge + 1;
@@ -909,7 +899,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     }
   }
 
-  private void moveToFrontCodeAndSend () throws IOException {
+  private void moveToFrontCodeAndSend() throws IOException {
     bsPutIntVS(24, origPtr);
     generateMTFValues();
     sendMTFValues();
@@ -1061,9 +1051,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         continue;
       }
 
-      med = med3(block[zptr[lo] + d + 1],
-          block[zptr[hi            ] + d  + 1],
-          block[zptr[(lo + hi) >> 1] + d + 1]);
+      med = med3(block[zptr[lo] + d + 1], block[zptr[hi] + d + 1], block[zptr[(lo + hi) >> 1] + d + 1]);
 
       unLo = ltLo = lo;
       unHi = gtHi = hi;
@@ -1082,8 +1070,9 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
             ltLo++;
             unLo++;
             continue;
-          };
-          if (n >  0) {
+          }
+          ;
+          if (n > 0) {
             break;
           }
           unLo++;
@@ -1101,8 +1090,9 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
             gtHi--;
             unHi--;
             continue;
-          };
-          if (n <  0) {
+          }
+          ;
+          if (n < 0) {
             break;
           }
           unHi--;
@@ -1233,16 +1223,14 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         int h = 1;
         do {
           h = 3 * h + 1;
-        }
-        while (h <= 256);
+        } while (h <= 256);
         do {
           h = h / 3;
           for (i = h; i <= 255; i++) {
             vv = runningOrder[i];
             j = i;
-            while ((ftab[((runningOrder[j - h]) + 1) << 8]
-                - ftab[(runningOrder[j - h]) << 8]) >
-            (ftab[((vv) + 1) << 8] - ftab[(vv) << 8])) {
+            while ((ftab[((runningOrder[j - h]) + 1) << 8] - ftab[(runningOrder[j - h]) << 8]) > (ftab[((vv) + 1) << 8]
+                - ftab[(vv) << 8])) {
               runningOrder[j] = runningOrder[j - h];
               j = j - h;
               if (j <= (h - 1)) {
@@ -1297,9 +1285,9 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         bigDone[ss] = true;
 
         if (i < 255) {
-          int bbStart  = ftab[ss << 8] & CLEARMASK;
-          int bbSize   = (ftab[(ss + 1) << 8] & CLEARMASK) - bbStart;
-          int shifts   = 0;
+          int bbStart = ftab[ss << 8] & CLEARMASK;
+          int bbSize = (ftab[(ss + 1) << 8] & CLEARMASK) - bbStart;
+          int shifts = 0;
 
           while ((bbSize >> shifts) > 65534) {
             shifts++;
@@ -1327,8 +1315,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
           copy[j] = ftab[(j << 8) + ss] & CLEARMASK;
         }
 
-        for (j = ftab[ss << 8] & CLEARMASK;
-            j < (ftab[(ss + 1) << 8] & CLEARMASK); j++) {
+        for (j = ftab[ss << 8] & CLEARMASK; j < (ftab[(ss + 1) << 8] & CLEARMASK); j++) {
           c1 = block[zptr[j]];
           if (!bigDone[c1]) {
             zptr[copy[c1]] = zptr[j] == 0 ? last : zptr[j] - 1;
@@ -1346,7 +1333,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
   private void randomiseBlock() {
     int i;
     int rNToGo = 0;
-    int rTPos  = 0;
+    int rTPos = 0;
     for (i = 0; i < 256; i++) {
       inUse[i] = false;
     }
@@ -1392,7 +1379,8 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         origPtr = i;
         break;
       }
-    };
+    }
+    ;
 
     if (origPtr == -1) {
       panic();
@@ -1510,11 +1498,13 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
       if (i1 > last) {
         i1 -= last;
         i1--;
-      };
+      }
+      ;
       if (i2 > last) {
         i2 -= last;
         i2--;
-      };
+      }
+      ;
 
       k -= 4;
       workDone++;
@@ -1529,19 +1519,16 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
       because the number of elems to sort is
       usually small, typically <= 20.
    */
-  private int[] incs = { 1, 4, 13, 40, 121, 364, 1093, 3280,
-      9841, 29524, 88573, 265720,
-      797161, 2391484 };
+  private int[] incs = { 1, 4, 13, 40, 121, 364, 1093, 3280, 9841, 29524, 88573, 265720, 797161, 2391484 };
 
-  private void allocateCompressStructures () {
+  private void allocateCompressStructures() {
     int n = baseBlockSize * blockSize100k;
     block = new char[(n + 1 + NUM_OVERSHOOT_BYTES)];
     quadrant = new int[(n + NUM_OVERSHOOT_BYTES)];
     zptr = new int[n];
     ftab = new int[65537];
 
-    if (block == null || quadrant == null || zptr == null
-        || ftab == null) {
+    if (block == null || quadrant == null || zptr == null || ftab == null) {
       //int totalDraw = (n + 1 + NUM_OVERSHOOT_BYTES) + (n + NUM_OVERSHOOT_BYTES) + n + 65537;
       //compressOutOfMemory ( totalDraw, n );
     }
@@ -1558,13 +1545,12 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
      */
     //    szptr = zptr;
 
-
     szptr = new short[2 * n];
   }
 
   private void generateMTFValues() {
     char[] yy = new char[256];
-    int  i, j;
+    int i, j;
     char tmp;
     char tmp2;
     int zPend;
@@ -1584,7 +1570,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
       yy[i] = (char) i;
     }
 
-
     for (i = 0; i <= last; i++) {
       char ll_i;
 
@@ -1597,7 +1582,8 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         tmp2 = tmp;
         tmp = yy[j];
         yy[j] = tmp2;
-      };
+      }
+      ;
       yy[0] = tmp;
 
       if (j == 0) {
@@ -1617,12 +1603,14 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
               wr++;
               mtfFreq[RUNB]++;
               break;
-            };
+            }
+            ;
             if (zPend < 2) {
               break;
             }
             zPend = (zPend - 2) / 2;
-          };
+          }
+          ;
           zPend = 0;
         }
         szptr[wr] = (short) (j + 1);
@@ -1660,5 +1648,3 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     nMTF = wr;
   }
 }
-
-

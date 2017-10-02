@@ -74,11 +74,10 @@ import totalcross.util.ElementNotFoundException;
  * @since TotalCross 1.38
  */
 
-public class GPS
-{
+public class GPS {
   /** Stores the location - latitude on first index (0) and longitude on second index (1). 
    * On low signal, it contains the value <CODE>INVALID</code>. */
-  public double[] location = {INVALID,INVALID};
+  public double[] location = { INVALID, INVALID };
   /** Stores the direction in degrees from the North. 
    * On low signal, it contains the value <CODE>INVALID</code>. */
   public double direction = INVALID;
@@ -132,7 +131,8 @@ public class GPS
   PortConnector sp;
   private byte[] buf = new byte[1];
   private StringBuffer sb = new StringBuffer(512);
-  private static boolean nativeAPI = Settings.isWindowsCE() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE);
+  private static boolean nativeAPI = Settings.isWindowsCE() || Settings.platform.equals(Settings.ANDROID)
+      || Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE);
   private static boolean isOpen;
   boolean dontFinalize;
 
@@ -149,8 +149,7 @@ public class GPS
    */
   public static String getWinCEGPSCom() // guich@tc100b5_38
   {
-    try
-    {
+    try {
       try // guich@tc120_51
       {
         String key = "System\\CurrentControlSet\\GPS Intermediate Driver\\Multiplexer\\ActiveDevice";
@@ -159,36 +158,27 @@ public class GPS
         if (prefix.equals("COM")) {
           return "COM" + index;
         }
-      }
-      catch (ElementNotFoundException enfe)
-      {
+      } catch (ElementNotFoundException enfe) {
         // ignore if a key was not found
       }
 
       String[] keys = Registry.list(Registry.HKEY_LOCAL_MACHINE, "Drivers\\BuiltIn");
-      for (int i = 0; i < keys.length; i++)
-      {
+      for (int i = 0; i < keys.length; i++) {
         String k = keys[i].toLowerCase();
-        if (k.indexOf("serial") >= 0)
-        {
+        if (k.indexOf("serial") >= 0) {
           String key = "Drivers\\BuiltIn\\" + keys[i], prefix, name;
-          try
-          {
+          try {
             prefix = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "Prefix");
             name = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "FriendlyName");
             if (prefix.equals("COM") && name.toLowerCase().indexOf("gps") >= 0) {
               return "COM" + Registry.getInt(Registry.HKEY_LOCAL_MACHINE, key, "Index");
             }
-          }
-          catch (ElementNotFoundException enfe)
-          {
+          } catch (ElementNotFoundException enfe) {
             // ignore if a key was not found
           }
         }
       }
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
     }
     return null;
   }
@@ -202,8 +192,7 @@ public class GPS
    * @throws GPSDisabledException If GPS is disabled
    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
    */
-  public GPS() throws IOException
-  {
+  public GPS() throws IOException {
     this(HIGH_GPS_PRECISION);
   }
 
@@ -216,12 +205,10 @@ public class GPS
    * @throws GPSDisabledException If GPS is disabled
    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
    */
-  public GPS(int precision) throws IOException
-  {
+  public GPS(int precision) throws IOException {
     this.precision = precision;
     checkOpen();
-    if (!nativeAPI || !testStartGPS())
-    {
+    if (!nativeAPI || !testStartGPS()) {
       String com;
       if ("PIDION".equals(Settings.deviceId)) {
         sp = new PortConnector(Convert.chars2int("COM4"), 9600, 7, PortConnector.PARITY_EVEN, 1);
@@ -232,8 +219,7 @@ public class GPS
       }
     }
 
-    if (sp != null)
-    {
+    if (sp != null) {
       sp.readTimeout = 1500;
       sp.setFlowControl(false);
     }
@@ -251,36 +237,31 @@ public class GPS
    * @see #GPS()
    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
    */
-  public GPS(PortConnector sp) throws IOException
-  {
+  public GPS(PortConnector sp) throws IOException {
     checkOpen();
-    if (sp != null){
+    if (sp != null) {
       this.sp = sp;
-    }else 
-      if (nativeAPI){
-        testStartGPS();
-      }
+    } else if (nativeAPI) {
+      testStartGPS();
+    }
   }
 
-  private boolean testStartGPS() throws IOException
-  {
-    try
-    {
+  private boolean testStartGPS() throws IOException {
+    try {
       return startGPS();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       isOpen = false;
       throw e;
     }
   }
 
   @ReplacedByNativeOnDeploy
-  private boolean startGPS() throws IOException {return false;}
+  private boolean startGPS() throws IOException {
+    return false;
+  }
 
-  private void checkOpen() throws IOException
-  {
-    if (isOpen){
+  private void checkOpen() throws IOException {
+    if (isOpen) {
       throw new IOException("There's already an open instance of the GPS class");
     }
     isOpen = true;
@@ -289,37 +270,35 @@ public class GPS
   /**
    * Closes the underlying PortConnector or native api.
    */
-  public void stop()
-  {
+  public void stop() {
     dontFinalize = true;
     isOpen = false;
-    if (sp == null){
+    if (sp == null) {
       stopGPS();
-    }else
-    {
-      try {sp.close();} catch (Exception e) {}
+    } else {
+      try {
+        sp.close();
+      } catch (Exception e) {
+      }
       sp = null;
     }
   }
 
   @ReplacedByNativeOnDeploy
-  private void stopGPS()
-  {
+  private void stopGPS() {
   }
 
   /**
    * Returns the latitude (<code>location[0]</code>).
    */
-  public double getLatitude()
-  {
+  public double getLatitude() {
     return location[0];
   }
 
   /**
    * Returns the longitude (<code>location[1]</code>).
    */
-  public double getLongitude()
-  {
+  public double getLongitude() {
     return location[1];
   }
 
@@ -331,25 +310,19 @@ public class GPS
    * @param dir
    *           the direction: SWEN
    */
-  public static double toCoordinate(String s, char dir)
-  {
+  public static double toCoordinate(String s, char dir) {
     double deg = 0;
     int i = s.indexOf('.'); // guich@421_58
-    if (i >= 0)
-    {
+    if (i >= 0) {
       int divider = 1;
       int size = s.length();
       for (int d = size - i - 1; d > 0; d--) {
         divider *= 10;
       }
-      try
-      {
-        deg = (double) Convert.toInt(s.substring(0, i - 2)) +
-            ((double) Convert.toInt(s.substring(i - 2, i)) +
-                (double) Convert.toInt(s.substring(i + 1, size)) / divider) / 60;
-      }
-      catch (InvalidNumberException ine)
-      {
+      try {
+        deg = (double) Convert.toInt(s.substring(0, i - 2)) + ((double) Convert.toInt(s.substring(i - 2, i))
+            + (double) Convert.toInt(s.substring(i + 1, size)) / divider) / 60;
+      } catch (InvalidNumberException ine) {
         return 0;
       }
       if (dir == 'S' || dir == 'W') {
@@ -359,10 +332,8 @@ public class GPS
     return deg;
   }
 
-  public static String toCoordinateGGMMSS(String coord, char dir) throws InvalidNumberException
-  {
-    try
-    {
+  public static String toCoordinateGGMMSS(String coord, char dir) throws InvalidNumberException {
+    try {
       String g, m, s;
 
       if (dir == 'E' || dir == 'W') // LONGITUDE
@@ -372,18 +343,14 @@ public class GPS
         m = coord.substring(3, 5) + " ";
         double temp = Convert.toDouble("0" + coord.substring(5, 10)) * 60;
         s = Convert.toString(temp, 4);
-      }
-      else
-      {
+      } else {
         g = coord.substring(0, 2) + " "; // LATITUDE
         m = coord.substring(2, 4) + " ";
         double temp = Convert.toDouble("0" + coord.substring(4, 9)) * 60;
         s = Convert.toString(temp, 4);
       }
       return g + m + s + " " + dir;
-    }
-    catch (IndexOutOfBoundsException ioobe)
-    {
+    } catch (IndexOutOfBoundsException ioobe) {
       return "Err: " + coord + " - " + dir;
     }
   }
@@ -392,47 +359,39 @@ public class GPS
    * @returns true if the data was retrieved, false if low signal.
    * @see #lowSignalReason
    */
-  public boolean retrieveGPSData()
-  {
-    try
-    {
+  public boolean retrieveGPSData() {
+    try {
       lowSignalReason = null;
       location[0] = location[1] = direction = velocity = INVALID;
       satellites = 0;
       return sp != null ? processSerial() : processNative();
-    }
-    catch (Exception e1)
-    {
-      lowSignalReason = e1.getMessage()+" ("+(e1.getClass())+")";
+    } catch (Exception e1) {
+      lowSignalReason = e1.getMessage() + " (" + (e1.getClass()) + ")";
       return false;
     }
   }
 
   @ReplacedByNativeOnDeploy
-  private int updateLocation()
-  {
+  private int updateLocation() {
     return 0;
   }
 
   // private methods
-  private boolean processNative()
-  {
+  private boolean processNative() {
     int result = updateLocation();
-    if ((result & 8) == 0){
+    if ((result & 8) == 0) {
       velocity = INVALID;
     }
-    if ((result & 4) == 0){
+    if ((result & 4) == 0) {
       direction = INVALID;
     }
     return (result & 3) != 0; // latitude and longitude: one doesn't make sense without the other
   }
 
-  private boolean processSerial() throws Exception
-  {
+  private boolean processSerial() throws Exception {
     String message;
     boolean ok = false;
-    while ((message = nextMessage()) != null)
-    {
+    while ((message = nextMessage()) != null) {
       messageReceived = message;
       String[] sp = Convert.tokenizeString(message, ',');
       if (sp[0].equals("$GPGGA")) // guich@tc115_71
@@ -442,20 +401,16 @@ public class GPS
         }
         location[0] = toCoordinate(sp[2], sp[3].charAt(0));
         location[1] = toCoordinate(sp[4], sp[5].charAt(0));
-        if (sp.length > 7 && sp[7].length() > 0)
-        {
+        if (sp.length > 7 && sp[7].length() > 0) {
           satellites = Convert.toInt(sp[7]); //flsobral@tc120_66: new field, satellites.
         }
-      }
-      else if (sp[0].equals("$GPGLL"))
-      {
+      } else if (sp[0].equals("$GPGLL")) {
         if (!"A".equals(sp[6])) {
           continue;
         }
         location[0] = toCoordinate(sp[1], sp[2].charAt(0));
         location[1] = toCoordinate(sp[3], sp[4].charAt(0));
-        if (sp[5].length() > 0)
-        {
+        if (sp[5].length() > 0) {
           lastFix.hour = Convert.toInt(sp[5].substring(0, 2));
           lastFix.minute = Convert.toInt(sp[5].substring(2, 4));
           lastFix.second = Convert.toInt(sp[5].substring(4, 6));
@@ -464,35 +419,30 @@ public class GPS
         ok = true;
       }
       // fleite@421_57: Adding position and time message's decode routine
-      else if (sp[0].equals("$GPRMC") && sp.length >= 8 && "A".equals(sp[2]))
-      {
+      else if (sp[0].equals("$GPRMC") && sp.length >= 8 && "A".equals(sp[2])) {
         if (!"A".equals(sp[2])) {
           continue;
         }
         location[0] = toCoordinate(sp[3], sp[4].charAt(0));
         location[1] = toCoordinate(sp[5], sp[6].charAt(0));
-        if (sp[1].length() >= 6)
-        {
+        if (sp[1].length() >= 6) {
           lastFix.hour = Convert.toInt(sp[1].substring(0, 2));
           lastFix.minute = Convert.toInt(sp[1].substring(2, 4));
           lastFix.second = Convert.toInt(sp[1].substring(4, 6));
           lastFix.millis = 0;
         }
-        if (sp[7].length() > 0)
-        {
+        if (sp[7].length() > 0) {
           velocity = Convert.toDouble(sp[7]); //knots
         }
-        if (sp[8].length() > 0)
-        {
+        if (sp[8].length() > 0) {
           direction = Convert.toDouble(sp[8]); //degrees
         }
         ok = true;
-      }
-      else if (sp[0].equals("$GPGSA")) {
-        try 
-        {
+      } else if (sp[0].equals("$GPGSA")) {
+        try {
           pdop = sp.length > 15 ? Convert.toDouble(sp[15]) : 0;
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
       }
     }
     return ok;
@@ -507,8 +457,7 @@ public class GPS
    * @return
    * @throws IOException
    */
-  private String nextMessage() throws IOException
-  {
+  private String nextMessage() throws IOException {
     StringBuffer sb = this.sb;
     byte[] buf = this.buf;
     String ret = null;
@@ -516,8 +465,7 @@ public class GPS
     int retry = 5;
     int read;
 
-    while ((read = sp.readBytes(buf, 0, 1)) != -1)
-    {
+    while ((read = sp.readBytes(buf, 0, 1)) != -1) {
       if (read == 0 && --retry <= 0) {
         throw new IOException("Invalid port: nothing to read.");
       }
@@ -532,8 +480,7 @@ public class GPS
         break;
       } else if (c > 128) {
         throw new IOException("Invalid port: only trash was retrieved.");
-      } else if (++len > 512)
-      {
+      } else if (++len > 512) {
         int idx = sb.toString().indexOf('$');
         if (idx == -1) {
           sb.setLength(0);
@@ -544,8 +491,7 @@ public class GPS
       }
     }
 
-    if (len > 0)
-    {
+    if (len > 0) {
       ret = sb.toString();
       if (ret.length() <= 3) {
         return null;
@@ -565,23 +511,20 @@ public class GPS
    * 
    * @since TotalCross 1.20
    */
-  private String validateMessage(String message)
-  {
+  private String validateMessage(String message) {
     char[] msgChars = message.toCharArray();
     int checksum = 0;
 
-    if (msgChars[0] != '$' || msgChars[msgChars.length - 2] != '\r' || msgChars[msgChars.length - 1] != '\n'){
+    if (msgChars[0] != '$' || msgChars[msgChars.length - 2] != '\r' || msgChars[msgChars.length - 1] != '\n') {
       return null;
     }
-    for (int i = msgChars.length - 6; i > 0; i--)
-    {
+    for (int i = msgChars.length - 6; i > 0; i--) {
       if (msgChars[i] == '\r' || msgChars[i] == '\n' || msgChars[i] == '$' || msgChars[i] == '*') {
         return null;
       }
       checksum ^= msgChars[i];
     }
-    if (msgChars[msgChars.length - 5] == '*')
-    {
+    if (msgChars[msgChars.length - 5] == '*') {
       int checksum2 = Convert.hex2signed(new String(msgChars, msgChars.length - 4, 2));
       if (checksum != checksum2) {
         return null;
@@ -592,8 +535,7 @@ public class GPS
   }
 
   @Override
-  protected void finalize()
-  {
+  protected void finalize() {
     this.stop();
   }
 }

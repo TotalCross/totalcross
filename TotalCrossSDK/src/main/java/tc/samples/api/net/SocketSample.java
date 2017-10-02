@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.net;
 
 import tc.samples.api.BaseContainer;
@@ -32,41 +30,34 @@ import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 import totalcross.util.Vector;
 
-public class SocketSample extends BaseContainer
-{
+public class SocketSample extends BaseContainer {
   Button btnOpen;
-  Edit edA,edP;
+  Edit edA, edP;
   Socket socket;
   Vector networks;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
-    add(new Label("Address: "),LEFT, TOP+1);
-    add(edA = new Edit(""), AFTER+3, SAME);
+    add(new Label("Address: "), LEFT, TOP + 1);
+    add(edA = new Edit(""), AFTER + 3, SAME);
     edA.setText("www.superwaba.com.br");
-    add(new Label("Port: "), LEFT, AFTER+3);
-    add(edP = new Edit("8080"), AFTER+3, SAME);
+    add(new Label("Port: "), LEFT, AFTER + 3);
+    add(edP = new Edit("8080"), AFTER + 3, SAME);
     edP.setText("80");
 
-    add(btnOpen = new Button(" Open connection "), CENTER, AFTER+3,PREFERRED,PREFERRED+fmH/4);
+    add(btnOpen = new Button(" Open connection "), CENTER, AFTER + 3, PREFERRED, PREFERRED + fmH / 4);
 
-    addLog(LEFT,AFTER+3,FILL,FILL,null);
+    addLog(LEFT, AFTER + 3, FILL, FILL, null);
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == ControlEvent.PRESSED)
-    {
+  public void onEvent(Event e) {
+    if (e.type == ControlEvent.PRESSED) {
       if (e.target == btnOpen) {
-        try
-        {
+        try {
           openSocket();
-        }
-        catch (IOException e1)
-        {
+        } catch (IOException e1) {
           log("openSocket failed!");
           log(e1.getMessage());
           e1.printStackTrace();
@@ -75,13 +66,15 @@ public class SocketSample extends BaseContainer
     }
   }
 
-  private void openSocket() throws totalcross.net.UnknownHostException,  totalcross.io.IOException
-  {
+  private void openSocket() throws totalcross.net.UnknownHostException, totalcross.io.IOException {
     repaintNow(); // release the button
     log("opening connection...");
     int port = 80;
-    if (edP.getLength() > 0){
-      try {port = Convert.toInt(edP.getText());} catch (InvalidNumberException ine) {}
+    if (edP.getLength() > 0) {
+      try {
+        port = Convert.toInt(edP.getText());
+      } catch (InvalidNumberException ine) {
+      }
     }
 
     socket = new Socket(edA.getText(), port, 25000);
@@ -89,7 +82,7 @@ public class SocketSample extends BaseContainer
 
     log("Socket opened");
     log("Sending HttpGet");
-    byte []bytes = "GET / HTTP/1.0\n\n".getBytes();
+    byte[] bytes = "GET / HTTP/1.0\n\n".getBytes();
     socket.writeBytes(bytes);
     log("===== RESPONSE =====");
 
@@ -97,14 +90,11 @@ public class SocketSample extends BaseContainer
     // so we loop until we find something to read
     LineReader lr = new LineReader(socket); // note: using socket.readLine is VERY slow.
     String line;
-    try
-    {
+    try {
       while ((line = lr.readLine()) != null) {
         log(line);
       }
-    }
-    catch (SocketTimeoutException ex)
-    {
+    } catch (SocketTimeoutException ex) {
       log("Read: Timeout!");
     }
     log("===================");
