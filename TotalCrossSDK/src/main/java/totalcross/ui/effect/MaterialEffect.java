@@ -184,8 +184,10 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
     if (sfo) {
       iniUp = iniDn;
     }
-    int w = Math.max(px, target.getWidth() - px);
-    int h = Math.max(py, target.getHeight() - py);
+    int rpx = Math.abs(px - target.getEffectX());
+    int rpy = Math.abs(py - target.getEffectY());
+    int w = Math.max(rpx, target.getEffectW()-rpx);
+    int h = Math.max(rpy, target.getEffectH()-rpy);
     max = (int) Math.sqrt(w * w + h * h) + 1;
     Window.needsPaint = true;
     te = target.addTimer(TIMER_INTERVAL);
