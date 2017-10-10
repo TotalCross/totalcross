@@ -410,6 +410,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     if (animating) {
       animating = false;
       Window.needsPaint = true;
+      alphaSel = alphaValue;
       postPressedEvent();
     }
   }
