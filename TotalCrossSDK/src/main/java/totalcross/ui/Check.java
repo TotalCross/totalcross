@@ -361,6 +361,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   public void sideStop() {
     if (animating) {
       animating = false;
+      alphaSel = alphaValue;
       postPressedEvent();
     }
   }
