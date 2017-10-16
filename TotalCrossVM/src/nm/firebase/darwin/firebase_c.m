@@ -11,7 +11,10 @@
 void privateFirebaseGetToken(NMParams p)
 {
 	NSString *fcmToken = [FIRMessaging messaging].FCMToken;
-	const char* token = [fcmToken cStringUsingEncoding:NSASCIIStringEncoding];
-	p->retO = createStringObjectFromCharP(p->currentContext, token, xstrlen(token));
-	setObjectLock(p->retO, UNLOCKED);
+	if (fcmToken != null)
+	{
+		const char* token = [fcmToken cStringUsingEncoding:NSASCIIStringEncoding];
+		p->retO = createStringObjectFromCharP(p->currentContext, token, xstrlen(token));
+		setObjectLock(p->retO, UNLOCKED);
+	}
 } 
