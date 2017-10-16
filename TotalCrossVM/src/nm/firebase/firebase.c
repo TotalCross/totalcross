@@ -13,6 +13,10 @@
 
 #include <stdio.h>
 
+#if defined(darwin)
+ void privateFirebaseGetToken(NMParams p);
+#endif
+
 TC_API void tfiFII_getToken(NMParams p)
 {
 #if defined(ANDROID)
@@ -33,6 +37,8 @@ TC_API void tfiFII_getToken(NMParams p)
 
 		(*env)->ReleaseStringUTFChars(env, jtoken, sztoken);
 	}
+#elif defined (darwin)
+    privateFirebaseGetToken(p);
 #else
 	p->retO = null;
 #endif
