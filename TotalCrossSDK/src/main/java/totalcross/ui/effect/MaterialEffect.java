@@ -83,12 +83,22 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
         }
       }
       if (matImg != null) {
-        int curDn = Vm.getTimeStamp() - iniDn;
-        int curUp = Vm.getTimeStamp() - iniUp;
+        int ts = Vm.getTimeStamp();
+        int curDn = ts - iniDn; // total elapsed
+        int curUp = ts - iniUp;
         int rad = Math.min(max, curDn * max / duration);
-        alpha = isDown ? alphaValue
-            : rad < max ? alphaValue - curUp * alphaValue / (duration - (iniUp - iniDn))
-                : Math.max(0, alpha - TIMER_INTERVAL);
+        int rest = duration-(iniUp-iniDn);
+        if (isDown) // pen down
+          alpha = alphaValue;
+        else
+        if (rad < max) // pen up and didnt reach max radius
+          alpha = alphaValue - curUp * alphaValue / rest; // fading in?
+        else
+        if ((iniUp-iniDn) < duration) // reached max radius and if there is still time to fade out...
+          alpha = (duration-curDn) * alphaValue / duration; // fading out
+        else
+          alpha = (iniUp + duration - ts) * alphaValue / duration; // fading out
+        if (alpha < 0) alpha = 0;
 
         if (!sideEffOnly) {
           Graphics gg = matImg.getGraphics();
