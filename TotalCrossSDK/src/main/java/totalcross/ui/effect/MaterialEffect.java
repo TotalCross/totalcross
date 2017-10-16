@@ -94,7 +94,7 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
         if (rad < max) // pen up and didnt reach max radius
           alpha = alphaValue - curUp * alphaValue / rest; // fading in?
         else
-        if ((iniUp-iniDn) < duration*2/3) // reached max radius and if there is still time to fade out...
+        if ((iniUp-iniDn) < duration) // reached max radius and if there is still time to fade out...
           alpha = (duration-curDn) * alphaValue / duration; // fading out
         else
           alpha = (iniUp + duration - ts) * alphaValue / duration; // fading out
