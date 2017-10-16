@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -130,6 +131,18 @@ public class Deployer4IPhoneIPA {
         .cp(new TFile(appFolder, DeploySettings.fontTCZ));
     // Litebase
     new TFile(DeploySettings.folderTotalCross3DistVM, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
+
+    try {
+      String google_services_json_path = Utils.findPath("GoogleService-Info.plist", true);
+
+      if (google_services_json_path == null) {
+        throw new FileNotFoundException("can't find GoogleService-Info.plist in TotalCross deploy path");
+      }
+      new TFile(google_services_json_path).cp(new TFile(appFolder, "GoogleService-Info.plist"));
+    } catch (FileNotFoundException e) {
+      System.out
+          .println("Could not find 'GoogleService-Info.plist', thus Firebase will be ignored further on (iOS deploy)");
+    }
 
     Hashtable ht = new Hashtable(13);
     Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22
@@ -267,6 +280,7 @@ public class Deployer4IPhoneIPA {
     ignoredFiles.add("Info.plist");
     ignoredFiles.add("CodeResources");
     ignoredFiles.add("_CodeSignature/CodeResources");
+    ignoredFiles.add("GoogleService-Info.plist");
     //       ignoredFiles.add(bundleResourceSpecification);
     ignoredFiles.add(executableName);
 

@@ -397,6 +397,7 @@
 		15E4ED11189C35510012D8ED /* Reflection.c in Sources */ = {isa = PBXBuildFile; fileRef = 15E4ED10189C35510012D8ED /* Reflection.c */; };
 		37430B751EEECEEB008D89DF /* firebase.c in Sources */ = {isa = PBXBuildFile; fileRef = 37430B731EEECEEB008D89DF /* firebase.c */; };
 		37430B761EEECEEB008D89DF /* firebase.h in Headers */ = {isa = PBXBuildFile; fileRef = 37430B741EEECEEB008D89DF /* firebase.h */; };
+		3790A20F1F6317F100F012F1 /* firebase_c.m in Sources */ = {isa = PBXBuildFile; fileRef = 3790A20E1F6317F100F012F1 /* firebase_c.m */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A1BF9211D4B8CF6009A7B42 /* pngdebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */; };
 		3A1BF9221D4B8CF6009A7B42 /* pnginfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A1BF91D1D4B8CF6009A7B42 /* pnginfo.h */; };
@@ -830,6 +831,7 @@
 		15E4ED10189C35510012D8ED /* Reflection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Reflection.c; sourceTree = "<group>"; };
 		37430B731EEECEEB008D89DF /* firebase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = firebase.c; path = firebase/firebase.c; sourceTree = "<group>"; };
 		37430B741EEECEEB008D89DF /* firebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = firebase.h; path = firebase/firebase.h; sourceTree = "<group>"; };
+		3790A20E1F6317F100F012F1 /* firebase_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = firebase_c.m; path = firebase/darwin/firebase_c.m; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngdebug.h; sourceTree = "<group>"; };
 		3A1BF91D1D4B8CF6009A7B42 /* pnginfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pnginfo.h; sourceTree = "<group>"; };
@@ -1877,10 +1879,19 @@
 		37430B771EEECEF2008D89DF /* firebase */ = {
 			isa = PBXGroup;
 			children = (
+				3790A20D1F6317B300F012F1 /* darwin */,
 				37430B731EEECEEB008D89DF /* firebase.c */,
 				37430B741EEECEEB008D89DF /* firebase.h */,
 			);
 			name = firebase;
+			sourceTree = "<group>";
+		};
+		3790A20D1F6317B300F012F1 /* darwin */ = {
+			isa = PBXGroup;
+			children = (
+				3790A20E1F6317F100F012F1 /* firebase_c.m */,
+			);
+			name = darwin;
 			sourceTree = "<group>";
 		};
 		3A8C3EC3159E4A3900D3E666 /* darwin */ = {
@@ -2258,6 +2269,7 @@
 				0F8C8CC21549CFC700E0967F /* jdpostct.c in Sources */,
 				0F8C8CC31549CFC700E0967F /* jdsample.c in Sources */,
 				0F8C8CC41549CFC700E0967F /* jerror.c in Sources */,
+				3790A20F1F6317F100F012F1 /* firebase_c.m in Sources */,
 				0F8C8CC61549CFC700E0967F /* jfdctfst.c in Sources */,
 				0F8C8CC71549CFC700E0967F /* jidctfst.c in Sources */,
 				0F8C8CC81549CFC700E0967F /* jidctred.c in Sources */,
@@ -2409,6 +2421,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2460,6 +2473,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2506,6 +2520,7 @@
 		0F003ED8150FEBBF004F0653 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
 				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -2521,6 +2536,7 @@
 		0F003ED9150FEBBF004F0653 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
 				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
