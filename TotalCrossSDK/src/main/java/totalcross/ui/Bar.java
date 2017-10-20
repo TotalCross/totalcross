@@ -507,9 +507,10 @@ public class Bar extends Container {
         Spacer spl = new Spacer(0, 0), spr = new Spacer(0, 0);
         add(spl, lastAtLeft != null ? AFTER : LEFT, SAME, lastAtLeft);
         add(spr, lastAtRight != null ? BEFORE : RIGHT, SAME, lastAtRight);
+        boolean old = Settings.showUIErrors;
         Settings.showUIErrors = false; // ignore title if there is not enough space
         add(title, AFTER, TOP, FIT, FILL,spl);
-        Settings.showUIErrors = true;
+        Settings.showUIErrors = old;
       }
       if (spinner != null) {
         add(spinner, RIGHT_OF - (n == 0 ? fmH / 2 : height), CENTER_OF, FONTSIZE, FONTSIZE, this.title);
