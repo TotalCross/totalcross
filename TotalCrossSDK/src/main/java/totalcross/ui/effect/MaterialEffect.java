@@ -7,6 +7,7 @@ import totalcross.ui.Button;
 import totalcross.ui.Control;
 import totalcross.ui.PushButtonGroup;
 import totalcross.ui.Window;
+import totalcross.ui.Flick;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PenListener;
