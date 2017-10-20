@@ -95,9 +95,10 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
            alpha = alphaValue - curUp * alphaValue / rest; // fading in?
         else
         if ((iniUp-iniDn) < duration) // reached max radius and if there is still time to fade out...
-           alpha = Math.max(0,(duration-curDn) * alphaValue / duration); // fading out
+          alpha = (duration-curDn) * alphaValue / duration; // fading out
         else
-           alpha = Math.max(0,(iniUp + duration - ts) * alphaValue / duration); // fading out
+          alpha = (iniUp + duration - ts) * alphaValue / duration; // fading out
+        if (alpha < 0) alpha = 0;
 
         if (!sideEffOnly) {
           Graphics gg = matImg.getGraphics();
