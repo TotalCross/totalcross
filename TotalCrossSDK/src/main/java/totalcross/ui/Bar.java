@@ -262,7 +262,9 @@ public class Bar extends Container {
             if (listeners != null) {
               postPressedEvent();
             }
-            parent.postPressedEvent();
+            if (parent != null) {
+              parent.postPressedEvent();
+            }
           }
         } else {
           selected = -1;
@@ -286,7 +288,9 @@ public class Bar extends Container {
         if (selected > 1000) {
           selected -= 1000;
         }
-        parent.postPressedEvent();
+        if (parent != null) {
+          parent.postPressedEvent();
+        }
         break;
       }
     }
