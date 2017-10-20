@@ -291,7 +291,7 @@ public class Control extends GfxSurface {
   protected Font setFont;
   protected Control setRel;
   protected boolean repositionAllowed;
-  protected int tempW; // used in flowContainer
+  protected int tempW=-1; // used in flowContainer
   protected TranslucentShape translucentShape = TranslucentShape.NONE;
 
   /** The shadow color to be applied to this control. */
@@ -1320,6 +1320,7 @@ public class Control extends GfxSurface {
     this.y = y;
     this.width = width;
     this.height = height;
+    tempW = -1;
     if (parent != null) {
       updateTemporary();
     }
