@@ -1964,7 +1964,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       return new UserFont(fontName, suffix);
     } catch (Exception e) {
       String msg = "" + e.getMessage();
-      if (!msg.startsWith("name") || !msg.endsWith("not found")) {
+      if (!msg.startsWith("name") && !msg.endsWith("not found")) {
         if (Settings.onJavaSE) {
           e.printStackTrace();
         }
@@ -2096,7 +2096,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         this.bitIndexTable[i] = ubase.bitIndexTable[i] * maxHeight / ubase.maxHeight;
       }
       this.nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
-      this.fontName = fontName;
+      this.fontName = base.name;
       this.firstChar = ubase.firstChar;
       this.lastChar = ubase.lastChar;
       this.antialiased = ubase.antialiased;
@@ -2213,7 +2213,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             bits.img = nativeFonts[index];
             bits.rowWIB = bits.width;
           } catch (Exception e) {
-            e.printStackTrace();
+            if (Settings.showDesktopMessages) {
+               e.printStackTrace();
+            }
+            bits.width = spaceWidth;
+            bits.offset = -1;
           }
         }
       } else {
