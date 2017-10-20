@@ -84,6 +84,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   private Image imgSel, imgUnsel;
   private static Hashtable imgs; // cache the images
   private static Image vistaSelected, vistaUnselected;
+  private boolean sendPressAfterEffect;
 
   /** Creates a radio control displaying the given text. */
   public Radio(String text) {
@@ -163,8 +164,10 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
       }
       Window.needsPaint = true;
       if (effect != null) {
+        sendPressAfterEffect = sendPress;
         effect.startEffect();
       }
+      else
       if (sendPress) {
         postPressedEvent();
       }
@@ -213,8 +216,10 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
         if (radioGroup != null) {
           radioGroup.setSelectedItem(this);
         }
-        if (!uiMaterial) {
-          postPressedEvent();
+        if (effect == null) {
+           postPressedEvent();
+        } else {
+          sendPressAfterEffect = true;
         }
       }
       break;
@@ -411,7 +416,10 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
       animating = false;
       Window.needsPaint = true;
       alphaSel = alphaValue;
-      postPressedEvent();
+      if (sendPressAfterEffect) {
+        postPressedEvent();
+      }
+      sendPressAfterEffect = false;
     }
   }
 
