@@ -2142,7 +2142,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
            // compute size - $p20u0
            String name = z.names[i];
            String ss = name.substring(name.lastIndexOf('$')+2, name.lastIndexOf('u'));
-           int size = Convert.toInt(ss,0);
+           int size = toInt(ss);
            if (!sizes.contains(size))
               sizes.addElement(size);
         }
