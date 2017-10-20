@@ -379,7 +379,7 @@ public class ScrollContainer extends Container implements Scrollable {
       bag0.setRect(r.x, r.y, maxX, maxY);
       setRect(this.x, this.y, maxX, maxY);
     }
-    if (needX && sbH != null) {
+    if (needX && sbH != null && canShowScrollBars(false)) {
       super.add(sbH);
       sbH.setMaximum(maxX);
       sbH.setVisibleItems(bag0.width);
@@ -389,7 +389,7 @@ public class ScrollContainer extends Container implements Scrollable {
     } else if (sbH != null) {
       sbH.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
     }
-    if (needY && sbV != null) {
+    if (needY && sbV != null && canShowScrollBars(true)) {
       super.add(sbV);
       sbV.setMaximum(maxY);
       sbV.setVisibleItems(bag0.height);
@@ -400,6 +400,10 @@ public class ScrollContainer extends Container implements Scrollable {
       sbV.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
     }
     Window.needsPaint = true;
+  }
+
+  protected boolean canShowScrollBars(boolean vertical) {
+    return true;
   }
 
   /** Override this method to return the correct scroll distance. Defaults to the container's width. */
