@@ -175,7 +175,10 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
 
   @Override
   public void onAnimationFinished(ControlAnimation anim) {
-    getParentWindow().reposition();
+    Window w = getParentWindow();
+    if (w != null) {
+      w.reposition();
+    }
     Settings.showUIErrors = showUIErrorsOld;
   }
 
@@ -183,7 +186,10 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
   public void setPos(int x, int y) {
     this.height = setH = y;
     Window.needsPaint = true;
-    getParentWindow().reposition();
+    Window w = getParentWindow();
+    if (w != null) {
+      w.reposition();
+    }
   }
 
   private int getMaxHeight() {
