@@ -1271,7 +1271,11 @@ public class Control extends GfxSurface {
       if (Settings.onJavaSE && Settings.showUIErrors) // guich@450_36: do these checks only if running on desktop
       {
         if (cli.width == 0 || cli.height == 0) {
-          throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
+          boolean zeroIsValid = false;
+          for (Control c = parent; c != null && !zeroIsValid; c = c.parent)
+            zeroIsValid = c instanceof AccordionContainer;
+          if (!zeroIsValid) // when a Control is inside a AccordionContainer, it can reach size 0, so we just ignore the exception
+            throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
         } else if (x + y + width + height > RANGE) {
           String error = "";
           if (isOnlyForSize(x) || isOnlyForY(x)) {
