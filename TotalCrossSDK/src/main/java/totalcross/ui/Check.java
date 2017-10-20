@@ -65,6 +65,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   private String originalText;
   private int alphaSel = 255;
   private boolean animating;
+  private boolean sendPressAfterEffect;
   /** Set to true to left-justify the text in the control. The default is right-justified,
    * if the control's width is greater than the preferred one.
    * @since TotalCross 1.0
@@ -120,8 +121,10 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
         Window.needsPaint = true;
         checked0 = checked;
         checked = !checked;
-        if (!uiMaterial) {
-          postPressedEvent();
+        if (effect == null) {
+           postPressedEvent();
+        } else {
+          sendPressAfterEffect = true;
         }
       }
       break;
@@ -161,8 +164,10 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
       this.checked = checked;
       Window.needsPaint = true;
       if (effect != null) {
+        sendPressAfterEffect = sendPress;
         effect.startEffect();
       }
+      else
       if (sendPress) {
         postPressedEvent();
       }
@@ -361,8 +366,12 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   public void sideStop() {
     if (animating) {
       animating = false;
+      Window.needsPaint = true;
       alphaSel = alphaValue;
-      postPressedEvent();
+      if (sendPressAfterEffect) {
+        postPressedEvent();
+      }
+      sendPressAfterEffect = false;
     }
   }
 

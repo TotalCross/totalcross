@@ -7,6 +7,7 @@ import totalcross.ui.Button;
 import totalcross.ui.Control;
 import totalcross.ui.PushButtonGroup;
 import totalcross.ui.Window;
+import totalcross.ui.Flick;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PenListener;
@@ -89,10 +90,10 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
         int rad = Math.min(max, curDn * max / duration);
         int rest = duration-(iniUp-iniDn);
         if (isDown) // pen down
-          alpha = alphaValue;
+           alpha = alphaValue;
         else
         if (rad < max) // pen up and didnt reach max radius
-          alpha = alphaValue - curUp * alphaValue / rest; // fading in?
+           alpha = alphaValue - curUp * alphaValue / rest; // fading in?
         else
         if ((iniUp-iniDn) < duration) // reached max radius and if there is still time to fade out...
           alpha = (duration-curDn) * alphaValue / duration; // fading out
@@ -142,7 +143,7 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
 
   @Override
   public void penDown(PenEvent e) {
-    if (!sideEffOnly) {
+    if (!sideEffOnly && Flick.currentFlick == null) { // guich@20171004 - if material is applied during a flick, it halts the flick making a strange effect
       if (isRunning()) {
         postEvent();
       }

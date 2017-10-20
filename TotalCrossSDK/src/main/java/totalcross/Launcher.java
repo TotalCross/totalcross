@@ -1919,7 +1919,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   static final int AA_NO = 0;
   static final int AA_4BPP = 1;
   static final int AA_8BPP = 2;
-  static int[] realSizes = { 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 40, 60, 80 };
   private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
   static Hashtable htBaseFonts = new Hashtable(5); // 
 
@@ -1929,11 +1928,16 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     if (f == null) {
       int i;
       if (!name.endsWith("noaa")) {
-        for (i = 0; i < realSizes.length - 1; i++) {
-          if (size <= realSizes[i]) {
-            size = realSizes[i];
-            break;
-          }
+        TCZ z = (TCZ)loadedTCZs.get((name+".tcz").toLowerCase());
+        if (z == null) {
+           return null;
+        }
+        FontInfo fi = (FontInfo)z.bag;
+        for (i = 0; i < fi.sizes.length-1; i++) {
+           if (size <= fi.sizes[i]) {
+              size = fi.sizes[i];
+              break;
+           }
         }
       }
 
@@ -1952,7 +1956,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   private UserFont loadUF(String fontName, String suffix) {
     try {
-      if (totalcross.ui.font.Font.baseChar == ' ' && !fontName.endsWith("noaa")) // test if there's another 8bpp native font.
+      if (totalcross.ui.font.Font.baseChar == ' ' && !fontName.endsWith("noaa")) // test if there's another 8bpp native font. - base font
       {
         boolean bold = suffix.charAt(1) == 'b';
         int size = Integer.parseInt(suffix.substring(2, suffix.indexOf('u')));
@@ -1964,7 +1968,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       return new UserFont(fontName, suffix);
     } catch (Exception e) {
       String msg = "" + e.getMessage();
-      if (!msg.startsWith("name") || !msg.endsWith("not found")) {
+      if (!msg.startsWith("name") && !msg.endsWith("not found")) {
         if (Settings.onJavaSE) {
           e.printStackTrace();
         }
@@ -2063,6 +2067,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   private static Hashtable loadedTCZs = new Hashtable(31);
+  class FontInfo {
+    totalcross.io.ByteArrayStream chunks[];
+    int[] sizes;
+  }
 
   public class UserFont {
     // 25/120 14/70 4/25 2/15
@@ -2096,7 +2104,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         this.bitIndexTable[i] = ubase.bitIndexTable[i] * maxHeight / ubase.maxHeight;
       }
       this.nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
-      this.fontName = fontName;
+      this.fontName = base.name;
       this.firstChar = ubase.firstChar;
       this.lastChar = ubase.lastChar;
       this.antialiased = ubase.antialiased;
@@ -2123,14 +2131,24 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           }
         }
         z = new TCZ(new IS2S(is));
-        totalcross.io.ByteArrayStream fontChunks[];
-        fontChunks = new totalcross.io.ByteArrayStream[z.numberOfChunks];
-        for (int i = 0; i < fontChunks.length; i++) {
-          int s = z.getNextChunkSize();
-          fontChunks[i] = new totalcross.io.ByteArrayStream(s);
-          z.readNextChunk(fontChunks[i]);
+        FontInfo fi = new FontInfo();
+        int n = z.numberOfChunks;
+        fi.chunks = new totalcross.io.ByteArrayStream[n];
+        totalcross.util.IntVector sizes = new totalcross.util.IntVector(n/2);
+        for (int i =0; i < n; i++) {
+           int s = z.getNextChunkSize();
+           fi.chunks[i] = new totalcross.io.ByteArrayStream(s);
+           z.readNextChunk(fi.chunks[i]);
+           // compute size - $p20u0
+           String name = z.names[i];
+           String ss = name.substring(name.lastIndexOf('$')+2, name.lastIndexOf('u'));
+           int size = toInt(ss);
+           if (!sizes.contains(size))
+              sizes.addElement(size);
         }
-        z.bag = fontChunks;
+        sizes.qsort();
+        fi.sizes = sizes.toIntArray();            
+        z.bag = fi;
         loadedTCZs.put(fileName.toLowerCase(), z);
       }
       fontName += sufix;
@@ -2139,7 +2157,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         throw new Exception("name " + fontName + " not found"); // loaded = false
       }
 
-      totalcross.io.ByteArrayStream bas = ((totalcross.io.ByteArrayStream[]) z.bag)[index];
+      totalcross.io.ByteArrayStream bas = ((FontInfo)z.bag).chunks[index];
       bas.reset();
       totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
       antialiased = ds.readUnsignedShort();
@@ -2213,7 +2231,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             bits.img = nativeFonts[index];
             bits.rowWIB = bits.width;
           } catch (Exception e) {
-            e.printStackTrace();
+            if (Settings.showDesktopMessages) {
+               e.printStackTrace();
+            }
+            bits.width = spaceWidth;
+            bits.offset = -1;
           }
         }
       } else {

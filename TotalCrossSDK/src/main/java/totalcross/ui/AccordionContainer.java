@@ -49,6 +49,7 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    */
   public int minH = fmH + Edit.prefH;
   private Group group;
+  private boolean showUIErrorsOld;
 
   public AccordionContainer() {
   }
@@ -141,6 +142,8 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
       p.useOffscreen = false;
       p.setpos = this;
+      showUIErrorsOld = Settings.showUIErrors;
+      Settings.showUIErrors = false;
       p.start();
     } else {
       setPos(0, maxH);
@@ -153,6 +156,8 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
       p.useOffscreen = false;
       p.setpos = this;
+      showUIErrorsOld = Settings.showUIErrors;
+      Settings.showUIErrors = false;
       p.start();
     } else {
       setPos(0, getPreferredHeight());
@@ -170,14 +175,21 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
 
   @Override
   public void onAnimationFinished(ControlAnimation anim) {
-    getParentWindow().reposition();
+    Window w = getParentWindow();
+    if (w != null) {
+      w.reposition();
+    }
+    Settings.showUIErrors = showUIErrorsOld;
   }
 
   @Override
   public void setPos(int x, int y) {
     this.height = setH = y;
     Window.needsPaint = true;
-    getParentWindow().reposition();
+    Window w = getParentWindow();
+    if (w != null) {
+      w.reposition();
+    }
   }
 
   private int getMaxHeight() {

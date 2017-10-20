@@ -288,7 +288,7 @@ public class ImageControl extends Control {
       g.foreColor = borderColor;
       g.drawRect(0, 0, width, height);
     }
-    if (effect != null) {
+    if (effect != null && img != null) {
       effect.paintEffect(g);
     }
   }

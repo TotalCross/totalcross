@@ -415,7 +415,7 @@ public class ScrollBar extends Container implements PathAnimation.SetPosition, C
       Window.needsPaint = true;
       mustPostEvent = btnDec.isEnabled() || btnInc.isEnabled();
       pos = verticalBar ? ((PenEvent) event).y : ((PenEvent) event).x;
-      startDragPos = 0;
+      startDragPos = -1; // requested by ScrollPosition 
       if (directMove && oldPos >= 0) {
         int value = (int) ((pos - dragBarMin) / valuesPerPixel);
         if (unitIncrement != 1) {

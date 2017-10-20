@@ -1015,4 +1015,7 @@ public final class Settings {
    * @since TotalCross 4.0
    */
   public static boolean enableVirtualKeyboard = true;
+
+  /** Set to false to disable UI positional errors that are shown in Java SE */
+  public static boolean showUIErrors = true;
 }

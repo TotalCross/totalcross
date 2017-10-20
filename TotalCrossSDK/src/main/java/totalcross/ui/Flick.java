@@ -133,6 +133,11 @@ public class Flick implements PenListener, TimerListener {
   /** The maximum accelleration that can be applied when the user keep dragging the container. Defaults to 5. */
   public int maximumAccelerationMultiplier = 5;
 
+  /** When a ScrollContainer is inside another one, by default, both can be scrolled at the same time. Set this flag to false
+   * at the topmost one to prevent this from occuring.
+   */
+  public boolean dontPropagate;
+   
   /**
    * Create a Flick animation object for a FlickableContainer.
    */
@@ -351,6 +356,9 @@ public class Flick implements PenListener, TimerListener {
     if (currentFlick != null || dragId != e.dragId) {
       return;
     }
+   if (dontPropagate) {
+     e.consumed = true;
+   }
 
     dragId = -1; // the drag event sequence has ended
     t0 = Vm.getTimeStamp();
