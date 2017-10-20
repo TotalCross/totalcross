@@ -142,7 +142,7 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
 
   @Override
   public void penDown(PenEvent e) {
-    if (!sideEffOnly) {
+    if (!sideEffOnly && Flick.currentFlick == null) { // guich@20171004 - if material is applied during a flick, it halts the flick making a strange effect
       if (isRunning()) {
         postEvent();
       }
