@@ -1961,6 +1961,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         boolean bold = suffix.charAt(1) == 'b';
         int size = Integer.parseInt(suffix.substring(2, suffix.indexOf('u')));
         totalcross.ui.font.Font base = getBaseFont(fontName, bold, size, suffix);
+        if (base == null) {
+          new UserFont(fontName, suffix); // load sizes
+          base = getBaseFont(fontName, bold, size, suffix);
+        }
         if (base != null) {
           return new UserFont(fontName, suffix, size, base);
         }
