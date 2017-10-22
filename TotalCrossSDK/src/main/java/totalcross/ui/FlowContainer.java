@@ -112,11 +112,12 @@ public class FlowContainer extends Container {
         : hgap;
     // position next controls
     int x2 = 0;
+    int tw = tempW != -1 ? tempW : width;
     while (c != null) {
       int w = c.getPreferredWidth() + g;
       x2 += w;
       c = c.next;
-      if (x2 > tempW) // still fits in the same line?
+      if (x2 > tw) // still fits in the same line?
       {
         lines++;
         x2 = w;
