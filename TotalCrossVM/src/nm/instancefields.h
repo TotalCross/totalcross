@@ -424,5 +424,6 @@
 #define SmsManager_smsReceiver(o)                     *getInstanceFieldObject(o, "receiver", "totalcross.telephony.SmsManager")
 #define SmsMessage_displayOriginatingAddress(o)       *getInstanceFieldObject(o, "displayOriginatingAddress", "totalcross.telephony.SmsMessage")
 #define SmsMessage_displayMessageBody(o)              *getInstanceFieldObject(o, "displayMessageBody", "totalcross.telephony.SmsMessage")
+#define SmsMessage_userData(o)                        *getInstanceFieldObject(o, "userData", "totalcross.telephony.SmsMessage")
 
 #endif

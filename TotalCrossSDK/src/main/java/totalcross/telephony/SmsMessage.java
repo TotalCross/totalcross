@@ -5,6 +5,7 @@ public class SmsMessage {
 
   String displayOriginatingAddress;
   String displayMessageBody;
+  byte[] userData;
 
   private SmsMessage() {
   }
@@ -23,5 +24,9 @@ public class SmsMessage {
    */
   public String getDisplayMessageBody() {
     return displayMessageBody;
+  }
+  
+  public byte[] getUserData() {
+    return userData;
   }
 }

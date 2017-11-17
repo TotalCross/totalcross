@@ -38,17 +38,40 @@ TC_API void ttSM_sendTextMessage_sss(NMParams p) // totalcross/telephony/SmsMana
    }
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void ttSM_registerSmsReceiver_s(NMParams p) // totalcross/telephony/SmsManager public native void registerSmsReceiver(totalcross.telephony.SmsReceiver receiver);
+TC_API void ttSM_registerSmsReceiver_si(NMParams p) // totalcross/telephony/SmsManager public native void registerSmsReceiver(totalcross.telephony.SmsReceiver receiver, int port);
 {
    TCObject smsManager = p->obj[0];
    TCObject smsReceiver = p->obj[1];
+   int32 port = p->i32[0];
    SmsManager_smsReceiver(smsManager) = smsReceiver;
    
 #if defined (ANDROID)   
-   registerSmsReceiver(smsReceiver);
+   registerSmsReceiver(smsReceiver, port);
 #endif
 }
-
+//////////////////////////////////////////////////////////////////////////
+TC_API void ttSM_sendDataMessage_ssiB(NMParams p) // totalcross/telephony/SmsManager public native void sendDataMessage(String destinationAddress, String scAddress, int port, byte[] data);
+{
+	TCObject smsManager = p->obj[0];
+	TCObject destinationAddress = p->obj[1];
+	TCObject scAddress = p->obj[2];
+	int32 port = p->i32[0];
+	TCObject data = p->obj[3];
+	
+	if (destinationAddress == null) {
+		throwNullArgumentException(p->currentContext, "destinationAddress");
+	} else if (data == null) {
+		throwNullArgumentException(p->currentContext, "data");
+	} else if (String_charsLen(destinationAddress) == 0) {
+		throwIllegalArgumentException(p->currentContext, "Argument destinationAddress cannot be empty");
+	} else if (ARRAYOBJ_LEN(data) == 0) {
+		throwIllegalArgumentException(p->currentContext, "Argument data cannot be empty");
+	} else {
+#if defined (ANDROID)
+		sendDataMessage(destinationAddress, scAddress, port, data);
+#endif
+	}
+}
 #ifdef ENABLE_TEST_SUITE
 //#include "SmsManager_test.h"
 #endif

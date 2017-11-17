@@ -114,10 +114,10 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeOnEvent
 /*
  * Class:     totalcross_Launcher4A
  * Method:    nativeSmsReceived
- * Signature: (Ljava/lang/String;Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;Ljava/lang/String;[B)V
  */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSmsReceived
-  (JNIEnv *, jclass, jstring, jstring);
+  (JNIEnv *, jclass, jstring, jstring, jbyteArray);
 
 #ifdef __cplusplus
 }
