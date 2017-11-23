@@ -557,7 +557,7 @@ public final class Vm {
    * @return a byte array with the file or null if file not found
    */
   public static byte[] getFile(String name) {
-    return Launcher.instance.readBytes(name);
+    return Launcher.instance == null ? null : Launcher.instance.readBytes(name);
   }
 
   /**
