@@ -461,6 +461,7 @@ public class Window extends Container {
             _controlEvent.type = ControlEvent.FOCUS_IN;
             _controlEvent.target = c;
             _controlEvent.touch();
+            _controlEvent.consumed = false;
             c.postEvent(_controlEvent);
           }
           setHighlighted(_focus);
