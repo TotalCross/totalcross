@@ -217,12 +217,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (h < lastScreenH && Loader.isFullScreen && lastScreenH == screenHeight && appTitleH == 0) // 1: surfaceChanged. 0 -> 480. displayH: 480  =>  2: surfaceChanged. 480 -> 455. displayH: 480
          appTitleH = lastScreenH - h; 
       
-      if (sipVisible) // sip changed?
-      {
+      if (sipVisible && !rotated) // sip changed and no rotation occured?
          instance.nativeInitSize(null,-999,h); // signal vm that the keyboard will appear
-         if (rotated) // close the sip if a rotation occurs
-            setSIP(SIP_HIDE,false);
-      }
       else
       {
          instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
@@ -250,6 +246,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             rDirty.right = lastScreenW;
             rDirty.bottom = lastScreenH;
             DisplayMetrics metrics = getResources().getDisplayMetrics();
+            setSIP(SIP_HIDE,false);
             _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             sendCloseSIPEvent(); // makes first screen rotation work
          }
