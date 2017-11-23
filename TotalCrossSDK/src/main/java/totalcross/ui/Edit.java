@@ -1329,8 +1329,8 @@ public class Edit extends Control implements TextControl, TimerListener {
       {
         if (autoSelect && !ignoreSelect) // guich@570_112: changed to !ignoreSelect
         {
-          startSelectPos = len;
-          newInsertPos = 0;
+          startSelectPos = 0;
+          newInsertPos = len;
         } else if (Settings.moveCursorToEndOnFocus) {
           newInsertPos = len;
         }
