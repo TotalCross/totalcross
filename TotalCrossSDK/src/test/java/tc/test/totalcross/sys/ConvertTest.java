@@ -459,7 +459,7 @@ public class ConvertTest extends TestCase {
 
   private void toString_Char() {
     assertEquals("a", Convert.toString('a'));
-    assertEquals("�", Convert.toString('�'));
+    assertEquals("ç", Convert.toString('ç'));
     assertEquals("\u1E00", Convert.toString((char) 0x1E00));
   }
 
@@ -773,8 +773,8 @@ public class ConvertTest extends TestCase {
   private void toLowerCase() {
     assertEquals('z', Convert.toLowerCase('Z'));
     assertEquals('a', Convert.toLowerCase('a'));
-    assertEquals('�', Convert.toLowerCase('�'));
-    assertEquals('�', Convert.toLowerCase('�'));
+    assertEquals('ç', Convert.toLowerCase('ç'));
+    assertEquals('ç', Convert.toLowerCase('Ç'));
     assertEquals(0, Convert.toLowerCase((char) 0));
     assertEquals(0x1E01, Convert.toLowerCase((char) 0x1E00));
     assertEquals(0x1E01, Convert.toLowerCase((char) 0x1E01));
@@ -783,8 +783,8 @@ public class ConvertTest extends TestCase {
   private void toUpperCase() {
     assertEquals('Z', Convert.toUpperCase('z'));
     assertEquals('A', Convert.toUpperCase('A'));
-    assertEquals('�', Convert.toUpperCase('�'));
-    assertEquals('�', Convert.toUpperCase('�'));
+    assertEquals('Ç', Convert.toUpperCase('ç'));
+    assertEquals('Ç', Convert.toUpperCase('Ç'));
     assertEquals(0, Convert.toUpperCase((char) 0));
     assertEquals(0x1E00, Convert.toUpperCase((char) 0x1E01));
     assertEquals(0x1E00, Convert.toUpperCase((char) 0x1E00));
