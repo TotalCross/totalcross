@@ -291,8 +291,9 @@ public class Edit extends Control implements TextControl, TimerListener {
   public boolean virtualKeyboard = Settings.virtualKeyboard;
 
   /** Cursor thickness */
-  public static int cursorThickness = Math.max(Settings.screenWidth, Settings.screenHeight) > 1500 ? 3
-      : Math.max(Settings.screenWidth, Settings.screenHeight) > 700 ? 2 : 1;
+   public static int cursorThickness = Math.max(Settings.screenWidth,Settings.screenHeight) > 2000 ? 4 
+      : Math.max(Settings.screenWidth,Settings.screenHeight) > 1500 ? 3 
+      : Math.max(Settings.screenWidth,Settings.screenHeight) > 700 ? 2 : 1;
 
   // changes for material design
   private int xcap, ycap, ycap0, fmHmin, fmHtarget, xcap0, inccap;
@@ -992,8 +993,8 @@ public class Edit extends Control implements TextControl, TimerListener {
       {
         if (cursorShowing) {
           g.clearClip();
-          g.foreColor = Color.interpolate(backColor, foreColor);
-          g.drawRect(cursorX - 1, uiAndroid ? y + 1 : y, cursorThickness, fmH);
+          g.backColor = Color.interpolate(backColor,foreColor);
+          g.fillRect(cursorX - 1, uiAndroid?y+1:y, cursorThickness, fmH);
         }
       }
       cursorShowing = !cursorShowing;
