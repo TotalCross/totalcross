@@ -1367,6 +1367,11 @@ public class Edit extends Control implements TextControl, TimerListener {
         {
           Control next;
           if (parent != null && (next=parent.moveFocusToNextEditable(this, ke.modifiers == 0)) != null) {
+             for (Container p = parent; p != null; p = p.parent) // if next is inside a ScrollContainer, scroll to it
+                if (p instanceof ScrollContainer) {
+                   ((ScrollContainer)p).scrollToControl(next);
+                   break;
+                }                           
              if (next instanceof Edit)
                 ((Edit)next).shiftScreen(true); // update screen shift position when user press ENTER
              return;
