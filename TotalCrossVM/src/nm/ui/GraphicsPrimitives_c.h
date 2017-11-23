@@ -2185,8 +2185,9 @@ int32 *shiftYfield, *shiftHfield, *lastShiftYfield, *needsPaint, lastShiftY=-1;
 static bool firstUpdate = true;
 #endif
 
+static int32 oldShiftY=9000000;
 #ifdef darwin
-static int32 lastAppHeightOnSipOpen, oldShiftY;
+static int32 lastAppHeightOnSipOpen;
 extern int keyboardH,realAppH;
 extern bool setShiftYonNextUpdateScreen;
 
@@ -2216,6 +2217,7 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
 }
 #elif defined(ANDROID)
 extern int realAppH;
+extern bool setShiftYonNextUpdateScreen;
 static int32 lastAppHeightOnSipOpen;
 static int desiredShiftY=-1;
 static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *shiftH)
@@ -2261,6 +2263,11 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
          {
             *shiftY -= appHeightOnSipOpen - *shiftH;
             *shiftH = appHeightOnSipOpen ;
+         }
+         if (oldShiftY != *shiftY) // prevent 100% cpu use - shift can change on ENTER or PEN_UP - now same code of iOS
+         {
+            oldShiftY = *shiftY;
+            setShiftYonNextUpdateScreen = true;
          }
       }
    }
