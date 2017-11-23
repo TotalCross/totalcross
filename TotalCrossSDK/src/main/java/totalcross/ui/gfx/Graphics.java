@@ -103,7 +103,6 @@ public final class Graphics {
   private int clipX1, clipY1, clipX2, clipY2;
   private int minX, minY, maxX, maxY;
   private Font font;
-  private totalcross.Launcher.CharBits gCharBits = new totalcross.Launcher.CharBits();
   private static int ands8Mask[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
   private int pitch;
   private static int[] pal685;
@@ -820,7 +819,7 @@ public final class Graphics {
     int rowWIB;
     // speed-up
     totalcross.Launcher.UserFont font = (totalcross.Launcher.UserFont) this.font.hv_UserFont;
-    totalcross.Launcher.CharBits bits = gCharBits;
+    totalcross.Launcher.CharBits bits = new totalcross.Launcher.CharBits();
     int height = font.maxHeight;
     int chrStart = 0;
     int pxRB = foreColor & 0xFF00FF;
