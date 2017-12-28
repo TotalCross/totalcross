@@ -430,6 +430,7 @@
 		CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5140181EF13F00B1B00A /* sqlite3.h */; };
 		CEFA5145181EF13F00B1B00A /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5141181EF13F00B1B00A /* sqlite3ext.h */; };
 		CEFA5148181EF24700B1B00A /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = CEFA5147181EF24700B1B00A /* mainview.m */; };
+		D598D4811EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4801EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -865,6 +866,7 @@
 		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
 		CEFA5141181EF13F00B1B00A /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3ext.h; path = sqlite/sqlite3ext.h; sourceTree = "<group>"; };
 		CEFA5147181EF24700B1B00A /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; };
+		D598D4801EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ScanditBarcodeScanner.framework; sourceTree = "<group>"; };
 		DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -873,6 +875,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D598D4811EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework in Frameworks */,
 				0FAA49A71549D7B30039F4BF /* UIKit.framework in Frameworks */,
 				0F003EB7150FEBBF004F0653 /* Foundation.framework in Frameworks */,
 			);
@@ -904,6 +907,7 @@
 		0F003EB5150FEBBF004F0653 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D598D4801EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework */,
 				0F7318BC1513DCFB001EE647 /* AudioToolbox.framework */,
 				0FAA49A61549D7B30039F4BF /* UIKit.framework */,
 				0F003EB6150FEBBF004F0653 /* Foundation.framework */,
@@ -2465,7 +2469,9 @@
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -2512,7 +2518,9 @@
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -2523,6 +2531,10 @@
 				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
 				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "tcvm-Prefix.pch";
 				ONLY_ACTIVE_ARCH = NO;
@@ -2539,6 +2551,10 @@
 				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
 				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "tcvm-Prefix.pch";
 				ONLY_ACTIVE_ARCH = NO;

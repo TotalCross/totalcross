@@ -47,6 +47,8 @@ import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import com.scandit.barcodepicker.*;
+import com.scandit.recognition.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -61,11 +63,11 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
-   private static final int ZXING_RETURN = 1234324333;
    private static final int EXTCAMERA_RETURN = 1234324334;
    private static final int SELECT_PICTURE = 1234324335;
    private static final int CAMERA_PIC_REQUEST = 1337;
    private static final int SPEECH_TO_TEXT = 1234324336;
+   private static final int FROM_SCANDIT = 1234324337;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -125,6 +127,10 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
    {
       switch (requestCode)
       {
+         case FROM_SCANDIT:
+            Launcher4A.zxingResult = data.getBooleanExtra("barcodeRecognized", false) ? data.getStringExtra("barcodeData") : null; //data.getStringExtra("barcodeSymbologyName").toUpperCase());
+            Launcher4A.callingZXing = false;
+            break;
          case SPEECH_TO_TEXT:
             Launcher4A.soundResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
             Launcher4A.callingSound = false;
@@ -160,13 +166,8 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             Launcher4A.showingMap = false;
             break;
          case IntentIntegrator.REQUEST_CODE:
-         {
             IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             Launcher4A.zxingResult = result.getContents();
-            Launcher4A.callingZXing = false;
-         } break;
-         case ZXING_RETURN:
-            Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringExtra("SCAN_RESULT") : null;
             Launcher4A.callingZXing = false;
             break;
          case EXTCAMERA_RETURN:
@@ -624,41 +625,58 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             case ZXING_SCAN:
             {
                String cmd = b.getString("zxing.mode");
-               StringTokenizer st = new StringTokenizer(cmd,"&");
-               String mode = "SCAN_MODE";
-               String scanmsg = "";
-               while (st.hasMoreTokens())
+               if (cmd.startsWith("scandit:"))
                {
-                  String s = st.nextToken();
-                  int i = s.indexOf('=');
-                  if (i == -1) continue;
-                  String s1 = s.substring(0,i);
-                  String s2 = s.substring(i+1);
-                  if (s1.equalsIgnoreCase("mode"))
-                     mode = s2;
-                  else
-                  if (s1.equalsIgnoreCase("msg"))
-                     scanmsg = s2;
-               }
-               
-               IntentIntegrator integrator = new IntentIntegrator(Loader.this);
-               if (mode.equalsIgnoreCase("1D"))
-               {
-                  integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
-               }
-               else if (mode.equalsIgnoreCase("2D"))
-               {
-                  integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+                  String key = cmd.substring(8);
+                  Intent intent = new Intent(Loader.this, BarcodePickerActivity.class);
+                  ScanditLicense.setAppKey(key);
+                  intent.putExtra("appKey", key);
+                  intent.putExtra("enabledSymbologies", new int[] {
+                     Barcode.SYMBOLOGY_EAN13,
+                     Barcode.SYMBOLOGY_EAN8,
+                     Barcode.SYMBOLOGY_UPCA,
+                     Barcode.SYMBOLOGY_UPCE
+                  });
+                  startActivityForResult(intent, FROM_SCANDIT);      
                }
                else
                {
-                  integrator.setDesiredBarcodeFormats(null);
+                  StringTokenizer st = new StringTokenizer(cmd,"&");
+                  String mode = "SCAN_MODE";
+                  String scanmsg = "";
+                  while (st.hasMoreTokens())
+                  {
+                     String s = st.nextToken();
+                     int i = s.indexOf('=');
+                     if (i == -1) continue;
+                     String s1 = s.substring(0,i);
+                     String s2 = s.substring(i+1);
+                     if (s1.equalsIgnoreCase("mode"))
+                        mode = s2;
+                     else
+                     if (s1.equalsIgnoreCase("msg"))
+                        scanmsg = s2;
+                  }
+                  
+                  IntentIntegrator integrator = new IntentIntegrator(Loader.this);
+                  if (mode.equalsIgnoreCase("1D"))
+                  {
+                     integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
+                  }
+                  else if (mode.equalsIgnoreCase("2D"))
+                  {
+                     integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+                  }
+                  else
+                  {
+                     integrator.setDesiredBarcodeFormats(null);
+                  }
+                  integrator.setPrompt(scanmsg);
+                  integrator.setResultDisplayDuration(1000);
+                  integrator.autoWide();  // Wide scanning rectangle, may work better for 1D barcodes
+                  integrator.setCameraId(0);  // Use a specific camera of the device
+                  integrator.initiateScan();
                }
-               integrator.setPrompt(scanmsg);
-               integrator.setResultDisplayDuration(1000);
-               integrator.autoWide();  // Wide scanning rectangle, may work better for 1D barcodes
-               integrator.setCameraId(0);  // Use a specific camera of the device
-               integrator.initiateScan();
                break;
             }               
             case TOTEXT:

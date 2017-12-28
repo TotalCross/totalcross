@@ -228,7 +228,7 @@ public class Deployer4Android {
     ZipFile inf = new ZipFile(ap);
     ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
 
-    // search the input zip file, convert and write each entry to the output zip file
+    // search input zip file, convert and write each entry to output zip file
     for (ZipEntry ze : inf) {
       ZipEntry ze2;
       String name = ze.getName();
@@ -239,7 +239,8 @@ public class Deployer4Android {
         // little trick to make the entry reusable
         ze2.setCompressedSize(-1);
       } else {
-        // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
+        // the trick above doesn't work with stored entries
+        // we'll ignore the metadata and use only the name
         ze2 = new ZipEntry(ze.getName());
       }
       InputStream zis = inf.getInputStream(ze2);
@@ -256,8 +257,8 @@ public class Deployer4Android {
         insertAndroidManifest_xml(zis, zos);
       } else if (singleApk) {
         byte[] bytes = Utils.readJavaInputStream(zis);
-        if (name.endsWith(".ogg")) // for zxing beep.ogg file 
-        {
+        // for zxing beep.ogg file
+        if (name.endsWith(".ogg")) {
           setEntryAsStored(ze2, bytes);
         }
         zos.putNextEntry(ze2);
@@ -269,6 +270,7 @@ public class Deployer4Android {
     if (singleApk) {
       processClassesDexes(tcFolder + "TotalCross.apk", zos);
       copyZipEntries(tcFolder + "TotalCross.apk", "res", zos);
+      copyZipEntries(tcFolder + "TotalCross.apk", "lib", zos);
     } else {
       // add classes.dex
       zos.putNextEntry(new ZipEntry("classes.dex"));
@@ -296,10 +298,6 @@ public class Deployer4Android {
       jsonStream.close();
     } catch (FileNotFoundException e) {
       System.out.println("Could not find 'google-services.json', thus Firebase will be ignored further on (Android deploy)");
-    }
-    // include the vm and litebase
-    if (tcFolder != null) {
-      copyZipEntry(tcFolder + "TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
     }
 
     zos.close();

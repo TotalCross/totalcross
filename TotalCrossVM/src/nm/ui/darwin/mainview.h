@@ -64,6 +64,7 @@
 - (void) gpsStop;
 - (int) gpsUpdateLocation;
 - (IBAction)closeWebView:(id)sender;
+- (IBAction)closeBarcode:(id)sender;
 @end
 
 typedef struct
