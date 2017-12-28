@@ -11,6 +11,18 @@
 
 #include "tcvm.h"
 
+#if defined (darwin)
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
+    char* iphone_readBarcode(char* mode);
+    
+#ifdef __cplusplus
+};
+#endif
+#endif // darwin
+
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String mode);
 {
@@ -30,6 +42,12 @@ TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scan
    }
    (*env)->DeleteLocalRef(env, result); // guich@tc125_1
    p->retO = o;
+#elif defined darwin
+    TCObject mode = p->obj[0];
+    char* cmode = String2CharP(mode);
+    char* ret = iphone_readBarcode(cmode);
+    p->retO = createStringObjectFromCharP(p->currentContext, ret, -1);
+    xfree(cmode);
 #else
    p->retO = 0;
 #endif	

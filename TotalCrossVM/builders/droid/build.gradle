@@ -144,7 +144,11 @@ android {
  repositories { 
      jcenter()
      maven {
-         url "https://maven.java.net/content/groups/public/"
+         url "http://maven.totalcross.com/artifactory/build"
+         credentials {
+             username = 'builder'
+             password = 's3nh4d0bu1ld3r'
+         }
      }
  }
 
@@ -177,4 +181,5 @@ dependencies {
 	
 	// Enabling Multidex for use of Firebase and etc
 	compile 'com.android.support:multidex:1.0.1'
+	compile(group: 'ScanditBarcodeScanner', name: 'ScanditBarcodeScanner', version: 'b1', ext: 'aar')
 }
