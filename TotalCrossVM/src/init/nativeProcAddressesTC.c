@@ -111,6 +111,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTexture"), &tuiI_freeTexture);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFade_i"), &tuiI_applyFade_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeResizeJpeg_ssi"), &tuiI_nativeResizeJpeg_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCircleAA_iiibbbbb"), &tugG_drawCircleAA_iiibbbbb);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillShadedRect_iiiibbiii"), &tugG_fillShadedRect_iiiibbiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
@@ -313,6 +314,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getHostAddress_s"), &tnCM_getHostAddress_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getHostName_s"), &tnCM_getHostName_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getLocalHost"), &tnCM_getLocalHost);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getLocalHostName"), &tnCM_getLocalHostName);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_isAvailable_i"), &tnCM_isAvailable_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_releaseResources"), &tnCM_releaseResources);
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_socketCreate_siib"), &tnS_socketCreate_siib);

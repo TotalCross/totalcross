@@ -326,6 +326,7 @@ TC_API void tnCM_nativeClose(NMParams p);
 TC_API void tnCM_getHostAddress_s(NMParams p);
 TC_API void tnCM_getHostName_s(NMParams p);
 TC_API void tnCM_getLocalHost(NMParams p);
+TC_API void tnCM_getLocalHostName(NMParams p);
 TC_API void tnCM_isAvailable_i(NMParams p);
 TC_API void tnCM_releaseResources(NMParams p);
 TC_API void tnS_socketCreate_siib(NMParams p);

@@ -308,6 +308,7 @@ totalcross/net/ConnectionManager|native private static void nativeClose() throws
 totalcross/net/ConnectionManager|native public static String getHostAddress(String host) throws totalcross.net.UnknownHostException;
 totalcross/net/ConnectionManager|native public static String getHostName(String host) throws totalcross.net.UnknownHostException;
 totalcross/net/ConnectionManager|native public static String getLocalHost() throws totalcross.net.UnknownHostException;
+totalcross/net/ConnectionManager|native public static String getLocalHostName() throws totalcross.net.UnknownHostException;
 totalcross/net/ConnectionManager|native public static boolean isAvailable(int type) throws totalcross.io.IOException;
 totalcross/net/ConnectionManager|native private void releaseResources();
 totalcross/net/Socket|native void socketCreate(final String host, final int port, final int timeout, final boolean noLinger);

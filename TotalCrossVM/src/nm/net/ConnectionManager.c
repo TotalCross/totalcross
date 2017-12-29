@@ -17,6 +17,8 @@
  #include "win/ConnectionManager_c.h"
 #elif defined (ANDROID)
  #include "android/ConnectionManager_c.h"
+#elif defined (darwin)
+ #include <unistd.h>
 #endif
 
 // static fields
@@ -215,6 +217,18 @@ TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager na
 #else
    p->retO = createStringObjectFromCharP(p->currentContext, "127.0.0.1", -1);
 #endif
+   setObjectLock(p->retO, UNLOCKED);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tnCM_getLocalHostName(NMParams p) // totalcross/net/ConnectionManager native public static String getLocalHostName() throws totalcross.net.UnknownHostException;
+{
+   char hostname[256];
+   
+   if (gethostname(hostname, 256) == 0) {
+	   p->retO = createStringObjectFromCharP(p->currentContext, hostname, -1);
+   } else {
+	   p->retO = createStringObjectFromCharP(p->currentContext, "127.0.0.1", -1);
+   }
    setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
