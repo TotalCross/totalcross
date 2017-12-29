@@ -263,6 +263,21 @@ public class ConnectionManager {
   }
 
   /**
+  * Gets the host name for this device. If the operation is not allowed, it will return the textual
+  * representation of the IP address.
+  *
+  * @return the host name for this device, or the textual representation of the IP address.
+  * @throws UnknownHostException
+  */
+  public static String getLocalHostName() throws UnknownHostException {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (java.net.UnknownHostException e) {
+      throw new UnknownHostException(e.getMessage());
+    }
+  }
+
+  /**
    * Returns true if we can connect to google.com using port 80, false otherwise. Please notice this is just a quick
    * check that assumes the device is connected to the Internet without any restrictions. Results are undefined when
    * used behind proxies or firewalls.
