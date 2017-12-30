@@ -1116,8 +1116,9 @@ static void initSipRect()
 
    SipShowIM(SIPF_OFF);
 #ifdef SHFS_HIDESIPBUTTON
-   if (_SHFullScreen != null)
-	   _SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON); // only supported in 3.0
+   if (_SHFullScreen != null) {
+	_SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON); // only supported in 3.0
+   }
 #endif
    SipEnumIM(&verifyCurrentSip);
    if (mustChangeSip && keybSip.Data1 != 0)
