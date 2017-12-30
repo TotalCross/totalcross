@@ -50,6 +50,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.zip.ZipInputStream;
+
 import tc.tools.JarClassPathLoader;
 import tc.tools.RegisterSDK;
 import tc.tools.deployer.DeploySettings;
@@ -1664,8 +1665,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   /** read the available bytes from the stream getted with openInputStream.
-   * called by totalcross.ui.image.Image and totalcross.io.PDBFile
-   */
+    * called by totalcross.ui.image.Image and totalcross.io.PDBFile
+    */
   public byte[] readBytes(String path) {
     byte[] bytes = null;
     try {
@@ -1683,8 +1684,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   /** write the available bytes to the stream getted with openOutputStream.
-   * called by totalcross.io.PDBFile
-   */
+    * called by totalcross.io.PDBFile
+    */
   public boolean writeBytes(String path, byte[] buf, int len) {
     boolean ret = true;
     try {
@@ -1928,16 +1929,16 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     if (f == null) {
       int i;
       if (!name.endsWith("noaa")) {
-        TCZ z = (TCZ)loadedTCZs.get((name+".tcz").toLowerCase());
+        TCZ z = (TCZ) loadedTCZs.get((name + ".tcz").toLowerCase());
         if (z == null) {
-           return null;
+          return null;
         }
-        FontInfo fi = (FontInfo)z.bag;
-        for (i = 0; i < fi.sizes.length-1; i++) {
-           if (size <= fi.sizes[i]) {
-              size = fi.sizes[i];
-              break;
-           }
+        FontInfo fi = (FontInfo) z.bag;
+        for (i = 0; i < fi.sizes.length - 1; i++) {
+          if (size <= fi.sizes[i]) {
+            size = fi.sizes[i];
+            break;
+          }
         }
       }
 
@@ -2071,6 +2072,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   private static Hashtable loadedTCZs = new Hashtable(31);
+
   class FontInfo {
     totalcross.io.ByteArrayStream chunks[];
     int[] sizes;
@@ -2138,20 +2140,20 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         FontInfo fi = new FontInfo();
         int n = z.numberOfChunks;
         fi.chunks = new totalcross.io.ByteArrayStream[n];
-        totalcross.util.IntVector sizes = new totalcross.util.IntVector(n/2);
-        for (int i =0; i < n; i++) {
-           int s = z.getNextChunkSize();
-           fi.chunks[i] = new totalcross.io.ByteArrayStream(s);
-           z.readNextChunk(fi.chunks[i]);
-           // compute size - $p20u0
-           String name = z.names[i];
-           String ss = name.substring(name.lastIndexOf('$')+2, name.lastIndexOf('u'));
-           int size = toInt(ss);
-           if (!sizes.contains(size))
-              sizes.addElement(size);
+        totalcross.util.IntVector sizes = new totalcross.util.IntVector(n / 2);
+        for (int i = 0; i < n; i++) {
+          int s = z.getNextChunkSize();
+          fi.chunks[i] = new totalcross.io.ByteArrayStream(s);
+          z.readNextChunk(fi.chunks[i]);
+          // compute size - $p20u0
+          String name = z.names[i];
+          String ss = name.substring(name.lastIndexOf('$') + 2, name.lastIndexOf('u'));
+          int size = toInt(ss);
+          if (!sizes.contains(size))
+            sizes.addElement(size);
         }
         sizes.qsort();
-        fi.sizes = sizes.toIntArray();            
+        fi.sizes = sizes.toIntArray();
         z.bag = fi;
         loadedTCZs.put(fileName.toLowerCase(), z);
       }
@@ -2161,7 +2163,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         throw new Exception("name " + fontName + " not found"); // loaded = false
       }
 
-      totalcross.io.ByteArrayStream bas = ((FontInfo)z.bag).chunks[index];
+      totalcross.io.ByteArrayStream bas = ((FontInfo) z.bag).chunks[index];
       bas.reset();
       totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
       antialiased = ds.readUnsignedShort();
@@ -2236,7 +2238,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             bits.rowWIB = bits.width;
           } catch (Exception e) {
             if (Settings.showDesktopMessages) {
-               e.printStackTrace();
+              e.printStackTrace();
             }
             bits.width = spaceWidth;
             bits.offset = -1;
