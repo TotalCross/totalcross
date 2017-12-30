@@ -557,9 +557,11 @@ LRESULT VibrateThread(int32 *ms_)
    {
       case VIB_AYG:
       {
-         _Vibrate(0,NULL,TRUE,INFINITE);
-         Sleep(ms);
-         _VibrateStop();
+    	  if (_Vibrate != null && _VibrateStop != null) {
+	         _Vibrate(0,NULL,TRUE,INFINITE);
+	         Sleep(ms);
+	         _VibrateStop();
+    	  }
          break;
       }
       case VIB_CORE:
