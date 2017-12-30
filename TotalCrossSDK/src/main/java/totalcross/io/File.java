@@ -54,7 +54,7 @@ import totalcross.util.Vector;
  * On iOS and Android, if you don't specify a path, the file will be open in device/ path. 
  */
 
-public class File extends RandomAccessStream {
+public class File extends RandomAccessStream implements FileStates {
   /** The path that represents this file */
   protected String path;
 
@@ -69,55 +69,6 @@ public class File extends RandomAccessStream {
 
   /** Stores the slot number passed in the constructor. */
   private int slot;
-
-  public static final int INVALID = 0;
-  /**
-   * The DONT_OPEN mode allows the exists(), rename(), delete(), listFiles(), createDir(), and isDir() methods to be
-   * called without requiring the file to be open for reading or writing.
-   * 
-   * @see #File(String)
-   * @see #File(String,int)
-   * @see #File(String,int,int)
-   * @see #exists()
-   * @see #rename(String)
-   * @see #delete()
-   * @see #listFiles()
-   * @see #createDir()
-   * @see #isDir()
-   */
-  public static final int DONT_OPEN = 1;
-  /**
-   * Read-write open mode. Works only for files, must not be used for folders.
-   * 
-   * @see #File(String,int)
-   * @see #File(String,int,int)
-   */
-  public static final int READ_WRITE = 2;
-  /**
-   * Read-only open mode. Works only for files, must not be used for folders.
-   * 
-   * @see #File(String,int)
-   * @see #File(String,int,int)
-   * @since TotalCross 1.38
-   */
-  public static final int READ_ONLY = 3;
-  /**
-   * Used to create a file if one does not exist; if the file exists, it is not erased, and the mode is changed to
-   * READ_WRITE.
-   * 
-   * @see #File(String,int)
-   * @see #File(String,int,int)
-   */
-  public static final int CREATE = 4;
-  /**
-   * Create an empty file; destroys the file if it exists, then the mode is changed to READ_WRITE.
-   * 
-   * @see #File(String,int)
-   * @see #File(String,int,int)
-   */
-  public static final int CREATE_EMPTY = 5;
-
-  public static final int CLOSED = 6;
 
   /**
    * Used in the setTime method, in parameter whichTime. This sets all times at once.
@@ -215,11 +166,11 @@ public class File extends RandomAccessStream {
    * @since SuperWaba 5.52
    * @see #File(String)
    * @see #File(String,int)
-   * @see #DONT_OPEN
-   * @see #READ_WRITE
-   * @see #READ_ONLY
-   * @see #CREATE
-   * @see #CREATE_EMPTY
+   * @see FileStates#DONT_OPEN
+   * @see FileStates#READ_WRITE
+   * @see FileStates#READ_ONLY
+   * @see FileStates#CREATE
+   * @see FileStates#CREATE_EMPTY
    * @see totalcross.sys.Settings#nvfsVolume
    * @deprecated TotalCross 2 no longer uses slot
    */
@@ -1100,14 +1051,16 @@ public class File extends RandomAccessStream {
 
   private static void listFiles(String dir, Vector files, boolean recursive) throws IOException // guich@tc115_92
   {
-    String[] list = new File(dir).listFiles();
-    if (list != null) {
-      for (int i = 0; i < list.length; i++) {
-        String p = list[i];
-        String full = Convert.appendPath(dir, p);
-        files.addElement(full);
-        if (recursive && p.endsWith("/")) {
-          listFiles(full, files, recursive);
+    try (File f = new File(dir)) {
+      String[] list = f.listFiles();
+      if (list != null) {
+        for (int i = 0; i < list.length; i++) {
+          String p = list[i];
+          String full = Convert.appendPath(dir, p);
+          files.addElement(full);
+          if (recursive && p.endsWith("/")) {
+            listFiles(full, files, recursive);
+          }
         }
       }
     }
@@ -1118,8 +1071,7 @@ public class File extends RandomAccessStream {
    * 
    * @since TotalCross 1.15
    */
-  public static String[] listFiles(String dir) throws IOException // guich@tc115_92
-  {
+  public static String[] listFiles(String dir) throws IOException { // guich@tc115_92
     return listFiles(dir, true);
   }
 
@@ -1225,23 +1177,9 @@ public class File extends RandomAccessStream {
    */
   public static void copy(String src, String dst) throws IOException // guich@tc126_43
   {
-    File fin = null, fout = null;
-    try {
-      fin = new File(src, File.READ_ONLY);
-      fout = new File(dst, File.CREATE_EMPTY);
-      fin.copyTo(fout);
-    } finally {
-      try {
-        if (fin != null) {
-          fin.close();
-        }
-      } catch (Exception e) {
-      }
-      try {
-        if (fout != null) {
-          fout.close();
-        }
-      } catch (Exception e) {
+    try (File fin = new File(src, READ_ONLY)) {
+      try (File fout = new File(dst, CREATE_EMPTY)) {
+        fin.copyTo(fout);
       }
     }
   }
@@ -1254,17 +1192,9 @@ public class File extends RandomAccessStream {
    */
   public static void move(String src, String dst) throws IOException // guich@tc126_43
   {
-    File fin = null, fout = null;
-    try {
-      fin = new File(src, File.READ_WRITE);
-      fout = new File(dst, File.CREATE_EMPTY);
-      fin.moveTo(fout);
-    } finally {
-      try {
-        if (fout != null) {
-          fout.close();
-        }
-      } catch (Exception e) {
+    try (File fin = new File(src, READ_WRITE)) {
+      try (File fout = new File(dst, CREATE_EMPTY)) {
+        fin.moveTo(fout);
       }
     }
   }
@@ -1364,6 +1294,7 @@ public class File extends RandomAccessStream {
    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
    * @since TotalCross 1.53
    */
+  @Deprecated
   public byte[] readAndClose() throws IOException {
     try {
       return read();
@@ -1379,6 +1310,7 @@ public class File extends RandomAccessStream {
    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
    * @since TotalCross 1.53
    */
+  @Deprecated
   public byte[] readAndDelete() throws IOException {
     try {
       return read();
@@ -1394,6 +1326,7 @@ public class File extends RandomAccessStream {
    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
    * @since TotalCross 1.53
    */
+  @Deprecated
   public void writeAndClose(byte[] bytes) throws IOException {
     try {
       writeBytes(bytes, 0, bytes.length);
@@ -1405,6 +1338,7 @@ public class File extends RandomAccessStream {
   /** Reads the file and returns a byte array with its contents.
    * @since TotalCross 3.1
    */
+  @Deprecated
   public byte[] read() throws IOException {
     int len = getSize();
     byte[] ret = new byte[len];

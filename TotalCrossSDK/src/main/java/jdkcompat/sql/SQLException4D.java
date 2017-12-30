@@ -19,6 +19,7 @@ package jdkcompat.sql;
 import java.sql.SQLException;
 
 public class SQLException4D extends Exception {
+  private static final long serialVersionUID = 2177808452277895382L;
   String state;
   int code;
   SQLException next;

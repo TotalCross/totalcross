@@ -21,7 +21,7 @@ import totalcross.sys.Registry;
 import totalcross.sys.Settings;
 import totalcross.util.Vector;
 
-public class File4D extends RandomAccessStream {
+public class File4D extends RandomAccessStream implements FileStates {
   protected String path;
   Object fileRef;
   int mode = INVALID;
@@ -33,12 +33,6 @@ public class File4D extends RandomAccessStream {
   static final boolean isWP8 = Settings.platform.equals(Settings.WINDOWSPHONE);
   static final boolean isWin32 = Settings.platform.equals(Settings.WIN32);
   static final boolean isWinCE = Settings.isWindowsCE();
-  static final int INVALID = 0;
-  public static final int DONT_OPEN = 1;
-  public static final int READ_WRITE = 2;
-  public static final int READ_ONLY = 3;
-  public static final int CREATE = 4;
-  public static final int CREATE_EMPTY = 5;
   public static final int CLOSED = 6;
 
   public static final byte TIME_ALL = (byte) 0xF;
@@ -112,17 +106,7 @@ public class File4D extends RandomAccessStream {
   }
 
   @Override
-  public void close() throws totalcross.io.IOException {
-    if (mode == CLOSED) {
-      return;
-    }
-    if (mode == INVALID) {
-      throw new totalcross.io.IOException("Invalid file object");
-    }
-    if (mode != DONT_OPEN) {
-      nativeClose();
-    }
-  }
+  native public void close() throws totalcross.io.IOException;
 
   public String getPath() {
     return path;
@@ -171,8 +155,6 @@ public class File4D extends RandomAccessStream {
 
   native private void create(String path, int mode, int slot)
       throws totalcross.io.FileNotFoundException, totalcross.io.IOException;
-
-  native private void nativeClose() throws totalcross.io.IOException;
 
   native public static boolean isCardInserted(int slot) throws totalcross.io.IllegalArgumentIOException;
 
@@ -280,14 +262,16 @@ public class File4D extends RandomAccessStream {
 
   private static void listFiles(String dir, Vector files, boolean recursive) throws IOException // guich@tc115_92
   {
-    String[] list = new File(dir).listFiles();
-    if (list != null) {
-      for (int i = 0; i < list.length; i++) {
-        String p = list[i];
-        String full = Convert.appendPath(dir, p);
-        files.addElement(full);
-        if (recursive && p.endsWith("/")) {
-          listFiles(full, files, recursive);
+    try (File f = new File(dir)) {
+      String[] list = f.listFiles();
+      if (list != null) {
+        for (int i = 0; i < list.length; i++) {
+          String p = list[i];
+          String full = Convert.appendPath(dir, p);
+          files.addElement(full);
+          if (recursive && p.endsWith("/")) {
+            listFiles(full, files, recursive);
+          }
         }
       }
     }
@@ -344,44 +328,23 @@ public class File4D extends RandomAccessStream {
 
   public static void copy(String src, String dst) throws IOException // guich@tc126_43
   {
-    File fin = null, fout = null;
-    try {
-      fin = new File(src, File.READ_ONLY);
-      fout = new File(dst, File.CREATE_EMPTY);
-      fin.copyTo(fout);
-    } finally {
-      try {
-        if (fin != null) {
-          fin.close();
-        }
-      } catch (Exception e) {
-      }
-      try {
-        if (fout != null) {
-          fout.close();
-        }
-      } catch (Exception e) {
+    try (File fin = new File(src, READ_ONLY)) {
+      try (File fout = new File(dst, CREATE_EMPTY)) {
+        fin.copyTo(fout);
       }
     }
   }
 
   public static void move(String src, String dst) throws IOException // guich@tc126_43
   {
-    File fin = null, fout = null;
-    try {
-      fin = new File(src, File.READ_WRITE);
-      fout = new File(dst, File.CREATE_EMPTY);
-      fin.moveTo(fout);
-    } finally {
-      try {
-        if (fout != null) {
-          fout.close();
-        }
-      } catch (Exception e) {
+    try (File fin = new File(src, READ_WRITE)) {
+      try (File fout = new File(dst, CREATE_EMPTY)) {
+        fin.moveTo(fout);
       }
     }
   }
 
+  @Deprecated
   public byte[] readAndClose() throws IOException {
     try {
       return read();
@@ -390,6 +353,7 @@ public class File4D extends RandomAccessStream {
     }
   }
 
+  @Deprecated
   public byte[] readAndDelete() throws IOException {
     try {
       return read();
@@ -398,6 +362,7 @@ public class File4D extends RandomAccessStream {
     }
   }
 
+  @Deprecated
   public byte[] read() throws IOException {
     int len = getSize();
     byte[] ret = new byte[len];
@@ -405,6 +370,7 @@ public class File4D extends RandomAccessStream {
     return ret;
   }
 
+  @Deprecated
   public void writeAndClose(byte[] bytes) throws IOException {
     try {
       writeBytes(bytes, 0, bytes.length);

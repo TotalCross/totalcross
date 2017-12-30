@@ -16,6 +16,8 @@
 
 package totalcross.res;
 
+import java.io.ByteArrayInputStream;
+
 import totalcross.io.File;
 import totalcross.io.IOException;
 import totalcross.sys.Settings;
@@ -23,6 +25,7 @@ import totalcross.sys.Vm;
 import totalcross.ui.NinePatch;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
+import totalcross.util.IOUtils;
 
 /** This class loads images depending on the user interface selected.
  * Currently there's only Android images.
@@ -256,9 +259,14 @@ public class Resources {
         break;
       }
       loadImages("totalcross/res/android/"); // always load android UI
-      try {
-        if (!new File("device/chime.mp3").exists()) {
-          new File("device/chime.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("totalcross/res/mp3/chime.mp3"));
+      try (File test = new File("device/chime.mp3")) {
+        if (!test.exists()) {
+          try (File writeTo = new File("device/chime.mp3", File.CREATE_EMPTY)) {
+            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                Vm.getFile("totalcross/res/mp3/chime.mp3"))) {
+              IOUtils.copy(inputStream, writeTo.asOutputStream(), 4096);
+            }
+          }
         }
       } catch (Exception e) {
         if (!Settings.onJavaSE) {

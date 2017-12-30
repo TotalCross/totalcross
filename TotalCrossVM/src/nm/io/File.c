@@ -143,7 +143,7 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
       if (mode != CREATE && mode != CREATE_EMPTY && !fileExists(szPath, File_slot(file)))
          throwFileNotFoundException(p->currentContext, szPath);
       else
-      if ((fileRef = createByteArray(p->currentContext, sizeof(NATIVE_FILE))) != null) // created fileRef will be unlocked only in nativeClose
+      if ((fileRef = createByteArray(p->currentContext, sizeof(NATIVE_FILE))) != null) // created fileRef will be unlocked only in native close
       {
          File_fileRef(file) = fileRef;
          natFile = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
@@ -156,14 +156,24 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
    }
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private void nativeClose() throws totalcross.io.IOException;
+TC_API void tiF_close(NMParams p) // totalcross/io/File native public void close() throws totalcross.io.IOException;
 {
    TCObject file, fileRef;
    NATIVE_FILE* fref;
    Err err;
+   int32 mode;
 
    file = p->obj[0];
    fileRef = File_fileRef(file);
+   mode = File_mode(file);
+   if (mode == CLOSED || mode == DONT_OPEN)
+   {
+      return;
+   }
+   if (mode == INVALID)
+   {
+      throwException(p->currentContext, IOException, "Invalid file object.");
+   }
    if (fileRef) // don't remove this!
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);

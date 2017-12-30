@@ -180,7 +180,7 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException); // assert file was closed
 
    // #5 - create file with mode CREATE_EMPTY
@@ -190,7 +190,7 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
    tiF_create_sii(&p); // create file (deleting)
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException); // assert file was closed
 
    // #7 - open file with mode READ_WRITE
@@ -200,7 +200,7 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException); // assert file was closed
 
    // #7 - open file with mode DONT_OPEN
@@ -250,7 +250,7 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
    finish:
       ;
 }
-TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(); #DEPENDS(tiF_create_sii)
+TESTCASE(tiF_close) // totalcross/io/File native private void close(); #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
    TCObject objArray[2],path;
@@ -261,7 +261,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
 
    // ARCHIVE
 
-   p.obj[0] = createFile(currentContext, TEMP_PATH, TEXT("tiF_nativeClose.test"), &path);
+   p.obj[0] = createFile(currentContext, TEMP_PATH, TEXT("tiF_close.test"), &path);
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // #1 - Create and close archive.
@@ -271,7 +271,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException); // assert file was closed
 
    // #2 - Open archive with READ_WRITE and close.
@@ -281,7 +281,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException); // assert file was closed
 
    // #3 - Open archive with DONT_OPEN and close.
@@ -291,7 +291,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException); // assert file was closed
 
    // #4 - Open archive with DONT_OPEN and delete.
@@ -303,7 +303,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
 
    tiF_delete(&p);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // #5 - Create and delete the archive.
@@ -316,7 +316,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
    tiF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // DIRECTORY
@@ -343,7 +343,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
    tiF_createDir(&p); // create dir
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // #7 - Delete directory and close file.
@@ -358,7 +358,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
 
    tiF_delete(&p);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    finish:
@@ -577,7 +577,7 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #D
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT2_EQUALS(I32, p.i32[1], p.retI);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(True, p.retI);
    tiF_getSize(&p);
@@ -625,7 +625,7 @@ TESTCASE(tiF_isDir) // totalcross/io/File native public boolean isDir();     #DE
    tiF_isDir(&p);
    ASSERT1_EQUALS(False, p.retI);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    p.obj[0] = createFile(currentContext, TEMP_PATH, TEXT("tiF_isDir.test"), &path);
@@ -639,7 +639,7 @@ TESTCASE(tiF_isDir) // totalcross/io/File native public boolean isDir();     #DE
    tiF_isDir(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(False, p.retI);
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // ----- DIR -----
@@ -687,7 +687,7 @@ TESTCASE(tiF_listFiles) // totalcross/io/File native public String []listFiles()
    tiF_create_sii(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    p.obj[0] = createFile(currentContext, TEMP_PATH, null, &path);
@@ -825,7 +825,7 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    ASSERT2_EQUALS(I32, 0, wbP.retI);
 
    // #3 Close the file.
-   tiF_nativeClose(&wbP);
+   tiF_close(&wbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // #4 Try to write on the closed file.
@@ -846,7 +846,7 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    currentContext->thrownException = null;
 
    // #9 Close the file.
-   tiF_nativeClose(&wbP);
+   tiF_close(&wbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // #10 Create in mode DONT_OPEN.
@@ -955,7 +955,7 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    ASSERT2_EQUALS(I32, 11, wbP.retI);
 
    // #21 Close and reopen the file
-   tiF_nativeClose(&wbP);
+   tiF_close(&wbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    rbP.obj[0] = createFile(currentContext, TEMP_PATH, TEXT("tiF_writeBytes_Bii.test"), &path);
@@ -1097,7 +1097,7 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11)); 
 
    // #34 Close the file.
-   tiF_nativeClose(&rbP);
+   tiF_close(&rbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    finish:
@@ -1182,7 +1182,7 @@ TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte w
    ASSERT1_EQUALS(NotNull, p.retO);
    t3 = p.retO;
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
 #if defined (WIN32) || defined (PALMOS) // POSIX does not support creation time of files
@@ -1249,7 +1249,7 @@ TESTCASE(tiF_setSize_i) // totalcross/io/File native public void setSize(int new
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT2_EQUALS(I32, p.i32[0], p.retI);
 
-   tiF_nativeClose(&p);
+   tiF_close(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    finish:
