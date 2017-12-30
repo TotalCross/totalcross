@@ -20,8 +20,10 @@ package totalcross.ui;
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 import totalcross.firebase.FirebaseManager;
 import totalcross.firebase.iid.FirebaseInstanceIdService;
+import totalcross.io.ByteArrayStream;
 import totalcross.io.File;
 import totalcross.io.FileNotFoundException;
+import totalcross.io.IOException;
 import totalcross.res.Resources;
 import totalcross.sys.CharacterConverter;
 import totalcross.sys.Convert;
@@ -38,6 +40,7 @@ import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
 import totalcross.unit.UIRobot;
 import totalcross.util.Hashtable;
+import totalcross.util.IOUtils;
 import totalcross.util.Vector;
 import totalcross.util.concurrent.Lock;
 import totalcross.util.zip.CompressedStream;
@@ -146,12 +149,13 @@ public class MainWindow extends Window implements totalcross.MainClass {
   //$START:REMOVE-ON-SDK-GENERATION$   
   private static void sendStats() {
     try {
-      new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();
+      try (File appcr4shedFile = new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE)) {
+        appcr4shedFile.delete();
+      }
       Settings.abortedOnLastRun = true;
       // if appCrashed doesn't exists, its because it exitted normally
       final byte[] dconbytes = readDebugConsole();
-      new Thread() // app crashed exists, send report
-      {
+      new Thread() {// app crashed exists, send report
         @Override
         public void run() {
           try {
@@ -192,8 +196,23 @@ public class MainWindow extends Window implements totalcross.MainClass {
             z.writeBytes(info);
             z.close();
             final byte[] infobytes = bas.toByteArray();
-            final byte[] bugrbytes = createdBugRep && new File("/sdcard/IssueReport/bugreport.zip").exists()
-                ? new File("/sdcard/IssueReport/bugreport.zip", File.READ_WRITE).readAndDelete() : new byte[0];
+            final byte[] bugrbytes;
+            if (createdBugRep) {
+              try (File test = new File("/sdcard/IssueReport/bugreport.zip")) {
+                if (test.exists()) {
+                  try (File asRead = new File("/sdcard/IssueReport/bugreport.zip", File.READ_WRITE);
+                      ByteArrayStream readFromFile = new ByteArrayStream(asRead.getSize());) {
+                    IOUtils.copy(asRead.asInputStream(), readFromFile.asOutputStream(), 4096);
+                    bugrbytes = readFromFile.toByteArray();
+                    asRead.delete();
+                  }
+                } else {
+                  bugrbytes = new byte[0];
+                }
+              }
+            } else {
+              bugrbytes = new byte[0];
+            }
             //HttpStream
             totalcross.net.HttpStream.Options options = new totalcross.net.HttpStream.Options();
             options.openTimeOut = 30000;
@@ -207,28 +226,25 @@ public class MainWindow extends Window implements totalcross.MainClass {
             options.postHeaders.put("Bugr-len", String.valueOf(bugrbytes.length));
             options.postHeaders.put("DCon-len", String.valueOf(dconbytes.length));
             for (int i = 0; i < 200; i++) {
-              try {
-                new totalcross.net.HttpStream(
-                    new totalcross.net.URI("http://www.superwaba.net/SDKRegistrationService/BugReportService"),
-                    options) {
-                  @Override
-                  protected void writeResponseRequest(StringBuffer sb, Options options)
-                      throws totalcross.io.IOException {
-                    String str = sb.toString();
-                    byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
-                    writeBytes(bytes, 0, bytes.length);
-                    // content length
-                    writeBytes(infobytes, 0, infobytes.length);
-                    if (bugrbytes.length > 0) {
-                      writeBytes(bugrbytes, 0, bugrbytes.length);
-                    }
-                    if (dconbytes.length > 0) {
-                      writeBytes(dconbytes, 0, dconbytes.length);
-                    }
+              try (totalcross.net.HttpStream httpStream = new totalcross.net.HttpStream(
+                  new totalcross.net.URI("http://www.superwaba.net/SDKRegistrationService/BugReportService"), options) {
+                @Override
+                protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException {
+                  String str = sb.toString();
+                  byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
+                  writeBytes(bytes, 0, bytes.length);
+                  // content length
+                  writeBytes(infobytes, 0, infobytes.length);
+                  if (bugrbytes.length > 0) {
+                    writeBytes(bugrbytes, 0, bugrbytes.length);
                   }
-                };
+                  if (dconbytes.length > 0) {
+                    writeBytes(dconbytes, 0, dconbytes.length);
+                  }
+                }
+              }) {
                 break;
-              } catch (Exception e) {
+              } catch (IOException e) {
                 Vm.sleep(60000);
               }
             }
@@ -241,11 +257,9 @@ public class MainWindow extends Window implements totalcross.MainClass {
         }
       }.start();
     } catch (OutOfMemoryError oome) {
-    } catch (Throwable t) // FileNotFound
-    {
+    } catch (Throwable t) {// FileNotFound
     }
-    try {
-      new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.CREATE_EMPTY).close();
+    try (File appCr4shed = new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.CREATE_EMPTY)) {
     } catch (Throwable t) {
       t.printStackTrace();
     } // restarting app
@@ -254,18 +268,17 @@ public class MainWindow extends Window implements totalcross.MainClass {
   private static byte[] readDebugConsole() {
     String name = Convert.appendPath(Settings.appPath, "DebugConsole.txt");
     byte[] ret = new byte[0];
-    try {
-      byte[] bytes = new File(name, File.READ_ONLY).readAndClose();
-      if (bytes.length == 0) {
+    try (File debug = new File(name, File.READ_ONLY)) {
+      if (debug.getSize() == 0) {
         return new byte[0];
       }
 
-      totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(bytes.length / 10);
-      ZipStream zstream = new ZipStream(bas, CompressedStream.DEFLATE);
-      zstream.putNextEntry(new ZipEntry("dc.z"));
-      zstream.writeBytes(bytes);
-      zstream.closeEntry();
-      zstream.close();
+      totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(debug.getSize() / 10);
+      try (ZipStream zstream = new ZipStream(bas, CompressedStream.DEFLATE)) {
+        zstream.putNextEntry(new ZipEntry("dc.z"));
+        IOUtils.copy(debug.asInputStream(), zstream.asOutputStream(), 4096);
+        zstream.closeEntry();
+      }
       ret = bas.toByteArray();
     } catch (OutOfMemoryError oome) {
     } catch (FileNotFoundException fnfe) {
@@ -273,8 +286,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
       e.printStackTrace();
     }
 
-    if (ret != null) {
-      // if we read the file, erase it to prevent sending again with the same data
+    if (ret != null) {// if we read the file, erase it to prevent sending again with the same data
       Vm.debug(Vm.ERASE_DEBUG);
     }
     return ret;
@@ -700,8 +712,8 @@ public class MainWindow extends Window implements totalcross.MainClass {
           exit(1);
           return;
         } else 
-          //$END:REMOVE-ON-SDK-GENERATION$
-          startProgram();
+        //$END:REMOVE-ON-SDK-GENERATION$
+        startProgram();
     }
     int minInterval = 0;
     TimerEvent timer = firstTimer;

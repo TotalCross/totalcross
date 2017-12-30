@@ -11,6 +11,10 @@
 
 package tc.tools.deployer;
 
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 
 import totalcross.io.File;
@@ -19,6 +23,7 @@ import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 import totalcross.sys.Settings;
 import totalcross.util.Hashtable;
+import totalcross.util.IOUtils;
 import totalcross.util.IntVector;
 import totalcross.util.Vector;
 
@@ -221,14 +226,22 @@ public class DeploySettings {
     while (true) {
       try {
         String path = Convert.appendPath(dir, TCAPP_PROP);
-        File f = new File(path, File.READ_WRITE);
-        Hashtable ht = new Hashtable(new String(f.read()));
-        appBuildNumber = Convert.toInt((String) ht.get("build.number", "0"), 0) + 1;
-        ht.put("build.number", appBuildNumber);
-        byte[] bytes = ht.getKeyValuePairs("=").toString("\n").getBytes();
-        f.setSize(0);
-        f.writeAndClose(bytes);
-        tcappProp = bytes;
+        try (File f = new File(path, File.READ_WRITE);
+            InputStreamReader fileReader = new InputStreamReader(f.asInputStream());
+            StringWriter stringWriter = new StringWriter();) {
+          IOUtils.copy(fileReader, stringWriter);
+          Hashtable ht = new Hashtable(stringWriter.toString());
+          appBuildNumber = Convert.toInt((String) ht.get("build.number", "0"), 0) + 1;
+          ht.put("build.number", appBuildNumber);
+          try (StringReader stringReader = new StringReader(ht.getKeyValuePairs("=").toString("\n"));
+              OutputStreamWriter outputWriter = new OutputStreamWriter(f.asOutputStream());) {
+            f.setSize(0);
+            IOUtils.copy(stringReader, outputWriter);
+          }
+          byte[] bytes = ht.getKeyValuePairs("=").toString("\n").getBytes();
+
+          tcappProp = bytes;
+        }
         System.out.println("Application's build number: " + appBuildNumber);
         break;
       } catch (FileNotFoundException fnfe) {

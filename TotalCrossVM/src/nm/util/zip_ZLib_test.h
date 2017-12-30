@@ -12,7 +12,7 @@
 
 
 TC_API void tiF_create_sii(NMParams p);
-TC_API void tiF_nativeClose(NMParams p);
+TC_API void tiF_close(NMParams p);
 
 #define TEST_ZLIB false
 
@@ -75,9 +75,9 @@ TESTCASE(ZLib) // totalcross/util/zip/ZLib
 
    tuzZL_deflate_ssiib(&tmnpZlib);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   tiF_nativeClose(&tmnpFileIn);
+   tiF_close(&tmnpFileIn);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   tiF_nativeClose(&tmnpFileOut);
+   tiF_close(&tmnpFileOut);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    tmnpFileIn.obj[0] = createObject(currentContext, "totalcross.io.File");
@@ -107,9 +107,9 @@ TESTCASE(ZLib) // totalcross/util/zip/ZLib
 
    tuzZL_inflate_ssib(&tmnpZlib);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   tiF_nativeClose(&tmnpFileIn);
+   tiF_close(&tmnpFileIn);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   tiF_nativeClose(&tmnpFileOut);
+   tiF_close(&tmnpFileOut);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 #else
    TEST_SKIP;

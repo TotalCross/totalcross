@@ -410,7 +410,7 @@ totalcross/io/PDBFile|native public void setAttributes(int i);
 totalcross/io/PDBFile|native public int searchBytes(byte []toSearch, int length, int offsetInRec);
 totalcross/io/File|native private static String getDeviceAlias();
 totalcross/io/File|native private void create(String path, int mode, int slot) throws totalcross.io.IOException;
-totalcross/io/File|native private void nativeClose() throws totalcross.io.IOException;
+totalcross/io/File|native private void close() throws totalcross.io.IOException;
 totalcross/io/File|native public static boolean isCardInserted(int slot);
 totalcross/io/File|native public void createDir() throws totalcross.io.IOException;
 totalcross/io/File|native public boolean delete() throws totalcross.io.IOException;
