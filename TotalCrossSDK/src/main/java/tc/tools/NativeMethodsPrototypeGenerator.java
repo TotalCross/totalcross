@@ -12,13 +12,19 @@
 package tc.tools;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.InputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /** Created by guich to help the implementation of native methods in the TotalCross vm. */
 
@@ -31,14 +37,16 @@ public class NativeMethodsPrototypeGenerator {
         System.out.println("<input-file>: the file to be parsed");
         System.out.println("<testcase>: if true, creates the stubs for the test cases");
       } else {
-        Vector<String> v = new Vector<String>(100);
+        List<String> v = new ArrayList<String>();
         if (argv[0].equals("makeNativeHT")) {
           nativeHTSuffix = argv[1];
           nativeHTPath = argv[2];
-          readFile(v, new FileInputStream(argv[3]));
+          for (int i = 3; i < argv.length; i++) {
+            v.addAll(readFile(argv[i]));
+          }
           makeNativeHT = true;
         } else {
-          readFile(v, new FileInputStream(argv[0]));
+          v.addAll(readFile(argv[0]));
           makeTestCases = argv.length >= 2
               && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
         }
@@ -48,7 +56,7 @@ public class NativeMethodsPrototypeGenerator {
         }
 
         for (int i = 0; i < n; i++) {
-          String line = (String) v.elementAt(i);
+          String line = v.get(i);
           if (line.trim().length() == 0) {
             continue;
           }
@@ -64,7 +72,6 @@ public class NativeMethodsPrototypeGenerator {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    ;
   }
 
   private static String[] split(String s, String p) {
@@ -405,32 +412,18 @@ public class NativeMethodsPrototypeGenerator {
     System.exit(0);
   }
 
-  //////////////////////////////////////////////////////////////////////////////////
-  // reads a text file
-  private static void readFile(Vector<String> v, InputStream is) throws Exception {
-    v.removeAllElements();
-    try {
-      int b = is.read();
-      char c;
-      String s = "";
-      while (b >= 0) {
-        c = (char) b;
-        if (c == '\n') {
-          v.addElement(s);
-          s = "";
-        } else {
-          s += c;
-        }
-        b = is.read();
-        if ((char) b == '\r') {
-          b = is.read();
-        }
-      }
-      if (s.length() > 0) {
-        v.addElement(s);
-      }
-    } finally {
-      is.close();
+  /**
+   * Read the contents of the file on the given path into a List
+   * 
+   * @param path
+   * @return
+   * @throws IOException
+   */
+  private static List<String> readFile(String path) throws IOException {
+    List<String> list = null;
+    try (Stream<String> lines = Files.lines(Paths.get(path))) {
+      list = lines.collect(Collectors.<String>toList());
     }
+    return list == null ? Collections.<String>emptyList() : list;
   }
 }
