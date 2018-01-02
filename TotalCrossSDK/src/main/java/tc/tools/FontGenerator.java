@@ -49,6 +49,7 @@ import java.util.Set;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStreamLE;
 import totalcross.io.File;
+import totalcross.io.FileNotFoundException;
 import totalcross.util.IntVector;
 import totalcross.util.Vector;
 import totalcross.util.zip.TCZ;
@@ -187,10 +188,14 @@ public class FontGenerator {
     }
 
     // write the file
+    try (File f = new File(outName)) {
+      if (f.exists()) {
     try {
-      new File(outName).delete();
-    } catch (Exception e) {
-    } // delete if it exists
+          f.delete();
+        } catch (FileNotFoundException e) {
+        }
+      }
+    }
     new TCZ(v, outName, (short) 0);
     System.out.println("\nFile " + outName + ".tcz created.");
   }
@@ -216,6 +221,8 @@ public class FontGenerator {
     java.awt.Image img = comp.createImage(width, height);
     java.awt.Graphics2D g = (java.awt.Graphics2D) img.getGraphics();
     try {
+      // must disable graphic drawing antialias to be able to turn on text antialiasing. This is a bug with the JVM. 
+      g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_OFF);
       g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, antialiased != AA_NO
           ? java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON : java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
     } catch (Throwable t) {
@@ -275,7 +282,7 @@ public class FontGenerator {
           }
           widths[i] = fm.charWidth(ch);
         } else {
-          int w = r.width + r.height / 5; // +1 for interchar spacing - guich@560_15: use java's if monospaced font
+          int w = r.width;
 
           // guich@tc126_44: skip chars above normal
           if (skipBigChars) {
@@ -292,7 +299,7 @@ public class FontGenerator {
           maxW = Math.max(maxW, w);
           maxH = Math.max(maxH, h);
           gaps[i] = (byte) gap;//<=0 ? 1 : 0; // most chars Java puts 1 pixel away; some chars Java puts one pixel near; for those chars, we make them one pixel right
-          widths[i] = w;
+          widths[i] = (w + fm.charWidth(ch)) / 2;
           if (detailed == 1) {
             println("Width of " + characterAsString + " = " + widths[i] + " - gap: " + gap);
           }
