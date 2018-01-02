@@ -551,7 +551,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_setVisibleD_b"), &tmA_setVisibleD_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_isVisibleD"), &tmA_isVisibleD);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendTextMessage_sss"), &ttSM_sendTextMessage_sss);
-   htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_s"), &ttSM_registerSmsReceiver_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendDataMessage_ssiB"), &ttSM_sendDataMessage_ssiB);
+   htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_si"), &ttSM_registerSmsReceiver_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tfiFII_getToken"), &tfiFII_getToken);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);

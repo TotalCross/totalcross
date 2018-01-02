@@ -1002,7 +1002,6 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       if (onMainLoop)
          Launcher4A.appPaused();
       super.onPause();
-      updateSmsReceiver(true);
       if (isFinishing() && runningVM) // guich@tc126_60: stop the vm if finishing is true, since onDestroy is not guaranteed to be called
          quitVM();                    // call app 1, exit, call app 2: onPause is called but onDestroy not
    }
@@ -1027,7 +1026,6 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          Launcher4A.appResumed();
       Launcher4A.appPaused = false;
       super.onResume();
-      updateSmsReceiver(false);      
    }
 
    public String strBarcodeData;    
@@ -1159,36 +1157,46 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
    
    IntentFilter intentFilter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
    
+   IntentFilter intentFilterData = new IntentFilter(Telephony.Sms.Intents.DATA_SMS_RECEIVED_ACTION);
+   
    BroadcastReceiver mReceiver = new BroadcastReceiver() {
       
-      @Override
-      public void onReceive(Context context, Intent intent) {
-         // Get the data (SMS data) bound to intent
-         Bundle bundle = intent.getExtras();
-  
-         android.telephony.SmsMessage[] msgs = null;
-  
-         if (bundle != null) {
-             // Retrieve the SMS Messages received
-             Object[] pdus = (Object[]) bundle.get("pdus");
-             msgs = new android.telephony.SmsMessage[pdus.length];
-  
-             // For every SMS message received
-             for (int i=0; i < msgs.length; i++) {
-                 // Convert Object array
-                 msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
-                 Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody());
-             }
-         }
-      }
-   };
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        for (android.telephony.SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
+          Launcher4A.nativeSmsReceived(smsMessage.getDisplayOriginatingAddress(), smsMessage.getDisplayMessageBody(),
+              smsMessage.getUserData());
+        }
+      } else {
+        // Get the data (SMS data) bound to intent
+        Bundle bundle = intent.getExtras();
 
-   public void enableSmsReceiver(boolean enabled) {
+        android.telephony.SmsMessage[] msgs = null;
+
+        if (bundle != null) {
+          // Retrieve the SMS Messages received
+          Object[] pdus = (Object[]) bundle.get("pdus");
+          msgs = new android.telephony.SmsMessage[pdus.length];
+
+          // For every SMS message received
+          for (int i = 0; i < msgs.length; i++) {
+            // Convert Object array
+            msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
+            Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody(),
+                msgs[i].getUserData());
+          }
+        }
+      }
+    }
+   };
+   
+   public void enableSmsReceiver(boolean enabled, int port) {
       smsReceiverEnabled = enabled;
-      updateSmsReceiver(false);
+      updateSmsReceiver(false, port);
    }
    
-  public void updateSmsReceiver(boolean unregisterOnly) {
+  public void updateSmsReceiver(boolean unregisterOnly, int port) {
     if (unregisterOnly || !smsReceiverEnabled) {
       try {
         this.unregisterReceiver(this.mReceiver);
@@ -1196,7 +1204,14 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
         // ignore exception thrown when the receiver was not registered
       }
     } else {
-      this.registerReceiver(mReceiver, intentFilter);
+      if (port > 0) {
+        intentFilterData.setPriority(10);
+        intentFilterData.addDataScheme("sms");
+        intentFilterData.addDataAuthority("*", Integer.toString(port));
+        this.registerReceiver(mReceiver, intentFilterData);
+      } else {
+        this.registerReceiver(mReceiver, intentFilter);
+      }
     }
   }
 }
