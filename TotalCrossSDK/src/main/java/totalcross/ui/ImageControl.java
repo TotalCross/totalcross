@@ -44,6 +44,7 @@ public class ImageControl extends Control {
   private Coord c = new Coord();
   private boolean isEventEnabled, canDrag, isPressedEventsEnabled;
   private UIEffects effect;
+  private double lasthwScale;
   /** Set to true to center the image in the control when it is loaded */
   public boolean centerImage;
 
@@ -279,10 +280,10 @@ public class ImageControl extends Control {
       g.fillRect(0, 0, width, height);
     }
     if (img != null) {
-      drawImage(g, img);
+      drawImage(g, false);
     }
     if (drawBack && imgBack != null) {
-      drawImage(g, imgBack);
+      drawImage(g, true);
     }
     if (borderColor != -1) {
       g.foreColor = borderColor;
@@ -293,19 +294,37 @@ public class ImageControl extends Control {
     }
   }
 
-  private void drawImage(Graphics g, Image img) {
-    double dw = img.hwScaleW, dh = img.hwScaleH;
-    if (tempHwScale != NOTEMP) {
-      img.hwScaleW = img.hwScaleH = tempHwScale;
-    }
-    if (allowBeyondLimits) {
-      g.drawImage(img, lastX, lastY, true);
-    } else {
-      g.copyRect(img, 0, 0, img.getWidth(), img.getHeight(), lastX, lastY);
-    }
-    img.hwScaleW = dw;
-    img.hwScaleH = dh;
-  }
+   private void drawImage(Graphics g, boolean isBack) {
+      Image temp = isBack ? imgBack : tempHwScale == NOTEMP ? img : img0;      
+      double dw = temp.hwScaleW, dh = temp.hwScaleH;
+      double scaleX = 1, scaleY = 1;
+      if (!isBack && tempHwScale != NOTEMP) { // scale the original image instead of the resized one
+         double w = temp.getWidth(), h = temp.getHeight();
+         scaleX = w / width;
+         scaleY = h / height;
+         if (!strechImage) {
+            Coord onW = getSize(img0, width, false);
+            if (onW.x <= width && onW.y <= height)
+               scaleY = scaleX;
+            else
+               scaleX = scaleY;
+         }
+         if (lasthwScale != tempHwScale) { // if scale changed, center image again
+            lasthwScale = tempHwScale;
+            lastX = (int)(width  - w * tempHwScale / scaleX)/2;
+            lastY = (int)(height - h * tempHwScale / scaleY)/2;
+         }
+      }
+      if (tempHwScale != NOTEMP) {
+         temp.hwScaleW = tempHwScale / scaleX;
+         temp.hwScaleH = tempHwScale / scaleY;
+      }
+      if (allowBeyondLimits)
+         g.drawImage(temp, lastX,lastY, true);
+      else
+         g.copyRect(temp,0,0,temp.getWidth(),temp.getHeight(),lastX,lastY);
+      temp.hwScaleW = dw; temp.hwScaleH = dh;
+   }
 
   /** Returns the image's width; when scaling, returns the scaled width. */
   public int getImageWidth() {
@@ -332,6 +351,11 @@ public class ImageControl extends Control {
   /** Returns the current image assigned to this ImageControl. */
   public Image getImage() {
     return img;
+  }
+
+  /** Returns the original image assigned to this ImageControl. Note that getImage() returns the image scaled, while getOriginalImage() returns the unscaled image. */
+  public Image getOriginalImage() {
+    return img0;
   }
 
   /** Sets the given image as a freezed background of this image control. */

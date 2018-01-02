@@ -252,7 +252,7 @@ public class Deployer4WinCE {
             new File(targetDir).createDir();
           } catch (Exception e) {
           }
-          String name = "/tcvm.dll";
+          String name = "/TCVM.dll";
           File.copy(Convert.appendPath(tcFolder, name), Convert.appendPath(targetDir, name));
           if (lbFolder != null) {
             name = "/Litebase.dll";
@@ -315,7 +315,7 @@ public class Deployer4WinCE {
           "[SourceDisksFiles]\n" +
 
           (hasExe ? (DeploySettings.filePrefix + ".exe    = 1\n") : "")
-          + (tcFolder != null ? ("tcvm.dll      = 1\n") : "") + (lbFolder != null ? ("Litebase.dll  = 1\n") : "")
+          + (tcFolder != null ? ("TCVM.dll      = 1\n") : "") + (lbFolder != null ? ("Litebase.dll  = 1\n") : "")
           + toString(vLocals, " = 2\n", false) + toString(vGlobals, " = 3\n", false) +
 
           //-----------------------------------------------
@@ -327,7 +327,7 @@ public class Deployer4WinCE {
           + "LocalFiles = 0,%InstallDir%\n" + "Startmenu = 0,%CE11%\n" +
 
           (hasExe ? ("[Binaries]\n" + DeploySettings.filePrefix + ".exe\n") : "")
-          + (tcFolder != null ? ("tcvm.dll\n") : "") + (lbFolder != null ? ("Litebase.dll\n") : "") +
+          + (tcFolder != null ? ("TCVM.dll\n") : "") + (lbFolder != null ? ("Litebase.dll\n") : "") +
 
           "[LocalFiles]\n" + toString(vLocals, "\n", true) +
 

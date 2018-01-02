@@ -2054,7 +2054,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         System.exit(2);
       }
     } catch (Exception e) {
-      System.out.println("" + e);
+      System.out.println("Launcher.getFont: " + e);
     }
     return uf;
   }
@@ -2344,7 +2344,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   public void alert(String msg) {
     if (!started) {
-      System.out.println(msg);
+      System.out.println("Alert: "+msg);
     } else {
       alert.setText(msg);
       alert.setVisible(true);
