@@ -143,8 +143,11 @@ public final class UIColors // guich@564_6
   public static int positionbarBackgroundColor = -1;
 
   /** Spinner foreground color. */
+  @Deprecated
   public static int spinnerFore = controlsFore;
+  
   /** Spinner background color. */
+  @Deprecated
   public static int spinnerBack = -1;
 
   /** The shaded factor (0 - 100) used to fill a background when the backgroundStyle is BACKGROUND_SHADED */

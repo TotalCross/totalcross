@@ -50,6 +50,8 @@ public class Spinner extends Control implements Runnable {
   private boolean running;
   private Image anim, anim0;
 
+  private int type = -1;
+
   /** Creates a spinner with the defined spinnerType. */
   public Spinner() {
     this(spinnerType);
@@ -58,6 +60,7 @@ public class Spinner extends Control implements Runnable {
   /** Creates a spinner of the given type. */
   public Spinner(int type) {
     setType(type);
+    this.transparentBackground = true;
   }
 
   /** Changes the Spinner to one of the predefined types. */
@@ -66,13 +69,13 @@ public class Spinner extends Control implements Runnable {
       throw new IllegalArgumentException("Invalid type");
     }
     try {
-      anim0 = loaded[t] == null ? loaded[t] = new Image(files[t]) : loaded[t];
-      anim = null;
+      this.setImage(loaded[t] == null ? loaded[t] = new Image(files[t]) : loaded[t]);
     } catch (Exception e) {
       if (Settings.onJavaSE) {
         e.printStackTrace();
       }
     }
+    this.type = t;
   }
 
   /** Creates a spinner from an animated GIF.
@@ -96,17 +99,15 @@ public class Spinner extends Control implements Runnable {
    */
 
   public Spinner(Image anim) {
-    this.anim0 = anim;
-    if (UIColors.spinnerBack != -1) {
-      backColor = UIColors.spinnerBack;
-    }
-    foreColor = UIColors.spinnerFore;
+    this.setImage(anim);
+    this.transparentBackground = true;
   }
 
   /** Changes the gif image of this Spinner */
   public void setImage(Image anim) {
     this.anim0 = anim;
     this.anim = null;
+    this.type = -1;
   }
 
   @Override
@@ -123,7 +124,9 @@ public class Spinner extends Control implements Runnable {
   public void onPaint(Graphics g) {
     if (!Settings.isOpenGL) {
       g.backColor = backColor;
-      g.fillRect(0, 0, width, height);
+      if (!transparentBackground) {
+        g.fillRect(0, 0, width, height);
+      }
     }
     if (anim == null) {
       checkAnim();
@@ -136,7 +139,9 @@ public class Spinner extends Control implements Runnable {
   private void checkAnim() {
     try {
       anim = anim0.smoothScaledFixedAspectRatio(width < height ? width : height, true);
-      anim.applyColor2(getForeColor() | 0xAA000000);
+      if (type != -1) {
+        anim.applyColor2(getForeColor() | 0xAA000000);
+      }
     } catch (Exception e) {
       anim = null;
     }

@@ -32,8 +32,6 @@ import totalcross.ui.Spinner;
  * </pre>
  * 
  * @see totalcross.ui.Spinner#spinnerType
- * @see totalcross.ui.UIColors#spinnerFore
- * @see totalcross.ui.UIColors#spinnerBack
  * @since TotalCross 1.3
  */
 
