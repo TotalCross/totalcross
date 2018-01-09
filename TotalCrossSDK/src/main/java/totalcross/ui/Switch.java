@@ -124,7 +124,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
         buildBar();
       }
 
-      int perc = dragBarPos * 255 / (width - dragBarSize);
+      final int perc = dragBarPos * 100 / dragBarMax;
       if (effect != null) {
         effect.paintEffect(g);
       }
@@ -135,9 +135,9 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
         g.drawImage(barOn, 0, dy);
         barOn.alphaMask = 255;
       } else {
-        barOff.alphaMask = (255 - perc) * alphaValue / 255;
-        barOn.alphaMask = perc * alphaValue / 255;
-        if (perc != 255) {
+        barOn.alphaMask = alphaValue * perc / 100;
+        barOff.alphaMask = 255 - barOn.alphaMask;
+        if (perc != 100) {
           g.drawImage(barOff, 0, dy);
         }
         if (perc != 0) {
@@ -163,15 +163,15 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
       if (!uiMaterial) {
         g.drawImage(ballOn, dragBarPos, 0);
       } else {
-        ballOff.alphaMask = (255 - perc) * alphaValue / 255;
-        ballOn.alphaMask = perc * alphaValue / 255;
-        if (perc != 255) {
+        ballOn.alphaMask = alphaValue * perc / 100;
+        ballOff.alphaMask = 255 - ballOn.alphaMask;
+        if (perc != 100) {
           g.drawImage(ballOff, dragBarPos, 0);
         }
         if (perc != 0) {
           g.drawImage(ballOn, dragBarPos, 0);
         }
-        ballOff.alphaMask = ballOff.alphaMask = 255;
+        ballOff.alphaMask = ballOn.alphaMask = 255;
       }
       // text
       if (on && textForeOn != null) // text at left
