@@ -1,6 +1,27 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.0 - 2018-01-0?
+
+### Highlights
+- The Null Point Exception in 'Graphics.drawText' ocurs under some situations when the UI is loaded from a thered
+- Now the 'ImageControl.scaleToFit' accept windows transitions effects 
+- Fixed the Window bug that incorrectly calling 'onClickedOutside' when the user do a two-finger movement.
+- Now the ComboBox is'nt posting an event if the same item was selected again
+- The ScrollContainer display the controls correctly if order changes
+
+### Fixed
+
+
+### Added
+
+
+### Changes
+
+
+### Deprecated
+
+
 ## Unreleased
 
 ### Added
