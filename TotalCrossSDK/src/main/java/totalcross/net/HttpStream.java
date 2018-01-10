@@ -33,6 +33,7 @@ import totalcross.sys.Vm;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Hashtable;
+import totalcross.util.IOUtils;
 
 /**
  * A HttpStream HAS-A totalcross.net.Socket and takes care of exchange protocol. It starts reading (in a buffer) at the
@@ -505,7 +506,8 @@ public class HttpStream extends Stream {
 
   @Override
   public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
-    int bytesRead;
+    int lastRead = IOUtils.EOF;
+    int bytesRead = 0;
     if (contentLength != -1) {
       if (contentRead == contentLength) {
         return 0;
@@ -527,16 +529,16 @@ public class HttpStream extends Stream {
         buffer = null;
         bytesRead = len;
         if (count > len) {
-          int n = socket.readBytes(buf, start + len, count - len);
-          bytesRead += (n == -1 ? 0 : n);
+          lastRead = socket.readBytes(buf, start + len, count - len);
         }
       }
     } else {
-      bytesRead = socket.readBytes(buf, start, count);
+      lastRead = socket.readBytes(buf, start, count);
     }
+    bytesRead += (lastRead == IOUtils.EOF ? 0 : lastRead);
 
-    contentRead += (bytesRead == -1 ? 0 : bytesRead);
-    return bytesRead;
+    contentRead += (bytesRead == IOUtils.EOF ? 0 : bytesRead);
+    return (bytesRead == 0 && lastRead == IOUtils.EOF) ? IOUtils.EOF : bytesRead;
   }
 
   @Override

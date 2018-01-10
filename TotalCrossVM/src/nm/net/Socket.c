@@ -108,6 +108,8 @@ TC_API void tnS_readWriteBytes_Biib(NMParams p) // totalcross/net/Socket native 
       throwExceptionWithCode(p->currentContext, IOException, err);
    else if (retCount == -2) // timeout!
       throwException(p->currentContext, SocketTimeoutException, "Operation timed out");
+   else if (isRead && retCount == 0 && count > 0)
+      p->retI = -1;
    else
       p->retI = retCount;
 }
