@@ -18,16 +18,15 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - The ScrollContainer display the controls correctly if order changes
 - Running an app as applet does not require activation Reverted and redone to fix line endings creation of string with unicode character, without casting to char check for unicode character
-- MaterialEffect when used in a ListBox that was scrolled up (?)
-- Check's check not being painted if you set checked=true in the same event that set it as false  (?)
+- The MaterialEffect when used in a ListBox is resizing according to the size of the mobile device when that was scrolled up
 - The Radio's check not beign painted if set 'checked = true' in the same event that set it as false
 - 'MaterialEffect' had fixed fade out duration when the screen is heavy. it was using a constant decrease value, now alpha is computed based on remaining time
-- ScrollPosition's handle not being hidden when released (?)
+- Now the ScrollPosition's handle being hidden when released
 - The Check and Radio sending PRESSED event when setChecked is called, even if user did not want to send the event fade out duration when the screen is heavy.
 - The handling of incorrect values and errors on a font file are returned to the 'Graphics.drawText'
 - The Null Point Exception is called when font is loaded at first time
 - Null Pointer Exception and ArrayIndexOutOfBoundsException when paint is called from a thread
-- Control fix for issue 80  // Olhar que issue é essa e escrever mais aqui
+- As suggested in [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80), ProgressBar now retains its position even when there are other components that are in front of it instead of being drawning above that.
 - issue 100 bematech scanner //Olhar que issue é essa e escrever mais aqui
 - Fix ios icons // Ver o que foi consertado ou adicionado
 - Fixed the various links to changelogs in javadocs (colocar um link para o javadoc aqui)
