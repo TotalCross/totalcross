@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 - Now the ComboBox is`nt posting an event if the same item was selected again
 - The ScrollContainer display the controls correctly if order changes
 - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
+- xxx - Field newRanges was removed and processRange work now with ranges instead of int. 
+- `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
 
 
 ### Fixed
@@ -57,12 +59,10 @@ All notable changes to this project will be documented in this file.
 
 
 ### Changes
-- Now the Tcvm.dll build does not require high user execution when running on Windows
-
+- The tcvm.dll no longer requires elevated privileges to be run on Windows desktop
 - Changes `Spinner` to have transparent background by default
 - Changes `Spinner` to not mess with the colors when created using an `Image`
 - On iOS, the application now receives an ENTER key event when the keyboard is closed
-
 - A `RuntimeException` is no longer raised in JavaSE when you add a control to an `AccordionContainer`, and its height reaches zero during animation
 - Changed `ImageControl` to paint material effects only if there is an image and `setPressedEventsEnabled` was called
 - Now `Edit.autoSelect` puts cursor at end of line instead of begining, matching the behaviour of `MultiEdit`
