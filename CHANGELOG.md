@@ -6,8 +6,8 @@ All notable changes to this project will be documented in this file.
 ## 4.1.0 - 2018-01-0?
 
 ### Highlights
-- Firebase for iOS
-- SMS changes
+- [Firebase for iOS](https://gitlab.com/totalcross/TotalCross/wikis/Features/Post-Notification---Firebase)
+- [SMS changes](https://gitlab.com/totalcross/TotalCross/wikis/Features/sms-manager)
  - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
 - [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
 - Font support
@@ -57,7 +57,13 @@ All notable changes to this project will be documented in this file.
 - Changed `Time(char[] sqlTime)` to also parse the milliseconds value (`SQLite.getTime()` now includes milliseconds)
 
 ### Deprecated
-
+- File.readAndClose
+- eadAndDelete
+- writeAndClose
+- read()
+- UIControls
+ - spinnerFore
+ - spinnerBack
 
 ## 4.0.2 - 2017-09-01
 
