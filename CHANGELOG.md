@@ -12,29 +12,26 @@ All notable changes to this project will be documented in this file.
 - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
 - xxx - Field newRanges was removed and processRange work now with ranges instead of int parsing Range constructor now may throw `IllegalArgumentException` if start is before end
 - `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
-
+- creation of string with unicode character
+- 
 ### Fixed
-- The ScrollContainer display the controls correctly if order changes
-- If running an app as applet, so is not requires activation Reverted and redone for fix line endings creation of string with unicode character
-- The MaterialEffect when used in a ListBox is resizing according to the size of the mobile device when that was scrolled up
-- The Radio's check not being painted if the event set it as false (when `checked=true` in the same event)
-- `MaterialEffect` has fixed fade out duration when the screen is heavy.
-- Now the ScrollPosition`s handle being hidden when released
-- When check and Radio seding `PRESSED`, the` setChecked` is called, even if user did not feel it fade out duration
-- The handling of incorrect values and errors on a font file are returned to the `Graphics.drawText`
-- The `NullPointerException` is called when font is loaded at first time
-- `NullPointerException` and `ArrayIndexOutOfBoundsException` when paint is called from a thread
-- `ProgressBar` now retains its position when there are other components that are in front of it - [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80)
-- Fixed iOS Icons by adding method `colorDist (int rgb1, int rgb2)` and `addFillPoint (int x, int y)`
-- The `ImageControl` was scaling the resized image shown inthe control but it was fixed and it is showning the original image
-- Fixed the internal scanner usage on Android devices
+- Fixed `ScrollContainer` to properly display the controls if the order is changed
+- Fixed MaterialEffect on a `ListBox` that was scrolled up
+- Fixed Radio not being correctly painted when checked is set to true within the same event that changed it to false
+- Fixed `MaterialEffect` fade out duration - alpha is now computed based on remaining time instead of using a constant decreasing value
+- Fixed ScrollPosition's handle not being hidden when released
+- Fixed Check and Radio sending PRESSED event when setChecked is called, even when Settings.sendPressEventOnChange is set to false
+- Fixed Launcher to better handle missing or bogus font files when running on desktop
+- On Graphics, fixed `NullPointerException` and `ArrayIndexOutOfBoundsException` when repaint is called from a thread
+- Fixed `ProgressBar` to retain the z-order when its value is updated [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80)
+- Fixed iOS icons by adding method `colorDist (int rgb1, int rgb2)` and `addFillPoint (int x, int y)`
+- Fixed `ImageControl` zooming with poor quality, it was scaling the resized image displayed in the control instead of the original image
+- Fixed usage of internal scanners on Android devices
 - Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
-- Fixed the scanner that was cutting part of the bar code - [issue 106](https://gitlab.com/totalcross/TotalCross/issues/106)
-- Fixed the bad alpha percentage because the Switch which was disappearing on Android
-- The `NullPointerException` in `Graphics.drawText` ocurs under some situations when the UI is loaded from a thered
-- Fixed the Window bug that incorrectly calling `onClickedOutside` when the user do a two-finger movement.
-- Now the `ComboBox` is not posting an event if the same item was selected again
-- The `ScrollContainer` display the controls correctly if order changes
+- Fixed barcode reading with Motorola scanners when the digits of both halves of the barcode were the same (such as 10161016 or 10201020) - [issue 106](https://gitlab.com/totalcross/TotalCross/issues/106)
+- Fixed Switch disappearing on Android - calculation of alpha channel applied to the switch was wrong
+- Fixed `NullPointerException` in `Graphics.drawText` that would occur under some situations when the UI is loaded from a thread
+- Fixed Window incorrectly calling `onClickedOutside` when a two-finger movement is performed
 
 ### Added
 - Added support to Bematech scanner back to the SDK - [issue 100](https://gitlab.com/totalcross/TotalCross/issues/100)
