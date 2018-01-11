@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 ## 4.1.0 - 2018-01-0?
 
 ### Highlights
-- The Null Point Exception in `Graphics.drawText` ocurs under some situations when the UI is loaded from a thered
+- The `NullPointerException` in `Graphics.drawText` ocurs under some situations when the UI is loaded from a thered
 - Now the `ImageControl.scaleToFit` accept windows transitions effects 
 - Fixed the Window bug that incorrectly calling `onClickedOutside` when the user do a two-finger movement.
 - Now the ComboBox is`nt posting an event if the same item was selected again
@@ -21,16 +21,15 @@ All notable changes to this project will be documented in this file.
 - The ScrollContainer display the controls correctly if order changes
 - Running an app as applet does not require activation Reverted and redone to fix line endings creation of string with unicode character, without casting to char check for unicode character
 - The MaterialEffect when used in a ListBox is resizing according to the size of the mobile device when that was scrolled up
-- The Radio`s check not beign painted if set `checked = true` in the same event that set it as false
+- The Radio's check not beign painted if set `checked = true` in the same event that set it as false
 - `MaterialEffect` had fixed fade out duration when the screen is heavy. it was using a constant decrease value, now alpha is computed based on remaining time
 - Now the ScrollPosition`s handle being hidden when released
 - The Check and Radio sending PRESSED event when setChecked is called, even if user did not want to send the event fade out duration when the screen is heavy.
 - The handling of incorrect values and errors on a font file are returned to the `Graphics.drawText`
-- The Null Point Exception is called when font is loaded at first time
-- Null Pointer Exception and ArrayIndexOutOfBoundsException when paint is called from a thread
+- The `NullPointerException` is called when font is loaded at first time
+- `NullPointerException` and `ArrayIndexOutOfBoundsException` when paint is called from a thread
 - As suggested in [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80), ProgressBar now retains its position even when there are other components that are in front of it instead of being drawning above that.
-- Fixed IOS Icons by adding method `colorDist (int rgb1, int rgb2)` and `addFillPoint (int x, int y)`
-- Fixes buid by disabling the flag `ENABLE_BITCODE`
+- Fixed iOS Icons by adding method `colorDist (int rgb1, int rgb2)` and `addFillPoint (int x, int y)`
 - The ImageControl was scaling the resized image shown inthe control but it was fixed and it is showning the original image
 - Fixed the internal scanner usage on Android devices
 - Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
@@ -39,7 +38,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Added
-- Deploy was implemented on Linux and now the deploy used for IOS works on Linux without use X11 DISPLAY
+- Deploy was implemented on Linux and now the deploy used for iOS works on Linux without use X11 DISPLAY
 - Accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
 - Added `Settings.showUIErrors` set to false to disable UI errors that are shown in desktop only.
 - `Flick.dontPropagate`, now can be useful if you have 2 or more intrinsic ScrollContainers and dont want to propagate the scroll among them
@@ -62,14 +61,11 @@ All notable changes to this project will be documented in this file.
 - Now the Tcvm.dll build does not require high user execution when running on Windows
 - `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
 - Spinner have transparent background by default and to not mess with the image colors
-- Changed Throwable4D to create the `ArrayList` just if needed field from `private` to `protected`
 - When ios keyboard closes must be send ENTER key to application
-- Changed the javadoc inasmuch as we using lambda expressions with Java8
 - FontGenerator default execution less verbose
 - A RuntimeException is no longer raised in JavaSE when you add a control to an AccordionContainer, and its height reaches zero during animation
 - Type of `newRanges` was changed from Vector to `List <Range>`
 - Field newRanges was removed and processRange work now with ranges instead of int. 
-- The message warning was put back
 - Changed `ImageControl` to paint material effects only if there is an image and `setPressedEventsEnabled` was called
 - Now `Edit.autoSelect` puts cursor at end of line instead of begining, matching the behaviour of `MultiEdit`
 - Now if you press ENTER in a set of Edits that are inside a `ScrollContainer`, it scrolls automatically to the next control.
