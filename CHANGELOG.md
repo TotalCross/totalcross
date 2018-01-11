@@ -35,10 +35,9 @@ All notable changes to this project will be documented in this file.
 - Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
 - Fixed the scanner that was cutting part of the bar code, as issue [106](https://gitlab.com/totalcross/TotalCross/issues/106)
 - Fixed the bad alpha percentage because the Switch which was disappearing on Android
-
+- Fixed deploy for iOS on headless Linux (without X11 DISPLAY)
 
 ### Added
-- Deploy was implemented on Linux and now the deploy used for iOS works on Linux without use X11 DISPLAY
 - Accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
 - Added `Settings.showUIErrors` set to false to disable UI errors that are shown in desktop only.
 - `Flick.dontPropagate`, now can be useful if you have 2 or more intrinsic ScrollContainers and dont want to propagate the scroll among them
@@ -59,13 +58,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 - Now the Tcvm.dll build does not require high user execution when running on Windows
-- `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
-- Spinner have transparent background by default and to not mess with the image colors
-- When ios keyboard closes must be send ENTER key to application
-- FontGenerator default execution less verbose
-- A RuntimeException is no longer raised in JavaSE when you add a control to an AccordionContainer, and its height reaches zero during animation
-- Type of `newRanges` was changed from Vector to `List <Range>`
-- Field newRanges was removed and processRange work now with ranges instead of int. 
+
+- Changes `Spinner` to have transparent background by default
+- Changes `Spinner` to not mess with the colors when created using an `Image`
+- On iOS, the application now receives an ENTER key event when the keyboard is closed
+
+- A `RuntimeException` is no longer raised in JavaSE when you add a control to an `AccordionContainer`, and its height reaches zero during animation
 - Changed `ImageControl` to paint material effects only if there is an image and `setPressedEventsEnabled` was called
 - Now `Edit.autoSelect` puts cursor at end of line instead of begining, matching the behaviour of `MultiEdit`
 - Now if you press ENTER in a set of Edits that are inside a `ScrollContainer`, it scrolls automatically to the next control.
