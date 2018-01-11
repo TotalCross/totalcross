@@ -27,7 +27,6 @@ All notable changes to this project will be documented in this file.
 - The Null Point Exception is called when font is loaded at first time
 - Null Pointer Exception and ArrayIndexOutOfBoundsException when paint is called from a thread
 - As suggested in [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80), ProgressBar now retains its position even when there are other components that are in front of it instead of being drawning above that.
-- issue 100 bematech scanner //Olhar que issue é essa e escrever mais aqui
 - Fix ios icons // Ver o que foi consertado ou adicionado
 - Fixed the various links to changelogs in javadocs (colocar um link para o javadoc aqui)
 - Fixes buid by disabling the flag ENABLE_BITCODE (Found what they may be)
@@ -44,6 +43,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Deploy was implemented on Linux and now the deploy used for IOS works on Linux without use X11 DISPLAY
 - Added artifice to move a copy to block 'doLast' to ensure 'gradle' does attempt to copy the resulting files before they are created
+-accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
+
 
 ### Changes
 - Now the Tcvm.dll build does not require high user execution when running on Windows
