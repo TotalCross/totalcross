@@ -286,8 +286,7 @@ public class Socket extends Stream {
       }
 
       try {
-        int result = ((java.io.InputStream) myInputStream).read(buf, start, count);
-        return result == -1 ? 0 : result;
+        return ((java.io.InputStream) myInputStream).read(buf, start, count);
       } catch (java.net.SocketTimeoutException e) {
         throw new totalcross.net.SocketTimeoutException(e.getMessage());
       } catch (java.io.IOException e) {
