@@ -1,8 +1,6 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## Unreleased
-
 ## 4.1.0 - 2018-01-0?
 
 ### Highlights
@@ -20,8 +18,8 @@ All notable changes to this project will be documented in this file.
 - Fixed MaterialEffect on a `ListBox` that was scrolled up
 - Fixed Radio not being correctly painted when checked is set to true within the same event that changed it to false
 - Fixed `MaterialEffect` fade out duration - alpha is now computed based on remaining time instead of using a constant decreasing value
-- Fixed ScrollPosition's handle not being hidden when released
-- Fixed Check and Radio sending PRESSED event when setChecked is called, even when Settings.sendPressEventOnChange is set to false
+- Fixed `ScrollPosition`'s handle not being hidden when released
+- Fixed Check and Radio sending PRESSED event when `setChecked` is called, even when `Settings.sendPressEventOnChange` is set to false
 - Fixed Launcher to better handle missing or bogus font files when running on desktop
 - On Graphics, fixed `NullPointerException` and `ArrayIndexOutOfBoundsException` when repaint is called from a thread
 - Fixed `ProgressBar` to retain the z-order when its value is updated [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80)
@@ -33,12 +31,12 @@ All notable changes to this project will be documented in this file.
 - Fixed Switch disappearing on Android - calculation of alpha channel applied to the switch was wrong
 - Fixed `NullPointerException` in `Graphics.drawText` that would occur under some situations when the UI is loaded from a thread
 - Fixed Window incorrectly calling `onClickedOutside` when a two-finger movement is performed
-- Fixed MaterialEffect to not apply effects during a flick
+- Fixed `MaterialEffect` to not apply effects during a flick
 
 ### Added
 - Added support to Bematech scanner back to the SDK - [issue 100](https://gitlab.com/totalcross/TotalCross/issues/100)
 - Added `Settings.showUIErrors`, which can be set to false to disable UI errors that are shown in desktop only.
-- Added `Flick.dontPropagate`, which can be useful if you have two or more intrinsic ScrollContainers and dont want to propagate the scroll among them
+- Added `Flick.dontPropagate`, which can be useful if you have two or more intrinsic `ScrollContainers` and dont want to propagate the scroll among them
 - Added `ScrollContainer.canShowScrollBar`s, which gives child classes finer control on whether scrollbars should be displayed or not
 - Added `ComboBox.getArrowColor` and now you can change the arrow color at runtime
 - Added classes `java.awt.Dimension` and its dependencies - `java.awt.geom.Dimension2D`, `java.lang.InternalError`, `java.lang.VirtualMachineError`
@@ -57,13 +55,13 @@ All notable changes to this project will be documented in this file.
 - Changed `Time(char[] sqlTime)` to also parse the milliseconds value (`SQLite.getTime()` now includes milliseconds)
 
 ### Deprecated
-- File.readAndClose
-- eadAndDelete
-- writeAndClose
-- read()
+- `File.readAndClose`
+- `eadAndDelete`
+- `writeAndClose`
+- `read()`
 - UIControls
- - spinnerFore
- - spinnerBack
+ - `spinnerFore`
+ - `spinnerBack`
 
 ## 4.0.2 - 2017-09-01
 
