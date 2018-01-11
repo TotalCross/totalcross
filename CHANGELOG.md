@@ -9,15 +9,9 @@ All notable changes to this project will be documented in this file.
 ## 4.1.0 - 2018-01-0?
 
 ### Highlights
-- The `NullPointerException` in `Graphics.drawText` ocurs under some situations when the UI is loaded from a thered
-- Now the `ImageControl.scaleToFit` accept windows transitions effects 
-- Fixed the Window bug that incorrectly calling `onClickedOutside` when the user do a two-finger movement.
-- Now the ComboBox is`nt posting an event if the same item was selected again
-- The ScrollContainer display the controls correctly if order changes
 - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
 - xxx - Field newRanges was removed and processRange work now with ranges instead of int parsing Range constructor now may throw `IllegalArgumentException` if start is before end
 - `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
-
 
 ### Fixed
 - The ScrollContainer display the controls correctly if order changes
@@ -38,6 +32,11 @@ All notable changes to this project will be documented in this file.
 - Fixed the scanner that was cutting part of the bar code, as issue [106](https://gitlab.com/totalcross/TotalCross/issues/106)
 - Fixed the bad alpha percentage because the Switch which was disappearing on Android
 - Fixed deploy for iOS on headless Linux (without X11 DISPLAY)
+- The `NullPointerException` in `Graphics.drawText` ocurs under some situations when the UI is loaded from a thered
+- Now the `ImageControl.scaleToFit` accept windows transitions effects 
+- Fixed the Window bug that incorrectly calling `onClickedOutside` when the user do a two-finger movement.
+- Now the ComboBox is`nt posting an event if the same item was selected again
+- The ScrollContainer display the controls correctly if order changes
 
 ### Added
 - Added support to Bematech scanner back to the SDK - [100](https://gitlab.com/totalcross/TotalCross/issues/100)
