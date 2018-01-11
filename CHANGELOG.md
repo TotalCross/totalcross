@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 - Now the ComboBox is`nt posting an event if the same item was selected again
 - The ScrollContainer display the controls correctly if order changes
 - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
-- xxx - Field newRanges was removed and processRange work now with ranges instead of int. 
+- xxx - Field newRanges was removed and processRange work now with ranges instead of int parsing Range constructor now may throw `IllegalArgumentException` if start is before end
 - `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
 
 
@@ -40,23 +40,17 @@ All notable changes to this project will be documented in this file.
 - Fixed deploy for iOS on headless Linux (without X11 DISPLAY)
 
 ### Added
-- Accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
-- Added `Settings.showUIErrors` set to false to disable UI errors that are shown in desktop only.
-- `Flick.dontPropagate`, now can be useful if you have 2 or more intrinsic ScrollContainers and dont want to propagate the scroll among them
-- ScrollContainer.canShowScrollBars, a protected method that you can override for fine control whether scrollbars can be displayed or not, being important when you are carrying a canvas and the scrolls are visible, even if there is no component.
+- Added support to Bematech scanner back to the SDK - [100](https://gitlab.com/totalcross/TotalCross/issues/100)
+- Added `Settings.showUIErrors`, which can be set to false to disable UI errors that are shown in desktop only.
+- Added `Flick.dontPropagate`, which can be useful if you have two or more intrinsic ScrollContainers and dont want to propagate the scroll among them
+- Added `ScrollContainer.canShowScrollBar`s, which gives child classes finer control on whether scrollbars should be displayed or not
 - Added `ComboBox.getArrowColor` and now you can change the arrow color at runtime
-- Now, SQLite.getTime () also includes milis, which is enabled by changing the Time Constructor
-- Adds class `java.awt.Dimension` and its dependencies
-- Added the support control transition
-- Now, in a transition you can take 2 screenshots of the same control
-- Use offscreen0 if available to Window and FadeAnimation
-- Final modifier to variables for readability
-- Added method `toString(long i, int radix)`
-- If material is applied during a flick, it halts the flick making a strange effect
-- The FlowContainer now have your tempW setting -1 when there is already a valid width
-- Added a increase cursor thickness on high res devices
-- Parsing Range constructor now may throw `IllegalArgumentException` if start is before end
-
+- Added classes `java.awt.Dimension` and its dependencies - `java.awt.geom.Dimension2D`, `java.lang.InternalError`, `java.lang.VirtualMachineError`
+- Added method `Long.toString(long i, int radix)` to `java.lang.Long`
+- ? Added the support control transition
+- ? Now, in a transition you can take 2 screenshots of the same control
+- ? Use offscreen0 if available to Window and FadeAnimation
+- ? If material is applied during a flick, it halts the flick making a strange effect
 
 ### Changes
 - The tcvm.dll no longer requires elevated privileges to be run on Windows desktop
@@ -67,6 +61,8 @@ All notable changes to this project will be documented in this file.
 - Changed `ImageControl` to paint material effects only if there is an image and `setPressedEventsEnabled` was called
 - Now `Edit.autoSelect` puts cursor at end of line instead of begining, matching the behaviour of `MultiEdit`
 - Now if you press ENTER in a set of Edits that are inside a `ScrollContainer`, it scrolls automatically to the next control.
+- Increased cursor thickness on `Edit` for devices with high resolution
+- Changed `Time(char[] sqlTime)` to also parse the milliseconds value (`SQLite.getTime()` now includes milliseconds)
 
 ### Deprecated
 
