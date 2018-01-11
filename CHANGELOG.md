@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 - Fixed the Window bug that incorrectly calling 'onClickedOutside' when the user do a two-finger movement.
 - Now the ComboBox is'nt posting an event if the same item was selected again
 - The ScrollContainer display the controls correctly if order changes
+- Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
+
 
 ### Fixed
 - The ScrollContainer display the controls correctly if order changes
@@ -40,10 +42,41 @@ All notable changes to this project will be documented in this file.
 - Deploy was implemented on Linux and now the deploy used for IOS works on Linux without use X11 DISPLAY
 - Added artifice to move a copy to block 'doLast' to ensure 'gradle' does attempt to copy the resulting files before they are created
 - Accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
+- Added 'Settings.showUIErrors' set to false to disable UI errors that are shown in desktop only.
+- ‘Flick.dontPropagate’, now can be useful if you have 2 or more intrinsic ScrollContainers and dont want to propagate the scroll among them
+- ScrollContainer.canShowScrollBars, a protected method that you can override for fine control whether scrollbars can be displayed or not, being important when you are carrying a canvas and the scrolls are visible, even if there is no component.
+- Added ‘ComboBox.getArrowColor’ and now you can change the arrow color at runtime
+- Now, SQLite.getTime () also includes milis, which is enabled by changing the Time Constructor
+- Adds class 'java.awt.Dimension' and its dependencies
+- Added the support control transition
+- Now, in a transition you can take 2 screenshots of the same control
+- use offscreen0 if available to Window and FadeAnimation
+- Use target buildVisualStrudio2008 to build Totalcross and Lifebase for Win32 and WinCE
+- final modifier to variables for readability
+- Added method 'toString(long i, int radix)'
+- if material is applied during a flick, it halts the flick making a strange effect
+- The FlowContainer now have your tempW setting -1 when there is already a valid width
+- Added a increase cursor thickness on high res devices
+- Parsing Range constructor now may throw 'IllegalArgumentException' if start is before end
 
 
 ### Changes
 - Now the Tcvm.dll build does not require high user execution when running on Windows
+- 'ProcessRange' to check valid chars for the selected Font adds method toString to class 'Range' updates documentation to reflect the changes in argument processing
+- Spinner have transparent background by default and to not mess with the image colors
+- Changed Throwable4D to create the 'ArrayList' just if needed field from 'private' to 'protected'
+- When ios keyboard closes must be send ENTER key to application
+- Remove task alxjoin which was used a long time ago for BlackBerry
+- Remove unused stuff from ant build
+- Changed the javadoc inasmuch as we using lambda expressions with Java8
+- FontGenerator default execution less verbose
+- A RuntimeException is no longer raised in JavaSE when you add a control to an AccordionContainer, and its height reaches zero during animation
+- Type of 'newRanges' was changed from Vector to 'List <Range>'
+- Field newRanges was removed and processRange work now with ranges instead of int. 
+- The message warning was put back
+- Changed 'ImageControl' to paint material effects only if there is an image and 'setPressedEventsEnabled' was called
+- Now 'Edit.autoSelect' puts cursor at end of line instead of begining, matching the behaviour of 'MultiEdit'
+- Now if you press ENTER in a set of Edits that are inside a 'ScrollContainer', it scrolls automatically to the next control.
 
 ### Deprecated
 
