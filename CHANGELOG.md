@@ -1,6 +1,11 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+- [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
+
 ## 4.1.0 - 2018-01-0?
 
 ### Highlights
@@ -11,10 +16,6 @@ All notable changes to this project will be documented in this file.
 - The ScrollContainer display the controls correctly if order changes
 
 ### Fixed
-- The Null Point Exception in 'Graphics.drawText' ocurs under some situations when the UI is loaded from a thered
-- Now the 'ImageControl.scaleToFit' accept windows transitions effects 
-- Fixed the Window bug that incorrectly calling 'onClickedOutside' when the user do a two-finger movement.
-- Now the ComboBox is'nt posting an event if the same item was selected again
 - The ScrollContainer display the controls correctly if order changes
 - Running an app as applet does not require activation Reverted and redone to fix line endings creation of string with unicode character, without casting to char check for unicode character
 - MaterialEffect when used in a ListBox that was scrolled up (?)
@@ -30,15 +31,16 @@ All notable changes to this project will be documented in this file.
 - issue 100 bematech scanner //Olhar que issue é essa e escrever mais aqui
 - Fix ios icons // Ver o que foi consertado ou adicionado
 - Fixed the various links to changelogs in javadocs (colocar um link para o javadoc aqui)
-- fixes buid by disabling the flag ENABLE_BITCODE (Found what they may be)
-- fix path to Litebase.xcodeproj //descobrir o q foi consertado aqui
-- fix compilation error //idem
+- Fixes buid by disabling the flag ENABLE_BITCODE (Found what they may be)
+- Fix path to Litebase.xcodeproj //descobrir o q foi consertado aqui
+- Fix compilation error //idem
 - The ImageControl was scaling the resized image shown inthe control but it was fixed and it is showning the original image
 - Resolve "Corrige uso de scanner interno em aparelhos Android" //olhar que isssue é essa, por em ingles e detalhar aqui
 - Bugfix aygshell functions //descobrir o q ser isso
 - fixed bug where screen was not being shifted when changing focus between Edits using 'PEN_UP' or ENTER
 - issue 106 fix motorola scanner //Olhar que issue é essa e escrever mais aqui
 - Fixed the bad alpha percentage because the Switch which was disappearing on Android
+
 
 ### Added
 - Deploy was implemented on Linux and now the deploy used for IOS works on Linux without use X11 DISPLAY
@@ -48,12 +50,6 @@ All notable changes to this project will be documented in this file.
 - Now the Tcvm.dll build does not require high user execution when running on Windows
 
 ### Deprecated
-
-
-## Unreleased
-
-### Added
-- [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
 
 ## 4.0.2 - 2017-09-01
 
