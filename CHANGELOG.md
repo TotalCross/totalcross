@@ -11,13 +11,41 @@ All notable changes to this project will be documented in this file.
 - The ScrollContainer display the controls correctly if order changes
 
 ### Fixed
-
+- The Null Point Exception in 'Graphics.drawText' ocurs under some situations when the UI is loaded from a thered
+- Now the 'ImageControl.scaleToFit' accept windows transitions effects 
+- Fixed the Window bug that incorrectly calling 'onClickedOutside' when the user do a two-finger movement.
+- Now the ComboBox is'nt posting an event if the same item was selected again
+- The ScrollContainer display the controls correctly if order changes
+- Running an app as applet does not require activation Reverted and redone to fix line endings creation of string with unicode character, without casting to char check for unicode character
+- MaterialEffect when used in a ListBox that was scrolled up (?)
+- Check's check not being painted if you set checked=true in the same event that set it as false  (?)
+- The Radio's check not beign painted if set 'checked = true' in the same event that set it as false
+- 'MaterialEffect' had fixed fade out duration when the screen is heavy. it was using a constant decrease value, now alpha is computed based on remaining time
+- ScrollPosition's handle not being hidden when released (?)
+- The Check and Radio sending PRESSED event when setChecked is called, even if user did not want to send the event fade out duration when the screen is heavy.
+- The handling of incorrect values and errors on a font file are returned to the 'Graphics.drawText'
+- The Null Point Exception is called when font is loaded at first time
+- Null Pointer Exception and ArrayIndexOutOfBoundsException when paint is called from a thread
+- Control fix for issue 80  // Olhar que issue é essa e escrever mais aqui
+- issue 100 bematech scanner //Olhar que issue é essa e escrever mais aqui
+- Fix ios icons // Ver o que foi consertado ou adicionado
+- Fixed the various links to changelogs in javadocs (colocar um link para o javadoc aqui)
+- fixes buid by disabling the flag ENABLE_BITCODE (Found what they may be)
+- fix path to Litebase.xcodeproj //descobrir o q foi consertado aqui
+- fix compilation error //idem
+- The ImageControl was scaling the resized image shown inthe control but it was fixed and it is showning the original image
+- Resolve "Corrige uso de scanner interno em aparelhos Android" //olhar que isssue é essa, por em ingles e detalhar aqui
+- Bugfix aygshell functions //descobrir o q ser isso
+- fixed bug where screen was not being shifted when changing focus between Edits using 'PEN_UP' or ENTER
+- issue 106 fix motorola scanner //Olhar que issue é essa e escrever mais aqui
+- Fixed the bad alpha percentage because the Switch which was disappearing on Android
 
 ### Added
-
+- Deploy was implemented on Linux and now the deploy used for IOS works on Linux without use X11 DISPLAY
+- Added artifice to move a copy to block 'doLast' to ensure 'gradle' does attempt to copy the resulting files before they are created
 
 ### Changes
-
+- Now the Tcvm.dll build does not require high user execution when running on Windows
 
 ### Deprecated
 
