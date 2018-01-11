@@ -3,17 +3,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-### Added
-- [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
-
 ## 4.1.0 - 2018-01-0?
 
 ### Highlights
-- Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
-- xxx - Field newRanges was removed and processRange work now with ranges instead of int parsing Range constructor now may throw `IllegalArgumentException` if start is before end
-- `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
-- creation of string with unicode character
-- 
+- Firebase for iOS
+- SMS changes
+ - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
+- [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
+- Font support
+ - xxx - Field newRanges was removed and processRange work now with ranges instead of int parsing Range constructor now may throw `IllegalArgumentException` if start is before end
+ - `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
+ - creation of string with unicode character
+
 ### Fixed
 - Fixed `ScrollContainer` to properly display the controls if the order is changed
 - Fixed MaterialEffect on a `ListBox` that was scrolled up
@@ -32,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - Fixed Switch disappearing on Android - calculation of alpha channel applied to the switch was wrong
 - Fixed `NullPointerException` in `Graphics.drawText` that would occur under some situations when the UI is loaded from a thread
 - Fixed Window incorrectly calling `onClickedOutside` when a two-finger movement is performed
+- Fixed MaterialEffect to not apply effects during a flick
 
 ### Added
 - Added support to Bematech scanner back to the SDK - [issue 100](https://gitlab.com/totalcross/TotalCross/issues/100)
@@ -41,10 +43,6 @@ All notable changes to this project will be documented in this file.
 - Added `ComboBox.getArrowColor` and now you can change the arrow color at runtime
 - Added classes `java.awt.Dimension` and its dependencies - `java.awt.geom.Dimension2D`, `java.lang.InternalError`, `java.lang.VirtualMachineError`
 - Added method `Long.toString(long i, int radix)` to `java.lang.Long`
-- ? Added the support control transition
-- ? Now, in a transition you can take 2 screenshots of the same control
-- ? Use offscreen0 if available to Window and FadeAnimation
-- ? If material is applied during a flick, it halts the flick making a strange effect
 
 ### Changes
 - The tcvm.dll no longer requires elevated privileges to be run on Windows desktop
