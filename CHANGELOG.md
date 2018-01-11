@@ -27,23 +27,19 @@ All notable changes to this project will be documented in this file.
 - The Null Point Exception is called when font is loaded at first time
 - Null Pointer Exception and ArrayIndexOutOfBoundsException when paint is called from a thread
 - As suggested in [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80), ProgressBar now retains its position even when there are other components that are in front of it instead of being drawning above that.
-- Fix ios icons // Ver o que foi consertado ou adicionado
-- Fixed the various links to changelogs in javadocs (colocar um link para o javadoc aqui)
-- Fixes buid by disabling the flag ENABLE_BITCODE (Found what they may be)
-- Fix path to Litebase.xcodeproj //descobrir o q foi consertado aqui
-- Fix compilation error //idem
+- Fixed IOS Icons by adding method 'colorDist (int rgb1, int rgb2)' and 'addFillPoint (int x, int y)'
+- Fixes buid by disabling the flag 'ENABLE_BITCODE'
 - The ImageControl was scaling the resized image shown inthe control but it was fixed and it is showning the original image
-- Resolve "Corrige uso de scanner interno em aparelhos Android" //olhar que isssue é essa, por em ingles e detalhar aqui
-- Bugfix aygshell functions //descobrir o q ser isso
+- Fixed the internal scanner usage on Android devices
 - fixed bug where screen was not being shifted when changing focus between Edits using 'PEN_UP' or ENTER
-- issue 106 fix motorola scanner //Olhar que issue é essa e escrever mais aqui
+- fixed the scanner that was cutting part of the bar code, as issue [106](https://gitlab.com/totalcross/TotalCross/issues/106)
 - Fixed the bad alpha percentage because the Switch which was disappearing on Android
 
 
 ### Added
 - Deploy was implemented on Linux and now the deploy used for IOS works on Linux without use X11 DISPLAY
 - Added artifice to move a copy to block 'doLast' to ensure 'gradle' does attempt to copy the resulting files before they are created
--accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
+- Accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
 
 
 ### Changes
