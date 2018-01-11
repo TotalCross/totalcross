@@ -15,31 +15,29 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - The ScrollContainer display the controls correctly if order changes
-- Running an app as applet does not require activation Reverted and redone to fix line endings creation of string with unicode character, without casting to char check for unicode character
+- If running an app as applet, so is not requires activation Reverted and redone for fix line endings creation of string with unicode character
 - The MaterialEffect when used in a ListBox is resizing according to the size of the mobile device when that was scrolled up
-- The Radio's check not beign painted if set `checked = true` in the same event that set it as false
-- `MaterialEffect` had fixed fade out duration when the screen is heavy. it was using a constant decrease value, now alpha is computed based on remaining time
+- The Radio's check not being painted if the event set it as false (when `checked=true` in the same event)
+- `MaterialEffect` has fixed fade out duration when the screen is heavy.
 - Now the ScrollPosition`s handle being hidden when released
-- The Check and Radio sending PRESSED event when setChecked is called, even if user did not want to send the event fade out duration when the screen is heavy.
+- When check and Radio seding `PRESSED`, the` setChecked` is called, even if user did not feel it fade out duration
 - The handling of incorrect values and errors on a font file are returned to the `Graphics.drawText`
 - The `NullPointerException` is called when font is loaded at first time
 - `NullPointerException` and `ArrayIndexOutOfBoundsException` when paint is called from a thread
-- As suggested in [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80), ProgressBar now retains its position even when there are other components that are in front of it instead of being drawning above that.
+- `ProgressBar` now retains its position when there are other components that are in front of it - [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80)
 - Fixed iOS Icons by adding method `colorDist (int rgb1, int rgb2)` and `addFillPoint (int x, int y)`
-- The ImageControl was scaling the resized image shown inthe control but it was fixed and it is showning the original image
+- The `ImageControl` was scaling the resized image shown inthe control but it was fixed and it is showning the original image
 - Fixed the internal scanner usage on Android devices
 - Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
-- Fixed the scanner that was cutting part of the bar code, as issue [106](https://gitlab.com/totalcross/TotalCross/issues/106)
+- Fixed the scanner that was cutting part of the bar code - [issue 106](https://gitlab.com/totalcross/TotalCross/issues/106)
 - Fixed the bad alpha percentage because the Switch which was disappearing on Android
-- Fixed deploy for iOS on headless Linux (without X11 DISPLAY)
 - The `NullPointerException` in `Graphics.drawText` ocurs under some situations when the UI is loaded from a thered
-- Now the `ImageControl.scaleToFit` accept windows transitions effects 
 - Fixed the Window bug that incorrectly calling `onClickedOutside` when the user do a two-finger movement.
-- Now the ComboBox is`nt posting an event if the same item was selected again
-- The ScrollContainer display the controls correctly if order changes
+- Now the `ComboBox` is not posting an event if the same item was selected again
+- The `ScrollContainer` display the controls correctly if order changes
 
 ### Added
-- Added support to Bematech scanner back to the SDK - [100](https://gitlab.com/totalcross/TotalCross/issues/100)
+- Added support to Bematech scanner back to the SDK - [issue 100](https://gitlab.com/totalcross/TotalCross/issues/100)
 - Added `Settings.showUIErrors`, which can be set to false to disable UI errors that are shown in desktop only.
 - Added `Flick.dontPropagate`, which can be useful if you have two or more intrinsic ScrollContainers and dont want to propagate the scroll among them
 - Added `ScrollContainer.canShowScrollBar`s, which gives child classes finer control on whether scrollbars should be displayed or not
