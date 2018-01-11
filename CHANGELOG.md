@@ -33,14 +33,13 @@ All notable changes to this project will be documented in this file.
 - Fixes buid by disabling the flag `ENABLE_BITCODE`
 - The ImageControl was scaling the resized image shown inthe control but it was fixed and it is showning the original image
 - Fixed the internal scanner usage on Android devices
-- fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
-- fixed the scanner that was cutting part of the bar code, as issue [106](https://gitlab.com/totalcross/TotalCross/issues/106)
+- Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
+- Fixed the scanner that was cutting part of the bar code, as issue [106](https://gitlab.com/totalcross/TotalCross/issues/106)
 - Fixed the bad alpha percentage because the Switch which was disappearing on Android
 
 
 ### Added
 - Deploy was implemented on Linux and now the deploy used for IOS works on Linux without use X11 DISPLAY
-- Added artifice to move a copy to block `doLast` to ensure `gradle` does attempt to copy the resulting files before they are created
 - Accordant issue [100](https://gitlab.com/totalcross/TotalCross/issues/100), the bematech scanner was added back to the SDK
 - Added `Settings.showUIErrors` set to false to disable UI errors that are shown in desktop only.
 - `Flick.dontPropagate`, now can be useful if you have 2 or more intrinsic ScrollContainers and dont want to propagate the scroll among them
@@ -50,11 +49,10 @@ All notable changes to this project will be documented in this file.
 - Adds class `java.awt.Dimension` and its dependencies
 - Added the support control transition
 - Now, in a transition you can take 2 screenshots of the same control
-- use offscreen0 if available to Window and FadeAnimation
-- Use target buildVisualStrudio2008 to build Totalcross and Lifebase for Win32 and WinCE
-- final modifier to variables for readability
+- Use offscreen0 if available to Window and FadeAnimation
+- Final modifier to variables for readability
 - Added method `toString(long i, int radix)`
-- if material is applied during a flick, it halts the flick making a strange effect
+- If material is applied during a flick, it halts the flick making a strange effect
 - The FlowContainer now have your tempW setting -1 when there is already a valid width
 - Added a increase cursor thickness on high res devices
 - Parsing Range constructor now may throw `IllegalArgumentException` if start is before end
@@ -66,8 +64,6 @@ All notable changes to this project will be documented in this file.
 - Spinner have transparent background by default and to not mess with the image colors
 - Changed Throwable4D to create the `ArrayList` just if needed field from `private` to `protected`
 - When ios keyboard closes must be send ENTER key to application
-- Remove task alxjoin which was used a long time ago for BlackBerry
-- Remove unused stuff from ant build
 - Changed the javadoc inasmuch as we using lambda expressions with Java8
 - FontGenerator default execution less verbose
 - A RuntimeException is no longer raised in JavaSE when you add a control to an AccordionContainer, and its height reaches zero during animation
