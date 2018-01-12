@@ -1,10 +1,69 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 4.1.0 - 2018-01-15
+
+### Highlights
+- [Firebase for iOS](https://gitlab.com/totalcross/TotalCross/wikis/Features/Post-Notification---Firebase)
+- [SMS changes](https://gitlab.com/totalcross/TotalCross/wikis/Features/sms-manager)
+ - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
+- [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
+- Font support
+ - Improved FontGenerator to create better looking fonts. Regenerate your fonts to make them look smoother on device.
+ - Spacing between characters was also improved.
+ - Fixed support for some unicode characters and handling of the ranges passed to the command line.
+
+### Fixed
+- Fixed `ScrollContainer` to properly display the controls if the order is changed
+- Fixed MaterialEffect on a `ListBox` that was scrolled up
+- Fixed Radio not being correctly painted when checked is set to true within the same event that changed it to false
+- Fixed `MaterialEffect` fade out duration - alpha is now computed based on remaining time instead of using a constant decreasing value
+- Fixed `ScrollPosition`'s handle not being hidden when released
+- Fixed Check and Radio sending PRESSED event when `setChecked` is called, even when `Settings.sendPressEventOnChange` is set to false
+- Fixed Launcher to better handle missing or bogus font files when running on desktop
+- On Graphics, fixed `NullPointerException` and `ArrayIndexOutOfBoundsException` when repaint is called from a thread
+- Fixed `ProgressBar` to retain the z-order when its value is updated [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80)
+- Fixed iOS icons by adding method `colorDist (int rgb1, int rgb2)` and `addFillPoint (int x, int y)`
+- Fixed `ImageControl` zooming with poor quality, it was scaling the resized image displayed in the control instead of the original image
+- Fixed usage of internal scanners on Android devices
+- Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
+- Fixed barcode reading with Motorola scanners when the digits of both halves of the barcode were the same (such as 10161016 or 10201020) - [issue 106](https://gitlab.com/totalcross/TotalCross/issues/106)
+- Fixed Switch disappearing on Android - calculation of alpha channel applied to the switch was wrong
+- Fixed `NullPointerException` in `Graphics.drawText` that would occur under some situations when the UI is loaded from a thread
+- Fixed Window incorrectly calling `onClickedOutside` when a two-finger movement is performed
+- Fixed `MaterialEffect` to not apply effects during a flick
 
 ### Added
-- [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
+- Added support to Bematech scanner back to the SDK - [issue 100](https://gitlab.com/totalcross/TotalCross/issues/100)
+- Added `Settings.showUIErrors`, which can be set to false to disable UI errors that are shown in desktop only.
+- Added `Flick.dontPropagate`, which can be useful if you have two or more intrinsic `ScrollContainers` and dont want to propagate the scroll among them
+- Added `ScrollContainer.canShowScrollBar`s, which gives child classes finer control on whether scrollbars should be displayed or not
+- Added `ComboBox.getArrowColor` and now you can change the arrow color at runtime
+- Added classes `java.awt.Dimension` and its dependencies - `java.awt.geom.Dimension2D`, `java.lang.InternalError`, `java.lang.VirtualMachineError`
+- Added method `Long.toString(long i, int radix)` to `java.lang.Long`
+
+### Changes
+- The tcvm.dll no longer requires elevated privileges to be run on Windows desktop
+- Changes `Spinner` to have transparent background by default
+- Changes `Spinner` to not mess with the colors when created using an `Image`
+- On iOS, the application now receives an ENTER key event when the keyboard is closed
+- A `RuntimeException` is no longer raised in JavaSE when you add a control to an `AccordionContainer`, and its height reaches zero during animation
+- Changed `ImageControl` to paint material effects only if there is an image and `setPressedEventsEnabled` was called
+- Now `Edit.autoSelect` puts cursor at end of line instead of begining, matching the behaviour of `MultiEdit`
+- Now if you press ENTER in a set of Edits that are inside a `ScrollContainer`, it scrolls automatically to the next control.
+- Increased cursor thickness on `Edit` for devices with high resolution
+- Changed `Time(char[] sqlTime)` to also parse the milliseconds value (`SQLite.getTime()` now includes milliseconds)
+
+### Deprecated
+The following fields and methods were deprecated and should no longer be used
+- `File`
+ - `readAndClose`
+ - `eadAndDelete`
+ - `writeAndClose`
+ - `read()`
+- UIControls
+ - `spinnerFore`
+ - `spinnerBack`
 
 ## 4.0.2 - 2017-09-01
 
@@ -37,7 +96,7 @@ All notable changes to this project will be documented in this file.
 ### Highlights
 - Familiar with the Material design User Experience? Well, you can now give it to your user!
 - `@ReplacedByNativeOnDeploy` annotation to denote every method that runs with a native implementation on device
-  - It's Java implementation is replaced when it is deployed
+  - The Java implementation is replaced by a native call during the deploy
 - `java.util.function.*` functional interfaces of Java 8 to provide a deeper dive into functional programming
   - The project needs to be compiled with Java 8 to works, even if it has been downtargeted by RetroLambda
   - **NOTE**: no default methods nor static methods yet
