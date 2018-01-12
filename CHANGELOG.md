@@ -9,9 +9,9 @@ All notable changes to this project will be documented in this file.
  - Implementation for sending and receiving data SMS also disables changing the state of the receiver when the application is paused and resumed
 - [Fade transition](https://gitlab.com/totalcross/TotalCross/wikis/Features/fade transition)
 - Font support
- - xxx - Field newRanges was removed and processRange work now with ranges instead of int parsing Range constructor now may throw `IllegalArgumentException` if start is before end
- - `ProcessRange` to check valid chars for the selected Font adds method toString to class `Range` updates documentation to reflect the changes in argument processing
- - creation of string with unicode character
+ - Improved FontGenerator to create better looking fonts. Regenerate your fonts to make them look smoother on device.
+ - Spacing between characters was also improved.
+ - Fixed support for some unicode characters and handling of the ranges passed to the command line.
 
 ### Fixed
 - Fixed `ScrollContainer` to properly display the controls if the order is changed
@@ -55,10 +55,12 @@ All notable changes to this project will be documented in this file.
 - Changed `Time(char[] sqlTime)` to also parse the milliseconds value (`SQLite.getTime()` now includes milliseconds)
 
 ### Deprecated
-- `File.readAndClose`
-- `eadAndDelete`
-- `writeAndClose`
-- `read()`
+The following fields and methods were deprecated and should no longer be used
+- `File`
+ - `readAndClose`
+ - `eadAndDelete`
+ - `writeAndClose`
+ - `read()`
 - UIControls
  - `spinnerFore`
  - `spinnerBack`
