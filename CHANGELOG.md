@@ -1,7 +1,7 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## 4.1.0 - 2018-01-0?
+## 4.1.0 - 2018-01-15
 
 ### Highlights
 - [Firebase for iOS](https://gitlab.com/totalcross/TotalCross/wikis/Features/Post-Notification---Firebase)
