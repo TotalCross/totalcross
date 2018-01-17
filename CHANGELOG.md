@@ -41,6 +41,7 @@ All notable changes to this project will be documented in this file.
 - Added `ComboBox.getArrowColor` and now you can change the arrow color at runtime
 - Added classes `java.awt.Dimension` and its dependencies - `java.awt.geom.Dimension2D`, `java.lang.InternalError`, `java.lang.VirtualMachineError`
 - Added method `Long.toString(long i, int radix)` to `java.lang.Long`
+- Added method `ConnectionManager.getLocalHostName` to retrieve the host name of the local host - [issue 41](https://gitlab.com/totalcross/TotalCross/issues/41)
 
 ### Changes
 - The tcvm.dll no longer requires elevated privileges to be run on Windows desktop
