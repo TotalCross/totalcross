@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 ## 4.1.1 - 
 
+### Fixed
+- Fixed screen not being shifted when device is in landscape
+- Fixed issue where a focused `Edit` would not receive keypress events
+- Fixed bug in `Edit` on Android - backspace events would not be issued when the Edit had text but had not received any typing events
+
+### Added
+- Added `Edit.canMoveFocus` to disable focus change
+- Added `Stream.write(int)`, convenience method to write a single byte to the stream
+- Added `ScrollContainer.setScrollBars` to allow subclasses to add or remove scrollbars after its creation
+
 ### Changes
 - `Whiteboard` now supports usage of `transparentBackground` to ignore the background color and generate images with transparent background - #153
 
