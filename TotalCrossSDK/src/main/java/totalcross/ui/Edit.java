@@ -1632,7 +1632,7 @@ public class Edit extends Control implements TextControl, TimerListener {
       }
     }
 
-    if (wasFocusIn && startSelectPos != -1 && insertPos > startSelectPos) {
+    if (!clearSelect && wasFocusIn && startSelectPos != -1 && insertPos > startSelectPos) {
       wasFocusIn = false;
     } else if (clearSelect && startSelectPos != -1) {
       startSelectPos = -1;
