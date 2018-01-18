@@ -145,6 +145,21 @@ public class ScrollContainer extends Container implements Scrollable {
     bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
     bag.setRect(0, 0, getBagInitialWidth(), getBagInitialHeight()); // set an arbitrary size
     bag.setX = SETX_NOT_SET; // ignore this setX and use the next one
+    setScrollBars(allowHScrollBar, allowVScrollBar);
+    if (Settings.fingerTouch)
+      flick = new Flick(this);
+  }
+
+  protected void setScrollBars(boolean allowHScrollBar, boolean allowVScrollBar) {
+    if (sbH != null) {
+      super.remove(sbH); 
+      sbH = null;
+    }
+    if (sbV != null) {
+      super.remove(sbV); 
+      sbV = null;
+    }
+    
     if (allowHScrollBar) {
       sbH = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
       sbH.setLiveScrolling(true);
@@ -154,9 +169,6 @@ public class ScrollContainer extends Container implements Scrollable {
       sbV = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL);
       sbV.setLiveScrolling(true);
       sbV.setMaximum(0);
-    }
-    if (Settings.fingerTouch) {
-      flick = new Flick(this);
     }
   }
 
