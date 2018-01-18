@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 - `Whiteboard` now supports usage of `transparentBackground` to ignore the background color and generate images with transparent background - #153
+- Pressing ENTER in a set of `Edit` inside a `ScrollContainer` will now automatically scroll to the next control
+- Improved `Control.setRect` error messages, it will now throw distinct messages for invalid width or height
 
 ## 4.1.0 - 2018-01-15
 
