@@ -1056,7 +1056,7 @@ public class Window extends Container {
           }
           else
           if (tempFocus != null && tempFocus instanceof Edit) // shifts screen when focus change when user does a pen up
-            ((Edit)tempFocus).shiftTo(true);
+            ((Edit)tempFocus).shiftTo(tempFocus);
         }
 
         if (!firstDrag) {
