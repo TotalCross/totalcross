@@ -475,7 +475,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             char[] chars = str.toCharArray();
             for (int i =0; i < chars.length; i++)
-               eventThread.pushEvent(KEY_PRESS, chars[i],chars[i],0,event.getMetaState(),0);
+               eventThread.pushEvent(KEY_PRESS, chars[i],0,0,event.getMetaState(),0);
          }
          break;
       }
