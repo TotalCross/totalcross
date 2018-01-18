@@ -1,6 +1,11 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.1 - 
+
+### Changes
+- `Whiteboard` now supports usage of `transparentBackground` to ignore the background color and generate images with transparent background - #153
+
 ## 4.1.0 - 2018-01-15
 
 ### Highlights
