@@ -190,7 +190,7 @@ public class FontGenerator {
     // write the file
     try (File f = new File(outName)) {
       if (f.exists()) {
-    try {
+        try {
           f.delete();
         } catch (FileNotFoundException e) {
         }

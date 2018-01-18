@@ -294,9 +294,9 @@ public class Edit extends Control implements TextControl, TimerListener {
   public boolean virtualKeyboard = Settings.virtualKeyboard;
 
   /** Cursor thickness */
-   public static int cursorThickness = Math.max(Settings.screenWidth,Settings.screenHeight) > 2000 ? 4 
-      : Math.max(Settings.screenWidth,Settings.screenHeight) > 1500 ? 3 
-      : Math.max(Settings.screenWidth,Settings.screenHeight) > 700 ? 2 : 1;
+  public static int cursorThickness = Math.max(Settings.screenWidth, Settings.screenHeight) > 2000 ? 4
+      : Math.max(Settings.screenWidth, Settings.screenHeight) > 1500 ? 3
+          : Math.max(Settings.screenWidth, Settings.screenHeight) > 700 ? 2 : 1;
 
   // changes for material design
   private int xcap, ycap, ycap0, fmHmin, fmHtarget, xcap0, inccap;
@@ -996,8 +996,8 @@ public class Edit extends Control implements TextControl, TimerListener {
       {
         if (cursorShowing) {
           g.clearClip();
-          g.backColor = Color.interpolate(backColor,foreColor);
-          g.fillRect(cursorX - 1, uiAndroid?y+1:y, cursorThickness, fmH);
+          g.backColor = Color.interpolate(backColor, foreColor);
+          g.fillRect(cursorX - 1, uiAndroid ? y + 1 : y, cursorThickness, fmH);
         }
       }
       cursorShowing = !cursorShowing;
@@ -1224,11 +1224,13 @@ public class Edit extends Control implements TextControl, TimerListener {
         shiftScreen(false);
         boolean isNumeric = useNativeNumericPad && kbdType == KBD_NUMERIC;
         if (!Window.isSipShown() || lastWasNumeric != isNumeric) {
-           lastWasNumeric = isNumeric;
-           int sbl = Settings.SIPBottomLimit;
-           if (sbl == -1) sbl = Settings.screenHeight / 2;
-           boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
-           Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, isNumeric); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+          lastWasNumeric = isNumeric;
+          int sbl = Settings.SIPBottomLimit;
+          if (sbl == -1) {
+            sbl = Settings.screenHeight / 2;
+          }
+          boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
+          Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, isNumeric); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
         }
       }
     } else {
@@ -1241,11 +1243,12 @@ public class Edit extends Control implements TextControl, TimerListener {
   }
 
   protected void shiftScreen(boolean force) {
-     if (Settings.unmovableSIP && (force || !Window.isSipShown())) { // guich@tc126_21
-        Window ww = getParentWindow();
-        if (ww != null)
-          ww.shiftScreen(this,this.height-(fmH+prefH));
-     }
+    if (Settings.unmovableSIP && (force || !Window.isSipShown())) { // guich@tc126_21
+      Window ww = getParentWindow();
+      if (ww != null) {
+        ww.shiftScreen(this, this.height - (fmH + prefH));
+      }
+    }
   }
 
   protected void hideSip() {
@@ -1365,13 +1368,14 @@ public class Edit extends Control implements TextControl, TimerListener {
           popupKCC();
           break;
         }
-        boolean moveFocus = canMoveFocus && !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
+        boolean moveFocus = canMoveFocus && !Settings.geographicalFocus
+            && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
         if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
         {
           Control next;
-          if (parent != null && (next=parent.moveFocusToNextEditable(this, ke.modifiers == 0)) != null) {
-              shiftTo(next);
-              return;
+          if (parent != null && (next = parent.moveFocusToNextEditable(this, ke.modifiers == 0)) != null) {
+            shiftTo(next);
+            return;
           }
         }
         boolean loseFocus = moveFocus || ke.key == SpecialKeys.ESCAPE;
@@ -1676,15 +1680,17 @@ public class Edit extends Control implements TextControl, TimerListener {
       Window.needsPaint = true; // must repaint everything due to a possible background image
     }
   }
+
   protected void shiftTo(Control next) {
     for (Container p = parent; p != null; p = p.parent) { // if next is inside a ScrollContainer, scroll to it
       if (p instanceof ScrollContainer) {
-        ((ScrollContainer)p).scrollToControl(next);
+        ((ScrollContainer) p).scrollToControl(next);
         break;
       }
     }
-    if (next instanceof Edit)
-      ((Edit)next).shiftScreen(true); // update screen shift position when user press ENTER
+    if (next instanceof Edit) {
+      ((Edit) next).shiftScreen(true); // update screen shift position when user press ENTER
+    }
   }
 
   private boolean showClipboardMenu() {

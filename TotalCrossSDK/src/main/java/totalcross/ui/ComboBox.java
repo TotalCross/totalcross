@@ -665,11 +665,11 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
       Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
     }
   }
-  
-   /** Used to determine the arrow color in Material UI when its drawing. */
-   protected int getArrowColor() {
-      return fColor;
-   }
+
+  /** Used to determine the arrow color in Material UI when its drawing. */
+  protected int getArrowColor() {
+    return fColor;
+  }
 
   /** paint the combo's border and the current selected item */
   @Override
@@ -724,7 +724,8 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
         g.fillRect(0, 0, width, height);
       }
       int y = isSupportedListBox() ? getTextY() : (height - fmH) / 2;
-      g.drawArrow(width-btnW*2-1,y+(fmH-btnW)/2,btnW, Graphics.ARROW_DOWN, false, checkColor != -1 && hasFocus() ? checkColor : getArrowColor());
+      g.drawArrow(width - btnW * 2 - 1, y + (fmH - btnW) / 2, btnW, Graphics.ARROW_DOWN, false,
+          checkColor != -1 && hasFocus() ? checkColor : getArrowColor());
       g.setClip(0, 0, width - btnW * 2, height);
     }
     if (pop.lb.itemCount > 0 && pop.lb.selectedIndex >= 0) {

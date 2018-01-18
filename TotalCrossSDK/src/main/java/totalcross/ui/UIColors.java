@@ -145,7 +145,7 @@ public final class UIColors // guich@564_6
   /** Spinner foreground color. */
   @Deprecated
   public static int spinnerFore = controlsFore;
-  
+
   /** Spinner background color. */
   @Deprecated
   public static int spinnerBack = -1;

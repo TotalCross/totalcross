@@ -297,7 +297,8 @@ public class Deployer4Android {
 
       jsonStream.close();
     } catch (FileNotFoundException e) {
-      System.out.println("Could not find 'google-services.json', thus Firebase will be ignored further on (Android deploy)");
+      System.out
+          .println("Could not find 'google-services.json', thus Firebase will be ignored further on (Android deploy)");
     }
 
     zos.close();

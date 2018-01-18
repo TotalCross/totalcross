@@ -975,8 +975,9 @@ public class Window extends Container {
       forceShifted = false;
       if (Flick.currentFlick == null && c.focusOnPenDown && !c.focusLess) { // if flicking, do not transfer focus
         forceShifted = c == _focus || (c.isEnabled() && (c instanceof Edit || c instanceof MultiEdit));
-        if (c != _focus)
+        if (c != _focus) {
           setFocus(c);
+        }
       }
       tempFocus = c;
     }
@@ -1053,10 +1054,9 @@ public class Window extends Container {
               setSIP(SIP_HIDE, null, false);
               needsPaint = true;
             }
+          } else if (tempFocus != null && tempFocus instanceof Edit) {
+            ((Edit) tempFocus).shiftTo(tempFocus);
           }
-          else
-          if (tempFocus != null && tempFocus instanceof Edit) // shifts screen when focus change when user does a pen up
-            ((Edit)tempFocus).shiftTo(tempFocus);
         }
 
         if (!firstDrag) {

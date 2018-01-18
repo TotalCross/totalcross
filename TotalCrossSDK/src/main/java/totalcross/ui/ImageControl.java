@@ -294,37 +294,40 @@ public class ImageControl extends Control {
     }
   }
 
-   private void drawImage(Graphics g, boolean isBack) {
-      Image temp = isBack ? imgBack : tempHwScale == NOTEMP ? img : img0;      
-      double dw = temp.hwScaleW, dh = temp.hwScaleH;
-      double scaleX = 1, scaleY = 1;
-      if (!isBack && tempHwScale != NOTEMP) { // scale the original image instead of the resized one
-         double w = temp.getWidth(), h = temp.getHeight();
-         scaleX = w / width;
-         scaleY = h / height;
-         if (!strechImage) {
-            Coord onW = getSize(img0, width, false);
-            if (onW.x <= width && onW.y <= height)
-               scaleY = scaleX;
-            else
-               scaleX = scaleY;
-         }
-         if (lasthwScale != tempHwScale) { // if scale changed, center image again
-            lasthwScale = tempHwScale;
-            lastX = (int)(width  - w * tempHwScale / scaleX)/2;
-            lastY = (int)(height - h * tempHwScale / scaleY)/2;
-         }
+  private void drawImage(Graphics g, boolean isBack) {
+    Image temp = isBack ? imgBack : tempHwScale == NOTEMP ? img : img0;
+    double dw = temp.hwScaleW, dh = temp.hwScaleH;
+    double scaleX = 1, scaleY = 1;
+    if (!isBack && tempHwScale != NOTEMP) { // scale the original image instead of the resized one
+      double w = temp.getWidth(), h = temp.getHeight();
+      scaleX = w / width;
+      scaleY = h / height;
+      if (!strechImage) {
+        Coord onW = getSize(img0, width, false);
+        if (onW.x <= width && onW.y <= height) {
+          scaleY = scaleX;
+        } else {
+          scaleX = scaleY;
+        }
       }
-      if (tempHwScale != NOTEMP) {
-         temp.hwScaleW = tempHwScale / scaleX;
-         temp.hwScaleH = tempHwScale / scaleY;
+      if (lasthwScale != tempHwScale) { // if scale changed, center image again
+        lasthwScale = tempHwScale;
+        lastX = (int) (width - w * tempHwScale / scaleX) / 2;
+        lastY = (int) (height - h * tempHwScale / scaleY) / 2;
       }
-      if (allowBeyondLimits)
-         g.drawImage(temp, lastX,lastY, true);
-      else
-         g.copyRect(temp,0,0,temp.getWidth(),temp.getHeight(),lastX,lastY);
-      temp.hwScaleW = dw; temp.hwScaleH = dh;
-   }
+    }
+    if (tempHwScale != NOTEMP) {
+      temp.hwScaleW = tempHwScale / scaleX;
+      temp.hwScaleH = tempHwScale / scaleY;
+    }
+    if (allowBeyondLimits) {
+      g.drawImage(temp, lastX, lastY, true);
+    } else {
+      g.copyRect(temp, 0, 0, temp.getWidth(), temp.getHeight(), lastX, lastY);
+    }
+    temp.hwScaleW = dw;
+    temp.hwScaleH = dh;
+  }
 
   /** Returns the image's width; when scaling, returns the scaled width. */
   public int getImageWidth() {

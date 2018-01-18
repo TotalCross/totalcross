@@ -2149,8 +2149,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           String name = z.names[i];
           String ss = name.substring(name.lastIndexOf('$') + 2, name.lastIndexOf('u'));
           int size = toInt(ss);
-          if (!sizes.contains(size))
+          if (!sizes.contains(size)) {
             sizes.addElement(size);
+          }
         }
         sizes.qsort();
         fi.sizes = sizes.toIntArray();
@@ -2344,7 +2345,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   public void alert(String msg) {
     if (!started) {
-      System.out.println("Alert: "+msg);
+      System.out.println("Alert: " + msg);
     } else {
       alert.setText(msg);
       alert.setVisible(true);

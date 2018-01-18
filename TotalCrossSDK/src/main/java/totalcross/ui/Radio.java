@@ -166,9 +166,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
       if (effect != null) {
         sendPressAfterEffect = sendPress;
         effect.startEffect();
-      }
-      else
-      if (sendPress) {
+      } else if (sendPress) {
         postPressedEvent();
       }
     }
@@ -217,7 +215,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
           radioGroup.setSelectedItem(this);
         }
         if (effect == null) {
-           postPressedEvent();
+          postPressedEvent();
         } else {
           sendPressAfterEffect = true;
         }
