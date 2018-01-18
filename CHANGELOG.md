@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 ## 4.1.1 - 
 
 ### Fixed
+- Fixed `Switch` disappearing on Android - calculation of alpha channel applied to the switch was wrong
+- Fixed `Socket` and `HttpStream` to properly handle EOF during read operation
 - Fixed screen not being shifted when device is in landscape
 - Fixed issue where a focused `Edit` would not receive keypress events
 - Fixed bug in `Edit` on Android - backspace events would not be issued when the Edit had text but had not received any typing events
