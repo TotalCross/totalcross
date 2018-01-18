@@ -173,6 +173,9 @@ public class Edit extends Control implements TextControl, TimerListener {
   /** Used to inform that a <i>command</i> operation has been made. You can localize this message if you wish. */
   public static String commandStr = "command";
 
+  /** Set to false to disable focus change on this Edit */
+  protected boolean canMoveFocus = true;
+
   /** Handler for the CaptionPress */
   public CaptionPress captionPress;
 
@@ -1362,7 +1365,7 @@ public class Edit extends Control implements TextControl, TimerListener {
           popupKCC();
           break;
         }
-        boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
+        boolean moveFocus = canMoveFocus && !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
         if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
         {
           Control next;
