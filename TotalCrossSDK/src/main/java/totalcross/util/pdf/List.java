@@ -9,22 +9,18 @@ package totalcross.util.pdf;
 
 import java.util.ArrayList;
 
-public abstract class List extends Base
-{
+public abstract class List extends Base {
 
   protected ArrayList<String> mList;
 
-  public List()
-  {
+  public List() {
     mList = new ArrayList<String>();
   }
 
-  protected String renderList()
-  {
+  protected String renderList() {
     StringBuilder sb = new StringBuilder();
     int x = 0;
-    while (x < mList.size())
-    {
+    while (x < mList.size()) {
       sb.append(mList.get(x).toString());
       x++;
     }
@@ -32,8 +28,7 @@ public abstract class List extends Base
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
     mList.clear();
   }
 }

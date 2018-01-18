@@ -33,8 +33,7 @@ import totalcross.util.Properties;
  * 
  * @since TotalCross 1.13
  */
-public class SMTPTransport extends Transport
-{
+public class SMTPTransport extends Transport {
   Socket connection;
 
   DataStream writer;
@@ -52,22 +51,19 @@ public class SMTPTransport extends Transport
   private static final String ehlo = "EHLO localhost" + Convert.CRLF;
   protected static final String starttls = "STARTTLS" + Convert.CRLF;
 
-  protected SMTPTransport(MailSession session)
-  {
+  protected SMTPTransport(MailSession session) {
     super(session);
   }
 
   @Override
-  protected void protocolConnect(String host, int port, String user, String password) throws AuthenticationException,
-  MessagingException
-  {
-    if (supportsTLS){
+  protected void protocolConnect(String host, int port, String user, String password)
+      throws AuthenticationException, MessagingException {
+    if (supportsTLS) {
       startTLS();
     }
     ehlo();
 
-    switch (authSupported)
-    {
+    switch (authSupported) {
     case 1: // auth with LOGIN
       issueCommand("AUTH LOGIN" + Convert.CRLF, 334);
       issueCommand(Base64.encode(user.getBytes()) + Convert.CRLF, 334);
@@ -84,17 +80,14 @@ public class SMTPTransport extends Transport
   }
 
   @Override
-  public void sendMessage(Message message) throws MessagingException
-  {
-    try
-    {
+  public void sendMessage(Message message) throws MessagingException {
+    try {
       // WRITE RETURN PATH
       Properties.Str smtpFrom = (Properties.Str) session.get(MailSession.SMTP_FROM);
       String returnPath = null;
       if (smtpFrom != null && smtpFrom.value != null) {
         returnPath = smtpFrom.value;
-      } else
-      {
+      } else {
         Address[] from = message.getFrom();
         if (from != null && from.length > 0 && from[0].address != null) {
           returnPath = from[0].address;
@@ -117,35 +110,27 @@ public class SMTPTransport extends Transport
       // END DATA
       connection.readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
       issueCommand(Convert.CRLF + "." + Convert.CRLF, 250);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
-  protected boolean ehlo() throws MessagingException
-  {
+  protected boolean ehlo() throws MessagingException {
     String actualEhlo;
-    try
-    {
+    try {
       actualEhlo = ehlo.replace("localhost", ConnectionManager.getLocalHost());
-    }
-    catch (UnknownHostException e)
-    {
+    } catch (UnknownHostException e) {
       actualEhlo = ehlo;
     }
     boolean ret = simpleCommand(actualEhlo) == 220;
-    while (readServerResponse() == 220)
-    {; // the HELO reply may be followed by textual messages, just ignore them.
+    while (readServerResponse() == 220) {
+      ; // the HELO reply may be followed by textual messages, just ignore them.
     }
 
     authSupported = 0;
-    do
-    {
+    do {
       int start = lastServerResponse.indexOf("AUTH");
-      if (start != -1)
-      {
+      if (start != -1) {
         if ((start = lastServerResponse.indexOf("LOGIN")) != -1) {
           authSupported = 1;
         } else if ((start = lastServerResponse.indexOf("PLAIN")) != -1) {
@@ -155,9 +140,7 @@ public class SMTPTransport extends Transport
         } else {
           authSupported = -1;
         }
-      }
-      else if (lastServerResponse.indexOf("STARTTLS") != -1)
-      {
+      } else if (lastServerResponse.indexOf("STARTTLS") != -1) {
         supportsTLS = true; //flsobral: server supports secure connections            
       }
       readServerResponse();
@@ -167,14 +150,12 @@ public class SMTPTransport extends Transport
     return ret;
   }
 
-  public void connect(Socket connection) throws MessagingException
-  {
+  public void connect(Socket connection) throws MessagingException {
     boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
 
     this.connection = connection;
     this.writer = new DataStream(connection, true);
-    try
-    {
+    try {
       reader = new LineReader(connection);
       if (!ehlo()) {
         throw new MessagingException("Failed to greet the remote server.");
@@ -183,72 +164,55 @@ public class SMTPTransport extends Transport
         throw new MessagingException(
             "Server requires authentication through a secure connection - See MailSession.SMTP_STARTTLS");
       }
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
-  protected int readServerResponse() throws MessagingException
-  {
-    try
-    {
+  protected int readServerResponse() throws MessagingException {
+    try {
       lastServerResponse = reader.readLine();
       return Convert.toInt(lastServerResponse.substring(0, 3));
-    }
-    catch (InvalidNumberException e)
-    {
+    } catch (InvalidNumberException e) {
       throw new MessagingException(e.getMessage() + "\n Reply: " + lastServerResponse);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
-  public void issueCommand(String cmd, int expect) throws MessagingException
-  {
+  public void issueCommand(String cmd, int expect) throws MessagingException {
     int responseCode = simpleCommand(cmd.getBytes());
-    if (expect != -1 && responseCode != expect){
+    if (expect != -1 && responseCode != expect) {
       throw new MessagingException("Unexpected response code. Expected " + expect + ", but received " + responseCode);
     }
   }
 
-  protected int simpleCommand(byte[] command) throws MessagingException
-  {
-    try
-    {
+  protected int simpleCommand(byte[] command) throws MessagingException {
+    try {
       writer.writeBytes(command);
       return readServerResponse();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
 
-  public int simpleCommand(String command) throws MessagingException
-  {
+  public int simpleCommand(String command) throws MessagingException {
     return simpleCommand(command.getBytes());
   }
 
-  public boolean supportsExtension(String ext)
-  {
-    if ("STARTTLS".equals(ext)){
+  public boolean supportsExtension(String ext) {
+    if ("STARTTLS".equals(ext)) {
       return supportsTLS;
     }
     return false;
   }
 
-  public boolean getRequireStartTLS()
-  {
+  public boolean getRequireStartTLS() {
     return requiresTLS;
   }
 
   @Override
-  public void connect() throws AuthenticationException, MessagingException
-  {
+  public void connect() throws AuthenticationException, MessagingException {
     // TODO Auto-generated method stub
 
   }
@@ -260,36 +224,26 @@ public class SMTPTransport extends Transport
    * @see totalcross.net.mail.Service#close()
    */
   @Override
-  public void close() throws MessagingException
-  {
+  public void close() throws MessagingException {
     MessagingException exception = null;
-    try
-    {
+    try {
       // QUIT
       issueCommand("QUIT" + Convert.CRLF, 221);
-    }
-    catch (MessagingException e)
-    {
+    } catch (MessagingException e) {
       exception = e;
     }
 
-    try
-    {
+    try {
       writer.close();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       if (exception != null) {
         exception = new MessagingException(e);
       }
     }
 
-    try
-    {
+    try {
       connection.close();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       if (exception != null) {
         exception = new MessagingException(e);
       }
@@ -298,15 +252,14 @@ public class SMTPTransport extends Transport
     reader = null;
     writer = null;
     connection = null;
-    if (exception != null){
+    if (exception != null) {
       throw exception;
     }
   }
 
   @Override
-  public void connect(String host, int port, String user, String password) throws AuthenticationException,
-  MessagingException
-  {
+  public void connect(String host, int port, String user, String password)
+      throws AuthenticationException, MessagingException {
     // TODO Auto-generated method stub
 
   }
@@ -316,6 +269,6 @@ public class SMTPTransport extends Transport
    * 
    * @throws MessagingException
    */
-  protected void startTLS() throws MessagingException
-  {}
+  protected void startTLS() throws MessagingException {
+  }
 }

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.concurrent;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -30,28 +28,23 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  * @since TotalCross 1.2
  */
 
-public class Lock
-{
+public class Lock {
   Object mutex;
 
-  public Lock()
-  {
+  public Lock() {
     create();
   }
 
   @Override
-  protected void finalize()
-  {
+  protected void finalize() {
     destroy();
   }
 
   @ReplacedByNativeOnDeploy
-  final void create() 
-  {
+  final void create() {
   }
 
   @ReplacedByNativeOnDeploy
-  final void destroy()
-  {
+  final void destroy() {
   }
 }

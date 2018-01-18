@@ -15,12 +15,10 @@ import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.unit.TestSuite;
 
-public class TestCollectionsAPI extends TestSuite
-{
-  public TestCollectionsAPI()
-  {
+public class TestCollectionsAPI extends TestSuite {
+  public TestCollectionsAPI() {
     super("Collections Test Suite");
-    if (Settings.platform.equals(Settings.ANDROID)){
+    if (Settings.platform.equals(Settings.ANDROID)) {
       Vm.debug(Vm.ALTERNATIVE_DEBUG);
     }
 
@@ -69,9 +67,9 @@ public class TestCollectionsAPI extends TestSuite
     addTestCase(TestLinkedHashMap.class);
     addTestCase(TestLinkedHashSet.class);
     addTestCase(TestLinkedList.class);
-    addTestCase(TestPriorityQueue.class); 
-    addTestCase(TestStack.class); 
-    addTestCase(TestTreeSet.class); 
+    addTestCase(TestPriorityQueue.class);
+    addTestCase(TestStack.class);
+    addTestCase(TestTreeSet.class);
     addTestCase(TestTreeMap.class);
     addTestCase(TestVector.class);
 

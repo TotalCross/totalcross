@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC035_fload_1 extends LoadLocal
-{
-  public BC035_fload_1()
-  {
-    super(1,FLOAT);
+public class BC035_fload_1 extends LoadLocal {
+  public BC035_fload_1() {
+    super(1, FLOAT);
   }
 }

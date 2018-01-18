@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.io.IOException;
@@ -28,8 +26,7 @@ import totalcross.util.Vector;
  * 
  * @since TotalCross 1.13
  */
-public class Part
-{
+public class Part {
   public static final String INLINE = "inline";
   public static final String ATTACHMENT = "attachment";
 
@@ -64,8 +61,7 @@ public class Part
    *           the value for this header
    * @since TotalCross 1.22
    */
-  public void addHeader(String name, String value)
-  {
+  public void addHeader(String name, String value) {
     headers.addHeader(name, value);
   }
 
@@ -78,8 +74,7 @@ public class Part
    * 
    * @since TotalCross 1.22
    */
-  public String getContentType()
-  {
+  public String getContentType() {
     return mimeType;
   }
 
@@ -98,9 +93,8 @@ public class Part
    *            if the given content is a Part object
    * @since TotalCross 1.13
    */
-  public void setContent(Object content, String mimeType)
-  {
-    if (content instanceof Part){
+  public void setContent(Object content, String mimeType) {
+    if (content instanceof Part) {
       throw new IllegalArgumentException("A body part cannot be set as content of another body part");
     }
     this.content = content;
@@ -115,8 +109,7 @@ public class Part
    *           the multipart object that is the part's content
    * @since TotalCross 1.13
    */
-  public void setContent(Multipart multipart)
-  {
+  public void setContent(Multipart multipart) {
     this.content = multipart;
     contentHandler = null;
     this.mimeType = MULTIPART + multipart.subType + "; boundary=\"" + new String(multipart.boundary) + "\"";
@@ -134,15 +127,13 @@ public class Part
    *            if the given content is a Part object
    * @since TotalCross 1.13
    */
-  public void setContent(Object content)
-  {
-    if (content instanceof Part){
+  public void setContent(Object content) {
+    if (content instanceof Part) {
       throw new IllegalArgumentException("A body part cannot be set as content of another body part");
     }
-    if (content instanceof Multipart){
+    if (content instanceof Multipart) {
       setContent((Multipart) content);
-    }else
-    {
+    } else {
       if (content instanceof String) {
         this.mimeType = PLAIN;
       } else {
@@ -161,8 +152,7 @@ public class Part
    *           the text that is this part's content.
    * @since TotalCross 1.13
    */
-  public void setText(String text)
-  {
+  public void setText(String text) {
     this.content = text;
     this.mimeType = PLAIN;
     contentHandler = DataHandler.getDataContentHandler(mimeType);
@@ -184,17 +174,16 @@ public class Part
    *            if an error occurs fetching the data to be written
    * @since TotalCross 1.13
    */
-  public void writeTo(Stream stream) throws IOException, MessagingException
-  {
+  public void writeTo(Stream stream) throws IOException, MessagingException {
     addHeader("Content-Type", mimeType); //flsobral@tc125: It is not an error to use "type", but better safe than sorry.
 
     String headerLine;
-    if (headers != null && (headerLine = headers.getHeaderString()) != null){
+    if (headers != null && (headerLine = headers.getHeaderString()) != null) {
       stream.writeBytes(headerLine);
     }
-    if (content instanceof Multipart){
+    if (content instanceof Multipart) {
       ((Multipart) content).writeTo(stream);
-    }else {
+    } else {
       contentHandler.writeTo(this, mimeType, stream);
     }
   }
@@ -205,8 +194,7 @@ public class Part
    * @return the content of this part.
    * @since TotalCross 1.13
    */
-  public Object getContent()
-  {
+  public Object getContent() {
     return content; //flsobral@tc124_26: now we return the content, regardless of its type.
   }
 }
@@ -216,17 +204,14 @@ public class Part
  * 
  * @since TotalCross 1.22
  */
-class PartHeaders
-{
+class PartHeaders {
   private Vector headers;
 
-  PartHeaders()
-  {
+  PartHeaders() {
     headers = new Vector();
   }
 
-  void addHeader(String name, String value)
-  {
+  void addHeader(String name, String value) {
     Header newHeader = new Header(name, value);
 
     int insertIndex = -1;
@@ -236,23 +221,21 @@ class PartHeaders
       }
     }
 
-    if (insertIndex == -1){
+    if (insertIndex == -1) {
       headers.addElement(newHeader);
-    }else {
+    } else {
       headers.insertElementAt(newHeader, insertIndex);
     }
   }
 
-  String getHeaderString()
-  {
+  String getHeaderString() {
     int count = headers.size();
-    if (count <= 0){
+    if (count <= 0) {
       return null;
     }
 
     StringBuffer headerBuf = new StringBuffer(256);
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
       Header header = (Header) headers.items[i];
       headerBuf.append(header.name).append(": ").append(header.value).append(Convert.CRLF);
     }
@@ -265,14 +248,12 @@ class PartHeaders
  * 
  * @since TotalCross 1.22
  */
-class Header
-{
+class Header {
   String name;
   String value;
   int hash;
 
-  Header(String name, String value)
-  {
+  Header(String name, String value) {
     this.name = name;
     this.value = value;
     this.hash = name.toLowerCase().hashCode();

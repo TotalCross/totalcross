@@ -19,13 +19,11 @@ package totalcross.net;
 /** 
  * Exception thrown when an authentication fails.
  */
-public class AuthenticationException extends Exception
-{
+public class AuthenticationException extends Exception {
   /**
    * Constructs an empty exception.
    */
-  public AuthenticationException()
-  {
+  public AuthenticationException() {
   }
 
   /** 
@@ -33,8 +31,7 @@ public class AuthenticationException extends Exception
    * 
    * @param msg The error message.
    */
-  public AuthenticationException(String msg)
-  {
+  public AuthenticationException(String msg) {
     super(msg);
   }
 }

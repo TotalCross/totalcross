@@ -23,15 +23,13 @@ import org.apache.commons.io.FileUtils;
  * @author Fabio Sobral
  * 
  */
-public class SilverlightZip
-{
+public class SilverlightZip {
   private ZipOutputStream zos;
   private BlackHoleOutputStream nos = new BlackHoleOutputStream();
 
-  private Hashtable<String,ZipEntry> entries = new Hashtable<String,ZipEntry>();
+  private Hashtable<String, ZipEntry> entries = new Hashtable<String, ZipEntry>();
 
-  public SilverlightZip(File outputFile) throws FileNotFoundException
-  {
+  public SilverlightZip(File outputFile) throws FileNotFoundException {
     this.zos = new ZipOutputStream(new FileOutputStream(outputFile));
   }
 
@@ -43,9 +41,8 @@ public class SilverlightZip
    * @return true if successful, false if there's already a file with the given name on the zip file.
    * @throws IOException
    */
-  public boolean putEntry(String name, byte[] content) throws IOException
-  {
-    if (entries.containsKey(name)){
+  public boolean putEntry(String name, byte[] content) throws IOException {
+    if (entries.containsKey(name)) {
       return false;
     }
 
@@ -68,13 +65,11 @@ public class SilverlightZip
     return true;
   }
 
-  public boolean putEntry(String name, File file) throws IOException
-  {
+  public boolean putEntry(String name, File file) throws IOException {
     return putEntry(name, FileUtils.readFileToByteArray(file));
   }
 
-  public void close() throws IOException
-  {
+  public void close() throws IOException {
     zos.close();
   }
 }

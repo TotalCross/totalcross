@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.lang.reflect.Array;
@@ -87,9 +86,7 @@ import totalcross.sys.Vm;
  * @see AbstractList
  * @status updated to 1.4
  */
-public class ArrayList4D<E> extends AbstractList<E>
-implements List<E>, RandomAccess, Cloneable
-{
+public class ArrayList4D<E> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable {
   /**
    * The default capacity for new ArrayLists.
    */
@@ -112,10 +109,9 @@ implements List<E>, RandomAccess, Cloneable
    * @param capacity initial capacity of this ArrayList
    * @throws IllegalArgumentException if capacity is negative
    */
-  public ArrayList4D(int capacity)
-  {
+  public ArrayList4D(int capacity) {
     // Must explicitly check, to get correct exception.
-    if (capacity < 0){
+    if (capacity < 0) {
       throw new IllegalArgumentException();
     }
     data = (E[]) new Object[capacity];
@@ -124,8 +120,7 @@ implements List<E>, RandomAccess, Cloneable
   /**
    * Construct a new ArrayList with the default capacity (16).
    */
-  public ArrayList4D()
-  {
+  public ArrayList4D() {
     this(DEFAULT_CAPACITY);
   }
 
@@ -137,8 +132,7 @@ implements List<E>, RandomAccess, Cloneable
    * @param c the collection whose elements will initialize this list
    * @throws NullPointerException if c is null
    */
-  public ArrayList4D(Collection<? extends E> c)
-  {
+  public ArrayList4D(Collection<? extends E> c) {
     this((int) (c.size() * 1.1f));
     addAll(c);
   }
@@ -147,12 +141,10 @@ implements List<E>, RandomAccess, Cloneable
    * Trims the capacity of this List to be equal to its size;
    * a memory saver.
    */
-  public void trimToSize()
-  {
+  public void trimToSize() {
     // Not a structural change from the perspective of iterators on this list,
     // so don't update modCount.
-    if (size != data.length)
-    {
+    if (size != data.length) {
       E[] newData = (E[]) new Object[size];
       Vm.arrayCopy(data, 0, newData, 0, size);
       data = newData;
@@ -169,12 +161,10 @@ implements List<E>, RandomAccess, Cloneable
    *
    * @param minCapacity the minimum guaranteed capacity
    */
-  public void ensureCapacity(int minCapacity)
-  {
+  public void ensureCapacity(int minCapacity) {
     int current = data.length;
 
-    if (minCapacity > current)
-    {
+    if (minCapacity > current) {
       E[] newData = (E[]) new Object[Math.max(current * 2, minCapacity)];
       Vm.arrayCopy(data, 0, newData, 0, size);
       data = newData;
@@ -187,8 +177,7 @@ implements List<E>, RandomAccess, Cloneable
    * @return the list size
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return size;
   }
 
@@ -198,8 +187,7 @@ implements List<E>, RandomAccess, Cloneable
    * @return true if there are no elements
    */
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return size == 0;
   }
 
@@ -210,8 +198,7 @@ implements List<E>, RandomAccess, Cloneable
    * @return true if the list contains e
    */
   @Override
-  public boolean contains(Object e)
-  {
+  public boolean contains(Object e) {
     return indexOf(e) != -1;
   }
 
@@ -223,10 +210,9 @@ implements List<E>, RandomAccess, Cloneable
    * @return the index where e was found
    */
   @Override
-  public int indexOf(Object e)
-  {
+  public int indexOf(Object e) {
     for (int i = 0; i < size; i++) {
-      if (AbstractCollection4D.equals(e, data[i])){
+      if (AbstractCollection4D.equals(e, data[i])) {
         return i;
       }
     }
@@ -241,10 +227,9 @@ implements List<E>, RandomAccess, Cloneable
    * @return the index where e was found
    */
   @Override
-  public int lastIndexOf(Object e)
-  {
+  public int lastIndexOf(Object e) {
     for (int i = size - 1; i >= 0; i--) {
-      if (AbstractCollection4D.equals(e, data[i])){
+      if (AbstractCollection4D.equals(e, data[i])) {
         return i;
       }
     }
@@ -257,17 +242,13 @@ implements List<E>, RandomAccess, Cloneable
    * @return the cloned object
    */
   @Override
-  public Object clone()
-  {
+  public Object clone() {
     ArrayList4D<E> clone = null;
-    try
-    {
+    try {
       clone = (ArrayList4D<E>) super.clone();
-      clone.data = (E[])new Object[data.length];
+      clone.data = (E[]) new Object[data.length];
       Vm.arrayCopy(data, 0, clone.data, 0, data.length);
-    }
-    catch (CloneNotSupportedException e)
-    {
+    } catch (CloneNotSupportedException e) {
     }
     return clone;
   }
@@ -279,8 +260,7 @@ implements List<E>, RandomAccess, Cloneable
    * @return an array representation of this list
    */
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     E[] array = (E[]) new Object[size];
     Vm.arrayCopy(data, 0, array, 0, size);
     return array;
@@ -301,11 +281,10 @@ implements List<E>, RandomAccess, Cloneable
    * @throws NullPointerException if a is null
    */
   @Override
-  public <T> T[] toArray(T[] a)
-  {
-    if (a.length < size){
+  public <T> T[] toArray(T[] a) {
+    if (a.length < size) {
       a = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
-    }else if (a.length > size){
+    } else if (a.length > size) {
       a[size] = null;
     }
     Vm.arrayCopy(data, 0, a, 0, size);
@@ -319,8 +298,7 @@ implements List<E>, RandomAccess, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   @Override
-  public E get(int index)
-  {
+  public E get(int index) {
     checkBoundExclusive(index);
     return data[index];
   }
@@ -335,8 +313,7 @@ implements List<E>, RandomAccess, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= 0
    */
   @Override
-  public E set(int index, E e)
-  {
+  public E set(int index, E e) {
     checkBoundExclusive(index);
     E result = data[index];
     data[index] = e;
@@ -351,10 +328,9 @@ implements List<E>, RandomAccess, Cloneable
    * @return true, the add will always succeed
    */
   @Override
-  public boolean add(E e)
-  {
+  public boolean add(E e) {
     modCount++;
-    if (size == data.length){
+    if (size == data.length) {
       ensureCapacity(size + 1);
     }
     data[size++] = e;
@@ -371,14 +347,13 @@ implements List<E>, RandomAccess, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
   @Override
-  public void add(int index, E e)
-  {
+  public void add(int index, E e) {
     checkBoundInclusive(index);
     modCount++;
-    if (size == data.length){
+    if (size == data.length) {
       ensureCapacity(size + 1);
     }
-    if (index != size){
+    if (index != size) {
       Vm.arrayCopy(data, index, data, index + 1, size - index);
     }
     data[index] = e;
@@ -393,12 +368,11 @@ implements List<E>, RandomAccess, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   @Override
-  public E remove(int index)
-  {
+  public E remove(int index) {
     checkBoundExclusive(index);
     E r = data[index];
     modCount++;
-    if (index != --size){
+    if (index != --size) {
       Vm.arrayCopy(data, index + 1, data, index, size - index);
     }
     // Aid for garbage collection by releasing this pointer.
@@ -410,10 +384,8 @@ implements List<E>, RandomAccess, Cloneable
    * Removes all elements from this List
    */
   @Override
-  public void clear()
-  {
-    if (size > 0)
-    {
+  public void clear() {
+    if (size > 0) {
       modCount++;
       // Allow for garbage collection.
       Convert.fill(data, 0, size, null);
@@ -432,8 +404,7 @@ implements List<E>, RandomAccess, Cloneable
    * @throws NullPointerException if c is null
    */
   @Override
-  public boolean addAll(Collection<? extends E> c)
-  {
+  public boolean addAll(Collection<? extends E> c) {
     return addAll(size, c);
   }
 
@@ -448,22 +419,21 @@ implements List<E>, RandomAccess, Cloneable
    * @throws NullPointerException if c is null
    */
   @Override
-  public boolean addAll(int index, Collection<? extends E> c)
-  {
+  public boolean addAll(int index, Collection<? extends E> c) {
     checkBoundInclusive(index);
     Iterator<? extends E> itr = c.iterator();
     int csize = c.size();
 
     modCount++;
-    if (csize + size > data.length){
+    if (csize + size > data.length) {
       ensureCapacity(size + csize);
     }
     int end = index + csize;
-    if (size > 0 && index != size){
+    if (size > 0 && index != size) {
       Vm.arrayCopy(data, index, data, end, size - index);
     }
     size += csize;
-    for ( ; index < end; index++) {
+    for (; index < end; index++) {
       data[index] = itr.next();
     }
     return csize > 0;
@@ -478,16 +448,13 @@ implements List<E>, RandomAccess, Cloneable
    * @throws IndexOutOfBoundsException if fromIndex &gt; toIndex
    */
   @Override
-  protected void removeRange(int fromIndex, int toIndex)
-  {
+  protected void removeRange(int fromIndex, int toIndex) {
     int change = toIndex - fromIndex;
-    if (change > 0)
-    {
+    if (change > 0) {
       modCount++;
       Vm.arrayCopy(data, toIndex, data, fromIndex, size - toIndex);
       size -= change;
-    }
-    else if (change < 0){
+    } else if (change < 0) {
       throw new IndexOutOfBoundsException();
     }
   }
@@ -498,12 +465,11 @@ implements List<E>, RandomAccess, Cloneable
    * @param index the index to check
    * @throws IndexOutOfBoundsException if index &gt; size
    */
-  private void checkBoundInclusive(int index)
-  {
+  private void checkBoundInclusive(int index) {
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException,
     // a subclass of the required exception, with no effort on our part.
-    if (index > size){
+    if (index > size) {
       raiseBoundsError(index);
     }
   }
@@ -514,12 +480,11 @@ implements List<E>, RandomAccess, Cloneable
    * @param index the index to check
    * @throws IndexOutOfBoundsException if index &gt;= size
    */
-  private void checkBoundExclusive(int index)
-  {
+  private void checkBoundExclusive(int index) {
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException,
     // a subclass of the required exception, with no effort on our part.
-    if (index >= size){
+    if (index >= size) {
       raiseBoundsError(index);
     }
   }
@@ -530,14 +495,12 @@ implements List<E>, RandomAccess, Cloneable
    * @param index the index of the access
    * @throws IndexOutOfBoundsException unconditionally
    */
-  private void raiseBoundsError(int index)
-  {
+  private void raiseBoundsError(int index) {
     // Implementaion note: put in a separate method to make the JITs job easier
     // (separate common from uncommon code at method boundaries when trivial to
     // do so).
     throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
   }
-
 
   /**
    * Remove from this list all elements contained in the given collection.
@@ -548,22 +511,21 @@ implements List<E>, RandomAccess, Cloneable
    * @return true if this list changed
    * @throws NullPointerException if c is null
    */
-  boolean removeAllInternal(Collection<?> c)
-  {
+  boolean removeAllInternal(Collection<?> c) {
     int i;
     int j;
     for (i = 0; i < size; i++) {
-      if (c.contains(data[i])){
+      if (c.contains(data[i])) {
         break;
       }
     }
-    if (i == size){
+    if (i == size) {
       return false;
     }
 
     modCount++;
     for (j = i++; i < size; i++) {
-      if (! c.contains(data[i])){
+      if (!c.contains(data[i])) {
         data[j++] = data[i];
       }
     }
@@ -581,22 +543,21 @@ implements List<E>, RandomAccess, Cloneable
    * @throws NullPointerException if c is null
    * @since 1.2
    */
-  boolean retainAllInternal(Collection<?> c)
-  {
+  boolean retainAllInternal(Collection<?> c) {
     int i;
     int j;
     for (i = 0; i < size; i++) {
-      if (! c.contains(data[i])){
+      if (!c.contains(data[i])) {
         break;
       }
     }
-    if (i == size){
+    if (i == size) {
       return false;
     }
 
     modCount++;
     for (j = i++; i < size; i++) {
-      if (c.contains(data[i])){
+      if (c.contains(data[i])) {
         data[j++] = data[i];
       }
     }

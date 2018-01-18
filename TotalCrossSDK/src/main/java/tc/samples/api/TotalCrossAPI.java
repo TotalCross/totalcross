@@ -25,10 +25,8 @@ import totalcross.ui.event.PushNotificationEvent;
 import totalcross.ui.event.PushNotificationListener;
 import totalcross.ui.gfx.Color;
 
-public class TotalCrossAPI extends MainWindow
-{
-  static
-  {
+public class TotalCrossAPI extends MainWindow {
+  static {
     Settings.resizableWindow = true;
     Settings.appVersion = "1.06";
     Settings.windowSize = Settings.WINDOWSIZE_480X640;
@@ -45,37 +43,33 @@ public class TotalCrossAPI extends MainWindow
     Settings.iosCFBundleIdentifier = "com.totalcross.tcapi";
   }
 
-  public TotalCrossAPI()
-  {
-    super("TotalCross API",NO_BORDER);
+  public TotalCrossAPI() {
+    super("TotalCross API", NO_BORDER);
     setTitle("");
     setUIStyle(Settings.Material);
     setBackColor(UIColors.controlsBack = Color.WHITE);
     Settings.fadeOtherWindows = true;
-    UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
+    UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR, 64);
     UIColors.messageboxFore = Color.WHITE;
-    Settings.scrollDistanceOnMouseWheelMove = fmH*10;
+    Settings.scrollDistanceOnMouseWheelMove = fmH * 10;
 
     // MUST REGISTER AT CONSTRUCTOR, SINCE THE TOKEN MAY BE SENT VERY EARLY
     // You may also use onEvent.
-    this.addPushNotificationListener(new PushNotificationListener()
-    {
+    this.addPushNotificationListener(new PushNotificationListener() {
       @Override
-      public void tokenReceived(PushNotificationEvent e)
-      {
-        Vm.debug("Token: "+e.message);
-      }         
+      public void tokenReceived(PushNotificationEvent e) {
+        Vm.debug("Token: " + e.message);
+      }
+
       @Override
-      public void messageReceived(PushNotificationEvent e)
-      {
-        Toast.show("Message received: "+e.message,3000);
+      public void messageReceived(PushNotificationEvent e) {
+        Toast.show("Message received: " + e.message, 3000);
       }
     });
   }
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     new MainMenu().show();
   }
 }

@@ -5,8 +5,7 @@ import totalcross.sys.Time;
 import totalcross.util.BigDecimal;
 import totalcross.util.Date;
 
-public interface PreparedStatement extends Statement
-{
+public interface PreparedStatement extends Statement {
   public ResultSet executeQuery() throws SQLException;
 
   public int executeUpdate() throws SQLException;

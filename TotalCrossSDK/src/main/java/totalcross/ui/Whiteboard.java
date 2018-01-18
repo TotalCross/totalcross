@@ -30,8 +30,7 @@ import totalcross.ui.image.ImageException;
  * It uses a special event flag in order to improve the accuracy.
  */
 
-public class Whiteboard extends Control
-{
+public class Whiteboard extends Control {
   //to draw Lines
   private int oldX;
   private int oldY;
@@ -39,13 +38,13 @@ public class Whiteboard extends Control
   private Graphics gImg;
   private Graphics gScr;
   /** Set this to some color so a frame can be drawn around the image */
-  public int borderColor=-1;
+  public int borderColor = -1;
   /** Set to true to enable antialiase on the line drawing. It must be set right after the constructor.
    * @deprecated This field is useless in OpenGL platforms 
    */
   @Deprecated
   public boolean useAA;
-  private boolean isEmpty=true;
+  private boolean isEmpty = true;
 
   /** Set to true to draw a thick line.
    * @since TotalCross 1.14
@@ -55,46 +54,38 @@ public class Whiteboard extends Control
   private int desiredPenColor = -1;
 
   /** Constructs a new whiteboard, setting the back color to white. */
-  public Whiteboard()
-  {
+  public Whiteboard() {
     backColor = Color.WHITE;
     focusTraversable = false; // guich@tc123_13
   }
 
   /** Now that we know our bounds, we can create the image that will hold the drawing */
   @Override
-  public void onBoundsChanged(boolean screenChanged)
-  {
+  public void onBoundsChanged(boolean screenChanged) {
     //if (!screenChanged)
-    if (isEmpty){
-      try
-      {
+    if (isEmpty) {
+      try {
         setImage(null); // resize to width and height
-      }
-      catch (ImageException e)
-      {
+      } catch (ImageException e) {
         Vm.debug("Not enough memory to resize the whiteboard");
       }
     }
   }
 
   /** Returns the image where the drawing is taking place. */
-  public Image getImage()
-  {
+  public Image getImage() {
     return this.img;
   }
 
   /** Returns the preferred width: FILL */
   @Override
-  public int getPreferredWidth()
-  {
+  public int getPreferredWidth() {
     return FILL;
   }
 
   /** Returns the preferred height: FILL */
   @Override
-  public int getPreferredHeight()
-  {
+  public int getPreferredHeight() {
     return FILL;
   }
 
@@ -103,21 +94,18 @@ public class Whiteboard extends Control
    * 
    * @throws ImageException
    */
-  public void setImage(Image image) throws ImageException
-  {
+  public void setImage(Image image) throws ImageException {
     isEmpty = image == null;
     this.img = image == null ? new Image(width, height) : image;
     this.gImg = img.getGraphics();
     gImg.foreColor = desiredPenColor != -1 ? desiredPenColor : Color.BLACK;
     //gImg.useAA = useAA;
     int lastColor = gImg.foreColor;
-    if (image == null)
-    {
+    if (image == null) {
       gImg.backColor = backColor;
       gImg.fillRect(0, 0, width, height);
     }
-    if (borderColor != -1)
-    {
+    if (borderColor != -1) {
       gImg.foreColor = borderColor;
       gImg.drawRect(0, 0, width, height);
     }
@@ -128,76 +116,71 @@ public class Whiteboard extends Control
 
   /** Clears the WhiteBoard to the current background color. */
   @Override
-  public void clear()
-  {
-    try {setImage(null);} catch (Exception e) {}
+  public void clear() {
+    try {
+      setImage(null);
+    } catch (Exception e) {
+    }
   }
 
   /** Sets the drawing pen color */
   public void setPenColor(int c) // guich@300_65
   {
     desiredPenColor = c;
-    if (gImg != null){
+    if (gImg != null) {
       gImg.foreColor = c;
     }
-    if (gScr != null){
+    if (gScr != null) {
       gScr.foreColor = c;
     }
   }
 
   /** Returns the drawing pen color. */
-  public int getPenColor()
-  {
+  public int getPenColor() {
     return desiredPenColor;
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
-    if (!Settings.isOpenGL && gScr == null)
-    {
+  public void onPaint(Graphics g) {
+    if (!Settings.isOpenGL && gScr == null) {
       gScr = getGraphics(); // create the graphics object that will be used to repaint the image
-      gScr.setClip(0,0,width,height);
+      gScr.setClip(0, 0, width, height);
       //gScr.useAA = useAA;
       if (desiredPenColor != -1) {
         gScr.foreColor = desiredPenColor;
       }
     }
-    g.drawImage(img,0,0); // draw the image...
+    g.drawImage(img, 0, 0); // draw the image...
   }
 
   TimerEvent te;
 
-  private void drawTo(Graphics g, int pex, int pey)
-  {
-    g.drawLine(oldX,oldY,pex,pey); // guich@580_34: draw directly on screen
-    if (thick)
-    {
-      g.drawLine(oldX+1,oldY+1,pex+1,pey+1);
-      g.drawLine(oldX-1,oldY-1,pex-1,pey-1);
-      g.drawLine(oldX+1,oldY+1,pex-1,pey-1);
-      g.drawLine(oldX-1,oldY-1,pex+1,pey+1);
+  private void drawTo(Graphics g, int pex, int pey) {
+    g.drawLine(oldX, oldY, pex, pey); // guich@580_34: draw directly on screen
+    if (thick) {
+      g.drawLine(oldX + 1, oldY + 1, pex + 1, pey + 1);
+      g.drawLine(oldX - 1, oldY - 1, pex - 1, pey - 1);
+      g.drawLine(oldX + 1, oldY + 1, pex - 1, pey - 1);
+      g.drawLine(oldX - 1, oldY - 1, pex + 1, pey + 1);
     }
   }
 
   @Override
-  public void onEvent(Event event)
-  {
+  public void onEvent(Event event) {
     PenEvent pe;
-    switch (event.type)
-    {
+    switch (event.type) {
     case TimerEvent.TRIGGERED:
       if (te != null && te.triggered) {
         Window.needsPaint = true;
       }
       break;
     case PenEvent.PEN_DOWN:
-      pe = (PenEvent)event;
+      pe = (PenEvent) event;
       oldX = pe.x;
       oldY = pe.y;
-      drawTo(gImg, pe.x,pe.y); // after
+      drawTo(gImg, pe.x, pe.y); // after
       if (gScr != null) {
-        drawTo(gScr,pe.x,pe.y);
+        drawTo(gScr, pe.x, pe.y);
       }
       getParentWindow().setGrabPenEvents(this); // guich@tc100: redirect all pen events to here, bypassing other processings
       if (Settings.isOpenGL) {
@@ -205,15 +188,14 @@ public class Whiteboard extends Control
       }
       break;
     case PenEvent.PEN_DRAG:
-      pe = (PenEvent)event;
-      drawTo(gImg, pe.x,pe.y); // before
+      pe = (PenEvent) event;
+      drawTo(gImg, pe.x, pe.y); // before
       if (gScr != null) {
-        drawTo(gScr,pe.x,pe.y);
+        drawTo(gScr, pe.x, pe.y);
       }
       oldX = pe.x;
       oldY = pe.y;
-      if (!Settings.isOpenGL)
-      {
+      if (!Settings.isOpenGL) {
         Control.safeUpdateScreen(); // important at desktop!
       }
       break;

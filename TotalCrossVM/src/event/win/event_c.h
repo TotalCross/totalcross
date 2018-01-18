@@ -42,7 +42,9 @@ static void hideWinCEStuff()
    {
       // now make sure task bar/start icon/sip are lower down the z-order so they seem to be removed
       SetForegroundWindow(mainHWnd);
-      _SHFullScreen(mainHWnd, SHFS_HIDESTARTICON | SHFS_HIDETASKBAR);
+      if (_SHFullScreen != null) {
+    	  _SHFullScreen(mainHWnd, SHFS_HIDESTARTICON | SHFS_HIDETASKBAR);
+      }
       if (!isWindowsMobile)
       {
          RECT rect;
@@ -60,7 +62,9 @@ static void hideWinCEStuff()
    switch (*tcSettings.closeButtonTypePtr)
    {
       case CLOSE_BUTTON:
-         _SHDoneButton(mainHWnd, SHDB_SHOW);
+    	  if (_SHDoneButton != null) {
+    		  _SHDoneButton(mainHWnd, SHDB_SHOW);
+    	  }
          break;
       case NO_BUTTON: // guich@tc111_3
       {
@@ -68,14 +72,18 @@ static void hideWinCEStuff()
       	if ((dwStyle & WS_MINIMIZEBOX) == 0)
          {
       		SetWindowLong(mainHWnd, GWL_STYLE, dwStyle | WS_MINIMIZEBOX);
-            _SHDoneButton(mainHWnd, SHDB_SHOW); // force caption bar redraw
-            _SHDoneButton(mainHWnd, SHDB_HIDE);
+      		if (_SHDoneButton != null) {
+      			_SHDoneButton(mainHWnd, SHDB_SHOW); // force caption bar redraw
+            	_SHDoneButton(mainHWnd, SHDB_HIDE);
+      		}
          }
          break;
       }
       default: break;
    }
-   _SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
+   if (_SHFullScreen != null) {
+	   _SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
+   }
 #endif
 }
 

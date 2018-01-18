@@ -14,18 +14,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Highlight events. */
 
-public interface HighlightListener
-{
+public interface HighlightListener {
   /** A HIGHLIGHT_IN event was dispatched.
    * @see ControlEvent 
    */
   public void highlightIn(ControlEvent e);
+
   /** A HIGHLIGHT_OUT event was dispatched.
    * @see ControlEvent 
    */

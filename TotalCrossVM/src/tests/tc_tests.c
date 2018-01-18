@@ -18,7 +18,7 @@ void test_tiF_exists(struct TestSuite *tc, Context currentContext);// nm/io/File
 void test_tiF_getSize(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
 void test_tiF_isDir(struct TestSuite *tc, Context currentContext); // nm/io/File_test.h - depends on testtiF_create_sii
 void test_tiF_listFiles(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
-void test_tiF_nativeClose(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
+void test_tiF_close(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
 void test_tiF_rename_s(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
 void test_tiF_setAttributes_i(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
 void test_tiF_setSize_i(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
@@ -370,7 +370,7 @@ void fillTestCaseArray(testFunc *tests)
    tests[12] = test_tiF_getSize;
    tests[13] = test_tiF_isDir;
    tests[14] = test_tiF_listFiles;
-   tests[15] = test_tiF_nativeClose;
+   tests[15] = test_tiF_close;
    tests[16] = test_tiF_rename_s;
    tests[17] = test_tiF_setAttributes_i;
    tests[18] = test_tiF_setSize_i;

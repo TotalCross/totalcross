@@ -10,38 +10,31 @@ import totalcross.sql.Statement;
 import totalcross.sys.Convert;
 import totalcross.unit.TestCase;
 
-public class InsertQueryTest extends TestCase
-{
-  interface ConnectionFactory
-  {
+public class InsertQueryTest extends TestCase {
+  interface ConnectionFactory {
     Connection getConnection() throws SQLException;
 
     void dispose() throws SQLException;
   }
 
-  class IndependentConnectionFactory implements ConnectionFactory
-  {
+  class IndependentConnectionFactory implements ConnectionFactory {
     @Override
-    public Connection getConnection() throws SQLException
-    {
+    public Connection getConnection() throws SQLException {
       return DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
     }
 
     @Override
-    public void dispose() throws SQLException
-    {
+    public void dispose() throws SQLException {
 
     }
 
   }
 
-  class SharedConnectionFactory implements ConnectionFactory
-  {
+  class SharedConnectionFactory implements ConnectionFactory {
     private Connection conn = null;
 
     @Override
-    public Connection getConnection() throws SQLException
-    {
+    public Connection getConnection() throws SQLException {
       if (conn == null) {
         conn = DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
       }
@@ -49,86 +42,72 @@ public class InsertQueryTest extends TestCase
     }
 
     @Override
-    public void dispose() throws SQLException
-    {
+    public void dispose() throws SQLException {
       if (conn != null) {
         conn.close();
       }
     }
   }
 
-  static class BD
-  {
+  static class BD {
     String fullId;
     String type;
 
-    public BD(String fullId, String type)
-    {
+    public BD(String fullId, String type) {
       this.fullId = fullId;
       this.type = type;
     }
 
-    public String getFullId()
-    {
+    public String getFullId() {
       return fullId;
     }
 
-    public void setFullId(String fullId)
-    {
+    public void setFullId(String fullId) {
       this.fullId = fullId;
     }
 
-    public String getType()
-    {
+    public String getType() {
       return type;
     }
 
-    public void setType(String type)
-    {
+    public void setType(String type) {
       this.type = type;
     }
 
-    public static byte[] serializeBD(BD item)
-    {
+    public static byte[] serializeBD(BD item) {
       return new byte[0];
     }
 
   }
 
-  public void insertLockTestUsingSharedConnection() 
-  {
+  public void insertLockTestUsingSharedConnection() {
     insertAndQuery(new SharedConnectionFactory());
   }
 
-  public void insertLockTestUsingIndependentConnection() 
-  {
+  public void insertLockTestUsingIndependentConnection() {
     insertAndQuery(new IndependentConnectionFactory());
   }
 
-  void insertAndQuery(ConnectionFactory factory) 
-  {
-    try
-    {
+  void insertAndQuery(ConnectionFactory factory) {
+    try {
       Statement st = factory.getConnection().createStatement();
-      st
-      .executeUpdate("CREATE TABLE IF NOT EXISTS data (fid VARCHAR(255) PRIMARY KEY, type VARCHAR(64), data BLOB);");
-      st
-      .executeUpdate("CREATE TABLE IF NOT EXISTS ResourcesTags (bd_fid VARCHAR(255), name VARCHAR(64), version INTEGER);");
+      st.executeUpdate("CREATE TABLE IF NOT EXISTS data (fid VARCHAR(255) PRIMARY KEY, type VARCHAR(64), data BLOB);");
+      st.executeUpdate(
+          "CREATE TABLE IF NOT EXISTS ResourcesTags (bd_fid VARCHAR(255), name VARCHAR(64), version INTEGER);");
       st.close();
 
       factory.getConnection().setAutoCommit(false);
 
       // Object Serialization
-      PreparedStatement statAddBD = factory.getConnection().prepareStatement(
-          "INSERT OR REPLACE INTO data values (?, ?, ?)");
-      PreparedStatement statDelRT = factory.getConnection().prepareStatement(
-          "DELETE FROM ResourcesTags WHERE bd_fid = ?");
-      PreparedStatement statAddRT = factory.getConnection().prepareStatement(
-          "INSERT INTO ResourcesTags values (?, ?, ?)");
+      PreparedStatement statAddBD = factory.getConnection()
+          .prepareStatement("INSERT OR REPLACE INTO data values (?, ?, ?)");
+      PreparedStatement statDelRT = factory.getConnection()
+          .prepareStatement("DELETE FROM ResourcesTags WHERE bd_fid = ?");
+      PreparedStatement statAddRT = factory.getConnection()
+          .prepareStatement("INSERT INTO ResourcesTags values (?, ?, ?)");
 
-      for (int i = 0; i < 10; i++)
-      {
-        BD item = new BD(Convert.unsigned2hex(i,4), Convert.toString(i));
+      for (int i = 0; i < 10; i++) {
+        BD item = new BD(Convert.unsigned2hex(i, 4), Convert.toString(i));
 
         // SQLite database insertion
         statAddBD.setString(1, item.getFullId());
@@ -142,8 +121,7 @@ public class InsertQueryTest extends TestCase
 
         statAddRT.setString(1, item.getFullId());
 
-        for (int j = 0; j < 2; j++)
-        {
+        for (int j = 0; j < 2; j++) {
           statAddRT.setString(2, "1");
           statAddRT.setLong(3, 1L);
           statAddRT.execute();
@@ -165,22 +143,23 @@ public class InsertQueryTest extends TestCase
 
       rs.next();
       long result = rs.getLong(1);
-      assertEquals(result,10);
+      assertEquals(result, 10);
 
       rs.close();
       stat.close();
-    }
-    catch (Exception e) {fail(e);}
-    finally
-    {
-      try {factory.dispose();} catch (Exception e) {fail(e);}
+    } catch (Exception e) {
+      fail(e);
+    } finally {
+      try {
+        factory.dispose();
+      } catch (Exception e) {
+        fail(e);
+      }
     }
   }
 
-  public void reproduceDatabaseLocked()
-  {
-    try
-    {
+  public void reproduceDatabaseLocked() {
+    try {
       Connection conn = DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
       Connection conn2 = DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
       Statement stat = conn.createStatement();
@@ -197,12 +176,12 @@ public class InsertQueryTest extends TestCase
 
       conn.commit(); // causes "database is locked" (SQLITE_BUSY)
       fail("should raise exception");
-    } catch (Exception e) {}
+    } catch (Exception e) {
+    }
   }
 
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     insertLockTestUsingSharedConnection();
     insertLockTestUsingIndependentConnection();
     reproduceDatabaseLocked();

@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC128_ior extends Logical
-{
-  public BC128_ior()
-  {
-    super(-1,-2,-1,INT);
+public class BC128_ior extends Logical {
+  public BC128_ior() {
+    super(-1, -2, -1, INT);
   }
+
   @Override
-  public void exec()
-  {
+  public void exec() {
     stack[-2].asInt |= stack[-1].asInt;
   }
 }

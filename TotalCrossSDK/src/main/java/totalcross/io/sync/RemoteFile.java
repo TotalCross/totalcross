@@ -14,7 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package totalcross.io.sync;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -25,11 +24,9 @@ import totalcross.sys.Vm;
  * It may only be used on files stored using a file system, therefore, it cannot be used to handle files on the PalmOS
  * internal memory. But you may use it to handle files on the device's built-in memory or an inserted external card.
  */
-public final class RemoteFile
-{
-  static
-  {
-    if (!Vm.attachNativeLibrary("TCSync")){
+public final class RemoteFile {
+  static {
+    if (!Vm.attachNativeLibrary("TCSync")) {
       throw new RuntimeException("Could not load native library\nTCSync.dll.\n\nPlease add its location\nto the path.");
     }
   }
@@ -44,8 +41,7 @@ public final class RemoteFile
    * (E.G.: 1:/dbs/myapp/MyPDBFile.pdb).
    */
   @ReplacedByNativeOnDeploy
-  public static String[] listFiles(String folder)
-  {
+  public static String[] listFiles(String folder) {
     return null;
   }
 
@@ -60,8 +56,7 @@ public final class RemoteFile
    * @return true if the operation succeeds.
    */
   @ReplacedByNativeOnDeploy
-  public static boolean copyToRemote(String srcFile, String dstFile)
-  {
+  public static boolean copyToRemote(String srcFile, String dstFile) {
     return false;
   }
 
@@ -75,8 +70,7 @@ public final class RemoteFile
    * @return true if the operation succeeds.
    */
   @ReplacedByNativeOnDeploy
-  public static boolean copyFromRemote(String srcFile, String dstFile)
-  {
+  public static boolean copyFromRemote(String srcFile, String dstFile) {
     return false;
   }
 
@@ -86,8 +80,7 @@ public final class RemoteFile
    * @return true if the operation succeeds.
    */
   @ReplacedByNativeOnDeploy
-  public static boolean delete(String fileOrFolder)
-  {
+  public static boolean delete(String fileOrFolder) {
     return false;
   }
 
@@ -109,8 +102,7 @@ public final class RemoteFile
    * @since TotalCross 1.22
    */
   @ReplacedByNativeOnDeploy
-  public static int exec(String command, String args, int launchCode, boolean wait)
-  {
+  public static int exec(String command, String args, int launchCode, boolean wait) {
     return -1;
   }
 }

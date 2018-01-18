@@ -23,8 +23,7 @@ import tc.tools.deployer.ipa.blob.Requirements;
  * http://llvm.org/docs/doxygen/html/MachOFormat_8h_source.html
  * http://comments.gmane.org/gmane.comp.programming.garbage-collection.boehmgc/4987
  */
-public class MachObjectFile extends AppleBinary
-{
+public class MachObjectFile extends AppleBinary {
   protected long magic;
   protected long cputype;
   protected long cpusubtype;
@@ -40,24 +39,20 @@ public class MachObjectFile extends AppleBinary
 
   private byte[] signatureTemplate;
 
-  protected MachObjectFile(byte[] data) throws IOException, InstantiationException, IllegalAccessException
-  {
+  protected MachObjectFile(byte[] data) throws IOException, InstantiationException, IllegalAccessException {
     super(data);
     ElephantMemoryReader reader = new ElephantMemoryReader(data);
 
     this.readHeader(reader);
     this.commands.clear();
-    for (int i = 0; i < ncmds; i++)
-    {
+    for (int i = 0; i < ncmds; i++) {
       MachLoadCommand command = MachLoadCommand.readFromStream(reader);
-      if (command != null)
-      {
+      if (command != null) {
         this.commands.add(command);
         if (lc_signature == null && command instanceof MachLoadCommandCodeSignature) {
           lc_signature = (MachLoadCommandCodeSignature) command;
         }
-        if (lc_segment == null && command instanceof MachLoadCommandSegment)
-        {
+        if (lc_segment == null && command instanceof MachLoadCommandSegment) {
           lc_segment = (MachLoadCommandSegment) command;
           if (!lc_segment.segname.startsWith("__LINKEDIT")) {
             lc_segment = null;
@@ -68,13 +63,12 @@ public class MachObjectFile extends AppleBinary
     reader.close();
 
     if (lc_segment == null || lc_signature == null
-        || (lc_signature.blobFileOffset + lc_signature.blobFileSize) != (lc_segment.fileoff + lc_segment.filesize)){
+        || (lc_signature.blobFileOffset + lc_signature.blobFileSize) != (lc_segment.fileoff + lc_segment.filesize)) {
       throw new RuntimeException("Template IPA files appears to be corrupted, please reinstall the SDK and try again");
     }
   }
 
-  protected void readHeader(ElephantMemoryReader reader) throws IOException
-  {
+  protected void readHeader(ElephantMemoryReader reader) throws IOException {
     this.magic = reader.readUnsignedIntLE();
     this.cputype = reader.readUnsignedIntLE();
     this.cpusubtype = reader.readUnsignedIntLE();
@@ -84,13 +78,11 @@ public class MachObjectFile extends AppleBinary
     this.flags = reader.readUnsignedIntLE();
   }
 
-  public EmbeddedSignature getEmbeddedSignature()
-  {
+  public EmbeddedSignature getEmbeddedSignature() {
     return lc_signature.signature;
   }
 
-  public void setEmbeddedSignature(EmbeddedSignature signature) throws IOException
-  {
+  public void setEmbeddedSignature(EmbeddedSignature signature) throws IOException {
     ElephantMemoryWriter writer = new ElephantMemoryWriter(data);
     signatureTemplate = signature.getBytes();
 
@@ -105,8 +97,7 @@ public class MachObjectFile extends AppleBinary
   @Override
   public byte[] resign(KeyStore ks, X509Store certStore, String bundleIdentifier, byte[] entitlementsBytes, byte[] info,
       byte[] sourceData) throws IOException, CMSException, UnrecoverableKeyException, CertificateEncodingException,
-  KeyStoreException, NoSuchAlgorithmException, OperatorCreationException
-  {
+      KeyStoreException, NoSuchAlgorithmException, OperatorCreationException {
     // create a new codeDirectory with the new identifier, but keeping the same codeLimit
     CodeDirectory codeDirectory = new CodeDirectory(bundleIdentifier, lc_signature.signature.codeDirectory.codeLimit);
     // now create brand new entitlements and requirements
@@ -128,7 +119,7 @@ public class MachObjectFile extends AppleBinary
 
     lc_signature.signature.sign();
     byte[] resignedData = lc_signature.signature.getBytes();
-    if (signatureTemplate.length != resignedData.length){
+    if (signatureTemplate.length != resignedData.length) {
       throw new IllegalStateException("Failed to resign the file, please try again.");
     }
 
@@ -140,12 +131,11 @@ public class MachObjectFile extends AppleBinary
 
     int actualSize = writer.size();
     int expectedSize = (int) (lc_segment.filesize + lc_segment.fileoff);
-    if (actualSize < expectedSize){
+    if (actualSize < expectedSize) {
       throw new IllegalStateException("Generated file appears to be missing data, please try again.");
-    }else if (actualSize == expectedSize){
+    } else if (actualSize == expectedSize) {
       this.data = writer.buffer;
-    }else
-    {
+    } else {
       this.data = new byte[expectedSize];
       System.arraycopy(writer.buffer, 0, this.data, 0, expectedSize);
     }

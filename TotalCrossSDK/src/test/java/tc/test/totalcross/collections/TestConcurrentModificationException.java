@@ -15,26 +15,18 @@ import java.util.ConcurrentModificationException;
 
 import totalcross.unit.TestCase;
 
-public class TestConcurrentModificationException extends TestCase
-{
+public class TestConcurrentModificationException extends TestCase {
   @Override
-  public void testRun()
-  {
-    try
-    {
+  public void testRun() {
+    try {
       throw new ConcurrentModificationException();
-    }
-    catch (ConcurrentModificationException exception)
-    {
+    } catch (ConcurrentModificationException exception) {
       assertTrue(exception instanceof ConcurrentModificationException);
     }
 
-    try
-    {
+    try {
       throw new ConcurrentModificationException("erro");
-    }
-    catch (ConcurrentModificationException exception)
-    {
+    } catch (ConcurrentModificationException exception) {
       assertTrue(exception instanceof ConcurrentModificationException);
       assertEquals("erro", exception.getMessage());
     }

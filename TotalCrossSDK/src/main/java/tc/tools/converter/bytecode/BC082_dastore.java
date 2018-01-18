@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC082_dastore extends StoreArray
-{
-  public BC082_dastore()
-  {
-    super(-4,0,1,2,DOUBLE);
+public class BC082_dastore extends StoreArray {
+  public BC082_dastore() {
+    super(-4, 0, 1, 2, DOUBLE);
   }
 }

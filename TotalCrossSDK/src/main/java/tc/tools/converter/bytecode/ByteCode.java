@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
 import tc.tools.converter.JConstants;
@@ -18,8 +16,7 @@ import tc.tools.converter.TCValue;
 import tc.tools.converter.java.JavaCode;
 import tc.tools.converter.java.JavaConstantPool;
 
-public class ByteCode implements JConstants
-{
+public class ByteCode implements JConstants {
   /** The bytecode index. */
   public int bc;
   /** The number of increments to the stack this instruction does. */
@@ -51,128 +48,125 @@ public class ByteCode implements JConstants
   /** The local variables */
   public static TCValue[] local;
 
-  private static Class<?> []bcClasses;
+  private static Class<?>[] bcClasses;
 
-  public ByteCode getNext()
-  {
-    return jc.bcs[posInMethod+1];
-  }
-  public ByteCode getPrev()
-  {
-    return jc.bcs[posInMethod-1];
+  public ByteCode getNext() {
+    return jc.bcs[posInMethod + 1];
   }
 
-  public ByteCode()
-  {
+  public ByteCode getPrev() {
+    return jc.bcs[posInMethod - 1];
+  }
+
+  public ByteCode() {
     pcInMethod = pc;
   }
 
-  public static void initClasses() throws ClassNotFoundException
-  {
+  public static void initClasses() throws ClassNotFoundException {
     if (bcClasses == null) // init only once
     {
       bcClasses = new Class[bcClassNames.length];
       // by directly assigning the real class, we can safely obfuscate these classes
-      bcClasses[  0] = tc.tools.converter.bytecode.BC000_nop.class;
-      bcClasses[  1] = tc.tools.converter.bytecode.BC001_aconst_null.class;
-      bcClasses[  2] = tc.tools.converter.bytecode.BC002_iconst_m1.class;
-      bcClasses[  3] = tc.tools.converter.bytecode.BC003_iconst_0.class;
-      bcClasses[  4] = tc.tools.converter.bytecode.BC004_iconst_1.class;
-      bcClasses[  5] = tc.tools.converter.bytecode.BC005_iconst_2.class;
-      bcClasses[  6] = tc.tools.converter.bytecode.BC006_iconst_3.class;
-      bcClasses[  7] = tc.tools.converter.bytecode.BC007_iconst_4.class;
-      bcClasses[  8] = tc.tools.converter.bytecode.BC008_iconst_5.class;
-      bcClasses[  9] = tc.tools.converter.bytecode.BC009_lconst_0.class;
-      bcClasses[ 10] = tc.tools.converter.bytecode.BC010_lconst_1.class;
-      bcClasses[ 11] = tc.tools.converter.bytecode.BC011_fconst_0.class;
-      bcClasses[ 12] = tc.tools.converter.bytecode.BC012_fconst_1.class;
-      bcClasses[ 13] = tc.tools.converter.bytecode.BC013_fconst_2.class;
-      bcClasses[ 14] = tc.tools.converter.bytecode.BC014_dconst_0.class;
-      bcClasses[ 15] = tc.tools.converter.bytecode.BC015_dconst_1.class;
-      bcClasses[ 16] = tc.tools.converter.bytecode.BC016_bipush.class;
-      bcClasses[ 17] = tc.tools.converter.bytecode.BC017_sipush.class;
-      bcClasses[ 18] = tc.tools.converter.bytecode.BC018_ldc.class;
-      bcClasses[ 19] = tc.tools.converter.bytecode.BC019_ldc_w.class;
-      bcClasses[ 20] = tc.tools.converter.bytecode.BC020_ldc2_w.class;
-      bcClasses[ 21] = tc.tools.converter.bytecode.BC021_iload.class;
-      bcClasses[ 22] = tc.tools.converter.bytecode.BC022_lload.class;
-      bcClasses[ 23] = tc.tools.converter.bytecode.BC023_fload.class;
-      bcClasses[ 24] = tc.tools.converter.bytecode.BC024_dload.class;
-      bcClasses[ 25] = tc.tools.converter.bytecode.BC025_aload.class;
-      bcClasses[ 26] = tc.tools.converter.bytecode.BC026_iload_0.class;
-      bcClasses[ 27] = tc.tools.converter.bytecode.BC027_iload_1.class;
-      bcClasses[ 28] = tc.tools.converter.bytecode.BC028_iload_2.class;
-      bcClasses[ 29] = tc.tools.converter.bytecode.BC029_iload_3.class;
-      bcClasses[ 30] = tc.tools.converter.bytecode.BC030_lload_0.class;
-      bcClasses[ 31] = tc.tools.converter.bytecode.BC031_lload_1.class;
-      bcClasses[ 32] = tc.tools.converter.bytecode.BC032_lload_2.class;
-      bcClasses[ 33] = tc.tools.converter.bytecode.BC033_lload_3.class;
-      bcClasses[ 34] = tc.tools.converter.bytecode.BC034_fload_0.class;
-      bcClasses[ 35] = tc.tools.converter.bytecode.BC035_fload_1.class;
-      bcClasses[ 36] = tc.tools.converter.bytecode.BC036_fload_2.class;
-      bcClasses[ 37] = tc.tools.converter.bytecode.BC037_fload_3.class;
-      bcClasses[ 38] = tc.tools.converter.bytecode.BC038_dload_0.class;
-      bcClasses[ 39] = tc.tools.converter.bytecode.BC039_dload_1.class;
-      bcClasses[ 40] = tc.tools.converter.bytecode.BC040_dload_2.class;
-      bcClasses[ 41] = tc.tools.converter.bytecode.BC041_dload_3.class;
-      bcClasses[ 42] = tc.tools.converter.bytecode.BC042_aload_0.class;
-      bcClasses[ 43] = tc.tools.converter.bytecode.BC043_aload_1.class;
-      bcClasses[ 44] = tc.tools.converter.bytecode.BC044_aload_2.class;
-      bcClasses[ 45] = tc.tools.converter.bytecode.BC045_aload_3.class;
-      bcClasses[ 46] = tc.tools.converter.bytecode.BC046_iaload.class;
-      bcClasses[ 47] = tc.tools.converter.bytecode.BC047_laload.class;
-      bcClasses[ 48] = tc.tools.converter.bytecode.BC048_faload.class;
-      bcClasses[ 49] = tc.tools.converter.bytecode.BC049_daload.class;
-      bcClasses[ 50] = tc.tools.converter.bytecode.BC050_aaload.class;
-      bcClasses[ 51] = tc.tools.converter.bytecode.BC051_baload.class;
-      bcClasses[ 52] = tc.tools.converter.bytecode.BC052_caload.class;
-      bcClasses[ 53] = tc.tools.converter.bytecode.BC053_saload.class;
-      bcClasses[ 54] = tc.tools.converter.bytecode.BC054_istore.class;
-      bcClasses[ 55] = tc.tools.converter.bytecode.BC055_lstore.class;
-      bcClasses[ 56] = tc.tools.converter.bytecode.BC056_fstore.class;
-      bcClasses[ 57] = tc.tools.converter.bytecode.BC057_dstore.class;
-      bcClasses[ 58] = tc.tools.converter.bytecode.BC058_astore.class;
-      bcClasses[ 59] = tc.tools.converter.bytecode.BC059_istore_0.class;
-      bcClasses[ 60] = tc.tools.converter.bytecode.BC060_istore_1.class;
-      bcClasses[ 61] = tc.tools.converter.bytecode.BC061_istore_2.class;
-      bcClasses[ 62] = tc.tools.converter.bytecode.BC062_istore_3.class;
-      bcClasses[ 63] = tc.tools.converter.bytecode.BC063_lstore_0.class;
-      bcClasses[ 64] = tc.tools.converter.bytecode.BC064_lstore_1.class;
-      bcClasses[ 65] = tc.tools.converter.bytecode.BC065_lstore_2.class;
-      bcClasses[ 66] = tc.tools.converter.bytecode.BC066_lstore_3.class;
-      bcClasses[ 67] = tc.tools.converter.bytecode.BC067_fstore_0.class;
-      bcClasses[ 68] = tc.tools.converter.bytecode.BC068_fstore_1.class;
-      bcClasses[ 69] = tc.tools.converter.bytecode.BC069_fstore_2.class;
-      bcClasses[ 70] = tc.tools.converter.bytecode.BC070_fstore_3.class;
-      bcClasses[ 71] = tc.tools.converter.bytecode.BC071_dstore_0.class;
-      bcClasses[ 72] = tc.tools.converter.bytecode.BC072_dstore_1.class;
-      bcClasses[ 73] = tc.tools.converter.bytecode.BC073_dstore_2.class;
-      bcClasses[ 74] = tc.tools.converter.bytecode.BC074_dstore_3.class;
-      bcClasses[ 75] = tc.tools.converter.bytecode.BC075_astore_0.class;
-      bcClasses[ 76] = tc.tools.converter.bytecode.BC076_astore_1.class;
-      bcClasses[ 77] = tc.tools.converter.bytecode.BC077_astore_2.class;
-      bcClasses[ 78] = tc.tools.converter.bytecode.BC078_astore_3.class;
-      bcClasses[ 79] = tc.tools.converter.bytecode.BC079_iastore.class;
-      bcClasses[ 80] = tc.tools.converter.bytecode.BC080_fastore.class;
-      bcClasses[ 81] = tc.tools.converter.bytecode.BC081_lastore.class;
-      bcClasses[ 82] = tc.tools.converter.bytecode.BC082_dastore.class;
-      bcClasses[ 83] = tc.tools.converter.bytecode.BC083_aastore.class;
-      bcClasses[ 84] = tc.tools.converter.bytecode.BC084_bastore.class;
-      bcClasses[ 85] = tc.tools.converter.bytecode.BC085_castore.class;
-      bcClasses[ 86] = tc.tools.converter.bytecode.BC086_sastore.class;
-      bcClasses[ 87] = tc.tools.converter.bytecode.BC087_pop.class;
-      bcClasses[ 88] = tc.tools.converter.bytecode.BC088_pop2.class;
-      bcClasses[ 89] = tc.tools.converter.bytecode.BC089_dup.class;
-      bcClasses[ 90] = tc.tools.converter.bytecode.BC090_dup_x1.class;
-      bcClasses[ 91] = tc.tools.converter.bytecode.BC091_dup_x2.class;
-      bcClasses[ 92] = tc.tools.converter.bytecode.BC092_dup2.class;
-      bcClasses[ 93] = tc.tools.converter.bytecode.BC093_dup2_x1.class;
-      bcClasses[ 94] = tc.tools.converter.bytecode.BC094_dup2_x2.class;
-      bcClasses[ 95] = tc.tools.converter.bytecode.BC095_swap.class;
-      bcClasses[ 96] = tc.tools.converter.bytecode.BC096_iadd.class;
-      bcClasses[ 97] = tc.tools.converter.bytecode.BC097_ladd.class;
-      bcClasses[ 98] = tc.tools.converter.bytecode.BC098_fadd.class;
-      bcClasses[ 99] = tc.tools.converter.bytecode.BC099_dadd.class;
+      bcClasses[0] = tc.tools.converter.bytecode.BC000_nop.class;
+      bcClasses[1] = tc.tools.converter.bytecode.BC001_aconst_null.class;
+      bcClasses[2] = tc.tools.converter.bytecode.BC002_iconst_m1.class;
+      bcClasses[3] = tc.tools.converter.bytecode.BC003_iconst_0.class;
+      bcClasses[4] = tc.tools.converter.bytecode.BC004_iconst_1.class;
+      bcClasses[5] = tc.tools.converter.bytecode.BC005_iconst_2.class;
+      bcClasses[6] = tc.tools.converter.bytecode.BC006_iconst_3.class;
+      bcClasses[7] = tc.tools.converter.bytecode.BC007_iconst_4.class;
+      bcClasses[8] = tc.tools.converter.bytecode.BC008_iconst_5.class;
+      bcClasses[9] = tc.tools.converter.bytecode.BC009_lconst_0.class;
+      bcClasses[10] = tc.tools.converter.bytecode.BC010_lconst_1.class;
+      bcClasses[11] = tc.tools.converter.bytecode.BC011_fconst_0.class;
+      bcClasses[12] = tc.tools.converter.bytecode.BC012_fconst_1.class;
+      bcClasses[13] = tc.tools.converter.bytecode.BC013_fconst_2.class;
+      bcClasses[14] = tc.tools.converter.bytecode.BC014_dconst_0.class;
+      bcClasses[15] = tc.tools.converter.bytecode.BC015_dconst_1.class;
+      bcClasses[16] = tc.tools.converter.bytecode.BC016_bipush.class;
+      bcClasses[17] = tc.tools.converter.bytecode.BC017_sipush.class;
+      bcClasses[18] = tc.tools.converter.bytecode.BC018_ldc.class;
+      bcClasses[19] = tc.tools.converter.bytecode.BC019_ldc_w.class;
+      bcClasses[20] = tc.tools.converter.bytecode.BC020_ldc2_w.class;
+      bcClasses[21] = tc.tools.converter.bytecode.BC021_iload.class;
+      bcClasses[22] = tc.tools.converter.bytecode.BC022_lload.class;
+      bcClasses[23] = tc.tools.converter.bytecode.BC023_fload.class;
+      bcClasses[24] = tc.tools.converter.bytecode.BC024_dload.class;
+      bcClasses[25] = tc.tools.converter.bytecode.BC025_aload.class;
+      bcClasses[26] = tc.tools.converter.bytecode.BC026_iload_0.class;
+      bcClasses[27] = tc.tools.converter.bytecode.BC027_iload_1.class;
+      bcClasses[28] = tc.tools.converter.bytecode.BC028_iload_2.class;
+      bcClasses[29] = tc.tools.converter.bytecode.BC029_iload_3.class;
+      bcClasses[30] = tc.tools.converter.bytecode.BC030_lload_0.class;
+      bcClasses[31] = tc.tools.converter.bytecode.BC031_lload_1.class;
+      bcClasses[32] = tc.tools.converter.bytecode.BC032_lload_2.class;
+      bcClasses[33] = tc.tools.converter.bytecode.BC033_lload_3.class;
+      bcClasses[34] = tc.tools.converter.bytecode.BC034_fload_0.class;
+      bcClasses[35] = tc.tools.converter.bytecode.BC035_fload_1.class;
+      bcClasses[36] = tc.tools.converter.bytecode.BC036_fload_2.class;
+      bcClasses[37] = tc.tools.converter.bytecode.BC037_fload_3.class;
+      bcClasses[38] = tc.tools.converter.bytecode.BC038_dload_0.class;
+      bcClasses[39] = tc.tools.converter.bytecode.BC039_dload_1.class;
+      bcClasses[40] = tc.tools.converter.bytecode.BC040_dload_2.class;
+      bcClasses[41] = tc.tools.converter.bytecode.BC041_dload_3.class;
+      bcClasses[42] = tc.tools.converter.bytecode.BC042_aload_0.class;
+      bcClasses[43] = tc.tools.converter.bytecode.BC043_aload_1.class;
+      bcClasses[44] = tc.tools.converter.bytecode.BC044_aload_2.class;
+      bcClasses[45] = tc.tools.converter.bytecode.BC045_aload_3.class;
+      bcClasses[46] = tc.tools.converter.bytecode.BC046_iaload.class;
+      bcClasses[47] = tc.tools.converter.bytecode.BC047_laload.class;
+      bcClasses[48] = tc.tools.converter.bytecode.BC048_faload.class;
+      bcClasses[49] = tc.tools.converter.bytecode.BC049_daload.class;
+      bcClasses[50] = tc.tools.converter.bytecode.BC050_aaload.class;
+      bcClasses[51] = tc.tools.converter.bytecode.BC051_baload.class;
+      bcClasses[52] = tc.tools.converter.bytecode.BC052_caload.class;
+      bcClasses[53] = tc.tools.converter.bytecode.BC053_saload.class;
+      bcClasses[54] = tc.tools.converter.bytecode.BC054_istore.class;
+      bcClasses[55] = tc.tools.converter.bytecode.BC055_lstore.class;
+      bcClasses[56] = tc.tools.converter.bytecode.BC056_fstore.class;
+      bcClasses[57] = tc.tools.converter.bytecode.BC057_dstore.class;
+      bcClasses[58] = tc.tools.converter.bytecode.BC058_astore.class;
+      bcClasses[59] = tc.tools.converter.bytecode.BC059_istore_0.class;
+      bcClasses[60] = tc.tools.converter.bytecode.BC060_istore_1.class;
+      bcClasses[61] = tc.tools.converter.bytecode.BC061_istore_2.class;
+      bcClasses[62] = tc.tools.converter.bytecode.BC062_istore_3.class;
+      bcClasses[63] = tc.tools.converter.bytecode.BC063_lstore_0.class;
+      bcClasses[64] = tc.tools.converter.bytecode.BC064_lstore_1.class;
+      bcClasses[65] = tc.tools.converter.bytecode.BC065_lstore_2.class;
+      bcClasses[66] = tc.tools.converter.bytecode.BC066_lstore_3.class;
+      bcClasses[67] = tc.tools.converter.bytecode.BC067_fstore_0.class;
+      bcClasses[68] = tc.tools.converter.bytecode.BC068_fstore_1.class;
+      bcClasses[69] = tc.tools.converter.bytecode.BC069_fstore_2.class;
+      bcClasses[70] = tc.tools.converter.bytecode.BC070_fstore_3.class;
+      bcClasses[71] = tc.tools.converter.bytecode.BC071_dstore_0.class;
+      bcClasses[72] = tc.tools.converter.bytecode.BC072_dstore_1.class;
+      bcClasses[73] = tc.tools.converter.bytecode.BC073_dstore_2.class;
+      bcClasses[74] = tc.tools.converter.bytecode.BC074_dstore_3.class;
+      bcClasses[75] = tc.tools.converter.bytecode.BC075_astore_0.class;
+      bcClasses[76] = tc.tools.converter.bytecode.BC076_astore_1.class;
+      bcClasses[77] = tc.tools.converter.bytecode.BC077_astore_2.class;
+      bcClasses[78] = tc.tools.converter.bytecode.BC078_astore_3.class;
+      bcClasses[79] = tc.tools.converter.bytecode.BC079_iastore.class;
+      bcClasses[80] = tc.tools.converter.bytecode.BC080_fastore.class;
+      bcClasses[81] = tc.tools.converter.bytecode.BC081_lastore.class;
+      bcClasses[82] = tc.tools.converter.bytecode.BC082_dastore.class;
+      bcClasses[83] = tc.tools.converter.bytecode.BC083_aastore.class;
+      bcClasses[84] = tc.tools.converter.bytecode.BC084_bastore.class;
+      bcClasses[85] = tc.tools.converter.bytecode.BC085_castore.class;
+      bcClasses[86] = tc.tools.converter.bytecode.BC086_sastore.class;
+      bcClasses[87] = tc.tools.converter.bytecode.BC087_pop.class;
+      bcClasses[88] = tc.tools.converter.bytecode.BC088_pop2.class;
+      bcClasses[89] = tc.tools.converter.bytecode.BC089_dup.class;
+      bcClasses[90] = tc.tools.converter.bytecode.BC090_dup_x1.class;
+      bcClasses[91] = tc.tools.converter.bytecode.BC091_dup_x2.class;
+      bcClasses[92] = tc.tools.converter.bytecode.BC092_dup2.class;
+      bcClasses[93] = tc.tools.converter.bytecode.BC093_dup2_x1.class;
+      bcClasses[94] = tc.tools.converter.bytecode.BC094_dup2_x2.class;
+      bcClasses[95] = tc.tools.converter.bytecode.BC095_swap.class;
+      bcClasses[96] = tc.tools.converter.bytecode.BC096_iadd.class;
+      bcClasses[97] = tc.tools.converter.bytecode.BC097_ladd.class;
+      bcClasses[98] = tc.tools.converter.bytecode.BC098_fadd.class;
+      bcClasses[99] = tc.tools.converter.bytecode.BC099_dadd.class;
       bcClasses[100] = tc.tools.converter.bytecode.BC100_isub.class;
       bcClasses[101] = tc.tools.converter.bytecode.BC101_lsub.class;
       bcClasses[102] = tc.tools.converter.bytecode.BC102_fsub.class;
@@ -278,96 +272,97 @@ public class ByteCode implements JConstants
     }
   }
 
-  private static TCValue[] allocTCValues(TCValue[] vs, int max)
-  {
-    if (vs == null || max > vs.length)
-    {
+  private static TCValue[] allocTCValues(TCValue[] vs, int max) {
+    if (vs == null || max > vs.length) {
       // have to alloc?
       vs = new TCValue[max];
-      for (int i =0; i < max; i++) {
+      for (int i = 0; i < max; i++) {
         vs[i] = new TCValue();
       }
-    }
-    else
-    {
+    } else {
       // just zero it
-      for (int i =0; i < max; i++) {
+      for (int i = 0; i < max; i++) {
         vs[i].clear();
       }
     }
     return vs;
   }
-  public static void initLocal(int max)
-  {
+
+  public static void initLocal(int max) {
     local = allocTCValues(local, max);
   }
 
-  public static void initStack(int max)
-  {
+  public static void initStack(int max) {
     stack = allocTCValues(stack, max);
     stackPtr = 0;
   }
 
-  public static ByteCode getInstance(int idx)
-  {
-    try
-    {
+  public static ByteCode getInstance(int idx) {
+    try {
       return (ByteCode) bcClasses[idx].newInstance();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
   }
 
-  protected static int readInt16(int p)
-  {
-    return (short)((code[p]&0xFF) << 8) | (code[p+1]&0xFF);
+  protected static int readInt16(int p) {
+    return (short) ((code[p] & 0xFF) << 8) | (code[p + 1] & 0xFF);
   }
-  protected static int readInt32(int p)
-  {
-    return (code[p+3]&0xFF) | ((code[p+2]&0xFF) << 8) | ((code[p+1]&0xFF) << 16) | ((code[p+0]&0xFF) << 24);
+
+  protected static int readInt32(int p) {
+    return (code[p + 3] & 0xFF) | ((code[p + 2] & 0xFF) << 8) | ((code[p + 1] & 0xFF) << 16)
+        | ((code[p + 0] & 0xFF) << 24);
   }
-  protected static int readUInt16(int p)
-  {
-    return ((code[p]&0xFF) << 8) | (code[p+1]&0xFF);
+
+  protected static int readUInt16(int p) {
+    return ((code[p] & 0xFF) << 8) | (code[p + 1] & 0xFF);
   }
-  protected static int readUInt8(int p)
-  {
+
+  protected static int readUInt8(int p) {
     return code[p] & 0xFF;
   }
-  public static int convertJavaType(String t)
-  {
-    switch (t.charAt(0))
-    {
-    case 'I': return INT;
-    case 'J': return LONG;
-    case 'Z': return BOOLEAN;
-    case 'B': return BYTE;
-    case 'C': return CHAR;
-    case 'S': return SHORT;
-    case 'F': return FLOAT;
-    case 'D': return DOUBLE;
-    case 'V': return VOID;
-    default: return OBJECT;
+
+  public static int convertJavaType(String t) {
+    switch (t.charAt(0)) {
+    case 'I':
+      return INT;
+    case 'J':
+      return LONG;
+    case 'Z':
+      return BOOLEAN;
+    case 'B':
+      return BYTE;
+    case 'C':
+      return CHAR;
+    case 'S':
+      return SHORT;
+    case 'F':
+      return FLOAT;
+    case 'D':
+      return DOUBLE;
+    case 'V':
+      return VOID;
+    default:
+      return OBJECT;
     }
   }
 
-  protected void exec() {}
+  protected void exec() {
+  }
 
-  public void execute()
-  {
+  public void execute() {
     exec();
     stackPtr += stackInc;
     pc += pcInc;
   }
 
   private static StringBuffer sbuf = new StringBuffer(30);
+
   @Override
-  public String toString()
-  {
+  public String toString() {
     sbuf.setLength(0);
-    return sbuf.append(posInMethod).append("  ").append(pcInMethod).append(": ").append(bcClassNames[bc].substring(6)).toString();
+    return sbuf.append(posInMethod).append("  ").append(pcInMethod).append(": ").append(bcClassNames[bc].substring(6))
+        .toString();
   }
 }

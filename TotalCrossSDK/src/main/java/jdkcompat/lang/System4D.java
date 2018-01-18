@@ -65,7 +65,7 @@ public class System4D {
     public void println(String str) {
       synchronized (lock) {
         print(str);
-        flush();	
+        flush();
       }
     }
 
@@ -74,6 +74,7 @@ public class System4D {
       flush();
     }
   }
+
   private static final VmDebugStream instance = new VmDebugStream();
 
   public static final PrintStream err = instance;

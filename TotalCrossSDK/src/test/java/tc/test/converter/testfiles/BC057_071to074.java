@@ -9,29 +9,21 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC057_071to074
-{
-  public BC057_071to074()
-  {
-    double a, b, c, d, e;
+public class BC057_071to074 {
+  public BC057_071to074() {
+    double a, b, d, e;
 
-    a = -131072;   // integer minimum of 18 bits                 -- MOV_regD_s18
-    b = 131071;    // integer maximum of 18 bits                 -- MOV_regD_s18
-    c = -0.5;      // a double                                   -- MOV_regD_sym
-    d = 1.5;       // a double                                   -- MOV_regD_sym
+    a = -131072; // integer minimum of 18 bits                 -- MOV_regD_s18
+    b = 131071; // integer maximum of 18 bits                 -- MOV_regD_s18
+    d = 1.5; // a double                                   -- MOV_regD_sym
     e = -131072.0; // a double that can be an integer of 18 bits -- MOV_regD_s18 (an optmization)
-    e = 131071.0;  // a double that can be an integer of 18 bits -- MOV_regD_s18 (an optmization)
+    e = 131071.0; // a double that can be an integer of 18 bits -- MOV_regD_s18 (an optmization)
 
     a = b; // MOV_reg64_reg64
     d = a; // MOV_reg64_reg64
     e = d; // MOV_reg64_reg64
-
-    // incompleto ...
-    c += e;  // remove warnings
   }
 
 }

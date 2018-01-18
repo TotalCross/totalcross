@@ -9,15 +9,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class StackManipulation extends ByteCode
-{
-  public StackManipulation(int stackInc, boolean is64)
-  {
+public class StackManipulation extends ByteCode {
+  public StackManipulation(int stackInc, boolean is64) {
     this.stackInc = stackInc;
-    this.targetType = is64?LONG:INT;
+    this.targetType = is64 ? LONG : INT;
   }
 }

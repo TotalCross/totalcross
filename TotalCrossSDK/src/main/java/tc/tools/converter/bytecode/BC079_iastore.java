@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC079_iastore extends StoreArray
-{
-  public BC079_iastore()
-  {
-    super(-3,0,1,2,INT);
+public class BC079_iastore extends StoreArray {
+  public BC079_iastore() {
+    super(-3, 0, 1, 2, INT);
   }
 }

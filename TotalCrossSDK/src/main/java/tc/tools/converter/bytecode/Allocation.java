@@ -9,13 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class Allocation extends ByteCode
-{
-  public Allocation()
-  {
+public class Allocation extends ByteCode {
+  public Allocation() {
   }
 }

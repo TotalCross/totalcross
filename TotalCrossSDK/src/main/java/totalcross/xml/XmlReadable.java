@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
 
 import totalcross.net.URI;
@@ -27,8 +25,7 @@ import totalcross.net.URI;
  *
  * @author Pierre G. Richard
  */
-public interface XmlReadable
-{
+public interface XmlReadable {
   /**
    * Read this XmlReadable through an XmlReader parser.
    *

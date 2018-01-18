@@ -9,7 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package ras.comm.v1;
 
 import ras.Utils;
@@ -18,45 +17,38 @@ import totalcross.io.DataStream;
 import totalcross.io.IOException;
 import totalcross.util.Hashtable;
 
-public class ActivationRequest extends Packet
-{
+public class ActivationRequest extends Packet {
   protected Hashtable productInfo;
   protected Hashtable deviceInfo;
   protected String activationCode;
 
-  public ActivationRequest()
-  {
+  public ActivationRequest() {
     productInfo = new Hashtable(10);
     deviceInfo = new Hashtable(10);
     this.webServiceMethod = "activate";
   }
 
-  public ActivationRequest(Hashtable productInfo, Hashtable deviceInfo, String activationCode)
-  {
+  public ActivationRequest(Hashtable productInfo, Hashtable deviceInfo, String activationCode) {
     this.productInfo = productInfo;
     this.deviceInfo = deviceInfo;
     this.activationCode = activationCode;
     this.webServiceMethod = "activate";
   }
 
-  public Hashtable getProductInfo()
-  {
+  public Hashtable getProductInfo() {
     return productInfo;
   }
 
-  public Hashtable getDeviceInfo()
-  {
+  public Hashtable getDeviceInfo() {
     return deviceInfo;
   }
 
-  public String getActivationCode()
-  {
+  public String getActivationCode() {
     return activationCode;
   }
 
   @Override
-  protected void read(DataStream ds) throws IOException
-  {
+  protected void read(DataStream ds) throws IOException {
     productInfo.clear();
     Utils.readInfo(ds, productInfo);
 
@@ -67,8 +59,7 @@ public class ActivationRequest extends Packet
   }
 
   @Override
-  protected void write(DataStream ds) throws IOException
-  {
+  protected void write(DataStream ds) throws IOException {
     Utils.writeInfo(ds, productInfo);
     Utils.writeInfo(ds, deviceInfo);
     ds.writeString(activationCode);

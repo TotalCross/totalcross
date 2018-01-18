@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.lang.thread;
 
 import totalcross.io.IOException;
@@ -26,19 +24,17 @@ import totalcross.ui.Label;
 import totalcross.ui.MultiEdit;
 import totalcross.ui.gfx.Color;
 
-public class HTTPContainer extends Container implements Runnable, ThreadSample.SetX
-{
+public class HTTPContainer extends Container implements Runnable, ThreadSample.SetX {
   MultiEdit me;
   Label label;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     setBackColor(Color.brighter(Color.CYAN));
     setBorderStyle(BORDER_RAISED);
 
-    add(label = new Label(), LEFT,TOP,FILL,PREFERRED);
-    add(me = new MultiEdit(0,0), LEFT,AFTER,FILL,FILL);
+    add(label = new Label(), LEFT, TOP, FILL, PREFERRED);
+    add(me = new MultiEdit(0, 0), LEFT, AFTER, FILL, FILL);
     me.setEditable(false);
     MultiEdit.hasCursorWhenNotEditable = false;
     me.setBackColor(Color.CYAN);
@@ -49,30 +45,25 @@ public class HTTPContainer extends Container implements Runnable, ThreadSample.S
   }
 
   @Override
-  public void setX(int x)
-  {
+  public void setX(int x) {
     this.x = x;
   }
 
   @Override
-  public void incX(int x)
-  {
+  public void incX(int x) {
     this.x += x;
   }
 
   @Override
-  public void run()
-  {
+  public void run() {
     Socket socket = null;
-    while (true)
-    {
-      try
-      {
+    while (true) {
+      try {
         me.setText("Content is Loading...");
         if (ThreadSample.paused || ThreadSample.paused0) {
           me.repaintNow();
         }
-        socket = new Socket("www.google.com",80,25000);
+        socket = new Socket("www.google.com", 80, 25000);
         socket.readTimeout = 5000;
         String requestString = "GET /index.html HTTP/1.0\n\n";
         byte[] get = requestString.getBytes();
@@ -84,9 +75,8 @@ public class HTTPContainer extends Container implements Runnable, ThreadSample.S
         byte[] buff = new byte[100];
         boolean done = false;
         StringBuffer responseBuffer = new StringBuffer(64);
-        while (!done)
-        {
-          count = socket.readBytes(buff,0,buff.length);
+        while (!done) {
+          count = socket.readBytes(buff, 0, buff.length);
           String text = new String(buff, 0, count);
           responseBuffer.append(text);
           totalCount += count;
@@ -111,9 +101,7 @@ public class HTTPContainer extends Container implements Runnable, ThreadSample.S
         if (ThreadSample.paused || ThreadSample.paused0) {
           me.repaintNow();
         }
-      }
-      catch (IOException ioE)
-      {
+      } catch (IOException ioE) {
         me.setText("IOException - " + ioE.getMessage());
         me.repaintNow();
       }

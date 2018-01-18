@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractList;
@@ -72,13 +71,11 @@ import java.util.TreeMap;
  * @since 1.2
  * @status updated to 1.4
  */
-public class ConcurrentModificationException4D extends RuntimeException
-{
+public class ConcurrentModificationException4D extends RuntimeException {
   /**
    * Constructs a ConcurrentModificationException with no detail message.
    */
-  public ConcurrentModificationException4D()
-  {
+  public ConcurrentModificationException4D() {
   }
 
   /**
@@ -86,8 +83,7 @@ public class ConcurrentModificationException4D extends RuntimeException
    *
    * @param detail the detail message for the exception
    */
-  public ConcurrentModificationException4D(String detail)
-  {
+  public ConcurrentModificationException4D(String detail) {
     super(detail);
   }
 }

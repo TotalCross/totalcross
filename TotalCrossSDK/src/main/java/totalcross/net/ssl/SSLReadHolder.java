@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /*
  *  Copyright(C) 2006 Cameron Rich
  *
@@ -43,21 +41,18 @@ package totalcross.net.ssl;
 /**
  * A holder for data read in an SSL read.
  */
-public class SSLReadHolder
-{
+public class SSLReadHolder {
   /**
    * Contruct a new read holder object.
    */
-  public SSLReadHolder()
-  {
+  public SSLReadHolder() {
     m_buf = null;
   }
 
   /**
    * Retrieve the reference to the read data.
    */
-  public byte[] getData()
-  {
+  public byte[] getData() {
     return m_buf;
   }
 

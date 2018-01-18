@@ -1,6 +1,5 @@
 package totalcross.json;
 
-
 /*
 Copyright (c) 2002 JSON.org
 
@@ -34,17 +33,16 @@ SOFTWARE.
  */
 public class JSONTokener {
 
-  private long    character;
+  private long character;
   private boolean eof;
-  private long    index;
-  private long    line;
-  private char    previous;
+  private long index;
+  private long line;
+  private char previous;
   //private ByteArrayStream  reader;
   private boolean usePrevious;
 
-  private int idx,len;
+  private int idx, len;
   private String source;
-
 
   /**
    * Construct a JSONTokener from a Reader.
@@ -82,7 +80,6 @@ public class JSONTokener {
     //this(new ByteArrayStream(s.getBytes()));//StringReader(s));
   }
 
-
   /**
    * Back up one character. This provides a sort of lookahead capability,
    * so that you can test for a digit or letter before attempting to parse
@@ -97,7 +94,6 @@ public class JSONTokener {
     this.usePrevious = true;
     this.eof = false;
   }
-
 
   /**
    * Get the hex value of a character (base16).
@@ -122,7 +118,6 @@ public class JSONTokener {
     return this.eof && !this.usePrevious;
   }
 
-
   /**
    * Determine if the source string still contains characters that next()
    * can consume.
@@ -136,7 +131,6 @@ public class JSONTokener {
     this.back();
     return true;
   }
-
 
   /**
    * Get the next character in the source string.
@@ -170,7 +164,6 @@ public class JSONTokener {
     return this.previous;
   }
 
-
   /**
    * Consume the next character, and check that it matches a specified
    * character.
@@ -181,12 +174,10 @@ public class JSONTokener {
   public char next(char c) throws JSONException {
     char n = this.next();
     if (n != c) {
-      throw this.syntaxError("Expected '" + c + "' and instead saw '" +
-          n + "'");
+      throw this.syntaxError("Expected '" + c + "' and instead saw '" + n + "'");
     }
     return n;
   }
-
 
   /**
    * Get the next n characters.
@@ -215,7 +206,6 @@ public class JSONTokener {
     return new String(chars);
   }
 
-
   /**
    * Get the next char in the string, skipping whitespace.
    * @throws JSONException
@@ -229,7 +219,6 @@ public class JSONTokener {
       }
     }
   }
-
 
   /**
    * Return the characters up to the next close quote character.
@@ -271,7 +260,7 @@ public class JSONTokener {
           sb.append('\r');
           break;
         case 'u':
-          sb.append((char)Integer.parseInt(this.next(4), 16));
+          sb.append((char) Integer.parseInt(this.next(4), 16));
           break;
         case '"':
         case '\'':
@@ -291,7 +280,6 @@ public class JSONTokener {
       }
     }
   }
-
 
   /**
    * Get the text up but not including the specified character or the
@@ -313,7 +301,6 @@ public class JSONTokener {
     }
   }
 
-
   /**
    * Get the text up but not including one of the specified delimiter
    * characters or the end of line, whichever comes first.
@@ -325,8 +312,7 @@ public class JSONTokener {
     StringBuilder sb = new StringBuilder();
     for (;;) {
       c = this.next();
-      if (delimiters.indexOf(c) >= 0 || c == 0 ||
-          c == '\n' || c == '\r') {
+      if (delimiters.indexOf(c) >= 0 || c == 0 || c == '\n' || c == '\r') {
         if (c != 0) {
           this.back();
         }
@@ -335,7 +321,6 @@ public class JSONTokener {
       sb.append(c);
     }
   }
-
 
   /**
    * Get the next value. The value can be a Boolean, Double, Integer,
@@ -383,7 +368,6 @@ public class JSONTokener {
     return JSONObject.stringToValue(string);
   }
 
-
   /**
    * Skip characters until the next character is the requested character.
    * If the requested character is not found, no characters are skipped.
@@ -415,7 +399,6 @@ public class JSONTokener {
     return c;
   }
 
-
   /**
    * Make a JSONException to signal a syntax error.
    *
@@ -426,7 +409,6 @@ public class JSONTokener {
     return new JSONException(message + this.toString());
   }
 
-
   /**
    * Make a printable string of this JSONTokener.
    *
@@ -434,7 +416,6 @@ public class JSONTokener {
    */
   @Override
   public String toString() {
-    return " at " + this.index + " [character " + this.character + " line " +
-        this.line + "]";
+    return " at " + this.index + " [character " + this.character + " line " + this.line + "]";
   }
 }

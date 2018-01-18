@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractCollection;
@@ -67,15 +66,11 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.4
  */
-public abstract class AbstractSet4D<E>
-extends AbstractCollection4D<E>
-implements Set<E>
-{
+public abstract class AbstractSet4D<E> extends AbstractCollection4D<E> implements Set<E> {
   /**
    * The main constructor, for use by subclasses.
    */
-  protected AbstractSet4D()
-  {
+  protected AbstractSet4D() {
   }
 
   /**
@@ -89,11 +84,8 @@ implements Set<E>
    * @return true if the given object is equal to this Set
    */
   @Override
-  public boolean equals(Object o)
-  {
-    return (o == this
-        || (o instanceof Set && ((Set) o).size() == size()
-        && containsAll((Collection) o)));
+  public boolean equals(Object o) {
+    return (o == this || (o instanceof Set && ((Set) o).size() == size() && containsAll((Collection) o)));
   }
 
   /**
@@ -105,12 +97,11 @@ implements Set<E>
    * @return a hash code for this Set
    */
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     Iterator<E> itr = iterator();
     int hash = 0;
     int pos = size();
-    while (--pos >= 0){
+    while (--pos >= 0) {
       hash += AbstractCollection4D.hashCode(itr.next());
     }
     return hash;
@@ -134,22 +125,17 @@ implements Set<E>
    * @see Iterator#remove()
    */
   @Override
-  public boolean removeAll(Collection<?> c)
-  {
+  public boolean removeAll(Collection<?> c) {
     int oldsize = size();
     int count = c.size();
-    if (oldsize < count)
-    {
+    if (oldsize < count) {
       Iterator<E> i;
-      for (i = iterator(), count = oldsize; count > 0; count--)
-      {
+      for (i = iterator(), count = oldsize; count > 0; count--) {
         if (c.contains(i.next())) {
           i.remove();
         }
       }
-    }
-    else
-    {
+    } else {
       Iterator<?> i;
       for (i = c.iterator(); count > 0; count--) {
         remove(i.next());

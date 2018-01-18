@@ -14,8 +14,7 @@ package totalcross.crypto.cipher;
 /**
  * This class implements the RSA cryptographic cipher public key.
  */
-public class RSAPublicKey extends Key
-{
+public class RSAPublicKey extends Key {
   private byte[] e;
   private byte[] n;
 
@@ -25,8 +24,7 @@ public class RSAPublicKey extends Key
    * @param e A byte array containing the public exponent.
    * @param n A byte array containing the modulus.
    */
-  public RSAPublicKey(byte[] e, byte[] n)
-  {
+  public RSAPublicKey(byte[] e, byte[] n) {
     this.e = e;
     this.n = n;
   }
@@ -36,8 +34,7 @@ public class RSAPublicKey extends Key
    * 
    * @return A copy of the byte array containing the modulus.
    */
-  public byte[] getModulus()
-  {
+  public byte[] getModulus() {
     return n;
   }
 
@@ -46,8 +43,7 @@ public class RSAPublicKey extends Key
    * 
    * @return A copy of the byte array containing the public exponent.
    */
-  public byte[] getPublicExponent()
-  {
+  public byte[] getPublicExponent() {
     return e;
   }
 }

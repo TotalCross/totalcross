@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 /**
@@ -24,8 +22,7 @@ package totalcross.io.device.bluetooth;
  * 
  * @since TotalCross 1.2
  */
-public interface DiscoveryListener
-{
+public interface DiscoveryListener {
   /**
    * Indicates the normal completion of device discovery. Used with the <code>inquiryCompleted()</code> method.
    * <p>

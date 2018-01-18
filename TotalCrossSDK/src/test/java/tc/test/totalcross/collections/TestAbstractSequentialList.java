@@ -18,11 +18,9 @@ import java.util.ListIterator;
 import totalcross.sys.Settings;
 import totalcross.unit.TestCase;
 
-public class TestAbstractSequentialList extends TestCase
-{
+public class TestAbstractSequentialList extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test15 test1 = new Test15();
     AbstractSequentialList test2 = new Test15();
     AbstractList test3 = new Test15();
@@ -35,81 +33,60 @@ public class TestAbstractSequentialList extends TestCase
     assertEquals(0, test2.size());
     assertEquals(0, test3.size());
 
-    try
-    {
+    try {
       test1.add(0, null);
       fail("1");
+    } catch (NullPointerException exception) {
     }
-    catch (NullPointerException exception) {}
-    try
-    {
+    try {
       test2.add(0, null);
       fail("2");
+    } catch (NullPointerException exception) {
     }
-    catch (NullPointerException exception) {}
-    try
-    {
+    try {
       test3.add(0, null);
       fail("3");
+    } catch (NullPointerException exception) {
     }
-    catch (NullPointerException exception) {}
 
-    try
-    {
+    try {
       test1.addAll(0, null);
       fail("4");
+    } catch (NullPointerException exception) {
     }
-    catch (NullPointerException exception) {}
-    try
-    {
+    try {
       test2.addAll(0, null);
       fail("5");
+    } catch (NullPointerException exception) {
     }
-    catch (NullPointerException exception) {}
-    try
-    {
+    try {
       test3.addAll(0, null);
       fail("6");
+    } catch (NullPointerException exception) {
     }
-    catch (NullPointerException exception) {}
 
-    try
-    {
+    try {
       test1.get(0);
       fail("7");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
-    try
-    {
+    try {
       test2.get(0);
       fail("8");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
-    try
-    {
+    try {
       test3.get(0);
       fail("9");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
 
@@ -117,99 +94,66 @@ public class TestAbstractSequentialList extends TestCase
     assertEquals(null, test2.iterator());
     assertEquals(null, test3.iterator());
 
-    try
-    {
+    try {
       test1.remove(0);
       fail("10");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
-    try
-    {
+    try {
       test2.remove(0);
       fail("11");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
-    try
-    {
+    try {
       test3.remove(0);
       fail("12");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
 
-    try
-    {
+    try {
       test1.set(0, null);
       fail("13");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
-    try
-    {
+    try {
       test2.set(0, null);
       fail("14");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
-    try
-    {
+    try {
       test3.set(0, null);
       fail("15");
-    }
-    catch (NullPointerException exception) 
-    {
+    } catch (NullPointerException exception) {
       assertTrue(Settings.onJavaSE);
-    }
-    catch (IndexOutOfBoundsException exception)
-    {
+    } catch (IndexOutOfBoundsException exception) {
       assertFalse(Settings.onJavaSE);
     }
   }
 }
 
-class Test15 extends AbstractSequentialList
-{
+class Test15 extends AbstractSequentialList {
   @Override
-  public ListIterator listIterator(int index)
-  {
+  public ListIterator listIterator(int index) {
     return null;
   }
 
   @Override
-  public int size()
-  {
+  public int size() {
     return 0;
   }
 }

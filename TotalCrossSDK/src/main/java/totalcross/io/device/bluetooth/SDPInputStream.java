@@ -28,36 +28,30 @@ import totalcross.sys.UTF8CharacterConverter;
  * 
  * @since TotalCross 1.27
  */
-class SDPInputStream extends DataStream
-{
+class SDPInputStream extends DataStream {
   final private static UTF8CharacterConverter converterUTF8 = new UTF8CharacterConverter();
   final private static CharacterConverter converterASCII = new CharacterConverter();
 
-  public SDPInputStream(byte[] input)
-  {
+  public SDPInputStream(byte[] input) {
     super(new ByteArrayStream(input), true);
   }
 
-  private byte[] readBytes(int size) throws IOException
-  {
+  private byte[] readBytes(int size) throws IOException {
     byte[] buffer = new byte[size];
     readBytes(buffer);
     return buffer;
   }
 
-  public DataElement readElement() throws IOException
-  {
+  public DataElement readElement() throws IOException {
     int header = readByte();
     int type = header >> 3 & 0x1f;
     int sizeDescriptor = header & 0x07;
 
-    switch (type)
-    {
+    switch (type) {
     case 0: // NULL
       return new DataElement(DataElement.NULL);
     case 1: // U_INT
-      switch (sizeDescriptor)
-      {
+      switch (sizeDescriptor) {
       case 0:
         return new DataElement(DataElement.U_INT_1, readUnsignedByte());
       case 1:
@@ -72,8 +66,7 @@ class SDPInputStream extends DataStream
         throw new IOException();
       }
     case 2: // INT
-      switch (sizeDescriptor)
-      {
+      switch (sizeDescriptor) {
       case 0:
         return new DataElement(DataElement.INT_1, readByte());
       case 1:
@@ -90,8 +83,7 @@ class SDPInputStream extends DataStream
     case 3: // UUID
     {
       UUID uuid = null;
-      switch (sizeDescriptor)
-      {
+      switch (sizeDescriptor) {
       case 1:
         uuid = new UUID(readUnsignedShort());
         break;
@@ -109,8 +101,7 @@ class SDPInputStream extends DataStream
     case 4: // STRING
     {
       int length = -1;
-      switch (sizeDescriptor)
-      {
+      switch (sizeDescriptor) {
       case 5:
         length = readUnsignedByte();
         break;
@@ -131,8 +122,7 @@ class SDPInputStream extends DataStream
     case 6: // DATSEQ
     {
       long length;
-      switch (sizeDescriptor)
-      {
+      switch (sizeDescriptor) {
       case 5:
         length = readUnsignedByte();
         break;
@@ -162,8 +152,7 @@ class SDPInputStream extends DataStream
     case 7: // DATALT
     {
       long length;
-      switch (sizeDescriptor)
-      {
+      switch (sizeDescriptor) {
       case 5:
         length = readUnsignedByte();
         break;
@@ -194,8 +183,7 @@ class SDPInputStream extends DataStream
     {
       int length;
 
-      switch (sizeDescriptor)
-      {
+      switch (sizeDescriptor) {
       case 5:
         length = readUnsignedByte();
         break;

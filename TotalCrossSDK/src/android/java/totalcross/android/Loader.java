@@ -47,6 +47,8 @@ import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import com.scandit.barcodepicker.*;
+import com.scandit.recognition.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -61,11 +63,11 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
-   private static final int ZXING_RETURN = 1234324333;
    private static final int EXTCAMERA_RETURN = 1234324334;
    private static final int SELECT_PICTURE = 1234324335;
    private static final int CAMERA_PIC_REQUEST = 1337;
    private static final int SPEECH_TO_TEXT = 1234324336;
+   private static final int FROM_SCANDIT = 1234324337;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -125,6 +127,10 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
    {
       switch (requestCode)
       {
+         case FROM_SCANDIT:
+            Launcher4A.zxingResult = data.getBooleanExtra("barcodeRecognized", false) ? data.getStringExtra("barcodeData") : null; //data.getStringExtra("barcodeSymbologyName").toUpperCase());
+            Launcher4A.callingZXing = false;
+            break;
          case SPEECH_TO_TEXT:
             Launcher4A.soundResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
             Launcher4A.callingSound = false;
@@ -160,13 +166,8 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             Launcher4A.showingMap = false;
             break;
          case IntentIntegrator.REQUEST_CODE:
-         {
             IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             Launcher4A.zxingResult = result.getContents();
-            Launcher4A.callingZXing = false;
-         } break;
-         case ZXING_RETURN:
-            Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringExtra("SCAN_RESULT") : null;
             Launcher4A.callingZXing = false;
             break;
          case EXTCAMERA_RETURN:
@@ -624,41 +625,58 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             case ZXING_SCAN:
             {
                String cmd = b.getString("zxing.mode");
-               StringTokenizer st = new StringTokenizer(cmd,"&");
-               String mode = "SCAN_MODE";
-               String scanmsg = "";
-               while (st.hasMoreTokens())
+               if (cmd.startsWith("scandit:"))
                {
-                  String s = st.nextToken();
-                  int i = s.indexOf('=');
-                  if (i == -1) continue;
-                  String s1 = s.substring(0,i);
-                  String s2 = s.substring(i+1);
-                  if (s1.equalsIgnoreCase("mode"))
-                     mode = s2;
-                  else
-                  if (s1.equalsIgnoreCase("msg"))
-                     scanmsg = s2;
-               }
-               
-               IntentIntegrator integrator = new IntentIntegrator(Loader.this);
-               if (mode.equalsIgnoreCase("1D"))
-               {
-                  integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
-               }
-               else if (mode.equalsIgnoreCase("2D"))
-               {
-                  integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+                  String key = cmd.substring(8);
+                  Intent intent = new Intent(Loader.this, BarcodePickerActivity.class);
+                  ScanditLicense.setAppKey(key);
+                  intent.putExtra("appKey", key);
+                  intent.putExtra("enabledSymbologies", new int[] {
+                     Barcode.SYMBOLOGY_EAN13,
+                     Barcode.SYMBOLOGY_EAN8,
+                     Barcode.SYMBOLOGY_UPCA,
+                     Barcode.SYMBOLOGY_UPCE
+                  });
+                  startActivityForResult(intent, FROM_SCANDIT);      
                }
                else
                {
-                  integrator.setDesiredBarcodeFormats(null);
+                  StringTokenizer st = new StringTokenizer(cmd,"&");
+                  String mode = "SCAN_MODE";
+                  String scanmsg = "";
+                  while (st.hasMoreTokens())
+                  {
+                     String s = st.nextToken();
+                     int i = s.indexOf('=');
+                     if (i == -1) continue;
+                     String s1 = s.substring(0,i);
+                     String s2 = s.substring(i+1);
+                     if (s1.equalsIgnoreCase("mode"))
+                        mode = s2;
+                     else
+                     if (s1.equalsIgnoreCase("msg"))
+                        scanmsg = s2;
+                  }
+                  
+                  IntentIntegrator integrator = new IntentIntegrator(Loader.this);
+                  if (mode.equalsIgnoreCase("1D"))
+                  {
+                     integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
+                  }
+                  else if (mode.equalsIgnoreCase("2D"))
+                  {
+                     integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+                  }
+                  else
+                  {
+                     integrator.setDesiredBarcodeFormats(null);
+                  }
+                  integrator.setPrompt(scanmsg);
+                  integrator.setResultDisplayDuration(1000);
+                  integrator.autoWide();  // Wide scanning rectangle, may work better for 1D barcodes
+                  integrator.setCameraId(0);  // Use a specific camera of the device
+                  integrator.initiateScan();
                }
-               integrator.setPrompt(scanmsg);
-               integrator.setResultDisplayDuration(1000);
-               integrator.autoWide();  // Wide scanning rectangle, may work better for 1D barcodes
-               integrator.setCameraId(0);  // Use a specific camera of the device
-               integrator.initiateScan();
                break;
             }               
             case TOTEXT:
@@ -984,7 +1002,6 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       if (onMainLoop)
          Launcher4A.appPaused();
       super.onPause();
-      updateSmsReceiver(true);
       if (isFinishing() && runningVM) // guich@tc126_60: stop the vm if finishing is true, since onDestroy is not guaranteed to be called
          quitVM();                    // call app 1, exit, call app 2: onPause is called but onDestroy not
    }
@@ -1009,7 +1026,6 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          Launcher4A.appResumed();
       Launcher4A.appPaused = false;
       super.onResume();
-      updateSmsReceiver(false);      
    }
 
    public String strBarcodeData;    
@@ -1141,36 +1157,46 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
    
    IntentFilter intentFilter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
    
+   IntentFilter intentFilterData = new IntentFilter(Telephony.Sms.Intents.DATA_SMS_RECEIVED_ACTION);
+   
    BroadcastReceiver mReceiver = new BroadcastReceiver() {
       
-      @Override
-      public void onReceive(Context context, Intent intent) {
-         // Get the data (SMS data) bound to intent
-         Bundle bundle = intent.getExtras();
-  
-         android.telephony.SmsMessage[] msgs = null;
-  
-         if (bundle != null) {
-             // Retrieve the SMS Messages received
-             Object[] pdus = (Object[]) bundle.get("pdus");
-             msgs = new android.telephony.SmsMessage[pdus.length];
-  
-             // For every SMS message received
-             for (int i=0; i < msgs.length; i++) {
-                 // Convert Object array
-                 msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
-                 Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody());
-             }
-         }
-      }
-   };
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        for (android.telephony.SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
+          Launcher4A.nativeSmsReceived(smsMessage.getDisplayOriginatingAddress(), smsMessage.getDisplayMessageBody(),
+              smsMessage.getUserData());
+        }
+      } else {
+        // Get the data (SMS data) bound to intent
+        Bundle bundle = intent.getExtras();
 
-   public void enableSmsReceiver(boolean enabled) {
+        android.telephony.SmsMessage[] msgs = null;
+
+        if (bundle != null) {
+          // Retrieve the SMS Messages received
+          Object[] pdus = (Object[]) bundle.get("pdus");
+          msgs = new android.telephony.SmsMessage[pdus.length];
+
+          // For every SMS message received
+          for (int i = 0; i < msgs.length; i++) {
+            // Convert Object array
+            msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
+            Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody(),
+                msgs[i].getUserData());
+          }
+        }
+      }
+    }
+   };
+   
+   public void enableSmsReceiver(boolean enabled, int port) {
       smsReceiverEnabled = enabled;
-      updateSmsReceiver(false);
+      updateSmsReceiver(false, port);
    }
    
-  public void updateSmsReceiver(boolean unregisterOnly) {
+  public void updateSmsReceiver(boolean unregisterOnly, int port) {
     if (unregisterOnly || !smsReceiverEnabled) {
       try {
         this.unregisterReceiver(this.mReceiver);
@@ -1178,7 +1204,14 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
         // ignore exception thrown when the receiver was not registered
       }
     } else {
-      this.registerReceiver(mReceiver, intentFilter);
+      if (port > 0) {
+        intentFilterData.setPriority(10);
+        intentFilterData.addDataScheme("sms");
+        intentFilterData.addDataAuthority("*", Integer.toString(port));
+        this.registerReceiver(mReceiver, intentFilterData);
+      } else {
+        this.registerReceiver(mReceiver, intentFilter);
+      }
     }
   }
 }

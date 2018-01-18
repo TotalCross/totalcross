@@ -17,11 +17,9 @@ import java.util.Queue;
 
 import totalcross.unit.TestCase;
 
-public class TestQueue extends TestCase
-{
+public class TestQueue extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test25 test1 = new Test25();
     Queue test2 = new Test25();
     Collection test3 = new Test25();
@@ -80,132 +78,113 @@ public class TestQueue extends TestCase
 
     assertFalse(test1.offer(null));
     assertFalse(test2.offer(null));
-    assertFalse(((Queue)test3).offer(null));
+    assertFalse(((Queue) test3).offer(null));
 
     assertEquals(null, test1.remove());
     assertEquals(null, test2.remove());
-    assertEquals(null, ((Queue)test3).remove());
+    assertEquals(null, ((Queue) test3).remove());
 
     assertEquals(null, test1.poll());
     assertEquals(null, test2.poll());
-    assertEquals(null, ((Queue)test3).poll());
+    assertEquals(null, ((Queue) test3).poll());
 
     assertEquals(null, test1.element());
     assertEquals(null, test2.element());
-    assertEquals(null, ((Queue)test3).element());
+    assertEquals(null, ((Queue) test3).element());
 
     assertEquals(null, test1.peek());
     assertEquals(null, test2.peek());
-    assertEquals(null, ((Queue)test3).peek());
-  } 
+    assertEquals(null, ((Queue) test3).peek());
+  }
 }
 
-class Test25 implements Queue
-{
+class Test25 implements Queue {
   @Override
-  public int size()
-  {
+  public int size() {
     return 0;
   }
 
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return false;
   }
 
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     return false;
   }
 
   @Override
-  public Iterator iterator()
-  {
+  public Iterator iterator() {
     return null;
   }
 
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     return null;
   }
 
   @Override
-  public Object[] toArray(Object[] a)
-  {
+  public Object[] toArray(Object[] a) {
     return null;
   }
 
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     return false;
   }
 
   @Override
-  public boolean containsAll(Collection c)
-  {
+  public boolean containsAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean addAll(Collection c)
-  {
+  public boolean addAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean removeAll(Collection c)
-  {
+  public boolean removeAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean retainAll(Collection c)
-  {
+  public boolean retainAll(Collection c) {
     return false;
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
   }
 
   @Override
-  public boolean add(Object e)
-  {
+  public boolean add(Object e) {
     return false;
   }
 
   @Override
-  public boolean offer(Object e)
-  {
+  public boolean offer(Object e) {
     return false;
   }
 
   @Override
-  public Object remove()
-  {
+  public Object remove() {
     return null;
   }
 
   @Override
-  public Object poll()
-  {
+  public Object poll() {
     return null;
   }
 
   @Override
-  public Object element()
-  {
+  public Object element() {
     return null;
   }
 
   @Override
-  public Object peek()
-  {
+  public Object peek() {
     return null;
   }
 }

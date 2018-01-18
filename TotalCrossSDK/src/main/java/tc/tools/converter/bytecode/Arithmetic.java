@@ -9,16 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class Arithmetic extends ByteCode
-{
+public class Arithmetic extends ByteCode {
   public int result, operand;
 
-  public Arithmetic(int stackInc, int result, int operand, int type)
-  {
+  public Arithmetic(int stackInc, int result, int operand, int type) {
     this.targetType = type;
     this.stackInc = stackInc;
     this.result = result;

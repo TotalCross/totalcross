@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.lang.Enum;
@@ -89,10 +88,7 @@ import java.util.Set;
 
 // FIXME: serialization is special, uses SerializationProxy.
 // of(E e) is the 'bottom' method that creates a real EnumSet.
-public abstract class EnumSet4D<T extends Enum<T>>
-extends AbstractSet<T>
-implements Cloneable
-{
+public abstract class EnumSet4D<T extends Enum<T>> extends AbstractSet<T> implements Cloneable {
   // These fields could go into the anonymous inner class in of(E),
   // complementOf would need to be refactored then, though.
   /**
@@ -115,8 +111,7 @@ implements Cloneable
   /**
    * Empty package-private constructor
    */
-  EnumSet4D()
-  {
+  EnumSet4D() {
   }
 
   /**
@@ -125,16 +120,12 @@ implements Cloneable
    * @return a clone of the set.
    */
   @Override
-  public EnumSet4D<T> clone()
-  {
+  public EnumSet4D<T> clone() {
     EnumSet4D<T> r;
 
-    try
-    {
+    try {
       r = (EnumSet4D<T>) super.clone();
-    }
-    catch (CloneNotSupportedException cnse)
-    {
+    } catch (CloneNotSupportedException cnse) {
       /* Can't happen */
       return null;
     }
@@ -150,8 +141,7 @@ implements Cloneable
    * @return an {@link EnumSet} with all the bits set.
    * @throws NullPointerException if the element type is <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> allOf(Class<T> eltType)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> allOf(Class<T> eltType) {
     // create an EnumSet from the list of values of the type
     return copyOf(Arrays.asList(eltType.getEnumConstants()));
   }
@@ -164,8 +154,7 @@ implements Cloneable
    * @return an {@link EnumSet} with none of the bits set.
    * @throws NullPointerException if the element type is <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> noneOf(Class<T> eltType)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> noneOf(Class<T> eltType) {
     return complementOf(allOf(eltType));
   }
 
@@ -176,8 +165,7 @@ implements Cloneable
    * @return an {@link EnumSet} that is a clone of the given set.
    * @throws NullPointerException if <code>other</code> is <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet<T> copyOf(EnumSet<T> other)
-  {
+  public static <T extends Enum<T>> EnumSet<T> copyOf(EnumSet<T> other) {
     return other.clone();
   }
 
@@ -192,18 +180,16 @@ implements Cloneable
    * @throws NullPointerException if <code>other</code> is <code>null</code>.
    * @throws IllegalArgumentException if the collection is empty.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> copyOf(Collection<T> other)
-  {
-    if (other instanceof EnumSet){
-      return ((EnumSet4D)other).clone();
+  public static <T extends Enum<T>> EnumSet4D<T> copyOf(Collection<T> other) {
+    if (other instanceof EnumSet) {
+      return ((EnumSet4D) other).clone();
     }
-    if (other.isEmpty()){
+    if (other.isEmpty()) {
       throw new IllegalArgumentException("Collection is empty");
     }
     EnumSet4D<T> r = null;
 
-    for (T val : other)
-    {
+    for (T val : other) {
       if (r == null) {
         r = of(val);
       } else {
@@ -223,8 +209,7 @@ implements Cloneable
    * @return an {@link EnumSet} which is the inverse of the current one.
    * @throws NullPointerException if <code>other</code> is <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> complementOf(EnumSet4D<T> other)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> complementOf(EnumSet4D<T> other) {
     EnumSet4D<T> r = other.clone();
     int numConstants = r.enumClass.getEnumConstants().length;
     r.store.flip(0, numConstants);
@@ -239,13 +224,10 @@ implements Cloneable
    * @return an {@link EnumSet} containing the element.
    * @throws NullPointerException if <code>first</code> is <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first)
-  {
-    EnumSet4D<T> r = new EnumSet4D<T>()
-    {
+  public static <T extends Enum<T>> EnumSet4D<T> of(T first) {
+    EnumSet4D<T> r = new EnumSet4D<T>() {
       @Override
-      public boolean add(T val)
-      {
+      public boolean add(T val) {
         if (store.get(val.ordinal())) {
           return false;
         }
@@ -256,25 +238,19 @@ implements Cloneable
       }
 
       @Override
-      public boolean addAll(Collection<? extends T> c)
-      {
+      public boolean addAll(Collection<? extends T> c) {
         boolean result = false;
-        if (c instanceof EnumSet)
-        {
+        if (c instanceof EnumSet) {
           EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass == other.enumClass)
-          {
+          if (enumClass == other.enumClass) {
             store.or(other.store);
             int save = cardinality;
             cardinality = store.cardinality();
             result = save != cardinality;
           }
-        }
-        else
-        {
-          for (T val : c)
-          {
-            if (add (val)) {
+        } else {
+          for (T val : c) {
+            if (add(val)) {
               result = true;
             }
           }
@@ -283,16 +259,14 @@ implements Cloneable
       }
 
       @Override
-      public void clear()
-      {
+      public void clear() {
         store.clear();
         cardinality = 0;
       }
 
       @Override
-      public boolean contains(Object o)
-      {
-        if (! (o instanceof Enum)) {
+      public boolean contains(Object o) {
+        if (!(o instanceof Enum)) {
           return false;
         }
 
@@ -305,10 +279,8 @@ implements Cloneable
       }
 
       @Override
-      public boolean containsAll(Collection<?> c)
-      {
-        if (c instanceof EnumSet)
-        {
+      public boolean containsAll(Collection<?> c) {
+        if (c instanceof EnumSet) {
           EnumSet4D<T> other = (EnumSet4D<T>) c;
           if (enumClass.equals(enumClass)) {
             return store.containsAll(other.store);
@@ -320,32 +292,26 @@ implements Cloneable
       }
 
       @Override
-      public Iterator<T> iterator()
-      {
-        return new Iterator<T>()
-        {
+      public Iterator<T> iterator() {
+        return new Iterator<T>() {
           int next = -1;
           int count = 0;
 
           @Override
-          public boolean hasNext()
-          {
+          public boolean hasNext() {
             return count < cardinality;
           }
 
           @Override
-          public T next()
-          {
+          public T next() {
             next = store.nextSetBit(next + 1);
             ++count;
             return enumClass.getEnumConstants()[next];
           }
 
           @Override
-          public void remove()
-          {
-            if (! store.get(next))
-            {
+          public void remove() {
+            if (!store.get(next)) {
               store.clear(next);
               --cardinality;
             }
@@ -354,9 +320,8 @@ implements Cloneable
       }
 
       @Override
-      public boolean remove(Object o)
-      {
-        if (! (o instanceof Enum)) {
+      public boolean remove(Object o) {
+        if (!(o instanceof Enum)) {
           return false;
         }
 
@@ -371,10 +336,8 @@ implements Cloneable
       }
 
       @Override
-      public boolean removeAll(Collection<?> c)
-      {
-        if (c instanceof EnumSet)
-        {
+      public boolean removeAll(Collection<?> c) {
+        if (c instanceof EnumSet) {
           EnumSet4D<T> other = (EnumSet4D<T>) c;
           if (enumClass != other.enumClass) {
             return false;
@@ -389,10 +352,8 @@ implements Cloneable
       }
 
       @Override
-      public boolean retainAll(Collection<?> c)
-      {
-        if (c instanceof EnumSet)
-        {
+      public boolean retainAll(Collection<?> c) {
+        if (c instanceof EnumSet) {
           EnumSet4D<T> other = (EnumSet4D<T>) c;
           if (enumClass != other.enumClass) {
             return false;
@@ -407,8 +368,7 @@ implements Cloneable
       }
 
       @Override
-      public int size()
-      {
+      public int size() {
         return cardinality;
       }
     };
@@ -429,8 +389,7 @@ implements Cloneable
    * @return an {@link EnumSet} containing the elements.
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second) {
     EnumSet4D<T> r = of(first);
     r.add(second);
     return r;
@@ -445,8 +404,7 @@ implements Cloneable
    * @return an {@link EnumSet} containing the elements.
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third) {
     EnumSet4D<T> r = of(first, second);
     r.add(third);
     return r;
@@ -462,9 +420,7 @@ implements Cloneable
    * @return an {@link EnumSet} containing the elements.
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third,
-      T fourth)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third, T fourth) {
     EnumSet4D<T> r = of(first, second, third);
     r.add(fourth);
     return r;
@@ -481,9 +437,7 @@ implements Cloneable
    * @return an {@link EnumSet} containing the elements.
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third,
-      T fourth, T fifth)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third, T fourth, T fifth) {
     EnumSet4D<T> r = of(first, second, third, fourth);
     r.add(fifth);
     return r;
@@ -497,8 +451,7 @@ implements Cloneable
    * @return an {@link EnumSet} containing the elements.
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T... rest)
-  {
+  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T... rest) {
     EnumSet4D<T> r = noneOf(first.getDeclaringClass());
     r.add(first);
     for (T val : rest) {
@@ -523,9 +476,8 @@ implements Cloneable
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    * @throws IllegalArgumentException if {@code first.compareTo(last) > 0}.
    */
-  public static <T extends Enum<T>> EnumSet4D<T> range(T from, T to)
-  {
-    if (from.compareTo(to) > 0){
+  public static <T extends Enum<T>> EnumSet4D<T> range(T from, T to) {
+    if (from.compareTo(to) > 0) {
       throw new IllegalArgumentException();
     }
     Class<T> type = from.getDeclaringClass();
@@ -534,7 +486,7 @@ implements Cloneable
     T[] values = type.getEnumConstants();
     // skip over values until start of range is found
     int i = 0;
-    while (from != values[i]){
+    while (from != values[i]) {
       i++;
     }
 

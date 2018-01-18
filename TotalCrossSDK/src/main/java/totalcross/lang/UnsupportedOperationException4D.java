@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.lang;
 
 /**
@@ -48,13 +47,11 @@ package totalcross.lang;
  * @since 1.2
  * @status updated to 1.5
  */
-public class UnsupportedOperationException4D extends RuntimeException
-{
+public class UnsupportedOperationException4D extends RuntimeException {
   /**
    * Create an exception without a message.
    */
-  public UnsupportedOperationException4D()
-  {
+  public UnsupportedOperationException4D() {
   }
 
   /**
@@ -62,8 +59,7 @@ public class UnsupportedOperationException4D extends RuntimeException
    *
    * @param s the message
    */
-  public UnsupportedOperationException4D(String s)
-  {
+  public UnsupportedOperationException4D(String s) {
     super(s);
   }
 
@@ -88,8 +84,7 @@ public class UnsupportedOperationException4D extends RuntimeException
    *              is unknown.
    * @since 1.5
    */
-  public UnsupportedOperationException4D(String message, Throwable cause)
-  {
+  public UnsupportedOperationException4D(String message, Throwable cause) {
     super(message, cause);
   }
 
@@ -114,8 +109,7 @@ public class UnsupportedOperationException4D extends RuntimeException
    *              is unknown.
    * @since 1.5
    */
-  public UnsupportedOperationException4D(Throwable cause)
-  {
+  public UnsupportedOperationException4D(Throwable cause) {
     super(cause);
   }
 

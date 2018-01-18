@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.deployer;
 
 import java.io.DataOutputStream;
@@ -33,11 +31,9 @@ import totalcross.util.Vector;
 /**
  * Generates Linux packages for TotalCross VM and Litebase.
  */
-public class LinuxBuildNatives
-{
+public class LinuxBuildNatives {
 
-  public static void main(String args[]) throws Exception
-  {
+  public static void main(String args[]) throws Exception {
     String targetDir = null;
     String binFile = null;
     String name = null;
@@ -50,13 +46,10 @@ public class LinuxBuildNatives
     Vector vFiles = new Vector();
 
     // parse the parameters
-    for (int i = 0; i < args.length; i++)
-    {
+    for (int i = 0; i < args.length; i++) {
       String cmd = args[i].toLowerCase();
-      if (cmd.charAt(0) == '-')
-      {
-        switch (cmd.charAt(1))
-        {
+      if (cmd.charAt(0) == '-') {
+        switch (cmd.charAt(1)) {
         case 'n':
           name = args[++i];
           break;
@@ -95,40 +88,38 @@ public class LinuxBuildNatives
       }
     }
 
-    if (name == null){
+    if (name == null) {
       throw new DeployerException("Error: missing -n for the library name!");
     }
-    if (category == null){
+    if (category == null) {
       throw new DeployerException("Error: missing -c for the library category!");
     }
-    if (version == null){
+    if (version == null) {
       throw new DeployerException("Error: missing -v for the library version!");
     }
-    if (binFile == null){
+    if (binFile == null) {
       throw new DeployerException("Error: missing -b for the binary file!");
     }
-    if (targetDir == null){
+    if (targetDir == null) {
       throw new DeployerException("Error: missing -t for the target directory!");
     }
 
     // create the output folder
     File f = new File(targetDir);
-    if (!f.exists())
-    {
+    if (!f.exists()) {
       f.createDir();
       //Utils.copyTCZFile(targetDir);
     }
 
     createLinuxPackage(name, category, description, location, url, version, maintainer, binFile, targetDir, vFiles);
 
-    System.out.println("... Files written to folder "+targetDir);
+    System.out.println("... Files written to folder " + targetDir);
   }
 
   /////////////////////////////////////////////////////////////////////////////////////
 
   public static void createLinuxPackage(String name, String category, String description, String location, String url,
-      String version, String maintainer, String binFile, String targetDir, Vector files) throws Exception
-  {
+      String version, String maintainer, String binFile, String targetDir, Vector files) throws Exception {
     Utils.println("...creating Linux Installation...");
 
     files.addElement(binFile);
@@ -141,7 +132,7 @@ public class LinuxBuildNatives
     Utils.println("baseDir = " + baseDir);
     // create the output folder
     File dir = new File(baseDir);
-    if (!dir.exists()){
+    if (!dir.exists()) {
       dir.createDir();
     }
 
@@ -153,7 +144,7 @@ public class LinuxBuildNatives
     Utils.println("controlDir = " + controlDir);
     // create the output folder
     dir = new File(controlDir);
-    if (!dir.exists()){
+    if (!dir.exists()) {
       dir.createDir();
     }
 
@@ -161,44 +152,35 @@ public class LinuxBuildNatives
     java.io.File[] ctrlFiles = new java.io.File[3]; // control files
 
     String outFile = "control";
-    Utils.println("...writing "+outFile);
+    Utils.println("...writing " + outFile);
     DataOutputStream dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
-    dos.writeBytes(
-        "Package: " + name + "\n" +
-            "Name: " + name + "\n" +
-            "Version: " + version + "\n" +
-            "Architecture: i386\n" +
-            "Priority: optional\n" +
-            "Description: " + description + "\n" +
-            "Homepage: " + url + "\n" +
-            "Maintainer: " + maintainer + "\n" +
-            "Section: " + category + "\n" +
-            "Depends: " + (vmPkg ? "libdirectfb-1.2-0 (>= 1.2.7)" : "totalcross (>= "+getTCVersion(totalcross.sys.Settings.version)+")") + "\n"
-        );
+    dos.writeBytes("Package: " + name + "\n" + "Name: " + name + "\n" + "Version: " + version + "\n"
+        + "Architecture: i386\n" + "Priority: optional\n" + "Description: " + description + "\n" + "Homepage: " + url
+        + "\n"
+        + "Maintainer: " + maintainer + "\n" + "Section: " + category + "\n" + "Depends: " + (vmPkg
+            ? "libdirectfb-1.2-0 (>= 1.2.7)" : "totalcross (>= " + getTCVersion(totalcross.sys.Settings.version) + ")")
+        + "\n");
     dos.close();
     //ctrlFiles.add(new java.io.File(controlDir + outFile));
     ctrlFiles[0] = new java.io.File(controlDir + outFile);
 
     VariableResolver vars = null;
 
-    Processor debProc = new Processor(new JDebConsole(), vars); 
+    Processor debProc = new Processor(new JDebConsole(), vars);
 
-    Mapper mapper = new Mapper()
-    {
+    Mapper mapper = new Mapper() {
       //@Override
       @Override
-      public TarEntry map(TarEntry entry)
-      {
+      public TarEntry map(TarEntry entry) {
         if (entry.getName().contains("/lib") && entry.getName().contains(".so")) {
           entry.setMode(0100755);
         }
         return entry;
-      }         
+      }
     };
     DataProducer[] dataProd = new DataProducer[1];
-    for (int i = 0; i < files.size(); i++)
-    {
-      String source = (String)files.items[i];
+    for (int i = 0; i < files.size(); i++) {
+      String source = (String) files.items[i];
       String fname = source.substring(source.lastIndexOf('/') + 1);
       String dest = baseDir + "/" + fname;
       Utils.println("file: " + source + " to " + dest);
@@ -206,55 +188,40 @@ public class LinuxBuildNatives
     }
 
     outFile = "postinst";
-    Utils.println("...writing "+outFile);
+    Utils.println("...writing " + outFile);
     dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
-    dos.writeBytes(
-        "#!/bin/sh\n" +
-            "set -e\n" +
-            "if [ \"$1\" = \"configure\" ]; then\n" +
-            "  ldconfig /usr/lib/totalcross\n" +
-            "fi\n"
-        );
+    dos.writeBytes("#!/bin/sh\n" + "set -e\n" + "if [ \"$1\" = \"configure\" ]; then\n"
+        + "  ldconfig /usr/lib/totalcross\n" + "fi\n");
     dos.close();
     java.io.File ff = new java.io.File(controlDir + outFile);
     ff.setExecutable(true, false);
     ctrlFiles[1] = ff;
 
     outFile = "postrm";
-    Utils.println("...writing "+outFile);
+    Utils.println("...writing " + outFile);
     dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
-    dos.writeBytes(
-        "#!/bin/sh\n" +
-            "set -e\n" +
-            "if [ \"$1\" = \"remove\" ]; then\n" +
-            "  ldconfig /usr/lib/totalcross\n" +
-            "fi\n"
-        );
+    dos.writeBytes("#!/bin/sh\n" + "set -e\n" + "if [ \"$1\" = \"remove\" ]; then\n"
+        + "  ldconfig /usr/lib/totalcross\n" + "fi\n");
     dos.close();
     ff = new java.io.File(controlDir + outFile);
     ff.setExecutable(true, false);
     ctrlFiles[2] = ff;
 
-    dataProd[0] = new DataProducerDirectory(new java.io.File("install/linux/"), 
-        new String[] { "usr" + java.io.File.separatorChar +"**" }, // includes
+    dataProd[0] = new DataProducerDirectory(new java.io.File("install/linux/"),
+        new String[] { "usr" + java.io.File.separatorChar + "**" }, // includes
         new String[] {}, // excludes
-        new Mapper[] { mapper }); 
+        new Mapper[] { mapper });
     String debName = name + "_" + version + "_i386.deb";
     java.io.File debOut = new java.io.File("install/linux/" + debName);
-    try
-    {
+    try {
       PackageDescriptor pdsc = debProc.createDeb(ctrlFiles, dataProd, debOut, "bzip2");
       System.out.println("debian package descriptor:\n" + pdsc.toString());
-    } 
-    catch (PackagingException e)
-    {
+    } catch (PackagingException e) {
       System.err.println(e);
-    } 
-    catch (InvalidDescriptorException e)
-    {
+    } catch (InvalidDescriptorException e) {
       System.err.println(e);
     }
-    Utils.copyFile("install/linux/" + debName, targetDir+"/"+debName, false);
+    Utils.copyFile("install/linux/" + debName, targetDir + "/" + debName, false);
     totalcross.io.File.deleteDir("install");
 
     //      int ret = Runtime.getRuntime().exec("dpkg-deb -b cydia/" + name).waitFor();
@@ -267,7 +234,6 @@ public class LinuxBuildNatives
     // deferred temp files deletion
     //      for (int i = vFiles.size()-1; i >= 0; i--)
     //         vCleanup.addElement((String)vFiles.items[i]);      
-
 
     //vFiles.addElement(name);
 
@@ -325,22 +291,18 @@ public class LinuxBuildNatives
     //      }
   }
 
-  private static String getTCVersion(int version)
-  {
+  private static String getTCVersion(int version) {
     String s = (version / 100) + "." + (version % 100);
-    if (s.endsWith("0"))
-    {
-      s = s.substring(0,s.length()-1); // 1.20 -> 1.2
+    if (s.endsWith("0")) {
+      s = s.substring(0, s.length() - 1); // 1.20 -> 1.2
     }
     return s;
   }
 
-  static class JDebConsole implements Console 
-  {
+  static class JDebConsole implements Console {
     //@Override
     @Override
-    public void println(String s)
-    {
+    public void println(String s) {
       Utils.println(s);
     }
   }

@@ -9,20 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandRegIs extends OperandRegI
-{
-  public OperandRegIs()
-  {
+public class OperandRegIs extends OperandRegI {
+  public OperandRegIs() {
     super();
     kind = opr_regIs;
   }
 
-  public OperandRegIs(int framePosition)
-  {
+  public OperandRegIs(int framePosition) {
     super(opr_regIs, framePosition);
   }
 }

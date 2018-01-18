@@ -67,8 +67,7 @@ import totalcross.sys.Vm;
  * @author Eric Blake (ebb9@email.byu.edu)
  * @status updated to 1.4
  */
-public class BitSet4D implements Cloneable
-{
+public class BitSet4D implements Cloneable {
   /**
    * A common mask.
    */
@@ -84,8 +83,7 @@ public class BitSet4D implements Cloneable
   /**
    * Create a new empty bit set. All bits are initially false.
    */
-  public BitSet4D()
-  {
+  public BitSet4D() {
     this(64);
   }
 
@@ -97,14 +95,13 @@ public class BitSet4D implements Cloneable
    * @param nbits the initial size of the bit set
    * @throws NegativeArraySizeException if nbits &lt; 0
    */
-  public BitSet4D(int nbits)
-  {
-    if (nbits < 0){
+  public BitSet4D(int nbits) {
+    if (nbits < 0) {
       throw new NegativeArraySizeException();
     }
 
     int length = nbits >>> 6;
-    if ((nbits & LONG_MASK) != 0){
+    if ((nbits & LONG_MASK) != 0) {
       ++length;
     }
     bits = new long[length];
@@ -118,14 +115,13 @@ public class BitSet4D implements Cloneable
    * @param bs the second bit set
    * @throws NullPointerException if bs is null
    */
-  public void and(BitSet4D bs)
-  {
+  public void and(BitSet4D bs) {
     int max = Math.min(bits.length, bs.bits.length);
     int i;
     for (i = 0; i < max; ++i) {
       bits[i] &= bs.bits[i];
     }
-    while (i < bits.length){
+    while (i < bits.length) {
       bits[i++] = 0;
     }
   }
@@ -141,10 +137,9 @@ public class BitSet4D implements Cloneable
    * @throws NullPointerException if bs is null
    * @since 1.2
    */
-  public void andNot(BitSet4D bs)
-  {
+  public void andNot(BitSet4D bs) {
     int i = Math.min(bits.length, bs.bits.length);
-    while (--i >= 0){
+    while (--i >= 0) {
       bits[i] &= ~bs.bits[i];
     }
   }
@@ -155,18 +150,15 @@ public class BitSet4D implements Cloneable
    * @return the number of true bits
    * @since 1.4
    */
-  public int cardinality()
-  {
+  public int cardinality() {
     int card = 0;
-    for (int i = bits.length - 1; i >= 0; i--)
-    {
+    for (int i = bits.length - 1; i >= 0; i--) {
       long a = bits[i];
       // Take care of common cases.
       if (a == 0) {
         continue;
       }
-      if (a == -1)
-      {
+      if (a == -1) {
         card += 64;
         continue;
       }
@@ -187,8 +179,7 @@ public class BitSet4D implements Cloneable
    *
    * @since 1.4
    */
-  public void clear()
-  {
+  public void clear() {
     Convert.fill(bits, 0, bits.length, 0);
   }
 
@@ -200,8 +191,7 @@ public class BitSet4D implements Cloneable
    * @param pos a non-negative integer
    * @throws IndexOutOfBoundsException if pos &lt; 0
    */
-  public void clear(int pos)
-  {
+  public void clear(int pos) {
     int offset = pos >> 6;
     ensure(offset);
     // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
@@ -218,19 +208,17 @@ public class BitSet4D implements Cloneable
    *         from &gt; to
    * @since 1.4
    */
-  public void clear(int from, int to)
-  {
-    if (from < 0 || from > to){
+  public void clear(int from, int to) {
+    if (from < 0 || from > to) {
       throw new IndexOutOfBoundsException();
     }
-    if (from == to){
+    if (from == to) {
       return;
     }
     int lo_offset = from >>> 6;
     int hi_offset = to >>> 6;
     ensure(hi_offset);
-    if (lo_offset == hi_offset)
-    {
+    if (lo_offset == hi_offset) {
       bits[hi_offset] &= ((1L << from) - 1) | (-1L << to);
       return;
     }
@@ -250,17 +238,13 @@ public class BitSet4D implements Cloneable
    * @return the clone of this object.
    */
   @Override
-  public Object clone()
-  {
-    try
-    {
+  public Object clone() {
+    try {
       BitSet4D bs = (BitSet4D) super.clone();
-      bs.bits = new long[bits.length]; 
+      bs.bits = new long[bits.length];
       Vm.arrayCopy(bits, 0, bs.bits, 0, bits.length);
       return bs;
-    }
-    catch (CloneNotSupportedException e)
-    {
+    } catch (CloneNotSupportedException e) {
       // Impossible to get here.
       return null;
     }
@@ -274,27 +258,26 @@ public class BitSet4D implements Cloneable
    * @return true if obj equals this bit set
    */
   @Override
-  public boolean equals(Object obj)
-  {
-    if (!(obj instanceof BitSet4D)){
+  public boolean equals(Object obj) {
+    if (!(obj instanceof BitSet4D)) {
       return false;
     }
     BitSet4D bs = (BitSet4D) obj;
     int max = Math.min(bits.length, bs.bits.length);
     int i;
     for (i = 0; i < max; ++i) {
-      if (bits[i] != bs.bits[i]){
+      if (bits[i] != bs.bits[i]) {
         return false;
       }
     }
     // If one is larger, check to make sure all extra bits are 0.
     for (int j = i; j < bits.length; ++j) {
-      if (bits[j] != 0){
+      if (bits[j] != 0) {
         return false;
       }
     }
     for (int j = i; j < bs.bits.length; ++j) {
-      if (bs.bits[j] != 0){
+      if (bs.bits[j] != 0) {
         return false;
       }
     }
@@ -308,8 +291,7 @@ public class BitSet4D implements Cloneable
    * @throws IndexOutOfBoundsException if index is negative
    * @since 1.4
    */
-  public void flip(int index)
-  {
+  public void flip(int index) {
     int offset = index >> 6;
     ensure(offset);
     // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
@@ -326,19 +308,17 @@ public class BitSet4D implements Cloneable
    *         to &lt; 0
    * @since 1.4
    */
-  public void flip(int from, int to)
-  {
-    if (from < 0 || from > to){
+  public void flip(int from, int to) {
+    if (from < 0 || from > to) {
       throw new IndexOutOfBoundsException();
     }
-    if (from == to){
+    if (from == to) {
       return;
     }
     int lo_offset = from >>> 6;
     int hi_offset = to >>> 6;
     ensure(hi_offset);
-    if (lo_offset == hi_offset)
-    {
+    if (lo_offset == hi_offset) {
       bits[hi_offset] ^= (-1L << from) & ((1L << to) - 1);
       return;
     }
@@ -358,10 +338,9 @@ public class BitSet4D implements Cloneable
    * @return the value of the bit at the specified position
    * @throws IndexOutOfBoundsException if the pos is negative
    */
-  public boolean get(int pos)
-  {
+  public boolean get(int pos) {
     int offset = pos >> 6;
-    if (offset >= bits.length){
+    if (offset >= bits.length) {
       return false;
     }
     // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
@@ -379,43 +358,40 @@ public class BitSet4D implements Cloneable
    *         to &lt; 0
    * @since 1.4
    */
-  public BitSet4D get(int from, int to)
-  {
-    if (from < 0 || from > to){
+  public BitSet4D get(int from, int to) {
+    if (from < 0 || from > to) {
       throw new IndexOutOfBoundsException();
     }
     BitSet4D bs = new BitSet4D(to - from);
     int lo_offset = from >>> 6;
-    if (lo_offset >= bits.length || to == from){
+    if (lo_offset >= bits.length || to == from) {
       return bs;
     }
 
     int lo_bit = from & LONG_MASK;
     int hi_offset = to >>> 6;
-      if (lo_bit == 0)
-      {
-        int len = Math.min(hi_offset - lo_offset + 1, bits.length - lo_offset);
-        Vm.arrayCopy(bits, lo_offset, bs.bits, 0, len);
-        if (hi_offset < bits.length) {
-          bs.bits[hi_offset - lo_offset] &= (1L << to) - 1;
-        }
-        return bs;
-      }
-
-      int len = Math.min(hi_offset, bits.length - 1);
-      int reverse = 64 - lo_bit;
-      int i;
-      for (i = 0; lo_offset < len; lo_offset++, i++) {
-        bs.bits[i] = ((bits[lo_offset] >>> lo_bit)
-            | (bits[lo_offset + 1] << reverse));
-      }
-      if ((to & LONG_MASK) > lo_bit){
-        bs.bits[i++] = bits[lo_offset] >>> lo_bit;
-      }
-      if (hi_offset < bits.length){
-        bs.bits[i - 1] &= (1L << (to - from)) - 1;
+    if (lo_bit == 0) {
+      int len = Math.min(hi_offset - lo_offset + 1, bits.length - lo_offset);
+      Vm.arrayCopy(bits, lo_offset, bs.bits, 0, len);
+      if (hi_offset < bits.length) {
+        bs.bits[hi_offset - lo_offset] &= (1L << to) - 1;
       }
       return bs;
+    }
+
+    int len = Math.min(hi_offset, bits.length - 1);
+    int reverse = 64 - lo_bit;
+    int i;
+    for (i = 0; lo_offset < len; lo_offset++, i++) {
+      bs.bits[i] = ((bits[lo_offset] >>> lo_bit) | (bits[lo_offset + 1] << reverse));
+    }
+    if ((to & LONG_MASK) > lo_bit) {
+      bs.bits[i++] = bits[lo_offset] >>> lo_bit;
+    }
+    if (hi_offset < bits.length) {
+      bs.bits[i - 1] &= (1L << (to - from)) - 1;
+    }
+    return bs;
   }
 
   /**
@@ -436,26 +412,25 @@ public class BitSet4D implements Cloneable
    * would be a correct implementation of the actual algorithm:
    *
    * 
-<pre>public int hashCode()
-{
+  <pre>public int hashCode()
+  {
   long h = 1234;
   for (int i = bits.length-1; i &gt;= 0; i--)
   {
     h ^= bits[i] * (i + 1);
   }
-
+  
   return (int)((h >> 32) ^ h);
-}</pre>
+  }</pre>
    *
    * Note that the hash code values changes, if the set is changed.
    *
    * @return the hash code value for this bit set.
    */
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     long h = 1234;
-    for (int i = bits.length; i > 0; ) {
+    for (int i = bits.length; i > 0;) {
       h ^= i * bits[--i];
     }
     return (int) ((h >> 32) ^ h);
@@ -470,11 +445,10 @@ public class BitSet4D implements Cloneable
    * @throws NullPointerException if set is null
    * @since 1.4
    */
-  public boolean intersects(BitSet4D set)
-  {
+  public boolean intersects(BitSet4D set) {
     int i = Math.min(bits.length, set.bits.length);
-    while (--i >= 0){
-      if ((bits[i] & set.bits[i]) != 0){
+    while (--i >= 0) {
+      if ((bits[i] & set.bits[i]) != 0) {
         return true;
       }
     }
@@ -487,10 +461,9 @@ public class BitSet4D implements Cloneable
    * @return true if all bits are false
    * @since 1.4
    */
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     for (int i = bits.length - 1; i >= 0; i--) {
-      if (bits[i] != 0){
+      if (bits[i] != 0) {
         return false;
       }
     }
@@ -504,15 +477,15 @@ public class BitSet4D implements Cloneable
    *
    * @return the index of the highest set bit plus one.
    */
-  public int length()
-  {
+  public int length() {
     // Set i to highest index that contains a non-zero value.
     int i;
-    for (i = bits.length - 1; i >= 0 && bits[i] == 0; --i) {;
+    for (i = bits.length - 1; i >= 0 && bits[i] == 0; --i) {
+      ;
     }
 
     // if i < 0 all bits are cleared.
-    if (i < 0){
+    if (i < 0) {
       return 0;
     }
 
@@ -520,8 +493,7 @@ public class BitSet4D implements Cloneable
     long b = bits[i];
     int len = (i + 1) * 64;
     // b >= 0 checks if the highest bit is zero.
-    while (b >= 0)
-    {
+    while (b >= 0) {
       --len;
       b <<= 1;
     }
@@ -538,28 +510,24 @@ public class BitSet4D implements Cloneable
    * @throws IndexOutOfBoundsException if from is negative
    * @since 1.4
    */
-  public int nextClearBit(int from)
-  {
+  public int nextClearBit(int from) {
     int offset = from >> 6;
-      long mask = 1L << from;
-      while (offset < bits.length)
-      {
-        // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
-        // so we'll just let that be our exception.
-        long h = bits[offset];
-        do
-        {
-          if ((h & mask) == 0) {
-            return from;
-          }
-          mask <<= 1;
-          from++;
+    long mask = 1L << from;
+    while (offset < bits.length) {
+      // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
+      // so we'll just let that be our exception.
+      long h = bits[offset];
+      do {
+        if ((h & mask) == 0) {
+          return from;
         }
-        while (mask != 0);
-        mask = 1;
-        offset++;
-      }
-      return from;
+        mask <<= 1;
+        from++;
+      } while (mask != 0);
+      mask = 1;
+      offset++;
+    }
+    return from;
   }
 
   /**
@@ -567,38 +535,34 @@ public class BitSet4D implements Cloneable
    * (inclusive). If there is none, -1 is returned. You can iterate over
    * all true bits with this loop:<br>
    * 
-<pre>for (int i = bs.nextSetBit(0); i &gt;= 0; i = bs.nextSetBit(i + 1))
-{
+  <pre>for (int i = bs.nextSetBit(0); i &gt;= 0; i = bs.nextSetBit(i + 1))
+  {
   // operate on i here
-}</pre>
+  }</pre>
    *
    * @param from the start location
    * @return the first true bit, or -1
    * @throws IndexOutOfBoundsException if from is negative
    * @since 1.4
    */
-  public int nextSetBit(int from)
-  {
+  public int nextSetBit(int from) {
     int offset = from >> 6;
-          long mask = 1L << from;
-          while (offset < bits.length)
-          {
-            // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
-            // so we'll just let that be our exception.
-            long h = bits[offset];
-            do
-            {
-              if ((h & mask) != 0) {
-                return from;
-              }
-              mask <<= 1;
-              from++;
-            }
-            while (mask != 0);
-            mask = 1;
-            offset++;
-          }
-          return -1;
+    long mask = 1L << from;
+    while (offset < bits.length) {
+      // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
+      // so we'll just let that be our exception.
+      long h = bits[offset];
+      do {
+        if ((h & mask) != 0) {
+          return from;
+        }
+        mask <<= 1;
+        from++;
+      } while (mask != 0);
+      mask = 1;
+      offset++;
+    }
+    return -1;
   }
 
   /**
@@ -610,8 +574,7 @@ public class BitSet4D implements Cloneable
    * @param bs the second bit set
    * @throws NullPointerException if bs is null
    */
-  public void or(BitSet4D bs)
-  {
+  public void or(BitSet4D bs) {
     ensure(bs.bits.length - 1);
     for (int i = bs.bits.length - 1; i >= 0; i--) {
       bits[i] |= bs.bits[i];
@@ -627,13 +590,12 @@ public class BitSet4D implements Cloneable
    * @param pos a non-negative integer.
    * @throws IndexOutOfBoundsException if pos is negative
    */
-  public void set(int pos)
-  {
+  public void set(int pos) {
     int offset = pos >> 6;
-              ensure(offset);
-              // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
-              // so we'll just let that be our exception.
-              bits[offset] |= 1L << pos;
+    ensure(offset);
+    // ArrayIndexOutOfBoundsException subclasses IndexOutOfBoundsException,
+    // so we'll just let that be our exception.
+    bits[offset] |= 1L << pos;
   }
 
   /**
@@ -645,11 +607,10 @@ public class BitSet4D implements Cloneable
    * @throws IndexOutOfBoundsException if index is negative
    * @since 1.4
    */
-  public void set(int index, boolean value)
-  {
-    if (value){
+  public void set(int index, boolean value) {
+    if (value) {
       set(index);
-    }else {
+    } else {
       clear(index);
     }
   }
@@ -663,28 +624,26 @@ public class BitSet4D implements Cloneable
    *         to &lt; 0
    * @since 1.4
    */
-  public void set(int from, int to)
-  {
-    if (from < 0 || from > to){
+  public void set(int from, int to) {
+    if (from < 0 || from > to) {
       throw new IndexOutOfBoundsException();
     }
-    if (from == to){
+    if (from == to) {
       return;
     }
     int lo_offset = from >>> 6;
-              int hi_offset = to >>> 6;
-      ensure(hi_offset);
-      if (lo_offset == hi_offset)
-      {
-        bits[hi_offset] |= (-1L << from) & ((1L << to) - 1);
-        return;
-      }
+    int hi_offset = to >>> 6;
+    ensure(hi_offset);
+    if (lo_offset == hi_offset) {
+      bits[hi_offset] |= (-1L << from) & ((1L << to) - 1);
+      return;
+    }
 
-      bits[lo_offset] |= -1L << from;
-      bits[hi_offset] |= (1L << to) - 1;
-      for (int i = lo_offset + 1; i < hi_offset; i++) {
-        bits[i] = -1;
-      }
+    bits[lo_offset] |= -1L << from;
+    bits[hi_offset] |= (1L << to) - 1;
+    for (int i = lo_offset + 1; i < hi_offset; i++) {
+      bits[i] = -1;
+    }
   }
 
   /**
@@ -698,11 +657,10 @@ public class BitSet4D implements Cloneable
    *         to &lt; 0
    * @since 1.4
    */
-  public void set(int from, int to, boolean value)
-  {
-    if (value){
+  public void set(int from, int to, boolean value) {
+    if (value) {
       set(from, to);
-    }else {
+    } else {
       clear(from, to);
     }
   }
@@ -714,8 +672,7 @@ public class BitSet4D implements Cloneable
    *
    * @return the number of bits currently used.
    */
-  public int size()
-  {
+  public int size() {
     return bits.length * 64;
   }
 
@@ -727,22 +684,18 @@ public class BitSet4D implements Cloneable
    * @return the string representation.
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     StringBuffer r = new StringBuffer("{");
     boolean first = true;
-    for (int i = 0; i < bits.length; ++i)
-    {
+    for (int i = 0; i < bits.length; ++i) {
       long bit = 1;
       long word = bits[i];
       if (word == 0) {
         continue;
       }
-      for (int j = 0; j < 64; ++j)
-      {
-        if ((word & bit) != 0)
-        {
-          if (! first) {
+      for (int j = 0; j < 64; ++j) {
+        if ((word & bit) != 0) {
+          if (!first) {
             r.append(", ");
           }
           r.append(64 * i + j);
@@ -764,8 +717,7 @@ public class BitSet4D implements Cloneable
    * @param bs the second bit set
    * @throws NullPointerException if bs is null
    */
-  public void xor(BitSet4D bs)
-  {
+  public void xor(BitSet4D bs) {
     ensure(bs.bits.length - 1);
     for (int i = bs.bits.length - 1; i >= 0; i--) {
       bits[i] ^= bs.bits[i];
@@ -777,10 +729,8 @@ public class BitSet4D implements Cloneable
    *
    * @param lastElt the size needed for the bits array
    */
-  private void ensure(int lastElt)
-  {
-    if (lastElt >= bits.length)
-    {
+  private void ensure(int lastElt) {
+    if (lastElt >= bits.length) {
       long[] nd = new long[lastElt + 1];
       Vm.arrayCopy(bits, 0, nd, 0, bits.length);
       bits = nd;
@@ -788,11 +738,9 @@ public class BitSet4D implements Cloneable
   }
 
   // This is used by EnumSet for efficiency.
-  final boolean containsAll(BitSet4D other)
-  {
-    for (int i = other.bits.length - 1; i >= 0; i--)
-    {
-      if ((bits[i] & other.bits[i]) != other.bits[i]){
+  final boolean containsAll(BitSet4D other) {
+    for (int i = other.bits.length - 1; i >= 0; i--) {
+      if ((bits[i] & other.bits[i]) != other.bits[i]) {
         return false;
       }
     }

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.Settings;
@@ -37,8 +35,7 @@ import totalcross.ui.image.Image;
  * Then set a timer to update the value. See the UIGadgets sample.
  */
 
-public class ProgressBar extends Control
-{
+public class ProgressBar extends Control {
   /** The minimum value of a progress bar. */
   public int min;
 
@@ -49,10 +46,10 @@ public class ProgressBar extends Control
   private int value;
 
   /** The string prefix. The displayed label will be prefix+value+sufix. The default is an empty string. */
-  public String prefix="";
+  public String prefix = "";
 
   /** The string prefix. The displayed label will be prefix+value+sufix. The default is the percentage symbol. */
-  public String suffix="%";
+  public String suffix = "%";
 
   /** Set to false to don't let the text be drawn.
    * @since TotalCross 1.0
@@ -86,14 +83,13 @@ public class ProgressBar extends Control
 
   private boolean endless;
 
-  private Image npback,npfore;
+  private Image npback, npfore;
 
   /**
    * Creates a progress bar, with minimum and maximum set as 0 and 100, respectively.
    */
-  public ProgressBar()
-  {
-    this(0,100);
+  public ProgressBar() {
+    this(0, 100);
   }
 
   /**
@@ -102,13 +98,12 @@ public class ProgressBar extends Control
    * @param min The minimum value
    * @param max The maximum value
    */
-  public ProgressBar(int min, int max)
-  {
+  public ProgressBar(int min, int max) {
     this.min = value = min;
     this.max = max;
     foreColor = 0x0000C8;
     focusTraversable = false;
-    if (uiAndroid){
+    if (uiAndroid) {
       transparentBackground = true;
     }
   }
@@ -119,7 +114,7 @@ public class ProgressBar extends Control
    */
   public void setEndless() // guich@tc125_19
   {
-    if (vertical){
+    if (vertical) {
       throw new RuntimeException("Endless progressbar cannot be vertical, only horizontal)");
     }
     suffix = "";
@@ -128,25 +123,21 @@ public class ProgressBar extends Control
 
   /** Gets the preferred width, which is the parent's width-6, or the screen's width. */
   @Override
-  public int getPreferredWidth()
-  {
-    if (vertical){
-      return fm.stringWidth(max+prefix+suffix)+8;
+  public int getPreferredWidth() {
+    if (vertical) {
+      return fm.stringWidth(max + prefix + suffix) + 8;
     }
-    return parent==null ? Settings.screenWidth : (parent.getWidth()-6);
+    return parent == null ? Settings.screenWidth : (parent.getWidth() - 6);
   }
 
   /** Returns the preferred height, which is fmH+2 */
   @Override
-  public int getPreferredHeight()
-  {
-    if (vertical){
-      return parent==null ? Settings.screenHeight : (parent.getHeight()-6);
+  public int getPreferredHeight() {
+    if (vertical) {
+      return parent == null ? Settings.screenHeight : (parent.getHeight() - 6);
     }
-    return fmH+2;
+    return fmH + 2;
   }
-
-
 
   /**
    * Sets the current value. Due to performance reasons,
@@ -162,11 +153,9 @@ public class ProgressBar extends Control
    * @param   n The new value
    * @see     #getValue
    */
-  public void setValue(int n)
-  {
-    if (endless || value != n)
-    {
-      value = endless ? value+n : n;
+  public void setValue(int n) {
+    if (endless || value != n) {
+      value = endless ? value + n : n;
       repaintNow();
     }
   }
@@ -179,29 +168,25 @@ public class ProgressBar extends Control
    * @param  value The new value
    * @see     #getValue
    */
-  public void setValue(int value, String prefix, String suffix)
-  {
-    this.value = endless ? this.value+value : value;
+  public void setValue(int value, String prefix, String suffix) {
+    this.value = endless ? this.value + value : value;
     this.prefix = prefix;
     this.suffix = suffix;
     repaintNow();
   }
 
   /** Returns the current value */
-  public int getValue()
-  {
+  public int getValue() {
     return value;
   }
 
   @Override
-  public void onColorsChanged(boolean b)
-  {
+  public void onColorsChanged(boolean b) {
     npback = npfore = null;
   }
 
   @Override
-  public void onBoundsChanged(boolean b)
-  {
+  public void onBoundsChanged(boolean b) {
     npback = npfore = null;
   }
 
@@ -210,119 +195,101 @@ public class ProgressBar extends Control
    * the defined textColor color; no border is drawn.
    */
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     // computes the current width of the bar
-    int dif = max-min;
+    int dif = max - min;
     int size = vertical ? height : width;
-    int s = (dif == 0 || value==max) ? size : (value == 0) ? 0 : (int)((long)size * (long)(value - min) / (long)dif);
-    if (s > size){
+    int s = (dif == 0 || value == max) ? size
+        : (value == 0) ? 0 : (int) ((long) size * (long) (value - min) / (long) dif);
+    if (s > size) {
       s = size;
     }
     // draw the filled part
     int bc = getBackColor();
     int fc = getForeColor();
 
-    if (uiAndroid && !uiMaterial){
-      try
-      {
-        if (npback == null)
-        {
-          int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
-          npback = NinePatch.getInstance().getNormalInstance(type,width,height,bc,false);
-          npfore = NinePatch.getInstance().getNormalInstance(type,width,height,fc,false);
+    if (uiAndroid && !uiMaterial) {
+      try {
+        if (npback == null) {
+          int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV
+              : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
+          npback = NinePatch.getInstance().getNormalInstance(type, width, height, bc, false);
+          npfore = NinePatch.getInstance().getNormalInstance(type, width, height, fc, false);
         }
 
         if (endless) // only horizontal
         {
-          int d = value-dif;
-          g.copyRect(npback, 0,0,d,height,0,0);
-          g.copyRect(npback, value,0,width-value,height,value,0);
-          g.copyRect(npfore, d,0,dif,height,d,0);
-        }
-        else
-        {
-          if (vertical)
-          {
-            int r = height-s;
-            g.copyRect(npback, 0,0,width,r,0,0);
-            g.copyRect(npfore, 0,r,width,s,0,r);
-          }
-          else
-          {
-            int r = width-s;
-            g.copyRect(npfore, 0,0,s,height,0,0);
-            g.copyRect(npback, s,0,r,height,s,0); 
+          int d = value - dif;
+          g.copyRect(npback, 0, 0, d, height, 0, 0);
+          g.copyRect(npback, value, 0, width - value, height, value, 0);
+          g.copyRect(npfore, d, 0, dif, height, d, 0);
+        } else {
+          if (vertical) {
+            int r = height - s;
+            g.copyRect(npback, 0, 0, width, r, 0, 0);
+            g.copyRect(npfore, 0, r, width, s, 0, r);
+          } else {
+            int r = width - s;
+            g.copyRect(npfore, 0, 0, s, height, 0, 0);
+            g.copyRect(npback, s, 0, r, height, s, 0);
           }
         }
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      catch (Exception e) {e.printStackTrace();}
-    }else
-    {
-      if (s > 0)
-      {
-        if (endless || uiMaterial)
-        {
+    } else {
+      if (s > 0) {
+        if (endless || uiMaterial) {
           g.backColor = bc;
-          g.fillRect(0,0,width,height);
+          g.fillRect(0, 0, width, height);
         }
         if ((uiMaterial || uiVista) && isEnabled()) // guich@573_6
         {
-          if (uiMaterial)
-          {
+          if (uiMaterial) {
             g.backColor = fc;
             if (vertical) {
               g.fillRect(0, height - s, width, s);
-            } else
-              if (!endless) {
-                g.fillRect(0,0,s,height);
-              } else {
-                g.fillRect(value-dif,0,dif,height);
-              }
-          }
-          else
-          {
+            } else if (!endless) {
+              g.fillRect(0, 0, s, height);
+            } else {
+              g.fillRect(value - dif, 0, dif, height);
+            }
+          } else {
             if (vertical) {
               g.fillVistaRect(0, height - s, width, s, fc, false, false);
-            } else
-              if (!endless) {
-                g.fillVistaRect(0,0,s,height,fc,false,false);
-              } else {
-                g.fillVistaRect(value-dif,0,dif,height,fc,false,false);
-              }
+            } else if (!endless) {
+              g.fillVistaRect(0, 0, s, height, fc, false, false);
+            } else {
+              g.fillVistaRect(value - dif, 0, dif, height, fc, false, false);
+            }
           }
-        }
-        else
-        {
+        } else {
           g.backColor = fc;
           if (vertical) {
             g.fillRect(0, height - s, width, s);
-          } else
-            if (!endless) {
-              g.fillRect(0,0,s,height);
-            } else {
-              g.fillRect(value-dif,0,dif,height);
-            }
+          } else if (!endless) {
+            g.fillRect(0, 0, s, height);
+          } else {
+            g.fillRect(value - dif, 0, dif, height);
+          }
         }
       }
       // draw the empty part
       g.backColor = bc;
-      int ss = size-s;
-      if (ss > 0 && !transparentBackground)
-      {
+      int ss = size - s;
+      if (ss > 0 && !transparentBackground) {
         if (vertical) {
-          g.fillRect(0,0,width,ss);
+          g.fillRect(0, 0, width, ss);
         } else {
-          g.fillRect(s,0,ss,height);
+          g.fillRect(s, 0, ss, height);
         }
       }
     }
-    if (endless && value-dif >= width){
+    if (endless && value - dif >= width) {
       value = 0;
-    } 
+    }
     // draw the text
-    if (drawText)
-    {
+    if (drawText) {
       StringBuffer sb = this.sb; // get a local reference
       sb.setLength(0);
       sb.append(prefix);
@@ -330,15 +297,17 @@ public class ProgressBar extends Control
         sb.append(value);
       }
       String st = sb.append(suffix).toString();
-      int x = (width-fm.stringWidth(st))>>1;
-      int y = ((height-fmH)>>1)-1;
-      int shadow = uiMaterial ? -1 : textShadowColor != -1 ? textShadowColor : !highlight ? -1 : highlightColor == -1 ? Color.getCursorColor(textColor) : highlightColor;
+      int x = (width - fm.stringWidth(st)) >> 1;
+      int y = ((height - fmH) >> 1) - 1;
+      int shadow = uiMaterial ? -1
+          : textShadowColor != -1 ? textShadowColor
+              : !highlight ? -1 : highlightColor == -1 ? Color.getCursorColor(textColor) : highlightColor;
       g.foreColor = textColor;
       g.drawText(st, x, y, shadow != -1, shadow);
     }
     g.foreColor = textColor;
-    if (drawBorder && !uiAndroid){
-      g.drawRect(0,0,width,height);
+    if (drawBorder && !uiAndroid) {
+      g.drawRect(0, 0, width, height);
     }
   }
 

@@ -9,15 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public interface JavaClassStructure
-{
+public interface JavaClassStructure {
   public int length();
 
   public void load(DataStream ds) throws IOException;

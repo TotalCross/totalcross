@@ -9,46 +9,37 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
 import tc.tools.converter.TCConstants;
 
-abstract public class Operand implements TCConstants
-{
+abstract public class Operand implements TCConstants {
   // the kind of operand (see class TCConstants)
   public int kind;
   // the number of words of this operand in the java stack.
   public int nWords = 1; // 1 = 32 bits; 2 = 64 bits
 
-  public Operand(int kind)
-  {
+  public Operand(int kind) {
     this.kind = kind;
   }
 
-  public boolean isReg()
-  {
+  public boolean isReg() {
     return false;
   }
 
-  public boolean isSym()
-  {
+  public boolean isSym() {
     return false;
   }
 
-  public boolean isConstant()
-  {
+  public boolean isConstant() {
     return false;
   }
 
-  public boolean isConstantInt()
-  {
+  public boolean isConstantInt() {
     return false;
   }
 
-  public boolean isConstantLong()
-  {
+  public boolean isConstantLong() {
     return false;
   }
 }

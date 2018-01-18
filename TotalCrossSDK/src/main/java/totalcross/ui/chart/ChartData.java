@@ -70,8 +70,7 @@ import totalcross.util.Vector;
     @since TotalCross 2.0
  */
 
-public class ChartData extends Container
-{
+public class ChartData extends Container {
   Vector rows = new Vector(10);
   protected Chart chart;
   public int lineColor = Color.DARK;
@@ -92,8 +91,7 @@ public class ChartData extends Container
   /**
    * Constructs an empty ChartData.
    */
-  public ChartData(Chart chart)
-  {
+  public ChartData(Chart chart) {
     this.chart = chart;
   }
 
@@ -103,54 +101,46 @@ public class ChartData extends Container
    * @param data
    *           The values to be displayed in the format [rows][cols]
    */
-  public ChartData(Chart chart, ChartDataRow[] data)
-  {
+  public ChartData(Chart chart, ChartDataRow[] data) {
     this(chart);
     this.rows.addElements(data);
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     g.backColor = backColor;
-    if (!transparentBackground)
-    {
+    if (!transparentBackground) {
       g.fillRect(0, 0, width, height);
-      if (chart.axisBackColor != -1)
-      {
+      if (chart.axisBackColor != -1) {
         g.backColor = chart.axisBackColor;
         g.fillRect(chart.xAxisX1, 0, chart.xAxisX2 - chart.xAxisX1, height);
       }
     }
     double inc = (chart.xAxisMaxValue - chart.xAxisMinValue) / chart.xAxisSteps;
     double val = chart.xAxisMinValue;
-    if (chart.getXValuePos(val) == 0){
+    if (chart.getXValuePos(val) == 0) {
       return;
     }
     int v0 = chart.getXValuePos(val), xx;
     int cw = chart.getXValuePos(val + inc) - v0;
 
     int rowsLength = rows.size();
-    if (rowsLength > 0)
-    {
+    if (rowsLength > 0) {
       int ystep = this.height / rowsLength;
       int yxtra = this.height % ystep;
 
-      if (fillColor2 != -1)
-      {
+      if (fillColor2 != -1) {
         double x0 = val + inc * use2ndColorEveryXColumns;
         g.backColor = fillColor2;
         // vertical lines            
-        for (int j = 1, n = getRow(0).columns.length; j <= n; j += 2, x0 += inc * use2ndColorEveryXColumns * 2)
-        {
+        for (int j = 1, n = getRow(0).columns.length; j <= n; j += 2, x0 += inc * use2ndColorEveryXColumns * 2) {
           xx = chart.getXValuePos(x0);
           g.fillRect(xx, 0, chart.getXValuePos(x0 + inc * use2ndColorEveryXColumns) - xx, height);
         }
       }
 
       int xx0 = chart.getXValuePos(val);
-      if (titleBackColor != -1)
-      {
+      if (titleBackColor != -1) {
         g.backColor = titleBackColor;
         g.fillRect(0, 0, xx0 + 1, height);
       }
@@ -158,28 +148,24 @@ public class ChartData extends Container
       g.backColor = backColor;
       g.foreColor = foreColor;
       int yy = 0;
-      for (int i = 0; i < rowsLength; i++)
-      {
+      for (int i = 0; i < rowsLength; i++) {
         ChartDataRow row = getRow(i);
         double x0 = val;
         int hh = ystep;
         if (i < yxtra) {
           hh++;
         }
-        if (row.title != null)
-        {
+        if (row.title != null) {
           g.setClip(0, yy, chart.getXValuePos(x0) - 2, hh);
           g.foreColor = titleForeColor != -1 ? titleForeColor : foreColor;
           g.drawText(row.title, 0, yy + (hh - fmH) / 2);
         }
         g.foreColor = foreColor;
-        for (int j = 0, n = row.columns.length; j < n; j++, x0 += inc)
-        {
+        for (int j = 0, n = row.columns.length; j < n; j++, x0 += inc) {
           xx = chart.getXValuePos(x0);
           g.setClip(xx, yy, cw, hh - 1);
           Properties.Value value = row.columns[j];
-          if (value != null)
-          {
+          if (value != null) {
             String d = value.toString();
             int sw = fm.stringWidth(d);
             g.drawText(d, xx + (cw - sw) / 2, yy + (hh - fmH) / 2);
@@ -187,8 +173,7 @@ public class ChartData extends Container
         }
         yy += hh;
       }
-      if (lineColor != -1)
-      {
+      if (lineColor != -1) {
         g.clearClip();
         g.foreColor = chart.axisForeColor;
         g.drawLine(xx = chart.getXValuePos(val), 0, xx, height); // draw Y axis
@@ -215,8 +200,7 @@ public class ChartData extends Container
         }
       }
     }
-    if (chart.markPos != Chart.UNSET)
-    {
+    if (chart.markPos != Chart.UNSET) {
       g.foreColor = chart.categoryMarkColor;
       g.drawLine(chart.markPos - 1, 0, chart.markPos - 1, height);
       g.drawLine(chart.markPos, 0, chart.markPos, height);
@@ -225,21 +209,16 @@ public class ChartData extends Container
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    switch (e.type)
-    {
+  public void onEvent(Event e) {
+    switch (e.type) {
     case PenEvent.PEN_UP:
-      if (isEnabled() && !hadParentScrolled())
-      {
+      if (isEnabled() && !hadParentScrolled()) {
         selectedRow = selectedCol = -1;
         PenEvent pe = (PenEvent) e;
         int pex = pe.x, pey = pe.y;
         int rowsLength = rows.size();
-        if (rowsLength > 0 &&
-            chart.xAxisX1 <= pex && pex <= chart.xAxisX2 &&
-            chart.yAxisY2 <= pey && pey <= chart.yAxisY1)
-        {
+        if (rowsLength > 0 && chart.xAxisX1 <= pex && pex <= chart.xAxisX2 && chart.yAxisY2 <= pey
+            && pey <= chart.yAxisY1) {
           int ystep = this.height / rowsLength;
           int yxtra = this.height % ystep;
           selectedCol = (pex - chart.xAxisX1) / chart.columnW;
@@ -249,8 +228,7 @@ public class ChartData extends Container
             if (i < yxtra) {
               hh++;
             }
-            if (yy <= pey && pey < yy + hh)
-            {
+            if (yy <= pey && pey < yy + hh) {
               selectedRow = i;
               break;
             }
@@ -263,83 +241,73 @@ public class ChartData extends Container
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     super.reposition(false);
     removeAll();
     initUI();
   }
 
   @Override
-  public int getPreferredHeight()
-  {
+  public int getPreferredHeight() {
     int rowsLength = rows.size();
-    if (rowsLength == 0){
+    if (rowsLength == 0) {
       return 0;
     }
     return fmH * preferredCellHeight * rowsLength / 100;
   }
 
-  public Properties.Value getSelectedCell()
-  {
-    if (selectedCol >= 0 && selectedRow >= 0){
+  public Properties.Value getSelectedCell() {
+    if (selectedCol >= 0 && selectedRow >= 0) {
       return getRow(selectedRow).columns[selectedCol];
     }
     return null;
   }
 
-  public Properties.Value getCell(int col, int row)
-  {
+  public Properties.Value getCell(int col, int row) {
     return getRow(row).columns[col];
   }
 
-  public void setCell(Properties.Value value, int col, int row)
-  {
+  public void setCell(Properties.Value value, int col, int row) {
     getRow(row).columns[col] = value;
     Window.needsPaint = true;
   }
 
-  public ChartDataRow getRow(int row)
-  {
-    if (row < 0 || row >= rows.size()){
+  public ChartDataRow getRow(int row) {
+    if (row < 0 || row >= rows.size()) {
       throw new IndexOutOfBoundsException();
     }
     return (ChartDataRow) rows.items[row];
   }
 
-  public ChartDataRow getSelectedRow()
-  {
-    if (selectedRow >= 0){
+  public ChartDataRow getSelectedRow() {
+    if (selectedRow >= 0) {
       return getRow(selectedRow);
     }
     return null;
   }
 
   /** Adds a new row. Pass -1 to add at the end */
-  public void addLine(int pos, ChartDataRow row)
-  {
+  public void addLine(int pos, ChartDataRow row) {
     int rowCount = rows.size();
-    if (pos < 0 || pos > rowCount){
+    if (pos < 0 || pos > rowCount) {
       pos = rowCount;
     }
     rows.insertElementAt(row, pos);
   }
 
-  public void removeLine(int pos)
-  {
+  public void removeLine(int pos) {
     int rowCount = rows.size();
-    if (pos == -1){
+    if (pos == -1) {
       pos = rowCount - 1;
     }
-    if (pos < 0 || pos >= rowCount){
+    if (pos < 0 || pos >= rowCount) {
       return;
     }
 
     this.rows.removeElementAt(pos);
   }
 
-  public void removeLine(String title)
-  {
+  public void removeLine(String title) {
     for (int i = rows.size() - 1; i >= 0; i--) {
       if (getRow(i).title.equals(title)) {
         removeLine(i);
@@ -347,29 +315,24 @@ public class ChartData extends Container
     }
   }
 
-  public class ChartDataRow
-  {
+  public class ChartDataRow {
     String title;
     Properties.Value[] columns;
 
-    public ChartDataRow(int columnCount)
-    {
+    public ChartDataRow(int columnCount) {
       this(null, new Properties.Value[columnCount]);
     }
 
-    public ChartDataRow(String title, int columnCount)
-    {
+    public ChartDataRow(String title, int columnCount) {
       this(title, new Properties.Value[columnCount]);
     }
 
-    public ChartDataRow(String title, Properties.Value[] data)
-    {
+    public ChartDataRow(String title, Properties.Value[] data) {
       this.title = title;
       this.columns = data;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
       return title;
     }
   }

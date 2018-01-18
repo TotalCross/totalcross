@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractCollection;
@@ -104,9 +103,7 @@ import totalcross.sys.Convert;
  * @since 1.2
  * @status updated to 1.4
  */
-public class HashMap4D<K, V> extends AbstractMap4D<K, V>
-implements Map<K, V>, Cloneable
-{
+public class HashMap4D<K, V> extends AbstractMap4D<K, V> implements Map<K, V>, Cloneable {
   /**
    * Default number of buckets; this is currently set to 16.
    * Package visible for use by HashSet.
@@ -164,8 +161,7 @@ implements Map<K, V>, Cloneable
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  static class HashEntry<K, V> extends AbstractMap4D.SimpleEntry<K, V>
-  {
+  static class HashEntry<K, V> extends AbstractMap4D.SimpleEntry<K, V> {
     /**
      * The next entry in the linked list. Package visible for use by subclass.
      */
@@ -176,8 +172,7 @@ implements Map<K, V>, Cloneable
      * @param key the key
      * @param value the value
      */
-    HashEntry(K key, V value)
-    {
+    HashEntry(K key, V value) {
       super(key, value);
     }
 
@@ -186,8 +181,7 @@ implements Map<K, V>, Cloneable
      * This version does nothing, but in LinkedHashMap, it must do some
      * bookkeeping for access-traversal mode.
      */
-    void access()
-    {
+    void access() {
     }
 
     /**
@@ -196,8 +190,7 @@ implements Map<K, V>, Cloneable
      *
      * @return the value of this key as it is removed
      */
-    V cleanup()
-    {
+    V cleanup() {
       return value;
     }
   }
@@ -206,8 +199,7 @@ implements Map<K, V>, Cloneable
    * Construct a new HashMap with the default capacity (11) and the default
    * load factor (0.75).
    */
-  public HashMap4D()
-  {
+  public HashMap4D() {
     this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
   }
 
@@ -222,8 +214,7 @@ implements Map<K, V>, Cloneable
    *        <b>NOTE: key / value pairs are not cloned in this constructor.</b>
    * @throws NullPointerException if m is null
    */
-  public HashMap4D(Map<? extends K, ? extends V> m)
-  {
+  public HashMap4D(Map<? extends K, ? extends V> m) {
     this(Math.max(m.size() * 2, DEFAULT_CAPACITY), DEFAULT_LOAD_FACTOR);
     putAll(m);
   }
@@ -235,8 +226,7 @@ implements Map<K, V>, Cloneable
    * @param initialCapacity the initial capacity of this HashMap (&gt;=0)
    * @throws IllegalArgumentException if (initialCapacity &lt; 0)
    */
-  public HashMap4D(int initialCapacity)
-  {
+  public HashMap4D(int initialCapacity) {
     this(initialCapacity, DEFAULT_LOAD_FACTOR);
   }
 
@@ -248,17 +238,15 @@ implements Map<K, V>, Cloneable
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public HashMap4D(int initialCapacity, double loadFactor)
-  {
-    if (initialCapacity < 0){
-      throw new IllegalArgumentException("Illegal Capacity: "
-          + initialCapacity);
+  public HashMap4D(int initialCapacity, double loadFactor) {
+    if (initialCapacity < 0) {
+      throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
     }
-    if (! (loadFactor > 0)){
+    if (!(loadFactor > 0)) {
       throw new IllegalArgumentException("Illegal Load: " + loadFactor);
     }
 
-    if (initialCapacity == 0){
+    if (initialCapacity == 0) {
       initialCapacity = 1;
     }
     buckets = (HashEntry<K, V>[]) new HashEntry[initialCapacity];
@@ -272,8 +260,7 @@ implements Map<K, V>, Cloneable
    * @return the size
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return size;
   }
 
@@ -283,8 +270,7 @@ implements Map<K, V>, Cloneable
    * @return <code>size() == 0</code>
    */
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return size == 0;
   }
 
@@ -300,12 +286,10 @@ implements Map<K, V>, Cloneable
    * @see #containsKey(Object)
    */
   @Override
-  public V get(Object key)
-  {
+  public V get(Object key) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
-    while (e != null)
-    {
+    while (e != null) {
       if (AbstractCollection4D.equals(key, e.key)) {
         return e.value;
       }
@@ -315,10 +299,9 @@ implements Map<K, V>, Cloneable
   }
 
   @Override
-  public V getOrDefault(Object key, V def)
-  {
+  public V getOrDefault(Object key, V def) {
     V ret = get(key);
-    if (ret == null){
+    if (ret == null) {
       ret = def;
     }
     return ret;
@@ -333,12 +316,10 @@ implements Map<K, V>, Cloneable
    * @see #containsValue(Object)
    */
   @Override
-  public boolean containsKey(Object key)
-  {
+  public boolean containsKey(Object key) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
-    while (e != null)
-    {
+    while (e != null) {
       if (AbstractCollection4D.equals(key, e.key)) {
         return true;
       }
@@ -361,18 +342,15 @@ implements Map<K, V>, Cloneable
    * @see Object#equals(Object)
    */
   @Override
-  public V put(K key, V value)
-  {
+  public V put(K key, V value) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
 
     int hash1 = key == null ? 0 : key.hashCode();
-    while (e != null)
-    {
+    while (e != null) {
       int hash2 = e.key == null ? 0 : e.key.hashCode();
 
-      if ((hash1 == hash2) && equals(key, e.key))
-      {
+      if ((hash1 == hash2) && equals(key, e.key)) {
         e.access(); // Must call this for bookkeeping in LinkedHashMap.
         V r = e.value;
         e.value = value;
@@ -384,8 +362,7 @@ implements Map<K, V>, Cloneable
 
     // At this point, we know we need to add a new entry.
     modCount++;
-    if (++size > threshold)
-    {
+    if (++size > threshold) {
       rehash();
       // Need a new hash value to suit the bigger table.
       idx = hash(key);
@@ -404,18 +381,14 @@ implements Map<K, V>, Cloneable
    * @param m the map to be hashed into this
    */
   @Override
-  public void putAll(Map<? extends K, ? extends V> m)
-  {
-    final Map<K,V> addMap = (Map<K,V>) m;
-    final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
-    while (it.hasNext())
-    {
-      final Map.Entry<K,V> e = it.next();
+  public void putAll(Map<? extends K, ? extends V> m) {
+    final Map<K, V> addMap = (Map<K, V>) m;
+    final Iterator<Map.Entry<K, V>> it = addMap.entrySet().iterator();
+    while (it.hasNext()) {
+      final Map.Entry<K, V> e = it.next();
       // Optimize in case the Entry is one of our own.
-      if (e instanceof AbstractMap4D.SimpleEntry)
-      {
-        AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry
-        = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
+      if (e instanceof AbstractMap4D.SimpleEntry) {
+        AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
         put(entry.key, entry.value);
       } else {
         put(e.getKey(), e.getValue());
@@ -434,16 +407,13 @@ implements Map<K, V>, Cloneable
    * @return whatever the key mapped to, if present
    */
   @Override
-  public V remove(Object key)
-  {
+  public V remove(Object key) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     HashEntry<K, V> last = null;
 
-    while (e != null)
-    {
-      if (AbstractCollection4D.equals(key, e.key))
-      {
+    while (e != null) {
+      if (AbstractCollection4D.equals(key, e.key)) {
         modCount++;
         if (last == null) {
           buckets[idx] = e.next;
@@ -464,10 +434,8 @@ implements Map<K, V>, Cloneable
    * Clears the Map so it has no keys. This is O(1).
    */
   @Override
-  public void clear()
-  {
-    if (size != 0)
-    {
+  public void clear() {
+    if (size != 0) {
       modCount++;
       Convert.fill(buckets, 0, buckets.length, null);
       size = 0;
@@ -483,13 +451,10 @@ implements Map<K, V>, Cloneable
    * @see #containsKey(Object)
    */
   @Override
-  public boolean containsValue(Object value)
-  {
-    for (int i = buckets.length - 1; i >= 0; i--)
-    {
+  public boolean containsValue(Object value) {
+    for (int i = buckets.length - 1; i >= 0; i--) {
       HashEntry<K, V> e = buckets[i];
-      while (e != null)
-      {
+      while (e != null) {
         if (AbstractCollection4D.equals(value, e.value)) {
           return true;
         }
@@ -506,15 +471,11 @@ implements Map<K, V>, Cloneable
    * @return the clone
    */
   @Override
-  public Object clone()
-  {
+  public Object clone() {
     HashMap4D<K, V> copy = null;
-    try
-    {
+    try {
       copy = (HashMap4D<K, V>) super.clone();
-    }
-    catch (CloneNotSupportedException x)
-    {
+    } catch (CloneNotSupportedException x) {
       // This is impossible.
     }
     copy.buckets = (HashEntry<K, V>[]) new HashEntry[buckets.length];
@@ -534,41 +495,34 @@ implements Map<K, V>, Cloneable
    * @see #entrySet()
    */
   @Override
-  public Set<K> keySet()
-  {
-    if (keys == null){
+  public Set<K> keySet() {
+    if (keys == null) {
       // Create an AbstractSet with custom implementations of those methods
       // that can be overridden easily and efficiently.
-      keys = new AbstractSet<K>()
-      {
+      keys = new AbstractSet<K>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<K> iterator()
-        {
+        public Iterator<K> iterator() {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap4D.this.iterator(KEYS);
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           HashMap4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
+        public boolean contains(Object o) {
           return containsKey(o);
         }
 
         @Override
-        public boolean remove(Object o)
-        {
+        public boolean remove(Object o) {
           // Test against the size of the HashMap to determine if anything
           // really got removed. This is necessary because the return value
           // of HashMap.remove() is ambiguous in the null case.
@@ -592,29 +546,24 @@ implements Map<K, V>, Cloneable
    * @see #entrySet()
    */
   @Override
-  public Collection<V> values()
-  {
-    if (values == null){
+  public Collection<V> values() {
+    if (values == null) {
       // We don't bother overriding many of the optional methods, as doing so
       // wouldn't provide any significant performance advantage.
-      values = new AbstractCollection<V>()
-      {
+      values = new AbstractCollection<V>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<V> iterator()
-        {
+        public Iterator<V> iterator() {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap4D.this.iterator(VALUES);
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           HashMap4D.this.clear();
         }
       };
@@ -636,44 +585,36 @@ implements Map<K, V>, Cloneable
    * @see Map.Entry
    */
   @Override
-  public Set<Map.Entry<K, V>> entrySet()
-  {
-    if (entries == null){
+  public Set<Map.Entry<K, V>> entrySet() {
+    if (entries == null) {
       // Create an AbstractSet with custom implementations of those methods
       // that can be overridden easily and efficiently.
-      entries = new AbstractSet<Map.Entry<K, V>>()
-      {
+      entries = new AbstractSet<Map.Entry<K, V>>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<Map.Entry<K, V>> iterator()
-        {
+        public Iterator<Map.Entry<K, V>> iterator() {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap4D.this.iterator(ENTRIES);
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           HashMap4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
+        public boolean contains(Object o) {
           return getEntry(o) != null;
         }
 
         @Override
-        public boolean remove(Object o)
-        {
+        public boolean remove(Object o) {
           HashEntry<K, V> e = getEntry(o);
-          if (e != null)
-          {
+          if (e != null) {
             HashMap4D.this.remove(e.key);
             return true;
           }
@@ -694,8 +635,7 @@ implements Map<K, V>, Cloneable
    * @param callRemove whether to call the removeEldestEntry method
    * @see #put(Object, Object)
    */
-  void addEntry(K key, V value, int idx, boolean callRemove)
-  {
+  void addEntry(K key, V value, int idx, boolean callRemove) {
     HashEntry<K, V> e = new HashEntry<K, V>(key, value);
     e.next = buckets[idx];
     buckets[idx] = e;
@@ -710,17 +650,15 @@ implements Map<K, V>, Cloneable
    * @see #entrySet()
    */
   // Package visible, for use in nested classes.
-  final HashEntry<K, V> getEntry(Object o)
-  {
-    if (! (o instanceof Map.Entry)){
+  final HashEntry<K, V> getEntry(Object o) {
+    if (!(o instanceof Map.Entry)) {
       return null;
     }
     Map.Entry<K, V> me = (Map.Entry<K, V>) o;
     K key = me.getKey();
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
-    while (e != null)
-    {
+    while (e != null) {
       if (equals(e.key, key)) {
         return equals(e.value, me.getValue()) ? e : null;
       }
@@ -736,8 +674,7 @@ implements Map<K, V>, Cloneable
    * @param key the key
    * @return the bucket number
    */
-  public final int hash(Object key)
-  {
+  public final int hash(Object key) {
     return key == null ? 0 : Math.abs(key.hashCode() % buckets.length);
   }
 
@@ -748,8 +685,7 @@ implements Map<K, V>, Cloneable
    * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
    * @return the appropriate iterator
    */
-  <T> Iterator<T> iterator(int type)
-  {
+  <T> Iterator<T> iterator(int type) {
     // FIXME: bogus cast here.
     return new HashIterator<T>(type);
   }
@@ -761,14 +697,12 @@ implements Map<K, V>, Cloneable
    *
    * @param m the map to initialize this from
    */
-  void putAllInternal(Map<? extends K, ? extends V> m)
-  {
-    final Map<K,V> addMap = (Map<K,V>) m;
-    final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
+  void putAllInternal(Map<? extends K, ? extends V> m) {
+    final Map<K, V> addMap = (Map<K, V>) m;
+    final Iterator<Map.Entry<K, V>> it = addMap.entrySet().iterator();
     size = 0;
-    while (it.hasNext())
-    {
-      final Map.Entry<K,V> e = it.next();
+    while (it.hasNext()) {
+      final Map.Entry<K, V> e = it.next();
       size++;
       K key = e.getKey();
       int idx = hash(key);
@@ -785,21 +719,17 @@ implements Map<K, V>, Cloneable
    * <p>This is not specified, but the new size is twice the current size
    * plus one; this number is not always prime, unfortunately.
    */
-  private void rehash()
-  {
+  private void rehash() {
     HashEntry<K, V>[] oldBuckets = buckets;
 
     int newcapacity = (buckets.length * 2) + 1;
     threshold = (int) (newcapacity * loadFactor);
     buckets = (HashEntry<K, V>[]) new HashEntry[newcapacity];
 
-    for (int i = oldBuckets.length - 1; i >= 0; i--)
-    {
+    for (int i = oldBuckets.length - 1; i >= 0; i--) {
       HashEntry<K, V> e = oldBuckets[i];
-      while (e != null)
-      {
+      while (e != null) {
         int idx = hash(e.key);
-        HashEntry<K, V> dest = buckets[idx];
         HashEntry<K, V> next = e.next;
         e.next = buckets[idx];
         buckets[idx] = e;
@@ -815,8 +745,7 @@ implements Map<K, V>, Cloneable
    *
    * @author Jon Zeppieri
    */
-  private final class HashIterator<T> implements Iterator<T>
-  {
+  private final class HashIterator<T> implements Iterator<T> {
     /**
      * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
      * or {@link #ENTRIES}.
@@ -843,8 +772,7 @@ implements Map<K, V>, Cloneable
      * Construct a new HashIterator with the supplied type.
      * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
      */
-    HashIterator(int type)
-    {
+    HashIterator(int type) {
       this.type = type;
     }
 
@@ -853,8 +781,7 @@ implements Map<K, V>, Cloneable
      * @return true if there are more elements
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return count > 0;
     }
 
@@ -865,27 +792,26 @@ implements Map<K, V>, Cloneable
      * @throws NoSuchElementException if there is none
      */
     @Override
-    public T next()
-    {
-      if (knownMod != modCount){
+    public T next() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (count == 0){
+      if (count == 0) {
         throw new NoSuchElementException();
       }
       count--;
       HashEntry e = next;
 
-      while (e == null){
+      while (e == null) {
         e = buckets[--idx];
       }
 
       next = e.next;
       last = e;
-      if (type == VALUES){
+      if (type == VALUES) {
         return (T) e.value;
       }
-      if (type == KEYS){
+      if (type == KEYS) {
         return (T) e.key;
       }
       return (T) e;
@@ -898,12 +824,11 @@ implements Map<K, V>, Cloneable
      * @throws IllegalStateException if called when there is no last element
      */
     @Override
-    public void remove()
-    {
-      if (knownMod != modCount){
+    public void remove() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (last == null){
+      if (last == null) {
         throw new IllegalStateException();
       }
 

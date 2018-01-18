@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC046to053
-{
-  public BC046to053()
-  {
+public class BC046to053 {
+  public BC046to053() {
     boolean arBool[] = new boolean[4];
     boolean b1 = arBool[1];
 
@@ -46,6 +42,15 @@ public class BC046to053
     Object arObj[] = new Object[4];
     Object o1 = arObj[1];
 
-    if (false) {b1&=false; c1&=0; B1&=0; s1&=0; l1&=0; f1+=0; d1+=0; arObj[0] = o1;} // remove warnings
+    if (false) {
+      b1 &= false;
+      c1 &= 0;
+      B1 &= 0;
+      s1 &= 0;
+      l1 &= 0;
+      f1 += 0;
+      d1 += 0;
+      arObj[0] = o1;
+    } // remove warnings
   }
 }

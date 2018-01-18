@@ -13,12 +13,19 @@
 #import <QuartzCore/QuartzCore.h>
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
+#import <ScanditBarcodeScanner/ScanditBarcodeScanner.h>
+
 #define LKLayer CALayer
 
 bool allowMainThread();
 int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
+static bool callingCamera;
+SBSBarcodePicker *picker;
+UIWindow* barwindow;
+static bool callingBarcode;
+static char barcode[2048];
 extern int32 iosScale;
 extern bool isIpad;
 
@@ -127,6 +134,7 @@ int isShown;
    // Any new character added is passed in as the "text" parameter
    if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
    {
+      [self addEvent:[[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt:(int)'\n'], @"key", nil]];
       [textView resignFirstResponder];
       [kbd removeFromSuperview];
       return FALSE; // Return FALSE so that the final '\n' character doesn't get added
@@ -199,6 +207,95 @@ int isShown;
    ];
 }
 
+-(void) readBarcode:(NSString*) mode
+{
+   callingBarcode = true;
+   barcode[0] = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^
+    {
+       if (barwindow != NULL)
+          barwindow.hidden = NO;
+       else
+       {
+          [SBSLicense setAppKey:[mode substringFromIndex:8]];
+          
+          SBSScanSettings* settings = [SBSScanSettings defaultSettings];
+          
+          //By default, all symbologies are turned off so you need to explicity enable the desired simbologies.
+          NSSet *symbologiesToEnable = [NSSet setWithObjects:
+                                        @(SBSSymbologyEAN13) ,
+                                        @(SBSSymbologyUPC12),
+                                        @(SBSSymbologyEAN8),
+                                        @(SBSSymbologyUPCE),
+                                        @(SBSSymbologyCode39) ,
+                                        @(SBSSymbologyCode128),
+                                        @(SBSSymbologyITF),
+                                        @(SBSSymbologyQR),
+                                        @(SBSSymbologyDatamatrix), nil];
+          [settings enableSymbologies:symbologiesToEnable];
+          
+          
+          // Some 1d barcode symbologies allow you to encode variable-length data. By default, the
+          // Scandit BarcodeScanner SDK only scans barcodes in a certain length range. If your
+          // application requires scanning of one of these symbologies, and the length is falling
+          // outside the default range, you may need to adjust the "active symbol counts" for this
+          // symbology. This is shown in the following 3 lines of code.
+          
+          SBSSymbologySettings *symSettings = [settings settingsForSymbology:SBSSymbologyCode39];
+          symSettings.activeSymbolCounts = [NSSet setWithObjects:@7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, nil];
+          
+          // Initialize the barcode picker - make sure you set the app key above
+          picker = [[SBSBarcodePicker alloc] initWithSettings:settings];
+          
+          // only show camera switch button on tablets. For all other devices the switch button is
+          // hidden, even if they have a front camera.
+          [picker.overlayController setCameraSwitchVisibility:SBSCameraSwitchVisibilityOnTablet];
+          [picker setAllowedInterfaceOrientations:UIInterfaceOrientationMaskAll];
+          picker.scanDelegate = self;
+          
+          barwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+          
+          UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+          [button addTarget:DEVICE_CTX->_mainview action:@selector(closeBarcode:) forControlEvents:UIControlEventTouchUpInside];
+          [button setTitle:@" X " forState:UIControlStateNormal];
+          [button setBackgroundColor:[UIColor colorWithRed:0.5f green:0.5f blue:0.5f alpha:0.5f]];
+          [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+          int h = button.font.pointSize*2;
+          button.font = [UIFont fontWithName:button.font.fontName size:h];
+          button.frame = CGRectMake(0,20,h*3/2,h*3/2);
+          [barwindow setRootViewController:picker];
+          [barwindow makeKeyAndVisible];
+          [barwindow addSubview:button];
+       }
+       // Open the camera and start scanning barcodes
+       [picker startScanning];
+    });
+   while (callingBarcode)
+      Sleep(100);
+}
+
+- (void)barcodePicker:(SBSBarcodePicker *)thePicker didScan:(SBSScanSession *)session {
+   
+   [session stopScanning];
+   SBSCode *code = [session.newlyRecognizedCodes objectAtIndex:0];
+   
+   barwindow.hidden = YES;
+   //[barwindow resignKeyWindow];
+   //[barwindow removeFromSuperview];
+   
+   //NSString *symbology = code.symbologyString;
+   NSString *str = code.data;
+   strncpy(barcode, [str cStringUsingEncoding: NSASCIIStringEncoding], MIN([str length], sizeof(barcode)));
+   callingBarcode = false;
+}
+
+-(IBAction)closeBarcode:(id)sender
+{
+   [picker stopScanning];
+   barwindow.hidden = YES;
+   callingBarcode = false;
+}
+
 -(void) dialNumber:(NSString*) number
 {
    dispatch_sync(dispatch_get_main_queue(), ^
@@ -217,8 +314,6 @@ int isShown;
       [self viewDidLayoutSubviews];
    });
 }
-
-static bool callingCamera;
 
 -(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t
 {
@@ -417,6 +512,13 @@ void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, in
 }
 
 //////////////// interface to mainview methods ///////////////////
+
+char* iphone_readBarcode(char* mode)
+{
+   NSString* cmode = [NSString stringWithFormat:@"%s", mode];
+   [DEVICE_CTX->_mainview readBarcode:cmode];
+   return barcode;
+}
 
 bool iphone_mapsShowAddress(char* addr, int flags)
 {

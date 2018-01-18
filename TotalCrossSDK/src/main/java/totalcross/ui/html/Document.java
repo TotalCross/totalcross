@@ -110,13 +110,12 @@ import totalcross.xml.XmlReader;
  * @see totalcross.ui.UIColors#htmlContainerLink
  */
 
-public class Document extends ScrollContainer
-{
+public class Document extends ScrollContainer {
   /** Base URL for this document */
   public URI baseURI;
 
   /** Title associated with this document. */
-  public String title="";
+  public String title = "";
 
   /** All forms in this document. */
   public Vector vForms = new Vector(2);
@@ -135,8 +134,7 @@ public class Document extends ScrollContainer
    * @param doc XmlReadable to be read
    * @throws totalcross.io.IOException
    */
-  public Document(XmlReadable doc) throws totalcross.io.IOException, SyntaxException
-  {
+  public Document(XmlReadable doc) throws totalcross.io.IOException, SyntaxException {
     renderDoc(doc);
   }
 
@@ -157,12 +155,9 @@ public class Document extends ScrollContainer
    */
   protected Image loadImage(String src, URI baseURI) // guich@510_20
   {
-    try
-    {
+    try {
       return new Image(src);
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
     }
     return null;
@@ -179,17 +174,23 @@ public class Document extends ScrollContainer
     backColor = new Builder(doc).currStyle.backColor;
   }
 
-  static class Hidden extends Control
-  {
-    public Hidden() {focusTraversable = false;}
+  static class Hidden extends Control {
+    public Hidden() {
+      focusTraversable = false;
+    }
+
     @Override
-    public int getPreferredWidth()  {return 0;}
+    public int getPreferredWidth() {
+      return 0;
+    }
+
     @Override
-    public int getPreferredHeight() {return 0;}
+    public int getPreferredHeight() {
+      return 0;
+    }
   }
 
-  private class Img extends Control implements Document.CustomLayout, Document.SizeDelimiter
-  {
+  private class Img extends Control implements Document.CustomLayout, Document.SizeDelimiter {
     /**
      * read align attribute once
      */
@@ -206,101 +207,93 @@ public class Document extends ScrollContainer
      * @param atts tag attributes
      * @param style associated style
      */
-    Img(Style currStyle, AttributeList atts, URI baseURI)
-    {
+    Img(Style currStyle, AttributeList atts, URI baseURI) {
       String v;
       boolean mustBeScaled = false;
 
       v = atts.getAttributeValue("align");
-      this.align = v == null ? currStyle.getControlAlignment(false) : v.equalsIgnoreCase("center") ? CENTER : v.equalsIgnoreCase("right") ? RIGHT : LEFT;
+      this.align = v == null ? currStyle.getControlAlignment(false)
+          : v.equalsIgnoreCase("center") ? CENTER : v.equalsIgnoreCase("right") ? RIGHT : LEFT;
       v = atts.getAttributeValue("valign");
-      this.valign = v == null ? TOP : v.equalsIgnoreCase("middle") || v.equalsIgnoreCase("center") ? CENTER : v.equalsIgnoreCase("bottom") ? BOTTOM : TOP;
+      this.valign = v == null ? TOP
+          : v.equalsIgnoreCase("middle") || v.equalsIgnoreCase("center") ? CENTER
+              : v.equalsIgnoreCase("bottom") ? BOTTOM : TOP;
       this.altName = atts.getAttributeValue("alt");
-      int width= atts.getAttributeValueAsInt("width",0);
-      int height=atts.getAttributeValueAsInt("height",0);
+      int width = atts.getAttributeValueAsInt("width", 0);
+      int height = atts.getAttributeValueAsInt("height", 0);
       mustBeScaled = width > 0 || height > 0;
       String src = atts.getAttributeValue("src");
       if (src != null) {
-        try
-        {
+        try {
           img = Document.this.loadImage(src, baseURI); // let our caller handle the image - maybe it comes from another source?
-          if (img == null)
-          {
+          if (img == null) {
             URI uri = new URI(src, baseURI);
             HttpStream in = new HttpStream(uri);
             if (in.isOk()) {
               img = in.makeImage();
             }
           }
-          if (img != null)
-          {
+          if (img != null) {
             int imgWidth, imgHeight;
-            if ( (imgWidth = img.getWidth()) <= 0 || (imgHeight = img.getHeight()) <= 0) {
+            if ((imgWidth = img.getWidth()) <= 0 || (imgHeight = img.getHeight()) <= 0) {
               img = null;
-            } else
-              if (mustBeScaled) {
-                img = (height <= 0 && (height=(imgHeight*width)/imgWidth) <= 0) || (width <= 0 && (width=(imgWidth*height)/imgHeight) <= 0) 
-                    ? null : img.getSmoothScaledInstance(width, height);
-              }
+            } else if (mustBeScaled) {
+              img = (height <= 0 && (height = (imgHeight * width) / imgWidth) <= 0)
+                  || (width <= 0 && (width = (imgWidth * height) / imgHeight) <= 0) ? null
+                      : img.getSmoothScaledInstance(width, height);
+            }
           }
-        }
-        catch (Exception e)
-        {
-          img = null;  
+        } catch (Exception e) {
+          img = null;
           if (Settings.onJavaSE) {
-            Vm.warning("Error reading image: "+e.getMessage());
+            Vm.warning("Error reading image: " + e.getMessage());
           }
         }
       }
       if (img == null) {
-        try
-        {
+        try {
           String s = altName != null ? altName : src != null ? src : "no image";
           int tw = fm.stringWidth(s);
-          img = new Image(Math.max(width,tw)+4,Math.max(height,fmH)+3);
+          img = new Image(Math.max(width, tw) + 4, Math.max(height, fmH) + 3);
           int w = img.getWidth();
           int h = img.getHeight();
           Graphics g = img.getGraphics();
           g.backColor = UIColors.htmlContainerControlsBack;
-          g.fillRect(0,0,w,h);
+          g.fillRect(0, 0, w, h);
           g.foreColor = UIColors.htmlContainerControlsFore;
-          g.drawRect(0,0,w,h);
+          g.drawRect(0, 0, w, h);
           g.foreColor = UIColors.htmlContainerControlsFore;
-          g.drawText(s, (w-tw)/2+1,(h-fmH)/2);
-        } catch (ImageException e) {}
+          g.drawText(s, (w - tw) / 2 + 1, (h - fmH) / 2);
+        } catch (ImageException e) {
+        }
       }
       focusTraversable = currStyle.href != null;
     }
 
     @Override
-    public int getMaxWidth()
-    {
+    public int getMaxWidth() {
       return img.getWidth();
     }
 
     @Override
-    public int getPreferredWidth()
-    {
+    public int getPreferredWidth() {
       return img.getWidth();
     }
 
     @Override
-    public int getPreferredHeight()
-    {
+    public int getPreferredHeight() {
       return img.getHeight();
     }
 
     @Override
-    public void layout(LayoutContext lc)
-    {
+    public void layout(LayoutContext lc) {
       int width = img.getWidth();
       int height = img.getHeight();
       int alignedPosX = lc.nextX;
       int alignedPosY = lc.nextY;
 
       //mike@570_59 implemented layouting accordingly to the alignment of the image
-      switch (align)
-      {
+      switch (align) {
       case CENTER:
         alignedPosX += (lc.parentContainer.getWidth() - width) / 2;
         break;
@@ -312,8 +305,7 @@ public class Document extends ScrollContainer
         break;
       }
 
-      switch (valign)
-      {
+      switch (valign) {
       case CENTER:
         alignedPosY = (parent.getHeight() - alignedPosY - height) / 2;
         break;
@@ -326,15 +318,14 @@ public class Document extends ScrollContainer
       }
 
       lc.verify(img.getWidth());
-      setRect(alignedPosX,alignedPosY,PREFERRED,PREFERRED);
+      setRect(alignedPosX, alignedPosY, PREFERRED, PREFERRED);
       lc.update(width);
-      lc.incY = Math.max(lc.incY,img.getHeight()-fmH);
+      lc.incY = Math.max(lc.incY, img.getHeight() - fmH);
     }
 
     @Override
-    public void onPaint(Graphics g)
-    {
-      g.drawImage(img,0,0);
+    public void onPaint(Graphics g) {
+      g.drawImage(img, 0, 0);
     }
 
     /** added support for links on images */
@@ -342,51 +333,48 @@ public class Document extends ScrollContainer
     public void onEvent(Event e) // mike@570_59
     {
       Style s;
-      if ((e.type == PenEvent.PEN_DOWN || e.type == KeyEvent.ACTION_KEY_PRESS) && (s=ControlProperties.getStyle(this)).href != null) {
+      if ((e.type == PenEvent.PEN_DOWN || e.type == KeyEvent.ACTION_KEY_PRESS)
+          && (s = ControlProperties.getStyle(this)).href != null) {
         HtmlContainer.getHtmlContainer(this).postLinkEvent(s.href);
       }
     }
   }
 
-  static class BR extends Control implements CustomLayout
-  {
+  static class BR extends Control implements CustomLayout {
     private boolean isP;
-    public BR(boolean isP)
-    {
+
+    public BR(boolean isP) {
       this.isP = isP;
       focusTraversable = false;
     }
+
     @Override
-    public int getPreferredWidth()  
-    {
+    public int getPreferredWidth() {
       return 0;
     }
+
     @Override
-    public int getPreferredHeight() 
-    {
-      return fmH+(isP?Edit.prefH:0);
+    public int getPreferredHeight() {
+      return fmH + (isP ? Edit.prefH : 0);
     }
+
     @Override
-    public void layout(LayoutContext lc)
-    {
-      setRect(lc.nextX,lc.nextY,PREFERRED,PREFERRED);
+    public void layout(LayoutContext lc) {
+      setRect(lc.nextX, lc.nextY, PREFERRED, PREFERRED);
       lc.disjoin();
     }
   }
 
-  static class Entry
-  {
+  static class Entry {
     String key, value;
 
-    Entry(String key, String value)
-    {
+    Entry(String key, String value) {
       this.key = key;
       this.value = value;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return value;
     }
 
@@ -397,38 +385,34 @@ public class Document extends ScrollContainer
     }
   }
 
-  static class SubmitReset implements PressListener
-  {
+  static class SubmitReset implements PressListener {
     boolean isReset;
     Form currForm;
     String title;
 
-    public SubmitReset(Form currForm, boolean isReset, String title)
-    {
+    public SubmitReset(Form currForm, boolean isReset, String title) {
       this.title = title;
       this.isReset = isReset;
       this.currForm = currForm;
     }
+
     @Override
-    public void controlPressed(ControlEvent e) 
-    {
+    public void controlPressed(ControlEvent e) {
       if (isReset) {
         currForm.reset();
       } else {
         currForm.submit(title);
-      } 
+      }
     }
   }
 
-  private class Builder extends XmlReader
-  {
+  private class Builder extends XmlReader {
     private Style currStyle;
     private Form currForm;
 
-    Builder(XmlReadable doc) throws totalcross.io.IOException, SyntaxException
-    {
+    Builder(XmlReadable doc) throws totalcross.io.IOException, SyntaxException {
       currStyle = new Style();
-      Document.this.width= Document.this.height = 4096;
+      Document.this.width = Document.this.height = 4096;
       new HeadContentHandler();
       disableReferenceResolution(true);
       parse(doc);
@@ -436,8 +420,7 @@ public class Document extends ScrollContainer
 
     /** Impl. note: only works when reference resolution has been disabled */
     @Override
-    protected void foundReference(byte input[], int offset, int count)
-    {
+    protected void foundReference(byte input[], int offset, int count) {
       char res = NamedEntitiesDereferencer.toCode(input, offset, count);
       if (res == 0) {
         res = super.resolveCharacterReference(input, offset, count);
@@ -446,17 +429,14 @@ public class Document extends ScrollContainer
     }
 
     @Override
-    protected int getTagCode(byte b[], int offset, int count)
-    {
+    protected int getTagCode(byte b[], int offset, int count) {
       return TagDereferencer.toCode(b, offset, count);
     }
 
     @Override
-    public final void foundStartTagName(byte buffer[], int offset, int count)
-    {
+    public final void foundStartTagName(byte buffer[], int offset, int count) {
       super.foundStartTagName(buffer, offset, count);
-      switch (tagNameHashId)
-      {
+      switch (tagNameHashId) {
       case TagDereferencer.SCRIPT:
       case TagDereferencer.TEXTAREA:
         setCdataContents(buffer, offset, count);
@@ -469,11 +449,9 @@ public class Document extends ScrollContainer
     }
 
     @Override
-    public final void foundEndTagName(byte buffer[], int offset, int count)
-    {
+    public final void foundEndTagName(byte buffer[], int offset, int count) {
       super.foundEndTagName(buffer, offset, count);
-      switch (tagNameHashId)
-      {
+      switch (tagNameHashId) {
       case TagDereferencer.PRE:
       case TagDereferencer.XMP:
         setNewlineSignificant(false);
@@ -481,27 +459,22 @@ public class Document extends ScrollContainer
       }
     }
 
-    private class HeadContentHandler extends ContentHandler
-    {
+    private class HeadContentHandler extends ContentHandler {
       boolean inTitle;
 
-      HeadContentHandler()
-      {
+      HeadContentHandler() {
         setContentHandler(this);
       }
 
       @Override
-      public void startElement(int tagHashId, AttributeList atts)
-      {
-        switch (tagHashId)
-        {
+      public void startElement(int tagHashId, AttributeList atts) {
+        switch (tagHashId) {
         case TagDereferencer.HTML:
           break;
         case TagDereferencer.TITLE:
           inTitle = true;
           break;
-        case TagDereferencer.BASE:
-        {
+        case TagDereferencer.BASE: {
           String href = atts.getAttributeValue("href");
           if (href != null) {
             baseURI = new URI(href);
@@ -513,41 +486,37 @@ public class Document extends ScrollContainer
           String bgcolor = atts.getAttributeValue("bgcolor");
           if (bgcolor != null) {
             currStyle.backColor = Style.getColor(bgcolor, currStyle.backColor);
-          } 
+          }
           new BodyContentHandler();
           break;
         }
       }
 
       @Override
-      public void endElement(int tagHashId)
-      {
+      public void endElement(int tagHashId) {
         if (tagHashId == TagDereferencer.TITLE) {
           inTitle = false;
         }
       }
 
       @Override
-      public void characters(String s)
-      {
+      public void characters(String s) {
         if (inTitle) {
           title = s;
         }
       }
     }
 
-    private class BodyContentHandler extends ContentHandler
-    {
+    private class BodyContentHandler extends ContentHandler {
       Container currTile;
       ContentHandler prevContentHandler;
-      private Hashtable rgTable;           // Names and RadioGroup instances
+      private Hashtable rgTable; // Names and RadioGroup instances
       private TextSpan currTextSpan;
       private boolean openIdent;
       IntVector alignmentStack = new IntVector();
       boolean insidePre = false;
 
-      BodyContentHandler()
-      {
+      BodyContentHandler() {
         alignmentStack.addElement(Style.ALIGN_LEFT);
         currTile = Document.this;
         rgTable = new Hashtable(13);
@@ -556,27 +525,21 @@ public class Document extends ScrollContainer
       }
 
       @Override
-      public void startElement(int tagHashId, AttributeList atts)
-      {
+      public void startElement(int tagHashId, AttributeList atts) {
         int size;
         Control control = null;
         currStyle = Style.tagStartFound(currStyle, tagHashId, atts);
-        if (!insidePre && currStyle.alignment == Style.ALIGN_NONE)
-        {
-          try
-          {
+        if (!insidePre && currStyle.alignment == Style.ALIGN_NONE) {
+          try {
             currStyle.alignment = alignmentStack.peek();
-          }
-          catch (ElementNotFoundException e)
-          {
+          } catch (ElementNotFoundException e) {
             // ignore
           }
         }
-        String name  = atts.getAttributeValue("name");
+        String name = atts.getAttributeValue("name");
         String value = atts.getAttributeValue("value");
         boolean glue = false;
-        switch (tagHashId)
-        {
+        switch (tagHashId) {
         case TagDereferencer.CENTER:
           alignmentStack.push(Style.ALIGN_CENTER);
           break;
@@ -605,7 +568,7 @@ public class Document extends ScrollContainer
           vForms.addElement(currForm = new Form(currForm, atts));
           break;
         case TagDereferencer.INPUT:
-          String type  = atts.getAttributeValue("type");
+          String type = atts.getAttributeValue("type");
           if (type == null || type.equalsIgnoreCase("password")) // Edit is the default input
           {
             size = atts.getAttributeValueAsInt("size", -1);
@@ -622,75 +585,54 @@ public class Document extends ScrollContainer
               ed.setMode(passwordMode);
             }
             control = ed;
-          }
-          else
-            if (type.equalsIgnoreCase("button")) {
-              control = new Button(value == null ? " " : value);
-            } else
-              if (type.equalsIgnoreCase("submit") || type.equalsIgnoreCase("reset"))
-              {
-                final boolean isReset = type.equalsIgnoreCase("reset");
-                control = new Button(value == null ? (isReset?"Reset":"Submit") : value);
-                ((Button)control).addPressListener(new SubmitReset(currForm, isReset, value));
+          } else if (type.equalsIgnoreCase("button")) {
+            control = new Button(value == null ? " " : value);
+          } else if (type.equalsIgnoreCase("submit") || type.equalsIgnoreCase("reset")) {
+            final boolean isReset = type.equalsIgnoreCase("reset");
+            control = new Button(value == null ? (isReset ? "Reset" : "Submit") : value);
+            ((Button) control).addPressListener(new SubmitReset(currForm, isReset, value));
+          } else if (type.equalsIgnoreCase("checkbox")) {
+            glue = true;
+            control = new Check("");
+            control.clearValueInt = atts.exists("checked") ? 1 : 0;
+          } else if (type.equalsIgnoreCase("radio")) {
+            glue = true;
+            RadioGroupController rg = null;
+            if (name != null) {
+              rg = (RadioGroupController) rgTable.get(name);
+              if (rg == null) {
+                rgTable.put(name, rg = new RadioGroupController());
               }
-              else
-                if (type.equalsIgnoreCase("checkbox"))
-                {
-                  glue = true;
-                  control = new Check("");
-                  control.clearValueInt = atts.exists("checked") ? 1 : 0;
-                }
-                else
-                  if (type.equalsIgnoreCase("radio"))
-                  {
-                    glue = true;
-                    RadioGroupController rg = null;
-                    if (name != null)
-                    {
-                      rg = (RadioGroupController) rgTable.get(name);
-                      if (rg == null) {
-                        rgTable.put(name, rg = new RadioGroupController());
-                      }
-                    }
-                    control = new Radio("", rg);
-                    control.clearValueInt = atts.exists("checked") ? 1 : 0;
-                  }
-                  else
-                    if (type.equalsIgnoreCase("hidden")) {
-                      control = new Hidden();
-                    }
+            }
+            control = new Radio("", rg);
+            control.clearValueInt = atts.exists("checked") ? 1 : 0;
+          } else if (type.equalsIgnoreCase("hidden")) {
+            control = new Hidden();
+          }
           break;
-        case TagDereferencer.TABLE:
-        {
+        case TagDereferencer.TABLE: {
           Table table = new Table(atts, currStyle);
           control = table;
           new TableContentHandler(table);
           break;
         }
-        case TagDereferencer.SELECT:
-        {
+        case TagDereferencer.SELECT: {
           // if "multiple" is present, its a MultiListBox. If size > 1, is a 
           // listbox with size lines, else, if size <= 1, its a ComboBox
           size = atts.getAttributeValueAsInt("size", -1);
-          if (atts.exists("multiple"))
-          {
+          if (atts.exists("multiple")) {
             control = new MultiListBox();
-            ((ListBox)control).visibleLines = size == -1 ? 4 : size;
+            ((ListBox) control).visibleLines = size == -1 ? 4 : size;
+          } else if (size > 1) {
+            control = new ListBox();
+            ((ListBox) control).visibleLines = size;
+          } else {
+            control = new ComboBox(); // default is a combobox
           }
-          else
-            if (size > 1)
-            {
-              control = new ListBox();
-              ((ListBox)control).visibleLines = size;
-            }
-            else {
-              control = new ComboBox(); // default is a combobox
-            }
           new SelectContentHandler(control);
           break;
         }
-        case TagDereferencer.TEXTAREA:
-        {
+        case TagDereferencer.TEXTAREA: {
           int rows = atts.getAttributeValueAsInt("rows", -1);
           int cols = atts.getAttributeValueAsInt("cols", -1);
           String mask = Convert.dup('0', cols <= 0 ? 20 : cols);
@@ -705,46 +647,38 @@ public class Document extends ScrollContainer
         default:
           return;
         }
-        if (control != null)
-        {
+        if (control != null) {
           control.appObj = new ControlProperties(name, value, currStyle);
           control.setFont(currStyle.getFont());
-          ((ControlProperties)control.appObj).glue = glue; 
-          if (currForm != null && !(control instanceof BR))
-          {
+          ((ControlProperties) control.appObj).glue = glue;
+          if (currForm != null && !(control instanceof BR)) {
             currForm.inputs.addElement(control); // add this control to the form.
           }
           currTile.add(control);
-          control.setBackForeColors(UIColors.htmlContainerControlsBack,UIColors.htmlContainerControlsFore);
-        }      
+          control.setBackForeColors(UIColors.htmlContainerControlsBack, UIColors.htmlContainerControlsFore);
+        }
       }
 
       @Override
-      public void endElement(int tagHashId)
-      {
-        switch (tagHashId)
-        {
+      public void endElement(int tagHashId) {
+        switch (tagHashId) {
         case TagDereferencer.CENTER:
-          try
-          {
+          try {
             alignmentStack.pop();
-          }
-          catch (ElementNotFoundException e)
-          {
+          } catch (ElementNotFoundException e) {
             // ignore
           }
-          break;               
+          break;
         case TagDereferencer.TABLE:
           //mike@570_59 notify table about end
-          ((TableContentHandler)getContentHandler()).table.endTable();
+          ((TableContentHandler) getContentHandler()).table.endTable();
           currStyle = Style.tagEndFound(currStyle, tagHashId);
         case TagDereferencer.BODY:
         case TagDereferencer.SELECT:
           setContentHandler(prevContentHandler);
           break;
         case TagDereferencer.FORM:
-          if (currForm != null) 
-          {
+          if (currForm != null) {
             currForm.reset();
             currForm = currForm.previous;
           }
@@ -763,14 +697,16 @@ public class Document extends ScrollContainer
         default:
           currStyle = Style.tagEndFound(currStyle, tagHashId);
           if ((Style.getStyle(tagHashId) & Style.P_AFTER) != 0) // add a <p> after a <Hn>
-          {currTile.add(new BR(false));currTile.add(new BR(false));}
+          {
+            currTile.add(new BR(false));
+            currTile.add(new BR(false));
+          }
           break;
         }
       }
 
       @Override
-      public void characters(String s)
-      {
+      public void characters(String s) {
         if (!isDataCDATA() && s.trim().length() > 0) //mike@570_59 Don't create textspan tiles for empty texts
         {
           currTextSpan = new TextSpan(currTile, s, currStyle);
@@ -780,12 +716,10 @@ public class Document extends ScrollContainer
       }
     }
 
-    private class TableContentHandler extends BodyContentHandler
-    {
+    private class TableContentHandler extends BodyContentHandler {
       private Table table;
 
-      TableContentHandler(Table table)
-      {
+      TableContentHandler(Table table) {
         // super() set currTile to the Document.rootTile this is a fall-back in case TextSpan are created
         // while no table cells exist.  This garbaged text will show up after the end of the table.
         super();
@@ -793,11 +727,9 @@ public class Document extends ScrollContainer
       }
 
       @Override
-      public void startElement(int tagHashId, AttributeList atts)
-      {
+      public void startElement(int tagHashId, AttributeList atts) {
         super.startElement(tagHashId, atts);
-        switch (tagHashId)
-        {
+        switch (tagHashId) {
         case TagDereferencer.TR:
           table.startRow(atts, currStyle);
           break;
@@ -809,89 +741,75 @@ public class Document extends ScrollContainer
       }
 
       @Override
-      public void endElement(int tagHashId)
-      {
+      public void endElement(int tagHashId) {
         super.endElement(tagHashId);
-        switch (tagHashId)
-        {
+        switch (tagHashId) {
         case TagDereferencer.TR:
           table.endRow();
           // fall thru
         case TagDereferencer.TD:
         case TagDereferencer.TH:
-          currTile = Document.this;   // reset default document tiles
+          currTile = Document.this; // reset default document tiles
           break;
         }
       }
     }
 
-    private class SelectContentHandler extends BodyContentHandler
-    {
+    private class SelectContentHandler extends BodyContentHandler {
       private Control select;
       private AttributeList currOptionAtts; // remembers curr OPTION attributes
-      private StringBuffer sb;              // To catenate the option text
+      private StringBuffer sb; // To catenate the option text
 
-      SelectContentHandler(Control select)
-      {
+      SelectContentHandler(Control select) {
         this.select = select;
         sb = new StringBuffer(64);
       }
 
-      private void endCurrentOption()
-      {
-        if (currOptionAtts != null)
-        {
+      private void endCurrentOption() {
+        if (currOptionAtts != null) {
           String item = sb.toString();
           String key = currOptionAtts.getAttributeValue("value");
           boolean selected = currOptionAtts.exists("selected");
           if (select instanceof MultiListBox) // must come first!
           {
-            MultiListBox lb = (MultiListBox)select;
+            MultiListBox lb = (MultiListBox) select;
             lb.add(new Entry(key, item));
             if (selected) {
               lb.clearValues.addElement(lb.size() - 1);
             }
+          } else if (select instanceof ListBox) {
+            ListBox lb = (ListBox) select;
+            int count = lb.size();
+            lb.add(new Entry(key, item));
+            if (selected) {
+              lb.setSelectedIndex(lb.clearValueInt = count);
+            }
+          } else // ComboBox
+          {
+            ComboBox cb = (ComboBox) select;
+            int count = cb.size();
+            cb.add(new Entry(key, item));
+            if (selected || (count == 0)) {
+              cb.clearValueInt = count;
+            }
           }
-          else
-            if (select instanceof ListBox)
-            {
-              ListBox lb = (ListBox)select;
-              int count = lb.size();
-              lb.add(new Entry(key, item));
-              if (selected) {
-                lb.setSelectedIndex(lb.clearValueInt = count);
-              }
-            }
-            else // ComboBox
-            {
-              ComboBox cb = (ComboBox)select;
-              int count = cb.size();
-              cb.add(new Entry(key, item));
-              if (selected || (count == 0)) {
-                cb.clearValueInt = count;
-              }
-            }
           sb.setLength(0);
           currOptionAtts = null;
         }
       }
 
       @Override
-      public void startElement(int tagHashId, AttributeList atts)
-      {
+      public void startElement(int tagHashId, AttributeList atts) {
         // no other tags except OPTION are permitted within a SELECT
-        if (tagHashId == TagDereferencer.OPTION)
-        {
+        if (tagHashId == TagDereferencer.OPTION) {
           endCurrentOption();
           currOptionAtts = new AttributeList(atts);
         }
       }
 
       @Override
-      public void endElement(int tagHashId)
-      {
-        switch (tagHashId)
-        {
+      public void endElement(int tagHashId) {
+        switch (tagHashId) {
         case TagDereferencer.SELECT:
           endCurrentOption();
           setContentHandler(prevContentHandler);
@@ -903,113 +821,97 @@ public class Document extends ScrollContainer
       }
 
       @Override
-      public void characters(String s)
-      {
+      public void characters(String s) {
         if (currOptionAtts != null) {
           sb.append(s);
         }
       }
     }
 
-    private class TextAreaContentHandler extends BodyContentHandler
-    {
+    private class TextAreaContentHandler extends BodyContentHandler {
       private MultiEdit textArea;
-      private StringBuffer sb;    // To concatenate the text of the TextArea
+      private StringBuffer sb; // To concatenate the text of the TextArea
 
-      TextAreaContentHandler(MultiEdit textArea)
-      {
+      TextAreaContentHandler(MultiEdit textArea) {
         this.textArea = textArea;
         sb = new StringBuffer(128);
       }
 
       @Override
-      public void startElement(int tagHashId, AttributeList atts)
-      {
+      public void startElement(int tagHashId, AttributeList atts) {
         // no tags are permitted within a TEXTAREA (#CDATA element)
       }
 
       @Override
-      public void endElement(int tagHashId)
-      {
-        if (tagHashId == TagDereferencer.TEXTAREA)
-        {
+      public void endElement(int tagHashId) {
+        if (tagHashId == TagDereferencer.TEXTAREA) {
           textArea.setText(textArea.clearValueStr = sb.toString());
           setContentHandler(prevContentHandler);
         }
       }
 
       @Override
-      public void characters(String s)
-      {
+      public void characters(String s) {
         sb.append(s);
       }
     }
   }
 
-  static interface CustomLayout
-  {
+  static interface CustomLayout {
     public void layout(LayoutContext lc);
   }
 
-  static interface StopLayout
-  {
+  static interface StopLayout {
   }
 
-  static interface SizeDelimiter
-  {
+  static interface SizeDelimiter {
     public int getMaxWidth();
   }
 
-  static void layout(Control control, LayoutContext lc)
-  {
-    if (control instanceof CustomLayout){
-      ((CustomLayout)control).layout(lc);
-    }else
-      if (control.appObj != null)
-      {
-        ControlProperties cp = (ControlProperties)control.appObj;
-        Style style = cp.style;
-        if ((style.hasInitialValues() && style.isDisjoint)) {
-          lc.disjoin();
-        }
-
-        //TextSpan.debug(lc,style,control.toString());
-        if (control instanceof BR) {
-          lc.incY += control.getPreferredHeight();
-        } else
-        {
-          lc.verify(control.getPreferredWidth());
-          int dif = (control.getFont().fm.height + Edit.prefH - control.getPreferredHeight())/2; // vertically align the controls with their texts
-          if (dif < 0) {
-            dif = 0;
-          }
-
-          int alignedPosX = lc.nextX;
-          switch (style.alignment)
-          {
-          case Style.ALIGN_CENTER:
-            alignedPosX += (lc.parentContainer.getWidth() - control.getPreferredWidth()) / 2;
-            break;
-          case Style.ALIGN_RIGHT:
-            alignedPosX += lc.parentContainer.getWidth() - control.getPreferredWidth();
-            break;
-          case Style.ALIGN_LEFT:
-            // default, left aligned
-            break;
-          }            
-          control.setRect(alignedPosX, lc.nextY+dif, Control.PREFERRED, Control.PREFERRED, lc.lastControl);
-          control.getParent().incLastY(-dif);
-          if (!cp.glue) {
-            control.getParent().incLastX(control.fm.charWidth(' '));
-          }
-          lc.update(control.getWidth());
-          lc.lastControl = control;
-        }
+  static void layout(Control control, LayoutContext lc) {
+    if (control instanceof CustomLayout) {
+      ((CustomLayout) control).layout(lc);
+    } else if (control.appObj != null) {
+      ControlProperties cp = (ControlProperties) control.appObj;
+      Style style = cp.style;
+      if ((style.hasInitialValues() && style.isDisjoint)) {
+        lc.disjoin();
       }
 
-    if (control instanceof Container && !(control instanceof StopLayout))
-    {
-      Control[] children = ((Container)control).getChildren();
+      //TextSpan.debug(lc,style,control.toString());
+      if (control instanceof BR) {
+        lc.incY += control.getPreferredHeight();
+      } else {
+        lc.verify(control.getPreferredWidth());
+        int dif = (control.getFont().fm.height + Edit.prefH - control.getPreferredHeight()) / 2; // vertically align the controls with their texts
+        if (dif < 0) {
+          dif = 0;
+        }
+
+        int alignedPosX = lc.nextX;
+        switch (style.alignment) {
+        case Style.ALIGN_CENTER:
+          alignedPosX += (lc.parentContainer.getWidth() - control.getPreferredWidth()) / 2;
+          break;
+        case Style.ALIGN_RIGHT:
+          alignedPosX += lc.parentContainer.getWidth() - control.getPreferredWidth();
+          break;
+        case Style.ALIGN_LEFT:
+          // default, left aligned
+          break;
+        }
+        control.setRect(alignedPosX, lc.nextY + dif, Control.PREFERRED, Control.PREFERRED, lc.lastControl);
+        control.getParent().incLastY(-dif);
+        if (!cp.glue) {
+          control.getParent().incLastX(control.fm.charWidth(' '));
+        }
+        lc.update(control.getWidth());
+        lc.lastControl = control;
+      }
+    }
+
+    if (control instanceof Container && !(control instanceof StopLayout)) {
+      Control[] children = ((Container) control).getChildren();
       if (children != null) {
         for (int i = children.length; --i >= 0;) {
           layout(children[i], lc);
@@ -1018,14 +920,13 @@ public class Document extends ScrollContainer
     }
   }
 
-  private int getMaxWidth(Control control, int maxWidth)
-  {
-    maxWidth = Math.max(maxWidth, control instanceof SizeDelimiter ? ((SizeDelimiter)control).getMaxWidth() : control.getPreferredWidth());
+  private int getMaxWidth(Control control, int maxWidth) {
+    maxWidth = Math.max(maxWidth,
+        control instanceof SizeDelimiter ? ((SizeDelimiter) control).getMaxWidth() : control.getPreferredWidth());
 
-    if (control instanceof Container)
-    {
-      Control[] children = ((Container)control).getChildren();
-      for (int i = children==null ? 0 : children.length; --i >= 0;) {
+    if (control instanceof Container) {
+      Control[] children = ((Container) control).getChildren();
+      for (int i = children == null ? 0 : children.length; --i >= 0;) {
         maxWidth = getMaxWidth(children[i], maxWidth);
       }
     }
@@ -1034,8 +935,7 @@ public class Document extends ScrollContainer
 
   /** Layout the controls of this document. */
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     setBackColor(parent.getBackColor());
     //flsobral@tc126_36: restore scrolls default colors.
     sbV.setBackColor(UIColors.controlsBack);
@@ -1043,26 +943,31 @@ public class Document extends ScrollContainer
     sbV.focusTraversable = sbH.focusTraversable = false;
     sbV.setValue(0);
     sbH.setValue(0);
-    int maxWidth = getMaxWidth(this,0);
+    int maxWidth = getMaxWidth(this, 0);
     resize(maxWidth, 60000);
-    layout(this, new LayoutContext(getClientRect().width-sbV.getPreferredWidth(), this));
+    layout(this, new LayoutContext(getClientRect().width - sbV.getPreferredWidth(), this));
     resize();
   }
 
-  public void scroll(int dir)
-  {
-    switch (dir)
-    {
-    case RIGHT : sbH.blockScroll(true);  break;
-    case LEFT  : sbH.blockScroll(false); break;
-    case BOTTOM: sbV.blockScroll(true);  break;
-    case TOP   : sbV.blockScroll(false); break;
+  public void scroll(int dir) {
+    switch (dir) {
+    case RIGHT:
+      sbH.blockScroll(true);
+      break;
+    case LEFT:
+      sbH.blockScroll(false);
+      break;
+    case BOTTOM:
+      sbV.blockScroll(true);
+      break;
+    case TOP:
+      sbV.blockScroll(false);
+      break;
     }
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     super.reposition(false);
     sbV.reposition();
     sbH.reposition();
@@ -1070,17 +975,15 @@ public class Document extends ScrollContainer
 
   void resetWith(String url) // guich@tc114_28
   {
-    Hashtable ht = new Hashtable(URI.decode(url.replace('&','\n'))); //flsobral@tc115_3: Decode the received String.
-    for (int i =vForms.size(); --i >= 0;)
-    {
-      Form f = (Form)vForms.items[i];
+    Hashtable ht = new Hashtable(URI.decode(url.replace('&', '\n'))); //flsobral@tc115_3: Decode the received String.
+    for (int i = vForms.size(); --i >= 0;) {
+      Form f = (Form) vForms.items[i];
       Vector inputs = f.inputs;
-      for (int j = inputs.size(); --j >= 0;)
-      {
-        Control item = (Control)inputs.items[j];
-        ControlProperties cl = (ControlProperties)item.appObj;
-        String name = cl.name,v;
-        if (name != null && (v=(String)ht.get(name)) != null && v.length() > 0) {
+      for (int j = inputs.size(); --j >= 0;) {
+        Control item = (Control) inputs.items[j];
+        ControlProperties cl = (ControlProperties) item.appObj;
+        String name = cl.name, v;
+        if (name != null && (v = (String) ht.get(name)) != null && v.length() > 0) {
           Form.setValue(item, v);
         }
       }

@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC130_ixor extends Logical
-{
-  public BC130_ixor()
-  {
-    super(-1,-2,-1,INT);
+public class BC130_ixor extends Logical {
+  public BC130_ixor() {
+    super(-1, -2, -1, INT);
   }
+
   @Override
-  public void exec()
-  {
+  public void exec() {
     stack[-2].asInt ^= stack[-1].asInt;
   }
 }

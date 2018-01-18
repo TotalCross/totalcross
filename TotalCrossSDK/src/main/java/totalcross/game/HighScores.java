@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
 import totalcross.io.DataStream;
@@ -98,14 +96,13 @@ import totalcross.ui.dialog.MessageBox;
  * @version 1.0
  */
 
-public class HighScores extends PDBFile
-{
+public class HighScores extends PDBFile {
   private final static String dbName_suffix = "_HSC.";
-  private final static String dbType        = ".DATA";
+  private final static String dbType = ".DATA";
 
-  HighScoreEntry              entries[];
-  private boolean             dirty;
-  private int                 validEntries;           // number of valid highscore entries
+  HighScoreEntry entries[];
+  private boolean dirty;
+  private int validEntries; // number of valid highscore entries
 
   /**
    * This class must be instantiated using the
@@ -113,8 +110,7 @@ public class HighScores extends PDBFile
    *
    * @throws totalcross.io.IOException
    */
-  protected HighScores(GameEngine engine) throws totalcross.io.IOException
-  {
+  protected HighScores(GameEngine engine) throws totalcross.io.IOException {
     super(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType, PDBFile.CREATE);
 
     entries = new HighScoreEntry[engine.gameHighscoresSize];
@@ -123,11 +119,10 @@ public class HighScores extends PDBFile
     }
     dirty = false;
 
-    if (getRecordCount() < 1){
+    if (getRecordCount() < 1) {
       return;
     }
-    try
-    {
+    try {
       setRecordPos(0);
       DataStream ds = new DataStream(this);
 
@@ -141,16 +136,13 @@ public class HighScores extends PDBFile
 
       validEntries = ds.readInt();
       for (int i = 0; i < entries.length; i++) {
-        if (i < validEntries)
-        {
+        if (i < validEntries) {
           entries[i].name = ds.readString();
           entries[i].score = ds.readInt();
         }
       }
-    }
-    catch (IOException e)
-    {
-      MessageBox.showException(e,false);
+    } catch (IOException e) {
+      MessageBox.showException(e, false);
     }
   }
 
@@ -159,8 +151,7 @@ public class HighScores extends PDBFile
    *
    * @return the number of entries in the highscore table.
    */
-  public final int size()
-  {
+  public final int size() {
     return entries.length;
   }
 
@@ -169,8 +160,7 @@ public class HighScores extends PDBFile
    *
    * @return an array to the highscore entries.
    */
-  public final HighScoreEntry[] getEntries()
-  {
+  public final HighScoreEntry[] getEntries() {
     return entries;
   }
 
@@ -184,8 +174,7 @@ public class HighScores extends PDBFile
    * @see HighScoreEntry
    * @return added entry or null
    */
-  public HighScoreEntry add(int score, String name)
-  {
+  public HighScoreEntry add(int score, String name) {
     int insert;
 
     // lookup the position to insert the score
@@ -195,8 +184,7 @@ public class HighScores extends PDBFile
       }
     }
 
-    if (insert >= entries.length)
-    {
+    if (insert >= entries.length) {
       return null; // didn't found a lower score to replace
     }
 
@@ -212,7 +200,7 @@ public class HighScores extends PDBFile
     free.name = name;
     free.score = score;
     entries[insert] = free;
-    if (validEntries < entries.length){
+    if (validEntries < entries.length) {
       validEntries++;
     }
 
@@ -225,31 +213,26 @@ public class HighScores extends PDBFile
    *
    * @return false if no changes to save or an error occurs
    */
-  public boolean save()
-  {
-    if (!dirty){
+  public boolean save() {
+    if (!dirty) {
       return false;
     }
 
     // use this nice object to resize the highscore record
     ResizeRecord rs = new ResizeRecord(this, 100);
-    try
-    {
+    try {
       rs.restartRecord(0);
 
       DataStream ds = new DataStream(rs);
       ds.writeInt(GameEngine.GAME_ENGINE_VERSION);
       ds.writeInt(validEntries);
-      for (int i = 0; i < validEntries; i++)
-      {
+      for (int i = 0; i < validEntries; i++) {
         ds.writeString(entries[i].name);
         ds.writeInt(entries[i].score);
       }
 
       rs.endRecord();
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
       throw new GameEngineException(e.getMessage());
     }
     dirty = false;
@@ -263,8 +246,7 @@ public class HighScores extends PDBFile
    * @throws totalcross.io.IOException
    */
   @Override
-  public void close() throws totalcross.io.IOException
-  {
+  public void close() throws totalcross.io.IOException {
     save();
     super.close();
   }

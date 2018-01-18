@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.Convert;
@@ -44,13 +42,12 @@ import totalcross.util.Vector;
  * which is easier to deal on such devices. 
  */
 
-public class SpinList extends Control
-{
-  protected String []choices;
+public class SpinList extends Control {
+  protected String[] choices;
   protected int selected;
   protected TimerEvent timer;
   /** Timer interval in which the scroll will be done. */
-  public int timerInterval=300;
+  public int timerInterval = 300;
   /** Number of ticks of the timer interval that will be waiten until the scroll starts. */
   public int timerInitialDelay = 3;
   /** The horizontal text alignment of the SpinList: LEFT, CENTER or RIGHT */
@@ -89,40 +86,37 @@ public class SpinList extends Control
 
   /** Allows -1 as selected index (nothing selected). */
   public boolean allowsNoneSelected;
+
   /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
    * @see #setChoices 
    */
-  public SpinList(String[] choices) throws InvalidNumberException
-  {
+  public SpinList(String[] choices) throws InvalidNumberException {
     this(choices, true);
   }
 
   /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
    * @see #setChoices 
    */
-  public SpinList(String[] choices, boolean isVertical) throws InvalidNumberException
-  {
+  public SpinList(String[] choices, boolean isVertical) throws InvalidNumberException {
     this.isVertical = isVertical;
-    if (!isVertical){
+    if (!isVertical) {
       hAlign = CENTER;
     }
     setChoices(choices);
   }
 
   @Override
-  public int getPreferredWidth()
-  {
-    int w=fm.getMaxWidth(choices,0,choicesLen);
-    if (w == 0){
-      return Settings.screenWidth/2;
+  public int getPreferredWidth() {
+    int w = fm.getMaxWidth(choices, 0, choicesLen);
+    if (w == 0) {
+      return Settings.screenWidth / 2;
     }
     int aw = getArrowHeight() * 2;
-    return isVertical ? w + aw : w + aw+2;
+    return isVertical ? w + aw : w + aw + 2;
   }
 
   @Override
-  public int getPreferredHeight()
-  {
+  public int getPreferredHeight() {
     return fmH + Edit.prefH;
   }
 
@@ -130,23 +124,21 @@ public class SpinList extends Control
    * For example, passing some string as "Day [1,31]" will expand that to an array of 
    * <code>"Day 1","Day 2",...,"Day 31"</code>.
    */
-  public void setChoices(String []choices) throws InvalidNumberException
-  {
-    if (choices == null){
-      choices = new String[]{""};
-    }else
-    {
+  public void setChoices(String[] choices) throws InvalidNumberException {
+    if (choices == null) {
+      choices = new String[] { "" };
+    } else {
       this.choicesLen = choices.length;
-      Vector v = new Vector(choicesLen+10);
-      for (int i =0; i < choicesLen; i++) {
+      Vector v = new Vector(choicesLen + 10);
+      for (int i = 0; i < choicesLen; i++) {
         if (choices[i].indexOf('[') != -1) {
-          expand(v,choices[i]);
+          expand(v, choices[i]);
         } else {
           v.addElement(choices[i]);
         }
       }
       if (choicesLen != v.size()) {
-        choices = (String[])v.toObjectArray();
+        choices = (String[]) v.toObjectArray();
       }
     }
     this.choices = choices;
@@ -156,11 +148,10 @@ public class SpinList extends Control
   }
 
   /** Just replaces the choices array. */
-  public void replaceChoices(String []choices) throws InvalidNumberException
-  {
+  public void replaceChoices(String[] choices) throws InvalidNumberException {
     this.choices = choices;
     this.choicesLen = choices.length;
-    if (selected >= choicesLen){
+    if (selected >= choicesLen) {
       selected = choicesLen;
     }
   }
@@ -169,50 +160,43 @@ public class SpinList extends Control
    * For example, passing some string as "Day [1,31]" will expand that to an array of 
    * <code>"Day 1","Day 2",...,"Day 31"</code>.
    */
-  public static void expand(Vector v, String str) throws InvalidNumberException
-  {
+  public static void expand(Vector v, String str) throws InvalidNumberException {
     int ini = str.indexOf('[');
     int fim = str.indexOf(']');
-    String prefix = str.substring(0,ini);
-    String sufix  = str.substring(fim+1);
+    String prefix = str.substring(0, ini);
+    String sufix = str.substring(fim + 1);
     int j;
-    int start = Convert.toInt(str.substring(ini+1,j=str.indexOf(',',ini+1)));
-    int end   = Convert.toInt(str.substring(j+1,fim));
-    for (int k =start; k <= end; k++) {
-      v.addElement(prefix+k+sufix);
+    int start = Convert.toInt(str.substring(ini + 1, j = str.indexOf(',', ini + 1)));
+    int end = Convert.toInt(str.substring(j + 1, fim));
+    for (int k = start; k <= end; k++) {
+      v.addElement(prefix + k + sufix);
     }
   }
 
   /** Returns the choices array, after the expansion (if any). */
-  public String[] getChoices()
-  {
+  public String[] getChoices() {
     return choices;
   }
 
   /** Returns the selected item. */
-  public String getSelectedItem()
-  {
+  public String getSelectedItem() {
     return selected == -1 ? "" : choices[selected];
   }
 
   /** Returns the selected index. */
-  public int getSelectedIndex()
-  {
+  public int getSelectedIndex() {
     return selected;
   }
 
   /** Sets the selected item; -1 is NOT accepted. */
-  public void setSelectedIndex(int i)
-  {
+  public void setSelectedIndex(int i) {
     setSelectedIndex(i, Settings.sendPressEventOnChange);
   }
 
   /** Sets the selected item; -1 is NOT accepted. */
-  public void setSelectedIndex(int i, boolean sendPress)
-  {
+  public void setSelectedIndex(int i, boolean sendPress) {
     int min = allowsNoneSelected ? -1 : 0;
-    if (min <= i && i < choicesLen && selected != i)
-    {
+    if (min <= i && i < choicesLen && selected != i) {
       selected = i;
       Window.needsPaint = true;
       if (sendPress) {
@@ -222,27 +206,24 @@ public class SpinList extends Control
   }
 
   /** Selects the given item. If the item is not found, the selected index remains unchanged. */
-  public void setSelectedItem(String item)
-  {
+  public void setSelectedItem(String item) {
     setSelectedIndex(indexOf(item));
   }
 
   /** Selects the given item. If the item is not found, the selected index remains unchanged. */
-  public void setSelectedItem(String item, boolean sendPress)
-  {
+  public void setSelectedItem(String item, boolean sendPress) {
     setSelectedIndex(indexOf(item), sendPress);
   }
 
   /** Removes the item at the given index. */
-  public String removeAt(int index)
-  {
+  public String removeAt(int index) {
     String ret = choices[index];
-    int last = choicesLen-1;
-    String []ch = new String[last];
-    Vm.arrayCopy(choices,0,ch,0,index);
-    if (index < last){
-      Vm.arrayCopy(choices,index+1,ch,index,last-index);
-    }else {
+    int last = choicesLen - 1;
+    String[] ch = new String[last];
+    Vm.arrayCopy(choices, 0, ch, 0, index);
+    if (index < last) {
+      Vm.arrayCopy(choices, index + 1, ch, index, last - index);
+    } else {
       selected--;
     }
     this.choices = ch;
@@ -251,14 +232,12 @@ public class SpinList extends Control
   }
 
   /** Removes the current item */
-  public String removeCurrent()
-  {
+  public String removeCurrent() {
     return selected == -1 ? "" : removeAt(selected);
   }
 
   /** Returns the index of the given item. */
-  public int indexOf(String elem)
-  {
+  public int indexOf(String elem) {
     for (int i = 0; i < choicesLen; i++) {
       if (choices[i].equals(elem)) {
         return i;
@@ -268,20 +247,18 @@ public class SpinList extends Control
   }
 
   /** Inserts the given element in order (based in the assumption that the original choices was ordered). */
-  public void insertInOrder(String elem)
-  {
+  public void insertInOrder(String elem) {
     // find the correct position to insert
     int index = 0;
-    while (index < choicesLen && elem.compareTo(choices[index]) > 0){
+    while (index < choicesLen && elem.compareTo(choices[index]) > 0) {
       index++;
     }
-    if (index == choicesLen || !elem.equals(choices[index]))
-    {
-      String []ch = new String[choicesLen+1];
-      Vm.arrayCopy(choices,0,ch,0,index);
+    if (index == choicesLen || !elem.equals(choices[index])) {
+      String[] ch = new String[choicesLen + 1];
+      Vm.arrayCopy(choices, 0, ch, 0, index);
       ch[index] = elem;
       if (index < choicesLen) {
-        Vm.arrayCopy(choices,index,ch,index+1,choicesLen-index);
+        Vm.arrayCopy(choices, index, ch, index + 1, choicesLen - index);
       }
       choices = ch;
       selected = index;
@@ -289,88 +266,78 @@ public class SpinList extends Control
     }
   }
 
-  private int getArrowHeight()
-  {
-    return isVertical ? 4*fmH/11 : fmH/2;
+  private int getArrowHeight() {
+    return isVertical ? 4 * fmH / 11 : fmH / 2;
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     g.backColor = backColor; // guich@341_3
-    g.fillRect(0,0,width,height);
+    g.fillRect(0, 0, width, height);
     int fore = isEnabled() ? foreColor : Color.getCursorColor(foreColor);
     g.foreColor = fore;
     int yoff = (height - fmH) / 2 + 1;
     int wArrow = getArrowHeight();
     String s = choicesLen > 0 && selected != -1 ? choices[selected] : "";
-    if (isVertical)
-    {
-      g.drawArrow(0,yoff,wArrow,Graphics.ARROW_UP,false,fore);
-      g.drawArrow(0,yoff+height/2,wArrow,Graphics.ARROW_DOWN,false,fore);
+    if (isVertical) {
+      g.drawArrow(0, yoff, wArrow, Graphics.ARROW_UP, false, fore);
+      g.drawArrow(0, yoff + height / 2, wArrow, Graphics.ARROW_DOWN, false, fore);
       if (choicesLen > 0) {
-        g.drawText(s,hAlign==LEFT?wArrow*2:hAlign==RIGHT?width-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+        g.drawText(s,
+            hAlign == LEFT ? wArrow * 2 : hAlign == RIGHT ? width - fm.stringWidth(s) : (width - fm.stringWidth(s)) / 2,
+            yoff - 1, textShadowColor != -1, textShadowColor);
       }
-    }
-    else
-    {
-      if (useNumericBox || useCalculatorBox)
-      {
-        g.backColor = Color.darker(g.backColor,16);
-        g.fillRect(width/3,0,width/3,height);
+    } else {
+      if (useNumericBox || useCalculatorBox) {
+        g.backColor = Color.darker(g.backColor, 16);
+        g.fillRect(width / 3, 0, width / 3, height);
       }
-      g.drawArrow(0,yoff,wArrow,Graphics.ARROW_LEFT,false,fore);
-      g.drawArrow(width-wArrow,yoff,wArrow,Graphics.ARROW_RIGHT,false,fore);
+      g.drawArrow(0, yoff, wArrow, Graphics.ARROW_LEFT, false, fore);
+      g.drawArrow(width - wArrow, yoff, wArrow, Graphics.ARROW_RIGHT, false, fore);
       if (choicesLen > 0) {
-        g.drawText(s,hAlign==LEFT?wArrow:hAlign==RIGHT?width-fmH/2-1-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+        g.drawText(s,
+            hAlign == LEFT ? wArrow
+                : hAlign == RIGHT ? width - fmH / 2 - 1 - fm.stringWidth(s) : (width - fm.stringWidth(s)) / 2,
+            yoff - 1, textShadowColor != -1, textShadowColor);
       }
     }
   }
 
-  private void scroll(boolean up, boolean doPostEvent)
-  {
+  private void scroll(boolean up, boolean doPostEvent) {
     int min = allowsNoneSelected ? -1 : 0;
-    int max = choicesLen-1;
-    if (!wrapAround && ((up && selected == min) || (!up && selected == max))){
+    int max = choicesLen - 1;
+    if (!wrapAround && ((up && selected == min) || (!up && selected == max))) {
       return;
     }
-    if (up)
-    {
+    if (up) {
       selected--;
       if (selected < min) {
         selected = max;
       }
-    }
-    else
-    {
+    } else {
       selected++;
       if (selected > max) {
         selected = min;
       }
     }
     Window.needsPaint = true;
-    if (doPostEvent){
+    if (doPostEvent) {
       postPressedEvent();
     }
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
-    case KeyEvent.KEY_PRESS:
-    {
-      KeyEvent ke = (KeyEvent)event;
+  public void onEvent(Event event) {
+    switch (event.type) {
+    case KeyEvent.KEY_PRESS: {
+      KeyEvent ke = (KeyEvent) event;
       int key = ke.key;
       if (key == ' ') {
         selected = 0; // restart a search
-      } else
-      {
-        key = Convert.toLowerCase((char)key); // converts to uppercase
-        for (int i =0; i < choicesLen; i++) {
-          if (choices[i].charAt(0) == (char)key)
-          {
+      } else {
+        key = Convert.toLowerCase((char) key); // converts to uppercase
+        for (int i = 0; i < choicesLen; i++) {
+          if (choices[i].charAt(0) == (char) key) {
             selected = i;
             Window.needsPaint = true;
             break;
@@ -379,50 +346,42 @@ public class SpinList extends Control
       }
       break;
     }
-    case KeyEvent.SPECIAL_KEY_PRESS:
-    {
-      KeyEvent ke = (KeyEvent)event;
+    case KeyEvent.SPECIAL_KEY_PRESS: {
+      KeyEvent ke = (KeyEvent) event;
       if (Settings.keyboardFocusTraversable && ke.isActionKey()) {
         postPressedEvent();
-      } else
-        if (ke.isUpKey()) {
-          scroll(true,!Settings.keyboardFocusTraversable);
-        } else
-          if (ke.isDownKey()) {
-            scroll(false,!Settings.keyboardFocusTraversable);
-          }
+      } else if (ke.isUpKey()) {
+        scroll(true, !Settings.keyboardFocusTraversable);
+      } else if (ke.isDownKey()) {
+        scroll(false, !Settings.keyboardFocusTraversable);
+      }
       break;
     }
-    case PenEvent.PEN_DOWN:
-    {
-      PenEvent pe = (PenEvent)event;
-      goingUp = isVertical ? pe.y > height/2 : pe.x < width/2;
+    case PenEvent.PEN_DOWN: {
+      PenEvent pe = (PenEvent) event;
+      goingUp = isVertical ? pe.y > height / 2 : pe.x < width / 2;
       if (!Settings.fingerTouch) {
-        doScroll((PenEvent)event);
+        doScroll((PenEvent) event);
       }
-      if (timer == null)
-      {
+      if (timer == null) {
         tick = 0;
         timer = addTimer(timerInterval);
       }
       break;
     }
-    case PenEvent.PEN_UP:
-    {
-      PenEvent pe = (PenEvent)event;
+    case PenEvent.PEN_UP: {
+      PenEvent pe = (PenEvent) event;
       stopTimer();
-      if (Settings.fingerTouch && !hadParentScrolled())
-      {
-        if (!isVertical && (useNumericBox || useCalculatorBox) && width/3 <= pe.x && pe.x <= 2*width/3)
-        {
+      if (Settings.fingerTouch && !hadParentScrolled()) {
+        if (!isVertical && (useNumericBox || useCalculatorBox) && width / 3 <= pe.x && pe.x <= 2 * width / 3) {
           CalculatorBox nb = new CalculatorBox(useCalculatorBox);
           nb.cOrigDefault = this;
           if (useNumericBox) {
-            nb.maxLength = Math.max(choices[0].length(),choices[choicesLen-1].length());
+            nb.maxLength = Math.max(choices[0].length(), choices[choicesLen - 1].length());
           }
           nb.popup();
         } else {
-          doScroll((PenEvent)event);
+          doScroll((PenEvent) event);
         }
       }
       break;
@@ -430,27 +389,22 @@ public class SpinList extends Control
     case TimerEvent.TRIGGERED:
       if (hadParentScrolled() || !isTopMost()) {
         stopTimer();
-      } else
-        if (timer.triggered && tick++ > timerInitialDelay) {
-          scroll(goingUp,!Settings.keyboardFocusTraversable);
-        }
+      } else if (timer.triggered && tick++ > timerInitialDelay) {
+        scroll(goingUp, !Settings.keyboardFocusTraversable);
+      }
       break;
     }
   }
 
-  private void doScroll(PenEvent pe)
-  {
-    if (!isVertical || pe.x < getArrowHeight()*2)
-    {
-      goingUp = isVertical ? pe.y > height/2 : pe.x < width/2;
-      scroll(goingUp,true);
+  private void doScroll(PenEvent pe) {
+    if (!isVertical || pe.x < getArrowHeight() * 2) {
+      goingUp = isVertical ? pe.y > height / 2 : pe.x < width / 2;
+      scroll(goingUp, true);
     }
   }
 
-  private void stopTimer()
-  {
-    if (timer != null)
-    {
+  private void stopTimer() {
+    if (timer != null) {
       removeTimer(timer);
       timer = null;
     }
@@ -458,15 +412,13 @@ public class SpinList extends Control
 
   /** Clears this control, selecting element clearValueInt. */
   @Override
-  public void clear()
-  {
+  public void clear() {
     setSelectedIndex(clearValueInt);
   }
 
   @Override
-  public Control handleGeographicalFocusChangeKeys(KeyEvent ke)
-  {
-    if (!ke.isUpKey() && !ke.isDownKey()){
+  public Control handleGeographicalFocusChangeKeys(KeyEvent ke) {
+    if (!ke.isUpKey() && !ke.isDownKey()) {
       return null;
     }
     _onEvent(ke);

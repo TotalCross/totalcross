@@ -14,10 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
-
 
 /**
  * The {@code ServiceRecord} class describes characteristics of a Bluetooth 
@@ -88,8 +85,7 @@ package totalcross.io.device.bluetooth;
  * </TABLE>
  * @since TotalCross 1.15
  */
-public class ServiceRecord
-{
+public class ServiceRecord {
   Object nativeInstance;
 
   /**
@@ -119,12 +115,10 @@ public class ServiceRecord
    */
   public static final int AUTHENTICATE_ENCRYPT = 0x02;
 
-  ServiceRecord()
-  {
-  }   
+  ServiceRecord() {
+  }
 
-  ServiceRecord(Object nativeInstance)
-  {
+  ServiceRecord(Object nativeInstance) {
     this.nativeInstance = nativeInstance;
   }
 
@@ -137,8 +131,7 @@ public class ServiceRecord
    *         ServiceRecord
    * @since TotalCross 1.27
    */
-  public RemoteDevice getHostDevice()
-  {
+  public RemoteDevice getHostDevice() {
     return null;
   }
 
@@ -153,9 +146,8 @@ public class ServiceRecord
    *            if attrID is negative or greater than or equal to 2<sup>16</sup>
    * @since TotalCross 1.27
    */
-  public DataElement getAttributeValue(int attrID)
-  {
-    if (attrID < 0x0000 || attrID > 0xffff){
+  public DataElement getAttributeValue(int attrID) {
+    if (attrID < 0x0000 || attrID > 0xffff) {
       throw new IllegalArgumentException();
     }
     return null;
@@ -173,8 +165,7 @@ public class ServiceRecord
    *         ServiceRecord is not formatted according to the Bluetooth specification
    * @since TotalCross 1.15
    */
-  public String getConnectionURL()
-  {
+  public String getConnectionURL() {
     return getConnectionURL(NOAUTHENTICATE_NOENCRYPT, false);
   }
 
@@ -199,18 +190,16 @@ public class ServiceRecord
    * @since TotalCross 1.27
    * @see #NOAUTHENTICATE_NOENCRYPT
    */
-  public String getConnectionURL(int requiredSecurity, boolean mustBeMaster)
-  {
+  public String getConnectionURL(int requiredSecurity, boolean mustBeMaster) {
     // security
-    switch (requiredSecurity)
-    {
+    switch (requiredSecurity) {
     case NOAUTHENTICATE_NOENCRYPT:
     case AUTHENTICATE_NOENCRYPT:
     case AUTHENTICATE_ENCRYPT:
       break;
     default:
       throw new IllegalArgumentException();
-    }      
+    }
     return null;
   }
 }

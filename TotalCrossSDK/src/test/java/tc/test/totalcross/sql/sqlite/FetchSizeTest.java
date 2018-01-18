@@ -6,14 +6,14 @@ import totalcross.sql.PreparedStatement;
 import totalcross.sql.ResultSet;
 import totalcross.unit.TestCase;
 
-public class FetchSizeTest extends TestCase
-{
-  public void testFetchSize()
-  {
-    try
-    {
+public class FetchSizeTest extends TestCase {
+  public void testFetchSize() {
+    try {
       Connection conn = DriverManager.getConnection("jdbc:sqlite:");
-      try {conn.createStatement().execute("drop table s1");} catch (Exception e) {}
+      try {
+        conn.createStatement().execute("drop table s1");
+      } catch (Exception e) {
+      }
       assertEquals(conn.prepareStatement("create table s1 (c1)").executeUpdate(), 0);
       PreparedStatement insertPrep = conn.prepareStatement("insert into s1 values (?)");
       insertPrep.setInt(1, 1);
@@ -38,16 +38,13 @@ public class FetchSizeTest extends TestCase
       assertTrue(rs.next());
       assertFalse(rs.next());
       conn.close();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       fail(e);
     }
   }
 
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     testFetchSize();
   }
 }

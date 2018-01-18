@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.io.IOException;
@@ -30,8 +28,7 @@ import totalcross.util.IntVector;
  * 
  * @since TotalCross 1.15
  */
-public class DiscoveryAgent
-{
+public class DiscoveryAgent {
   /**
    * Used with the <code>retrieveDevices()</code> method to return those devices that were found via a previous
    * inquiry. If no inquiries have been started, this will cause the method to return <code>null</code>.
@@ -82,8 +79,7 @@ public class DiscoveryAgent
   /** Max attribute value */
   private static int maxAttrValue = (2 << 16) - 1;
 
-  DiscoveryAgent()
-  {
+  DiscoveryAgent() {
   }
 
   /**
@@ -107,9 +103,8 @@ public class DiscoveryAgent
    *            if <code>listener</code> is <code>null</code>
    * @since TotalCross 1.2
    */
-  public boolean cancelInquiry(DiscoveryListener listener)
-  {
-    if (listener == null){
+  public boolean cancelInquiry(DiscoveryListener listener) {
+    if (listener == null) {
       throw new NullPointerException();
     }
     return false; // // not supported on JDK, always returns false.
@@ -129,8 +124,7 @@ public class DiscoveryAgent
    *         <code>transID</code> does not represent an active service search transaction
    * @since TotalCross 1.2
    */
-  public boolean cancelServiceSearch(int transID)
-  {
+  public boolean cancelServiceSearch(int transID) {
     return true; // not supported on JDK, always returns false.
   }
 
@@ -152,9 +146,8 @@ public class DiscoveryAgent
    * @throws IllegalArgumentException
    *            if <code>option</code> is not <code>CACHED</code> or <code>PREKNOWN</code>
    */
-  public RemoteDevice[] retrieveDevices(int option)
-  {
-    if (option != CACHED && option != PREKNOWN){
+  public RemoteDevice[] retrieveDevices(int option) {
+    if (option != CACHED && option != PREKNOWN) {
       throw new IllegalArgumentException();
     }
     return null; // not supported on JDK, always returns null.
@@ -194,31 +187,29 @@ public class DiscoveryAgent
    *            <code>bluetooth.sd.trans.max</code> property obtained from the class <code>LocalDevice</code> or the
    *            system is unable to start one due to current conditions
    */
-  public int searchServices(int[] attrSet, UUID[] uuidSet, RemoteDevice btDev, DiscoveryListener discListener) throws IOException
-  {
-    if (uuidSet == null || btDev == null || discListener == null){
+  public int searchServices(int[] attrSet, UUID[] uuidSet, RemoteDevice btDev, DiscoveryListener discListener)
+      throws IOException {
+    if (uuidSet == null || btDev == null || discListener == null) {
       throw new NullPointerException();
     }
 
     // arrays cannot be empty
     int attrSetLen = attrSet == null ? 0 : attrSet.length;
     int uuidSetLen = uuidSet.length;
-    if ((attrSet != null && attrSetLen == 0) || uuidSetLen == 0){
+    if ((attrSet != null && attrSetLen == 0) || uuidSetLen == 0) {
       throw new IllegalArgumentException();
     }
 
-    if (attrSet == null){
+    if (attrSet == null) {
       attrSet = new int[] { 0, 1, 2, 3, 4 };
-    }else
-    {      
+    } else {
       IntVector attrSetVector = new IntVector(attrSet);
       attrSetVector.qsort();
 
       if (attrSetVector.items[0] < 0 || attrSetVector.items[0] > maxAttrValue) {
         throw new IllegalArgumentException("attrSet values must be in the range [0 - (2^16 - 1)]");
       }
-      for (int i = attrSetLen - 1; i > 0; i--)
-      {
+      for (int i = attrSetLen - 1; i > 0; i--) {
         // attrSet cannot have duplicated values
         if (attrSetVector.items[i] == attrSetVector.items[i - 1]) {
           throw new IllegalArgumentException("Duplicated value in attrSet");
@@ -291,13 +282,12 @@ public class DiscoveryAgent
    *            if the Bluetooth system cannot start the request due to the current state of the Bluetooth system
    * @since TotalCross 1.2
    */
-  public String selectService(UUID uuid, int security, boolean master) throws IOException
-  {
-    if (uuid == null){
+  public String selectService(UUID uuid, int security, boolean master) throws IOException {
+    if (uuid == null) {
       throw new NullPointerException();
     }
     if (security != ServiceRecord.NOAUTHENTICATE_NOENCRYPT && security != ServiceRecord.AUTHENTICATE_NOENCRYPT
-        && security != ServiceRecord.AUTHENTICATE_ENCRYPT){
+        && security != ServiceRecord.AUTHENTICATE_ENCRYPT) {
       throw new IllegalArgumentException();
     }
 
@@ -328,12 +318,11 @@ public class DiscoveryAgent
    *            performed by the device
    * @since TotalCross 1.2
    */
-  public boolean startInquiry(int accessCode, DiscoveryListener listener) throws IOException
-  {
-    if (accessCode != LIAC || accessCode != GIAC || accessCode < 0x9E8B00 || accessCode > 0x9E8B3F){
+  public boolean startInquiry(int accessCode, DiscoveryListener listener) throws IOException {
+    if (accessCode != LIAC || accessCode != GIAC || accessCode < 0x9E8B00 || accessCode > 0x9E8B3F) {
       throw new IllegalArgumentException();
     }
-    if (listener == null){
+    if (listener == null) {
       throw new NullPointerException();
     }
 

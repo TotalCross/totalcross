@@ -29,45 +29,45 @@
 
 package totalcross.util.regex;
 
-public class Optimizer{
-  public static final int THRESHOLD=20;
+public class Optimizer {
+  public static final int THRESHOLD = 20;
 
-  static Optimizer find(Term entry){
-    return find(entry,0);
+  static Optimizer find(Term entry) {
+    return find(entry, 0);
   }
 
-  private static Optimizer find(Term term,int dist){
+  private static Optimizer find(Term term, int dist) {
     //System.out.println("term="+term+", dist="+dist);
-    if(term==null){
+    if (term == null) {
       return null;
     }
-    Term next=term.next;
-    int type=term.type;
-    switch(type){
+    Term next = term.next;
+    int type = term.type;
+    switch (type) {
     case Term.CHAR:
     case Term.REG:
     case Term.REG_I:
-      return new Optimizer(term,dist);
+      return new Optimizer(term, dist);
     case Term.BITSET:
     case Term.BITSET2:
-      if(term.weight<=THRESHOLD) {
-        return new Optimizer(term,dist);
+      if (term.weight <= THRESHOLD) {
+        return new Optimizer(term, dist);
       } else {
-        return find(term.next,dist+1);
+        return find(term.next, dist + 1);
       }
     case Term.ANY_CHAR:
     case Term.ANY_CHAR_NE:
-      return find(next,dist+1);
+      return find(next, dist + 1);
     case Term.REPEAT_MIN_INF:
     case Term.REPEAT_MIN_MAX:
-      if(term.minCount>0){
-        return find(term.target,dist);
+      if (term.minCount > 0) {
+        return find(term.target, dist);
       } else {
         return null;
       }
     }
-    if(type>=Term.FIRST_TRANSPARENT && type<=Term.LAST_TRANSPARENT){
-      return find(next,dist);
+    if (type >= Term.FIRST_TRANSPARENT && type <= Term.LAST_TRANSPARENT) {
+      return find(next, dist);
     }
     return null;
   }
@@ -75,88 +75,86 @@ public class Optimizer{
   private Term atom;
   private int distance;
 
-  private Optimizer(Term atom,int distance){
-    this.atom=atom;
-    this.distance=distance;
+  private Optimizer(Term atom, int distance) {
+    this.atom = atom;
+    this.distance = distance;
   }
 
-  Term makeFirst(Term theFirst){
-    return new Find(atom,distance,theFirst);
+  Term makeFirst(Term theFirst) {
+    return new Find(atom, distance, theFirst);
   }
 
-  Term makeBacktrack(Term back){
-    int min=back.minCount;
-    switch(back.type){
+  Term makeBacktrack(Term back) {
+    int min = back.minCount;
+    switch (back.type) {
     case Term.BACKTRACK_0:
-      min=0;
+      min = 0;
     case Term.BACKTRACK_MIN:
-      return new FindBack(atom,distance,min,back);
+      return new FindBack(atom, distance, min, back);
 
     case Term.BACKTRACK_REG_MIN:
       return back;
 
     default:
-      throw new Error("unexpected iterator's backtracker:"+ back);
+      throw new Error("unexpected iterator's backtracker:" + back);
       //return back;
     }
   }
 }
 
-class Find extends Term{
-  Find(Term target, int distance, Term theFirst){
-    switch(target.type){
+class Find extends Term {
+  Find(Term target, int distance, Term theFirst) {
+    switch (target.type) {
     case Term.CHAR:
     case Term.BITSET:
     case Term.BITSET2:
-      type=Term.FIND;
+      type = Term.FIND;
       break;
     case Term.REG:
     case Term.REG_I:
-      type=Term.FINDREG;
+      type = Term.FINDREG;
       break;
     default:
-      throw new IllegalArgumentException("wrong target type: "+target.type);
+      throw new IllegalArgumentException("wrong target type: " + target.type);
     }
-    this.target=target;
-    this.distance=distance;
-    if(target==theFirst){
-      next=target.next;
-      eat=true; //eat the next
-    }
-    else{
-      next=theFirst;
-      eat=false;
+    this.target = target;
+    this.distance = distance;
+    if (target == theFirst) {
+      next = target.next;
+      eat = true; //eat the next
+    } else {
+      next = theFirst;
+      eat = false;
     }
   }
 }
 
-class FindBack extends Term{
-  FindBack(Term target, int distance, int minCount, Term backtrack){
-    this.minCount=minCount;
-    switch(target.type){
+class FindBack extends Term {
+  FindBack(Term target, int distance, int minCount, Term backtrack) {
+    this.minCount = minCount;
+    switch (target.type) {
     case Term.CHAR:
     case Term.BITSET:
     case Term.BITSET2:
-      type=Term.BACKTRACK_FIND_MIN;
+      type = Term.BACKTRACK_FIND_MIN;
       break;
     case Term.REG:
     case Term.REG_I:
-      type=Term.BACKTRACK_FINDREG_MIN;
+      type = Term.BACKTRACK_FINDREG_MIN;
       break;
     default:
-      throw new IllegalArgumentException("wrong target type: "+target.type);
+      throw new IllegalArgumentException("wrong target type: " + target.type);
     }
 
-    this.target=target;
-    this.distance=distance;
-    Term next=backtrack.next;
-    if(target==next){
-      this.next=next.next;
-      this.eat=true;
-    }
-    else{
-      this.next=next;
-      this.eat=false;
+    this.target = target;
+    this.distance = distance;
+    Term next = backtrack.next;
+    if (target == next) {
+      this.next = next.next;
+      this.eat = true;
+    } else {
+      this.next = next;
+      this.eat = false;
     }
   }
 }

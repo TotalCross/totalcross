@@ -14,16 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to mouse move events.
  * @since TotalCross 1.27 
  */
 
-public interface MouseListener
-{
+public interface MouseListener {
   /** A MOUSE_MOVE event was dispatched.
    * @see PenEvent 
    */

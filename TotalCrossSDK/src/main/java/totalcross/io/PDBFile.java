@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import java.io.OutputStream;
@@ -70,8 +68,7 @@ import totalcross.util.Vector;
  * ("..\\..\\Test"). Note that the Settings.dataPath, if set, is also used as the path to the PDBFile.
  */
 
-public class PDBFile extends Stream
-{
+public class PDBFile extends Stream {
   /**
    * On desktop, is the Vector that represents this PDBFile. <br>
    * On device, stores the DmOpenRef.
@@ -147,19 +144,19 @@ public class PDBFile extends Stream
    * @since SuperWaba 5.66
    * @see #setRecordAttributes(int, byte)
    */
-  public static final byte REC_RELEASE = (byte)-1;
+  public static final byte REC_RELEASE = (byte) -1;
   /** Record atribute: Deleted. Note that after a record has it delete attribute set you don't have access to it anymore.
    * @see #setRecordAttributes(int, byte)
    */
-  public static final byte REC_ATTR_DELETE = (byte)0x80;
+  public static final byte REC_ATTR_DELETE = (byte) 0x80;
   /** Record atribute: Dirty (has been modified since last sync)
    * @see #setRecordAttributes(int, byte)
    */
-  public static final byte REC_ATTR_DIRTY = (byte)0x40;
+  public static final byte REC_ATTR_DIRTY = (byte) 0x40;
   /** Record atribute: Private
    * @see #setRecordAttributes(int, byte)
    */
-  public static final byte REC_ATTR_SECRET = (byte)0x10;
+  public static final byte REC_ATTR_SECRET = (byte) 0x10;
 
   /**
    * Opens a PDBFile with the given name and mode.
@@ -186,19 +183,19 @@ public class PDBFile extends Stream
    * @see #CREATE
    * @see #CREATE_EMPTY
    */
-  public PDBFile(String name, int mode) throws totalcross.io.IllegalArgumentIOException,
-  totalcross.io.FileNotFoundException, totalcross.io.IOException
-  {
-    if (name == null){
+  public PDBFile(String name, int mode)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException {
+    if (name == null) {
       throw new java.lang.NullPointerException("Argument 'name' cannot have a null value.");
     }
-    if (mode < 3 || mode > 5){
+    if (mode < 3 || mode > 5) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'mode': " + mode);
     }
 
     String[] st = Convert.tokenizeString(name, '.');
-    if (st == null || st.length != 3 || st[0].length() > 31 || st[1].length() != 4 || st[2].length() != 4){
-      throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'name': " + name+". The name must be in format Name.CRTR.TYPE and 'Name' must be <= 31 characters in length.");
+    if (st == null || st.length != 3 || st[0].length() > 31 || st[1].length() != 4 || st[2].length() != 4) {
+      throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'name': " + name
+          + ". The name must be in format Name.CRTR.TYPE and 'Name' must be <= 31 characters in length.");
     }
 
     this.name = name;
@@ -207,8 +204,7 @@ public class PDBFile extends Stream
   }
 
   final private void create(String name, String creator, String type, int mode)
-      throws totalcross.io.FileNotFoundException, totalcross.io.IOException
-  {
+      throws totalcross.io.FileNotFoundException, totalcross.io.IOException {
     _name = name;
     _creator = creator;
     _type = type;
@@ -226,17 +222,12 @@ public class PDBFile extends Stream
         openRef = null; // don't let the finalizer close an empty db!
         throw new totalcross.io.FileNotFoundException("Could not find the pdb file: " + this.name);
       }
-    }
-    else
-    {
+    } else {
       // if PDBFile found and mode = create, continue.
-      if (mode == PDBFile.CREATE_EMPTY)
-      {
+      if (mode == PDBFile.CREATE_EMPTY) {
         removePDBFileFromDisk();
         deleted = false;
-      }
-      else
-      {
+      } else {
         openRef = fromPDB(fileBytes, _creator, _type, _attrs);
       }
     }
@@ -248,8 +239,7 @@ public class PDBFile extends Stream
    *
    * @since SuperWaba 5.5
    */
-  public String getName()
-  {
+  public String getName() {
     return this.name;
   }
 
@@ -269,17 +259,16 @@ public class PDBFile extends Stream
    *
    * @throws totalcross.io.IOException
    */
-  final public void rename(String newName) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void rename(String newName) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (newName == null){
+    if (newName == null) {
       throw new java.lang.NullPointerException("Argument 'newName' cannot have a null value.");
     }
 
     String[] st = Convert.tokenizeString(newName, '.');
-    if (st == null || st.length != 3 || st[0].length() > 31 || st[1].length() != 4 || st[2].length() != 4){
+    if (st == null || st.length != 3 || st[0].length() > 31 || st[1].length() != 4 || st[2].length() != 4) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'newName': " + newName);
     }
 
@@ -296,7 +285,7 @@ public class PDBFile extends Stream
     deleted = false; // guich@400_58: was set to true in removePDBFileFromDisk
     modificationNumber++; // guich@400_58: needed for PDBFile.close.
     _dbHash.put(this.name, this); // guich@550_11
-    if (path != null && path.length() > 0){
+    if (path != null && path.length() > 0) {
       Launcher.instance.htOpenedAt.put(fileName, path);
     }
   }
@@ -307,12 +296,11 @@ public class PDBFile extends Stream
    * @param size The size in bytes of the record to add
    * @throws totalcross.io.IOException If the operation could not be completed.
    */
-  final public void addRecord(int size) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void addRecord(int size) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (size < 0 || size > 65535){
+    if (size < 0 || size > 65535) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'size': " + size);
     }
 
@@ -335,17 +323,16 @@ public class PDBFile extends Stream
    * @throws totalcross.io.IOException If the operation could not be completed.
    * @throws totalcross.io.IllegalArgumentIOException If size or pos have invalid values.
    */
-  final public void addRecord(int size, int pos) throws totalcross.io.IllegalArgumentIOException,
-  totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void addRecord(int size, int pos)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (size < 0 || size > 65535){
+    if (size < 0 || size > 65535) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'size': " + size);
     }
     Vector records = (Vector) openRef;
-    if (pos < 0 || pos > records.size()){
+    if (pos < 0 || pos > records.size()) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'pos': " + pos);
     }
 
@@ -366,15 +353,14 @@ public class PDBFile extends Stream
    * @param size the new size of the record
    * @throws totalcross.io.IOException When the method fails.
    */
-  final public void resizeRecord(int size) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void resizeRecord(int size) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (size < 0 || size > 65535){
+    if (size < 0 || size > 65535) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'size': " + size);
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
 
@@ -382,9 +368,9 @@ public class PDBFile extends Stream
     byte oldRec[] = (byte[]) records.items[_hvRecordPos];
     byte newRec[] = new byte[size];
     int copyLen;
-    if (oldRec.length < newRec.length){
+    if (oldRec.length < newRec.length) {
       copyLen = oldRec.length;
-    }else {
+    } else {
       copyLen = newRec.length;
     }
     System.arraycopy(oldRec, 0, newRec, 0, copyLen);
@@ -400,26 +386,22 @@ public class PDBFile extends Stream
    * @throws IOException If the PDBFile was already closed.
    */
   @Override
-  public void close() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  public void close() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
-    try
-    {
+    try {
       nativeClose();
-    }
-    finally
-    {
+    } finally {
       openRef = null;
       mode = INVALID;
     }
   }
 
-  final private void nativeClose() throws totalcross.io.IOException
-  {
-    if (!deleted && (modificationNumber != originalModificationNumber || (modificationNumber == 0 && getRecordCount() == 0))){
+  final private void nativeClose() throws totalcross.io.IOException {
+    if (!deleted
+        && (modificationNumber != originalModificationNumber || (modificationNumber == 0 && getRecordCount() == 0))) {
       writeCB();
     }
   }
@@ -427,9 +409,9 @@ public class PDBFile extends Stream
   private void writeCB() throws totalcross.io.IOException // guich@552_19
   {
     OutputStream os = Launcher.instance.openOutputStream(fileName); // guich@552_19: write directly to the stream
-    if (os != null){
+    if (os != null) {
       toPDB(os, (Vector) openRef, _creator, _name, _type, _attrs);
-    }else {
+    } else {
       throw new totalcross.io.IOException("Could not write " + name);
     }
   }
@@ -439,9 +421,8 @@ public class PDBFile extends Stream
    *
    * @throws totalcross.io.IOException When the method fails.
    */
-  final public void delete() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void delete() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
@@ -452,14 +433,12 @@ public class PDBFile extends Stream
     openRef = null;
     mode = INVALID;
     // guich@300_19: try to delete the file from disk first
-    if (removePDBFileFromDisk() == null)
-    {
+    if (removePDBFileFromDisk() == null) {
       writeCB(); // could not phisicaly delete the file? write a zero-sized pdb
     }
   }
 
-  static private int makeInt(byte b1, byte b2, byte b3, byte b4)
-  {
+  static private int makeInt(byte b1, byte b2, byte b3, byte b4) {
     return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
   }
 
@@ -470,11 +449,9 @@ public class PDBFile extends Stream
    * files in the current "." folder or at Settings.dataPath folder, if it was set.
    * @return A String array with the names
    */
-  public static String []listPDBs()
-  {
-    return listPDBs(0,0);
+  public static String[] listPDBs() {
+    return listPDBs(0, 0);
   }
-
 
   /**
    * Returns the list of existing PDBFiles with the given creator id and/or type.
@@ -489,10 +466,10 @@ public class PDBFile extends Stream
    * @see totalcross.sys.Convert#chars2int(String)
    * @return A String array with the names or null if no matches were found.
    */
-  final public static String []listPDBs(int creatorIdWild, int typeWild) // guich@330_17
+  final public static String[] listPDBs(int creatorIdWild, int typeWild) // guich@330_17
   {
     boolean includeVersion = creatorIdWild == 0xFFFFFFFF; // guich@570_27
-    if (includeVersion){
+    if (includeVersion) {
       creatorIdWild = 0;
     }
     // guich@220_8: now returns also the prc/pdb files of the current dir
@@ -500,47 +477,39 @@ public class PDBFile extends Stream
     Object[] keys = _dbHash.getKeys().toObjectArray();
     Vector v = (keys != null ? new Vector(keys) : new Vector()); //flsobral@tc111_20a: Avoid NPE if keys is null.
     // guich@330_17: check the creators of the current items
-    if (creatorIdWild != 0 || typeWild != 0)
-    {
-      for (int i =v.size(); --i >=0;)
-      {
-        byte[]b = v.items[i].toString().getBytes();
+    if (creatorIdWild != 0 || typeWild != 0) {
+      for (int i = v.size(); --i >= 0;) {
+        byte[] b = v.items[i].toString().getBytes();
         int l = b.length;
-        int crtrI = makeInt(b[l-9],b[l-8],b[l-7],b[l-6]);
-        int typeI = makeInt(b[l-4],b[l-3],b[l-2],b[l-1]);
+        int crtrI = makeInt(b[l - 9], b[l - 8], b[l - 7], b[l - 6]);
+        int typeI = makeInt(b[l - 4], b[l - 3], b[l - 2], b[l - 1]);
         if ((creatorIdWild != 0 && creatorIdWild != crtrI) || (typeWild != 0 && typeWild != typeI)) {
           v.removeElementAt(i);
-        } else
-          if (includeVersion)
-          {
-            PDBFile pb = ((PDBFile)_dbHash.get(v.items[i]));
-            if (pb != null) {
-              v.items[i] = v.items[i]+"#"+pb.version;
-            }
+        } else if (includeVersion) {
+          PDBFile pb = ((PDBFile) _dbHash.get(v.items[i]));
+          if (pb != null) {
+            v.items[i] = v.items[i] + "#" + pb.version;
           }
+        }
       }
     }
 
     // gets from the current dir
     String path = Launcher.instance.getDataPath() != null ? Launcher.instance.getDataPath() : "."; // guich@570_21: use datapath if assigned
     java.io.File f = new java.io.File(path);
-    String []s = f.list();
-    if (s != null)
-    {
-      byte []buf = new byte[68];
-      for (int i =0; i < s.length; i++) {
+    String[] s = f.list();
+    if (s != null) {
+      byte[] buf = new byte[68];
+      for (int i = 0; i < s.length; i++) {
         if (v.indexOf(s[i]) == -1 && (/*s[i].toLowerCase().endsWith("prc") ||*/ s[i].toLowerCase().endsWith("pdb"))) {
-          try
-          {
+          try {
             // get the type and creator for this file
             java.io.FileInputStream fis = new java.io.FileInputStream(new java.io.File(path, s[i]));
             int readLength = fis.read(buf);
-            if (buf.length == readLength)
-            {
+            if (buf.length == readLength) {
               int typeI = makeInt(buf[60], buf[61], buf[62], buf[63]); // guich@330_17
               int crtrI = makeInt(buf[64], buf[65], buf[66], buf[67]);
-              if ((creatorIdWild != 0 && creatorIdWild != crtrI) || (typeWild != 0 && typeWild != typeI))
-              {
+              if ((creatorIdWild != 0 && creatorIdWild != crtrI) || (typeWild != 0 && typeWild != typeI)) {
                 fis.close();
                 continue;
               }
@@ -556,14 +525,12 @@ public class PDBFile extends Stream
               }
             }
             fis.close();
-          }
-          catch (java.io.IOException e)
-          {
+          } catch (java.io.IOException e) {
           }
         }
       }
     }
-    return (String[])v.toObjectArray(); // guich@200b4_27: fix array cast exception - guich@220_32: now we can use the cast.
+    return (String[]) v.toObjectArray(); // guich@200b4_27: fix array cast exception - guich@220_32: now we can use the cast.
   }
 
   /**
@@ -573,12 +540,11 @@ public class PDBFile extends Stream
    *
    * @throws totalcross.io.IOException When the method fails.
    */
-  final public void deleteRecord() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void deleteRecord() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
 
@@ -593,9 +559,8 @@ public class PDBFile extends Stream
    *
    * @throws totalcross.io.IOException If the PDBFile is not open.
    */
-  final public int getRecordCount() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public int getRecordCount() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
@@ -607,12 +572,11 @@ public class PDBFile extends Stream
    *
    * @throws totalcross.io.IOException When the method fails.
    */
-  final public int getRecordSize() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public int getRecordSize() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
 
@@ -627,45 +591,44 @@ public class PDBFile extends Stream
    * @throws totalcross.io.IllegalArgumentIOException If the argument pos has an invalid value.
    * @throws totalcross.io.IOException If the method fails
    */
-  final public void setRecordPos(int pos) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void setRecordPos(int pos) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
     Vector records = (Vector) openRef;
-    if (pos == -1){
+    if (pos == -1) {
       _hvRecordPos = -1;
-    }else if (pos < -1 || pos >= records.size()){
+    } else if (pos < -1 || pos >= records.size()) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'pos': " + pos);
-    }else
-    {
+    } else {
       _hvRecordPos = pos;
       _hvRecordLength = ((byte[]) records.items[_hvRecordPos]).length;
       _hvRecordOffset = 0;
     }
   }
 
-  private int readWriteBytes(byte buf[], int start, int count, boolean isRead) throws totalcross.io.IOException
-  {
+  private int readWriteBytes(byte buf[], int start, int count, boolean isRead) throws totalcross.io.IOException {
     byte rec[] = null;
     Vector records = (Vector) openRef;
-    try
-    {
+    try {
       rec = (byte[]) records.items[_hvRecordPos];
       if (isRead) {
-        System.arraycopy(rec,_hvRecordOffset,buf,start,count);
-      } else
-      {
-        System.arraycopy(buf,start,rec,_hvRecordOffset,count);
-        if (_attrs != null)
-        {
-          setRecordAttributes(_hvRecordPos, (byte)(getRecordAttributes(_hvRecordPos) | PDBFile.REC_ATTR_DIRTY)); // set dirty
+        System.arraycopy(rec, _hvRecordOffset, buf, start, count);
+      } else {
+        System.arraycopy(buf, start, rec, _hvRecordOffset, count);
+        if (_attrs != null) {
+          setRecordAttributes(_hvRecordPos, (byte) (getRecordAttributes(_hvRecordPos) | PDBFile.REC_ATTR_DIRTY)); // set dirty
         }
         modificationNumber++;
       }
       _hvRecordOffset += count;
-    } catch (Exception ee) {System.out.println("Exception "+ee+" in _readWriteBytes: rec.length: "+(rec==null?"null":""+rec.length)+", buf.length: "+buf.length+", start: "+start+", count: "+count+", isRead? "+isRead); count = -1;}
+    } catch (Exception ee) {
+      System.out
+          .println("Exception " + ee + " in _readWriteBytes: rec.length: " + (rec == null ? "null" : "" + rec.length)
+              + ", buf.length: " + buf.length + ", start: " + start + ", count: " + count + ", isRead? " + isRead);
+      count = -1;
+    }
     return count;
   }
 
@@ -682,27 +645,24 @@ public class PDBFile extends Stream
    * @throws IOException If you request more bytes than available or if the PDBFile is closed.
    */
   @Override
-  final public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new java.lang.NullPointerException("Argument 'buf' cannot have a null value.");
     }
-    if (start < 0 || count < 0 || start + count > buf.length){
+    if (start < 0 || count < 0 || start + count > buf.length) {
       throw new ArrayIndexOutOfBoundsException();
     }
-    if (count == 0)
-    {
+    if (count == 0) {
       return 0; // flsobral@tc113_43: return 0 if asked to read 0.
     }
     int bytesLeft = _hvRecordLength - _hvRecordOffset;
-    if (count > bytesLeft)
-    {
+    if (count > bytesLeft) {
       if (bytesLeft == 0) {
         return -1;
       }
@@ -719,20 +679,19 @@ public class PDBFile extends Stream
    * @param count the number of bytes to skip.
    */
   @Override
-  public int skipBytes(int count) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (openRef == null){
+  public int skipBytes(int count) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
 
     int off = _hvRecordOffset + count;
-    if (off < 0){
+    if (off < 0) {
       throw new totalcross.io.IllegalArgumentIOException("Offset cannot underflow the record size: " + off);
     }
-    if (off > _hvRecordLength){
+    if (off > _hvRecordLength) {
       throw new totalcross.io.IllegalArgumentIOException("Offset cannot overflow the record size: " + off);
     }
     _hvRecordOffset += count;
@@ -747,15 +706,14 @@ public class PDBFile extends Stream
    * @param ofs The new read/write cursor offset value.
    * @since SuperWaba 5.5
    */
-  public void setRecordOffset(int ofs) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (openRef == null){
+  public void setRecordOffset(int ofs) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (ofs < 0){
+    if (ofs < 0) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'ofs': " + ofs);
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
 
@@ -777,22 +735,21 @@ public class PDBFile extends Stream
    * @return The number of bytes written.
    */
   @Override
-  final public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new java.lang.NullPointerException("Argument 'buf' cannot have a null value.");
     }
-    if (start < 0 || count < 0 || start + count > buf.length){
+    if (start < 0 || count < 0 || start + count > buf.length) {
       throw new ArrayIndexOutOfBoundsException();
     }
     int bytesLeft = _hvRecordLength - _hvRecordOffset;
-    if (count > bytesLeft){
+    if (count > bytesLeft) {
       count = bytesLeft;
     }
 
@@ -811,26 +768,25 @@ public class PDBFile extends Stream
    * @since SuperWaba 1.1
    * @throws totalcross.io.IOException When the method fails.
    */
-  final public int inspectRecord(byte buf[], int recordPos, int offsetInRec) throws totalcross.io.IllegalArgumentIOException,
-  totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public int inspectRecord(byte buf[], int recordPos, int offsetInRec)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (buf == null){
+    if (buf == null) {
       throw new java.lang.NullPointerException("Argument 'buf' cannot have a null value.");
     }
-    if (offsetInRec < 0 || offsetInRec > 65535){
+    if (offsetInRec < 0 || offsetInRec > 65535) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'offsetInRec': " + offsetInRec);
     }
 
     Vector records = (Vector) openRef;
-    if (recordPos < 0 || recordPos >= records.size()){
+    if (recordPos < 0 || recordPos >= records.size()) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'recordPos': " + recordPos);
     }
 
     byte rec[] = (byte[]) records.items[recordPos];
-    if (offsetInRec >= rec.length){
+    if (offsetInRec >= rec.length) {
       return 0;
     }
     int count = Math.min(buf.length, rec.length);
@@ -850,15 +806,14 @@ public class PDBFile extends Stream
    * @see #REC_ATTR_DIRTY
    * @see #REC_ATTR_SECRET
    */
-  final public byte getRecordAttributes(int recordPos) throws totalcross.io.IllegalArgumentIOException,
-  totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public byte getRecordAttributes(int recordPos)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
     Vector records = (Vector) openRef;
-    if (recordPos < 0 || recordPos >= records.size()){
+    if (recordPos < 0 || recordPos >= records.size()) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'recordPos': " + recordPos);
     }
 
@@ -877,15 +832,14 @@ public class PDBFile extends Stream
    * @see #REC_ATTR_DIRTY
    * @see #REC_ATTR_SECRET
    */
-  final public void setRecordAttributes(int recordPos, byte attr) throws totalcross.io.IllegalArgumentIOException,
-  totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void setRecordAttributes(int recordPos, byte attr)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
     Vector records = (Vector) openRef;
-    if (recordPos < 0 || recordPos >= records.size()){
+    if (recordPos < 0 || recordPos >= records.size()) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'recordPos': " + recordPos);
     }
 
@@ -905,9 +859,8 @@ public class PDBFile extends Stream
    * @see #DB_ATTR_RESET_AFTER_INSTALL
    * @see #DB_ATTR_STREAM
    */
-  final public int getAttributes() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public int getAttributes() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
@@ -928,9 +881,8 @@ public class PDBFile extends Stream
    * @see #DB_ATTR_RESET_AFTER_INSTALL
    * @see #DB_ATTR_STREAM
    */
-  final public void setAttributes(int i) throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public void setAttributes(int i) throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
 
@@ -943,9 +895,8 @@ public class PDBFile extends Stream
    *
    * @throws totalcross.io.IOException If the PDBFile is closed
    */
-  final public int getRecordPos() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  final public int getRecordPos() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
     return _hvRecordPos;
@@ -960,12 +911,11 @@ public class PDBFile extends Stream
    *
    * @since SuperWaba 4.0
    */
-  public int getRecordOffset() throws totalcross.io.IOException
-  {
-    if (openRef == null){
+  public int getRecordOffset() throws totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (_hvRecordPos == -1){
+    if (_hvRecordPos == -1) {
       throw new totalcross.io.IOException("No record selected for this operation.");
     }
     return _hvRecordOffset;
@@ -986,71 +936,61 @@ public class PDBFile extends Stream
    * @throws totalcross.io.IOException If the method fails
    */
   final public int searchBytes(byte[] toSearch, int length, int offsetInRec)
-      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (openRef == null){
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (openRef == null) {
       throw new totalcross.io.IOException("The pdb file is closed.");
     }
-    if (toSearch == null){
+    if (toSearch == null) {
       throw new java.lang.NullPointerException("Argument 'toSearch' cannot have a null value.");
     }
-    if (offsetInRec < 0){
+    if (offsetInRec < 0) {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'offsetInRec': " + offsetInRec);
     }
-    if (length <= 0 || length > toSearch.length){
+    if (length <= 0 || length > toSearch.length) {
       throw new ArrayIndexOutOfBoundsException();
     }
 
     int n = getRecordCount();
-    if (n == 0){
+    if (n == 0) {
       return -1;
     }
 
     int found = -1;
     byte buf[] = new byte[length];
     int lenM1 = length - 1;
-    for (int i = Math.max(_hvRecordPos,0) ; i < n && found == -1 ; i++) // guich@tc110_34: consider recordPos in the search
+    for (int i = Math.max(_hvRecordPos, 0); i < n && found == -1; i++) // guich@tc110_34: consider recordPos in the search
     {
       int bytesRead;
-      try
-      {
+      try {
         bytesRead = inspectRecord(buf, i, offsetInRec);
-        if (bytesRead >= length && buf[lenM1] == toSearch[lenM1] && buf[0] == toSearch[0])
-        {
+        if (bytesRead >= length && buf[lenM1] == toSearch[lenM1] && buf[0] == toSearch[0]) {
           found = i;
-          if (length > 2)
-          {
-            for (int j = 1 ; j < lenM1 ; j++)
-            {
-              if (buf[j] != toSearch[j])
-              {
+          if (length > 2) {
+            for (int j = 1; j < lenM1; j++) {
+              if (buf[j] != toSearch[j]) {
                 found = -1;
                 break;
               }
             }
           }
         }
-      }
-      catch (ArrayIndexOutOfBoundsException e)
-      {
+      } catch (ArrayIndexOutOfBoundsException e) {
       }
     }
     return found;
   }
 
-  private String removePDBFileFromDisk()
-  {
+  private String removePDBFileFromDisk() {
     String path = (String) Launcher.instance.htOpenedAt.get(fileName);
-    if (path == null || path.length() == 0){
+    if (path == null || path.length() == 0) {
       path = System.getProperty("user.dir");
     }
-    if (path == null){
+    if (path == null) {
       path = ".";
     }
 
     java.io.File f = new java.io.File(path, fileName);
-    if (!f.exists())
-    {
+    if (!f.exists()) {
       path = "";
       f = new java.io.File(path, fileName);
       if (!f.exists() && Launcher.instance.getDataPath() != null) // guich@450_: test also with dataPath
@@ -1062,15 +1002,11 @@ public class PDBFile extends Stream
     deleted = true; // guich@400_3
 
     // guich@400_3: if the file was created in the same session it is being deleted, it may not have been written to disk, so we can simply return as if it was created.
-    if (f.exists())
-    {
-      try
-      {
+    if (f.exists()) {
+      try {
         f.delete();
         return path;
-      }
-      catch(SecurityException e)
-      {
+      } catch (SecurityException e) {
         //            throw new totalcross.io.IOException(e.getMessage(), e);
       }
     }
@@ -1107,8 +1043,8 @@ public class PDBFile extends Stream
    * . padding Unused.<br>
    *
    */
-  private byte []appInfoBlock; // guich@200b4: store here the appinfoblock (with the categories)
-  private byte []sortInfoBlock; // guich@200b4
+  private byte[] appInfoBlock; // guich@200b4: store here the appinfoblock (with the categories)
+  private byte[] sortInfoBlock; // guich@200b4
 
   /** The creation date of the database, specified as the number of seconds since
    * 12:00 A.M. on January 1, 1904.
@@ -1151,9 +1087,8 @@ public class PDBFile extends Stream
   private int nextRecordListID;
 
   // created by Mr. Tines to correct the date error
-  private long getNow()
-  {
-    long timeX=new java.util.Date().getTime()/1000; // seconds since 1970
+  private long getNow() {
+    long timeX = new java.util.Date().getTime() / 1000; // seconds since 1970
     // add of 66 years - Mac date is based in # of seconds since 1904
     // Don't forget the leap days!
     timeX += ((66 * 365) + 17) * 24 * 60 * 60;
@@ -1161,53 +1096,51 @@ public class PDBFile extends Stream
   }
 
   // created by Mr. Tines to correct the date error
-  private void doSetDate()
-  {
-    long timeX=getNow();
-    creationDate = (int)timeX;
+  private void doSetDate() {
+    long timeX = getNow();
+    creationDate = (int) timeX;
     modificationDate = creationDate;
     timeX -= 365 * 24 * 60 * 60; // sub 1 year
-    lastBackupDate = (int)timeX; // make sure we will be hotsync'ed!
+    lastBackupDate = (int) timeX; // make sure we will be hotsync'ed!
   }
+
   /** converts the records to a pdb file. @param records a vector of array of bytes */
-  private void toPDB(OutputStream outStream, Vector records, String creatorId, String dbName, String typeId, Vector _attrs) throws totalcross.io.IOException
-  {
+  private void toPDB(OutputStream outStream, Vector records, String creatorId, String dbName, String typeId,
+      Vector _attrs) throws totalcross.io.IOException {
     byte name[] = new byte[32];
     byte type[] = typeId.getBytes();
     byte creator[] = creatorId.getBytes();
 
     // guich@200b4: verifies the db name
     int slash = -1;
-    if ((slash=dbName.lastIndexOf('\\')) != -1 || (slash=dbName.lastIndexOf('/')) != -1){
-      dbName = dbName.substring(slash+1);
+    if ((slash = dbName.lastIndexOf('\\')) != -1 || (slash = dbName.lastIndexOf('/')) != -1) {
+      dbName = dbName.substring(slash + 1);
     }
-    if (dbName.length() > 31){
-      dbName = dbName.substring(0,31);
+    if (dbName.length() > 31) {
+      dbName = dbName.substring(0, 31);
     }
     // copies the db name to inside the array <name>
-    byte []bn = dbName.getBytes();
-    for (int i =0; i < name.length; i++) {
-      name[i] = (i < bn.length)?bn[i]:0;
+    byte[] bn = dbName.getBytes();
+    for (int i = 0; i < name.length; i++) {
+      name[i] = (i < bn.length) ? bn[i] : 0;
     }
 
     int numRecords = records == null ? 0 : records.size(); // guich@tc110_35: delete may call writeCB, which then calls toPDB. but records is nulled by delete.
     ByteArrayStream bas = new ByteArrayStream(8192); // guich@552_19: write the header to a temp bytearray
     DataStream os = new DataStream(bas);
 
-    int offset = 80+numRecords*8;
-    if (appInfoBlock != null)
-    {
+    int offset = 80 + numRecords * 8;
+    if (appInfoBlock != null) {
       appInfoOffset = offset;
       offset += appInfoBlock.length;
     }
-    if (sortInfoBlock != null)
-    {
+    if (sortInfoBlock != null) {
       sortInfoOffset = offset;
       offset += sortInfoBlock.length;
     }
 
     //guich@330_44: commented out -> attributes |= PDBFile.DB_ATTR_BACKUP;
-    modificationDate = (int)getNow();
+    modificationDate = (int) getNow();
 
     // DatabaseHdrType
     os.writeBytes(name);
@@ -1227,56 +1160,47 @@ public class PDBFile extends Stream
     int nextRecordListID = 0;
     os.writeInt(nextRecordListID);
     os.writeShort(numRecords);
-    byte []recUniqueID = {0,0,0}; // let the system create them again
-    for (int i = 0; i < numRecords; i++)
-    {
+    byte[] recUniqueID = { 0, 0, 0 }; // let the system create them again
+    for (int i = 0; i < numRecords; i++) {
       os.writeInt(offset); // LocalChunkID
       if (_attrs == null || i >= _attrs.size()) {
         os.writeByte(0); // attributes
-      }
-      else {
-        os.writeByte(((Byte)_attrs.items[i]).byteValue() & ~0x20); // guich@300_64: disable all busy attributes
+      } else {
+        os.writeByte(((Byte) _attrs.items[i]).byteValue() & ~0x20); // guich@300_64: disable all busy attributes
       }
       // get back the uniqueID if already stored
       os.writeBytes(recUniqueID);
-      int recSize = ((byte [])records.items[i]).length;
-      if (recSize > 65520)
-      {
-        Launcher.print("CAUTION! RECORD "+i+" HAS A SIZE GREATER THAN 65520 AND WILL BE REJECTED BY PALM OS!"); // guich@230_12
+      int recSize = ((byte[]) records.items[i]).length;
+      if (recSize > 65520) {
+        Launcher.print("CAUTION! RECORD " + i + " HAS A SIZE GREATER THAN 65520 AND WILL BE REJECTED BY PALM OS!"); // guich@230_12
       }
       offset += recSize;
     }
     os.writeShort(0); // pad
 
     // AppInfoBlock (guich@200b4)
-    if (appInfoBlock != null){
+    if (appInfoBlock != null) {
       os.writeBytes(appInfoBlock);
     }
 
-    try
-    {
+    try {
       outStream.write(bas.getBuffer(), 0, bas.getPos()); // write the header
-      for (int i = 0; i < numRecords; i++)
-      {
+      for (int i = 0; i < numRecords; i++) {
         outStream.write((byte[]) records.items[i]);
         records.items[i] = null; // guich@552_19: frees some memory
       }
       outStream.close();
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
   }
 
   /** reads a pdb file and returns a vector of records. */
-  private Vector fromPDB(byte[] all, String creatorId, String typeId, Vector _attrs)
-      throws totalcross.io.IOException
-  {
+  private Vector fromPDB(byte[] all, String creatorId, String typeId, Vector _attrs) throws totalcross.io.IOException {
     // ps: i had to read everything to an array because reading one record at a time was reading trash.
     DataStream is = new DataStream(new ByteArrayStream(all));
 
-    if (all.length == 0){
+    if (all.length == 0) {
       throw new totalcross.io.IOException("Invalid or corrupted PDBFile with length 0.");
     }
     // DatabaseHdrType
@@ -1298,8 +1222,7 @@ public class PDBFile extends Stream
     uniqueIDSeed = is.readInt();
     originalModificationNumber = modificationNumber;
 
-    if (all.length >= 8 && new String(all, 0, 8).trim().equalsIgnoreCase("<HTML>"))
-    {
+    if (all.length >= 8 && new String(all, 0, 8).trim().equalsIgnoreCase("<HTML>")) {
       return new Vector(); // return a empty db
     }
 
@@ -1307,32 +1230,32 @@ public class PDBFile extends Stream
     boolean creatorOk = creatorId.equals(new String(creator));
     boolean typeOk = typeId.equals(new String(type));
 
-    if (!creatorOk && !typeOk){
+    if (!creatorOk && !typeOk) {
       throw new totalcross.io.IOException("Database already exists with different creator and type.");
     }
-    if (!creatorOk){
+    if (!creatorOk) {
       throw new totalcross.io.IOException("Database already exists with different creator.");
     }
-    if (!typeOk){
+    if (!typeOk) {
       throw new totalcross.io.IOException("Database already exists with different type.");
     }
 
     // RecordListType
     nextRecordListID = is.readInt();
-    if (nextRecordListID != 0){
-      throw new totalcross.io.IOException("Invalid database file! TotalCross does not support multiple record or resource lists in a Database!!!");
+    if (nextRecordListID != 0) {
+      throw new totalcross.io.IOException(
+          "Invalid database file! TotalCross does not support multiple record or resource lists in a Database!!!");
     }
     int numRecords = is.readUnsignedShort(); // guich@340_48
     // reads the header (meaningless)
-    int recOffsets[] = new int[numRecords+1];
+    int recOffsets[] = new int[numRecords + 1];
     byte recAttributes;
     byte recUniqueID[] = new byte[3];
-    if (_attrs != null){
+    if (_attrs != null) {
       _attrs.removeAllElements();
     }
-    for (int i=0; i < numRecords; i++)
-    {
-      recOffsets[i] = is.readInt();  // offset
+    for (int i = 0; i < numRecords; i++) {
+      recOffsets[i] = is.readInt(); // offset
       recAttributes = is.readByte();
       is.readBytes(recUniqueID);
       if (_attrs != null) {
@@ -1341,42 +1264,38 @@ public class PDBFile extends Stream
     }
     recOffsets[numRecords] = all.length; // add the total size so we can compute the size of each record
 
-    int offset = 80+numRecords*8;
+    int offset = 80 + numRecords * 8;
     int offset2 = recOffsets[0];
     is.skipBytes(2);
 
     // guich@200b4: read the appInfoBlock and sortInfoBlock and store it in a safe place
-    if (appInfoOffset > 0)
-    {
-      int len = sortInfoOffset > 0 ? (sortInfoOffset-offset) : (recOffsets[0]-offset);
+    if (appInfoOffset > 0) {
+      int len = sortInfoOffset > 0 ? (sortInfoOffset - offset) : (recOffsets[0] - offset);
       appInfoBlock = new byte[len];
       is.readBytes(appInfoBlock);
       offset += len;
     }
-    if (sortInfoOffset > 0)
-    {
-      int len = recOffsets[0]-offset;
+    if (sortInfoOffset > 0) {
+      int len = recOffsets[0] - offset;
       sortInfoBlock = new byte[len];
       is.readBytes(sortInfoBlock);
       offset += len;
     }
-    int toSkip = (offset2-offset); // pad - guich@580_3: fixed sf_1432481  - guich@tc112_22: moved to after the app and sort blocks are read
+    int toSkip = (offset2 - offset); // pad - guich@580_3: fixed sf_1432481  - guich@tc112_22: moved to after the app and sort blocks are read
     is.skipBytes(toSkip);
 
     // the records were written in sequence from here
     Vector v = new Vector(numRecords);
-    int size=0;
-    for (int i=0;  i < numRecords; i++)
-    {
-      if (_attrs != null && (( (Byte)_attrs.items[i] ).byteValue() & PDBFile.REC_ATTR_DELETE) != 0) {
+    int size = 0;
+    for (int i = 0; i < numRecords; i++) {
+      if (_attrs != null && (((Byte) _attrs.items[i]).byteValue() & PDBFile.REC_ATTR_DELETE) != 0) {
         _attrs.removeElementAt(i);
-      } else
-      {
-        size = recOffsets[i+1] - recOffsets[i];
+      } else {
+        size = recOffsets[i + 1] - recOffsets[i];
         if (size <= 0) {
-          throw new totalcross.io.IOException("Invalid record "+i+"! Size <= 0 ("+size+")");
+          throw new totalcross.io.IOException("Invalid record " + i + "! Size <= 0 (" + size + ")");
         }
-        byte []bytes = new byte[size];
+        byte[] bytes = new byte[size];
         is.readBytes(bytes);
         v.addElement(bytes);
       }
@@ -1387,14 +1306,10 @@ public class PDBFile extends Stream
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       close();
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
     }
   }
 }

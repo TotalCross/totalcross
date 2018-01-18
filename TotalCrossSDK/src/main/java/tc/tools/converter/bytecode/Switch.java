@@ -9,24 +9,20 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class Switch extends ByteCode
-{
+public class Switch extends ByteCode {
   public int[] jumps;
   public int def; // pc for the "default" instruction. if there's no default, it points to the end of the switch.
   public int paramStackPos;
 
-  public Switch(int paramStackPos)
-  {
+  public Switch(int paramStackPos) {
     this.paramStackPos = paramStackPos;
   }
   /*
    The code below does not work. This sample:
-public class AddressBook
-{
+  public class AddressBook
+  {
     public void onEvent()
     {
       int type = 300;
@@ -41,9 +37,9 @@ public class AddressBook
     }
     private int getActiveTab() {return 1;}
    private void clear() {}
-}
-
-results on this:
+  }
+  
+  results on this:
     public void onEvent()
     {
     //    0    0:sipush          300
@@ -59,8 +55,8 @@ results on this:
     //    9   31:invokespecial   #4   <Method void clear()>
     //   10   34:return
     }
-Which proves that is impossible to find where the switch ends. (marked by *)
-
+  Which proves that is impossible to find where the switch ends. (marked by *)
+  
    public int getPosAfterSwitch()
    {
       // here we scan the code from the first case to the last one and find the farest goto

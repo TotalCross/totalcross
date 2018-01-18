@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.lang.reflect.Array;
@@ -92,9 +91,7 @@ import totalcross.util.concurrent.Lock;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Vector4D<T> extends AbstractList<T>
-implements List<T>, RandomAccess, Cloneable
-{
+public class Vector4D<T> extends AbstractList<T> implements List<T>, RandomAccess, Cloneable {
   /**
    * The internal array used to hold members of a Vector. The elements are
    * in positions 0 through elementCount - 1, and all remaining slots are null.
@@ -122,8 +119,7 @@ implements List<T>, RandomAccess, Cloneable
    * Constructs an empty vector with an initial size of 10, and
    * a capacity increment of 0
    */
-  public Vector4D()
-  {
+  public Vector4D() {
     this(10, 0);
   }
 
@@ -135,8 +131,7 @@ implements List<T>, RandomAccess, Cloneable
    * @throws NullPointerException if c is null
    * @since 1.2
    */
-  public Vector4D(Collection<? extends T> c)
-  {
+  public Vector4D(Collection<? extends T> c) {
     elementCount = c.size();
     elementData = c.toArray(new Object[elementCount]);
   }
@@ -150,9 +145,8 @@ implements List<T>, RandomAccess, Cloneable
    *        increased by when necessary, 0 to double the size
    * @throws IllegalArgumentException if initialCapacity &lt; 0
    */
-  public Vector4D(int initialCapacity, int capacityIncrement)
-  {
-    if (initialCapacity < 0){
+  public Vector4D(int initialCapacity, int capacityIncrement) {
+    if (initialCapacity < 0) {
       throw new IllegalArgumentException();
     }
     elementData = new Object[initialCapacity];
@@ -166,8 +160,7 @@ implements List<T>, RandomAccess, Cloneable
    * @param initialCapacity the initial size of the Vector's internal array
    * @throws IllegalArgumentException if initialCapacity &lt; 0
    */
-  public Vector4D(int initialCapacity)
-  {
+  public Vector4D(int initialCapacity) {
     this(initialCapacity, 0);
   }
 
@@ -182,8 +175,7 @@ implements List<T>, RandomAccess, Cloneable
    * @throws NullPointerException the array is null
    * @see #toArray(Object[])
    */
-  public synchronized void copyInto(Object[] a)
-  {
+  public synchronized void copyInto(Object[] a) {
     System.arraycopy(elementData, 0, a, 0, elementCount);
   }
 
@@ -192,8 +184,7 @@ implements List<T>, RandomAccess, Cloneable
    * than the number of Objects its holding, a new array is constructed
    * that precisely holds the elements. Otherwise this does nothing.
    */
-  public synchronized void trimToSize()
-  {
+  public synchronized void trimToSize() {
     // Don't bother checking for the case where size() == the capacity of the
     // vector since that is a much less likely case; it's more efficient to
     // not do the check and lose a bit of performance in that infrequent case
@@ -213,16 +204,15 @@ implements List<T>, RandomAccess, Cloneable
    *
    * @param minCapacity the desired minimum capacity, negative values ignored
    */
-  public synchronized void ensureCapacity(int minCapacity)
-  {
-    if (elementData.length >= minCapacity){
+  public synchronized void ensureCapacity(int minCapacity) {
+    if (elementData.length >= minCapacity) {
       return;
     }
 
     int newCapacity;
-    if (capacityIncrement <= 0){
+    if (capacityIncrement <= 0) {
       newCapacity = elementData.length * 2;
-    }else {
+    } else {
       newCapacity = elementData.length + capacityIncrement;
     }
 
@@ -241,14 +231,13 @@ implements List<T>, RandomAccess, Cloneable
    * @param newSize The new size of the internal array
    * @throws ArrayIndexOutOfBoundsException if the new size is negative
    */
-  public synchronized void setSize(int newSize)
-  {
+  public synchronized void setSize(int newSize) {
     // Don't bother checking for the case where size() == the capacity of the
     // vector since that is a much less likely case; it's more efficient to
     // not do the check and lose a bit of performance in that infrequent case
     modCount++;
     ensureCapacity(newSize);
-    if (newSize < elementCount){
+    if (newSize < elementCount) {
       Arrays.fill(elementData, newSize, elementCount, null);
     }
     elementCount = newSize;
@@ -260,8 +249,7 @@ implements List<T>, RandomAccess, Cloneable
    *
    * @return capacity of the internal data array
    */
-  public synchronized int capacity()
-  {
+  public synchronized int capacity() {
     return elementData.length;
   }
 
@@ -271,8 +259,7 @@ implements List<T>, RandomAccess, Cloneable
    * @return the number of elements in this Vector
    */
   @Override
-  public synchronized int size()
-  {
+  public synchronized int size() {
     return elementCount;
   }
 
@@ -282,8 +269,7 @@ implements List<T>, RandomAccess, Cloneable
    * @return true if the Vector is empty, false otherwise
    */
   @Override
-  public synchronized boolean isEmpty()
-  {
+  public synchronized boolean isEmpty() {
     return elementCount == 0;
   }
 
@@ -295,22 +281,18 @@ implements List<T>, RandomAccess, Cloneable
    * @see #iterator()
    */
   // No need to synchronize as the Enumeration is not thread-safe!
-  public Enumeration<T> elements()
-  {
-    return new Enumeration<T>()
-    {
+  public Enumeration<T> elements() {
+    return new Enumeration<T>() {
       private int i = 0;
 
       @Override
-      public boolean hasMoreElements()
-      {
+      public boolean hasMoreElements() {
         return i < elementCount;
       }
 
       @Override
       @SuppressWarnings("unchecked")
-      public T nextElement()
-      {
+      public T nextElement() {
         if (i >= elementCount) {
           throw new NoSuchElementException();
         }
@@ -326,8 +308,7 @@ implements List<T>, RandomAccess, Cloneable
    * @return true if the object is contained in this Vector, false otherwise
    */
   @Override
-  public boolean contains(Object elem)
-  {
+  public boolean contains(Object elem) {
     return indexOf(elem, 0) >= 0;
   }
 
@@ -339,8 +320,7 @@ implements List<T>, RandomAccess, Cloneable
    * @return the index of the first occurrence, or -1 if not found
    */
   @Override
-  public int indexOf(Object elem)
-  {
+  public int indexOf(Object elem) {
     return indexOf(elem, 0);
   }
 
@@ -355,10 +335,9 @@ implements List<T>, RandomAccess, Cloneable
    * @return the index of the next occurrence, or -1 if it is not found
    * @throws IndexOutOfBoundsException if index &lt; 0
    */
-  public synchronized int indexOf(Object e, int index)
-  {
+  public synchronized int indexOf(Object e, int index) {
     for (int i = index; i < elementCount; i++) {
-      if (AbstractCollection4D.equals(e, elementData[i])){
+      if (AbstractCollection4D.equals(e, elementData[i])) {
         return i;
       }
     }
@@ -373,8 +352,7 @@ implements List<T>, RandomAccess, Cloneable
    * @return the last index of the object, or -1 if not found
    */
   @Override
-  public int lastIndexOf(Object elem)
-  {
+  public int lastIndexOf(Object elem) {
     return lastIndexOf(elem, elementCount - 1);
   }
 
@@ -388,11 +366,10 @@ implements List<T>, RandomAccess, Cloneable
    * @return the index of the Object if found, -1 otherwise
    * @throws IndexOutOfBoundsException if index &gt;= size()
    */
-  public synchronized int lastIndexOf(Object e, int index)
-  {
+  public synchronized int lastIndexOf(Object e, int index) {
     checkBoundExclusive(index);
     for (int i = index; i >= 0; i--) {
-      if (AbstractCollection4D.equals(e, elementData[i])){
+      if (AbstractCollection4D.equals(e, elementData[i])) {
         return i;
       }
     }
@@ -408,8 +385,7 @@ implements List<T>, RandomAccess, Cloneable
    * @see #get(int)
    */
   @SuppressWarnings("unchecked")
-  public synchronized T elementAt(int index)
-  {
+  public synchronized T elementAt(int index) {
     checkBoundExclusive(index);
     return (T) elementData[index];
   }
@@ -421,9 +397,8 @@ implements List<T>, RandomAccess, Cloneable
    * @throws NoSuchElementException the Vector is empty
    */
   @SuppressWarnings("unchecked")
-  public synchronized T firstElement()
-  {
-    if (elementCount == 0){
+  public synchronized T firstElement() {
+    if (elementCount == 0) {
       throw new NoSuchElementException();
     }
 
@@ -437,9 +412,8 @@ implements List<T>, RandomAccess, Cloneable
    * @throws NoSuchElementException the Vector is empty
    */
   @SuppressWarnings("unchecked")
-  public synchronized T lastElement()
-  {
-    if (elementCount == 0){
+  public synchronized T lastElement() {
+    if (elementCount == 0) {
       throw new NoSuchElementException();
     }
 
@@ -454,8 +428,7 @@ implements List<T>, RandomAccess, Cloneable
    * @throws ArrayIndexOutOfBoundsException the index is out of range
    * @see #set(int, Object)
    */
-  public void setElementAt(T obj, int index)
-  {
+  public void setElementAt(T obj, int index) {
     set(index, obj);
   }
 
@@ -467,8 +440,7 @@ implements List<T>, RandomAccess, Cloneable
    * @throws ArrayIndexOutOfBoundsException index &lt; 0 || index &gt;= size();
    * @see #remove(int)
    */
-  public void removeElementAt(int index)
-  {
+  public void removeElementAt(int index) {
     remove(index);
   }
 
@@ -481,15 +453,13 @@ implements List<T>, RandomAccess, Cloneable
    * @throws ArrayIndexOutOfBoundsException index &lt; 0 || index &gt; size()
    * @see #add(int, Object)
    */
-  public synchronized void insertElementAt(T obj, int index)
-  {
+  public synchronized void insertElementAt(T obj, int index) {
     checkBoundInclusive(index);
-    if (elementCount == elementData.length){
+    if (elementCount == elementData.length) {
       ensureCapacity(elementCount + 1);
     }
     modCount++;
-    System.arraycopy(elementData, index, elementData, index + 1,
-        elementCount - index);
+    System.arraycopy(elementData, index, elementData, index + 1, elementCount - index);
     elementCount++;
     elementData[index] = obj;
   }
@@ -500,9 +470,8 @@ implements List<T>, RandomAccess, Cloneable
    *
    * @param obj the object to add to the Vector
    */
-  public synchronized void addElement(T obj)
-  {
-    if (elementCount == elementData.length){
+  public synchronized void addElement(T obj) {
+    if (elementCount == elementData.length) {
       ensureCapacity(elementCount + 1);
     }
     modCount++;
@@ -518,11 +487,9 @@ implements List<T>, RandomAccess, Cloneable
    * @return true if the Object was in the Vector, false otherwise
    * @see #remove(Object)
    */
-  public synchronized boolean removeElement(Object obj)
-  {
+  public synchronized boolean removeElement(Object obj) {
     int idx = indexOf(obj, 0);
-    if (idx >= 0)
-    {
+    if (idx >= 0) {
       remove(idx);
       return true;
     }
@@ -535,9 +502,8 @@ implements List<T>, RandomAccess, Cloneable
    *
    * @see #clear()
    */
-  public synchronized void removeAllElements()
-  {
-    if (elementCount == 0){
+  public synchronized void removeAllElements() {
+    if (elementCount == 0) {
       return;
     }
 
@@ -553,17 +519,13 @@ implements List<T>, RandomAccess, Cloneable
    * @return the clone of this vector
    */
   @Override
-  public synchronized Object clone()
-  {
-    try
-    {
+  public synchronized Object clone() {
+    try {
       Vector4D clone = (Vector4D) super.clone();
       clone.elementData = new Object[elementData.length];
       Vm.arrayCopy(elementData, 0, clone.elementData, 0, elementData.length);
       return clone;
-    }
-    catch (CloneNotSupportedException ex)
-    {
+    } catch (CloneNotSupportedException ex) {
       throw new RuntimeException(ex.getMessage());
     }
   }
@@ -579,8 +541,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized Object[] toArray()
-  {
+  public synchronized Object[] toArray() {
     Object[] newArray = new Object[elementCount];
     copyInto(newArray);
     return newArray;
@@ -603,12 +564,10 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized <S> S[] toArray(S[] a)
-  {
-    if (a.length < elementCount){
-      a = (S[]) Array.newInstance(a.getClass().getComponentType(),
-          elementCount);
-    }else if (a.length > elementCount){
+  public synchronized <S> S[] toArray(S[] a) {
+    if (a.length < elementCount) {
+      a = (S[]) Array.newInstance(a.getClass().getComponentType(), elementCount);
+    } else if (a.length > elementCount) {
       a[elementCount] = null;
     }
     System.arraycopy(elementData, 0, a, 0, elementCount);
@@ -624,8 +583,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public T get(int index)
-  {
+  public T get(int index) {
     return elementAt(index);
   }
 
@@ -641,8 +599,7 @@ implements List<T>, RandomAccess, Cloneable
    */
   @Override
   @SuppressWarnings("unchecked")
-  public synchronized T set(int index, T element)
-  {
+  public synchronized T set(int index, T element) {
     checkBoundExclusive(index);
     T temp = (T) elementData[index];
     elementData[index] = element;
@@ -657,8 +614,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public boolean add(T o)
-  {
+  public boolean add(T o) {
     addElement(o);
     return true;
   }
@@ -672,8 +628,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     return removeElement(o);
   }
 
@@ -687,8 +642,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public void add(int index, T element)
-  {
+  public void add(int index, T element) {
     insertElementAt(element, index);
   }
 
@@ -702,15 +656,13 @@ implements List<T>, RandomAccess, Cloneable
    */
   @Override
   @SuppressWarnings("unchecked")
-  public synchronized T remove(int index)
-  {
+  public synchronized T remove(int index) {
     checkBoundExclusive(index);
     T temp = (T) elementData[index];
     modCount++;
     elementCount--;
-    if (index < elementCount){
-      System.arraycopy(elementData, index + 1, elementData, index,
-          elementCount - index);
+    if (index < elementCount) {
+      System.arraycopy(elementData, index + 1, elementData, index, elementCount - index);
     }
     elementData[elementCount] = null;
     return temp;
@@ -720,8 +672,7 @@ implements List<T>, RandomAccess, Cloneable
    * Clears all elements in the Vector and sets its size to 0.
    */
   @Override
-  public void clear()
-  {
+  public void clear() {
     removeAllElements();
   }
 
@@ -734,8 +685,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized boolean containsAll(Collection<?> c)
-  {
+  public synchronized boolean containsAll(Collection<?> c) {
     // Here just for the sychronization.
     return super.containsAll(c);
   }
@@ -751,8 +701,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized boolean addAll(Collection<? extends T> c)
-  {
+  public synchronized boolean addAll(Collection<? extends T> c) {
     return addAll(elementCount, c);
   }
 
@@ -765,8 +714,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized boolean removeAll(Collection<?> c)
-  {
+  public synchronized boolean removeAll(Collection<?> c) {
     // The NullPointerException is thrown implicitly when the Vector
     // is not empty and c is null. The RI allows null arguments when
     // the vector is empty. See Mauve test:
@@ -775,17 +723,17 @@ implements List<T>, RandomAccess, Cloneable
     int i;
     int j;
     for (i = 0; i < elementCount; i++) {
-      if (c.contains(elementData[i])){
+      if (c.contains(elementData[i])) {
         break;
       }
     }
-    if (i == elementCount){
+    if (i == elementCount) {
       return false;
     }
 
     modCount++;
     for (j = i++; i < elementCount; i++) {
-      if (! c.contains(elementData[i])){
+      if (!c.contains(elementData[i])) {
         elementData[j++] = elementData[i];
       }
     }
@@ -802,8 +750,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized boolean retainAll(Collection<?> c)
-  {
+  public synchronized boolean retainAll(Collection<?> c) {
     // The NullPointerException is thrown implicitly when the Vector
     // is not empty and c is null. The RI allows null arguments when
     // the vector is empty. See Mauve test:
@@ -812,17 +759,17 @@ implements List<T>, RandomAccess, Cloneable
     int i;
     int j;
     for (i = 0; i < elementCount; i++) {
-      if (! c.contains(elementData[i])){
+      if (!c.contains(elementData[i])) {
         break;
       }
     }
-    if (i == elementCount){
+    if (i == elementCount) {
       return false;
     }
 
     modCount++;
     for (j = i++; i < elementCount; i++) {
-      if (c.contains(elementData[i])){
+      if (c.contains(elementData[i])) {
         elementData[j++] = elementData[i];
       }
     }
@@ -842,8 +789,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized boolean addAll(int index, Collection<? extends T> c)
-  {
+  public synchronized boolean addAll(int index, Collection<? extends T> c) {
     checkBoundInclusive(index);
     Iterator<? extends T> itr = c.iterator();
     int csize = c.size();
@@ -851,12 +797,11 @@ implements List<T>, RandomAccess, Cloneable
     modCount++;
     ensureCapacity(elementCount + csize);
     int end = index + csize;
-    if (elementCount > 0 && index != elementCount){
-      System.arraycopy(elementData, index,
-          elementData, end, elementCount - index);
+    if (elementCount > 0 && index != elementCount) {
+      System.arraycopy(elementData, index, elementData, end, elementCount - index);
     }
     elementCount += csize;
-    for ( ; index < end; index++) {
+    for (; index < end; index++) {
       elementData[index] = itr.next();
     }
     return (csize > 0);
@@ -870,8 +815,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized boolean equals(Object o)
-  {
+  public synchronized boolean equals(Object o) {
     // Here just for the sychronization.
     return super.equals(o);
   }
@@ -883,8 +827,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized int hashCode()
-  {
+  public synchronized int hashCode() {
     // Here just for the sychronization.
     return super.hashCode();
   }
@@ -896,8 +839,7 @@ implements List<T>, RandomAccess, Cloneable
    * @return the String representation of this Vector
    */
   @Override
-  public synchronized String toString()
-  {
+  public synchronized String toString() {
     // Here just for the sychronization.
     return super.toString();
   }
@@ -922,8 +864,7 @@ implements List<T>, RandomAccess, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized List<T> subList(int fromIndex, int toIndex)
-  {
+  public synchronized List<T> subList(int fromIndex, int toIndex) {
     List<T> sub = super.subList(fromIndex, toIndex);
     // We must specify the correct object to synchronize upon, hence the
     // use of a non-public API
@@ -941,19 +882,15 @@ implements List<T>, RandomAccess, Cloneable
   // This does not need to be synchronized, because it is only called through
   // clear() of a sublist, and clear() had already synchronized.
   @Override
-  protected void removeRange(int fromIndex, int toIndex)
-  {
+  protected void removeRange(int fromIndex, int toIndex) {
     int change = toIndex - fromIndex;
-    if (change > 0)
-    {
+    if (change > 0) {
       modCount++;
-      System.arraycopy(elementData, toIndex, elementData, fromIndex,
-          elementCount - toIndex);
+      System.arraycopy(elementData, toIndex, elementData, fromIndex, elementCount - toIndex);
       int save = elementCount;
       elementCount -= change;
       Arrays.fill(elementData, elementCount, save, null);
-    }
-    else if (change < 0){
+    } else if (change < 0) {
       throw new IndexOutOfBoundsException();
     }
   }
@@ -964,12 +901,11 @@ implements List<T>, RandomAccess, Cloneable
    * @param index the index to check
    * @throws ArrayIndexOutOfBoundsException if index &gt; size
    */
-  private void checkBoundInclusive(int index)
-  {
+  private void checkBoundInclusive(int index) {
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException
     // with no effort on our part.
-    if (index > elementCount){
+    if (index > elementCount) {
       raiseBoundsError(index, " > ");
     }
   }
@@ -980,12 +916,11 @@ implements List<T>, RandomAccess, Cloneable
    * @param index the index to check
    * @throws ArrayIndexOutOfBoundsException if index &gt;= size
    */
-  private void checkBoundExclusive(int index)
-  {
+  private void checkBoundExclusive(int index) {
     // Implementation note: we do not check for negative ranges here, since
     // use of a negative index will cause an ArrayIndexOutOfBoundsException
     // with no effort on our part.
-    if (index >= elementCount){
+    if (index >= elementCount) {
       raiseBoundsError(index, " >= ");
     }
   }
@@ -997,8 +932,7 @@ implements List<T>, RandomAccess, Cloneable
    * @param operator the operator to include in the error message
    * @throws IndexOutOfBoundsException unconditionally
    */
-  private void raiseBoundsError(int index, String operator)
-  {
+  private void raiseBoundsError(int index, String operator) {
     // Implementaion note: put in a separate method to make the JITs job easier
     // (separate common from uncommon code at method boundaries when trivial to
     // do so).

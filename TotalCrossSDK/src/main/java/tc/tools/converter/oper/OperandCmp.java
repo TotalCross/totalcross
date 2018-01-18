@@ -9,16 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandCmp extends Operand
-{
+public class OperandCmp extends Operand {
   public Operand v1, v2;
 
-  public OperandCmp(Operand v1, Operand v2)
-  {
+  public OperandCmp(Operand v1, Operand v2) {
     super(opr_cmp);
     this.v1 = v1;
     this.v2 = v2;

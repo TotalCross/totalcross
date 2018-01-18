@@ -9,28 +9,22 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.ir.Instruction;
 
 import tc.tools.converter.tclass.TCCode;
 import totalcross.util.Vector;
 
-public class Dims extends Params
-{
-  public Dims(int line, int d1, int d2, int d3, int d4)
-  {
+public class Dims extends Params {
+  public Dims(int line, int d1, int d2, int d3, int d4) {
     super(line, d1, d2, d3, d4);
   }
 
-  public Dims(int line)
-  {
+  public Dims(int line) {
     super(line);
   }
 
   @Override
-  public void toTCCode(Vector vcode)
-  {
+  public void toTCCode(Vector vcode) {
     TCCode tc = new TCCode(line);
     tc.len = 0;
     tc.dims__dim1(typeOfParam1 != type_Constant ? param1 : param1 + 65);

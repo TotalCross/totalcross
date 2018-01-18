@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.scape;
 
 import totalcross.game.Sprite;
@@ -25,16 +23,17 @@ import totalcross.ui.gfx.Color;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 
-public class Ball extends Sprite
-{
+public class Ball extends Sprite {
   private int _regionMinx;
   private int _regionMiny;
   private int _regionMaxx;
   private int _regionMaxy;
 
-  public Ball() throws ImageException, IOException
-  {
-    super(new Image("tc/samples/game/scape/ball.png").getSmoothScaledInstance(26*Math.min(Settings.screenWidth,Settings.screenHeight)/320*7, 26*Math.min(Settings.screenWidth,Settings.screenHeight)/320),
+  public Ball() throws ImageException, IOException {
+    super(
+        new Image("tc/samples/game/scape/ball.png").getSmoothScaledInstance(
+            26 * Math.min(Settings.screenWidth, Settings.screenHeight) / 320 * 7,
+            26 * Math.min(Settings.screenWidth, Settings.screenHeight) / 320),
         7, Color.WHITE, Scape.SPRITE_BKGD_SAVING, null);
 
     this.doClip = false;
@@ -47,8 +46,7 @@ public class Ball extends Sprite
     _regionMaxy = regionMaxy;
   }
 
-  public void reduceZone(int size)
-  {
+  public void reduceZone(int size) {
     regionMinx = _regionMinx + size;
     regionMiny = _regionMiny + size;
     regionMaxx = _regionMaxx - size;
@@ -56,19 +54,16 @@ public class Ball extends Sprite
   }
 
   @Override
-  public void show()
-  {
+  public void show() {
     image.nextFrame();
     super.show();
   }
 
-  public boolean place(int x, int y, boolean doValidate)
-  {
+  public boolean place(int x, int y, boolean doValidate) {
     return setPos(xpos = x, ypos = y, doValidate);
   }
 
-  public boolean move(int dx, int dy)
-  {
+  public boolean move(int dx, int dy) {
     return setPos(xpos += dx, ypos += dy, true);
   }
 

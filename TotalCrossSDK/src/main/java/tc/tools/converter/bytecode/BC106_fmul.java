@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC106_fmul extends Arithmetic
-{
-  public BC106_fmul()
-  {
-    super(-1,-2,-1,FLOAT);
+public class BC106_fmul extends Arithmetic {
+  public BC106_fmul() {
+    super(-1, -2, -1, FLOAT);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-2].asDouble *= stack[stackPtr-1].asDouble;
+  public void exec() {
+    stack[stackPtr - 2].asDouble *= stack[stackPtr - 1].asDouble;
   }
 }

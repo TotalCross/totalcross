@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
 
 import totalcross.io.Stream;
@@ -137,46 +135,41 @@ import totalcross.sys.Vm;
  * "&lt;foo>&lt;bar>opop&lt;/foo>" is syntactically valid. <BR/> As
  * a result, a Tokenizer can work on document fragments.
  */
-public class XmlTokenizer
-{
-  private int               ofsStart;
-  private int               ofsCur;
-  private int               ofsEnd;
-  private int               readPos;
-  private int               state;
-  private int               substate;
-  private byte[]            endTagToSkipTo;
-  private int               ixEndTagToSkipTo;
-  private byte              quote;
-  private boolean           strictlyXml;
-  private boolean           resolveCharRef;
+public class XmlTokenizer {
+  private int ofsStart;
+  private int ofsCur;
+  private int ofsEnd;
+  private int readPos;
+  private int state;
+  private int substate;
+  private byte[] endTagToSkipTo;
+  private int ixEndTagToSkipTo;
+  private byte quote;
+  private boolean strictlyXml;
+  private boolean resolveCharRef;
 
   // XML Predefined Named References
-  private static final byte chrRef[][]     =
-    {
-        {(byte) '<', (byte) 'l', (byte) 't'},
-        {(byte) '>', (byte) 'g', (byte) 't'}, {(byte) '&', (byte) 'a', (byte) 'm', (byte) 'p'},
-        {(byte) '\'', (byte) 'a', (byte) 'p', (byte) 'o', (byte) 's'},
-        {(byte) '"', (byte) 'q', (byte) 'u', (byte) 'o', (byte) 't'}
-    };
+  private static final byte chrRef[][] = { { (byte) '<', (byte) 'l', (byte) 't' },
+      { (byte) '>', (byte) 'g', (byte) 't' }, { (byte) '&', (byte) 'a', (byte) 'm', (byte) 'p' },
+      { (byte) '\'', (byte) 'a', (byte) 'p', (byte) 'o', (byte) 's' },
+      { (byte) '"', (byte) 'q', (byte) 'u', (byte) 'o', (byte) 't' } };
 
   // Was class XmlByteType.  Moved here for optim and footprint.
   // (no one but the Tokenizer is supposed to use this class!)
-  private static final byte is[]           = new byte[256];
-  private static final byte ISNAMESTART    = 1 << 0;
+  private static final byte is[] = new byte[256];
+  private static final byte ISNAMESTART = 1 << 0;
   private static final byte ISNAMEFOLLOWER = 1 << 1;
-  private static final byte ISSPACE        = 1 << 2;
-  private static final byte ISQUOTE        = 1 << 3;
-  private static final byte ISCONTENTDLM   = 1 << 4;
-  private static final byte ISENDTAGDLM    = 1 << 5;
+  private static final byte ISSPACE = 1 << 2;
+  private static final byte ISQUOTE = 1 << 3;
+  private static final byte ISCONTENTDLM = 1 << 4;
+  private static final byte ISENDTAGDLM = 1 << 5;
   private static final byte ISENDREFERENCE = 1 << 6;
 
-  static
-  {
+  static {
     byte isNameStartOrFollower = (byte) (ISNAMESTART | ISNAMEFOLLOWER);
-    Convert.fill(is, 'a', 'z'+1, isNameStartOrFollower); 
-    Convert.fill(is, 'A', 'Z'+1, isNameStartOrFollower); 
-    Convert.fill(is, '0', '9'+1, ISNAMEFOLLOWER); 
+    Convert.fill(is, 'a', 'z' + 1, isNameStartOrFollower);
+    Convert.fill(is, 'A', 'Z' + 1, isNameStartOrFollower);
+    Convert.fill(is, '0', '9' + 1, ISNAMEFOLLOWER);
     is['_'] = isNameStartOrFollower;
     is[':'] = isNameStartOrFollower;
     is['-'] = ISNAMEFOLLOWER;
@@ -194,8 +187,7 @@ public class XmlTokenizer
     is[';'] = ISENDREFERENCE;
   }
 
-  protected XmlTokenizer()
-  {
+  protected XmlTokenizer() {
     resolveCharRef = true;
   }
 
@@ -210,8 +202,7 @@ public class XmlTokenizer
    *           number of bytes to tokenize
    * @exception SyntaxException
    */
-  public final void tokenize(byte input[], int offset, int count) throws SyntaxException
-  {
+  public final void tokenize(byte input[], int offset, int count) throws SyntaxException {
     ofsStart = 0;
     ofsCur = offset;
     ofsEnd = count;
@@ -229,8 +220,7 @@ public class XmlTokenizer
    *           byte array to tokenize
    * @exception SyntaxException
    */
-  public final void tokenize(byte input[]) throws SyntaxException
-  {
+  public final void tokenize(byte input[]) throws SyntaxException {
     tokenize(input, 0, input.length);
   }
 
@@ -242,8 +232,7 @@ public class XmlTokenizer
    * @exception SyntaxException
    * @throws totalcross.io.IOException
    */
-  public final void tokenize(Stream input) throws SyntaxException, totalcross.io.IOException
-  {
+  public final void tokenize(Stream input) throws SyntaxException, totalcross.io.IOException {
     byte buffer[] = new byte[1024];
     tokenize(input, buffer, 0, input.readBytes(buffer, 0, buffer.length), 0);
   }
@@ -268,39 +257,31 @@ public class XmlTokenizer
    * @exception SyntaxException
    * @throws totalcross.io.IOException
    */
-  public final void tokenize(Stream input, byte[] buffer, int start, int end, int pos) throws SyntaxException,
-  totalcross.io.IOException
-  {
+  public final void tokenize(Stream input, byte[] buffer, int start, int end, int pos)
+      throws SyntaxException, totalcross.io.IOException {
     ofsStart = start;
     ofsCur = start;
     ofsEnd = end;
     readPos = pos;
     state = 0;
     foundStartOfInput(buffer, 0, ofsEnd);
-    while (ofsCur < ofsEnd)
-    {
+    while (ofsCur < ofsEnd) {
       tokenizeBytes(buffer); // returns when ofsCur == ofsEnd
-      if (ofsEnd == buffer.length)
-      { 
+      if (ofsEnd == buffer.length) {
         // no more room
-        if (ofsStart > 0)
-        { 
+        if (ofsStart > 0) {
           // tidy is still possible
           Vm.arrayCopy(buffer, ofsStart, buffer, 0, ofsEnd - ofsStart);
           readPos += ofsStart;
           ofsCur -= ofsStart;
           ofsStart = 0;
-        }
-        else if (((state == 10) || (state == 22)) && (ofsCur > 0))
-        { 
+        } else if (((state == 10) || (state == 22)) && (ofsCur > 0)) {
           // "Data" mode: flush
           foundCharacterData(buffer, 0, ofsCur);
           Vm.arrayCopy(buffer, 0, buffer, 0, ofsEnd - ofsCur);
           readPos += ofsCur;
           ofsCur = ofsStart = 0;
-        }
-        else
-        { 
+        } else {
           // nothing else to do than to extend
           byte oldBuffer[] = buffer;
           int newSize = oldBuffer.length * 15 / 10; // guich@510_17: instead of double, grow 50%...
@@ -330,21 +311,14 @@ public class XmlTokenizer
    * @return the resulting character, or '&#x5C;uffff' (not a unicode
    *         character) if the conversion could not be done
    */
-  public static final char resolveCharacterReference(byte input[], int offset, int count)
-  {
-    if ((count > 1) && (input[offset] == '#'))
-    {
-      if ((input[++offset] == 'x') || (input[offset] == 'X'))
-      {
+  public static final char resolveCharacterReference(byte input[], int offset, int count) {
+    if ((count > 1) && (input[offset] == '#')) {
+      if ((input[++offset] == 'x') || (input[offset] == 'X')) {
         return hex2char(input, offset + 1, count - 2);
-      }
-      else
-      {
+      } else {
         return dec2char(input, offset, count - 1);
       }
-    }
-    else
-    {
+    } else {
       return ref2char(input, offset, count);
     }
   }
@@ -356,8 +330,7 @@ public class XmlTokenizer
    * @return the absolute offset of the data parameters of the currently
    *         reported event.
    */
-  public final int getAbsoluteOffset()
-  {
+  public final int getAbsoluteOffset() {
     return ofsStart + readPos;
   }
 
@@ -384,14 +357,11 @@ public class XmlTokenizer
    * @param count
    *           number of relevant bytes
    */
-  protected final void setCdataContents(byte input[], int offset, int count)
-  {
+  protected final void setCdataContents(byte input[], int offset, int count) {
     endTagToSkipTo = new byte[count];
-    for (int i = 0; i < count; ++i)
-    {
+    for (int i = 0; i < count; ++i) {
       byte b = input[offset + i];
-      if ('a' <= b)
-      {
+      if ('a' <= b) {
         b -= ('a' - 'A'); // fast toUpper
       }
       endTagToSkipTo[i] = b;
@@ -409,8 +379,7 @@ public class XmlTokenizer
    * a <code>P</code> element is named <code>PCDATA</code> (Parsed
    * Character Data)
    */
-  public final boolean isDataCDATA()
-  {
+  public final boolean isDataCDATA() {
     return (endTagToSkipTo != null);
   }
 
@@ -423,8 +392,7 @@ public class XmlTokenizer
    *           if true, set the strict XML mode; if false, allows HTML
    *           constructs.
    */
-  public final void setStrictlyXml(boolean toSet)
-  {
+  public final void setStrictlyXml(boolean toSet) {
     strictlyXml = toSet;
   }
 
@@ -445,8 +413,7 @@ public class XmlTokenizer
    *           boolean: if <code>true</code> automatic resolution of
    *           references is turned off, otherwise, it is turned on.
    */
-  public final void disableReferenceResolution(boolean disable)
-  {
+  public final void disableReferenceResolution(boolean disable) {
     resolveCharRef = !disable;
   }
 
@@ -464,8 +431,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes to be tokenized
    */
-  protected void foundStartOfInput(byte input[], int offset, int count)
-  {
+  protected void foundStartOfInput(byte input[], int offset, int count) {
   }
 
   /**
@@ -480,8 +446,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the tag name is made of
    */
-  protected void foundStartTagName(byte input[], int offset, int count)
-  {
+  protected void foundStartTagName(byte input[], int offset, int count) {
   }
 
   /**
@@ -496,8 +461,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the tag name is made of
    */
-  protected void foundEndTagName(byte input[], int offset, int count)
-  {
+  protected void foundEndTagName(byte input[], int offset, int count) {
   }
 
   /**
@@ -519,8 +483,7 @@ public class XmlTokenizer
    * </PRE>
    *
    */
-  protected void foundEndEmptyTag()
-  {
+  protected void foundEndEmptyTag() {
   }
 
   /**
@@ -535,8 +498,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the character data content is made of
    */
-  protected void foundCharacterData(byte input[], int offset, int count)
-  {
+  protected void foundCharacterData(byte input[], int offset, int count) {
   }
 
   /**
@@ -549,8 +511,7 @@ public class XmlTokenizer
    *           is set to '&#x5C;uffff', which is not a unicode character.
    * @see XmlTokenizer#foundReference(byte[],int,int)
    */
-  protected void foundCharacter(char charFound)
-  {
+  protected void foundCharacter(char charFound) {
   }
 
   /**
@@ -566,8 +527,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the attribute name is made of
    */
-  protected void foundAttributeName(byte input[], int offset, int count)
-  {
+  protected void foundAttributeName(byte input[], int offset, int count) {
   }
 
   /**
@@ -586,8 +546,7 @@ public class XmlTokenizer
    *           delimiter that started the attribute value (' or "). '\0' if
    *           none
    */
-  protected void foundAttributeValue(byte input[], int offset, int count, byte dlm)
-  {
+  protected void foundAttributeValue(byte input[], int offset, int count, byte dlm) {
   }
 
   /**
@@ -604,8 +563,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the comment is made of
    */
-  protected void foundComment(byte input[], int offset, int count)
-  {
+  protected void foundComment(byte input[], int offset, int count) {
   }
 
   /**
@@ -623,8 +581,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the processing instruction is made of
    */
-  protected void foundProcessingInstruction(byte input[], int offset, int count)
-  {
+  protected void foundProcessingInstruction(byte input[], int offset, int count) {
   }
 
   /**
@@ -642,8 +599,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the declaration is made of
    */
-  protected void foundDeclaration(byte input[], int offset, int count)
-  {
+  protected void foundDeclaration(byte input[], int offset, int count) {
   }
 
   /**
@@ -704,8 +660,7 @@ public class XmlTokenizer
    *           number of bytes the reference name is made of
    * @see XmlTokenizer#setStrictlyXml(boolean toSet)
    */
-  protected void foundReference(byte input[], int offset, int count)
-  {
+  protected void foundReference(byte input[], int offset, int count) {
   }
 
   /**
@@ -722,8 +677,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes the invalidData is made of
    */
-  protected void foundInvalidData(byte input[], int offset, int count)
-  {
+  protected void foundInvalidData(byte input[], int offset, int count) {
   }
 
   /**
@@ -735,8 +689,7 @@ public class XmlTokenizer
    * @param count
    *           number of bytes parsed
    */
-  protected void foundEndOfInput(int count)
-  {
+  protected void foundEndOfInput(int count) {
   }
 
   /**
@@ -747,212 +700,144 @@ public class XmlTokenizer
    *           byte array to parse
    * @exception SyntaxException
    */
-  private void tokenizeBytes(byte input[]) throws SyntaxException
-  {
-    while (ofsCur < ofsEnd)
-    {
+  private void tokenizeBytes(byte input[]) throws SyntaxException {
+    while (ofsCur < ofsEnd) {
       int ch = (int) input[ofsCur] & 0xFF;
-      switch (state)
-      {
+      switch (state) {
       case 0:
         ofsStart = ofsCur;
-        if (endTagToSkipTo != null)
-        {
+        if (endTagToSkipTo != null) {
           state = 22;
           continue; // same ofsCur!!! it can start </script>
-        }
-        else if (ch == '<')
-        {
+        } else if (ch == '<') {
           state = 1;
-        }
-        else if (ch == '&')
-        {
+        } else if (ch == '&') {
           state = 11;
-        }
-        else
-        {
+        } else {
           state = 10;
         }
         break;
       case 1:
-        if ((is[ch] & ISNAMESTART) != 0)
-        {
+        if ((is[ch] & ISNAMESTART) != 0) {
           state = 2;
-        }
-        else if (ch == '/')
-        {
+        } else if (ch == '/') {
           state = 12;
-        }
-        else if (ch == '!')
-        {
+        } else if (ch == '!') {
           state = 16;
-        }
-        else if (ch == '?')
-        {
+        } else if (ch == '?') {
           state = 20;
           substate = 0; // so we wait for "?>"
-        }
-        else if (!strictlyXml)
-        {
+        } else if (!strictlyXml) {
           state = 10; // recovery: process "<$xxx" as data
-        }
-        else
-        {
+        } else {
           endTokenize(input); // strictly XML: give up
         }
         break;
       case 2:
-        while ((is[ch] & ISNAMEFOLLOWER) != 0)
-        {
+        while ((is[ch] & ISNAMEFOLLOWER) != 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if (ch == '>')
-        {
+        if (ch == '>') {
           state = 0;
-        }
-        else if (ch == '/')
-        {
+        } else if (ch == '/') {
           state = 9;
-        }
-        else if ((is[ch] & ISSPACE) != 0)
-        {
+        } else if ((is[ch] & ISSPACE) != 0) {
           state = 3;
-        }
-        else if (!strictlyXml)
-        { 
+        } else if (!strictlyXml) {
           // <ABC$xxx
           state = 10; // recovery: process "<ABC$xxx" as data
           break;
-        }
-        else
-        {
+        } else {
           endTokenize(input); // strictly XML: give up
         }
         foundStartTagName(input, ofsStart + 1, ofsCur - ofsStart - 1);
         break;
       case 3:
-        while ((is[ch] & ISSPACE) != 0)
-        {
+        while ((is[ch] & ISSPACE) != 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if (ch == '>')
-        {
+        if (ch == '>') {
           state = 0;
-        }
-        else if (ch == '/')
-        {
+        } else if (ch == '/') {
           state = 9;
-        }
-        else if ((is[ch] & ISNAMESTART) != 0)
-        {
+        } else if ((is[ch] & ISNAMESTART) != 0) {
           ofsStart = ofsCur;
           state = 4;
-        }
-        else
-        {
+        } else {
           state = 21; // possible recovery: skip to TAGC
         }
         break;
       case 4:
-        while ((is[ch] & ISNAMEFOLLOWER) != 0)
-        {
+        while ((is[ch] & ISNAMEFOLLOWER) != 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if ((is[ch] & ISSPACE) != 0)
-        {
+        if ((is[ch] & ISSPACE) != 0) {
           state = 5;
-        }
-        else if (ch == '=')
-        {
+        } else if (ch == '=') {
           state = 6;
-        }
-        else if (!strictlyXml && (ch == '>'))
-        {
+        } else if (!strictlyXml && (ch == '>')) {
           state = 0; // <list compact> allowed in HTML
-        }
-        else
-        {
+        } else {
           state = 21; // possible recovery: skip to TAGC
           break;
         }
         foundAttributeName(input, ofsStart, ofsCur - ofsStart);
         break;
       case 5:
-        while ((is[ch] & ISSPACE) != 0)
-        {
+        while ((is[ch] & ISSPACE) != 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if (ch == '=')
-        {
+        if (ch == '=') {
           state = 6;
-        }
-        else if (!strictlyXml)
-        {
-          if (ch == '>')
-          {
+        } else if (!strictlyXml) {
+          if (ch == '>') {
             state = 0; // <list compact > allowed in HTML
-          }
-          else if ((is[ch] & ISNAMESTART) != 0)
-          {
+          } else if ((is[ch] & ISNAMESTART) != 0) {
             ofsStart = ofsCur;
             state = 4; // <list compact simple> allowed in HTML
-          }
-          else
-          {
+          } else {
             state = 21; // possible recovery: skip to TAGC
           }
-        }
-        else
-        {
+        } else {
           state = 21; // possible recovery: skip to TAGC
         }
         break;
       case 6:
-        while ((is[ch] & ISSPACE) != 0)
-        {
+        while ((is[ch] & ISSPACE) != 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if ((is[ch] & ISQUOTE) != 0)
-        {
+        if ((is[ch] & ISQUOTE) != 0) {
           quote = (byte) ch;
           ofsStart = ofsCur;
           state = 7;
-        }
-        else if (!strictlyXml)
-        {
-          if (ch == '>')
-          {
+        } else if (!strictlyXml) {
+          if (ch == '>') {
             state = 0;
-          }
-          else
-          {
+          } else {
             ofsStart = ofsCur;
             state = 15;
           }
-        }
-        else
-        {
+        } else {
           endTokenize(input); // strictly XML: give up
         }
         break;
       case 7:
-        while (ch != quote)
-        {
+        while (ch != quote) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
@@ -963,183 +848,132 @@ public class XmlTokenizer
         state = 8;
         break;
       case 8:
-        if (ch == '>')
-        {
+        if (ch == '>') {
           state = 0;
-        }
-        else if (ch == '/')
-        {
+        } else if (ch == '/') {
           state = 9;
-        }
-        else if ((is[ch] & ISSPACE) != 0)
-        {
+        } else if ((is[ch] & ISSPACE) != 0) {
           state = 3;
-        }
-        else if ((is[ch] & ISNAMESTART) != 0)
-        {
+        } else if ((is[ch] & ISNAMESTART) != 0) {
           ofsStart = ofsCur;
           state = 4;
-        }
-        else
-        {
+        } else {
           state = 21; // possible recovery: skip to TAGC
         }
         break;
       case 9:
-        if (ch != '>')
-        {
+        if (ch != '>') {
           state = 21; // possible recovery: skip to TAGC
-        }
-        else
-        {
+        } else {
           foundEndEmptyTag();
           state = 0;
         }
         break;
       case 10:
-        while ((is[ch] & ISCONTENTDLM) == 0)
-        {
+        while ((is[ch] & ISCONTENTDLM) == 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if (ofsCur > ofsStart)
-        {
+        if (ofsCur > ofsStart) {
           foundCharacterData(input, ofsStart, ofsCur - ofsStart);
         }
         ofsStart = ofsCur;
-        if (ch == '<')
-        {
+        if (ch == '<') {
           state = 1;
-        }
-        else
-        {
+        } else {
           state = 11;
         }
         break;
       case 11:
-        while ((is[ch] & (ISCONTENTDLM | ISSPACE | ISENDREFERENCE)) == 0)
-        {
+        while ((is[ch] & (ISCONTENTDLM | ISSPACE | ISENDREFERENCE)) == 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
         tellReference(input, ofsStart + 1, ofsCur - ofsStart - 1);
-        if (ch == ';')
-        {
+        if (ch == ';') {
           ofsStart = ofsCur + 1; // data starts at next byte
           state = 10;
-        }
-        else if (!strictlyXml)
-        {
+        } else if (!strictlyXml) {
           ofsStart = ofsCur;
-          if (ch == '<')
-          {
+          if (ch == '<') {
             state = 1;
-          }
-          else if (ch != '&')
-          { 
+          } else if (ch != '&') {
             // spaces (else '&' again, stay here)
             state = 10;
           }
-        }
-        else
-        {
+        } else {
           endTokenize(input); // strictly XML: give up
         }
         break;
       case 12:
-        if ((is[ch] & ISNAMESTART) != 0)
-        {
+        if ((is[ch] & ISNAMESTART) != 0) {
           state = 13;
-        }
-        else if (!strictlyXml)
-        {
+        } else if (!strictlyXml) {
           state = 10; // recovery: process "</$xxx" as data
-        }
-        else
-        {
+        } else {
           endTokenize(input); // strictly XML: give up
         }
         break;
       case 13:
-        while ((is[ch] & ISNAMEFOLLOWER) != 0)
-        {
+        while ((is[ch] & ISNAMEFOLLOWER) != 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if (ch == '>')
-        {
+        if (ch == '>') {
           state = 0;
-        }
-        else if ((is[ch] & ISSPACE) != 0)
-        {
+        } else if ((is[ch] & ISSPACE) != 0) {
           state = 14;
-        }
-        else if (!strictlyXml)
-        {
+        } else if (!strictlyXml) {
           state = 10; // recovery: process "</xxx$" as data
           break;
-        }
-        else
-        {
+        } else {
           endTokenize(input); // strictly XML: give up
         }
         foundEndTagName(input, ofsStart + 2, ofsCur - ofsStart - 2);
         break;
       case 14:
-        while ((is[ch] & ISSPACE) != 0)
-        {
+        while ((is[ch] & ISSPACE) != 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
-        if (ch == '>')
-        {
+        if (ch == '>') {
           state = 0;
-        }
-        else
-        {
+        } else {
           state = 21; // possible recovery: skip to TAGC
         }
         break;
       case 15: // !strictlyXml
-        while ((is[ch] & (ISSPACE | ISENDTAGDLM)) == 0)
-        {
+        while ((is[ch] & (ISSPACE | ISENDTAGDLM)) == 0) {
           if (++ofsCur >= ofsEnd) {
             return;
           }
           ch = (int) input[ofsCur] & 0xFF;
         }
         foundAttributeValue(input, ofsStart, ofsCur - ofsStart, (byte) 0);
-        if (ch == '>')
-        {
+        if (ch == '>') {
           state = 0;
-        }
-        else
-        {
+        } else {
           state = 3;
         }
         break;
       case 16:
         ofsStart = ofsCur;
-        if (ch == '-')
-        {
+        if (ch == '-') {
           state = 18;
-        }
-        else
-        {
+        } else {
           state = 17;
         }
         break;
       case 17:
-        while (ch != '>')
-        {
+        while (ch != '>') {
           if (++ofsCur >= ofsEnd) {
             return;
           }
@@ -1149,24 +983,19 @@ public class XmlTokenizer
         state = 0;
         break;
       case 18:
-        if (ch == '-')
-        {
+        if (ch == '-') {
           ofsStart = ofsCur;
           state = 19;
           substate = 0; // so we wait for "-->"
-        }
-        else
-        { 
+        } else {
           // keep ofsStart unchanged!
           state = 17;
         }
         break;
       case 19:
-        switch (substate)
-        {
+        switch (substate) {
         case 0:
-          while (ch != '-')
-          {
+          while (ch != '-') {
             if (++ofsCur >= ofsEnd) {
               return;
             }
@@ -1175,58 +1004,44 @@ public class XmlTokenizer
           substate = 1;
           break;
         case 1: // '-' found
-          if (ch != '-')
-          {
+          if (ch != '-') {
             substate = 0;
-          }
-          else
-          {
+          } else {
             substate = 2;
           }
           break;
         case 2: // '-'('-')+ found
-          while (ch == '-')
-          {
+          while (ch == '-') {
             if (++ofsCur >= ofsEnd) {
               return;
             }
             ch = (int) input[ofsCur] & 0xFF;
           }
-          if (ch == '>')
-          {
+          if (ch == '>') {
             foundComment(input, ofsStart + 1, ofsCur - ofsStart - 3);
             ofsStart = ofsCur;
             state = 0;
-          }
-          else if (ch == '!')
-          {
+          } else if (ch == '!') {
             substate = 3;
-          }
-          else
-          {
+          } else {
             substate = 0;
           }
           break;
         case 3:
-          if (ch == '>')
-          {
+          if (ch == '>') {
             foundComment(input, ofsStart + 1, ofsCur - ofsStart - 4);
             ofsStart = ofsCur;
             state = 0;
-          }
-          else
-          {
+          } else {
             substate = 0;
           }
           break;
         }
         break;
       case 20:
-        switch (substate)
-        {
+        switch (substate) {
         case 0:
-          while (ch != '?')
-          {
+          while (ch != '?') {
             if (++ofsCur >= ofsEnd) {
               return;
             }
@@ -1235,29 +1050,22 @@ public class XmlTokenizer
           substate = 1;
           break;
         case 1:
-          if (ch == '>')
-          {
+          if (ch == '>') {
             foundProcessingInstruction(input, ofsStart + 2, ofsCur - ofsStart - 3);
             ofsStart = ofsCur;
             state = 0;
-          }
-          else
-          {
+          } else {
             substate = 0;
           }
           break;
         }
         break;
       case 21: // Skip to TAGC
-        if (strictlyXml)
-        {
+        if (strictlyXml) {
           endTokenize(input); // strictly XML: give up
-        }
-        else
-        {
+        } else {
           ofsStart = ofsCur;
-          while (ch != '>')
-          {
+          while (ch != '>') {
             if (++ofsCur >= ofsEnd) {
               return;
             }
@@ -1268,8 +1076,7 @@ public class XmlTokenizer
         }
         break;
       case 22: // skip to end tag (SCRIPT contents)
-        while (ch != '<')
-        {
+        while (ch != '<') {
           if (++ofsCur >= ofsEnd) {
             return;
           }
@@ -1278,31 +1085,22 @@ public class XmlTokenizer
         state = 23;
         break;
       case 23:
-        if (ch != '/')
-        {
+        if (ch != '/') {
           state = 22;
-        }
-        else
-        {
+        } else {
           state = 24;
           ixEndTagToSkipTo = 0;
         }
         break;
       case 24:
-        if (ixEndTagToSkipTo == endTagToSkipTo.length)
-        {
+        if (ixEndTagToSkipTo == endTagToSkipTo.length) {
           int ofsTemp = ofsCur - ixEndTagToSkipTo - 2;
           ;
-          if (ch == '>')
-          {
+          if (ch == '>') {
             state = 0;
-          }
-          else if ((is[ch] & ISSPACE) != 0)
-          {
+          } else if ((is[ch] & ISSPACE) != 0) {
             state = 14;
-          }
-          else
-          {
+          } else {
             state = 22;
             break; // abandon here
           }
@@ -1310,15 +1108,11 @@ public class XmlTokenizer
           ofsStart = ofsTemp;
           foundEndTagName(input, ofsTemp + 2, ixEndTagToSkipTo);
           endTagToSkipTo = null;
-        }
-        else
-        {
-          if ('a' <= ch)
-          {
+        } else {
+          if ('a' <= ch) {
             ch -= ('a' - 'A'); // fast toUpper
           }
-          if (endTagToSkipTo[ixEndTagToSkipTo++] != (byte) ch)
-          {
+          if (endTagToSkipTo[ixEndTagToSkipTo++] != (byte) ch) {
             state = 22;
           }
         }
@@ -1340,21 +1134,17 @@ public class XmlTokenizer
    * @param input
    *           current buffer
    */
-  private void endTokenize(byte[] input) throws SyntaxException
-  {
-    switch (state)
-    {
+  private void endTokenize(byte[] input) throws SyntaxException {
+    switch (state) {
     case 0:
       break;
     case 10:
-      if (ofsCur > ofsStart)
-      {
+      if (ofsCur > ofsStart) {
         foundCharacterData(input, ofsStart, ofsCur - ofsStart);
       }
       break;
     case 11:
-      if (!strictlyXml)
-      {
+      if (!strictlyXml) {
         tellReference(input, ofsStart, ofsCur - ofsStart);
         break;
       }
@@ -1375,19 +1165,14 @@ public class XmlTokenizer
    * @param count
    *           number of bytes of the reference
    */
-  private void tellReference(byte[] input, int offset, int count) throws SyntaxException
-  {
-    if (resolveCharRef)
-    {
+  private void tellReference(byte[] input, int offset, int count) throws SyntaxException {
+    if (resolveCharRef) {
       char res = resolveCharacterReference(input, offset, count);
-      if (strictlyXml && (res == '\uffff'))
-      {
+      if (strictlyXml && (res == '\uffff')) {
         throw new SyntaxException(state, ofsCur + readPos);
       }
       foundCharacter(res);
-    }
-    else
-    {
+    } else {
       foundReference(input, offset, count);
     }
   }
@@ -1405,23 +1190,17 @@ public class XmlTokenizer
    * @return the resulting character, or '&#x5C;uffff' (not a unicode
    *         character) if the conversion could not be done
    */
-  private static char hex2char(byte[] input, int offset, int count)
-  {
+  private static char hex2char(byte[] input, int offset, int count) {
     char res = 0;
-    if ((count > 0) && (count <= 4))
-    {
-      while (true)
-      {
+    if ((count > 0) && (count <= 4)) {
+      while (true) {
         char c = (char) (input[offset++]);
-        if (c <= '9')
-        {
+        if (c <= '9') {
           if (c < '0') {
             break;
           }
           res += (c & 0xF);
-        }
-        else
-        {
+        } else {
           if ((c = (char) ((c & ~('a' - 'A')) - 'A')) >= (char) (16 - 10)) {
             break;
           }
@@ -1449,16 +1228,12 @@ public class XmlTokenizer
    * @return the resulting character, or '&#x5C;uffff' (not a unicode
    *         character)
    */
-  private static char dec2char(byte[] input, int offset, int count)
-  {
+  private static char dec2char(byte[] input, int offset, int count) {
     char res = 0;
-    if (count > 0)
-    {
-      while (true)
-      {
+    if (count > 0) {
+      while (true) {
         char c = (char) (input[offset++]);
-        if (c <= '9')
-        {
+        if (c <= '9') {
           if (c < '0') {
             break;
           }
@@ -1491,18 +1266,14 @@ public class XmlTokenizer
    * @return the resulting character, or '&#x5C;uffff' (not a unicode
    *         character)
    */
-  private static char ref2char(byte[] input, int offset, int count)
-  {
+  private static char ref2char(byte[] input, int offset, int count) {
     ++count;
-    for (int i = 0; i < chrRef.length; ++i)
-    {
-      if (chrRef[i].length == count)
-      {
+    for (int i = 0; i < chrRef.length; ++i) {
+      if (chrRef[i].length == count) {
         byte b[] = chrRef[i];
         int k = offset;
         int j = 0;
-        while (true)
-        {
+        while (true) {
           if (++j == count) {
             return (char) (b[0]);
           }
@@ -1518,11 +1289,10 @@ public class XmlTokenizer
   /** Returns the hashcode of the given bytes.
    * @since TotalCross 1.25
    */
-  public int hashCode(byte[] input, int offset, int count)
-  {
+  public int hashCode(byte[] input, int offset, int count) {
     int hash = 0;
-    while (--count >= 0){
-      hash = (hash << 5) - hash + (int)input[offset++];
+    while (--count >= 0) {
+      hash = (hash << 5) - hash + (int) input[offset++];
     }
     return hash;
   }

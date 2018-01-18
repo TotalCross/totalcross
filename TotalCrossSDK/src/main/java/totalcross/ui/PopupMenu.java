@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.io.IOException;
@@ -55,16 +53,15 @@ import totalcross.util.IntVector;
  * 
  */
 
-public class PopupMenu extends Window
-{
-  private Object []items;
-  private int selected=-1;
-  private Image off,ball;
+public class PopupMenu extends Window {
+  private Object[] items;
+  private int selected = -1;
+  private Image off, ball;
   private ListContainer list;
   private Button cancel/*,ok - future*/;
-  private ListContainer.Item []containers;
+  private ListContainer.Item[] containers;
   private boolean multipleSelection;
-  private int cursorColor=-1;
+  private int cursorColor = -1;
   private static final int UNSET = -9999;
   private int desiredSelectedIndex = UNSET;
   private IntHashtable htSearchKeys;
@@ -99,60 +96,51 @@ public class PopupMenu extends Window
   public boolean keepIndexOnCancel;
 
   /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
-  public PopupMenu(String caption, Object []items) throws IOException,ImageException
-  {
-    this(caption,items,false);
+  public PopupMenu(String caption, Object[] items) throws IOException, ImageException {
+    this(caption, items, false);
   }
 
   /** Constructs a PopupMenu with the given parameters. */
-  public PopupMenu(String caption, Object []items, boolean multipleSelection) throws IOException,ImageException
-  {
-    super(caption,ROUND_BORDER);
+  public PopupMenu(String caption, Object[] items, boolean multipleSelection) throws IOException, ImageException {
+    super(caption, ROUND_BORDER);
     this.multipleSelection = multipleSelection;
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
     titleColor = uiMaterial ? Color.BLACK : Color.WHITE;
-    if (uiMaterial){
+    if (uiMaterial) {
       setBackColor(0xDDDDDD);
     }
     this.items = items;
     itemCount = items.length;
-    if (multipleSelection)
-    {
+    if (multipleSelection) {
       off = Resources.checkBkg.getCopy();
       ball = Resources.checkSel.getCopy();
+    } else if (!uiMaterial) // remove ball on material
+    {
+      off = Resources.radioBkg.getCopy();
+      ball = Resources.radioSel.getCopy();
     }
-    else
-      if (!uiMaterial) // remove ball on material
-      {
-        off = Resources.radioBkg.getCopy();
-        ball = Resources.radioSel.getCopy();
-      }
   }
 
-  private Image getSelectedImage(int color) throws ImageException
-  {
+  private Image getSelectedImage(int color) throws ImageException {
     // "off" image is a composite of two images: on + selection
     Image on = off.getFrameInstance(0);
     ball.applyColor2(color); // paint it
-    on.getGraphics().drawImage(ball,0,0);
+    on.getGraphics().drawImage(ball, 0, 0);
     return on;
   }
 
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       list = new ListContainer();
       list.setFont(this.font);
       if (cursorColor != -1) {
         list.highlightColor = cursorColor;
       }
 
-      ListContainer.Layout layout = list.getLayout(3,1);
-      layout.insets.set(10,50,10,50);
-      if (multipleSelection || !uiMaterial)
-      {
+      ListContainer.Layout layout = list.getLayout(3, 1);
+      layout.insets.set(10, 50, 10, 50);
+      if (multipleSelection || !uiMaterial) {
         layout.defaultRightImage = off;
         layout.defaultRightImage2 = getSelectedImage(checkColor == -1 ? foreColor : checkColor);
         layout.imageGap = 50;
@@ -160,7 +148,7 @@ public class PopupMenu extends Window
       }
       layout.centerVertically = true;
       layout.setup();
-      int cw=-1;
+      int cw = -1;
 
       containers = new ListContainer.Item[itemCount];
 
@@ -171,16 +159,14 @@ public class PopupMenu extends Window
       }
       htSearchKeys = new IntHashtable(40);
       char last = 0;
-      for (int i = 0; i < itemCount; i++)
-      {
+      for (int i = 0; i < itemCount; i++) {
         ListContainer.Item c = new ListContainer.Item(layout);
         containers[i] = c;
-        String s = items[i] instanceof String ? (String)items[i] : (items[i] instanceof String[]) ? ((String[])items[i])[dataCol] : items[i].toString();
-        if (enableSearch && s.length() > 0)
-        {
+        String s = items[i] instanceof String ? (String) items[i]
+            : (items[i] instanceof String[]) ? ((String[]) items[i])[dataCol] : items[i].toString();
+        if (enableSearch && s.length() > 0) {
           char cc = s.charAt(0);
-          if (cc != last)
-          {
+          if (cc != last) {
             last = cc;
             htSearchKeys.put(Convert.toUpperCase(cc), i);
           }
@@ -190,11 +176,10 @@ public class PopupMenu extends Window
         }
         int sw = fm.stringWidth(s);
         if (sw <= cw) {
-          c.items = new String[]{"",s,""};
-        } else
-        {
-          String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw,fm,s),'\n');
-          c.items = new String[]{"","",""};
+          c.items = new String[] { "", s, "" };
+        } else {
+          String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw, fm, s), '\n');
+          c.items = new String[] { "", "", "" };
           for (int j = 0, n = Math.min(parts.length, c.items.length); j < n; j++) {
             c.items[j] = parts[j];
           }
@@ -205,174 +190,157 @@ public class PopupMenu extends Window
         enableSearch = false;
       }
       ScrollContainer sc2 = null;
-      if (enableSearch)
-      {
+      if (enableSearch) {
         IntVector v = htSearchKeys.getKeys();
         v.qsort();
         String[] caps = new String[v.size()];
         for (int i = 0; i < caps.length; i++) {
-          caps[i] = Convert.toString((char)v.items[i]);
+          caps[i] = Convert.toString((char) v.items[i]);
         }
-        pbgSearch = new PushButtonGroup(caps,false,-1,0,fmH,1,true,PushButtonGroup.BUTTON);
-        add(sc2 = new ScrollContainer(true, false),LEFT,TOP,FILL,FONTSIZE+(ScrollPosition.AUTO_HIDE ? 200 : 225));
-        sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FONTSIZE+200);
+        pbgSearch = new PushButtonGroup(caps, false, -1, 0, fmH, 1, true, PushButtonGroup.BUTTON);
+        add(sc2 = new ScrollContainer(true, false), LEFT, TOP, FILL, FONTSIZE + (ScrollPosition.AUTO_HIDE ? 200 : 225));
+        sc2.add(pbgSearch, LEFT, TOP, PREFERRED, FONTSIZE + 200);
       }
-      if (enableCancel)
-      {
+      if (enableCancel) {
         cancel = new Button(cancelString);
         cancel.setBackColor(Color.WHITE);
-        add(cancel,CENTER,BOTTOM-fmH/2,PARENTSIZE+90,PREFERRED+fmH);
+        add(cancel, CENTER, BOTTOM - fmH / 2, PARENTSIZE + 90, PREFERRED + fmH);
       }
       list = new ListContainer();
       if (!uiMaterial) {
         list.setBackColor(Color.WHITE);
       }
-      add(list,LEFT,enableSearch ? AFTER+fmH/5 : TOP,FILL,(enableCancel?FIT:FILL)-fmH/2, enableSearch ? sc2 : null);
+      add(list, LEFT, enableSearch ? AFTER + fmH / 5 : TOP, FILL, (enableCancel ? FIT : FILL) - fmH / 2,
+          enableSearch ? sc2 : null);
       list.addContainers(containers);
       repositionOnSize();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       if (Settings.onJavaSE) {
         e.printStackTrace();
       }
-      throw new RuntimeException(e.getClass().getName()+" "+e);
+      throw new RuntimeException(e.getClass().getName() + " " + e);
     }
   }
 
-  private void repositionOnSize()
-  {
-    if (containers == null){
+  private void repositionOnSize() {
+    if (containers == null) {
       return;
     }
-    int hh = containers[containers.length-1].getY2();
-    int hm = list.y+hh+(cancel==null?0:cancel.height)+fmH;
+    int hh = containers[containers.length - 1].getY2();
+    int hm = list.y + hh + (cancel == null ? 0 : cancel.height) + fmH;
 
-    if (this.height > hm)
-    {
-      list.height = hh+fmH/3;
-      setRect(CENTER,CENTER,KEEP,hm);
+    if (this.height > hm) {
+      list.height = hh + fmH / 3;
+      setRect(CENTER, CENTER, KEEP, hm);
       if (cancel != null) {
-        cancel.setRect(KEEP,BOTTOM-fmH/3,KEEP,KEEP);
+        cancel.setRect(KEEP, BOTTOM - fmH / 3, KEEP, KEEP);
       }
     }
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     super.reposition();
     repositionOnSize();
   }
 
   /** Selects the given index. */
-  public int setSelectedIndex(int index)
-  {
-    if (containers == null) 
-    {
+  public int setSelectedIndex(int index) {
+    if (containers == null) {
       desiredSelectedIndex = index;
       return -1;
     }
-    if (-1 <= index && index < containers.length){
+    if (-1 <= index && index < containers.length) {
       selected(index);
     }
-    if (0 <= selected && selected < containers.length){
+    if (0 <= selected && selected < containers.length) {
       list.scrollToControl(containers[selected]);
     }
     return selected;
   }
 
   /** Returns the selected index when this window was closed or -1 if non was selected */
-  public int getSelectedIndex()
-  {
+  public int getSelectedIndex() {
     return desiredSelectedIndex != UNSET ? desiredSelectedIndex : selected;
   }
 
   /** Setup some important variables */
   @Override
-  protected void onPopup()
-  {
-    if (list == null)
-    {
-      int maxW = Math.max(!enableCancel ? 0 : fm.stringWidth(cancelString), title == null ? 0 : titleFont.fm.stringWidth(title))+fmH*4;
-      for (int i = 0; i < itemCount; i++)
-      {
-        String s = items[i] instanceof String ? (String)items[i] : (items[i] instanceof String[]) ? ((String[])items[i])[dataCol] : items[i].toString();
-        int w = fm.stringWidth(s) + (uiMaterial ? fmH*4 : fmH*6);
+  protected void onPopup() {
+    if (list == null) {
+      int maxW = Math.max(!enableCancel ? 0 : fm.stringWidth(cancelString),
+          title == null ? 0 : titleFont.fm.stringWidth(title)) + fmH * 4;
+      for (int i = 0; i < itemCount; i++) {
+        String s = items[i] instanceof String ? (String) items[i]
+            : (items[i] instanceof String[]) ? ((String[]) items[i])[dataCol] : items[i].toString();
+        int w = fm.stringWidth(s) + (uiMaterial ? fmH * 4 : fmH * 6);
         if (w > maxW) {
           maxW = w;
         }
       }
-      setRect(CENTER,CENTER,maxW < Math.min(Settings.screenWidth,Settings.screenHeight)-fmH*2 ? maxW : SCREENSIZE+90,SCREENSIZE+90);
+      setRect(CENTER, CENTER,
+          maxW < Math.min(Settings.screenWidth, Settings.screenHeight) - fmH * 2 ? maxW : SCREENSIZE + 90,
+          SCREENSIZE + 90);
     }
-    if (desiredSelectedIndex != UNSET){
+    if (desiredSelectedIndex != UNSET) {
       setSelectedIndex(desiredSelectedIndex);
     }
     desiredSelectedIndex = UNSET;
   }
 
   @Override
-  protected void postUnpop()
-  {
-    if (selected != -1){
+  protected void postUnpop() {
+    if (selected != -1) {
       postPressedEvent();
     }
   }
 
-  private void search(char c)
-  {
-    int pos = htSearchKeys.get(Convert.toUpperCase(c),-1);
-    if (pos != -1){
+  private void search(char c) {
+    int pos = htSearchKeys.get(Convert.toUpperCase(c), -1);
+    if (pos != -1) {
       list.scrollToControl(containers[pos]);
     }
   }
+
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
+  public void onEvent(Event event) {
+    switch (event.type) {
     case KeyEvent.KEY_PRESS:
       if (enableSearch) {
-        search((char)((KeyEvent)event).key);
+        search((char) ((KeyEvent) event).key);
       }
       break;
     case ControlEvent.PRESSED:
       if (enableSearch && event.target == pbgSearch && pbgSearch.getSelectedIndex() != -1) {
         search(pbgSearch.getSelectedItem().charAt(0));
-      } else
-        if (cancel != null && event.target == cancel)
-        {
-          if (!keepIndexOnCancel) {
-            selected = -1;
-          }
-          unpop();
+      } else if (cancel != null && event.target == cancel) {
+        if (!keepIndexOnCancel) {
+          selected = -1;
         }
+        unpop();
+      }
       break;
-    case ListContainerEvent.ITEM_SELECTED_EVENT:
-    {
-      ListContainerEvent lce = (ListContainerEvent)event;
-      selected(((Control)lce.source).appId);
-      if (!multipleSelection)
-      {
+    case ListContainerEvent.ITEM_SELECTED_EVENT: {
+      ListContainerEvent lce = (ListContainerEvent) event;
+      selected(((Control) lce.source).appId);
+      if (!multipleSelection) {
         Vm.sleep(100);
         unpop();
       }
       break;
     }
-    case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT:
-    {
-      ListContainerEvent lce = (ListContainerEvent)event;
+    case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: {
+      ListContainerEvent lce = (ListContainerEvent) event;
       //if (lce.isImage2) since tc 1.5, when this event is sent the image 2 was already replaced by image 1
       {
         int idx;
         if (event.target instanceof Control) {
-          idx = ((Control)event.target).parent.appId;
+          idx = ((Control) event.target).parent.appId;
         } else {
           idx = lce.source.appId;
         }
         selected(idx);
-        if (!multipleSelection)
-        {
+        if (!multipleSelection) {
           Vm.sleep(100);
           unpop();
         }
@@ -382,16 +350,15 @@ public class PopupMenu extends Window
     }
   }
 
-  private void selected(int newSel)
-  {
-    if (0 <= selected && selected < containers.length){
-      containers[selected].setImage(false,true);
+  private void selected(int newSel) {
+    if (0 <= selected && selected < containers.length) {
+      containers[selected].setImage(false, true);
     }
     selected = newSel;
-    if (0 <= selected && selected < containers.length){
-      containers[newSel].setImage(false,false);
+    if (0 <= selected && selected < containers.length) {
+      containers[newSel].setImage(false, false);
     }
-    if (selected == -1){
+    if (selected == -1) {
       list.setSelectedIndex(-1);
     }
 
@@ -399,8 +366,7 @@ public class PopupMenu extends Window
   }
 
   /** Sets the cursor color. By default, it is based in the background color */
-  public void setCursorColor(int c)
-  {
+  public void setCursorColor(int c) {
     cursorColor = c;
   }
 }

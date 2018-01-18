@@ -9,23 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.regalloc;
 
 import tc.tools.converter.ir.BitSet;
 
-public class AdjListNode
-{
+public class AdjListNode {
   public int color;
   public int reg;
   public boolean pushed;
   public BitSet adjs;
   public BitSet removedAdjs;
 
-
-  public AdjListNode(int len)
-  {
+  public AdjListNode(int len) {
     color = -1;
     reg = -1;
     pushed = false;
@@ -33,8 +28,7 @@ public class AdjListNode
     removedAdjs = new BitSet(len);
   }
 
-  public AdjListNode(int len, int r)
-  {
+  public AdjListNode(int len, int r) {
     color = -1;
     reg = r;
     pushed = false;
@@ -42,29 +36,24 @@ public class AdjListNode
     removedAdjs = new BitSet(len);
   }
 
-  public void addInterf(int interf)
-  {
+  public void addInterf(int interf) {
     adjs.on(interf);
   }
 
-  public void removeInterf(int interf)
-  {
+  public void removeInterf(int interf) {
     adjs.off(interf);
   }
 
-  public void addRemovedAdjs(int n)
-  {
+  public void addRemovedAdjs(int n) {
     removedAdjs.on(n);
   }
 
-  public void adjs2RemovedAdjs()
-  {
+  public void adjs2RemovedAdjs() {
     removedAdjs.on(adjs);
     adjs.clear();
   }
 
-  public int nInts()
-  {
+  public int nInts() {
     return adjs.count();
   }
 }

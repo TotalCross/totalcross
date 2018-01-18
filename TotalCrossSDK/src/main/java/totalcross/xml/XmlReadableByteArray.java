@@ -15,15 +15,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
+
 import totalcross.io.IOException;
 import totalcross.net.URI;
 
 /** Make an XmlReadable from a byte array. */
-public class XmlReadableByteArray implements XmlReadable
-{
+public class XmlReadableByteArray implements XmlReadable {
   protected byte[] buf;
   protected URI baseURI;
   private boolean caseInsensitive;
@@ -33,32 +31,27 @@ public class XmlReadableByteArray implements XmlReadable
    *
    * @param source The byte array to be parsed
    */
-  public XmlReadableByteArray(byte[] source)
-  {
+  public XmlReadableByteArray(byte[] source) {
     buf = source;
   }
 
-  protected XmlReadableByteArray()
-  {
+  protected XmlReadableByteArray() {
   }
 
   @Override
-  public void readXml(XmlReader rdr) throws SyntaxException, IOException
-  {
+  public void readXml(XmlReader rdr) throws SyntaxException, IOException {
     rdr.setCaseInsensitive(caseInsensitive);
     rdr.parse(buf, 0, buf.length);
     //buf = null; - don't do this, otherwise HtmlBrowser's font change won't work 
   }
 
   @Override
-  public URI getBaseURI()
-  {
+  public URI getBaseURI() {
     return baseURI;
   }
 
   @Override
-  public void setCaseInsensitive(boolean caseInsensitive)
-  {
+  public void setCaseInsensitive(boolean caseInsensitive) {
     this.caseInsensitive = caseInsensitive;
   }
 }

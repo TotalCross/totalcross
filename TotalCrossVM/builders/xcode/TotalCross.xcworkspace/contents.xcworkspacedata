@@ -8,6 +8,6 @@
       location = "group:tcvm.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../../../Litebase/LitebaseSDK/builders/xcode/Litebase.xcodeproj">
+      location = "group:../../../LitebaseSDK/builders/xcode/Litebase.xcodeproj">
    </FileRef>
 </Workspace>

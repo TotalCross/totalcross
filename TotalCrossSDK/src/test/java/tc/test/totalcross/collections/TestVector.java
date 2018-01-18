@@ -20,11 +20,9 @@ import java.util.Vector;
 
 import totalcross.unit.TestCase;
 
-public class TestVector extends TestCase
-{
+public class TestVector extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test35 test1 = new Test35();
     Vector test2 = new Test35(test1);
     AbstractList test3 = new Test35(11, 0);
@@ -34,28 +32,28 @@ public class TestVector extends TestCase
     assertTrue(Arrays.equals(test1.toArray(), strings));
     test2.copyInto(strings);
     assertTrue(Arrays.equals(test2.toArray(), strings));
-    ((Vector)test3).copyInto(strings);
+    ((Vector) test3).copyInto(strings);
     assertTrue(Arrays.equals(test3.toArray(), strings));
 
     test1.trimToSize();
     test2.trimToSize();
-    ((Vector)test3).trimToSize();
+    ((Vector) test3).trimToSize();
 
     test1.ensureCapacity(12);
     test2.ensureCapacity(12);
-    ((Vector)test3).ensureCapacity(12);
+    ((Vector) test3).ensureCapacity(12);
 
     test1.setSize(13);
     test2.setSize(13);
-    ((Vector)test3).setSize(13);
+    ((Vector) test3).setSize(13);
 
     assertEquals(24, test1.capacity());
     assertEquals(24, test2.capacity());
-    assertEquals(24, ((Vector)test3).capacity());
+    assertEquals(24, ((Vector) test3).capacity());
 
     assertEquals(13, test1.size());
     assertEquals(13, test2.size());
-    assertEquals(13, ((Vector)test3).size());
+    assertEquals(13, ((Vector) test3).size());
 
     assertFalse(test1.isEmpty());
     assertFalse(test2.isEmpty());
@@ -63,7 +61,7 @@ public class TestVector extends TestCase
 
     Enumeration enum1 = test1.elements();
     Enumeration enum2 = test2.elements();
-    Enumeration enum3 = ((Vector)test3).elements();
+    Enumeration enum3 = ((Vector) test3).elements();
 
     assertTrue(enum1.hasMoreElements());
     assertTrue(enum2.hasMoreElements());
@@ -83,7 +81,7 @@ public class TestVector extends TestCase
 
     assertEquals(0, test1.indexOf(null, 0));
     assertEquals(0, test2.indexOf(null, 0));
-    assertEquals(0, ((Vector)test3).indexOf(null, 0));
+    assertEquals(0, ((Vector) test3).indexOf(null, 0));
 
     assertEquals(12, test1.lastIndexOf(null));
     assertEquals(12, test2.lastIndexOf(null));
@@ -91,47 +89,47 @@ public class TestVector extends TestCase
 
     assertEquals(12, test1.lastIndexOf(null, 12));
     assertEquals(12, test2.lastIndexOf(null, 12));
-    assertEquals(12, ((Vector)test3).lastIndexOf(null, 12));
+    assertEquals(12, ((Vector) test3).lastIndexOf(null, 12));
 
     assertEquals(null, test1.elementAt(0));
     assertEquals(null, test2.elementAt(0));
-    assertEquals(null, ((Vector)test3).elementAt(0));
+    assertEquals(null, ((Vector) test3).elementAt(0));
 
     assertEquals(null, test1.firstElement());
     assertEquals(null, test2.firstElement());
-    assertEquals(null, ((Vector)test3).firstElement());
+    assertEquals(null, ((Vector) test3).firstElement());
 
     assertEquals(null, test1.lastElement());
     assertEquals(null, test2.lastElement());
-    assertEquals(null, ((Vector)test3).lastElement());
+    assertEquals(null, ((Vector) test3).lastElement());
 
     test1.setElementAt("0", 0);
     test2.setElementAt("0", 0);
-    ((Vector)test3).setElementAt("0", 0);
+    ((Vector) test3).setElementAt("0", 0);
 
     test1.removeElementAt(0);
     test2.removeElementAt(0);
-    ((Vector)test3).removeElementAt(0);
+    ((Vector) test3).removeElementAt(0);
 
     test1.insertElementAt("0", 0);
     test2.insertElementAt("0", 0);
-    ((Vector)test3).insertElementAt("0", 0);
+    ((Vector) test3).insertElementAt("0", 0);
 
     test1.addElement("0");
     test2.addElement("0");
-    ((Vector)test3).addElement("0");
+    ((Vector) test3).addElement("0");
 
     assertTrue(test1.removeElement("0"));
     assertTrue(test2.removeElement("0"));
-    assertTrue(((Vector)test3).removeElement("0"));
+    assertTrue(((Vector) test3).removeElement("0"));
 
     test1.removeAllElements();
     test2.removeAllElements();
-    ((Vector)test3).removeAllElements();
+    ((Vector) test3).removeAllElements();
 
     assertTrue(test1.equals(test1.clone()));
     assertTrue(test2.equals(test2.clone()));
-    assertTrue(test3.equals(((Vector)test3).clone()));
+    assertTrue(test3.equals(((Vector) test3).clone()));
 
     assertTrue(Arrays.equals(strings, test1.toArray()));
     assertTrue(Arrays.equals(strings, test2.toArray()));
@@ -141,43 +139,37 @@ public class TestVector extends TestCase
     assertEquals(0, test2.toArray(strings).length);
     assertEquals(0, test3.toArray(strings).length);
 
-    try
-    {
+    try {
       test1.get(0);
       fail("1");
+    } catch (ArrayIndexOutOfBoundsException exception) {
     }
-    catch (ArrayIndexOutOfBoundsException exception) {}
-    try
-    {
+    try {
       test2.get(0);
       fail("2");
+    } catch (ArrayIndexOutOfBoundsException exception) {
     }
-    catch (ArrayIndexOutOfBoundsException exception) {}
-    try
-    {
+    try {
       test3.get(0);
       fail("3");
+    } catch (ArrayIndexOutOfBoundsException exception) {
     }
-    catch (ArrayIndexOutOfBoundsException exception) {}
 
-    try
-    {
+    try {
       test1.set(0, "0");
       fail("4");
+    } catch (ArrayIndexOutOfBoundsException exception) {
     }
-    catch (ArrayIndexOutOfBoundsException exception) {}
-    try
-    {
+    try {
       test2.set(0, "0");
       fail("5");
+    } catch (ArrayIndexOutOfBoundsException exception) {
     }
-    catch (ArrayIndexOutOfBoundsException exception) {}
-    try
-    {
+    try {
       test3.set(0, "0");
       fail("6");
+    } catch (ArrayIndexOutOfBoundsException exception) {
     }
-    catch (ArrayIndexOutOfBoundsException exception) {}
 
     assertTrue(test1.add("0"));
     assertTrue(test2.add("0"));
@@ -233,22 +225,20 @@ public class TestVector extends TestCase
   }
 }
 
-class Test35 extends Vector
-{
-  public Test35()
-  {
+class Test35 extends Vector {
+  public Test35() {
     super();
   }
-  public Test35(Collection c)
-  {
+
+  public Test35(Collection c) {
     super(c);
   }
-  public Test35(int initialCapacity, int capacityIncrement)
-  {
+
+  public Test35(int initialCapacity, int capacityIncrement) {
     super(initialCapacity, capacityIncrement);
   }
-  public Test35(int initialCapacity)
-  {
+
+  public Test35(int initialCapacity) {
     super(initialCapacity);
   }
 }

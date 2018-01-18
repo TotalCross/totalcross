@@ -9,13 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC195_monitorexit extends Monitor
-{
-  public BC195_monitorexit()
-  {
+public class BC195_monitorexit extends Monitor {
+  public BC195_monitorexit() {
   }
 }

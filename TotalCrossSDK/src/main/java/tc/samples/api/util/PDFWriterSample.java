@@ -17,21 +17,17 @@ import totalcross.util.pdf.PaperSize;
 import totalcross.util.pdf.StandardFonts;
 import totalcross.util.pdf.Transformation;
 
-public class PDFWriterSample extends BaseContainer
-{
+public class PDFWriterSample extends BaseContainer {
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
-    try
-    {
+    try {
       PDFWriter mPDFWriter = new PDFWriter(PaperSize.FOLIO_WIDTH, PaperSize.FOLIO_HEIGHT);
 
       // note that to make this images snippet work
       // you have to uncompress the assets.zip file
       // included into your project assets folder
-      try
-      {
+      try {
         Image img = Resources.comboArrow;
         mPDFWriter.addImage(400, 600, img, Transformation.DEGREES_315_ROTATION);
         mPDFWriter.addImage(300, 500, img);
@@ -40,9 +36,7 @@ public class PDFWriterSample extends BaseContainer
         mPDFWriter.addImageKeepRatio(100, 200, 50, 25, img);
         mPDFWriter.addImageKeepRatio(50, 100, 30, 25, img, Transformation.DEGREES_270_ROTATION);
         mPDFWriter.addImageKeepRatio(25, 50, 30, 25, img);
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         e.printStackTrace();
       }
 
@@ -67,34 +61,29 @@ public class PDFWriterSample extends BaseContainer
       mPDFWriter.addLine(150, 140, 270, 140);
 
       int pageCount = mPDFWriter.getPageCount();
-      for (int i = 0; i < pageCount; i++)
-      {
+      for (int i = 0; i < pageCount; i++) {
         mPDFWriter.setCurrentPage(i);
         mPDFWriter.addText(10, 10, 8, Integer.toString(i + 1) + " / " + Integer.toString(pageCount));
       }
 
       String s = mPDFWriter.asString();
-      final String name = Settings.appPath+"test.pdf";
-      File f = new File(name,File.CREATE_EMPTY);
+      final String name = Settings.appPath + "test.pdf";
+      File f = new File(name, File.CREATE_EMPTY);
       f.writeBytes(s.getBytes());
       f.close();
 
       Button b = new Button(" Open it ");
-      add(b, CENTER,TOP+5);
-      addLog(LEFT,AFTER+10,FILL,FILL,null);
-      log("PDF Writter created by Javier Santo Domingo"); 
-      log("PDF Generated at "+name);
-      b.addPressListener(new PressListener()
-      {
+      add(b, CENTER, TOP + 5);
+      addLog(LEFT, AFTER + 10, FILL, FILL, null);
+      log("PDF Writter created by Javier Santo Domingo");
+      log("PDF Generated at " + name);
+      b.addPressListener(new PressListener() {
         @Override
-        public void controlPressed(ControlEvent e)
-        {
-          Vm.exec("viewer",Convert.normalizePath(name),0,true);
+        public void controlPressed(ControlEvent e) {
+          Vm.exec("viewer", Convert.normalizePath(name), 0, true);
         }
       });
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       MessageBox.showException(e, true);
     }
   }

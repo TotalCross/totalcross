@@ -14,14 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 /** Used to define the gaps between the container and its child controls. */
 
-public class Insets
-{
+public class Insets {
   /** The inset from the top. */
   public int top;
 
@@ -37,8 +34,7 @@ public class Insets
   /**
    * Creates a new Insets object.
    */
-  public Insets()
-  {
+  public Insets() {
     this(0, 0, 0, 0);
   }
 
@@ -50,8 +46,7 @@ public class Insets
    * @param bottom The inset from the bottom.
    * @param right The inset from the right.
    */
-  public Insets(int top, int left, int bottom, int right)
-  {
+  public Insets(int top, int left, int bottom, int right) {
     this.top = top;
     this.left = left;
     this.bottom = bottom;
@@ -61,8 +56,7 @@ public class Insets
   /** Sets the fields with the given values.
    * @since TotalCross 1.3
    */
-  public void set(int top, int left, int bottom, int right)
-  {
+  public void set(int top, int left, int bottom, int right) {
     this.top = top;
     this.left = left;
     this.bottom = bottom;
@@ -73,8 +67,7 @@ public class Insets
    * Copy the insets from another Insets object.
    * @param other The other Insets object.
    */
-  public void copyFrom(Insets other)
-  {
+  public void copyFrom(Insets other) {
     top = other.top;
     left = other.left;
     bottom = other.bottom;
@@ -82,19 +75,17 @@ public class Insets
   }
 
   @Override
-  public boolean equals(Object obj)
-  {
-    if (!(obj instanceof Insets)){
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Insets)) {
       return false;
     }
 
-    Insets other = (Insets)obj;
+    Insets other = (Insets) obj;
     return top == other.top && left == other.left && bottom == other.bottom && right == other.right;
   }
 
   @Override
-  public int hashCode()
-  {
-    return ((top+16) << 24) | ((bottom+16) << 16) | ((right+16) << 8) | (left+16); // somewhat dificult that an inset is less than -16 or greater than 240
+  public int hashCode() {
+    return ((top + 16) << 24) | ((bottom + 16) << 16) | ((right + 16) << 8) | (left + 16); // somewhat dificult that an inset is less than -16 or greater than 240
   }
 }

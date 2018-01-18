@@ -37,7 +37,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.EmptyStackException;
@@ -62,8 +61,7 @@ import java.util.Vector;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Stack4D<T> extends Vector<T>
-{
+public class Stack4D<T> extends Vector<T> {
   // We could use Vector methods internally for the following methods,
   // but have used Vector fields directly for efficiency (i.e. this
   // often reduces out duplicate bounds checking).
@@ -71,8 +69,7 @@ public class Stack4D<T> extends Vector<T>
   /**
    * This constructor creates a new Stack, initially empty
    */
-  public Stack4D()
-  {
+  public Stack4D() {
   }
 
   /**
@@ -83,8 +80,7 @@ public class Stack4D<T> extends Vector<T>
    * @return the Object pushed onto the stack
    * @see Vector#addElement(Object)
    */
-  public T push(T item)
-  {
+  public T push(T item) {
     // When growing the Stack, use the Vector routines in case more
     // memory is needed.
     // Note: spec indicates that this method *always* returns obj passed in!
@@ -101,9 +97,8 @@ public class Stack4D<T> extends Vector<T>
    * @throws EmptyStackException if the stack is empty
    */
   @SuppressWarnings("unchecked")
-  public synchronized T pop()
-  {
-    if (elementCount == 0){
+  public synchronized T pop() {
+    if (elementCount == 0) {
       throw new EmptyStackException();
     }
 
@@ -122,9 +117,8 @@ public class Stack4D<T> extends Vector<T>
    * @throws EmptyStackException if the stack is empty
    */
   @SuppressWarnings("unchecked")
-  public synchronized T peek()
-  {
-    if (elementCount == 0){
+  public synchronized T peek() {
+    if (elementCount == 0) {
       throw new EmptyStackException();
     }
 
@@ -136,8 +130,7 @@ public class Stack4D<T> extends Vector<T>
    *
    * @return true if the stack contains no items, false otherwise
    */
-  public synchronized boolean empty()
-  {
+  public synchronized boolean empty() {
     return elementCount == 0;
   }
 
@@ -150,11 +143,10 @@ public class Stack4D<T> extends Vector<T>
    * @return The 1 based depth of the Object, or -1 if the Object
    *         is not on the stack
    */
-  public synchronized int search(Object o)
-  {
+  public synchronized int search(Object o) {
     int i = elementCount;
-    while (--i >= 0){
-      if (AbstractCollection4D.equals(o, elementData[i])){
+    while (--i >= 0) {
+      if (AbstractCollection4D.equals(o, elementData[i])) {
         return elementCount - i;
       }
     }

@@ -100,9 +100,7 @@ import totalcross.sys.Vm;
  * @since 1.4
  * @status updated to 1.4
  */
-public class IdentityHashMap4D<K,V> extends AbstractMap4D<K,V>
-implements Map<K,V>, Cloneable
-{
+public class IdentityHashMap4D<K, V> extends AbstractMap4D<K, V> implements Map<K, V>, Cloneable {
   /** The default capacity. */
   private static final int DEFAULT_CAPACITY = 21;
 
@@ -136,7 +134,7 @@ implements Map<K,V>, Cloneable
   /**
    * The cache for {@link #entrySet()}.
    */
-  private transient Set<Map.Entry<K,V>> entries;
+  private transient Set<Map.Entry<K, V>> entries;
 
   /**
    * The threshold for rehashing, which is 75% of (table.length / 2).
@@ -146,8 +144,7 @@ implements Map<K,V>, Cloneable
   /**
    * Create a new IdentityHashMap with the default capacity (21 entries).
    */
-  public IdentityHashMap4D()
-  {
+  public IdentityHashMap4D() {
     this(DEFAULT_CAPACITY);
   }
 
@@ -160,13 +157,12 @@ implements Map<K,V>, Cloneable
    * @param max initial size
    * @throws IllegalArgumentException if max is negative
    */
-  public IdentityHashMap4D(int max)
-  {
-    if (max < 0){
+  public IdentityHashMap4D(int max) {
+    if (max < 0) {
       throw new IllegalArgumentException();
     }
     // Need at least two slots, or hash() will break.
-    if (max < 2){
+    if (max < 2) {
       max = 2;
     }
     table = new Object[max << 1];
@@ -180,8 +176,7 @@ implements Map<K,V>, Cloneable
    * @param m The map whose elements are to be put in this map
    * @throws NullPointerException if m is null
    */
-  public IdentityHashMap4D(Map<? extends K, ? extends V> m)
-  {
+  public IdentityHashMap4D(Map<? extends K, ? extends V> m) {
     this(Math.max(m.size() << 1, DEFAULT_CAPACITY));
     putAll(m);
   }
@@ -190,10 +185,8 @@ implements Map<K,V>, Cloneable
    * Remove all mappings from this map.
    */
   @Override
-  public void clear()
-  {
-    if (size != 0)
-    {
+  public void clear() {
+    if (size != 0) {
       modCount++;
       Arrays.fill(table, null);
       size = 0;
@@ -204,18 +197,14 @@ implements Map<K,V>, Cloneable
    * Creates a shallow copy where keys and values are not cloned.
    */
   @Override
-  public Object clone()
-  {
-    try
-    {
+  public Object clone() {
+    try {
       IdentityHashMap4D copy = (IdentityHashMap4D) super.clone();
       copy.table = new Object[table.length];
       Vm.arrayCopy(table, 0, copy.table, 0, table.length);
       copy.entries = null; // invalidate the cache
       return copy;
-    }
-    catch (CloneNotSupportedException e)
-    {
+    } catch (CloneNotSupportedException e) {
       // Can't happen.
       return null;
     }
@@ -232,8 +221,7 @@ implements Map<K,V>, Cloneable
    * @see #get(Object)
    */
   @Override
-  public boolean containsKey(Object key)
-  {
+  public boolean containsKey(Object key) {
     key = xform(key);
     return key == table[hash(key)];
   }
@@ -248,11 +236,10 @@ implements Map<K,V>, Cloneable
    * @see #containsKey(Object)
    */
   @Override
-  public boolean containsValue(Object value)
-  {
+  public boolean containsValue(Object value) {
     value = xform(value);
     for (int i = table.length - 1; i > 0; i -= 2) {
-      if (table[i] == value){
+      if (table[i] == value) {
         return true;
       }
     }
@@ -287,33 +274,27 @@ implements Map<K,V>, Cloneable
    * @see Map.Entry
    */
   @Override
-  public Set<Map.Entry<K,V>> entrySet()
-  {
-    if (entries == null){
-      entries = new AbstractSet<Map.Entry<K,V>>()
-      {
+  public Set<Map.Entry<K, V>> entrySet() {
+    if (entries == null) {
+      entries = new AbstractSet<Map.Entry<K, V>>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<Map.Entry<K,V>> iterator()
-        {
-          return new IdentityIterator<Map.Entry<K,V>>(ENTRIES);
+        public Iterator<Map.Entry<K, V>> iterator() {
+          return new IdentityIterator<Map.Entry<K, V>>(ENTRIES);
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           IdentityHashMap4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
-          if (! (o instanceof Map.Entry)) {
+        public boolean contains(Object o) {
+          if (!(o instanceof Map.Entry)) {
             return false;
           }
           Map.Entry m = (Map.Entry) o;
@@ -323,21 +304,18 @@ implements Map<K,V>, Cloneable
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
           return IdentityHashMap4D.this.hashCode();
         }
 
         @Override
-        public boolean remove(Object o)
-        {
-          if (! (o instanceof Map.Entry)) {
+        public boolean remove(Object o) {
+          if (!(o instanceof Map.Entry)) {
             return false;
           }
           Object key = xform(((Map.Entry) o).getKey());
           int h = hash(key);
-          if (table[h] == key)
-          {
+          if (table[h] == key) {
             size--;
             modCount++;
             IdentityHashMap4D.this.removeAtIndex(h);
@@ -361,8 +339,7 @@ implements Map<K,V>, Cloneable
    * @return true if it is equal
    */
   @Override
-  public boolean equals(Object o)
-  {
+  public boolean equals(Object o) {
     // Why did Sun specify this one? The superclass does the right thing.
     return super.equals(o);
   }
@@ -383,8 +360,7 @@ implements Map<K,V>, Cloneable
    * @see #containsKey(Object)
    */
   @Override
-  public V get(Object key)
-  {
+  public V get(Object key) {
     key = xform(key);
     int h = hash(key);
     return (V) (table[h] == key ? unxform(table[h + 1]) : null);
@@ -399,18 +375,15 @@ implements Map<K,V>, Cloneable
    * @return the hash code
    */
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     int hash = 0;
-    for (int i = table.length - 2; i >= 0; i -= 2)
-    {
+    for (int i = table.length - 2; i >= 0; i -= 2) {
       Object key = table[i];
       if (key == null) {
         continue;
       }
       // FIXME: this is a lame computation.
-      hash += (Vm.identityHashCode(unxform(key))
-          ^ Vm.identityHashCode(unxform(table[i + 1])));
+      hash += (Vm.identityHashCode(unxform(key)) ^ Vm.identityHashCode(unxform(table[i + 1])));
     }
     return hash;
   }
@@ -420,8 +393,7 @@ implements Map<K,V>, Cloneable
    * @return <code>size() == 0</code>
    */
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return size == 0;
   }
 
@@ -445,41 +417,33 @@ implements Map<K,V>, Cloneable
    * @see #entrySet()
    */
   @Override
-  public Set<K> keySet()
-  {
-    if (keys == null){
-      keys = new AbstractSet<K>()
-      {
+  public Set<K> keySet() {
+    if (keys == null) {
+      keys = new AbstractSet<K>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<K> iterator()
-        {
+        public Iterator<K> iterator() {
           return new IdentityIterator<K>(KEYS);
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           IdentityHashMap4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
+        public boolean contains(Object o) {
           return containsKey(o);
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
           int hash = 0;
-          for (int i = table.length - 2; i >= 0; i -= 2)
-          {
+          for (int i = table.length - 2; i >= 0; i -= 2) {
             Object key = table[i];
             if (key == null) {
               continue;
@@ -490,12 +454,10 @@ implements Map<K,V>, Cloneable
         }
 
         @Override
-        public boolean remove(Object o)
-        {
+        public boolean remove(Object o) {
           o = xform(o);
           int h = hash(o);
-          if (table[h] == o)
-          {
+          if (table[h] == o) {
             size--;
             modCount++;
             removeAtIndex(h);
@@ -523,23 +485,20 @@ implements Map<K,V>, Cloneable
    * @see #get(Object)
    */
   @Override
-  public V put(K key, V value)
-  {
+  public V put(K key, V value) {
     key = (K) xform(key);
     value = (V) xform(value);
 
     // We don't want to rehash if we're overwriting an existing slot.
     int h = hash(key);
-    if (table[h] == key)
-    {
+    if (table[h] == key) {
       V r = (V) unxform(table[h + 1]);
       table[h + 1] = value;
       return r;
     }
 
     // Rehash if the load factor is too high.
-    if (size > threshold)
-    {
+    if (size > threshold) {
       Object[] old = table;
       // This isn't necessarily prime, but it is an odd number of key/value
       // slots, which has a higher probability of fewer collisions.
@@ -547,11 +506,9 @@ implements Map<K,V>, Cloneable
       size = 0;
       threshold = (table.length >>> 3) * 3;
 
-      for (int i = old.length - 2; i >= 0; i -= 2)
-      {
+      for (int i = old.length - 2; i >= 0; i -= 2) {
         K oldkey = (K) old[i];
-        if (oldkey != null)
-        {
+        if (oldkey != null) {
           h = hash(oldkey);
           table[h] = oldkey;
           table[h + 1] = old[i + 1];
@@ -581,8 +538,7 @@ implements Map<K,V>, Cloneable
    * @throws NullPointerException if m is null
    */
   @Override
-  public void putAll(Map<? extends K, ? extends V> m)
-  {
+  public void putAll(Map<? extends K, ? extends V> m) {
     // Why did Sun specify this one? The superclass does the right thing.
     super.putAll(m);
   }
@@ -592,18 +548,15 @@ implements Map<K,V>, Cloneable
    * This is package-private for use by inner classes.
    * @param i index of the removed element
    */
-  final void removeAtIndex(int i)
-  {
+  final void removeAtIndex(int i) {
     // This is Algorithm R from Knuth, section 6.4.
     // Variable names are taken directly from the text.
-    while (true)
-    {
+    while (true) {
       table[i] = null;
       table[i + 1] = null;
       int j = i;
       int r;
-      do
-      {
+      do {
         i -= 2;
         if (i < 0) {
           i = table.length - 2;
@@ -612,12 +565,8 @@ implements Map<K,V>, Cloneable
         if (key == null) {
           return;
         }
-        r = Math.abs(Vm.identityHashCode(key)
-            % (table.length >> 1)) << 1;
-      }
-      while ((i <= r && r < j)
-          || (r < j && j < i)
-          || (j < i && i <= r));
+        r = Math.abs(Vm.identityHashCode(key) % (table.length >> 1)) << 1;
+      } while ((i <= r && r < j) || (r < j && j < i) || (j < i && i <= r));
       table[j] = table[i];
       table[j + 1] = table[i + 1];
     }
@@ -638,12 +587,10 @@ implements Map<K,V>, Cloneable
    * @return whatever the key mapped to, if present
    */
   @Override
-  public V remove(Object key)
-  {
+  public V remove(Object key) {
     key = xform(key);
     int h = hash(key);
-    if (table[h] == key)
-    {
+    if (table[h] == key) {
       modCount++;
       size--;
       Object r = unxform(table[h + 1]);
@@ -658,8 +605,7 @@ implements Map<K,V>, Cloneable
    * @return the size
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return size;
   }
 
@@ -682,37 +628,30 @@ implements Map<K,V>, Cloneable
    * @see #entrySet()
    */
   @Override
-  public Collection<V> values()
-  {
-    if (values == null){
-      values = new AbstractCollection<V>()
-      {
+  public Collection<V> values() {
+    if (values == null) {
+      values = new AbstractCollection<V>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<V> iterator()
-        {
+        public Iterator<V> iterator() {
           return new IdentityIterator<V>(VALUES);
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           IdentityHashMap4D.this.clear();
         }
 
         @Override
-        public boolean remove(Object o)
-        {
+        public boolean remove(Object o) {
           o = xform(o);
           // This approach may look strange, but it is ok.
           for (int i = table.length - 1; i > 0; i -= 2) {
-            if (table[i] == o)
-            {
+            if (table[i] == o) {
               modCount++;
               size--;
               IdentityHashMap4D.this.removeAtIndex(i - 1);
@@ -730,9 +669,8 @@ implements Map<K,V>, Cloneable
    * Transform a reference from its external form to its internal form.
    * This is package-private for use by inner classes.
    */
-  final Object xform(Object o)
-  {
-    if (o == null){
+  final Object xform(Object o) {
+    if (o == null) {
       o = nullslot;
     }
     return o;
@@ -742,9 +680,8 @@ implements Map<K,V>, Cloneable
    * Transform a reference from its internal form to its external form.
    * This is package-private for use by inner classes.
    */
-  final Object unxform(Object o)
-  {
-    if (o == nullslot){
+  final Object unxform(Object o) {
+    if (o == nullslot) {
       o = null;
     }
     return o;
@@ -761,12 +698,10 @@ implements Map<K,V>, Cloneable
    * @see #put(Object, Object)
    */
   // Package visible for use by nested classes.
-  final int hash(Object key)
-  {
+  final int hash(Object key) {
     int h = Math.abs(Vm.identityHashCode(key) % (table.length >> 1)) << 1;
 
-    while (true)
-    {
+    while (true) {
       // By requiring at least 2 key/value slots, and rehashing at 75%
       // capacity, we guarantee that there will always be either an empty
       // slot somewhere in the table.
@@ -791,8 +726,7 @@ implements Map<K,V>, Cloneable
    * @author Tom Tromey (tromey@redhat.com)
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private class IdentityIterator<I> implements Iterator<I>
-  {
+  private class IdentityIterator<I> implements Iterator<I> {
     /**
      * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
      * or {@link #ENTRIES}.
@@ -809,8 +743,7 @@ implements Map<K,V>, Cloneable
      * Construct a new Iterator with the supplied type.
      * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
      */
-    IdentityIterator(int type)
-    {
+    IdentityIterator(int type) {
       this.type = type;
     }
 
@@ -819,8 +752,7 @@ implements Map<K,V>, Cloneable
      * @return true if there are more elements
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return count > 0;
     }
 
@@ -831,27 +763,22 @@ implements Map<K,V>, Cloneable
      * @throws NoSuchElementException if there is none
      */
     @Override
-    public I next()
-    {
-      if (knownMod != modCount){
+    public I next() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (count == 0){
+      if (count == 0) {
         throw new NoSuchElementException();
       }
       count--;
 
       Object key;
-      do
-      {
+      do {
         loc -= 2;
         key = table[loc];
-      }
-      while (key == null);
+      } while (key == null);
 
-      return (I) (type == KEYS ? unxform(key)
-          : (type == VALUES ? unxform(table[loc + 1])
-              : new IdentityEntry(loc)));
+      return (I) (type == KEYS ? unxform(key) : (type == VALUES ? unxform(table[loc + 1]) : new IdentityEntry(loc)));
     }
 
     /**
@@ -862,12 +789,11 @@ implements Map<K,V>, Cloneable
      * @throws IllegalStateException if called when there is no last element
      */
     @Override
-    public void remove()
-    {
-      if (knownMod != modCount){
+    public void remove() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (loc == table.length){
+      if (loc == table.length) {
         throw new IllegalStateException();
       }
       modCount++;
@@ -887,8 +813,7 @@ implements Map<K,V>, Cloneable
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private final class IdentityEntry<EK,EV> implements Map.Entry<EK,EV>
-  {
+  private final class IdentityEntry<EK, EV> implements Map.Entry<EK, EV> {
     /** The location of this entry. */
     final int loc;
     /** The number of modifications to the backing Map that we know about. */
@@ -899,8 +824,7 @@ implements Map<K,V>, Cloneable
      *
      * @param loc the location of this entry in table
      */
-    IdentityEntry(int loc)
-    {
+    IdentityEntry(int loc) {
       this.loc = loc;
     }
 
@@ -915,17 +839,15 @@ implements Map<K,V>, Cloneable
      *         by modifying the Map or calling Iterator.remove()
      */
     @Override
-    public boolean equals(Object o)
-    {
-      if (knownMod != modCount){
+    public boolean equals(Object o) {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (! (o instanceof Map.Entry)){
+      if (!(o instanceof Map.Entry)) {
         return false;
       }
       Map.Entry e = (Map.Entry) o;
-      return table[loc] == xform(e.getKey())
-          && table[loc + 1] == xform(e.getValue());
+      return table[loc] == xform(e.getKey()) && table[loc + 1] == xform(e.getValue());
     }
 
     /**
@@ -936,9 +858,8 @@ implements Map<K,V>, Cloneable
      *         by modifying the Map or calling Iterator.remove()
      */
     @Override
-    public EK getKey()
-    {
-      if (knownMod != modCount){
+    public EK getKey() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
       return (EK) unxform(table[loc]);
@@ -952,9 +873,8 @@ implements Map<K,V>, Cloneable
      *         by modifying the Map or calling Iterator.remove()
      */
     @Override
-    public EV getValue()
-    {
-      if (knownMod != modCount){
+    public EV getValue() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
       return (EV) unxform(table[loc + 1]);
@@ -970,13 +890,11 @@ implements Map<K,V>, Cloneable
      *         by modifying the Map or calling Iterator.remove()
      */
     @Override
-    public int hashCode()
-    {
-      if (knownMod != modCount){
+    public int hashCode() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      return (Vm.identityHashCode(unxform(table[loc]))
-          ^ Vm.identityHashCode(unxform(table[loc + 1])));
+      return (Vm.identityHashCode(unxform(table[loc])) ^ Vm.identityHashCode(unxform(table[loc + 1])));
     }
 
     /**
@@ -988,9 +906,8 @@ implements Map<K,V>, Cloneable
      *         by modifying the Map or calling Iterator.remove()
      */
     @Override
-    public EV setValue(EV value)
-    {
-      if (knownMod != modCount){
+    public EV setValue(EV value) {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
       EV r = (EV) unxform(table[loc + 1]);
@@ -1007,9 +924,8 @@ implements Map<K,V>, Cloneable
      *         by modifying the Map or calling Iterator.remove()
      */
     @Override
-    public String toString()
-    {
-      if (knownMod != modCount){
+    public String toString() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
       return unxform(table[loc]) + "=" + unxform(table[loc + 1]);

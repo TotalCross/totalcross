@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util;
 
 /*
@@ -60,16 +58,15 @@ modifications.
  * This Hashtable class does not support Generics; use the HashMap class instead.
 
  */
-public class Hashtable
-{
+public class Hashtable {
   /** Hashtable collision list. */
-  protected static class Entry
-  {
+  protected static class Entry {
     public int hash;
     public Object key;
     public Object value;
     public Entry next;
   }
+
   /** The hash table data. */
   protected Entry table[];
   /** The total number of entries in the hash table. */
@@ -106,7 +103,7 @@ public class Hashtable
   /** Setting this to true will allow the hashtable to have more than one key with the same value.
    * In this case, the methods will always return the first matching key.
    * @since TotalCross 1.24
-   */ 
+   */
   public boolean allowDuplicateKeys;
 
   /**
@@ -115,12 +112,12 @@ public class Hashtable
    *
    * @param initialCapacity The number of elements you think the hashtable will end with. The hashtable will grow if necessary, but using
    * a number near or above the final size can improve performance.
-
+  
    */
-  public Hashtable(int initialCapacity)
-  {
+  public Hashtable(int initialCapacity) {
     init(initialCapacity, 0.75f);
   }
+
   /**
    * Constructs a new, empty hashtable with the specified initial
    * capacity and the specified load factor.
@@ -130,8 +127,7 @@ public class Hashtable
    * a number near or above the final size can improve performance.
    * @param loadFactor a number between 0.0 and 1.0.
    */
-  public Hashtable(int initialCapacity, double loadFactor)
-  {
+  public Hashtable(int initialCapacity, double loadFactor) {
     init(initialCapacity, loadFactor);
   }
 
@@ -168,14 +164,13 @@ public class Hashtable
   {
     String[] items = totalcross.sys.Convert.tokenizeString(res, '\n');
     init(items.length, 0.75); // guich@tc114_27
-    for (int i =0; i < items.length; i++)
-    {
+    for (int i = 0; i < items.length; i++) {
       String s = items[i];
-      int eq = s.indexOf('=',0);
+      int eq = s.indexOf('=', 0);
       if (eq < 0) {
         continue;
       }
-      put(s.substring(0,eq).trim(), s.substring(eq+1).trim());
+      put(s.substring(0, eq).trim(), s.substring(eq + 1).trim());
     }
   }
 
@@ -188,10 +183,9 @@ public class Hashtable
    * The values parameter cannot be null.
    * @since TotalCross 1.5
    */
-  public Hashtable(Object[] keys, Object values)
-  {
+  public Hashtable(Object[] keys, Object values) {
     this(keys.length);
-    Object[] objArray = values instanceof Object[] ? (Object[])values : null;
+    Object[] objArray = values instanceof Object[] ? (Object[]) values : null;
     for (int i = 0; i < keys.length; i++) {
       put(keys[i], objArray != null ? objArray[i] : values);
     }
@@ -199,30 +193,27 @@ public class Hashtable
 
   private void init(int initialCapacity, double loadFactor) // guich@tc114_27
   {
-    if (initialCapacity <= 0)
-    {
+    if (initialCapacity <= 0) {
       initialCapacity = 5; // guich@310_6
     }
-    initialCapacity = (int)(initialCapacity / loadFactor + 1); // guich@tc100: since most users just pass the number of element, compute the desired initial capacity based in the load factor
+    initialCapacity = (int) (initialCapacity / loadFactor + 1); // guich@tc100: since most users just pass the number of element, compute the desired initial capacity based in the load factor
     this.loadFactor = loadFactor;
     table = new Entry[initialCapacity];
-    threshold = (int)(initialCapacity * loadFactor);
+    threshold = (int) (initialCapacity * loadFactor);
   }
 
   /**
    * Clears this hashtable so that it contains no keys.
    */
-  public void clear()
-  {
+  public void clear() {
     Entry tab[] = table;
-    if (count < 100){
-      for (int i = tab.length; --i >= 0;)
-      {
+    if (count < 100) {
+      for (int i = tab.length; --i >= 0;) {
         tab[i] = null; // faster for tables with few elements
       }
-    }else {
+    } else {
       totalcross.sys.Convert.fill(tab, 0, tab.length, null);
-    }      
+    }
     count = 0;
   }
 
@@ -233,11 +224,10 @@ public class Hashtable
    *          <code>null</code> if the key is not mapped to any value in
    *          this hashtable.
    */
-  public Object get(Object key)
-  {
+  public Object get(Object key) {
     int hash = key.hashCode();
     int index = (hash & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if ((e.hash == hash) && e.key.equals(key)) {
         return e.value;
       }
@@ -258,9 +248,9 @@ public class Hashtable
   {
     int hash = key.hashCode();
     int index = (hash & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if ((e.hash == hash) && e.key.equals(key)) {
-        return e.value instanceof String ? (String)e.value : e.value.toString();
+        return e.value instanceof String ? (String) e.value : e.value.toString();
       }
     }
     return null;
@@ -279,9 +269,9 @@ public class Hashtable
   {
     int hash = key.hashCode();
     int index = (hash & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if ((e.hash == hash) && e.key.equals(key)) {
-        return e.value instanceof String ? (String)e.value : e.value.toString();
+        return e.value instanceof String ? (String) e.value : e.value.toString();
       }
     }
     return defaultValue;
@@ -300,7 +290,7 @@ public class Hashtable
   {
     int hash = key.hashCode();
     int index = (hash & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if ((e.hash == hash) && e.key.equals(key)) {
         return e.value;
       }
@@ -334,10 +324,9 @@ public class Hashtable
    *          <code>null</code> if the key is not mapped to any value in
    *          this hashtable.
    */
-  public Object get(int hash)
-  {
+  public Object get(int hash) {
     int index = (hash & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if (e.hash == hash) {
         return e.value;
       }
@@ -355,7 +344,7 @@ public class Hashtable
   {
     int hash = key.hashCode();
     int index = (hash & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if ((e.hash == hash) && e.key.equals(key)) {
         return true;
       }
@@ -368,9 +357,8 @@ public class Hashtable
    * @see #getValues
    * @see #getKeyValuePairs
    */
-  public Vector getKeys()
-  {
-    return getKeysValues(GET_KEYS,null);
+  public Vector getKeys() {
+    return getKeysValues(GET_KEYS, null);
   }
 
   /**
@@ -381,7 +369,7 @@ public class Hashtable
    */
   public Vector getValues() // guich@510_8
   {
-    return getKeysValues(GET_VALUES,null);
+    return getKeysValues(GET_VALUES, null);
   }
 
   /**
@@ -392,22 +380,22 @@ public class Hashtable
    */
   public Vector getKeyValuePairs(String separator) // guich@510_8
   {
-    return getKeysValues(GET_BOTH,separator);
+    return getKeysValues(GET_BOTH, separator);
   }
 
   private static final int GET_KEYS = 0;
   private static final int GET_VALUES = 1;
   private static final int GET_BOTH = 2;
 
-  private Vector getKeysValues(int getType, String sep)
-  {
+  private Vector getKeysValues(int getType, String sep) {
     // dgecawich 5/16/01 - fix so that all keys are returned rather than just the last one
     // the sympton for this was that getCount() always returned 1 regardless of how many items were added
     Object[] v = new Object[count];
-    if (table != null){
-      for (int i = 0,n=0; i < table.length; i++) {
+    if (table != null) {
+      for (int i = 0, n = 0; i < table.length; i++) {
         for (Entry entry = table[i]; entry != null; entry = entry.next) {
-          v[n++] = getType==GET_KEYS?entry.key:getType==GET_VALUES?entry.value:(entry.key+sep+entry.value);
+          v[n++] = getType == GET_KEYS ? entry.key
+              : getType == GET_VALUES ? entry.value : (entry.key + sep + entry.value);
         }
       }
     }
@@ -420,10 +408,9 @@ public class Hashtable
    */
   public void copyInto(Hashtable target) // guich@tc115_17
   {
-    if (table != null){
+    if (table != null) {
       for (int i = 0; i < table.length; i++) {
-        for (Entry entry = table[i]; entry != null; entry = entry.next)
-        {
+        for (Entry entry = table[i]; entry != null; entry = entry.next) {
           if (entry.key != null) {
             target.put(entry.key, entry.value);
           } else {
@@ -448,10 +435,9 @@ public class Hashtable
    *             or <code>null</code> if it did not have one.
    * @see     java.lang.Object#equals(java.lang.Object)
    */
-  public Object put(Object key, Object value)
-  {
+  public Object put(Object key, Object value) {
     // Make sure the value is not null
-    if (value == null){
+    if (value == null) {
       throw new NullPointerException("Argument 'value' cannot have a null value");
     }
     int hash = key.hashCode(); // flsobral@tc100b4_23: this operation throws NPE if key is null, no need to explicitly test that.
@@ -459,18 +445,16 @@ public class Hashtable
     // Makes sure the key is not already in the hashtable.
     Entry tab[] = table;
     int index = (hash & 0x7FFFFFFF) % tab.length;
-    if (!allowDuplicateKeys){
-      for (Entry e = tab[index] ; e != null ; e = e.next) {
-        if ((e.hash == hash) && e.key.equals(key))
-        {
+    if (!allowDuplicateKeys) {
+      for (Entry e = tab[index]; e != null; e = e.next) {
+        if ((e.hash == hash) && e.key.equals(key)) {
           Object old = e.value;
           e.value = value;
           return old;
         }
       }
     }
-    if (count >= threshold)
-    {
+    if (count >= threshold) {
       // Rehash the table if the threshold is exceeded
       rehash();
       return put(key, value);
@@ -482,7 +466,7 @@ public class Hashtable
     e.key = key;
     e.value = value;
     e.next = tab[index];
-    if (e.next != null){
+    if (e.next != null) {
       collisions++;
     }
     tab[index] = e;
@@ -508,27 +492,24 @@ public class Hashtable
    *             or <code>null</code> if it did not have one.
    * @see     java.lang.Object#equals(java.lang.Object)
    */
-  public Object put(int hash, Object value)
-  {
+  public Object put(int hash, Object value) {
     // Make sure the value is not null
-    if (value == null){
+    if (value == null) {
       throw new NullPointerException("Argument 'value' cannot have a null value");
     }
     // Makes sure the key is not already in the hashtable.
     Entry tab[] = table;
     int index = (hash & 0x7FFFFFFF) % tab.length;
-    if (!allowDuplicateKeys){
-      for (Entry e = tab[index] ; e != null ; e = e.next) {
-        if (e.hash == hash)
-        {
+    if (!allowDuplicateKeys) {
+      for (Entry e = tab[index]; e != null; e = e.next) {
+        if (e.hash == hash) {
           Object old = e.value;
           e.value = value;
           return old;
         }
       }
     }
-    if (count >= threshold)
-    {
+    if (count >= threshold) {
       // Rehash the table if the threshold is exceeded
       rehash();
       return put(hash, value);
@@ -539,7 +520,7 @@ public class Hashtable
     e.hash = hash;
     e.value = value;
     e.next = tab[index];
-    if (e.next != null){
+    if (e.next != null) {
       collisions++;
     }
     tab[index] = e;
@@ -553,20 +534,18 @@ public class Hashtable
    * number of keys in the hashtable exceeds this hashtable's capacity
    * and load factor.
    */
-  protected void rehash()
-  {
+  protected void rehash() {
     int oldCapacity = table.length;
     Entry oldTable[] = table;
 
     int newCapacity = (((oldCapacity << 1) + oldCapacity) >> 1) + 1; // guich@120 - grows 50% instead of 100% - guich@200b4_198: added Peter Dickerson and Andrew Chitty changes to correct the optimization i made with << and >>
     Entry newTable[] = new Entry[newCapacity];
 
-    threshold = (int)(newCapacity * loadFactor);
+    threshold = (int) (newCapacity * loadFactor);
     table = newTable;
 
-    for (int i = oldCapacity ; i-- > 0 ;) {
-      for (Entry old = oldTable[i] ; old != null ; )
-      {
+    for (int i = oldCapacity; i-- > 0;) {
+      for (Entry old = oldTable[i]; old != null;) {
         Entry e = old;
         old = old.next;
 
@@ -576,6 +555,7 @@ public class Hashtable
       }
     }
   }
+
   /**
    * Removes the key (and its corresponding value) from this
    * hashtable. This method does nothing if the key is not in the hashtable.
@@ -583,14 +563,12 @@ public class Hashtable
    * @return  the value to which the key had been mapped in this hashtable,
    *          or <code>null</code> if the key did not have a mapping.
    */
-  public Object remove(Object key)
-  {
+  public Object remove(Object key) {
     Entry tab[] = table;
     int hash = key.hashCode();
     int index = (hash & 0x7FFFFFFF) % tab.length;
-    for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next) {
-      if ((e.hash == hash) && e.key.equals(key))
-      {
+    for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
+      if ((e.hash == hash) && e.key.equals(key)) {
         if (prev != null) {
           prev.next = e.next;
         } else {
@@ -614,9 +592,8 @@ public class Hashtable
   {
     Entry tab[] = table;
     int index = (hash & 0x7FFFFFFF) % tab.length;
-    for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next) {
-      if (e.hash == hash)
-      {
+    for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
+      if (e.hash == hash) {
         if (prev != null) {
           prev.next = e.next;
         } else {
@@ -627,11 +604,10 @@ public class Hashtable
       }
     }
     return null;
-  }   
+  }
 
   /** Returns the number of keys in this hashtable. */
-  public int size()
-  {
+  public int size() {
     return count;
   }
 
@@ -641,9 +617,8 @@ public class Hashtable
    * @param lineSeparator The separator placed after each key+value pair (E.G.: "\r\n"). The last separator is cut from the StringBuffer.
    * @since TotalCross 1.23
    */
-  public StringBuffer dumpKeysValues(StringBuffer sb, String keyvalueSeparator, String lineSeparator)
-  {
-    if (table != null){
+  public StringBuffer dumpKeysValues(StringBuffer sb, String keyvalueSeparator, String lineSeparator) {
+    if (table != null) {
       for (int i = 0; i < table.length; i++) {
         for (Entry entry = table[i]; entry != null; entry = entry.next) {
           sb.append(entry.key).append(keyvalueSeparator).append(entry.value).append(lineSeparator);
@@ -651,8 +626,8 @@ public class Hashtable
       }
     }
     int l = sb.length();
-    if (l > 0){
-      sb.setLength(l-lineSeparator.length());
+    if (l > 0) {
+      sb.setLength(l - lineSeparator.length());
     }
     return sb;
   }

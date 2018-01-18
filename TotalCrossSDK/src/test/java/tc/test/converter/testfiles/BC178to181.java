@@ -9,12 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC178to181 extends ExtField1
-{
+public class BC178to181 extends ExtField1 {
   private boolean fb1;
   private char fc1;
   private byte fB1;
@@ -35,18 +32,17 @@ public class BC178to181 extends ExtField1
   private static double static_d1;
   private static Object static_o1;
 
-  public void start()
-  {
+  public void start() {
     // getField -> this
     boolean b1 = fb1; // regI (2)
-    char c1 = fc1;    // regI (4)
-    byte B1 = fB1;    // regI (6)
-    short s1 = fs1;   // regI (8)
-    int i1 = fi1;     // regI (10)
-    long l1 = fl1;    // reg64 (2)
-    float f1 = ff1;   // reg64 (4)
-    double d1 = fd1;  // reg64 (6)
-    Object o1 = fo1;  // regO (2)
+    char c1 = fc1; // regI (4)
+    byte B1 = fB1; // regI (6)
+    short s1 = fs1; // regI (8)
+    int i1 = fi1; // regI (10)
+    long l1 = fl1; // reg64 (2)
+    float f1 = ff1; // reg64 (4)
+    double d1 = fd1; // reg64 (6)
+    Object o1 = fo1; // regO (2)
 
     // putField -> this
     fb1 = b1;
@@ -111,19 +107,18 @@ public class BC178to181 extends ExtField1
     ExtField2.fo1 = o1;
   }
 
-  public BC178to181() { }
+  public BC178to181() {
+  }
 }
 
-class ExtField1
-{
+class ExtField1 {
   protected int ext_fi1;
   protected long ext_fl1;
   protected double ext_fd1;
   protected Object ext_fo1;
 }
 
-class ExtField2
-{
+class ExtField2 {
   public static int fi1;
   public static long fl1;
   public static double fd1;

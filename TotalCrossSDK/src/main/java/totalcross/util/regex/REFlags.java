@@ -29,17 +29,17 @@
 
 package totalcross.util.regex;
 
-public interface REFlags{
+public interface REFlags {
   /**
    * All the foolowing options turned off
    */
-  public int DEFAULT=0;
+  public int DEFAULT = 0;
 
   /**
    * Pattern "a" matches both "a" and "A".
    * Corresponds to "i" in Perl notation.
    */
-  public int IGNORE_CASE=1<<0;
+  public int IGNORE_CASE = 1 << 0;
 
   /**
    * Affects the behaviour of "^" and "$" tags. When switched off:
@@ -50,7 +50,7 @@ public interface REFlags{
    * <li> the "$" additionally matches the line ends (that is just before "\r\n" or '\n');
    * Corresponds to "m" in Perl notation.
    */
-  public int MULTILINE=1<<1;
+  public int MULTILINE = 1 << 1;
 
   /**
    * Affects the behaviour of dot(".") tag. When switched off:
@@ -60,7 +60,7 @@ public interface REFlags{
    * This flag is sometimes referenced in regex tutorials as SINGLELINE, which confusingly seems opposite to MULTILINE, but in fact is orthogonal.
    * Corresponds to "s" in Perl notation.
    */
-  public int DOTALL=1<<2;
+  public int DOTALL = 1 << 2;
 
   /**
    * Affects how the space characters are interpeted in the expression. When switched off:
@@ -69,7 +69,7 @@ public interface REFlags{
    * <li> the spaces are ingnored, allowing an expression to be slightly more readable.
    * Corresponds to "x" in Perl notation.
    */
-  public int IGNORE_SPACES=1<<3;
+  public int IGNORE_SPACES = 1 << 3;
 
   /**
    * Affects whether the predefined classes("\d","\s","\w",etc) in the expression are interpreted as belonging to Unicode. When switched off:
@@ -77,10 +77,10 @@ public interface REFlags{
    * When switched on:
    * <li> the predefined classes are interpreted as Unicode categories;
    */
-  public int UNICODE=1<<4;
+  public int UNICODE = 1 << 4;
 
   /**
    * Turns on the compatibility with XML Schema regular expressions.
    */
-  public int XML_SCHEMA=1<<5;
+  public int XML_SCHEMA = 1 << 5;
 }

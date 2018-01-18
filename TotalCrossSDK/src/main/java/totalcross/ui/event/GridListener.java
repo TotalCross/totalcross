@@ -14,22 +14,21 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Grid events. */
 
-public interface GridListener
-{
+public interface GridListener {
   /** A SELECTED_EVENT event was dispatched.
    * @see GridEvent 
    */
   public void gridSelected(GridEvent e);
+
   /** A CHECK_CHANGED_EVENT event was dispatched.
    * @see GridEvent 
    */
   public void gridCheckChanged(GridEvent e);
+
   /** A TEXT_CHANGED_EVENT event was dispatched.
    * @see GridEvent 
    */

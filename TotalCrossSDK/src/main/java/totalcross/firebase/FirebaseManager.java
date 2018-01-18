@@ -93,7 +93,8 @@ public class FirebaseManager {
         registeredService = service;
         firstTime = false;
       } else {
-        throw new UnsupportedOperationException("One should implement MainWindow.initFirebaseInstanceIdService() to register a firebase instanceIdService");
+        throw new UnsupportedOperationException(
+            "One should implement MainWindow.initFirebaseInstanceIdService() to register a firebase instanceIdService");
       }
     }
   }

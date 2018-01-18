@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.Convert;
@@ -68,11 +66,9 @@ import totalcross.ui.gfx.Rect;
  * 
  * In Android UI, the ToolTip is displayed with a round border.
  **/
-public class ToolTip extends Label implements PenListener, MouseListener
-{
+public class ToolTip extends Label implements PenListener, MouseListener {
   private static PenEvent outside;
-  static
-  {
+  static {
     outside = new PenEvent();
     outside.type = PenEvent.PEN_UP;
   }
@@ -99,6 +95,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
   public int borderColor = -1; // the color around the rect
 
   private String msg0, msg0lines[];
+
   /**
    * Constructor
    * @param control the control which supports the tip. 
@@ -106,19 +103,17 @@ public class ToolTip extends Label implements PenListener, MouseListener
    * @param message the message which will be written in the tip. You can
    * make multiLine, using \n character like in the Label control.
    **/
-  public ToolTip(Control control, String message)
-  {
-    super(message==null?"":message, LEFT);
+  public ToolTip(Control control, String message) {
+    super(message == null ? "" : message, LEFT);
     msg0 = super.text;
-    if (msg0.indexOf('\n') != -1){
-      msg0lines = Convert.tokenizeString(msg0,'\n');
+    if (msg0.indexOf('\n') != -1) {
+      msg0lines = Convert.tokenizeString(msg0, '\n');
     }
     setVisible(false);
     this.control = control;
-    setBackForeColors(UIColors.tooltipBack,UIColors.tooltipFore);
+    setBackForeColors(UIColors.tooltipBack, UIColors.tooltipFore);
     transparentBackground = uiAndroid;
-    if (control != null) 
-    {
+    if (control != null) {
       control.addPenListener(this); // i must admit: listeners simplified a LOT the ToolTip class
       control.addMouseListener(this);
       control.onEventFirst = false;
@@ -129,9 +124,8 @@ public class ToolTip extends Label implements PenListener, MouseListener
   /** Stop using mouse events to show the tooltip.
    * @since TotalCross 1.27
    */
-  public void dontShowTipOnMouseEvents()
-  {
-    if (control != null){
+  public void dontShowTipOnMouseEvents() {
+    if (control != null) {
       control.removeMouseListener(this);
     }
   }
@@ -148,87 +142,74 @@ public class ToolTip extends Label implements PenListener, MouseListener
    * @since TotalCross 1.2
    */
   @Deprecated
-  public static String split(String msg, FontMetrics fm)
-  {
-    return Convert.insertLineBreak(Settings.screenWidth-insideGap*2, fm, msg);
+  public static String split(String msg, FontMetrics fm) {
+    return Convert.insertLineBreak(Settings.screenWidth - insideGap * 2, fm, msg);
   }
 
   /** Change the control rect to the given one. By default, its used the absolute rectangle
    * of the control passed in the constructor. The placement of the tooltip will
    * be defined based on it, in a way that the control is not obscured. */
-  public void setControlRect(Rect r)
-  {
-    int xx,yy;
+  public void setControlRect(Rect r) {
+    int xx, yy;
 
     Window w = control == null ? null : control.getParentWindow();
-    if (w == null){
+    if (w == null) {
       w = Window.getTopMost();
     }
     w.add(this); // guich@tc100b4_19: must always be (re)added to the parent container to make sure we will be the last control that will be painted
     Coord size = w.getSize();
 
-    int ww = msg0lines != null ? fm.getMaxWidth(msg0lines,0,msg0lines.length) : fm.stringWidth(msg0); // guich@tc120_2: moved to after w.add(this)
-    if (ww == 0){
-      ww = getMaxTextWidth()+ insideGap;
+    int ww = msg0lines != null ? fm.getMaxWidth(msg0lines, 0, msg0lines.length) : fm.stringWidth(msg0); // guich@tc120_2: moved to after w.add(this)
+    if (ww == 0) {
+      ww = getMaxTextWidth() + insideGap;
     }
-    if (ww > Settings.screenWidth)
-    {
+    if (ww > Settings.screenWidth) {
       super.setText(Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, fm, msg0));
       ww = super.getMaxTextWidth();
     }
-    int hh = getPreferredHeight()+ insideGap;
+    int hh = getPreferredHeight() + insideGap;
 
     // can we place it below the control?
-    if (r.y2()+distY+hh < size.y && r.height != 0){
-      yy = r.y2()+distY-w.y; // guich@tc126_48: decrease window's y
-    }
-    else {
-      yy = Math.max(0,r.y-hh-distY-w.y); // guich@tc126_48: decrease window's y
+    if (r.y2() + distY + hh < size.y && r.height != 0) {
+      yy = r.y2() + distY - w.y; // guich@tc126_48: decrease window's y
+    } else {
+      yy = Math.max(0, r.y - hh - distY - w.y); // guich@tc126_48: decrease window's y
     }
 
     // check if we don't overflow the width
-    if ((r.x+ww+distX) > size.x){
+    if ((r.x + ww + distX) > size.x) {
       xx = size.x - ww - distX;
-    }
-    else {
+    } else {
       xx = r.x + distX - w.x; // guich@tc126_48: decrease window's x
     }
 
-    setRect(xx,yy,ww+(super.lines.length == 1 ? insideGap : fmH),hh,null,false); // careful: xx,yy are relative to window position, but the control's rect passed as parameter is ABSOLUTE
+    setRect(xx, yy, ww + (super.lines.length == 1 ? insideGap : fmH), hh, null, false); // careful: xx,yy are relative to window position, but the control's rect passed as parameter is ABSOLUTE
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == TimerEvent.TRIGGERED)
-    {
-      if (delayTimer != null && delayTimer.triggered)
-      {
+  public void onEvent(Event e) {
+    if (e.type == TimerEvent.TRIGGERED) {
+      if (delayTimer != null && delayTimer.triggered) {
         removeTimer(delayTimer);
         delayTimer = null;
-        if (control != null)
-        {
+        if (control != null) {
           setControlRect(control.getAbsoluteRect());
           control._onEvent(getPressedEvent(this)); // tell the parent that we'll popup
         }
         if (text.length() > 0) {
           show();
         }
-      }
-      else
-        if (displayTimer != null && displayTimer.triggered)
-        {
-          hide();
-          if (control != null) {
-            postOutside();
-          }
+      } else if (displayTimer != null && displayTimer.triggered) {
+        hide();
+        if (control != null) {
+          postOutside();
         }
+      }
     }
   }
 
-  private void postOutside()
-  {
-    outside.absoluteX = outside.x = outside.absoluteY = outside.y = -(Settings.touchTolerance+1); // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
+  private void postOutside() {
+    outside.absoluteX = outside.x = outside.absoluteY = outside.y = -(Settings.touchTolerance + 1); // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
     outside.target = control;
     outside.consumed = false;
     control.postEvent(outside);
@@ -242,8 +223,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
    * toolTip.show();
    * </pre> 
    */
-  public void show()
-  {
+  public void show() {
     displayTimer = addTimer(millisDisplay);
     setVisible(true);
     shown = true;
@@ -251,9 +231,8 @@ public class ToolTip extends Label implements PenListener, MouseListener
   }
 
   /** Hides the tooltip. */
-  public void hide()
-  {
-    if (displayTimer != null){
+  public void hide() {
+    if (displayTimer != null) {
       removeTimer(displayTimer);
     }
     displayTimer = null;
@@ -262,33 +241,28 @@ public class ToolTip extends Label implements PenListener, MouseListener
   }
 
   @Override
-  public void mouseMove(MouseEvent e)
-  {
+  public void mouseMove(MouseEvent e) {
   }
 
   @Override
-  public void mouseIn(MouseEvent e)
-  {
+  public void mouseIn(MouseEvent e) {
     penDown(e);
   }
 
   @Override
-  public void mouseOut(MouseEvent e)
-  {
+  public void mouseOut(MouseEvent e) {
     penUp(e);
   }
 
   @Override
-  public void penDown(PenEvent e)
-  {
+  public void penDown(PenEvent e) {
     delayTimer = addTimer(millisDelay);
     shown = false;
   }
 
   @Override
-  public void penUp(PenEvent e)
-  {
-    if (e == outside){
+  public void penUp(PenEvent e) {
+    if (e == outside) {
       return;
     }
 
@@ -310,66 +284,58 @@ public class ToolTip extends Label implements PenListener, MouseListener
       }
       displayTimer = delayTimer = null;
     }
-    if (shown && e != null){
+    if (shown && e != null) {
       e.consumed = true;
     }
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     if (displayTimer != null) // only draw if we're visible
     {
-      int dx = (insideGap>>1)+1;
-      int dy = (dx>>1)-2;
+      int dx = (insideGap >> 1) + 1;
+      int dy = (dx >> 1) - 2;
       g.backColor = backColor;
       if (uiAndroid) {
-        g.fillRoundRect(0,0,width,height,fmH/2);
-      }
-      else {
-        g.fillRect(0,0,dx,height); // since g will be translated, fill the part that the Label won't
+        g.fillRoundRect(0, 0, width, height, fmH / 2);
+      } else {
+        g.fillRect(0, 0, dx, height); // since g will be translated, fill the part that the Label won't
       }
       // draw the label, taking care to not overwrite the border
-      g.translate(dx,dy);
+      g.translate(dx, dy);
       super.onPaint(g);
-      g.translate(-dx,-dy);
+      g.translate(-dx, -dy);
       // draw the border
-      if (borderColor != -1)
-      {
+      if (borderColor != -1) {
         g.foreColor = borderColor;
         if (uiAndroid) {
-          g.drawRoundRect(0,0,width,height,fmH/2);
+          g.drawRoundRect(0, 0, width, height, fmH / 2);
         } else {
-          g.drawRect(0,0,width,height);
+          g.drawRect(0, 0, width, height);
         }
       }
     }
   }
 
   @Override
-  public void penDrag(DragEvent e)
-  {
+  public void penDrag(DragEvent e) {
   }
 
   @Override
-  public void penDragEnd(DragEvent e)
-  {
+  public void penDragEnd(DragEvent e) {
   }
 
   @Override
-  public void penDragStart(DragEvent e)
-  {
+  public void penDragStart(DragEvent e) {
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     hide();
     super.reposition();
   }
 
   @Override
-  public void mouseWheel(MouseEvent e)
-  {
+  public void mouseWheel(MouseEvent e) {
   }
 }

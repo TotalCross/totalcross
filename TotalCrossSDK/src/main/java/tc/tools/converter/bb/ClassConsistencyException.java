@@ -9,19 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb;
 
-public class ClassConsistencyException extends Exception
-{
-  public ClassConsistencyException(JavaClass jc1, String reason)
-  {
+public class ClassConsistencyException extends Exception {
+  public ClassConsistencyException(JavaClass jc1, String reason) {
     super("Class '" + jc1 + "' is not consistent" + (reason != null ? ": " + reason : ""));
   }
 
-  public ClassConsistencyException(JavaClass jc1, JavaClass jc2, String reason)
-  {
+  public ClassConsistencyException(JavaClass jc1, JavaClass jc2, String reason) {
     super("Class '" + jc1 + "' is not consistent with '" + jc2 + "'" + (reason != null ? ": " + reason : ""));
   }
 }

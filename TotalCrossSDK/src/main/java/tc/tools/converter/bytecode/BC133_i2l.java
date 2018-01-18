@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC133_i2l extends Conversion
-{
-  public BC133_i2l()
-  {
-    super(-1,-1, INT, LONG);
+public class BC133_i2l extends Conversion {
+  public BC133_i2l() {
+    super(-1, -1, INT, LONG);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-1].asLong = (long)stack[stackPtr-1].asInt;
+  public void exec() {
+    stack[stackPtr - 1].asLong = (long) stack[stackPtr - 1].asInt;
   }
 }

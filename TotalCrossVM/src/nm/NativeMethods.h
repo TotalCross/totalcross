@@ -326,6 +326,7 @@ TC_API void tnCM_nativeClose(NMParams p);
 TC_API void tnCM_getHostAddress_s(NMParams p);
 TC_API void tnCM_getHostName_s(NMParams p);
 TC_API void tnCM_getLocalHost(NMParams p);
+TC_API void tnCM_getLocalHostName(NMParams p);
 TC_API void tnCM_isAvailable_i(NMParams p);
 TC_API void tnCM_releaseResources(NMParams p);
 TC_API void tnS_socketCreate_siib(NMParams p);
@@ -427,7 +428,7 @@ TC_API void tiPDBF_setAttributes_i(NMParams p);
 TC_API void tiPDBF_searchBytes_Bii(NMParams p);
 TC_API void tiF_getDeviceAlias(NMParams p);
 TC_API void tiF_create_sii(NMParams p);
-TC_API void tiF_nativeClose(NMParams p);
+TC_API void tiF_close(NMParams p);
 TC_API void tiF_isCardInserted_i(NMParams p);
 TC_API void tiF_createDir(NMParams p);
 TC_API void tiF_delete(NMParams p);
@@ -573,7 +574,8 @@ TC_API void tmA_setPositionD_i(NMParams p);
 TC_API void tmA_setVisibleD_b(NMParams p);
 TC_API void tmA_isVisibleD(NMParams p);
 TC_API void ttSM_sendTextMessage_sss(NMParams p);
-TC_API void ttSM_registerSmsReceiver_s(NMParams p);
+TC_API void ttSM_sendDataMessage_ssiB(NMParams p);
+TC_API void ttSM_registerSmsReceiver_si(NMParams p);
 TC_API void tfiFII_getToken(NMParams p);
 
 #ifdef __cplusplus

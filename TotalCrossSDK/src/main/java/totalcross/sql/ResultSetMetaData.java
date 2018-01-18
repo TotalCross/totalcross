@@ -2,8 +2,7 @@ package totalcross.sql;
 
 import java.sql.SQLException;
 
-public interface ResultSetMetaData
-{
+public interface ResultSetMetaData {
   public static final int columnNoNulls = 0;
   public static final int columnNullable = 1;
   public static final int columnNullableUnknown = 2;
@@ -50,4 +49,3 @@ public interface ResultSetMetaData
 
   public String getColumnClassName(int column) throws SQLException;
 }
-

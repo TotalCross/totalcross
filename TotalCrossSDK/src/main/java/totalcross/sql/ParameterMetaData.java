@@ -41,8 +41,7 @@ import java.sql.SQLException;
 /**
  * @since 1.4
  */
-public interface ParameterMetaData
-{
+public interface ParameterMetaData {
   int parameterNoNulls = 0;
 
   int parameterNullable = 1;

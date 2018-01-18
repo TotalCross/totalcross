@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.chart;
 
 import totalcross.sys.Convert;
@@ -32,8 +30,7 @@ import totalcross.util.Vector;
 
 /** A vertical column chart. */
 
-public class ColumnChart extends Chart
-{
+public class ColumnChart extends Chart {
   /** The current selected column */
   private int selection = -1;
 
@@ -56,8 +53,7 @@ public class ColumnChart extends Chart
    * Creates a new 2D column chart
    * @param categories The categories that will be used
    */
-  public ColumnChart(String[] categories)
-  {
+  public ColumnChart(String[] categories) {
     this(0, categories);
   }
 
@@ -67,20 +63,18 @@ public class ColumnChart extends Chart
    * @param categories The categories that will be used
    * @see #type
    */
-  public ColumnChart(int type, String[] categories)
-  {
+  public ColumnChart(int type, String[] categories) {
     this.type = type;
     setXAxis(categories);
   }
 
   @Override
-  public void onPaint(Graphics g)
-  {
-    if (columns.size() != series.size()){
+  public void onPaint(Graphics g) {
+    if (columns.size() != series.size()) {
       columns.removeAllElements();
     }
 
-    if (!draw(g)){
+    if (!draw(g)) {
       return;
     }
 
@@ -88,7 +82,7 @@ public class ColumnChart extends Chart
     int cCount = xAxisSteps;
 
     int numCols = sCount * cCount;
-    for (int i = columns.size(); i < numCols; i ++) {
+    for (int i = columns.size(); i < numCols; i++) {
       columns.addElement(new Rect());
     }
 
@@ -100,10 +94,11 @@ public class ColumnChart extends Chart
     boolean forward = perspectiveH >= 0;
 
     int col = 0;
-    for (int i = 0; i < cCount; i ++) // for each category
+    for (int i = 0; i < cCount; i++) // for each category
     {
-      int x = getXValuePos(i) + colS + (forward ? 0 : colW*(sCount-1)-perspectiveH);
-      for (int j = forward ? 0 : sCount-1; forward ? (j < sCount) : (j >= 0); j+=(forward?1:-1), x += (forward?colW:-colW), col++) // for each series
+      int x = getXValuePos(i) + colS + (forward ? 0 : colW * (sCount - 1) - perspectiveH);
+      for (int j = forward ? 0 : sCount - 1; forward ? (j < sCount)
+          : (j >= 0); j += (forward ? 1 : -1), x += (forward ? colW : -colW), col++) // for each series
       {
         Series s = (Series) series.items[j];
         int y = getYValuePos(s.yValues[i]);
@@ -119,15 +114,12 @@ public class ColumnChart extends Chart
           c = Color.darker(c);
         }
 
-        if ((type & (GRADIENT_HORIZONTAL|GRADIENT_VERTICAL)) != 0)
-        {
-          int fade = (type & GRADIENT_DARK) != 0 ? Color.darker(c,128) : Color.brighter(c,128);
+        if ((type & (GRADIENT_HORIZONTAL | GRADIENT_VERTICAL)) != 0) {
+          int fade = (type & GRADIENT_DARK) != 0 ? Color.darker(c, 128) : Color.brighter(c, 128);
           boolean invertGradient = (type & GRADIENT_INVERT) != 0;
           boolean vertical = (type & GRADIENT_VERTICAL) != 0;
-          g.fillShadedRect(x,y,colW, yAxisY1-y,!invertGradient,!vertical,c,fade,100); // note: original method was drawRoundGradient, which draws from c2 to c1, that's why we use !invert here
-        }
-        else
-        {
+          g.fillShadedRect(x, y, colW, yAxisY1 - y, !invertGradient, !vertical, c, fade, 100); // note: original method was drawRoundGradient, which draws from c2 to c1, that's why we use !invert here
+        } else {
           g.backColor = c;
           g.fillRect(x, y, colW + 1, yAxisY1 - y + 1);
         }
@@ -143,26 +135,33 @@ public class ColumnChart extends Chart
 
           // top
           g.backColor = Color.darker(c);
-          xPoints[0] = x; yPoints[0] = y;
-          xPoints[1] = x + perspectiveH; yPoints[1] = y - perspectiveV;
-          xPoints[2] = x + colW + perspectiveH; yPoints[2] = y - perspectiveV;
-          xPoints[3] = x + colW; yPoints[3] = y;
+          xPoints[0] = x;
+          yPoints[0] = y;
+          xPoints[1] = x + perspectiveH;
+          yPoints[1] = y - perspectiveV;
+          xPoints[2] = x + colW + perspectiveH;
+          yPoints[2] = y - perspectiveV;
+          xPoints[3] = x + colW;
+          yPoints[3] = y;
 
           g.fillPolygon(xPoints, yPoints, 4);
           g.drawPolygon(xPoints, yPoints, 4);
 
           // side
-          if (perspectiveH >= 0)
-          {
-            xPoints[0] = x + colW; yPoints[0] = yAxisY1;
-            xPoints[1] = x + colW + perspectiveH; yPoints[1] = yAxisY1;
-          }
-          else
-          {
-            xPoints[0] = x; yPoints[0] = yAxisY1;
-            xPoints[1] = x + perspectiveH; yPoints[1] = yAxisY1;
-            xPoints[2] = x + perspectiveH; yPoints[2] = y - perspectiveV;
-            xPoints[3] = x; yPoints[3] = y;
+          if (perspectiveH >= 0) {
+            xPoints[0] = x + colW;
+            yPoints[0] = yAxisY1;
+            xPoints[1] = x + colW + perspectiveH;
+            yPoints[1] = yAxisY1;
+          } else {
+            xPoints[0] = x;
+            yPoints[0] = yAxisY1;
+            xPoints[1] = x + perspectiveH;
+            yPoints[1] = yAxisY1;
+            xPoints[2] = x + perspectiveH;
+            yPoints[2] = y - perspectiveV;
+            xPoints[3] = x;
+            yPoints[3] = y;
           }
 
           g.fillPolygon(xPoints, yPoints, 4);
@@ -173,52 +172,46 @@ public class ColumnChart extends Chart
 
     if (selection >= 0) // there is a selection
     {
-      Rect r = (Rect)columns.items[selection];
-      String text = Convert.toCurrencyString(((Series) series.items[selection % sCount]).yValues[selection / sCount], xDecimalPlaces);
+      Rect r = (Rect) columns.items[selection];
+      String text = Convert.toCurrencyString(((Series) series.items[selection % sCount]).yValues[selection / sCount],
+          xDecimalPlaces);
       drawTextBox(g, r.x, r.y, text);
     }
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    switch (e.type)
-    {
+  public void onEvent(Event e) {
+    switch (e.type) {
     case PenEvent.PEN_UP:
-      if (!hadParentScrolled())
-      {
+      if (!hadParentScrolled()) {
         PenEvent pe = (PenEvent) e;
         pe.consumed = true;
 
-        if (pe.x >= xAxisX1 && pe.x <= xAxisX2 && pe.y >= yAxisY2 && pe.y <= yAxisY1)
-        {
+        if (pe.x >= xAxisX1 && pe.x <= xAxisX2 && pe.y >= yAxisY2 && pe.y <= yAxisY1) {
           selection = -1;
           int len = columns.size();
           int i;
 
-          for (i = 0; i < len; i ++)
-          {
+          for (i = 0; i < len; i++) {
             Rect r = (Rect) columns.items[i];
             if (r.contains(pe.x, pe.y)) {
               break;
             }
           }
 
-          if (i < len)
-          {
+          if (i < len) {
             if ((type & IS_3D) != 0 && i < len - 1) // check overlaping with next column if 3D
             {
               Rect r = (Rect) columns.items[i + 1];
               if (r.contains(pe.x, pe.y)) {
-                i ++;
+                i++;
               }
             }
 
             selection = i;
           }
           Window.needsPaint = true;
-        }
-        else if (selection >= 0) // there is a column selected, invalidate
+        } else if (selection >= 0) // there is a column selected, invalidate
         {
           selection = -1;
           Window.needsPaint = true;
@@ -226,33 +219,25 @@ public class ColumnChart extends Chart
       }
       break;
     case KeyEvent.SPECIAL_KEY_PRESS:
-      if (Settings.keyboardFocusTraversable)
-      {
+      if (Settings.keyboardFocusTraversable) {
         KeyEvent ke = (KeyEvent) e;
 
-        if (ke.isActionKey())
-        {
+        if (ke.isActionKey()) {
           isHighlighting = true;
           parent.requestFocus();
-        }
-        else
-        {
+        } else {
           int len = columns.size();
-          if (len > 0)
-          {
+          if (len > 0) {
             if (ke.isNextKey()) // next column
             {
-              if (selection < len - 1)
-              {
-                selection ++;
+              if (selection < len - 1) {
+                selection++;
                 Window.needsPaint = true;
               }
-            }
-            else if (ke.isPrevKey()) // previous column
+            } else if (ke.isPrevKey()) // previous column
             {
-              if (selection > 0)
-              {
-                selection --;
+              if (selection > 0) {
+                selection--;
                 Window.needsPaint = true;
               }
             }
@@ -261,15 +246,13 @@ public class ColumnChart extends Chart
       }
       break;
     case ControlEvent.FOCUS_IN:
-      if (Settings.keyboardFocusTraversable && columns.size() > 0)
-      {
+      if (Settings.keyboardFocusTraversable && columns.size() > 0) {
         selection = 0;
         Window.needsPaint = true;
       }
       break;
     case ControlEvent.FOCUS_OUT:
-      if (selection >= 0)
-      {
+      if (selection >= 0) {
         selection = -1;
         Window.needsPaint = true;
       }

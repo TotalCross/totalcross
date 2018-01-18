@@ -9,22 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC166_if_acmpne extends ConditionalBranch
-{
-  public BC166_if_acmpne()
-  {
-    super(-2,-2,-1,readInt16(pc+1),OBJECT);
+public class BC166_if_acmpne extends ConditionalBranch {
+  public BC166_if_acmpne() {
+    super(-2, -2, -1, readInt16(pc + 1), OBJECT);
   }
+
   @Override
-  public void exec()
-  {
-    if (stack[stackPtr-2].asObj != stack[stackPtr-1].asObj){
+  public void exec() {
+    if (stack[stackPtr - 2].asObj != stack[stackPtr - 1].asObj) {
       pcInc = jumpIfTrue;
-    }else {
+    } else {
       pcInc = jumpIfFalse;
     }
   }

@@ -19,13 +19,11 @@ package totalcross.unit;
 /** 
  * Exception dispatched when an assertion fails. 
  */
-public class AssertionFailedError extends RuntimeException
-{
+public class AssertionFailedError extends RuntimeException {
   /** 
    * Constructs an empty exception. 
    */
-  public AssertionFailedError()
-  {
+  public AssertionFailedError() {
     super();
   }
 
@@ -34,8 +32,7 @@ public class AssertionFailedError extends RuntimeException
    *
    * @param arg0 The error message.
    */
-  public AssertionFailedError(String arg0)
-  {
+  public AssertionFailedError(String arg0) {
     super(arg0);
   }
 }

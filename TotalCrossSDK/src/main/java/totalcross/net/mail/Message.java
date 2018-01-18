@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.io.IOException;
@@ -28,8 +26,7 @@ import totalcross.util.Vector;
  * 
  * @since TotalCross 1.13
  */
-public class Message extends Part
-{
+public class Message extends Part {
   /** The subject of this message */
   public String subject;
 
@@ -51,8 +48,7 @@ public class Message extends Part
    * 
    * @since TotalCross 1.13
    */
-  public Message()
-  {
+  public Message() {
     vRecipients[RecipientType.TO] = new Vector();
     vRecipients[RecipientType.CC] = new Vector();
     vRecipients[RecipientType.BCC] = new Vector();
@@ -68,8 +64,7 @@ public class Message extends Part
    * @param headerSize
    * @since TotalCross 1.13
    */
-  Message(Folder folder, int msgNumber, String uidl, int size, int headerSize)
-  {
+  Message(Folder folder, int msgNumber, String uidl, int size, int headerSize) {
     this();
     this.msgNumber = msgNumber;
     this.folder = folder;
@@ -79,21 +74,20 @@ public class Message extends Part
   }
 
   @Override
-  public void addHeader(String name, String value)
-  {
-    if (name.length() > 7){
+  public void addHeader(String name, String value) {
+    if (name.length() > 7) {
       headers.addHeader(name, value);
-    }else if (name.equalsIgnoreCase("From")){
+    } else if (name.equalsIgnoreCase("From")) {
       throw new IllegalArgumentException();
-    }else if (name.equalsIgnoreCase(RecipientType.recipientPrefix[RecipientType.TO])){
+    } else if (name.equalsIgnoreCase(RecipientType.recipientPrefix[RecipientType.TO])) {
       throw new IllegalArgumentException();
-    }else if (name.equalsIgnoreCase(RecipientType.recipientPrefix[RecipientType.CC])){
+    } else if (name.equalsIgnoreCase(RecipientType.recipientPrefix[RecipientType.CC])) {
       throw new IllegalArgumentException();
-    }else if (name.equalsIgnoreCase(RecipientType.recipientPrefix[RecipientType.BCC])){
+    } else if (name.equalsIgnoreCase(RecipientType.recipientPrefix[RecipientType.BCC])) {
       throw new IllegalArgumentException();
-    }else if (name.equalsIgnoreCase("Subject")){
+    } else if (name.equalsIgnoreCase("Subject")) {
       throw new IllegalArgumentException();
-    }else {
+    } else {
       headers.addHeader(name, value);
     }
   }
@@ -111,9 +105,8 @@ public class Message extends Part
    *            if the given address is null
    * @since TotalCross 1.13
    */
-  public void addRecipient(int type, Address address)
-  {
-    if (type < RecipientType.TO || type > RecipientType.BCC){
+  public void addRecipient(int type, Address address) {
+    if (type < RecipientType.TO || type > RecipientType.BCC) {
       throw new IllegalArgumentException();
     }
     recipients.addElement(address.address);
@@ -133,14 +126,12 @@ public class Message extends Part
    *            if addresses is null, or has a null value
    * @since TotalCross 1.13
    */
-  public void addRecipients(int type, Address[] addresses)
-  {
-    if (type < RecipientType.TO || type > RecipientType.BCC){
+  public void addRecipients(int type, Address[] addresses) {
+    if (type < RecipientType.TO || type > RecipientType.BCC) {
       throw new IllegalArgumentException();
     }
 
-    for (int i = 0; i < addresses.length; i++)
-    {
+    for (int i = 0; i < addresses.length; i++) {
       recipients.addElement(addresses[i].address);
       vRecipients[type].addElement(addresses[i]);
     }
@@ -153,9 +144,8 @@ public class Message extends Part
    *           the senders
    * @since TotalCross 1.22
    */
-  public void addFrom(Address[] addresses)
-  {
-    if (vFrom == null){
+  public void addFrom(Address[] addresses) {
+    if (vFrom == null) {
       vFrom = new Vector();
     }
     vFrom.addElements(addresses);
@@ -168,11 +158,10 @@ public class Message extends Part
    *           the sender
    * @since TotalCross 1.22
    */
-  public void setFrom(Address address)
-  {
-    if (vFrom == null){
+  public void setFrom(Address address) {
+    if (vFrom == null) {
       vFrom = new Vector();
-    }else {
+    } else {
       vFrom.removeAllElements();
     }
     vFrom.addElement(address);
@@ -188,13 +177,12 @@ public class Message extends Part
    * @return array of Address objects
    * @since TotalCross 1.22
    */
-  public Address[] getFrom()
-  {
-    if (vFrom == null){
+  public Address[] getFrom() {
+    if (vFrom == null) {
       return null;
     }
     int fromSize = vFrom.size();
-    if (fromSize == 0){
+    if (fromSize == 0) {
       return new Address[0];
     }
     Address[] addresses = new Address[fromSize];
@@ -203,22 +191,17 @@ public class Message extends Part
   }
 
   @Override
-  public void writeTo(Stream stream) throws MessagingException
-  {
-    try
-    {
+  public void writeTo(Stream stream) throws MessagingException {
+    try {
       //flsobral@tc123_49: moved SMTP commands from Message.writeTo to SMTPTransport.sendMessage - Message.writeTo now correctly supports writing to any type of stream.
       // FROM
-      if (vFrom != null)
-      {
+      if (vFrom != null) {
         stream.writeBytes("From: ");
         int fromSize = vFrom.size();
-        if (fromSize > 0)
-        {
+        if (fromSize > 0) {
           Address from = (Address) vFrom.items[0];
           stream.writeBytes(from.toString());
-          for (int i = 1; i < fromSize; i++)
-          {
+          for (int i = 1; i < fromSize; i++) {
             from = (Address) vFrom.items[i];
             stream.writeBytes(", " + from);
           }
@@ -227,18 +210,15 @@ public class Message extends Part
       }
 
       // TO, CC and BCC
-      if (!vRecipients[RecipientType.TO].isEmpty())
-      {
+      if (!vRecipients[RecipientType.TO].isEmpty()) {
         stream.writeBytes("To: " + vRecipients[RecipientType.TO].toString(", "));
         stream.writeBytes(Convert.CRLF_BYTES);
       }
-      if (!vRecipients[RecipientType.CC].isEmpty())
-      {
+      if (!vRecipients[RecipientType.CC].isEmpty()) {
         stream.writeBytes("Cc: " + vRecipients[RecipientType.CC].toString(", "));
         stream.writeBytes(Convert.CRLF_BYTES);
       }
-      if (!vRecipients[RecipientType.BCC].isEmpty())
-      {
+      if (!vRecipients[RecipientType.BCC].isEmpty()) {
         stream.writeBytes("Bcc: " + vRecipients[RecipientType.BCC].toString(", "));
         stream.writeBytes(Convert.CRLF_BYTES);
       }
@@ -252,9 +232,7 @@ public class Message extends Part
       stream.writeBytes(Convert.CRLF_BYTES);
 
       super.writeTo(stream);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new MessagingException(e);
     }
   }
@@ -265,9 +243,8 @@ public class Message extends Part
    * @throws MessagingException
    * @since TotalCross 1.13
    */
-  public void delete() throws MessagingException
-  {
-    if (folder != null){
+  public void delete() throws MessagingException {
+    if (folder != null) {
       folder.deleteMessage(this);
     }
   }
@@ -294,16 +271,15 @@ public class Message extends Part
    * @throws AddressException
    * @since TotalCross 1.13
    */
-  public Message reply(boolean replyToAll) throws AddressException
-  {
+  public Message reply(boolean replyToAll) throws AddressException {
     Message reply = new Message();
 
     reply.subject = subject;
-    if (!reply.subject.startsWith("Re:")){
+    if (!reply.subject.startsWith("Re:")) {
       reply.subject = "Re:" + reply.subject;
     }
 
-    if (vFrom != null && !vFrom.isEmpty()){
+    if (vFrom != null && !vFrom.isEmpty()) {
       reply.addRecipient(Message.RecipientType.TO, (Address) vFrom.items[0]);
     }
 
@@ -312,8 +288,7 @@ public class Message extends Part
     return reply;
   }
 
-  public interface RecipientType
-  {
+  public interface RecipientType {
     static final int TO = 0;
     static final int CC = 1;
     static final int BCC = 2;
@@ -328,30 +303,24 @@ public class Message extends Part
   //private static final String HEADER_BCC = "\r\nBcc: ";
   private static final String HEADER_CONTENT_TYPE = "\r\nContent-type: ";
 
-  void parseHeader(String header) throws IOException, AddressException
-  {
+  void parseHeader(String header) throws IOException, AddressException {
     subject = getAttribute(HEADER_SUBJECT, header);
     String szFrom = getAttribute(HEADER_FROM, header);
-    if (szFrom != null)
-    {
+    if (szFrom != null) {
       int start = szFrom.indexOf('<');
-      if (start != -1)
-      {
+      if (start != -1) {
         String address = szFrom.substring(start + 1, szFrom.indexOf('>'));
         String personal = null;
         if (start > 0) {
           personal = szFrom.substring(0, start - 1);
         }
         setFrom(new Address(address, personal));
-      }
-      else
-      {
+      } else {
         setFrom(new Address(szFrom, null));
       }
     }
     String szTo = getAttribute(HEADER_TO, header);
-    if (szTo != null)
-    {
+    if (szTo != null) {
       String[] tokens = Convert.tokenizeString(szTo, ',');
       parseRecipient(RecipientType.TO, tokens);
     }
@@ -360,38 +329,34 @@ public class Message extends Part
     // String szBcc = getAttribute(HEADER_BCC, header);
 
     mimeType = getAttribute(HEADER_CONTENT_TYPE, header);
-    if (mimeType == null){
+    if (mimeType == null) {
       mimeType = PLAIN;
     }
   }
 
-  void parseContent(String content) throws IOException
-  {
+  void parseContent(String content) throws IOException {
     //if (mimeType == null || mimeType.equals(Part.PLAIN))
     this.content = content;
   }
 
-  private String getAttribute(String attribute, String source)
-  {
+  private String getAttribute(String attribute, String source) {
     int start = source.indexOf(attribute);
-    if (start == -1){
+    if (start == -1) {
       return null;
     }
     start += attribute.length();
     int end = source.indexOf(Convert.CRLF, start);
-    if (end == -1){
+    if (end == -1) {
       return null;
     }
     String result = source.substring(start, end);
-    if (result.startsWith("=?iso-8859-1?Q?"))
-    {
+    if (result.startsWith("=?iso-8859-1?Q?")) {
       int endEncoded = result.indexOf("?=");
       int resultLen = result.length();
       String encoded = result.substring(15, endEncoded);
       StringBuffer sb = new StringBuffer(resultLen);
       start = 0;
-      while ((end = encoded.indexOf('=', start)) != -1)
-      {
+      while ((end = encoded.indexOf('=', start)) != -1) {
         if (start != end) {
           sb.append(encoded.substring(start, end));
         }
@@ -408,25 +373,19 @@ public class Message extends Part
     return result;
   }
 
-  private void parseRecipient(int type, String[] tokens) throws AddressException
-  {
+  private void parseRecipient(int type, String[] tokens) throws AddressException {
     int len = tokens.length;
-    for (int i = 0; i < len; i++)
-    {
-      if (tokens[i].length() > 0)
-      {
+    for (int i = 0; i < len; i++) {
+      if (tokens[i].length() > 0) {
         int start = tokens[i].indexOf('<');
-        if (start != -1)
-        {
+        if (start != -1) {
           String address = tokens[i].substring(start + 1, tokens[i].indexOf('>'));
           String personal = address;
           if (start > 1) {
             personal = tokens[i].substring(1, start - 1);
           }
           addRecipient(type, new Address(address, personal));
-        }
-        else
-        {
+        } else {
           String address = tokens[i].substring(1);
           addRecipient(type, new Address(address, null));
         }

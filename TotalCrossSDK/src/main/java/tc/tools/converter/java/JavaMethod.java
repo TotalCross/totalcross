@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.java;
 
 import java.util.Arrays;
@@ -27,18 +25,17 @@ import totalcross.io.DataStream;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.Vector;
 
-public final class JavaMethod
-{
-  public String               name, ret, signature;
-  public JavaCode             code;
-  public JavaClass            classOfMethod;
-  public String[]             checkedExceptions;
-  public boolean              isPublic, isPrivate, isProtected, isStatic, isFinal, isVolatile, isTransient, isNative,
-  isAbstract, isStrict, isSynchronized;
+public final class JavaMethod {
+  public String name, ret, signature;
+  public JavaCode code;
+  public JavaClass classOfMethod;
+  public String[] checkedExceptions;
+  public boolean isPublic, isPrivate, isProtected, isStatic, isFinal, isVolatile, isTransient, isNative, isAbstract,
+      isStrict, isSynchronized;
   // method signature
-  public String[]             params;
-  public int                  paramCount;
-  private static Vector       vec   = new Vector(20);
+  public String[] params;
+  public int paramCount;
+  private static Vector vec = new Vector(20);
   private static StringBuffer retsb = new StringBuffer(30);
 
   public boolean replaceWithNative;
@@ -50,16 +47,13 @@ public final class JavaMethod
     ret.setLength(0);
     int n = s.length();
     for (int i = 1; i < n; i++) {
-      switch (s.charAt(i))
-      {
+      switch (s.charAt(i)) {
       case '[': // array?
       {
         int last = i;
-        do
-        {
+        do {
           last++;
-        }
-        while (s.charAt(last) == '[');
+        } while (s.charAt(last) == '[');
         if (s.charAt(last) == 'L') {
           last = s.indexOf(';', last);
         }
@@ -85,47 +79,44 @@ public final class JavaMethod
     // the return is the last added parameter
     {
       ret.append((String) v.pop());
-    }
-    catch (ElementNotFoundException e)
-    {
+    } catch (ElementNotFoundException e) {
     }
     return (String[]) v.toObjectArray();
   }
 
   private static int floatWarning;
 
-  public JavaMethod(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException
-  {
+  public JavaMethod(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
     this.classOfMethod = jc;
     int f = ds.readUnsignedShort();
-    isPublic    = (f & 0x1) != 0;
-    isPrivate   = (f & 0x2) != 0;
+    isPublic = (f & 0x1) != 0;
+    isPrivate = (f & 0x2) != 0;
     isProtected = (f & 0x4) != 0;
-    isStatic    = (f & 0x8) != 0;
-    isFinal     = (f & 0x10) != 0;
+    isStatic = (f & 0x8) != 0;
+    isFinal = (f & 0x10) != 0;
     isSynchronized = (f & 0x20) != 0;
-    isNative    = (f & 0x100) != 0;
-    isAbstract  = (f & 0x400) != 0;
-    isStrict    = (f & 0x800) != 0;
+    isNative = (f & 0x100) != 0;
+    isAbstract = (f & 0x400) != 0;
+    isStrict = (f & 0x800) != 0;
 
     name = (String) cp.constants[ds.readUnsignedShort()];
     String parameters = (String) cp.constants[ds.readUnsignedShort()];
     params = splitParams(parameters, retsb);
-    if (params != null){
+    if (params != null) {
       paramCount = params.length;
     }
     this.ret = retsb.toString();
     signature = name + parameters.substring(0, parameters.length() - ret.length()); // (I)V -> (I)
 
     // check for float types in the method
-    if (params != null){
-      for (int i = 0; i < params.length-1; i++) {
-        if (params[i].equals("F"))
-        {
+    if (params != null) {
+      for (int i = 0; i < params.length - 1; i++) {
+        if (params[i].equals("F")) {
           if (floatWarning++ == 0) {
-            System.out.println("There's a bug in tc.Deploy that will lead to unpredictable results in device when a method has a float parameter that's not at the last position. To fix this, just change the parameter's type from float to double. Note that, in device, all float values ARE transformed into double (TCVM does not supports float in device).");
+            System.out.println(
+                "There's a bug in tc.Deploy that will lead to unpredictable results in device when a method has a float parameter that's not at the last position. To fix this, just change the parameter's type from float to double. Note that, in device, all float values ARE transformed into double (TCVM does not supports float in device).");
           }
-          System.out.println("Caution! Method "+jc.className+"."+name+" has a float parameter.");
+          System.out.println("Caution! Method " + jc.className + "." + name + " has a float parameter.");
           break;
         }
       }
@@ -133,8 +124,7 @@ public final class JavaMethod
 
     // read the attributes
     int n = ds.readUnsignedShort();
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
       String name = (String) cp.constants[ds.readUnsignedShort()];
       int len = ds.readInt();
       if (false) {
@@ -142,8 +132,7 @@ public final class JavaMethod
       }
       if (name.equals("Code") || name.equals("JavaCode")) {
         code = new JavaCode(this, ds, cp);
-      } else if (name.equals("Exceptions"))
-      {
+      } else if (name.equals("Exceptions")) {
         checkedExceptions = new String[ds.readUnsignedShort()];
         for (int j = 0; j < checkedExceptions.length; j++) {
           checkedExceptions[j] = cp.getString1(ds.readUnsignedShort());
@@ -178,10 +167,7 @@ public final class JavaMethod
     Type returnType = Type.getReturnType(methodNode.desc);
     ret = returnType.getDescriptor();
 
-    signature =
-        methodNode.name
-        + Arrays.toString(Type.getArgumentTypes(methodNode.desc))
-        .replace(", ", "")
+    signature = methodNode.name + Arrays.toString(Type.getArgumentTypes(methodNode.desc)).replace(", ", "")
         .replaceFirst("^\\[(.*)\\]$", "($1)");
 
     if (methodNode.invisibleAnnotations != null && methodNode.invisibleAnnotations.size() > 0) {
@@ -193,8 +179,7 @@ public final class JavaMethod
     }
   }
 
-  public JavaMethod parse(JavaClass jc, DataStream ds, JavaConstantPool cp)
-      throws totalcross.io.IOException {
+  public JavaMethod parse(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
 
     this.classOfMethod = jc;
     int f = ds.readUnsignedShort();
@@ -225,8 +210,7 @@ public final class JavaMethod
             System.out.println(
                 "There's a bug in tc.Deploy that will lead to unpredictable results in device when a method has a float parameter that's not at the last position. To fix this, just change the parameter's type from float to double. Note that, in device, all float values ARE transformed into double (TCVM does not supports float in device).");
           }
-          System.out.println(
-              "Caution! Method " + jc.className + "." + name + " has a float parameter.");
+          System.out.println("Caution! Method " + jc.className + "." + name + " has a float parameter.");
           break;
         }
       }

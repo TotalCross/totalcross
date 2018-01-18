@@ -17,32 +17,27 @@ import totalcross.unit.TestCase;
 import totalcross.util.BigInteger;
 import totalcross.util.Random;
 
-public class TestBigInteger extends TestCase
-{
+public class TestBigInteger extends TestCase {
   private final static int bitlen = 100;
 
   @Override
-  public void testRun()
-  {
-    try
-    {
+  public void testRun() {
+    try {
       testConstants();
       testConstructor();
       testRandom();
       testAddition();
       testMultiplication();
       testGcd();
-    } catch (InvalidNumberException exception)
-    {
+    } catch (InvalidNumberException exception) {
       fail();
-    }      
+    }
   }
 
   /**
    * Tests static initialization and constants.
    */
-  private void testConstants() 
-  {  
+  private void testConstants() {
     assertEquals(BigInteger.ONE.subtract(BigInteger.ONE).intValue(), BigInteger.ZERO.intValue());
     assertEquals(BigInteger.ZERO.intValue(), 0);
     assertEquals(BigInteger.ONE.intValue(), 1);
@@ -53,8 +48,7 @@ public class TestBigInteger extends TestCase
    * Test constructor and toString.
    * @throws InvalidNumberException 
    */
-  private void testConstructor() throws InvalidNumberException 
-  {
+  private void testConstructor() throws InvalidNumberException {
     assertEquals(new BigInteger("34"), new BigInteger("34"));
     assertEquals(new BigInteger("-4"), new BigInteger("-4"));
 
@@ -75,8 +69,7 @@ public class TestBigInteger extends TestCase
    * Test random integer. 
    * @throws InvalidNumberException 
    */
-  private void testRandom() throws InvalidNumberException 
-  {
+  private void testRandom() throws InvalidNumberException {
     BigInteger a = new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1));
     BigInteger b = new BigInteger("" + a);
 
@@ -87,8 +80,7 @@ public class TestBigInteger extends TestCase
   /**
    * Tests addition.
    */
-  private void testAddition() 
-  {
+  private void testAddition() {
     BigInteger a = new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1));
     BigInteger b = a.add(BigInteger.ZERO);
     BigInteger c = a.add(a).subtract(a);
@@ -100,14 +92,13 @@ public class TestBigInteger extends TestCase
     b = a.subtract(BigInteger.ZERO);
     assertEquals(b.intValue(), a.intValue());
     b = a.subtract(a);
-    assertEquals(b.intValue(), BigInteger.ZERO.intValue());  
+    assertEquals(b.intValue(), BigInteger.ZERO.intValue());
   }
 
   /**
    * Test multiplication.
    */
-  private void testMultiplication() 
-  {
+  private void testMultiplication() {
     BigInteger a = new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1));
     BigInteger b = a.multiply(a);
     BigInteger c = b.divide(a);
@@ -129,8 +120,7 @@ public class TestBigInteger extends TestCase
   /**
    * Tests gcd. 
    */
-  private void testGcd() 
-  {
+  private void testGcd() {
     BigInteger a = new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1));
     BigInteger b = new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1));
     BigInteger c = a.gcd(b);

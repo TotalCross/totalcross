@@ -11,10 +11,8 @@ import totalcross.unit.TestCase;
 
 // svn.apache.org/repos/asf/harmony/enhanced/java/trunk/classlib/modules/luni/src/test/api/common/org/apache/harmony/luni/tests/java/lang/reflect/FieldTest.java
 
-public class FieldTest extends TestCase
-{
-  static class TestField
-  {
+public class FieldTest extends TestCase {
+  static class TestField {
     public static int pubfield1;
     protected static double doubleSField = Double.MAX_VALUE;
     private static int privfield1 = 123;
@@ -40,24 +38,20 @@ public class FieldTest extends TestCase
     protected static transient volatile int prsttrvol = 99;
   }
 
-  public class TestFieldSub1 extends TestField
-  {
+  public class TestFieldSub1 extends TestField {
   }
 
-  public class TestFieldSub2 extends TestField
-  {
+  public class TestFieldSub2 extends TestField {
   }
 
-  static class A
-  {
+  static class A {
     protected short shortField = Short.MAX_VALUE;
   }
 
   /**
    * @tests java.lang.reflect.Field#equals(java.lang.Object)
    */
-  public void test_equalsLjava_lang_Object() throws Exception
-  {
+  public void test_equalsLjava_lang_Object() throws Exception {
     // Test for method boolean
     // java.lang.reflect.Field.equals(java.lang.Object)
     TestField x = new TestField();
@@ -73,8 +67,7 @@ public class FieldTest extends TestCase
    * @tests java.lang.reflect.Field#get(java.lang.Object)
    */
   @SuppressWarnings("static-access")
-  public void test_getLjava_lang_Object() throws Throwable
-  {
+  public void test_getLjava_lang_Object() throws Throwable {
     // Test for method java.lang.Object
     // java.lang.reflect.Field.get(java.lang.Object)
     TestField x = new TestField();
@@ -86,57 +79,45 @@ public class FieldTest extends TestCase
     f = x.getClass().getDeclaredField("doubleSField");
     f.set(x, new Double(1.0));
     val = (Double) f.get(x);
-    assertEquals(1.0, val.doubleValue(),0);
+    assertEquals(1.0, val.doubleValue(), 0);
 
     // Try a get on a private field
-    try
-    {
+    try {
       f = TestAccess.class.getDeclaredField("xxx");
       assertNotNull(f);
       f.get(null);
       fail("No expected IllegalAccessException");
-    }
-    catch (IllegalAccessException ok)
-    {
+    } catch (IllegalAccessException ok) {
     }
 
     // Try a get on a private field in nested member
     // temporarily commented because it breaks J9 VM
     // Regression for HARMONY-1309
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("privfield1");
       assertEquals(TestField.privfield1, ((Integer) f.get(x)).intValue());
       fail("could get field access!");
-    }
-    catch (IllegalAccessException ok)
-    {
+    } catch (IllegalAccessException ok) {
     }
 
     // Try a get using an invalid class.
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("doubleField");
       f.get(new String());
       fail("No expected IllegalArgumentException");
-    }
-    catch (IllegalArgumentException exc)
-    {
+    } catch (IllegalArgumentException exc) {
       // Correct - Passed an Object that does not declare or inherit f
     }
   }
 
-  class SupportSubClass extends Support_Field
-  {
+  class SupportSubClass extends Support_Field {
 
-    Object getField(char primitiveType, Object o, Field f, Class<? extends IllegalArgumentException> expectedException)
-    {
+    Object getField(char primitiveType, Object o, Field f,
+        Class<? extends IllegalArgumentException> expectedException) {
       Object res = null;
-      try
-      {
+      try {
         primitiveType = Convert.toUpperCase(primitiveType);
-        switch (primitiveType)
-        {
+        switch (primitiveType) {
         case 'I': // int
           res = new Integer(f.getInt(o));
           break;
@@ -164,32 +145,24 @@ public class FieldTest extends TestCase
         default:
           res = f.get(o);
         }
-        if (expectedException != null)
-        {
+        if (expectedException != null) {
           fail("expected exception " + expectedException.getName());
         }
-      }
-      catch (Exception e)
-      {
-        if (expectedException == null)
-        {
+      } catch (Exception e) {
+        if (expectedException == null) {
           fail("unexpected exception " + e);
-        }
-        else
-        {
+        } else {
           test(e.getClass(), expectedException);
         }
       }
       return res;
     }
 
-    void setField(char primitiveType, Object o, Field f, Class<? extends IllegalArgumentException> expectedException, Object value)
-    {
-      try
-      {
+    void setField(char primitiveType, Object o, Field f, Class<? extends IllegalArgumentException> expectedException,
+        Object value) {
+      try {
         primitiveType = Convert.toUpperCase(primitiveType);
-        switch (primitiveType)
-        {
+        switch (primitiveType) {
         case 'I': // int
           f.setInt(o, ((Integer) value).intValue());
           break;
@@ -217,28 +190,21 @@ public class FieldTest extends TestCase
         default:
           f.set(o, value);
         }
-        if (expectedException != null)
-        {
+        if (expectedException != null) {
           fail("expected exception " + expectedException.getName());
         }
-      }
-      catch (Exception e)
-      {
-        if (expectedException == null)
-        {
+      } catch (Exception e) {
+        if (expectedException == null) {
           fail("unexpected exception " + e);
-        }
-        else
-        {
-          test(e.getClass(),expectedException);
+        } else {
+          test(e.getClass(), expectedException);
         }
       }
     }
   }
 
-  private void test(Object i, Object j)
-  {
-    assertEquals(i,j);
+  private void test(Object i, Object j) {
+    assertEquals(i, j);
   }
 
   /**
@@ -261,8 +227,7 @@ public class FieldTest extends TestCase
    * @tests java.lang.reflect.Field#setDouble(java.lang.Object, double)
    * @tests java.lang.reflect.Field#setChar(java.lang.Object, char)
    */
-  public void testProtectedFieldAccess()
-  {
+  public void testProtectedFieldAccess() {
     Class<? extends Support_Field> fieldClass = new Support_Field().getClass();
     String fieldName = null;
     Field objectField = null;
@@ -274,8 +239,7 @@ public class FieldTest extends TestCase
     Field longField = null;
     Field floatField = null;
     Field doubleField = null;
-    try
-    {
+    try {
       fieldName = "objectField";
       objectField = fieldClass.getDeclaredField(fieldName);
 
@@ -302,9 +266,7 @@ public class FieldTest extends TestCase
 
       fieldName = "doubleField";
       doubleField = fieldClass.getDeclaredField(fieldName);
-    }
-    catch (NoSuchFieldException e)
-    {
+    } catch (NoSuchFieldException e) {
       fail("missing field " + fieldName + " in test support class " + fieldClass.getName());
     }
 
@@ -335,27 +297,22 @@ public class FieldTest extends TestCase
     // primitive fields.
     char types[] = { 'L', 'B', 'S', 'C', 'I', 'J', 'F', 'D' };
     Field fields[] = { objectField, byteField, shortField, charField, intField, longField, floatField, doubleField };
-    Object values[] = { new Byte((byte) 1), new Byte((byte) 1), new Short((short) 1), new Character((char) 1), new Integer(1), new Long(1), new Float(1),
-        new Double(1) };
+    Object values[] = { new Byte((byte) 1), new Byte((byte) 1), new Short((short) 1), new Character((char) 1),
+        new Integer(1), new Long(1), new Float(1), new Double(1) };
 
     // test set methods
-    for (int i = 0; i < types.length; i++)
-    {
+    for (int i = 0; i < types.length; i++) {
       char type = types[i];
       Object value = values[i];
-      for (int j = i; j < fields.length; j++)
-      {
+      for (int j = i; j < fields.length; j++) {
         Field field = fields[j];
         fieldName = field.getName();
-        if (field == charField && type != 'C')
-        {
+        if (field == charField && type != 'C') {
           // the exception is that bytes and shorts CANNOT be
           // converted into chars even though chars CAN be
           // converted into ints, longs, floats and doubles
           subclass.setField(type, subclass, field, illegalArgumentExceptionClass, value);
-        }
-        else
-        {
+        } else {
           // setting type into field);
           subclass.setField(type, subclass, field, null, value);
           subclass.setField(type, otherSubclass, field, null, value);
@@ -363,8 +320,7 @@ public class FieldTest extends TestCase
           subclass.setField(type, plainObject, field, illegalArgumentExceptionClass, value);
         }
       }
-      for (int j = 0; j < i; j++)
-      {
+      for (int j = 0; j < i; j++) {
         Field field = fields[j];
         fieldName = field.getName();
         // not setting type into field);
@@ -378,15 +334,13 @@ public class FieldTest extends TestCase
     subclass.setField('Z', otherSubclass, booleanField, null, booleanValue);
     subclass.setField('Z', parentClass, booleanField, /* illegalAccessExceptionClass guich@javase */null, booleanValue);
     subclass.setField('Z', plainObject, booleanField, illegalArgumentExceptionClass, booleanValue);
-    for (int j = 0; j < fields.length; j++)
-    {
+    for (int j = 0; j < fields.length; j++) {
       Field listedField = fields[j];
       fieldName = listedField.getName();
       // not setting boolean into listedField
       subclass.setField('Z', subclass, listedField, illegalArgumentExceptionClass, booleanValue);
     }
-    for (int i = 0; i < types.length; i++)
-    {
+    for (int i = 0; i < types.length; i++) {
       char type = types[i];
       Object value = values[i];
       subclass.setField(type, subclass, booleanField, illegalArgumentExceptionClass, value);
@@ -402,22 +356,17 @@ public class FieldTest extends TestCase
     fields = newFields;
     types = newTypes;
     // test get methods
-    for (int i = 0; i < types.length; i++)
-    {
+    for (int i = 0; i < types.length; i++) {
       char type = types[i];
-      for (int j = 0; j <= i; j++)
-      {
+      for (int j = 0; j <= i; j++) {
         Field field = fields[j];
         fieldName = field.getName();
-        if (type == 'C' && field != charField)
-        {
+        if (type == 'C' && field != charField) {
           // the exception is that bytes and shorts CANNOT be
           // converted into chars even though chars CAN be
           // converted into ints, longs, floats and doubles
           subclass.getField(type, subclass, field, illegalArgumentExceptionClass);
-        }
-        else
-        {
+        } else {
           // getting type from field
           subclass.getField(type, subclass, field, null);
           subclass.getField(type, otherSubclass, field, null);
@@ -425,8 +374,7 @@ public class FieldTest extends TestCase
           subclass.getField(type, plainObject, field, illegalArgumentExceptionClass);
         }
       }
-      for (int j = i + 1; j < fields.length; j++)
-      {
+      for (int j = i + 1; j < fields.length; j++) {
         Field field = fields[j];
         fieldName = field.getName();
         subclass.getField(type, subclass, field, illegalArgumentExceptionClass);
@@ -438,15 +386,13 @@ public class FieldTest extends TestCase
     subclass.getField('Z', otherSubclass, booleanField, null);
     subclass.getField('Z', parentClass, booleanField, null /* illegalAccessExceptionClass guich@javase */);
     subclass.getField('Z', plainObject, booleanField, illegalArgumentExceptionClass);
-    for (int j = 0; j < fields.length; j++)
-    {
+    for (int j = 0; j < fields.length; j++) {
       Field listedField = fields[j];
       fieldName = listedField.getName();
       // not getting boolean from listedField
       subclass.getField('Z', subclass, listedField, illegalArgumentExceptionClass);
     }
-    for (int i = 0; i < types.length - 1; i++)
-    {
+    for (int i = 0; i < types.length - 1; i++) {
       char type = types[i];
       subclass.getField(type, subclass, booleanField, illegalArgumentExceptionClass);
     }
@@ -457,8 +403,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getBoolean(java.lang.Object)
    */
-  public void test_getBooleanLjava_lang_Object() throws Exception
-  {
+  public void test_getBooleanLjava_lang_Object() throws Exception {
     // Test for method boolean
     // java.lang.reflect.Field.getBoolean(java.lang.Object)
 
@@ -470,13 +415,10 @@ public class FieldTest extends TestCase
 
     assertTrue(val);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("doubleField");
       f.getBoolean(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since doubleField is not a
       // boolean type
       return;
@@ -487,8 +429,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getByte(java.lang.Object)
    */
-  public void test_getByteLjava_lang_Object() throws Exception
-  {
+  public void test_getByteLjava_lang_Object() throws Exception {
     // Test for method byte
     // java.lang.reflect.Field.getByte(java.lang.Object)
     TestField x = new TestField();
@@ -498,13 +439,10 @@ public class FieldTest extends TestCase
     val = f.getByte(x);
 
     assertTrue(val == Byte.MAX_VALUE);
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.getByte(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since byteField is not a
       // boolean type
       return;
@@ -516,8 +454,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getChar(java.lang.Object)
    */
-  public void test_getCharLjava_lang_Object() throws Exception
-  {
+  public void test_getCharLjava_lang_Object() throws Exception {
     // Test for method char
     // java.lang.reflect.Field.getChar(java.lang.Object)
     TestField x = new TestField();
@@ -527,13 +464,10 @@ public class FieldTest extends TestCase
     val = f.getChar(x);
 
     assertEquals('T', val);
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.getChar(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since charField is not a
       // boolean type
       return;
@@ -545,8 +479,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getDeclaringClass()
    */
-  public void test_getDeclaringClass()
-  {
+  public void test_getDeclaringClass() {
     // Test for method java.lang.Class
     // java.lang.reflect.Field.getDeclaringClass()
     Field[] fields;
@@ -563,8 +496,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getDouble(java.lang.Object)
    */
-  public void test_getDoubleLjava_lang_Object() throws Exception
-  {
+  public void test_getDoubleLjava_lang_Object() throws Exception {
     // Test for method double
     // java.lang.reflect.Field.getDouble(java.lang.Object)
     TestField x = new TestField();
@@ -574,13 +506,10 @@ public class FieldTest extends TestCase
     val = f.getDouble(x);
 
     assertTrue(val == Double.MAX_VALUE);
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.getDouble(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since doubleField is not a
       // boolean type
       return;
@@ -592,8 +521,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getFloat(java.lang.Object)
    */
-  public void test_getFloatLjava_lang_Object() throws Exception
-  {
+  public void test_getFloatLjava_lang_Object() throws Exception {
     // Test for method float
     // java.lang.reflect.Field.getFloat(java.lang.Object)
     TestField x = new TestField();
@@ -603,13 +531,10 @@ public class FieldTest extends TestCase
     val = f.getFloat(x);
 
     assertTrue(val == Float.MAX_VALUE);
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.getFloat(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since floatField is not a
       // boolean type
       return;
@@ -621,8 +546,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getInt(java.lang.Object)
    */
-  public void test_getIntLjava_lang_Object() throws Exception
-  {
+  public void test_getIntLjava_lang_Object() throws Exception {
     // Test for method int java.lang.reflect.Field.getInt(java.lang.Object)
     TestField x = new TestField();
     Field f = null;
@@ -631,13 +555,10 @@ public class FieldTest extends TestCase
     val = f.getInt(x);
 
     assertTrue(val == Integer.MAX_VALUE);
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.getInt(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since IntField is not a
       // boolean type
       return;
@@ -649,8 +570,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getLong(java.lang.Object)
    */
-  public void test_getLongLjava_lang_Object() throws Exception
-  {
+  public void test_getLongLjava_lang_Object() throws Exception {
     // Test for method long
     // java.lang.reflect.Field.getLong(java.lang.Object)
     TestField x = new TestField();
@@ -661,13 +581,10 @@ public class FieldTest extends TestCase
 
     assertTrue(val == Long.MAX_VALUE);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.getLong(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // long type
       return;
@@ -679,8 +596,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getModifiers()
    */
-  public void test_getModifiers() throws Exception
-  {
+  public void test_getModifiers() throws Exception {
     // Test for method int java.lang.reflect.Field.getModifiers()
     TestField x = new TestField();
     Field f = null;
@@ -695,8 +611,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getName()
    */
-  public void test_getName() throws Exception
-  {
+  public void test_getName() throws Exception {
     // Test for method java.lang.String java.lang.reflect.Field.getName()
     TestField x = new TestField();
     Field f = null;
@@ -708,8 +623,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getShort(java.lang.Object)
    */
-  public void test_getShortLjava_lang_Object() throws Exception
-  {
+  public void test_getShortLjava_lang_Object() throws Exception {
     // Test for method short
     // java.lang.reflect.Field.getShort(java.lang.Object)
     TestField x = new TestField();
@@ -720,13 +634,10 @@ public class FieldTest extends TestCase
     val = f.getShort(x);
 
     assertTrue(val == Short.MAX_VALUE);
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.getShort(x);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // short type
       return;
@@ -738,8 +649,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#getType()
    */
-  public void test_getType() throws Exception
-  {
+  public void test_getType() throws Exception {
     // Test for method java.lang.Class java.lang.reflect.Field.getType()
     TestField x = new TestField();
     Field f = null;
@@ -751,8 +661,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#set(java.lang.Object, java.lang.Object)
    */
-  public void test_setLjava_lang_ObjectLjava_lang_Object() throws Exception
-  {
+  public void test_setLjava_lang_ObjectLjava_lang_Object() throws Exception {
     // Test for method void java.lang.reflect.Field.set(java.lang.Object,
     // java.lang.Object)
     TestField x = new TestField();
@@ -762,26 +671,20 @@ public class FieldTest extends TestCase
     f.set(x, new Double(1.0));
     val = f.getDouble(x);
 
-    assertEquals(1.0, val,0);
+    assertEquals(1.0, val, 0);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.set(x, new Double(1.0));
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // double type
       return;
     }
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("doubleFField");
       f.set(x, new Double(1.0));
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since doubleFField is
       // declared as final
       return;
@@ -790,7 +693,7 @@ public class FieldTest extends TestCase
     f = x.getClass().getDeclaredField("doubleSField");
     f.set(x, new Double(1.0));
     val = f.getDouble(x);
-    assertEquals(1.0, val,0);
+    assertEquals(1.0, val, 0);
 
     fail("Accessed field of invalid type");
   }
@@ -798,8 +701,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setBoolean(java.lang.Object, boolean)
    */
-  public void test_setBooleanLjava_lang_ObjectZ() throws Exception
-  {
+  public void test_setBooleanLjava_lang_ObjectZ() throws Exception {
     // Test for method void
     // java.lang.reflect.Field.setBoolean(java.lang.Object, boolean)
     TestField x = new TestField();
@@ -811,25 +713,19 @@ public class FieldTest extends TestCase
 
     assertTrue(!val);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setBoolean(x, true);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // boolean type
       return;
     }
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanFField");
       f.setBoolean(x, true);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since booleanField is
       // declared as final
       return;
@@ -841,8 +737,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setByte(java.lang.Object, byte)
    */
-  public void test_setByteLjava_lang_ObjectB() throws Exception
-  {
+  public void test_setByteLjava_lang_ObjectB() throws Exception {
     // Test for method void
     // java.lang.reflect.Field.setByte(java.lang.Object, byte)
     TestField x = new TestField();
@@ -854,25 +749,19 @@ public class FieldTest extends TestCase
 
     assertEquals(1, val);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setByte(x, (byte) 1);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // byte type
       return;
     }
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("byteFField");
       f.setByte(x, (byte) 1);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since byteFField is declared
       // as final
       return;
@@ -884,8 +773,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setChar(java.lang.Object, char)
    */
-  public void test_setCharLjava_lang_ObjectC() throws Exception
-  {
+  public void test_setCharLjava_lang_ObjectC() throws Exception {
     // Test for method void
     // java.lang.reflect.Field.setChar(java.lang.Object, char)
     TestField x = new TestField();
@@ -897,25 +785,19 @@ public class FieldTest extends TestCase
 
     assertEquals(1, val);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setChar(x, (char) 1);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // char type
       return;
     }
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("charFField");
       f.setChar(x, (char) 1);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since charFField is declared
       // as final
       return;
@@ -927,8 +809,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setDouble(java.lang.Object, double)
    */
-  public void test_setDoubleLjava_lang_ObjectD() throws Exception
-  {
+  public void test_setDoubleLjava_lang_ObjectD() throws Exception {
     // Test for method void
     // java.lang.reflect.Field.setDouble(java.lang.Object, double)
     TestField x = new TestField();
@@ -938,27 +819,21 @@ public class FieldTest extends TestCase
     f.setDouble(x, 1.0);
     val = f.getDouble(x);
 
-    assertEquals(1.0, val,0);
+    assertEquals(1.0, val, 0);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setDouble(x, 1.0);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // double type
       return;
     }
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("doubleFField");
       f.setDouble(x, 1.0);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since doubleFField is
       // declared as final
       return;
@@ -970,8 +845,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setFloat(java.lang.Object, float)
    */
-  public void test_setFloatLjava_lang_ObjectF() throws Exception
-  {
+  public void test_setFloatLjava_lang_ObjectF() throws Exception {
     // Test for method void
     // java.lang.reflect.Field.setFloat(java.lang.Object, float)
     TestField x = new TestField();
@@ -981,25 +855,19 @@ public class FieldTest extends TestCase
     f.setFloat(x, (float) 1);
     val = f.getFloat(x);
 
-    assertEquals(1.0, val,0);
-    try
-    {
+    assertEquals(1.0, val, 0);
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setFloat(x, (float) 1);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // float type
       return;
     }
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("floatFField");
       f.setFloat(x, (float) 1);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since floatFField is
       // declared as final
       return;
@@ -1011,8 +879,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setInt(java.lang.Object, int)
    */
-  public void test_setIntLjava_lang_ObjectI() throws Exception
-  {
+  public void test_setIntLjava_lang_ObjectI() throws Exception {
     // Test for method void java.lang.reflect.Field.setInt(java.lang.Object,
     // int)
     TestField x = new TestField();
@@ -1024,24 +891,18 @@ public class FieldTest extends TestCase
 
     assertEquals(1, val);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setInt(x, (int) 1);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // int type
       return;
     }
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("intFField");
       f.setInt(x, (int) 1);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since intFField is declared
       // as final
       return;
@@ -1053,8 +914,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setLong(java.lang.Object, long)
    */
-  public void test_setLongLjava_lang_ObjectJ() throws Exception
-  {
+  public void test_setLongLjava_lang_ObjectJ() throws Exception {
     // Test for method void
     // java.lang.reflect.Field.setLong(java.lang.Object, long)
     TestField x = new TestField();
@@ -1066,24 +926,18 @@ public class FieldTest extends TestCase
 
     assertEquals(1, val);
 
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setLong(x, (long) 1);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // long type
       return;
     }
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("longFField");
       f.setLong(x, (long) 1);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since longFField is declared
       // as final
       return;
@@ -1095,8 +949,7 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#setShort(java.lang.Object, short)
    */
-  public void test_setShortLjava_lang_ObjectS() throws Exception
-  {
+  public void test_setShortLjava_lang_ObjectS() throws Exception {
     // Test for method void
     // java.lang.reflect.Field.setShort(java.lang.Object, short)
     TestField x = new TestField();
@@ -1107,24 +960,18 @@ public class FieldTest extends TestCase
     val = f.getShort(x);
 
     assertEquals(1, val);
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("booleanField");
       f.setShort(x, (short) 1);
-    }
-    catch (IllegalArgumentException ex)
-    {
+    } catch (IllegalArgumentException ex) {
       // Good, Exception should be thrown since booleanField is not a
       // short type
       return;
     }
-    try
-    {
+    try {
       f = x.getClass().getDeclaredField("shortFField");
       f.setShort(x, (short) 1);
-    }
-    catch (IllegalAccessException ex)
-    {
+    } catch (IllegalAccessException ex) {
       // Good, Exception should be thrown since shortFField is
       // declared as final
       return;
@@ -1136,13 +983,12 @@ public class FieldTest extends TestCase
   /**
    * @tests java.lang.reflect.Field#toString()
    */
-  public void test_toString() throws Exception
-  {
+  public void test_toString() throws Exception {
     Field f = null;
 
     f = TestField.class.getDeclaredField("x");
 
-    assertEquals(f.toString(),"private static final int tc.test.totalcross.lang.reflect.FieldTest$TestField.x");
+    assertEquals(f.toString(), "private static final int tc.test.totalcross.lang.reflect.FieldTest$TestField.x");
     Class<FieldTest> c = FieldTest.class;
     assertEquals(c.getDeclaredField("t").toString(), "int tc.test.totalcross.lang.reflect.FieldTest.t");
     assertEquals(c.getDeclaredField("it").toString(), "java.lang.Integer tc.test.totalcross.lang.reflect.FieldTest.it");
@@ -1155,10 +1001,8 @@ public class FieldTest extends TestCase
   Integer it;
 
   @Override
-  public void testRun()
-  {
-    try
-    {
+  public void testRun() {
+    try {
       test_equalsLjava_lang_Object();
       test_getLjava_lang_Object();
       testProtectedFieldAccess();
@@ -1184,16 +1028,14 @@ public class FieldTest extends TestCase
       test_setLongLjava_lang_ObjectJ();
       test_setShortLjava_lang_ObjectS();
       test_toString();
-    }
-    catch (Throwable e) 
-    {
+    } catch (Throwable e) {
       String s = Vm.getStackTrace(e);
-      throw new AssertionFailedError(getClass().getName()+" - "+e.getMessage()+" - "+s);
+      throw new AssertionFailedError(getClass().getName() + " - " + e.getMessage() + " - " + s);
     }
   }
 }
-class TestAccess
-{
+
+class TestAccess {
   @SuppressWarnings("unused")
   private static int xxx;
 }

@@ -15,11 +15,9 @@ import java.util.BitSet;
 
 import totalcross.unit.TestCase;
 
-public class TestBitSet extends TestCase
-{
+public class TestBitSet extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test19 test1 = new Test19();
     BitSet test2 = new Test19(64);
 
@@ -109,21 +107,17 @@ public class TestBitSet extends TestCase
   }
 }
 
-class Test19 extends BitSet implements Cloneable
-{
-  public Test19()
-  {
+class Test19 extends BitSet implements Cloneable {
+  public Test19() {
     super();
   }
 
-  public Test19(int nbits)
-  {
+  public Test19(int nbits) {
     super(nbits);
   }
 
   @Override
-  public Object clone()
-  {
-    return super.clone();     
+  public Object clone() {
+    return super.clone();
   }
 }

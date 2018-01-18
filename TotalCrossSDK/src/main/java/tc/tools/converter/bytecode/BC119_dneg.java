@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC119_dneg extends Arithmetic
-{
-  public BC119_dneg()
-  {
-    super(0,-1,-1,DOUBLE);
+public class BC119_dneg extends Arithmetic {
+  public BC119_dneg() {
+    super(0, -1, -1, DOUBLE);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-1].asDouble = -stack[stackPtr-1].asDouble;
+  public void exec() {
+    stack[stackPtr - 1].asDouble = -stack[stackPtr - 1].asDouble;
   }
 }

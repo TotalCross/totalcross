@@ -11,16 +11,13 @@ import java.io.OutputStream;
  * @author Fabio Sobral
  * 
  */
-public class BlackHoleOutputStream extends OutputStream
-{
-  public BlackHoleOutputStream()
-  {
+public class BlackHoleOutputStream extends OutputStream {
+  public BlackHoleOutputStream() {
     super();
   }
 
   @Override
-  public void write(int b) throws IOException
-  {
+  public void write(int b) throws IOException {
     // do nothing
   }
 }

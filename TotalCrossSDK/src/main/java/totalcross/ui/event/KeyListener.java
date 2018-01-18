@@ -14,22 +14,21 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Key events. */
 
-public interface KeyListener
-{
+public interface KeyListener {
   /** A KEY_PRESS event was dispatched.
    * @see KeyEvent 
    */
   public void keyPressed(KeyEvent e);
+
   /** An ACTION_KEY_PRESS event was dispatched.
    * @see KeyEvent 
    */
   public void actionkeyPressed(KeyEvent e);
+
   /** A SPECIAL_KEY_PRESS event was dispatched.
    * @see KeyEvent 
    */

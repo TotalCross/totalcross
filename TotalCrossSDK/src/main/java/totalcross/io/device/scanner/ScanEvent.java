@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.scanner;
 
 import totalcross.ui.event.Event;
@@ -26,8 +24,7 @@ import totalcross.ui.event.Event;
  * Used in the Scanner class.
  * @author Tom Cuthill (Palm Solutions) 16/3/2000
  */
-public class ScanEvent extends Event
-{
+public class ScanEvent extends Event {
   /** The event type for a scanner scanning event.*/
   public static final int SCANNED = 1101;
   /** The event type for a scanner low battery event. */
@@ -44,11 +41,9 @@ public class ScanEvent extends Event
    * Updates a scan event with the given type.
    * target is always null.
    */
-  public void update(int type)
-  {
+  public void update(int type) {
     touch();
     this.type = type;
     data = type == SCANNED ? Scanner.getData() : null;
   }
 }
-

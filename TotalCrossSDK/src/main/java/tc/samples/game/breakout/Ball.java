@@ -14,7 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package tc.samples.game.breakout;
 
 import totalcross.game.Sprite;
@@ -25,8 +24,7 @@ import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Random;
 
-public final class Ball extends Sprite
-{
+public final class Ball extends Sprite {
   private Breakout game;
   private Level level;
   private Racket racket;
@@ -34,9 +32,9 @@ public final class Ball extends Sprite
   private Random rand = new Random();
   protected int ispeedx, ispeedy;
 
-  public Ball(Breakout game, Racket racket, Level level) throws ImageException, IOException
-  {
-    super(new Image("tc/samples/game/breakout/ball.png").setTransparentColor(0x000099).smoothScaledFromResolution(320), -1, true, null);
+  public Ball(Breakout game, Racket racket, Level level) throws ImageException, IOException {
+    super(new Image("tc/samples/game/breakout/ball.png").setTransparentColor(0x000099).smoothScaledFromResolution(320),
+        -1, true, null);
 
     this.game = game;
     this.racket = racket;
@@ -46,12 +44,11 @@ public final class Ball extends Sprite
     reinit(level);
   }
 
-  public void reinit(Level level)
-  {
+  public void reinit(Level level) {
     this.level = level;
     Coord pos = racket.getBallPosition();
     ballHitY = pos.y - height / 2;
-    if (Settings.screenHeight == 160){
+    if (Settings.screenHeight == 160) {
       ballHitY--;
     }
 
@@ -59,15 +56,14 @@ public final class Ball extends Sprite
 
     int amp = Settings.screenWidth / 40;
     ispeedx = rand.between(-amp, amp);
-    if (ispeedx == 0){
+    if (ispeedx == 0) {
       ispeedx = -amp / 2;
     }
     ispeedy = -(4 * Settings.screenHeight / 100);
   }
 
   @Override
-  public boolean onPositionChange()
-  {
+  public boolean onPositionChange() {
     if (centerX < regionMinx) // hits left border
     {
       centerX = regionMinx;
@@ -92,8 +88,7 @@ public final class Ball extends Sprite
       game.stop();
       return false;
     }
-    if (collide(racket))
-    {
+    if (collide(racket)) {
       ispeedx = racket.hit(centerX);
       ispeedy = -ispeedy;
       centerY = ballHitY;
@@ -107,8 +102,7 @@ public final class Ball extends Sprite
     return !level.collide(this);
   }
 
-  public void move()
-  {
+  public void move() {
     towardPos(centerX + ispeedx, centerY + ispeedy, true);
     show();
   }

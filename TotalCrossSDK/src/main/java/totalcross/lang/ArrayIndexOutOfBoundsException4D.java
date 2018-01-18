@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -31,13 +29,11 @@ package totalcross.lang;
  * package that has no correspondence with <code>totalcross.lang</code> will make the <code>tc.Deploy</code> program to abort, informing where the 
  * problem has occurred. A good idea is to always refer to this JavaDoc to know what is and what isn't available.
  */
-public class ArrayIndexOutOfBoundsException4D extends IndexOutOfBoundsException
-{
+public class ArrayIndexOutOfBoundsException4D extends IndexOutOfBoundsException {
   /** 
    * Constructs an empty exception. 
    */
-  public ArrayIndexOutOfBoundsException4D()
-  {
+  public ArrayIndexOutOfBoundsException4D() {
   }
 
   /** 
@@ -45,8 +41,7 @@ public class ArrayIndexOutOfBoundsException4D extends IndexOutOfBoundsException
    *
    * @param msg The error message.
    */
-  public ArrayIndexOutOfBoundsException4D(String msg)
-  {
+  public ArrayIndexOutOfBoundsException4D(String msg) {
     super(msg);
   }
 }

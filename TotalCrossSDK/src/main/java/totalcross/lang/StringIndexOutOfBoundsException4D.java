@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class StringIndexOutOfBoundsException4D extends IndexOutOfBoundsException
-{
+public class StringIndexOutOfBoundsException4D extends IndexOutOfBoundsException {
   /** Constructs an empty Exception. */
-  public StringIndexOutOfBoundsException4D()
-  {
+  public StringIndexOutOfBoundsException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public StringIndexOutOfBoundsException4D(String msg)
-  {
+  public StringIndexOutOfBoundsException4D(String msg) {
     super(msg);
   }
 
@@ -51,8 +46,7 @@ public class StringIndexOutOfBoundsException4D extends IndexOutOfBoundsException
    *
    * @param index the invalid index
    */
-  public StringIndexOutOfBoundsException4D(int index)
-  {
+  public StringIndexOutOfBoundsException4D(int index) {
     super("String index out of range: " + index);
   }
 }

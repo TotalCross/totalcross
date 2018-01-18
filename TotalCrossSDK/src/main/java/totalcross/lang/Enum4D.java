@@ -47,9 +47,7 @@ import java.lang.reflect.Field;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
-public abstract class Enum4D<T extends Enum4D<T>>
-implements Comparable<T>
-{
+public abstract class Enum4D<T extends Enum4D<T>> implements Comparable<T> {
   /**
    * The name of this enum constant.
    */
@@ -68,8 +66,7 @@ implements Comparable<T>
    * @param ordinal the number of the enumeration constant, based on the
    *                declaration order of the constants and starting from zero.
    */
-  protected Enum4D(String name, int ordinal)
-  {
+  protected Enum4D(String name, int ordinal) {
     this.name = name;
     this.ordinal = ordinal;
   }
@@ -83,8 +80,7 @@ implements Comparable<T>
    * @return true if <code>this == o</code>.
    */
   @Override
-  public final boolean equals(Object o)
-  {
+  public final boolean equals(Object o) {
     // Enum constants are singular, so we need only compare `=='.
     return this == o;
   }
@@ -95,8 +91,7 @@ implements Comparable<T>
    * @return the hash code of this enumeration constant.
    */
   @Override
-  public final int hashCode()
-  {
+  public final int hashCode() {
     return ordinal;
   }
 
@@ -109,8 +104,7 @@ implements Comparable<T>
    * @return a textual representation of this constant.
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return name;
   }
 
@@ -128,11 +122,10 @@ implements Comparable<T>
    *         integer if <code>e.ordinal > this.ordinal</code>.
    * @throws ClassCastException if <code>e</code> is not an enumeration
    *                            constant of the same class.
-   */ 
+   */
   @Override
-  public final int compareTo(T e)
-  {
-    if (!getDeclaringClass().equals(e.getDeclaringClass())){
+  public final int compareTo(T e) {
+    if (!getDeclaringClass().equals(e.getDeclaringClass())) {
       throw new ClassCastException();
     }
     return ordinal - e.ordinal;
@@ -147,8 +140,7 @@ implements Comparable<T>
    *         cloned.
    */
   @Override
-  protected final Object clone() throws CloneNotSupportedException
-  {
+  protected final Object clone() throws CloneNotSupportedException {
     throw new CloneNotSupportedException("can't clone an enum constant");
   }
 
@@ -157,8 +149,7 @@ implements Comparable<T>
    *
    * @return the name of the constant.
    */
-  public final String name()
-  {
+  public final String name() {
     return name;
   }
 
@@ -168,8 +159,7 @@ implements Comparable<T>
    * 
    * @return the number of this constant.
    */
-  public final int ordinal()
-  {
+  public final int ordinal() {
     return ordinal;
   }
 
@@ -179,13 +169,11 @@ implements Comparable<T>
    *
    * @return the type of this enumeration constant.
    */
-  public final Class<T> getDeclaringClass()
-  {
-    Class k = getClass(),
-        s = k.getSuperclass();
+  public final Class<T> getDeclaringClass() {
+    Class k = getClass(), s = k.getSuperclass();
     // We might be in an anonymous subclass of the enum class, so go
     // up one more level.
-    if (!s.equals(Enum.class)){
+    if (!s.equals(Enum.class)) {
       return s;
     }
     return k;
@@ -197,23 +185,18 @@ implements Comparable<T>
    * @since 1.6
    */
   @Override
-  protected final void finalize()
-  {
+  protected final void finalize() {
   }
 
-  public static <T extends Enum4D<T>> T valueOf(Class<T> enumType, String name)
-  {
+  public static <T extends Enum4D<T>> T valueOf(Class<T> enumType, String name) {
     Field[] declaredFields = enumType.getDeclaredFields();
-    try
-    {
+    try {
       for (Field field : declaredFields) {
         if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name)) {
           return (T) field.get(null);
         }
       }
-    }
-    catch (IllegalAccessException iae)
-    {
+    } catch (IllegalAccessException iae) {
       throw new Error("Unable to access Enum class");
     }
     return null;

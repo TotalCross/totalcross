@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.soap;
 
 import totalcross.io.ByteArrayStream;
@@ -35,7 +33,6 @@ import totalcross.util.zip.ZLibStream;
 import totalcross.xml.DumpXml;
 import totalcross.xml.SyntaxException;
 import totalcross.xml.XmlTokenizer;
-
 
 /**
  * Used to dispatch requests to a SOAP web service. Here's a full sample:
@@ -103,8 +100,7 @@ public class SOAP // guich@570_34
   protected HttpStream hs; // guich@583_14
 
   private static IntHashtable htTypes;
-  static
-  {
+  static {
     htTypes = new IntHashtable(23);
     htTypes.put("xsd:string", STRING_TYPE);
     htTypes.put("xsd:int", INT_TYPE);
@@ -156,16 +152,14 @@ public class SOAP // guich@570_34
   // luciana@570_45 - used when user doesn't specify the parameter name
   private static final String DEFAULT_PARAM_NAME = "arg";
 
-  private class ParseAnswer extends XmlTokenizer
-  {
+  private class ParseAnswer extends XmlTokenizer {
     private boolean isInReturn;
     private boolean isInType;
     private int type;
     private String lastTag;
     private StringBuffer sb = new StringBuffer(2048); // guich@571_12: now all references and characters are appended until an end-tag is found
 
-    private boolean isReturn(String tag)
-    {
+    private boolean isReturn(String tag) {
       // flsobral@tc100b5: split the test in three, so we can compare alternativeReturnTag with tag before creating a new instance in lower case to compare with the default.
       if (tag == null) {
         return false;
@@ -177,32 +171,25 @@ public class SOAP // guich@570_34
       return (lowerTag.endsWith("return") || lowerTag.endsWith("result"));
     }
 
-    public ParseAnswer(Stream stream) throws SyntaxException, totalcross.io.IOException
-    {
+    public ParseAnswer(Stream stream) throws SyntaxException, totalcross.io.IOException {
       tokenize(stream);
     }
 
     @Override
-    public void foundCharacter(char charFound)
-    {
+    public void foundCharacter(char charFound) {
       sb.append(charFound);
     }
 
     @Override
-    public void foundStartTagName(byte buffer[], int offset, int count)
-    {
+    public void foundStartTagName(byte buffer[], int offset, int count) {
       String tag = lastTag = new String(Convert.charConverter.bytes2chars(buffer, offset, count)); // flsobral@tc100b5_46: all String constructors now use the CharacterConverter.bytes2chars.
       if (errorReasonState == 1 && tag.equals("faultstring")) {
         errorReasonState = 2;
       }
-      if (isInReturn)
-      {
-        try
-        {
+      if (isInReturn) {
+        try {
           type = htTypes.get(tag.hashCode());
-        }
-        catch (ElementNotFoundException e)
-        {
+        } catch (ElementNotFoundException e) {
           type = 0;
         }
       }
@@ -212,8 +199,7 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundEndTagName(byte buffer[], int offset, int count)
-    {
+    public void foundEndTagName(byte buffer[], int offset, int count) {
       if (sb.length() >= 0) // flsobral@tc100: replaced > by >= so empty tags are not ignored
       {
         if (isInReturn) {
@@ -236,10 +222,8 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundAttributeName(byte buffer[], int offset, int count)
-    {
-      if (isInReturn)
-      {
+    public void foundAttributeName(byte buffer[], int offset, int count) {
+      if (isInReturn) {
         String tag = new String(Convert.charConverter.bytes2chars(buffer, offset, count));
         if (tag.equals("xsi:type")) {
           isInType = true;
@@ -248,28 +232,21 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundAttributeValue(byte buffer[], int offset, int count, byte dlm)
-    {
-      if (isInReturn && isInType)
-      {
+    public void foundAttributeValue(byte buffer[], int offset, int count, byte dlm) {
+      if (isInReturn && isInType) {
         String tag = new String(Convert.charConverter.bytes2chars(buffer, offset, count));
-        try
-        {
+        try {
           type = htTypes.get(tag.hashCode());
-        }
-        catch (ElementNotFoundException e)
-        {
+        } catch (ElementNotFoundException e) {
           type = -99999;
         }
         isInType = false;
       }
     }
 
-    private void storeAnswer()
-    {
+    private void storeAnswer() {
       String tag = sb.toString();
-      switch (type)
-      {
+      switch (type) {
       case STRING_TYPE:
       case INT_TYPE:
       case DOUBLE_TYPE:
@@ -279,8 +256,7 @@ public class SOAP // guich@570_34
           answer = tag;
         } else if (answer instanceof Vector) {
           ((Vector) answer).addElement(tag);
-        } else
-        {
+        } else {
           // otherwise, more than one answer was found; create a vector and store all items found
           Vector v = new Vector(10);
           v.addElement(answer);
@@ -292,8 +268,7 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundCharacterData(byte buffer[], int offset, int count)
-    {
+    public void foundCharacterData(byte buffer[], int offset, int count) {
       if (errorReasonState == 2) // guich@582_1: get the error message
       {
         errorReasonState = 3;
@@ -304,8 +279,7 @@ public class SOAP // guich@570_34
         }
         errorReason = new String(Convert.charConverter.bytes2chars(buffer, offset, i - offset));
       }
-      if (isInReturn)
-      {
+      if (isInReturn) {
         sb.append(new String(Convert.charConverter.bytes2chars(buffer, offset, count)));
       }
     }
@@ -315,10 +289,8 @@ public class SOAP // guich@570_34
    * The prefix string used when sending requests. Note that it uses UTF-8, so
    * unicode characters are not supported.
    */
-  public static String prefix = "<soapenv:Envelope "
-      + "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-      + "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
-      + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+  public static String prefix = "<soapenv:Envelope " + "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+      + "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" " + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
       + "<soapenv:Body>";
   /** The suffix string used when sending requests. */
   public static String suffix = "</soapenv:Body>" + "</soapenv:Envelope>";
@@ -335,13 +307,12 @@ public class SOAP // guich@570_34
    * @param uri
    *           The complete URI.
    */
-  public SOAP(String mtd, String uri)
-  {
+  public SOAP(String mtd, String uri) {
     this.namespace = "http://schemas.xmlsoap.org/soap/";
     this.mtd = mtd;
     this.uri = uri;
-    this.openTimeout  = DEFAULT_OPEN_TIMEOUT;
-    this.readTimeout  = DEFAULT_READ_WRITE_TIMEOUT;
+    this.openTimeout = DEFAULT_OPEN_TIMEOUT;
+    this.readTimeout = DEFAULT_READ_WRITE_TIMEOUT;
     this.writeTimeout = DEFAULT_READ_WRITE_TIMEOUT;
   }
 
@@ -349,9 +320,9 @@ public class SOAP // guich@570_34
    * Sets a parameter with the name and type specified. Important: unicode
    * characters are not accepted because the default header uses UTF-8.
    */
-  public void setParam(String param, String paramName, String paramType)
-  {
-    sbuf.append('<').append(paramName).append(" xsi:type=\"xsd:").append(paramType).append("\">").append(param).append("</").append(paramName).append('>');
+  public void setParam(String param, String paramName, String paramType) {
+    sbuf.append('<').append(paramName).append(" xsi:type=\"xsd:").append(paramType).append("\">").append(param)
+        .append("</").append(paramName).append('>');
     paramIndex++;
   }
 
@@ -361,8 +332,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(String param)
-  {
+  public void setParam(String param) {
     setParam(param, DEFAULT_PARAM_NAME + paramIndex, "string");
   }
 
@@ -373,8 +343,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(String param, String paramName)
-  {
+  public void setParam(String param, String paramName) {
     setParam(param, paramName, "string");
   }
 
@@ -384,8 +353,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(int param)
-  {
+  public void setParam(int param) {
     setParam(Convert.toString(param), DEFAULT_PARAM_NAME + paramIndex, "int");
   }
 
@@ -396,8 +364,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(int param, String paramName)
-  {
+  public void setParam(int param, String paramName) {
     setParam(Convert.toString(param), paramName, "int");
   }
 
@@ -407,8 +374,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(double param)
-  {
+  public void setParam(double param) {
     setParam(String.valueOf(param), DEFAULT_PARAM_NAME + paramIndex, "double");
   }
 
@@ -419,8 +385,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(double param, String paramName)
-  {
+  public void setParam(double param, String paramName) {
     setParam(String.valueOf(param), paramName, "double");
   }
 
@@ -430,8 +395,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(boolean param)
-  {
+  public void setParam(boolean param) {
     setParam(Convert.toString(param), DEFAULT_PARAM_NAME + paramIndex, "boolean");
   }
 
@@ -442,8 +406,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(boolean param, String paramName)
-  {
+  public void setParam(boolean param, String paramName) {
     setParam(Convert.toString(param), paramName, "boolean");
   }
 
@@ -456,13 +419,14 @@ public class SOAP // guich@570_34
    * @param paramName
    * @param paramType
    */
-  public void setParam(String[] param, String paramName, String paramType)
-  {
+  public void setParam(String[] param, String paramName, String paramType) {
     StringBuffer sb = sbuf;
     int len = param.length;
-    sb.append('<').append(paramName).append(" soapenc:arrayType=\"xsd:").append(paramType).append("[]\" ").append("xsi:type=\"soapenc:Array\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">");
+    sb.append('<').append(paramName).append(" soapenc:arrayType=\"xsd:").append(paramType).append("[]\" ")
+        .append("xsi:type=\"soapenc:Array\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">");
     for (int i = 0; i < len; i++) {
-      sb.append('<').append(paramType).append(" xsi:type=\"xsd:").append(paramType).append("\">").append(param[i]).append("</").append(paramType).append('>');
+      sb.append('<').append(paramType).append(" xsi:type=\"xsd:").append(paramType).append("\">").append(param[i])
+          .append("</").append(paramType).append('>');
     }
     sb.append("</").append(paramName).append('>');
     //Vm.debug(sb.toString());
@@ -476,8 +440,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(String[] param)
-  {
+  public void setParam(String[] param) {
     setParam(param, DEFAULT_PARAM_NAME + paramIndex);
   }
 
@@ -489,8 +452,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(String[] param, String paramName)
-  {
+  public void setParam(String[] param, String paramName) {
     setParam(param, paramName, "string");
   }
 
@@ -500,8 +462,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(int[] param)
-  {
+  public void setParam(int[] param) {
     setParam(param, DEFAULT_PARAM_NAME + paramIndex);
   }
 
@@ -512,8 +473,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(int[] param, String paramName)
-  {
+  public void setParam(int[] param, String paramName) {
     int len = param.length;
     String array[] = new String[len];
     for (int i = 0; i < len; i++) {
@@ -529,8 +489,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(byte[] param, String paramName)
-  {
+  public void setParam(byte[] param, String paramName) {
     int len = param.length;
     String array[] = new String[len];
     for (int i = 0; i < len; i++) {
@@ -545,8 +504,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(double[] param)
-  {
+  public void setParam(double[] param) {
     setParam(param, DEFAULT_PARAM_NAME + paramIndex);
   }
 
@@ -557,8 +515,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(double[] param, String paramName)
-  {
+  public void setParam(double[] param, String paramName) {
     int len = param.length;
     String array[] = new String[len];
     for (int i = 0; i < len; i++) {
@@ -573,8 +530,7 @@ public class SOAP // guich@570_34
    *
    * @param param
    */
-  public void setParam(boolean[] param)
-  {
+  public void setParam(boolean[] param) {
     setParam(param, DEFAULT_PARAM_NAME + paramIndex);
   }
 
@@ -585,8 +541,7 @@ public class SOAP // guich@570_34
    * @param param
    * @param paramName
    */
-  public void setParam(boolean[] param, String paramName)
-  {
+  public void setParam(boolean[] param, String paramName) {
     int len = param.length;
     String array[] = new String[len];
     for (int i = 0; i < len; i++) {
@@ -605,13 +560,11 @@ public class SOAP // guich@570_34
    * @param fieldNames
    * @param fieldValues
    */
-  public void setObjectParam(String paramName, String[] fieldNames, String[] fieldValues)
-  {
+  public void setObjectParam(String paramName, String[] fieldNames, String[] fieldValues) {
     StringBuffer sb = sbuf;
     int len = fieldNames.length;
     sb.append('<').append(paramName).append('>');
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
       sb.append("<").append(fieldNames[i]);
       if (fieldValues[i] == null) {
         sb.append(" xsi:nil=\"true\"/>");
@@ -623,21 +576,17 @@ public class SOAP // guich@570_34
     paramIndex++;
   }
 
-  public void setObjectArrayParam(String paramName, String[] fieldNames, Vector fieldValues)
-  {
+  public void setObjectArrayParam(String paramName, String[] fieldNames, Vector fieldValues) {
     StringBuffer sb = sbuf;
     int arraySize;
-    if (fieldValues == null || (arraySize = fieldValues.size()) == 0){
+    if (fieldValues == null || (arraySize = fieldValues.size()) == 0) {
       sb.append('<').append(paramName).append(" xsi:nil=\"true\"/>");
-    }else
-    {
+    } else {
       int len = fieldNames.length;
-      for (int j = 0 ; j < arraySize ; j++)
-      {
+      for (int j = 0; j < arraySize; j++) {
         sb.append('<').append(paramName).append('>');
         String[] fields = (String[]) fieldValues.items[j];
-        for (int i = 0; i < len; i++)
-        {
+        for (int i = 0; i < len; i++) {
           sb.append("<").append(fieldNames[i]);
           if (fields[i] == null) {
             sb.append(" xsi:nil=\"true\"/>");
@@ -658,8 +607,7 @@ public class SOAP // guich@570_34
    *
    * @return Object
    */
-  public Object getAnswer()
-  {
+  public Object getAnswer() {
     return answer;
   }
 
@@ -696,8 +644,7 @@ public class SOAP // guich@570_34
    * 
    * @since TotalCross 1.27
    */
-  public void useProxy(String address, int port, String username, String password)
-  {
+  public void useProxy(String address, int port, String username, String password) {
     httpOptions = createOptions();
     httpOptions.proxyAddress = address;
     httpOptions.proxyPort = port;
@@ -709,10 +656,8 @@ public class SOAP // guich@570_34
    *
    * @throws SOAPException
    */
-  public void execute() throws SOAPException
-  {
-    try
-    {
+  public void execute() throws SOAPException {
+    try {
       answer = null;
       paramIndex = 0;
       if (httpOptions == null) {
@@ -722,25 +667,23 @@ public class SOAP // guich@570_34
       httpOptions.openTimeOut = openTimeout;
       httpOptions.writeTimeOut = writeTimeout;
       httpOptions.httpType = HttpStream.POST; //doPost = true;
-      if (!disableEncoding)
-      {
+      if (!disableEncoding) {
         httpOptions.postHeaders.put("Accept-Encoding", "deflate;q=1.0, gzip;q=0.5"); // flsobral@tc110_77: zlib encoding is preferred over gzip encoding.
       }
       httpOptions.postHeaders.put("Content-Type", "text/xml; charset=utf-8");
-      httpOptions.postHeaders.put("SOAPAction", "\"" + namespace + (!namespace.endsWith("/")? "/" : "") + mtd + "\""); // flsobral@tc100b5_48: only add a trailing slash if the namespace does not have one already.
-      httpOptions.postPrefix =
-          "<?xml version=\"1.0\" encoding=\"" + httpOptions.getCharsetEncoding() + "\"?>"
-              + prefix
-              + (namespaceId == null ? "<" + mtd + " xmlns=\"" + namespace + "\">" : "<" + namespaceId + ":" + mtd + " xmlns:" + namespaceId + "=\"" + namespace + "\">"); // guich@tc123_39: don't concatenate the args with the prefix and suffix
+      httpOptions.postHeaders.put("SOAPAction", "\"" + namespace + (!namespace.endsWith("/") ? "/" : "") + mtd + "\""); // flsobral@tc100b5_48: only add a trailing slash if the namespace does not have one already.
+      httpOptions.postPrefix = "<?xml version=\"1.0\" encoding=\"" + httpOptions.getCharsetEncoding() + "\"?>" + prefix
+          + (namespaceId == null ? "<" + mtd + " xmlns=\"" + namespace + "\">"
+              : "<" + namespaceId + ":" + mtd + " xmlns:" + namespaceId + "=\"" + namespace + "\">"); // guich@tc123_39: don't concatenate the args with the prefix and suffix
       httpOptions.postDataSB = sbuf;
-      httpOptions.postSuffix = namespaceId == null ? "</" + mtd + ">" + suffix : "</" + namespaceId + ":" + mtd + ">" + suffix;
+      httpOptions.postSuffix = namespaceId == null ? "</" + mtd + ">" + suffix
+          : "</" + namespaceId + ":" + mtd + ">" + suffix;
       if (debug) {
         Vm.debug("post: " + httpOptions.postPrefix + httpOptions.postDataSB + httpOptions.postSuffix);
       }
       hs = new HttpStream(new URI(uri), httpOptions);
       boolean ok = hs.isOk();
-      if (!ok)
-      {
+      if (!ok) {
         if (hs.responseCode == 500) {
           errorReasonState = 1; // find it in next parse
         } else {
@@ -749,67 +692,53 @@ public class SOAP // guich@570_34
       }
       Stream receivedStream;
       int initialSize = hs.contentLength > 0 ? hs.contentLength : 1024;
-      if (hs.contentEncoding != null)
-      {
+      if (hs.contentEncoding != null) {
         wasCompressionUsed = false;
-        if (hs.contentEncoding.equalsIgnoreCase("deflate"))
-        {
+        if (hs.contentEncoding.equalsIgnoreCase("deflate")) {
           ZLibStream zs = new ZLibStream(hs, CompressedStream.INFLATE);
           receivedStream = zs;
           wasCompressionUsed = true;
-        }
-        else if (hs.contentEncoding.equalsIgnoreCase("gzip"))
-        {
+        } else if (hs.contentEncoding.equalsIgnoreCase("gzip")) {
           GZipStream zs = new GZipStream(hs, CompressedStream.INFLATE); // flsobral@tc112_35: Better performance with GZipStream instead of GZip.
           receivedStream = zs;
           wasCompressionUsed = true;
         } else {
           throw new SOAPException("Unsupported encoding: " + hs.contentEncoding);
         }
-      }
-      else
-      {
+      } else {
         //flsobral@tc110_73: Use ByteArrayStream if the content is already encoded, if the length is unknown, or if the length is known and lower than 70k. (zlib requires at least 65k to run, so we'll only use it when reading more than 70k.)
-        boolean useBBAS = (hs.contentLength >= -1 && hs.contentLength <= 70000) || Vm.getFreeMemory() < 1024*1024;
-        if (useBBAS)
-        {
+        boolean useBBAS = (hs.contentLength >= -1 && hs.contentLength <= 70000) || Vm.getFreeMemory() < 1024 * 1024;
+        if (useBBAS) {
           CompressedByteArrayStream bbas = new CompressedByteArrayStream();
           bbas.readFully(hs, 5, initialSize);
           receivedStream = bbas;
-        }
-        else
-        {
+        } else {
           ByteArrayStream bas = new ByteArrayStream(initialSize);
           bas.readFully(hs, 5, initialSize);
           receivedStream = bas;
         }
       }
-      if (debug)
-      {
-        if (receivedStream instanceof CompressedStream)
-        {
+      if (debug) {
+        if (receivedStream instanceof CompressedStream) {
           CompressedByteArrayStream bbas = new CompressedByteArrayStream();
           bbas.readFully(receivedStream, 5, initialSize);
           receivedStream.close();
-          receivedStream = bbas;               
+          receivedStream = bbas;
         }
         new DumpXml(receivedStream);
         if (receivedStream instanceof ByteArrayStream) {
           ((ByteArrayStream) receivedStream).mark(); // flsobral@tc110_73: use mark instead of reset.
-        }
-        else {
+        } else {
           ((CompressedByteArrayStream) receivedStream).setMode(CompressedByteArrayStream.READ_MODE); // reset the buffer so it can be re-read
         }
       }
       ParseAnswer pa = new ParseAnswer(receivedStream);
       receivedStream.close();
-      if (!ok && hs.responseCode == 500)
-      {
+      if (!ok && hs.responseCode == 500) {
         throw new SOAPException("Error 500 on HttpStream. Reason: "
             + (errorReasonState == 3 ? EscapeHtml.unescape(errorReason) : "could not detect error in response")); // guich@tc114_9: unescape the error message
       }
-      if (answer instanceof Vector)
-      {
+      if (answer instanceof Vector) {
         Vector v = (Vector) answer;
         int len = v.size();
         switch (pa.type)
@@ -844,21 +773,16 @@ public class SOAP // guich@570_34
           break;
         }
       }
-      if (hs != null)
-      {
+      if (hs != null) {
         hs.close();
         hs = null;
       }
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       if (e instanceof SOAPException) {
         throw (SOAPException) e;
       }
       throw new SOAPException(e);
-    }
-    finally
-    {
+    } finally {
       sbuf.setLength(0);
     }
   }

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.phone;
 
 import tc.samples.api.BaseContainer;
@@ -27,23 +25,20 @@ import totalcross.ui.event.Event;
 
 /** Sample program that shows how to send and receive SMS messages. */
 
-public class PhoneSmsSample extends BaseContainer
-{
+public class PhoneSmsSample extends BaseContainer {
   Edit edNumber;
   MultiEdit edMsg;
   Button btSend;
   Button btReceive;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
-    if (!Settings.platform.equals(Settings.WINDOWSPHONE) && !Settings.onJavaSE)
-    {
-      add(new Label("This sample works only on Windows Phone"),CENTER,CENTER);
+    if (!Settings.platform.equals(Settings.WINDOWSPHONE) && !Settings.onJavaSE) {
+      add(new Label("This sample works only on Windows Phone"), CENTER, CENTER);
       return;
     }
-    add(new Label("Number: "),LEFT+2,TOP+2);
+    add(new Label("Number: "), LEFT + 2, TOP + 2);
     add(edNumber = new Edit(), AFTER, TOP);
     edNumber.setKeyboard(Edit.KBD_NUMERIC);
     add(btSend = new Button("Send"), LEFT + 3, BOTTOM);
@@ -52,16 +47,12 @@ public class PhoneSmsSample extends BaseContainer
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    if (event.type == ControlEvent.PRESSED)
-    {
-      try
-      {
-        if (event.target == btSend)
-        {
+  public void onEvent(Event event) {
+    if (event.type == ControlEvent.PRESSED) {
+      try {
+        if (event.target == btSend) {
           SMS.send(edNumber.getText(), edMsg.getText());
-          new MessageBox("Status","SMS message sent.").popup();
+          new MessageBox("Status", "SMS message sent.").popup();
         }
         /*            else if (event.target == btReceive)
             {
@@ -71,9 +62,7 @@ public class PhoneSmsSample extends BaseContainer
                edNumber.setText(answer[0]);
                edMsg.setText(answer[1]);
             }
-         */         }
-      catch (IOException e)
-      {
+         */ } catch (IOException e) {
         MessageBox.showException(e, false);
       }
     }

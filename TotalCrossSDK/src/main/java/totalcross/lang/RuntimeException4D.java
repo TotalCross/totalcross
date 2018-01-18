@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class RuntimeException4D extends Exception
-{
+public class RuntimeException4D extends Exception {
   /** Constructs an empty Exception. */
-  public RuntimeException4D()
-  {
+  public RuntimeException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public RuntimeException4D(String msg)
-  {
+  public RuntimeException4D(String msg) {
     super(msg);
   }
 
@@ -53,8 +48,7 @@ public class RuntimeException4D extends Exception
    * @param cause the cause of this exception
    * @since 1.4
    */
-  public RuntimeException4D(String s, Throwable cause)
-  {
+  public RuntimeException4D(String s, Throwable cause) {
     super(s, cause);
   }
 
@@ -65,12 +59,11 @@ public class RuntimeException4D extends Exception
    * @param cause the cause of this exception
    * @since 1.4
    */
-  public RuntimeException4D(Throwable cause)
-  {
+  public RuntimeException4D(Throwable cause) {
     super(cause);
   }
 
-  public RuntimeException4D(String message, Throwable cause,  boolean enableSuppression, boolean writableStackTrace) {
+  public RuntimeException4D(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 }

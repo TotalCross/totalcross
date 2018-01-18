@@ -19,8 +19,7 @@ package totalcross.unit;
 /** Interface used to listen to UIRobot events. 
  */
 
-public interface UIRobotListener
-{
+public interface UIRobotListener {
   /** The UIRobot has succeed. */
   public void robotSucceed(UIRobotEvent e);
 

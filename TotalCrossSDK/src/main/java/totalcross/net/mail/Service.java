@@ -24,8 +24,7 @@ import totalcross.net.AuthenticationException;
  * 
  * @since TotalCross 1.13
  */
-public abstract class Service
-{
+public abstract class Service {
   protected MailSession session;
 
   protected String host;
@@ -36,8 +35,7 @@ public abstract class Service
 
   protected String password;
 
-  protected Service(MailSession session)
-  {
+  protected Service(MailSession session) {
     this.session = session;
   }
 
@@ -54,8 +52,8 @@ public abstract class Service
    */
   public abstract void connect() throws AuthenticationException, MessagingException;
 
-  public abstract void connect(String host, int port, String user, String password) throws AuthenticationException,
-  MessagingException;
+  public abstract void connect(String host, int port, String user, String password)
+      throws AuthenticationException, MessagingException;
 
   /**
    * Close this service and terminate its connection. Any Messaging components (Folders, Messages, etc.) belonging to
@@ -67,7 +65,7 @@ public abstract class Service
    */
   public abstract void close() throws MessagingException;
 
-  protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException,
-  MessagingException
-  {}
+  protected void protocolConnect(String host, int port, String login, String password)
+      throws AuthenticationException, MessagingException {
+  }
 }

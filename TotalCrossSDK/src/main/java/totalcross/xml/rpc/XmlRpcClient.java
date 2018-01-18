@@ -61,8 +61,7 @@ import totalcross.xml.XmlReader;
  * @author Maintained by Nimkathana (<a href="http://www.nimkathana.com">www.nimkathana.com</a>)
  * @author Original by IOP GmbH (<a href="http://www.iop.de">www.iop.de</a>)
  */
-public class XmlRpcClient extends XmlReader
-{
+public class XmlRpcClient extends XmlReader {
   private StandardHttpClient httpClient;
   protected XmlRpcContentHandler xmlHandler;
   private XmlWriter writer;
@@ -77,30 +76,25 @@ public class XmlRpcClient extends XmlReader
    * @throws XmlRpcException
    *            If the connection to the server was unsuccessful
    */
-  public XmlRpcClient(String hostname, int port, String uri) throws XmlRpcException, UnknownHostException
-  {
+  public XmlRpcClient(String hostname, int port, String uri) throws XmlRpcException, UnknownHostException {
     this(new StandardHttpClient(hostname, port, uri));
   }
 
   /**
    * Creates a xmlrpc client with compression if the given flag is true.
    */
-  public XmlRpcClient(String hostname, int port, String uri, boolean doCompression) throws XmlRpcException, UnknownHostException
-  {
-    this(doCompression ?
-        new CompressedHttpClient(hostname, port, uri) :
-          new StandardHttpClient(hostname, port, uri));
+  public XmlRpcClient(String hostname, int port, String uri, boolean doCompression)
+      throws XmlRpcException, UnknownHostException {
+    this(doCompression ? new CompressedHttpClient(hostname, port, uri) : new StandardHttpClient(hostname, port, uri));
   }
 
-  public XmlRpcClient(String hostname, int port, String uri, int openTimeout, int readTimeout, int writeTimeout, boolean doCompression) throws XmlRpcException, UnknownHostException
-  {
-    this(doCompression ?
-        new CompressedHttpClient(hostname, port, uri, openTimeout, readTimeout, writeTimeout) :
-          new StandardHttpClient(hostname, port, uri, openTimeout, readTimeout, writeTimeout));
+  public XmlRpcClient(String hostname, int port, String uri, int openTimeout, int readTimeout, int writeTimeout,
+      boolean doCompression) throws XmlRpcException, UnknownHostException {
+    this(doCompression ? new CompressedHttpClient(hostname, port, uri, openTimeout, readTimeout, writeTimeout)
+        : new StandardHttpClient(hostname, port, uri, openTimeout, readTimeout, writeTimeout));
   }
 
-  public XmlRpcClient(StandardHttpClient httpClient) throws XmlRpcException, UnknownHostException
-  {
+  public XmlRpcClient(StandardHttpClient httpClient) throws XmlRpcException, UnknownHostException {
     this.httpClient = httpClient;
     xmlHandler = new XmlRpcContentHandler();
     setContentHandler(xmlHandler);
@@ -119,32 +113,27 @@ public class XmlRpcClient extends XmlReader
    *            If the remote procedure call was unsuccessful
    * @throws IOException
    */
-  public Object execute(String method, Vector params) throws XmlRpcException, IOException
-  {
+  public Object execute(String method, Vector params) throws XmlRpcException, IOException {
     writer.reset();
     writeRequest(method, params);
     byte[] writerBytes = writer.getBytes();
     byte[] response = httpClient.executeReturnBytes(writerBytes);
 
     // parse the response
-    try
-    {
+    try {
       parse(response, 0, response.length);
-    }
-    catch (SyntaxException e)
-    {
+    } catch (SyntaxException e) {
       throw new XmlRpcException(e.getMessage());
     }
 
     // httpClient keepalive is always false if XmlRpc.keepalive is false
-    if (!httpClient.keepAlive){
+    if (!httpClient.keepAlive) {
       httpClient.closeConnection();
     }
 
     Object result = xmlHandler.result;
 
-    if (xmlHandler.faultOccured)
-    {
+    if (xmlHandler.faultOccured) {
       // this is an XML-RPC-level problem, i.e. the server reported an error.
       // throw a XmlRpcException.
       Hashtable f = (Hashtable) result;
@@ -160,17 +149,19 @@ public class XmlRpcClient extends XmlReader
   }
 
   @Override
-  protected int getTagCode(byte[] b, int offset, int count)
-  {
+  protected int getTagCode(byte[] b, int offset, int count) {
     int hash = TagDereferencer.hashCode(b, offset, count);
-    try {return XmlRpcValue.tag2code.get(hash);} catch (ElementNotFoundException e) {return -1;}
+    try {
+      return XmlRpcValue.tag2code.get(hash);
+    } catch (ElementNotFoundException e) {
+      return -1;
+    }
   }
 
   /*
    * Generate an XML-RPC request from a method name and a parameter vector.
    */
-  private void writeRequest(String method, Vector params)
-  {
+  private void writeRequest(String method, Vector params) {
     XmlWriter writer = this.writer;
     writer.startElement("methodCall");
 
@@ -180,8 +171,7 @@ public class XmlRpcClient extends XmlReader
 
     writer.startElement("params");
     int n = params.size();
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
       writer.startElement("param");
       writeObject(params.items[i]);
       writer.endElement("param");
@@ -196,33 +186,24 @@ public class XmlRpcClient extends XmlReader
    * @param what
    *           The object to write
    */
-  protected void writeObject(Object what)
-  {
+  protected void writeObject(Object what) {
     XmlWriter writer = this.writer;
     writer.startElement("value");
-    if (what == null)
-    {
+    if (what == null) {
       throw new RuntimeException("null value not supported by XML-RPC");
-    }
-    else if (what instanceof String)
-    {
+    } else if (what instanceof String) {
       writer.chardata(what.toString());
-    }
-    else if (what instanceof Properties.Value) // handles: int, double, long, boolean
+    } else if (what instanceof Properties.Value) // handles: int, double, long, boolean
     {
-      Properties.Value val = (Properties.Value)what;
+      Properties.Value val = (Properties.Value) what;
       writer.startElement(val.typeStr);
       writer.write(what.toString());
       writer.endElement(val.typeStr);
-    }
-    else if (what instanceof byte[])
-    {
+    } else if (what instanceof byte[]) {
       writer.startElement("base64");
       writer.write(Base64.encode((byte[]) what));
       writer.endElement("base64");
-    }
-    else if (what instanceof Vector)
-    {
+    } else if (what instanceof Vector) {
       writer.startElement("array");
       writer.startElement("data");
       Vector v = (Vector) what;
@@ -232,16 +213,13 @@ public class XmlRpcClient extends XmlReader
       }
       writer.endElement("data");
       writer.endElement("array");
-    }
-    else if (what instanceof Hashtable)
-    {
+    } else if (what instanceof Hashtable) {
       writer.startElement("struct");
       Hashtable h = (Hashtable) what;
       Vector keys = h.getKeys();
       Vector vals = h.getValues();
       int n = keys.size();
-      for (int i = 0; i < n; i++)
-      {
+      for (int i = 0; i < n; i++) {
         Object nextkey = keys.items[i];
         Object nextval = vals.items[i];
         writer.startElement("member");
@@ -252,14 +230,12 @@ public class XmlRpcClient extends XmlReader
         writer.endElement("member");
       }
       writer.endElement("struct");
-    }
-    else if (what instanceof Time)
-    {
+    } else if (what instanceof Time) {
       writer.startElement("dateTime.iso8601");
       Time dateTime = (Time) what;
       writer.write(dateTime.toIso8601());
       writer.endElement("dateTime.iso8601");
-    }else {
+    } else {
       throw new RuntimeException("unsupported Java type: " + what.getClass());
     }
     writer.endElement("value");

@@ -52,8 +52,7 @@ import totalcross.sys.InvalidNumberException;
  * @see        Pattern
  */
 
-
-public class PerlSubstitution implements Substitution{
+public class PerlSubstitution implements Substitution {
   //private static Pattern refPtn,argsPtn;
   private static Pattern refPtn;
   private static int NAME_ID;
@@ -62,22 +61,21 @@ public class PerlSubstitution implements Substitution{
   //private static int FN_ARGS_ID;
   //private static int ARG_NAME_ID;
 
-  private static final String groupRef="\\$(?:\\{({=name}\\w+)\\}|({=name}\\d+|&))|\\\\({esc}.)";
+  private static final String groupRef = "\\$(?:\\{({=name}\\w+)\\}|({=name}\\d+|&))|\\\\({esc}.)";
   //private static final String fnRef="\\&({fn_name}\\w+)\\(({fn_args}"+groupRef+"(?:,"+groupRef+")*)*\\)";
 
-  static{
-    try{
+  static {
+    try {
       //refPtn=new Pattern("(?<!\\\\)"+fnRef+"|"+groupRef);
       //argsPtn=new Pattern(groupRef);
       //refPtn=new Pattern("(?<!\\\\)"+groupRef);
-      refPtn=new Pattern(groupRef);
-      NAME_ID=refPtn.groupId("name").intValue();
-      ESC_ID=refPtn.groupId("esc").intValue();
+      refPtn = new Pattern(groupRef);
+      NAME_ID = refPtn.groupId("name").intValue();
+      ESC_ID = refPtn.groupId("esc").intValue();
       //ARG_NAME_ID=argsPtn.groupId("name").intValue();
       //FN_NAME_ID=refPtn.groupId("fn_name").intValue();
       //FN_ARGS_ID=refPtn.groupId("fn_args").intValue();
-    }
-    catch(PatternSyntaxException e){
+    } catch (PatternSyntaxException e) {
       e.printStackTrace();
     }
   }
@@ -86,154 +84,156 @@ public class PerlSubstitution implements Substitution{
 
   //It seems we should somehow throw an IllegalArgumentException if an expression 
   //holds a reference to a non-existing group. Such checking will require a Pattern instance.
-  public PerlSubstitution(String s){
-    Matcher refMatcher=new Matcher(refPtn);
+  public PerlSubstitution(String s) {
+    Matcher refMatcher = new Matcher(refPtn);
     refMatcher.setTarget(s);
-    queueEntry=makeQueue(refMatcher);
+    queueEntry = makeQueue(refMatcher);
   }
 
-  public String value(MatchResult mr){
-    TextBuffer dest=Replacer.wrap(new StringBuffer(mr.length()));
-    appendSubstitution(mr,dest);
+  public String value(MatchResult mr) {
+    TextBuffer dest = Replacer.wrap(new StringBuffer(mr.length()));
+    appendSubstitution(mr, dest);
     return dest.toString();
   }
 
-  private static Element makeQueue(Matcher refMatcher){
-    if(refMatcher.find()){
+  private static Element makeQueue(Matcher refMatcher) {
+    if (refMatcher.find()) {
       Element element;
-      if(refMatcher.isCaptured(NAME_ID)){
-        char c=refMatcher.charAt(0,NAME_ID);
-        if(c=='&'){
-          element=new IntRefHandler(refMatcher.prefix(),new Integer(0));
-        }
-        else if(Character.isDigit(c)){
+      if (refMatcher.isCaptured(NAME_ID)) {
+        char c = refMatcher.charAt(0, NAME_ID);
+        if (c == '&') {
+          element = new IntRefHandler(refMatcher.prefix(), new Integer(0));
+        } else if (Character.isDigit(c)) {
           int v = 0;
-          try
-          {
+          try {
             v = Convert.toInt(refMatcher.group(NAME_ID));
+          } catch (InvalidNumberException e) {
           }
-          catch (InvalidNumberException e)
-          {
-          }
-          element=new IntRefHandler(refMatcher.prefix(),new Integer(v));
+          element = new IntRefHandler(refMatcher.prefix(), new Integer(v));
         } else {
-          element=new StringRefHandler(refMatcher.prefix(),refMatcher.group(NAME_ID));
+          element = new StringRefHandler(refMatcher.prefix(), refMatcher.group(NAME_ID));
         }
-      }
-      else{
+      } else {
         //escaped char
-        element=new PlainElement(refMatcher.prefix(),refMatcher.group(ESC_ID));
+        element = new PlainElement(refMatcher.prefix(), refMatcher.group(ESC_ID));
       }
-      refMatcher.setTarget(refMatcher,MatchResult.SUFFIX);
-      element.next=makeQueue(refMatcher);
+      refMatcher.setTarget(refMatcher, MatchResult.SUFFIX);
+      element.next = makeQueue(refMatcher);
       return element;
-    }else {
+    } else {
       return new PlainElement(refMatcher.target());
     }
   }
 
   @Override
-  public void appendSubstitution(MatchResult match,TextBuffer dest){
-    for(Element element=this.queueEntry; element!=null; element=element.next){
-      element.append(match,dest);
+  public void appendSubstitution(MatchResult match, TextBuffer dest) {
+    for (Element element = this.queueEntry; element != null; element = element.next) {
+      element.append(match, dest);
     }
   }
 
   @Override
-  public String toString(){
-    StringBuffer sb=new StringBuffer();
-    for(Element element=this.queueEntry;element!=null;element=element.next){
+  public String toString() {
+    StringBuffer sb = new StringBuffer();
+    for (Element element = this.queueEntry; element != null; element = element.next) {
       sb.append(element.toString());
     }
     return sb.toString();
   }
 
-  private static abstract class Element{
+  private static abstract class Element {
     protected String prefix;
     Element next;
-    abstract void append(MatchResult match,TextBuffer dest);
+
+    abstract void append(MatchResult match, TextBuffer dest);
   }
 
-  private static class PlainElement extends Element{
+  private static class PlainElement extends Element {
     private String str;
-    PlainElement(String s){
-      str=s;
+
+    PlainElement(String s) {
+      str = s;
     }
-    PlainElement(String pref,String s){
-      prefix=pref;
-      str=s;
+
+    PlainElement(String pref, String s) {
+      prefix = pref;
+      str = s;
     }
+
     @Override
-    void append(MatchResult match,TextBuffer dest){
-      if(prefix!=null) {
+    void append(MatchResult match, TextBuffer dest) {
+      if (prefix != null) {
         dest.append(prefix);
       }
-      if(str!=null) {
+      if (str != null) {
         dest.append(str);
       }
     }
   }
 
-  private static class IntRefHandler extends Element{
+  private static class IntRefHandler extends Element {
     private Integer index;
-    IntRefHandler(String s,Integer ind){
-      prefix=s;
-      index=ind;
+
+    IntRefHandler(String s, Integer ind) {
+      prefix = s;
+      index = ind;
     }
+
     @Override
-    void append(MatchResult match,TextBuffer dest){
-      if(prefix!=null) {
+    void append(MatchResult match, TextBuffer dest) {
+      if (prefix != null) {
         dest.append(prefix);
       }
-      if(index==null) {
+      if (index == null) {
         return;
       }
-      int i=index.intValue();
-      if(i>=match.pattern().groupCount()) {
+      int i = index.intValue();
+      if (i >= match.pattern().groupCount()) {
         return;
       }
-      if(match.isCaptured(i)) {
-        match.getGroup(i,dest);
+      if (match.isCaptured(i)) {
+        match.getGroup(i, dest);
       }
     }
   }
 
-  private static class StringRefHandler extends Element{
+  private static class StringRefHandler extends Element {
     private String index;
-    StringRefHandler(String s,String ind){
-      prefix=s;
-      index=ind;
+
+    StringRefHandler(String s, String ind) {
+      prefix = s;
+      index = ind;
     }
+
     @Override
-    void append(MatchResult match,TextBuffer dest){
-      if(prefix!=null) {
+    void append(MatchResult match, TextBuffer dest) {
+      if (prefix != null) {
         dest.append(prefix);
       }
-      if(index==null) {
+      if (index == null) {
         return;
       }
-      Integer id=match.pattern().groupId(index);
+      Integer id = match.pattern().groupId(index);
       //if(id==null) return; //???
-      int i=id.intValue();
-      if(match.isCaptured(i)) {
-        match.getGroup(i,dest);
+      int i = id.intValue();
+      if (match.isCaptured(i)) {
+        match.getGroup(i, dest);
       }
     }
   }
 }
 
-abstract class GReference{
+abstract class GReference {
   public abstract String stringValue(MatchResult match);
 
-  public static GReference createInstance(MatchResult match,int grp){
-    if(match.length(grp)==0){
+  public static GReference createInstance(MatchResult match, int grp) {
+    if (match.length(grp) == 0) {
       throw new IllegalArgumentException("arg name cannot be an empty string");
     }
-    if(Character.isDigit(match.charAt(0,grp))){
-      try{
+    if (Character.isDigit(match.charAt(0, grp))) {
+      try {
         return new IntReference(totalcross.sys.Convert.toInt(match.group(grp)));
-      }
-      catch(Exception e){
+      } catch (Exception e) {
         throw new IllegalArgumentException("illegal arg name, starts with digit but is not a number");
       }
     }
@@ -241,28 +241,28 @@ abstract class GReference{
   }
 }
 
-class IntReference extends GReference{
+class IntReference extends GReference {
   protected int id;
 
-  IntReference(int id){
-    this.id=id;
+  IntReference(int id) {
+    this.id = id;
   }
 
   @Override
-  public String stringValue(MatchResult match){
+  public String stringValue(MatchResult match) {
     return match.group(id);
   }
 }
 
-class StringReference extends GReference{
+class StringReference extends GReference {
   protected String name;
 
-  StringReference(String name){
-    this.name=name;
+  StringReference(String name) {
+    this.name = name;
   }
 
   @Override
-  public String stringValue(MatchResult match){
+  public String stringValue(MatchResult match) {
     return match.group(name);
   }
 }

@@ -96,7 +96,7 @@ public class BitOutputStream implements BitWriter {
    */
   @Override
   public void pad(int width) throws IOException {
-    int gap = (int)this.nrBits % width;
+    int gap = (int) this.nrBits % width;
     if (gap < 0) {
       gap += width;
     }
@@ -111,6 +111,7 @@ public class BitOutputStream implements BitWriter {
   }
 
   byte[] buf = new byte[1];
+
   /**
    * Write some bits. Up to 32 bits can be written at a time.
    *
@@ -133,14 +134,13 @@ public class BitOutputStream implements BitWriter {
       if (actual > this.vacant) {
         actual = this.vacant;
       }
-      this.unwritten |= ((bits >>> (width - actual)) &
-          ((1 << actual) - 1)) << (this.vacant - actual);
+      this.unwritten |= ((bits >>> (width - actual)) & ((1 << actual) - 1)) << (this.vacant - actual);
       width -= actual;
       nrBits += actual;
       this.vacant -= actual;
       if (this.vacant == 0) {
-        buf[0] = (byte)this.unwritten;
-        this.out.writeBytes(buf,0,1);
+        buf[0] = (byte) this.unwritten;
+        this.out.writeBytes(buf, 0, 1);
         this.unwritten = 0;
         this.vacant = 8;
       }

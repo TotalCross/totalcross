@@ -21,16 +21,19 @@ import totalcross.ui.Switch;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.PressListener;
 
-public class SwitchSample extends BaseContainer implements PressListener
-{
+public class SwitchSample extends BaseContainer implements PressListener {
   Switch s1, s2;
+
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
-    s1 = new Switch(true);  add(s1, CENTER, PARENTSIZE+30,PARENTSIZE+50,PREFERRED+fmH);
-    s1 = new Switch(true);  s1.setFont(font.adjustedBy(fmH/2)); add(s1, CENTER, AFTER+fmH,PARENTSIZE+50,PREFERRED+fmH);
-    s2 = new Switch(false); add(s2, CENTER,AFTER+fmH,PARENTSIZE+60,PREFERRED+fmH);
+    s1 = new Switch(true);
+    add(s1, CENTER, PARENTSIZE + 30, PARENTSIZE + 50, PREFERRED + fmH);
+    s1 = new Switch(true);
+    s1.setFont(font.adjustedBy(fmH / 2));
+    add(s1, CENTER, AFTER + fmH, PARENTSIZE + 50, PREFERRED + fmH);
+    s2 = new Switch(false);
+    add(s2, CENTER, AFTER + fmH, PARENTSIZE + 60, PREFERRED + fmH);
     s1.addPressListener(this);
     s2.addPressListener(this);
     s1.textForeOn = "I";
@@ -40,11 +43,10 @@ public class SwitchSample extends BaseContainer implements PressListener
   }
 
   @Override
-  public void controlPressed(ControlEvent e)
-  {
-    if (e.target == s1){
+  public void controlPressed(ControlEvent e) {
+    if (e.target == s1) {
       s2.setOn(s1.isOn());
-    }else {
+    } else {
       s1.setOn(s2.isOn());
     }
   }

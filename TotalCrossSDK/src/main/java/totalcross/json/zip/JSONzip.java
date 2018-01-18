@@ -52,9 +52,7 @@ public abstract class JSONzip implements None, PostMortem {
   /**
    * The characters in JSON numbers can be reduced to 4 bits each.
    */
-  public static final byte[] bcd = {
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', 'E'
-  };
+  public static final byte[] bcd = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', 'E' };
 
   /**
    * The end of string code.
@@ -249,10 +247,8 @@ public abstract class JSONzip implements None, PostMortem {
   @Override
   public boolean postMortem(PostMortem pm) {
     JSONzip that = (JSONzip) pm;
-    return this.namehuff.postMortem(that.namehuff)
-        && this.namekeep.postMortem(that.namekeep)
-        && this.stringkeep.postMortem(that.stringkeep)
-        && this.stringhuff.postMortem(that.stringhuff)
+    return this.namehuff.postMortem(that.namehuff) && this.namekeep.postMortem(that.namekeep)
+        && this.stringkeep.postMortem(that.stringkeep) && this.stringhuff.postMortem(that.stringhuff)
         && this.valuekeep.postMortem(that.valuekeep);
   }
 }

@@ -35,8 +35,8 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
+
 import java.lang.reflect.Array;
 import java.util.AbstractSequentialList;
 import java.util.ArrayList;
@@ -80,9 +80,7 @@ import java.util.NoSuchElementException;
  * @since 1.2
  * @status Complete to 1.6
  */
-public class LinkedList4D<T> extends AbstractSequentialList<T>
-implements List<T>, Deque<T>, Cloneable
-{
+public class LinkedList4D<T> extends AbstractSequentialList<T> implements List<T>, Deque<T>, Cloneable {
   /**
    * The first element in the list.
    */
@@ -101,8 +99,7 @@ implements List<T>, Deque<T>, Cloneable
   /**
    * Class to represent an entry in the list. Holds a single element.
    */
-  private static final class Entry<T>
-  {
+  private static final class Entry<T> {
     /** The element in the list. */
     T data;
 
@@ -116,8 +113,7 @@ implements List<T>, Deque<T>, Cloneable
      * Construct an entry.
      * @param data the list element
      */
-    Entry(T data)
-    {
+    Entry(T data) {
       this.data = data;
     }
   } // class Entry
@@ -135,19 +131,15 @@ implements List<T>, Deque<T>, Cloneable
    * @return the entry at position n
    */
   // Package visible for use in nested classes.
-  Entry<T> getEntry(int n)
-  {
+  Entry<T> getEntry(int n) {
     Entry<T> e;
-    if (n < size / 2)
-    {
+    if (n < size / 2) {
       e = first;
       // n less than size/2, iterate from start
       while (n-- > 0) {
         e = e.next;
       }
-    }
-    else
-    {
+    } else {
       e = last;
       // n greater than size/2, iterate from end
       while (++n < size) {
@@ -164,26 +156,19 @@ implements List<T>, Deque<T>, Cloneable
    * @param e the entry to remove
    */
   // Package visible for use in nested classes.
-  void removeEntry(Entry<T> e)
-  {
+  void removeEntry(Entry<T> e) {
     modCount++;
     size--;
-    if (size == 0){
+    if (size == 0) {
       first = last = null;
-    }else
-    {
-      if (e == first)
-      {
+    } else {
+      if (e == first) {
         first = e.next;
         e.next.previous = null;
-      }
-      else if (e == last)
-      {
+      } else if (e == last) {
         last = e.previous;
         e.previous.next = null;
-      }
-      else
-      {
+      } else {
         e.next.previous = e.previous;
         e.previous.next = e.next;
       }
@@ -196,11 +181,9 @@ implements List<T>, Deque<T>, Cloneable
    * @param index the index to check
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size
    */
-  private void checkBoundsInclusive(int index)
-  {
-    if (index < 0 || index > size){
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-          + size);
+  private void checkBoundsInclusive(int index) {
+    if (index < 0 || index > size) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + size);
     }
   }
 
@@ -210,19 +193,16 @@ implements List<T>, Deque<T>, Cloneable
    * @param index the index to check
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size
    */
-  private void checkBoundsExclusive(int index)
-  {
-    if (index < 0 || index >= size){
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
-          + size);
+  private void checkBoundsExclusive(int index) {
+    if (index < 0 || index >= size) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + size);
     }
   }
 
   /**
    * Create an empty linked list.
    */
-  public LinkedList4D()
-  {
+  public LinkedList4D() {
   }
 
   /**
@@ -232,8 +212,7 @@ implements List<T>, Deque<T>, Cloneable
    * @param c the collection to populate this list from
    * @throws NullPointerException if c is null
    */
-  public LinkedList4D(Collection<? extends T> c)
-  {
+  public LinkedList4D(Collection<? extends T> c) {
     addAll(c);
   }
 
@@ -244,9 +223,8 @@ implements List<T>, Deque<T>, Cloneable
    * @throws NoSuchElementException if the list is empty
    */
   @Override
-  public T getFirst()
-  {
-    if (size == 0){
+  public T getFirst() {
+    if (size == 0) {
       throw new NoSuchElementException();
     }
     return first.data;
@@ -259,9 +237,8 @@ implements List<T>, Deque<T>, Cloneable
    * @throws NoSuchElementException if the list is empty
    */
   @Override
-  public T getLast()
-  {
-    if (size == 0){
+  public T getLast() {
+    if (size == 0) {
       throw new NoSuchElementException();
     }
     return last.data;
@@ -274,18 +251,17 @@ implements List<T>, Deque<T>, Cloneable
    * @throws NoSuchElementException if the list is empty
    */
   @Override
-  public T removeFirst()
-  {
-    if (size == 0){
+  public T removeFirst() {
+    if (size == 0) {
       throw new NoSuchElementException();
     }
     modCount++;
     size--;
     T r = first.data;
 
-    if (first.next != null){
+    if (first.next != null) {
       first.next.previous = null;
-    }else {
+    } else {
       last = null;
     }
 
@@ -301,18 +277,17 @@ implements List<T>, Deque<T>, Cloneable
    * @throws NoSuchElementException if the list is empty
    */
   @Override
-  public T removeLast()
-  {
-    if (size == 0){
+  public T removeLast() {
+    if (size == 0) {
       throw new NoSuchElementException();
     }
     modCount++;
     size--;
     T r = last.data;
 
-    if (last.previous != null){
+    if (last.previous != null) {
       last.previous.next = null;
-    }else {
+    } else {
       first = null;
     }
 
@@ -327,15 +302,13 @@ implements List<T>, Deque<T>, Cloneable
    * @param o the element to insert
    */
   @Override
-  public void addFirst(T o)
-  {
+  public void addFirst(T o) {
     Entry<T> e = new Entry(o);
 
     modCount++;
-    if (size == 0){
+    if (size == 0) {
       first = last = e;
-    }else
-    {
+    } else {
       e.next = first;
       first.previous = e;
       first = e;
@@ -349,8 +322,7 @@ implements List<T>, Deque<T>, Cloneable
    * @param o the element to insert
    */
   @Override
-  public void addLast(T o)
-  {
+  public void addLast(T o) {
     addLastEntry(new Entry<T>(o));
   }
 
@@ -359,13 +331,11 @@ implements List<T>, Deque<T>, Cloneable
    *
    * @param e the entry to add
    */
-  private void addLastEntry(Entry<T> e)
-  {
+  private void addLastEntry(Entry<T> e) {
     modCount++;
-    if (size == 0){
+    if (size == 0) {
       first = last = e;
-    }else
-    {
+    } else {
       e.previous = last;
       last.next = e;
       last = e;
@@ -381,11 +351,9 @@ implements List<T>, Deque<T>, Cloneable
    * @return true if it is found
    */
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     Entry<T> e = first;
-    while (e != null)
-    {
+    while (e != null) {
       if (AbstractCollection4D.equals(o, e.data)) {
         return true;
       }
@@ -400,8 +368,7 @@ implements List<T>, Deque<T>, Cloneable
    * @return the list size
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return size;
   }
 
@@ -412,8 +379,7 @@ implements List<T>, Deque<T>, Cloneable
    * @return true, as it always succeeds
    */
   @Override
-  public boolean add(T o)
-  {
+  public boolean add(T o) {
     addLastEntry(new Entry<T>(o));
     return true;
   }
@@ -426,13 +392,10 @@ implements List<T>, Deque<T>, Cloneable
    * @return true if an instance of the object was removed
    */
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     Entry<T> e = first;
-    while (e != null)
-    {
-      if (AbstractCollection4D.equals(o, e.data))
-      {
+    while (e != null) {
+      if (AbstractCollection4D.equals(o, e.data)) {
         removeEntry(e);
         return true;
       }
@@ -451,8 +414,7 @@ implements List<T>, Deque<T>, Cloneable
    * @throws NullPointerException if c is null
    */
   @Override
-  public boolean addAll(Collection<? extends T> c)
-  {
+  public boolean addAll(Collection<? extends T> c) {
     return addAll(size, c);
   }
 
@@ -467,12 +429,11 @@ implements List<T>, Deque<T>, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
   @Override
-  public boolean addAll(int index, Collection<? extends T> c)
-  {
+  public boolean addAll(int index, Collection<? extends T> c) {
     checkBoundsInclusive(index);
     int csize = c.size();
 
-    if (csize == 0){
+    if (csize == 0) {
       return false;
     }
 
@@ -483,11 +444,10 @@ implements List<T>, Deque<T>, Cloneable
     // is null. If the list is empty, both are null.
     Entry<T> after = null;
     Entry<T> before = null;
-    if (index != size)
-    {
+    if (index != size) {
       after = getEntry(index);
       before = after.previous;
-    }else {
+    } else {
       before = last;
     }
 
@@ -501,8 +461,7 @@ implements List<T>, Deque<T>, Cloneable
     Entry<T> firstNew = e;
 
     // Create and link all the remaining entries.
-    for (int pos = 1; pos < csize; pos++)
-    {
+    for (int pos = 1; pos < csize; pos++) {
       e = new Entry<T>(itr.next());
       e.previous = prev;
       prev.next = e;
@@ -513,15 +472,15 @@ implements List<T>, Deque<T>, Cloneable
     modCount++;
     size += csize;
     prev.next = after;
-    if (after != null){
+    if (after != null) {
       after.previous = e;
-    }else {
+    } else {
       last = e;
     }
 
-    if (before != null){
+    if (before != null) {
       before.next = firstNew;
-    }else {
+    } else {
       first = firstNew;
     }
     return true;
@@ -531,10 +490,8 @@ implements List<T>, Deque<T>, Cloneable
    * Remove all elements from this list.
    */
   @Override
-  public void clear()
-  {
-    if (size > 0)
-    {
+  public void clear() {
+    if (size > 0) {
       modCount++;
       first = null;
       last = null;
@@ -550,8 +507,7 @@ implements List<T>, Deque<T>, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   @Override
-  public T get(int index)
-  {
+  public T get(int index) {
     checkBoundsExclusive(index);
     return getEntry(index).data;
   }
@@ -565,8 +521,7 @@ implements List<T>, Deque<T>, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   @Override
-  public T set(int index, T o)
-  {
+  public T set(int index, T o) {
     checkBoundsExclusive(index);
     Entry<T> e = getEntry(index);
     T old = e.data;
@@ -582,13 +537,11 @@ implements List<T>, Deque<T>, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
   @Override
-  public void add(int index, T o)
-  {
+  public void add(int index, T o) {
     checkBoundsInclusive(index);
     Entry<T> e = new Entry<T>(o);
 
-    if (index < size)
-    {
+    if (index < size) {
       modCount++;
       Entry<T> after = getEntry(index);
       e.next = after;
@@ -600,7 +553,7 @@ implements List<T>, Deque<T>, Cloneable
       }
       after.previous = e;
       size++;
-    }else {
+    } else {
       addLastEntry(e);
     }
   }
@@ -613,8 +566,7 @@ implements List<T>, Deque<T>, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
   @Override
-  public T remove(int index)
-  {
+  public T remove(int index) {
     checkBoundsExclusive(index);
     Entry<T> e = getEntry(index);
     removeEntry(e);
@@ -628,12 +580,10 @@ implements List<T>, Deque<T>, Cloneable
    * @return its position, or -1 if not found
    */
   @Override
-  public int indexOf(Object o)
-  {
+  public int indexOf(Object o) {
     int index = 0;
     Entry<T> e = first;
-    while (e != null)
-    {
+    while (e != null) {
       if (AbstractCollection4D.equals(o, e.data)) {
         return index;
       }
@@ -650,12 +600,10 @@ implements List<T>, Deque<T>, Cloneable
    * @return its position, or -1 if not found
    */
   @Override
-  public int lastIndexOf(Object o)
-  {
+  public int lastIndexOf(Object o) {
     int index = size - 1;
     Entry<T> e = last;
-    while (e != null)
-    {
+    while (e != null) {
       if (AbstractCollection4D.equals(o, e.data)) {
         return index;
       }
@@ -675,8 +623,7 @@ implements List<T>, Deque<T>, Cloneable
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
   @Override
-  public ListIterator<T> listIterator(int index)
-  {
+  public ListIterator<T> listIterator(int index) {
     checkBoundsInclusive(index);
     return new LinkedListItr<T>(index);
   }
@@ -688,15 +635,11 @@ implements List<T>, Deque<T>, Cloneable
    *         same elements in the same order
    */
   @Override
-  public Object clone()
-  {
+  public Object clone() {
     LinkedList<T> copy = null;
-    try
-    {
+    try {
       copy = (LinkedList<T>) super.clone();
-    }
-    catch (CloneNotSupportedException ex)
-    {
+    } catch (CloneNotSupportedException ex) {
     }
     copy.clear();
     copy.addAll(this);
@@ -709,12 +652,10 @@ implements List<T>, Deque<T>, Cloneable
    * @return an array containing the list elements
    */
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     Object[] array = new Object[size];
     Entry<T> e = first;
-    for (int i = 0; i < size; i++)
-    {
+    for (int i = 0; i < size; i++) {
       array[i] = e.data;
       e = e.next;
     }
@@ -736,16 +677,14 @@ implements List<T>, Deque<T>, Cloneable
    * @throws NullPointerException if a is null
    */
   @Override
-  public <S> S[] toArray(S[] a)
-  {
-    if (a.length < size){
+  public <S> S[] toArray(S[] a) {
+    if (a.length < size) {
       a = (S[]) Array.newInstance(a.getClass().getComponentType(), size);
-    }else if (a.length > size){
+    } else if (a.length > size) {
       a[size] = null;
     }
     Entry<T> e = first;
-    for (int i = 0; i < size; i++)
-    {
+    for (int i = 0; i < size; i++) {
       a[i] = (S) e.data;
       e = e.next;
     }
@@ -760,8 +699,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.5
    */
   @Override
-  public boolean offer(T value)
-  {
+  public boolean offer(T value) {
     return add(value);
   }
 
@@ -774,8 +712,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.5
    */
   @Override
-  public T element()
-  {
+  public T element() {
     return getFirst();
   }
 
@@ -788,9 +725,8 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.5
    */
   @Override
-  public T peek()
-  {
-    if (size == 0){
+  public T peek() {
+    if (size == 0) {
       return null;
     }
     return getFirst();
@@ -804,9 +740,8 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.5
    */
   @Override
-  public T poll()
-  {
-    if (size == 0){
+  public T poll() {
+    if (size == 0) {
       return null;
     }
     return removeFirst();
@@ -820,8 +755,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.5
    */
   @Override
-  public T remove()
-  {
+  public T remove() {
     return removeFirst();
   }
 
@@ -832,9 +766,7 @@ implements List<T>, Deque<T>, Cloneable
    * @author Original author unknown
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private final class LinkedListItr<I>
-  implements ListIterator<I>
-  {
+  private final class LinkedListItr<I> implements ListIterator<I> {
     /** Number of modifications we know about. */
     private int knownMod = modCount;
 
@@ -855,15 +787,11 @@ implements List<T>, Deque<T>, Cloneable
      *
      * @param index the initial index
      */
-    LinkedListItr(int index)
-    {
-      if (index == size)
-      {
+    LinkedListItr(int index) {
+      if (index == size) {
         next = null;
         previous = (Entry<I>) last;
-      }
-      else
-      {
+      } else {
         next = (Entry<I>) getEntry(index);
         previous = next.previous;
       }
@@ -875,9 +803,8 @@ implements List<T>, Deque<T>, Cloneable
      *
      * @throws ConcurrentModificationException if the list was modified
      */
-    private void checkMod()
-    {
-      if (knownMod != modCount){
+    private void checkMod() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
     }
@@ -888,8 +815,7 @@ implements List<T>, Deque<T>, Cloneable
      * @return the next index
      */
     @Override
-    public int nextIndex()
-    {
+    public int nextIndex() {
       return position;
     }
 
@@ -899,8 +825,7 @@ implements List<T>, Deque<T>, Cloneable
      * @return the previous index
      */
     @Override
-    public int previousIndex()
-    {
+    public int previousIndex() {
       return position - 1;
     }
 
@@ -910,8 +835,7 @@ implements List<T>, Deque<T>, Cloneable
      * @return true if next will succeed
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return (next != null);
     }
 
@@ -921,8 +845,7 @@ implements List<T>, Deque<T>, Cloneable
      * @return true if previous will succeed
      */
     @Override
-    public boolean hasPrevious()
-    {
+    public boolean hasPrevious() {
       return (previous != null);
     }
 
@@ -934,10 +857,9 @@ implements List<T>, Deque<T>, Cloneable
      * @throws NoSuchElementException if there is no next
      */
     @Override
-    public I next()
-    {
+    public I next() {
       checkMod();
-      if (next == null){
+      if (next == null) {
         throw new NoSuchElementException();
       }
       position++;
@@ -954,10 +876,9 @@ implements List<T>, Deque<T>, Cloneable
      * @throws NoSuchElementException if there is no previous
      */
     @Override
-    public I previous()
-    {
+    public I previous() {
       checkMod();
-      if (previous == null){
+      if (previous == null) {
         throw new NoSuchElementException();
       }
       position--;
@@ -973,16 +894,15 @@ implements List<T>, Deque<T>, Cloneable
      * @throws IllegalStateException if there was no last element
      */
     @Override
-    public void remove()
-    {
+    public void remove() {
       checkMod();
-      if (lastReturned == null){
+      if (lastReturned == null) {
         throw new IllegalStateException();
       }
 
       // Adjust the position to before the removed element, if the element
       // being removed is behind the cursor.
-      if (lastReturned == previous){
+      if (lastReturned == previous) {
         position--;
       }
 
@@ -1001,8 +921,7 @@ implements List<T>, Deque<T>, Cloneable
      * @throws ConcurrentModificationException if the list was modified
      */
     @Override
-    public void add(I o)
-    {
+    public void add(I o) {
       checkMod();
       modCount++;
       knownMod++;
@@ -1012,15 +931,15 @@ implements List<T>, Deque<T>, Cloneable
       e.previous = previous;
       e.next = next;
 
-      if (previous != null){
+      if (previous != null) {
         previous.next = e;
-      }else {
+      } else {
         first = (Entry<T>) e;
       }
 
-      if (next != null){
+      if (next != null) {
         next.previous = e;
-      }else {
+      } else {
         last = (Entry<T>) e;
       }
 
@@ -1036,10 +955,9 @@ implements List<T>, Deque<T>, Cloneable
      * @throws IllegalStateException if there was no last element
      */
     @Override
-    public void set(I o)
-    {
+    public void set(I o) {
       checkMod();
-      if (lastReturned == null){
+      if (lastReturned == null) {
         throw new IllegalStateException();
       }
       lastReturned.data = o;
@@ -1054,10 +972,8 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public Iterator<T> descendingIterator()
-  {
-    return new Iterator<T>()
-    {
+  public Iterator<T> descendingIterator() {
+    return new Iterator<T>() {
       /** Number of modifications we know about. */
       private int knownMod = modCount;
 
@@ -1078,8 +994,7 @@ implements List<T>, Deque<T>, Cloneable
        * @throws ConcurrentModificationException if the
        *         list has been modified elsewhere.
        */
-      private void checkMod()
-      {
+      private void checkMod() {
         if (knownMod != modCount) {
           throw new ConcurrentModificationException();
         }
@@ -1093,8 +1008,7 @@ implements List<T>, Deque<T>, Cloneable
        *         reached.
        */
       @Override
-      public boolean hasNext()
-      {
+      public boolean hasNext() {
         return next != null;
       }
 
@@ -1108,8 +1022,7 @@ implements List<T>, Deque<T>, Cloneable
        *         list has been modified elsewhere.
        */
       @Override
-      public T next()
-      {
+      public T next() {
         checkMod();
         if (next == null) {
           throw new NoSuchElementException();
@@ -1131,8 +1044,7 @@ implements List<T>, Deque<T>, Cloneable
        *         been removed.
        */
       @Override
-      public void remove()
-      {
+      public void remove() {
         checkMod();
         if (lastReturned == null) {
           throw new IllegalStateException();
@@ -1152,8 +1064,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public boolean offerFirst(T value)
-  {
+  public boolean offerFirst(T value) {
     addFirst(value);
     return true;
   }
@@ -1166,8 +1077,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public boolean offerLast(T value)
-  {
+  public boolean offerLast(T value) {
     return add(value);
   }
 
@@ -1180,8 +1090,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T peekFirst()
-  {
+  public T peekFirst() {
     return peek();
   }
 
@@ -1194,9 +1103,8 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T peekLast()
-  {
-    if (size == 0){
+  public T peekLast() {
+    if (size == 0) {
       return null;
     }
     return getLast();
@@ -1210,8 +1118,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T pollFirst()
-  {
+  public T pollFirst() {
     return poll();
   }
 
@@ -1223,9 +1130,8 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public T pollLast()
-  {
-    if (size == 0){
+  public T pollLast() {
+    if (size == 0) {
       return null;
     }
     return removeLast();
@@ -1243,8 +1149,7 @@ implements List<T>, Deque<T>, Cloneable
    * @see #removeFirst()
    */
   @Override
-  public T pop()
-  {
+  public T pop() {
     return removeFirst();
   }
 
@@ -1259,8 +1164,7 @@ implements List<T>, Deque<T>, Cloneable
    * @see #addFirst(T)
    */
   @Override
-  public void push(T value)
-  {
+  public void push(T value) {
     addFirst(value);
   }
 
@@ -1275,8 +1179,7 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public boolean removeFirstOccurrence(Object o)
-  {
+  public boolean removeFirstOccurrence(Object o) {
     return remove(o);
   }
 
@@ -1290,13 +1193,10 @@ implements List<T>, Deque<T>, Cloneable
    * @since 1.6
    */
   @Override
-  public boolean removeLastOccurrence(Object o)
-  {
+  public boolean removeLastOccurrence(Object o) {
     Entry<T> e = last;
-    while (e != null)
-    {
-      if (AbstractCollection4D.equals(o, e.data))
-      {
+    while (e != null) {
+      if (AbstractCollection4D.equals(o, e.data)) {
         removeEntry(e);
         return true;
       }

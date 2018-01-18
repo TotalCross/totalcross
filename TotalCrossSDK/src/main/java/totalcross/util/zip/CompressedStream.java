@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
 import java.util.zip.DeflaterOutputStream;
@@ -29,8 +27,7 @@ import totalcross.io.Stream;
  * @since TotalCross 1.12
  */
 
-public abstract class CompressedStream extends Stream
-{
+public abstract class CompressedStream extends Stream {
   protected Object compressedStream;
   protected int mode;
 
@@ -45,8 +42,7 @@ public abstract class CompressedStream extends Stream
    */
   public static final int INFLATE = 2;
 
-  protected CompressedStream()
-  {
+  protected CompressedStream() {
   }
 
   /**
@@ -60,15 +56,13 @@ public abstract class CompressedStream extends Stream
    * 
    * @since TotalCross 1.12
    */
-  protected CompressedStream(Stream stream, int mode)
-  {
-    if (stream == null){
+  protected CompressedStream(Stream stream, int mode) {
+    if (stream == null) {
       throw new NullPointerException("Argument stream cannot have a null value.");
     }
 
     this.mode = mode;
-    switch (mode)
-    {
+    switch (mode) {
     case DEFLATE:
       compressedStream = createDeflate(stream);
       break;
@@ -92,33 +86,26 @@ public abstract class CompressedStream extends Stream
    * @since TotalCross 1.12
    */
   @Override
-  public int readBytes(byte[] buf, int start, int count) throws IOException, ZipException
-  {
-    if (mode != INFLATE){
+  public int readBytes(byte[] buf, int start, int count) throws IOException, ZipException {
+    if (mode != INFLATE) {
       throw new IOException("This operation can only be performed in INFLATE mode.");
     }
 
-    try
-    {
+    try {
       int r = 0;
-      do
-      {
+      do {
         int l = ((InflaterInputStream) compressedStream).read(buf, start, count); // guich@tc125_28
         if (l <= 0) {
           break;
         }
         r += l;
         start += l;
-        count -= l;            
+        count -= l;
       } while (count > 0);
       return r == 0 ? -1 : r;
-    }
-    catch (java.io.EOFException e)
-    {
+    } catch (java.io.EOFException e) {
       return -1;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -131,19 +118,15 @@ public abstract class CompressedStream extends Stream
    * @since TotalCross 1.12
    */
   @Override
-  public int writeBytes(byte[] buf, int start, int count) throws IOException
-  {
-    if (mode != DEFLATE){
+  public int writeBytes(byte[] buf, int start, int count) throws IOException {
+    if (mode != DEFLATE) {
       throw new IOException("This operation can only be performed in DEFLATE mode.");
     }
 
-    try
-    {
+    try {
       ((DeflaterOutputStream) compressedStream).write(buf, start, count);
       return count;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -154,12 +137,9 @@ public abstract class CompressedStream extends Stream
    * @since TotalCross 1.12
    */
   @Override
-  public void close() throws IOException
-  {
-    try
-    {
-      switch (mode)
-      {
+  public void close() throws IOException {
+    try {
+      switch (mode) {
       case DEFLATE:
         ((DeflaterOutputStream) compressedStream).close();
         break;
@@ -169,28 +149,20 @@ public abstract class CompressedStream extends Stream
       default:
         throw new IOException("Invalid object.");
       }
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
-    }
-    finally
-    {
+    } finally {
       mode = 0;
     }
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       if (mode != 0) {
         this.close();
       }
-    }
-    catch (Throwable t)
-    {
+    } catch (Throwable t) {
     }
   }
 }

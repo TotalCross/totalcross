@@ -15,10 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.tree;
-
 
 /**
  * This class holds the tree structure that the Tree class used to render the tree widget. Note: you should
@@ -31,10 +28,9 @@ package totalcross.ui.tree;
  * @see #addNode(Node, Node)
  * @see #insertNode(Node, Node, int)
  */
-public class TreeModel
-{
-  private Tree    tree;
-  private Node    root;
+public class TreeModel {
+  private Tree tree;
+  private Node root;
 
   /** flag used to determine if a node is a leaf or a folder. */
   public boolean allowsChildren;
@@ -42,8 +38,7 @@ public class TreeModel
   /**
    * Constructor to create a tree model with the specified root node and with the specified allowsChildren flag.
    */
-  public TreeModel(Node root, boolean allowsChildren)
-  {
+  public TreeModel(Node root, boolean allowsChildren) {
     this.root = (root != null) ? root : new Node("");
     this.allowsChildren = allowsChildren;
   }
@@ -51,16 +46,14 @@ public class TreeModel
   /**
    * Constructor to create a tree model with the specified root node and with allowsChildren is true.
    */
-  public TreeModel(Node root)
-  {
+  public TreeModel(Node root) {
     this(root, true);
   }
 
   /**
    * Constructor to create an empty tree model with allowsChildren is true.
    */
-  public TreeModel()
-  {
+  public TreeModel() {
     this(true);
   }
 
@@ -71,8 +64,7 @@ public class TreeModel
    * @param allowsChildren
    *           true to use allowwsChildren to determine a leaf node.
    */
-  public TreeModel(boolean allowsChildren)
-  {
+  public TreeModel(boolean allowsChildren) {
     this(null, allowsChildren);
   }
 
@@ -83,16 +75,14 @@ public class TreeModel
    * @param tree
    *           the tree (view) that is associated with this model.
    */
-  public void setTree(Tree tree)
-  {
+  public void setTree(Tree tree) {
     this.tree = tree;
   }
 
   /**
    * Method to clear this model.
    */
-  public void clear()
-  {
+  public void clear() {
     root = new Node("");
     tree.setModel(this);
   }
@@ -100,9 +90,8 @@ public class TreeModel
   /**
    * Method to notify the tree to reload.
    */
-  public void reload()
-  {
-    if (tree != null){
+  public void reload() {
+    if (tree != null) {
       tree.reload();
     }
   }
@@ -112,8 +101,7 @@ public class TreeModel
    *
    * @return the root node of this tree model.
    */
-  public Node getRoot()
-  {
+  public Node getRoot() {
     return root;
   }
 
@@ -123,8 +111,7 @@ public class TreeModel
    * @param root
    *           the new root node of this tree model.
    */
-  public void setRoot(Node root)
-  {
+  public void setRoot(Node root) {
     this.root = root;
     reload();
   }
@@ -141,15 +128,13 @@ public class TreeModel
    * @param index
    *           the index to insert the node into
    */
-  public void insertNode(Node parent, Node newNode, int index)
-  {
-    if (parent == null || newNode == null || parent.isLeaf(allowsChildren))
-    {
+  public void insertNode(Node parent, Node newNode, int index) {
+    if (parent == null || newNode == null || parent.isLeaf(allowsChildren)) {
       return; // cannot insert into a leaf node
     }
 
     index = parent.insert(newNode, index);
-    if (tree != null){
+    if (tree != null) {
       tree.nodeInserted(parent, newNode, index);
     }
   }
@@ -163,15 +148,13 @@ public class TreeModel
    * @param newNode
    *           the new node to insert into this tree model.
    */
-  public void addNode(Node parent, Node newNode)
-  {
-    if (parent == null || newNode == null || parent.isLeaf(allowsChildren))
-    {
+  public void addNode(Node parent, Node newNode) {
+    if (parent == null || newNode == null || parent.isLeaf(allowsChildren)) {
       return; // cannot insert into a leaf node
     }
 
     parent.add(newNode);
-    if (tree != null){
+    if (tree != null) {
       tree.nodeInserted(parent, newNode, parent.size());
     }
   }
@@ -184,15 +167,14 @@ public class TreeModel
    * @param node
    *           the node to remove from this tree model.
    */
-  public void removeNode(Node parent, Node node)
-  {
+  public void removeNode(Node parent, Node node) {
     // cannot delete root node
-    if (parent == null || node == null){
+    if (parent == null || node == null) {
       return;
     }
 
     parent.remove(node);
-    if (tree != null){
+    if (tree != null) {
       tree.nodeRemoved(node);
     }
   }
@@ -205,9 +187,8 @@ public class TreeModel
    * @param userObject
    *           the new user object.
    */
-  public void modifyNode(Node node, Object userObject)
-  {
-    if (node == null){
+  public void modifyNode(Node node, Object userObject) {
+    if (node == null) {
       return;
     }
 

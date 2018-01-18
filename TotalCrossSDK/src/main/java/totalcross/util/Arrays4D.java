@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.lang.reflect.Array;
@@ -71,15 +70,12 @@ import totalcross.sys.Vm;
  * @since 1.2
  * @status updated to 1.4
  */
-public class Arrays4D
-{
+public class Arrays4D {
   /**
    * This class is non-instantiable.
    */
-  private Arrays4D()
-  {
+  private Arrays4D() {
   }
-
 
   // binarySearch
   /**
@@ -96,9 +92,8 @@ public class Arrays4D
    *         found, where n is the index of the first value higher than key or
    *         a.length if there is no such value.
    */
-  public static int binarySearch(byte[] a, byte key)
-  {
-    if (a.length == 0){
+  public static int binarySearch(byte[] a, byte key) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, 0, a.length - 1, key);
@@ -123,19 +118,15 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
    *                                        <code>hi > a.length</code>.
    */
-  public static int binarySearch(byte[] a, int low, int hi, byte key)
-  {
-    if (low > hi){
-      throw new IllegalArgumentException("The start index is higher than " +
-          "the finish index.");
+  public static int binarySearch(byte[] a, int low, int hi, byte key) {
+    if (low > hi) {
+      throw new IllegalArgumentException("The start index is higher than " + "the finish index.");
     }
-    if (low < 0 || hi > a.length){
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-          "of bounds.");
+    if (low < 0 || hi > a.length) {
+      throw new ArrayIndexOutOfBoundsException("One of the indices is out " + "of bounds.");
     }
     int mid = 0;
-    while (low <= hi)
-    {
+    while (low <= hi) {
       mid = (low + hi) >>> 1;
       final byte d = a[mid];
       if (d == key) {
@@ -164,9 +155,8 @@ public class Arrays4D
    *         found, where n is the index of the first value higher than key or
    *         a.length if there is no such value.
    */
-  public static int binarySearch(char[] a, char key)
-  {
-    if (a.length == 0){
+  public static int binarySearch(char[] a, char key) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, 0, a.length - 1, key);
@@ -191,19 +181,15 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
    *                                        <code>hi > a.length</code>.
    */
-  public static int binarySearch(char[] a, int low, int hi, char key)
-  {
-    if (low > hi){
-      throw new IllegalArgumentException("The start index is higher than " +
-          "the finish index.");
+  public static int binarySearch(char[] a, int low, int hi, char key) {
+    if (low > hi) {
+      throw new IllegalArgumentException("The start index is higher than " + "the finish index.");
     }
-    if (low < 0 || hi > a.length){
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-          "of bounds.");
+    if (low < 0 || hi > a.length) {
+      throw new ArrayIndexOutOfBoundsException("One of the indices is out " + "of bounds.");
     }
     int mid = 0;
-    while (low <= hi)
-    {
+    while (low <= hi) {
       mid = (low + hi) >>> 1;
       final char d = a[mid];
       if (d == key) {
@@ -232,9 +218,8 @@ public class Arrays4D
    *         found, where n is the index of the first value higher than key or
    *         a.length if there is no such value.
    */
-  public static int binarySearch(short[] a, short key)
-  {
-    if (a.length == 0){
+  public static int binarySearch(short[] a, short key) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, 0, a.length - 1, key);
@@ -259,19 +244,15 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
    *                                        <code>hi > a.length</code>.
    */
-  public static int binarySearch(short[] a, int low, int hi, short key)
-  {
-    if (low > hi){
-      throw new IllegalArgumentException("The start index is higher than " +
-          "the finish index.");
+  public static int binarySearch(short[] a, int low, int hi, short key) {
+    if (low > hi) {
+      throw new IllegalArgumentException("The start index is higher than " + "the finish index.");
     }
-    if (low < 0 || hi > a.length){
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-          "of bounds.");
+    if (low < 0 || hi > a.length) {
+      throw new ArrayIndexOutOfBoundsException("One of the indices is out " + "of bounds.");
     }
     int mid = 0;
-    while (low <= hi)
-    {
+    while (low <= hi) {
       mid = (low + hi) >>> 1;
       final short d = a[mid];
       if (d == key) {
@@ -300,9 +281,8 @@ public class Arrays4D
    *         found, where n is the index of the first value higher than key or
    *         a.length if there is no such value.
    */
-  public static int binarySearch(int[] a, int key)
-  {
-    if (a.length == 0){
+  public static int binarySearch(int[] a, int key) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, 0, a.length - 1, key);
@@ -327,19 +307,15 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
    *                                        <code>hi > a.length</code>.
    */
-  public static int binarySearch(int[] a, int low, int hi, int key)
-  {
-    if (low > hi){
-      throw new IllegalArgumentException("The start index is higher than " +
-          "the finish index.");
+  public static int binarySearch(int[] a, int low, int hi, int key) {
+    if (low > hi) {
+      throw new IllegalArgumentException("The start index is higher than " + "the finish index.");
     }
-    if (low < 0 || hi > a.length){
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-          "of bounds.");
+    if (low < 0 || hi > a.length) {
+      throw new ArrayIndexOutOfBoundsException("One of the indices is out " + "of bounds.");
     }
     int mid = 0;
-    while (low <= hi)
-    {
+    while (low <= hi) {
       mid = (low + hi) >>> 1;
       final int d = a[mid];
       if (d == key) {
@@ -368,9 +344,8 @@ public class Arrays4D
    *         found, where n is the index of the first value higher than key or
    *         a.length if there is no such value.
    */
-  public static int binarySearch(long[] a, long key)
-  {
-    if (a.length == 0){
+  public static int binarySearch(long[] a, long key) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, 0, a.length - 1, key);
@@ -395,19 +370,15 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
    *                                        <code>hi > a.length</code>.
    */
-  public static int binarySearch(long[] a, int low, int hi, long key)
-  {
-    if (low > hi){
-      throw new IllegalArgumentException("The start index is higher than " +
-          "the finish index.");
+  public static int binarySearch(long[] a, int low, int hi, long key) {
+    if (low > hi) {
+      throw new IllegalArgumentException("The start index is higher than " + "the finish index.");
     }
-    if (low < 0 || hi > a.length){
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-          "of bounds.");
+    if (low < 0 || hi > a.length) {
+      throw new ArrayIndexOutOfBoundsException("One of the indices is out " + "of bounds.");
     }
     int mid = 0;
-    while (low <= hi)
-    {
+    while (low <= hi) {
       mid = (low + hi) >>> 1;
       final long d = a[mid];
       if (d == key) {
@@ -436,9 +407,8 @@ public class Arrays4D
    *         found, where n is the index of the first value higher than key or
    *         a.length if there is no such value.
    */
-  public static int binarySearch(double[] a, double key)
-  {
-    if (a.length == 0){
+  public static int binarySearch(double[] a, double key) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, 0, a.length - 1, key);
@@ -463,20 +433,16 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
    *                                        <code>hi > a.length</code>.
    */
-  public static int binarySearch(double[] a, int low, int hi, double key)
-  {
-    if (low > hi){
-      throw new IllegalArgumentException("The start index is higher than " +
-          "the finish index.");
+  public static int binarySearch(double[] a, int low, int hi, double key) {
+    if (low > hi) {
+      throw new IllegalArgumentException("The start index is higher than " + "the finish index.");
     }
-    if (low < 0 || hi > a.length){
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-          "of bounds.");
+    if (low < 0 || hi > a.length) {
+      throw new ArrayIndexOutOfBoundsException("One of the indices is out " + "of bounds.");
     }
     // Must use Double.compare to take into account NaN, +-0.
     int mid = 0;
-    while (low <= hi)
-    {
+    while (low <= hi) {
       mid = (low + hi) >>> 1;
       final int r = Double.compare(a[mid], key);
       if (r == 0) {
@@ -510,9 +476,8 @@ public class Arrays4D
    *         elements of a
    * @throws NullPointerException if a null element in a is compared
    */
-  public static int binarySearch(Object[] a, Object key)
-  {
-    if (a.length == 0){
+  public static int binarySearch(Object[] a, Object key) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, key, null);
@@ -534,8 +499,7 @@ public class Arrays4D
    *         found, where n is the index of the first value higher than key or
    *         a.length if there is no such value.
    */
-  public static int binarySearch(Object[] a, int low, int hi, Object key)
-  {
+  public static int binarySearch(Object[] a, int low, int hi, Object key) {
     return binarySearch(a, low, hi, key, null);
   }
 
@@ -561,9 +525,8 @@ public class Arrays4D
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static <T> int binarySearch(T[] a, T key, Comparator<? super T> c)
-  {
-    if (a.length == 0){
+  public static <T> int binarySearch(T[] a, T key, Comparator<? super T> c) {
+    if (a.length == 0) {
       return -1;
     }
     return binarySearch(a, 0, a.length - 1, key, c);
@@ -593,20 +556,15 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
    *                                        <code>hi > a.length</code>.
    */
-  public static <T> int binarySearch(T[] a, int low, int hi, T key,
-      Comparator<? super T> c)
-  {
-    if (low > hi){
-      throw new IllegalArgumentException("The start index is higher than " +
-          "the finish index.");
+  public static <T> int binarySearch(T[] a, int low, int hi, T key, Comparator<? super T> c) {
+    if (low > hi) {
+      throw new IllegalArgumentException("The start index is higher than " + "the finish index.");
     }
-    if (low < 0 || hi > a.length){
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-          "of bounds.");
+    if (low < 0 || hi > a.length) {
+      throw new ArrayIndexOutOfBoundsException("One of the indices is out " + "of bounds.");
     }
     int mid = 0;
-    while (low <= hi)
-    {
+    while (low <= hi) {
       mid = (low + hi) >>> 1;
       // NOTE: Please keep the order of a[mid] and key.  Although
       // not required by the specs, the RI has it in this order as
@@ -624,7 +582,6 @@ public class Arrays4D
     return -mid - 1;
   }
 
-
   // equals
   /**
    * Compare two boolean arrays for equality.
@@ -634,21 +591,19 @@ public class Arrays4D
    * @return true if a1 and a2 are both null, or if a2 is of the same length
    *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(boolean[] a1, boolean[] a2)
-  {
+  public static boolean equals(boolean[] a1, boolean[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
         if (a1[i] != a2[i]) {
@@ -668,21 +623,19 @@ public class Arrays4D
    * @return true if a1 and a2 are both null, or if a2 is of the same length
    *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(byte[] a1, byte[] a2)
-  {
+  public static boolean equals(byte[] a1, byte[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
         if (a1[i] != a2[i]) {
@@ -702,21 +655,19 @@ public class Arrays4D
    * @return true if a1 and a2 are both null, or if a2 is of the same length
    *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(char[] a1, char[] a2)
-  {
+  public static boolean equals(char[] a1, char[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
         if (a1[i] != a2[i]) {
@@ -736,21 +687,19 @@ public class Arrays4D
    * @return true if a1 and a2 are both null, or if a2 is of the same length
    *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(short[] a1, short[] a2)
-  {
+  public static boolean equals(short[] a1, short[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
         if (a1[i] != a2[i]) {
@@ -770,21 +719,19 @@ public class Arrays4D
    * @return true if a1 and a2 are both null, or if a2 is of the same length
    *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(int[] a1, int[] a2)
-  {
+  public static boolean equals(int[] a1, int[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
         if (a1[i] != a2[i]) {
@@ -804,21 +751,19 @@ public class Arrays4D
    * @return true if a1 and a2 are both null, or if a2 is of the same length
    *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(long[] a1, long[] a2)
-  {
+  public static boolean equals(long[] a1, long[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
         if (a1[i] != a2[i]) {
@@ -838,22 +783,20 @@ public class Arrays4D
    * @return true if a1 and a2 are both null, or if a2 is of the same length
    *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
    */
-  public static boolean equals(double[] a1, double[] a2)
-  {
+  public static boolean equals(double[] a1, double[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // Must use Double.compare to take into account NaN, +-0.
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
         if (Double.compare(a1[i], a2[i]) != 0) {
@@ -874,24 +817,22 @@ public class Arrays4D
    *         as a2, and for each 0 <= i < a.length, a1[i] == null ?
    *         a2[i] == null : a1[i].equals(a2[i]).
    */
-  public static boolean equals(Object[] a1, Object[] a2)
-  {
+  public static boolean equals(Object[] a1, Object[] a2) {
     // Quick test which saves comparing elements of the same array, and also
     // catches the case that both are null.
-    if (a1 == a2){
+    if (a1 == a2) {
       return true;
     }
 
-    if (null == a1 || null == a2){
+    if (null == a1 || null == a2) {
       return false;
     }
 
     // If they're the same length, test each element
-    if (a1.length == a2.length)
-    {
+    if (a1.length == a2.length) {
       int i = a1.length;
       while (--i >= 0) {
-        if (! AbstractCollection4D.equals(a1[i], a2[i])) {
+        if (!AbstractCollection4D.equals(a1[i], a2[i])) {
           return false;
         }
       }
@@ -900,7 +841,6 @@ public class Arrays4D
     return false;
   }
 
-
   // fill
   /**
    * Fill an array with a boolean value.
@@ -908,8 +848,7 @@ public class Arrays4D
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(boolean[] a, boolean val)
-  {
+  public static void fill(boolean[] a, boolean val) {
     fill(a, 0, a.length, val);
   }
 
@@ -924,9 +863,8 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(boolean[] a, int fromIndex, int toIndex, boolean val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(boolean[] a, int fromIndex, int toIndex, boolean val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
@@ -940,8 +878,7 @@ public class Arrays4D
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(byte[] a, byte val)
-  {
+  public static void fill(byte[] a, byte val) {
     fill(a, 0, a.length, val);
   }
 
@@ -956,9 +893,8 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(byte[] a, int fromIndex, int toIndex, byte val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(byte[] a, int fromIndex, int toIndex, byte val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
@@ -972,8 +908,7 @@ public class Arrays4D
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(char[] a, char val)
-  {
+  public static void fill(char[] a, char val) {
     fill(a, 0, a.length, val);
   }
 
@@ -988,9 +923,8 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(char[] a, int fromIndex, int toIndex, char val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(char[] a, int fromIndex, int toIndex, char val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
@@ -1004,8 +938,7 @@ public class Arrays4D
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(short[] a, short val)
-  {
+  public static void fill(short[] a, short val) {
     fill(a, 0, a.length, val);
   }
 
@@ -1020,9 +953,8 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(short[] a, int fromIndex, int toIndex, short val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(short[] a, int fromIndex, int toIndex, short val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
@@ -1036,8 +968,7 @@ public class Arrays4D
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(int[] a, int val)
-  {
+  public static void fill(int[] a, int val) {
     fill(a, 0, a.length, val);
   }
 
@@ -1052,9 +983,8 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(int[] a, int fromIndex, int toIndex, int val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(int[] a, int fromIndex, int toIndex, int val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
@@ -1068,8 +998,7 @@ public class Arrays4D
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(long[] a, long val)
-  {
+  public static void fill(long[] a, long val) {
     fill(a, 0, a.length, val);
   }
 
@@ -1084,9 +1013,8 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(long[] a, int fromIndex, int toIndex, long val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(long[] a, int fromIndex, int toIndex, long val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
@@ -1100,8 +1028,7 @@ public class Arrays4D
    * @param a the array to fill
    * @param val the value to fill it with
    */
-  public static void fill(double[] a, double val)
-  {
+  public static void fill(double[] a, double val) {
     fill(a, 0, a.length, val);
   }
 
@@ -1116,9 +1043,8 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(double[] a, int fromIndex, int toIndex, double val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(double[] a, int fromIndex, int toIndex, double val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
@@ -1134,8 +1060,7 @@ public class Arrays4D
    * @throws ClassCastException if val is not an instance of the element
    *         type of a.
    */
-  public static void fill(Object[] a, Object val)
-  {
+  public static void fill(Object[] a, Object val) {
     fill(a, 0, a.length, val);
   }
 
@@ -1152,16 +1077,14 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void fill(Object[] a, int fromIndex, int toIndex, Object val)
-  {
-    if (fromIndex > toIndex){
+  public static void fill(Object[] a, int fromIndex, int toIndex, Object val) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
     for (int i = fromIndex; i < toIndex; i++) {
       a[i] = val;
     }
   }
-
 
   // sort
   // Thanks to Paul Fisher (rao@gnu.org) for finding this quicksort algorithm
@@ -1178,8 +1101,7 @@ public class Arrays4D
    *
    * @param a the byte array to sort
    */
-  public static void sort(byte[] a)
-  {
+  public static void sort(byte[] a) {
     qsort(a, 0, a.length);
   }
 
@@ -1194,12 +1116,11 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void sort(byte[] a, int fromIndex, int toIndex)
-  {
-    if (fromIndex > toIndex){
+  public static void sort(byte[] a, int fromIndex, int toIndex) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
-    if (fromIndex < 0){
+    if (fromIndex < 0) {
       throw new ArrayIndexOutOfBoundsException();
     }
     qsort(a, fromIndex, toIndex - fromIndex);
@@ -1214,11 +1135,8 @@ public class Arrays4D
    * @param d the array
    * @return the index (a, b, or c) which has the middle value of the three
    */
-  private static int med3(int a, int b, int c, byte[] d)
-  {
-    return (d[a] < d[b]
-        ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
-            : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
+  private static int med3(int a, int b, int c, byte[] d) {
+    return (d[a] < d[b] ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a) : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
   }
 
   /**
@@ -1228,8 +1146,7 @@ public class Arrays4D
    * @param j the second index
    * @param a the array
    */
-  private static void swap(int i, int j, byte[] a)
-  {
+  private static void swap(int i, int j, byte[] a) {
     byte c = a[i];
     a[i] = a[j];
     a[j] = c;
@@ -1243,9 +1160,8 @@ public class Arrays4D
    * @param n the element count
    * @param a the array
    */
-  private static void vecswap(int i, int j, int n, byte[] a)
-  {
-    for ( ; n > 0; i++, j++, n--) {
+  private static void vecswap(int i, int j, int n, byte[] a) {
+    for (; n > 0; i++, j++, n--) {
       swap(i, j, a);
     }
   }
@@ -1257,11 +1173,9 @@ public class Arrays4D
    * @param from the start index (inclusive)
    * @param count the number of elements to sort
    */
-  private static void qsort(byte[] array, int from, int count)
-  {
+  private static void qsort(byte[] array, int from, int count) {
     // Use an insertion sort on small arrays.
-    if (count <= 7)
-    {
+    if (count <= 7) {
       for (int i = from + 1; i < from + count; i++) {
         for (int j = i; j > from && array[j - 1] > array[j]; j--) {
           swap(j, j - 1, array);
@@ -1275,8 +1189,7 @@ public class Arrays4D
     int lo = from;
     int hi = from + count - 1;
 
-    if (count > 40)
-    { // big arrays, pseudomedian of 9
+    if (count > 40) { // big arrays, pseudomedian of 9
       int s = count / 8;
       lo = med3(lo, lo + s, lo + 2 * s, array);
       mid = med3(mid - s, mid, mid + s, array);
@@ -1296,21 +1209,16 @@ public class Arrays4D
     // that all elements before index b are less than the pivot, and all
     // elements after index c are greater than the pivot. a and b track
     // the elements equal to the pivot.
-    while (true)
-    {
-      while (b <= c && (comp = array[b] - array[from]) <= 0)
-      {
-        if (comp == 0)
-        {
+    while (true) {
+      while (b <= c && (comp = array[b] - array[from]) <= 0) {
+        if (comp == 0) {
           swap(a, b, array);
           a++;
         }
         b++;
       }
-      while (c >= b && (comp = array[c] - array[from]) >= 0)
-      {
-        if (comp == 0)
-        {
+      while (c >= b && (comp = array[c] - array[from]) >= 0) {
+        if (comp == 0) {
           swap(c, d, array);
           d--;
         }
@@ -1334,12 +1242,12 @@ public class Arrays4D
     vecswap(b, hi - span, span, array);
 
     span = b - a;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, from, span);
     }
 
     span = d - c;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, hi - span, span);
     }
   }
@@ -1350,8 +1258,7 @@ public class Arrays4D
    *
    * @param a the char array to sort
    */
-  public static void sort(char[] a)
-  {
+  public static void sort(char[] a) {
     qsort(a, 0, a.length);
   }
 
@@ -1366,12 +1273,11 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void sort(char[] a, int fromIndex, int toIndex)
-  {
-    if (fromIndex > toIndex){
+  public static void sort(char[] a, int fromIndex, int toIndex) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
-    if (fromIndex < 0){
+    if (fromIndex < 0) {
       throw new ArrayIndexOutOfBoundsException();
     }
     qsort(a, fromIndex, toIndex - fromIndex);
@@ -1386,11 +1292,8 @@ public class Arrays4D
    * @param d the array
    * @return the index (a, b, or c) which has the middle value of the three
    */
-  private static int med3(int a, int b, int c, char[] d)
-  {
-    return (d[a] < d[b]
-        ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
-            : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
+  private static int med3(int a, int b, int c, char[] d) {
+    return (d[a] < d[b] ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a) : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
   }
 
   /**
@@ -1400,8 +1303,7 @@ public class Arrays4D
    * @param j the second index
    * @param a the array
    */
-  private static void swap(int i, int j, char[] a)
-  {
+  private static void swap(int i, int j, char[] a) {
     char c = a[i];
     a[i] = a[j];
     a[j] = c;
@@ -1415,9 +1317,8 @@ public class Arrays4D
    * @param n the element count
    * @param a the array
    */
-  private static void vecswap(int i, int j, int n, char[] a)
-  {
-    for ( ; n > 0; i++, j++, n--) {
+  private static void vecswap(int i, int j, int n, char[] a) {
+    for (; n > 0; i++, j++, n--) {
       swap(i, j, a);
     }
   }
@@ -1429,11 +1330,9 @@ public class Arrays4D
    * @param from the start index (inclusive)
    * @param count the number of elements to sort
    */
-  private static void qsort(char[] array, int from, int count)
-  {
+  private static void qsort(char[] array, int from, int count) {
     // Use an insertion sort on small arrays.
-    if (count <= 7)
-    {
+    if (count <= 7) {
       for (int i = from + 1; i < from + count; i++) {
         for (int j = i; j > from && array[j - 1] > array[j]; j--) {
           swap(j, j - 1, array);
@@ -1447,8 +1346,7 @@ public class Arrays4D
     int lo = from;
     int hi = from + count - 1;
 
-    if (count > 40)
-    { // big arrays, pseudomedian of 9
+    if (count > 40) { // big arrays, pseudomedian of 9
       int s = count / 8;
       lo = med3(lo, lo + s, lo + 2 * s, array);
       mid = med3(mid - s, mid, mid + s, array);
@@ -1468,21 +1366,16 @@ public class Arrays4D
     // that all elements before index b are less than the pivot, and all
     // elements after index c are greater than the pivot. a and b track
     // the elements equal to the pivot.
-    while (true)
-    {
-      while (b <= c && (comp = array[b] - array[from]) <= 0)
-      {
-        if (comp == 0)
-        {
+    while (true) {
+      while (b <= c && (comp = array[b] - array[from]) <= 0) {
+        if (comp == 0) {
           swap(a, b, array);
           a++;
         }
         b++;
       }
-      while (c >= b && (comp = array[c] - array[from]) >= 0)
-      {
-        if (comp == 0)
-        {
+      while (c >= b && (comp = array[c] - array[from]) >= 0) {
+        if (comp == 0) {
           swap(c, d, array);
           d--;
         }
@@ -1506,12 +1399,12 @@ public class Arrays4D
     vecswap(b, hi - span, span, array);
 
     span = b - a;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, from, span);
     }
 
     span = d - c;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, hi - span, span);
     }
   }
@@ -1522,8 +1415,7 @@ public class Arrays4D
    *
    * @param a the short array to sort
    */
-  public static void sort(short[] a)
-  {
+  public static void sort(short[] a) {
     qsort(a, 0, a.length);
   }
 
@@ -1538,12 +1430,11 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void sort(short[] a, int fromIndex, int toIndex)
-  {
-    if (fromIndex > toIndex){
+  public static void sort(short[] a, int fromIndex, int toIndex) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
-    if (fromIndex < 0){
+    if (fromIndex < 0) {
       throw new ArrayIndexOutOfBoundsException();
     }
     qsort(a, fromIndex, toIndex - fromIndex);
@@ -1558,11 +1449,8 @@ public class Arrays4D
    * @param d the array
    * @return the index (a, b, or c) which has the middle value of the three
    */
-  private static int med3(int a, int b, int c, short[] d)
-  {
-    return (d[a] < d[b]
-        ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
-            : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
+  private static int med3(int a, int b, int c, short[] d) {
+    return (d[a] < d[b] ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a) : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
   }
 
   /**
@@ -1572,8 +1460,7 @@ public class Arrays4D
    * @param j the second index
    * @param a the array
    */
-  private static void swap(int i, int j, short[] a)
-  {
+  private static void swap(int i, int j, short[] a) {
     short c = a[i];
     a[i] = a[j];
     a[j] = c;
@@ -1587,9 +1474,8 @@ public class Arrays4D
    * @param n the element count
    * @param a the array
    */
-  private static void vecswap(int i, int j, int n, short[] a)
-  {
-    for ( ; n > 0; i++, j++, n--) {
+  private static void vecswap(int i, int j, int n, short[] a) {
+    for (; n > 0; i++, j++, n--) {
       swap(i, j, a);
     }
   }
@@ -1601,11 +1487,9 @@ public class Arrays4D
    * @param from the start index (inclusive)
    * @param count the number of elements to sort
    */
-  private static void qsort(short[] array, int from, int count)
-  {
+  private static void qsort(short[] array, int from, int count) {
     // Use an insertion sort on small arrays.
-    if (count <= 7)
-    {
+    if (count <= 7) {
       for (int i = from + 1; i < from + count; i++) {
         for (int j = i; j > from && array[j - 1] > array[j]; j--) {
           swap(j, j - 1, array);
@@ -1619,8 +1503,7 @@ public class Arrays4D
     int lo = from;
     int hi = from + count - 1;
 
-    if (count > 40)
-    { // big arrays, pseudomedian of 9
+    if (count > 40) { // big arrays, pseudomedian of 9
       int s = count / 8;
       lo = med3(lo, lo + s, lo + 2 * s, array);
       mid = med3(mid - s, mid, mid + s, array);
@@ -1640,21 +1523,16 @@ public class Arrays4D
     // that all elements before index b are less than the pivot, and all
     // elements after index c are greater than the pivot. a and b track
     // the elements equal to the pivot.
-    while (true)
-    {
-      while (b <= c && (comp = array[b] - array[from]) <= 0)
-      {
-        if (comp == 0)
-        {
+    while (true) {
+      while (b <= c && (comp = array[b] - array[from]) <= 0) {
+        if (comp == 0) {
           swap(a, b, array);
           a++;
         }
         b++;
       }
-      while (c >= b && (comp = array[c] - array[from]) >= 0)
-      {
-        if (comp == 0)
-        {
+      while (c >= b && (comp = array[c] - array[from]) >= 0) {
+        if (comp == 0) {
           swap(c, d, array);
           d--;
         }
@@ -1678,12 +1556,12 @@ public class Arrays4D
     vecswap(b, hi - span, span, array);
 
     span = b - a;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, from, span);
     }
 
     span = d - c;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, hi - span, span);
     }
   }
@@ -1694,8 +1572,7 @@ public class Arrays4D
    *
    * @param a the int array to sort
    */
-  public static void sort(int[] a)
-  {
+  public static void sort(int[] a) {
     qsort(a, 0, a.length);
   }
 
@@ -1710,12 +1587,11 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void sort(int[] a, int fromIndex, int toIndex)
-  {
-    if (fromIndex > toIndex){
+  public static void sort(int[] a, int fromIndex, int toIndex) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
-    if (fromIndex < 0){
+    if (fromIndex < 0) {
       throw new ArrayIndexOutOfBoundsException();
     }
     qsort(a, fromIndex, toIndex - fromIndex);
@@ -1730,11 +1606,8 @@ public class Arrays4D
    * @param d the array
    * @return the index (a, b, or c) which has the middle value of the three
    */
-  private static int med3(int a, int b, int c, int[] d)
-  {
-    return (d[a] < d[b]
-        ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
-            : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
+  private static int med3(int a, int b, int c, int[] d) {
+    return (d[a] < d[b] ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a) : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
   }
 
   /**
@@ -1744,8 +1617,7 @@ public class Arrays4D
    * @param j the second index
    * @param a the array
    */
-  private static void swap(int i, int j, int[] a)
-  {
+  private static void swap(int i, int j, int[] a) {
     int c = a[i];
     a[i] = a[j];
     a[j] = c;
@@ -1759,9 +1631,8 @@ public class Arrays4D
    * @param n the element count
    * @param a the array
    */
-  private static void vecswap(int i, int j, int n, int[] a)
-  {
-    for ( ; n > 0; i++, j++, n--) {
+  private static void vecswap(int i, int j, int n, int[] a) {
+    for (; n > 0; i++, j++, n--) {
       swap(i, j, a);
     }
   }
@@ -1773,8 +1644,7 @@ public class Arrays4D
    * @param b the second int
    * @return &lt; 0, 0, or &gt; 0 accorting to the comparison
    */
-  private static int compare(int a, int b)
-  {
+  private static int compare(int a, int b) {
     return a < b ? -1 : a == b ? 0 : 1;
   }
 
@@ -1785,11 +1655,9 @@ public class Arrays4D
    * @param from the start index (inclusive)
    * @param count the number of elements to sort
    */
-  private static void qsort(int[] array, int from, int count)
-  {
+  private static void qsort(int[] array, int from, int count) {
     // Use an insertion sort on small arrays.
-    if (count <= 7)
-    {
+    if (count <= 7) {
       for (int i = from + 1; i < from + count; i++) {
         for (int j = i; j > from && array[j - 1] > array[j]; j--) {
           swap(j, j - 1, array);
@@ -1803,8 +1671,7 @@ public class Arrays4D
     int lo = from;
     int hi = from + count - 1;
 
-    if (count > 40)
-    { // big arrays, pseudomedian of 9
+    if (count > 40) { // big arrays, pseudomedian of 9
       int s = count / 8;
       lo = med3(lo, lo + s, lo + 2 * s, array);
       mid = med3(mid - s, mid, mid + s, array);
@@ -1824,21 +1691,16 @@ public class Arrays4D
     // that all elements before index b are less than the pivot, and all
     // elements after index c are greater than the pivot. a and b track
     // the elements equal to the pivot.
-    while (true)
-    {
-      while (b <= c && (comp = compare(array[b], array[from])) <= 0)
-      {
-        if (comp == 0)
-        {
+    while (true) {
+      while (b <= c && (comp = compare(array[b], array[from])) <= 0) {
+        if (comp == 0) {
           swap(a, b, array);
           a++;
         }
         b++;
       }
-      while (c >= b && (comp = compare(array[c], array[from])) >= 0)
-      {
-        if (comp == 0)
-        {
+      while (c >= b && (comp = compare(array[c], array[from])) >= 0) {
+        if (comp == 0) {
           swap(c, d, array);
           d--;
         }
@@ -1862,12 +1724,12 @@ public class Arrays4D
     vecswap(b, hi - span, span, array);
 
     span = b - a;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, from, span);
     }
 
     span = d - c;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, hi - span, span);
     }
   }
@@ -1878,8 +1740,7 @@ public class Arrays4D
    *
    * @param a the long array to sort
    */
-  public static void sort(long[] a)
-  {
+  public static void sort(long[] a) {
     qsort(a, 0, a.length);
   }
 
@@ -1894,12 +1755,11 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void sort(long[] a, int fromIndex, int toIndex)
-  {
-    if (fromIndex > toIndex){
+  public static void sort(long[] a, int fromIndex, int toIndex) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
-    if (fromIndex < 0){
+    if (fromIndex < 0) {
       throw new ArrayIndexOutOfBoundsException();
     }
     qsort(a, fromIndex, toIndex - fromIndex);
@@ -1914,11 +1774,8 @@ public class Arrays4D
    * @param d the array
    * @return the index (a, b, or c) which has the middle value of the three
    */
-  private static int med3(int a, int b, int c, long[] d)
-  {
-    return (d[a] < d[b]
-        ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
-            : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
+  private static int med3(int a, int b, int c, long[] d) {
+    return (d[a] < d[b] ? (d[b] < d[c] ? b : d[a] < d[c] ? c : a) : (d[b] > d[c] ? b : d[a] > d[c] ? c : a));
   }
 
   /**
@@ -1928,8 +1785,7 @@ public class Arrays4D
    * @param j the second index
    * @param a the array
    */
-  private static void swap(int i, int j, long[] a)
-  {
+  private static void swap(int i, int j, long[] a) {
     long c = a[i];
     a[i] = a[j];
     a[j] = c;
@@ -1943,9 +1799,8 @@ public class Arrays4D
    * @param n the element count
    * @param a the array
    */
-  private static void vecswap(int i, int j, int n, long[] a)
-  {
-    for ( ; n > 0; i++, j++, n--) {
+  private static void vecswap(int i, int j, int n, long[] a) {
+    for (; n > 0; i++, j++, n--) {
       swap(i, j, a);
     }
   }
@@ -1957,8 +1812,7 @@ public class Arrays4D
    * @param b the second long
    * @return &lt; 0, 0, or &gt; 0 accorting to the comparison
    */
-  private static int compare(long a, long b)
-  {
+  private static int compare(long a, long b) {
     return a < b ? -1 : a == b ? 0 : 1;
   }
 
@@ -1969,11 +1823,9 @@ public class Arrays4D
    * @param from the start index (inclusive)
    * @param count the number of elements to sort
    */
-  private static void qsort(long[] array, int from, int count)
-  {
+  private static void qsort(long[] array, int from, int count) {
     // Use an insertion sort on small arrays.
-    if (count <= 7)
-    {
+    if (count <= 7) {
       for (int i = from + 1; i < from + count; i++) {
         for (int j = i; j > from && array[j - 1] > array[j]; j--) {
           swap(j, j - 1, array);
@@ -1987,8 +1839,7 @@ public class Arrays4D
     int lo = from;
     int hi = from + count - 1;
 
-    if (count > 40)
-    { // big arrays, pseudomedian of 9
+    if (count > 40) { // big arrays, pseudomedian of 9
       int s = count / 8;
       lo = med3(lo, lo + s, lo + 2 * s, array);
       mid = med3(mid - s, mid, mid + s, array);
@@ -2008,21 +1859,16 @@ public class Arrays4D
     // that all elements before index b are less than the pivot, and all
     // elements after index c are greater than the pivot. a and b track
     // the elements equal to the pivot.
-    while (true)
-    {
-      while (b <= c && (comp = compare(array[b], array[from])) <= 0)
-      {
-        if (comp == 0)
-        {
+    while (true) {
+      while (b <= c && (comp = compare(array[b], array[from])) <= 0) {
+        if (comp == 0) {
           swap(a, b, array);
           a++;
         }
         b++;
       }
-      while (c >= b && (comp = compare(array[c], array[from])) >= 0)
-      {
-        if (comp == 0)
-        {
+      while (c >= b && (comp = compare(array[c], array[from])) >= 0) {
+        if (comp == 0) {
           swap(c, d, array);
           d--;
         }
@@ -2046,12 +1892,12 @@ public class Arrays4D
     vecswap(b, hi - span, span, array);
 
     span = b - a;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, from, span);
     }
 
     span = d - c;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, hi - span, span);
     }
   }
@@ -2062,8 +1908,7 @@ public class Arrays4D
    *
    * @param a the double array to sort
    */
-  public static void sort(double[] a)
-  {
+  public static void sort(double[] a) {
     qsort(a, 0, a.length);
   }
 
@@ -2078,12 +1923,11 @@ public class Arrays4D
    * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; a.length
    */
-  public static void sort(double[] a, int fromIndex, int toIndex)
-  {
-    if (fromIndex > toIndex){
+  public static void sort(double[] a, int fromIndex, int toIndex) {
+    if (fromIndex > toIndex) {
       throw new IllegalArgumentException();
     }
-    if (fromIndex < 0){
+    if (fromIndex < 0) {
       throw new ArrayIndexOutOfBoundsException();
     }
     qsort(a, fromIndex, toIndex - fromIndex);
@@ -2098,13 +1942,10 @@ public class Arrays4D
    * @param d the array
    * @return the index (a, b, or c) which has the middle value of the three
    */
-  private static int med3(int a, int b, int c, double[] d)
-  {
+  private static int med3(int a, int b, int c, double[] d) {
     return (Double.compare(d[a], d[b]) < 0
-        ? (Double.compare(d[b], d[c]) < 0 ? b
-            : Double.compare(d[a], d[c]) < 0 ? c : a)
-            : (Double.compare(d[b], d[c]) > 0 ? b
-                : Double.compare(d[a], d[c]) > 0 ? c : a));
+        ? (Double.compare(d[b], d[c]) < 0 ? b : Double.compare(d[a], d[c]) < 0 ? c : a)
+        : (Double.compare(d[b], d[c]) > 0 ? b : Double.compare(d[a], d[c]) > 0 ? c : a));
   }
 
   /**
@@ -2114,8 +1955,7 @@ public class Arrays4D
    * @param j the second index
    * @param a the array
    */
-  private static void swap(int i, int j, double[] a)
-  {
+  private static void swap(int i, int j, double[] a) {
     double c = a[i];
     a[i] = a[j];
     a[j] = c;
@@ -2129,9 +1969,8 @@ public class Arrays4D
    * @param n the element count
    * @param a the array
    */
-  private static void vecswap(int i, int j, int n, double[] a)
-  {
-    for ( ; n > 0; i++, j++, n--) {
+  private static void vecswap(int i, int j, int n, double[] a) {
+    for (; n > 0; i++, j++, n--) {
       swap(i, j, a);
     }
   }
@@ -2143,16 +1982,11 @@ public class Arrays4D
    * @param from the start index (inclusive)
    * @param count the number of elements to sort
    */
-  private static void qsort(double[] array, int from, int count)
-  {
+  private static void qsort(double[] array, int from, int count) {
     // Use an insertion sort on small arrays.
-    if (count <= 7)
-    {
+    if (count <= 7) {
       for (int i = from + 1; i < from + count; i++) {
-        for (int j = i;
-            j > from && Double.compare(array[j - 1], array[j]) > 0;
-            j--)
-        {
+        for (int j = i; j > from && Double.compare(array[j - 1], array[j]) > 0; j--) {
           swap(j, j - 1, array);
         }
       }
@@ -2164,8 +1998,7 @@ public class Arrays4D
     int lo = from;
     int hi = from + count - 1;
 
-    if (count > 40)
-    { // big arrays, pseudomedian of 9
+    if (count > 40) { // big arrays, pseudomedian of 9
       int s = count / 8;
       lo = med3(lo, lo + s, lo + 2 * s, array);
       mid = med3(mid - s, mid, mid + s, array);
@@ -2185,21 +2018,16 @@ public class Arrays4D
     // that all elements before index b are less than the pivot, and all
     // elements after index c are greater than the pivot. a and b track
     // the elements equal to the pivot.
-    while (true)
-    {
-      while (b <= c && (comp = Double.compare(array[b], array[from])) <= 0)
-      {
-        if (comp == 0)
-        {
+    while (true) {
+      while (b <= c && (comp = Double.compare(array[b], array[from])) <= 0) {
+        if (comp == 0) {
           swap(a, b, array);
           a++;
         }
         b++;
       }
-      while (c >= b && (comp = Double.compare(array[c], array[from])) >= 0)
-      {
-        if (comp == 0)
-        {
+      while (c >= b && (comp = Double.compare(array[c], array[from])) >= 0) {
+        if (comp == 0) {
           swap(c, d, array);
           d--;
         }
@@ -2223,12 +2051,12 @@ public class Arrays4D
     vecswap(b, hi - span, span, array);
 
     span = b - a;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, from, span);
     }
 
     span = d - c;
-    if (span > 1){
+    if (span > 1) {
       qsort(array, hi - span, span);
     }
   }
@@ -2248,8 +2076,7 @@ public class Arrays4D
    *         null.compareTo cannot work)
    * @see Comparable
    */
-  public static void sort(Object[] a)
-  {
+  public static void sort(Object[] a) {
     sort(a, 0, a.length, null);
   }
 
@@ -2269,8 +2096,7 @@ public class Arrays4D
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static <T> void sort(T[] a, Comparator<? super T> c)
-  {
+  public static <T> void sort(T[] a, Comparator<? super T> c) {
     sort(a, 0, a.length, c);
   }
 
@@ -2293,8 +2119,7 @@ public class Arrays4D
    *         are not in range.
    * @throws IllegalArgumentException if fromIndex &gt; toIndex
    */
-  public static void sort(Object[] a, int fromIndex, int toIndex)
-  {
+  public static void sort(Object[] a, int fromIndex, int toIndex) {
     sort(a, fromIndex, toIndex, null);
   }
 
@@ -2319,14 +2144,11 @@ public class Arrays4D
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static <T> void sort(T[] a, int fromIndex, int toIndex,
-      Comparator<? super T> c)
-  {
-    if (fromIndex > toIndex){
-      throw new IllegalArgumentException("fromIndex " + fromIndex
-          + " > toIndex " + toIndex);
+  public static <T> void sort(T[] a, int fromIndex, int toIndex, Comparator<? super T> c) {
+    if (fromIndex > toIndex) {
+      throw new IllegalArgumentException("fromIndex " + fromIndex + " > toIndex " + toIndex);
     }
-    if (fromIndex < 0){
+    if (fromIndex < 0) {
       throw new ArrayIndexOutOfBoundsException();
     }
 
@@ -2335,23 +2157,17 @@ public class Arrays4D
     // better than I can, and if I try it will make it more confusing for
     // the JIT. First presort the array in chunks of length 6 with insertion
     // sort. A mergesort would give too much overhead for this length.
-    for (int chunk = fromIndex; chunk < toIndex; chunk += 6)
-    {
+    for (int chunk = fromIndex; chunk < toIndex; chunk += 6) {
       int end = Math.min(chunk + 6, toIndex);
-      for (int i = chunk + 1; i < end; i++)
-      {
-        if (Collections4D.compare(a[i - 1], a[i], c) > 0)
-        {
+      for (int i = chunk + 1; i < end; i++) {
+        if (Collections4D.compare(a[i - 1], a[i], c) > 0) {
           // not already sorted
           int j = i;
           T elem = a[j];
-          do
-          {
+          do {
             a[j] = a[j - 1];
             j--;
-          }
-          while (j > chunk
-              && Collections4D.compare(a[j - 1], elem, c) > 0);
+          } while (j > chunk && Collections4D.compare(a[j - 1], elem, c) > 0);
           a[j] = elem;
         }
       }
@@ -2359,7 +2175,7 @@ public class Arrays4D
 
     int len = toIndex - fromIndex;
     // If length is smaller or equal 6 we are done.
-    if (len <= 6){
+    if (len <= 6) {
       return;
     }
 
@@ -2371,10 +2187,8 @@ public class Arrays4D
     int srcDestDiff = -fromIndex;
 
     // The merges are done in this loop
-    for (int size = 6; size < len; size <<= 1)
-    {
-      for (int start = fromIndex; start < toIndex; start += size << 1)
-      {
+    for (int size = 6; size < len; size <<= 1) {
+      for (int start = fromIndex; start < toIndex; start += size << 1) {
         // mid is the start of the second sublist;
         // end the start of the next sublist (or end of array).
         int mid = start + size;
@@ -2382,24 +2196,15 @@ public class Arrays4D
 
         // The second list is empty or the elements are already in
         // order - no need to merge
-        if (mid >= end
-            || Collections4D.compare(src[mid - 1], src[mid], c) <= 0)
-        {
-          Vm.arrayCopy(src, start,
-              dest, start + srcDestDiff, end - start);
+        if (mid >= end || Collections4D.compare(src[mid - 1], src[mid], c) <= 0) {
+          Vm.arrayCopy(src, start, dest, start + srcDestDiff, end - start);
 
           // The two halves just need swapping - no need to merge
-        }
-        else if (Collections4D.compare(src[start], src[end - 1], c) > 0)
-        {
-          Vm.arrayCopy(src, start,
-              dest, end - size + srcDestDiff, size);
-          Vm.arrayCopy(src, mid,
-              dest, start + srcDestDiff, end - mid);
+        } else if (Collections4D.compare(src[start], src[end - 1], c) > 0) {
+          Vm.arrayCopy(src, start, dest, end - size + srcDestDiff, size);
+          Vm.arrayCopy(src, mid, dest, start + srcDestDiff, end - mid);
 
-        }
-        else
-        {
+        } else {
           // Declare a lot of variables to save repeating
           // calculations.  Hopefully a decent JIT will put these
           // in registers and make this fast
@@ -2409,11 +2214,8 @@ public class Arrays4D
 
           // The main merge loop; terminates as soon as either
           // half is ended
-          while (p1 < mid && p2 < end)
-          {
-            dest[i++] =
-                src[(Collections4D.compare(src[p1], src[p2], c) <= 0
-                ? p1++ : p2++)];
+          while (p1 < mid && p2 < end) {
+            dest[i++] = src[(Collections4D.compare(src[p1], src[p2], c) <= 0 ? p1++ : p2++)];
           }
 
           // Finish up by copying the remainder of whichever half
@@ -2437,8 +2239,7 @@ public class Arrays4D
     // make sure the result ends up back in the right place.  Note
     // that src and dest may have been swapped above, so src
     // contains the sorted array.
-    if (src != a)
-    {
+    if (src != a) {
       // Note that fromIndex == 0.
       Vm.arrayCopy(src, 0, a, srcDestDiff, toIndex);
     }
@@ -2459,8 +2260,7 @@ public class Arrays4D
    * @see RandomAccess
    * @see Arrays.ArrayList
    */
-  public static <T> List<T> asList(final T... a)
-  {
+  public static <T> List<T> asList(final T... a) {
     return new Arrays4D.ArrayList(a);
   }
 
@@ -2477,14 +2277,12 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(long[] v)
-  {
-    if (v == null){
+  public static int hashCode(long[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       int elt = (int) (v[i] ^ (v[i] >>> 32));
       result = 31 * result + elt;
     }
@@ -2504,9 +2302,8 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(int[] v)
-  {
-    if (v == null){
+  public static int hashCode(int[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
@@ -2529,9 +2326,8 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(short[] v)
-  {
-    if (v == null){
+  public static int hashCode(short[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
@@ -2554,9 +2350,8 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(char[] v)
-  {
-    if (v == null){
+  public static int hashCode(char[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
@@ -2579,9 +2374,8 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(byte[] v)
-  {
-    if (v == null){
+  public static int hashCode(byte[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
@@ -2604,9 +2398,8 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(boolean[] v)
-  {
-    if (v == null){
+  public static int hashCode(boolean[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
@@ -2629,14 +2422,12 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(double[] v)
-  {
-    if (v == null){
+  public static int hashCode(double[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       long l = Double.doubleToLongBits(v[i]);
       int elt = (int) (l ^ (l >>> 32));
       result = 31 * result + elt;
@@ -2656,28 +2447,24 @@ public class Arrays4D
    * @return the hash code of the array, or 0 if null was given.
    * @since 1.5
    */
-  public static int hashCode(Object[] v)
-  {
-    if (v == null){
+  public static int hashCode(Object[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       int elt = v[i] == null ? 0 : v[i].hashCode();
       result = 31 * result + elt;
     }
     return result;
   }
 
-  public static int deepHashCode(Object[] v)
-  {
-    if (v == null){
+  public static int deepHashCode(Object[] v) {
+    if (v == null) {
       return 0;
     }
     int result = 1;
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       int elt;
       if (v[i] == null) {
         elt = 0;
@@ -2706,17 +2493,15 @@ public class Arrays4D
   }
 
   /** @since 1.5 */
-  public static boolean deepEquals(Object[] v1, Object[] v2)
-  {
-    if (v1 == null){
+  public static boolean deepEquals(Object[] v1, Object[] v2) {
+    if (v1 == null) {
       return v2 == null;
     }
-    if (v2 == null || v1.length != v2.length){
+    if (v2 == null || v1.length != v2.length) {
       return false;
     }
 
-    for (int i = 0; i < v1.length; ++i)
-    {
+    for (int i = 0; i < v1.length; ++i) {
       Object e1 = v1[i];
       Object e2 = v2[i];
 
@@ -2747,7 +2532,7 @@ public class Arrays4D
       } else {
         check = e1.equals(e2);
       }
-      if (! check) {
+      if (!check) {
         return false;
       }
     }
@@ -2762,14 +2547,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(boolean[] v)
-  {
-    if (v == null){
+  public static String toString(boolean[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2786,14 +2569,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(byte[] v)
-  {
-    if (v == null){
+  public static String toString(byte[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2810,14 +2591,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(char[] v)
-  {
-    if (v == null){
+  public static String toString(char[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2834,14 +2613,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(short[] v)
-  {
-    if (v == null){
+  public static String toString(short[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2858,14 +2635,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(int[] v)
-  {
-    if (v == null){
+  public static String toString(int[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2882,14 +2657,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(long[] v)
-  {
-    if (v == null){
+  public static String toString(long[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2906,14 +2679,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(double[] v)
-  {
-    if (v == null){
+  public static String toString(double[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2930,14 +2701,12 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(Object[] v)
-  {
-    if (v == null){
+  public static String toString(Object[] v) {
+    if (v == null) {
       return "null";
     }
     StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2947,11 +2716,9 @@ public class Arrays4D
     return b.toString();
   }
 
-  private static void deepToString(Object[] v, StringBuffer b, HashSet seen)
-  {
+  private static void deepToString(Object[] v, StringBuffer b, HashSet seen) {
     b.append("[");
-    for (int i = 0; i < v.length; ++i)
-    {
+    for (int i = 0; i < v.length; ++i) {
       if (i > 0) {
         b.append(", ");
       }
@@ -2972,13 +2739,11 @@ public class Arrays4D
         b.append(toString((long[]) elt));
       } else if (elt instanceof double[]) {
         b.append(toString((double[]) elt));
-      } else if (elt instanceof Object[])
-      {
+      } else if (elt instanceof Object[]) {
         Object[] os = (Object[]) elt;
         if (seen.contains(os)) {
           b.append("[...]");
-        } else
-        {
+        } else {
           seen.add(os);
           deepToString(os, b, seen);
         }
@@ -2990,9 +2755,8 @@ public class Arrays4D
   }
 
   /** @since 1.5 */
-  public static String deepToString(Object[] v)
-  {
-    if (v == null){
+  public static String deepToString(Object[] v) {
+    if (v == null) {
       return "null";
     }
     HashSet seen = new HashSet();
@@ -3010,9 +2774,7 @@ public class Arrays4D
    * @author Eric Blake (ebb9@email.byu.edu)
    * @status updated to 1.4
    */
-  private static final class ArrayList<E> extends AbstractList<E>
-  implements RandomAccess
-  {
+  private static final class ArrayList<E> extends AbstractList<E> implements RandomAccess {
     // We override the necessary methods, plus others which will be much
     // more efficient with direct iteration rather than relying on iterator().
 
@@ -3027,10 +2789,9 @@ public class Arrays4D
      * @param a the array to view
      * @throws NullPointerException if a is null
      */
-    ArrayList(E[] a)
-    {
+    ArrayList(E[] a) {
       // We have to explicitly check.
-      if (a == null){
+      if (a == null) {
         throw new NullPointerException();
       }
       this.a = a;
@@ -3044,8 +2805,7 @@ public class Arrays4D
      * @return The object at the array index specified.
      */
     @Override
-    public E get(int index)
-    {
+    public E get(int index) {
       return a[index];
     }
 
@@ -3055,8 +2815,7 @@ public class Arrays4D
      * @return The size.
      */
     @Override
-    public int size()
-    {
+    public int size() {
       return a.length;
     }
 
@@ -3069,8 +2828,7 @@ public class Arrays4D
      * @return The object replaced by this operation.
      */
     @Override
-    public E set(int index, E element)
-    {
+    public E set(int index, E element) {
       E old = a[index];
       a[index] = element;
       return old;
@@ -3084,8 +2842,7 @@ public class Arrays4D
      * @return True if the object was found.
      */
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return lastIndexOf(o) >= 0;
     }
 
@@ -3097,8 +2854,7 @@ public class Arrays4D
      * @return The first relevant index.
      */
     @Override
-    public int indexOf(Object o)
-    {
+    public int indexOf(Object o) {
       int size = a.length;
       for (int i = 0; i < size; i++) {
         if (AbstractCollection4D.equals(o, a[i])) {
@@ -3116,10 +2872,9 @@ public class Arrays4D
      * @return The last relevant index.
      */
     @Override
-    public int lastIndexOf(Object o)
-    {
+    public int lastIndexOf(Object o) {
       int i = a.length;
-      while (--i >= 0){
+      while (--i >= 0) {
         if (AbstractCollection4D.equals(o, a[i])) {
           return i;
         }
@@ -3135,8 +2890,7 @@ public class Arrays4D
      * @return A clone of the internal array.
      */
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       Object[] aux = new Object[a.length];
       Vm.arrayCopy(a, 0, aux, 0, a.length);
       return aux;
@@ -3153,13 +2907,11 @@ public class Arrays4D
      *         which may or may not be == to array.
      */
     @Override
-    public <T> T[] toArray(T[] array)
-    {
+    public <T> T[] toArray(T[] array) {
       int size = a.length;
-      if (array.length < size){
-        array = (T[]) Array.newInstance(array.getClass().getComponentType(),
-            size);
-      }else if (array.length > size){
+      if (array.length < size) {
+        array = (T[]) Array.newInstance(array.getClass().getComponentType(), size);
+      } else if (array.length > size) {
         array[size] = null;
       }
 
@@ -3186,9 +2938,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(boolean[],int,int)
    */
-  public static boolean[] copyOf(boolean[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static boolean[] copyOf(boolean[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3221,19 +2972,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(boolean[],int)
    */
-  public static boolean[] copyOfRange(boolean[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static boolean[] copyOfRange(boolean[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     boolean[] newArray = new boolean[to - from];
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
       fill(newArray, original.length, newArray.length, false);
-    }else {
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3257,9 +3004,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(byte[],int,int)
    */
-  public static byte[] copyOf(byte[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static byte[] copyOf(byte[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3292,19 +3038,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(byte[],int)
    */
-  public static byte[] copyOfRange(byte[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static byte[] copyOfRange(byte[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     byte[] newArray = new byte[to - from];
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
-      fill(newArray, original.length, newArray.length, (byte)0);
-    }else {
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
+      fill(newArray, original.length, newArray.length, (byte) 0);
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3328,9 +3070,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(char[],int,int)
    */
-  public static char[] copyOf(char[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static char[] copyOf(char[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3363,19 +3104,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(char[],int)
    */
-  public static char[] copyOfRange(char[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static char[] copyOfRange(char[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     char[] newArray = new char[to - from];
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
       fill(newArray, original.length, newArray.length, '\0');
-    }else {
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3399,9 +3136,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(double[],int,int)
    */
-  public static double[] copyOf(double[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static double[] copyOf(double[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3434,19 +3170,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(double[],int)
    */
-  public static double[] copyOfRange(double[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static double[] copyOfRange(double[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     double[] newArray = new double[to - from];
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
       fill(newArray, original.length, newArray.length, 0d);
-    }else {
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3470,9 +3202,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(int[],int,int)
    */
-  public static int[] copyOf(int[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static int[] copyOf(int[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3505,19 +3236,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(int[],int)
    */
-  public static int[] copyOfRange(int[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static int[] copyOfRange(int[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     int[] newArray = new int[to - from];
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
       fill(newArray, original.length, newArray.length, 0);
-    }else {
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3541,9 +3268,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(long[],int,int)
    */
-  public static long[] copyOf(long[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static long[] copyOf(long[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3576,19 +3302,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(long[],int)
    */
-  public static long[] copyOfRange(long[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static long[] copyOfRange(long[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     long[] newArray = new long[to - from];
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
       fill(newArray, original.length, newArray.length, 0L);
-    }else {
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3612,9 +3334,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(short[],int,int)
    */
-  public static short[] copyOf(short[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static short[] copyOf(short[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3647,19 +3368,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(short[],int)
    */
-  public static short[] copyOfRange(short[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static short[] copyOfRange(short[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     short[] newArray = new short[to - from];
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
-      fill(newArray, original.length, newArray.length, (short)0);
-    }else {
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
+      fill(newArray, original.length, newArray.length, (short) 0);
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3683,9 +3400,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(T[],int,int)
    */
-  public static <T> T[] copyOf(T[] original, int newLength)
-  {
-    if (newLength < 0){
+  public static <T> T[] copyOf(T[] original, int newLength) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength);
@@ -3718,20 +3434,16 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(T[],int)
    */
-  public static <T> T[] copyOfRange(T[] original, int from, int to)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static <T> T[] copyOfRange(T[] original, int from, int to) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
     Class elemType = original.getClass().getComponentType();
     T[] newArray = (T[]) Array.newInstance(elemType, to - from);
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
       fill(newArray, original.length, newArray.length, null);
-    }else {
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;
@@ -3757,10 +3469,8 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOfRange(U[],int,int,Class)
    */
-  public static <T,U> T[] copyOf(U[] original, int newLength,
-      Class<? extends T[]> newType)
-  {
-    if (newLength < 0){
+  public static <T, U> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {
+    if (newLength < 0) {
       throw new NegativeArraySizeException("The array size is negative.");
     }
     return copyOfRange(original, 0, newLength, newType);
@@ -3795,21 +3505,15 @@ public class Arrays4D
    * @since 1.6
    * @see #copyOf(T[],int)
    */
-  public static <T,U> T[] copyOfRange(U[] original, int from, int to,
-      Class<? extends T[]> newType)
-  {
-    if (from > to){
-      throw new IllegalArgumentException("The initial index is after " +
-          "the final index.");
+  public static <T, U> T[] copyOfRange(U[] original, int from, int to, Class<? extends T[]> newType) {
+    if (from > to) {
+      throw new IllegalArgumentException("The initial index is after " + "the final index.");
     }
-    T[] newArray = (T[]) Array.newInstance(newType.getComponentType(),
-        to - from);
-    if (to > original.length)
-    {
-      Vm.arrayCopy(original, from, newArray, 0,
-          original.length - from);
+    T[] newArray = (T[]) Array.newInstance(newType.getComponentType(), to - from);
+    if (to > original.length) {
+      Vm.arrayCopy(original, from, newArray, 0, original.length - from);
       fill(newArray, original.length, newArray.length, null);
-    }else {
+    } else {
       Vm.arrayCopy(original, from, newArray, 0, to - from);
     }
     return newArray;

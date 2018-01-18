@@ -9,42 +9,31 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.totalcross.io;
 
 import totalcross.io.IOException;
 import totalcross.io.PDBFile;
 import totalcross.unit.TestCase;
 
-public class PDBFileTest extends TestCase
-{
+public class PDBFileTest extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     String name = "PDBFileTest.Test.Test";
     PDBFile c = null;
-    try
-    {
+    try {
       c = new PDBFile(name, PDBFile.READ_WRITE);
       c.delete();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
     }
 
-    try
-    {
+    try {
       c = new PDBFile(name, PDBFile.CREATE_EMPTY);
       c.delete();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       fail(e.getMessage());
     }
 
-    try
-    {
+    try {
       c = new PDBFile(name, PDBFile.CREATE);
       c.addRecord(100);
       c.addRecord(50);
@@ -52,22 +41,16 @@ public class PDBFileTest extends TestCase
       c.deleteRecord();
       c.setRecordPos(1);
       fail();
+    } catch (IOException e) {
     }
-    catch (IOException e)
-    {
-    }
-    try
-    {
+    try {
       c.setRecordPos(0);
       c.close();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       fail(e.getMessage());
     }
 
-    try
-    {
+    try {
       c = new PDBFile(name, PDBFile.CREATE_EMPTY);
       assertEquals(c.getRecordCount(), 0);
       c.addRecord(100);
@@ -76,17 +59,12 @@ public class PDBFileTest extends TestCase
       c.deleteRecord();
       c.setRecordPos(1);
       fail();
+    } catch (IOException e) {
     }
-    catch (IOException e)
-    {
-    }
-    try
-    {
+    try {
       c.setRecordPos(0);
       c.close();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       fail(e.getMessage());
     }
   }

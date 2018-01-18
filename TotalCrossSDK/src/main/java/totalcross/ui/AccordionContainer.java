@@ -25,25 +25,21 @@ import totalcross.ui.gfx.Graphics;
  * Note that when the container is changing its height, it calls <code>parent.reposition</code> to open space for its growth.
  */
 
-public class AccordionContainer extends ClippedContainer implements PathAnimation.SetPosition, AnimationFinished
-{
+public class AccordionContainer extends ClippedContainer implements PathAnimation.SetPosition, AnimationFinished {
   public static int ANIMATION_TIME = 300;
 
-  public static class Group
-  {
+  public static class Group {
     ArrayList<AccordionContainer> l = new ArrayList<AccordionContainer>(5);
 
-    public void collapseAll(boolean showAnimation)
-    {
-      for (AccordionContainer a: l) {
+    public void collapseAll(boolean showAnimation) {
+      for (AccordionContainer a : l) {
         if (a.isExpanded()) {
           a.collapse(showAnimation);
         }
       }
     }
 
-    public void collapseAll()
-    {
+    public void collapseAll() {
       this.collapseAll(true);
     }
   }
@@ -53,62 +49,53 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    */
   public int minH = fmH + Edit.prefH;
   private Group group;
+  private boolean showUIErrorsOld;
 
-  public AccordionContainer()
-  {
+  public AccordionContainer() {
   }
 
-  public AccordionContainer(Group g)
-  {
+  public AccordionContainer(Group g) {
     g.l.add(this);
     group = g;
   }
 
-  public class Caption extends Container
-  {
+  public class Caption extends Container {
     public Button btExpanded, btCollapsed;
     public Label lCaption;
 
-    public Caption(String caption)
-    {
+    public Caption(String caption) {
       this.lCaption = new Label(caption);
     }
 
-    public Caption(Label lCaption, Button btExpanded, Button btCollapsed)
-    {
+    public Caption(Label lCaption, Button btExpanded, Button btCollapsed) {
       this.lCaption = lCaption;
       this.btExpanded = btExpanded;
       this.btCollapsed = btCollapsed;
     }
 
     @Override
-    public void initUI()
-    {
-      if (btExpanded == null)
-      {
-        btExpanded = new ArrowButton(Graphics.ARROW_DOWN,fmH/2, foreColor);
+    public void initUI() {
+      if (btExpanded == null) {
+        btExpanded = new ArrowButton(Graphics.ARROW_DOWN, fmH / 2, foreColor);
         btExpanded.setBorder(Button.BORDER_NONE);
       }
-      if (btCollapsed == null)
-      {
-        btCollapsed = new ArrowButton(Graphics.ARROW_RIGHT,fmH/2, foreColor);
+      if (btCollapsed == null) {
+        btCollapsed = new ArrowButton(Graphics.ARROW_RIGHT, fmH / 2, foreColor);
         btCollapsed.setBorder(Button.BORDER_NONE);
       }
-      add(btExpanded, LEFT,TOP,PREFERRED,FILL);
-      add(btCollapsed, SAME,SAME,SAME,SAME);
-      add(lCaption, uiAdjustmentsBasedOnFontHeightIsSupported ? AFTER+50 : AFTER+fmH/2, CENTER);
+      add(btExpanded, LEFT, TOP, PREFERRED, FILL);
+      add(btCollapsed, SAME, SAME, SAME, SAME);
+      add(lCaption, uiAdjustmentsBasedOnFontHeightIsSupported ? AFTER + 50 : AFTER + fmH / 2, CENTER);
       btExpanded.setVisible(false);
     }
 
     @Override
-    public int getPreferredHeight()
-    {
+    public int getPreferredHeight() {
       return fmH + Edit.prefH;
     }
 
-    public void invert()
-    {
-      postPressedEvent();         
+    public void invert() {
+      postPressedEvent();
       if (isExpanded()) {
         collapse();
       } else {
@@ -120,23 +107,21 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
     }
 
     @Override
-    public void onEvent(Event e)
-    {
+    public void onEvent(Event e) {
       PenEvent pe;
-      switch (e.type)
-      {
+      switch (e.type) {
       case ControlEvent.PRESSED:
         if (e.target == btExpanded || e.target == btCollapsed) {
           invert();
         }
-        break;                  
+        break;
       case PenEvent.PEN_DOWN:
         Window.needsPaint = true;
         break;
       case PenEvent.PEN_UP:
         Window.needsPaint = true;
-        pe = (PenEvent)e;
-        if ((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x,pe.y)) {
+        pe = (PenEvent) e;
+        if ((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x, pe.y)) {
           invert();
         }
         break;
@@ -144,14 +129,12 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
     }
   }
 
-  public void expand()
-  {
+  public void expand() {
     this.expand(true);
   }
 
-  public void expand(boolean showAnimation)
-  {
-    if (group != null){
+  public void expand(boolean showAnimation) {
+    if (group != null) {
       group.collapseAll(showAnimation);
     }
     final int maxH = getMaxHeight();
@@ -159,6 +142,8 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
       p.useOffscreen = false;
       p.setpos = this;
+      showUIErrorsOld = Settings.showUIErrors;
+      Settings.showUIErrors = false;
       p.start();
     } else {
       setPos(0, maxH);
@@ -166,12 +151,13 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
     }
   }
 
-  public void collapse(boolean showAnimation)
-  {
+  public void collapse(boolean showAnimation) {
     if (showAnimation) {
       PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
       p.useOffscreen = false;
       p.setpos = this;
+      showUIErrorsOld = Settings.showUIErrors;
+      Settings.showUIErrors = false;
       p.start();
     } else {
       setPos(0, getPreferredHeight());
@@ -179,35 +165,36 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
     }
   }
 
-  public void collapse()
-  {
+  public void collapse() {
     this.collapse(true);
   }
 
-  public boolean isExpanded()
-  {
+  public boolean isExpanded() {
     return this.height != getPreferredHeight();
   }
 
   @Override
-  public void onAnimationFinished(ControlAnimation anim)
-  {
-    getParentWindow().reposition();
+  public void onAnimationFinished(ControlAnimation anim) {
+    Window w = getParentWindow();
+    if (w != null) {
+      w.reposition();
+    }
+    Settings.showUIErrors = showUIErrorsOld;
   }
 
   @Override
-  public void setPos(int x, int y)
-  {
+  public void setPos(int x, int y) {
     this.height = setH = y;
     Window.needsPaint = true;
-    getParentWindow().reposition();
+    Window w = getParentWindow();
+    if (w != null) {
+      w.reposition();
+    }
   }
 
-  private int getMaxHeight()
-  {
+  private int getMaxHeight() {
     int maxH = 0, minH = Convert.MAX_INT_VALUE;
-    for (Control child = children; child != null; child = child.next)
-    {
+    for (Control child = children; child != null; child = child.next) {
       if (child.y < minH) {
         minH = child.y;
       }
@@ -220,8 +207,7 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
   }
 
   @Override
-  public int getPreferredHeight()
-  {
-    return minH < 0 ? (fmH+Edit.prefH) * -minH : minH;
+  public int getPreferredHeight() {
+    return minH < 0 ? (fmH + Edit.prefH) * -minH : minH;
   }
 }

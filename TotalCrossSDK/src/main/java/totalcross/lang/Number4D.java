@@ -35,9 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.lang;
-
 
 /**
  * Number is a generic superclass of all the numeric classes, including
@@ -54,8 +52,7 @@ package totalcross.lang;
  * @since 1.0
  * @status updated to 1.4
  */
-public abstract class Number4D 
-{
+public abstract class Number4D {
   /**
    * Compatible with JDK 1.1+.
    */
@@ -64,18 +61,13 @@ public abstract class Number4D
   /**
    * Table for calculating digits, used in Character, Long, and Integer.
    */
-  static final char[] digits = {
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-      'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-      'u', 'v', 'w', 'x', 'y', 'z',
-  };
+  static final char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+      'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', };
 
   /**
    * The basic constructor (often called implicitly).
    */
-  public Number4D()
-  {
+  public Number4D() {
   }
 
   /**
@@ -105,8 +97,7 @@ public abstract class Number4D
    * @return the byte value
    * @since 1.1
    */
-  public byte byteValue()
-  {
+  public byte byteValue() {
     return (byte) intValue();
   }
 
@@ -116,8 +107,7 @@ public abstract class Number4D
    * @return the short value
    * @since 1.1
    */
-  public short shortValue()
-  {
+  public short shortValue() {
     return (short) intValue();
   }
 }

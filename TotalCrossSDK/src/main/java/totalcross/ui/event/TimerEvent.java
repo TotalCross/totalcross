@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /**
@@ -24,8 +22,7 @@ package totalcross.ui.event;
  * the addTimer() and removeTimer() methods present in the Control class.
  */
 
-public class TimerEvent extends Event
-{
+public class TimerEvent extends Event {
   /** The event type for a triggered timer */
   public static final int TRIGGERED = 350;
   /** The timer interval in milliseconds. */
@@ -38,19 +35,16 @@ public class TimerEvent extends Event
   public boolean triggered; // guich@220_39
 
   /** Constructs a new TimerEvent, setting the type to TRIGGERED. */
-  public TimerEvent()
-  {
+  public TimerEvent() {
     type = TRIGGERED;
   }
 
   @Override
-  public String toString()
-  {
-    return "TRIGGERED millis: "+millis+" "+super.toString();
+  public String toString() {
+    return "TRIGGERED millis: " + millis + " " + super.toString();
   }
 
-  public void postpone()
-  {
+  public void postpone() {
     lastTick = totalcross.sys.Vm.getTimeStamp();
   }
 }

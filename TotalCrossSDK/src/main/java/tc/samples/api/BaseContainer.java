@@ -40,156 +40,132 @@ import totalcross.ui.image.ImageException;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.Vector;
 
-public class BaseContainer extends Container
-{
+public class BaseContainer extends Container {
   public static final int BKGCOLOR = 0x0A246A;
   public static final int SELCOLOR = 0x829CE2; // Color.brighter(BKGCOLOR,120);
-  protected Bar headerBar,footerBar;
+  protected Bar headerBar, footerBar;
   private static Vector containerStack = new Vector(5);
   public static String defaultTitle = "TotalCross API";
   protected int gap;
   public boolean isSingleCall;
   public String info;
 
-  static
-  {
+  static {
     Toast.height = PREFERRED + Font.NORMAL_SIZE;
     Toast.posY = BOTTOM - Font.NORMAL_SIZE * 3;
   }
 
-  protected String getHelpMessage()
-  {
+  protected String getHelpMessage() {
     return null;
   }
 
-  public static Image getAwesomeImage(char c, int height, int color) throws ImageException
-  {
+  public static Image getAwesomeImage(char c, int height, int color) throws ImageException {
     Font f = Font.getFont("FontAwesome", false, height);
-    Image img = new Image(f.fm.charWidth(c),height);
+    Image img = new Image(f.fm.charWidth(c), height);
     Graphics g = img.getGraphics();
     g.foreColor = color;
     g.setFont(f);
-    g.drawText(String.valueOf(c), 0,0);
+    g.drawText(String.valueOf(c), 0, 0);
     return img;
   }
 
-  public <T extends Control> T setAwesome(T c, int fmH)
-  {
+  public <T extends Control> T setAwesome(T c, int fmH) {
     c.setFont(Font.getFont("FontAwesome", false, fmH));
     return c;
   }
 
-  public Bar.BarButton createAwesomeBarButton(String title)
-  {
-    Bar.BarButton b = headerBar.new BarButton(title,null);
+  public Bar.BarButton createAwesomeBarButton(String title) {
+    Bar.BarButton b = headerBar.new BarButton(title, null);
     b.buttonCanSelectTitle = true;
     b.buttonTitleAlign = CENTER;
     b.isShadedText = false;
-    return setAwesome(b, font.size * 12/10);
+    return setAwesome(b, font.size * 12 / 10);
   }
 
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       transitionEffect = TRANSITION_OPEN;
-      gap = fmH/2;
+      gap = fmH / 2;
       boolean isMainMenu = containerStack.size() == 1;
       int c1 = 0x0A246A;
-      Font f = font.adjustedBy(2,true);
+      Font f = font.adjustedBy(2, true);
       headerBar = new Bar(defaultTitle);
       headerBar.setFont(f);
-      headerBar.setBackForeColors(c1,Color.WHITE);
+      headerBar.setBackForeColors(c1, Color.WHITE);
       headerBar.addControl(createAwesomeBarButton("\uf017"));
       if (isMainMenu) {
         headerBar.addControl(createAwesomeBarButton("\uf05a"));
       } else {
         headerBar.addButton(Resources.back);
       }
-      add(headerBar, LEFT,0,FILL,PREFERRED);
+      add(headerBar, LEFT, 0, FILL, PREFERRED);
 
       footerBar = new Bar("");
       footerBar.uiAdjustmentsBasedOnFontHeightIsSupported = false;
       footerBar.setFont(f);
       footerBar.titleAlign = CENTER;
       footerBar.backgroundStyle = BACKGROUND_SOLID;
-      footerBar.setBackForeColors(c1,Color.WHITE);
-      setInsets(0,0,headerBar.getHeight(),footerBar.getPreferredHeight());
-      add(footerBar, LEFT,BOTTOM+insets.bottom,FILL,PREFERRED);
+      footerBar.setBackForeColors(c1, Color.WHITE);
+      setInsets(0, 0, headerBar.getHeight(), footerBar.getPreferredHeight());
+      add(footerBar, LEFT, BOTTOM + insets.bottom, FILL, PREFERRED);
       // we use a PressListener so that the subclasses don't need to call super.onEvent
-      headerBar.addPressListener(new PressListener()
-      {
+      headerBar.addPressListener(new PressListener() {
         @Override
-        public void controlPressed(ControlEvent e)
-        {
+        public void controlPressed(ControlEvent e) {
           e.consumed = true;
-          try
-          {
-            switch (((Bar)e.target).getSelectedIndex())
-            {
-            case 1:
-            {
+          try {
+            switch (((Bar) e.target).getSelectedIndex()) {
+            case 1: {
               Vm.gc();
-              Vm.tweak(Vm.TWEAK_DISABLE_GC,true);
+              Vm.tweak(Vm.TWEAK_DISABLE_GC, true);
               int ini = Vm.getTimeStamp();
               for (int i = 0; i < 100; i++) {
                 repaintNow();
               }
               int fim = Vm.getTimeStamp();
-              Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
-              String s = "Paint 100x elapsed: "+(fim-ini)+"ms";
+              Vm.tweak(Vm.TWEAK_DISABLE_GC, false);
+              String s = "Paint 100x elapsed: " + (fim - ini) + "ms";
               Toast.show(s, 3000);
-              Vm.debug(headerBar.getTitle()+" - "+s);
+              Vm.debug(headerBar.getTitle() + " - " + s);
               break;
             }
-            case 2:
-            {
+            case 2: {
               boolean isMainMenu = containerStack.size() == 1;
-              if (isMainMenu)
-              {
+              if (isMainMenu) {
                 String helpMessage = getHelpMessage();
                 if (helpMessage == null) {
                   return;
                 }
-                MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
+                MessageBox mb = new MessageBox("Help", helpMessage, new String[] { "Close" });
                 mb.transitionEffect = TRANSITION_FADE;
                 mb.footerColor = mb.headerColor = UIColors.messageboxBack;
                 //mb.setIcon(infoImg);
                 mb.popup();
-              }
-              else
-              {
+              } else {
                 back();
               }
               break;
             }
             }
-          }
-          catch (Exception ee)
-          {
-            MessageBox.showException(ee,true);
+          } catch (Exception ee) {
+            MessageBox.showException(ee, true);
           }
         }
       });
 
-      Window.keyHook = new KeyListener() 
-      {
+      Window.keyHook = new KeyListener() {
         @Override
-        public void keyPressed(KeyEvent e)
-        {
+        public void keyPressed(KeyEvent e) {
         }
 
         @Override
-        public void actionkeyPressed(KeyEvent e)
-        {
+        public void actionkeyPressed(KeyEvent e) {
         }
 
         @Override
-        public void specialkeyPressed(KeyEvent e)
-        {
-          if (e.key == SpecialKeys.ESCAPE)
-          {
+        public void specialkeyPressed(KeyEvent e) {
+          if (e.key == SpecialKeys.ESCAPE) {
             e.consumed = true;
             back();
           }
@@ -197,105 +173,90 @@ public class BaseContainer extends Container
       };
 
       String name = getClass().getName();
-      setTitle(name.endsWith("Sample") ? name.substring(name.lastIndexOf('.')+1,name.length()-6) : defaultTitle);
-    }
-    catch (Exception ee)
-    {
-      MessageBox.showException(ee,true);
+      setTitle(name.endsWith("Sample") ? name.substring(name.lastIndexOf('.') + 1, name.length() - 6) : defaultTitle);
+    } catch (Exception ee) {
+      MessageBox.showException(ee, true);
     }
   }
 
-  public void setTitle(String s)
-  {
+  public void setTitle(String s) {
     headerBar.setTitle(s);
   }
 
-  public String getTitle()
-  {
+  public String getTitle() {
     return headerBar.getTitle();
   }
 
-  public void setInfo(String s)
-  {
-    if (footerBar != null){
+  public void setInfo(String s) {
+    if (footerBar != null) {
       footerBar.setTitle(s);
     }
   }
 
-  public void show()
-  {
+  public void show() {
     containerStack.push(this); // push ourself
     MainWindow.getMainWindow().swap(this);
   }
 
-  public void back()
-  {
-    if (parent == null || (!(this instanceof MainMenu) && getParentWindow() == Window.getTopMost())){
-      try
-      {
+  public void back() {
+    if (parent == null || (!(this instanceof MainMenu) && getParentWindow() == Window.getTopMost())) {
+      try {
         setInfo(MainMenu.DEFAULT_INFO);
         containerStack.pop(); // pop ourself
-        MainWindow.getMainWindow().swap((Container)containerStack.peek());
+        MainWindow.getMainWindow().swap((Container) containerStack.peek());
         Window.keyHook = null;
-      }
-      catch (ElementNotFoundException enfe)
-      {
+      } catch (ElementNotFoundException enfe) {
         //MainWindow.exit(0); // we're the last screen, so just exit the application
       }
     }
   }
 
-  public boolean ask(String question)
-  {
-    MessageBox mb = new MessageBox("Question", question, new String[]{"Yes","No"});
+  public boolean ask(String question) {
+    MessageBox mb = new MessageBox("Question", question, new String[] { "Yes", "No" });
     mb.popup();
     return mb.getPressedButtonIndex() == 0;
   }
 
   // single place to add and log messages
   protected static ListBox lblog;
-  public void addLog(int x, int y, int w, int h, Control rel)
-  {
-    addLog(this,x,y,w,h,rel);
+
+  public void addLog(int x, int y, int w, int h, Control rel) {
+    addLog(this, x, y, w, h, rel);
   }
-  public void addLog(Container parent, int x, int y, int w, int h, Control rel)
-  {
+
+  public void addLog(Container parent, int x, int y, int w, int h, Control rel) {
     ListBox.itemHeightFactor = 1;
-    parent.add(lblog = new ListBox(),x,y,w,h,rel);
+    parent.add(lblog = new ListBox(), x, y, w, h, rel);
     ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR;
   }
 
   // a log method that runs safely on threads
-  public static void log(Object s)
-  {
-    log(s,true);
+  public static void log(Object s) {
+    log(s, true);
   }
-  public static void log(Object s, boolean selLast)
-  {
-    if (s == null){
+
+  public static void log(Object s, boolean selLast) {
+    if (s == null) {
       return;
     }
     Vm.debug(s.toString());
     final Object _s = s;
     final boolean _selLast = selLast;
-    if (MainWindow.isMainThread())
-    {
+    if (MainWindow.isMainThread()) {
       if (s instanceof String) {
-        lblog.addWrapping((String)s);
+        lblog.addWrapping((String) s);
       } else {
         lblog.add(s);
       }
       if (selLast) {
         lblog.selectLast();
       }
-    }else {
-      MainWindow.getMainWindow().runOnMainThread(new Runnable()
-      {
+    } else {
+      MainWindow.getMainWindow().runOnMainThread(new Runnable() {
         @Override
-        public void run()
-        {
+        public void run() {
           if (_s instanceof String) {
-            lblog.addWrapping((String)_s);
+            lblog.addWrapping((String) _s);
           } else {
             lblog.add(_s);
           }

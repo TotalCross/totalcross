@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractCollection;
@@ -58,7 +57,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 
 /**
  * This class provides a red-black tree implementation of the SortedMap
@@ -107,9 +105,7 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.6
  */
-public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
-implements NavigableMap<K, V>, Cloneable
-{
+public class TreeMap4D<K, V> extends AbstractMap4D<K, V> implements NavigableMap<K, V>, Cloneable {
   // Implementation note:
   // A red-black tree is a binary search tree with the additional properties
   // that all paths to a leaf node visit the same number of black nodes,
@@ -120,8 +116,7 @@ implements NavigableMap<K, V>, Cloneable
   /**
    * Color status of a node. Package visible for use by nested classes.
    */
-  static final int RED = -1,
-      BLACK = 1;
+  static final int RED = -1, BLACK = 1;
 
   /**
    * Sentinal node, used to avoid null checks for corner cases and make the
@@ -131,8 +126,7 @@ implements NavigableMap<K, V>, Cloneable
    * it will break bounds checking of a SubMap.
    */
   static final Node nil = new Node(null, null, BLACK);
-  static
-  {
+  static {
     // Nil is self-referential, so we must initialize it after creation.
     nil.parent = nil;
     nil.left = nil;
@@ -152,12 +146,12 @@ implements NavigableMap<K, V>, Cloneable
   /**
    * The cache for {@link #entrySet()}.
    */
-  private transient Set<Map.Entry<K,V>> entries;
+  private transient Set<Map.Entry<K, V>> entries;
 
   /**
    * The cache for {@link #descendingMap()}.
    */
-  private transient NavigableMap<K,V> descendingMap;
+  private transient NavigableMap<K, V> descendingMap;
 
   /**
    * The cache for {@link #navigableKeySet()}.
@@ -184,8 +178,7 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class Node<K, V> extends AbstractMap4D.SimpleEntry<K, V>
-  {
+  private static final class Node<K, V> extends AbstractMap4D.SimpleEntry<K, V> {
     // All fields package visible for use by nested classes.
     /** The color of this node. */
     int color;
@@ -202,8 +195,7 @@ implements NavigableMap<K, V>, Cloneable
      * @param key the key
      * @param value the value
      */
-    Node(K key, V value, int color)
-    {
+    Node(K key, V value, int color) {
       super(key, value);
       this.color = color;
     }
@@ -218,8 +210,7 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @see Comparable
    */
-  public TreeMap4D()
-  {
+  public TreeMap4D() {
     this((Comparator) null);
   }
 
@@ -232,8 +223,7 @@ implements NavigableMap<K, V>, Cloneable
    * @param c the sort order for the keys of this map, or null
    *        for the natural order
    */
-  public TreeMap4D(Comparator<? super K> c)
-  {
+  public TreeMap4D(Comparator<? super K> c) {
     comparator = c;
     fabricateTree(0);
   }
@@ -252,8 +242,7 @@ implements NavigableMap<K, V>, Cloneable
    * @throws NullPointerException if map is null
    * @see Comparable
    */
-  public TreeMap4D(Map<? extends K, ? extends V> map)
-  {
+  public TreeMap4D(Map<? extends K, ? extends V> map) {
     this((Comparator) null);
     putAll(map);
   }
@@ -266,8 +255,7 @@ implements NavigableMap<K, V>, Cloneable
    * @param sm a SortedMap, whose entries will be put into this TreeMap
    * @throws NullPointerException if sm is null
    */
-  public TreeMap4D(SortedMap<K, ? extends V> sm)
-  {
+  public TreeMap4D(SortedMap<K, ? extends V> sm) {
     this(sm.comparator());
     int pos = sm.size();
     Iterator itr = sm.entrySet().iterator();
@@ -275,8 +263,7 @@ implements NavigableMap<K, V>, Cloneable
     fabricateTree(pos);
     Node node = firstNode();
 
-    while (--pos >= 0)
-    {
+    while (--pos >= 0) {
       Map.Entry me = (Map.Entry) itr.next();
       node.key = me.getKey();
       node.value = me.getValue();
@@ -288,10 +275,8 @@ implements NavigableMap<K, V>, Cloneable
    * Clears the Map so it has no keys. This is O(1).
    */
   @Override
-  public void clear()
-  {
-    if (size > 0)
-    {
+  public void clear() {
+    if (size > 0) {
       modCount++;
       root = nil;
       size = 0;
@@ -305,15 +290,11 @@ implements NavigableMap<K, V>, Cloneable
    * @return the clone
    */
   @Override
-  public Object clone()
-  {
+  public Object clone() {
     TreeMap4D copy = null;
-    try
-    {
+    try {
       copy = (TreeMap4D) super.clone();
-    }
-    catch (CloneNotSupportedException x)
-    {
+    } catch (CloneNotSupportedException x) {
     }
     copy.entries = null;
     copy.fabricateTree(size);
@@ -321,8 +302,7 @@ implements NavigableMap<K, V>, Cloneable
     Node node = firstNode();
     Node cnode = copy.firstNode();
 
-    while (node != nil)
-    {
+    while (node != nil) {
       cnode.key = node.key;
       cnode.value = node.value;
       node = successor(node);
@@ -338,8 +318,7 @@ implements NavigableMap<K, V>, Cloneable
    * @return the map's comparator
    */
   @Override
-  public Comparator<? super K> comparator()
-  {
+  public Comparator<? super K> comparator() {
     return comparator;
   }
 
@@ -353,8 +332,7 @@ implements NavigableMap<K, V>, Cloneable
    *         tolerant of nulls
    */
   @Override
-  public boolean containsKey(Object key)
-  {
+  public boolean containsKey(Object key) {
     return getNode((K) key) != nil;
   }
 
@@ -366,11 +344,9 @@ implements NavigableMap<K, V>, Cloneable
    * @return true if the value appears in a mapping
    */
   @Override
-  public boolean containsValue(Object value)
-  {
+  public boolean containsValue(Object value) {
     Node node = firstNode();
-    while (node != nil)
-    {
+    while (node != nil) {
       if (equals(value, node.value)) {
         return true;
       }
@@ -393,9 +369,8 @@ implements NavigableMap<K, V>, Cloneable
    * @see Map.Entry
    */
   @Override
-  public Set<Map.Entry<K,V>> entrySet()
-  {
-    if (entries == null){
+  public Set<Map.Entry<K, V>> entrySet() {
+    if (entries == null) {
       // Create an AbstractSet with custom implementations of those methods
       // that can be overriden easily and efficiently.
       entries = new NavigableEntrySet();
@@ -410,9 +385,8 @@ implements NavigableMap<K, V>, Cloneable
    * @throws NoSuchElementException if the map is empty
    */
   @Override
-  public K firstKey()
-  {
-    if (root == nil){
+  public K firstKey() {
+    if (root == nil) {
       throw new NoSuchElementException();
     }
     return firstNode().key;
@@ -433,8 +407,7 @@ implements NavigableMap<K, V>, Cloneable
    * @see #containsKey(Object)
    */
   @Override
-  public V get(Object key)
-  {
+  public V get(Object key) {
     // Exploit fact that nil.value == null.
     return getNode((K) key).value;
   }
@@ -457,8 +430,7 @@ implements NavigableMap<K, V>, Cloneable
    *         tolerate null elements
    */
   @Override
-  public SortedMap<K, V> headMap(K toKey)
-  {
+  public SortedMap<K, V> headMap(K toKey) {
     return headMap(toKey, false);
   }
 
@@ -479,10 +451,8 @@ implements NavigableMap<K, V>, Cloneable
    *         tolerate null elements
    */
   @Override
-  public NavigableMap<K, V> headMap(K toKey, boolean inclusive)
-  {
-    return new SubMap((K)(Object)nil, inclusive
-        ? successor(getNode(toKey)).key : toKey);
+  public NavigableMap<K, V> headMap(K toKey, boolean inclusive) {
+    return new SubMap((K) (Object) nil, inclusive ? successor(getNode(toKey)).key : toKey);
   }
 
   /**
@@ -495,9 +465,8 @@ implements NavigableMap<K, V>, Cloneable
    * @see #entrySet()
    */
   @Override
-  public Set<K> keySet()
-  {
-    if (keys == null){
+  public Set<K> keySet() {
+    if (keys == null) {
       // Create an AbstractSet with custom implementations of those methods
       // that can be overriden easily and efficiently.
       keys = new KeySet();
@@ -512,9 +481,8 @@ implements NavigableMap<K, V>, Cloneable
    * @throws NoSuchElementException if the map is empty
    */
   @Override
-  public K lastKey()
-  {
-    if (root == nil){
+  public K lastKey() {
+    if (root == nil) {
       throw new NoSuchElementException("empty");
     }
     return lastNode().key;
@@ -537,15 +505,13 @@ implements NavigableMap<K, V>, Cloneable
    * @see Object#equals(Object)
    */
   @Override
-  public V put(K key, V value)
-  {
-    Node<K,V> current = root;
-    Node<K,V> parent = nil;
+  public V put(K key, V value) {
+    Node<K, V> current = root;
+    Node<K, V> parent = nil;
     int comparison = 0;
 
     // Find new node's parent.
-    while (current != nil)
-    {
+    while (current != nil) {
       parent = current;
       comparison = compare(key, current.key);
       if (comparison > 0) {
@@ -564,15 +530,14 @@ implements NavigableMap<K, V>, Cloneable
     // Insert node in tree.
     modCount++;
     size++;
-    if (parent == nil)
-    {
+    if (parent == nil) {
       // Special case inserting into an empty tree.
       root = n;
       return null;
     }
-    if (comparison > 0){
+    if (comparison > 0) {
       parent.right = n;
-    }else {
+    } else {
       parent.left = n;
     }
 
@@ -593,13 +558,11 @@ implements NavigableMap<K, V>, Cloneable
    *         does not tolerate nulls
    */
   @Override
-  public void putAll(Map<? extends K, ? extends V> m)
-  {
+  public void putAll(Map<? extends K, ? extends V> m) {
     Iterator itr = m.entrySet().iterator();
     int pos = m.size();
-    while (--pos >= 0)
-    {
-      Map.Entry<K,V> e = (Map.Entry<K,V>) itr.next();
+    while (--pos >= 0) {
+      Map.Entry<K, V> e = (Map.Entry<K, V>) itr.next();
       put(e.getKey(), e.getValue());
     }
   }
@@ -618,10 +581,9 @@ implements NavigableMap<K, V>, Cloneable
    *         not tolerate nulls
    */
   @Override
-  public V remove(Object key)
-  {
-    Node<K, V> n = getNode((K)key);
-    if (n == nil){
+  public V remove(Object key) {
+    Node<K, V> n = getNode((K) key);
+    if (n == nil) {
       return null;
     }
     // Note: removeNode can alter the contents of n, so save value now.
@@ -636,8 +598,7 @@ implements NavigableMap<K, V>, Cloneable
    * @return the size
    */
   @Override
-  public int size()
-  {
+  public int size() {
     return size;
   }
 
@@ -663,8 +624,7 @@ implements NavigableMap<K, V>, Cloneable
    * @throws IllegalArgumentException if fromKey is greater than toKey
    */
   @Override
-  public SortedMap<K, V> subMap(K fromKey, K toKey)
-  {
+  public SortedMap<K, V> subMap(K fromKey, K toKey) {
     return subMap(fromKey, true, toKey, false);
   }
 
@@ -689,9 +649,7 @@ implements NavigableMap<K, V>, Cloneable
    * @throws IllegalArgumentException if fromKey is greater than toKey
    */
   @Override
-  public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive,
-      K toKey, boolean toInclusive)
-  {
+  public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
     return new SubMap(fromInclusive ? fromKey : successor(getNode(fromKey)).key,
         toInclusive ? successor(getNode(toKey)).key : toKey);
   }
@@ -713,8 +671,7 @@ implements NavigableMap<K, V>, Cloneable
    *         does not tolerate null elements
    */
   @Override
-  public SortedMap<K, V> tailMap(K fromKey)
-  {
+  public SortedMap<K, V> tailMap(K fromKey) {
     return tailMap(fromKey, true);
   }
 
@@ -735,10 +692,8 @@ implements NavigableMap<K, V>, Cloneable
    *         does not tolerate null elements
    */
   @Override
-  public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive)
-  {
-    return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key,
-        (K)(Object)nil);
+  public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive) {
+    return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key, (K) (Object) nil);
   }
 
   /**
@@ -752,28 +707,23 @@ implements NavigableMap<K, V>, Cloneable
    * @see #entrySet()
    */
   @Override
-  public Collection<V> values()
-  {
-    if (values == null){
+  public Collection<V> values() {
+    if (values == null) {
       // We don't bother overriding many of the optional methods, as doing so
       // wouldn't provide any significant performance advantage.
-      values = new AbstractCollection<V>()
-      {
+      values = new AbstractCollection<V>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<V> iterator()
-        {
+        public Iterator<V> iterator() {
           return new TreeIterator(VALUES);
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           TreeMap4D.this.clear();
         }
       };
@@ -791,11 +741,8 @@ implements NavigableMap<K, V>, Cloneable
    *         or are not Comparable with natural ordering
    * @throws NullPointerException if o1 or o2 is null with natural ordering
    */
-  final int compare(K o1, K o2)
-  {
-    return (comparator == null
-        ? ((Comparable) o1).compareTo(o2)
-            : comparator.compare(o1, o2));
+  final int compare(K o1, K o2) {
+    return (comparator == null ? ((Comparable) o1).compareTo(o2) : comparator.compare(o1, o2));
   }
 
   /**
@@ -804,23 +751,19 @@ implements NavigableMap<K, V>, Cloneable
    * @param node the child of the node just deleted, possibly nil
    * @param parent the parent of the node just deleted, never nil
    */
-  private void deleteFixup(Node<K,V> node, Node<K,V> parent)
-  {
+  private void deleteFixup(Node<K, V> node, Node<K, V> parent) {
     // if (parent == nil)
     //   throw new InternalError();
     // If a black node has been removed, we need to rebalance to avoid
     // violating the "same number of black nodes on any path" rule. If
     // node is red, we can simply recolor it black and all is well.
-    while (node != root && node.color == BLACK)
-    {
-      if (node == parent.left)
-      {
+    while (node != root && node.color == BLACK) {
+      if (node == parent.left) {
         // Rebalance left side.
-        Node<K,V> sibling = parent.right;
+        Node<K, V> sibling = parent.right;
         // if (sibling == nil)
         //   throw new InternalError();
-        if (sibling.color == RED)
-        {
+        if (sibling.color == RED) {
           // Case 1: Sibling is red.
           // Recolor sibling and parent, and rotate parent left.
           sibling.color = BLACK;
@@ -829,18 +772,14 @@ implements NavigableMap<K, V>, Cloneable
           sibling = parent.right;
         }
 
-        if (sibling.left.color == BLACK && sibling.right.color == BLACK)
-        {
+        if (sibling.left.color == BLACK && sibling.right.color == BLACK) {
           // Case 2: Sibling has no red children.
           // Recolor sibling, and move to parent.
           sibling.color = RED;
           node = parent;
           parent = parent.parent;
-        }
-        else
-        {
-          if (sibling.right.color == BLACK)
-          {
+        } else {
+          if (sibling.right.color == BLACK) {
             // Case 3: Sibling has red left child.
             // Recolor sibling and left child, rotate sibling right.
             sibling.left.color = BLACK;
@@ -856,15 +795,12 @@ implements NavigableMap<K, V>, Cloneable
           rotateLeft(parent);
           node = root; // Finished.
         }
-      }
-      else
-      {
+      } else {
         // Symmetric "mirror" of left-side case.
-        Node<K,V> sibling = parent.left;
+        Node<K, V> sibling = parent.left;
         // if (sibling == nil)
         //   throw new InternalError();
-        if (sibling.color == RED)
-        {
+        if (sibling.color == RED) {
           // Case 1: Sibling is red.
           // Recolor sibling and parent, and rotate parent right.
           sibling.color = BLACK;
@@ -873,18 +809,14 @@ implements NavigableMap<K, V>, Cloneable
           sibling = parent.left;
         }
 
-        if (sibling.right.color == BLACK && sibling.left.color == BLACK)
-        {
+        if (sibling.right.color == BLACK && sibling.left.color == BLACK) {
           // Case 2: Sibling has no red children.
           // Recolor sibling, and move to parent.
           sibling.color = RED;
           node = parent;
           parent = parent.parent;
-        }
-        else
-        {
-          if (sibling.left.color == BLACK)
-          {
+        } else {
+          if (sibling.left.color == BLACK) {
             // Case 3: Sibling has red right child.
             // Recolor sibling and right child, rotate sibling left.
             sibling.right.color = BLACK;
@@ -911,10 +843,8 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @param count the number of blank nodes, non-negative
    */
-  private void fabricateTree(final int count)
-  {
-    if (count == 0)
-    {
+  private void fabricateTree(final int count) {
+    if (count == 0) {
       root = nil;
       size = 0;
       return;
@@ -932,12 +862,10 @@ implements NavigableMap<K, V>, Cloneable
     int rowsize;
 
     // Fill each row that is completely full of nodes.
-    for (rowsize = 2; rowsize + rowsize <= count; rowsize <<= 1)
-    {
+    for (rowsize = 2; rowsize + rowsize <= count; rowsize <<= 1) {
       Node parent = row;
       Node last = null;
-      for (int i = 0; i < rowsize; i += 2)
-      {
+      for (int i = 0; i < rowsize; i += 2) {
         Node left = new Node(null, null, BLACK);
         Node right = new Node(null, null, BLACK);
         left.parent = parent;
@@ -959,8 +887,7 @@ implements NavigableMap<K, V>, Cloneable
     int overflow = count - rowsize;
     Node parent = row;
     int i;
-    for (i = 0; i < overflow; i += 2)
-    {
+    for (i = 0; i < overflow; i += 2) {
       Node left = new Node(null, null, RED);
       Node right = new Node(null, null, RED);
       left.parent = parent;
@@ -971,8 +898,7 @@ implements NavigableMap<K, V>, Cloneable
       parent = next;
     }
     // Add a lone left node if necessary.
-    if (i - overflow == 0)
-    {
+    if (i - overflow == 0) {
       Node left = new Node(null, null, RED);
       left.parent = parent;
       parent.left = left;
@@ -980,8 +906,7 @@ implements NavigableMap<K, V>, Cloneable
       left.parent.right = nil;
     }
     // Unlink the remaining nodes of the previous row.
-    while (parent != nil)
-    {
+    while (parent != nil) {
       Node next = parent.right;
       parent.right = nil;
       parent = next;
@@ -994,11 +919,10 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @return the first node
    */
-  final Node<K, V> firstNode()
-  {
+  final Node<K, V> firstNode() {
     // Exploit fact that nil.left == nil.
     Node node = root;
-    while (node.left != nil){
+    while (node.left != nil) {
       node = node.left;
     }
     return node;
@@ -1011,11 +935,9 @@ implements NavigableMap<K, V>, Cloneable
    * @param key the key to search for
    * @return the node where the key is found, or nil
    */
-  final Node<K, V> getNode(K key)
-  {
-    Node<K,V> current = root;
-    while (current != nil)
-    {
+  final Node<K, V> getNode(K key) {
+    Node<K, V> current = root;
+    while (current != nil) {
       int comparison = compare(key, current.key);
       if (comparison > 0) {
         current = current.right;
@@ -1035,8 +957,7 @@ implements NavigableMap<K, V>, Cloneable
    * @param key the upper bound, exclusive
    * @return the previous node
    */
-  final Node<K,V> highestLessThan(K key)
-  {
+  final Node<K, V> highestLessThan(K key) {
     return highestLessThan(key, false);
   }
 
@@ -1050,18 +971,16 @@ implements NavigableMap<K, V>, Cloneable
    * @param equal true if the key should be returned if found.
    * @return the previous node
    */
-  final Node<K,V> highestLessThan(K key, boolean equal)
-  {
-    if (key == nil){
+  final Node<K, V> highestLessThan(K key, boolean equal) {
+    if (key == nil) {
       return lastNode();
     }
 
-    Node<K,V> last = nil;
-    Node<K,V> current = root;
+    Node<K, V> last = nil;
+    Node<K, V> current = root;
     int comparison = 0;
 
-    while (current != nil)
-    {
+    while (current != nil) {
       last = current;
       comparison = compare(key, current.key);
       if (comparison > 0) {
@@ -1080,30 +999,23 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @param n the newly inserted node
    */
-  private void insertFixup(Node<K,V> n)
-  {
+  private void insertFixup(Node<K, V> n) {
     // Only need to rebalance when parent is a RED node, and while at least
     // 2 levels deep into the tree (ie: node has a grandparent). Remember
     // that nil.color == BLACK.
-    while (n.parent.color == RED && n.parent.parent != nil)
-    {
-      if (n.parent == n.parent.parent.left)
-      {
+    while (n.parent.color == RED && n.parent.parent != nil) {
+      if (n.parent == n.parent.parent.left) {
         Node uncle = n.parent.parent.right;
         // Uncle may be nil, in which case it is BLACK.
-        if (uncle.color == RED)
-        {
+        if (uncle.color == RED) {
           // Case 1. Uncle is RED: Change colors of parent, uncle,
           // and grandparent, and move n to grandparent.
           n.parent.color = BLACK;
           uncle.color = BLACK;
           uncle.parent.color = RED;
           n = uncle.parent;
-        }
-        else
-        {
-          if (n == n.parent.right)
-          {
+        } else {
+          if (n == n.parent.right) {
             // Case 2. Uncle is BLACK and x is right child.
             // Move n to parent, and rotate n left.
             n = n.parent;
@@ -1115,25 +1027,19 @@ implements NavigableMap<K, V>, Cloneable
           n.parent.parent.color = RED;
           rotateRight(n.parent.parent);
         }
-      }
-      else
-      {
+      } else {
         // Mirror image of above code.
         Node uncle = n.parent.parent.left;
         // Uncle may be nil, in which case it is BLACK.
-        if (uncle.color == RED)
-        {
+        if (uncle.color == RED) {
           // Case 1. Uncle is RED: Change colors of parent, uncle,
           // and grandparent, and move n to grandparent.
           n.parent.color = BLACK;
           uncle.color = BLACK;
           uncle.parent.color = RED;
           n = uncle.parent;
-        }
-        else
-        {
-          if (n == n.parent.left)
-          {
+        } else {
+          if (n == n.parent.left) {
             // Case 2. Uncle is BLACK and x is left child.
             // Move n to parent, and rotate n right.
             n = n.parent;
@@ -1155,11 +1061,10 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @return the last node
    */
-  private Node<K,V> lastNode()
-  {
+  private Node<K, V> lastNode() {
     // Exploit fact that nil.right == nil.
     Node node = root;
-    while (node.right != nil){
+    while (node.right != nil) {
       node = node.right;
     }
     return node;
@@ -1174,8 +1079,7 @@ implements NavigableMap<K, V>, Cloneable
    * @param first true to return the first element instead of nil for nil key
    * @return the next node
    */
-  final Node<K,V> lowestGreaterThan(K key, boolean first)
-  {
+  final Node<K, V> lowestGreaterThan(K key, boolean first) {
     return lowestGreaterThan(key, first, true);
   }
 
@@ -1189,18 +1093,16 @@ implements NavigableMap<K, V>, Cloneable
    * @param equal true if the key should be returned if found.
    * @return the next node
    */
-  final Node<K,V> lowestGreaterThan(K key, boolean first, boolean equal)
-  {
-    if (key == nil){
+  final Node<K, V> lowestGreaterThan(K key, boolean first, boolean equal) {
+    if (key == nil) {
       return first ? firstNode() : nil;
     }
 
-    Node<K,V> last = nil;
-    Node<K,V> current = root;
+    Node<K, V> last = nil;
+    Node<K, V> current = root;
     int comparison = 0;
 
-    while (current != nil)
-    {
+    while (current != nil) {
       last = current;
       comparison = compare(key, current.key);
       if (comparison > 0) {
@@ -1220,10 +1122,8 @@ implements NavigableMap<K, V>, Cloneable
    * @param node the current node, not nil
    * @return the prior node in sorted order
    */
-  private Node<K,V> predecessor(Node<K,V> node)
-  {
-    if (node.left != nil)
-    {
+  private Node<K, V> predecessor(Node<K, V> node) {
+    if (node.left != nil) {
       node = node.left;
       while (node.right != nil) {
         node = node.right;
@@ -1233,8 +1133,7 @@ implements NavigableMap<K, V>, Cloneable
 
     Node parent = node.parent;
     // Exploit fact that nil.left == nil and node is non-nil.
-    while (node == parent.left)
-    {
+    while (node == parent.left) {
       node = parent;
       parent = node.parent;
     }
@@ -1249,13 +1148,11 @@ implements NavigableMap<K, V>, Cloneable
    * @param count the number of nodes to insert
    * @see TreeSet#TreeSet(SortedSet)
    */
-  final void putKeysLinear(Iterator<K> keys, int count)
-  {
+  final void putKeysLinear(Iterator<K> keys, int count) {
     fabricateTree(count);
-    Node<K,V> node = firstNode();
+    Node<K, V> node = firstNode();
 
-    while (--count >= 0)
-    {
+    while (--count >= 0) {
       node.key = keys.next();
       node.value = (V) "";
       node = successor(node);
@@ -1268,29 +1165,23 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @param node the node to remove
    */
-  final void removeNode(Node<K,V> node)
-  {
-    Node<K,V> splice;
-    Node<K,V> child;
+  final void removeNode(Node<K, V> node) {
+    Node<K, V> splice;
+    Node<K, V> child;
 
     modCount++;
     size--;
 
     // Find splice, the node at the position to actually remove from the tree.
-    if (node.left == nil)
-    {
+    if (node.left == nil) {
       // Node to be deleted has 0 or 1 children.
       splice = node;
       child = node.right;
-    }
-    else if (node.right == nil)
-    {
+    } else if (node.right == nil) {
       // Node to be deleted has 1 child.
       splice = node;
       child = node.left;
-    }
-    else
-    {
+    } else {
       // Node has 2 children. Splice is node's predecessor, and we swap
       // its contents into node.
       splice = node.left;
@@ -1304,22 +1195,21 @@ implements NavigableMap<K, V>, Cloneable
 
     // Unlink splice from the tree.
     Node parent = splice.parent;
-    if (child != nil){
+    if (child != nil) {
       child.parent = parent;
     }
-    if (parent == nil)
-    {
+    if (parent == nil) {
       // Special case for 0 or 1 node remaining.
       root = child;
       return;
     }
-    if (splice == parent.left){
+    if (splice == parent.left) {
       parent.left = child;
-    }else {
+    } else {
       parent.right = child;
     }
 
-    if (splice.color == BLACK){
+    if (splice.color == BLACK) {
       deleteFixup(child, parent);
     }
   }
@@ -1329,28 +1219,26 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @param node the node to rotate
    */
-  private void rotateLeft(Node<K,V> node)
-  {
+  private void rotateLeft(Node<K, V> node) {
     Node child = node.right;
     // if (node == nil || child == nil)
     //   throw new InternalError();
 
     // Establish node.right link.
     node.right = child.left;
-    if (child.left != nil){
+    if (child.left != nil) {
       child.left.parent = node;
     }
 
     // Establish child->parent link.
     child.parent = node.parent;
-    if (node.parent != nil)
-    {
+    if (node.parent != nil) {
       if (node == node.parent.left) {
         node.parent.left = child;
       } else {
         node.parent.right = child;
       }
-    }else {
+    } else {
       root = child;
     }
 
@@ -1364,28 +1252,26 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @param node the node to rotate
    */
-  private void rotateRight(Node<K,V> node)
-  {
+  private void rotateRight(Node<K, V> node) {
     Node child = node.left;
     // if (node == nil || child == nil)
     //   throw new InternalError();
 
     // Establish node.left link.
     node.left = child.right;
-    if (child.right != nil){
+    if (child.right != nil) {
       child.right.parent = node;
     }
 
     // Establish child->parent link.
     child.parent = node.parent;
-    if (node.parent != nil)
-    {
+    if (node.parent != nil) {
       if (node == node.parent.right) {
         node.parent.right = child;
       } else {
         node.parent.left = child;
       }
-    }else {
+    } else {
       root = child;
     }
 
@@ -1401,10 +1287,8 @@ implements NavigableMap<K, V>, Cloneable
    * @param node the current node, not nil
    * @return the next node in sorted order
    */
-  final Node<K,V> successor(Node<K,V> node)
-  {
-    if (node.right != nil)
-    {
+  final Node<K, V> successor(Node<K, V> node) {
+    if (node.right != nil) {
       node = node.right;
       while (node.left != nil) {
         node = node.left;
@@ -1412,10 +1296,9 @@ implements NavigableMap<K, V>, Cloneable
       return node;
     }
 
-    Node<K,V> parent = node.parent;
+    Node<K, V> parent = node.parent;
     // Exploit fact that nil.right == nil and node is non-nil.
-    while (node == parent.right)
-    {
+    while (node == parent.right) {
       node = parent;
       parent = parent.parent;
     }
@@ -1428,8 +1311,7 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private final class TreeIterator implements Iterator
-  {
+  private final class TreeIterator implements Iterator {
     /**
      * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
      * or {@link #ENTRIES}.
@@ -1451,8 +1333,7 @@ implements NavigableMap<K, V>, Cloneable
      * Construct a new TreeIterator with the supplied type.
      * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
      */
-    TreeIterator(int type)
-    {
+    TreeIterator(int type) {
       this(type, firstNode(), nil);
     }
 
@@ -1464,8 +1345,7 @@ implements NavigableMap<K, V>, Cloneable
      * @param first where to start iteration, nil for empty iterator
      * @param max the cutoff for iteration, nil for all remaining nodes
      */
-    TreeIterator(int type, Node first, Node max)
-    {
+    TreeIterator(int type, Node first, Node max) {
       this.type = type;
       this.next = first;
       this.max = max;
@@ -1476,8 +1356,7 @@ implements NavigableMap<K, V>, Cloneable
      * @return true if there are more elements
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return next != max;
     }
 
@@ -1488,20 +1367,19 @@ implements NavigableMap<K, V>, Cloneable
      * @throws NoSuchElementException if there is none
      */
     @Override
-    public Object next()
-    {
-      if (knownMod != modCount){
+    public Object next() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (next == max){
+      if (next == max) {
         throw new NoSuchElementException();
       }
       last = next;
       next = successor(last);
 
-      if (type == VALUES){
+      if (type == VALUES) {
         return last.value;
-      }else if (type == KEYS){
+      } else if (type == KEYS) {
         return last.key;
       }
       return last;
@@ -1514,12 +1392,11 @@ implements NavigableMap<K, V>, Cloneable
      * @throws IllegalStateException if called when there is no last element
      */
     @Override
-    public void remove()
-    {
-      if (last == null){
+    public void remove() {
+      if (last == null) {
         throw new IllegalStateException();
       }
-      if (knownMod != modCount){
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
 
@@ -1537,10 +1414,7 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private final class SubMap
-  extends AbstractMap4D<K,V>
-  implements NavigableMap<K,V>
-  {
+  private final class SubMap extends AbstractMap4D<K, V> implements NavigableMap<K, V> {
     /**
      * The lower range of this view, inclusive, or nil for unbounded.
      * Package visible for use by nested classes.
@@ -1556,12 +1430,12 @@ implements NavigableMap<K, V>, Cloneable
     /**
      * The cache for {@link #entrySet()}.
      */
-    private Set<Map.Entry<K,V>> entries;
+    private Set<Map.Entry<K, V>> entries;
 
     /**
      * The cache for {@link #descendingMap()}.
      */
-    private NavigableMap<K,V> descendingMap;
+    private NavigableMap<K, V> descendingMap;
 
     /**
      * The cache for {@link #navigableKeySet()}.
@@ -1577,9 +1451,8 @@ implements NavigableMap<K, V>, Cloneable
      * @param maxKey the upper bound
      * @throws IllegalArgumentException if minKey &gt; maxKey
      */
-    SubMap(K minKey, K maxKey)
-    {
-      if (minKey != nil && maxKey != nil && compare(minKey, maxKey) > 0){
+    SubMap(K minKey, K maxKey) {
+      if (minKey != nil && maxKey != nil && compare(minKey, maxKey) > 0) {
         throw new IllegalArgumentException("fromKey > toKey");
       }
       this.minKey = minKey;
@@ -1594,55 +1467,47 @@ implements NavigableMap<K, V>, Cloneable
      * @param key the key to check
      * @return true if the key is in range
      */
-    boolean keyInRange(K key)
-    {
-      return ((minKey == nil || compare(key, minKey) >= 0)
-          && (maxKey == nil || compare(key, maxKey) < 0));
+    boolean keyInRange(K key) {
+      return ((minKey == nil || compare(key, minKey) >= 0) && (maxKey == nil || compare(key, maxKey) < 0));
     }
 
     @Override
-    public Entry<K,V> ceilingEntry(K key)
-    {
-      Entry<K,V> n = TreeMap4D.this.ceilingEntry(key);
-      if (n != null && keyInRange(n.getKey())){
+    public Entry<K, V> ceilingEntry(K key) {
+      Entry<K, V> n = TreeMap4D.this.ceilingEntry(key);
+      if (n != null && keyInRange(n.getKey())) {
         return n;
       }
       return null;
     }
 
     @Override
-    public K ceilingKey(K key)
-    {
+    public K ceilingKey(K key) {
       K found = TreeMap4D.this.ceilingKey(key);
-      if (keyInRange(found)){
+      if (keyInRange(found)) {
         return found;
-      }else {
+      } else {
         return null;
       }
     }
 
     @Override
-    public NavigableSet<K> descendingKeySet()
-    {
+    public NavigableSet<K> descendingKeySet() {
       return descendingMap().navigableKeySet();
     }
 
     @Override
-    public NavigableMap<K,V> descendingMap()
-    {
-      if (descendingMap == null){
+    public NavigableMap<K, V> descendingMap() {
+      if (descendingMap == null) {
         descendingMap = new DescendingMap(this);
       }
       return descendingMap;
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
       Node next = lowestGreaterThan(minKey, true);
       Node max = lowestGreaterThan(maxKey, false);
-      while (next != max)
-      {
+      while (next != max) {
         Node current = next;
         next = successor(current);
         removeNode(current);
@@ -1650,24 +1515,20 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public Comparator<? super K> comparator()
-    {
+    public Comparator<? super K> comparator() {
       return comparator;
     }
 
     @Override
-    public boolean containsKey(Object key)
-    {
+    public boolean containsKey(Object key) {
       return keyInRange((K) key) && TreeMap4D.this.containsKey(key);
     }
 
     @Override
-    public boolean containsValue(Object value)
-    {
+    public boolean containsValue(Object value) {
       Node node = lowestGreaterThan(minKey, true);
       Node max = lowestGreaterThan(maxKey, false);
-      while (node != max)
-      {
+      while (node != max) {
         if (equals(value, node.getValue())) {
           return true;
         }
@@ -1677,9 +1538,8 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public Set<Map.Entry<K,V>> entrySet()
-    {
-      if (entries == null){
+    public Set<Map.Entry<K, V>> entrySet() {
+      if (entries == null) {
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
         entries = new SubMap.NavigableEntrySet();
@@ -1688,75 +1548,66 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public Entry<K,V> firstEntry()
-    {
-      Node<K,V> node = lowestGreaterThan(minKey, true);
-      if (node == nil || ! keyInRange(node.key)){
+    public Entry<K, V> firstEntry() {
+      Node<K, V> node = lowestGreaterThan(minKey, true);
+      if (node == nil || !keyInRange(node.key)) {
         return null;
       }
       return node;
     }
 
     @Override
-    public K firstKey()
-    {
-      Entry<K,V> e = firstEntry();
-      if (e == null){
+    public K firstKey() {
+      Entry<K, V> e = firstEntry();
+      if (e == null) {
         throw new NoSuchElementException();
       }
       return e.getKey();
     }
 
     @Override
-    public Entry<K,V> floorEntry(K key)
-    {
-      Entry<K,V> n = TreeMap4D.this.floorEntry(key);
-      if (n != null && keyInRange(n.getKey())){
+    public Entry<K, V> floorEntry(K key) {
+      Entry<K, V> n = TreeMap4D.this.floorEntry(key);
+      if (n != null && keyInRange(n.getKey())) {
         return n;
       }
       return null;
     }
 
     @Override
-    public K floorKey(K key)
-    {
+    public K floorKey(K key) {
       K found = TreeMap4D.this.floorKey(key);
-      if (keyInRange(found)){
+      if (keyInRange(found)) {
         return found;
-      }else {
+      } else {
         return null;
       }
     }
 
     @Override
-    public V get(Object key)
-    {
-      if (keyInRange((K) key)){
+    public V get(Object key) {
+      if (keyInRange((K) key)) {
         return TreeMap4D.this.get(key);
       }
       return null;
     }
 
     @Override
-    public SortedMap<K,V> headMap(K toKey)
-    {
+    public SortedMap<K, V> headMap(K toKey) {
       return headMap(toKey, false);
     }
 
     @Override
-    public NavigableMap<K,V> headMap(K toKey, boolean inclusive)
-    {
-      if (!keyInRange(toKey)){
+    public NavigableMap<K, V> headMap(K toKey, boolean inclusive) {
+      if (!keyInRange(toKey)) {
         throw new IllegalArgumentException("Key outside submap range");
       }
-      return new SubMap(minKey, (inclusive ?
-          successor(getNode(toKey)).key : toKey));
+      return new SubMap(minKey, (inclusive ? successor(getNode(toKey)).key : toKey));
     }
 
     @Override
-    public Set<K> keySet()
-    {
-      if (this.keys == null){
+    public Set<K> keySet() {
+      if (this.keys == null) {
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
         this.keys = new SubMap.KeySet();
@@ -1765,67 +1616,60 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public Entry<K,V> higherEntry(K key)
-    {
-      Entry<K,V> n = TreeMap4D.this.higherEntry(key);
-      if (n != null && keyInRange(n.getKey())){
+    public Entry<K, V> higherEntry(K key) {
+      Entry<K, V> n = TreeMap4D.this.higherEntry(key);
+      if (n != null && keyInRange(n.getKey())) {
         return n;
       }
       return null;
     }
 
     @Override
-    public K higherKey(K key)
-    {
+    public K higherKey(K key) {
       K found = TreeMap4D.this.higherKey(key);
-      if (keyInRange(found)){
+      if (keyInRange(found)) {
         return found;
-      }else {
+      } else {
         return null;
       }
     }
 
     @Override
-    public Entry<K,V> lastEntry()
-    {
+    public Entry<K, V> lastEntry() {
       return lowerEntry(maxKey);
     }
 
     @Override
-    public K lastKey()
-    {
-      Entry<K,V> e = lastEntry();
-      if (e == null){
+    public K lastKey() {
+      Entry<K, V> e = lastEntry();
+      if (e == null) {
         throw new NoSuchElementException();
       }
       return e.getKey();
     }
 
     @Override
-    public Entry<K,V> lowerEntry(K key)
-    {
-      Entry<K,V> n = TreeMap4D.this.lowerEntry(key);
-      if (n != null && keyInRange(n.getKey())){
+    public Entry<K, V> lowerEntry(K key) {
+      Entry<K, V> n = TreeMap4D.this.lowerEntry(key);
+      if (n != null && keyInRange(n.getKey())) {
         return n;
       }
       return null;
     }
 
     @Override
-    public K lowerKey(K key)
-    {
+    public K lowerKey(K key) {
       K found = TreeMap4D.this.lowerKey(key);
-      if (keyInRange(found)){
+      if (keyInRange(found)) {
         return found;
-      }else {
+      } else {
         return null;
       }
     }
 
     @Override
-    public NavigableSet<K> navigableKeySet()
-    {
-      if (this.nKeys == null){
+    public NavigableSet<K> navigableKeySet() {
+      if (this.nKeys == null) {
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
         this.nKeys = new SubMap.NavigableKeySet();
@@ -1834,51 +1678,45 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public Entry<K,V> pollFirstEntry()
-    {
-      Entry<K,V> e = firstEntry();
-      if (e != null){
-        removeNode((Node<K,V>) e);
+    public Entry<K, V> pollFirstEntry() {
+      Entry<K, V> e = firstEntry();
+      if (e != null) {
+        removeNode((Node<K, V>) e);
       }
       return e;
     }
 
     @Override
-    public Entry<K,V> pollLastEntry()
-    {
-      Entry<K,V> e = lastEntry();
-      if (e != null){
-        removeNode((Node<K,V>) e);
+    public Entry<K, V> pollLastEntry() {
+      Entry<K, V> e = lastEntry();
+      if (e != null) {
+        removeNode((Node<K, V>) e);
       }
       return e;
     }
 
     @Override
-    public V put(K key, V value)
-    {
-      if (! keyInRange(key)){
+    public V put(K key, V value) {
+      if (!keyInRange(key)) {
         throw new IllegalArgumentException("Key outside range");
       }
       return TreeMap4D.this.put(key, value);
     }
 
     @Override
-    public V remove(Object key)
-    {
-      if (keyInRange((K)key)){
+    public V remove(Object key) {
+      if (keyInRange((K) key)) {
         return TreeMap4D.this.remove(key);
       }
       return null;
     }
 
     @Override
-    public int size()
-    {
+    public int size() {
       Node node = lowestGreaterThan(minKey, true);
       Node max = lowestGreaterThan(maxKey, false);
       int count = 0;
-      while (node != max)
-      {
+      while (node != max) {
         count++;
         node = successor(node);
       }
@@ -1886,16 +1724,13 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public SortedMap<K,V> subMap(K fromKey, K toKey)
-    {
+    public SortedMap<K, V> subMap(K fromKey, K toKey) {
       return subMap(fromKey, true, toKey, false);
     }
 
     @Override
-    public NavigableMap<K,V> subMap(K fromKey, boolean fromInclusive,
-        K toKey, boolean toInclusive)
-    {
-      if (! keyInRange(fromKey) || ! keyInRange(toKey)){
+    public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
+      if (!keyInRange(fromKey) || !keyInRange(toKey)) {
         throw new IllegalArgumentException("key outside range");
       }
       return new SubMap(fromInclusive ? fromKey : successor(getNode(fromKey)).key,
@@ -1903,46 +1738,38 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public SortedMap<K, V> tailMap(K fromKey)
-    {
+    public SortedMap<K, V> tailMap(K fromKey) {
       return tailMap(fromKey, true);
     }
 
     @Override
-    public NavigableMap<K,V> tailMap(K fromKey, boolean inclusive)
-    {
-      if (! keyInRange(fromKey)){
+    public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive) {
+      if (!keyInRange(fromKey)) {
         throw new IllegalArgumentException("key outside range");
       }
-      return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key,
-          maxKey);
+      return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key, maxKey);
     }
 
     @Override
-    public Collection<V> values()
-    {
-      if (this.values == null){
+    public Collection<V> values() {
+      if (this.values == null) {
         // Create an AbstractCollection with custom implementations of those
         // methods that can be overriden easily and efficiently.
-        this.values = new AbstractCollection()
-        {
+        this.values = new AbstractCollection() {
           @Override
-          public int size()
-          {
+          public int size() {
             return SubMap.this.size();
           }
 
           @Override
-          public Iterator<V> iterator()
-          {
+          public Iterator<V> iterator() {
             Node first = lowestGreaterThan(minKey, true);
             Node max = lowestGreaterThan(maxKey, false);
             return new TreeIterator(VALUES, first, max);
           }
 
           @Override
-          public void clear()
-          {
+          public void clear() {
             SubMap.this.clear();
           }
         };
@@ -1950,47 +1777,39 @@ implements NavigableMap<K, V>, Cloneable
       return this.values;
     }
 
-    private class KeySet
-    extends AbstractSet<K>
-    {
+    private class KeySet extends AbstractSet<K> {
       @Override
-      public int size()
-      {
+      public int size() {
         return SubMap.this.size();
       }
 
       @Override
-      public Iterator<K> iterator()
-      {
+      public Iterator<K> iterator() {
         Node first = lowestGreaterThan(minKey, true);
         Node max = lowestGreaterThan(maxKey, false);
         return new TreeIterator(KEYS, first, max);
       }
 
       @Override
-      public void clear()
-      {
+      public void clear() {
         SubMap.this.clear();
       }
 
       @Override
-      public boolean contains(Object o)
-      {
-        if (! keyInRange((K) o)) {
+      public boolean contains(Object o) {
+        if (!keyInRange((K) o)) {
           return false;
         }
         return getNode((K) o) != nil;
       }
 
       @Override
-      public boolean remove(Object o)
-      {
-        if (! keyInRange((K) o)) {
+      public boolean remove(Object o) {
+        if (!keyInRange((K) o)) {
           return false;
         }
         Node n = getNode((K) o);
-        if (n != nil)
-        {
+        if (n != nil) {
           removeNode(n);
           return true;
         }
@@ -1999,112 +1818,90 @@ implements NavigableMap<K, V>, Cloneable
 
     } // class SubMap.KeySet
 
-    private final class NavigableKeySet
-    extends KeySet
-    implements NavigableSet<K>
-    {
+    private final class NavigableKeySet extends KeySet implements NavigableSet<K> {
 
       @Override
-      public K ceiling(K k)
-      {
+      public K ceiling(K k) {
         return SubMap.this.ceilingKey(k);
       }
 
       @Override
-      public Comparator<? super K> comparator()
-      {
+      public Comparator<? super K> comparator() {
         return comparator;
       }
 
       @Override
-      public Iterator<K> descendingIterator()
-      {
+      public Iterator<K> descendingIterator() {
         return descendingSet().iterator();
       }
 
       @Override
-      public NavigableSet<K> descendingSet()
-      {
+      public NavigableSet<K> descendingSet() {
         return new DescendingSet(this);
       }
 
       @Override
-      public K first()
-      {
+      public K first() {
         return SubMap.this.firstKey();
       }
 
       @Override
-      public K floor(K k)
-      {
+      public K floor(K k) {
         return SubMap.this.floorKey(k);
       }
 
       @Override
-      public SortedSet<K> headSet(K to)
-      {
+      public SortedSet<K> headSet(K to) {
         return headSet(to, false);
       }
 
       @Override
-      public NavigableSet<K> headSet(K to, boolean inclusive)
-      {
+      public NavigableSet<K> headSet(K to, boolean inclusive) {
         return SubMap.this.headMap(to, inclusive).navigableKeySet();
       }
 
       @Override
-      public K higher(K k)
-      {
+      public K higher(K k) {
         return SubMap.this.higherKey(k);
       }
 
       @Override
-      public K last()
-      {
+      public K last() {
         return SubMap.this.lastKey();
       }
 
       @Override
-      public K lower(K k)
-      {
+      public K lower(K k) {
         return SubMap.this.lowerKey(k);
       }
 
       @Override
-      public K pollFirst()
-      {
+      public K pollFirst() {
         return SubMap.this.pollFirstEntry().getKey();
       }
 
       @Override
-      public K pollLast()
-      {
+      public K pollLast() {
         return SubMap.this.pollLastEntry().getKey();
       }
 
       @Override
-      public SortedSet<K> subSet(K from, K to)
-      {
+      public SortedSet<K> subSet(K from, K to) {
         return subSet(from, true, to, false);
       }
 
       @Override
-      public NavigableSet<K> subSet(K from, boolean fromInclusive,
-          K to, boolean toInclusive)
-      {
-        return SubMap.this.subMap(from, fromInclusive,
-            to, toInclusive).navigableKeySet();
+      public NavigableSet<K> subSet(K from, boolean fromInclusive, K to, boolean toInclusive) {
+        return SubMap.this.subMap(from, fromInclusive, to, toInclusive).navigableKeySet();
       }
 
       @Override
-      public SortedSet<K> tailSet(K from)
-      {
+      public SortedSet<K> tailSet(K from) {
         return tailSet(from, true);
       }
 
       @Override
-      public NavigableSet<K> tailSet(K from, boolean inclusive)
-      {
+      public NavigableSet<K> tailSet(K from, boolean inclusive) {
         return SubMap.this.tailMap(from, inclusive).navigableKeySet();
       }
 
@@ -2113,59 +1910,51 @@ implements NavigableMap<K, V>, Cloneable
     /**
      * Implementation of {@link #entrySet()}.
      */
-    private class EntrySet
-    extends AbstractSet<Entry<K,V>>
-    {
+    private class EntrySet extends AbstractSet<Entry<K, V>> {
 
       @Override
-      public int size()
-      {
+      public int size() {
         return SubMap.this.size();
       }
 
       @Override
-      public Iterator<Map.Entry<K,V>> iterator()
-      {
+      public Iterator<Map.Entry<K, V>> iterator() {
         Node first = lowestGreaterThan(minKey, true);
         Node max = lowestGreaterThan(maxKey, false);
         return new TreeIterator(ENTRIES, first, max);
       }
 
       @Override
-      public void clear()
-      {
+      public void clear() {
         SubMap.this.clear();
       }
 
       @Override
-      public boolean contains(Object o)
-      {
-        if (! (o instanceof Map.Entry)){
+      public boolean contains(Object o) {
+        if (!(o instanceof Map.Entry)) {
           return false;
         }
-        Map.Entry<K,V> me = (Map.Entry<K,V>) o;
+        Map.Entry<K, V> me = (Map.Entry<K, V>) o;
         K key = me.getKey();
-        if (! keyInRange(key)){
+        if (!keyInRange(key)) {
           return false;
         }
-        Node<K,V> n = getNode(key);
+        Node<K, V> n = getNode(key);
         return n != nil && AbstractCollection4D.equals(me.getValue(), n.value);
       }
 
       @Override
-      public boolean remove(Object o)
-      {
-        if (! (o instanceof Map.Entry)){
+      public boolean remove(Object o) {
+        if (!(o instanceof Map.Entry)) {
           return false;
         }
-        Map.Entry<K,V> me = (Map.Entry<K,V>) o;
+        Map.Entry<K, V> me = (Map.Entry<K, V>) o;
         K key = me.getKey();
-        if (! keyInRange(key)){
+        if (!keyInRange(key)) {
           return false;
         }
-        Node<K,V> n = getNode(key);
-        if (n != nil && AbstractCollection4D.equals(me.getValue(), n.value))
-        {
+        Node<K, V> n = getNode(key);
+        if (n != nil && AbstractCollection4D.equals(me.getValue(), n.value)) {
           removeNode(n);
           return true;
         }
@@ -2173,123 +1962,98 @@ implements NavigableMap<K, V>, Cloneable
       }
     } // class SubMap.EntrySet
 
-    private final class NavigableEntrySet
-    extends EntrySet
-    implements NavigableSet<Entry<K,V>>
-    {
+    private final class NavigableEntrySet extends EntrySet implements NavigableSet<Entry<K, V>> {
 
       @Override
-      public Entry<K,V> ceiling(Entry<K,V> e)
-      {
+      public Entry<K, V> ceiling(Entry<K, V> e) {
         return SubMap.this.ceilingEntry(e.getKey());
       }
 
       @Override
-      public Comparator<? super Entry<K,V>> comparator()
-      {
-        return new Comparator<Entry<K,V>>()
-        {
+      public Comparator<? super Entry<K, V>> comparator() {
+        return new Comparator<Entry<K, V>>() {
           @Override
-          public int compare(Entry<K,V> t1, Entry<K,V> t2)
-          {
+          public int compare(Entry<K, V> t1, Entry<K, V> t2) {
             return comparator.compare(t1.getKey(), t2.getKey());
           }
         };
       }
 
       @Override
-      public Iterator<Entry<K,V>> descendingIterator()
-      {
+      public Iterator<Entry<K, V>> descendingIterator() {
         return descendingSet().iterator();
       }
 
       @Override
-      public NavigableSet<Entry<K,V>> descendingSet()
-      {
+      public NavigableSet<Entry<K, V>> descendingSet() {
         return new DescendingSet(this);
       }
 
       @Override
-      public Entry<K,V> first()
-      {
+      public Entry<K, V> first() {
         return SubMap.this.firstEntry();
       }
 
       @Override
-      public Entry<K,V> floor(Entry<K,V> e)
-      {
+      public Entry<K, V> floor(Entry<K, V> e) {
         return SubMap.this.floorEntry(e.getKey());
       }
 
       @Override
-      public SortedSet<Entry<K,V>> headSet(Entry<K,V> to)
-      {
+      public SortedSet<Entry<K, V>> headSet(Entry<K, V> to) {
         return headSet(to, false);
       }
 
       @Override
-      public NavigableSet<Entry<K,V>> headSet(Entry<K,V> to, boolean inclusive)
-      {
-        return (NavigableSet<Entry<K,V>>)
-            SubMap.this.headMap(to.getKey(), inclusive).entrySet();
+      public NavigableSet<Entry<K, V>> headSet(Entry<K, V> to, boolean inclusive) {
+        return (NavigableSet<Entry<K, V>>) SubMap.this.headMap(to.getKey(), inclusive).entrySet();
       }
 
       @Override
-      public Entry<K,V> higher(Entry<K,V> e)
-      {
+      public Entry<K, V> higher(Entry<K, V> e) {
         return SubMap.this.higherEntry(e.getKey());
       }
 
       @Override
-      public Entry<K,V> last()
-      {
+      public Entry<K, V> last() {
         return SubMap.this.lastEntry();
       }
 
       @Override
-      public Entry<K,V> lower(Entry<K,V> e)
-      {
+      public Entry<K, V> lower(Entry<K, V> e) {
         return SubMap.this.lowerEntry(e.getKey());
       }
 
       @Override
-      public Entry<K,V> pollFirst()
-      {
+      public Entry<K, V> pollFirst() {
         return SubMap.this.pollFirstEntry();
       }
 
       @Override
-      public Entry<K,V> pollLast()
-      {
+      public Entry<K, V> pollLast() {
         return SubMap.this.pollLastEntry();
       }
 
       @Override
-      public SortedSet<Entry<K,V>> subSet(Entry<K,V> from, Entry<K,V> to)
-      {
+      public SortedSet<Entry<K, V>> subSet(Entry<K, V> from, Entry<K, V> to) {
         return subSet(from, true, to, false);
       }
 
       @Override
-      public NavigableSet<Entry<K,V>> subSet(Entry<K,V> from, boolean fromInclusive,
-          Entry<K,V> to, boolean toInclusive)
-      {
-        return (NavigableSet<Entry<K,V>>)
-            SubMap.this.subMap(from.getKey(), fromInclusive,
-                to.getKey(), toInclusive).entrySet();
+      public NavigableSet<Entry<K, V>> subSet(Entry<K, V> from, boolean fromInclusive, Entry<K, V> to,
+          boolean toInclusive) {
+        return (NavigableSet<Entry<K, V>>) SubMap.this.subMap(from.getKey(), fromInclusive, to.getKey(), toInclusive)
+            .entrySet();
       }
 
       @Override
-      public SortedSet<Entry<K,V>> tailSet(Entry<K,V> from)
-      {
+      public SortedSet<Entry<K, V>> tailSet(Entry<K, V> from) {
         return tailSet(from, true);
       }
 
       @Override
-      public NavigableSet<Entry<K,V>> tailSet(Entry<K,V> from, boolean inclusive)
-      {
-        return (NavigableSet<Entry<K,V>>)
-            SubMap.this.tailMap(from.getKey(), inclusive).navigableKeySet();
+      public NavigableSet<Entry<K, V>> tailSet(Entry<K, V> from, boolean inclusive) {
+        return (NavigableSet<Entry<K, V>>) SubMap.this.tailMap(from.getKey(), inclusive).navigableKeySet();
       }
 
     } // class SubMap.NavigableEntrySet
@@ -2314,9 +2078,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> ceilingEntry(K key)
-  {
-    Node<K,V> n = lowestGreaterThan(key, false);
+  public Entry<K, V> ceilingEntry(K key) {
+    Node<K, V> n = lowestGreaterThan(key, false);
     return (n == nil) ? null : n;
   }
 
@@ -2337,9 +2100,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public K ceilingKey(K key)
-  {
-    Entry<K,V> e = ceilingEntry(key);
+  public K ceilingKey(K key) {
+    Entry<K, V> e = ceilingEntry(key);
     return (e == null) ? null : e.getKey();
   }
 
@@ -2354,8 +2116,7 @@ implements NavigableMap<K, V>, Cloneable
    * @see #descendingMap()
    */
   @Override
-  public NavigableSet<K> descendingKeySet()
-  {
+  public NavigableSet<K> descendingKeySet() {
     return descendingMap().navigableKeySet();
   }
 
@@ -2374,10 +2135,9 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public NavigableMap<K,V> descendingMap()
-  {
-    if (descendingMap == null){
-      descendingMap = new DescendingMap<K,V>(this);
+  public NavigableMap<K, V> descendingMap() {
+    if (descendingMap == null) {
+      descendingMap = new DescendingMap<K, V>(this);
     }
     return descendingMap;
   }
@@ -2391,9 +2151,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> firstEntry()
-  {
-    Node<K,V> n = firstNode();
+  public Entry<K, V> firstEntry() {
+    Node<K, V> n = firstNode();
     return (n == nil) ? null : n;
   }
 
@@ -2415,9 +2174,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> floorEntry(K key)
-  {
-    Node<K,V> n = highestLessThan(key, true);
+  public Entry<K, V> floorEntry(K key) {
+    Node<K, V> n = highestLessThan(key, true);
     return (n == nil) ? null : n;
   }
 
@@ -2438,9 +2196,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public K floorKey(K key)
-  {
-    Entry<K,V> e = floorEntry(key);
+  public K floorKey(K key) {
+    Entry<K, V> e = floorEntry(key);
     return (e == null) ? null : e.getKey();
   }
 
@@ -2462,9 +2219,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> higherEntry(K key)
-  {
-    Node<K,V> n = lowestGreaterThan(key, false, false);
+  public Entry<K, V> higherEntry(K key) {
+    Node<K, V> n = lowestGreaterThan(key, false, false);
     return (n == nil) ? null : n;
   }
 
@@ -2485,9 +2241,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public K higherKey(K key)
-  {
-    Entry<K,V> e = higherEntry(key);
+  public K higherKey(K key) {
+    Entry<K, V> e = higherEntry(key);
     return (e == null) ? null : e.getKey();
   }
 
@@ -2500,9 +2255,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> lastEntry()
-  {
-    Node<K,V> n = lastNode();
+  public Entry<K, V> lastEntry() {
+    Node<K, V> n = lastNode();
     return (n == nil) ? null : n;
   }
 
@@ -2524,9 +2278,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> lowerEntry(K key)
-  {
-    Node<K,V> n = highestLessThan(key);
+  public Entry<K, V> lowerEntry(K key) {
+    Node<K, V> n = highestLessThan(key);
     return (n == nil) ? null : n;
   }
 
@@ -2547,9 +2300,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public K lowerKey(K key)
-  {
-    Entry<K,V> e = lowerEntry(key);
+  public K lowerKey(K key) {
+    Entry<K, V> e = lowerEntry(key);
     return (e == null) ? null : e.getKey();
   }
 
@@ -2565,9 +2317,8 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public NavigableSet<K> navigableKeySet()
-  {
-    if (nKeys == null){
+  public NavigableSet<K> navigableKeySet() {
+    if (nKeys == null) {
       nKeys = new NavigableKeySet();
     }
     return nKeys;
@@ -2583,11 +2334,10 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> pollFirstEntry()
-  {
-    Entry<K,V> e = firstEntry();
-    if (e != null){
-      removeNode((Node<K,V>)e);
+  public Entry<K, V> pollFirstEntry() {
+    Entry<K, V> e = firstEntry();
+    if (e != null) {
+      removeNode((Node<K, V>) e);
     }
     return e;
   }
@@ -2602,11 +2352,10 @@ implements NavigableMap<K, V>, Cloneable
    * @since 1.6
    */
   @Override
-  public Entry<K,V> pollLastEntry()
-  {
-    Entry<K,V> e = lastEntry();
-    if (e != null){
-      removeNode((Node<K,V>)e);
+  public Entry<K, V> pollLastEntry() {
+    Entry<K, V> e = lastEntry();
+    if (e != null) {
+      removeNode((Node<K, V>) e);
     }
     return e;
   }
@@ -2620,14 +2369,12 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private static final class DescendingMap<DK,DV>
-  implements NavigableMap<DK,DV>
-  {
+  private static final class DescendingMap<DK, DV> implements NavigableMap<DK, DV> {
 
     /**
      * The cache for {@link #entrySet()}.
      */
-    private Set<Map.Entry<DK,DV>> entries;
+    private Set<Map.Entry<DK, DV>> entries;
 
     /**
      * The cache for {@link #keySet()}.
@@ -2647,7 +2394,7 @@ implements NavigableMap<K, V>, Cloneable
     /**
      * The backing {@link NavigableMap}.
      */
-    private NavigableMap<DK,DV> map;
+    private NavigableMap<DK, DV> map;
 
     /**
      * Create a {@link DescendingMap} around the specified
@@ -2655,301 +2402,250 @@ implements NavigableMap<K, V>, Cloneable
      *
      * @param map the map to wrap.
      */
-    public DescendingMap(NavigableMap<DK,DV> map)
-    {
+    public DescendingMap(NavigableMap<DK, DV> map) {
       this.map = map;
     }
 
     @Override
-    public Map.Entry<DK,DV> ceilingEntry(DK key)
-    {
+    public Map.Entry<DK, DV> ceilingEntry(DK key) {
       return map.floorEntry(key);
     }
 
     @Override
-    public DK ceilingKey(DK key)
-    {
+    public DK ceilingKey(DK key) {
       return map.floorKey(key);
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
       map.clear();
     }
 
     @Override
-    public Comparator<? super DK> comparator()
-    {
+    public Comparator<? super DK> comparator() {
       return Collections.reverseOrder(map.comparator());
     }
 
     @Override
-    public boolean containsKey(Object o)
-    {
+    public boolean containsKey(Object o) {
       return map.containsKey(o);
     }
 
     @Override
-    public boolean containsValue(Object o)
-    {
+    public boolean containsValue(Object o) {
       return map.containsValue(o);
     }
 
     @Override
-    public NavigableSet<DK> descendingKeySet()
-    {
+    public NavigableSet<DK> descendingKeySet() {
       return descendingMap().navigableKeySet();
     }
 
     @Override
-    public NavigableMap<DK,DV> descendingMap()
-    {
+    public NavigableMap<DK, DV> descendingMap() {
       return map;
     }
 
     @Override
-    public Set<Entry<DK,DV>> entrySet()
-    {
-      if (entries == null){
-        entries =
-            new DescendingSet<Entry<DK,DV>>((NavigableSet<Entry<DK,DV>>)
-                map.entrySet());
+    public Set<Entry<DK, DV>> entrySet() {
+      if (entries == null) {
+        entries = new DescendingSet<Entry<DK, DV>>((NavigableSet<Entry<DK, DV>>) map.entrySet());
       }
       return entries;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return map.equals(o);
     }
 
     @Override
-    public Entry<DK,DV> firstEntry()
-    {
+    public Entry<DK, DV> firstEntry() {
       return map.lastEntry();
     }
 
     @Override
-    public DK firstKey()
-    {
+    public DK firstKey() {
       return map.lastKey();
     }
 
     @Override
-    public Entry<DK,DV> floorEntry(DK key)
-    {
+    public Entry<DK, DV> floorEntry(DK key) {
       return map.ceilingEntry(key);
     }
 
     @Override
-    public DK floorKey(DK key)
-    {
+    public DK floorKey(DK key) {
       return map.ceilingKey(key);
     }
 
     @Override
-    public DV get(Object key)
-    {
+    public DV get(Object key) {
       return map.get(key);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return map.hashCode();
     }
 
     @Override
-    public SortedMap<DK,DV> headMap(DK toKey)
-    {
+    public SortedMap<DK, DV> headMap(DK toKey) {
       return headMap(toKey, false);
     }
 
     @Override
-    public NavigableMap<DK,DV> headMap(DK toKey, boolean inclusive)
-    {
+    public NavigableMap<DK, DV> headMap(DK toKey, boolean inclusive) {
       return new DescendingMap(map.tailMap(toKey, !inclusive));
     }
 
     @Override
-    public Entry<DK,DV> higherEntry(DK key)
-    {
+    public Entry<DK, DV> higherEntry(DK key) {
       return map.lowerEntry(key);
     }
 
     @Override
-    public DK higherKey(DK key)
-    {
+    public DK higherKey(DK key) {
       return map.lowerKey(key);
     }
 
     @Override
-    public Set<DK> keySet()
-    {
-      if (keys == null){
+    public Set<DK> keySet() {
+      if (keys == null) {
         keys = new DescendingSet<DK>(map.navigableKeySet());
       }
       return keys;
     }
 
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return map.isEmpty();
     }
 
     @Override
-    public Entry<DK,DV> lastEntry()
-    {
+    public Entry<DK, DV> lastEntry() {
       return map.firstEntry();
     }
 
     @Override
-    public DK lastKey()
-    {
+    public DK lastKey() {
       return map.firstKey();
     }
 
     @Override
-    public Entry<DK,DV> lowerEntry(DK key)
-    {
+    public Entry<DK, DV> lowerEntry(DK key) {
       return map.higherEntry(key);
     }
 
     @Override
-    public DK lowerKey(DK key)
-    {
+    public DK lowerKey(DK key) {
       return map.higherKey(key);
     }
 
     @Override
-    public NavigableSet<DK> navigableKeySet()
-    {
-      if (nKeys == null){
+    public NavigableSet<DK> navigableKeySet() {
+      if (nKeys == null) {
         nKeys = new DescendingSet<DK>(map.navigableKeySet());
       }
       return nKeys;
     }
 
     @Override
-    public Entry<DK,DV> pollFirstEntry()
-    {
+    public Entry<DK, DV> pollFirstEntry() {
       return map.pollLastEntry();
     }
 
     @Override
-    public Entry<DK,DV> pollLastEntry()
-    {
+    public Entry<DK, DV> pollLastEntry() {
       return map.pollFirstEntry();
     }
 
     @Override
-    public DV put(DK key, DV value)
-    {
+    public DV put(DK key, DV value) {
       return map.put(key, value);
     }
 
     @Override
-    public void putAll(Map<? extends DK, ? extends DV> m)
-    {
+    public void putAll(Map<? extends DK, ? extends DV> m) {
       map.putAll(m);
     }
 
     @Override
-    public DV remove(Object key)
-    {
+    public DV remove(Object key) {
       return map.remove(key);
     }
 
     @Override
-    public int size()
-    {
+    public int size() {
       return map.size();
     }
 
     @Override
-    public SortedMap<DK,DV> subMap(DK fromKey, DK toKey)
-    {
+    public SortedMap<DK, DV> subMap(DK fromKey, DK toKey) {
       return subMap(fromKey, true, toKey, false);
     }
 
     @Override
-    public NavigableMap<DK,DV> subMap(DK fromKey, boolean fromInclusive,
-        DK toKey, boolean toInclusive)
-    {
-      return new DescendingMap(map.subMap(toKey, fromInclusive,
-          fromKey, toInclusive));
+    public NavigableMap<DK, DV> subMap(DK fromKey, boolean fromInclusive, DK toKey, boolean toInclusive) {
+      return new DescendingMap(map.subMap(toKey, fromInclusive, fromKey, toInclusive));
     }
 
     @Override
-    public SortedMap<DK,DV> tailMap(DK fromKey)
-    {
+    public SortedMap<DK, DV> tailMap(DK fromKey) {
       return tailMap(fromKey, true);
     }
 
     @Override
-    public NavigableMap<DK,DV> tailMap(DK fromKey, boolean inclusive)
-    {
+    public NavigableMap<DK, DV> tailMap(DK fromKey, boolean inclusive) {
       return new DescendingMap(map.headMap(fromKey, !inclusive));
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       StringBuffer r = new StringBuffer("{");
-      final Iterator<Entry<DK,DV>> it = entrySet().iterator();
-      while (it.hasNext())
-      {
-        final Entry<DK,DV> e = it.next();
+      final Iterator<Entry<DK, DV>> it = entrySet().iterator();
+      while (it.hasNext()) {
+        final Entry<DK, DV> e = it.next();
         r.append(e.getKey());
         r.append('=');
         r.append(e.getValue());
         r.append(", ");
       }
-      if (r.length() > 1){
+      if (r.length() > 1) {
         r.replace(r.length() - 2, r.length(), "}");
-      }else {
+      } else {
         r.append('}');
       }
       return r.toString();
     }
 
     @Override
-    public Collection<DV> values()
-    {
-      if (values == null){
+    public Collection<DV> values() {
+      if (values == null) {
         // Create an AbstractCollection with custom implementations of those
         // methods that can be overriden easily and efficiently.
-        values = new AbstractCollection()
-        {
+        values = new AbstractCollection() {
           @Override
-          public int size()
-          {
+          public int size() {
             return DescendingMap.this.size();
           }
 
           @Override
-          public Iterator<DV> iterator()
-          {
-            return new Iterator<DV>()
-            {
+          public Iterator<DV> iterator() {
+            return new Iterator<DV>() {
               /** The last Entry returned by a next() call. */
-              private Entry<DK,DV> last;
+              private Entry<DK, DV> last;
 
               /** The next entry that should be returned by next(). */
-              private Entry<DK,DV> next = firstEntry();
+              private Entry<DK, DV> next = firstEntry();
 
               @Override
-              public boolean hasNext()
-              {
+              public boolean hasNext() {
                 return next != null;
               }
 
               @Override
-              public DV next()
-              {
+              public DV next() {
                 if (next == null) {
                   throw new NoSuchElementException();
                 }
@@ -2960,8 +2656,7 @@ implements NavigableMap<K, V>, Cloneable
               }
 
               @Override
-              public void remove()
-              {
+              public void remove() {
                 if (last == null) {
                   throw new IllegalStateException();
                 }
@@ -2973,8 +2668,7 @@ implements NavigableMap<K, V>, Cloneable
           }
 
           @Override
-          public void clear()
-          {
+          public void clear() {
             DescendingMap.this.clear();
           }
         };
@@ -2987,39 +2681,32 @@ implements NavigableMap<K, V>, Cloneable
   /**
    * Implementation of {@link #keySet()}.
    */
-  private class KeySet
-  extends AbstractSet<K>
-  {
+  private class KeySet extends AbstractSet<K> {
 
     @Override
-    public int size()
-    {
+    public int size() {
       return size;
     }
 
     @Override
-    public Iterator<K> iterator()
-    {
+    public Iterator<K> iterator() {
       return new TreeIterator(KEYS);
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
       TreeMap4D.this.clear();
     }
 
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return containsKey(o);
     }
 
     @Override
-    public boolean remove(Object key)
-    {
-      Node<K,V> n = getNode((K) key);
-      if (n == nil){
+    public boolean remove(Object key) {
+      Node<K, V> n = getNode((K) key);
+      if (n == nil) {
         return false;
       }
       removeNode(n);
@@ -3032,115 +2719,92 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private final class NavigableKeySet
-  extends KeySet
-  implements NavigableSet<K>
-  {
+  private final class NavigableKeySet extends KeySet implements NavigableSet<K> {
 
     @Override
-    public K ceiling(K k)
-    {
+    public K ceiling(K k) {
       return ceilingKey(k);
     }
 
     @Override
-    public Comparator<? super K> comparator()
-    {
+    public Comparator<? super K> comparator() {
       return comparator;
     }
 
     @Override
-    public Iterator<K> descendingIterator()
-    {
+    public Iterator<K> descendingIterator() {
       return descendingSet().iterator();
     }
 
     @Override
-    public NavigableSet<K> descendingSet()
-    {
+    public NavigableSet<K> descendingSet() {
       return new DescendingSet<K>(this);
     }
 
     @Override
-    public K first()
-    {
+    public K first() {
       return firstKey();
     }
 
     @Override
-    public K floor(K k)
-    {
+    public K floor(K k) {
       return floorKey(k);
     }
 
     @Override
-    public SortedSet<K> headSet(K to)
-    {
+    public SortedSet<K> headSet(K to) {
       return headSet(to, false);
     }
 
     @Override
-    public NavigableSet<K> headSet(K to, boolean inclusive)
-    {
+    public NavigableSet<K> headSet(K to, boolean inclusive) {
       return headMap(to, inclusive).navigableKeySet();
     }
 
     @Override
-    public K higher(K k)
-    {
+    public K higher(K k) {
       return higherKey(k);
     }
 
     @Override
-    public K last()
-    {
+    public K last() {
       return lastKey();
     }
 
     @Override
-    public K lower(K k)
-    {
+    public K lower(K k) {
       return lowerKey(k);
     }
 
     @Override
-    public K pollFirst()
-    {
+    public K pollFirst() {
       return pollFirstEntry().getKey();
     }
 
     @Override
-    public K pollLast()
-    {
+    public K pollLast() {
       return pollLastEntry().getKey();
     }
 
     @Override
-    public SortedSet<K> subSet(K from, K to)
-    {
+    public SortedSet<K> subSet(K from, K to) {
       return subSet(from, true, to, false);
     }
 
     @Override
-    public NavigableSet<K> subSet(K from, boolean fromInclusive,
-        K to, boolean toInclusive)
-    {
-      return subMap(from, fromInclusive,
-          to, toInclusive).navigableKeySet();
+    public NavigableSet<K> subSet(K from, boolean fromInclusive, K to, boolean toInclusive) {
+      return subMap(from, fromInclusive, to, toInclusive).navigableKeySet();
     }
 
     @Override
-    public SortedSet<K> tailSet(K from)
-    {
+    public SortedSet<K> tailSet(K from) {
       return tailSet(from, true);
     }
 
     @Override
-    public NavigableSet<K> tailSet(K from, boolean inclusive)
-    {
+    public NavigableSet<K> tailSet(K from, boolean inclusive) {
       return tailMap(from, inclusive).navigableKeySet();
     }
-
 
   } // class NavigableKeySet
 
@@ -3153,9 +2817,7 @@ implements NavigableMap<K, V>, Cloneable
    *
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private static final class DescendingSet<D>
-  implements NavigableSet<D>
-  {
+  private static final class DescendingSet<D> implements NavigableSet<D> {
 
     /**
      * The backing {@link NavigableSet}.
@@ -3168,118 +2830,98 @@ implements NavigableMap<K, V>, Cloneable
      *
      * @param map the set to wrap.
      */
-    public DescendingSet(NavigableSet<D> set)
-    {
+    public DescendingSet(NavigableSet<D> set) {
       this.set = set;
     }
 
     @Override
-    public boolean add(D e)
-    {
+    public boolean add(D e) {
       return set.add(e);
     }
 
     @Override
-    public boolean addAll(Collection<? extends D> c)
-    {
+    public boolean addAll(Collection<? extends D> c) {
       return set.addAll(c);
     }
 
     @Override
-    public D ceiling(D e)
-    {
+    public D ceiling(D e) {
       return set.floor(e);
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
       set.clear();
     }
 
     @Override
-    public Comparator<? super D> comparator()
-    {
+    public Comparator<? super D> comparator() {
       return Collections.reverseOrder(set.comparator());
     }
 
     @Override
-    public boolean contains(Object o)
-    {
+    public boolean contains(Object o) {
       return set.contains(o);
     }
 
     @Override
-    public boolean containsAll(Collection<?> c)
-    {
+    public boolean containsAll(Collection<?> c) {
       return set.containsAll(c);
     }
 
     @Override
-    public Iterator<D> descendingIterator()
-    {
+    public Iterator<D> descendingIterator() {
       return descendingSet().iterator();
     }
 
     @Override
-    public NavigableSet<D> descendingSet()
-    {
+    public NavigableSet<D> descendingSet() {
       return set;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return set.equals(o);
     }
 
     @Override
-    public D first()
-    {
+    public D first() {
       return set.last();
     }
 
     @Override
-    public D floor(D e)
-    {
+    public D floor(D e) {
       return set.ceiling(e);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return set.hashCode();
     }
 
     @Override
-    public SortedSet<D> headSet(D to)
-    {
+    public SortedSet<D> headSet(D to) {
       return headSet(to, false);
     }
 
     @Override
-    public NavigableSet<D> headSet(D to, boolean inclusive)
-    {
+    public NavigableSet<D> headSet(D to, boolean inclusive) {
       return new DescendingSet(set.tailSet(to, !inclusive));
     }
 
     @Override
-    public D higher(D e)
-    {
+    public D higher(D e) {
       return set.lower(e);
     }
 
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
       return set.isEmpty();
     }
 
     @Override
-    public Iterator<D> iterator()
-    {
-      return new Iterator<D>()
-      {
+    public Iterator<D> iterator() {
+      return new Iterator<D>() {
 
         /** The last element returned by a next() call. */
         private D last;
@@ -3288,14 +2930,12 @@ implements NavigableMap<K, V>, Cloneable
         private D next = first();
 
         @Override
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
           return next != null;
         }
 
         @Override
-        public D next()
-        {
+        public D next() {
           if (next == null) {
             throw new NoSuchElementException();
           }
@@ -3306,8 +2946,7 @@ implements NavigableMap<K, V>, Cloneable
         }
 
         @Override
-        public void remove()
-        {
+        public void remove() {
           if (last == null) {
             throw new IllegalStateException();
           }
@@ -3319,102 +2958,84 @@ implements NavigableMap<K, V>, Cloneable
     }
 
     @Override
-    public D last()
-    {
+    public D last() {
       return set.first();
     }
 
     @Override
-    public D lower(D e)
-    {
+    public D lower(D e) {
       return set.higher(e);
     }
 
     @Override
-    public D pollFirst()
-    {
+    public D pollFirst() {
       return set.pollLast();
     }
 
     @Override
-    public D pollLast()
-    {
+    public D pollLast() {
       return set.pollFirst();
     }
 
     @Override
-    public boolean remove(Object o)
-    {
+    public boolean remove(Object o) {
       return set.remove(o);
     }
 
     @Override
-    public boolean removeAll(Collection<?> c)
-    {
+    public boolean removeAll(Collection<?> c) {
       return set.removeAll(c);
     }
 
     @Override
-    public boolean retainAll(Collection<?> c)
-    {
+    public boolean retainAll(Collection<?> c) {
       return set.retainAll(c);
     }
 
     @Override
-    public int size()
-    {
+    public int size() {
       return set.size();
     }
 
     @Override
-    public SortedSet<D> subSet(D from, D to)
-    {
+    public SortedSet<D> subSet(D from, D to) {
       return subSet(from, true, to, false);
     }
 
     @Override
-    public NavigableSet<D> subSet(D from, boolean fromInclusive,
-        D to, boolean toInclusive)
-    {
-      return new DescendingSet(set.subSet(to, fromInclusive,
-          from, toInclusive));
+    public NavigableSet<D> subSet(D from, boolean fromInclusive, D to, boolean toInclusive) {
+      return new DescendingSet(set.subSet(to, fromInclusive, from, toInclusive));
     }
 
     @Override
-    public SortedSet<D> tailSet(D from)
-    {
+    public SortedSet<D> tailSet(D from) {
       return tailSet(from, true);
     }
 
     @Override
-    public NavigableSet<D> tailSet(D from, boolean inclusive)
-    {
+    public NavigableSet<D> tailSet(D from, boolean inclusive) {
       return new DescendingSet(set.headSet(from, !inclusive));
     }
 
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       D[] array = (D[]) set.toArray();
       Arrays.sort(array, comparator());
       return array;
     }
 
     @Override
-    public <T> T[] toArray(T[] a)
-    {
+    public <T> T[] toArray(T[] a) {
       T[] array = set.toArray(a);
       Arrays.sort(array, (Comparator<? super T>) comparator());
       return array;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       StringBuffer r = new StringBuffer("[");
       final Iterator<D> it = iterator();
-      while (it.hasNext())
-      {
+      while (it.hasNext()) {
         final D o = it.next();
         if (o == this) {
           r.append("<this>");
@@ -3429,48 +3050,40 @@ implements NavigableMap<K, V>, Cloneable
 
   } // class DescendingSet
 
-  private class EntrySet
-  extends AbstractSet<Entry<K,V>>
-  {
+  private class EntrySet extends AbstractSet<Entry<K, V>> {
     @Override
-    public int size()
-    {
+    public int size() {
       return size;
     }
 
     @Override
-    public Iterator<Map.Entry<K,V>> iterator()
-    {
+    public Iterator<Map.Entry<K, V>> iterator() {
       return new TreeIterator(ENTRIES);
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
       TreeMap4D.this.clear();
     }
 
     @Override
-    public boolean contains(Object o)
-    {
-      if (! (o instanceof Map.Entry)){
+    public boolean contains(Object o) {
+      if (!(o instanceof Map.Entry)) {
         return false;
       }
-      Map.Entry<K,V> me = (Map.Entry<K,V>) o;
-      Node<K,V> n = getNode(me.getKey());
+      Map.Entry<K, V> me = (Map.Entry<K, V>) o;
+      Node<K, V> n = getNode(me.getKey());
       return n != nil && AbstractCollection4D.equals(me.getValue(), n.value);
     }
 
     @Override
-    public boolean remove(Object o)
-    {
-      if (! (o instanceof Map.Entry)){
+    public boolean remove(Object o) {
+      if (!(o instanceof Map.Entry)) {
         return false;
       }
-      Map.Entry<K,V> me = (Map.Entry<K,V>) o;
-      Node<K,V> n = getNode(me.getKey());
-      if (n != nil && AbstractCollection4D.equals(me.getValue(), n.value))
-      {
+      Map.Entry<K, V> me = (Map.Entry<K, V>) o;
+      Node<K, V> n = getNode(me.getKey());
+      if (n != nil && AbstractCollection4D.equals(me.getValue(), n.value)) {
         removeNode(n);
         return true;
       }
@@ -3478,120 +3091,97 @@ implements NavigableMap<K, V>, Cloneable
     }
   }
 
-  private final class NavigableEntrySet
-  extends EntrySet
-  implements NavigableSet<Entry<K,V>>
-  {
+  private final class NavigableEntrySet extends EntrySet implements NavigableSet<Entry<K, V>> {
 
     @Override
-    public Entry<K,V> ceiling(Entry<K,V> e)
-    {
+    public Entry<K, V> ceiling(Entry<K, V> e) {
       return ceilingEntry(e.getKey());
     }
 
     @Override
-    public Comparator<? super Entry<K,V>> comparator()
-    {
-      return new Comparator<Entry<K,V>>()
-      {
+    public Comparator<? super Entry<K, V>> comparator() {
+      return new Comparator<Entry<K, V>>() {
         @Override
-        public int compare(Entry<K,V> t1, Entry<K,V> t2)
-        {
+        public int compare(Entry<K, V> t1, Entry<K, V> t2) {
           return comparator.compare(t1.getKey(), t2.getKey());
         }
       };
     }
 
     @Override
-    public Iterator<Entry<K,V>> descendingIterator()
-    {
+    public Iterator<Entry<K, V>> descendingIterator() {
       return descendingSet().iterator();
     }
 
     @Override
-    public NavigableSet<Entry<K,V>> descendingSet()
-    {
+    public NavigableSet<Entry<K, V>> descendingSet() {
       return new DescendingSet(this);
     }
 
     @Override
-    public Entry<K,V> first()
-    {
+    public Entry<K, V> first() {
       return firstEntry();
     }
 
     @Override
-    public Entry<K,V> floor(Entry<K,V> e)
-    {
+    public Entry<K, V> floor(Entry<K, V> e) {
       return floorEntry(e.getKey());
     }
 
     @Override
-    public SortedSet<Entry<K,V>> headSet(Entry<K,V> to)
-    {
+    public SortedSet<Entry<K, V>> headSet(Entry<K, V> to) {
       return headSet(to, false);
     }
 
     @Override
-    public NavigableSet<Entry<K,V>> headSet(Entry<K,V> to, boolean inclusive)
-    {
-      return (NavigableSet<Entry<K,V>>) headMap(to.getKey(), inclusive).entrySet();
+    public NavigableSet<Entry<K, V>> headSet(Entry<K, V> to, boolean inclusive) {
+      return (NavigableSet<Entry<K, V>>) headMap(to.getKey(), inclusive).entrySet();
     }
 
     @Override
-    public Entry<K,V> higher(Entry<K,V> e)
-    {
+    public Entry<K, V> higher(Entry<K, V> e) {
       return higherEntry(e.getKey());
     }
 
     @Override
-    public Entry<K,V> last()
-    {
+    public Entry<K, V> last() {
       return lastEntry();
     }
 
     @Override
-    public Entry<K,V> lower(Entry<K,V> e)
-    {
+    public Entry<K, V> lower(Entry<K, V> e) {
       return lowerEntry(e.getKey());
     }
 
     @Override
-    public Entry<K,V> pollFirst()
-    {
+    public Entry<K, V> pollFirst() {
       return pollFirstEntry();
     }
 
     @Override
-    public Entry<K,V> pollLast()
-    {
+    public Entry<K, V> pollLast() {
       return pollLastEntry();
     }
 
     @Override
-    public SortedSet<Entry<K,V>> subSet(Entry<K,V> from, Entry<K,V> to)
-    {
+    public SortedSet<Entry<K, V>> subSet(Entry<K, V> from, Entry<K, V> to) {
       return subSet(from, true, to, false);
     }
 
     @Override
-    public NavigableSet<Entry<K,V>> subSet(Entry<K,V> from, boolean fromInclusive,
-        Entry<K,V> to, boolean toInclusive)
-    {
-      return (NavigableSet<Entry<K,V>>) subMap(from.getKey(), fromInclusive,
-          to.getKey(), toInclusive).entrySet();
+    public NavigableSet<Entry<K, V>> subSet(Entry<K, V> from, boolean fromInclusive, Entry<K, V> to,
+        boolean toInclusive) {
+      return (NavigableSet<Entry<K, V>>) subMap(from.getKey(), fromInclusive, to.getKey(), toInclusive).entrySet();
     }
 
     @Override
-    public SortedSet<Entry<K,V>> tailSet(Entry<K,V> from)
-    {
+    public SortedSet<Entry<K, V>> tailSet(Entry<K, V> from) {
       return tailSet(from, true);
     }
 
     @Override
-    public NavigableSet<Entry<K,V>> tailSet(Entry<K,V> from, boolean inclusive)
-    {
-      return (NavigableSet<Entry<K,V>>) tailMap(from.getKey(), inclusive).navigableKeySet();
+    public NavigableSet<Entry<K, V>> tailSet(Entry<K, V> from, boolean inclusive) {
+      return (NavigableSet<Entry<K, V>>) tailMap(from.getKey(), inclusive).navigableKeySet();
     }
 
   } // class NavigableEntrySet

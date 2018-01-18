@@ -14,14 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Window events. */
 
-public interface WindowListener
-{
+public interface WindowListener {
   /** A WINDOW_CLOSED event was dispatched.
    * @see ControlEvent 
    */

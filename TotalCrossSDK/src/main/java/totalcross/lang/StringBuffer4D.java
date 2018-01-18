@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -59,8 +57,7 @@ package totalcross.lang;
  * available.
  */
 
-public final class StringBuffer4D
-{
+public final class StringBuffer4D {
   /** The buffer is used for character storage. */
   char charbuf[];
   /** The count is the number of characters in the buffer. */
@@ -72,8 +69,7 @@ public final class StringBuffer4D
    * Constructs an empty String buffer.
    * Consider using the other constructor where you pass an initial size.
    */
-  public StringBuffer4D()
-  {
+  public StringBuffer4D() {
     charbuf = new char[STARTING_SIZE];
   }
 
@@ -81,8 +77,7 @@ public final class StringBuffer4D
    * Constructs an empty String buffer with the specified initial length.
    * @param length the initial length
    */
-  public StringBuffer4D(int length)
-  {
+  public StringBuffer4D(int length) {
     charbuf = new char[length];
   }
 
@@ -90,8 +85,7 @@ public final class StringBuffer4D
    * Constructs a String buffer with the specified initial buffer.
    * @param str the initial buffer of the buffer
    */
-  public StringBuffer4D(String4D str)
-  {
+  public StringBuffer4D(String4D str) {
     int len = count = str.chars.length; // nopt
     charbuf = new char[len + 10]; // guich@320_8
     String4D.copyChars(str.chars, 0, charbuf, 0, len);
@@ -100,8 +94,7 @@ public final class StringBuffer4D
   /**
    * Returns the number of characters in the buffer.
    */
-  public int length()
-  {
+  public int length() {
     return count;
   }
 
@@ -118,8 +111,7 @@ public final class StringBuffer4D
    * is the amount of storage available for newly inserted
    * characters; beyond which a buffer reallocation will occur.
    */
-  public int capacity()
-  {
+  public int capacity() {
     return charbuf.length;
   }
 
@@ -143,8 +135,7 @@ public final class StringBuffer4D
    * from 0..length()-1.
    * @param index  the index of the desired character
    */
-  public char charAt(int index)
-  {
+  public char charAt(int index) {
     return (index >= 0 && index < count) ? charbuf[index] : '\0';
   }
 
@@ -158,8 +149,7 @@ public final class StringBuffer4D
    * @param dst    the array to copy the data into
    * @param dstBegin  offset into dst
    */
-  public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin)
-  {
+  public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
     String4D.copyChars(charbuf, srcBegin, dst, dstBegin, srcEnd - srcBegin);
   }
 
@@ -187,18 +177,15 @@ public final class StringBuffer4D
    * @param end the end index of the Substring to be appended
    * @return    the StringBuffer itself, NOT a new one.
    */
-  public StringBuffer4D append(String str, int start, int end)
-  {
+  public StringBuffer4D append(String str, int start, int end) {
     return this.append(str.substring(start, end));
   }
 
-  public StringBuffer4D append(CharSequence seq)
-  {
+  public StringBuffer4D append(CharSequence seq) {
     return this.append(seq.toString());
   }
 
-  public StringBuffer4D append(CharSequence seq, int start, int end)
-  {
+  public StringBuffer4D append(CharSequence seq, int start, int end) {
     return this.append(seq.subSequence(start, end).toString());
   }
 
@@ -223,9 +210,8 @@ public final class StringBuffer4D
    * @param b   the boolean to be appended
    * @return    the StringBuffer itself, NOT a new one.
    */
-  public StringBuffer4D append(boolean b)
-  {
-    return append(b?"true":"false");
+  public StringBuffer4D append(boolean b) {
+    return append(b ? "true" : "false");
   }
 
   /**
@@ -260,8 +246,7 @@ public final class StringBuffer4D
    * Converts to a String representing the data in the buffer.
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return new String(charbuf, 0, count);
   }
 
@@ -280,12 +265,10 @@ public final class StringBuffer4D
   /** Reverses the string.
    * @since SuperWaba 4.5
    */
-  public StringBuffer4D reverse()
-  {
+  public StringBuffer4D reverse() {
     int i = count - 1;
-    char []buf = charbuf;
-    for(int j = (i - 1) >> 1; j >= 0; j--)
-    {
+    char[] buf = charbuf;
+    for (int j = (i - 1) >> 1; j >= 0; j--) {
       char c = buf[j];
       buf[j] = buf[i - j];
       buf[i - j] = c;
@@ -302,9 +285,8 @@ public final class StringBuffer4D
    * @return this <code>StringBuffer4D</code>
    * @see #append(Object)
    */
-  public StringBuffer4D append(StringBuffer4D stringBuffer)
-  {
-    return append(stringBuffer.charbuf,0,count);
+  public StringBuffer4D append(StringBuffer4D stringBuffer) {
+    return append(stringBuffer.charbuf, 0, count);
   }
 
   /**
@@ -314,8 +296,7 @@ public final class StringBuffer4D
    * @return this <code>StringBuffer4D</code>
    * @throws StringIndexOutOfBoundsException if index is out of bounds
    */
-  public StringBuffer4D deleteCharAt(int index)
-  {
+  public StringBuffer4D deleteCharAt(int index) {
     return delete4D(index, index + 1);
   }
 
@@ -332,9 +313,8 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if start or end are out of bounds
    * @throws NullPointerException if str is null
    */
-  public StringBuffer4D replace(int start, int end, String4D str)
-  {
-    if (start < 0 || start > count || start > end){
+  public StringBuffer4D replace(int start, int end, String4D str) {
+    if (start < 0 || start > count || start > end) {
       throw new StringIndexOutOfBoundsException(start);
     }
 
@@ -343,7 +323,7 @@ public final class StringBuffer4D
     int delta = len - (end > count ? count : end) + start;
     ensureCapacity(count + delta);
 
-    if (delta != 0 && end < count){
+    if (delta != 0 && end < count) {
       String4D.copyChars(charbuf, end, charbuf, end + delta, count - end);
     }
 
@@ -361,8 +341,7 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if beginIndex is out of bounds
    * @see #substring(int, int)
    */
-  public String4D substring(int beginIndex)
-  {
+  public String4D substring(int beginIndex) {
     return substring(beginIndex, count);
   }
 
@@ -376,13 +355,12 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if beginIndex or endIndex is out
    *         of bounds
    */
-  public String4D substring(int beginIndex, int endIndex)
-  {
+  public String4D substring(int beginIndex, int endIndex) {
     int len = endIndex - beginIndex;
-    if (beginIndex < 0 || endIndex > count || endIndex < beginIndex){
+    if (beginIndex < 0 || endIndex > count || endIndex < beginIndex) {
       throw new StringIndexOutOfBoundsException();
     }
-    if (len == 0){
+    if (len == 0) {
       return new String4D();
     }
     return new String4D(charbuf, beginIndex, len);
@@ -400,9 +378,8 @@ public final class StringBuffer4D
    * @throws NullPointerException if <code>str</code> is <code>null</code>
    * @throws StringIndexOutOfBoundsException if any index is out of bounds
    */
-  public StringBuffer4D insert(int offset, char[] str, int str_offset, int len)
-  {
-    if (offset < 0 || offset > count || len < 0 || str_offset < 0 || str_offset > str.length - len){
+  public StringBuffer4D insert(int offset, char[] str, int str_offset, int len) {
+    if (offset < 0 || offset > count || len < 0 || str_offset < 0 || str_offset > str.length - len) {
       throw new StringIndexOutOfBoundsException();
     }
     ensureCapacity(count + len);
@@ -423,8 +400,7 @@ public final class StringBuffer4D
    * @exception StringIndexOutOfBoundsException if offset is out of bounds
    * @see String#valueOf(Object)
    */
-  public StringBuffer4D insert(int offset, Object obj)
-  {
+  public StringBuffer4D insert(int offset, Object obj) {
     return insert(offset, obj == null ? "null" : obj.toString());
   }
 
@@ -438,13 +414,12 @@ public final class StringBuffer4D
    * @return this <code>StringBuffer4D</code>
    * @throws StringIndexOutOfBoundsException if offset is out of bounds
    */
-  public StringBuffer4D insert(int offset, String4D str)
-  {
-    if (offset < 0 || offset > count){
+  public StringBuffer4D insert(int offset, String4D str) {
+    if (offset < 0 || offset > count) {
       throw new StringIndexOutOfBoundsException(offset);
     }
-    if (str == null){
-      str = new String4D(new char[]{'n','u','l','l'});
+    if (str == null) {
+      str = new String4D(new char[] { 'n', 'u', 'l', 'l' });
     }
     int len = str.chars.length;
     ensureCapacity(count + len);
@@ -465,8 +440,7 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if offset is out of bounds
    * @see #insert(int, char[], int, int)
    */
-  public StringBuffer4D insert(int offset, char[] data)
-  {
+  public StringBuffer4D insert(int offset, char[] data) {
     return insert(offset, data, 0, data.length);
   }
 
@@ -481,8 +455,7 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if offset is out of bounds
    * @see String#valueOf(boolean)
    */
-  public StringBuffer4D insert(int offset, boolean bool)
-  {
+  public StringBuffer4D insert(int offset, boolean bool) {
     return insert(offset, bool ? "true" : "false");
   }
 
@@ -494,9 +467,8 @@ public final class StringBuffer4D
    * @return this <code>StringBuffer4D</code>
    * @throws StringIndexOutOfBoundsException if offset is out of bounds
    */
-  public StringBuffer4D insert(int offset, char ch)
-  {
-    if (offset < 0 || offset > count){
+  public StringBuffer4D insert(int offset, char ch) {
+    if (offset < 0 || offset > count) {
       throw new StringIndexOutOfBoundsException(offset);
     }
     ensureCapacity(count + 1);
@@ -517,8 +489,7 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if offset is out of bounds
    * @see String#valueOf(int)
    */
-  public StringBuffer4D insert(int offset, int inum)
-  {
+  public StringBuffer4D insert(int offset, int inum) {
     return insert(offset, String.valueOf(inum));
   }
 
@@ -533,8 +504,7 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if offset is out of bounds
    * @see String#valueOf(long)
    */
-  public StringBuffer4D insert(int offset, long lnum)
-  {
+  public StringBuffer4D insert(int offset, long lnum) {
     return insert(offset, String.valueOf(lnum));
   }
 
@@ -549,8 +519,7 @@ public final class StringBuffer4D
    * @throws StringIndexOutOfBoundsException if offset is out of bounds
    * @see String#valueOf(double)
    */
-  public StringBuffer4D insert(int offset, double dnum)
-  {
+  public StringBuffer4D insert(int offset, double dnum) {
     return insert(offset, String.valueOf(dnum));
   }
 
@@ -561,8 +530,7 @@ public final class StringBuffer4D
    * @return location (base 0) of the String, or -1 if not found
    * @throws NullPointerException if str is null
    */
-  public int indexOf(String4D str)
-  {
+  public int indexOf(String4D str) {
     return indexOf(str, 0);
   }
 
@@ -578,14 +546,13 @@ public final class StringBuffer4D
    * @throws NullPointerException if str is null
    * @since 1.4
    */
-  public int indexOf(String4D str, int fromIndex)
-  {
-    if (fromIndex < 0){
+  public int indexOf(String4D str, int fromIndex) {
+    if (fromIndex < 0) {
       fromIndex = 0;
     }
     int limit = count - str.chars.length;
-    for ( ; fromIndex <= limit; fromIndex++) {
-      if (regionMatches(fromIndex, str)){
+    for (; fromIndex <= limit; fromIndex++) {
+      if (regionMatches(fromIndex, str)) {
         return fromIndex;
       }
     }
@@ -599,8 +566,7 @@ public final class StringBuffer4D
    * @return location (base 0) of the String, or -1 if not found
    * @throws NullPointerException if str is null
    */
-  public int lastIndexOf(String4D str)
-  {
+  public int lastIndexOf(String4D str) {
     return lastIndexOf(str, count - str.chars.length);
   }
 
@@ -615,23 +581,21 @@ public final class StringBuffer4D
    * @return location (base 0) of the String, or -1 if not found
    * @throws NullPointerException if str is null
    */
-  public int lastIndexOf(String4D str, int fromIndex)
-  {
+  public int lastIndexOf(String4D str, int fromIndex) {
     fromIndex = Math.min(fromIndex, count - str.chars.length);
-    for ( ; fromIndex >= 0; fromIndex--) {
-      if (regionMatches(fromIndex, str)){
+    for (; fromIndex >= 0; fromIndex--) {
+      if (regionMatches(fromIndex, str)) {
         return fromIndex;
       }
     }
     return -1;
   }
 
-  private boolean regionMatches(int toffset, String4D other)
-  {
+  private boolean regionMatches(int toffset, String4D other) {
     int len = other.chars.length;
     int index = 0;
-    while (--len >= 0){
-      if (charbuf[toffset++] != other.chars[index++]){
+    while (--len >= 0) {
+      if (charbuf[toffset++] != other.chars[index++]) {
         return false;
       }
     }

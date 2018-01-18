@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.phone;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
@@ -28,15 +26,13 @@ import totalcross.io.IOException;
  * @since TotalCross 1.0
  */
 
-final public class Dial
-{
+final public class Dial {
   /** 
    * A dial listener that will receive events informing the actual status of the dialing.
    * Does not work on the currently supported platforms.  
    * @deprecated */
   @Deprecated
-  public static interface Listener
-  {
+  public static interface Listener {
     public void dialStatusChange(String msg);
   }
 
@@ -45,15 +41,13 @@ final public class Dial
 
   /** Dials the given number. */
   @ReplacedByNativeOnDeploy
-  public static void number(String number) throws IOException
-  {
+  public static void number(String number) throws IOException {
   }
 
   /** Hangs up a running call. Does not work on the currently supported platforms. 
    * @deprecated*/
   @Deprecated
   @ReplacedByNativeOnDeploy
-  public static void hangup()
-  {
+  public static void hangup() {
   }
 }

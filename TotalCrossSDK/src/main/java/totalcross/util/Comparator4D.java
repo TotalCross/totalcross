@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Comparator;
@@ -76,8 +75,7 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Comparator4D<T>
-{
+public interface Comparator4D<T> {
   /**
    * Return an integer that is negative, zero or positive depending on whether
    * the first argument is less than, equal to or greater than the second

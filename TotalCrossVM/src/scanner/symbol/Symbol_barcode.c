@@ -805,8 +805,6 @@ SCAN_API void tidsS_commitBarcodeParams(NMParams p) // totalcross/io/device/scan
 //////////////////////////////////////////////////////////////////////////
 SCAN_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getData();
 {
-   LABELTYPE dwLabelType;
-   int32 len;
    TCHAR *barcode;
    DWORD dwResult;
 
@@ -817,28 +815,7 @@ SCAN_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner 
    else
    {
       barcode = (TCHAR*) SCNBUF_GETDATA(lpScanBuffer);
-
-      // handle the situation where the barcode returned by the scanner can
-      // sometimes be repeated - ie barcode scanned is 123 but SCNBUF_GETDATA
-      // returns 123123
-      dwLabelType = SCNBUF_GETLBLTYP(lpScanBuffer);
-      len = tcslen(barcode);
-      switch (dwLabelType)
-      {
-         case LABELTYPE_EAN13 :
-            if (len > 13)
-               tcscpy(barcode, barcode + len - 13);
-            break;
-         case LABELTYPE_EAN8 :
-            if (len > 8)
-               tcscpy(barcode, barcode + len - 8);
-            break;
-         default :
-            if ( len%2 == 0 )    // possible double decode ? only look at even len strings
-               if ( tcsncmp( barcode, barcode+(len/2), len/2 ) == 0 )
-                        barcode[len/2] = 0;
-      }
-      p->retO = createStringObjectFromTCHAR(p->currentContext, barcode, -1);
+      p->retO = createStringObjectFromTCHAR(p->currentContext, barcode, SCNBUF_GETLEN(lpScanBuffer));
       setObjectLock(p->retO, UNLOCKED);
    }
 }

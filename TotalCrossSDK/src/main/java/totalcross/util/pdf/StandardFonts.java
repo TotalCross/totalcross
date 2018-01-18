@@ -7,8 +7,7 @@
 
 package totalcross.util.pdf;
 
-public class StandardFonts
-{
+public class StandardFonts {
 
   public static final String SUBTYPE = "Type1";
 

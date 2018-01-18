@@ -20,11 +20,9 @@ import java.util.Set;
 
 import totalcross.unit.TestCase;
 
-public class TestHashMap extends TestCase
-{
+public class TestHashMap extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test20 test1 = new Test20();
     HashMap test2 = new Test20(test1);
     AbstractMap test3 = new Test20(10, 0.1f);
@@ -131,30 +129,25 @@ public class TestHashMap extends TestCase
 
     assertEquals(test1, test1.clone());
     assertEquals(test2, test2.clone());
-    assertEquals(test3, ((HashMap)test3).clone());
+    assertEquals(test3, ((HashMap) test3).clone());
   }
 }
 
-class Test20 extends HashMap implements Cloneable
-{
-  public Test20()
-  {
+class Test20 extends HashMap implements Cloneable {
+  public Test20() {
     super();
   }
 
-  public Test20(Map m)
-  {
+  public Test20(Map m) {
     super(m);
   }
 
-  public Test20(int initialCapacity, float load)
-  {
+  public Test20(int initialCapacity, float load) {
     super(initialCapacity, load);
   }
 
   @Override
-  public Object clone()
-  {
-    return super.clone();     
+  public Object clone() {
+    return super.clone();
   }
 }

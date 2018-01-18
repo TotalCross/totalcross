@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Collection;
@@ -82,8 +81,7 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface SortedSet4D<E> extends Set<E>
-{
+public interface SortedSet4D<E> extends Set<E> {
   /**
    * Returns the comparator used in sorting this set, or null if it is
    * the elements' natural ordering.

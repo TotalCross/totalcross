@@ -50,7 +50,7 @@ extern "C" {
    SCAN_API void tidsS_getScanPortDriverVersion(NMParams p);
    SCAN_API void tidsS_getScanManagerVersion(NMParams p);
    SCAN_API void tidsS_deactivate(NMParams p);
-#elif defined (ANDROID)
+#elif defined (ANDROID) || defined (darwin)
    TC_API void tidsS_scannerActivate(NMParams p);
    TC_API void tidsS_setBarcodeParam_ib(NMParams p);
    TC_API void tidsS_setParam_iii(NMParams p);
@@ -60,7 +60,9 @@ extern "C" {
    TC_API void tidsS_getScanPortDriverVersion(NMParams p);
    TC_API void tidsS_getScanManagerVersion(NMParams p);
    TC_API void tidsS_deactivate(NMParams p);
+#if defined (ANDROID)
    bool callBoolMethodWithoutParams(CharP name);
+#endif
 #endif   
 #ifdef __cplusplus
 }

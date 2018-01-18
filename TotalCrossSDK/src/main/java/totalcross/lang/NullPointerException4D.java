@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class NullPointerException4D extends RuntimeException
-{
+public class NullPointerException4D extends RuntimeException {
   /** Constructs an empty Exception. */
-  public NullPointerException4D()
-  {
+  public NullPointerException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public NullPointerException4D(String msg)
-  {
+  public NullPointerException4D(String msg) {
     super(msg);
   }
 }

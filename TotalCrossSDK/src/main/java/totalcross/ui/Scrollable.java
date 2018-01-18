@@ -5,8 +5,7 @@ package totalcross.ui;
  * Used for scrollable containers that include Flick capability. This interface exposes the
  * methods used to support flick animations.
  */
-public interface Scrollable
-{
+public interface Scrollable {
   /**
    * Called when the flick animation is started.
    */

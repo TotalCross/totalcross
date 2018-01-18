@@ -33,8 +33,7 @@ import totalcross.util.Vector;
  * <b>Only vertical scrolling is supported.</b>
  * 
  */
-public class DynamicScrollContainer extends ScrollContainer
-{
+public class DynamicScrollContainer extends ScrollContainer {
 
   private DataSource datasource;
 
@@ -52,8 +51,7 @@ public class DynamicScrollContainer extends ScrollContainer
   public DynamicScrollContainer(DataSource datasource) {
     super(false, true);
     this.datasource = datasource;
-    if (datasource != null)
-    {
+    if (datasource != null) {
       int scrollHeight = datasource.getTotalScrollHeight(getWidth() - insets.left - insets.right);
       Container c = new Container();
       add(c, LEFT, TOP, FILL, scrollHeight);
@@ -67,12 +65,9 @@ public class DynamicScrollContainer extends ScrollContainer
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    if (event.type == ControlEvent.PRESSED)
-    {
-      if (event.target == sbV && sbV.value != lastV)
-      {
+  public void onEvent(Event event) {
+    if (event.type == ControlEvent.PRESSED) {
+      if (event.target == sbV && sbV.value != lastV) {
 
         int scrollDirection = SCROLL_UNKNOWN;
         scrollDirection = sbV.value < lastVPos ? SCROLL_UP : SCROLL_DOWN;
@@ -81,26 +76,20 @@ public class DynamicScrollContainer extends ScrollContainer
         bag.setRect(bag.x, TOP - lastV, bag.width, bag.height);
         bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
 
-        try
-        {
+        try {
           updateVisibleViews(scrollDirection);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
           e.printStackTrace();
         }
 
-      }
-      else if (event.target == sbH && sbH.value != lastH)
-      {
+      } else if (event.target == sbH && sbH.value != lastH) {
         lastH = sbH.value;
         bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
         bag.setRect(LEFT - lastH, bag.y, bag.width, bag.height);
         bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
       }
-    }
-    else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnDec && sbV.btnDec.isEnabled() == false)
-    {
+    } else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnDec
+        && sbV.btnDec.isEnabled() == false) {
       /*
        * fixes issue where if you drag scroll handle all the way to the top the bag is never resized to start from the top
        * and the top one or two views are not painted
@@ -109,9 +98,8 @@ public class DynamicScrollContainer extends ScrollContainer
       bag.setRect(bag.x, TOP, bag.width, bag.height);
       bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
       updateVisibleViews(SCROLL_UNKNOWN);
-    }
-    else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnInc && sbV.btnInc.isEnabled() == false)
-    {
+    } else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnInc
+        && sbV.btnInc.isEnabled() == false) {
       /*
        * fixes issue where if you drag scroll handle all the way to the bottom, we never get the bag resized to the 
        * end of the scroll container so the very last one or two views are not painted
@@ -126,9 +114,8 @@ public class DynamicScrollContainer extends ScrollContainer
   /*
    * Repaints only the visible views on the scroll container
    */
-  protected void updateVisibleViews(int scrollDirection)
-  {
-    if (datasource == null){
+  protected void updateVisibleViews(int scrollDirection) {
+    if (datasource == null) {
       return;
     }
     int yStart = bag.y * -1;
@@ -137,21 +124,17 @@ public class DynamicScrollContainer extends ScrollContainer
     Vector newViews = datasource.getVisibleViewsVec(yStart, yEnd, scrollDirection);
     int currentviewCount = currentViews.size();
     int newviewCount = newViews.size();
-    for (int i = 0; i < currentviewCount; i++)
-    {
-      if (newViews.contains(currentViews.items[i]) == false)
-      {
+    for (int i = 0; i < currentviewCount; i++) {
+      if (newViews.contains(currentViews.items[i]) == false) {
         changed = true;
         AbstractView toRemove = (AbstractView) currentViews.items[i];
         bag.remove(toRemove.getComponent());
         toRemove.clear();
       }
     }
-    for (int i = 0; i < newviewCount; i++)
-    {
+    for (int i = 0; i < newviewCount; i++) {
 
-      if (currentViews.contains(newViews.items[i]) == false)
-      {
+      if (currentViews.contains(newViews.items[i]) == false) {
         changed = true;
         AbstractView view = (AbstractView) newViews.items[i];
         bag.add(view.getComponent());
@@ -164,12 +147,10 @@ public class DynamicScrollContainer extends ScrollContainer
   /**
    * Returns the top most {@link AbstractView} that starts within the viewable area
    */
-  public AbstractView getTopMostVisibleView()
-  {
+  public AbstractView getTopMostVisibleView() {
     int viewCount = currentViews.size();
     int yStart = bag.y * -1;
-    for (int i = 0; i < viewCount; i++)
-    {
+    for (int i = 0; i < viewCount; i++) {
       AbstractView view = (AbstractView) currentViews.items[i];
       if (view.yStart >= yStart) {
         return view;
@@ -183,8 +164,7 @@ public class DynamicScrollContainer extends ScrollContainer
    * 
    * @param view
    */
-  public boolean isViewVisible(AbstractView view)
-  {
+  public boolean isViewVisible(AbstractView view) {
     int yStart = bag.y * -1;
     int yEnd = ((bag.y * -1) + height);
 
@@ -195,8 +175,7 @@ public class DynamicScrollContainer extends ScrollContainer
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     lastVPos = 0;
     int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
     super.reposition();
@@ -209,8 +188,7 @@ public class DynamicScrollContainer extends ScrollContainer
     }
     if (curPage != 0) {
       scrollToPage(curPage);
-    } else
-    {
+    } else {
       if (sbH != null) {
         sbH.setValue(0);
       }
@@ -226,14 +204,12 @@ public class DynamicScrollContainer extends ScrollContainer
    * 
    * @param datasource
    */
-  public void setDataSource(DataSource datasource)
-  {
+  public void setDataSource(DataSource datasource) {
 
     this.datasource = datasource;
     flick.stop(true);
     lastVPos = 0;
-    if (datasource != null)
-    {
+    if (datasource != null) {
       scrollHeight = datasource.getTotalScrollHeight(getWidth() - insets.left - insets.right);
       Container c = new Container();
       changed = true;
@@ -246,10 +222,8 @@ public class DynamicScrollContainer extends ScrollContainer
   }
 
   @Override
-  public boolean scrollContent(int dx, int dy, boolean fromFlick)
-  {
-    if (super.scrollContent(dx, dy, fromFlick))
-    {
+  public boolean scrollContent(int dx, int dy, boolean fromFlick) {
+    if (super.scrollContent(dx, dy, fromFlick)) {
       updateVisibleViews(dy < 0 ? SCROLL_UP : SCROLL_DOWN);
       return true;
     } else {
@@ -257,10 +231,8 @@ public class DynamicScrollContainer extends ScrollContainer
     }
   }
 
-  public void scrollToView(AbstractView view)
-  {
-    if (view != null && sbV != null)
-    {
+  public void scrollToView(AbstractView view) {
+    if (view != null && sbV != null) {
       datasource.firstVisibleView = view.viewNo;
       datasource.lastVisibleView = 999999;
       int scrollDirection = SCROLL_DOWN;
@@ -268,8 +240,7 @@ public class DynamicScrollContainer extends ScrollContainer
       bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
       bag.setRect(KEEP, TOP - view.yStart, KEEP, KEEP);
 
-      if (bag.y * -1 + height > bag.height)
-      {
+      if (bag.y * -1 + height > bag.height) {
         int overflow = (bag.y * -1 + height - bag.height);
         bag.setRect(KEEP, bag.y + overflow, KEEP, KEEP);
         scrollDirection = SCROLL_UP;
@@ -283,8 +254,7 @@ public class DynamicScrollContainer extends ScrollContainer
   }
 
   @Override
-  public void resize(int maxX, int maxY)
-  {
+  public void resize(int maxX, int maxY) {
     super.resize(maxX, maxY);
   }
 
@@ -295,8 +265,7 @@ public class DynamicScrollContainer extends ScrollContainer
    * <p>
    * <b>CRITICAL: in {@link #initUI()} YOU MUST SET <code>y</code> on the defined rectangle of your container to be <code>yStart</code> otherwise the view will not be visible in {@link DynamicScrollContainer}</b>
    */
-  public static abstract class AbstractView
-  {
+  public static abstract class AbstractView {
     protected Container c;
 
     public AbstractView() {
@@ -341,8 +310,7 @@ public class DynamicScrollContainer extends ScrollContainer
      * Returns the container to display on the {@link DynamicScrollContainer}.
      * </br> Do not create your ui here but in {@link #initUI()}
      */
-    public Container getComponent()
-    {
+    public Container getComponent() {
       if (c == null) {
         initUI();
       }
@@ -359,16 +327,14 @@ public class DynamicScrollContainer extends ScrollContainer
      * <p>
      * <b>CRITICAL: YOU MUST SET <code>y</code> on the defined rectangle of your container to be <code>yStart</code> otherwise the view will not be visible in {@link DynamicScrollContainer}</b>
      */
-    public void initUI()
-    {
+    public void initUI() {
     }
 
     /**
      * Called when this view is scrolled out of the visible view area.</br> The view is destroyed </br> You can overwrite
      * to include any further garbage collection and resource release
      */
-    public void clear()
-    {
+    public void clear() {
       c = null;
     }
 
@@ -380,8 +346,7 @@ public class DynamicScrollContainer extends ScrollContainer
    * You must populate the {@link DataSource} with all the views you want to display before passing it to the {@link DynamicScrollContainer} <br>
    * 
    */
-  public static class DataSource
-  {
+  public static class DataSource {
     protected Vector views;
 
     private int viewCount;
@@ -408,13 +373,11 @@ public class DynamicScrollContainer extends ScrollContainer
      * This is calculated based on each {@link AbstractView} height and is called when a {@link DataSource} is set on
      * a {@link DataSource} or the {@link DynamicScrollContainer} detects screen rotation.
      */
-    public int getTotalScrollHeight(int scrollContainerWidth)
-    {
+    public int getTotalScrollHeight(int scrollContainerWidth) {
 
       viewCount = views.size();
       int height = 0;
-      for (int i = 0; i < viewCount; i++)
-      {
+      for (int i = 0; i < viewCount; i++) {
         AbstractView v = (AbstractView) views.items[i];
         v.parentWidth = scrollContainerWidth;
         int viewHeight = v.getHeight();
@@ -435,8 +398,7 @@ public class DynamicScrollContainer extends ScrollContainer
      * 
      * @param view
      */
-    public void addView(AbstractView view)
-    {
+    public void addView(AbstractView view) {
       if (views.contains(view) == false) {
         views.addElement(view);
       }
@@ -448,8 +410,7 @@ public class DynamicScrollContainer extends ScrollContainer
      * 
      * @param view
      */
-    public void removeView(AbstractView view)
-    {
+    public void removeView(AbstractView view) {
       views.removeElement(view);
     }
 
@@ -459,24 +420,20 @@ public class DynamicScrollContainer extends ScrollContainer
      * @param yStart
      * @param yEnd
      */
-    public Vector getVisibleViewsVec(int yStart, int yEnd, int scrollDirection)
-    {
+    public Vector getVisibleViewsVec(int yStart, int yEnd, int scrollDirection) {
       Vector visibleViewsVec = new Vector(20);
       if (viewCount == 0 || views == null) {
         return visibleViewsVec;
       }
-      switch (scrollDirection)
-      {
+      switch (scrollDirection) {
       case SCROLL_UNKNOWN:
         firstVisibleView = 0;
         lastVisibleView = viewCount - 1;
-        for (int i = 0; i < viewCount; i++)
-        {
+        for (int i = 0; i < viewCount; i++) {
           AbstractView view = ((AbstractView) (views.items[i]));
 
           if ((view.yStart <= yStart && view.yEnd > yStart) || (view.yStart >= yStart && view.yEnd <= yEnd)
-              || (view.yStart <= yEnd && view.yEnd > yEnd))
-          {
+              || (view.yStart <= yEnd && view.yEnd > yEnd)) {
             visibleViewsVec.addElement(views.items[i]);
             if (firstVisibleView == -1) {
               firstVisibleView = i;
@@ -491,21 +448,18 @@ public class DynamicScrollContainer extends ScrollContainer
       case SCROLL_DOWN:
         int temp = firstVisibleView;
         firstVisibleView = -1;
-        for (int i = temp; i < viewCount; i++)
-        {
+        for (int i = temp; i < viewCount; i++) {
           AbstractView view = ((AbstractView) (views.items[i]));
 
           if ((view.yStart <= yStart && view.yEnd > yStart) || (view.yStart >= yStart && view.yEnd <= yEnd)
-              || (view.yStart <= yEnd && view.yEnd > yEnd))
-          {
+              || (view.yStart <= yEnd && view.yEnd > yEnd)) {
             visibleViewsVec.addElement(views.items[i]);
             if (firstVisibleView == -1) {
               firstVisibleView = i;
             }
             lastVisibleView = i;
           }
-          if (view.yStart > yEnd)
-          {
+          if (view.yStart > yEnd) {
             break;
           }
         }
@@ -514,21 +468,18 @@ public class DynamicScrollContainer extends ScrollContainer
         temp = lastVisibleView;
         lastVisibleView = -1;
 
-        for (int i = temp; i >= 0; i--)
-        {
+        for (int i = temp; i >= 0; i--) {
           AbstractView view = ((AbstractView) (views.items[i]));
 
           if ((view.yStart <= yStart && view.yEnd > yStart) || (view.yStart >= yStart && view.yEnd <= yEnd)
-              || (view.yStart <= yEnd && view.yEnd > yEnd))
-          {
+              || (view.yStart <= yEnd && view.yEnd > yEnd)) {
             visibleViewsVec.addElement(views.items[i]);
             if (lastVisibleView == -1) {
               lastVisibleView = i;
             }
             firstVisibleView = i;
           }
-          if (view.yEnd < yStart)
-          {
+          if (view.yEnd < yStart) {
             break;
           }
         }
@@ -545,8 +496,7 @@ public class DynamicScrollContainer extends ScrollContainer
      * 
      * @param no
      */
-    public AbstractView getView(int no)
-    {
+    public AbstractView getView(int no) {
       return (AbstractView) views.items[no];
     }
 
@@ -555,8 +505,7 @@ public class DynamicScrollContainer extends ScrollContainer
   /**
    * Stops any triggered flick events
    */
-  public void stopFlick()
-  {
+  public void stopFlick() {
     flick.stop(true);
   }
 }

@@ -48,14 +48,13 @@ public class SideMenuContainer extends Container {
       for (final Control control : items) {
         control.setBackColor(Color.WHITE);
         if (control instanceof SideMenuContainer.Item) {
-          control.addPressListener(
-              new PressListener() {
+          control.addPressListener(new PressListener() {
 
-                @Override
-                public void controlPressed(ControlEvent e) {
-                  swap(((SideMenuContainer.Item) control));
-                }
-              });
+            @Override
+            public void controlPressed(ControlEvent e) {
+              swap(((SideMenuContainer.Item) control));
+            }
+          });
         }
       }
     }
@@ -71,16 +70,15 @@ public class SideMenuContainer extends Container {
     topMenu.titleAlign = LEFT + 25;
     topMenu.setFont(this.getFont());
 
-    bar.addPressListener(
-        new PressListener() {
+    bar.addPressListener(new PressListener() {
 
-          @Override
-          public void controlPressed(ControlEvent e) {
-            if (bar.getSelectedIndex() == 1) {
-              topMenu.popup();
-            }
-          }
-        });
+      @Override
+      public void controlPressed(ControlEvent e) {
+        if (bar.getSelectedIndex() == 1) {
+          topMenu.popup();
+        }
+      }
+    });
 
     setForeColor(Color.BLACK);
     setBackColor(BACK_COLOR);

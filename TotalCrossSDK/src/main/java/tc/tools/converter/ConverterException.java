@@ -9,18 +9,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter;
 
-public class ConverterException extends RuntimeException
-{
-  public ConverterException()
-  {
+public class ConverterException extends RuntimeException {
+  public ConverterException() {
   }
 
-  public ConverterException(String msg)
-  {
+  public ConverterException(String msg) {
     super(msg);
   }
 }

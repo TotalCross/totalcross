@@ -29,8 +29,7 @@ import totalcross.ui.event.PressListener;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 
-public class FirstScreen extends Container
-{
+public class FirstScreen extends Container {
   Radio rdClient;
   Radio rdServer;
   RadioGroupController rdCtrl;
@@ -41,8 +40,7 @@ public class FirstScreen extends Container
   final String RFCOMM = "0000110100001000800000805F9B34FB";
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     rdCtrl = new RadioGroupController();
     rdClient = new Radio("Client", rdCtrl);
     rdServer = new Radio("Server", rdCtrl);
@@ -64,37 +62,29 @@ public class FirstScreen extends Container
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
-    case ControlEvent.PRESSED:
-    {
-      if (event.target == btOk)
-      {
+  public void onEvent(Event event) {
+    switch (event.type) {
+    case ControlEvent.PRESSED: {
+      if (event.target == btOk) {
         Stream connection = null;
-        if (rdCtrl.getSelectedIndex() == 0)
-        {
+        if (rdCtrl.getSelectedIndex() == 0) {
           RadioDevice.setState(RadioDevice.BLUETOOTH, RadioDevice.RADIO_STATE_ENABLED);
           DiscoveryAgent agent = null;
           Vector devices = null;
 
-          try
-          {
+          try {
             agent = LocalDevice.getLocalDevice().getDiscoveryAgent();
             // testing listener
             final Window deviceList = new Window();
-            final Grid grid = new Grid(new String[] { "Name", "Address", "Major" }, new int[] { -45, -45, -10 }, new int[] { CENTER, CENTER,
-                CENTER }, false);
+            final Grid grid = new Grid(new String[] { "Name", "Address", "Major" }, new int[] { -45, -45, -10 },
+                new int[] { CENTER, CENTER, CENTER }, false);
             final Button windowExit = new Button("Close application");
             deviceList.add(windowExit, LEFT, BOTTOM, FILL, PREFERRED + 2);
             deviceList.add(grid, LEFT, TOP, FILL, FIT);
             windowExit.setEnabled(false);
-            windowExit.addPressListener(new PressListener()
-            {
+            windowExit.addPressListener(new PressListener() {
               @Override
-              public void controlPressed(ControlEvent e)
-              {
+              public void controlPressed(ControlEvent e) {
                 if (e.type == ControlEvent.PRESSED) {
                   deviceList.unpop();
                 }
@@ -102,40 +92,34 @@ public class FirstScreen extends Container
             });
 
             final Hashtable devicesHash = new Hashtable(10);
-            agent.startInquiry(DiscoveryAgent.GIAC, new DiscoveryListener()
-            {
+            agent.startInquiry(DiscoveryAgent.GIAC, new DiscoveryListener() {
               @Override
-              public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod)
-              {
-                try
-                {
-                  grid.add(new String[] { btDevice.getFriendlyName(), btDevice.getBluetoothAddress(), "" + cod.getMajorDeviceClass() });
-                }
-                catch (IOException e)
-                {
+              public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
+                try {
+                  grid.add(new String[] { btDevice.getFriendlyName(), btDevice.getBluetoothAddress(),
+                      "" + cod.getMajorDeviceClass() });
+                } catch (IOException e) {
                   e.printStackTrace();
                 }
-                Vm.debug(Convert.toString(cod.getServiceClasses(), 2) + " " + Convert.toString(cod.getMajorDeviceClass(), 2) + " "
-                    + Convert.toString(cod.getMinorDeviceClass(), 2));
+                Vm.debug(
+                    Convert.toString(cod.getServiceClasses(), 2) + " " + Convert.toString(cod.getMajorDeviceClass(), 2)
+                        + " " + Convert.toString(cod.getMinorDeviceClass(), 2));
                 grid.repaintNow();
                 devicesHash.put(btDevice.getBluetoothAddress(), btDevice);
               }
 
               @Override
-              public void inquiryCompleted(int discType)
-              {
+              public void inquiryCompleted(int discType) {
                 windowExit.setEnabled(true);
                 deviceList.repaintNow();
               }
 
               @Override
-              public void serviceSearchCompleted(int transID, int respCode)
-              {
+              public void serviceSearchCompleted(int transID, int respCode) {
               }
 
               @Override
-              public void servicesDiscovered(int transID, ServiceRecord[] servRecord)
-              {
+              public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
               }
 
             });
@@ -144,123 +128,97 @@ public class FirstScreen extends Container
             deviceList.popup();
 
             devices = devicesHash.getValues();
-            if (devices.isEmpty())
-            {
+            if (devices.isEmpty()) {
               new MessageBox("Error 1", "No device found.").popup();
               return;
             }
-          }
-          catch (Exception e)
-          {
+          } catch (Exception e) {
             MessageBox.showException(e, true);
             return;
           }
 
           Vm.alert("time to look for services");
 
-          UUID[] uuidSet = {new UUID(0x1101)};
+          UUID[] uuidSet = { new UUID(0x1101) };
 
           final Window deviceList = new Window();
           final Button windowExit = new Button("Close application");
           deviceList.add(windowExit, LEFT, BOTTOM, FILL, PREFERRED + 2);
           windowExit.setEnabled(false);
-          windowExit.addPressListener(new PressListener()
-          {
+          windowExit.addPressListener(new PressListener() {
             @Override
-            public void controlPressed(ControlEvent e)
-            {
+            public void controlPressed(ControlEvent e) {
               if (e.type == ControlEvent.PRESSED) {
                 deviceList.unpop();
               }
             }
-          });                  
+          });
           final StringBuffer connectionURL = new StringBuffer(128);
 
-
-          try
-          {
+          try {
             Vm.debug(((RemoteDevice) devices.items[0]).getFriendlyName());
-            agent.searchServices(null, uuidSet, (RemoteDevice) devices.items[0], new DiscoveryListener()
-            {
+            agent.searchServices(null, uuidSet, (RemoteDevice) devices.items[0], new DiscoveryListener() {
               @Override
-              public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod)
-              {
+              public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
               }
 
               @Override
-              public void inquiryCompleted(int discType)
-              {
+              public void inquiryCompleted(int discType) {
               }
 
               @Override
-              public void serviceSearchCompleted(int transID, int respCode)
-              {
+              public void serviceSearchCompleted(int transID, int respCode) {
                 Vm.debug("respCode: " + respCode);
                 windowExit.setEnabled(true);
                 deviceList.repaintNow();
               }
 
               @Override
-              public void servicesDiscovered(int transID, ServiceRecord[] servRecord)
-              {
+              public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
                 connectionURL.append(servRecord[0].getConnectionURL());
-                for (int i = 0 ; i < servRecord.length ; i++)
-                {
+                for (int i = 0; i < servRecord.length; i++) {
                   Vm.debug("service: " + servRecord[i].getConnectionURL());
                   Vm.debug("record data: " + servRecord[i].toString());
                 }
               }
             });
-          }
-          catch (IOException e1)
-          {
+          } catch (IOException e1) {
             MessageBox.showException(e1, true);
           }
-
 
           deviceList.popup();
 
           if (connectionURL != null) {
-            try
-            {
+            try {
               String url = connectionURL.toString();
               Vm.alert(url);
               connection = (Stream) Connector.open(url);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
               MessageBox.showException(e, true);
               return;
             }
           } else {
             new MessageBox("Error 2", "Service not found.").popup();
           }
-        }
-        else if (rdCtrl.getSelectedIndex() == 1)
-        {
+        } else if (rdCtrl.getSelectedIndex() == 1) {
           RadioDevice.setState(RadioDevice.BLUETOOTH, RadioDevice.BLUETOOTH_STATE_DISCOVERABLE);
-          try
-          {
-            StreamConnectionNotifier server = (StreamConnectionNotifier) Connector.open("btspp://localhost:" + serviceUUID);
+          try {
+            StreamConnectionNotifier server = (StreamConnectionNotifier) Connector
+                .open("btspp://localhost:" + serviceUUID);
             while (connection == null) {
               connection = server.accept();
             }
             LocalDevice.getLocalDevice().getRecord(server);
-          }
-          catch (Exception e)
-          {
+          } catch (Exception e) {
             MessageBox.showException(e, true);
           }
-        }
-        else
-        {
+        } else {
           // must choose one
         }
         if (connection != null) {
           MainWindow.getMainWindow().swap(new ChatScreen(connection));
         }
-      }
-      else if (event.target == btExit) {
+      } else if (event.target == btExit) {
         MainWindow.exit(0);
       }
     }

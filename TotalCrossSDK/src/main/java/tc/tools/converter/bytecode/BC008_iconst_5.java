@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC008_iconst_5 extends LoadConstant
-{
-  public BC008_iconst_5()
-  {
+public class BC008_iconst_5 extends LoadConstant {
+  public BC008_iconst_5() {
     super(5);
   }
 }

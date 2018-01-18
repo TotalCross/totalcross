@@ -14,14 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to MultiTouch events. */
 
-public interface MultiTouchListener
-{
+public interface MultiTouchListener {
   /** A SCALE event was dispatched.
    * @see PenEvent 
    */

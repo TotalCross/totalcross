@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.rpc;
 
 // Copyright (C) 2004 Nimkathana (www.nimkathana.com), USA
@@ -49,8 +47,7 @@ import totalcross.xml.ContentHandler;
  * @author Added to SuperWaba by Guich
  * @author Nimkathana (<a href="http://www.nimkathana.com">www.nimkathana.com</a>)
  */
-public class XmlRpcContentHandler extends ContentHandler
-{
+public class XmlRpcContentHandler extends ContentHandler {
   private Vector values;
   private StringBuffer cdata;
   private XmlRpcValue currentValue;
@@ -61,65 +58,65 @@ public class XmlRpcContentHandler extends ContentHandler
   /** Tells if a fault occurred during the parsing */
   public boolean faultOccured;
 
-  public XmlRpcContentHandler()
-  {
+  public XmlRpcContentHandler() {
     values = new Vector(50);
     cdata = new StringBuffer(128);
   }
 
   @Override
-  public void characters(String chars)
-  {
-    if (readCdata){
+  public void characters(String chars) {
+    if (readCdata) {
       cdata.append(chars);
     }
   }
 
   @Override
-  public void endElement(int tag)
-  {
+  public void endElement(int tag) {
     // finalize character data, if appropriate
-    if (currentValue != null && readCdata)
-    {
+    if (currentValue != null && readCdata) {
       currentValue.characterData(cdata.toString());
       cdata.setLength(0);
       readCdata = false;
     }
 
-    if (tag == XmlRpcValue.VALUE)
-    {
+    if (tag == XmlRpcValue.VALUE) {
       int depth = values.size();
       // Only handle top level objects or objects contained in arrays here.
       // For objects contained in structs, wait for </member> (see code below).
-      if (depth < 2 || values.items[depth - 2].hashCode() != XmlRpcValue.STRUCT)
-      {
+      if (depth < 2 || values.items[depth - 2].hashCode() != XmlRpcValue.STRUCT) {
         XmlRpcValue v = currentValue;
-        try {values.pop();} catch (ElementNotFoundException e) {}
-        if (depth < 2)
-        {
+        try {
+          values.pop();
+        } catch (ElementNotFoundException e) {
+        }
+        if (depth < 2) {
           // This is a top-level object
           result = v.getValue();
           currentValue = null;
-        }
-        else
-        {
+        } else {
           // add object to sub-array; if current container is a struct, add later (at </member>)
-          try {currentValue = (XmlRpcValue) values.peek();} catch (ElementNotFoundException e) {}
+          try {
+            currentValue = (XmlRpcValue) values.peek();
+          } catch (ElementNotFoundException e) {
+          }
           currentValue.endElement(v);
         }
       }
     }
 
-    if (tag == XmlRpcValue.MEMBER)
-    {
+    if (tag == XmlRpcValue.MEMBER) {
       // Handle objects contained in structs.
       XmlRpcValue v = currentValue;
-      try {values.pop();} catch (ElementNotFoundException e) {}
-      try {currentValue = (XmlRpcValue) values.peek();} catch (ElementNotFoundException e) {}
+      try {
+        values.pop();
+      } catch (ElementNotFoundException e) {
+      }
+      try {
+        currentValue = (XmlRpcValue) values.peek();
+      } catch (ElementNotFoundException e) {
+      }
       currentValue.endElement(v);
-    }
-    else if (tag == XmlRpcValue.METHODNAME)
-    {
+    } else if (tag == XmlRpcValue.METHODNAME) {
       // String methodName = cdata.toString();
       cdata.setLength(0);
       readCdata = false;
@@ -127,10 +124,8 @@ public class XmlRpcContentHandler extends ContentHandler
   }
 
   @Override
-  public void startElement(int tag, AttributeList atts)
-  {
-    switch (tag)
-    {
+  public void startElement(int tag, AttributeList atts) {
+    switch (tag) {
     case XmlRpcValue.ARRAY:
     case XmlRpcValue.STRUCT:
       currentValue.setType(tag);

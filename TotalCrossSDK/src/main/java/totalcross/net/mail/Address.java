@@ -22,8 +22,7 @@ package totalcross.net.mail;
  * 
  * @since TotalCross 1.13
  */
-public class Address
-{
+public class Address {
   /**
    * The e-mail address in the form <code>user@host.domain</code>.
    */
@@ -49,9 +48,8 @@ public class Address
    * @throws AddressException If the given address is <code>null</code>, or does not contain the character <code>@</code>.
    * @since TotalCross 1.13
    */
-  public Address(String address, String personal) throws AddressException
-  {
-    if (address == null || address.indexOf('@') == -1){
+  public Address(String address, String personal) throws AddressException {
+    if (address == null || address.indexOf('@') == -1) {
       throw new AddressException();
     }
     this.address = address;
@@ -65,8 +63,7 @@ public class Address
    * @return A string representation of this address.
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return ((personal != null ? personal : address) + " <" + address + ">");
   }
 }

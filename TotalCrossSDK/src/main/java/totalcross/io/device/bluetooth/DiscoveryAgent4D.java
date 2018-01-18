@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.io.IOException;
@@ -23,8 +21,7 @@ import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 import totalcross.util.IntVector;
 
-public class DiscoveryAgent4D
-{
+public class DiscoveryAgent4D {
   DiscoveryListener deviceInquiryListener;
   Object inquiryNativeFields;
 
@@ -34,8 +31,7 @@ public class DiscoveryAgent4D
   public static final int NOT_DISCOVERABLE = 0x00;
   public static final int PREKNOWN = 0x01;
 
-  DiscoveryAgent4D()
-  {
+  DiscoveryAgent4D() {
     nativeDiscoveryAgent();
   }
 
@@ -49,31 +45,29 @@ public class DiscoveryAgent4D
 
   private static int maxAttrValue = (2 << 16) - 1;
 
-  public int searchServices(int[] attrSet, UUID[] uuidSet, RemoteDevice btDev, DiscoveryListener discListener) throws IOException
-  {
-    if (uuidSet == null || btDev == null || discListener == null){
+  public int searchServices(int[] attrSet, UUID[] uuidSet, RemoteDevice btDev, DiscoveryListener discListener)
+      throws IOException {
+    if (uuidSet == null || btDev == null || discListener == null) {
       throw new NullPointerException();
     }
 
     // arrays cannot be empty
     int attrSetLen = attrSet == null ? 0 : attrSet.length;
     int uuidSetLen = uuidSet.length;
-    if ((attrSet != null && attrSetLen == 0) || uuidSetLen == 0){
+    if ((attrSet != null && attrSetLen == 0) || uuidSetLen == 0) {
       throw new IllegalArgumentException();
     }
 
-    if (attrSet == null){
+    if (attrSet == null) {
       attrSet = new int[] { 0, 1, 2, 3, 4 };
-    }else
-    {
+    } else {
       IntVector attrSetVector = new IntVector(attrSet);
       attrSetVector.qsort();
 
       if (attrSetVector.items[0] < 0 || attrSetVector.items[0] > maxAttrValue) {
         throw new IllegalArgumentException("attrSet values must be in the range [0 - (2^16 - 1)]");
       }
-      for (int i = attrSetLen - 1; i > 0; i--)
-      {
+      for (int i = attrSetLen - 1; i > 0; i--) {
         // attrSet cannot have duplicated values
         if (attrSetVector.items[i] == attrSetVector.items[i - 1]) {
           throw new IllegalArgumentException("Duplicated value in attrSet");
@@ -118,27 +112,23 @@ public class DiscoveryAgent4D
 
     final RemoteDevice btDev2 = btDev;
     final DiscoveryListener discListener2 = discListener;
-    Runnable searchThread = new Runnable()
-    {
+    Runnable searchThread = new Runnable() {
       @Override
-      public void run()
-      {
-        try
-        {
+      public void run() {
+        try {
           nativeSearchServices(attrSet2, uuidSet2, btDev2, discListener2);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
           e.printStackTrace();
         }
       }
     };
-    Thread t = new Thread(searchThread); 
+    Thread t = new Thread(searchThread);
     t.start();
     return 1;
   }
 
-  native public int nativeSearchServices(int[] attrSet, UUID[] uuidSet, RemoteDevice btDev, DiscoveryListener discListener) throws IOException;
+  native public int nativeSearchServices(int[] attrSet, UUID[] uuidSet, RemoteDevice btDev,
+      DiscoveryListener discListener) throws IOException;
 
   native public String selectService(UUID uuid, int security, boolean master) throws IOException;
 

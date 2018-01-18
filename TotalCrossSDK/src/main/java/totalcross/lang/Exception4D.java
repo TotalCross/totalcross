@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class Exception4D extends Throwable4D
-{
+public class Exception4D extends Throwable4D {
   /** Constructs an empty Exception. */
-  public Exception4D()
-  {
+  public Exception4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public Exception4D(String msg)
-  {
+  public Exception4D(String msg) {
     super(msg);
   }
 
@@ -53,8 +48,7 @@ public class Exception4D extends Throwable4D
    * @param cause the cause of this error
    * @since 1.4
    */
-  public Exception4D(String s, Throwable4D cause)
-  {
+  public Exception4D(String s, Throwable4D cause) {
     super(s, cause);
   }
 
@@ -65,13 +59,11 @@ public class Exception4D extends Throwable4D
    * @param cause the cause of this exception
    * @since 1.4
    */
-  public Exception4D(Throwable4D cause)
-  {
+  public Exception4D(Throwable4D cause) {
     super(cause);
   }
 
-  public Exception4D(String message, Throwable4D cause,  boolean enableSuppression, boolean writableStackTrace) {
+  public Exception4D(String message, Throwable4D cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 }
-

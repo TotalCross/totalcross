@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Enumeration;
@@ -59,16 +58,14 @@ import java.util.Enumeration;
  * @since 1.0
  * @status updated to 1.4
  */
-public abstract class Dictionary4D<K, V>
-{
+public abstract class Dictionary4D<K, V> {
   // WARNING: Dictionary is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
 
   /**
    * Sole constructor (often called implicitly).
    */
-  public Dictionary4D()
-  {
+  public Dictionary4D() {
   }
 
   /**

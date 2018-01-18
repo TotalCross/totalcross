@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.net.AuthenticationException;
@@ -28,14 +26,12 @@ import totalcross.net.SocketFactory;
  * 
  * @since TotalCross 1.13
  */
-public abstract class Store
-{
+public abstract class Store {
   protected MailSession session;
   protected SocketFactory socketFactory;
   protected Socket connection;
 
-  protected Store(MailSession session)
-  {
+  protected Store(MailSession session) {
     this.session = session;
   }
 

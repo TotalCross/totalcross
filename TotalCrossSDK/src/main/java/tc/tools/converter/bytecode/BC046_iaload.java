@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC046_iaload extends LoadArray
-{
-  public BC046_iaload()
-  {
-    super(-1,-1,0,-1,INT);
+public class BC046_iaload extends LoadArray {
+  public BC046_iaload() {
+    super(-1, -1, 0, -1, INT);
   }
 }

@@ -28,20 +28,18 @@ import totalcross.ui.event.ListContainerEvent;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.image.Image;
 
-public class ListContainerSample extends BaseContainer
-{
+public class ListContainerSample extends BaseContainer {
   static int lastCount = -1;
+
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       super.initUI();
       isSingleCall = true;
 
       int TOTAL_ITEMS = lastCount == 30 ? 3000 : 30; // increase this to 3000, for example
       lastCount = TOTAL_ITEMS;
-      setInfo("Loading "+TOTAL_ITEMS+" items...");
+      setInfo("Loading " + TOTAL_ITEMS + " items...");
 
       // "normal" image
       final Image normal = new Image("ui/images/plusButton.png");
@@ -52,10 +50,10 @@ public class ListContainerSample extends BaseContainer
 
       ListContainer lc = new ListContainer();
       lc.getFlick().longestFlick = TOTAL_ITEMS > 1000 ? TOTAL_ITEMS * 3 : 2500;
-      add(lc, LEFT,TOP,FILL,FILL);
+      add(lc, LEFT, TOP, FILL, FILL);
 
-      ListContainer.Layout layout = lc.getLayout(5,2);
-      layout.insets.set(50,10,50,10);
+      ListContainer.Layout layout = lc.getLayout(5, 2);
+      layout.insets.set(50, 10, 50, 10);
       layout.defaultLeftImage = new Image("ui/images/restaurant.png");
       layout.leftImageEnlargeIfSmaller = true;
       layout.defaultRightImage = normal;
@@ -75,10 +73,11 @@ public class ListContainerSample extends BaseContainer
       int gcCount = Settings.gcCount;
       int ini = Vm.getTimeStamp();
       Container all[] = new Container[TOTAL_ITEMS];
-      for (int i = 0; i < all.length; i++)
-      {
+      for (int i = 0; i < all.length; i++) {
         all[i] = c = new ListContainer.Item(layout);
-        c.items = new String[]{Convert.numberPad(i+1,5)," BARITONOS LANCHONETE","Price","75000,00","Rio de Janeiro / Leme"};;
+        c.items = new String[] { Convert.numberPad(i + 1, 5), " BARITONOS LANCHONETE", "Price", "75000,00",
+            "Rio de Janeiro / Leme" };
+        ;
       }
       int ini2 = Vm.getTimeStamp();
       lc.addContainers(all);
@@ -86,7 +85,9 @@ public class ListContainerSample extends BaseContainer
       int ini3 = Vm.getTimeStamp();
       gcTime = Settings.gcTime - gcTime;
       gcCount = Settings.gcCount - gcCount;
-      setInfo(Settings.onJavaSE ? "" : "C="+(ini2-ini)+", A="+(ini3-ini2)+", T="+(ini3-ini)+", gc: "+gcTime+"/"+gcCount+"x");
+      setInfo(Settings.onJavaSE ? ""
+          : "C=" + (ini2 - ini) + ", A=" + (ini3 - ini2) + ", T=" + (ini3 - ini) + ", gc: " + gcTime + "/" + gcCount
+              + "x");
       lc.requestFocus();
 
       /** Example just to show that other Controls can be set as a left and right control: 
@@ -95,26 +96,22 @@ public class ListContainerSample extends BaseContainer
          c.leftControl = new Check(" "); ((Check)c.leftControl).checkColor = Color.RED;
          lc.addContainer(c);
        */
-    }
-    catch (Exception ee)
-    {
-      MessageBox.showException(ee,true);
+    } catch (Exception ee) {
+      MessageBox.showException(ee, true);
     }
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    switch (e.type)
-    {
+  public void onEvent(Event e) {
+    switch (e.type) {
     case ListContainerEvent.ITEM_SELECTED_EVENT:
-      setInfo("Item selected "+e.target);
+      setInfo("Item selected " + e.target);
       break;
     case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT:
-      setInfo("Left image clicked: "+(((ListContainerEvent)e).isImage2 ? "selected":"unselected"));
+      setInfo("Left image clicked: " + (((ListContainerEvent) e).isImage2 ? "selected" : "unselected"));
       break;
     case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT:
-      setInfo("Right image clicked: "+(((ListContainerEvent)e).isImage2 ? "selected":"unselected"));
+      setInfo("Right image clicked: " + (((ListContainerEvent) e).isImage2 ? "selected" : "unselected"));
       break;
     }
   }

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter;
 
 /*import tc.tools.converter.bytecode.*;
@@ -25,12 +23,9 @@ import tc.tools.converter.JConstants;
 import tc.tools.converter.TCConstants;
 import totalcross.unit.TestCase;
 
-
-public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConstants
-{
+public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConstants {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
   }
 
   /*private static final double DOUBLE_ERROR_PRECISION = 1e-3d;
@@ -42,14 +37,14 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       ByteCode.initClasses();
       GlobalConstantPool.init();
       File f = new File("P:/TotalCross3/classes/tc/test/converter/testfiles/"+fileName, File.READ_WRITE);
-
+  
       JavaClass jc = new JavaClass(f, false);
       new J2TC(jc);
-
+  
       OperandReg.init(jc.methods[0].params, jc.methods[0].isStatic);
       return jc.methods;
    }
-
+  
    /*private void BC001() throws Exception
    {
       JavaCode jcode = startTest("BC001.class")[0].code;
@@ -59,7 +54,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       {
          ByteCode i = bc[j];
          int op = i.bc;
-
+  
          switch (op)
          {
             case ACONST_NULL:
@@ -69,7 +64,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC002to015() throws Exception
    {
       JavaCode jcode = startTest("BC002to015.class")[0].code;
@@ -79,7 +74,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       {
          ByteCode i = bc[j];
          int op = i.bc;
-
+  
          switch (op)
          {
             case ICONST_M1: //2
@@ -148,7 +143,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC016to017() throws Exception
    {
       JavaCode jcode = startTest("BC016to017.class")[0].code;
@@ -158,7 +153,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       {
          ByteCode i = bc[j];
          int op = i.bc;
-
+  
          switch (op)
          {
             case BIPUSH: //16
@@ -167,7 +162,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
                OperandConstant oci = (OperandConstant)stack.pop();
                int x = oci.getValueAsInt();
-
+  
                if (x >= -32 && x <= 31)
                   assertEquals(opr_s6, oci.kind);
                else
@@ -180,7 +175,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC018to020() throws Exception
    {
       JavaCode jcode = startTest("BC018to020.class")[0].code;
@@ -192,7 +187,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          int op = i.bc;
          Operand opr = null;
          TCValue v;
-
+  
          switch (op)
          {
             case LDC: //18
@@ -203,7 +198,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                opr = stack.pop();
             }
          }
-
+  
          switch (op)
          {
             case LDC: //18
@@ -219,7 +214,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                   BC019_ldc_w ji = (BC019_ldc_w)i;
                   v = ji.val;
                }
-
+  
                if (v.type == INT)
                {
                   OperandConstant opr2 = (OperandConstant) opr;
@@ -241,7 +236,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             case LDC2_W: //20
             {
                BC020_ldc2_w ji = (BC020_ldc2_w)i;
@@ -263,7 +258,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC021_026to029() throws Exception
    {
       JavaCode jcode = startTest("BC021_026to029.class")[0].code;
@@ -284,7 +279,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
                OperandReg reg = (OperandReg)stack.pop();
                assertEquals(reg.kind, opr_regI);
-
+  
                LoadLocal ji = (LoadLocal)i;
                OperandReg reg2 = new OperandRegI(ji.localIdx);
                assertEquals(reg.index, reg2.index);
@@ -293,7 +288,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC022_030to033() throws Exception
    {
       JavaCode jcode = startTest("BC022_030to033.class")[0].code;
@@ -314,7 +309,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
                OperandReg reg = (OperandReg)stack.pop();
                assertEquals(reg.kind, opr_regL);
-
+  
                LoadLocal ji = (LoadLocal)i;
                OperandReg reg2 = new OperandRegL(ji.localIdx);
                assertEquals(reg.index, reg2.index);
@@ -323,7 +318,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC023_034to037() throws Exception
    {
       JavaCode jcode = startTest("BC023_034to037.class")[0].code;
@@ -344,7 +339,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
                OperandReg reg = (OperandReg)stack.pop();
                assertEquals(reg.kind, opr_regD);
-
+  
                LoadLocal ji = (LoadLocal)i;
                OperandReg reg2 = new OperandRegD32(ji.localIdx);
                assertEquals(reg.index, reg2.index);
@@ -353,7 +348,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC024_038to041() throws Exception
    {
       JavaCode jcode = startTest("BC024_038to041.class")[0].code;
@@ -374,7 +369,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
                OperandReg reg = (OperandReg)stack.pop();
                assertEquals(reg.kind, opr_regD);
-
+  
                LoadLocal ji = (LoadLocal)i;
                OperandReg reg2 = new OperandRegD64(ji.localIdx);
                assertEquals(reg.index, reg2.index);
@@ -383,7 +378,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC025_042to045() throws Exception
    {
       JavaCode jcode = startTest("BC025_042to045.class")[0].code;
@@ -404,7 +399,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
                OperandReg reg = (OperandReg)stack.pop();
                assertEquals(reg.kind, opr_regO);
-
+  
                LoadLocal ji = (LoadLocal)i;
                OperandReg reg2 = new OperandRegO(ji.localIdx);
                assertEquals(reg.index, reg2.index);
@@ -413,7 +408,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC087to095() throws Exception
    {
       JavaCode jcode = startTest("BC087to095.class")[0].code;
@@ -438,7 +433,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC054_059to062() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC054_059to062.class")[0].code;
@@ -558,7 +553,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC055_063to066() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC055_063to066.class")[0].code;
@@ -633,7 +628,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC056_067to070() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC056_067to070.class")[0].code;
@@ -708,7 +703,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC057_071to074() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC057_071to074.class")[0].code;
@@ -783,7 +778,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC058_075to078() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC058_075to078.class")[0].code;
@@ -839,12 +834,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC096to132() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC096to132.class")[0].code;
@@ -1202,12 +1197,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC096to099() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC096to099.class")[0].code;
@@ -1272,7 +1267,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 8);
                      assertEquals(tccode.reg_reg_reg__reg2(), 2);
                      break;
-
+  
                   // type: long
                   case 8: // l1 = l2 + l3;
                      assertEquals(tccode.op(), ADD_regL_regL_regL);
@@ -1316,7 +1311,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 18);
                      assertEquals(tccode.reg_reg_reg__reg2(), 2);
                      break;
-
+  
                   // type: float
                   case 15: // f1 = f2 + f3;
                      assertEquals(tccode.op(), ADD_regD_regD_regD);
@@ -1360,7 +1355,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 29);
                      assertEquals(tccode.reg_reg_reg__reg2(), 5);
                      break;
-
+  
                   // type: double
                   case 22: // d1 = d2 + d3;
                      assertEquals(tccode.op(), ADD_regD_regD_regD);
@@ -1407,12 +1402,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC100to103() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC100to103.class")[0].code;
@@ -1477,7 +1472,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 9);
                      assertEquals(tccode.reg_reg_reg__reg2(), 2);
                      break;
-
+  
                   // type: long
                   case 8: // l1 = l2 - l3;
                      assertEquals(tccode.op(), SUB_regL_regL_regL);
@@ -1521,7 +1516,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 18);
                      assertEquals(tccode.reg_reg_reg__reg2(), 2);
                      break;
-
+  
                   // type: float
                   case 15: // f1 = f2 - f3;
                      assertEquals(tccode.op(), SUB_regD_regD_regD);
@@ -1565,7 +1560,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 29);
                      assertEquals(tccode.reg_reg_reg__reg2(), 5);
                      break;
-
+  
                   // type: double
                   case 22: // d1 = d2 - d3;
                      assertEquals(tccode.op(), SUB_regD_regD_regD);
@@ -1612,12 +1607,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC104to107() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC104to107.class")[0].code;
@@ -1682,7 +1677,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 11);
                      assertEquals(tccode.reg_reg_reg__reg2(), 3);
                      break;
-
+  
                   // type: long
                   case 8: // l1 = l2 * l3;
                      assertEquals(tccode.op(), MUL_regL_regL_regL);
@@ -1726,7 +1721,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 19);
                      assertEquals(tccode.reg_reg_reg__reg2(), 3);
                      break;
-
+  
                   // type: float
                   case 15: // f1 = f2 * f3;
                      assertEquals(tccode.op(), MUL_regD_regD_regD);
@@ -1770,7 +1765,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 30);
                      assertEquals(tccode.reg_reg_reg__reg2(), 6);
                      break;
-
+  
                   // type: double
                   case 22: // d1 = d2 * d3;
                      assertEquals(tccode.op(), MUL_regD_regD_regD);
@@ -1817,12 +1812,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC108to111() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC108to111.class")[0].code;
@@ -1887,7 +1882,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 12);
                      assertEquals(tccode.reg_reg_reg__reg2(), 3);
                      break;
-
+  
                   // type: long
                   case 8: // l1 = l2 / l3;
                      assertEquals(tccode.op(), DIV_regL_regL_regL);
@@ -1931,7 +1926,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 19);
                      assertEquals(tccode.reg_reg_reg__reg2(), 3);
                      break;
-
+  
                   // type: float
                   case 15: // f1 = f2 / f3;
                      assertEquals(tccode.op(), DIV_regD_regD_regD);
@@ -1975,7 +1970,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 30);
                      assertEquals(tccode.reg_reg_reg__reg2(), 6);
                      break;
-
+  
                   // type: double
                   case 22: // d1 = d2 / d3;
                      assertEquals(tccode.op(), DIV_regD_regD_regD);
@@ -2022,12 +2017,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC112to115() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC112to115.class")[0].code;
@@ -2092,7 +2087,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 12);
                      assertEquals(tccode.reg_reg_reg__reg2(), 3);
                      break;
-
+  
                   // type: long
                   case 8: // l1 = l2 % l3;
                      assertEquals(tccode.op(), MOD_regL_regL_regL);
@@ -2136,7 +2131,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 19);
                      assertEquals(tccode.reg_reg_reg__reg2(), 3);
                      break;
-
+  
                   // type: float
                   case 15: // f1 = f2 % f3;
                      assertEquals(tccode.op(), MOD_regD_regD_regD);
@@ -2180,7 +2175,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 30);
                      assertEquals(tccode.reg_reg_reg__reg2(), 6);
                      break;
-
+  
                   // type: double
                   case 22: // d1 = d2 % d3;
                      assertEquals(tccode.op(), MOD_regD_regD_regD);
@@ -2227,12 +2222,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC116to119() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC116to119.class")[0].code;
@@ -2267,7 +2262,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_s12__reg1(), 5);
                      assertEquals(tccode.reg_reg_s12__s12(), 0);
                      break;
-
+  
                   // type: long
                   case 3: // l1 = -l2;
                      assertEquals(tccode.op(), SUB_regL_regL_regL);
@@ -2281,7 +2276,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 14);
                      assertEquals(tccode.reg_reg_reg__reg2(), 12);
                      break;
-
+  
                   // type: float
                   case 5: // f1 = -f2;
                      assertEquals(tccode.op(), SUB_regD_regD_regD);
@@ -2295,7 +2290,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg_reg__reg1(), 19);
                      assertEquals(tccode.reg_reg_reg__reg2(), 17);
                      break;
-
+  
                   // type: double
                   case 7: // d1 = -d2;
                      assertEquals(tccode.op(), SUB_regD_regD_regD);
@@ -2312,12 +2307,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC120to125() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC120to125.class")[0].code;
@@ -2452,12 +2447,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC126to131() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC126to131.class")[0].code;
@@ -2592,12 +2587,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC132() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC132.class")[0].code;
@@ -2646,7 +2641,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC133to147() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC133to147.class")[0].code;
@@ -2889,7 +2884,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.reg_reg__reg0(), 18);
                      assertEquals(tccode.reg_reg__reg1(), 5);
                      break;
-
+  
                   case 43: // d1 = (double) b1;
                      assertEquals(tccode.op(), CONV_regD_regI);
                      assertEquals(tccode.reg_reg__reg0(), 19);
@@ -2923,12 +2918,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC187to189() throws Exception
    {
       JavaCode jcode = startTest("BC187to189.class")[0].code;
@@ -3022,7 +3017,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC190() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC190.class")[0].code;
@@ -3059,12 +3054,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC046to053() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC046to053.class")[0].code;
@@ -3159,12 +3154,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC079to086() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC079to086.class")[0].code;
@@ -3247,12 +3242,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC178to181() throws Exception  // this test is not completed
    {
       JavaCode jcode = startTest("BC178to181.class")[0].code;
@@ -3561,7 +3556,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC197() throws Exception
    {
       JavaCode jcode = startTest("BC197.class")[0].code;
@@ -3691,12 +3686,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC193() throws Exception
    {
       JavaCode jcode = startTest("BC193.class")[0].code;
@@ -3751,16 +3746,16 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                      assertEquals(tccode.instanceof__regO(), 3);
                      assertEquals(tccode.instanceof__sym(), 34);
                      break;
-
+  
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC187() throws Exception
    {
       JavaCode jcode = startTest("BC187.class")[0].code;
@@ -3792,12 +3787,12 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
                }
                break;
             }
-
+  
             default: Bytecode2TCCode.convert(bc, i, stack, vcodeTest, false);
          }
       }
    }
-
+  
    private void BC159to166() throws Exception
    {
       JavaCode jcode = startTest("BC159to166.class")[0].code;
@@ -3808,9 +3803,9 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       {
          Bytecode2TCCode.convert(bc, bc[j], stack, vcodeTest, false);
       }
-
+  
       Bytecode2TCCode.updateBranchs(vcodeTest);
-
+  
       for (int j = 0; j < vcodeTest.size(); j++)
       {
          TCCode tccode = (TCCode) vcodeTest.items[j];
@@ -3871,7 +3866,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC148to158() throws Exception
    {
       JavaCode jcode = startTest("BC148to158.class")[0].code;
@@ -3882,9 +3877,9 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       {
          Bytecode2TCCode.convert(bc, bc[j], stack, vcodeTest, false);
       }
-
+  
       Bytecode2TCCode.updateBranchs(vcodeTest);
-
+  
       for (int j = 0; j < vcodeTest.size(); j++)
       {
          TCCode tccode = (TCCode) vcodeTest.items[j];
@@ -3945,7 +3940,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC198to199() throws Exception
    {
       JavaCode jcode = startTest("BC198to199.class")[0].code;
@@ -3956,9 +3951,9 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       {
          Bytecode2TCCode.convert(bc, bc[j], stack, vcodeTest, false);
       }
-
+  
       Bytecode2TCCode.updateBranchs(vcodeTest);
-
+  
       for (int j = 0; j < vcodeTest.size(); j++)
       {
          TCCode tccode = (TCCode) vcodeTest.items[j];
@@ -3992,7 +3987,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC168to169() throws Exception
    {
       JavaCode jcode = startTest("BC168to169.class")[0].code;
@@ -4008,11 +4003,11 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC172to177() throws Exception
    {
       JavaMethod[] jm = startTest("BC172to177.class");
-
+  
       for (int k=0; k<jm.length; k++)
       {
          ByteCode[] bc = jm[k].code.bcs;
@@ -4023,7 +4018,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
             Bytecode2TCCode.convert(bc, bc[j], stack, vcodeTest, false);
          }
       }
-
+  
       int n = 0;
       for (int j = 0; j < vcodeTest.size(); j++)
       {
@@ -4093,11 +4088,11 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC182to183() throws Exception
    {
       JavaMethod[] jm = startTest("BC182to183.class");
-
+  
       for (int k=0; k<jm.length; k++)
       {
          ByteCode[] bc = jm[k].code.bcs;
@@ -4108,7 +4103,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
             Bytecode2TCCode.convert(bc, bc[j], stack, vcodeTest, false);
          }
       }
-
+  
       int n = 0;
       for (int j = 0; j < vcodeTest.size(); j++)
       {
@@ -4238,11 +4233,11 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC184() throws Exception
    {
       JavaMethod[] jm = startTest("BC184.class");
-
+  
       for (int k=0; k<jm.length; k++)
       {
          ByteCode[] bc = jm[k].code.bcs;
@@ -4253,7 +4248,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
             Bytecode2TCCode.convert(bc, bc[j], stack, vcodeTest, false);
          }
       }
-
+  
       int n = 0;
       for (int j = 0; j < vcodeTest.size(); j++)
       {
@@ -4329,11 +4324,11 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC185() throws Exception
    {
       JavaMethod[] jm = startTest("BC185.class");
-
+  
       for (int k=0; k<jm.length; k++)
       {
          ByteCode[] bc = jm[k].code.bcs;
@@ -4344,7 +4339,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
             Bytecode2TCCode.convert(bc, bc[j], stack, vcodeTest, false);
          }
       }
-
+  
       int n = 0;
       for (int j = 0; j < vcodeTest.size(); j++)
       {
@@ -4374,17 +4369,17 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          }
       }
    }
-
+  
    private void BC170() throws Exception
    {
       JavaMethod[] jm = startTest("BC170.class");
    }
-
+  
    private void BC171() throws Exception
    {
       JavaMethod[] jm = startTest("BC171.class");
    }
-
+  
    public void testRun()
    {
       try
@@ -4400,7 +4395,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          BC024_038to041();
          BC025_042to045();
          BC087to095();
-
+  
          // complexity 2
          BC054_059to062();
          BC055_063to066();
@@ -4418,7 +4413,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          BC132();
          BC133to147();
          BC190();
-
+  
          // complexity 3
          BC187to189();
          BC046to053();
@@ -4430,11 +4425,11 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
          BC148to158();
          BC159to166();
          BC198to199();
-
+  
          // complexity 4
          BC168to169();
          BC172to177();
-
+  
          // complexity 5
          BC182to183();
          BC184();

@@ -15,28 +15,20 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
-
-
-
-public class EnabledStateChangeEvent extends ControlEvent
-{
+public class EnabledStateChangeEvent extends ControlEvent {
 
   public static final int ENABLED_STATE_CHANGE = 308;
 
   /** Constructs an empty EnabledStateChangeEvent. */
-  public EnabledStateChangeEvent()
-  {
+  public EnabledStateChangeEvent() {
     super();
     type = ENABLED_STATE_CHANGE;
   }
 
   @Override
-  public String toString()
-  {
-    return "ENABLED_STATE_CHANGE "+super.toString();
+  public String toString() {
+    return "ENABLED_STATE_CHANGE " + super.toString();
   }
 }

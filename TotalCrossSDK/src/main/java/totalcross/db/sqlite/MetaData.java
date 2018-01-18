@@ -28,24 +28,16 @@ import totalcross.util.Vector;
 import totalcross.util.regex.Matcher;
 import totalcross.util.regex.Pattern;
 
-class MetaData implements DatabaseMetaData
-{
-  private SQLiteConnection              conn;
-  private PreparedStatement
-  getTables             ,   getTableTypes        ,
-  getTypeInfo           ,   getCatalogs          ,
-  getSchemas            ,   getUDTs              ,
-  getColumnsTblName     ,   getSuperTypes        ,
-  getSuperTables        ,   getTablePrivileges   ,
-  getIndexInfo          ,   getProcedures        ,
-  getProcedureColumns   ,   getAttributes        ,
-  getBestRowIdentifier  ,   getVersionColumns    ,
-  getColumnPrivileges   ;
+class MetaData implements DatabaseMetaData {
+  private SQLiteConnection conn;
+  private PreparedStatement getTables, getTableTypes, getTypeInfo, getCatalogs, getSchemas, getUDTs, getColumnsTblName,
+      getSuperTypes, getSuperTables, getTablePrivileges, getIndexInfo, getProcedures, getProcedureColumns,
+      getAttributes, getBestRowIdentifier, getVersionColumns, getColumnPrivileges;
 
   /**
    * Used to save generating a new statement every call.
    */
-  private PreparedStatement getGeneratedKeys ;
+  private PreparedStatement getGeneratedKeys;
 
   /**
    * Reference count.
@@ -151,8 +143,7 @@ class MetaData implements DatabaseMetaData
       getVersionColumns = null;
       getColumnPrivileges = null;
       getGeneratedKeys = null;
-    }
-    finally {
+    } finally {
       conn = null;
     }
   }
@@ -1316,13 +1307,13 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getAttributes(String c, String s, String t, String a) throws SQLException {
     if (getAttributes == null) {
-      getAttributes = conn.prepareStatement("select null as TYPE_CAT, null as TYPE_SCHEM, " +
-          "null as TYPE_NAME, null as ATTR_NAME, null as DATA_TYPE, " +
-          "null as ATTR_TYPE_NAME, null as ATTR_SIZE, null as DECIMAL_DIGITS, " +
-          "null as NUM_PREC_RADIX, null as NULLABLE, null as REMARKS, null as ATTR_DEF, " +
-          "null as SQL_DATA_TYPE, null as SQL_DATETIME_SUB, null as CHAR_OCTET_LENGTH, " +
-          "null as ORDINAL_POSITION, null as IS_NULLABLE, null as SCOPE_CATALOG, " +
-          "null as SCOPE_SCHEMA, null as SCOPE_TABLE, null as SOURCE_DATA_TYPE limit 0;");
+      getAttributes = conn.prepareStatement(
+          "select null as TYPE_CAT, null as TYPE_SCHEM, " + "null as TYPE_NAME, null as ATTR_NAME, null as DATA_TYPE, "
+              + "null as ATTR_TYPE_NAME, null as ATTR_SIZE, null as DECIMAL_DIGITS, "
+              + "null as NUM_PREC_RADIX, null as NULLABLE, null as REMARKS, null as ATTR_DEF, "
+              + "null as SQL_DATA_TYPE, null as SQL_DATETIME_SUB, null as CHAR_OCTET_LENGTH, "
+              + "null as ORDINAL_POSITION, null as IS_NULLABLE, null as SCOPE_CATALOG, "
+              + "null as SCOPE_SCHEMA, null as SCOPE_TABLE, null as SOURCE_DATA_TYPE limit 0;");
     }
 
     return getAttributes.executeQuery();
@@ -1335,9 +1326,9 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getBestRowIdentifier(String c, String s, String t, int scope, boolean n) throws SQLException {
     if (getBestRowIdentifier == null) {
-      getBestRowIdentifier = conn.prepareStatement("select null as SCOPE, null as COLUMN_NAME, " +
-          "null as DATA_TYPE, null as TYPE_NAME, null as COLUMN_SIZE, " +
-          "null as BUFFER_LENGTH, null as DECIMAL_DIGITS, null as PSEUDO_COLUMN limit 0;");
+      getBestRowIdentifier = conn.prepareStatement(
+          "select null as SCOPE, null as COLUMN_NAME, " + "null as DATA_TYPE, null as TYPE_NAME, null as COLUMN_SIZE, "
+              + "null as BUFFER_LENGTH, null as DECIMAL_DIGITS, null as PSEUDO_COLUMN limit 0;");
     }
 
     return getBestRowIdentifier.executeQuery();
@@ -1350,9 +1341,9 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getColumnPrivileges(String c, String s, String t, String colPat) throws SQLException {
     if (getColumnPrivileges == null) {
-      getColumnPrivileges = conn.prepareStatement("select null as TABLE_CAT, null as TABLE_SCHEM, " +
-          "null as TABLE_NAME, null as COLUMN_NAME, null as GRANTOR, null as GRANTEE, " +
-          "null as PRIVILEGE, null as IS_GRANTABLE limit 0;");
+      getColumnPrivileges = conn.prepareStatement("select null as TABLE_CAT, null as TABLE_SCHEM, "
+          + "null as TABLE_NAME, null as COLUMN_NAME, null as GRANTOR, null as GRANTEE, "
+          + "null as PRIVILEGE, null as IS_GRANTABLE limit 0;");
     }
 
     return getColumnPrivileges.executeQuery();
@@ -1392,14 +1383,15 @@ class MetaData implements DatabaseMetaData
       rs = stat.executeQuery("pragma table_info ('" + escape(tblNamePattern) + "');");
     }
 
-    sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '").append(escape(tblNamePattern)).append("' as TABLE_NAME, ")
-    .append("cn as COLUMN_NAME, ct as DATA_TYPE, tn as TYPE_NAME, 2000000000 as COLUMN_SIZE, ")
-    .append("2000000000 as BUFFER_LENGTH, 10   as DECIMAL_DIGITS, 10   as NUM_PREC_RADIX, ")
-    .append("colnullable as NULLABLE, null as REMARKS, colDefault as COLUMN_DEF, ")
-    .append("0    as SQL_DATA_TYPE, 0    as SQL_DATETIME_SUB, 2000000000 as CHAR_OCTET_LENGTH, ")
-    .append("ordpos as ORDINAL_POSITION, (case colnullable when 0 then 'NO' when 1 then 'YES' else '' end)")
-    .append("    as IS_NULLABLE, null as SCOPE_CATLOG, null as SCOPE_SCHEMA, ")
-    .append("null as SCOPE_TABLE, null as SOURCE_DATA_TYPE from (");
+    sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '").append(escape(tblNamePattern))
+        .append("' as TABLE_NAME, ")
+        .append("cn as COLUMN_NAME, ct as DATA_TYPE, tn as TYPE_NAME, 2000000000 as COLUMN_SIZE, ")
+        .append("2000000000 as BUFFER_LENGTH, 10   as DECIMAL_DIGITS, 10   as NUM_PREC_RADIX, ")
+        .append("colnullable as NULLABLE, null as REMARKS, colDefault as COLUMN_DEF, ")
+        .append("0    as SQL_DATA_TYPE, 0    as SQL_DATETIME_SUB, 2000000000 as CHAR_OCTET_LENGTH, ")
+        .append("ordpos as ORDINAL_POSITION, (case colnullable when 0 then 'NO' when 1 then 'YES' else '' end)")
+        .append("    as IS_NULLABLE, null as SCOPE_CATLOG, null as SCOPE_SCHEMA, ")
+        .append("null as SCOPE_TABLE, null as SOURCE_DATA_TYPE from (");
 
     boolean colFound = false;
 
@@ -1432,24 +1424,18 @@ class MetaData implements DatabaseMetaData
       // rule #1 + boolean
       if (TYPE_INTEGER.matcher(colType).find()) {
         colJavaType = Types.INTEGER;
-      }
-      else if (TYPE_VARCHAR.matcher(colType).find()) {
+      } else if (TYPE_VARCHAR.matcher(colType).find()) {
         colJavaType = Types.VARCHAR;
-      }
-      else if (TYPE_FLOAT.matcher(colType).find()) {
+      } else if (TYPE_FLOAT.matcher(colType).find()) {
         colJavaType = Types.FLOAT;
-      }
-      else {
+      } else {
         // catch-all
         colJavaType = Types.VARCHAR;
       }
 
-      sql.append("select ").append(i).append(" as ordpos, ")
-      .append(colNullable).append(" as colnullable, '")
-      .append(colJavaType).append("' as ct, '")
-      .append(escape(colName)).append("' as cn, '")
-      .append(escape(colType)).append("' as tn, ")
-      .append(quote(colDefault == null ? null : escape(colDefault))).append(" as colDefault");
+      sql.append("select ").append(i).append(" as ordpos, ").append(colNullable).append(" as colnullable, '")
+          .append(colJavaType).append("' as ct, '").append(escape(colName)).append("' as cn, '").append(escape(colType))
+          .append("' as tn, ").append(quote(colDefault == null ? null : escape(colDefault))).append(" as colDefault");
 
       if (colNamePattern != null) {
         sql.append(" where upper(cn) like upper('").append(escape(colNamePattern)).append("')");
@@ -1460,19 +1446,20 @@ class MetaData implements DatabaseMetaData
 
     if (colFound) {
       sql.append(") order by TABLE_SCHEM, TABLE_NAME, ORDINAL_POSITION;");
-    }
-    else {
-      sql.append("select null as ordpos, null as colnullable, null as ct, null as cn, null as tn, null as colDefault) limit 0;");
+    } else {
+      sql.append(
+          "select null as ordpos, null as colnullable, null as ct, null as cn, null as tn, null as colDefault) limit 0;");
     }
 
-    return ((Stmt)stat).executeQuery(sql.toString(), true);
+    return ((Stmt) stat).executeQuery(sql.toString(), true);
   }
 
   /**
    * @see java.sql.DatabaseMetaData#getCrossReference(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
   @Override
-  public ResultSet getCrossReference(String pc, String ps, String pt, String fc, String fs, String ft) throws SQLException {
+  public ResultSet getCrossReference(String pc, String ps, String pt, String fc, String fs, String ft)
+      throws SQLException {
     if (pt == null) {
       return getExportedKeys(fc, fs, ft);
     }
@@ -1482,14 +1469,15 @@ class MetaData implements DatabaseMetaData
     }
 
     StringBuffer query = new StringBuffer();
-    query.append("select ").append(quote(pc)).append(" as PKTABLE_CAT, ")
-    .append(quote(ps)).append(" as PKTABLE_SCHEM, ").append(quote(pt)).append(" as PKTABLE_NAME, ")
-    .append("'' as PKCOLUMN_NAME, ").append(quote(fc)).append(" as FKTABLE_CAT, ")
-    .append(quote(fs)).append(" as FKTABLE_SCHEM, ").append(quote(ft)).append(" as FKTABLE_NAME, ")
-    .append("'' as FKCOLUMN_NAME, -1 as KEY_SEQ, 3 as UPDATE_RULE, 3 as DELETE_RULE, '' as FK_NAME, '' as PK_NAME, ")
-    .append(importedKeyInitiallyDeferred).append(" as DEFERRABILITY limit 0 ");
+    query.append("select ").append(quote(pc)).append(" as PKTABLE_CAT, ").append(quote(ps))
+        .append(" as PKTABLE_SCHEM, ").append(quote(pt)).append(" as PKTABLE_NAME, ").append("'' as PKCOLUMN_NAME, ")
+        .append(quote(fc)).append(" as FKTABLE_CAT, ").append(quote(fs)).append(" as FKTABLE_SCHEM, ").append(quote(ft))
+        .append(" as FKTABLE_NAME, ")
+        .append(
+            "'' as FKCOLUMN_NAME, -1 as KEY_SEQ, 3 as UPDATE_RULE, 3 as DELETE_RULE, '' as FK_NAME, '' as PK_NAME, ")
+        .append(importedKeyInitiallyDeferred).append(" as DEFERRABILITY limit 0 ");
 
-    return ((Stmt)conn.createStatement()).executeQuery(query.toString(), true);
+    return ((Stmt) conn.createStatement()).executeQuery(query.toString(), true);
   }
 
   /**
@@ -1527,14 +1515,13 @@ class MetaData implements DatabaseMetaData
 
     Statement stat = conn.createStatement();
     StringBuffer sql = new StringBuffer(512);
-    sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '")
-    .append(escape(table))
-    .append("' as TABLE_NAME, cn as COLUMN_NAME, ks as KEY_SEQ, pk as PK_NAME from (");
+    sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '").append(escape(table))
+        .append("' as TABLE_NAME, cn as COLUMN_NAME, ks as KEY_SEQ, pk as PK_NAME from (");
 
     if (columns == null) {
       sql.append("select null as cn, null as pk, 0 as ks) limit 0;");
 
-      return ((Stmt)stat).executeQuery(sql.toString(), true);
+      return ((Stmt) stat).executeQuery(sql.toString(), true);
     }
 
     String pkName = pkFinder.getName();
@@ -1543,12 +1530,11 @@ class MetaData implements DatabaseMetaData
       if (i > 0) {
         sql.append(" union ");
       }
-      sql.append("select ").append(pkName).append(" as pk, '")
-      .append(escape(columns[i].trim())).append("' as cn, ")
-      .append(i).append(" as ks");
+      sql.append("select ").append(pkName).append(" as pk, '").append(escape(columns[i].trim())).append("' as cn, ")
+          .append(i).append(" as ks");
     }
 
-    return ((Stmt)stat).executeQuery(sql.append(") order by cn;").toString(), true);
+    return ((Stmt) stat).executeQuery(sql.append(") order by cn;").toString(), true);
   }
 
   /**
@@ -1559,9 +1545,8 @@ class MetaData implements DatabaseMetaData
   private static String quote(String tableName) {
     if (tableName == null) {
       return "null";
-    }
-    else {
-      return "'"+tableName+"'";
+    } else {
+      return "'" + tableName + "'";
     }
   }
 
@@ -1578,8 +1563,8 @@ class MetaData implements DatabaseMetaData
   /**
    * Pattern used to extract a named primary key.
    */
-  protected final static Pattern FK_NAMED_PATTERN =
-      Pattern.compile(".* constraint +(.*?) +foreign +key *\\((.*?)\\).*", Pattern.IGNORE_CASE);
+  protected final static Pattern FK_NAMED_PATTERN = Pattern.compile(".* constraint +(.*?) +foreign +key *\\((.*?)\\).*",
+      Pattern.IGNORE_CASE);
 
   /**
    * @see java.sql.DatabaseMetaData#getExportedKeys(java.lang.String, java.lang.String,
@@ -1589,7 +1574,7 @@ class MetaData implements DatabaseMetaData
   public ResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException {
     PrimaryKeyFinder pkFinder = new PrimaryKeyFinder(table);
     String[] pkColumns = pkFinder.getColumns();
-    Stmt stat = (Stmt)conn.createStatement();
+    Stmt stat = (Stmt) conn.createStatement();
 
     catalog = (catalog != null) ? quote(catalog) : null;
     schema = (schema != null) ? quote(schema) : null;
@@ -1612,12 +1597,11 @@ class MetaData implements DatabaseMetaData
       String target = table.toLowerCase();
       // find imported keys for each table
       for (int i = 0, n = tableList.size(); i < n; i++) {
-        String tbl = (String)tableList.items[i];
+        String tbl = (String) tableList.items[i];
         try {
           fk = stat.executeQuery("pragma foreign_key_list('" + escape(tbl) + "')");
         } catch (SQLException e) {
-          if (e.getErrorCode() == Codes.SQLITE_DONE)
-          {
+          if (e.getErrorCode() == Codes.SQLITE_DONE) {
             continue; // expected if table has no foreign keys
           }
 
@@ -1626,9 +1610,9 @@ class MetaData implements DatabaseMetaData
 
         Stmt stat2 = null;
         try {
-          stat2 = (Stmt)conn.createStatement();
+          stat2 = (Stmt) conn.createStatement();
 
-          while(fk.next()) {
+          while (fk.next()) {
             int keySeq = fk.getInt(2) + 1;
             String PKTabName = fk.getString(3).toLowerCase();
 
@@ -1639,25 +1623,21 @@ class MetaData implements DatabaseMetaData
             String PKColName = fk.getString(5);
             PKColName = (PKColName == null) ? pkColumns[0] : PKColName.toLowerCase();
 
-            exportedKeysQuery
-            .append(count > 0 ? " union all select " : "select ")
-            .append(keySeq).append(" as ks, lower('")
-            .append(escape(tbl)).append("') as fkt, lower('")
-            .append(escape(fk.getString(4))).append("') as fcn, '")
-            .append(escape(PKColName)).append("' as pcn, ")
-            .append(RULE_MAP.get(fk.getString(6).hashCode(),-1)).append(" as ur, ")
-            .append(RULE_MAP.get(fk.getString(7).hashCode(),-1)).append(" as dr, ");
+            exportedKeysQuery.append(count > 0 ? " union all select " : "select ").append(keySeq)
+                .append(" as ks, lower('").append(escape(tbl)).append("') as fkt, lower('")
+                .append(escape(fk.getString(4))).append("') as fcn, '").append(escape(PKColName)).append("' as pcn, ")
+                .append(RULE_MAP.get(fk.getString(6).hashCode(), -1)).append(" as ur, ")
+                .append(RULE_MAP.get(fk.getString(7).hashCode(), -1)).append(" as dr, ");
 
-            rs = stat2.executeQuery("select sql from sqlite_master where" +
-                " lower(name) = lower('" + escape(tbl) + "')");
+            rs = stat2
+                .executeQuery("select sql from sqlite_master where" + " lower(name) = lower('" + escape(tbl) + "')");
 
             if (rs.next()) {
               Matcher matcher = FK_NAMED_PATTERN.matcher(rs.getString(1));
 
-              if (matcher.find()){
+              if (matcher.find()) {
                 exportedKeysQuery.append("'").append(escape(matcher.group(1).toLowerCase())).append("' as fkn");
-              }
-              else {
+              } else {
                 exportedKeysQuery.append("'' as fkn");
               }
             }
@@ -1665,54 +1645,49 @@ class MetaData implements DatabaseMetaData
             rs.close();
             count++;
           }
-        }
-        finally {
-          try{
+        } finally {
+          try {
             if (rs != null) {
               rs.close();
             }
-          }catch(SQLException e) {}
-          try{
+          } catch (SQLException e) {
+          }
+          try {
             if (stat2 != null) {
               stat2.close();
             }
-          }catch(SQLException e) {}
-          try{
+          } catch (SQLException e) {
+          }
+          try {
             if (fk != null) {
               fk.close();
             }
-          }catch(SQLException e) {}
+          } catch (SQLException e) {
+          }
         }
       }
     }
 
     boolean hasImportedKey = (count > 0);
     StringBuffer sql = new StringBuffer(512);
-    sql.append("select ")
-    .append(catalog).append(" as PKTABLE_CAT, ")
-    .append(schema).append(" as PKTABLE_SCHEM, ")
-    .append(quote(table)).append(" as PKTABLE_NAME, ")
-    .append(hasImportedKey ? "pcn" : "''").append(" as PKCOLUMN_NAME, ")
-    .append(catalog).append(" as FKTABLE_CAT, ")
-    .append(schema).append(" as FKTABLE_SCHEM, ")
-    .append(hasImportedKey ? "fkt" : "''").append(" as FKTABLE_NAME, ")
-    .append(hasImportedKey ? "fcn" : "''").append(" as FKCOLUMN_NAME, ")
-    .append(hasImportedKey ? "ks" : "-1").append(" as KEY_SEQ, ")
-    .append(hasImportedKey ? "ur" : "3").append(" as UPDATE_RULE, ")
-    .append(hasImportedKey ? "dr" : "3").append(" as DELETE_RULE, ")
-    .append(hasImportedKey ? "fkn" : "''").append(" as FK_NAME, ")
-    .append(pkFinder.getName() != null ? pkFinder.getName() : "''").append(" as PK_NAME, ")
-    .append(importedKeyInitiallyDeferred) // FIXME: Check for pragma foreign_keys = true ?
-    .append(" as DEFERRABILITY ");
+    sql.append("select ").append(catalog).append(" as PKTABLE_CAT, ").append(schema).append(" as PKTABLE_SCHEM, ")
+        .append(quote(table)).append(" as PKTABLE_NAME, ").append(hasImportedKey ? "pcn" : "''")
+        .append(" as PKCOLUMN_NAME, ").append(catalog).append(" as FKTABLE_CAT, ").append(schema)
+        .append(" as FKTABLE_SCHEM, ").append(hasImportedKey ? "fkt" : "''").append(" as FKTABLE_NAME, ")
+        .append(hasImportedKey ? "fcn" : "''").append(" as FKCOLUMN_NAME, ").append(hasImportedKey ? "ks" : "-1")
+        .append(" as KEY_SEQ, ").append(hasImportedKey ? "ur" : "3").append(" as UPDATE_RULE, ")
+        .append(hasImportedKey ? "dr" : "3").append(" as DELETE_RULE, ").append(hasImportedKey ? "fkn" : "''")
+        .append(" as FK_NAME, ").append(pkFinder.getName() != null ? pkFinder.getName() : "''").append(" as PK_NAME, ")
+        .append(importedKeyInitiallyDeferred) // FIXME: Check for pragma foreign_keys = true ?
+        .append(" as DEFERRABILITY ");
 
     if (hasImportedKey) {
       sql.append("from (").append(exportedKeysQuery).append(") order by fkt");
-    }
-    else {
+    } else {
       sql.append("limit 0");
     }
 
-    return ((Stmt)stat).executeQuery(sql.toString(), true);
+    return ((Stmt) stat).executeQuery(sql.toString(), true);
   }
 
   /**
@@ -1725,25 +1700,22 @@ class MetaData implements DatabaseMetaData
     Statement stat = conn.createStatement();
     StringBuffer sql = new StringBuffer(700);
 
-    sql.append("select ").append(quote(catalog)).append(" as PKTABLE_CAT, ")
-    .append(quote(schema)).append(" as PKTABLE_SCHEM, ")
-    .append("ptn as PKTABLE_NAME, pcn as PKCOLUMN_NAME, ")
-    .append(quote(catalog)).append(" as FKTABLE_CAT, ")
-    .append(quote(schema)).append(" as FKTABLE_SCHEM, ")
-    .append(quote(table)).append(" as FKTABLE_NAME, ") 
-    .append("fcn as FKCOLUMN_NAME, ks as KEY_SEQ, ur as UPDATE_RULE, dr as DELETE_RULE, '' as FK_NAME, '' as PK_NAME, ")
-    .append(importedKeyInitiallyDeferred).append(" as DEFERRABILITY from (");
+    sql.append("select ").append(quote(catalog)).append(" as PKTABLE_CAT, ").append(quote(schema))
+        .append(" as PKTABLE_SCHEM, ").append("ptn as PKTABLE_NAME, pcn as PKCOLUMN_NAME, ").append(quote(catalog))
+        .append(" as FKTABLE_CAT, ").append(quote(schema)).append(" as FKTABLE_SCHEM, ").append(quote(table))
+        .append(" as FKTABLE_NAME, ")
+        .append(
+            "fcn as FKCOLUMN_NAME, ks as KEY_SEQ, ur as UPDATE_RULE, dr as DELETE_RULE, '' as FK_NAME, '' as PK_NAME, ")
+        .append(importedKeyInitiallyDeferred).append(" as DEFERRABILITY from (");
 
     // Use a try catch block to avoid "query does not return ResultSet" error
     try {
       rs = stat.executeQuery("pragma foreign_key_list('" + escape(table) + "');");
-    }
-    catch (SQLException e) {
-      sql.append("select -1 as ks, '' as ptn, '' as fcn, '' as pcn, ")
-      .append(importedKeyNoAction).append(" as ur, ")
-      .append(importedKeyNoAction).append(" as dr) limit 0;");
+    } catch (SQLException e) {
+      sql.append("select -1 as ks, '' as ptn, '' as fcn, '' as pcn, ").append(importedKeyNoAction).append(" as ur, ")
+          .append(importedKeyNoAction).append(" as dr) limit 0;");
 
-      return ((Stmt)stat).executeQuery(sql.toString(), true);
+      return ((Stmt) stat).executeQuery(sql.toString(), true);
     }
 
     for (int i = 0; rs.next(); i++) {
@@ -1763,26 +1735,21 @@ class MetaData implements DatabaseMetaData
         sql.append(" union all ");
       }
 
-      sql.append("select ").append(keySeq).append(" as ks,")
-      .append("'").append(escape(PKTabName)).append("' as ptn, '")
-      .append(escape(FKColName)).append("' as fcn, '")
-      .append(escape(PKColName)).append("' as pcn,")
-      .append("case '").append(escape(updateRule)).append("'")
-      .append(" when 'NO ACTION' then ").append(importedKeyNoAction)
-      .append(" when 'CASCADE' then ").append(importedKeyCascade)
-      .append(" when 'RESTRICT' then ").append(importedKeyRestrict)
-      .append(" when 'SET NULL' then ").append(importedKeySetNull)
-      .append(" when 'SET DEFAULT' then ").append(importedKeySetDefault).append(" end as ur, ")
-      .append("case '").append(escape(deleteRule)).append("'")
-      .append(" when 'NO ACTION' then ").append(importedKeyNoAction)
-      .append(" when 'CASCADE' then ").append(importedKeyCascade)
-      .append(" when 'RESTRICT' then ").append(importedKeyRestrict)
-      .append(" when 'SET NULL' then ").append(importedKeySetNull)
-      .append(" when 'SET DEFAULT' then ").append(importedKeySetDefault).append(" end as dr");
+      sql.append("select ").append(keySeq).append(" as ks,").append("'").append(escape(PKTabName)).append("' as ptn, '")
+          .append(escape(FKColName)).append("' as fcn, '").append(escape(PKColName)).append("' as pcn,")
+          .append("case '").append(escape(updateRule)).append("'").append(" when 'NO ACTION' then ")
+          .append(importedKeyNoAction).append(" when 'CASCADE' then ").append(importedKeyCascade)
+          .append(" when 'RESTRICT' then ").append(importedKeyRestrict).append(" when 'SET NULL' then ")
+          .append(importedKeySetNull).append(" when 'SET DEFAULT' then ").append(importedKeySetDefault)
+          .append(" end as ur, ").append("case '").append(escape(deleteRule)).append("'")
+          .append(" when 'NO ACTION' then ").append(importedKeyNoAction).append(" when 'CASCADE' then ")
+          .append(importedKeyCascade).append(" when 'RESTRICT' then ").append(importedKeyRestrict)
+          .append(" when 'SET NULL' then ").append(importedKeySetNull).append(" when 'SET DEFAULT' then ")
+          .append(importedKeySetDefault).append(" end as dr");
     }
     rs.close();
 
-    return ((Stmt)stat).executeQuery(sql.append(");").toString(), true);
+    return ((Stmt) stat).executeQuery(sql.append(");").toString(), true);
   }
 
   /**
@@ -1795,52 +1762,48 @@ class MetaData implements DatabaseMetaData
     Statement stat = conn.createStatement();
     StringBuffer sql = new StringBuffer(500);
 
-    sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '")
-    .append(escape(t)).append("' as TABLE_NAME, un as NON_UNIQUE, null as INDEX_QUALIFIER, n as INDEX_NAME, ")
-    .append(tableIndexOther).append(" as TYPE, op as ORDINAL_POSITION, ")
-    .append("cn as COLUMN_NAME, null as ASC_OR_DESC, 0 as CARDINALITY, 0 as PAGES, null as FILTER_CONDITION from (");
+    sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '").append(escape(t))
+        .append("' as TABLE_NAME, un as NON_UNIQUE, null as INDEX_QUALIFIER, n as INDEX_NAME, ").append(tableIndexOther)
+        .append(" as TYPE, op as ORDINAL_POSITION, ").append(
+            "cn as COLUMN_NAME, null as ASC_OR_DESC, 0 as CARDINALITY, 0 as PAGES, null as FILTER_CONDITION from (");
 
     // Use a try catch block to avoid "query does not return ResultSet" error
     try {
       rs = stat.executeQuery("pragma index_list('" + escape(t) + "');");
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       sql.append("select null as un, null as n, null as op, null as cn) limit 0;");
 
-      return ((Stmt)stat).executeQuery(sql.toString(), true);
+      return ((Stmt) stat).executeQuery(sql.toString(), true);
     }
 
     Vector indexList = new Vector(20);
     while (rs.next()) {
-      indexList.addElement(new Object[]{rs.getString(2),new Integer(rs.getInt(3))});
-    } 
+      indexList.addElement(new Object[] { rs.getString(2), new Integer(rs.getInt(3)) });
+    }
     rs.close();
 
     int i = 0;
     Object[] currentIndex;
 
-    for (int j = 0, n = indexList.size(); j < n; j++)
-    {
-      currentIndex = (Object[])indexList.items[i];
-      String indexName = (String)currentIndex[0];
-      int indexValue = ((Integer)currentIndex[1]).intValue();
+    for (int j = 0, n = indexList.size(); j < n; j++) {
+      currentIndex = (Object[]) indexList.items[i];
+      String indexName = (String) currentIndex[0];
+      int indexValue = ((Integer) currentIndex[1]).intValue();
       rs = stat.executeQuery("pragma index_info('" + escape(indexName) + "');");
 
-      while(rs.next()) {
+      while (rs.next()) {
         if (i++ > 1) {
           sql.append(" union all ");
         }
 
-        sql.append("select ").append(1 - indexValue).append(" as un,'")
-        .append(escape(indexName)).append("' as n,")
-        .append(rs.getInt(1) + 1).append(" as op,'")
-        .append(escape(rs.getString(3))).append("' as cn");
+        sql.append("select ").append(1 - indexValue).append(" as un,'").append(escape(indexName)).append("' as n,")
+            .append(rs.getInt(1) + 1).append(" as op,'").append(escape(rs.getString(3))).append("' as cn");
       }
 
       rs.close();
     }
 
-    return ((Stmt)stat).executeQuery(sql.append(");").toString(), true);
+    return ((Stmt) stat).executeQuery(sql.append(");").toString(), true);
   }
 
   /**
@@ -1850,11 +1813,10 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getProcedureColumns(String c, String s, String p, String colPat) throws SQLException {
     if (getProcedures == null) {
-      getProcedureColumns = conn.prepareStatement("select null as PROCEDURE_CAT, " +
-          "null as PROCEDURE_SCHEM, null as PROCEDURE_NAME, null as COLUMN_NAME, " +
-          "null as COLUMN_TYPE, null as DATA_TYPE, null as TYPE_NAME, null as PRECISION, " +
-          "null as LENGTH, null as SCALE, null as RADIX, null as NULLABLE, " +
-          "null as REMARKS limit 0;");
+      getProcedureColumns = conn.prepareStatement(
+          "select null as PROCEDURE_CAT, " + "null as PROCEDURE_SCHEM, null as PROCEDURE_NAME, null as COLUMN_NAME, "
+              + "null as COLUMN_TYPE, null as DATA_TYPE, null as TYPE_NAME, null as PRECISION, "
+              + "null as LENGTH, null as SCALE, null as RADIX, null as NULLABLE, " + "null as REMARKS limit 0;");
     }
     return getProcedureColumns.executeQuery();
 
@@ -1867,9 +1829,9 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getProcedures(String c, String s, String p) throws SQLException {
     if (getProcedures == null) {
-      getProcedures = conn.prepareStatement("select null as PROCEDURE_CAT, null as PROCEDURE_SCHEM, " +
-          "null as PROCEDURE_NAME, null as UNDEF1, null as UNDEF2, null as UNDEF3, " +
-          "null as REMARKS, null as PROCEDURE_TYPE limit 0;");
+      getProcedures = conn.prepareStatement("select null as PROCEDURE_CAT, null as PROCEDURE_SCHEM, "
+          + "null as PROCEDURE_NAME, null as UNDEF1, null as UNDEF2, null as UNDEF3, "
+          + "null as REMARKS, null as PROCEDURE_TYPE limit 0;");
     }
     return getProcedures.executeQuery();
   }
@@ -1881,8 +1843,8 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getSuperTables(String c, String s, String t) throws SQLException {
     if (getSuperTables == null) {
-      getSuperTables = conn.prepareStatement("select null as TABLE_CAT, null as TABLE_SCHEM, " +
-          "null as TABLE_NAME, null as SUPERTABLE_NAME limit 0;");
+      getSuperTables = conn.prepareStatement(
+          "select null as TABLE_CAT, null as TABLE_SCHEM, " + "null as TABLE_NAME, null as SUPERTABLE_NAME limit 0;");
     }
     return getSuperTables.executeQuery();
   }
@@ -1894,9 +1856,8 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getSuperTypes(String c, String s, String t) throws SQLException {
     if (getSuperTypes == null) {
-      getSuperTypes = conn.prepareStatement("select null as TYPE_CAT, null as TYPE_SCHEM, " +
-          "null as TYPE_NAME, null as SUPERTYPE_CAT, null as SUPERTYPE_SCHEM, " +
-          "null as SUPERTYPE_NAME limit 0;");
+      getSuperTypes = conn.prepareStatement("select null as TYPE_CAT, null as TYPE_SCHEM, "
+          + "null as TYPE_NAME, null as SUPERTYPE_CAT, null as SUPERTYPE_SCHEM, " + "null as SUPERTYPE_NAME limit 0;");
     }
     return getSuperTypes.executeQuery();
   }
@@ -1908,9 +1869,9 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getTablePrivileges(String c, String s, String t) throws SQLException {
     if (getTablePrivileges == null) {
-      getTablePrivileges = conn.prepareStatement("select  null as TABLE_CAT, "
-          + "null as TABLE_SCHEM, null as TABLE_NAME, null as GRANTOR, null "
-          + "GRANTEE,  null as PRIVILEGE, null as IS_GRANTABLE limit 0;");
+      getTablePrivileges = conn.prepareStatement(
+          "select  null as TABLE_CAT, " + "null as TABLE_SCHEM, null as TABLE_NAME, null as GRANTOR, null "
+              + "GRANTEE,  null as PRIVILEGE, null as IS_GRANTABLE limit 0;");
     }
     return getTablePrivileges.executeQuery();
   }
@@ -1927,15 +1888,14 @@ class MetaData implements DatabaseMetaData
 
     StringBuffer sql = new StringBuffer();
     sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, name as TABLE_NAME,")
-    .append(" upper(type) as TABLE_TYPE, null as REMARKS, null as TYPE_CAT, null as TYPE_SCHEM,")
-    .append(" null as TYPE_NAME, null as SELF_REFERENCING_COL_NAME, null as REF_GENERATION")
-    .append(" from (select name, type from sqlite_master union all select name, type from sqlite_temp_master)")
-    .append(" where TABLE_NAME like '").append(tblNamePattern).append("' and TABLE_TYPE in (");
+        .append(" upper(type) as TABLE_TYPE, null as REMARKS, null as TYPE_CAT, null as TYPE_SCHEM,")
+        .append(" null as TYPE_NAME, null as SELF_REFERENCING_COL_NAME, null as REF_GENERATION")
+        .append(" from (select name, type from sqlite_master union all select name, type from sqlite_temp_master)")
+        .append(" where TABLE_NAME like '").append(tblNamePattern).append("' and TABLE_TYPE in (");
 
     if (types == null || types.length == 0) {
       sql.append("'TABLE','VIEW'");
-    }
-    else {
+    } else {
       sql.append("'").append(types[0].toUpperCase()).append("'");
 
       for (int i = 1; i < types.length; i++) {
@@ -1945,7 +1905,7 @@ class MetaData implements DatabaseMetaData
 
     sql.append(") order by TABLE_TYPE, TABLE_NAME;");
 
-    return ((Stmt)conn.createStatement()).executeQuery(sql.toString(), true);
+    return ((Stmt) conn.createStatement()).executeQuery(sql.toString(), true);
   }
 
   /**
@@ -1955,8 +1915,7 @@ class MetaData implements DatabaseMetaData
   public ResultSet getTableTypes() throws SQLException {
     checkOpen();
     if (getTableTypes == null) {
-      getTableTypes = conn.prepareStatement("select 'TABLE' as TABLE_TYPE "
-          + "union select 'VIEW' as TABLE_TYPE;");
+      getTableTypes = conn.prepareStatement("select 'TABLE' as TABLE_TYPE " + "union select 'VIEW' as TABLE_TYPE;");
     }
     getTableTypes.clearParameters();
     return getTableTypes.executeQuery();
@@ -1968,37 +1927,15 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getTypeInfo() throws SQLException {
     if (getTypeInfo == null) {
-      getTypeInfo = conn.prepareStatement("select " + "tn as TYPE_NAME, " + "dt as DATA_TYPE, "
-          + "0 as PRECISION, " + "null as LITERAL_PREFIX, " + "null as LITERAL_SUFFIX, "
-          + "null as CREATE_PARAMS, "
-          + typeNullable
-          + " as NULLABLE, "
-          + "1 as CASE_SENSITIVE, "
-          + typeSearchable
-          + " as SEARCHABLE, "
-          + "0 as UNSIGNED_ATTRIBUTE, "
-          + "0 as FIXED_PREC_SCALE, "
-          + "0 as AUTO_INCREMENT, "
-          + "null as LOCAL_TYPE_NAME, "
-          + "0 as MINIMUM_SCALE, "
-          + "0 as MAXIMUM_SCALE, "
-          + "0 as SQL_DATA_TYPE, "
-          + "0 as SQL_DATETIME_SUB, "
-          + "10 as NUM_PREC_RADIX from ("
-          + "    select 'BLOB' as tn, "
-          + Types.BLOB
-          + " as dt union"
-          + "    select 'NULL' as tn, "
-          + Types.NULL
-          + " as dt union"
-          + "    select 'REAL' as tn, "
-          + Types.REAL
-          + " as dt union"
-          + "    select 'TEXT' as tn, "
-          + Types.VARCHAR
-          + " as dt union"
-          + "    select 'INTEGER' as tn, "
-          + Types.INTEGER + " as dt" + ") order by TYPE_NAME;");
+      getTypeInfo = conn.prepareStatement("select " + "tn as TYPE_NAME, " + "dt as DATA_TYPE, " + "0 as PRECISION, "
+          + "null as LITERAL_PREFIX, " + "null as LITERAL_SUFFIX, " + "null as CREATE_PARAMS, " + typeNullable
+          + " as NULLABLE, " + "1 as CASE_SENSITIVE, " + typeSearchable + " as SEARCHABLE, "
+          + "0 as UNSIGNED_ATTRIBUTE, " + "0 as FIXED_PREC_SCALE, " + "0 as AUTO_INCREMENT, "
+          + "null as LOCAL_TYPE_NAME, " + "0 as MINIMUM_SCALE, " + "0 as MAXIMUM_SCALE, " + "0 as SQL_DATA_TYPE, "
+          + "0 as SQL_DATETIME_SUB, " + "10 as NUM_PREC_RADIX from (" + "    select 'BLOB' as tn, " + Types.BLOB
+          + " as dt union" + "    select 'NULL' as tn, " + Types.NULL + " as dt union" + "    select 'REAL' as tn, "
+          + Types.REAL + " as dt union" + "    select 'TEXT' as tn, " + Types.VARCHAR + " as dt union"
+          + "    select 'INTEGER' as tn, " + Types.INTEGER + " as dt" + ") order by TYPE_NAME;");
     }
 
     getTypeInfo.clearParameters();
@@ -2013,8 +1950,8 @@ class MetaData implements DatabaseMetaData
   public ResultSet getUDTs(String c, String s, String t, int[] types) throws SQLException {
     if (getUDTs == null) {
       getUDTs = conn.prepareStatement("select  null as TYPE_CAT, null as TYPE_SCHEM, "
-          + "null as TYPE_NAME,  null as CLASS_NAME,  null as DATA_TYPE, null as REMARKS, "
-          + "null as BASE_TYPE " + "limit 0;");
+          + "null as TYPE_NAME,  null as CLASS_NAME,  null as DATA_TYPE, null as REMARKS, " + "null as BASE_TYPE "
+          + "limit 0;");
     }
 
     getUDTs.clearParameters();
@@ -2028,9 +1965,9 @@ class MetaData implements DatabaseMetaData
   @Override
   public ResultSet getVersionColumns(String c, String s, String t) throws SQLException {
     if (getVersionColumns == null) {
-      getVersionColumns = conn.prepareStatement("select null as SCOPE, null as COLUMN_NAME, "
-          + "null as DATA_TYPE, null as TYPE_NAME, null as COLUMN_SIZE, "
-          + "null as BUFFER_LENGTH, null as DECIMAL_DIGITS, null as PSEUDO_COLUMN limit 0;");
+      getVersionColumns = conn.prepareStatement(
+          "select null as SCOPE, null as COLUMN_NAME, " + "null as DATA_TYPE, null as TYPE_NAME, null as COLUMN_SIZE, "
+              + "null as BUFFER_LENGTH, null as DECIMAL_DIGITS, null as PSEUDO_COLUMN limit 0;");
     }
     return getVersionColumns.executeQuery();
   }
@@ -2082,14 +2019,14 @@ class MetaData implements DatabaseMetaData
   /**
    * Pattern used to extract column order for an unnamed primary key.
    */
-  protected final static Pattern PK_UNNAMED_PATTERN =
-      Pattern.compile(".* primary +key *\\((.*?,+.*?)\\).*", Pattern.IGNORE_CASE);
+  protected final static Pattern PK_UNNAMED_PATTERN = Pattern.compile(".* primary +key *\\((.*?,+.*?)\\).*",
+      Pattern.IGNORE_CASE);
 
   /**
    * Pattern used to extract a named primary key.
    */
-  protected final static Pattern PK_NAMED_PATTERN =
-      Pattern.compile(".* constraint +(.*?) +primary +key *\\((.*?)\\).*", Pattern.IGNORE_CASE);
+  protected final static Pattern PK_NAMED_PATTERN = Pattern.compile(".* constraint +(.*?) +primary +key *\\((.*?)\\).*",
+      Pattern.IGNORE_CASE);
 
   /**
    * Parses the sqlite_master table for a table's primary key
@@ -2122,30 +2059,29 @@ class MetaData implements DatabaseMetaData
       try {
         stat = conn.createStatement();
         // read create SQL script for table
-        rs = stat.executeQuery("select sql from sqlite_master where" +
-            " lower(name) = lower('" + escape(table) + "') and type = 'table'");
+        rs = stat.executeQuery(
+            "select sql from sqlite_master where" + " lower(name) = lower('" + escape(table) + "') and type = 'table'");
 
         if (!rs.next()) {
           throw new SQLException("Table not found: '" + table + "'");
         }
 
         Matcher matcher = PK_NAMED_PATTERN.matcher(rs.getString(1));
-        if (matcher.find()){
+        if (matcher.find()) {
           pkName = '\'' + escape(matcher.group(1).toLowerCase()) + '\'';
           pkColumns = matcher.group(2).split(",");
-        }
-        else {
+        } else {
           matcher = PK_UNNAMED_PATTERN.matcher(rs.getString(1));
-          if (matcher.find()){
+          if (matcher.find()) {
             pkColumns = matcher.group(1).split(",");
           }
         }
 
         if (pkColumns == null) {
           rs = stat.executeQuery("pragma table_info('" + escape(table) + "');");
-          while(rs.next()) {
+          while (rs.next()) {
             if (rs.getBoolean(6)) {
-              pkColumns = new String[]{rs.getString(2)};
+              pkColumns = new String[] { rs.getString(2) };
             }
           }
         }
@@ -2155,18 +2091,19 @@ class MetaData implements DatabaseMetaData
             pkColumns[i] = pkColumns[i].toLowerCase().trim();
           }
         }
-      }
-      finally {
+      } finally {
         try {
           if (rs != null) {
             rs.close();
           }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         try {
           if (stat != null) {
             stat.close();
           }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
       }
     }
 

@@ -173,13 +173,11 @@ public class ZipAlign {
       super(out);
     }// FilterOutputStreamEx()
 
-
     @Override
     public void write(byte[] b) throws IOException {
       out.write(b);
       totalWritten += b.length;
     }// write()
-
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
@@ -187,13 +185,11 @@ public class ZipAlign {
       totalWritten += len;
     }// write()
 
-
     @Override
     public void write(int b) throws IOException {
       out.write(b);
       totalWritten += 1;
     }// write()
-
 
     @Override
     public void close() throws IOException {
@@ -286,8 +282,7 @@ public class ZipAlign {
   private void openFiles() throws IOException {
     mZipFile = new ZipFile(mInputFile);
     mRafInput = new RandomAccessFile(mInputFile, "r");
-    mOutputStream = new FilterOutputStreamEx(new BufferedOutputStream(
-        new FileOutputStream(mOutputFile), 32 * 1024));
+    mOutputStream = new FilterOutputStreamEx(new BufferedOutputStream(new FileOutputStream(mOutputFile), 32 * 1024));
   }// openFiles()
 
   /**
@@ -306,19 +301,16 @@ public class ZipAlign {
 
     final Enumeration<?> entries = mZipFile.entries();
     while (entries.hasMoreElements()) {
-      final ZipEntry entry = (ZipEntry)entries.nextElement();
+      final ZipEntry entry = (ZipEntry) entries.nextElement();
 
       int flags = entry.getMethod() == ZipEntry.STORED ? 0 : 1 << 3;
       flags |= 1 << 11;
 
       final long outputEntryHeaderOffset = mOutputStream.totalWritten;
 
-      final int inputEntryHeaderSize = ZIP_ENTRY_HEADER_LEN
-          + (entry.getExtra() != null ? entry.getExtra().length
-              : 0)
+      final int inputEntryHeaderSize = ZIP_ENTRY_HEADER_LEN + (entry.getExtra() != null ? entry.getExtra().length : 0)
           + entry.getName().getBytes("UTF-8").length;
-      final long inputEntryDataOffset = mInputFileOffset
-          + inputEntryHeaderSize;
+      final long inputEntryDataOffset = mInputFileOffset + inputEntryHeaderSize;
 
       final int padding;
 
@@ -338,8 +330,7 @@ public class ZipAlign {
         mTotalPadding += padding;
       }
 
-      final XEntry xentry = new XEntry(entry,
-          outputEntryHeaderOffset, flags, padding);
+      final XEntry xentry = new XEntry(entry, outputEntryHeaderOffset, flags, padding);
       mXEntries.add(xentry);
 
       /*
@@ -353,8 +344,7 @@ public class ZipAlign {
       } else {
         byte[] newExtra = new byte[extra.length + padding];
         System.arraycopy(extra, 0, newExtra, 0, extra.length);
-        Arrays.fill(newExtra, extra.length, newExtra.length,
-            (byte) 0);
+        Arrays.fill(newExtra, extra.length, newExtra.length, (byte) 0);
         extra = newExtra;
       }
       entry.setExtra(extra);
@@ -392,12 +382,10 @@ public class ZipAlign {
       mOutputStream.writeInt(entry.getCompressedSize());
       mOutputStream.writeInt(entry.getSize());
 
-      mOutputStream
-      .writeShort(entry.getName().getBytes("UTF-8").length);
+      mOutputStream.writeShort(entry.getName().getBytes("UTF-8").length);
       mOutputStream.writeShort(entry.getExtra().length);
       mOutputStream.write(entry.getName().getBytes("UTF-8"));
-      mOutputStream.write(entry.getExtra(), 0,
-          entry.getExtra().length);
+      mOutputStream.write(entry.getExtra(), 0, entry.getExtra().length);
 
       /*
        * Copy raw data.
@@ -407,12 +395,9 @@ public class ZipAlign {
 
       final long sizeToCopy;
       if ((flags & ZIP_ENTRY_USES_DATA_DESCR) != 0) {
-        sizeToCopy = (entry.isDirectory() ? 0 : entry
-            .getCompressedSize())
-            + ZIP_ENTRY_DATA_DESCRIPTOR_LEN;
+        sizeToCopy = (entry.isDirectory() ? 0 : entry.getCompressedSize()) + ZIP_ENTRY_DATA_DESCRIPTOR_LEN;
       } else {
-        sizeToCopy = entry.isDirectory() ? 0 : entry
-            .getCompressedSize();
+        sizeToCopy = entry.isDirectory() ? 0 : entry.getCompressedSize();
       }
 
       if (sizeToCopy > 0) {
@@ -421,22 +406,18 @@ public class ZipAlign {
         long totalSizeCopied = 0;
         final byte[] buf = new byte[32 * 1024];
         while (totalSizeCopied < sizeToCopy) {
-          int read = mRafInput.read(
-              buf,
-              0,
-              (int) Math.min(32 * 1024, sizeToCopy
-                  - totalSizeCopied));
+          int read = mRafInput.read(buf, 0, (int) Math.min(32 * 1024, sizeToCopy - totalSizeCopied));
           if (read <= 0) {
             break;
           }
 
           mOutputStream.write(buf, 0, read);
           totalSizeCopied += read;
-        }// while
-      }// if
+        } // while
+      } // if
 
       mInputFileOffset += sizeToCopy;
-    }// while
+    } // while
   }// copyAllEntries()
 
   /**
@@ -450,9 +431,9 @@ public class ZipAlign {
   private void buildCentralDirectory() throws IOException {
     final long centralDirOffset = mOutputStream.totalWritten;
 
-    for (int i = 0, n = mXEntries.size(); i < n; i++){
+    for (int i = 0, n = mXEntries.size(); i < n; i++) {
 
-      XEntry xentry = (XEntry) mXEntries.get(i); 
+      XEntry xentry = (XEntry) mXEntries.get(i);
       /*
        * Write entry.
        */
@@ -492,13 +473,11 @@ public class ZipAlign {
       mOutputStream.writeInt(entry.getSize()); // uncompressed size
       final byte[] nameBytes = entry.getName().getBytes("UTF-8");
       mOutputStream.writeShort(nameBytes.length);
-      mOutputStream.writeShort(entry.getExtra() != null ? entry
-          .getExtra().length - xentry.padding : 0);
+      mOutputStream.writeShort(entry.getExtra() != null ? entry.getExtra().length - xentry.padding : 0);
       final byte[] commentBytes;
       if (entry.getComment() != null) {
         commentBytes = entry.getComment().getBytes("UTF-8");
-        mOutputStream.writeShort(Math.min(commentBytes.length,
-            0xffff));
+        mOutputStream.writeShort(Math.min(commentBytes.length, 0xffff));
       } else {
         commentBytes = null;
         mOutputStream.writeShort(0);
@@ -513,21 +492,17 @@ public class ZipAlign {
       // header
       mOutputStream.write(nameBytes);
       if (entry.getExtra() != null) {
-        mOutputStream.write(entry.getExtra(), 0,
-            entry.getExtra().length - xentry.padding);
+        mOutputStream.write(entry.getExtra(), 0, entry.getExtra().length - xentry.padding);
       }
       if (commentBytes != null) {
-        mOutputStream.write(commentBytes, 0,
-            Math.min(commentBytes.length, 0xffff));
+        mOutputStream.write(commentBytes, 0, Math.min(commentBytes.length, 0xffff));
       }
-    }// for xentry
-
+    } // for xentry
 
     /*
      * Write the end of central directory.
      */
-    final long centralDirSize = mOutputStream.totalWritten
-        - centralDirOffset;
+    final long centralDirSize = mOutputStream.totalWritten - centralDirOffset;
 
     final int entryCount = mXEntries.size();
 
@@ -541,17 +516,18 @@ public class ZipAlign {
     // entries
     mOutputStream.writeInt(centralDirSize); // length of central
     // directory
-    mOutputStream.writeInt(centralDirOffset); // offset of central
+    mOutputStream.writeInt(centralDirOffset);
+    // offset of central
     // directory
     /*            if (mZipFile.getComment() != null) { // zip file comment
                 final byte[] bytes = mZipFile.getComment().getBytes("UTF-8");
                 mOutputStream.writeShort(bytes.length);
                 mOutputStream.write(bytes);
             } else {
-     */                mOutputStream.writeShort(0);
-     //            }
+     */ mOutputStream.writeShort(0);
+    //            }
 
-     mOutputStream.flush();
+    mOutputStream.flush();
 
   }// buildCentralDirectory()
 

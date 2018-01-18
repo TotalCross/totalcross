@@ -77,7 +77,7 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    */
   public int[] foreColors; // guich@tc120_53
 
-  private int maxw,vgap,ileft;
+  private int maxw, vgap, ileft;
 
   /** 
    * The alignment of the labels. Defaults to <code>LEFT</code>.
@@ -95,9 +95,8 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @see #AlignedLabelsContainer(String[], int)
    * @see #setLabels(String[], int)
    */
-  public AlignedLabelsContainer()
-  {
-    setLabels(null,0);
+  public AlignedLabelsContainer() {
+    setLabels(null, 0);
   }
 
   /** 
@@ -109,9 +108,8 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @see #AlignedLabelsContainer(String[], int)
    * @see #setLabels(String[], int)
    */
-  public AlignedLabelsContainer(String[] labels)
-  {
-    setLabels(labels,0);
+  public AlignedLabelsContainer(String[] labels) {
+    setLabels(labels, 0);
   }
 
   /** 
@@ -124,8 +122,7 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @see #AlignedLabelsContainer(String[])
    * @see #setLabels(String[], int)
    */
-  public AlignedLabelsContainer(String[] labels, int vgap)
-  {
+  public AlignedLabelsContainer(String[] labels, int vgap) {
     setLabels(labels, vgap);
   }
 
@@ -140,9 +137,8 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @see #AlignedLabelsContainer(String[])
    * @see #AlignedLabelsContainer(String[], int)
    */
-  public void setLabels(String[] labels, int vgap)
-  {
-    if (labels == null){
+  public void setLabels(String[] labels, int vgap) {
+    if (labels == null) {
       labels = new String[0];
     }
     this.labels = labels;
@@ -155,27 +151,24 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * Called after a <code>setFont()</code>
    */
   @Override
-  public void onFontChanged()
-  {
+  public void onFontChanged() {
     maxw = 0;
-    for (int i =0; i < labels.length; i++)
-    {
+    for (int i = 0; i < labels.length; i++) {
       widths[i] = fm.stringWidth(labels[i]);
       if (widths[i] > maxw) {
         maxw = widths[i];
       }
     }
-    super.setInsets(maxw+ileft,insets.right, insets.top, insets.bottom); // guich@tc114_3: set the insets again
+    super.setInsets(maxw + ileft, insets.right, insets.top, insets.bottom); // guich@tc114_3: set the insets again
   }
 
   /**
    * Since this is an <code>AlignedLabelsContainer</code>, use this to add a label. 
    */
   @Override
-  public void add(Control c)
-  {
+  public void add(Control c) {
     super.add(c);
-    if (childrenFont != null){
+    if (childrenFont != null) {
       c.setFont(childrenFont);
     }
   }
@@ -189,10 +182,9 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @param bottom The bottom border value.
    */
   @Override
-  public void setInsets(int left, int right, int top, int bottom)
-  {
-    ileft=left;
-    super.setInsets(maxw+left,right,top,bottom);
+  public void setInsets(int left, int right, int top, int bottom) {
+    ileft = left;
+    super.setInsets(maxw + left, right, top, bottom);
   }
 
   /**
@@ -201,9 +193,8 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @return The preferred width of this control.
    */
   @Override
-  public int getPreferredWidth()
-  {
-    return maxw+insets.left+insets.right;
+  public int getPreferredWidth() {
+    return maxw + insets.left + insets.right;
   }
 
   /**
@@ -212,8 +203,7 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @return The preferred height of this control.
    */
   @Override
-  public int getPreferredHeight()
-  {
+  public int getPreferredHeight() {
     return getLineY(labels.length) + insets.bottom;
   }
 
@@ -223,24 +213,27 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * @param g The graphics object for drawing.
    */
   @Override
-  public void onPaint(Graphics g)
-  {
+  public void onPaint(Graphics g) {
     super.onPaint(g);
     int left = insets.left - maxw;
     int yy = getLineY(0);
     int inc = getLineHeight() + getGap(vgap);
-    yy += Edit.prefH/2; // guich@tc114_5
-    for (int i =0; i < labels.length; i++, yy += inc)
-    {
+    yy += Edit.prefH / 2; // guich@tc114_5
+    for (int i = 0; i < labels.length; i++, yy += inc) {
       g.foreColor = foreColor;
       if (foreColors != null) {
         g.foreColor = foreColors[i];
       }
-      switch (labelAlign)
-      {
-      case LEFT: g.drawText(labels[i],left,yy, textShadowColor != -1, textShadowColor); break;
-      case CENTER: g.drawText(labels[i],left+(maxw-widths[i])/2,yy, textShadowColor != -1, textShadowColor); break;
-      case RIGHT: g.drawText(labels[i],left+maxw-widths[i],yy, textShadowColor != -1, textShadowColor); break;
+      switch (labelAlign) {
+      case LEFT:
+        g.drawText(labels[i], left, yy, textShadowColor != -1, textShadowColor);
+        break;
+      case CENTER:
+        g.drawText(labels[i], left + (maxw - widths[i]) / 2, yy, textShadowColor != -1, textShadowColor);
+        break;
+      case RIGHT:
+        g.drawText(labels[i], left + maxw - widths[i], yy, textShadowColor != -1, textShadowColor);
+        break;
       }
     }
   }
@@ -257,7 +250,7 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    */
   public int getLineY(int line) // guich@tc114_4
   {
-    int y0 = insets.top + Edit.prefH + getGap(vgap)-1;
+    int y0 = insets.top + Edit.prefH + getGap(vgap) - 1;
     int inc = getLineHeight() + getGap(vgap);
     return y0 + inc * line;
   }
@@ -283,8 +276,7 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
    * 
    * @return The left inset.
    */
-  public int getLeftInset()
-  {
+  public int getLeftInset() {
     return maxw;
   }
 }

@@ -14,16 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
 import totalcross.io.IOException;
 import totalcross.sys.Convert;
 import totalcross.util.Hashtable;
 
-public class ServiceRecord4D
-{
+public class ServiceRecord4D {
   private Hashtable attributes = new Hashtable(5);
 
   private RemoteDevice hostDevice;
@@ -35,37 +32,30 @@ public class ServiceRecord4D
   public static final int AUTHENTICATE_NOENCRYPT = 0x01;
   public static final int AUTHENTICATE_ENCRYPT = 0x02;
 
-  ServiceRecord4D()
-  {
-  }   
+  ServiceRecord4D() {
+  }
 
-  ServiceRecord4D(Object nativeInstance)
-  {
+  ServiceRecord4D(Object nativeInstance) {
     this.nativeInstance = nativeInstance;
   }
 
-  public RemoteDevice getHostDevice()
-  {
+  public RemoteDevice getHostDevice() {
     return hostDevice;
   }
 
-  public DataElement getAttributeValue(int attrID)
-  {
-    if (attrID < 0x0000 || attrID > 0xffff){
+  public DataElement getAttributeValue(int attrID) {
+    if (attrID < 0x0000 || attrID > 0xffff) {
       throw new IllegalArgumentException();
     }
     return (DataElement) attributes.get(attrID);
   }
 
-  public String getConnectionURL()
-  {
+  public String getConnectionURL() {
     return getConnectionURL(NOAUTHENTICATE_NOENCRYPT, false);
   }
 
-  public String getConnectionURL(int requiredSecurity, boolean mustBeMaster)
-  {
-    if (baseURL == null)
-    {
+  public String getConnectionURL(int requiredSecurity, boolean mustBeMaster) {
+    if (baseURL == null) {
       int commChannel = -1;
 
       DataElement protocolDescriptor = getAttributeValue(BluetoothConsts4D.ProtocolDescriptorList);
@@ -79,8 +69,7 @@ public class ServiceRecord4D
       boolean isOBEX = false;
 
       DataElement[] protocolsSeqEnum = (DataElement[]) protocolDescriptor.getValue();
-      for (int i = 0; i < protocolsSeqEnum.length; i++)
-      {
+      for (int i = 0; i < protocolsSeqEnum.length; i++) {
         DataElement elementSeq = (DataElement) protocolsSeqEnum[i];
         if (elementSeq.getDataType() != DataElement.DATSEQ) {
           continue;
@@ -97,18 +86,14 @@ public class ServiceRecord4D
         }
 
         Object uuid = protocolElement.getValue();
-        if (BluetoothConsts4D.OBEX_PROTOCOL_UUID.equals(uuid))
-        {
+        if (BluetoothConsts4D.OBEX_PROTOCOL_UUID.equals(uuid)) {
           isOBEX = true;
           isRFCOMM = false;
           isL2CAP = false;
-        }
-        else if (elementSeqEnum.length > 1 && (BluetoothConsts4D.RFCOMM_PROTOCOL_UUID.equals(uuid)))
-        {
+        } else if (elementSeqEnum.length > 1 && (BluetoothConsts4D.RFCOMM_PROTOCOL_UUID.equals(uuid))) {
           DataElement protocolPSMElement = (DataElement) elementSeqEnum[1];
 
-          switch (protocolPSMElement.getDataType())
-          {
+          switch (protocolPSMElement.getDataType()) {
           case DataElement.U_INT_1:
           case DataElement.U_INT_2:
           case DataElement.U_INT_4:
@@ -117,20 +102,16 @@ public class ServiceRecord4D
           case DataElement.INT_4:
           case DataElement.INT_8:
             long val = protocolPSMElement.getLong();
-            if ((val >= BluetoothConsts4D.RFCOMM_CHANNEL_MIN) && (val <= BluetoothConsts4D.RFCOMM_CHANNEL_MAX))
-            {
+            if ((val >= BluetoothConsts4D.RFCOMM_CHANNEL_MIN) && (val <= BluetoothConsts4D.RFCOMM_CHANNEL_MAX)) {
               commChannel = (int) val;
               isRFCOMM = true;
               isL2CAP = false;
             }
             break;
           }
-        }
-        else if (elementSeqEnum.length > 1 && (BluetoothConsts4D.L2CAP_PROTOCOL_UUID.equals(uuid)))
-        {
+        } else if (elementSeqEnum.length > 1 && (BluetoothConsts4D.L2CAP_PROTOCOL_UUID.equals(uuid))) {
           DataElement protocolPSMElement = (DataElement) elementSeqEnum[1];
-          switch (protocolPSMElement.getDataType())
-          {
+          switch (protocolPSMElement.getDataType()) {
           case DataElement.U_INT_1:
           case DataElement.U_INT_2:
           case DataElement.U_INT_4:
@@ -139,8 +120,7 @@ public class ServiceRecord4D
           case DataElement.INT_4:
           case DataElement.INT_8:
             long pcm = protocolPSMElement.getLong();
-            if ((pcm >= BluetoothConsts4D.L2CAP_PSM_MIN) && (pcm <= BluetoothConsts4D.L2CAP_PSM_MAX))
-            {
+            if ((pcm >= BluetoothConsts4D.L2CAP_PSM_MIN) && (pcm <= BluetoothConsts4D.L2CAP_PSM_MAX)) {
               commChannel = (int) pcm;
               isL2CAP = true;
             }
@@ -159,7 +139,8 @@ public class ServiceRecord4D
 
       // start the url
       StringBuffer urlBuffer = new StringBuffer();
-      urlBuffer.append(isOBEX ? BluetoothConsts4D.PROTOCOL_SCHEME_BT_OBEX : (isRFCOMM ? BluetoothConsts4D.PROTOCOL_SCHEME_RFCOMM : BluetoothConsts4D.PROTOCOL_SCHEME_L2CAP));
+      urlBuffer.append(isOBEX ? BluetoothConsts4D.PROTOCOL_SCHEME_BT_OBEX
+          : (isRFCOMM ? BluetoothConsts4D.PROTOCOL_SCHEME_RFCOMM : BluetoothConsts4D.PROTOCOL_SCHEME_L2CAP));
       urlBuffer.append("://").append(hostDevice.address).append(":");
 
       // comm channel
@@ -174,8 +155,7 @@ public class ServiceRecord4D
 
     String url = baseURL;
     // security
-    switch (requiredSecurity)
-    {
+    switch (requiredSecurity) {
     case NOAUTHENTICATE_NOENCRYPT:
       url += ";authenticate=false;encrypt=false";
       break;
@@ -193,23 +173,18 @@ public class ServiceRecord4D
     return url + (mustBeMaster ? ";master=true" : ";master=false");
   }
 
-  boolean readSDP4D(RemoteDevice device, byte[] input, int[] attrIDs) throws IOException
-  {
+  boolean readSDP4D(RemoteDevice device, byte[] input, int[] attrIDs) throws IOException {
     this.hostDevice = device;
 
     boolean anyRetrieved = false;
     DataElement element = new SDPInputStream(input).readElement();
     DataElement[] elements = (DataElement[]) element.getValue();
-    for (int i = 0; i < elements.length; i += 2)
-    {
+    for (int i = 0; i < elements.length; i += 2) {
       int attrID = (int) elements[i].getLong();
       populateAttributeValue(attrID, elements[i + 1]);
-      if (!anyRetrieved)
-      {
-        for (int j = attrIDs.length - 1; j >= 0; j--)
-        {
-          if (attrIDs[j] == attrID)
-          {
+      if (!anyRetrieved) {
+        for (int j = attrIDs.length - 1; j >= 0; j--) {
+          if (attrIDs[j] == attrID) {
             anyRetrieved = true;
             break;
           }
@@ -219,14 +194,13 @@ public class ServiceRecord4D
     return anyRetrieved;
   }
 
-  void populateAttributeValue(int attrID, DataElement attrValue)
-  {
-    if (attrID < 0x0000 || attrID > 0xffff){
+  void populateAttributeValue(int attrID, DataElement attrValue) {
+    if (attrID < 0x0000 || attrID > 0xffff) {
       throw new IllegalArgumentException();
     }
-    if (attrValue == null){
+    if (attrValue == null) {
       attributes.remove(attrID);
-    }else {
+    } else {
       attributes.put(attrID, attrValue);
     }
   }

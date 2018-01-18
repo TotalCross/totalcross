@@ -63,8 +63,7 @@ import java.util.NoSuchElementException;
  * @since 1.0
  * @status updated to 1.4
  */
-public interface Enumeration4D<E>
-{
+public interface Enumeration4D<E> {
   /**
    * Tests whether there are elements remaining in the enumeration.
    *

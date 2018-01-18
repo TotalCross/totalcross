@@ -397,6 +397,7 @@
 		15E4ED11189C35510012D8ED /* Reflection.c in Sources */ = {isa = PBXBuildFile; fileRef = 15E4ED10189C35510012D8ED /* Reflection.c */; };
 		37430B751EEECEEB008D89DF /* firebase.c in Sources */ = {isa = PBXBuildFile; fileRef = 37430B731EEECEEB008D89DF /* firebase.c */; };
 		37430B761EEECEEB008D89DF /* firebase.h in Headers */ = {isa = PBXBuildFile; fileRef = 37430B741EEECEEB008D89DF /* firebase.h */; };
+		3790A20F1F6317F100F012F1 /* firebase_c.m in Sources */ = {isa = PBXBuildFile; fileRef = 3790A20E1F6317F100F012F1 /* firebase_c.m */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A1BF9211D4B8CF6009A7B42 /* pngdebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */; };
 		3A1BF9221D4B8CF6009A7B42 /* pnginfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A1BF91D1D4B8CF6009A7B42 /* pnginfo.h */; };
@@ -429,6 +430,7 @@
 		CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5140181EF13F00B1B00A /* sqlite3.h */; };
 		CEFA5145181EF13F00B1B00A /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5141181EF13F00B1B00A /* sqlite3ext.h */; };
 		CEFA5148181EF24700B1B00A /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = CEFA5147181EF24700B1B00A /* mainview.m */; };
+		D598D4811EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4801EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -830,6 +832,7 @@
 		15E4ED10189C35510012D8ED /* Reflection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Reflection.c; sourceTree = "<group>"; };
 		37430B731EEECEEB008D89DF /* firebase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = firebase.c; path = firebase/firebase.c; sourceTree = "<group>"; };
 		37430B741EEECEEB008D89DF /* firebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = firebase.h; path = firebase/firebase.h; sourceTree = "<group>"; };
+		3790A20E1F6317F100F012F1 /* firebase_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = firebase_c.m; path = firebase/darwin/firebase_c.m; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngdebug.h; sourceTree = "<group>"; };
 		3A1BF91D1D4B8CF6009A7B42 /* pnginfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pnginfo.h; sourceTree = "<group>"; };
@@ -863,6 +866,7 @@
 		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
 		CEFA5141181EF13F00B1B00A /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3ext.h; path = sqlite/sqlite3ext.h; sourceTree = "<group>"; };
 		CEFA5147181EF24700B1B00A /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; };
+		D598D4801EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ScanditBarcodeScanner.framework; sourceTree = "<group>"; };
 		DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -871,6 +875,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D598D4811EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework in Frameworks */,
 				0FAA49A71549D7B30039F4BF /* UIKit.framework in Frameworks */,
 				0F003EB7150FEBBF004F0653 /* Foundation.framework in Frameworks */,
 			);
@@ -902,6 +907,7 @@
 		0F003EB5150FEBBF004F0653 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D598D4801EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework */,
 				0F7318BC1513DCFB001EE647 /* AudioToolbox.framework */,
 				0FAA49A61549D7B30039F4BF /* UIKit.framework */,
 				0F003EB6150FEBBF004F0653 /* Foundation.framework */,
@@ -1877,10 +1883,19 @@
 		37430B771EEECEF2008D89DF /* firebase */ = {
 			isa = PBXGroup;
 			children = (
+				3790A20D1F6317B300F012F1 /* darwin */,
 				37430B731EEECEEB008D89DF /* firebase.c */,
 				37430B741EEECEEB008D89DF /* firebase.h */,
 			);
 			name = firebase;
+			sourceTree = "<group>";
+		};
+		3790A20D1F6317B300F012F1 /* darwin */ = {
+			isa = PBXGroup;
+			children = (
+				3790A20E1F6317F100F012F1 /* firebase_c.m */,
+			);
+			name = darwin;
 			sourceTree = "<group>";
 		};
 		3A8C3EC3159E4A3900D3E666 /* darwin */ = {
@@ -2258,6 +2273,7 @@
 				0F8C8CC21549CFC700E0967F /* jdpostct.c in Sources */,
 				0F8C8CC31549CFC700E0967F /* jdsample.c in Sources */,
 				0F8C8CC41549CFC700E0967F /* jerror.c in Sources */,
+				3790A20F1F6317F100F012F1 /* firebase_c.m in Sources */,
 				0F8C8CC61549CFC700E0967F /* jfdctfst.c in Sources */,
 				0F8C8CC71549CFC700E0967F /* jidctfst.c in Sources */,
 				0F8C8CC81549CFC700E0967F /* jidctred.c in Sources */,
@@ -2409,6 +2425,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2452,7 +2469,9 @@
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -2460,6 +2479,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2498,7 +2518,9 @@
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -2506,8 +2528,13 @@
 		0F003ED8150FEBBF004F0653 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
 				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "tcvm-Prefix.pch";
 				ONLY_ACTIVE_ARCH = NO;
@@ -2521,8 +2548,13 @@
 		0F003ED9150FEBBF004F0653 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
 				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "tcvm-Prefix.pch";
 				ONLY_ACTIVE_ARCH = NO;

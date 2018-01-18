@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.gfx;
 
 /**
@@ -25,10 +23,12 @@ package totalcross.ui.gfx;
  * If any other class tries to extend GfxSurface, a RuntimeException will be thrown at the device.
  */
 
-public abstract class GfxSurface
-{
+public abstract class GfxSurface {
   public abstract int getX();
+
   public abstract int getY();
+
   public abstract int getWidth();
+
   public abstract int getHeight();
 }

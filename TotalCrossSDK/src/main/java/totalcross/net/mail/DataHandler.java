@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.util.Hashtable;
@@ -25,12 +23,10 @@ import totalcross.util.Hashtable;
  * 
  * @since TotalCross 1.13
  */
-public class DataHandler
-{
+public class DataHandler {
   private static Hashtable handlers = new Hashtable(5);
 
-  static
-  {
+  static {
     TextContentHandler textHandler = new TextContentHandler();
     handlers.put(Part.PLAIN, textHandler);
     handlers.put(Part.HTML, textHandler);
@@ -46,8 +42,7 @@ public class DataHandler
    *           the MIME type this DataContentHandler should be associated to
    * @since TotalCross 1.13
    */
-  public static void addDataContentHandler(DataContentHandler dataContentHandler, String mimeType)
-  {
+  public static void addDataContentHandler(DataContentHandler dataContentHandler, String mimeType) {
     handlers.put(mimeType, dataContentHandler);
   }
 
@@ -61,10 +56,9 @@ public class DataHandler
    *         handler.
    * @since TotalCross 1.13
    */
-  public static DataContentHandler getDataContentHandler(String mimeType)
-  {
+  public static DataContentHandler getDataContentHandler(String mimeType) {
     DataContentHandler handler = (DataContentHandler) handlers.get(mimeType);
-    if (handler == null){
+    if (handler == null) {
       handler = (DataContentHandler) handlers.get(Part.BINARY);
     }
     return handler;

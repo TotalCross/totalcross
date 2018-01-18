@@ -78,11 +78,11 @@ import totalcross.util.Hashtable;
  * @see        MatchResult#suffix()
  */
 
-public class Pattern implements /*Serializable,*/REFlags{
+public class Pattern implements /*Serializable,*/REFlags {
   String stringRepr;
 
   // tree entry
-  Term root,root0;
+  Term root, root0;
 
   // required number of memory slots
   int memregs;
@@ -95,7 +95,8 @@ public class Pattern implements /*Serializable,*/REFlags{
 
   Hashtable namedGroupMap;
 
-  protected Pattern() throws PatternSyntaxException{}
+  protected Pattern() throws PatternSyntaxException {
+  }
 
   /**
    * Compiles an expression with default flags.
@@ -104,8 +105,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @see        Pattern#Pattern(java.lang.String,java.lang.String)
    * @see        Pattern#Pattern(java.lang.String,int)
    */
-  public Pattern(String regex) throws PatternSyntaxException{
-    this(regex,DEFAULT);
+  public Pattern(String regex) throws PatternSyntaxException {
+    this(regex, DEFAULT);
   }
 
   /**
@@ -125,9 +126,9 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @exception  PatternSyntaxException  if the argument doesn't correspond to perl5 regex syntax.
    * see REFlags
    */
-  public Pattern(String regex,String flags) throws PatternSyntaxException{
-    stringRepr=regex;
-    compileInt(regex,parseFlags(flags));
+  public Pattern(String regex, String flags) throws PatternSyntaxException {
+    stringRepr = regex;
+    compileInt(regex, parseFlags(flags));
   }
 
   /**
@@ -146,34 +147,32 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @exception  PatternSyntaxException  if the argument doesn't correspond to perl5 regex syntax.
    * see REFlags
    */
-  public Pattern(String regex, int flags) throws PatternSyntaxException{
-    compileInt(regex,flags);
+  public Pattern(String regex, int flags) throws PatternSyntaxException {
+    compileInt(regex, flags);
   }
-
 
   //java.util.regex.* compatibility
-  public static Pattern compile(String regex) throws PatternSyntaxException{
-    Pattern p=new Pattern();
-    p.compileInt(regex,0);
+  public static Pattern compile(String regex) throws PatternSyntaxException {
+    Pattern p = new Pattern();
+    p.compileInt(regex, 0);
     return p;
   }
 
-  public static Pattern compile(String regex, int flags) throws PatternSyntaxException{
-    Pattern p=new Pattern();
-    p.compileInt(regex,flags);
+  public static Pattern compile(String regex, int flags) throws PatternSyntaxException {
+    Pattern p = new Pattern();
+    p.compileInt(regex, flags);
     return p;
   }
 
-
-  protected void compileInt(String regex,int flags) throws PatternSyntaxException{
-    stringRepr=regex;
-    Term.makeTree(regex,flags,this);
+  protected void compileInt(String regex, int flags) throws PatternSyntaxException {
+    stringRepr = regex;
+    Term.makeTree(regex, flags, this);
   }
 
   /**
    * How many capturing groups this expression includes?
    */
-  public int groupCount(){
+  public int groupCount() {
     return memregs;
   }
 
@@ -183,8 +182,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @see MatchResult#group(java.lang.String)
    * @see MatchResult#isCaptured(java.lang.String)
    */
-  public Integer groupId(String name){
-    return ((Integer)namedGroupMap.get(name));
+  public Integer groupId(String name) {
+    return ((Integer) namedGroupMap.get(name));
   }
 
   /**
@@ -194,7 +193,7 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @see Matcher#matches()
    * @see Matcher#matches(String)
    */
-  public boolean matches(String s){
+  public boolean matches(String s) {
     return matcher(s).matches();
   }
 
@@ -204,7 +203,7 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @return true if the entire target matches the beginning of the pattern
    * @see Matcher#matchesPrefix()
    */
-  public boolean startsWith(String s){
+  public boolean startsWith(String s) {
     return matcher(s).matchesPrefix();
   }
 
@@ -212,15 +211,15 @@ public class Pattern implements /*Serializable,*/REFlags{
    * Returns a targetless matcher.
    * Don't forget to supply a target.
    */
-  public Matcher matcher(){
+  public Matcher matcher() {
     return new Matcher(this);
   }
 
   /**
    * Returns a matcher for a specified string.
    */
-  public Matcher matcher(String s){
-    Matcher m=new Matcher(this);
+  public Matcher matcher(String s) {
+    Matcher m = new Matcher(this);
     m.setTarget(s);
     return m;
   }
@@ -228,9 +227,9 @@ public class Pattern implements /*Serializable,*/REFlags{
   /**
    * Returns a matcher for a specified region.
    */
-  public Matcher matcher(char[] data,int start,int end){
-    Matcher m=new Matcher(this);
-    m.setTarget(data,start,end);
+  public Matcher matcher(char[] data, int start, int end) {
+    Matcher m = new Matcher(this);
+    m.setTarget(data, start, end);
     return m;
   }
 
@@ -239,13 +238,12 @@ public class Pattern implements /*Serializable,*/REFlags{
    * <code>groupId</code> parameter specifies which group is a target.
    * @param groupId which group is a target; either positive integer(group id), or one of MatchResult.MATCH,MatchResult.PREFIX,MatchResult.SUFFIX,MatchResult.TARGET.
    */
-  public Matcher matcher(MatchResult res,int groupId){
-    Matcher m=new Matcher(this);
-    if(res instanceof Matcher){
-      m.setTarget((Matcher)res,groupId);
-    }
-    else{
-      m.setTarget(res.targetChars(),res.start(groupId)+res.targetStart(),res.length(groupId));
+  public Matcher matcher(MatchResult res, int groupId) {
+    Matcher m = new Matcher(this);
+    if (res instanceof Matcher) {
+      m.setTarget((Matcher) res, groupId);
+    } else {
+      m.setTarget(res.targetChars(), res.start(groupId) + res.targetStart(), res.length(groupId));
     }
     return m;
   }
@@ -254,13 +252,13 @@ public class Pattern implements /*Serializable,*/REFlags{
    * Just as above, yet with symbolic group name.
    * @exception NullPointerException if there is no group with such name
    */
-  public Matcher matcher(MatchResult res,String groupName){
-    Integer id=res.pattern().groupId(groupName);
-    if(id==null){
-      throw new IllegalArgumentException("group not found:"+groupName);
+  public Matcher matcher(MatchResult res, String groupName) {
+    Integer id = res.pattern().groupId(groupName);
+    if (id == null) {
+      throw new IllegalArgumentException("group not found:" + groupName);
     }
-    int group=id.intValue();
-    return matcher(res,group);
+    int group = id.intValue();
+    return matcher(res, group);
   }
 
   /**
@@ -271,9 +269,9 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @exception IOException indicates an IO problem
    * @exception OutOfMemoryError if a stream is too lengthy
    */
-  public Matcher matcher(CharStream text,int length)throws IOException{
-    Matcher m=new Matcher(this);
-    m.setTarget(text,length);
+  public Matcher matcher(CharStream text, int length) throws IOException {
+    Matcher m = new Matcher(this);
+    m.setTarget(text, length);
     return m;
   }
 
@@ -296,8 +294,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @param expr a perl-like expression, the "$&" and "${&}" standing for whole match, the "$N" and "${N}" standing for group#N, and "${Foo}" standing for named group Foo.
    * @see Replacer
    */
-  public Replacer replacer(String expr){
-    return new Replacer(this,expr);
+  public Replacer replacer(String expr) {
+    return new Replacer(this, expr);
   }
 
   /**
@@ -306,8 +304,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @param model a Substitution object which is in charge for match substitution
    * @see Replacer
    */
-  public Replacer replacer(Substitution model){
-    return new Replacer(this,model);
+  public Replacer replacer(Substitution model) {
+    return new Replacer(this, model);
   }
 
   /**
@@ -318,8 +316,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @see RETokenizer#RETokenizer(totalcross.util.regex.Pattern,java.lang.String)
    * 
    */
-  public RETokenizer tokenizer(String text){
-    return new RETokenizer(this,text);
+  public RETokenizer tokenizer(String text) {
+    return new RETokenizer(this, text);
   }
 
   /**
@@ -329,8 +327,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * @see RETokenizer 
    * @see RETokenizer#RETokenizer(totalcross.util.regex.Pattern,char[],int,int)
    */
-  public RETokenizer tokenizer(char[] data,int off,int len){
-    return new RETokenizer(this,data,off,len);
+  public RETokenizer tokenizer(char[] data, int off, int len) {
+    return new RETokenizer(this, data, off, len);
   }
 
   /**
@@ -339,73 +337,73 @@ public class Pattern implements /*Serializable,*/REFlags{
    * The same as new RETokenizer(Pattern,Reader,int);
    * @see RETokenizer 
    */
-  public RETokenizer tokenizer(CharStream in,int length) throws IOException{
-    return new RETokenizer(this,in,length);
+  public RETokenizer tokenizer(CharStream in, int length) throws IOException {
+    return new RETokenizer(this, in, length);
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     return stringRepr;
   }
 
   /**
    * Returns a less or more readable representation of a bytecode for the pattern.
    */
-  public String toString_d(){
+  public String toString_d() {
     return root.toStringAll();
   }
 
-  static int parseFlags(String flags)throws PatternSyntaxException{
-    boolean enable=true;
-    int len=flags.length();
-    int result=DEFAULT;
-    for(int i=0;i<len;i++){
-      char c=flags.charAt(i);
-      switch(c){
+  static int parseFlags(String flags) throws PatternSyntaxException {
+    boolean enable = true;
+    int len = flags.length();
+    int result = DEFAULT;
+    for (int i = 0; i < len; i++) {
+      char c = flags.charAt(i);
+      switch (c) {
       case '+':
-        enable=true;
+        enable = true;
         break;
       case '-':
-        enable=false;
+        enable = false;
         break;
       default:
-        int flag=getFlag(c);
-        if(enable) {
-          result|=flag;
+        int flag = getFlag(c);
+        if (enable) {
+          result |= flag;
         } else {
-          result&=(~flag);
+          result &= (~flag);
         }
       }
     }
     return result;
   }
 
-  static int parseFlags(char[] data,int start,int len)throws PatternSyntaxException{
-    boolean enable=true;
-    int result=DEFAULT;
-    for(int i=0;i<len;i++){
-      char c=data[start+i];
-      switch(c){
+  static int parseFlags(char[] data, int start, int len) throws PatternSyntaxException {
+    boolean enable = true;
+    int result = DEFAULT;
+    for (int i = 0; i < len; i++) {
+      char c = data[start + i];
+      switch (c) {
       case '+':
-        enable=true;
+        enable = true;
         break;
       case '-':
-        enable=false;
+        enable = false;
         break;
       default:
-        int flag=getFlag(c);
-        if(enable) {
-          result|=flag;
+        int flag = getFlag(c);
+        if (enable) {
+          result |= flag;
         } else {
-          result&=(~flag);
+          result &= (~flag);
         }
       }
     }
     return result;
   }
 
-  private static int getFlag(char c)throws PatternSyntaxException{
-    switch(c){
+  private static int getFlag(char c) throws PatternSyntaxException {
+    switch (c) {
     case 'i':
       return IGNORE_CASE;
     case 'm':
@@ -419,6 +417,6 @@ public class Pattern implements /*Serializable,*/REFlags{
     case 'X':
       return XML_SCHEMA;
     }
-    throw new PatternSyntaxException("unknown flag: "+c);
+    throw new PatternSyntaxException("unknown flag: " + c);
   }
 }

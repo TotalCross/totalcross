@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
 import totalcross.io.DataStream;
@@ -101,23 +99,17 @@ import totalcross.util.Properties;
  * @version 1.0
  */
 
-public class Options extends Properties
-{
-  private PDBFile             cat;
-  private final static String dbName_suffix      = "_OPT.";
-  private final static String dbType             = ".DATA";
+public class Options extends Properties {
+  private PDBFile cat;
+  private final static String dbName_suffix = "_OPT.";
+  private final static String dbType = ".DATA";
   private static final String duplicatedProperty = "OPT:duplicated:";
 
-  protected Options(GameEngine engine)
-  {
-    try
-    {
-      try
-      {
+  protected Options(GameEngine engine) {
+    try {
+      try {
         cat = new PDBFile(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType, PDBFile.READ_WRITE);
-      }
-      catch (FileNotFoundException fnfe)
-      {
+      } catch (FileNotFoundException fnfe) {
         cat = new PDBFile(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType, PDBFile.CREATE_EMPTY);
         cat.addRecord(100);
       }
@@ -127,9 +119,7 @@ public class Options extends Properties
       DataStream ds = new DataStream(cat);
       oldVersion = ds.readInt();
       load(ds);
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -145,11 +135,9 @@ public class Options extends Properties
    *           the property default value.
    * @return a boolean property object.
    */
-  public Boolean declareBoolean(String name, boolean value)
-  {
+  public Boolean declareBoolean(String name, boolean value) {
     Value v = get(name);
-    if (v != null)
-    {
+    if (v != null) {
       if (v.type == Boolean.TYPE) {
         return (Boolean) v;
       }
@@ -171,11 +159,9 @@ public class Options extends Properties
    *           the property default value.
    * @return a long property object.
    */
-  public Long declareLong(String name, long value)
-  {
+  public Long declareLong(String name, long value) {
     Value v = get(name);
-    if (v != null)
-    {
+    if (v != null) {
       if (v.type == Long.TYPE) {
         return (Long) v;
       }
@@ -197,11 +183,9 @@ public class Options extends Properties
    *           the property default value.
    * @return an integer property object.
    */
-  public Int declareInteger(String name, int value)
-  {
+  public Int declareInteger(String name, int value) {
     Value v = get(name);
-    if (v != null)
-    {
+    if (v != null) {
       if (v.type == Int.TYPE) {
         return (Int) v;
       }
@@ -223,11 +207,9 @@ public class Options extends Properties
    *           the property default value.
    * @return a double property object.
    */
-  public Double declareDouble(String name, double value)
-  {
+  public Double declareDouble(String name, double value) {
     Value v = get(name);
-    if (v != null)
-    {
+    if (v != null) {
       if (v.type == Double.TYPE) {
         return (Double) v;
       }
@@ -249,11 +231,9 @@ public class Options extends Properties
    *           the property default value.
    * @return a string property object.
    */
-  public Str declareString(String name, String value)
-  {
+  public Str declareString(String name, String value) {
     Value v = get(name);
-    if (v != null)
-    {
+    if (v != null) {
       if (v.type == Str.TYPE) {
         return (Str) v;
       }
@@ -282,8 +262,7 @@ public class Options extends Properties
    *         depending on the value type, that can be retrieved with the
    *         <code>type</code> read-only property.
    */
-  public Properties.Value getProp(String key)
-  {
+  public Properties.Value getProp(String key) {
     return get(key);
   }
 
@@ -292,19 +271,15 @@ public class Options extends Properties
    *
    * @return false if an error occurs
    */
-  public boolean save()
-  {
+  public boolean save() {
     // use this nice object to resize the options record
-    try
-    {
+    try {
       ResizeRecord rs = new ResizeRecord(cat, 100);
       rs.restartRecord(0);
       DataStream ds = new DataStream(rs);
       ds.writeInt(newVersion);
       save(ds);
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
       return false;
     }
 
@@ -316,9 +291,8 @@ public class Options extends Properties
    *
    * @throws IOException
    */
-  public void close() throws IOException
-  {
-    if (save()){
+  public void close() throws IOException {
+    if (save()) {
       cat.close();
     }
   }

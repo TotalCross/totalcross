@@ -25,23 +25,20 @@ import totalcross.ui.event.MultiTouchEvent;
 import totalcross.ui.event.MultiTouchListener;
 import totalcross.ui.image.Image;
 
-public class MultitouchSample extends BaseContainer
-{
+public class MultitouchSample extends BaseContainer {
   ImageControl ic;
   public static Image screenShot;
   private static Image lata;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     isSingleCall = true;
 
-    if (!Settings.isOpenGL && !Settings.onJavaSE){
-      add(new Label("This sample works only on iOS, Android and Windows Phone."),CENTER,CENTER);
-    }else {
-      try
-      {
+    if (!Settings.isOpenGL && !Settings.onJavaSE) {
+      add(new Label("This sample works only on iOS, Android and Windows Phone."), CENTER, CENTER);
+    } else {
+      try {
         super.initUI();
         if (lata == null) {
           lata = new Image("ui/images/lata.jpg");
@@ -51,25 +48,20 @@ public class MultitouchSample extends BaseContainer
         ic.allowBeyondLimits = false;
         ic.setEventsEnabled(true);
         updateStatus();
-        add(ic,LEFT+gap,TOP+gap,FILL-gap,FILL-gap);
-        ic.addMultiTouchListener(new MultiTouchListener()
-        {
+        add(ic, LEFT + gap, TOP + gap, FILL - gap, FILL - gap);
+        ic.addMultiTouchListener(new MultiTouchListener() {
           @Override
-          public void scale(MultiTouchEvent e)
-          {
+          public void scale(MultiTouchEvent e) {
             updateStatus();
           }
         });
-      }
-      catch (Exception e)
-      {
-        MessageBox.showException(e,false);
+      } catch (Exception e) {
+        MessageBox.showException(e, false);
       }
     }
   }
 
-  private void updateStatus()
-  {
-    setInfo(ic.getImageWidth()+"x"+ic.getImageHeight());
+  private void updateStatus() {
+    setInfo(ic.getImageWidth() + "x" + ic.getImageHeight());
   }
 }

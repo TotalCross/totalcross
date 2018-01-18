@@ -9,20 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC173_lreturn extends Return
-{
-  public BC173_lreturn()
-  {
-    super(1,-1,LONG);
+public class BC173_lreturn extends Return {
+  public BC173_lreturn() {
+    super(1, -1, LONG);
   }
+
   @Override
-  public void exec()
-  {
-    returnValue.asLong = stack[stackPtr-1].asLong;
+  public void exec() {
+    returnValue.asLong = stack[stackPtr - 1].asLong;
     returnValue.type = LONG;
   }
 }

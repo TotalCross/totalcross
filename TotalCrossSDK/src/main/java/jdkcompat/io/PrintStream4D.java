@@ -54,7 +54,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   public void println(String str) {
     synchronized (lock) {
       print(str);
-      newLine();	
+      newLine();
     }
   }
 

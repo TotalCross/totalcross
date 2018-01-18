@@ -1,11 +1,23 @@
 import java.util.regex.*
 import org.apache.tools.ant.filters.*
 
+buildscript {
+  repositories {
+    maven {
+      url 'https://plugins.gradle.org/m2/'
+    }
+  }
+  dependencies {
+    classpath 'gradle.plugin.me.tatarka:gradle-retrolambda:3.7.0'
+  }
+}
+
+apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.7
-version = '4.0.2'
+sourceCompatibility = 1.8
+version = '4.1.0'
 group = 'com.totalcross'
 
 // can't be used yet, enconding is a mess
@@ -13,6 +25,10 @@ compileJava.options.encoding = 'UTF-8'
 
 configurations { 
 	obfuscatedArchive
+}
+
+retrolambda {
+  javaVersion JavaVersion.VERSION_1_7
 }
 
 jar {
@@ -112,6 +128,8 @@ dependencies {
 	// https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
 	runtime group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
 
+	// https://mvnrepository.com/artifact/junit/junit
+	testCompile group: 'junit', name: 'junit', version: '4.12'
 
     compile(group: 'com.totalcross.annotations', name: 'totalcross-annotations', version: '1.0.0')
 }
@@ -124,12 +142,24 @@ publishing {
 			
 			// workaround - maven-publish lists all dependencies as runtime regardless of the original scope
 			pom.withXml {
-				asNode().dependencies.'*'.findAll() {
+				// use instead of 'asNode()' - workaround to avoid duplicating the dependencies node by getting index 0
+				def dependenciesNode = asNode().getAt("dependencies")[0]
+			
+				dependenciesNode.dependencies.'*'.findAll() {
 					it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
 						dep.name == it.artifactId.text()
 					}
 				}.each { it.scope*.value = 'compile'}
-			}
+				
+				// manually add test dependencies because they are ignored by maven-publish
+		        configurations.testCompile.dependencies.each {
+		            def dependencyNode = dependenciesNode.appendNode('dependency')
+		            dependencyNode.appendNode('groupId', it.group)
+		            dependencyNode.appendNode('artifactId', it.name)
+		            dependencyNode.appendNode('version', it.version)
+		            dependencyNode.appendNode('scope', 'test')
+				}
+        	}
 
 			// kept as reference
             /*

@@ -135,7 +135,7 @@ target: makeNativeHT - updates the native methods hash table.
       classpath="${path.to.prototypeGenerator}"
       fork="yes"
    >
-      <arg line="makeNativeHT TC ${source.vm.path}/src/init ${source.vm.path}/src/nm/NativeMethods.txt" />
+      <arg line="makeNativeHT TC ${source.vm.path}/src/init ${source.vm.path}/src/nm/NativeMethods.txt ${source.vm.path}/src/scanner/NativeMethods.txt" />
    </java>
 </target>
    
@@ -251,11 +251,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <!-- totalcross -->
    <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
    
-   <!-- litebase -->
-   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="yes">
-    <zipgroupfileset dir="${target.litebase.path}/dist" includes="litebase.jar"/>
-   </zip>
-
    <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
    <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
       <fileset dir="${target.litebase.path}/dist/samples" />
@@ -628,6 +623,32 @@ target: buildWinCE
             <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
         </delete>
     </target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: vs2008
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="buildVisualStudio2008" >
+   <echo message="GENERATING WIN32 and WINCE"/>
+   
+   <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
+   </exec>
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.sln /project Litebase /rebuild "DEMO Release|Win32"'/>
+   </exec>
+	
+    <exec executable="${msvc.path}" failonerror="yes">
+        <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
+    </exec>
+    <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+      <fileset dir="${sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+    </copy>
+    <delete failonerror="no">
+        <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+    </delete>
+</target>
+
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build targets

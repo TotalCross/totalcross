@@ -27,8 +27,7 @@ import totalcross.ui.event.Event;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.gfx.Color;
 
-public class GPSVelocitySample extends BaseContainer
-{
+public class GPSVelocitySample extends BaseContainer {
   Velocimeter vel;
   TimerEvent tt;
   GPS gps;
@@ -36,64 +35,51 @@ public class GPSVelocitySample extends BaseContainer
   double lastVel;
 
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       super.initUI();
       vel = new Velocimeter();
       vel.value = 0;
       vel.max = 120;
       vel.pointerColor = Color.WHITE;
-      add(vel,CENTER,CENTER,PARENTSIZE+50,PARENTSIZE+50);
-      add(l = new Label("",CENTER),LEFT,AFTER+50);
+      add(vel, CENTER, CENTER, PARENTSIZE + 50, PARENTSIZE + 50);
+      add(l = new Label("", CENTER), LEFT, AFTER + 50);
       gps = new GPS();
       tt = addTimer(50);
-    }
-    catch (GPSDisabledException gde)
-    {
-      Toast.show("GPS is disabled, please enable it!",2000);
+    } catch (GPSDisabledException gde) {
+      Toast.show("GPS is disabled, please enable it!", 2000);
       super.back();
-    }
-    catch (Exception e)
-    {
-      MessageBox.showException(e,true);
+    } catch (Exception e) {
+      MessageBox.showException(e, true);
       back();
     }
   }
 
   @Override
-  public void back()
-  {
+  public void back() {
     super.back();
-    if (gps != null){
+    if (gps != null) {
       gps.stop();
     }
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == TimerEvent.TRIGGERED && tt.triggered){
-      try
-      {
-        if (gps.retrieveGPSData())
-        {
+  public void onEvent(Event e) {
+    if (e.type == TimerEvent.TRIGGERED && tt.triggered) {
+      try {
+        if (gps.retrieveGPSData()) {
           double v = gps.velocity;
           if (v < 0) {
             v = 0;
           }
-          if (v != lastVel)
-          {
+          if (v != lastVel) {
             lastVel = v;
-            vel.value = (int)(v * 3.6); // m/s -> km/h
-            l.setText(vel.value+" km/h");
+            vel.value = (int) (v * 3.6); // m/s -> km/h
+            l.setText(vel.value + " km/h");
           }
         }
-      }
-      catch (Exception ee)
-      {
-        Toast.show("Error: "+ee.getMessage(),2000);
+      } catch (Exception ee) {
+        Toast.show("Error: " + ee.getMessage(), 2000);
       }
     }
   }

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.attribute;
 
 import tc.tools.converter.bb.JavaClass;
@@ -20,31 +18,26 @@ import totalcross.io.DataStream;
 import totalcross.io.IOException;
 import totalcross.util.Vector;
 
-public class LocalVariableTable implements AttributeInfo
-{
+public class LocalVariableTable implements AttributeInfo {
   private JavaClass jclass;
 
   public Vector variables;
 
-  public LocalVariableTable(JavaClass jclass)
-  {
+  public LocalVariableTable(JavaClass jclass) {
     this.jclass = jclass;
     variables = new Vector();
   }
 
   @Override
-  public int length()
-  {
+  public int length() {
     return 2 + (variables.size() * 10);
   }
 
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
     int count = ds.readUnsignedShort();
     variables.removeAllElements();
-    for (int i = 0; i < count; i ++)
-    {
+    for (int i = 0; i < count; i++) {
       LocalVariable variable = new LocalVariable(this);
       variable.load(ds);
       variables.addElement(variable);
@@ -52,17 +45,15 @@ public class LocalVariableTable implements AttributeInfo
   }
 
   @Override
-  public void save(DataStream ds) throws IOException
-  {
+  public void save(DataStream ds) throws IOException {
     int count = variables.size();
     ds.writeShort(count);
-    for (int i = 0; i < count; i ++) {
-      ((LocalVariable)variables.items[i]).save(ds);
+    for (int i = 0; i < count; i++) {
+      ((LocalVariable) variables.items[i]).save(ds);
     }
   }
 
-  public static class LocalVariable implements JavaClassStructure
-  {
+  public static class LocalVariable implements JavaClassStructure {
     public LocalVariableTable table;
     public int startPC;
     public int length;
@@ -70,14 +61,12 @@ public class LocalVariableTable implements AttributeInfo
     public JavaConstant descriptor;
     public int index;
 
-    public LocalVariable(LocalVariableTable table)
-    {
+    public LocalVariable(LocalVariableTable table) {
       this.table = table;
     }
 
     @Override
-    public int length()
-    {
+    public int length() {
       return 10;
     }
 
@@ -85,8 +74,7 @@ public class LocalVariableTable implements AttributeInfo
      * @param ds
      */
     @Override
-    public void load(DataStream ds) throws IOException
-    {
+    public void load(DataStream ds) throws IOException {
       startPC = ds.readUnsignedShort();
       length = ds.readUnsignedShort();
       name = table.jclass.getConstant(ds.readUnsignedShort(), this);
@@ -98,8 +86,7 @@ public class LocalVariableTable implements AttributeInfo
      * @param ds
      */
     @Override
-    public void save(DataStream ds) throws IOException
-    {
+    public void save(DataStream ds) throws IOException {
       ds.writeShort(startPC);
       ds.writeShort(length);
       ds.writeShort(table.jclass.getConstantIndex(name, this));

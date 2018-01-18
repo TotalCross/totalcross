@@ -117,8 +117,9 @@ static void windowSetSIP(int32 sipOption, bool numeric)
 #endif
       case SIP_HIDE:
 #ifndef WIN32_PLATFORM_HPC2000
-		  if (_SHFullScreen != null)
-			  _SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
+		  if (_SHFullScreen != null) {
+			_SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON);
+		  }
 #endif
          SipShowIM(SIPF_OFF);
          {  //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
@@ -155,7 +156,9 @@ static void windowSetSIP(int32 sipOption, bool numeric)
          vkSettings.changed = true;
 
 #ifndef WIN32_PLATFORM_HPC2000
-         _SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
+		 if (_SHFullScreen != null) {
+			_SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
+		 }
 #endif
          SipSetDefaultRect(&sipRect);
          SipGetCurrentIM(&Clsid);
@@ -170,7 +173,9 @@ static void windowSetSIP(int32 sipOption, bool numeric)
          break;
       case SIP_SHOW:
 #ifndef WIN32_PLATFORM_HPC2000
-         _SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
+		  if (_SHFullScreen != null) {
+			_SHFullScreen(mainHWnd, SHFS_SHOWSIPBUTTON);
+		  }
 #endif
          SipShowIM(SIPF_ON);
          {  //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.

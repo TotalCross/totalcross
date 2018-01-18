@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 /** This class is used to handle record sizes of a PDBFile. 
@@ -51,8 +49,7 @@ public class ResizeRecord extends Stream // guich@580_19
    @param cat The PDBFile associated
    @param initialSize The initial size of the record. CANNOT BE 0!
    */
-  public ResizeRecord(PDBFile cat, int initialSize)
-  {
+  public ResizeRecord(PDBFile cat, int initialSize) {
     this.cat = cat;
     this.initialSize = initialSize;
   }
@@ -71,9 +68,9 @@ public class ResizeRecord extends Stream // guich@580_19
    */
   public void startRecord(int pos) throws IOException // flsobral@tc100b5_49: returning boolean is no longer necessary.
   {
-    if (pos >= cat.getRecordCount()){
+    if (pos >= cat.getRecordCount()) {
       cat.addRecord(initialSize);
-    }else {
+    } else {
       cat.addRecord(initialSize, pos);
     }
     written = 0;
@@ -89,8 +86,7 @@ public class ResizeRecord extends Stream // guich@580_19
    * @see #startRecord(int)
    * @see #endRecord()
    */
-  public void startRecord() throws IOException
-  {
+  public void startRecord() throws IOException {
     cat.addRecord(initialSize); // guich@200b4_96
     written = 0;
     size = initialSize;
@@ -104,12 +100,10 @@ public class ResizeRecord extends Stream // guich@580_19
    * @see #startRecord(int)
    * @see #endRecord()
    */
-  public boolean restartRecord(int pos) throws IOException
-  {
-    if (pos < 0 || pos >= cat.getRecordCount()){
+  public boolean restartRecord(int pos) throws IOException {
+    if (pos < 0 || pos >= cat.getRecordCount()) {
       startRecord();
-    }else
-    {
+    } else {
       written = 0;
       size = initialSize;
       cat.setRecordPos(pos); // guich@241_14
@@ -123,10 +117,8 @@ public class ResizeRecord extends Stream // guich@580_19
    * @see #restartRecord(int)
    * @see #startRecord(int)
    */
-  public void endRecord() throws IOException
-  {
-    if (!isRecordClosed)
-    {
+  public void endRecord() throws IOException {
+    if (!isRecordClosed) {
       isRecordClosed = true;
       if (written > 0) // guich@400_22
       {
@@ -141,18 +133,16 @@ public class ResizeRecord extends Stream // guich@580_19
   }
 
   @Override
-  public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
+  public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
     return cat.readBytes(buf, start, count);
   }
 
   @Override
-  public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
-  {
-    if (size == 0){
+  public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
+    if (size == 0) {
       return cat.writeBytes(buf, start, count);
     }
-    if (count - start <= 0){
+    if (count - start <= 0) {
       return 0;
     }
 
@@ -160,27 +150,22 @@ public class ResizeRecord extends Stream // guich@580_19
 
     while (total > size) // no more space?
     {
-      if (size == 65520)
-      {
+      if (size == 65520) {
         return -1; // guich@550_14: avoid infinite recursion
       }
       size += initialSize;
 
-      if (size > 65520)
-      {
+      if (size > 65520) {
         size = 65520; // guich@500_7: avoid blowing up the buffer
       }
-      try
-      {
+      try {
         cat.resizeRecord(size); // expand
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
         return -1;
       }
     }
     int n = cat.writeBytes(buf, start, count);
-    if (n >= 0){
+    if (n >= 0) {
       written += n;
     }
     return n;
@@ -192,9 +177,8 @@ public class ResizeRecord extends Stream // guich@580_19
    * @throws totalcross.io.IOException
    */
   @Override
-  public void close() throws totalcross.io.IOException
-  {
-    if (isClosing){
+  public void close() throws totalcross.io.IOException {
+    if (isClosing) {
       return;
     }
     isClosing = true;
@@ -203,23 +187,18 @@ public class ResizeRecord extends Stream // guich@580_19
   }
 
   /** Returns the stream attached to this stream (which is always a PDBFile). */
-  public Stream getStream()
-  {
+  public Stream getStream() {
     return cat;
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       if (cat.mode != -1) {
         endRecord();
       }
       close();
-    }
-    catch (IOException ex)
-    {
+    } catch (IOException ex) {
     }
   }
 }

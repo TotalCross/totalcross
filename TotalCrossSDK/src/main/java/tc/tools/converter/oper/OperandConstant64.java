@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandConstant64 extends OperandConstant
-{
-  public OperandConstant64(long value, int type)
-  {
+public class OperandConstant64 extends OperandConstant {
+  public OperandConstant64(long value, int type) {
     super(value, type);
     this.nWords = 2;
   }

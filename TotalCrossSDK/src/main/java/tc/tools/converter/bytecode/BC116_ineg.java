@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC116_ineg extends Arithmetic
-{
-  public BC116_ineg()
-  {
-    super(0,-1,-1,INT);
+public class BC116_ineg extends Arithmetic {
+  public BC116_ineg() {
+    super(0, -1, -1, INT);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-1].asInt = -stack[stackPtr-1].asInt;
+  public void exec() {
+    stack[stackPtr - 1].asInt = -stack[stackPtr - 1].asInt;
   }
 }

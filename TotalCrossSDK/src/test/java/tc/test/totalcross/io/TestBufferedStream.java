@@ -19,44 +19,37 @@ import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.unit.TestCase;
 
-public class TestBufferedStream extends TestCase
-{
+public class TestBufferedStream extends TestCase {
 
   @Override
-  public void testRun()
-  {
-    try
-    {
+  public void testRun() {
+    try {
       File stream = new File(Convert.appendPath(Settings.appPath, "test"), File.CREATE_EMPTY);
       String string = "Hello world from TotalCross";
       byte[] bytes = string.getBytes();
       int length = bytes.length;
 
       // Invalid Parameters.
-      try
-      {
+      try {
         new BufferedStream(null, BufferedStream.READ);
         fail("1");
+      } catch (NullPointerException exception) {
       }
-      catch (NullPointerException exception) {}
-      try
-      {
+      try {
         new BufferedStream(stream, -1);
         fail("2");
+      } catch (IllegalArgumentIOException exception) {
       }
-      catch (IllegalArgumentIOException exception) {}
-      try
-      {
+      try {
         new BufferedStream(stream, 2);
         fail("3");
+      } catch (IllegalArgumentIOException exception) {
       }
-      catch (IllegalArgumentIOException exception) {}
-      try
-      {
+      try {
         new BufferedStream(stream, BufferedStream.READ, -1);
         fail("4");
+      } catch (IllegalArgumentIOException exception) {
       }
-      catch (IllegalArgumentIOException exception) {}
 
       // Write mode.
       BufferedStream bufStr = new BufferedStream(stream, BufferedStream.WRITE);
@@ -65,28 +58,25 @@ public class TestBufferedStream extends TestCase
       {
         bufStr.readBytes(bytes, 0, length);
         fail("5");
+      } catch (IOException exception) {
       }
-      catch (IOException exception) {}
 
       // Invalid Parameters
-      try 
-      {
+      try {
         bufStr.writeBytes(null, 0, length);
         fail("6");
+      } catch (NullPointerException exception) {
       }
-      catch (NullPointerException exception) {}
-      try 
-      {
+      try {
         bufStr.writeBytes(bytes, -1, length);
         fail("7");
+      } catch (IllegalArgumentIOException exception) {
       }
-      catch (IllegalArgumentIOException exception) {}
-      try 
-      {
+      try {
         bufStr.writeBytes(bytes, 0, -1);
         fail("8");
+      } catch (IllegalArgumentIOException exception) {
       }
-      catch (IllegalArgumentIOException exception) {}
 
       // Finally writes the bytes and closes the <code>BufferedStream</close>.
       assertEquals(0, bufStr.writeBytes(bytes, 0, 0));
@@ -102,28 +92,25 @@ public class TestBufferedStream extends TestCase
       {
         bufStr.writeBytes(bytesAux, 0, length);
         fail("9");
+      } catch (IOException exception) {
       }
-      catch (IOException exception) {}
 
       // Invalid Parameters
-      try 
-      {
+      try {
         bufStr.readBytes(null, 0, length);
         fail("10");
+      } catch (NullPointerException exception) {
       }
-      catch (NullPointerException exception) {}
-      try 
-      {
+      try {
         bufStr.readBytes(bytesAux, -1, length);
         fail("11");
+      } catch (IllegalArgumentIOException exception) {
       }
-      catch (IllegalArgumentIOException exception) {}
-      try 
-      {
+      try {
         bufStr.readBytes(bytesAux, 0, -1);
         fail("12");
+      } catch (IllegalArgumentIOException exception) {
       }
-      catch (IllegalArgumentIOException exception) {}
 
       // Finally reads the bytes and closes the <code>BufferedStream</close>.
       assertEquals(length, bufStr.readBytes(bytesAux, 0, length));
@@ -135,20 +122,17 @@ public class TestBufferedStream extends TestCase
       assertEquals(string, bufStr.readLine());
 
       // Tests the changing of the underlining stream.
-      try
-      {
+      try {
         bufStr.setStream(null);
         fail("13");
+      } catch (NullPointerException exception) {
       }
-      catch (NullPointerException exception) {}         
       bufStr.setStream(stream);
 
       // Closes everything.
       stream.close();
-      bufStr.close();         
-    }
-    catch (IOException exception)
-    {
+      bufStr.close();
+    } catch (IOException exception) {
       exception.printStackTrace();
       fail("14");
     }

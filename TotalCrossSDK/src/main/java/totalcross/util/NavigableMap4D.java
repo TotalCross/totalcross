@@ -70,7 +70,7 @@ import java.util.SortedMap;
  * @param <V> the type of mapped values
  * @since 1.6
  */
-public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
+public interface NavigableMap4D<K, V> extends SortedMap<K, V> {
   /**
    * Returns a key-value mapping associated with the greatest key
    * strictly less than the given key, or {@code null} if there is
@@ -84,7 +84,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @throws NullPointerException if the specified key is null
    *         and this map does not permit null keys
    */
-  Map.Entry<K,V> lowerEntry(K key);
+  Map.Entry<K, V> lowerEntry(K key);
 
   /**
    * Returns the greatest key strictly less than the given key, or
@@ -113,7 +113,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @throws NullPointerException if the specified key is null
    *         and this map does not permit null keys
    */
-  Map.Entry<K,V> floorEntry(K key);
+  Map.Entry<K, V> floorEntry(K key);
 
   /**
    * Returns the greatest key less than or equal to the given key,
@@ -142,7 +142,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @throws NullPointerException if the specified key is null
    *         and this map does not permit null keys
    */
-  Map.Entry<K,V> ceilingEntry(K key);
+  Map.Entry<K, V> ceilingEntry(K key);
 
   /**
    * Returns the least key greater than or equal to the given key,
@@ -171,7 +171,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @throws NullPointerException if the specified key is null
    *         and this map does not permit null keys
    */
-  Map.Entry<K,V> higherEntry(K key);
+  Map.Entry<K, V> higherEntry(K key);
 
   /**
    * Returns the least key strictly greater than the given key, or
@@ -194,7 +194,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @return an entry with the least key,
    *         or {@code null} if this map is empty
    */
-  Map.Entry<K,V> firstEntry();
+  Map.Entry<K, V> firstEntry();
 
   /**
    * Returns a key-value mapping associated with the greatest
@@ -203,7 +203,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @return an entry with the greatest key,
    *         or {@code null} if this map is empty
    */
-  Map.Entry<K,V> lastEntry();
+  Map.Entry<K, V> lastEntry();
 
   /**
    * Removes and returns a key-value mapping associated with
@@ -212,7 +212,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @return the removed first entry of this map,
    *         or {@code null} if this map is empty
    */
-  Map.Entry<K,V> pollFirstEntry();
+  Map.Entry<K, V> pollFirstEntry();
 
   /**
    * Removes and returns a key-value mapping associated with
@@ -221,7 +221,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @return the removed last entry of this map,
    *         or {@code null} if this map is empty
    */
-  Map.Entry<K,V> pollLastEntry();
+  Map.Entry<K, V> pollLastEntry();
 
   /**
    * Returns a reverse order view of the mappings contained in this map.
@@ -238,7 +238,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    *
    * @return a reverse order view of this map
    */
-  NavigableMap<K,V> descendingMap();
+  NavigableMap<K, V> descendingMap();
 
   /**
    * Returns a {@link NavigableSet} view of the keys contained in this map.
@@ -306,8 +306,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    *         range, and {@code fromKey} or {@code toKey} lies
    *         outside the bounds of the range
    */
-  NavigableMap<K,V> subMap(K fromKey, boolean fromInclusive,
-      K toKey,   boolean toInclusive);
+  NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive);
 
   /**
    * Returns a view of the portion of this map whose keys are less than (or
@@ -336,7 +335,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    *         restricted range, and {@code toKey} lies outside the
    *         bounds of the range
    */
-  NavigableMap<K,V> headMap(K toKey, boolean inclusive);
+  NavigableMap<K, V> headMap(K toKey, boolean inclusive);
 
   /**
    * Returns a view of the portion of this map whose keys are greater than (or
@@ -365,7 +364,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    *         restricted range, and {@code fromKey} lies outside the
    *         bounds of the range
    */
-  NavigableMap<K,V> tailMap(K fromKey, boolean inclusive);
+  NavigableMap<K, V> tailMap(K fromKey, boolean inclusive);
 
   /**
    * {@inheritDoc}
@@ -377,7 +376,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @throws IllegalArgumentException {@inheritDoc}
    */
   @Override
-  SortedMap<K,V> subMap(K fromKey, K toKey);
+  SortedMap<K, V> subMap(K fromKey, K toKey);
 
   /**
    * {@inheritDoc}
@@ -389,7 +388,7 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @throws IllegalArgumentException {@inheritDoc}
    */
   @Override
-  SortedMap<K,V> headMap(K toKey);
+  SortedMap<K, V> headMap(K toKey);
 
   /**
    * {@inheritDoc}
@@ -401,5 +400,5 @@ public interface NavigableMap4D<K,V> extends SortedMap<K,V> {
    * @throws IllegalArgumentException {@inheritDoc}
    */
   @Override
-  SortedMap<K,V> tailMap(K fromKey);
+  SortedMap<K, V> tailMap(K fromKey);
 }

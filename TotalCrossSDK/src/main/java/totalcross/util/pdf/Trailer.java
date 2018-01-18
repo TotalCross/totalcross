@@ -7,36 +7,30 @@
 
 package totalcross.util.pdf;
 
-public class Trailer extends Base
-{
+public class Trailer extends Base {
 
   private int mXRefByteOffset;
   private int mObjectsCount;
   private String mId;
   private Dictionary mTrailerDictionary;
 
-  public Trailer()
-  {
+  public Trailer() {
     clear();
   }
 
-  public void setId(String Value)
-  {
+  public void setId(String Value) {
     mId = Value;
   }
 
-  public void setCrossReferenceTableByteOffset(int Value)
-  {
+  public void setCrossReferenceTableByteOffset(int Value) {
     mXRefByteOffset = Value;
   }
 
-  public void setObjectsCount(int Value)
-  {
+  public void setObjectsCount(int Value) {
     mObjectsCount = Value;
   }
 
-  private void renderDictionary()
-  {
+  private void renderDictionary() {
     mTrailerDictionary.setContent("  /Size " + Integer.toString(mObjectsCount));
     mTrailerDictionary.addNewLine();
     mTrailerDictionary.addContent("  /Root 1 0 R");
@@ -45,8 +39,7 @@ public class Trailer extends Base
     mTrailerDictionary.addNewLine();
   }
 
-  private String render()
-  {
+  private String render() {
     renderDictionary();
     StringBuilder sb = new StringBuilder();
     sb.append("trailer");
@@ -62,14 +55,12 @@ public class Trailer extends Base
   }
 
   @Override
-  public String toPDFString()
-  {
+  public String toPDFString() {
     return render();
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
     mXRefByteOffset = 0;
     mTrailerDictionary = new Dictionary();
   }

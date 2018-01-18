@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.html;
 
 import totalcross.ui.Control;
@@ -26,8 +24,7 @@ import totalcross.ui.Control;
  *
  * @author Pierre G. Richard / Jim Guistwite
  */
-public class ControlProperties
-{
+public class ControlProperties {
   /** The name of this control */
   public String name;
 
@@ -40,16 +37,14 @@ public class ControlProperties
   /** True to glue the next control in this one. */
   public boolean glue;
 
-  public ControlProperties(String name, String value, Style style)
-  {
+  public ControlProperties(String name, String value, Style style) {
     this.name = name;
     this.value = value;
     this.style = style;
   }
 
-  public static Style getStyle(Control c)
-  {
-    return ((ControlProperties)c.appObj).style;
+  public static Style getStyle(Control c) {
+    return ((ControlProperties) c.appObj).style;
   }
 
 }

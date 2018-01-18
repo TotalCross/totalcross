@@ -62,8 +62,7 @@ import totalcross.util.Hashtable;
  * </pre>
  */
 
-public class Button extends Control implements TextControl
-{
+public class Button extends Control implements TextControl {
   /** Specifies no border for this button. Used in the setBorder method. */
   public static final byte BORDER_NONE = 0;
   /** Specifies a single-lined border for this button. Used in the setBorder method. */
@@ -139,13 +138,13 @@ public class Button extends Control implements TextControl
   public int AUTO_DELAY = 150;
 
   protected String text;
-  protected Image img,img0,imgDis;
+  protected Image img, img0, imgDis;
   protected boolean armed;
   protected byte border = BORDER_3D;
-  protected int tx0,ty0,ix0,iy0;
-  protected int fColor,pressColor=-1;
+  protected int tx0, ty0, ix0, iy0;
+  protected int fColor, pressColor = -1;
   protected int fourColors[] = new int[4];
-  private int txtPos,tiGap,maxTW;
+  private int txtPos, tiGap, maxTW;
   private boolean fixPressColor;
   private static Hashtable htGrays;
   private Image colorized;
@@ -155,8 +154,8 @@ public class Button extends Control implements TextControl
   private Rect clip;
   private int localCommonGap;
 
-  private String []lines;
-  private int []linesW;
+  private String[] lines;
+  private int[] linesW;
 
   /** Sets the image that will be displayed when the user press this button.
    * Only works on Imaged buttons.
@@ -252,9 +251,8 @@ public class Button extends Control implements TextControl
    * @param gap The space between the text and the image
    * @since TotalCross 1.0
    */
-  public Button(String text, Image img, int textPosition, int gap)
-  {
-    if (text != null){
+  public Button(String text, Image img, int textPosition, int gap) {
+    if (text != null) {
       setText(text);
     }
     this.img = this.img0 = img;
@@ -266,26 +264,23 @@ public class Button extends Control implements TextControl
   }
 
   /** Creates a button displaying the given text. */
-  public Button(String text)
-  {
-    this(text,null,0,0);
+  public Button(String text) {
+    this(text, null, 0, 0);
   }
 
   /** Creates a button displaying the given text and border. */
-  public Button(String text, byte border)
-  {
-    this(text,null,0,0);
+  public Button(String text, byte border) {
+    this(text, null, 0, 0);
     setBorder(border);
   }
 
   /** Sets the text that is displayed in the button. */
   @Override
-  public void setText(String text)
-  {
+  public void setText(String text) {
     this.text = text;
-    lines = Convert.tokenizeString(text,'\n');
+    lines = Convert.tokenizeString(text, '\n');
     onFontChanged();
-    if (txtPos == 0){
+    if (txtPos == 0) {
       img = null;
     }
     Window.needsPaint = true;
@@ -293,31 +288,27 @@ public class Button extends Control implements TextControl
 
   /** Creates a button with the given image. The transparentColor property of
    * the Image must be set before calling this constructor. */
-  public Button(Image img)
-  {
-    this(null,img,0,0);
+  public Button(Image img) {
+    this(null, img, 0, 0);
   }
 
   /** Creates a button with the given image and border. The transparentColor property of
    * the Image must be set before calling this constructor. */
-  public Button(Image img, byte border)
-  {
-    this(null,img,0,0);
+  public Button(Image img, byte border) {
+    this(null, img, 0, 0);
     setBorder(border);
   }
 
-  protected Button()
-  {
+  protected Button() {
   }
 
   /** Sets the image that is displayed in the button. The
     transparentColor property of the Image must be set before calling this
     method.<br>
     Note: this method does not resize the button to fit the image.*/
-  public void setImage(Image img)
-  {
+  public void setImage(Image img) {
     this.img = img;
-    if (txtPos == 0){
+    if (txtPos == 0) {
       text = null;
     }
     onBoundsChanged(false);
@@ -326,13 +317,13 @@ public class Button extends Control implements TextControl
 
   /** Sets the color that the button's background will go ('armed color') when the button gets
        a PENDOWN event. The default is the cursor color for the background.
-
+  
        In Android user interface style, using a bright color may result in a white background. 
        Use a darker color in this case.
        @since SuperWaba 4.21
        @param newColor New color to set as the background when pressed.
    */
-  public void setPressedColor(int newColor)  // vik@421_28
+  public void setPressedColor(int newColor) // vik@421_28
   {
     pressColor = newColor;
     fixPressColor = true; // don't allow it change
@@ -346,11 +337,9 @@ public class Button extends Control implements TextControl
    * @see #BORDER_3D_VERTICAL_GRADIENT
    * @see #BORDER_GRAY_IMAGE
    */
-  public void setBorder(byte border)
-  {
+  public void setBorder(byte border) {
     this.border = border;
-    switch (border)
-    {
+    switch (border) {
     case BORDER_ROUND:
       transparentBackground = true;
       break;
@@ -364,21 +353,17 @@ public class Button extends Control implements TextControl
       bottomColor3DG = Color.BLUE;
       break;
     case BORDER_GRAY_IMAGE: // guich@tc112_25
-      String key = img.hashCode()+"|"+borderColor3DG+"|"+backColor;
+      String key = img.hashCode() + "|" + borderColor3DG + "|" + backColor;
       if (htGrays == null) {
         htGrays = new Hashtable(3);
       }
-      colorized = (Image)htGrays.get(key);
-      if (colorized == null)
-      {
-        try
-        {
+      colorized = (Image) htGrays.get(key);
+      if (colorized == null) {
+        try {
           colorized = img.getFrameInstance(0);
           colorized.applyColor(borderColor3DG);
-          htGrays.put(key,colorized);
-        }
-        catch (ImageException e)
-        {
+          htGrays.put(key, colorized);
+        } catch (ImageException e) {
           //flsobral@tc150: colorized will remain null.
         }
       }
@@ -389,84 +374,80 @@ public class Button extends Control implements TextControl
 
   /** Gets the text displayed in the button. */
   @Override
-  public String getText()
-  {
-    return text!=null?text:"image";
+  public String getText() {
+    return text != null ? text : "image";
   }
 
   /** Returns the preffered width of this control. */
   @Override
-  public int getPreferredWidth()
-  {
+  public int getPreferredWidth() {
     int border = this.border < 2 ? this.border : 2; // guich@tc112_31
     int prefW;
     int tw = text == null ? 0 : maxTW;
-    int iw = (this.border == BORDER_GRAY_IMAGE || img  == null) ? 0 : img.getWidth(); // guich@tc120_1: using a gray image does not take the image into consideration
-    switch (txtPos)
-    {
-    case BOTTOM: case TOP: 
-      prefW = Math.max(tw,iw); 
+    int iw = (this.border == BORDER_GRAY_IMAGE || img == null) ? 0 : img.getWidth(); // guich@tc120_1: using a gray image does not take the image into consideration
+    switch (txtPos) {
+    case BOTTOM:
+    case TOP:
+      prefW = Math.max(tw, iw);
       break;
-    case CENTER_OF: 
+    case CENTER_OF:
     case RIGHT_OF:
-    case LEFT: 
-    case RIGHT: 
-      prefW = tw + getGap(tiGap) + iw; 
+    case LEFT:
+    case RIGHT:
+      prefW = tw + getGap(tiGap) + iw;
       break;
-    case CENTER:           
-      prefW = Math.max(tw,iw)+1; 
+    case CENTER:
+      prefW = Math.max(tw, iw) + 1;
       if (img != null) {
         border = 0;
-      } 
+      }
       if (this.border == BORDER_GRAY_IMAGE) {
-        prefW += getGap(tiGap)*2;
-      }  
+        prefW += getGap(tiGap) * 2;
+      }
       break; // guich@tc112_26 - guich@tc113_6: use tiGap too
-    default:               
+    default:
       prefW = tw + iw;
     }
-    if (border == BORDER_ROUND){
+    if (border == BORDER_ROUND) {
       prefW += getPreferredHeight();
     }
-    return prefW + ((localCommonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
+    return prefW + ((localCommonGap + border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
   }
 
   /** Returns the preffered height of this control. */
   @Override
-  public int getPreferredHeight()
-  {
-    if (translucentShape == TranslucentShape.CIRCLE){
+  public int getPreferredHeight() {
+    if (translucentShape == TranslucentShape.CIRCLE) {
       return getPreferredWidth();
     }
     int border = this.border < 2 ? this.border : 2; // guich@tc112_31
     int prefH;
-    int th = text == null ? 0 : ((uiVista?1:0)+fmH*lines.length);
-    int ih = (this.border == BORDER_GRAY_IMAGE || img  == null) ? 0 : img.getHeight(); // guich@tc120_1: using a gray image does not take the image into consideration
-    switch (txtPos)
-    {
-    case BOTTOM: 
-    case TOP: 
-      prefH = th + getGap(tiGap) + ih; 
+    int th = text == null ? 0 : ((uiVista ? 1 : 0) + fmH * lines.length);
+    int ih = (this.border == BORDER_GRAY_IMAGE || img == null) ? 0 : img.getHeight(); // guich@tc120_1: using a gray image does not take the image into consideration
+    switch (txtPos) {
+    case BOTTOM:
+    case TOP:
+      prefH = th + getGap(tiGap) + ih;
       break;
-    case CENTER_OF: 
+    case CENTER_OF:
     case RIGHT_OF:
-    case LEFT: 
-    case RIGHT: 
-      prefH = Math.max(th,ih); 
+    case LEFT:
+    case RIGHT:
+      prefH = Math.max(th, ih);
       break;
-    case CENTER:           
-      prefH = Math.max(th,ih)+1;
+    case CENTER:
+      prefH = Math.max(th, ih) + 1;
       if (img != null) {
         border = 0;
-      } 
+      }
       if (this.border == BORDER_GRAY_IMAGE) {
-        prefH += getGap(tiGap)*2;
-      } 
+        prefH += getGap(tiGap) * 2;
+      }
       break; // guich@tc112_26 - guich@tc113_6: use tiGap too
-    default:               
+    default:
       prefH = th + ih;
     }
-    return prefH + ((localCommonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
+    return prefH + ((localCommonGap + border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
   }
 
   /** Press and depress this Button to simulate that the user had clicked on it.
@@ -477,10 +458,9 @@ public class Button extends Control implements TextControl
    */
   public void simulatePress() // guich@550_27
   {
-    if (isSticky){
+    if (isSticky) {
       press(armed = !armed);
-    }else
-    {
+    } else {
       press(true);
       Vm.safeSleep(100);// on win32 is needed, but and in the devices?
       press(false);
@@ -500,15 +480,12 @@ public class Button extends Control implements TextControl
 
   /** Called by the system to pass events to the button. */
   @Override
-  public void onEvent(Event event)
-  {
+  public void onEvent(Event event) {
     PenEvent pe;
-    if (isEnabled()){
-      switch (event.type)
-      {
+    if (isEnabled()) {
+      switch (event.type) {
       case TimerEvent.TRIGGERED:
-        if (autoRepeatTimer != null && autoRepeatTimer.triggered && armed)
-        {
+        if (autoRepeatTimer != null && autoRepeatTimer.triggered && armed) {
           if (autoRepeatTimer.millis == INITIAL_DELAY) {
             autoRepeatTimer.millis = AUTO_DELAY;
           }
@@ -520,7 +497,7 @@ public class Button extends Control implements TextControl
         postPressedEvent();
         break;
       case PenEvent.PEN_DOWN:
-        armed = isSticky ? !armed: true;
+        armed = isSticky ? !armed : true;
         repaintNow();
         if (!isSticky && autoRepeat) {
           autoRepeatTimer = addTimer(INITIAL_DELAY);
@@ -533,14 +510,14 @@ public class Button extends Control implements TextControl
         if (!isSticky && armed) {
           press(armed = false);
         }
-        pe = (PenEvent)event;
-        if ((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x,pe.y)) {
+        pe = (PenEvent) event;
+        if ((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x, pe.y)) {
           postPressedEvent();
         }
         break;
       case PenEvent.PEN_DRAG:
-        pe = (PenEvent)event;
-        boolean lArmed = isInsideOrNear(pe.x,pe.y);
+        pe = (PenEvent) event;
+        boolean lArmed = isInsideOrNear(pe.x, pe.y);
         if (armed != lArmed) {
           press(armed = lArmed);
         }
@@ -562,8 +539,7 @@ public class Button extends Control implements TextControl
   }
 
   /** Simulate the press or release of this button. Does not generate events. */
-  public void press(boolean pressed)
-  {
+  public void press(boolean pressed) {
     if (transparentBackground && !isAndroidStyle) // guich@tc114_77: repaint now the parent's background otherwise it will leave dirt in the background
     {
       boolean eus = Control.enableUpdateScreen;
@@ -581,79 +557,71 @@ public class Button extends Control implements TextControl
 
   /** Called by the system to draw the button. it cuts the text if the button is too small. */
   @Override
-  public void onPaint(Graphics g)
-  {
-    if (skipPaint){
+  public void onPaint(Graphics g) {
+    if (skipPaint) {
       return;
     }
     boolean isRound = border == BORDER_ROUND;
-    if (uiMaterial && effect != null){
+    if (uiMaterial && effect != null) {
       effect.darkSideOnPress = border != BORDER_NONE;
     }
-    if (isAndroidStyle)
-    {
-      if (translucentShape == TranslucentShape.NONE && !uiMaterial && !Settings.isOpenGL)
-      {
+    if (isAndroidStyle) {
+      if (translucentShape == TranslucentShape.NONE && !uiMaterial && !Settings.isOpenGL) {
         g.getClip(clip);
-        g.backColor = Settings.isOpenGL ? parent.backColor : g.getPixel(clip.x,clip.y);
-        g.fillRect(0,0,width,height);
+        g.backColor = Settings.isOpenGL ? parent.backColor : g.getPixel(clip.x, clip.y);
+        g.fillRect(0, 0, width, height);
       }
+    } else if (!isRound && (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground)
+        || drawBordersIfTransparentBackground)) {
+      paintBackground(g);
     }
-    else
-      if (!isRound && (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground) || drawBordersIfTransparentBackground)){
-        paintBackground(g);
-      }
 
-    if (isRound)
-    {
+    if (isRound) {
       g.backColor = backColor;
-      g.fillRoundRect(0,0,width,height,height/roundBorderFactor);
+      g.fillRoundRect(0, 0, width, height, height / roundBorderFactor);
+    } else if (isAndroidStyle || (uiMaterial && border != BORDER_NONE)) {
+      paintImage(g, true, 0, 0);
     }
-    else
-      if (isAndroidStyle || (uiMaterial && border != BORDER_NONE)){
-        paintImage(g, true, 0,0);
-      }
 
-    if (effect != null){
+    if (effect != null) {
       effect.paintEffect(g);
     }
 
-    int border = txtPos == CENTER ? 0 : Math.min(2,this.border); // guich@tc112_31
-    g.setClip(border,border,width-(border<<1),height-(border<<1)); // guich@101: cut text if button is too small - guich@510_4
+    int border = txtPos == CENTER ? 0 : Math.min(2, this.border); // guich@tc112_31
+    g.setClip(border, border, width - (border << 1), height - (border << 1)); // guich@101: cut text if button is too small - guich@510_4
 
-    int tx=tx0;
-    int ty=ty0;
-    int ix=ix0;
-    int iy=iy0;
+    int tx = tx0;
+    int ty = ty0;
+    int ix = ix0;
+    int iy = iy0;
     boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
     if (armed && !isAndroidStyle && shiftOnPress && (is3d || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
     {
       int inc = is3d ? borderWidth3DG : 1;
-      tx += inc; ix += inc;
-      ty += inc; iy += inc;
+      tx += inc;
+      ix += inc;
+      ty += inc;
+      iy += inc;
     }
     g.foreColor = fColor;
-    if (img != null){
-      paintImage(g, false, ix,iy);
+    if (img != null) {
+      paintImage(g, false, ix, iy);
     }
 
-    if (text != null){
-      paintText(g,tx,ty);
+    if (text != null) {
+      paintText(g, tx, ty);
     }
   }
 
   @Override
-  protected void onFontChanged()
-  {
-    if (text != null)
-    {
+  protected void onFontChanged() {
+    if (text != null) {
       if (linesW == null || linesW.length != lines.length) {
         linesW = new int[lines.length];
       }
-      int []linesW = this.linesW;
+      int[] linesW = this.linesW;
       maxTW = 0;
-      for (int i = lines.length-1; i >= 0; i--)
-      {
+      for (int i = lines.length - 1; i >= 0; i--) {
         linesW[i] = fm.stringWidth(lines[i]);
         maxTW = Math.max(maxTW, linesW[i]);
       }
@@ -662,137 +630,146 @@ public class Button extends Control implements TextControl
   }
 
   @Override
-  protected void onBoundsChanged(boolean screenChanged)
-  {
+  protected void onBoundsChanged(boolean screenChanged) {
     int tiGap = getGap(this.tiGap);
-    if (imageHeightFactor != 0 && img0 != null){
-      try 
-      {
-        img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);
-        if (img.getWidth() > this.width-4) {
-          img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(width-4,false) : img0.hwScaledFixedAspectRatio(width-4,false);
+    if (imageHeightFactor != 0 && img0 != null) {
+      try {
+        img = Settings.enableWindowTransitionEffects
+            ? img0.smoothScaledFixedAspectRatio(height * imageHeightFactor / 100, true)
+            : img0.hwScaledFixedAspectRatio(height * imageHeightFactor / 100, true);
+        if (img.getWidth() > this.width - 4) {
+          img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(width - 4, false)
+              : img0.hwScaledFixedAspectRatio(width - 4, false);
         }
         img.setCurrentFrame(currentFrame);
         imgDis = null;
-      } catch (Throwable t) {img = img0;}
+      } catch (Throwable t) {
+        img = img0;
+      }
     }
     isAndroidStyle = uiAndroid && this.border == BORDER_3D;
-    if ((isAndroidStyle || uiMaterial) && clip == null){
+    if ((isAndroidStyle || uiMaterial) && clip == null) {
       clip = new Rect();
     }
     npback = null;
-    int th=0,iw=0,ih=0;
+    int th = 0, iw = 0, ih = 0;
 
-    if (isAndroidStyle && width > 0 && height > 0){
+    if (isAndroidStyle && width > 0 && height > 0) {
       transparentBackground = true;
     }
     // compute where to draw each item to keep it centered
-    if (text != null)
-    {
+    if (text != null) {
       th = fmH * lines.length;
-      tx0 = (width  - maxTW) / 2;
+      tx0 = (width - maxTW) / 2;
       ty0 = (height - th) / 2;
     }
     if (border == BORDER_GRAY_IMAGE) // guich@tc113_6: recompute image's
     {
       if (colorized != null) {
-        try
-        {
-          img = colorized.getSmoothScaledInstance(width,height);
-        }
-        catch (ImageException e)
-        {
+        try {
+          img = colorized.getSmoothScaledInstance(width, height);
+        } catch (ImageException e) {
           //flsobral@tc150: keep old value 
         }
       }
     }
-    if (img != null)
-    {
+    if (img != null) {
       iw = img.getWidth();
       ih = img.getHeight();
       ix0 = (width - iw) >> 1;
-    iy0 = (height- ih) >> 1;
+      iy0 = (height - ih) >> 1;
     }
-    if (txtPos != 0)
-    {
+    if (txtPos != 0) {
       int restH = (height - (ih + tiGap + th)) >> 1;
-    int restW = (width  - (iw + tiGap + maxTW)) >> 1;
-    switch (txtPos)
-    {
-    case TOP:    ty0 = restH; iy0 = ty0 + th + tiGap; break;
-    case BOTTOM: iy0 = restH; ty0 = iy0 + ih + tiGap; break;
-    case LEFT:   tx0 = restW; ix0 = tx0 + maxTW + tiGap; break;
-    case RIGHT:  ix0 = restW; tx0 = ix0 + iw + tiGap; break;
-    case RIGHT_OF: // guich@tc126_28
-    {
-      if (relativeToText == null) {
-        throw new NullPointerException("When using RIGHT_OF, you must set the Button's relativeToText field.");
-      }
-      int rw = 0;
-      if (relativeToText.indexOf('\n') == -1) {
-        rw = fm.stringWidth(relativeToText);
-      } else
+      int restW = (width - (iw + tiGap + maxTW)) >> 1;
+      switch (txtPos) {
+      case TOP:
+        ty0 = restH;
+        iy0 = ty0 + th + tiGap;
+        break;
+      case BOTTOM:
+        iy0 = restH;
+        ty0 = iy0 + ih + tiGap;
+        break;
+      case LEFT:
+        tx0 = restW;
+        ix0 = tx0 + maxTW + tiGap;
+        break;
+      case RIGHT:
+        ix0 = restW;
+        tx0 = ix0 + iw + tiGap;
+        break;
+      case RIGHT_OF: // guich@tc126_28
       {
-        String []relToLines = Convert.tokenizeString(relativeToText,'\n');
-        rw = fm.getMaxWidth(relToLines, 0, relToLines.length);
+        if (relativeToText == null) {
+          throw new NullPointerException("When using RIGHT_OF, you must set the Button's relativeToText field.");
+        }
+        int rw = 0;
+        if (relativeToText.indexOf('\n') == -1) {
+          rw = fm.stringWidth(relativeToText);
+        } else {
+          String[] relToLines = Convert.tokenizeString(relativeToText, '\n');
+          rw = fm.getMaxWidth(relToLines, 0, relToLines.length);
+        }
+        ix0 = (width - (iw + tiGap + rw)) >> 1;
+        ;
+        tx0 = ix0 + iw + tiGap + (rw - maxTW) / 2;
+        break;
       }
-      ix0 = (width  - (iw + tiGap + rw)) >> 1;; 
-      tx0 = ix0 + iw + tiGap + (rw-maxTW)/2; break;
-    }
-    case CENTER: break;
-    }
+      case CENTER:
+        break;
+      }
     }
   }
 
   @Override
-  protected void onColorsChanged(boolean colorsChanged)
-  {
+  protected void onColorsChanged(boolean colorsChanged) {
     boolean enabled = isEnabled();
     npback = null;
-    if (!enabled && autoRepeatTimer != null){
+    if (!enabled && autoRepeatTimer != null) {
       disableAutoRepeat();
     }
     fColor = enabled ? foreColor : Color.getCursorColor(foreColor); // guich@tc110_49: use getCursorColor so a white forecolor shows up as changed
-    if (!isAndroidStyle && !uiMaterial){
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+    if (!isAndroidStyle && !uiMaterial) {
+      Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
     }
-    if (!fixPressColor)
-    {
+    if (!fixPressColor) {
       pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
     }
-    if (!isAndroidStyle){
+    if (!isAndroidStyle) {
       fourColors[1] = pressColor;
     }
   }
 
   /** Paint button's background. */
-  protected void paintBackground(Graphics g)
-  {
+  protected void paintBackground(Graphics g) {
     boolean enabled = isEnabled();
-    if (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground))
-    {
-      if (border == BORDER_GRAY_IMAGE)
-      {
+    if (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground)) {
+      if (border == BORDER_GRAY_IMAGE) {
         g.backColor = backColor;
-        g.fillRect(0,0,width,height);
+        g.fillRect(0, 0, width, height);
         return;
       }
-      if (border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT)
-      {
-        g.drawRoundGradient(0,0,width - 1, height - 1, cornerRadius3DG,cornerRadius3DG,cornerRadius3DG,cornerRadius3DG,borderColor3DG,borderColor3DG,border == BORDER_3D_VERTICAL_GRADIENT);
+      if (border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT) {
+        g.drawRoundGradient(0, 0, width - 1, height - 1, cornerRadius3DG, cornerRadius3DG, cornerRadius3DG,
+            cornerRadius3DG, borderColor3DG, borderColor3DG, border == BORDER_3D_VERTICAL_GRADIENT);
         if (armed) {
-          g.drawRoundGradient(borderWidth3DG,borderWidth3DG,width - 1, height - 1,cornerRadius3DG,cornerRadius3DG - borderWidth3DG,cornerRadius3DG - borderWidth3DG,cornerRadius3DG,armed && fixPressColor ? pressColor : topColor3DG,enabled ? bottomColor3DG : topColor3DG,border == BORDER_3D_VERTICAL_GRADIENT); // guich@tc120_42: use pressColor if defined
-        }
-        else {
-          g.drawRoundGradient(0,0,width - borderWidth3DG - 1, height - borderWidth3DG - 1,cornerRadius3DG,cornerRadius3DG - borderWidth3DG,cornerRadius3DG - borderWidth3DG,cornerRadius3DG,armed && fixPressColor ? pressColor : topColor3DG, enabled ? bottomColor3DG : topColor3DG,border == BORDER_3D_VERTICAL_GRADIENT); // guich@tc120_42
+          g.drawRoundGradient(borderWidth3DG, borderWidth3DG, width - 1, height - 1, cornerRadius3DG,
+              cornerRadius3DG - borderWidth3DG, cornerRadius3DG - borderWidth3DG, cornerRadius3DG,
+              armed && fixPressColor ? pressColor : topColor3DG, enabled ? bottomColor3DG : topColor3DG,
+              border == BORDER_3D_VERTICAL_GRADIENT); // guich@tc120_42: use pressColor if defined
+        } else {
+          g.drawRoundGradient(0, 0, width - borderWidth3DG - 1, height - borderWidth3DG - 1, cornerRadius3DG,
+              cornerRadius3DG - borderWidth3DG, cornerRadius3DG - borderWidth3DG, cornerRadius3DG,
+              armed && fixPressColor ? pressColor : topColor3DG, enabled ? bottomColor3DG : topColor3DG,
+              border == BORDER_3D_VERTICAL_GRADIENT); // guich@tc120_42
         }
         return;
       }
-      switch (Settings.uiStyle)
-      {
+      switch (Settings.uiStyle) {
       case Settings.Flat:
         g.backColor = img == null && armed ? pressColor : backColor; // guich@tc100b4_13: also check if img is null
-        g.fillRect(0,0,width,height);
+        g.fillRect(0, 0, width, height);
         break;
       case Settings.Android:
       case Settings.Material:
@@ -802,85 +779,78 @@ public class Button extends Control implements TextControl
         if (border == BORDER_NONE && flatBackground) // guich@582_14
         {
           g.backColor = armed && fixPressColor && effect == null ? pressColor : backColor;
-          g.fillRect(0,0,width,height);
-        }
-        else
-          if (enabled) {
-            g.fillVistaRect(0,0,width,height,backColor, armed,false);
-          } else
-            // guich@582_14 - commented if (border != BORDER_NONE)
-          {
-            g.backColor = backColor;
-            g.fillRect(0,0,width,height);
-            if (border != BORDER_NONE) {
-              g.drawVistaRect(0,0,width,height,fColor,fColor,fColor,fColor);
-            }
+          g.fillRect(0, 0, width, height);
+        } else if (enabled) {
+          g.fillVistaRect(0, 0, width, height, backColor, armed, false);
+        } else
+        // guich@582_14 - commented if (border != BORDER_NONE)
+        {
+          g.backColor = backColor;
+          g.fillRect(0, 0, width, height);
+          if (border != BORDER_NONE) {
+            g.drawVistaRect(0, 0, width, height, fColor, fColor, fColor, fColor);
           }
+        }
         break;
       }
       }
     }
-    if (border != BORDER_NONE && !isAndroidStyle && !(uiVista && !enabled)){
-      g.draw3dRect(0,0,width,height,armed ?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,border == BORDER_SIMPLE,fourColors);
+    if (border != BORDER_NONE && !isAndroidStyle && !(uiVista && !enabled)) {
+      g.draw3dRect(0, 0, width, height, armed ? Graphics.R3D_LOWERED : Graphics.R3D_RAISED, false,
+          border == BORDER_SIMPLE, fourColors);
     }
   }
 
   /** Paint button's text. */
-  protected void paintText(Graphics g, int tx, int ty)
-  {
+  protected void paintText(Graphics g, int tx, int ty) {
     int shade = !isEnabled() ? -1 : textShadowColor != -1 ? textShadowColor : hightlightColor;
-    if (underlinedText){
+    if (underlinedText) {
       g.backColor = foreColor;
     }
-    for (int i = 0; i < lines.length; i++, ty += fmH)
-    {
+    for (int i = 0; i < lines.length; i++, ty += fmH) {
       int txx = tx + ((maxTW - linesW[i]) >> 1);
       g.drawText(lines[i], txx, ty, shade != -1, shade);
       if (underlinedText) {
-        g.fillRect(txx,ty+fm.ascent+1, linesW[i], (fmH-1)>>3);
-      } 
+        g.fillRect(txx, ty + fm.ascent + 1, linesW[i], (fmH - 1) >> 3);
+      }
     }
   }
 
-  protected void paintImage(Graphics g, boolean bkg, int ix, int iy)
-  {
+  protected void paintImage(Graphics g, boolean bkg, int ix, int iy) {
     boolean enabled = isEnabled();
-    if (bkg){
-      try
-      {
-        if (!drawTranslucentBackground(g, armed ? alphaValue >= 80 ? alphaValue/2 : alphaValue*2 : alphaValue))
-        {
+    if (bkg) {
+      try {
+        if (!drawTranslucentBackground(g, armed ? alphaValue >= 80 ? alphaValue / 2 : alphaValue * 2 : alphaValue)) {
           if (npback == null) {
-            npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
+            npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON, width, height, backColor, false);
           }
-          NinePatch.tryDrawImage(g, enabled ? armed && (isSticky || effect == null) ? 
-              NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor) : 
-                npback : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false),ix,iy);
+          NinePatch.tryDrawImage(g,
+              enabled
+                  ? armed && (isSticky || effect == null)
+                      ? NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor) : npback
+                  : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON, width, height,
+                      Color.interpolate(parent.backColor, backColor), false),
+              ix, iy);
+        }
+      } catch (ImageException ie) {
+        ie.printStackTrace();
+      }
+    } else if (!enabled) {
+      if (img != null && imgDis == null) {
+        try {
+          imgDis = img.getFadedInstance();
+        } catch (ImageException e) {
+          imgDis = img;
         }
       }
-      catch (ImageException ie) {ie.printStackTrace();}
-    }else
-      if (!enabled)
-      {
-        if (img != null && imgDis == null) {
-          try
-          {
-            imgDis = img.getFadedInstance();
-          }
-          catch (ImageException e)
-          {
-            imgDis = img;
-          }
-        }
-        g.drawImage(imgDis,ix,iy);
-      }else {
-        g.drawImage(armed && pressedImage != null ? pressedImage : img,ix,iy);
-      }
+      g.drawImage(imgDis, ix, iy);
+    } else {
+      g.drawImage(armed && pressedImage != null ? pressedImage : img, ix, iy);
+    }
   }
 
   /** Returns the image that is assigned to this Button, or null if none. */
-  public Image getImage()
-  {
+  public Image getImage() {
     return img;
   }
 }

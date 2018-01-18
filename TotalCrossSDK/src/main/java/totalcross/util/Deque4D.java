@@ -458,7 +458,6 @@ public interface Deque4D<E> extends Queue<E> {
   @Override
   E peek();
 
-
   // *** Stack methods ***
 
   /**
@@ -493,7 +492,6 @@ public interface Deque4D<E> extends Queue<E> {
    * @throws NoSuchElementException if this deque is empty
    */
   E pop();
-
 
   // *** Collection methods ***
 

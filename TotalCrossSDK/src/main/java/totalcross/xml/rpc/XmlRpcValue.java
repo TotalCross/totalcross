@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.rpc;
 
 import totalcross.net.Base64;
@@ -57,11 +55,9 @@ import totalcross.util.Vector;
  * Original by IOP GmbH
  * (<a href="http://www.iop.de">www.iop.de</a>)
  */
-public class XmlRpcValue
-{
-  private static final String types[] = { "String", "Properties.Int", "Properties.Boolean", "Properties.Double",
-      "Date", "Base64", "Struct", "Array", "Long",
-      "Value","Member","Fault","MethodName","Name","I4"};
+public class XmlRpcValue {
+  private static final String types[] = { "String", "Properties.Int", "Properties.Boolean", "Properties.Double", "Date",
+      "Base64", "Struct", "Array", "Long", "Value", "Member", "Fault", "MethodName", "Name", "I4" };
 
   // XML RPC parameter types
   public static final int STRING = 0;
@@ -83,8 +79,7 @@ public class XmlRpcValue
   public static IntHashtable tag2code;
 
   // flsobral@tc111_13: TagDereferencer expects tags in upper case.
-  static
-  {
+  static {
     tag2code = new IntHashtable(31);
     tag2code.put("ARRAY", ARRAY);
     tag2code.put("VALUE", VALUE);
@@ -110,14 +105,12 @@ public class XmlRpcValue
   private Hashtable struct;
   private String nextMemberName;
 
-  public XmlRpcValue()
-  {
+  public XmlRpcValue() {
     this.type = STRING;
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return (types[type] + " element " + value);
   }
 
@@ -125,8 +118,7 @@ public class XmlRpcValue
   // It breaks the contract of method hashCode, but it doesn't matter since
   // Value objects are never used as keys in Hashtables.
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     return type;
   }
 
@@ -135,8 +127,7 @@ public class XmlRpcValue
    *@return
    * This XmlRpcValue's object
    */
-  public Object getValue()
-  {
+  public Object getValue() {
     return value;
   }
 
@@ -145,11 +136,10 @@ public class XmlRpcValue
    *@param child
    * The child that was parsed
    */
-  public void endElement(XmlRpcValue child)
-  {
-    if (type == ARRAY){
+  public void endElement(XmlRpcValue child) {
+    if (type == ARRAY) {
       array.addElement(child.value);
-    }else if (type == STRUCT){
+    } else if (type == STRUCT) {
       struct.put(nextMemberName, child.value);
     }
   }
@@ -160,15 +150,13 @@ public class XmlRpcValue
    *@param type
    * One of this class' public fields
    */
-  public void setType(int type)
-  {
+  public void setType(int type) {
     this.type = type;
-    if (type == ARRAY){
+    if (type == ARRAY) {
       value = array = new Vector();
-    }else
-      if (type == STRUCT){
-        value = struct = new Hashtable(13);
-      }
+    } else if (type == STRUCT) {
+      value = struct = new Hashtable(13);
+    }
   }
 
   /**
@@ -177,12 +165,9 @@ public class XmlRpcValue
    *@param cdata
    * The character data to set and interpret
    */
-  public void characterData(String cdata)
-  {
-    try
-    {
-      switch (type)
-      {
+  public void characterData(String cdata) {
+    try {
+      switch (type) {
       case INTEGER:
         value = new Properties.Int(Convert.toInt(cdata.trim()));
         break;
@@ -209,6 +194,8 @@ public class XmlRpcValue
         value = new Properties.Long(Convert.toLong(cdata.trim()));
         break;
       }
-    } catch (InvalidNumberException ine) {value = ine.getMessage();}
+    } catch (InvalidNumberException ine) {
+      value = ine.getMessage();
+    }
   }
 }

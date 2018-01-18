@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 /**
@@ -46,8 +44,7 @@ package totalcross.net;
  * initUI method.
  * <p>
  */
-public class ServerSocket
-{
+public class ServerSocket {
   Object serverRef;
   String addr;
   int port;
@@ -68,8 +65,7 @@ public class ServerSocket
   public static final int WAIT_FOREVER = 0;
 
   /** For internal use only */
-  protected ServerSocket()
-  {
+  protected ServerSocket() {
   }
 
   /**
@@ -79,8 +75,7 @@ public class ServerSocket
    * @param port the local TCP port to listen for incoming connections
    * @throws totalcross.io.IOException
    */
-  public ServerSocket(int port) throws totalcross.io.IOException
-  {
+  public ServerSocket(int port) throws totalcross.io.IOException {
     this(port, DEFAULT_SOTIMEOUT, DEFAULT_BACKLOG, null);
   }
 
@@ -92,8 +87,7 @@ public class ServerSocket
    * @param timeout the accept operation timeout
    * @throws totalcross.io.IOException
    */
-  public ServerSocket(int port, int timeout) throws totalcross.io.IOException
-  {
+  public ServerSocket(int port, int timeout) throws totalcross.io.IOException {
     this(port, timeout, DEFAULT_BACKLOG, null);
   }
 
@@ -108,8 +102,7 @@ public class ServerSocket
    * @param addr the local address this server will bind to
    * @throws totalcross.io.IOException
    */
-  public ServerSocket(int port, int timeout, String addr) throws totalcross.io.IOException
-  {
+  public ServerSocket(int port, int timeout, String addr) throws totalcross.io.IOException {
     this(port, timeout, DEFAULT_BACKLOG, addr);
   }
 
@@ -125,16 +118,14 @@ public class ServerSocket
    * @param addr the local address this server will bind to
    * @throws totalcross.io.IOException
    */
-  public ServerSocket(int port, int timeout, int backlog, String addr)
-      throws totalcross.io.IOException
-  {
-    if (port < 0 || port > 65535){
+  public ServerSocket(int port, int timeout, int backlog, String addr) throws totalcross.io.IOException {
+    if (port < 0 || port > 65535) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'port': " + port);
     }
-    if (timeout < 0){
+    if (timeout < 0) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'timeout': " + timeout);
     }
-    if (backlog <= 0){
+    if (backlog <= 0) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'backlog': " + backlog);
     }
 
@@ -142,17 +133,12 @@ public class ServerSocket
     this.timeout = timeout;
     this.addr = addr;
 
-    try
-    {
+    try {
       serverRef = new java.net.ServerSocket(port, backlog);
       ((java.net.ServerSocket) serverRef).setSoTimeout(timeout);
-    }
-    catch (java.net.SocketException e)
-    {
+    } catch (java.net.SocketException e) {
       throw new totalcross.io.IOException(e.getMessage());
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
   }
@@ -162,8 +148,7 @@ public class ServerSocket
    * @return the address to which this socket is bound, or null if the socket
    * is unbound.
    */
-  public String getHost()
-  {
+  public String getHost() {
     return addr;
   }
 
@@ -171,8 +156,7 @@ public class ServerSocket
    * Returns the local TCP port on which this socket is listening, passed in the constructor.
    * @return the port number to which this socket is listening.
    */
-  public int getLocalPort()
-  {
+  public int getLocalPort() {
     return port;
   }
 
@@ -184,9 +168,8 @@ public class ServerSocket
    * @return the client Socket
    * @throws totalcross.io.IOException
    */
-  public Socket accept() throws totalcross.io.IOException
-  {
-    if (serverRef == null){
+  public Socket accept() throws totalcross.io.IOException {
+    if (serverRef == null) {
       throw new totalcross.io.IOException("The server socket is closed");
     }
 
@@ -194,28 +177,21 @@ public class ServerSocket
     return clientSocket;
   }
 
-  final private totalcross.net.Socket nativeAccept() throws totalcross.io.IOException
-  {
+  final private totalcross.net.Socket nativeAccept() throws totalcross.io.IOException {
     totalcross.net.Socket clientSocket = null;
     java.net.Socket socketRef;
 
-    try
-    {
-      java.net.ServerSocket ss = (java.net.ServerSocket)serverRef;
+    try {
+      java.net.ServerSocket ss = (java.net.ServerSocket) serverRef;
       ss.setSoTimeout(timeout);
-      if ((socketRef = ss.accept()) != null)
-      {
+      if ((socketRef = ss.accept()) != null) {
         clientSocket = new totalcross.net.Socket();
         clientSocket.socketRef = socketRef;
       }
       return clientSocket;
-    }
-    catch (java.net.SocketTimeoutException e)
-    {
+    } catch (java.net.SocketTimeoutException e) {
       return null;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
   }
@@ -224,43 +200,31 @@ public class ServerSocket
    * Closes the server socket.
    * @throws totalcross.io.IOException
    */
-  public void close() throws totalcross.io.IOException
-  {
-    if (serverRef == null){
+  public void close() throws totalcross.io.IOException {
+    if (serverRef == null) {
       throw new totalcross.io.IOException("The server socket is closed");
     }
 
-    try
-    {
+    try {
       nativeClose();
-    }
-    finally
-    {
+    } finally {
       serverRef = null;
     }
   }
 
-  private void nativeClose() throws totalcross.io.IOException
-  {
-    try
-    {
+  private void nativeClose() throws totalcross.io.IOException {
+    try {
       ((java.net.ServerSocket) serverRef).close();
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
   }
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       close();
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
     }
   }
 }

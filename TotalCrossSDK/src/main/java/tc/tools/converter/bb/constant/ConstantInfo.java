@@ -9,12 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.constant;
 
 import tc.tools.converter.bb.JavaClassStructure;
 
-public interface ConstantInfo extends JavaClassStructure
-{
+public interface ConstantInfo extends JavaClassStructure {
 }

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.scape;
 
 import totalcross.game.Animation;
@@ -28,10 +26,9 @@ import totalcross.ui.image.ImageException;
  * The game animated logo.<br>
  */
 
-public final class AnimLogo extends Animation
-{
-  public AnimLogo() throws ImageException, IOException
-  {
-    super(new Image("tc/samples/game/scape/hockey.png").getHwScaledInstance(Font.NORMAL_SIZE*4*8,Font.NORMAL_SIZE*4), 8, Font.NORMAL_SIZE*4);
+public final class AnimLogo extends Animation {
+  public AnimLogo() throws ImageException, IOException {
+    super(new Image("tc/samples/game/scape/hockey.png").getHwScaledInstance(Font.NORMAL_SIZE * 4 * 8,
+        Font.NORMAL_SIZE * 4), 8, Font.NORMAL_SIZE * 4);
   }
 }

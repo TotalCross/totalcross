@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.chart;
 
 import totalcross.sys.Convert;
@@ -34,8 +32,7 @@ import totalcross.util.Vector;
  * @see XYChart
  * @since TotalCross 1.0
  */
-public class Chart extends Control
-{
+public class Chart extends Control {
   /** Sample gray color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
   public static final int COLOR1 = 0x4D4D4D; // (gray)
   /** Sample blue color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
@@ -115,10 +112,10 @@ public class Chart extends Control
   protected double yAxisMinValue;
 
   /** The value for the end of the Y axis */
-  protected double yAxisMaxValue=100; // guich@tc100b5_56: initialize to something if the user don't call setYAxis
+  protected double yAxisMaxValue = 100; // guich@tc100b5_56: initialize to something if the user don't call setYAxis
 
   /** The number of subdivisions of the Y axis */
-  protected int yAxisSteps=10; // guich@tc100b5_56
+  protected int yAxisSteps = 10; // guich@tc100b5_56
 
   /** The relative screen position of the X axis origin */
   public int xAxisX1;
@@ -159,7 +156,7 @@ public class Chart extends Control
   public boolean showCategoriesOnTick;
 
   /** The index where the category mark is shown. */
-  public int categoryMarkIndex=-1;
+  public int categoryMarkIndex = -1;
   /** The color for the category mark. */
   public int categoryMarkColor = Color.RED;
 
@@ -185,7 +182,7 @@ public class Chart extends Control
   public int legendPerspective = 3;
 
   /** Flag that indicates if the axis must be drawn. Defaults to true. */
-  protected boolean drawAxis=true;
+  protected boolean drawAxis = true;
 
   /** Shows the first y value or not. */
   public boolean showFirstYValue = true;
@@ -232,16 +229,14 @@ public class Chart extends Control
    * Sets this chart's title
    * @param title the new title
    */
-  public void setTitle(String title)
-  {
+  public void setTitle(String title) {
     this.title = title;
   }
 
   /**
    * @return this chart's title
    */
-  public String getTitle()
-  {
+  public String getTitle() {
     return title;
   }
 
@@ -252,8 +247,7 @@ public class Chart extends Control
    * @param max the maximum value (the axis end)
    * @param steps the number of subdivisions of the axis
    */
-  public void setXAxis(double min, double max, int steps)
-  {
+  public void setXAxis(double min, double max, int steps) {
     //      xAxisCategories = null; // disable categories
     xAxisMinValue = min;
     xAxisMaxValue = max;
@@ -264,8 +258,7 @@ public class Chart extends Control
    * Sets the X axis as a category axis
    * @param categories the categories' names
    */
-  public void setXAxis(String[] categories)
-  {
+  public void setXAxis(String[] categories) {
     xAxisCategories = categories;
     xAxisMinValue = 0;
     xAxisMaxValue = categories.length;
@@ -279,49 +272,45 @@ public class Chart extends Control
    * @param max the maximum value (the axis end)
    * @param steps the number of subdivisions of the axis
    */
-  public void setYAxis(double min, double max, int steps)
-  {
-    yAxisMinValue = Math.min(min,max);
-    yAxisMaxValue = Math.max(min,max);
+  public void setYAxis(double min, double max, int steps) {
+    yAxisMinValue = Math.min(min, max);
+    yAxisMaxValue = Math.max(min, max);
     yAxisSteps = steps;
   }
 
-  private int getTotalSize(String []names)
-  {
+  private int getTotalSize(String[] names) {
     int t = 0;
-    for (int i =0; i < names.length; i++) {
+    for (int i = 0; i < names.length; i++) {
       t += fm.stringWidth(names[i]);
     }
     return t;
   }
 
-  protected void getCustomInsets(Insets r)
-  {
+  protected void getCustomInsets(Insets r) {
   }
 
   public static final int UNSET = -9999999;
-  int markPos = UNSET; 
+  int markPos = UNSET;
 
   /**
    * Draws the chart's basic features.
    * @param g The graphics object.
    */
-  protected boolean draw(Graphics g)
-  {
+  protected boolean draw(Graphics g) {
     boolean is3d = (type & IS_3D) != 0;
     int sMaxLen = 0;
     int sCount = series.size();
-    if (sCount != seriesNames.length){
+    if (sCount != seriesNames.length) {
       seriesNames = new String[sCount];
     }
 
-    for (int i = 0; i < sCount; i ++) {
+    for (int i = 0; i < sCount; i++) {
       seriesNames[i] = ((Series) series.items[i]).name;
     }
 
     boolean drawTitle = showTitle && title != null;
     boolean drawCategories = showCategories && xAxisCategories != null;
-    boolean drawLegend   = showLegend && sCount > 0;
+    boolean drawLegend = showLegend && sCount > 0;
 
     int top = snapToTop ? 0 : border.top;
     int left = border.left;
@@ -329,14 +318,13 @@ public class Chart extends Control
     int right = border.right;
     double incY = (yAxisMaxValue - yAxisMinValue) / yAxisSteps;
     boolean lr = legendPosition == LEFT || legendPosition == RIGHT;
-    int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2,xx;
+    int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2, xx;
 
-    if (drawTitle && !snapToTop){
+    if (drawTitle && !snapToTop) {
       top += fmH;
     }
 
-    if (drawLegend)
-    {
+    if (drawLegend) {
       sMaxLen += lr ? fm.getMaxWidth(seriesNames, 0, sCount) : (sqWH + 4) * sCount + getTotalSize(seriesNames);
       if (legendValues != null) {
         sMaxLen += lr ? fm.getMaxWidth(legendValues, 0, sCount) : getTotalSize(legendValues);
@@ -345,8 +333,7 @@ public class Chart extends Control
       if (is3d) {
         ww += Math.abs(legendPerspective);
       }
-      switch (legendPosition)
-      {
+      switch (legendPosition) {
       case RIGHT:
         right += ww;
         break;
@@ -356,13 +343,13 @@ public class Chart extends Control
         }
         break;
       case TOP:
-        top += fmH+6;
+        top += fmH + 6;
         if (is3d) {
           top += Math.abs(legendPerspective);
         }
         break;
       case BOTTOM:
-        bottom += fmH+6;
+        bottom += fmH + 6;
         if (is3d) {
           bottom += Math.abs(legendPerspective);
         }
@@ -376,80 +363,73 @@ public class Chart extends Control
     left += ci.left;
     right += ci.right;
 
-    if (showYValues)
-    {
+    if (showYValues) {
       int yvalW = yValuesSize;
       for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY) {
-        yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
+        yvalW = Math.max(yvalW, fm.stringWidth(Convert.toCurrencyString(v, yDecimalPlaces)));
       }
-      left += yvalW+3;
-      top += snapToTop ? 0 : fm.ascent/2;
-      bottom += snapToBottom ? 0 : fm.ascent/2;
+      left += yvalW + 3;
+      top += snapToTop ? 0 : fm.ascent / 2;
+      bottom += snapToBottom ? 0 : fm.ascent / 2;
       if (drawCategories) {
-        bottom += fmH/2-1;
+        bottom += fmH / 2 - 1;
       }
+    } else if (drawCategories) {
+      bottom += snapToBottom ? 0 : fmH - 3;
     }
-    else
-      if (drawCategories){
-        bottom += snapToBottom ? 0 : fmH - 3;
-      }
 
     xAxisX1 = left + 3;
-    if (xAxisX1 < 0 || xAxisX1 >= width){
+    if (xAxisX1 < 0 || xAxisX1 >= width) {
       return false;
     }
 
     xAxisX2 = width - right - 1;
-    if (xAxisX2 < 0 || xAxisX2 >= width || xAxisX2 <= xAxisX1){
+    if (xAxisX2 < 0 || xAxisX2 >= width || xAxisX2 <= xAxisX1) {
       return false;
     }
 
     yAxisY1 = height - bottom - (snapToBottom ? 0 : 4);
-    if (!onlyShowCategories && (yAxisY1 < 0 || yAxisY1 > height)){
+    if (!onlyShowCategories && (yAxisY1 < 0 || yAxisY1 > height)) {
       return false;
     }
 
     yAxisY2 = top;
-    if (!onlyShowCategories && (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1)){
+    if (!onlyShowCategories && (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1)) {
       return false;
     }
 
     double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
     double val = xAxisMinValue;
-    columnW = getXValuePos(val+inc) - getXValuePos(val);
+    columnW = getXValuePos(val + inc) - getXValuePos(val);
 
     g.foreColor = axisForeColor;
-    if (!transparentBackground)
-    {
+    if (!transparentBackground) {
       g.backColor = backColor;
-      g.fillRect(0,0,width,height);
-      if (axisBackColor != -1 && (drawCategories || showYValues))
-      {
+      g.fillRect(0, 0, width, height);
+      if (axisBackColor != -1 && (drawCategories || showYValues)) {
         g.backColor = axisBackColor;
-        g.fillRect(xAxisX1,yAxisY2,xAxisX2-xAxisX1,yAxisY1-yAxisY2);
+        g.fillRect(xAxisX1, yAxisY2, xAxisX2 - xAxisX1, yAxisY1 - yAxisY2);
       }
     }
-    if (!onlyShowCategories && drawAxis)
-    {
+    if (!onlyShowCategories && drawAxis) {
       g.drawLine(xAxisX1, yAxisY1, xAxisX2, yAxisY1); // draw X axis
       g.drawLine(xAxisX1, yAxisY2, xAxisX1, yAxisY1); // draw Y axis
     }
 
     int lastPos = UNSET;
-    markPos = UNSET; 
+    markPos = UNSET;
 
-    if (fillColor2 != -1)
-    {
+    if (fillColor2 != -1) {
       double x0 = val + inc * use2ndColorEveryXColumns;
       g.backColor = fillColor2;
-      for (int j = 1, n = xAxisSteps; j <= n; j+=2, x0 += inc * use2ndColorEveryXColumns * 2) {
-        g.fillRect(xx = getXValuePos(x0),yAxisY2,getXValuePos(x0+inc*use2ndColorEveryXColumns)-xx,yAxisY1-yAxisY2);
+      for (int j = 1, n = xAxisSteps; j <= n; j += 2, x0 += inc * use2ndColorEveryXColumns * 2) {
+        g.fillRect(xx = getXValuePos(x0), yAxisY2, getXValuePos(x0 + inc * use2ndColorEveryXColumns) - xx,
+            yAxisY1 - yAxisY2);
       }
     }
     val = xAxisMinValue;
 
-    for (int i = 0; i <= xAxisSteps; i++, val += inc)
-    {
+    for (int i = 0; i <= xAxisSteps; i++, val += inc) {
       int pos = getXValuePos(val);
       if (!onlyShowCategories && drawAxis && !snapToBottom) {
         g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
@@ -461,28 +441,23 @@ public class Chart extends Control
 
       if (drawCategories && i < xAxisCategories.length) // draw category
       {
-        final int tW = (xAxisCategories[i] == null || xAxisCategories[i].length() == 0)
-            ? 0
-                : fm.stringWidth(xAxisCategories[i]);
+        final int tW = (xAxisCategories[i] == null || xAxisCategories[i].length() == 0) ? 0
+            : fm.stringWidth(xAxisCategories[i]);
 
-        if (tW > 0)
-        {
-          if (showCategoriesOnTick)
-          {
+        if (tW > 0) {
+          if (showCategoriesOnTick) {
             final int p = pos - (tW / 2);
             final int y1 = height - (fmH * 3 / 4);
 
             if ("|".equals(xAxisCategories[i])) {
               g.drawLine(pos, y1, pos, y1 + fmH);
-            } else if (":".equals(xAxisCategories[i]))
-            {
+            } else if (":".equals(xAxisCategories[i])) {
               g.backColor = axisBackColor;
               g.drawDots(pos, y1, pos, y1 + fmH);
-            }
-            else if (p > lastPos)
-            {
+            } else if (p > lastPos) {
               g.foreColor = axisText;
-              g.drawText(xAxisCategories[i], p, onlyShowCategories ? (height-fmH)/2 : yAxisY1, textShadowColor != -1, textShadowColor);
+              g.drawText(xAxisCategories[i], p, onlyShowCategories ? (height - fmH) / 2 : yAxisY1,
+                  textShadowColor != -1, textShadowColor);
               g.foreColor = axisForeColor;
               lastPos = p + tW + fmH;
             }
@@ -490,9 +465,7 @@ public class Chart extends Control
               markPos = pos;
             }
             pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
-          }
-          else
-          {
+          } else {
             pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
             g.foreColor = axisText;
             g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
@@ -501,50 +474,44 @@ public class Chart extends Control
         }
       }
     }
-    if (onlyShowCategories){
+    if (onlyShowCategories) {
       return true;
     }
-    if (drawCategories && categoryMarkIndex >= 0 && markPos != UNSET)
-    {
+    if (drawCategories && categoryMarkIndex >= 0 && markPos != UNSET) {
       g.foreColor = categoryMarkColor;
-      g.drawLine(markPos-1,yAxisY1,markPos-1,yAxisY2);
-      g.drawLine(markPos,yAxisY1,markPos,yAxisY2);
-      g.drawLine(markPos+1,yAxisY1,markPos+1,yAxisY2);
+      g.drawLine(markPos - 1, yAxisY1, markPos - 1, yAxisY2);
+      g.drawLine(markPos, yAxisY1, markPos, yAxisY2);
+      g.drawLine(markPos + 1, yAxisY1, markPos + 1, yAxisY2);
     }
 
     val = yAxisMinValue;
     // adjust the number of steps depending on the number's height
     int ySteps = yAxisSteps;
-    while (ySteps > 1 && showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
-    {
+    while (ySteps > 1 && showYValues && (getYValuePos(incY) - getYValuePos(incY * 2)) < fm.ascent) {
       ySteps--;
       incY = (yAxisMaxValue - yAxisMinValue) / ySteps;
     }
-    for (int i = 0; i <= ySteps; i ++, val += incY)
-    {
+    for (int i = 0; i <= ySteps; i++, val += incY) {
       int pos = getYValuePos(val);
-      if (i == 0 && !showFirstYValue) {;
-      } else
-        if ((!snapToBottom || i != 0) && (!snapToTop || i != ySteps))
-        {
-          if (drawAxis) {
-            g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
-          }
-          if (showYValues)
-          {
-            String s = Convert.toCurrencyString(val,yDecimalPlaces);
-            g.foreColor = axisText;
-            g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
-            g.foreColor = axisForeColor;
-          }
+      if (i == 0 && !showFirstYValue) {
+        ;
+      } else if ((!snapToBottom || i != 0) && (!snapToTop || i != ySteps)) {
+        if (drawAxis) {
+          g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
         }
+        if (showYValues) {
+          String s = Convert.toCurrencyString(val, yDecimalPlaces);
+          g.foreColor = axisText;
+          g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos - fmH / 2, textShadowColor != -1, textShadowColor);
+          g.foreColor = axisForeColor;
+        }
+      }
       if (showHGrids && pos != yAxisY1) {
         g.drawDots(xAxisX1, pos, xAxisX2, pos);
       }
     }
 
-    if (drawTitle)
-    {
+    if (drawTitle) {
       Font fp = this.font;
       Font fb = fp.asBold();
 
@@ -552,34 +519,29 @@ public class Chart extends Control
       g.drawText(title, (width - fb.fm.stringWidth(title)) / 2, 0, textShadowColor != -1, textShadowColor);
       g.setFont(fp); // return to previous font
     }
-    if (drawLegend)
-    {
-      int x,y,w,h;
-      if (lr)
-      {
+    if (drawLegend) {
+      int x, y, w, h;
+      if (lr) {
         w = sMaxLen + sqWH + 10;
         h = fmH * sCount;
         x = legendPosition == RIGHT ? xAxisX2 + 5 : 0;
         y = yAxisY2 + (yAxisY1 - yAxisY2 - h) / 2;
-      }
-      else
-      {
+      } else {
         w = sMaxLen + 6;
         h = fmH + 2;
-        x = (this.width-w)/2;
+        x = (this.width - w) / 2;
         if (legendPosition == TOP) {
-          y = drawTitle ? fmH+3 : 0;
+          y = drawTitle ? fmH + 3 : 0;
         } else {
-          y = this.height - (fmH + 2 + (is3d ? Math.abs(legendPerspective):0));
+          y = this.height - (fmH + 2 + (is3d ? Math.abs(legendPerspective) : 0));
         }
       }
 
-      if (is3d)
-      {
+      if (is3d) {
         if (legendPerspective < 0 && lr) {
           x -= legendPerspective;
         }
-        g.backColor = Color.interpolate(backColor,0);
+        g.backColor = Color.interpolate(backColor, 0);
         g.fillRect(x + legendPerspective, y + Math.abs(legendPerspective), w, h);
       }
       g.backColor = backColor;
@@ -589,18 +551,18 @@ public class Chart extends Control
       x += snapToBottom || snapToTop ? 0 : 3;
       g.foreColor = legendTextColor;
       int halfBlankWidth = fm.stringWidth(" ") / 2;
-      for (int i = 0; i < sCount; i ++)
-      {
+      for (int i = 0; i < sCount; i++) {
         Series se = (Series) series.items[i];
-        if (se.dot != null)
-        {
+        if (se.dot != null) {
           if (se.legendDot == null) {
-            try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH - halfBlankWidth,true);} catch (Exception e) {se.legendDot = se.dot;}
+            try {
+              se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH - halfBlankWidth, true);
+            } catch (Exception e) {
+              se.legendDot = se.dot;
+            }
           }
-          g.drawImage(se.legendDot,x + halfBlankWidth,y+sqOff + 1);
-        }
-        else
-        {
+          g.drawImage(se.legendDot, x + halfBlankWidth, y + sqOff + 1);
+        } else {
           g.backColor = se.color;
           g.fillRect(x, y + sqOff, sqWH, sqWH);
           g.drawRect(x, y + sqOff, sqWH, sqWH);
@@ -614,13 +576,13 @@ public class Chart extends Control
         if (lr) {
           y += fmH;
         } else {
-          x += fm.stringWidth(s)+4+sqWH;
+          x += fm.stringWidth(s) + 4 + sqWH;
         }
       }
 
       g.backColor = backColor; // back to original back color
     }
-    clientRect.set(left, top, this.width - right-left, this.height - top-bottom);
+    clientRect.set(left, top, this.width - right - left, this.height - top - bottom);
 
     return true;
   }
@@ -631,8 +593,7 @@ public class Chart extends Control
    * @param refX the X position of the anchor point
    * @param refY the Y position of the anchor point
    */
-  protected void drawTextBox(Graphics g, int refX, int refY, String text)
-  {
+  protected void drawTextBox(Graphics g, int refX, int refY, String text) {
     Font f = this.font;
 
     int boxW = f.fm.stringWidth(text) + 4;
@@ -641,18 +602,18 @@ public class Chart extends Control
     int boxY = refY - boxH - 2;
 
     int dif = (boxX + boxW) - width;
-    if (dif > 0){
+    if (dif > 0) {
       boxX -= dif;
     }
     dif = (boxY + boxH) - height;
-    if (dif > 0){
+    if (dif > 0) {
       boxY -= dif;
     }
 
-    if (boxX < 0){
+    if (boxX < 0) {
       boxX = 0;
     }
-    if (boxY < 0){
+    if (boxY < 0) {
       boxY = 0;
     }
 
@@ -673,9 +634,8 @@ public class Chart extends Control
    * @return the screen position of the value
    * @see #draw(Graphics)
    */
-  public int getXValuePos(double value)
-  {
-    return xAxisX1 + (int)Math.round((value - xAxisMinValue) / (xAxisMaxValue - xAxisMinValue) * (xAxisX2 - xAxisX1));
+  public int getXValuePos(double value) {
+    return xAxisX1 + (int) Math.round((value - xAxisMinValue) / (xAxisMaxValue - xAxisMinValue) * (xAxisX2 - xAxisX1));
   }
 
   /**
@@ -687,8 +647,7 @@ public class Chart extends Control
    * @return the screen position of the value
    * @see #draw(Graphics)
    */
-  public int getYValuePos(double value)
-  {
-    return yAxisY1 - (int)Math.round((value - yAxisMinValue) / (yAxisMaxValue - yAxisMinValue) * (yAxisY1 - yAxisY2));
+  public int getYValuePos(double value) {
+    return yAxisY1 - (int) Math.round((value - yAxisMinValue) / (yAxisMaxValue - yAxisMinValue) * (yAxisY1 - yAxisY2));
   }
 }

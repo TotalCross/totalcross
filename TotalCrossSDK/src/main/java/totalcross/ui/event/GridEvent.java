@@ -14,16 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** An event generated when the user clicks on a grid or checks it.
  * @since SuperWaba 5.54
  * */
 
-public class GridEvent extends Event
-{
+public class GridEvent extends Event {
   /** Event generated when a new row was selected. In penless devices, the user must press 0-9 to dispatch the event. */
   public static final int SELECTED_EVENT = 501;
   /** Event generated when a grid row was checked or unchecked.
@@ -44,15 +41,19 @@ public class GridEvent extends Event
   public int col;
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String s = "";
-    switch (type)
-    {
-    case SELECTED_EVENT: s = "SELECTED_EVENT"; break;
-    case CHECK_CHANGED_EVENT: s = "CHECK_CHANGED_EVENT"; break;
-    case TEXT_CHANGED_EVENT: s = "TEXT_CHANGED_EVENT"; break;
+    switch (type) {
+    case SELECTED_EVENT:
+      s = "SELECTED_EVENT";
+      break;
+    case CHECK_CHANGED_EVENT:
+      s = "CHECK_CHANGED_EVENT";
+      break;
+    case TEXT_CHANGED_EVENT:
+      s = "TEXT_CHANGED_EVENT";
+      break;
     }
-    return s+" row:"+row+", col: "+col+", checked: "+checked+" "+super.toString();
+    return s + " row:" + row + ", col: " + col + ", checked: " + checked + " " + super.toString();
   }
 }

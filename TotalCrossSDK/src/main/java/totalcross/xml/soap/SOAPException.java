@@ -14,28 +14,22 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.soap;
 
-public class SOAPException extends Exception
-{
+public class SOAPException extends Exception {
   private Throwable cause;
 
-  public SOAPException(String string)
-  {
+  public SOAPException(String string) {
     super(string);
   }
 
-  public SOAPException(Throwable cause)
-  {
+  public SOAPException(Throwable cause) {
     super(cause == null ? null : cause.getMessage());
     this.cause = cause;
   }
 
   @Override
-  public void printStackTrace()
-  {
+  public void printStackTrace() {
     if (cause != null) {
       cause.printStackTrace();
     } else {
@@ -44,8 +38,7 @@ public class SOAPException extends Exception
   }
 
   @Override
-  public Throwable getCause()
-  {
+  public Throwable getCause() {
     return cause;
   }
 }

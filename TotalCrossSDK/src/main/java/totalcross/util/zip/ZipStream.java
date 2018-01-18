@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
 import totalcross.Launcher;
@@ -32,8 +30,7 @@ import totalcross.io.Stream;
  * @since TotalCross 1.20
  */
 
-public class ZipStream extends CompressedStream
-{
+public class ZipStream extends CompressedStream {
   int defaultMethod = DEFLATED;
 
   /** Compression method for uncompressed (STORED) entries. */
@@ -52,21 +49,18 @@ public class ZipStream extends CompressedStream
    * 
    * @since TotalCross 1.20
    */
-  public ZipStream(RandomAccessStream stream, int mode)
-  {
+  public ZipStream(RandomAccessStream stream, int mode) {
     super(stream, mode);
   }
 
   @Override
-  protected Object createDeflate(Stream stream)
-  {
+  protected Object createDeflate(Stream stream) {
     Launcher.S2OS os = new Launcher.S2OS(stream, false);
     return new java.util.zip.ZipOutputStream(os);
   }
 
   @Override
-  protected Object createInflate(Stream stream)
-  {
+  protected Object createInflate(Stream stream) {
     Launcher.S2IS is = new Launcher.S2IS(stream, -1, false);
     return new java.util.zip.ZipInputStream(is);
   }
@@ -81,18 +75,14 @@ public class ZipStream extends CompressedStream
    * 
    * @since TotalCross 1.20
    */
-  public int available() throws IOException
-  {
-    if (mode != INFLATE){
+  public int available() throws IOException {
+    if (mode != INFLATE) {
       throw new IOException("This operation can only be performed in INFLATE mode.");
     }
 
-    try
-    {
+    try {
       return ((java.io.InputStream) this.compressedStream).available();
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -106,27 +96,21 @@ public class ZipStream extends CompressedStream
    * 
    * @since TotalCross 1.20
    */
-  public ZipEntry getNextEntry() throws IOException
-  {
-    if (mode != INFLATE){
+  public ZipEntry getNextEntry() throws IOException {
+    if (mode != INFLATE) {
       throw new IOException("This operation can only be performed in INFLATE mode.");
     }
 
     java.util.zip.ZipInputStream zis = (java.util.zip.ZipInputStream) this.compressedStream;
-    try
-    {
+    try {
       Object zipEntry = zis.getNextEntry();
       if (zipEntry == null) {
         return null;
       }
       return new ZipEntry(zipEntry);
-    }
-    catch (java.io.EOFException e)
-    {
+    } catch (java.io.EOFException e) {
       return null;
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -142,19 +126,15 @@ public class ZipStream extends CompressedStream
    * 
    * @since TotalCross 1.20
    */
-  public void putNextEntry(ZipEntry entry) throws IOException, ZipException
-  {
-    if (mode != DEFLATE){
+  public void putNextEntry(ZipEntry entry) throws IOException, ZipException {
+    if (mode != DEFLATE) {
       throw new IOException("This operation can only be performed in DEFLATE mode.");
     }
 
     java.util.zip.ZipOutputStream zos = (java.util.zip.ZipOutputStream) this.compressedStream;
-    try
-    {
+    try {
       zos.putNextEntry((java.util.zip.ZipEntry) entry.zipEntry);
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -167,34 +147,24 @@ public class ZipStream extends CompressedStream
    * 
    * @since TotalCross 1.20
    */
-  public void closeEntry() throws IOException, ZipException
-  {
-    try
-    {
-      if (mode == DEFLATE)
-      {
+  public void closeEntry() throws IOException, ZipException {
+    try {
+      if (mode == DEFLATE) {
         java.util.zip.ZipOutputStream zos = (java.util.zip.ZipOutputStream) this.compressedStream;
         zos.closeEntry();
-      }
-      else
-      {
+      } else {
         java.util.zip.ZipInputStream zis = (java.util.zip.ZipInputStream) this.compressedStream;
         zis.closeEntry();
       }
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
 
   @Override
-  public void close() throws IOException
-  {
-    try
-    {
-      switch (mode)
-      {
+  public void close() throws IOException {
+    try {
+      switch (mode) {
       case DEFLATE:
         ((java.util.zip.ZipOutputStream) compressedStream).finish();
         break;
@@ -204,13 +174,9 @@ public class ZipStream extends CompressedStream
       default:
         throw new IOException("Invalid object.");
       }
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
-    }
-    finally
-    {
+    } finally {
       mode = 0;
     }
   }

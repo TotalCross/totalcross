@@ -113,9 +113,7 @@ import totalcross.util.concurrent.Lock;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Hashtable4D<K, V> extends Dictionary<K, V>
-implements Map<K, V>, Cloneable
-{
+public class Hashtable4D<K, V> extends Dictionary<K, V> implements Map<K, V>, Cloneable {
   // WARNING: Hashtable is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
 
@@ -184,9 +182,7 @@ implements Map<K, V>, Cloneable
    * pair. A Hashtable Entry is identical to a HashMap Entry, except that
    * `null' is not allowed for keys and values.
    */
-  private static final class HashEntry<K, V>
-  extends AbstractMap4D.SimpleEntry<K, V>
-  {
+  private static final class HashEntry<K, V> extends AbstractMap4D.SimpleEntry<K, V> {
     /** The next entry in the linked list. */
     HashEntry<K, V> next;
 
@@ -195,8 +191,7 @@ implements Map<K, V>, Cloneable
      * @param key the key, already guaranteed non-null
      * @param value the value, already guaranteed non-null
      */
-    HashEntry(K key, V value)
-    {
+    HashEntry(K key, V value) {
       super(key, value);
     }
 
@@ -207,9 +202,8 @@ implements Map<K, V>, Cloneable
      * @throws NullPointerException if <code>newVal</code> is null
      */
     @Override
-    public V setValue(V newVal)
-    {
-      if (newVal == null){
+    public V setValue(V newVal) {
+      if (newVal == null) {
         throw new NullPointerException();
       }
       return super.setValue(newVal);
@@ -220,8 +214,7 @@ implements Map<K, V>, Cloneable
    * Construct a new Hashtable with the default capacity (11) and the default
    * load factor (0.75).
    */
-  public Hashtable4D()
-  {
+  public Hashtable4D() {
     this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
   }
 
@@ -239,8 +232,7 @@ implements Map<K, V>, Cloneable
    *         to or from `null'.
    * @since 1.2
    */
-  public Hashtable4D(Map<? extends K, ? extends V> m)
-  {
+  public Hashtable4D(Map<? extends K, ? extends V> m) {
     this(Math.max(m.size() * 2, DEFAULT_CAPACITY), DEFAULT_LOAD_FACTOR);
     putAll(m);
   }
@@ -252,8 +244,7 @@ implements Map<K, V>, Cloneable
    * @param initialCapacity the initial capacity of this Hashtable (&gt;= 0)
    * @throws IllegalArgumentException if (initialCapacity &lt; 0)
    */
-  public Hashtable4D(int initialCapacity)
-  {
+  public Hashtable4D(int initialCapacity) {
     this(initialCapacity, DEFAULT_LOAD_FACTOR);
   }
 
@@ -266,17 +257,15 @@ implements Map<K, V>, Cloneable
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public Hashtable4D(int initialCapacity, float loadFactor)
-  {
-    if (initialCapacity < 0){
-      throw new IllegalArgumentException("Illegal Capacity: "
-          + initialCapacity);
+  public Hashtable4D(int initialCapacity, float loadFactor) {
+    if (initialCapacity < 0) {
+      throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
     }
-    if (! (loadFactor > 0)){
+    if (!(loadFactor > 0)) {
       throw new IllegalArgumentException("Illegal Load: " + loadFactor);
     }
 
-    if (initialCapacity == 0){
+    if (initialCapacity == 0) {
       initialCapacity = 1;
     }
     buckets = (HashEntry<K, V>[]) new HashEntry[initialCapacity];
@@ -289,8 +278,7 @@ implements Map<K, V>, Cloneable
    * @return the size
    */
   @Override
-  public synchronized int size()
-  {
+  public synchronized int size() {
     return size;
   }
 
@@ -299,8 +287,7 @@ implements Map<K, V>, Cloneable
    * @return <code>size() == 0</code>
    */
   @Override
-  public synchronized boolean isEmpty()
-  {
+  public synchronized boolean isEmpty() {
     return size == 0;
   }
 
@@ -314,8 +301,7 @@ implements Map<K, V>, Cloneable
    * @see #keySet()
    */
   @Override
-  public Enumeration<K> keys()
-  {
+  public Enumeration<K> keys() {
     return new KeyEnumerator();
   }
 
@@ -329,8 +315,7 @@ implements Map<K, V>, Cloneable
    * @see #values()
    */
   @Override
-  public Enumeration<V> elements()
-  {
+  public Enumeration<V> elements() {
     return new ValueEnumerator();
   }
 
@@ -346,17 +331,14 @@ implements Map<K, V>, Cloneable
    * @see #containsValue(Object)
    * @see #containsKey(Object)
    */
-  public synchronized boolean contains(Object value)
-  {
-    if (value == null){
+  public synchronized boolean contains(Object value) {
+    if (value == null) {
       throw new NullPointerException();
     }
 
-    for (int i = buckets.length - 1; i >= 0; i--)
-    {
+    for (int i = buckets.length - 1; i >= 0; i--) {
       HashEntry<K, V> e = buckets[i];
-      while (e != null)
-      {
+      while (e != null) {
         if (e.value.equals(value)) {
           return true;
         }
@@ -380,8 +362,7 @@ implements Map<K, V>, Cloneable
    * @since 1.2
    */
   @Override
-  public boolean containsValue(Object value)
-  {
+  public boolean containsValue(Object value) {
     // Delegate to older method to make sure code overriding it continues
     // to work.
     return contains(value);
@@ -397,12 +378,10 @@ implements Map<K, V>, Cloneable
    * @see #containsValue(Object)
    */
   @Override
-  public synchronized boolean containsKey(Object key)
-  {
+  public synchronized boolean containsKey(Object key) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
-    while (e != null)
-    {
+    while (e != null) {
       if (e.key.equals(key)) {
         return true;
       }
@@ -422,12 +401,10 @@ implements Map<K, V>, Cloneable
    * @see #containsKey(Object)
    */
   @Override
-  public synchronized V get(Object key)
-  {
+  public synchronized V get(Object key) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
-    while (e != null)
-    {
+    while (e != null) {
       if (e.key.equals(key)) {
         return e.value;
       }
@@ -449,35 +426,29 @@ implements Map<K, V>, Cloneable
    * @see Object#equals(Object)
    */
   @Override
-  public synchronized V put(K key, V value)
-  {
+  public synchronized V put(K key, V value) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
 
     // Check if value is null since it is not permitted.
-    if (value == null){
+    if (value == null) {
       throw new NullPointerException();
     }
 
-    while (e != null)
-    {
-      if (e.key.equals(key))
-      {
+    while (e != null) {
+      if (e.key.equals(key)) {
         // Bypass e.setValue, since we already know value is non-null.
         V r = e.value;
         e.value = value;
         return r;
-      }
-      else
-      {
+      } else {
         e = e.next;
       }
     }
 
     // At this point, we know we need to add a new entry.
     modCount++;
-    if (++size > threshold)
-    {
+    if (++size > threshold) {
       rehash();
       // Need a new hash value to suit the bigger table.
       idx = hash(key);
@@ -500,16 +471,13 @@ implements Map<K, V>, Cloneable
    * @return whatever the key mapped to, if present
    */
   @Override
-  public synchronized V remove(Object key)
-  {
+  public synchronized V remove(Object key) {
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
     HashEntry<K, V> last = null;
 
-    while (e != null)
-    {
-      if (e.key.equals(key))
-      {
+    while (e != null) {
+      if (e.key.equals(key)) {
         modCount++;
         if (last == null) {
           buckets[idx] = e.next;
@@ -534,22 +502,16 @@ implements Map<K, V>, Cloneable
    * @throws NullPointerException if m is null, or contains null keys or values
    */
   @Override
-  public synchronized void putAll(Map<? extends K, ? extends V> m)
-  {
-    final Map<K,V> addMap = (Map<K,V>) m;
-    final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
-    while (it.hasNext())
-    {
-      final Map.Entry<K,V> e = it.next();
+  public synchronized void putAll(Map<? extends K, ? extends V> m) {
+    final Map<K, V> addMap = (Map<K, V>) m;
+    final Iterator<Map.Entry<K, V>> it = addMap.entrySet().iterator();
+    while (it.hasNext()) {
+      final Map.Entry<K, V> e = it.next();
       // Optimize in case the Entry is one of our own.
-      if (e instanceof AbstractMap.SimpleEntry)
-      {
-        AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry
-        = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
+      if (e instanceof AbstractMap.SimpleEntry) {
+        AbstractMap4D.SimpleEntry<? extends K, ? extends V> entry = (AbstractMap4D.SimpleEntry<? extends K, ? extends V>) e;
         put(entry.key, entry.value);
-      }
-      else
-      {
+      } else {
         put(e.getKey(), e.getValue());
       }
     }
@@ -559,10 +521,8 @@ implements Map<K, V>, Cloneable
    * Clears the hashtable so it has no keys.  This is O(1).
    */
   @Override
-  public synchronized void clear()
-  {
-    if (size > 0)
-    {
+  public synchronized void clear() {
+    if (size > 0) {
       modCount++;
       Arrays.fill(buckets, null);
       size = 0;
@@ -576,15 +536,11 @@ implements Map<K, V>, Cloneable
    * @return the clone
    */
   @Override
-  public synchronized Object clone()
-  {
+  public synchronized Object clone() {
     Hashtable4D<K, V> copy = null;
-    try
-    {
+    try {
       copy = (Hashtable4D<K, V>) super.clone();
-    }
-    catch (CloneNotSupportedException x)
-    {
+    } catch (CloneNotSupportedException x) {
       // This is impossible.
     }
     copy.buckets = (HashEntry<K, V>[]) new HashEntry[buckets.length];
@@ -607,15 +563,13 @@ implements Map<K, V>, Cloneable
    * @return the string representation
    */
   @Override
-  public synchronized String toString()
-  {
+  public synchronized String toString() {
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
     // unsynchronized EntryIterator instead.
     Iterator<Map.Entry<K, V>> entries = new EntryIterator();
     StringBuffer r = new StringBuffer("{");
-    for (int pos = size; pos > 0; pos--)
-    {
+    for (int pos = size; pos > 0; pos--) {
       r.append(entries.next());
       if (pos > 1) {
         r.append(", ");
@@ -641,35 +595,28 @@ implements Map<K, V>, Cloneable
    * @since 1.2
    */
   @Override
-  public Set<K> keySet()
-  {
-    if (keys == null)
-    {
+  public Set<K> keySet() {
+    if (keys == null) {
       // Create a synchronized AbstractSet with custom implementations of
       // those methods that can be overridden easily and efficiently.
-      Set<K> r = new AbstractSet<K>()
-      {
+      Set<K> r = new AbstractSet<K>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<K> iterator()
-        {
+        public Iterator<K> iterator() {
           return new KeyIterator();
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           Hashtable4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
+        public boolean contains(Object o) {
           if (o == null) {
             return false;
           }
@@ -677,8 +624,7 @@ implements Map<K, V>, Cloneable
         }
 
         @Override
-        public boolean remove(Object o)
-        {
+        public boolean remove(Object o) {
           return Hashtable4D.this.remove(o) != null;
         }
       };
@@ -706,29 +652,23 @@ implements Map<K, V>, Cloneable
    * @since 1.2
    */
   @Override
-  public Collection<V> values()
-  {
-    if (values == null)
-    {
+  public Collection<V> values() {
+    if (values == null) {
       // We don't bother overriding many of the optional methods, as doing so
       // wouldn't provide any significant performance advantage.
-      Collection<V> r = new AbstractCollection<V>()
-      {
+      Collection<V> r = new AbstractCollection<V>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<V> iterator()
-        {
+        public Iterator<V> iterator() {
           return new ValueIterator();
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           Hashtable4D.this.clear();
         }
       };
@@ -762,44 +702,35 @@ implements Map<K, V>, Cloneable
    * @since 1.2
    */
   @Override
-  public Set<Map.Entry<K, V>> entrySet()
-  {
-    if (entries == null)
-    {
+  public Set<Map.Entry<K, V>> entrySet() {
+    if (entries == null) {
       // Create an AbstractSet with custom implementations of those methods
       // that can be overridden easily and efficiently.
-      Set<Map.Entry<K, V>> r = new AbstractSet<Map.Entry<K, V>>()
-      {
+      Set<Map.Entry<K, V>> r = new AbstractSet<Map.Entry<K, V>>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return size;
         }
 
         @Override
-        public Iterator<Map.Entry<K, V>> iterator()
-        {
+        public Iterator<Map.Entry<K, V>> iterator() {
           return new EntryIterator();
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           Hashtable4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
+        public boolean contains(Object o) {
           return getEntry(o) != null;
         }
 
         @Override
-        public boolean remove(Object o)
-        {
+        public boolean remove(Object o) {
           HashEntry<K, V> e = getEntry(o);
-          if (e != null)
-          {
+          if (e != null) {
             Hashtable4D.this.remove(e.key);
             return true;
           }
@@ -825,13 +756,12 @@ implements Map<K, V>, Cloneable
    * @since 1.2
    */
   @Override
-  public boolean equals(Object o)
-  {
+  public boolean equals(Object o) {
     // no need to synchronize, entrySet().equals() does that.
-    if (o == this){
+    if (o == this) {
       return true;
     }
-    if (!(o instanceof Map)){
+    if (!(o instanceof Map)) {
       return false;
     }
 
@@ -846,8 +776,7 @@ implements Map<K, V>, Cloneable
    * @since 1.2
    */
   @Override
-  public synchronized int hashCode()
-  {
+  public synchronized int hashCode() {
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
     // unsynchronized EntryIterator instead.
@@ -868,8 +797,7 @@ implements Map<K, V>, Cloneable
    * @return the bucket number
    * @throws NullPointerException if key is null
    */
-  private int hash(Object key)
-  {
+  private int hash(Object key) {
     // Note: Inline Math.abs here, for less method overhead, and to avoid
     // a bootstrap dependency, since Math relies on native methods.
     int hash = key.hashCode() % buckets.length;
@@ -885,20 +813,18 @@ implements Map<K, V>, Cloneable
    * @see #entrySet()
    */
   // Package visible, for use in nested classes.
-  HashEntry<K, V> getEntry(Object o)
-  {
-    if (! (o instanceof Map.Entry)){
+  HashEntry<K, V> getEntry(Object o) {
+    if (!(o instanceof Map.Entry)) {
       return null;
     }
     K key = ((Map.Entry<K, V>) o).getKey();
-    if (key == null){
+    if (key == null) {
       return null;
     }
 
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
-    while (e != null)
-    {
+    while (e != null) {
       if (e.equals(o)) {
         return e;
       }
@@ -914,14 +840,12 @@ implements Map<K, V>, Cloneable
    *
    * @param m the map to initialize this from
    */
-  void putAllInternal(Map<? extends K, ? extends V> m)
-  {
-    final Map<K,V> addMap = (Map<K,V>) m;
-    final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
+  void putAllInternal(Map<? extends K, ? extends V> m) {
+    final Map<K, V> addMap = (Map<K, V>) m;
+    final Iterator<Map.Entry<K, V>> it = addMap.entrySet().iterator();
     size = 0;
-    while (it.hasNext())
-    {
-      final Map.Entry<K,V> e = it.next();
+    while (it.hasNext()) {
+      final Map.Entry<K, V> e = it.next();
       size++;
       K key = e.getKey();
       int idx = hash(key);
@@ -942,34 +866,27 @@ implements Map<K, V>, Cloneable
    * one; this number is not always prime, unfortunately. This implementation
    * is not synchronized, as it is only invoked from synchronized methods.
    */
-  protected void rehash()
-  {
+  protected void rehash() {
     HashEntry<K, V>[] oldBuckets = buckets;
 
     int newcapacity = (buckets.length * 2) + 1;
     threshold = (int) (newcapacity * loadFactor);
     buckets = (HashEntry<K, V>[]) new HashEntry[newcapacity];
 
-    for (int i = oldBuckets.length - 1; i >= 0; i--)
-    {
+    for (int i = oldBuckets.length - 1; i >= 0; i--) {
       HashEntry<K, V> e = oldBuckets[i];
-      while (e != null)
-      {
+      while (e != null) {
         int idx = hash(e.key);
         HashEntry<K, V> dest = buckets[idx];
 
-        if (dest != null)
-        {
+        if (dest != null) {
           HashEntry next = dest.next;
-          while (next != null)
-          {
+          while (next != null) {
             dest = next;
             next = dest.next;
           }
           dest.next = e;
-        }
-        else
-        {
+        } else {
           buckets[idx] = e;
         }
 
@@ -992,9 +909,7 @@ implements Map<K, V>, Cloneable
    * @author Jon Zeppieri
    * @author Fridjof Siebert
    */
-  private class EntryIterator
-  implements Iterator<Entry<K,V>>
-  {
+  private class EntryIterator implements Iterator<Entry<K, V>> {
     /**
      * The number of modifications to the backing Hashtable that we know about.
      */
@@ -1015,18 +930,15 @@ implements Map<K, V>, Cloneable
     /**
      * Construct a new EntryIterator
      */
-    EntryIterator()
-    {
+    EntryIterator() {
     }
-
 
     /**
      * Returns true if the Iterator has more elements.
      * @return true if there are more elements
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return count > 0;
     }
 
@@ -1037,18 +949,17 @@ implements Map<K, V>, Cloneable
      * @throws NoSuchElementException if there is none
      */
     @Override
-    public Map.Entry<K,V> next()
-    {
-      if (knownMod != modCount){
+    public Map.Entry<K, V> next() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (count == 0){
+      if (count == 0) {
         throw new NoSuchElementException();
       }
       count--;
       HashEntry<K, V> e = next;
 
-      while (e == null){
+      while (e == null) {
         if (idx <= 0) {
           return null;
         } else {
@@ -1068,12 +979,11 @@ implements Map<K, V>, Cloneable
      * @throws IllegalStateException if called when there is no last element
      */
     @Override
-    public void remove()
-    {
-      if (knownMod != modCount){
+    public void remove() {
+      if (knownMod != modCount) {
         throw new ConcurrentModificationException();
       }
-      if (last == null){
+      if (last == null) {
         throw new IllegalStateException();
       }
 
@@ -1091,9 +1001,7 @@ implements Map<K, V>, Cloneable
    * @author Fridtjof Siebert
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private class KeyIterator
-  implements Iterator<K>
-  {
+  private class KeyIterator implements Iterator<K> {
 
     /**
      * This entry iterator is used for most operations.  Only
@@ -1105,11 +1013,9 @@ implements Map<K, V>, Cloneable
     /**
      * Construct a new KeyIterator
      */
-    KeyIterator()
-    {
+    KeyIterator() {
       iterator = new EntryIterator();
     }
-
 
     /**
      * Returns true if the entry iterator has more elements.
@@ -1118,8 +1024,7 @@ implements Map<K, V>, Cloneable
      * @throws ConcurrentModificationException if the hashtable was modified
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return iterator.hasNext();
     }
 
@@ -1132,9 +1037,8 @@ implements Map<K, V>, Cloneable
      * @throws NoSuchElementException if there is none
      */
     @Override
-    public K next()
-    {
-      return ((HashEntry<K,V>) iterator.next()).key;
+    public K next() {
+      return ((HashEntry<K, V>) iterator.next()).key;
     }
 
     /**
@@ -1145,8 +1049,7 @@ implements Map<K, V>, Cloneable
      * @throws IllegalStateException if called when there is no last element
      */
     @Override
-    public void remove()
-    {
+    public void remove() {
       iterator.remove();
     }
   } // class KeyIterator
@@ -1159,9 +1062,7 @@ implements Map<K, V>, Cloneable
    * @author Fridtjof Siebert
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private class ValueIterator
-  implements Iterator<V>
-  {
+  private class ValueIterator implements Iterator<V> {
 
     /**
      * This entry iterator is used for most operations.  Only
@@ -1173,11 +1074,9 @@ implements Map<K, V>, Cloneable
     /**
      * Construct a new KeyIterator
      */
-    ValueIterator()
-    {
+    ValueIterator() {
       iterator = new EntryIterator();
     }
-
 
     /**
      * Returns true if the entry iterator has more elements.
@@ -1186,8 +1085,7 @@ implements Map<K, V>, Cloneable
      * @throws ConcurrentModificationException if the hashtable was modified
      */
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
       return iterator.hasNext();
     }
 
@@ -1200,9 +1098,8 @@ implements Map<K, V>, Cloneable
      * @throws NoSuchElementException if there is none
      */
     @Override
-    public V next()
-    {
-      return ((HashEntry<K,V>) iterator.next()).value;
+    public V next() {
+      return ((HashEntry<K, V>) iterator.next()).value;
     }
 
     /**
@@ -1213,8 +1110,7 @@ implements Map<K, V>, Cloneable
      * @throws IllegalStateException if called when there is no last element
      */
     @Override
-    public void remove()
-    {
+    public void remove() {
       iterator.remove();
     }
 
@@ -1234,9 +1130,7 @@ implements Map<K, V>, Cloneable
    * @author Jon Zeppieri
    * @author Fridjof Siebert
    */
-  private class EntryEnumerator
-  implements Enumeration<Entry<K,V>>
-  {
+  private class EntryEnumerator implements Enumeration<Entry<K, V>> {
     /** The number of elements remaining to be returned by next(). */
     int count = size;
     /** Current index in the physical hash table. */
@@ -1251,8 +1145,7 @@ implements Map<K, V>, Cloneable
     /**
      * Construct the enumeration.
      */
-    EntryEnumerator()
-    {
+    EntryEnumerator() {
       // Nothing to do here.
     }
 
@@ -1261,8 +1154,7 @@ implements Map<K, V>, Cloneable
      * @return true if nextElement() will not fail.
      */
     @Override
-    public boolean hasMoreElements()
-    {
+    public boolean hasMoreElements() {
       return count > 0;
     }
 
@@ -1272,15 +1164,14 @@ implements Map<K, V>, Cloneable
      * @throws NoSuchElementException if there is none.
      */
     @Override
-    public Map.Entry<K,V> nextElement()
-    {
-      if (count == 0){
+    public Map.Entry<K, V> nextElement() {
+      if (count == 0) {
         throw new NoSuchElementException("Hashtable Enumerator");
       }
       count--;
       HashEntry<K, V> e = next;
 
-      while (e == null){
+      while (e == null) {
         if (idx <= 0) {
           return null;
         } else {
@@ -1292,7 +1183,6 @@ implements Map<K, V>, Cloneable
       return e;
     }
   } // class EntryEnumerator
-
 
   /**
    * Enumeration view of this Hashtable, providing sequential access to its
@@ -1309,9 +1199,7 @@ implements Map<K, V>, Cloneable
    * @author Fridjof Siebert
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private final class KeyEnumerator
-  implements Enumeration<K>
-  {
+  private final class KeyEnumerator implements Enumeration<K> {
     /**
      * This entry enumerator is used for most operations.  Only
      * <code>nextElement()</code> gives a different result, by returning just
@@ -1322,11 +1210,9 @@ implements Map<K, V>, Cloneable
     /**
      * Construct a new KeyEnumerator
      */
-    KeyEnumerator()
-    {
+    KeyEnumerator() {
       enumerator = new EntryEnumerator();
     }
-
 
     /**
      * Returns true if the entry enumerator has more elements.
@@ -1335,8 +1221,7 @@ implements Map<K, V>, Cloneable
      * @throws ConcurrentModificationException if the hashtable was modified
      */
     @Override
-    public boolean hasMoreElements()
-    {
+    public boolean hasMoreElements() {
       return enumerator.hasMoreElements();
     }
 
@@ -1346,17 +1231,15 @@ implements Map<K, V>, Cloneable
      * @throws NoSuchElementException if there is none.
      */
     @Override
-    public K nextElement()
-    {
-      HashEntry<K,V> entry = (HashEntry<K,V>) enumerator.nextElement();
+    public K nextElement() {
+      HashEntry<K, V> entry = (HashEntry<K, V>) enumerator.nextElement();
       K retVal = null;
-      if (entry != null){
+      if (entry != null) {
         retVal = entry.key;
       }
       return retVal;
     }
   } // class KeyEnumerator
-
 
   /**
    * Enumeration view of this Hashtable, providing sequential access to its
@@ -1373,9 +1256,7 @@ implements Map<K, V>, Cloneable
    * @author Fridjof Siebert
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
-  private final class ValueEnumerator
-  implements Enumeration<V>
-  {
+  private final class ValueEnumerator implements Enumeration<V> {
     /**
      * This entry enumerator is used for most operations.  Only
      * <code>nextElement()</code> gives a different result, by returning just
@@ -1386,11 +1267,9 @@ implements Map<K, V>, Cloneable
     /**
      * Construct a new ValueEnumerator
      */
-    ValueEnumerator()
-    {
+    ValueEnumerator() {
       enumerator = new EntryEnumerator();
     }
-
 
     /**
      * Returns true if the entry enumerator has more elements.
@@ -1399,8 +1278,7 @@ implements Map<K, V>, Cloneable
      * @throws ConcurrentModificationException if the hashtable was modified
      */
     @Override
-    public boolean hasMoreElements()
-    {
+    public boolean hasMoreElements() {
       return enumerator.hasMoreElements();
     }
 
@@ -1410,11 +1288,10 @@ implements Map<K, V>, Cloneable
      * @throws NoSuchElementException if there is none.
      */
     @Override
-    public V nextElement()
-    {
-      HashEntry<K,V> entry = (HashEntry<K,V>) enumerator.nextElement();
+    public V nextElement() {
+      HashEntry<K, V> entry = (HashEntry<K, V>) enumerator.nextElement();
       V retVal = null;
-      if (entry != null){
+      if (entry != null) {
         retVal = entry.value;
       }
       return retVal;

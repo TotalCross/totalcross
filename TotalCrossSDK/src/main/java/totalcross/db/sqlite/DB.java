@@ -17,6 +17,7 @@ package totalcross.db.sqlite;
 
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
+
 /*
  * This class is the interface to SQLite. It provides some helper functions
  * used by other parts of the driver. The goal of the helper functions here
@@ -29,21 +30,19 @@ import java.sql.SQLException;
  *
  * The subclass, NativeDB, provides the actual access to SQLite functions.
  */
-abstract class DB implements Codes
-{
+abstract class DB implements Codes {
   /** The JDBC Connection that 'owns' this database instance. */
-  SQLiteConnection                          conn;
+  SQLiteConnection conn;
 
   /** The "begin;"and "commit;" statement handles. */
-  long                          begin;
-  long                          commit;
+  long begin;
+  long commit;
 
   /** Tracer for statements to avoid unfinalized statements on db close. */
   //private Vector stmts = new Vector(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
   //public totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
 
-  public static interface ProgressObserver
-  {
+  public static interface ProgressObserver {
     public void progress(int remaining, int pageCount);
   }
 
@@ -140,8 +139,7 @@ abstract class DB implements Codes
       default:
         throwex(ret);
       }
-    }
-    finally {
+    } finally {
       finalize(pointer);
     }
   }
@@ -161,6 +159,7 @@ abstract class DB implements Codes
   }
 
   boolean closed;
+
   /**
    * Closes a database connection and finalizes any remaining statements before
    * the closing operation.
@@ -168,7 +167,7 @@ abstract class DB implements Codes
    * @see <a href="http://www.sqlite.org/c3ref/close.html">http://www.sqlite.org/c3ref/close.html</a>
    */
   void close() throws SQLException {
-    if (closed){
+    if (closed) {
       return;
     }
     closed = true;
@@ -213,9 +212,11 @@ abstract class DB implements Codes
   }
 
   @Override
-  public void finalize()
-  {
-    try {close();} catch (Throwable t) {}
+  public void finalize() {
+    try {
+      close();
+    } catch (Throwable t) {
+    }
   }
 
   /**
@@ -231,12 +232,9 @@ abstract class DB implements Codes
     }
     int rc = SQLITE_ERROR;
     long pointer = stmt.pointer;
-    try 
-    {
+    try {
       rc = finalize(pointer);
-    }
-    finally 
-    {
+    } finally {
       stmt.pointer = 0;
       //           stmts.removeElement(stmt);
     }
@@ -647,7 +645,8 @@ abstract class DB implements Codes
    * @throws SQLException
    *
    */
-  abstract int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+  abstract int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer)
+      throws SQLException;
 
   /**
    * @param dbName Database name for restoring data.
@@ -657,7 +656,8 @@ abstract class DB implements Codes
    * @throws SQLException
    *
    */
-  abstract int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+  abstract int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer)
+      throws SQLException;
 
   /**
    * Returns an array describing the attributes (not null, primary key and auto increment) of columns.
@@ -699,29 +699,21 @@ abstract class DB implements Codes
     pos++;
     if (v == null) {
       return bind_null(stmt, pos);
-    }
-    else if (v instanceof Integer) {
+    } else if (v instanceof Integer) {
       return bind_int(stmt, pos, ((Integer) v).intValue());
-    }
-    else if (v instanceof Short) {
+    } else if (v instanceof Short) {
       return bind_int(stmt, pos, ((Short) v).shortValue());
-    }
-    else if (v instanceof Long) {
+    } else if (v instanceof Long) {
       return bind_long(stmt, pos, ((Long) v).longValue());
-    }
-    else if (v instanceof Float) {
+    } else if (v instanceof Float) {
       return bind_double(stmt, pos, ((Float) v).floatValue());
-    }
-    else if (v instanceof Double) {
+    } else if (v instanceof Double) {
       return bind_double(stmt, pos, ((Double) v).doubleValue());
-    }
-    else if (v instanceof String) {
+    } else if (v instanceof String) {
       return bind_text(stmt, pos, (String) v);
-    }
-    else if (v instanceof byte[]) {
+    } else if (v instanceof byte[]) {
       return bind_blob(stmt, pos, (byte[]) v);
-    }
-    else {
+    } else {
       throw new SQLException("unexpected param type: " + v.getClass());
     }
   }
@@ -751,7 +743,7 @@ abstract class DB implements Codes
       for (int i = 0; i < count; i++) {
         reset(stmt);
         for (int j = 0; j < params; j++) {
-          if ((ret=sqlbind(stmt, j, vals[(i * params) + j])) != SQLITE_OK) {
+          if ((ret = sqlbind(stmt, j, vals[(i * params) + j])) != SQLITE_OK) {
             throwex(ret);
           }
         }
@@ -767,8 +759,7 @@ abstract class DB implements Codes
 
         changes[i] = changes();
       }
-    }
-    finally {
+    } finally {
       ensureAutoCommit();
     }
 
@@ -787,13 +778,12 @@ abstract class DB implements Codes
     if (vals != null) {
       final int params = bind_parameter_count(stmt.pointer);
       if (params != vals.length) {
-        throw new SQLException("assertion failure: param count (" + params + ") != value count (" + vals.length
-            + ")");
+        throw new SQLException("assertion failure: param count (" + params + ") != value count (" + vals.length + ")");
       }
 
       int ret;
       for (int i = 0; i < params; i++) {
-        if ((ret=sqlbind(stmt.pointer, i, vals[i])) != SQLITE_OK) {
+        if ((ret = sqlbind(stmt.pointer, i, vals[i])) != SQLITE_OK) {
           throwex(ret);
         }
       }
@@ -893,7 +883,7 @@ abstract class DB implements Codes
    */
   static SQLException newSQLException(int errorCode, String errorMessage) throws SQLException {
     SQLiteErrorCode code = SQLiteErrorCode.getErrorCode(errorCode);
-    SQLException e = new SQLException(code+" ("+errorMessage+")", null, code.value);
+    SQLException e = new SQLException(code + " (" + errorMessage + ")", null, code.value);
     return e;
   }
 
@@ -952,18 +942,16 @@ abstract class DB implements Codes
     }
 
     try {
-      if (step(begin) != SQLITE_DONE)
-      {
+      if (step(begin) != SQLITE_DONE) {
         return; // assume we are in a transaction
       }
       int ret;
-      if ((ret=step(commit)) != SQLITE_DONE) {
+      if ((ret = step(commit)) != SQLITE_DONE) {
         reset(commit);
         throwex(ret);
       }
       //throw new SQLException("unable to auto-commit");
-    }
-    finally {
+    } finally {
       reset(begin);
       reset(commit);
     }

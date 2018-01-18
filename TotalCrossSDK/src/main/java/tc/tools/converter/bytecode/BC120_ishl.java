@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC120_ishl extends Logical
-{
-  public BC120_ishl()
-  {
-    super(-1,-2,-1,INT);
+public class BC120_ishl extends Logical {
+  public BC120_ishl() {
+    super(-1, -2, -1, INT);
   }
+
   @Override
-  public void exec()
-  {
+  public void exec() {
     stack[-2].asInt <<= stack[-1].asInt & 0x1F;
   }
 }

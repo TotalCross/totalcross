@@ -25,8 +25,7 @@ import totalcross.crypto.NoSuchAlgorithmException;
 /**
  * This class implements the MD5 message digest algorithm.
  */
-public class MD5Digest extends Digest
-{
+public class MD5Digest extends Digest {
   /**
    * Creates a new MD5Digest object.
    * 
@@ -42,8 +41,7 @@ public class MD5Digest extends Digest
    * @return "MD5".
    */
   @Override
-  public final String getAlgorithm()
-  {
+  public final String getAlgorithm() {
     return "MD5";
   }
 
@@ -53,8 +51,7 @@ public class MD5Digest extends Digest
    * @return 64.
    */
   @Override
-  public final int getBlockLength()
-  {
+  public final int getBlockLength() {
     return 64;
   }
 
@@ -64,22 +61,20 @@ public class MD5Digest extends Digest
    * @return 16.
    */
   @Override
-  public final int getDigestLength()
-  {
+  public final int getDigestLength() {
     return 16;
   }
 
   @Override
   @ReplacedByNativeOnDeploy
-  protected final byte[] process(byte[] data)
-  {
-    MessageDigest digest = (MessageDigest)digestRef;
+  protected final byte[] process(byte[] data) {
+    MessageDigest digest = (MessageDigest) digestRef;
     digest.reset();
     digest.update(data);
 
-    return ((MessageDigest)digestRef).digest();
+    return ((MessageDigest) digestRef).digest();
   }
-  
+
   @ReplacedByNativeOnDeploy
   private void init() throws NoSuchAlgorithmException {
     try {

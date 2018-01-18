@@ -31,13 +31,11 @@ package totalcross.lang;
  *
  * @see totalcross.sys.Vm#arrayCopy
  */
-public class ArrayStoreException4D extends RuntimeException
-{
+public class ArrayStoreException4D extends RuntimeException {
   /** 
    * Constructs an empty Exception. 
    */
-  public ArrayStoreException4D()
-  {
+  public ArrayStoreException4D() {
   }
 
   /** 
@@ -45,8 +43,7 @@ public class ArrayStoreException4D extends RuntimeException
    * 
    * @param message The error message. 
    */
-  public ArrayStoreException4D(String message)
-  {
+  public ArrayStoreException4D(String message) {
     super(message);
   }
 }

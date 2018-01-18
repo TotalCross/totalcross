@@ -9,27 +9,21 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.java;
 
 import totalcross.io.DataStream;
 
-public final class JavaConstantPool
-{
-  public int      numConstants;
+public final class JavaConstantPool {
+  public int numConstants;
   public Object[] constants;
 
-  public JavaConstantPool(DataStream ds) throws totalcross.io.IOException
-  {
+  public JavaConstantPool(DataStream ds) throws totalcross.io.IOException {
     totalcross.sys.Convert.setDefaultConverter("UTF8");
     numConstants = ds.readUnsignedShort();
-    if (numConstants > 0)
-    {
+    if (numConstants > 0) {
       byte b;
       constants = new Object[numConstants + 1]; // constants start from 1
-      for (int i = 1; i < numConstants; i++)
-      {
+      for (int i = 1; i < numConstants; i++) {
         switch (b = ds.readByte())
         // guich@400_16: moved to here since now we compute other things; also, ordered and inserted blank cases to let the compiler optimize it to a jump table
         {
@@ -66,21 +60,19 @@ public final class JavaConstantPool
     totalcross.sys.Convert.setDefaultConverter("");
   }
 
-  public String getString1(int idx)
-  {
-    if (idx == 0){
+  public String getString1(int idx) {
+    if (idx == 0) {
       return null;
     }
-    if (constants[idx] instanceof String){
+    if (constants[idx] instanceof String) {
       return (String) constants[idx];
     }
     JavaConstantInfo ci = (JavaConstantInfo) constants[idx];
     return (String) constants[ci.index1];
   }
 
-  public String getString2(int idx)
-  {
-    if (idx == 0){
+  public String getString2(int idx) {
+    if (idx == 0) {
       return null;
     }
     JavaConstantInfo ci = (JavaConstantInfo) constants[idx];

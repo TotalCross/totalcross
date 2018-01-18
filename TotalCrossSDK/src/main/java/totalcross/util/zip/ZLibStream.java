@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
 import java.util.zip.DeflaterOutputStream;
@@ -31,8 +29,7 @@ import totalcross.io.Stream;
  * @since TotalCross 1.10
  */
 
-public class ZLibStream extends CompressedStream
-{
+public class ZLibStream extends CompressedStream {
   /**
    * Creates a ZLibStream object that may be used to read compressed data from the given stream, or to write compressed
    * data to the given stream.<br>
@@ -44,21 +41,18 @@ public class ZLibStream extends CompressedStream
    * 
    * @since TotalCross 1.10
    */
-  public ZLibStream(Stream stream, int mode)
-  {
+  public ZLibStream(Stream stream, int mode) {
     super(stream, mode);
   }
 
   @Override
-  protected Object createDeflate(Stream stream)
-  {
+  protected Object createDeflate(Stream stream) {
     Launcher.S2OS os = new Launcher.S2OS(stream, false);
     return new DeflaterOutputStream(os);
   }
 
   @Override
-  protected Object createInflate(Stream stream)
-  {
+  protected Object createInflate(Stream stream) {
     Launcher.S2IS is = new Launcher.S2IS(stream, -1, false);
     return new InflaterInputStream(is);
   }

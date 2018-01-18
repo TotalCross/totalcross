@@ -25,20 +25,19 @@ import totalcross.sql.ResultSet;
 import totalcross.sql.Statement;
 import totalcross.sys.Vm;
 
-class Stmt extends Unused implements Statement, Codes
-{
+class Stmt extends Unused implements Statement, Codes {
   final SQLiteConnection conn;
-  final DB   db;
-  final RS   rs;
+  final DB db;
+  final RS rs;
 
   private MetaData metadata;
 
-  long       pointer;
-  String     sql;
+  long pointer;
+  String sql;
 
-  int        batchPos;
-  Object[]   batch;
-  boolean    resultsWaiting;
+  int batchPos;
+  Object[] batch;
+  boolean resultsWaiting;
 
   Stmt(SQLiteConnection c) {
     conn = c;
@@ -79,8 +78,7 @@ class Stmt extends Unused implements Statement, Codes
     boolean rc = false;
     try {
       rc = db.execute(this, null);
-    }
-    finally {
+    } finally {
       resultsWaiting = rc;
     }
 
@@ -105,8 +103,7 @@ class Stmt extends Unused implements Statement, Codes
     boolean rc = false;
     try {
       rc = db.execute(sql);
-    }
-    finally {
+    } finally {
       resultsWaiting = rc;
     }
 
@@ -114,8 +111,7 @@ class Stmt extends Unused implements Statement, Codes
   }
 
   protected void internalClose() throws SQLException {
-    if (pointer == 0 || db.conn.isClosed())
-    {
+    if (pointer == 0 || db.conn.isClosed()) {
       return; //throw DB.newSQLException(SQLITE_ERROR, "Connection is closed");
     }
 
@@ -161,7 +157,7 @@ class Stmt extends Unused implements Statement, Codes
     internalClose();
 
     SQLExtension ext = ExtendedCommand.parse(sql);
-    if (ext != null) { 
+    if (ext != null) {
       ext.execute(db);
 
       return false;
@@ -201,11 +197,10 @@ class Stmt extends Unused implements Statement, Codes
     return getResultSet();
   }
 
-  static class BackupObserver implements ProgressObserver
-  {
+  static class BackupObserver implements ProgressObserver {
     @Override
     public void progress(int remaining, int pageCount) {
-      totalcross.sys.Vm.debug("remaining:"+remaining+", page count:"+pageCount);
+      totalcross.sys.Vm.debug("remaining:" + remaining + ", page count:" + pageCount);
     }
   }
 
@@ -222,8 +217,7 @@ class Stmt extends Unused implements Statement, Codes
     if (ext != null) {
       // execute extended command 
       ext.execute(db);
-    }
-    else {
+    } else {
       try {
         changes = db.total_changes();
 
@@ -234,8 +228,7 @@ class Stmt extends Unused implements Statement, Codes
         }
 
         changes = db.total_changes() - changes;
-      }
-      finally {
+      } finally {
         internalClose();
       }
     }
@@ -324,23 +317,20 @@ class Stmt extends Unused implements Statement, Codes
 
     int[] changes = new int[batchPos];
 
-    /*synchronized (db.stmtsLock) */{
+    /*synchronized (db.stmtsLock) */ {
       try {
         for (int i = 0; i < changes.length; i++) {
           try {
             this.sql = (String) batch[i];
             db.prepare(this);
             changes[i] = db.executeUpdate(this, null);
-          }
-          catch (SQLException e) {
+          } catch (SQLException e) {
             throw new BatchUpdateException("batch entry " + i + ": " + e.getMessage(), changes);
-          }
-          finally {
+          } finally {
             db.finalize(this);
           }
         }
-      }
-      finally {
+      } finally {
         clearBatch();
       }
     }
@@ -352,7 +342,8 @@ class Stmt extends Unused implements Statement, Codes
    * @see java.sql.Statement#setCursorName(java.lang.String)
    */
   @Override
-  public void setCursorName(String name) {}
+  public void setCursorName(String name) {
+  }
 
   /**
    * @see java.sql.Statement#getWarnings()
@@ -366,7 +357,8 @@ class Stmt extends Unused implements Statement, Codes
    * @see java.sql.Statement#clearWarnings()
    */
   @Override
-  public void clearWarnings() throws SQLException {}
+  public void clearWarnings() throws SQLException {
+  }
 
   /**
    * @see java.sql.Statement#getConnection()
@@ -481,7 +473,7 @@ class Stmt extends Unused implements Statement, Codes
    */
   public ResultSet getGeneratedKeys() throws SQLException {
     if (metadata == null) {
-      metadata = (MetaData)conn.getMetaData();
+      metadata = (MetaData) conn.getMetaData();
       metadata.refCount++;
     }
 
@@ -533,7 +525,7 @@ class Stmt extends Unused implements Statement, Codes
    * @see java.sql.Statement#setEscapeProcessing(boolean)
    */
   public void setEscapeProcessing(boolean enable) throws SQLException {
-    if(enable) {
+    if (enable) {
       throw unused();
     }
   }

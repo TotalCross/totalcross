@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 import totalcross.ui.Control;
@@ -27,8 +25,7 @@ import totalcross.ui.Control;
  * A pen drag occurs when the pen moves while the screen is pressed.
  */
 
-public class PenEvent extends Event implements Cloneable
-{
+public class PenEvent extends Event implements Cloneable {
   /** The event type for a pen or mouse down. */
   public static final int PEN_DOWN = 200;
   /** The event type for a pen or mouse up. */
@@ -40,7 +37,8 @@ public class PenEvent extends Event implements Cloneable
   /** The event type for a pen or mouse drag end. */
   public static final int PEN_DRAG_END = 204; // kmeehl@tc100
 
-  protected static final String[] EVENT_NAME = {"PEN_DOWN","PEN_UP","PEN_DRAG","PEN_DRAG_START","PEN_DRAG_END","MOUSE_MOVE","MOUSE_IN","MOUSE_OUT","MOUSE_WHEEL"};
+  protected static final String[] EVENT_NAME = { "PEN_DOWN", "PEN_UP", "PEN_DRAG", "PEN_DRAG_START", "PEN_DRAG_END",
+      "MOUSE_MOVE", "MOUSE_IN", "MOUSE_OUT", "MOUSE_WHEEL" };
 
   /** The x location of the event. */
   public int x;
@@ -61,12 +59,10 @@ public class PenEvent extends Event implements Cloneable
    */
   public int modifiers;
 
-
   /** Updates this event setting also the timestamp, consumed and target.
    * @since TotalCross 1.0
    */
-  public PenEvent update(Control c, int absoluteX, int x, int absoluteY, int y, int type, int modifiers)
-  {
+  public PenEvent update(Control c, int absoluteX, int x, int absoluteY, int y, int type, int modifiers) {
     this.absoluteX = absoluteX;
     this.x = x;
     this.absoluteY = absoluteY;
@@ -80,15 +76,13 @@ public class PenEvent extends Event implements Cloneable
   }
 
   /** Returns the event name. Used to debugging. */
-  public static String getEventName(int type)
-  {
-    return PEN_DOWN <= type && type <= PEN_DRAG_END ? EVENT_NAME[type-200] : "Not a PEN_EVENT";
+  public static String getEventName(int type) {
+    return PEN_DOWN <= type && type <= PEN_DRAG_END ? EVENT_NAME[type - 200] : "Not a PEN_EVENT";
   }
 
   @Override
-  public String toString()
-  {
-    return EVENT_NAME[type-200]+" pos: "+x+","+y+" "+super.toString();
+  public String toString() {
+    return EVENT_NAME[type - 200] + " pos: " + x + "," + y + " " + super.toString();
   }
 
   @Override
@@ -105,4 +99,3 @@ public class PenEvent extends Event implements Cloneable
     return clone;
   }
 }
-

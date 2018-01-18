@@ -106,6 +106,7 @@ TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tuiI_freeTexture(NMParams p);
 TC_API void tuiI_applyFade_i(NMParams p);
 TC_API void tuiI_createJpg_si(NMParams p);
+TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p);
 TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p);
 TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
@@ -308,6 +309,7 @@ TC_API void tnCM_nativeClose(NMParams p);
 TC_API void tnCM_getHostAddress_s(NMParams p);
 TC_API void tnCM_getHostName_s(NMParams p);
 TC_API void tnCM_getLocalHost(NMParams p);
+TC_API void tnCM_getLocalHostName(NMParams p);
 TC_API void tnCM_isAvailable_i(NMParams p);
 TC_API void tnCM_releaseResources(NMParams p);
 TC_API void tnS_socketCreate_siib(NMParams p);
@@ -409,7 +411,7 @@ TC_API void tiPDBF_setAttributes_i(NMParams p);
 TC_API void tiPDBF_searchBytes_Bii(NMParams p);
 TC_API void tiF_getDeviceAlias(NMParams p);
 TC_API void tiF_create_sii(NMParams p);
-TC_API void tiF_nativeClose(NMParams p);
+TC_API void tiF_close(NMParams p);
 TC_API void tiF_isCardInserted_i(NMParams p);
 TC_API void tiF_createDir(NMParams p);
 TC_API void tiF_delete(NMParams p);
@@ -554,6 +556,9 @@ TC_API void tmA_setSizeD_i(NMParams p);
 TC_API void tmA_setPositionD_i(NMParams p);
 TC_API void tmA_setVisibleD_b(NMParams p);
 TC_API void tmA_isVisibleD(NMParams p);
+TC_API void ttSM_sendTextMessage_sss(NMParams p);
+TC_API void ttSM_registerSmsReceiver_s(NMParams p);
+TC_API void tfiFII_getToken(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
@@ -981,6 +986,10 @@ TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native pub
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p) // totalcross/ui/image/Image native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1792,6 +1801,10 @@ TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager na
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tnCM_getLocalHostName(NMParams p) // totalcross/net/ConnectionManager native public static String getLocalHostName() throws totalcross.net.UnknownHostException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_isAvailable_i(NMParams p) // totalcross/net/ConnectionManager native public static boolean isAvailable(int type) throws totalcross.io.IOException;
 {
 }
@@ -2196,7 +2209,7 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private void nativeClose() throws totalcross.io.IOException;
+TC_API void tiF_close(NMParams p) // totalcross/io/File native private void close() throws totalcross.io.IOException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2360,7 +2373,7 @@ TC_API void txXT_nativeCreate(NMParams p) // totalcross/xml/XmlTokenizer native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdMD5D_init(NMParams p) // totalcross/crypto/digest/MD5Digest native void nativeCreate();
+TC_API void tcdMD5D_init(NMParams p) // totalcross/crypto/digest/MD5Digest native private void init() throws totalcross.crypto.NoSuchAlgorithmException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2368,7 +2381,7 @@ TC_API void tcdMD5D_process_B(NMParams p) // totalcross/crypto/digest/MD5Digest 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdSHA1D_init(NMParams p) // totalcross/crypto/digest/SHA1Digest native void nativeCreate();
+TC_API void tcdSHA1D_init(NMParams p) // totalcross/crypto/digest/SHA1Digest native private void init() throws totalcross.crypto.NoSuchAlgorithmException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2376,7 +2389,7 @@ TC_API void tcdSHA1D_process_B(NMParams p) // totalcross/crypto/digest/SHA1Diges
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcdSHA256D_init(NMParams p) // totalcross/crypto/digest/SHA256Digest native void nativeCreate();
+TC_API void tcdSHA256D_init(NMParams p) // totalcross/crypto/digest/SHA256Digest native private void init() throws totalcross.crypto.NoSuchAlgorithmException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2396,7 +2409,7 @@ TC_API void tccAESC_process_B(NMParams p) // totalcross/crypto/cipher/AESCipher 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tccRSAC_init(NMParams p) // totalcross/crypto/cipher/RSACipher native void nativeCreate();
+TC_API void tccRSAC_init(NMParams p) // totalcross/crypto/cipher/RSACipher native private void init();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2412,7 +2425,7 @@ TC_API void tccRSAC_process_B(NMParams p) // totalcross/crypto/cipher/RSACipher 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcsPKCS1S_init(NMParams p) // totalcross/crypto/signature/PKCS1Signature native void nativeCreate();
+TC_API void tcsPKCS1S_init(NMParams p) // totalcross/crypto/signature/PKCS1Signature native private void init() throws totalcross.crypto.CryptoException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2773,5 +2786,17 @@ TC_API void tmA_setVisibleD_b(NMParams p) // totalcross/money/Ads native static 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmA_isVisibleD(NMParams p) // totalcross/money/Ads native static boolean isVisibleD();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void ttSM_sendTextMessage_sss(NMParams p) // totalcross/telephony/SmsManager public native void sendTextMessage(String destinationAddress, String scAddress, String text);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void ttSM_registerSmsReceiver_s(NMParams p) // totalcross/telephony/SmsManager public native void registerSmsReceiver(totalcross.telephony.SmsReceiver receiver);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tfiFII_getToken(NMParams p) // totalcross/firebase/iid/FirebaseInstanceId public native String getToken();
 {
 }

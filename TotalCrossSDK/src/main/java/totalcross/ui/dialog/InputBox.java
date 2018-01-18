@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.dialog;
 
 import totalcross.sys.Convert;
@@ -49,8 +47,7 @@ import totalcross.ui.gfx.Color;
     </pre>
  */
 
-public class InputBox extends Window
-{
+public class InputBox extends Window {
   private Label msg;
   private PushButtonGroup btns;
   private Edit ed;
@@ -97,10 +94,9 @@ public class InputBox extends Window
    * and two buttons "Ok" and "Cancel".
    * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
    */
-  public InputBox(String title, String text, String defaultValue)
-  {
-    this(title, text, defaultValue, new String[]{"Ok","Cancel"},false,4,6);
-    buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
+  public InputBox(String title, String text, String defaultValue) {
+    this(title, text, defaultValue, new String[] { "Ok", "Cancel" }, false, 4, 6);
+    buttonKeys = new int[] { SpecialKeys.ENTER, SpecialKeys.ESCAPE };
   }
 
   /** Creates a new InputBox with the given window Title,
@@ -108,9 +104,8 @@ public class InputBox extends Window
    * and with the given buttons.
    * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
    */
-  public InputBox(String title, String text, String defaultValue, String[] buttonCaptions)
-  {
-    this(title,text,defaultValue,buttonCaptions,false,4,6);
+  public InputBox(String title, String text, String defaultValue, String[] buttonCaptions) {
+    this(title, text, defaultValue, buttonCaptions, false, 4, 6);
   }
 
   /** Creates a new InputBox with the given window Title,
@@ -118,9 +113,9 @@ public class InputBox extends Window
    * and with the given buttons.
    * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
    */
-  public InputBox(String title, String text, String defaultValue, String[] buttonCaptions, boolean allSameWidth, int gap, int insideGap)
-  {
-    super(title,ROUND_BORDER);
+  public InputBox(String title, String text, String defaultValue, String[] buttonCaptions, boolean allSameWidth,
+      int gap, int insideGap) {
+    super(title, ROUND_BORDER);
     this.buttonCaptions = buttonCaptions;
     this.gap = gap;
     this.insideGap = insideGap;
@@ -130,120 +125,112 @@ public class InputBox extends Window
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
     this.originalText = text;
     ed = new Edit("@@@@@@@@@@");
-    if (defaultValue != null){
+    if (defaultValue != null) {
       ed.setText(defaultValue);
     }
   }
 
   @Override
-  protected void onPopup()
-  {
+  protected void onPopup() {
     removeAll();
     String text = originalText;
-    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth-6){
-      text = Convert.insertLineBreak(Settings.screenWidth-6, fm, text.replace('\n',' '));
+    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth - 6) {
+      text = Convert.insertLineBreak(Settings.screenWidth - 6, fm, text.replace('\n', ' '));
     }
-    msg = new Label(text,labelAlign);
+    msg = new Label(text, labelAlign);
     msg.setFont(font);
     ed.setFont(font);
-    btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,1,allSameWidth || uiAndroid,PushButtonGroup.BUTTON);
+    btns = new PushButtonGroup(buttonCaptions, false, -1, gap, insideGap, 1, allSameWidth || uiAndroid,
+        PushButtonGroup.BUTTON);
     btns.setFont(font);
     int wb = btns.getPreferredWidth();
-    if (wb > Settings.screenWidth-10) // guich@tc123_38: buttons too large? place them in a single column
+    if (wb > Settings.screenWidth - 10) // guich@tc123_38: buttons too large? place them in a single column
     {
-      btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,buttonCaptions.length,true,PushButtonGroup.BUTTON);
+      btns = new PushButtonGroup(buttonCaptions, false, -1, gap, insideGap, buttonCaptions.length, true,
+          PushButtonGroup.BUTTON);
       btns.setFont(font);
       wb = btns.getPreferredWidth();
     }
 
-    int androidGap = uiAndroid ? fmH/3 : 0;
-    if (androidGap > 0 && (androidGap&1) == 1){
+    int androidGap = uiAndroid ? fmH / 3 : 0;
+    if (androidGap > 0 && (androidGap & 1) == 1) {
       androidGap++;
     }
     int hb = btns.getPreferredHeight() + androidGap;
-    int wm = Math.min(msg.getPreferredWidth()+(uiAndroid?fmH:1),Settings.screenWidth-6);
+    int wm = Math.min(msg.getPreferredWidth() + (uiAndroid ? fmH : 1), Settings.screenWidth - 6);
     int hm = msg.getPreferredHeight();
-    if (uiAndroid){
-      hb += fmH/2;
+    if (uiAndroid) {
+      hb += fmH / 2;
     }
     int we = ed.getPreferredWidth();
     int he = ed.getPreferredHeight();
     FontMetrics fm2 = titleFont.fm; // guich@220_28
-    int captionH = fm2.height+10 + titleGap;
+    int captionH = fm2.height + 10 + titleGap;
 
     int h = captionH + hb + hm + he;
-    int w = Convert.max(wb,wm,we,fm2.stringWidth(title!=null?title:""))+6; // guich@200b4_29
-    w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
-    setRect(CENTER,yPosition,w,h);
+    int w = Convert.max(wb, wm, we, fm2.stringWidth(title != null ? title : "")) + 6; // guich@200b4_29
+    w = Math.min(w, Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
+    setRect(CENTER, yPosition, w, h);
     add(msg);
     add(btns);
     add(ed);
-    msg.setRect(4,TOP,wm,hm);
-    ed.setRect(LEFT+4,AFTER+2,FILL-4,he);
-    if (uiAndroid){
-      btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,AFTER+3,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-3);
-    }else {
-      btns.setRect(CENTER,AFTER+2,wb,hb);
+    msg.setRect(4, TOP, wm, hm);
+    ed.setRect(LEFT + 4, AFTER + 2, FILL - 4, he);
+    if (uiAndroid) {
+      btns.setRect(buttonCaptions.length > 1 ? LEFT + 3 : CENTER, AFTER + 3,
+          buttonCaptions.length > 1 ? FILL - 3 : Math.max(w / 3, wb), FILL - 3);
+    } else {
+      btns.setRect(CENTER, AFTER + 2, wb, hb);
     }
     setBackForeColors(UIColors.inputboxBack, UIColors.inputboxFore);
     msg.setBackForeColors(backColor, foreColor); // guich@tc115_9: moved to here
-    if (btns != null)
-    {
-      btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
+    if (btns != null) {
+      btns.setBackForeColors(UIColors.inputboxAction,
+          Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
     }
   }
 
   /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */
-  public void setTextAlignment(int align)
-  {
+  public void setTextAlignment(int align) {
     labelAlign = align;
   }
 
   @Override
-  public void reposition()
-  {
+  public void reposition() {
     onPopup();
   }
 
   @Override
-  protected void postPopup()
-  {
+  protected void postPopup() {
     ed.requestFocus();
-    if (openKeyboardOnPopup){
+    if (openKeyboardOnPopup) {
       ed.popupKCC();
     }
-    if (Settings.keyboardFocusTraversable)
-    {
+    if (Settings.keyboardFocusTraversable) {
       isHighlighting = false; // allow a direct click to dismiss this dialog
     }
   }
 
   @Override
-  protected void postUnpop()
-  {
-    if (Settings.keyboardFocusTraversable){
+  protected void postUnpop() {
+    if (Settings.keyboardFocusTraversable) {
       isHighlighting = true;
     }
-    if (selected != -1)
-    {
+    if (selected != -1) {
       postPressedEvent(); // guich@580_27
     }
   }
 
   /** handle scroll buttons and normal buttons */
   @Override
-  public void onEvent(Event e)
-  {
-    switch (e.type)
-    {
+  public void onEvent(Event e) {
+    switch (e.type) {
     case KeyEvent.KEY_PRESS:
     case KeyEvent.SPECIAL_KEY_PRESS:
-      if (buttonKeys != null)
-      {
-        int k = ((KeyEvent)e).key;
+      if (buttonKeys != null) {
+        int k = ((KeyEvent) e).key;
         for (int i = buttonKeys.length; --i >= 0;) {
-          if (buttonKeys[i] == k)
-          {
+          if (buttonKeys[i] == k) {
             btns.setSelectedIndex(i);
             close();
             break;
@@ -259,8 +246,7 @@ public class InputBox extends Window
     }
   }
 
-  private void close()
-  {
+  private void close() {
     selected = btns.getSelectedIndex();
     btns.requestFocus(); // remove focus from the edit
     btns.setSelectedIndex(-1);
@@ -268,29 +254,28 @@ public class InputBox extends Window
   }
 
   /** Returns the pressed button index, starting from 0 */
-  public int getPressedButtonIndex()
-  {
+  public int getPressedButtonIndex() {
     return selected;
   }
 
   /** Returns the value entered */
-  public String getValue()
-  {
+  public String getValue() {
     return ed.getText();
   }
+
   /** Sets the default value on the Edit field */
-  public void setValue(String value)
-  {
+  public void setValue(String value) {
     ed.setText(value);
   }
+
   /** Returns the Edit so you can set its properties. */
   public Edit getEdit() // guich@310_23
   {
     return ed;
   }
+
   /** Sets the Edit to the given one. */
-  public void setEdit(Edit ed)
-  {
+  public void setEdit(Edit ed) {
     this.ed = ed;
   }
 }

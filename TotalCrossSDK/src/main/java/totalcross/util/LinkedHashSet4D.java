@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.Collection;
@@ -93,15 +92,12 @@ import java.util.TreeSet;
  * @since 1.4
  * @status updated to 1.4
  */
-public class LinkedHashSet4D<T> extends HashSet4D<T>
-implements Set<T>, Cloneable
-{
+public class LinkedHashSet4D<T> extends HashSet4D<T> implements Set<T>, Cloneable {
   /**
    * Construct a new, empty HashSet whose backing HashMap has the default
    * capacity (11) and loadFactor (0.75).
    */
-  public LinkedHashSet4D()
-  {
+  public LinkedHashSet4D() {
     super();
   }
 
@@ -112,8 +108,7 @@ implements Set<T>, Cloneable
    * @param initialCapacity the initial capacity of the backing HashMap
    * @throws IllegalArgumentException if the capacity is negative
    */
-  public LinkedHashSet4D(int initialCapacity)
-  {
+  public LinkedHashSet4D(int initialCapacity) {
     super(initialCapacity);
   }
 
@@ -126,8 +121,7 @@ implements Set<T>, Cloneable
    * @throws IllegalArgumentException if either argument is negative, or
    *         if loadFactor is POSITIVE_INFINITY or NaN
    */
-  public LinkedHashSet4D(int initialCapacity, double loadFactor)
-  {
+  public LinkedHashSet4D(int initialCapacity, double loadFactor) {
     super(initialCapacity, loadFactor);
   }
 
@@ -140,8 +134,7 @@ implements Set<T>, Cloneable
    * @param c a collection of initial set elements
    * @throws NullPointerException if c is null
    */
-  public LinkedHashSet4D(Collection<? extends T> c)
-  {
+  public LinkedHashSet4D(Collection<? extends T> c) {
     super(c);
   }
 
@@ -153,8 +146,7 @@ implements Set<T>, Cloneable
    * @return the backing HashMap
    */
   @Override
-  HashMap4D<T, String> init(int capacity, double load)
-  {
+  HashMap4D<T, String> init(int capacity, double load) {
     return new LinkedHashMap4D<T, String>(capacity, load);
   }
 }

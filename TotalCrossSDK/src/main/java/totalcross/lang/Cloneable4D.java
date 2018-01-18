@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.lang;
 
 /**
@@ -72,7 +71,6 @@ package totalcross.lang;
  * @since 1.0
  * @status updated to 1.4
  */
-public interface Cloneable4D
-{
+public interface Cloneable4D {
   // Tagging interface only.
 }

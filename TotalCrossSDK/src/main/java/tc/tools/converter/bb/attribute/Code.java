@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.attribute;
 
 import tc.tools.converter.bb.JavaAttribute;
@@ -21,8 +19,7 @@ import totalcross.io.DataStream;
 import totalcross.io.IOException;
 import totalcross.util.Vector;
 
-public class Code implements AttributeInfo
-{
+public class Code implements AttributeInfo {
   private JavaClass jclass;
 
   public int maxStack;
@@ -31,63 +28,55 @@ public class Code implements AttributeInfo
   public Vector exceptions;
   public Vector attributes;
 
-  public Code(JavaClass jclass)
-  {
+  public Code(JavaClass jclass) {
     this.jclass = jclass;
     exceptions = new Vector();
     attributes = new Vector();
   }
 
   @Override
-  public int length()
-  {
+  public int length() {
     int len = 12 + code.length + (exceptions.size() * 8);
     int count = attributes.size();
     for (int i = 0; i < count; i++) {
-      len += ((JavaAttribute)attributes.items[i]).length();
+      len += ((JavaAttribute) attributes.items[i]).length();
     }
 
     return len;
   }
 
-  public LineNumberTable[] getLineNumberTables()
-  {
+  public LineNumberTable[] getLineNumberTables() {
     Vector v = new Vector();
     getAttributes(LineNumberTable.class, v);
 
-    if (v.size() == 0){
+    if (v.size() == 0) {
       return null;
-    }else
-    {
+    } else {
       LineNumberTable[] result = new LineNumberTable[v.size()];
       v.copyInto(result);
       return result;
     }
   }
 
-  public LocalVariableTable[] getLocalVariableTables()
-  {
+  public LocalVariableTable[] getLocalVariableTables() {
     Vector v = new Vector();
     getAttributes(LocalVariableTable.class, v);
 
-    if (v.size() == 0){
+    if (v.size() == 0) {
       return null;
-    }else
-    {
+    } else {
       LocalVariableTable[] result = new LocalVariableTable[v.size()];
       v.copyInto(result);
       return result;
     }
   }
 
-  private void getAttributes(Class<?> infoType, Vector v)
-  {
+  private void getAttributes(Class<?> infoType, Vector v) {
     JavaAttribute attribute;
 
     int count = attributes.size();
-    for (int i = 0; i < count; i++)
-    {
-      attribute = (JavaAttribute)attributes.items[i];
+    for (int i = 0; i < count; i++) {
+      attribute = (JavaAttribute) attributes.items[i];
       if (infoType.isInstance(attribute.info)) {
         v.addElement(attribute.info);
       }
@@ -95,8 +84,7 @@ public class Code implements AttributeInfo
   }
 
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
     maxStack = ds.readUnsignedShort();
     maxLocals = ds.readUnsignedShort();
 
@@ -106,8 +94,7 @@ public class Code implements AttributeInfo
 
     count = ds.readUnsignedShort();
     exceptions.removeAllElements();
-    for (int i = 0; i < count; i ++)
-    {
+    for (int i = 0; i < count; i++) {
       Exception exception = new Exception();
       exception.load(ds);
       exceptions.addElement(exception);
@@ -115,8 +102,7 @@ public class Code implements AttributeInfo
 
     count = ds.readUnsignedShort();
     attributes.removeAllElements();
-    for (int i = 0; i < count; i ++)
-    {
+    for (int i = 0; i < count; i++) {
       JavaAttribute attribute = new JavaAttribute(jclass);
       attribute.load(ds);
       attributes.addElement(attribute);
@@ -124,8 +110,7 @@ public class Code implements AttributeInfo
   }
 
   @Override
-  public void save(DataStream ds) throws IOException
-  {
+  public void save(DataStream ds) throws IOException {
     ds.writeShort(maxStack);
     ds.writeShort(maxLocals);
     ds.writeInt(code.length);
@@ -133,33 +118,30 @@ public class Code implements AttributeInfo
 
     int count = exceptions.size();
     ds.writeShort(count);
-    for (int i = 0; i < count; i ++) {
-      ((Exception)exceptions.items[i]).save(ds);
+    for (int i = 0; i < count; i++) {
+      ((Exception) exceptions.items[i]).save(ds);
     }
 
     count = attributes.size();
     ds.writeShort(count);
-    for (int i = 0; i < count; i ++) {
-      ((JavaAttribute)attributes.items[i]).save(ds);
+    for (int i = 0; i < count; i++) {
+      ((JavaAttribute) attributes.items[i]).save(ds);
     }
   }
 
-  public class Exception implements JavaClassStructure
-  {
+  public class Exception implements JavaClassStructure {
     public int startPC;
     public int endPC;
     public int handlerPC;
     public JavaConstant catchType;
 
     @Override
-    public int length()
-    {
+    public int length() {
       return 8;
     }
 
     @Override
-    public void load(DataStream ds) throws IOException
-    {
+    public void load(DataStream ds) throws IOException {
       startPC = ds.readUnsignedShort();
       endPC = ds.readUnsignedShort();
       handlerPC = ds.readUnsignedShort();
@@ -169,8 +151,7 @@ public class Code implements AttributeInfo
     }
 
     @Override
-    public void save(DataStream ds) throws IOException
-    {
+    public void save(DataStream ds) throws IOException {
       ds.writeShort(startPC);
       ds.writeShort(endPC);
       ds.writeShort(handlerPC);

@@ -14,12 +14,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
-public class ServerSocket4D
-{
+public class ServerSocket4D {
   private Object serverRef;
   private String addr;
   private int port;
@@ -30,31 +27,26 @@ public class ServerSocket4D
   public static final int DEFAULT_BACKLOG = 100;
   public static final int WAIT_FOREVER = 0;
 
-  public ServerSocket4D(int port) throws totalcross.io.IOException
-  {
+  public ServerSocket4D(int port) throws totalcross.io.IOException {
     this(port, DEFAULT_SOTIMEOUT, DEFAULT_BACKLOG, null);
   }
 
-  public ServerSocket4D(int port, int timeout) throws totalcross.io.IOException
-  {
+  public ServerSocket4D(int port, int timeout) throws totalcross.io.IOException {
     this(port, timeout, DEFAULT_BACKLOG, null);
   }
 
-  public ServerSocket4D(int port, int timeout, String addr) throws totalcross.io.IOException
-  {
+  public ServerSocket4D(int port, int timeout, String addr) throws totalcross.io.IOException {
     this(port, timeout, DEFAULT_BACKLOG, addr);
   }
 
-  public ServerSocket4D(int port, int timeout, int backlog, String addr)
-      throws totalcross.io.IOException
-  {
-    if (port < 0 || port > 65535){
+  public ServerSocket4D(int port, int timeout, int backlog, String addr) throws totalcross.io.IOException {
+    if (port < 0 || port > 65535) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'port': " + port);
     }
-    if (timeout < 0){
+    if (timeout < 0) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'timeout': " + timeout);
     }
-    if (backlog <= 0){
+    if (backlog <= 0) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'backlog': " + backlog);
     }
 
@@ -64,22 +56,18 @@ public class ServerSocket4D
     serversocketCreate(port, backlog, timeout, addr);
   }
 
-  native void serversocketCreate(int port, int backlog, int timeout, String addr)
-      throws totalcross.io.IOException;
+  native void serversocketCreate(int port, int backlog, int timeout, String addr) throws totalcross.io.IOException;
 
-  public String getHost()
-  {
+  public String getHost() {
     return addr;
   }
 
-  public int getLocalPort()
-  {
+  public int getLocalPort() {
     return port;
   }
 
-  public Socket accept() throws totalcross.io.IOException
-  {
-    if (serverRef == null){
+  public Socket accept() throws totalcross.io.IOException {
+    if (serverRef == null) {
       throw new totalcross.io.IOException("The server socket is closed");
     }
 
@@ -89,9 +77,8 @@ public class ServerSocket4D
 
   native totalcross.net.Socket nativeAccept() throws totalcross.io.IOException;
 
-  public void close() throws totalcross.io.IOException
-  {
-    if (serverRef == null){
+  public void close() throws totalcross.io.IOException {
+    if (serverRef == null) {
       throw new totalcross.io.IOException("The server socket is closed");
     }
     nativeClose();
@@ -100,14 +87,10 @@ public class ServerSocket4D
   native private void nativeClose() throws totalcross.io.IOException;
 
   @Override
-  protected void finalize()
-  {
-    try
-    {
+  protected void finalize() {
+    try {
       close();
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
     }
   }
 }

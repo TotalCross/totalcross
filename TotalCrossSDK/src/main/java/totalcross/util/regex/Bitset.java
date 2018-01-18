@@ -31,113 +31,109 @@ package totalcross.util.regex;
 
 import totalcross.sys.Vm;
 
-class Bitset implements UnicodeConstants{
+class Bitset implements UnicodeConstants {
 
-  private static final Block[][] categoryBits=new Block[CATEGORY_COUNT][BLOCK_COUNT];
-  static{
-    for(int i=0;i<=65535;i++){
-      int cat=Character.getType((char)i);
-      int blockNo=(i>>8)&0xff;
-      Block b=categoryBits[cat][blockNo];
-      if(b==null) {
-        categoryBits[cat][blockNo]=b=new Block();
+  private static final Block[][] categoryBits = new Block[CATEGORY_COUNT][BLOCK_COUNT];
+  static {
+    for (int i = 0; i <= 65535; i++) {
+      int cat = Character.getType((char) i);
+      int blockNo = (i >> 8) & 0xff;
+      Block b = categoryBits[cat][blockNo];
+      if (b == null) {
+        categoryBits[cat][blockNo] = b = new Block();
       }
-      b.set(i&0xff);
+      b.set(i & 0xff);
     }
   }
 
-  private boolean positive=true;
+  private boolean positive = true;
   private boolean isLarge;
 
-  boolean[] block0;  //1-byte bit set
-  private static final boolean[] emptyBlock0=new boolean[BLOCK_SIZE];
+  boolean[] block0; //1-byte bit set
+  private static final boolean[] emptyBlock0 = new boolean[BLOCK_SIZE];
 
-  Block[] blocks;  //2-byte bit set
+  Block[] blocks; //2-byte bit set
 
   private int weight;
 
-  final void reset(){
-    positive=true;
-    block0=null;
-    blocks=null;
-    isLarge=false;
-    weight=0;
+  final void reset() {
+    positive = true;
+    block0 = null;
+    blocks = null;
+    isLarge = false;
+    weight = 0;
   }
 
-  final static void unify(Bitset bs,Term term){
-    if(bs.isLarge){
-      term.type=Term.BITSET2;
-      term.bitset2=Block.toBitset2(bs.blocks);
+  final static void unify(Bitset bs, Term term) {
+    if (bs.isLarge) {
+      term.type = Term.BITSET2;
+      term.bitset2 = Block.toBitset2(bs.blocks);
+    } else {
+      term.type = Term.BITSET;
+      term.bitset = bs.block0 == null ? emptyBlock0 : bs.block0;
     }
-    else{
-      term.type=Term.BITSET;
-      term.bitset=bs.block0==null? emptyBlock0: bs.block0;
-    }
-    term.inverse=!bs.positive;
-    term.weight=bs.positive? bs.weight: MAX_WEIGHT-bs.weight;
+    term.inverse = !bs.positive;
+    term.weight = bs.positive ? bs.weight : MAX_WEIGHT - bs.weight;
   }
 
-  final void setPositive(boolean b){
-    positive=b;
+  final void setPositive(boolean b) {
+    positive = b;
   }
 
-  final boolean isPositive(){
+  final boolean isPositive() {
     return positive;
   }
 
-  final boolean isLarge(){
+  final boolean isLarge() {
     return isLarge;
   }
 
-  private final void enableLargeMode(){
-    if(isLarge){
+  private final void enableLargeMode() {
+    if (isLarge) {
       return;
     }
-    Block[] blocks=new Block[BLOCK_COUNT];
-    this.blocks=blocks;
-    if(block0!=null){
-      blocks[0]=new Block(block0);
+    Block[] blocks = new Block[BLOCK_COUNT];
+    this.blocks = blocks;
+    if (block0 != null) {
+      blocks[0] = new Block(block0);
     }
-    isLarge=true;
+    isLarge = true;
   }
 
-  final int getWeight(){
-    return positive? weight: MAX_WEIGHT-weight;
+  final int getWeight() {
+    return positive ? weight : MAX_WEIGHT - weight;
   }
 
-  final void setWordChar(boolean unicode){
-    if(unicode){
+  final void setWordChar(boolean unicode) {
+    if (unicode) {
       setCategory(Lu);
       setCategory(Ll);
       setCategory(Lt);
       setCategory(Lo);
       setCategory(Nd);
       setChar('_');
-    }
-    else{
-      setRange('a','z');
-      setRange('A','Z');
-      setRange('0','9');
+    } else {
+      setRange('a', 'z');
+      setRange('A', 'Z');
+      setRange('0', '9');
       setChar('_');
     }
   }
 
-  final void setDigit(boolean unicode){
-    if(unicode){
+  final void setDigit(boolean unicode) {
+    if (unicode) {
       setCategory(Nd);
-    }
-    else{
-      setRange('0','9');
+    } else {
+      setRange('0', '9');
     }
   }
 
-  final void setSpace(boolean unicode){
-    if(unicode){
+  final void setSpace(boolean unicode) {
+    if (unicode) {
       setCategory(Zs);
       setCategory(Zp);
       setCategory(Zl);
-    }
-    else{
+    } else {
       setChar(' ');
       setChar('\r');
       setChar('\n');
@@ -146,180 +142,177 @@ class Bitset implements UnicodeConstants{
     }
   }
 
-  final void setCategory(int c){
-    if(!isLarge){
+  final void setCategory(int c) {
+    if (!isLarge) {
       enableLargeMode();
     }
-    Block[] catBits=categoryBits[c];
-    weight+=Block.add(this.blocks,catBits,0,BLOCK_COUNT-1,false);
+    Block[] catBits = categoryBits[c];
+    weight += Block.add(this.blocks, catBits, 0, BLOCK_COUNT - 1, false);
   }
 
-  final void setChars(String chars){
-    for(int i=chars.length()-1;i>=0;i--) {
+  final void setChars(String chars) {
+    for (int i = chars.length() - 1; i >= 0; i--) {
       setChar(chars.charAt(i));
     }
   }
 
-  final void setChar(char c){
-    setRange(c,c);
+  final void setChar(char c) {
+    setRange(c, c);
   }
 
-  final void setRange(char c1,char c2){
-    if(c2>=256 || isLarge){
-      int s=0;
-      if(!isLarge){
+  final void setRange(char c1, char c2) {
+    if (c2 >= 256 || isLarge) {
+      int s = 0;
+      if (!isLarge) {
         enableLargeMode();
       }
-      Block[] blocks=this.blocks;
-      for(int c=c1;c<=c2;c++){
-        int i2=(c>>8)&0xff;
-        int i=c&0xff;
-        Block block=blocks[i2];
-        if(block==null){
-          blocks[i2]=block=new Block();
+      Block[] blocks = this.blocks;
+      for (int c = c1; c <= c2; c++) {
+        int i2 = (c >> 8) & 0xff;
+        int i = c & 0xff;
+        Block block = blocks[i2];
+        if (block == null) {
+          blocks[i2] = block = new Block();
         }
-        if(block.set(i)) {
+        if (block.set(i)) {
           s++;
         }
       }
-      weight+=s;
-    }
-    else{
-      boolean[] block0=this.block0;
-      if(block0==null){
-        this.block0=block0=new boolean[BLOCK_SIZE];
+      weight += s;
+    } else {
+      boolean[] block0 = this.block0;
+      if (block0 == null) {
+        this.block0 = block0 = new boolean[BLOCK_SIZE];
       }
-      weight+=set(block0,true,c1,c2);
+      weight += set(block0, true, c1, c2);
     }
   }
 
-  final void add(Bitset bs){
-    add(bs,false);
+  final void add(Bitset bs) {
+    add(bs, false);
   }
 
-  final void add(Bitset bs,boolean inverse){
-    weight+=addImpl(this,bs,!bs.positive^inverse);
+  final void add(Bitset bs, boolean inverse) {
+    weight += addImpl(this, bs, !bs.positive ^ inverse);
   }
 
-  private final static int addImpl(Bitset bs1, Bitset bs2, boolean inv){
-    int s=0;
-    if(!bs1.isLarge && !bs2.isLarge && !inv){
-      if(bs2.block0!=null){
-        boolean[] bits=bs1.block0;
-        if(bits==null) {
-          bs1.block0=bits=new boolean[BLOCK_SIZE];
+  private final static int addImpl(Bitset bs1, Bitset bs2, boolean inv) {
+    int s = 0;
+    if (!bs1.isLarge && !bs2.isLarge && !inv) {
+      if (bs2.block0 != null) {
+        boolean[] bits = bs1.block0;
+        if (bits == null) {
+          bs1.block0 = bits = new boolean[BLOCK_SIZE];
         }
-        s+=add(bits,bs2.block0,0,BLOCK_SIZE-1,false);
+        s += add(bits, bs2.block0, 0, BLOCK_SIZE - 1, false);
       }
-    }
-    else {
-      if(!bs1.isLarge) {
+    } else {
+      if (!bs1.isLarge) {
         bs1.enableLargeMode();
       }
-      if(!bs2.isLarge) {
+      if (!bs2.isLarge) {
         bs2.enableLargeMode();
       }
-      s+=Block.add(bs1.blocks,bs2.blocks,0,BLOCK_COUNT-1,inv);
+      s += Block.add(bs1.blocks, bs2.blocks, 0, BLOCK_COUNT - 1, inv);
     }
     return s;
   }
 
-  final void subtract(Bitset bs){
-    subtract(bs,false);
+  final void subtract(Bitset bs) {
+    subtract(bs, false);
   }
 
-  final void subtract(Bitset bs,boolean inverse){
-    weight+=subtractImpl(this,bs,!bs.positive^inverse);
+  final void subtract(Bitset bs, boolean inverse) {
+    weight += subtractImpl(this, bs, !bs.positive ^ inverse);
   }
 
-  private final static int subtractImpl(Bitset bs1,Bitset bs2,boolean inv){
-    int s=0;
-    if(!bs1.isLarge && !bs2.isLarge && !inv){
-      boolean[] bits1,bits2;
-      if((bits2=bs2.block0)!=null){
-        bits1=bs1.block0;
-        if(bits1==null) {
+  private final static int subtractImpl(Bitset bs1, Bitset bs2, boolean inv) {
+    int s = 0;
+    if (!bs1.isLarge && !bs2.isLarge && !inv) {
+      boolean[] bits1, bits2;
+      if ((bits2 = bs2.block0) != null) {
+        bits1 = bs1.block0;
+        if (bits1 == null) {
           return 0;
         }
-        s+=subtract(bits1,bits2,0,BLOCK_SIZE-1,false);
+        s += subtract(bits1, bits2, 0, BLOCK_SIZE - 1, false);
       }
-    }
-    else {
-      if(!bs1.isLarge) {
+    } else {
+      if (!bs1.isLarge) {
         bs1.enableLargeMode();
       }
-      if(!bs2.isLarge) {
+      if (!bs2.isLarge) {
         bs2.enableLargeMode();
       }
-      s+=Block.subtract(bs1.blocks,bs2.blocks,0,BLOCK_COUNT-1,inv);
+      s += Block.subtract(bs1.blocks, bs2.blocks, 0, BLOCK_COUNT - 1, inv);
     }
     return s;
   }
 
-  final void intersect(Bitset bs){
-    intersect(bs,false);
+  final void intersect(Bitset bs) {
+    intersect(bs, false);
   }
 
-  final void intersect(Bitset bs,boolean inverse){
-    subtract(bs,!inverse);
+  final void intersect(Bitset bs, boolean inverse) {
+    subtract(bs, !inverse);
   }
 
-  static final int add(boolean[] bs1,boolean[] bs2,int from,int to,boolean inv){
-    int s=0;
-    for(int i=from;i<=to;i++){
-      if(bs1[i]) {
+  static final int add(boolean[] bs1, boolean[] bs2, int from, int to, boolean inv) {
+    int s = 0;
+    for (int i = from; i <= to; i++) {
+      if (bs1[i]) {
         continue;
       }
-      if(!(bs2[i]^inv)) {
+      if (!(bs2[i] ^ inv)) {
         continue;
       }
       s++;
-      bs1[i]=true;
+      bs1[i] = true;
     }
     return s;
   }
 
-  static final int subtract(boolean[] bs1,boolean[] bs2,int from,int to,boolean inv){
-    int s=0;
-    for(int i=from;i<=to;i++){
-      if(!bs1[i]) {
+  static final int subtract(boolean[] bs1, boolean[] bs2, int from, int to, boolean inv) {
+    int s = 0;
+    for (int i = from; i <= to; i++) {
+      if (!bs1[i]) {
         continue;
       }
-      if(!(bs2[i]^inv)) {
+      if (!(bs2[i] ^ inv)) {
         continue;
       }
       s--;
-      bs1[i]=false;
+      bs1[i] = false;
     }
     return s;
   }
 
-  static final int set(boolean[] arr,boolean value,int from,int to){
-    int s=0;
-    for(int i=from;i<=to;i++){
-      if(arr[i]==value) {
+  static final int set(boolean[] arr, boolean value, int from, int to) {
+    int s = 0;
+    for (int i = from; i <= to; i++) {
+      if (arr[i] == value) {
         continue;
       }
-      if(value) {
+      if (value) {
         s++;
       } else {
         s--;
       }
-      arr[i]=value;
+      arr[i] = value;
     }
     return s;
   }
 
   @Override
-  public String toString(){
-    StringBuffer sb=new StringBuffer(64);
-    if(!positive){
+  public String toString() {
+    StringBuffer sb = new StringBuffer(64);
+    if (!positive) {
       sb.append('^');
     }
 
-    if(isLarge){
+    if (isLarge) {
       sb.append(CharacterClass.stringValue2(Block.toBitset2(blocks)));
-    }else if(block0!=null){
+    } else if (block0 != null) {
       sb.append(CharacterClass.stringValue0(block0));
     }
 
@@ -342,313 +335,301 @@ class Bitset implements UnicodeConstants{
       //b1.enableLargeMode();
       b1.setRange('a','z');
       b1.setRange('à','ÿ');
-
+  
       Bitset b2=new Bitset();
       //b2.setCategory(Ll);
       //b2.enableLargeMode();
       b2.setRange('A','Z');
       b2.setRange('À','ß');
-
+  
       Bitset b=new Bitset();
       //bs.setRange('a','z');
       //bs.setRange('A','Z');
       b.add(b1);
       b.add(b2,true);
-
+  
       System.out.println("b1="+b1);
       System.out.println("b2="+b2);
       System.out.println("b=b1+^b2="+b);
-
+  
       b.subtract(b1,true);
-
+  
       System.out.println("(b1+^b2)-^b1="+b);
-
+  
    }
    */
 }
 
-class Block implements UnicodeConstants{
+class Block implements UnicodeConstants {
   private boolean isFull;
   //private boolean[] bits;
   boolean[] bits;
-  private boolean shared=false;
+  private boolean shared = false;
 
-  Block(){}
-
-  Block(boolean[] bits){
-    this.bits=bits;
-    shared=true;
+  Block() {
   }
 
-  final boolean set(int c){
-    if(isFull){
+  Block(boolean[] bits) {
+    this.bits = bits;
+    shared = true;
+  }
+
+  final boolean set(int c) {
+    if (isFull) {
       return false;
     }
-    boolean[] bits=this.bits;
-    if(bits==null){
-      this.bits=bits=new boolean[BLOCK_SIZE];
-      shared=false;
-      bits[c]=true;
+    boolean[] bits = this.bits;
+    if (bits == null) {
+      this.bits = bits = new boolean[BLOCK_SIZE];
+      shared = false;
+      bits[c] = true;
       return true;
     }
 
-    if(bits[c]){
+    if (bits[c]) {
       return false;
     }
 
-    if(shared){
-      bits=copyBits(this);
+    if (shared) {
+      bits = copyBits(this);
     }
 
-    bits[c]=true;
+    bits[c] = true;
     return true;
   }
 
-  final boolean get(int c){
-    if(isFull){
+  final boolean get(int c) {
+    if (isFull) {
       return true;
     }
-    boolean[] bits=this.bits;
-    if(bits==null){
+    boolean[] bits = this.bits;
+    if (bits == null) {
       return false;
     }
     return bits[c];
   }
 
-  final static int add(Block[] targets,Block[] addends,int from,int to,boolean inv){
-    int s=0;
-    for(int i=from;i<=to;i++){
-      Block addend=addends[i];
-      if(addend==null){ 
-        if(!inv) {
+  final static int add(Block[] targets, Block[] addends, int from, int to, boolean inv) {
+    int s = 0;
+    for (int i = from; i <= to; i++) {
+      Block addend = addends[i];
+      if (addend == null) {
+        if (!inv) {
           continue;
         }
-      }
-      else if(addend.isFull && inv) {
+      } else if (addend.isFull && inv) {
         continue;
       }
 
-      Block target=targets[i];
-      if(target==null) {
-        targets[i]=target=new Block();
-      } else if(target.isFull) {
+      Block target = targets[i];
+      if (target == null) {
+        targets[i] = target = new Block();
+      } else if (target.isFull) {
         continue;
       }
 
-      s+=add(target,addend,inv);
+      s += add(target, addend, inv);
     }
     return s;
   }
 
-  private final static int add(Block target,Block addend,boolean inv){
+  private final static int add(Block target, Block addend, boolean inv) {
     //there is provided that !target.isFull
-    boolean[] targetbits,addbits;
-    if(addend==null){
-      if(!inv) {
+    boolean[] targetbits, addbits;
+    if (addend == null) {
+      if (!inv) {
         return 0;
       }
-      int s=BLOCK_SIZE;
-      if((targetbits=target.bits)!=null){
-        s-=count(targetbits,0,BLOCK_SIZE-1);
+      int s = BLOCK_SIZE;
+      if ((targetbits = target.bits) != null) {
+        s -= count(targetbits, 0, BLOCK_SIZE - 1);
       }
-      target.isFull=true;
-      target.bits=null;
-      target.shared=false;
+      target.isFull = true;
+      target.bits = null;
+      target.shared = false;
       return s;
-    }
-    else if(addend.isFull){
-      if(inv) {
+    } else if (addend.isFull) {
+      if (inv) {
         return 0;
       }
-      int s=BLOCK_SIZE;
-      if((targetbits=target.bits)!=null){
-        s-=count(targetbits,0,BLOCK_SIZE-1);
+      int s = BLOCK_SIZE;
+      if ((targetbits = target.bits) != null) {
+        s -= count(targetbits, 0, BLOCK_SIZE - 1);
       }
-      target.isFull=true;
-      target.bits=null;
-      target.shared=false;
+      target.isFull = true;
+      target.bits = null;
+      target.shared = false;
       return s;
-    }
-    else if((addbits=addend.bits)==null){
-      if(!inv) {
+    } else if ((addbits = addend.bits) == null) {
+      if (!inv) {
         return 0;
       }
-      int s=BLOCK_SIZE;
-      if((targetbits=target.bits)!=null){
-        s-=count(targetbits,0,BLOCK_SIZE-1);
+      int s = BLOCK_SIZE;
+      if ((targetbits = target.bits) != null) {
+        s -= count(targetbits, 0, BLOCK_SIZE - 1);
       }
-      target.isFull=true;
-      target.bits=null;
-      target.shared=false;
+      target.isFull = true;
+      target.bits = null;
+      target.shared = false;
       return s;
-    }
-    else{
-      if((targetbits=target.bits)==null){
-        if(!inv){
-          target.bits=addbits;
-          target.shared=true;
-          return count(addbits,0,BLOCK_SIZE-1);
+    } else {
+      if ((targetbits = target.bits) == null) {
+        if (!inv) {
+          target.bits = addbits;
+          target.shared = true;
+          return count(addbits, 0, BLOCK_SIZE - 1);
+        } else {
+          target.bits = targetbits = emptyBits(null);
+          target.shared = false;
+          return Bitset.add(targetbits, addbits, 0, BLOCK_SIZE - 1, inv);
         }
-        else{
-          target.bits=targetbits=emptyBits(null);
-          target.shared=false;
-          return Bitset.add(targetbits,addbits,0,BLOCK_SIZE-1,inv);
+      } else {
+        if (target.shared) {
+          targetbits = copyBits(target);
         }
-      }
-      else{
-        if(target.shared) {
-          targetbits=copyBits(target);
-        }
-        return Bitset.add(targetbits,addbits,0,BLOCK_SIZE-1,inv);
+        return Bitset.add(targetbits, addbits, 0, BLOCK_SIZE - 1, inv);
       }
     }
   }
 
-  final static int subtract(Block[] targets,Block[] subtrahends,int from,int to,boolean inv){
-    int s=0;
-    for(int i=from;i<=to;i++){
+  final static int subtract(Block[] targets, Block[] subtrahends, int from, int to, boolean inv) {
+    int s = 0;
+    for (int i = from; i <= to; i++) {
 
-      Block target=targets[i];
-      if(target==null || (!target.isFull && target.bits==null)) {
+      Block target = targets[i];
+      if (target == null || (!target.isFull && target.bits == null)) {
         continue;
       }
 
-      Block subtrahend=subtrahends[i];
+      Block subtrahend = subtrahends[i];
 
-      if(subtrahend==null){
-        if(!inv) {
+      if (subtrahend == null) {
+        if (!inv) {
           continue;
-        } else{
-          if(target.isFull){
-            s-=BLOCK_SIZE;
+        } else {
+          if (target.isFull) {
+            s -= BLOCK_SIZE;
+          } else {
+            s -= count(target.bits, 0, BLOCK_SIZE - 1);
           }
-          else{
-            s-=count(target.bits,0,BLOCK_SIZE-1);
-          }
-          target.isFull=false;
-          target.bits=null;
-          target.shared=false;
+          target.isFull = false;
+          target.bits = null;
+          target.shared = false;
         }
-      }
-      else{
-        s+=subtract(target,subtrahend,inv);
+      } else {
+        s += subtract(target, subtrahend, inv);
       }
     }
     return s;
   }
 
-  private final static int subtract(Block target,Block subtrahend,boolean inv){
-    boolean[] targetbits,subbits;
+  private final static int subtract(Block target, Block subtrahend, boolean inv) {
+    boolean[] targetbits, subbits;
     //there is provided that target.isFull or target.bits!=null
-    if(subtrahend.isFull){
-      if(inv) {
+    if (subtrahend.isFull) {
+      if (inv) {
         return 0;
       }
-      int s=0;
-      if(target.isFull){
-        s=BLOCK_SIZE;
+      int s = 0;
+      if (target.isFull) {
+        s = BLOCK_SIZE;
+      } else {
+        s = count(target.bits, 0, BLOCK_SIZE - 1);
       }
-      else{
-        s=count(target.bits,0,BLOCK_SIZE-1);
-      }
-      target.isFull=false;
-      target.bits=null;
-      target.shared=false;
+      target.isFull = false;
+      target.bits = null;
+      target.shared = false;
       return s;
-    }
-    else if((subbits=subtrahend.bits)==null){
-      if(!inv) {
+    } else if ((subbits = subtrahend.bits) == null) {
+      if (!inv) {
         return 0;
       }
-      int s=0;
-      if(target.isFull){
-        s=BLOCK_SIZE;
+      int s = 0;
+      if (target.isFull) {
+        s = BLOCK_SIZE;
+      } else {
+        s = count(target.bits, 0, BLOCK_SIZE - 1);
       }
-      else{
-        s=count(target.bits,0,BLOCK_SIZE-1);
-      }
-      target.isFull=false;
-      target.bits=null;
-      target.shared=false;
+      target.isFull = false;
+      target.bits = null;
+      target.shared = false;
       return s;
-    }
-    else{
-      if(target.isFull){
-        boolean[] bits=fullBits(target.bits);
-        int s=Bitset.subtract(bits,subbits,0,BLOCK_SIZE-1,inv);
-        target.isFull=false;
-        target.shared=false;
-        target.bits=bits;
+    } else {
+      if (target.isFull) {
+        boolean[] bits = fullBits(target.bits);
+        int s = Bitset.subtract(bits, subbits, 0, BLOCK_SIZE - 1, inv);
+        target.isFull = false;
+        target.shared = false;
+        target.bits = bits;
         return s;
-      }
-      else{
-        if(target.shared) {
-          targetbits=copyBits(target);
+      } else {
+        if (target.shared) {
+          targetbits = copyBits(target);
         } else {
-          targetbits=target.bits;
+          targetbits = target.bits;
         }
-        return Bitset.subtract(targetbits,subbits,0,BLOCK_SIZE-1,inv);
+        return Bitset.subtract(targetbits, subbits, 0, BLOCK_SIZE - 1, inv);
       }
     }
   }
 
-  private static boolean[] copyBits(Block block){
-    boolean[] bits=new boolean[BLOCK_SIZE];
-    Vm.arrayCopy(block.bits,0,bits,0,BLOCK_SIZE);
-    block.bits=bits;
-    block.shared=false;
+  private static boolean[] copyBits(Block block) {
+    boolean[] bits = new boolean[BLOCK_SIZE];
+    Vm.arrayCopy(block.bits, 0, bits, 0, BLOCK_SIZE);
+    block.bits = bits;
+    block.shared = false;
     return bits;
   }
 
-  private static boolean[] fullBits(boolean[] bits){
-    if(bits==null){
-      bits=new boolean[BLOCK_SIZE];
+  private static boolean[] fullBits(boolean[] bits) {
+    if (bits == null) {
+      bits = new boolean[BLOCK_SIZE];
     }
-    Vm.arrayCopy(FULL_BITS,0,bits,0,BLOCK_SIZE);
+    Vm.arrayCopy(FULL_BITS, 0, bits, 0, BLOCK_SIZE);
     return bits;
   }
 
-  private static boolean[] emptyBits(boolean[] bits){
-    if(bits==null){
-      bits=new boolean[BLOCK_SIZE];
-    }else {
-      Vm.arrayCopy(EMPTY_BITS,0,bits,0,BLOCK_SIZE);
+  private static boolean[] emptyBits(boolean[] bits) {
+    if (bits == null) {
+      bits = new boolean[BLOCK_SIZE];
+    } else {
+      Vm.arrayCopy(EMPTY_BITS, 0, bits, 0, BLOCK_SIZE);
     }
     return bits;
   }
 
-  final static int count(boolean[] arr, int from, int to){
-    int s=0;
-    for(int i=from;i<=to;i++){
-      if(arr[i]) {
+  final static int count(boolean[] arr, int from, int to) {
+    int s = 0;
+    for (int i = from; i <= to; i++) {
+      if (arr[i]) {
         s++;
       }
     }
     return s;
   }
 
-  final static boolean[][] toBitset2(Block[] blocks){
-    int len=blocks.length;
-    boolean[][] result=new boolean[len][];
-    for(int i=0;i<len;i++){
-      Block block=blocks[i];
-      if(block==null) {
+  final static boolean[][] toBitset2(Block[] blocks) {
+    int len = blocks.length;
+    boolean[][] result = new boolean[len][];
+    for (int i = 0; i < len; i++) {
+      Block block = blocks[i];
+      if (block == null) {
         continue;
       }
-      if(block.isFull){
-        result[i]=FULL_BITS;
+      if (block.isFull) {
+        result[i] = FULL_BITS;
       } else {
-        result[i]=block.bits;
+        result[i] = block.bits;
       }
     }
     return result;
   }
 
-  private final static boolean[] EMPTY_BITS=new boolean[BLOCK_SIZE];
-  private final static boolean[] FULL_BITS=new boolean[BLOCK_SIZE];
-  static{
-    for(int i=0;i<BLOCK_SIZE;i++) {
-      FULL_BITS[i]=true;
+  private final static boolean[] EMPTY_BITS = new boolean[BLOCK_SIZE];
+  private final static boolean[] FULL_BITS = new boolean[BLOCK_SIZE];
+  static {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+      FULL_BITS[i] = true;
     }
   }
 }

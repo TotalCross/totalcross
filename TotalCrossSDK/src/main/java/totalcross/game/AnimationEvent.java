@@ -22,8 +22,7 @@ import totalcross.ui.event.Event;
 /**
  * Events posted by an animation control.
  */
-public class AnimationEvent extends Event
-{
+public class AnimationEvent extends Event {
   /** 
    * The event type when the animation loops. 
    */
@@ -45,8 +44,7 @@ public class AnimationEvent extends Event
    * @param type The event type.
    * @param target The object which is the target of the event.
    */
-  public AnimationEvent(int type, Object target)
-  {
-    super(type,target,Vm.getTimeStamp());
+  public AnimationEvent(int type, Object target) {
+    super(type, target, Vm.getTimeStamp());
   }
 }

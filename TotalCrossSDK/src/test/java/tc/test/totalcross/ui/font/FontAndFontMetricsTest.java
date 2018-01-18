@@ -9,18 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.totalcross.ui.font;
 
 import totalcross.ui.font.Font;
 import totalcross.unit.TestCase;
 
-public class FontAndFontMetricsTest extends TestCase
-{
+public class FontAndFontMetricsTest extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Font bigplain = Font.getFont("BabiDedeNat", false, Font.BIG_SIZE);
     //Font bigbold = bigplain.asBold();
     Font smallplain = Font.getFont(Font.DEFAULT, false, Font.NORMAL_SIZE);

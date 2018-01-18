@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.media;
 
 /**
@@ -33,23 +31,19 @@ package totalcross.ui.media;
  * Sound.tone(4000, 300);
  * </pre>
  */
-public final class Sound
-{
+public final class Sound {
   private static boolean toneErrDisplayed;
   private static boolean soundEnabled = true;
 
-  private Sound()
-  {
+  private Sound() {
   }
 
   /** Plays the device's default beep sound. */
-  public static void beep()
-  {
-    if (soundEnabled){
+  public static void beep() {
+    if (soundEnabled) {
       java.awt.Toolkit.getDefaultToolkit().beep();
     }
   }
-
 
   /**
    * Plays a tone of the specified frequency for the specified
@@ -62,10 +56,8 @@ public final class Sound
    * @param freq frequency in hertz from 32 to 32767
    * @param duration duration in milliseconds
    */
-  public static void tone(int freq, int duration)
-  {
-    if (!toneErrDisplayed)
-    {
+  public static void tone(int freq, int duration) {
+    if (!toneErrDisplayed) {
       beep();
       totalcross.Launcher.print("NOTICE: tones aren't supported under Java");
       toneErrDisplayed = true;
@@ -81,8 +73,7 @@ public final class Sound
    * <p> It is not supported on WP8.
    * @param on if true enables the sound, if false disable it.
    */
-  public static void setEnabled(boolean on)
-  {
+  public static void setEnabled(boolean on) {
     soundEnabled = on;
   }
 
@@ -101,8 +92,8 @@ public final class Sound
   @Deprecated
   public static void midiTone(int midiNoteNumber, int duration) // guich@300_33
   {
-    int freq = (int)Math.round(440.0 * Math.pow (2, ((double)midiNoteNumber-69.0) / 12));
-    tone(freq,duration);
+    int freq = (int) Math.round(440.0 * Math.pow(2, ((double) midiNoteNumber - 69.0) / 12));
+    tone(freq, duration);
   }
 
   /** Plays the given short wav or mp3 file. Make sure that the sounds are enabled, or you will not hear it!
@@ -120,8 +111,7 @@ public final class Sound
    * The last sound is cached, so playing it again is fast. If you want to unload it, just call <code>Sound.play("");</code>,
    * but this is not needed since small mp3/wav files consumes just a few memory. Cache is not done in Win32.
    */
-  public static void play(String filename)
-  {
+  public static void play(String filename) {
   }
 
   /** Activates speech and let the user dictate something that will be returned. The params can be:
@@ -136,11 +126,9 @@ public final class Sound
    * String ret = Sound.toText("title:Answer|timeout:500");
    * </pre>
    */
-  public static String toText(String params)
-  {
+  public static String toText(String params) {
     return "";
   }
-
 
   /** Activates speech and let the user hear the given text.
    * The very first time it is used in the device, Android will ask you to install a high definition 
@@ -163,7 +151,6 @@ public final class Sound
    * lab.setText("Answer: "+ret);
    * </pre>
    */
-  public static void fromText(String text)
-  {
+  public static void fromText(String text) {
   }
 }

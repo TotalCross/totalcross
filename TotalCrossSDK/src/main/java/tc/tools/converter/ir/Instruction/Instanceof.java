@@ -9,51 +9,43 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.ir.Instruction;
 
 import tc.tools.converter.TCConstants;
 import tc.tools.converter.tclass.TCCode;
 import totalcross.util.Vector;
 
-public class Instanceof extends SingleInstruction
-{
+public class Instanceof extends SingleInstruction {
   public int sym;
   public int regO;
   public int regI;
 
-  public Instanceof(int op, int line, int s, int ro, int ri)
-  {
+  public Instanceof(int op, int line, int s, int ro, int ri) {
     super(op, line);
-    sym  = s;
+    sym = s;
     regO = ro;
     regI = ri;
   }
 
-  public Instanceof(int op, int line)
-  {
+  public Instanceof(int op, int line) {
     super(op, line);
   }
 
-  public void set(int s, int ro, int ri)
-  {
-    sym  = s;
+  public void set(int s, int ro, int ri) {
+    sym = s;
     regO = ro;
     regI = ri;
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     String print;
     print = TCConstants.bcTClassNames[opcode] + " " + sym + ", " + regO + ", " + regI;
     return print;
   }
 
   @Override
-  public void toTCCode(Vector vcode)
-  {
+  public void toTCCode(Vector vcode) {
     TCCode tc = new TCCode(opcode, line);
     tc.instanceof__regI(regI);
     tc.instanceof__regO(regO);

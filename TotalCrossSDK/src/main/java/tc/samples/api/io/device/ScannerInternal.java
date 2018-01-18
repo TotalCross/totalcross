@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.io.device;
 
 import tc.samples.api.BaseContainer;
@@ -59,8 +57,7 @@ import totalcross.ui.event.Event;
  </pre>
  */
 
-public class ScannerInternal extends BaseContainer
-{
+public class ScannerInternal extends BaseContainer {
   // by making the members private, the compiler can optimize them.
   private String barCode;
   private Check chkScanner;
@@ -69,12 +66,10 @@ public class ScannerInternal extends BaseContainer
   private Label lblRomSerialNumber;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
-    if (!Settings.platform.equals(Settings.ANDROID) && !Settings.isWindowsCE() && !Settings.onJavaSE)
-    {
-      add(new Label("This sample works only on\nAndroid and Windows Mobile"),CENTER,CENTER);
+    if (!Settings.platform.equals(Settings.ANDROID) && !Settings.isWindowsCE() && !Settings.onJavaSE) {
+      add(new Label("This sample works only on\nAndroid and Windows Mobile"), CENTER, CENTER);
       return;
     }
     add(new Label("Scan manager version:"), CENTER, TOP);
@@ -82,13 +77,12 @@ public class ScannerInternal extends BaseContainer
     add(new Label("Rom serial number:"), CENTER, AFTER);
     add(lblRomSerialNumber = new Label("", CENTER), LEFT, AFTER);
     add(chkScanner = new Check("Scan enabled"), LEFT, AFTER + 10);
-    addLog(LEFT,AFTER + 10,FILL,FILL,null); 
+    addLog(LEFT, AFTER + 10, FILL, FILL, null);
 
     // tell scanner that we are the control that is listening the events.
     // if this is not done, all events will be sent to the top most window.
     // Scanner.listener = this;
-    if (scannerStart())
-    {
+    if (scannerStart()) {
       // Versions can only be get after the Scanner is initialized
       lblScanManagerVersion.setText(Scanner.scanManagerVersion);
       lblRomSerialNumber.setText(Settings.romSerialNumber != null ? Settings.romSerialNumber : "Not available");
@@ -96,55 +90,47 @@ public class ScannerInternal extends BaseContainer
     }
   }
 
-  private static boolean setDefaultAndroidParams()
-  {
-    if (Settings.deviceId.toLowerCase().contains("honeywell"))
-    {
-      Scanner.setParam(Honeywell.START_BATCH,"true");
+  private static boolean setDefaultAndroidParams() {
+    if (Settings.deviceId.toLowerCase().contains("honeywell")) {
+      Scanner.setParam(Honeywell.START_BATCH, "true");
       Scanner.setParam(Honeywell.PROPERTY_CODE_128_ENABLED, "true");
       Scanner.setParam(Honeywell.PROPERTY_CODABAR_ENABLED, "true");
       Scanner.setParam(Honeywell.PROPERTY_EAN_13_ENABLED, "true");
       Scanner.setParam(Honeywell.PROPERTY_EAN_8_ENABLED, "true");
-      Scanner.setParam(Honeywell.END_BATCH,"true");
+      Scanner.setParam(Honeywell.END_BATCH, "true");
       return true;
-    }else {
-      return Scanner.setBarcodeParam(Intermec.CODE_128, true)
-          && Scanner.setBarcodeParam(Intermec.CODABAR, true) && Scanner.setBarcodeParam(Intermec.EAN_UPC_UPC_E, true)
-          && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_13, true) && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_8, true);
+    } else {
+      return Scanner.setBarcodeParam(Intermec.CODE_128, true) && Scanner.setBarcodeParam(Intermec.CODABAR, true)
+          && Scanner.setBarcodeParam(Intermec.EAN_UPC_UPC_E, true)
+          && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_13, true)
+          && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_8, true);
     }
   }
 
-  private boolean scannerStart()
-  {
-    if (Scanner.activate())
-    {
+  private boolean scannerStart() {
+    if (Scanner.activate()) {
       // only using BARUPCE for demo - use initializeScanner(String args[]) for your requirements
-      if ((Settings.platform.equals(Settings.ANDROID) && setDefaultAndroidParams()) || !Settings.platform.equals(Settings.ANDROID))
-      {   
+      if ((Settings.platform.equals(Settings.ANDROID) && setDefaultAndroidParams())
+          || !Settings.platform.equals(Settings.ANDROID)) {
         log("Initializing scanner ...");
-        if (Scanner.commitBarcodeParams())
-        {
+        if (Scanner.commitBarcodeParams()) {
           log("Scanner ready.");
           chkScanner.setChecked(true);
           Scanner.listener = this;
           return true;
-        }
-        else
-        {
+        } else {
           log("Scanner not initialized.");
           scannerStop();
         }
       }
-    }else {
+    } else {
       log("Scanner not activated.");
     }
     return false;
   }
 
-  private void scannerStop()
-  {
-    if (Scanner.deactivate())
-    {
+  private void scannerStop() {
+    if (Scanner.deactivate()) {
       log("Scanner deactivated.");
       chkScanner.setChecked(false);
     }
@@ -157,14 +143,10 @@ public class ScannerInternal extends BaseContainer
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
-    case ControlEvent.PRESSED:
-    {
-      if (event.target == chkScanner)
-      {
+  public void onEvent(Event event) {
+    switch (event.type) {
+    case ControlEvent.PRESSED: {
+      if (event.target == chkScanner) {
         if (chkScanner.isChecked()) {
           scannerStart();
         } else {
@@ -172,25 +154,22 @@ public class ScannerInternal extends BaseContainer
         }
       }
     }
-    break;
+      break;
     // note that in ScanEvents the target is the listener or the top most window.
     // caution: if you're going to popup a window when handling these events, do NOT
     // call popup or the application will hang. Use popupNonBlocking instead.
-    case ScanEvent.SCANNED:
-    {
-      barCode = ((ScanEvent)event).data;
+    case ScanEvent.SCANNED: {
+      barCode = ((ScanEvent) event).data;
       String errorCode = "NR";
-      final String status = (barCode == null? "": barCode.equals(errorCode)? "Try scanning a barcode ..." : barCode);
-      MainWindow.getMainWindow().runOnMainThread(new Runnable()
-      {
+      final String status = (barCode == null ? "" : barCode.equals(errorCode) ? "Try scanning a barcode ..." : barCode);
+      MainWindow.getMainWindow().runOnMainThread(new Runnable() {
         @Override
-        public void run()
-        {
+        public void run() {
           log(status);
         }
       });
     }
-    break;
+      break;
     case ScanEvent.BATTERY_ERROR:
       log("Replace Batteries");
       break;

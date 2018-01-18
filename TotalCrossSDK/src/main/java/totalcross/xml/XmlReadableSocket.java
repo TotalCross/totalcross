@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
 
 import totalcross.io.IOException;
@@ -28,8 +26,7 @@ import totalcross.net.URI;
  * An XmlReadableSocket has a Socket stream that takes care of the HTTP
  * headers and starts reading at the message body.
  */
-public class XmlReadableSocket extends HttpStream implements XmlReadable
-{
+public class XmlReadableSocket extends HttpStream implements XmlReadable {
   private URI baseURI;
   private boolean caseInsensitive;
 
@@ -43,8 +40,7 @@ public class XmlReadableSocket extends HttpStream implements XmlReadable
    * @throws IOException
    * @throws IllegalArgumentIOException
    */
-  public XmlReadableSocket(URI uri, Options options) throws IllegalArgumentIOException, IOException
-  {
+  public XmlReadableSocket(URI uri, Options options) throws IllegalArgumentIOException, IOException {
     // guich@510_14
     super(uri, options);
     baseURI = uri;
@@ -58,29 +54,25 @@ public class XmlReadableSocket extends HttpStream implements XmlReadable
    * @throws IOException
    * @throws IllegalArgumentIOException
    */
-  public XmlReadableSocket(URI uri) throws IllegalArgumentIOException, IOException
-  {
+  public XmlReadableSocket(URI uri) throws IllegalArgumentIOException, IOException {
     super(uri);
     baseURI = uri;
   }
 
   @Override
-  public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException
-  {
+  public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException {
     rdr.setCaseInsensitive(caseInsensitive);
     rdr.parse(socket, buffer, ofsStart, ofsEnd, readPos);
     socket.close();
   }
 
   @Override
-  public URI getBaseURI()
-  {
+  public URI getBaseURI() {
     return baseURI;
   }
 
   @Override
-  public void setCaseInsensitive(boolean caseInsensitive)
-  {
+  public void setCaseInsensitive(boolean caseInsensitive) {
     this.caseInsensitive = caseInsensitive;
   }
 }

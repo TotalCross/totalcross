@@ -14,34 +14,27 @@ import java.net.URLClassLoader;
  * @since TotalCross 1.15
  */
 //flsobral@tc115: just a mark for quick search, see class documentation above.
-public class JarClassPathLoader
-{
+public class JarClassPathLoader {
   private static final Class<?>[] parameters = new Class[] { URL.class };
 
-  public static void addFile(String s) throws java.io.IOException
-  {
+  public static void addFile(String s) throws java.io.IOException {
     java.io.File f = new java.io.File(s);
     addFile(f);
   }
 
-  public static void addFile(java.io.File f) throws java.io.IOException
-  {
+  public static void addFile(java.io.File f) throws java.io.IOException {
     addURL(f.toURI().toURL());
   }
 
-  public static void addURL(URL u) throws java.io.IOException
-  {
+  public static void addURL(URL u) throws java.io.IOException {
     URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
     Class<?> sysclass = URLClassLoader.class;
 
-    try
-    {
+    try {
       Method method = sysclass.getDeclaredMethod("addURL", parameters);
       method.setAccessible(true);
       method.invoke(sysloader, new Object[] { u });
-    }
-    catch (Throwable t)
-    {
+    } catch (Throwable t) {
       throw new java.io.IOException("Error, could not add URL to system classloader", t);
     }
   }

@@ -12,36 +12,29 @@
 package tc.test.totalcross.collections;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 import totalcross.unit.TestCase;
 
-public class TestLinkedHashSet extends TestCase
-{
+public class TestLinkedHashSet extends TestCase {
   @Override
-  public void testRun()
-  {
-    Test23 test1 = new Test23();
+  public void testRun() {
+    new Test23();
     LinkedHashSet test2 = new Test23(10, 0.1f);
-    HashSet test3 = new Test23(test2);
+    new Test23(test2);
   }
 }
 
-class Test23 extends LinkedHashSet
-{
-  public Test23()
-  {
+class Test23 extends LinkedHashSet {
+  public Test23() {
     super();
   }
 
-  public Test23(int initialCapacity, float load)
-  {
+  public Test23(int initialCapacity, float load) {
     super(initialCapacity, load);
   }
 
-  public Test23(Collection c)
-  {
+  public Test23(Collection c) {
     super(c);
   }
 }

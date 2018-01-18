@@ -44,7 +44,7 @@ public class Property {
     if (properties != null && properties.size() > 0) {
       Vector v = properties.getKeys();//Enumeration enumProperties = properties.propertyNames();
       for (int i = 0, n = v.size(); i < n; i++) {
-        String name = (String)v.items[i];//enumProperties.nextElement();
+        String name = (String) v.items[i];//enumProperties.nextElement();
         jo.put(name, properties.get(name));
       }
     }
@@ -57,8 +57,8 @@ public class Property {
    * @return java.util.Properties
    * @throws JSONException
    */
-  public static /*Properties*/Hashtable toProperties(JSONObject jo)  throws JSONException {
-    /*Properties*/Hashtable  properties = new Hashtable(jo.length());
+  public static /*Properties*/Hashtable toProperties(JSONObject jo) throws JSONException {
+    /*Properties*/Hashtable properties = new Hashtable(jo.length());
     if (jo != null) {
       Iterator<String> keys = jo.keys();
       while (keys.hasNext()) {

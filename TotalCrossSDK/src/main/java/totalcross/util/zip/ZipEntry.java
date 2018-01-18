@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util.zip;
 
 /**
@@ -23,8 +21,7 @@ package totalcross.util.zip;
  * 
  * @since TotalCross 1.20
  */
-public class ZipEntry
-{
+public class ZipEntry {
   String name; // entry name
   int dostime = -1; // modification time (in DOS time)
   int crc = -1; // crc-32 of entry data
@@ -46,8 +43,7 @@ public class ZipEntry
 
   Object zipEntry;
 
-  ZipEntry(Object zipEntry)
-  {
+  ZipEntry(Object zipEntry) {
     this.zipEntry = (java.util.zip.ZipEntry) zipEntry;
   }
 
@@ -63,8 +59,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.20
    */
-  public ZipEntry(String name)
-  {
+  public ZipEntry(String name) {
     zipEntry = new java.util.zip.ZipEntry(name);
   }
 
@@ -76,8 +71,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public ZipEntry(ZipEntry e)
-  {
+  public ZipEntry(ZipEntry e) {
     zipEntry = new java.util.zip.ZipEntry((java.util.zip.ZipEntry) e.zipEntry);
   }
 
@@ -88,8 +82,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.20
    */
-  public String getName()
-  {
+  public String getName() {
     return ((java.util.zip.ZipEntry) zipEntry).getName();
   }
 
@@ -101,8 +94,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public void setTime(long time)
-  {
+  public void setTime(long time) {
     ((java.util.zip.ZipEntry) zipEntry).setTime(time);
   }
 
@@ -113,8 +105,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public long getTime()
-  {
+  public long getTime() {
     return ((java.util.zip.ZipEntry) zipEntry).getTime();
   }
 
@@ -128,8 +119,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public void setSize(long size)
-  {
+  public void setSize(long size) {
     ((java.util.zip.ZipEntry) zipEntry).setSize(size);
   }
 
@@ -140,8 +130,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public long getSize()
-  {
+  public long getSize() {
     return ((java.util.zip.ZipEntry) zipEntry).getSize();
   }
 
@@ -153,8 +142,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public void setCompressedSize(long csize)
-  {
+  public void setCompressedSize(long csize) {
     ((java.util.zip.ZipEntry) zipEntry).setCompressedSize(csize);
   }
 
@@ -166,8 +154,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public long getCompressedSize()
-  {
+  public long getCompressedSize() {
     return ((java.util.zip.ZipEntry) zipEntry).getCompressedSize();
   }
 
@@ -181,8 +168,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public void setCrc(long crc)
-  {
+  public void setCrc(long crc) {
     ((java.util.zip.ZipEntry) zipEntry).setCrc(crc);
   }
 
@@ -193,8 +179,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public long getCrc()
-  {
+  public long getCrc() {
     return ((java.util.zip.ZipEntry) zipEntry).getCrc();
   }
 
@@ -208,8 +193,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public void setMethod(int method)
-  {
+  public void setMethod(int method) {
     ((java.util.zip.ZipEntry) zipEntry).setMethod(method);
   }
 
@@ -220,8 +204,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public int getMethod()
-  {
+  public int getMethod() {
     return ((java.util.zip.ZipEntry) zipEntry).getMethod();
   }
 
@@ -235,8 +218,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public void setExtra(byte[] extra)
-  {
+  public void setExtra(byte[] extra) {
     ((java.util.zip.ZipEntry) zipEntry).setExtra(extra);
   }
 
@@ -247,8 +229,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public byte[] getExtra()
-  {
+  public byte[] getExtra() {
     return ((java.util.zip.ZipEntry) zipEntry).getExtra();
   }
 
@@ -262,8 +243,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public void setComment(String comment)
-  {
+  public void setComment(String comment) {
     ((java.util.zip.ZipEntry) zipEntry).setComment(comment);
   }
 
@@ -274,8 +254,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public String getComment()
-  {
+  public String getComment() {
     return ((java.util.zip.ZipEntry) zipEntry).getComment();
   }
 
@@ -286,8 +265,7 @@ public class ZipEntry
    * 
    * @since TotalCross 1.23
    */
-  public boolean isDirectory()
-  {
+  public boolean isDirectory() {
     return ((java.util.zip.ZipEntry) zipEntry).isDirectory();
   }
 
@@ -297,8 +275,7 @@ public class ZipEntry
    * @since TotalCross 1.23
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return ((java.util.zip.ZipEntry) zipEntry).toString();
   }
 
@@ -309,19 +286,16 @@ public class ZipEntry
    * @since TotalCross 1.23
    */
   @Override
-  public int hashCode()
-  {
+  public int hashCode() {
     return ((java.util.zip.ZipEntry) zipEntry).hashCode();
   }
 
   /* implemented only for BlackBerry */
-  final int getDOSTime()
-  {
+  final int getDOSTime() {
     return 0;
   }
 
   /* implemented only for BlackBerry */
-  final void setDOSTime(int dostime)
-  {
+  final void setDOSTime(int dostime) {
   }
 }

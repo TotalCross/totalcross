@@ -9,38 +9,31 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb.constant;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class Long implements ConstantInfo
-{
+public class Long implements ConstantInfo {
   public long value;
 
   @Override
-  public java.lang.String toString()
-  {
+  public java.lang.String toString() {
     return "" + value;
   }
 
   @Override
-  public int length()
-  {
+  public int length() {
     return 8;
   }
 
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
     value = ds.readLong();
   }
 
   @Override
-  public void save(DataStream ds) throws IOException
-  {
+  public void save(DataStream ds) throws IOException {
     ds.writeLong(value);
   }
 }

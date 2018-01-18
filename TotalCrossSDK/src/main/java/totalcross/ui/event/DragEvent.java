@@ -14,15 +14,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /**
  * An event that represents a pen drag.
  */
-public class DragEvent extends PenEvent
-{
+public class DragEvent extends PenEvent {
   /** The direction constant for a drag or flick right. */
   public static final int RIGHT = 1;
   /** The direction constant for a drag or flick left. */
@@ -32,9 +29,9 @@ public class DragEvent extends PenEvent
   /** The direction constant for a drag or flick down. */
   public static final int DOWN = 4;
 
-  public final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
+  public final static String[] DIRECTIONS = { "", "RIGHT", "LEFT", "UP", "DOWN" };
 
-  public int xDelta,yDelta,xTotal,yTotal;
+  public int xDelta, yDelta, xTotal, yTotal;
 
   public int direction;
 
@@ -42,23 +39,20 @@ public class DragEvent extends PenEvent
   public int dragId;
 
   /** Constructs an empty DragEvent. */
-  public DragEvent()
-  {
+  public DragEvent() {
   }
 
   /**
    * Constructs a new DragEvent from a PenEvent, setting a new timestamp and setting consumed to false.
    */
-  public DragEvent(PenEvent evt)
-  {
+  public DragEvent(PenEvent evt) {
     update(evt);
   }
 
   /**
    * Updates this DragEvent from a PenEvent, setting a new timestamp and setting consumed to false.
    */
-  public DragEvent update(PenEvent evt)
-  {
+  public DragEvent update(PenEvent evt) {
     this.absoluteX = evt.absoluteX;
     this.x = evt.x;
     this.absoluteY = evt.absoluteY;
@@ -71,15 +65,13 @@ public class DragEvent extends PenEvent
   }
 
   @Override
-  public String toString()
-  {      
-    return EVENT_NAME[type-200]+", direction: "+DIRECTIONS[direction]+", pos: "+x+","+y+", delta: "+xDelta+","+yDelta+", total: "+xTotal+","+yTotal+". "+super.toString();
+  public String toString() {
+    return EVENT_NAME[type - 200] + ", direction: " + DIRECTIONS[direction] + ", pos: " + x + "," + y + ", delta: "
+        + xDelta + "," + yDelta + ", total: " + xTotal + "," + yTotal + ". " + super.toString();
   }
 
-  public static int getInverseDirection(int direction)
-  {
-    switch (direction)
-    {
+  public static int getInverseDirection(int direction) {
+    switch (direction) {
     case UP:
       return DOWN;
     case DOWN:

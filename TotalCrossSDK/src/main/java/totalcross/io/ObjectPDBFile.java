@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import totalcross.util.Vector;
@@ -77,19 +75,18 @@ import totalcross.util.Vector;
  * @author <A HREF="mailto:rnielsen@cygnus.uwa.edu.au">Robert Nielsen</A>,
  * @version 1.2.0 16 October 1999
  */
-public class ObjectPDBFile extends PDBFile
-{
+public class ObjectPDBFile extends PDBFile {
   /* the registered classes */
-  protected Vector          classes;
+  protected Vector classes;
 
   /* the position in the search through the records */
-  protected int             cnt;
+  protected int cnt;
 
-  protected byte[]          buf;
+  protected byte[] buf;
 
   protected ByteArrayStream bs;
 
-  protected DataStream      ds;
+  protected DataStream ds;
 
   /**
    * Constructs a new ObjectPDBFile
@@ -102,8 +99,8 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.FileNotFoundException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public ObjectPDBFile(String name, int type) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
-  {
+  public ObjectPDBFile(String name, int type)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException {
     super(name, type);
   }
 
@@ -115,8 +112,7 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public ObjectPDBFile(String name) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  public ObjectPDBFile(String name) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     super(name, PDBFile.CREATE);
   }
 
@@ -127,9 +123,8 @@ public class ObjectPDBFile extends PDBFile
    * @param s
    *           an instance of the class to register. The contents are ignored.
    */
-  public void registerClass(Storable s)
-  {
-    if (classes == null){
+  public void registerClass(Storable s) {
+    if (classes == null) {
       classes = new Vector();
     }
     classes.addElement(s);
@@ -143,17 +138,15 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public void addObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (bs == null)
-    {
+  public void addObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (bs == null) {
       bs = new ByteArrayStream(1024);
       ds = new DataStream(bs);
-    }else {
+    } else {
       bs.reset();
     }
 
-    if (s.getID() != 0){
+    if (s.getID() != 0) {
       ds.writeByte(s.getID());
     }
     s.saveState(ds);
@@ -174,17 +167,16 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public void insertObjectAt(Storable s, int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
-    if (bs == null)
-    {
+  public void insertObjectAt(Storable s, int i)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
+    if (bs == null) {
       bs = new ByteArrayStream(1024);
       ds = new DataStream(bs);
-    }else {
+    } else {
       bs.reset();
     }
 
-    if (s.getID() != 0){
+    if (s.getID() != 0) {
       ds.writeByte(s.getID());
     }
     s.saveState(ds);
@@ -208,26 +200,25 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public void loadObjectAt(Storable s, int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  public void loadObjectAt(Storable s, int i)
+      throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     // bs=null;
     // buf=null;
     setRecordPos(i);
     int size = getRecordSize();
-    if (buf == null || buf.length < size){
+    if (buf == null || buf.length < size) {
       buf = new byte[size];
     }
     readBytes(buf, 0, size);
     setRecordPos(-1);
-    if (bs == null)
-    {
+    if (bs == null) {
       bs = new ByteArrayStream(buf);
       ds = new DataStream(bs);
-    }else {
+    } else {
       bs.setBuffer(buf);
     }
 
-    if (s.getID() != 0){
+    if (s.getID() != 0) {
       ds.readByte();
     }
     s.loadState(ds);
@@ -245,21 +236,18 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public Storable loadObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  public Storable loadObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     Storable s = null;
 
     setRecordPos(i);
-    if (classes != null)
-    {
+    if (classes != null) {
       int recsize = getRecordSize();
       if (buf == null || buf.length < recsize) {
         buf = new byte[recsize];
       }
       readBytes(buf, 0, recsize);
 
-      if (bs == null)
-      {
+      if (bs == null) {
         bs = new ByteArrayStream(buf);
         ds = new DataStream(bs);
       } else {
@@ -270,8 +258,7 @@ public class ObjectPDBFile extends PDBFile
       byte type = ds.readByte();
 
       for (int j = 0, size = classes.size(); j < size; j++) {
-        if ((s = (Storable) classes.items[j]).getID() == type)
-        {
+        if ((s = (Storable) classes.items[j]).getID() == type) {
           s = s.getInstance();
           s.loadState(ds);
           break;
@@ -289,8 +276,7 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public void deleteObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  public void deleteObjectAt(int i) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     setRecordPos(i);
     deleteRecord();
   }
@@ -306,8 +292,7 @@ public class ObjectPDBFile extends PDBFile
    * @return true if sucessful, false otherwise
    * @throws totalcross.io.IOException
    */
-  public boolean setObjectAttribute(int i, byte a) throws totalcross.io.IOException
-  {
+  public boolean setObjectAttribute(int i, byte a) throws totalcross.io.IOException {
     setRecordAttributes(i, a);
     return true;
   }
@@ -320,8 +305,7 @@ public class ObjectPDBFile extends PDBFile
    * @return the record attributes
    * @throws totalcross.io.IOException
    */
-  public byte getObjectAttribute(int i) throws totalcross.io.IOException
-  {
+  public byte getObjectAttribute(int i) throws totalcross.io.IOException {
     return getRecordAttributes(i);
   }
 
@@ -331,8 +315,7 @@ public class ObjectPDBFile extends PDBFile
    * @return the number of records contained by it
    * @throws totalcross.io.IOException
    */
-  public int size() throws totalcross.io.IOException
-  {
+  public int size() throws totalcross.io.IOException {
     return getRecordCount();
   }
 
@@ -340,8 +323,7 @@ public class ObjectPDBFile extends PDBFile
    * Resets a counter for iterating through the PDBFile. Should be called
    * before iterating with nextObject().
    */
-  public void resetSearch()
-  {
+  public void resetSearch() {
     setSearchIndex(0);
   }
 
@@ -351,8 +333,7 @@ public class ObjectPDBFile extends PDBFile
    * @param i
    *           the index to start
    */
-  public void setSearchIndex(int i)
-  {
+  public void setSearchIndex(int i) {
     cnt = i;
   }
 
@@ -364,11 +345,10 @@ public class ObjectPDBFile extends PDBFile
    * @throws totalcross.io.IOException
    * @throws totalcross.io.IllegalArgumentIOException
    */
-  public boolean nextObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
-  {
+  public boolean nextObject(Storable s) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException {
     boolean ret = cnt < size();
 
-    if (ret){
+    if (ret) {
       loadObjectAt(s, cnt++);
     }
     return ret;
@@ -380,8 +360,7 @@ public class ObjectPDBFile extends PDBFile
    * @return the next object, or null on error or if the end has been reached
    * @throws totalcross.io.IOException
    */
-  public Storable nextObject() throws totalcross.io.IOException
-  {
+  public Storable nextObject() throws totalcross.io.IOException {
     return cnt < size() ? loadObjectAt(cnt++) : null;
   }
 }

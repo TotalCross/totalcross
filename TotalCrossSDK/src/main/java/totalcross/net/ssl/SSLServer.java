@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /*
  *  Copyright(C) 2006 Cameron Rich
  *
@@ -49,15 +47,13 @@ import totalcross.net.Socket;
  * The server context.
  * All server connections are started within a server context.
  */
-public class SSLServer extends SSLCTX
-{
+public class SSLServer extends SSLCTX {
   /**
    * Start a new server context.
    * @throws NoSuchAlgorithmException 
    * @see SSLCTX for details.
    */
-  public SSLServer(int options, int num_sessions) throws NoSuchAlgorithmException
-  {
+  public SSLServer(int options, int num_sessions) throws NoSuchAlgorithmException {
     super(options, num_sessions);
   }
 
@@ -73,8 +69,7 @@ public class SSLServer extends SSLCTX
    * @throws CryptoException 
    * @throws NoSuchAlgorithmException 
    */
-  public SSL connect(Socket socket) throws IOException, NoSuchAlgorithmException, CryptoException
-  {
+  public SSL connect(Socket socket) throws IOException, NoSuchAlgorithmException, CryptoException {
     return newServer(socket);
   }
 }

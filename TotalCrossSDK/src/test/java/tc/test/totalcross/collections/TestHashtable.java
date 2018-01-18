@@ -22,11 +22,9 @@ import java.util.Set;
 
 import totalcross.unit.TestCase;
 
-public class TestHashtable extends TestCase
-{
+public class TestHashtable extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test37 test1 = new Test37(12);
     Hashtable test2 = new Test37(test1);
     Dictionary test3 = new Test37(11, 0.8f);
@@ -47,59 +45,53 @@ public class TestHashtable extends TestCase
     assertFalse(enum2.hasMoreElements());
     assertFalse(enum3.hasMoreElements());
 
-    try
-    {
+    try {
       enum1.nextElement();
       fail("1");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       enum2.nextElement();
       fail("2");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       enum3.nextElement();
       fail("3");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
 
     assertFalse((enum1 = test1.elements()).hasMoreElements());
     assertFalse((enum2 = test2.elements()).hasMoreElements());
     assertFalse((enum3 = test3.elements()).hasMoreElements());
 
-    try
-    {
+    try {
       enum1.nextElement();
       fail("4");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       enum2.nextElement();
       fail("5");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       enum3.nextElement();
       fail("6");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
 
     assertFalse(test1.contains("a"));
     assertFalse(test2.contains("a"));
-    assertFalse(((Hashtable)test3).contains("a"));
+    assertFalse(((Hashtable) test3).contains("a"));
 
     assertFalse(test1.containsValue("a"));
     assertFalse(test2.containsValue("a"));
-    assertFalse(((Hashtable)test3).containsValue("a"));
+    assertFalse(((Hashtable) test3).containsValue("a"));
 
     assertFalse(test1.containsKey("a"));
     assertFalse(test2.containsKey("a"));
-    assertFalse(((Hashtable)test3).containsKey("a"));
+    assertFalse(((Hashtable) test3).containsKey("a"));
 
     assertEquals(null, test1.get("a"));
     assertEquals(null, test2.get("a"));
@@ -114,16 +106,16 @@ public class TestHashtable extends TestCase
     assertEquals("b", test3.remove("a"));
 
     test1.putAll(test2);
-    ((Hashtable)test2).putAll((Hashtable)test3);
-    ((Hashtable)test3).putAll(test1);
+    ((Hashtable) test2).putAll((Hashtable) test3);
+    ((Hashtable) test3).putAll(test1);
 
     test1.clear();
     test2.clear();
-    ((Hashtable)test3).clear();
+    ((Hashtable) test3).clear();
 
     assertEquals(test1, test1.clone());
     assertEquals(test2, test2.clone());
-    assertEquals(test3, ((Hashtable)test3).clone());
+    assertEquals(test3, ((Hashtable) test3).clone());
 
     assertEquals("{}", test1.toString());
     assertEquals("{}", test2.toString());
@@ -131,7 +123,7 @@ public class TestHashtable extends TestCase
 
     Set set1 = test1.keySet();
     Set set2 = test2.keySet();
-    Set set3 = ((Hashtable)test3).keySet();
+    Set set3 = ((Hashtable) test3).keySet();
 
     assertEquals(0, set1.size());
     assertEquals(0, set2.size());
@@ -145,43 +137,37 @@ public class TestHashtable extends TestCase
     assertFalse(it2.hasNext());
     assertFalse(it3.hasNext());
 
-    try
-    {
+    try {
       it1.next();
       fail("7");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       it2.next();
       fail("8");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       it3.next();
       fail("9");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
 
-    try
-    {
+    try {
       it1.remove();
       fail("10");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
-    try
-    {
+    try {
       it2.remove();
       fail("11");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
-    try
-    {
+    try {
       it3.remove();
       fail("12");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
 
     set1.clear();
     set2.clear();
@@ -197,7 +183,7 @@ public class TestHashtable extends TestCase
 
     Collection values1 = test1.values();
     Collection values2 = test2.values();
-    Collection values3 = ((Hashtable)test3).values();
+    Collection values3 = ((Hashtable) test3).values();
 
     assertEquals(0, values1.size());
     assertEquals(0, values2.size());
@@ -207,43 +193,37 @@ public class TestHashtable extends TestCase
     assertFalse((it2 = values2.iterator()).hasNext());
     assertFalse((it3 = values3.iterator()).hasNext());
 
-    try
-    {
+    try {
       it1.next();
       fail("13");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       it2.next();
       fail("14");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       it3.next();
       fail("15");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
 
-    try
-    {
+    try {
       it1.remove();
       fail("16");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
-    try
-    {
+    try {
       it2.remove();
       fail("17");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
-    try
-    {
+    try {
       it3.remove();
       fail("18");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
 
     values1.clear();
     values2.clear();
@@ -251,49 +231,43 @@ public class TestHashtable extends TestCase
 
     assertEquals(0, (set1 = test1.entrySet()).size());
     assertEquals(0, (set2 = test2.entrySet()).size());
-    assertEquals(0, (set3 = ((Hashtable)test3).entrySet()).size());
+    assertEquals(0, (set3 = ((Hashtable) test3).entrySet()).size());
 
     assertFalse((it1 = set1.iterator()).hasNext());
     assertFalse((it2 = set2.iterator()).hasNext());
     assertFalse((it3 = set3.iterator()).hasNext());
 
-    try
-    {
+    try {
       it1.next();
       fail("19");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       it2.next();
       fail("20");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
-    try
-    {
+    try {
       it3.next();
       fail("21");
+    } catch (NoSuchElementException exception) {
     }
-    catch (NoSuchElementException exception) {}
 
-    try
-    {
+    try {
       it1.remove();
       fail("22");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
-    try
-    {
+    try {
       it2.remove();
       fail("23");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
-    try
-    {
+    try {
       it3.remove();
       fail("24");
+    } catch (IllegalStateException exception) {
     }
-    catch (IllegalStateException exception) {}
 
     set1.clear();
     set2.clear();
@@ -317,22 +291,20 @@ public class TestHashtable extends TestCase
   }
 }
 
-class Test37 extends Hashtable
-{
-  public Test37()
-  {
+class Test37 extends Hashtable {
+  public Test37() {
     super();
   }
-  public Test37(Map m)
-  {
+
+  public Test37(Map m) {
     super(m);
   }
-  public Test37(int initialCapacity)
-  {
+
+  public Test37(int initialCapacity) {
     super(initialCapacity);
   }
-  public Test37(int initialCapacity, float loadFactor)
-  {
+
+  public Test37(int initialCapacity, float loadFactor) {
     super(initialCapacity);
   }
 }

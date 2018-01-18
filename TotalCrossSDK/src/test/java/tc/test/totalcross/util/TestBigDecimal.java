@@ -7,24 +7,19 @@ import totalcross.util.BigDecimal;
 import totalcross.util.BigInteger;
 import totalcross.util.Random;
 
-public class TestBigDecimal extends TestCase
-{
+public class TestBigDecimal extends TestCase {
   private final static int bitlen = 100;
 
   @Override
-  public void testRun()
-  {
-    try
-    {
+  public void testRun() {
+    try {
       testConstants();
       testConstructor();
       testRandom();
       testAddition();
       testMultiplication();
       testDistributive();
-    }
-    catch (InvalidNumberException exception)
-    {
+    } catch (InvalidNumberException exception) {
       exception.printStackTrace();
       fail();
     }
@@ -33,8 +28,7 @@ public class TestBigDecimal extends TestCase
   /**
    * Tests static initialization and constants.
    */
-  private void testConstants() 
-  {
+  private void testConstants() {
     BigDecimal a = BigDecimal.ONE.subtract(BigDecimal.ONE);
 
     assertEquals(a.compareTo(BigDecimal.ZERO), 0);
@@ -46,14 +40,13 @@ public class TestBigDecimal extends TestCase
    * Tests constructor and toString. 
    * @throws InvalidNumberException 
    */
-  private void testConstructor() throws InvalidNumberException 
-  {
+  private void testConstructor() throws InvalidNumberException {
     BigDecimal a = new BigDecimal("3.4");
-    a = a.add(a);    
+    a = a.add(a);
     assertEquals(0, new BigDecimal("6.8").compareTo(a));
 
     String s = "6.1111111111111111111111111111111111111111111";
-    String t = new BigDecimal(s).toString();    
+    String t = new BigDecimal(s).toString();
     assertEquals(s, t);
 
     a = new BigDecimal(1);
@@ -68,25 +61,23 @@ public class TestBigDecimal extends TestCase
    * Tests random rationals.
    * @throws InvalidNumberException 
    */
-  private void testRandom() throws InvalidNumberException 
-  {
+  private void testRandom() throws InvalidNumberException {
     BigDecimal a = new BigDecimal(new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1)));
     BigDecimal b = new BigDecimal("" + a);
     BigDecimal c = a.subtract(a);
-    assertEquals(c, BigDecimal.ZERO);    
-    assertEquals(0, b.compareTo(new BigDecimal( "" + b )));
-  } 
+    assertEquals(c, BigDecimal.ZERO);
+    assertEquals(0, b.compareTo(new BigDecimal("" + b)));
+  }
 
   /**
    * Tests addition.
    */
-  private void testAddition() 
-  {
+  private void testAddition() {
     BigDecimal a = new BigDecimal(new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1)));
     assertEquals(0, a.add(a).subtract(a).compareTo(a));
     BigDecimal b = a.add(BigDecimal.ZERO);
     assertEquals(0, b.compareTo(a));
-    b = a.subtract( BigDecimal.ZERO );
+    b = a.subtract(BigDecimal.ZERO);
     assertEquals(0, b.compareTo(a));
     b = a.subtract(a);
     assertEquals(b.compareTo(BigDecimal.ZERO), 0);
@@ -99,10 +90,9 @@ public class TestBigDecimal extends TestCase
    * Tests multiplication.
    * @throws InvalidNumberException 
    */
-  private void testMultiplication() throws InvalidNumberException 
-  {
+  private void testMultiplication() throws InvalidNumberException {
     BigDecimal a = new BigDecimal(new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1)));
-    assertEquals(a.multiply(a).divide(a).compareTo(a), 0);    
+    assertEquals(a.multiply(a).divide(a).compareTo(a), 0);
     assertEquals(a.multiply(BigDecimal.ONE), a);
     assertEquals(0, a.divide(BigDecimal.ONE).compareTo(a));
 
@@ -119,11 +109,10 @@ public class TestBigDecimal extends TestCase
   /**
    * Tests distributive law.
    */
-  private void testDistributive() 
-  {
+  private void testDistributive() {
     BigDecimal a = new BigDecimal(new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1)));
     BigDecimal b = new BigDecimal(new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1)));
-    BigDecimal c = new BigDecimal(new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1)));    
+    BigDecimal c = new BigDecimal(new BigInteger(bitlen, new Random(Convert.MAX_INT_VALUE >> 1)));
     assertEquals(a.multiply(b.add(c)).compareTo(a.multiply(b).add(a.multiply(c))), 0);
   }
 }

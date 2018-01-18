@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.util.AbstractList;
@@ -92,8 +91,7 @@ import java.util.Set;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface List4D<E> extends Collection<E>
-{
+public interface List4D<E> extends Collection<E> {
   /**
    * Insert an element into the list at a given position (optional operation).
    * This shifts all existing elements from that position to the end one
@@ -251,13 +249,13 @@ public interface List4D<E> extends Collection<E>
    * contract of the hashCode method of class Object, this value is
    * calculated as follows:
    * 
-<p><pre>hashCode = 1;
-Iterator i = list.iterator();
-while (i.hasNext())
-{
+  <p><pre>hashCode = 1;
+  Iterator i = list.iterator();
+  while (i.hasNext())
+  {
   Object obj = i.next();
   hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
-}</pre>
+  }</pre>
    *
    * <p>This ensures that the general contract of Object.hashCode()
    * is adhered to.

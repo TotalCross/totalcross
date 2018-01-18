@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.media;
 
 import totalcross.io.IOException;
@@ -56,8 +54,7 @@ import totalcross.ui.dialog.FileChooserBox;
  * @see #getSupportedResolutions()
  */
 
-public class Camera
-{
+public class Camera {
   /** The initial directory. */
   public String initialDir;
   /** The default file name. */
@@ -109,7 +106,7 @@ public class Camera
 
   /** The original camera used in TotalCross */
   public static final int CAMERA_CUSTOM = 0;
-  /** The native camera application; a copy of the image is returned. */      
+  /** The native camera application; a copy of the image is returned. */
   public static final int CAMERA_NATIVE = 1;
   /** The native camera application; the original image is deleted and a copy of it is returned. */
   public static final int CAMERA_NATIVE_NOCOPY = 2;
@@ -142,8 +139,7 @@ public class Camera
   /** The default title when used in desktop */
   public static String fcbTitle = "Select a photo";
 
-  public Camera()
-  {
+  public Camera() {
   }
 
   /**
@@ -153,9 +149,8 @@ public class Camera
    * @throws IOException
    *            if any other error occurs.
    */
-  public String click() throws IOException
-  {
-    FileChooserBox fcb = new FileChooserBox(fcbTitle,FileChooserBox.defaultButtonCaptions,null);
+  public String click() throws IOException {
+    FileChooserBox fcb = new FileChooserBox(fcbTitle, FileChooserBox.defaultButtonCaptions, null);
     fcb.showPreview = fcb.newestFirst = true;
     fcb.popup();
     return fcb.getAnswer();
@@ -171,8 +166,7 @@ public class Camera
    * 
    * @since TotalCross 1.3
    */
-  public static String[] getSupportedResolutions()
-  {
-    return new String[]{"320x240","640x480","1024x768","2048x1536"};
+  public static String[] getSupportedResolutions() {
+    return new String[] { "320x240", "640x480", "1024x768", "2048x1536" };
   }
 }

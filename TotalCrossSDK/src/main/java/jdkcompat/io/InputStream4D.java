@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package jdkcompat.io;
 
 import totalcross.io.IOException;
@@ -50,13 +49,11 @@ import totalcross.io.IOException;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy (warrenl@cygnus.com)
  */
-public abstract class InputStream4D implements java.io.Closeable
-{
+public abstract class InputStream4D implements java.io.Closeable {
   /**
    * Default, no-arg, public constructor
    */
-  public InputStream4D()
-  {
+  public InputStream4D() {
   }
 
   /**
@@ -70,8 +67,7 @@ public abstract class InputStream4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs
    */
-  public int available() throws java.io.IOException
-  {
+  public int available() throws java.io.IOException {
     return 0;
   }
 
@@ -86,8 +82,7 @@ public abstract class InputStream4D implements java.io.Closeable
    * in a subclass
    */
   @Override
-  public void close() throws java.io.IOException
-  {
+  public void close() throws java.io.IOException {
     // Do nothing
   }
 
@@ -108,8 +103,7 @@ public abstract class InputStream4D implements java.io.Closeable
    * @param readLimit The number of bytes that can be read before the
    *                  mark becomes invalid
    */
-  public void mark(int readLimit)
-  {
+  public void mark(int readLimit) {
     // Do nothing
   }
 
@@ -126,8 +120,7 @@ public abstract class InputStream4D implements java.io.Closeable
    * @return <code>true</code> if mark/reset functionality is
    * supported, <code>false</code> otherwise
    */
-  public boolean markSupported()
-  {
+  public boolean markSupported() {
     return false;
   }
 
@@ -161,8 +154,7 @@ public abstract class InputStream4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs.
    */
-  public int read(byte[] b) throws java.io.IOException
-  {
+  public int read(byte[] b) throws java.io.IOException {
     return read(b, 0, b.length);
   }
 
@@ -194,25 +186,20 @@ public abstract class InputStream4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs.
    */
-  public int read(byte[] b, int off, int len) throws java.io.IOException
-  {
-    if (off < 0 || len < 0 || b.length - off < len){
+  public int read(byte[] b, int off, int len) throws java.io.IOException {
+    if (off < 0 || len < 0 || b.length - off < len) {
       throw new IndexOutOfBoundsException();
     }
 
     int i, ch;
 
     for (i = 0; i < len; ++i) {
-      try
-      {
-        if ((ch = read()) < 0)
-        {
-          return i == 0 ? -1 : i;             // EOF
+      try {
+        if ((ch = read()) < 0) {
+          return i == 0 ? -1 : i; // EOF
         }
         b[off + i] = (byte) ch;
-      }
-      catch (java.io.IOException ex)
-      {
+      } catch (java.io.IOException ex) {
         // Only reading the first byte should cause an IOException.
         if (i == 0) {
           throw ex;
@@ -235,8 +222,7 @@ public abstract class InputStream4D implements java.io.Closeable
    *
    * @exception IOException Always thrown for this class
    */
-  public void reset() throws java.io.IOException
-  {
+  public void reset() throws java.io.IOException {
     throw new java.io.IOException("mark/reset not supported");
   }
 
@@ -257,16 +243,14 @@ public abstract class InputStream4D implements java.io.Closeable
    *
    * @exception IOException If an error occurs
    */
-  public long skip(long n) throws java.io.IOException
-  {
+  public long skip(long n) throws java.io.IOException {
     // Throw away n bytes by reading them into a temp byte[].
     // Limit the temp array to 2Kb so we don't grab too much memory.
     final int buflen = n > 2048 ? 2048 : (int) n;
     byte[] tmpbuf = new byte[buflen];
     final long origN = n;
 
-    while (n > 0L)
-    {
+    while (n > 0L) {
       int numread = read(tmpbuf, 0, n > buflen ? buflen : (int) n);
       if (numread <= 0) {
         break;

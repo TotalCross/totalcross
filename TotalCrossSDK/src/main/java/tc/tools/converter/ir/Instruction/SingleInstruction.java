@@ -9,19 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.ir.Instruction;
 
 import totalcross.util.Vector;
 
-public class SingleInstruction extends Instruction
-{
-  public SingleInstruction(int op, int line)
-  {
+public class SingleInstruction extends Instruction {
+  public SingleInstruction(int op, int line) {
     super(op, line);
   }
 
   @Override
-  public void toTCCode(Vector vcode)  { }
+  public void toTCCode(Vector vcode) {
+  }
 }

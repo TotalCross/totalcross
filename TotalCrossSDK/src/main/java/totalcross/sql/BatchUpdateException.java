@@ -43,8 +43,7 @@ exception statement from your version. */
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public class BatchUpdateException extends SQLException
-{
+public class BatchUpdateException extends SQLException {
   static final long serialVersionUID = 5977529877145521757L;
 
   /**
@@ -63,9 +62,7 @@ public class BatchUpdateException extends SQLException
    * @param vendorCode
    * @param updateCounts The update count information for this error.
    */
-  public BatchUpdateException(String message, String SQLState, int vendorCode,
-      int[] updateCounts)
-  {
+  public BatchUpdateException(String message, String SQLState, int vendorCode, int[] updateCounts) {
     super(message, SQLState, vendorCode);
     this.updateCounts = updateCounts;
   }
@@ -79,9 +76,7 @@ public class BatchUpdateException extends SQLException
    * @param SQLState The SQL state information for this error.
    * @param updateCounts The update count information for this error.
    */
-  public BatchUpdateException(String message, String SQLState,
-      int[] updateCounts)
-  {
+  public BatchUpdateException(String message, String SQLState, int[] updateCounts) {
     super(message, SQLState);
     this.updateCounts = updateCounts;
   }
@@ -95,8 +90,7 @@ public class BatchUpdateException extends SQLException
    * @param message The descriptive error message.
    * @param updateCounts The update count information for this error.
    */
-  public BatchUpdateException(String message, int[] updateCounts)
-  {
+  public BatchUpdateException(String message, int[] updateCounts) {
     super(message);
     this.updateCounts = updateCounts;
   }
@@ -109,8 +103,7 @@ public class BatchUpdateException extends SQLException
    *
    * @param updateCounts The update count array.
    */
-  public BatchUpdateException(int[] updateCounts)
-  {
+  public BatchUpdateException(int[] updateCounts) {
     this.updateCounts = updateCounts;
   }
 
@@ -120,8 +113,7 @@ public class BatchUpdateException extends SQLException
    * be initialized to <code>null</code> and the vendor specific error code will
    * initialized to 0.
    */
-  public BatchUpdateException()
-  {
+  public BatchUpdateException() {
     super();
   }
 
@@ -133,8 +125,7 @@ public class BatchUpdateException extends SQLException
    *
    * @return The update count information, which may be <code>null</code>.
    */
-  public int[] getUpdateCounts()
-  {
+  public int[] getUpdateCounts() {
     return updateCounts;
   }
 }

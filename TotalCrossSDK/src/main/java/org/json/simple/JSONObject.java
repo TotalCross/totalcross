@@ -25,10 +25,9 @@ import java.util.Map;
  * 
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
  */
-public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAware{
+public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAware {
 
   private static final long serialVersionUID = -503443796854799292L;
-
 
   /**
    * 
@@ -47,7 +46,6 @@ public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAwa
     super(map);
   }
 
-
   /**
    * Encode a map into JSON text and write it to out.
    * If this map is also a JSONAware or JSONStreamAware, JSONAware or JSONStreamAware specific behaviours will be ignored at this top level.
@@ -59,22 +57,22 @@ public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAwa
    * @throws IOException description omitted.
    */
   public static void writeJSONString(Map map, Writer out) throws IOException {
-    if(map == null){
+    if (map == null) {
       out.write("null");
       return;
     }
 
     boolean first = true;
-    Iterator iter=map.entrySet().iterator();
+    Iterator iter = map.entrySet().iterator();
 
     out.write('{');
-    while(iter.hasNext()){
-      if(first) {
+    while (iter.hasNext()) {
+      if (first) {
         first = false;
       } else {
         out.write(',');
       }
-      Map.Entry entry=(Map.Entry)iter.next();
+      Map.Entry entry = (Map.Entry) iter.next();
       out.write('\"');
       out.write(escape(String.valueOf(entry.getKey())));
       out.write('\"');
@@ -85,7 +83,7 @@ public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAwa
   }
 
   @Override
-  public void writeJSONString(Writer out) throws IOException{
+  public void writeJSONString(Writer out) throws IOException {
     writeJSONString(this, out);
   }
 
@@ -98,7 +96,7 @@ public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAwa
    * @param map description omitted.
    * @return JSON text, or "null" if map is null.
    */
-  public static String toJSONString(Map map){
+  public static String toJSONString(Map map) {
     final StringWriter writer = new StringWriter();
 
     try {
@@ -111,12 +109,12 @@ public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAwa
   }
 
   @Override
-  public String toJSONString(){
+  public String toJSONString() {
     return toJSONString(this);
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     return toJSONString();
   }
 
@@ -127,10 +125,10 @@ public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAwa
    * @param value description omitted.
    * @return description omitted.
    */
-  public static String toString(String key,Object value){
+  public static String toString(String key, Object value) {
     StringBuffer sb = new StringBuffer();
     sb.append('\"');
-    if(key == null) {
+    if (key == null) {
       sb.append("null");
     } else {
       JSONValue.escape(key, sb);
@@ -151,7 +149,7 @@ public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAwa
    * @param s description omitted.
    * @return description omitted.
    */
-  public static String escape(String s){
+  public static String escape(String s) {
     return JSONValue.escape(s);
   }
 }

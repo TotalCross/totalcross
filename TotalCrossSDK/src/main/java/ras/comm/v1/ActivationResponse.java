@@ -9,42 +9,34 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package ras.comm.v1;
 
 import ras.comm.Packet;
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class ActivationResponse extends Packet
-{
+public class ActivationResponse extends Packet {
   protected ActivationRequest request;
 
-  public ActivationResponse()
-  {
+  public ActivationResponse() {
     request = new ActivationRequest();
   }
 
-  public ActivationResponse(ActivationRequest request)
-  {
+  public ActivationResponse(ActivationRequest request) {
     this.request = request;
   }
 
-  public ActivationRequest getRequest()
-  {
+  public ActivationRequest getRequest() {
     return request;
   }
 
   @Override
-  protected void read(DataStream ds) throws IOException
-  {
+  protected void read(DataStream ds) throws IOException {
     request.read(ds);
   }
 
   @Override
-  protected void write(DataStream ds) throws IOException
-  {
+  protected void write(DataStream ds) throws IOException {
     request.write(ds);
   }
 }

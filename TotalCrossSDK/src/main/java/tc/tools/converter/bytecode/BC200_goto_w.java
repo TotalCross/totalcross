@@ -9,20 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC200_goto_w extends Branch
-{
-  public BC200_goto_w()
-  {
-    super(0,readInt32(pc+1));
+public class BC200_goto_w extends Branch {
+  public BC200_goto_w() {
+    super(0, readInt32(pc + 1));
     pcInc = 5;
   }
+
   @Override
-  public void exec()
-  {
+  public void exec() {
     pcInc = jumpTo;
   }
 }

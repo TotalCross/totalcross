@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC075_astore_0 extends StoreLocal
-{
-  public BC075_astore_0()
-  {
-    super(0,-1,OBJECT);
+public class BC075_astore_0 extends StoreLocal {
+  public BC075_astore_0() {
+    super(0, -1, OBJECT);
   }
 }

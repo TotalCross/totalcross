@@ -170,5 +170,5 @@ public class Base64decoderStream extends InputStream {
     overflowSize = -1;
     decodedReadPos = -1;
     decodedSize = -1;
-  }	
+  }
 }

@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.oper;
 
-public class OperandNull extends Operand
-{
-  public OperandNull()
-  {
+public class OperandNull extends Operand {
+  public OperandNull() {
     super(opr_null);
   }
 }

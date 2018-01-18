@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /**
@@ -31,18 +29,15 @@ package totalcross.lang;
  * A good idea is to always refer to this javadoc to know what is and what isn't available.
  */
 
-public class IllegalStateException4D extends RuntimeException
-{
+public class IllegalStateException4D extends RuntimeException {
   static final long serialVersionUID = -1848914673093119416L;
 
   /** Constructs an empty Exception. */
-  public IllegalStateException4D()
-  {
+  public IllegalStateException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public IllegalStateException4D(String message)
-  {
+  public IllegalStateException4D(String message) {
     super(message);
   }
 }

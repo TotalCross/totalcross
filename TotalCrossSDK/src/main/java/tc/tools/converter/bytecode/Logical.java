@@ -9,16 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class Logical extends ByteCode
-{
+public class Logical extends ByteCode {
   public int result, operand;
 
-  public Logical(int stackInc, int result, int operand, int type)
-  {
+  public Logical(int stackInc, int result, int operand, int type) {
     this.stackInc = stackInc;
     this.targetType = type;
     this.result = result;

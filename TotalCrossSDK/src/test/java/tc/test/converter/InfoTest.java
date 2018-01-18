@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter;
 
 /*import tc.tools.converter.*;
@@ -22,16 +20,14 @@ import totalcross.util.zip.*;
  */
 import totalcross.unit.TestCase;
 
-public class InfoTest extends TestCase
-{
+public class InfoTest extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     /*      GlobalConstantPool.init();
       // get the bytes from the string
       ByteArrayStream uncompressed = new ByteArrayStream(512);
       ImageTester.hex2bytes(LzmaTest.TestTypes_uncompressed, uncompressed);
-
+    
       // load the tclass
       TCClass tc = null;
       try
@@ -46,7 +42,7 @@ public class InfoTest extends TestCase
       {
          fail(e.getMessage());
       }
-
+    
       // save the tclass
       ByteArrayStream saved = new ByteArrayStream(512);
       try
@@ -57,9 +53,9 @@ public class InfoTest extends TestCase
       {
          fail(e.getMessage());
       }
-
+    
       byte[] u = uncompressed.toByteArray();
       byte[] s = saved.toByteArray();
       assertEquals(u, s);
-     */   }
+     */ }
 }

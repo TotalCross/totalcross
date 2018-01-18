@@ -14,14 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 /** Interface used to listen to Timer events. */
 
-public interface TimerListener
-{
+public interface TimerListener {
   /** A TRIGGERED event was dispatched.
    * @see TimerEvent 
    */

@@ -18,11 +18,9 @@ import java.util.ListIterator;
 
 import totalcross.unit.TestCase;
 
-public class TestList extends TestCase
-{
+public class TestList extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test5 test1 = new Test5();
     List test2 = new Test5();
     Collection test3 = new Test5();
@@ -69,7 +67,7 @@ public class TestList extends TestCase
 
     assertFalse(test1.addAll(0, null));
     assertFalse(test2.addAll(0, null));
-    assertFalse(((List)test3).addAll(0, null));
+    assertFalse(((List) test3).addAll(0, null));
 
     assertFalse(test1.removeAll(null));
     assertFalse(test2.removeAll(null));
@@ -79,225 +77,183 @@ public class TestList extends TestCase
     assertFalse(test2.retainAll(null));
     assertFalse(test3.retainAll(null));
 
-    try
-    {
+    try {
       test1.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("1");
     }
-    try
-    {
+    try {
       test2.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("2");
     }
-    try
-    {
+    try {
       test3.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("3");
     }
 
     assertEquals(null, test1.get(0));
     assertEquals(null, test2.get(0));
-    assertEquals(null, ((List)test3).get(0));
+    assertEquals(null, ((List) test3).get(0));
 
     assertEquals(null, test1.set(0, null));
     assertEquals(null, test2.set(0, null));
-    assertEquals(null, ((List)test3).set(0, null));
+    assertEquals(null, ((List) test3).set(0, null));
 
-    try
-    {
+    try {
       test1.add(0, null);
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("4");
     }
-    try
-    {
+    try {
       test2.add(0, null);
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("5");
     }
-    try
-    {
-      ((List)test3).add(0, null);
-    }
-    catch (Throwable throwable)
-    {
+    try {
+      ((List) test3).add(0, null);
+    } catch (Throwable throwable) {
       fail("6");
     }
 
     assertEquals(null, test1.remove(0));
     assertEquals(null, test2.remove(0));
-    assertEquals(null, ((List)test3).remove(0));
+    assertEquals(null, ((List) test3).remove(0));
 
     assertEquals(0, test1.indexOf(null));
     assertEquals(0, test2.indexOf(null));
-    assertEquals(0, ((List)test3).indexOf(null));
+    assertEquals(0, ((List) test3).indexOf(null));
 
     assertEquals(0, test1.lastIndexOf(null));
     assertEquals(0, test2.lastIndexOf(null));
-    assertEquals(0, ((List)test3).lastIndexOf(null));
+    assertEquals(0, ((List) test3).lastIndexOf(null));
 
     assertEquals(null, test1.listIterator());
     assertEquals(null, test2.listIterator());
-    assertEquals(null, ((List)test3).listIterator());
+    assertEquals(null, ((List) test3).listIterator());
 
     assertEquals(null, test1.listIterator(0));
     assertEquals(null, test2.listIterator(0));
-    assertEquals(null, ((List)test3).listIterator(0));
+    assertEquals(null, ((List) test3).listIterator(0));
 
     assertEquals(null, test1.subList(0, 0));
     assertEquals(null, test2.subList(0, 0));
-    assertEquals(null, ((List)test3).subList(0, 0));
+    assertEquals(null, ((List) test3).subList(0, 0));
   }
 }
 
-class Test5 implements List
-{
+class Test5 implements List {
   @Override
-  public int size()
-  {
+  public int size() {
     return 0;
   }
 
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return false;
   }
 
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     return false;
   }
 
   @Override
-  public Iterator iterator()
-  {
+  public Iterator iterator() {
     return null;
   }
 
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     return null;
   }
 
   @Override
-  public Object[] toArray(Object[] a)
-  {
+  public Object[] toArray(Object[] a) {
     return null;
   }
 
   @Override
-  public boolean add(Object e)
-  {
+  public boolean add(Object e) {
     return false;
   }
 
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     return false;
   }
 
   @Override
-  public boolean containsAll(Collection c)
-  {
+  public boolean containsAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean addAll(Collection c)
-  {
+  public boolean addAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean addAll(int index, Collection c)
-  {
+  public boolean addAll(int index, Collection c) {
     return false;
   }
 
   @Override
-  public boolean removeAll(Collection c)
-  {
+  public boolean removeAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean retainAll(Collection c)
-  {
+  public boolean retainAll(Collection c) {
     return false;
   }
 
   @Override
-  public void clear()
-  {    
+  public void clear() {
   }
 
   @Override
-  public Object get(int index)
-  {
+  public Object get(int index) {
     return null;
   }
 
   @Override
-  public Object set(int index, Object element)
-  {
+  public Object set(int index, Object element) {
     return null;
   }
 
   @Override
-  public void add(int index, Object element)
-  {    
+  public void add(int index, Object element) {
   }
 
   @Override
-  public Object remove(int index)
-  {
+  public Object remove(int index) {
     return null;
   }
 
   @Override
-  public int indexOf(Object o)
-  {
+  public int indexOf(Object o) {
     return 0;
   }
 
   @Override
-  public int lastIndexOf(Object o)
-  {
+  public int lastIndexOf(Object o) {
     return 0;
   }
 
   @Override
-  public ListIterator listIterator()
-  {
+  public ListIterator listIterator() {
     return null;
   }
 
   @Override
-  public ListIterator listIterator(int index)
-  {
+  public ListIterator listIterator(int index) {
     return null;
   }
 
   @Override
-  public List subList(int fromIndex, int toIndex)
-  {
+  public List subList(int fromIndex, int toIndex) {
     return null;
   }
 }

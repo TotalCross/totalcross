@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util;
 
 import totalcross.sys.Convert;
@@ -61,23 +59,21 @@ modifications.
  * </pre>
  * Don't forget to catch the ElementNotFoundException in the methods it is thrown.
  */
-public class IntHashtable
-{
+public class IntHashtable {
   /** Exception thrown when allowDuplicateKeys is set to false. */
-  public static class DuplicatedKeyException extends RuntimeException
-  {
-    public DuplicatedKeyException(String s)
-    {
+  public static class DuplicatedKeyException extends RuntimeException {
+    public DuplicatedKeyException(String s) {
       super(s);
     }
   }
+
   /** Hashtable collision list. */
-  protected static class Entry
-  {
+  protected static class Entry {
     public int key; // == hash
     public int value;
     public Entry next;
   }
+
   /** The hash table data. */
   protected Entry table[];
   /** The total number of entries in the hash table. */
@@ -124,10 +120,10 @@ public class IntHashtable
    * @param   initialCapacity The number of elements you think the hashtable will end with. The hashtable will grow if necessary, but using
    * a number near or above the final size can improve performance.
    */
-  public IntHashtable(int initialCapacity)
-  {
+  public IntHashtable(int initialCapacity) {
     this(initialCapacity, 0.75f);
   }
+
   /**
    * Constructs a new, empty hashtable with the specified initial
    * capacity and the specified load factor.
@@ -137,23 +133,20 @@ public class IntHashtable
    * a number near or above the final size can improve performance.
    * @param loadFactor a number between 0.0 and 1.0.
    */
-  public IntHashtable(int initialCapacity, double loadFactor)
-  {
-    if (initialCapacity <= 0)
-    {
+  public IntHashtable(int initialCapacity, double loadFactor) {
+    if (initialCapacity <= 0) {
       initialCapacity = 5; // guich@310_6
     }
-    initialCapacity = (int)(initialCapacity / loadFactor + 1); // guich@tc100: since most users just pass the number of element, compute the desired initial capacity based in the load factor
+    initialCapacity = (int) (initialCapacity / loadFactor + 1); // guich@tc100: since most users just pass the number of element, compute the desired initial capacity based in the load factor
     this.loadFactor = loadFactor;
     table = new Entry[initialCapacity];
-    threshold = (int)(initialCapacity * loadFactor);
+    threshold = (int) (initialCapacity * loadFactor);
   }
 
   /**
    * Clears this hashtable so that it contains no keys.
    */
-  public void clear()
-  {
+  public void clear() {
     totalcross.sys.Convert.fill(table, 0, table.length, null);
     count = 0;
   }
@@ -165,15 +158,14 @@ public class IntHashtable
    * @throws totalcross.util.ElementNotFoundException When the key was not found.
    * @see #get(int, int)
    */
-  public int get(int key) throws ElementNotFoundException
-  {
+  public int get(int key) throws ElementNotFoundException {
     int index = (key & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if (e.key == key) {
         return e.value;
       }
     }
-    throw new ElementNotFoundException("Key not found: "+key);
+    throw new ElementNotFoundException("Key not found: " + key);
   }
 
   /**
@@ -184,8 +176,7 @@ public class IntHashtable
    * @throws NullPointerException If the key is null
    * @see #get(int, int)
    */
-  public int get(Object key) throws ElementNotFoundException
-  {
+  public int get(Object key) throws ElementNotFoundException {
     return get(key.hashCode());
   }
 
@@ -198,13 +189,14 @@ public class IntHashtable
   public boolean exists(int key) // guich@580_29
   {
     int index = (key & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if (e.key == key) {
         return true;
       }
     }
     return false;
   }
+
   /**
    * Return a Vector of the values in the Hashtable. The order is the same of the getKeys method.
    * @since SuperWaba 5.11
@@ -219,23 +211,20 @@ public class IntHashtable
    * Added ds@120.
    * corrected by dgecawich@200
    */
-  public IntVector getKeys()
-  {
+  public IntVector getKeys() {
     return getKeysOrValues(true);
   }
 
-  private IntVector getKeysOrValues(boolean isKeys)
-  {
+  private IntVector getKeysOrValues(boolean isKeys) {
     // dgecawich 5/16/01 - fix so that all keys are returned rather than just the last one
     // the sympton for this was that getCount() always returned 1 regardless of how many items were added
     int[] array = new int[count]; // guich@511_10: optimized to avoid method calls
-    int len = table.length,n=0;
-    for ( int i = 0; i < len; i++ )
-    {
+    int len = table.length, n = 0;
+    for (int i = 0; i < len; i++) {
       Entry entry = table[i];
       while (entry != null) // guich@566_30
       {
-        array[n++] = isKeys?entry.key:entry.value;
+        array[n++] = isKeys ? entry.key : entry.value;
         entry = entry.next;
       }
     }
@@ -247,14 +236,10 @@ public class IntHashtable
    *  To increase safeness, set <code>allowDuplicateKeys</code> to false.
    * @see #put(int, int)
    */
-  public int put(Object key, int value)
-  {
-    try
-    {
+  public int put(Object key, int value) {
+    try {
       return put(key.hashCode(), value);
-    }
-    catch (DuplicatedKeyException dke)
-    {
+    } catch (DuplicatedKeyException dke) {
       throw new DuplicatedKeyException(key.toString());
     }
   }
@@ -274,14 +259,12 @@ public class IntHashtable
    * @see     #allowDuplicateKeys
    * @throws IntHashtable.DuplicatedKeyException if allowDuplicateKeys is set to false and another key is already added.
    */
-  public int put(int key, int value)
-  {
+  public int put(int key, int value) {
     // Makes sure the key is not already in the hashtable.
     Entry tab[] = table;
     int index = (key & 0x7FFFFFFF) % tab.length;
-    for (Entry e = tab[index] ; e != null ; e = e.next) {
-      if (e.key == key)
-      {
+    for (Entry e = tab[index]; e != null; e = e.next) {
+      if (e.key == key) {
         if (!allowDuplicateKeys) {
           throw new DuplicatedKeyException(Convert.toString(key));
         }
@@ -290,8 +273,7 @@ public class IntHashtable
         return old;
       }
     }
-    if (count >= threshold)
-    {
+    if (count >= threshold) {
       // Rehash the table if the threshold is exceeded
       rehash();
       return put(key, value);
@@ -302,33 +284,32 @@ public class IntHashtable
     e.key = key;
     e.value = value;
     e.next = tab[index];
-    if (e.next != null){
+    if (e.next != null) {
       collisions++;
     }
     tab[index] = e;
     count++;
     return value; // guich@tc100: returns the given value instead of INVALID
   }
+
   /**
    * Rehashes the contents of the hashtable into a hashtable with a
    * larger capacity. This method is called automatically when the
    * number of keys in the hashtable exceeds this hashtable's capacity
    * and load factor.
    */
-  protected void rehash()
-  {
+  protected void rehash() {
     int oldCapacity = table.length;
     Entry oldTable[] = table;
 
     int newCapacity = (((oldCapacity << 1) + oldCapacity) >> 1) + 1; // guich@120 - grows 50% instead of 100% - guich@200b4_198: added Peter Dickerson and Andrew Chitty changes to correct the optimization i made with << and >>
     Entry newTable[] = new Entry[newCapacity];
 
-    threshold = (int)(newCapacity * loadFactor);
+    threshold = (int) (newCapacity * loadFactor);
     table = newTable;
 
-    for (int i = oldCapacity ; i-- > 0 ;) {
-      for (Entry old = oldTable[i] ; old != null ; )
-      {
+    for (int i = oldCapacity; i-- > 0;) {
+      for (Entry old = oldTable[i]; old != null;) {
         Entry e = old;
         old = old.next;
 
@@ -338,6 +319,7 @@ public class IntHashtable
       }
     }
   }
+
   /**
    * Removes the key (and its corresponding value) from this
    * hashtable. This method does nothing if the key is not in the hashtable.
@@ -346,13 +328,11 @@ public class IntHashtable
    *          or <code>INVALID</code> if the key did not have a mapping.
    * @throws totalcross.util.ElementNotFoundException When the key was not found.
    */
-  public int remove(int key) throws ElementNotFoundException
-  {
+  public int remove(int key) throws ElementNotFoundException {
     Entry tab[] = table;
     int index = (key & 0x7FFFFFFF) % tab.length;
-    for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next) {
-      if (e.key == key)
-      {
+    for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
+      if (e.key == key) {
         if (prev != null) {
           prev.next = e.next;
         } else {
@@ -362,15 +342,15 @@ public class IntHashtable
         return e.value;
       }
     }
-    throw new ElementNotFoundException("Key not found: "+key);
+    throw new ElementNotFoundException("Key not found: " + key);
   }
+
   /**
    * Returns the number of keys in this hashtable.
    *
    * @return  the number of keys in this hashtable.
    */
-  public int size()
-  {
+  public int size() {
     return count;
   }
 
@@ -382,10 +362,9 @@ public class IntHashtable
    *          this hashtable.
    * @since TotalCross 1.0
    */
-  public int get(int key, int defaultValue)
-  {
+  public int get(int key, int defaultValue) {
     int index = (key & 0x7FFFFFFF) % table.length;
-    for (Entry e = table[index] ; e != null ; e = e.next) {
+    for (Entry e = table[index]; e != null; e = e.next) {
       if (e.key == key) {
         return e.value;
       }
@@ -398,12 +377,10 @@ public class IntHashtable
    * @since TotalCross 1.0
    * @throws ArrayIndexOutOfBoundsException If the position is out of range
    */
-  public int getKey(int pos)
-  {
+  public int getKey(int pos) {
     int len = table.length;
     int t = pos;
-    for ( int i = 0; i < len; i++ )
-    {
+    for (int i = 0; i < len; i++) {
       Entry entry = table[i];
       while (entry != null) // guich@566_30
       {
@@ -422,8 +399,7 @@ public class IntHashtable
    * @return The current value.
    * @since TotalCross 1.2
    */
-  public int incrementValue(int key, int amount)
-  {
+  public int incrementValue(int key, int amount) {
     int current = get(key, 0);
     current += amount;
     put(key, current);

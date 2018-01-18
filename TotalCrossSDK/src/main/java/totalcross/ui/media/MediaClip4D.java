@@ -14,16 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.media;
 
 import totalcross.io.File;
 import totalcross.io.IOException;
 import totalcross.io.RandomAccessStream;
 
-public class MediaClip4D
-{
+public class MediaClip4D {
   Object mediaClipRef;
   RandomAccessStream mediaStream;
   protected String path;
@@ -53,10 +50,9 @@ public class MediaClip4D
   public static final int MEDIUM = 22050;
   public static final int HIGH = 44100;
 
-  public MediaClip4D(RandomAccessStream stream) throws IOException
-  {
+  public MediaClip4D(RandomAccessStream stream) throws IOException {
     mediaStream = stream;
-    if (stream instanceof File){
+    if (stream instanceof File) {
       this.path = ((File) stream).getPath();
     }
     create();
@@ -65,20 +61,15 @@ public class MediaClip4D
 
   final native private void create();
 
-  public int getCurrentState()
-  {
+  public int getCurrentState() {
     return currentState;
   }
 
-  final public void start() throws IOException
-  {
-    if (currentState == PREFETCHED)
-    {
+  final public void start() throws IOException {
+    if (currentState == PREFETCHED) {
       // resume
       nativeStart();
-    }
-    else if (currentState == UNREALIZED)
-    {
+    } else if (currentState == UNREALIZED) {
       int subChunkId;
       int subChunkSize;
 
@@ -86,18 +77,15 @@ public class MediaClip4D
       dataPos += mediaStream.readBytes(mediaHeader, 0, 36);
       subChunkSize = (((mediaHeader[19] & 0xFF) << 24) | ((mediaHeader[18] & 0xFF) << 16)
           | ((mediaHeader[17] & 0xFF) << 8) | (mediaHeader[16] & 0xFF));
-      if (subChunkSize > 16)
-      {
+      if (subChunkSize > 16) {
         dataPos += mediaStream.readBytes(mediaHeader, 36, 2);
         subChunkSize = (((mediaHeader[37] & 0xFF) << 8) | (mediaHeader[36] & 0xFF));
       } else {
         subChunkSize = 0;
       }
 
-      do
-      {
-        if (subChunkSize > 0)
-        {
+      do {
+        if (subChunkSize > 0) {
           dataPos += mediaStream.skipBytes(subChunkSize);
         }
         dataPos += mediaStream.readBytes(mediaHeader, 38, 4);
@@ -125,32 +113,24 @@ public class MediaClip4D
 
   final native private void nativeClose();
 
-  final public void close() throws totalcross.io.IOException
-  {
-    if (currentState != CLOSED)
-    {
+  final public void close() throws totalcross.io.IOException {
+    if (currentState != CLOSED) {
       dontFinalize = true;
       nativeClose();
     }
   }
 
-  public void onEvent(MediaClipEvent evt)
-  {
+  public void onEvent(MediaClipEvent evt) {
   }
 
   native public void record(int samplesPerSecond, int bitsPerSample, boolean stereo) throws totalcross.io.IOException;
 
   @Override
-  public void finalize()
-  {
-    if (currentState != CLOSED)
-    {
-      try
-      {
+  public void finalize() {
+    if (currentState != CLOSED) {
+      try {
         this.close();
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
       }
     }
   }

@@ -7,31 +7,24 @@ import totalcross.net.mail.MessagingException;
 import totalcross.ui.Grid;
 import totalcross.ui.dialog.MessageBox;
 
-public class MailboxDataSource implements Grid.DataSource
-{
+public class MailboxDataSource implements Grid.DataSource {
   Folder folder;
   String[][] items;
 
-  public MailboxDataSource(Folder folder)
-  {
+  public MailboxDataSource(Folder folder) {
     this.folder = folder;
   }
 
   @Override
-  public String[][] getItems(int startingRow, int count)
-  {
-    try
-    {
+  public String[][] getItems(int startingRow, int count) {
+    try {
       Message[] msgs = folder.getMessages(startingRow + 1, startingRow + count);
       items = new String[msgs.length][2];
-      for (int i = 0; i < msgs.length; i++)
-      {
+      for (int i = 0; i < msgs.length; i++) {
         items[i][0] = msgs[i].subject;
         items[i][1] = msgs[i].uidl;
       }
-    }
-    catch (MessagingException e)
-    {
+    } catch (MessagingException e) {
       MessageBox.showException(e, true);
     }
     return items;

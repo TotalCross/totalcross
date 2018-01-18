@@ -21,11 +21,9 @@ import java.util.Set;
 
 import totalcross.unit.TestCase;
 
-public class TestIdentityHashMap extends TestCase
-{
+public class TestIdentityHashMap extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test33 test1 = new Test33();
     IdentityHashMap test2 = new Test33(22);
     AbstractMap test3 = new Test33(test2);
@@ -36,7 +34,7 @@ public class TestIdentityHashMap extends TestCase
 
     assertEquals(test1, test1.clone());
     assertEquals(test2, test2.clone());
-    assertEquals(test3, ((Test33)test3).clone());
+    assertEquals(test3, ((Test33) test3).clone());
 
     assertFalse(test1.containsKey("a"));
     assertFalse(test2.containsKey("a"));
@@ -154,58 +152,50 @@ public class TestIdentityHashMap extends TestCase
     assertFalse(iterator2.hasNext());
     assertFalse(iterator3.hasNext());
 
-    try
-    {
+    try {
       iterator1.next();
       fail("1");
+    } catch (ConcurrentModificationException exception) {
     }
-    catch (ConcurrentModificationException exception) {}
-    try
-    {
+    try {
       iterator2.next();
       fail("2");
+    } catch (ConcurrentModificationException exception) {
     }
-    catch (ConcurrentModificationException exception) {}
-    try
-    {
+    try {
       iterator3.next();
       fail("3");
+    } catch (ConcurrentModificationException exception) {
     }
-    catch (ConcurrentModificationException exception) {}
 
-    try
-    {
+    try {
       iterator1.remove();
       fail("4");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator2.remove();
       fail("5");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
-    try
-    {
+    try {
       iterator3.remove();
       fail("6");
+    } catch (RuntimeException exception) {
     }
-    catch (RuntimeException exception) {}
   }
 }
 
-class Test33 extends IdentityHashMap implements Cloneable
-{
-  public Test33()
-  {
+class Test33 extends IdentityHashMap implements Cloneable {
+  public Test33() {
     super();
   }
-  public Test33(int max)
-  {
+
+  public Test33(int max) {
     super(max);
   }
-  public Test33(Map m)
-  {
+
+  public Test33(Map m) {
     super(m);
   }
 }

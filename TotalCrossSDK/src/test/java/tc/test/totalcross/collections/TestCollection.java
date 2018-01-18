@@ -16,11 +16,9 @@ import java.util.Iterator;
 
 import totalcross.unit.TestCase;
 
-public class TestCollection extends TestCase
-{
+public class TestCollection extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Collection test1 = new Test1();
     Test1 test2 = new Test1();
     Iterable test3 = new Test1();
@@ -29,15 +27,15 @@ public class TestCollection extends TestCase
 
     assertEquals(1, test1.size());
     assertEquals(1, test2.size());
-    assertEquals(1, ((Collection)test3).size());
+    assertEquals(1, ((Collection) test3).size());
 
     assertTrue(test1.isEmpty());
     assertTrue(test2.isEmpty());
-    assertTrue(((Collection)test3).isEmpty());
+    assertTrue(((Collection) test3).isEmpty());
 
     assertTrue(test1.contains(null));
     assertFalse(test2.contains(object));
-    assertFalse(((Collection)test3).contains(object));
+    assertFalse(((Collection) test3).contains(object));
 
     assertEquals(null, test1.iterator());
     assertEquals(null, test2.iterator());
@@ -45,125 +43,111 @@ public class TestCollection extends TestCase
 
     assertEquals(0, test1.toArray().length);
     assertEquals(0, test2.toArray().length);
-    assertEquals(0, ((Collection)test3).toArray().length);
+    assertEquals(0, ((Collection) test3).toArray().length);
 
     assertEquals(1, test1.toArray(null).length);
     assertEquals(1, test2.toArray(objects).length);
-    assertEquals(1, ((Collection)test3).toArray(objects).length);
+    assertEquals(1, ((Collection) test3).toArray(objects).length);
 
     assertTrue(test1.add(test1));
     assertTrue(test2.add(test2));
-    assertTrue(((Collection)test3).add(test3));
+    assertTrue(((Collection) test3).add(test3));
 
     assertTrue(test1.remove(test1));
     assertTrue(test2.remove(test2));
-    assertTrue(((Collection)test3).remove(test3));
+    assertTrue(((Collection) test3).remove(test3));
 
     assertTrue(test1.containsAll(test1));
     assertTrue(test2.containsAll(test2));
-    assertTrue(((Collection)test3).containsAll((Collection)test3));
+    assertTrue(((Collection) test3).containsAll((Collection) test3));
 
     assertTrue(test1.addAll(test1));
     assertTrue(test2.addAll(test2));
-    assertTrue(((Collection)test3).addAll((Collection)test3));
+    assertTrue(((Collection) test3).addAll((Collection) test3));
 
     assertTrue(test1.removeAll(test1));
     assertTrue(test2.removeAll(test2));
-    assertTrue(((Collection)test3).removeAll((Collection)test3));
+    assertTrue(((Collection) test3).removeAll((Collection) test3));
 
     assertTrue(test1.retainAll(test1));
     assertTrue(test2.retainAll(test2));
-    assertTrue(((Collection)test3).retainAll((Collection)test3));
+    assertTrue(((Collection) test3).retainAll((Collection) test3));
 
     Test1.i = 0;
     test1.clear();
     assertEquals(1, Test1.i);
     test2.clear();
     assertEquals(2, Test1.i);
-    ((Collection)test3).clear();
+    ((Collection) test3).clear();
     assertEquals(3, Test1.i);
   }
 }
 
-class Test1 implements Collection
-{
+class Test1 implements Collection {
   public static int i;
 
   @Override
-  public int size()
-  {
+  public int size() {
     return 1;
   }
 
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return true;
   }
 
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     return o == null;
   }
 
   @Override
-  public Iterator iterator()
-  {
+  public Iterator iterator() {
     return null;
   }
 
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     return new Object[0];
   }
 
   @Override
-  public Object[] toArray(Object[] a)
-  {
+  public Object[] toArray(Object[] a) {
     return new Object[1];
   }
 
   @Override
-  public boolean add(Object e)
-  {
+  public boolean add(Object e) {
     return e instanceof Test1;
   }
 
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     return o instanceof Collection;
   }
 
   @Override
-  public boolean containsAll(Collection c)
-  {
+  public boolean containsAll(Collection c) {
     return c instanceof Test1;
   }
 
   @Override
-  public boolean addAll(Collection c)
-  {
+  public boolean addAll(Collection c) {
     return c instanceof Collection;
   }
 
   @Override
-  public boolean removeAll(Collection c)
-  {
+  public boolean removeAll(Collection c) {
     return c instanceof Test1;
   }
 
   @Override
-  public boolean retainAll(Collection c)
-  {
+  public boolean retainAll(Collection c) {
     return c instanceof Collection;
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
     i++;
   }
 }

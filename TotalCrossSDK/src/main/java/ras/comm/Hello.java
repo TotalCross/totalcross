@@ -9,40 +9,32 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package ras.comm;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class Hello extends Packet
-{
+public class Hello extends Packet {
   private int version;
 
-  public Hello()
-  {
+  public Hello() {
   }
 
-  public Hello(int version)
-  {
+  public Hello(int version) {
     this.version = version;
   }
 
-  public int getVersion()
-  {
+  public int getVersion() {
     return version;
   }
 
   @Override
-  protected void read(DataStream ds) throws IOException
-  {
+  protected void read(DataStream ds) throws IOException {
     version = ds.readInt();
   }
 
   @Override
-  protected void write(DataStream ds) throws IOException
-  {
+  protected void write(DataStream ds) throws IOException {
     ds.writeInt(version);
   }
 }

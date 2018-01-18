@@ -21,8 +21,7 @@ import totalcross.io.ByteArrayStream;
 /**
  * This class provides the functionality of a message digest algorithm.
  */
-public abstract class Digest
-{
+public abstract class Digest {
   Object digestRef;
 
   protected ByteArrayStream input = new ByteArrayStream(128);
@@ -34,8 +33,7 @@ public abstract class Digest
    * @return The name of the algorithm whose class heirs from Digest. 
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return getAlgorithm();
   }
 
@@ -63,8 +61,7 @@ public abstract class Digest
   /**
    * Initializes this message digest. Calling this method will also reset the input data buffer.
    */
-  public final void reset()
-  {
+  public final void reset() {
     input.reset();
   }
 
@@ -74,9 +71,8 @@ public abstract class Digest
    * 
    * @param data The input data.
    */
-  public final void update(int data)
-  {
-    oneByte[0] = (byte)(data & 0xFF);
+  public final void update(int data) {
+    oneByte[0] = (byte) (data & 0xFF);
     input.writeBytes(oneByte, 0, 1);
   }
 
@@ -86,8 +82,7 @@ public abstract class Digest
    * 
    * @param data The input data.
    */
-  public final void update(byte[] data)
-  {
+  public final void update(byte[] data) {
     input.writeBytes(data, 0, data.length);
   }
 
@@ -99,8 +94,7 @@ public abstract class Digest
    * @param start The offset in <code>data</code> where the data starts.
    * @param count The input length.
    */
-  public final void update(byte[] data, int start, int count)
-  {
+  public final void update(byte[] data, int start, int count) {
     input.writeBytes(data, start, count);
   }
 
@@ -109,8 +103,7 @@ public abstract class Digest
    * 
    * @return The operation result in a new buffer.
    */
-  public final byte[] getDigest()
-  {
+  public final byte[] getDigest() {
     return process(input.toByteArray());
   }
 

@@ -18,11 +18,9 @@ import java.util.List;
 
 import totalcross.unit.TestCase;
 
-public class TestArrayList extends TestCase
-{
+public class TestArrayList extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test18 test1 = new Test18();
     ArrayList test2 = new Test18(1);
     AbstractList test3 = new Test18(new ArrayList());
@@ -30,13 +28,13 @@ public class TestArrayList extends TestCase
 
     test1.trimToSize();
     test2.trimToSize();
-    ((ArrayList)test3).trimToSize();
-    ((ArrayList)test4).trimToSize();
+    ((ArrayList) test3).trimToSize();
+    ((ArrayList) test4).trimToSize();
 
     test1.ensureCapacity(0);
     test2.ensureCapacity(1);
-    ((ArrayList)test3).ensureCapacity(2);
-    ((ArrayList)test4).ensureCapacity(3);
+    ((ArrayList) test3).ensureCapacity(2);
+    ((ArrayList) test4).ensureCapacity(3);
 
     assertEquals(0, test1.size());
     assertEquals(0, test2.size());
@@ -74,53 +72,45 @@ public class TestArrayList extends TestCase
     assertEquals(0, test3.toArray(array).length);
     assertEquals(0, test4.toArray(array).length);
 
-    try
-    {
+    try {
       test1.get(0);
       fail("1");
+    } catch (IndexOutOfBoundsException exception) {
     }
-    catch (IndexOutOfBoundsException exception) {}
-    try
-    {
+    try {
       test2.get(0);
       fail("2");
+    } catch (IndexOutOfBoundsException exception) {
     }
-    catch (IndexOutOfBoundsException exception) {}
-    try
-    {
+    try {
       test3.get(0);
       fail("3");
+    } catch (IndexOutOfBoundsException exception) {
     }
-    catch (IndexOutOfBoundsException exception) {}
-    try
-    {
+    try {
       test4.get(0);
       fail("4");
+    } catch (IndexOutOfBoundsException exception) {
     }
-    catch (IndexOutOfBoundsException exception) {}
 
     assertEquals(test1, test1.clone());
     assertEquals(test2, test2.clone());
-    assertEquals(test3, ((ArrayList)test3).clone());
-    assertEquals(test4, ((ArrayList)test4).clone());
+    assertEquals(test3, ((ArrayList) test3).clone());
+    assertEquals(test4, ((ArrayList) test4).clone());
   }
 
 }
 
-class Test18 extends ArrayList implements Cloneable
-{
-  public Test18()
-  {
+class Test18 extends ArrayList implements Cloneable {
+  public Test18() {
     super();
   }
 
-  public Test18(int capacity)
-  {
+  public Test18(int capacity) {
     super(capacity);
   }
 
-  public Test18(Collection c)
-  {
+  public Test18(Collection c) {
     super(c);
   }
 }

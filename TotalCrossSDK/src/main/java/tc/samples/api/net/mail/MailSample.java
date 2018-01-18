@@ -39,8 +39,7 @@ https://accounts.google.com/b/0/DisplayUnlockCaptcha
 
  */
 
-public class MailSample extends BaseContainer
-{
+public class MailSample extends BaseContainer {
   MessageContainer messagePanel;
 
   Label lblInbox;
@@ -57,8 +56,7 @@ public class MailSample extends BaseContainer
   MailboxDataSource mds;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     add(lblPage = new Label("Inbox", Control.CENTER), CENTER, TOP);
     add(btConnect = new Button("Synchronize"), RIGHT, TOP);
@@ -74,44 +72,32 @@ public class MailSample extends BaseContainer
   Message[] msgs;
 
   @Override
-  public void onEvent(Event event)
-  {
-    try
-    {
-      if (event.target == btReset && event.type == ControlEvent.PRESSED)
-      {
+  public void onEvent(Event event) {
+    try {
+      if (event.target == btReset && event.type == ControlEvent.PRESSED) {
         inbox.removeAllElements();
         folder.reset();
         inbox.setDataSource(mds, folder.getMessageCount());
-      }
-      else if (event.target == btOpen && event.type == ControlEvent.PRESSED)
-      {
+      } else if (event.target == btOpen && event.type == ControlEvent.PRESSED) {
         int selectedIndex = inbox.getSelectedIndex();
-        if (selectedIndex != -1)
-        {
+        if (selectedIndex != -1) {
           String[] item = inbox.getSelectedItem();
           showMessage(folder.getMessage(item[1]));
         }
-      }
-      else if (event.target == btConnect && event.type == ControlEvent.PRESSED)
-      {
+      } else if (event.target == btConnect && event.type == ControlEvent.PRESSED) {
         connect();
       }
-    }
-    catch (MessagingException e)
-    {
+    } catch (MessagingException e) {
       MessageBox.showException(e, true);
     }
   }
 
-  private void connect()
-  {
-    if (store != null){
+  private void connect() {
+    if (store != null) {
       return;
     }
 
-    try
-    {
+    try {
       store = MailSession.getDefaultInstance().getStore("pop3");
       store.connect();
       folder = store.getFolder("INBOX");
@@ -120,38 +106,29 @@ public class MailSample extends BaseContainer
       int messageCount = folder.getMessageCount();
       inbox.setDataSource(mds = new MailboxDataSource(folder), messageCount);
       inbox.scrollTo(messageCount);
-    }
-    catch (AuthenticationException e)
-    {
+    } catch (AuthenticationException e) {
       MessageBox.showException(e, true);
-    }
-    catch (MessagingException e)
-    {
+    } catch (MessagingException e) {
       MessageBox.showException(e, true);
     }
   }
 
-  private void showMessage(Message message)
-  {
-    if (message != null){
+  private void showMessage(Message message) {
+    if (message != null) {
       new MessageContainer(message).popup();
     }
   }
 
   @Override
-  public void onRemove()
-  {
-    try
-    {
+  public void onRemove() {
+    try {
       if (folder != null) {
         folder.close(false);
       }
       if (store != null) {
         store.close();
       }
-    }
-    catch (MessagingException e)
-    {
+    } catch (MessagingException e) {
       MessageBox.showException(e, true);
     }
   }

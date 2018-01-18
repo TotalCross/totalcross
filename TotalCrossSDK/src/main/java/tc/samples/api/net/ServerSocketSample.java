@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.net;
 
 import tc.samples.api.BaseContainer;
@@ -30,8 +28,7 @@ import totalcross.ui.Label;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 
-public class ServerSocketSample extends BaseContainer implements Runnable
-{
+public class ServerSocketSample extends BaseContainer implements Runnable {
   private Button btnStart;
   private Button btnStop;
   private Edit edPort;
@@ -42,17 +39,13 @@ public class ServerSocketSample extends BaseContainer implements Runnable
   private boolean threadIsRunning;
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
     String ip;
-    try
-    {
+    try {
       ip = ConnectionManager.getLocalHost();
-    }
-    catch (Exception ex)
-    {
-      add(new Label("Unable to get local host ip."),CENTER,CENTER);
+    } catch (Exception ex) {
+      add(new Label("Unable to get local host ip."), CENTER, CENTER);
       return;
     }
 
@@ -62,9 +55,9 @@ public class ServerSocketSample extends BaseContainer implements Runnable
     edPort.setText("7070");
     add(new Label("Port: "), BEFORE - 2, SAME);
     Label l;
-    add(l=new Label("Write this ip and port in your browser"), LEFT, AFTER);
+    add(l = new Label("Write this ip and port in your browser"), LEFT, AFTER);
 
-    Button.commonGap = fmH/4;
+    Button.commonGap = fmH / 4;
     add(btnStart = new Button("Start"), LEFT + 2, BOTTOM - 2);
     add(btnStop = new Button("Stop"), RIGHT - 2, BOTTOM - 2);
     Button.commonGap = 0;
@@ -75,15 +68,13 @@ public class ServerSocketSample extends BaseContainer implements Runnable
   }
 
   boolean stopThread;
+
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == ControlEvent.PRESSED)
-    {
+  public void onEvent(Event e) {
+    if (e.type == ControlEvent.PRESSED) {
       if (e.target == btnStart && validatePort()) {
         new Thread(this).start();
-      } else if (e.target == btnStop)
-      {
+      } else if (e.target == btnStop) {
         log("Wait until accept finishes...");
         stopThread = true;
       }
@@ -92,8 +83,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
 
   String answer = "<HTML><HEAD><TITLE>TotalCross</TITLE></HEAD><BODY>Connected!</BODY></HTML>";
 
-  private void startServer() throws Exception
-  {
+  private void startServer() throws Exception {
     stopThread = false;
     threadIsRunning = true;
     toggleUI(false);
@@ -103,14 +93,12 @@ public class ServerSocketSample extends BaseContainer implements Runnable
 
     log("Server started. Waiting for connections");
 
-    do
-    {
+    do {
       clientSocket = serverSocket.accept();
       log("Still waiting...");
-    }
-    while (!stopThread && clientSocket == null);
+    } while (!stopThread && clientSocket == null);
 
-    if (stopThread){
+    if (stopThread) {
       return;
     }
 
@@ -119,8 +107,8 @@ public class ServerSocketSample extends BaseContainer implements Runnable
 
     log("========================");
     String s;
-    while ((s = clientSocket.readLine()) != null && (s = s.trim()).length() > 0){
-      log(s,false);
+    while ((s = clientSocket.readLine()) != null && (s = s.trim()).length() > 0) {
+      log(s, false);
     }
     log("========================");
     clientSocket.writeBytes(answer);
@@ -128,60 +116,48 @@ public class ServerSocketSample extends BaseContainer implements Runnable
     clientSocket = null; // flsobral@tc120: must set to null, otherwise the method stopServer will try to close it again.
   }
 
-  private void stopServer()
-  {
-    if (!threadIsRunning){
+  private void stopServer() {
+    if (!threadIsRunning) {
       return;
     }
     threadIsRunning = false;
 
     toggleUI(true);
 
-    try
-    {
-      if (clientSocket != null)
-      {
+    try {
+      if (clientSocket != null) {
         clientSocket.close();
         clientSocket = null;
         log("Closed connection");
       }
-      if (serverSocket != null)
-      {
+      if (serverSocket != null) {
         log("Stopping the server...");
         serverSocket.close();
         serverSocket = null;
         log("Server closed.");
       }
       repaintNow();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       log("EXCEPTION CAUGHT AT STOP SERVER");
     }
   }
 
   @Override
-  public void run()
-  {
-    try
-    {
+  public void run() {
+    try {
       startServer();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       // ignore exceptions thrown after the server was stopped
-      if (threadIsRunning)
-      {
+      if (threadIsRunning) {
         log("EXCEPTION CAUGHT AT SERVER START");
-        log(e.getClass()+": "+e.getMessage());
+        log(e.getClass() + ": " + e.getMessage());
       }
     }
     stopServer();
   }
 
   @Override
-  public void onRemove()
-  {
+  public void onRemove() {
     // remember to stop the server on exit.
     stopServer();
   }
@@ -191,8 +167,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
    * 
    * @param enabled
    */
-  private void toggleUI(boolean enabled)
-  {
+  private void toggleUI(boolean enabled) {
     edPort.setEnabled(enabled);
     btnStart.setEnabled(enabled);
     btnStop.setEnabled(!enabled);
@@ -204,17 +179,12 @@ public class ServerSocketSample extends BaseContainer implements Runnable
    * 
    * @return
    */
-  private boolean validatePort()
-  {
-    if (edPort.getLength() > 0)
-    {
-      try
-      {
+  private boolean validatePort() {
+    if (edPort.getLength() > 0) {
+      try {
         port = Convert.toInt(edPort.getText());
         return true;
-      }
-      catch (InvalidNumberException e)
-      {
+      } catch (InvalidNumberException e) {
         log("Invalid port value.");
       }
     }

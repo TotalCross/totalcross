@@ -15,11 +15,9 @@ import java.util.Enumeration;
 
 import totalcross.unit.TestCase;
 
-public class TestEnumeration extends TestCase
-{
+public class TestEnumeration extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test3 test1 = new Test3();
     Enumeration test2 = new Test3();
 
@@ -31,17 +29,14 @@ public class TestEnumeration extends TestCase
   }
 }
 
-class Test3 implements Enumeration
-{
+class Test3 implements Enumeration {
   @Override
-  public boolean hasMoreElements()
-  {
+  public boolean hasMoreElements() {
     return this instanceof Enumeration;
   }
 
   @Override
-  public Object nextElement()
-  {
+  public Object nextElement() {
     return new String("");
   }
 }

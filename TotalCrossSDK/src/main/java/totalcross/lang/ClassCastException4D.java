@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
@@ -33,16 +31,13 @@ package totalcross.lang;
  * available.
  */
 
-public class ClassCastException4D extends RuntimeException
-{
+public class ClassCastException4D extends RuntimeException {
   /** Constructs an empty Exception. */
-  public ClassCastException4D()
-  {
+  public ClassCastException4D() {
   }
 
   /** Constructs an exception with the given message. */
-  public ClassCastException4D(String s)
-  {
+  public ClassCastException4D(String s) {
     super(s);
   }
 }

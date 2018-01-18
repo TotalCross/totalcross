@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.util;
 
 import java.lang.Enum;
@@ -55,10 +54,7 @@ import totalcross.sys.Vm;
  * @since 1.5
  */
 
-public class EnumMap4D<K extends Enum<K>, V>
-extends AbstractMap4D<K, V>
-implements Cloneable
-{
+public class EnumMap4D<K extends Enum<K>, V> extends AbstractMap4D<K, V> implements Cloneable {
   V[] store;
   int cardinality;
   Class<K> enumClass;
@@ -70,39 +66,31 @@ implements Cloneable
 
   static final Object emptySlot = new Object();
 
-  public EnumMap4D(Class<K> keyType)
-  {
+  public EnumMap4D(Class<K> keyType) {
     store = (V[]) new Object[keyType.getEnumConstants().length];
     Arrays.fill(store, emptySlot);
     cardinality = 0;
     enumClass = keyType;
   }
 
-  public EnumMap4D(EnumMap4D<K, ? extends V> map)
-  {
-    store = (V[]) new Object[map.store.length]; 
+  public EnumMap4D(EnumMap4D<K, ? extends V> map) {
+    store = (V[]) new Object[map.store.length];
     Vm.arrayCopy(map.store, 0, store, 0, store.length);
     cardinality = map.cardinality;
     enumClass = map.enumClass;
   }
 
-  public EnumMap4D(Map<K, ? extends V> map)
-  {
-    if (map instanceof EnumMap)
-    {
+  public EnumMap4D(Map<K, ? extends V> map) {
+    if (map instanceof EnumMap) {
       EnumMap4D<K, ? extends V> other = (EnumMap4D<K, ? extends V>) map;
-      store = (V[]) new Object[other.store.length]; 
+      store = (V[]) new Object[other.store.length];
       Vm.arrayCopy(other.store, 0, store, 0, store.length);
       cardinality = other.cardinality;
       enumClass = other.enumClass;
-    }
-    else
-    {
-      for (K key : map.keySet())
-      {
+    } else {
+      for (K key : map.keySet()) {
         V value = map.get(key);
-        if (store == null)
-        {
+        if (store == null) {
           enumClass = key.getDeclaringClass();
           store = (V[]) new Object[enumClass.getEnumConstants().length];
         }
@@ -120,17 +108,14 @@ implements Cloneable
   }
 
   @Override
-  public int size()
-  {
+  public int size() {
     return cardinality;
   }
 
   @Override
-  public boolean containsValue(Object value)
-  {
-    for (V i : store)
-    {
-      if (i != emptySlot && AbstractCollection4D.equals(i , value)) {
+  public boolean containsValue(Object value) {
+    for (V i : store) {
+      if (i != emptySlot && AbstractCollection4D.equals(i, value)) {
         return true;
       }
     }
@@ -138,26 +123,24 @@ implements Cloneable
   }
 
   @Override
-  public boolean containsKey(Object key)
-  {
-    if (! (key instanceof Enum)){
+  public boolean containsKey(Object key) {
+    if (!(key instanceof Enum)) {
       return false;
     }
     Enum<K> e = (Enum<K>) key;
-    if (e.getDeclaringClass() != enumClass){
+    if (e.getDeclaringClass() != enumClass) {
       return false;
     }
     return store[e.ordinal()] != emptySlot;
   }
 
   @Override
-  public V get(Object key)
-  {
-    if (! (key instanceof Enum)){
+  public V get(Object key) {
+    if (!(key instanceof Enum)) {
       return null;
     }
     Enum<K> e = (Enum<K>) key;
-    if (e.getDeclaringClass() != enumClass){
+    if (e.getDeclaringClass() != enumClass) {
       return null;
     }
     V o = store[e.ordinal()];
@@ -165,15 +148,13 @@ implements Cloneable
   }
 
   @Override
-  public V put(K key, V value)
-  {
+  public V put(K key, V value) {
     int o = key.ordinal();
     V result;
-    if (store[o] == emptySlot)
-    {
+    if (store[o] == emptySlot) {
       result = null;
       ++cardinality;
-    }else {
+    } else {
       result = store[o];
     }
     store[o] = value;
@@ -181,19 +162,18 @@ implements Cloneable
   }
 
   @Override
-  public V remove(Object key)
-  {
-    if (! (key instanceof Enum)){
+  public V remove(Object key) {
+    if (!(key instanceof Enum)) {
       return null;
     }
     Enum<K> e = (Enum<K>) key;
-    if (!e.getDeclaringClass().equals(enumClass)){
+    if (!e.getDeclaringClass().equals(enumClass)) {
       return null;
     }
     V result = store[e.ordinal()];
-    if (result == emptySlot){
+    if (result == emptySlot) {
       result = null;
-    }else {
+    } else {
       --cardinality;
     }
     store[e.ordinal()] = (V) emptySlot;
@@ -201,10 +181,8 @@ implements Cloneable
   }
 
   @Override
-  public void putAll(Map<? extends K, ? extends V> map)
-  {
-    for (K key : map.keySet())
-    {
+  public void putAll(Map<? extends K, ? extends V> map) {
+    for (K key : map.keySet()) {
       V value = map.get(key);
 
       int o = key.ordinal();
@@ -216,51 +194,42 @@ implements Cloneable
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
     Arrays.fill(store, emptySlot);
     cardinality = 0;
   }
 
   @Override
-  public Set<K> keySet()
-  {
-    if (keys == null)
-    {
-      keys = new AbstractSet<K>()
-      {
+  public Set<K> keySet() {
+    if (keys == null) {
+      keys = new AbstractSet<K>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return cardinality;
         }
 
         @Override
-        public Iterator<K> iterator()
-        {
-          return new Iterator<K>()
-          {
+        public Iterator<K> iterator() {
+          return new Iterator<K>() {
             int count = 0;
             int index = -1;
 
             @Override
-            public boolean hasNext()
-            {
+            public boolean hasNext() {
               return count < cardinality;
             }
 
             @Override
-            public K next()
-            {
+            public K next() {
               ++count;
-              for (++index; store[index] == emptySlot; ++index) {;
+              for (++index; store[index] == emptySlot; ++index) {
+                ;
               }
-              return (K)((Object[])enumClass.getEnumConstants())[index];
+              return (K) ((Object[]) enumClass.getEnumConstants())[index];
             }
 
             @Override
-            public void remove()
-            {
+            public void remove() {
               --cardinality;
               store[index] = (V) emptySlot;
             }
@@ -268,20 +237,17 @@ implements Cloneable
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           EnumMap4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
+        public boolean contains(Object o) {
           return containsKey(o);
         }
 
         @Override
-        public boolean remove(Object o)
-        {
+        public boolean remove(Object o) {
           return EnumMap4D.this.remove(o) != null;
         }
       };
@@ -290,44 +256,36 @@ implements Cloneable
   }
 
   @Override
-  public Collection<V> values()
-  {
-    if (values == null)
-    {
-      values = new AbstractCollection<V>()
-      {
+  public Collection<V> values() {
+    if (values == null) {
+      values = new AbstractCollection<V>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return cardinality;
         }
 
         @Override
-        public Iterator<V> iterator()
-        {
-          return new Iterator<V>()
-          {
+        public Iterator<V> iterator() {
+          return new Iterator<V>() {
             int count = 0;
             int index = -1;
 
             @Override
-            public boolean hasNext()
-            {
+            public boolean hasNext() {
               return count < cardinality;
             }
 
             @Override
-            public V next()
-            {
+            public V next() {
               ++count;
-              for (++index; store[index] == emptySlot; ++index) {;
+              for (++index; store[index] == emptySlot; ++index) {
+                ;
               }
               return store[index];
             }
 
             @Override
-            public void remove()
-            {
+            public void remove() {
               --cardinality;
               store[index] = (V) emptySlot;
             }
@@ -335,8 +293,7 @@ implements Cloneable
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           EnumMap4D.this.clear();
         }
       };
@@ -345,46 +302,36 @@ implements Cloneable
   }
 
   @Override
-  public Set<Map.Entry<K, V>> entrySet()
-  {
-    if (entries == null)
-    {
-      entries = new AbstractSet<Map.Entry<K, V>>()
-      {
+  public Set<Map.Entry<K, V>> entrySet() {
+    if (entries == null) {
+      entries = new AbstractSet<Map.Entry<K, V>>() {
         @Override
-        public int size()
-        {
+        public int size() {
           return cardinality;
         }
 
         @Override
-        public Iterator<Map.Entry<K, V>> iterator()
-        {
-          return new Iterator<Map.Entry<K, V>>()
-          {
+        public Iterator<Map.Entry<K, V>> iterator() {
+          return new Iterator<Map.Entry<K, V>>() {
             int count = 0;
             int index = -1;
 
             @Override
-            public boolean hasNext()
-            {
+            public boolean hasNext() {
               return count < cardinality;
             }
 
             @Override
-            public Map.Entry<K,V> next()
-            {
+            public Map.Entry<K, V> next() {
               ++count;
-              for (++index; store[index] == emptySlot; ++index) {;
+              for (++index; store[index] == emptySlot; ++index) {
+                ;
               }
               // FIXME: we could just return something that
               // only knows the index.  That would be cleaner.
-              return new AbstractMap4D.SimpleEntry<K, V>(enumClass.getEnumConstants()[index],
-                  store[index])
-              {
+              return new AbstractMap4D.SimpleEntry<K, V>(enumClass.getEnumConstants()[index], store[index]) {
                 @Override
-                public V setValue(V newVal)
-                {
+                public V setValue(V newVal) {
                   value = newVal;
                   return put(key, newVal);
                 }
@@ -392,8 +339,7 @@ implements Cloneable
             }
 
             @Override
-            public void remove()
-            {
+            public void remove() {
               --cardinality;
               store[index] = (V) emptySlot;
             }
@@ -401,27 +347,22 @@ implements Cloneable
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
           EnumMap4D.this.clear();
         }
 
         @Override
-        public boolean contains(Object o)
-        {
-          if (! (o instanceof Map.Entry)) {
+        public boolean contains(Object o) {
+          if (!(o instanceof Map.Entry)) {
             return false;
           }
           Map.Entry<K, V> other = (Map.Entry<K, V>) o;
-          return (containsKey(other.getKey())
-              && AbstractCollection4D.equals(get(other.getKey()),
-                  other.getValue()));
+          return (containsKey(other.getKey()) && AbstractCollection4D.equals(get(other.getKey()), other.getValue()));
         }
 
         @Override
-        public boolean remove(Object o)
-        {
-          if (! (o instanceof Map.Entry)) {
+        public boolean remove(Object o) {
+          if (!(o instanceof Map.Entry)) {
             return false;
           }
           Map.Entry<K, V> other = (Map.Entry<K, V>) o;
@@ -433,32 +374,27 @@ implements Cloneable
   }
 
   @Override
-  public boolean equals(Object o)
-  {
-    if (! (o instanceof EnumMap)){
+  public boolean equals(Object o) {
+    if (!(o instanceof EnumMap)) {
       return false;
     }
     EnumMap4D<K, V> other = (EnumMap4D<K, V>) o;
-    if (other.enumClass != enumClass || other.cardinality != cardinality){
+    if (other.enumClass != enumClass || other.cardinality != cardinality) {
       return false;
     }
     return Arrays.equals(store, other.store);
   }
 
   @Override
-  public EnumMap4D<K, V> clone()
-  {
+  public EnumMap4D<K, V> clone() {
     EnumMap4D<K, V> result;
-    try
-    {
+    try {
       result = (EnumMap4D<K, V>) super.clone();
-    }
-    catch (CloneNotSupportedException ignore)
-    {
+    } catch (CloneNotSupportedException ignore) {
       result = null;
     }
 
-    result.store = (V[]) new Object[store.length]; 
+    result.store = (V[]) new Object[store.length];
     Vm.arrayCopy(store, 0, result.store, 0, store.length);
     return result;
   }

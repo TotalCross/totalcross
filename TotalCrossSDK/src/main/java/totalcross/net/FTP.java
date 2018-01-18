@@ -14,7 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package totalcross.net;
 
 import totalcross.io.IOException;
@@ -300,19 +299,18 @@ import totalcross.util.Vector;
  * @since SuperWaba 5.6
  * @author Guilherme C. Hazan
  */
-public class FTP
-{
+public class FTP {
   /** Assign the progressInfo member to an instance of this interface to receive information of how many bytes were transfered.
    * Note that there's no way to get the total size of the file, but only what has been transfered so far.
    * @see #progressInfo 
    */
-  public static interface ProgressInformation
-  {
+  public static interface ProgressInformation {
     /** Called to report the size of the file that will be transferred.
      * You can use it to compute the transfer's percentage.
      * @since TotalCross 1.2
      */
     public void reportSize(int size); // guich@tc120_40
+
     /** Called to inform how many bytes were transfered. */
     public void transfering(int current);
   }
@@ -386,8 +384,8 @@ public class FTP
    * 
    * @see #FTP(String, String, String, int, int, int, int, Control)
    */
-  public FTP(String url, String user, String pass) throws UnknownHostException, IOException, FTPConnectionClosedException
-  {
+  public FTP(String url, String user, String pass)
+      throws UnknownHostException, IOException, FTPConnectionClosedException {
     this(url, user, pass, defaultPort, defaultOpenTimeout, defaultReadTimeout, defaultWriteTimeout, null);
   }
 
@@ -401,8 +399,8 @@ public class FTP
    * 
    * @see #FTP(String, String, String, int, int, int, int, Control)
    */
-  public FTP(String url, String user, String pass, int port) throws UnknownHostException, IOException, FTPConnectionClosedException
-  {
+  public FTP(String url, String user, String pass, int port)
+      throws UnknownHostException, IOException, FTPConnectionClosedException {
     this(url, user, pass, port, defaultOpenTimeout, defaultReadTimeout, defaultWriteTimeout, null);
   }
 
@@ -416,8 +414,8 @@ public class FTP
    * 
    * @see #FTP(String, String, String, int, int, int, int, Control)
    */
-  public FTP(String url, String user, String pass, Control loggingControl) throws UnknownHostException, IOException, FTPConnectionClosedException
-  {
+  public FTP(String url, String user, String pass, Control loggingControl)
+      throws UnknownHostException, IOException, FTPConnectionClosedException {
     this(url, user, pass, defaultPort, defaultOpenTimeout, defaultReadTimeout, defaultWriteTimeout, loggingControl);
   }
 
@@ -433,8 +431,8 @@ public class FTP
    * 
    * @see #FTP(String, String, String, int, int, int, int, Control)
    */
-  public FTP(String url, String user, String pass, int openTimeout, int readTimeout, int writeTimeout) throws UnknownHostException, IOException, FTPConnectionClosedException
-  {
+  public FTP(String url, String user, String pass, int openTimeout, int readTimeout, int writeTimeout)
+      throws UnknownHostException, IOException, FTPConnectionClosedException {
     this(url, user, pass, defaultPort, openTimeout, readTimeout, writeTimeout, null);
   }
 
@@ -451,8 +449,8 @@ public class FTP
    * 
    * @see #FTP(String, String, String, int, int, int, int, Control)
    */
-  public FTP(String url, String user, String pass, int openTimeout, int readTimeout, int writeTimeout, Control loggingControl) throws UnknownHostException, IOException, FTPConnectionClosedException
-  {
+  public FTP(String url, String user, String pass, int openTimeout, int readTimeout, int writeTimeout,
+      Control loggingControl) throws UnknownHostException, IOException, FTPConnectionClosedException {
     this(url, user, pass, defaultPort, openTimeout, readTimeout, writeTimeout, loggingControl);
   }
 
@@ -468,20 +466,15 @@ public class FTP
    * @param writeTimeout The timeout used for write operations           
    * @param loggingControl The ListBox or ComboBox where the logging will be sent to.
    */
-  public FTP(String url, String user, String pass, int port, int openTimeout, int readTimeout, int writeTimeout, Control loggingControl) throws UnknownHostException, IOException, FTPConnectionClosedException
-  {
+  public FTP(String url, String user, String pass, int port, int openTimeout, int readTimeout, int writeTimeout,
+      Control loggingControl) throws UnknownHostException, IOException, FTPConnectionClosedException {
     setLoggingControl(loggingControl);
-    try
-    {
+    try {
       myTCPConnection = new Socket(url, port, openTimeout, true); // guich@561_14: use  for Palm OS
-    }
-    catch (totalcross.net.UnknownHostException e)
-    {
+    } catch (totalcross.net.UnknownHostException e) {
       log("Not connected. Error: " + e.getMessage());
       throw e;
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
       log("Not connected. Error: " + e.getMessage());
       throw e;
     }
@@ -504,21 +497,14 @@ public class FTP
    * @throws FTPConnectionClosedException
    * @throws totalcross.io.IOException
    */
-  public void quit() throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (myTCPConnection != null)
-    {
-      try
-      {
+  public void quit() throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (myTCPConnection != null) {
+      try {
         sendCommand("QUIT", null, COMPLETED);
-      }
-      catch (totalcross.io.IOException e)
-      {
+      } catch (totalcross.io.IOException e) {
         // The server might close the connection without sending an acknowledgement,
         // so we catch and ignore IOExceptions at this point.
-      }
-      finally
-      {
+      } finally {
         myTCPConnection.close();
         myTCPConnection = null;
         myTCPConnectionReader = null;
@@ -533,8 +519,7 @@ public class FTP
    * @throws FTPConnectionClosedException
    * @throws totalcross.io.IOException
    */
-  public String getCurrentDir() throws FTPConnectionClosedException, totalcross.io.IOException
-  {
+  public String getCurrentDir() throws FTPConnectionClosedException, totalcross.io.IOException {
     String s = sendCommand("PWD", null, COMPLETED);
     return s.substring(s.indexOf('"') + 1, s.lastIndexOf('"'));
   }
@@ -548,8 +533,7 @@ public class FTP
    * 
    * @param pathName Specifies a directory or other system dependent file group designator.
    */
-  public void setCurrentDir(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
+  public void setCurrentDir(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException {
     sendCommand("CWD ", pathName, COMPLETED);
   }
 
@@ -562,9 +546,8 @@ public class FTP
    * @see #BINARY
    * @see #EBCDIC
    */
-  public void setType(String type) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (type == null){
+  public void setType(String type) throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (type == null) {
       throw new NullPointerException("Argument 'type' cannot have a null value.");
     }
     sendCommand("TYPE ", type, COMPLETED);
@@ -584,9 +567,8 @@ public class FTP
    * @param port port to be used in data connection
    * @throws NullPointerException if port is null.
    */
-  public void setPort(String port) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (port == null){
+  public void setPort(String port) throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (port == null) {
       throw new NullPointerException("Argument 'port' cannot have a null value.");
     }
     sendCommand("PORT ", port, COMPLETED);
@@ -601,9 +583,8 @@ public class FTP
    * @throws NullPointerException
    *            if pathName is null.
    */
-  public void delete(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (pathName == null){
+  public void delete(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (pathName == null) {
       throw new NullPointerException("Argument 'pathName' cannot have a null value.");
     }
     sendCommand("DELE ", pathName, COMPLETED);
@@ -618,9 +599,8 @@ public class FTP
    * @param pathName Specifies the directory to be created.
    * @throws NullPointerException if pathName is null.
    */
-  public void createDir(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (pathName == null){
+  public void createDir(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (pathName == null) {
       throw new NullPointerException("Argument 'pathName' cannot have a null value");
     }
     sendCommand("MKD ", pathName, COMPLETED);
@@ -633,9 +613,8 @@ public class FTP
    * @param pathName Specifies the directory to be removed.
    * @throws NullPointerException if pathName is null.
    */
-  public void removeDir(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (pathName == null){
+  public void removeDir(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (pathName == null) {
       throw new NullPointerException("Argument 'pathName' cannot have a null value");
     }
     sendCommand("RMD ", pathName, COMPLETED);
@@ -647,8 +626,7 @@ public class FTP
    * This command does not affect any parameters or previously entered commands. It specifies no action other than that
    * the server send an OK reply.
    */
-  public void noop() throws FTPConnectionClosedException, totalcross.io.IOException
-  {
+  public void noop() throws FTPConnectionClosedException, totalcross.io.IOException {
     sendCommand("NOOP", null, COMPLETED);
   }
 
@@ -659,12 +637,12 @@ public class FTP
    * @param newPathName New pathname of the file specified to be renamed.
    * @throws NullPointerException if any of the arguments, oldPathName and newPathName, is null.
    */
-  public void rename(String oldPathName, String newPathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (oldPathName == null){
+  public void rename(String oldPathName, String newPathName)
+      throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (oldPathName == null) {
       throw new NullPointerException("Argument 'oldPathName' cannot have a null value.");
     }
-    if (newPathName == null){
+    if (newPathName == null) {
       throw new NullPointerException("Argument 'newPathName' cannot have a null value.");
     }
 
@@ -682,12 +660,12 @@ public class FTP
    * @return Returns the total bytes sent. Its up to the user to check if it was the desired amount.
    * @throws NullPointerException if any of the arguments, inputStream or pathName, is null.
    */
-  public int sendFile(Stream inputStream, String pathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (inputStream == null){
+  public int sendFile(Stream inputStream, String pathName)
+      throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (inputStream == null) {
       throw new NullPointerException("Argument 'inputStream' cannot have a null value.");
     }
-    if (pathName == null){
+    if (pathName == null) {
       throw new NullPointerException("Argument 'pathName' cannot have a null value.");
     }
 
@@ -701,21 +679,19 @@ public class FTP
     Socket socket = openReturningPath(false);
     sendCommand("STOR ", pathName, WAITING_FOR_REPLY);
     log("0 bytes sent");
-    if (progressInfo != null){
+    if (progressInfo != null) {
       progressInfo.transfering(0);
     }
     int tries = 3;
-    if (buffer == null){
+    if (buffer == null) {
       buffer = new byte[2048];
     }
-    while ((count = inputStream.readBytes(buffer, 0, buffer.length)) > 0)
-    {
+    while ((count = inputStream.readBytes(buffer, 0, buffer.length)) > 0) {
       int totalSent = 0;
       while (totalSent < count) // this may happen when using softick
       {
         int sent = socket.writeBytes(buffer, totalSent, count - totalSent);
-        if (sendSleep > 0)
-        {
+        if (sendSleep > 0) {
           Vm.sleep(sendSleep); // this is needed for softick
         }
         if (sent == 0 && tries-- == 0) {
@@ -733,35 +709,27 @@ public class FTP
       }
     }
     log("Flushing file...");
-    try
-    {
+    try {
       socket.close();
 
       // if the socket was correctly closed, we can safely ignore any timeout exceptions
       log("Flushed. Receiving ack...");
-      try
-      {
+      try {
         checkResponse(COMPLETED);
-      }
-      catch (totalcross.io.IOException e)
-      {
+      } catch (totalcross.io.IOException e) {
         String msg = e.getMessage();
-        if (msg != null && (msg.startsWith("No response") || msg.indexOf("450") >= 0))
-        {
+        if (msg != null && (msg.startsWith("No response") || msg.indexOf("450") >= 0)) {
           /*
            * This is a case where, given to the long wait for file flushing, the ack from the server was lost.
            * Since the socket had closed fine, we can ensure that the file was transfered and just ignore the ack.
            */
           log("Ack was lost, but file transfer succeed.");
-        }
-        else {
+        } else {
           throw e; // something else happened, dispatch the exception
         }
       }
 
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
       // if the socket could not be closed, let the user handle
       // the exception because the file was not transfered
       checkResponse(COMPLETED);
@@ -779,42 +747,40 @@ public class FTP
    * @return number of bytes read.
    * @throws NullPointerException if any of the arguments, pathName or outputStream, is null.
    */
-  public int receiveFile(String pathName, Stream outputStream) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
-    if (pathName == null){
+  public int receiveFile(String pathName, Stream outputStream)
+      throws FTPConnectionClosedException, totalcross.io.IOException {
+    if (pathName == null) {
       throw new NullPointerException("Argument 'pathName' cannot have a null value.");
     }
-    if (outputStream == null){
+    if (outputStream == null) {
       throw new NullPointerException("Argument 'outputStream' cannot have a null value.");
     }
 
     setType(BINARY);
     Socket socket = openReturningPath(true);
 
-    if (progressInfo != null){
-      try
-      {
+    if (progressInfo != null) {
+      try {
         String fsize = sendCommand("SIZE ", pathName, COMPLETED);
-        progressInfo.reportSize(Convert.toInt(fsize.substring(fsize.lastIndexOf(' ')+1)));
+        progressInfo.reportSize(Convert.toInt(fsize.substring(fsize.lastIndexOf(' ') + 1)));
+      } catch (Exception e) {
       }
-      catch (Exception e) {}
     }
 
     sendCommand("RETR ", pathName, WAITING_FOR_REPLY);
     int count;
     int total = 0;
     log("0 bytes received");
-    if (progressInfo != null){
+    if (progressInfo != null) {
       progressInfo.transfering(0);
     }
     int tries = 3;
-    if (buffer == null){
+    if (buffer == null) {
       buffer = new byte[2048];
     }
     while ((count = socket.readBytes(buffer)) >= 0) // guich@561_8: != -1 -> > 0
     {
-      if (count > 0)
-      {
+      if (count > 0) {
         tries = 3;
         total += count;
         logReplace(total + " bytes received");
@@ -822,17 +788,13 @@ public class FTP
           progressInfo.transfering(total);
         }
         outputStream.writeBytes(buffer, 0, count);
-      }
-      else if (tries-- == 0) {
+      } else if (tries-- == 0) {
         break;
       }
     }
-    try
-    {
+    try {
       checkResponse(COMPLETED); //flsobral@tc123_50: always check for the server response, even when count is -1 (EOF).
-    }
-    catch (totalcross.io.IOException e)
-    {
+    } catch (totalcross.io.IOException e) {
       log("Cannot read from server.|Received " + total + " bytes. Error: " + e.getMessage());
       throw e;
     }
@@ -857,28 +819,25 @@ public class FTP
    * @throws FTPConnectionClosedException
    * @throws IOException
    */
-  public String[] list(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
+  public String[] list(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException {
     Socket socket = openReturningPath(true);
     sendCommand("LIST ", pathName, WAITING_FOR_REPLY);
     Vector v = new Vector(50);
     String s;
 
-    if (listReader == null){
+    if (listReader == null) {
       listReader = new LineReader(socket);
-    }else {
+    } else {
       listReader.setStream(socket);
     }
-    while (true)
-    {
+    while (true) {
       if ((s = listReader.readLine()) != null) {
         v.addElement(s);
       } else {
         break;
       }
     }
-    if (v.size() > 0 && v.items[v.size() - 1].toString().startsWith("total"))
-    {
+    if (v.size() > 0 && v.items[v.size() - 1].toString().startsWith("total")) {
       v.removeElementAt(v.size() - 1); // remove the "total" information
     }
 
@@ -903,27 +862,24 @@ public class FTP
    * @throws FTPConnectionClosedException
    * @throws totalcross.io.IOException
    */
-  public String[] listNames(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
+  public String[] listNames(String pathName) throws FTPConnectionClosedException, totalcross.io.IOException {
     Socket socket = openReturningPath(true);
     sendCommand("NLST ", pathName, WAITING_FOR_REPLY);
     Vector v = new Vector(50);
     String s;
-    if (listReader == null){
+    if (listReader == null) {
       listReader = new LineReader(socket);
-    }else {
+    } else {
       listReader.setStream(socket);
     }
-    while (true)
-    {
+    while (true) {
       if ((s = listReader.readLine()) != null) {
         v.addElement(s);
       } else {
         break;
       }
     }
-    if (v.size() > 0 && v.items[v.size() - 1].toString().startsWith("total"))
-    {
+    if (v.size() > 0 && v.items[v.size() - 1].toString().startsWith("total")) {
       v.removeElementAt(v.size() - 1); // remove the "total" information
     }
 
@@ -934,27 +890,24 @@ public class FTP
 
   /////////////////////////////////////////////////////////////////////////////////////////
 
-  private Socket openReturningPath(boolean linger) throws FTPConnectionClosedException, totalcross.net.UnknownHostException, totalcross.io.IOException
-  {
+  private Socket openReturningPath(boolean linger)
+      throws FTPConnectionClosedException, totalcross.net.UnknownHostException, totalcross.io.IOException {
     String line = sendCommand("PASV", "", COMPLETED); // 227 Entering Passive Mode (219,112,241,81,68,33)
     // get the host and port
-    if (line == null || line.length() == 0){
+    if (line == null || line.length() == 0) {
       throw new totalcross.io.IOException("Nothing read from PASV|connection closed?");
     }
     line = line.substring(line.indexOf('(') + 1);
     line = line.substring(0, line.lastIndexOf(')')); // guich@561_6: some servers return "33)" and others "33)."
     String[] p = Convert.tokenizeString(line, ',');
-    if (p == null || p.length != 6){
+    if (p == null || p.length != 6) {
       throw new totalcross.io.IOException("Error! Invalid answer: " + line);
     }
     String host = p[0] + '.' + p[1] + '.' + p[2] + '.' + p[3];
     int port = 21;
-    try
-    {
+    try {
       port = (Convert.toInt(p[4]) << 8) | Convert.toInt(p[5]);
-    }
-    catch (InvalidNumberException ine)
-    {
+    } catch (InvalidNumberException ine) {
       log(ine.getMessage());
       throw new totalcross.io.IOException("Invalid port number: " + p[4] + p[5]);
     }
@@ -963,23 +916,17 @@ public class FTP
     Socket socket = null;
     for (int i = 0; i < 5; i++) // guich@561_8: try more than one time
     {
-      try
-      {
+      try {
         socket = new Socket(host, port, openTimeout, linger); // guich@561_14: 15: use nolinger for Palm OS
         socket.readTimeout = readTimeout;
         socket.writeTimeout = writeTimeout;
         break;
-      }
-      catch (totalcross.net.UnknownHostException e)
-      {
+      } catch (totalcross.net.UnknownHostException e) {
         throw e;
-      }
-      catch (totalcross.io.IOException e)
-      {
+      } catch (totalcross.io.IOException e) {
         if (i < 4) {
           Vm.sleep(500);
-        }
-        else {
+        } else {
           throw e; // flsobral@tc100b3: failed all 5 times, time to give up and throw the exception caught.
         }
       }
@@ -987,44 +934,32 @@ public class FTP
     return socket;
   }
 
-  private boolean isDigit(char c)
-  {
+  private boolean isDigit(char c) {
     return '0' <= c && c <= '9';
   }
 
-  private String readAck() throws totalcross.io.IOException
-  {
-    try
-    {
+  private String readAck() throws totalcross.io.IOException {
+    try {
       String s;
-      do
-      {
+      do {
         s = myTCPConnectionReader.readLine();
         if (s == null) {
           break;
         }
-      }
-      while (!isDigit(s.charAt(0)) || !isDigit(s.charAt(1)) || !isDigit(s.charAt(2)) || s.charAt(3) != ' ');
+      } while (!isDigit(s.charAt(0)) || !isDigit(s.charAt(1)) || !isDigit(s.charAt(2)) || s.charAt(3) != ' ');
       return s;
-    }
-    catch (ArrayIndexOutOfBoundsException aioobe)
-    {
+    } catch (ArrayIndexOutOfBoundsException aioobe) {
       return null;
     }
   }
 
-  private String checkResponse(byte expectedReturnType) throws FTPConnectionClosedException, totalcross.io.IOException
-  {
+  private String checkResponse(byte expectedReturnType) throws FTPConnectionClosedException, totalcross.io.IOException {
     String line = readAck();
-    if (line != null)
-    {
+    if (line != null) {
       int ack = -1;
-      try
-      {
+      try {
         ack = Convert.toInt(line.substring(0, 3));
-      }
-      catch (InvalidNumberException ine)
-      {
+      } catch (InvalidNumberException ine) {
         // This exception will NEVER be thrown by Conver.toInt because readAck() ALWAYS returns strings starting with 3 digits.
         Vm.warning("FTP.checkResponse unexpected error: " + ine.getMessage());
       }
@@ -1039,23 +974,24 @@ public class FTP
         myTCPConnection = null;
         throw new FTPConnectionClosedException("Connection timed out. This FTP|instance is no longer valid.");
       }
-      throw new totalcross.io.IOException("Not acknowledged|Expected of type " + expectedReturnType + "|Received: "
-          + ack);
+      throw new totalcross.io.IOException(
+          "Not acknowledged|Expected of type " + expectedReturnType + "|Received: " + ack);
     }
     // Cleans the socket's incoming buffer
-    if (buffer == null){
+    if (buffer == null) {
       buffer = new byte[2048];
     }
-    while (myTCPConnection.readBytes(buffer, 0, buffer.length) > 0){;
+    while (myTCPConnection.readBytes(buffer, 0, buffer.length) > 0) {
+      ;
     }
     myTCPConnectionReader.setStream(myTCPConnection);
     throw new totalcross.io.IOException("No response|Maybe the ftp was closed?");
   }
 
-  private String sendCommand(String s1, String s2, byte expectedReturnType) throws FTPConnectionClosedException, totalcross.io.IOException // guich@562_4: now the 2nd command is passed separately
+  private String sendCommand(String s1, String s2, byte expectedReturnType)
+      throws FTPConnectionClosedException, totalcross.io.IOException // guich@562_4: now the 2nd command is passed separately
   {
-    if (s1 != null)
-    {
+    if (s1 != null) {
       StringBuffer sb = sbsc;
       sb.setLength(0);
       sb.append(s1);
@@ -1072,33 +1008,27 @@ public class FTP
     return checkResponse(expectedReturnType);
   }
 
-  private void logReplace(String s)
-  {
+  private void logReplace(String s) {
     // remove the last
-    if (cbLog != null){
+    if (cbLog != null) {
       cbLog.remove(cbLog.size() - 1);
-    }else if (lbLog != null){
+    } else if (lbLog != null) {
       lbLog.remove(lbLog.size() - 1);
     }
     // and add the new
     log(s);
   }
 
-  private void log(String s)
-  {
-    if (s != null)
-    {
+  private void log(String s) {
+    if (s != null) {
       if (log2console) {
         Vm.debug(s);
       }
       // display in a combobox or listbox if any were assigned
-      if (cbLog != null)
-      {
+      if (cbLog != null) {
         cbLog.add(s);
         cbLog.selectLast();
-      }
-      else if (lbLog != null)
-      {
+      } else if (lbLog != null) {
         lbLog.add(s);
         lbLog.selectLast();
       }
@@ -1108,18 +1038,16 @@ public class FTP
   /**
    * Sets the control where the log will be displayed. Only ComboBox and ListBox are allowed.
    */
-  public void setLoggingControl(Control c)
-  {
+  public void setLoggingControl(Control c) {
     if (c == null) //rnovais@571_13: the control can be null
     {
       cbLog = null;
       lbLog = null;
-    }
-    else if (c instanceof ComboBox){
+    } else if (c instanceof ComboBox) {
       cbLog = (ComboBox) c;
-    }else if (c instanceof ListBox){
+    } else if (c instanceof ListBox) {
       lbLog = (ListBox) c;
-    }else {
+    } else {
       Vm.warning("Only ListBox and ComboBox are alowed in FTP.setLogControl");
     }
   }
@@ -1128,8 +1056,7 @@ public class FTP
    * Closes the control connection without issuing any quit or abort command to the server.
    * Avoid using this method unless strictly necessary, use the quit method instead. 
    */
-  public void forceClose() throws totalcross.io.IOException
-  {
+  public void forceClose() throws totalcross.io.IOException {
     myTCPConnection.close();
     myTCPConnection = null;
     myTCPConnectionReader = null;

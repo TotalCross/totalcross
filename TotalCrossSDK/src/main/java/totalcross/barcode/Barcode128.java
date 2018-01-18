@@ -55,113 +55,28 @@ public class Barcode128 extends Barcode {
 
   /** The bars to generate the code.
    */
-  static byte BARS[][] = { { 2, 1, 2, 2, 2, 2 }, {
-    2, 2, 2, 1, 2, 2 }, {
-      2, 2, 2, 2, 2, 1 }, {
-        1, 2, 1, 2, 2, 3 }, {
-          1, 2, 1, 3, 2, 2 }, {
-            1, 3, 1, 2, 2, 2 }, {
-              1, 2, 2, 2, 1, 3 }, {
-                1, 2, 2, 3, 1, 2 }, {
-                  1, 3, 2, 2, 1, 2 }, {
-                    2, 2, 1, 2, 1, 3 }, {
-                      2, 2, 1, 3, 1, 2 }, {
-                        2, 3, 1, 2, 1, 2 }, {
-                          1, 1, 2, 2, 3, 2 }, {
-                            1, 2, 2, 1, 3, 2 }, {
-                              1, 2, 2, 2, 3, 1 }, {
-                                1, 1, 3, 2, 2, 2 }, {
-                                  1, 2, 3, 1, 2, 2 }, {
-                                    1, 2, 3, 2, 2, 1 }, {
-                                      2, 2, 3, 2, 1, 1 }, {
-                                        2, 2, 1, 1, 3, 2 }, {
-                                          2, 2, 1, 2, 3, 1 }, {
-                                            2, 1, 3, 2, 1, 2 }, {
-                                              2, 2, 3, 1, 1, 2 }, {
-                                                3, 1, 2, 1, 3, 1 }, {
-                                                  3, 1, 1, 2, 2, 2 }, {
-                                                    3, 2, 1, 1, 2, 2 }, {
-                                                      3, 2, 1, 2, 2, 1 }, {
-                                                        3, 1, 2, 2, 1, 2 }, {
-                                                          3, 2, 2, 1, 1, 2 }, {
-                                                            3, 2, 2, 2, 1, 1 }, {
-                                                              2, 1, 2, 1, 2, 3 }, {
-                                                                2, 1, 2, 3, 2, 1 }, {
-                                                                  2, 3, 2, 1, 2, 1 }, {
-                                                                    1, 1, 1, 3, 2, 3 }, {
-                                                                      1, 3, 1, 1, 2, 3 }, {
-                                                                        1, 3, 1, 3, 2, 1 }, {
-                                                                          1, 1, 2, 3, 1, 3 }, {
-                                                                            1, 3, 2, 1, 1, 3 }, {
-                                                                              1, 3, 2, 3, 1, 1 }, {
-                                                                                2, 1, 1, 3, 1, 3 }, {
-                                                                                  2, 3, 1, 1, 1, 3 }, {
-                                                                                    2, 3, 1, 3, 1, 1 }, {
-                                                                                      1, 1, 2, 1, 3, 3 }, {
-                                                                                        1, 1, 2, 3, 3, 1 }, {
-                                                                                          1, 3, 2, 1, 3, 1 }, {
-                                                                                            1, 1, 3, 1, 2, 3 }, {
-                                                                                              1, 1, 3, 3, 2, 1 }, {
-                                                                                                1, 3, 3, 1, 2, 1 }, {
-                                                                                                  3, 1, 3, 1, 2, 1 }, {
-                                                                                                    2, 1, 1, 3, 3, 1 }, {
-                                                                                                      2, 3, 1, 1, 3, 1 }, {
-                                                                                                        2, 1, 3, 1, 1, 3 }, {
-                                                                                                          2, 1, 3, 3, 1, 1 }, {
-                                                                                                            2, 1, 3, 1, 3, 1 }, {
-                                                                                                              3, 1, 1, 1, 2, 3 }, {
-                                                                                                                3, 1, 1, 3, 2, 1 }, {
-                                                                                                                  3, 3, 1, 1, 2, 1 }, {
-                                                                                                                    3, 1, 2, 1, 1, 3 }, {
-                                                                                                                      3, 1, 2, 3, 1, 1 }, {
-                                                                                                                        3, 3, 2, 1, 1, 1 }, {
-                                                                                                                          3, 1, 4, 1, 1, 1 }, {
-                                                                                                                            2, 2, 1, 4, 1, 1 }, {
-                                                                                                                              4, 3, 1, 1, 1, 1 }, {
-                                                                                                                                1, 1, 1, 2, 2, 4 }, {
-                                                                                                                                  1, 1, 1, 4, 2, 2 }, {
-                                                                                                                                    1, 2, 1, 1, 2, 4 }, {
-                                                                                                                                      1, 2, 1, 4, 2, 1 }, {
-                                                                                                                                        1, 4, 1, 1, 2, 2 }, {
-                                                                                                                                          1, 4, 1, 2, 2, 1 }, {
-                                                                                                                                            1, 1, 2, 2, 1, 4 }, {
-                                                                                                                                              1, 1, 2, 4, 1, 2 }, {
-                                                                                                                                                1, 2, 2, 1, 1, 4 }, {
-                                                                                                                                                  1, 2, 2, 4, 1, 1 }, {
-                                                                                                                                                    1, 4, 2, 1, 1, 2 }, {
-                                                                                                                                                      1, 4, 2, 2, 1, 1 }, {
-                                                                                                                                                        2, 4, 1, 2, 1, 1 }, {
-                                                                                                                                                          2, 2, 1, 1, 1, 4 }, {
-                                                                                                                                                            4, 1, 3, 1, 1, 1 }, {
-                                                                                                                                                              2, 4, 1, 1, 1, 2 }, {
-                                                                                                                                                                1, 3, 4, 1, 1, 1 }, {
-                                                                                                                                                                  1, 1, 1, 2, 4, 2 }, {
-                                                                                                                                                                    1, 2, 1, 1, 4, 2 }, {
-                                                                                                                                                                      1, 2, 1, 2, 4, 1 }, {
-                                                                                                                                                                        1, 1, 4, 2, 1, 2 }, {
-                                                                                                                                                                          1, 2, 4, 1, 1, 2 }, {
-                                                                                                                                                                            1, 2, 4, 2, 1, 1 }, {
-                                                                                                                                                                              4, 1, 1, 2, 1, 2 }, {
-                                                                                                                                                                                4, 2, 1, 1, 1, 2 }, {
-                                                                                                                                                                                  4, 2, 1, 2, 1, 1 }, {
-                                                                                                                                                                                    2, 1, 2, 1, 4, 1 }, {
-                                                                                                                                                                                      2, 1, 4, 1, 2, 1 }, {
-                                                                                                                                                                                        4, 1, 2, 1, 2, 1 }, {
-                                                                                                                                                                                          1, 1, 1, 1, 4, 3 }, {
-                                                                                                                                                                                            1, 1, 1, 3, 4, 1 }, {
-                                                                                                                                                                                              1, 3, 1, 1, 4, 1 }, {
-                                                                                                                                                                                                1, 1, 4, 1, 1, 3 }, {
-                                                                                                                                                                                                  1, 1, 4, 3, 1, 1 }, {
-                                                                                                                                                                                                    4, 1, 1, 1, 1, 3 }, {
-                                                                                                                                                                                                      4, 1, 1, 3, 1, 1 }, {
-                                                                                                                                                                                                        1, 1, 3, 1, 4, 1 }, {
-                                                                                                                                                                                                          1, 1, 4, 1, 3, 1 }, {
-                                                                                                                                                                                                            3, 1, 1, 1, 4, 1 }, {
-                                                                                                                                                                                                              4, 1, 1, 1, 3, 1 }, {
-                                                                                                                                                                                                                2, 1, 1, 4, 1, 2 }, {
-                                                                                                                                                                                                                  2, 1, 1, 2, 1, 4 }, {
-                                                                                                                                                                                                                    2, 1, 1, 2, 3, 2 }
-  };
+  static byte BARS[][] = { { 2, 1, 2, 2, 2, 2 }, { 2, 2, 2, 1, 2, 2 }, { 2, 2, 2, 2, 2, 1 }, { 1, 2, 1, 2, 2, 3 },
+      { 1, 2, 1, 3, 2, 2 }, { 1, 3, 1, 2, 2, 2 }, { 1, 2, 2, 2, 1, 3 }, { 1, 2, 2, 3, 1, 2 }, { 1, 3, 2, 2, 1, 2 },
+      { 2, 2, 1, 2, 1, 3 }, { 2, 2, 1, 3, 1, 2 }, { 2, 3, 1, 2, 1, 2 }, { 1, 1, 2, 2, 3, 2 }, { 1, 2, 2, 1, 3, 2 },
+      { 1, 2, 2, 2, 3, 1 }, { 1, 1, 3, 2, 2, 2 }, { 1, 2, 3, 1, 2, 2 }, { 1, 2, 3, 2, 2, 1 }, { 2, 2, 3, 2, 1, 1 },
+      { 2, 2, 1, 1, 3, 2 }, { 2, 2, 1, 2, 3, 1 }, { 2, 1, 3, 2, 1, 2 }, { 2, 2, 3, 1, 1, 2 }, { 3, 1, 2, 1, 3, 1 },
+      { 3, 1, 1, 2, 2, 2 }, { 3, 2, 1, 1, 2, 2 }, { 3, 2, 1, 2, 2, 1 }, { 3, 1, 2, 2, 1, 2 }, { 3, 2, 2, 1, 1, 2 },
+      { 3, 2, 2, 2, 1, 1 }, { 2, 1, 2, 1, 2, 3 }, { 2, 1, 2, 3, 2, 1 }, { 2, 3, 2, 1, 2, 1 }, { 1, 1, 1, 3, 2, 3 },
+      { 1, 3, 1, 1, 2, 3 }, { 1, 3, 1, 3, 2, 1 }, { 1, 1, 2, 3, 1, 3 }, { 1, 3, 2, 1, 1, 3 }, { 1, 3, 2, 3, 1, 1 },
+      { 2, 1, 1, 3, 1, 3 }, { 2, 3, 1, 1, 1, 3 }, { 2, 3, 1, 3, 1, 1 }, { 1, 1, 2, 1, 3, 3 }, { 1, 1, 2, 3, 3, 1 },
+      { 1, 3, 2, 1, 3, 1 }, { 1, 1, 3, 1, 2, 3 }, { 1, 1, 3, 3, 2, 1 }, { 1, 3, 3, 1, 2, 1 }, { 3, 1, 3, 1, 2, 1 },
+      { 2, 1, 1, 3, 3, 1 }, { 2, 3, 1, 1, 3, 1 }, { 2, 1, 3, 1, 1, 3 }, { 2, 1, 3, 3, 1, 1 }, { 2, 1, 3, 1, 3, 1 },
+      { 3, 1, 1, 1, 2, 3 }, { 3, 1, 1, 3, 2, 1 }, { 3, 3, 1, 1, 2, 1 }, { 3, 1, 2, 1, 1, 3 }, { 3, 1, 2, 3, 1, 1 },
+      { 3, 3, 2, 1, 1, 1 }, { 3, 1, 4, 1, 1, 1 }, { 2, 2, 1, 4, 1, 1 }, { 4, 3, 1, 1, 1, 1 }, { 1, 1, 1, 2, 2, 4 },
+      { 1, 1, 1, 4, 2, 2 }, { 1, 2, 1, 1, 2, 4 }, { 1, 2, 1, 4, 2, 1 }, { 1, 4, 1, 1, 2, 2 }, { 1, 4, 1, 2, 2, 1 },
+      { 1, 1, 2, 2, 1, 4 }, { 1, 1, 2, 4, 1, 2 }, { 1, 2, 2, 1, 1, 4 }, { 1, 2, 2, 4, 1, 1 }, { 1, 4, 2, 1, 1, 2 },
+      { 1, 4, 2, 2, 1, 1 }, { 2, 4, 1, 2, 1, 1 }, { 2, 2, 1, 1, 1, 4 }, { 4, 1, 3, 1, 1, 1 }, { 2, 4, 1, 1, 1, 2 },
+      { 1, 3, 4, 1, 1, 1 }, { 1, 1, 1, 2, 4, 2 }, { 1, 2, 1, 1, 4, 2 }, { 1, 2, 1, 2, 4, 1 }, { 1, 1, 4, 2, 1, 2 },
+      { 1, 2, 4, 1, 1, 2 }, { 1, 2, 4, 2, 1, 1 }, { 4, 1, 1, 2, 1, 2 }, { 4, 2, 1, 1, 1, 2 }, { 4, 2, 1, 2, 1, 1 },
+      { 2, 1, 2, 1, 4, 1 }, { 2, 1, 4, 1, 2, 1 }, { 4, 1, 2, 1, 2, 1 }, { 1, 1, 1, 1, 4, 3 }, { 1, 1, 1, 3, 4, 1 },
+      { 1, 3, 1, 1, 4, 1 }, { 1, 1, 4, 1, 1, 3 }, { 1, 1, 4, 3, 1, 1 }, { 4, 1, 1, 1, 1, 3 }, { 4, 1, 1, 3, 1, 1 },
+      { 1, 1, 3, 1, 4, 1 }, { 1, 1, 4, 1, 3, 1 }, { 3, 1, 1, 1, 4, 1 }, { 4, 1, 1, 1, 3, 1 }, { 2, 1, 1, 4, 1, 2 },
+      { 2, 1, 1, 2, 1, 4 }, { 2, 1, 1, 2, 3, 2 } };
 
   /** The stop bars.
    */
@@ -198,6 +113,7 @@ public class Barcode128 extends Barcode {
     quietZoneX = 10;
 
   }
+
   /** Gets the maximum width that the barcode will occupy.
    *  The lower left corner is always (0, 0).
    * @return the size the barcode occupies.
@@ -226,6 +142,7 @@ public class Barcode128 extends Barcode {
     }
     return fullWidth;
   }
+
   /** Generates the bars. The input has the actual barcodes, not
    * the human readable text.
    * @param text the barcode
@@ -250,6 +167,7 @@ public class Barcode128 extends Barcode {
     System.arraycopy(BARS_STOP, 0, bars, k * 6, 7);
     return bars;
   }
+
   /** Packs the digits for charset C. It assumes that all the parameters
    * are valid.
    * @param text the text to pack
@@ -257,10 +175,7 @@ public class Barcode128 extends Barcode {
    * @param numDigits the number of digits to pack. It is always an even number
    * @return the packed digits, two digits per character
    */
-  static String getPackedRawDigits(
-      String text,
-      int textIndex,
-      int numDigits) {
+  static String getPackedRawDigits(String text, int textIndex, int numDigits) {
     String out = "";
     while (numDigits > 0) {
       numDigits -= 2;
@@ -270,6 +185,7 @@ public class Barcode128 extends Barcode {
     }
     return out;
   }
+
   /** Converts the human readable text to the characters needed to
    * create a barcode. Some optimization is done to get the shortest code.
    * @param text the text to convert
@@ -291,10 +207,7 @@ public class Barcode128 extends Barcode {
     for (int k = 0; k < tLen; ++k) {
       c = text.charAt(k);
       if (c > 127) {
-        throw new RuntimeException(
-            "There are illegal characters for barcode 128 in '"
-                + text
-                + "'.");
+        throw new RuntimeException("There are illegal characters for barcode 128 in '" + text + "'.");
       }
     }
     c = text.charAt(0);
@@ -326,8 +239,7 @@ public class Barcode128 extends Barcode {
     }
     while (index < tLen) {
       switch (currentCode) {
-      case START_A :
-      {
+      case START_A: {
         if (isNextDigits(text, index, 4)) {
           currentCode = START_C;
           out += CODE_AB_TO_C;
@@ -346,9 +258,8 @@ public class Barcode128 extends Barcode {
           }
         }
       }
-      break;
-      case START_B :
-      {
+        break;
+      case START_B: {
         if (isNextDigits(text, index, 4)) {
           currentCode = START_C;
           out += CODE_AB_TO_C;
@@ -365,9 +276,8 @@ public class Barcode128 extends Barcode {
           }
         }
       }
-      break;
-      case START_C :
-      {
+        break;
+      case START_C: {
         if (isNextDigits(text, index, 2)) {
           out += getPackedRawDigits(text, index, 2);
           index += 2;
@@ -384,11 +294,12 @@ public class Barcode128 extends Barcode {
           }
         }
       }
-      break;
+        break;
       }
     }
     return out;
   }
+
   /** Returns <CODE>true</CODE> if the next <CODE>numDigits</CODE>
    * starting from index <CODE>textIndex</CODE> are numeric.
    * @param text the text to check
@@ -408,6 +319,7 @@ public class Barcode128 extends Barcode {
     }
     return true;
   }
+
   /** Places the barcode in a BufferedImage. The
    * The bars and text are written in the following colors:<p>
    * <P><TABLE BORDER=1>
@@ -442,10 +354,7 @@ public class Barcode128 extends Barcode {
    * @param textColor the color of the text. It can be <CODE>-1</CODE>
    */
   @Override
-  public void placeBarcode(
-      Image i,
-      int barColor,
-      int textColor) {
+  public void placeBarcode(Image i, int barColor, int textColor) {
     String fullCode = code;
     Graphics g = i.getGraphics();
     int imageX = i.getWidth();
@@ -487,12 +396,12 @@ public class Barcode128 extends Barcode {
     int barStartX = 0;
     int textStartX = 0;
     switch (textAlignment) {
-    case Barcode.ALIGN_LEFT :
+    case Barcode.ALIGN_LEFT:
       break;
-    case Barcode.ALIGN_RIGHT :
+    case Barcode.ALIGN_RIGHT:
       textStartX = imageX - fontX;
       break;
-    default :
+    default:
       textStartX = (imageX - fontX) / 2;
       break;
     }
@@ -512,11 +421,8 @@ public class Barcode128 extends Barcode {
     for (int k = 0; k < bars.length; ++k) {
       int w = (bars[k] * x);
       if (print) {
-        g.fillRect(
-            quietZone + scale(imageX, fullWidth, barStartX),
-            scale(imageY, barHeight, barStartY),
-            scale(imageX, fullWidth, w),
-            Math.round(barHeight));
+        g.fillRect(quietZone + scale(imageX, fullWidth, barStartX), scale(imageY, barHeight, barStartY),
+            scale(imageX, fullWidth, w), Math.round(barHeight));
       }
 
       print = !print;

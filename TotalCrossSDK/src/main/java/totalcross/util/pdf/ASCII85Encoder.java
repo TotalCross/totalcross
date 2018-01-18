@@ -1,6 +1,7 @@
 package totalcross.util.pdf;
 
 // Copyright (c) 2005, Luc Maisonobe
+
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with
@@ -36,7 +37,6 @@ package totalcross.util.pdf;
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-
 /**
  * This class encodes a binary stream into a text stream.
  * <p>
@@ -50,8 +50,7 @@ package totalcross.util.pdf;
  * 
  * @author Luc Maisonobe
  */
-public class ASCII85Encoder 
-{
+public class ASCII85Encoder {
   totalcross.io.Stream out;
 
   /**
@@ -59,8 +58,7 @@ public class ASCII85Encoder
    * 
    * @param out sink of binary data to filter
    */
-  public ASCII85Encoder(totalcross.io.Stream out)
-  {
+  public ASCII85Encoder(totalcross.io.Stream out) {
     this.out = out;
     lineLength = -1;
     c1 = -1;
@@ -90,8 +88,7 @@ public class ASCII85Encoder
    * @param sol start of line marker to use (mainly for indentation purposes), may be null
    * @param eol end of line marker to use, may be null only if <code>lineLength</code> is negative
    */
-  public ASCII85Encoder(totalcross.io.Stream out, int lineLength, byte[] sol, byte[] eol)
-  {
+  public ASCII85Encoder(totalcross.io.Stream out, int lineLength, byte[] sol, byte[] eol) {
     this.out = out;
     this.lineLength = lineLength;
     this.sol = sol;
@@ -103,11 +100,9 @@ public class ASCII85Encoder
   /**
    * Closes this output stream and releases any system resources associated with the stream.
    */
-  public void close() throws totalcross.io.IOException
-  {
+  public void close() throws totalcross.io.IOException {
 
-    if (c1 >= 0)
-    {
+    if (c1 >= 0) {
       c4 += c5 / 85;
       c3 += c4 / 85;
       c2 += c3 / 85;
@@ -116,14 +111,11 @@ public class ASCII85Encoder
       // output only the required number of bytes
       putByte(33 + c1);
       putByte(33 + (c2 % 85));
-      if (phase > 1)
-      {
+      if (phase > 1) {
         putByte(33 + (c3 % 85));
-        if (phase > 2)
-        {
+        if (phase > 2) {
           putByte(33 + (c4 % 85));
-          if (phase > 3)
-          {
+          if (phase > 3) {
             putByte(33 + (c5 % 85));
           }
         }
@@ -136,8 +128,7 @@ public class ASCII85Encoder
     }
 
     // end the last line properly
-    if (length != 0)
-    {
+    if (length != 0) {
       out.writeBytes(eol, 0, eol.length);
     }
 
@@ -151,13 +142,11 @@ public class ASCII85Encoder
    * 
    * @param b byte to write (only the 8 low order bits are used)
    */
-  public void write(int b) throws totalcross.io.IOException
-  {
+  public void write(int b) throws totalcross.io.IOException {
 
     b = b & 0xff;
 
-    switch (phase)
-    {
+    switch (phase) {
     case 1:
       c3 += 9 * b;
       c4 += 6 * b;
@@ -174,15 +163,11 @@ public class ASCII85Encoder
       phase = 4;
       break;
     default:
-      if (c1 >= 0)
-      {
+      if (c1 >= 0) {
         // there was a preceding quantum, we now know it was not the last
-        if ((c1 == 0) && (c2 == 0) && (c3 == 0) && (c4 == 0) && (c5 == 0))
-        {
+        if ((c1 == 0) && (c2 == 0) && (c3 == 0) && (c4 == 0) && (c5 == 0)) {
           putByte('z');
-        }
-        else
-        {
+        } else {
           c4 += c5 / 85;
           c3 += c4 / 85;
           c2 += c3 / 85;
@@ -205,34 +190,29 @@ public class ASCII85Encoder
   }
 
   private byte[] one = new byte[1];
+
   /**
    * Put a byte in the underlying stream, inserting line breaks as needed.
    * 
    * @param b byte to put in the underlying stream (only the 8 low order bits are used)
    * @exception IOException if the underlying stream throws one
    */
-  private void putByte(int b) throws totalcross.io.IOException
-  {
-    if (lineLength >= 0)
-    {
+  private void putByte(int b) throws totalcross.io.IOException {
+    if (lineLength >= 0) {
       // split encoded lines if needed
-      if ((length == 0) && (sol != null))
-      {
+      if ((length == 0) && (sol != null)) {
         out.writeBytes(sol, 0, sol.length);
         length = sol.length;
       }
-      one[0] = (byte)b;         
-      out.writeBytes(one,0,1);
-      if (++length >= lineLength)
-      {
+      one[0] = (byte) b;
+      out.writeBytes(one, 0, 1);
+      if (++length >= lineLength) {
         out.writeBytes(eol, 0, eol.length);
         length = 0;
       }
-    }
-    else
-    {
-      one[0] = (byte)b;         
-      out.writeBytes(one,0,1);
+    } else {
+      one[0] = (byte) b;
+      out.writeBytes(one, 0, 1);
     }
   }
 

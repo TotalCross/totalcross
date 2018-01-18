@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.unit;
 
 import totalcross.io.DataStreamLE;
@@ -121,12 +119,11 @@ import totalcross.util.concurrent.Lock;
  * @see totalcross.sys.SpecialKeys
  * @see UIRobotEvent
  */
-public class UIRobot
-{
+public class UIRobot {
   private static final String TITLE = " User Interface Robot ";
-  public static final int IDLE      = 0;
+  public static final int IDLE = 0;
   public static final int RECORDING = 1;
-  public static final int PLAYBACK  = 2;
+  public static final int PLAYBACK = 2;
   public static int status;
 
   private static MainWindow mw = MainWindow.getMainWindow();
@@ -152,77 +149,75 @@ public class UIRobot
 
   /** Constructs a new UIRobot and opens the user interface. 
    */
-  public UIRobot() throws Exception
-  {
+  public UIRobot() throws Exception {
     autolaunch = false;
-    if (status != IDLE){
+    if (status != IDLE) {
       throw new Exception("Already running");
     }
     // get from user if he wants to record or playback
-    switch (showMessage("Please select the action:",new String[]{"Record","Playback","Cancel"},0,false))
-    {
-    case 0: record();   break;
-    case 1: playback(); break;
+    switch (showMessage("Please select the action:", new String[] { "Record", "Playback", "Cancel" }, 0, false)) {
+    case 0:
+      record();
+      break;
+    case 1:
+      playback();
+      break;
     }
   }
 
   /** Constructs a new UIRobot and starts the playback of the given file. */
-  public UIRobot(String robotFileName) throws Exception
-  {
+  public UIRobot(String robotFileName) throws Exception {
     autolaunch = true;
-    recordedRobots = new String[]{robotFileName};
-    play(new int[]{0}, 1, false, 1);
+    recordedRobots = new String[] { robotFileName };
+    play(new int[] { 0 }, 1, false, 1);
   }
 
-  private void record() throws Exception
-  {
-    InputBox ib = new InputBox(TITLE,"Please type the robot name:","",new String[]{"Start record","Cancel"});
+  private void record() throws Exception {
+    InputBox ib = new InputBox(TITLE, "Please type the robot name:", "", new String[] { "Start record", "Cancel" });
     ib.transitionEffect = Container.TRANSITION_NONE;
     ib.setBackForeColors(Color.ORANGE, 1);
-    ib.buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
+    ib.buttonKeys = new int[] { SpecialKeys.ENTER, SpecialKeys.ESCAPE };
     ib.popup();
-    if (ib.getPressedButtonIndex() == 1){
+    if (ib.getPressedButtonIndex() == 1) {
       throw new Exception("Cancelled");
     }
     String name = ib.getValue() + ".robot";
-    flog = new File(robotFileName = Settings.appPath+"/"+name,File.CREATE_EMPTY);
+    flog = new File(robotFileName = Settings.appPath + "/" + name, File.CREATE_EMPTY);
     fds = new DataStreamLE(flog);
     lastTS = Vm.getTimeStamp();
-    status = RECORDING; 
+    status = RECORDING;
   }
 
-  private void playback() throws Exception
-  {
-    if (recordedRobots == null){
+  private void playback() throws Exception {
+    if (recordedRobots == null) {
       fillListOfRecordedRobots();
     }
-    if (recordedRobots == null)
-    {
-      showMessage("No robots found.",null,1500,false);
+    if (recordedRobots == null) {
+      showMessage("No robots found.", null, 1500, false);
       throw new Exception("No robots");
     }
     MultiListBox lb = new MultiListBox(recordedRobots);
     lb.setOrderIsImportant(true);
-    ControlBox cb = new ControlBox(TITLE,"Select the robots in the\nsequence you want to run.",lb,Control.FILL,Control.FIT,
-        new String[]{"Play selected","Play all","Play random","Dump contents","Delete selected","Cancel"},2);
+    ControlBox cb = new ControlBox(TITLE, "Select the robots in the\nsequence you want to run.", lb, Control.FILL,
+        Control.FIT,
+        new String[] { "Play selected", "Play all", "Play random", "Dump contents", "Delete selected", "Cancel" }, 2);
     cb.transitionEffect = Container.TRANSITION_NONE;
     cb.setBackForeColors(Color.ORANGE, 1);
     cb.popup();
     IntVector order = lb.getSelectedIndexes();
     int n = order.size();
     int sel = cb.getPressedButtonIndex();
-    switch (sel)
-    {
+    switch (sel) {
     case 0: // play selected
-      play(order.items, n, false,1);
+      play(order.items, n, false, 1);
       break;
     case 1: // play all
-      play(null, recordedRobots.length, false,1);
+      play(null, recordedRobots.length, false, 1);
       break;
     case 2: // play random
     {
       // get the number of repetitions
-      InputBox ib = new InputBox(TITLE,"Type the number of runs","1");
+      InputBox ib = new InputBox(TITLE, "Type the number of runs", "1");
       ib.getEdit().setValidChars(Edit.numbersSet);
       ib.transitionEffect = Container.TRANSITION_NONE;
       ib.setBackForeColors(Color.ORANGE, 1);
@@ -232,24 +227,19 @@ public class UIRobot
       }
       String countStr = ib.getValue();
       int repeat;
-      try 
-      {
+      try {
         repeat = Convert.toInt(countStr);
-      }
-      catch (InvalidNumberException ine)
-      {
-        showMessage("Invalid number, operation cancelled.",null,1500,true);
+      } catch (InvalidNumberException ine) {
+        showMessage("Invalid number, operation cancelled.", null, 1500, true);
         throw new Exception("Cancelled");
       }
       // fills an array with all indexes and them swap them randomly
       int[] s = order.items;
       Random r = new Random();
-      for (int i = n*3; --i >= 0;)
-      {
-        int idx1 = r.between(0,n-1);
-        int idx2 = r.between(0,n-1);
-        if (idx1 != idx2)
-        {
+      for (int i = n * 3; --i >= 0;) {
+        int idx1 = r.between(0, n - 1);
+        int idx2 = r.between(0, n - 1);
+        if (idx1 != idx2) {
           int temp = s[idx1];
           s[idx1] = s[idx2];
           s[idx2] = temp;
@@ -262,17 +252,13 @@ public class UIRobot
       play(order.items, n, true, 1);
       break;
     case 4: // delete
-      if (showMessage("Do you want to delete the selected robots?", new String[]{"No","Yes"},0,true) == 1)
-      {
+      if (showMessage("Do you want to delete the selected robots?", new String[] { "No", "Yes" }, 0, true) == 1) {
         for (int i = 0; i < n; i++) {
-          try
-          {
+          try {
             String item = recordedRobots[order.items[i]];
-            String fileName = item.substring(0,item.indexOf(' '));
-            new File(Settings.appPath+"/"+fileName,1).delete();
-          }
-          catch (Exception ee)
-          {
+            String fileName = item.substring(0, item.indexOf(' '));
+            new File(Settings.appPath + "/" + fileName, 1).delete();
+          } catch (Exception ee) {
             ee.printStackTrace();
           }
         }
@@ -285,74 +271,58 @@ public class UIRobot
   private Vector threadPool = new Vector(10);
   private Lock tpLock;
 
-  private PostThread popThread()
-  {
-    try
-    {
-      synchronized (tpLock)
-      {
-        return (PostThread)threadPool.pop();
+  private PostThread popThread() {
+    try {
+      synchronized (tpLock) {
+        return (PostThread) threadPool.pop();
       }
-    }
-    catch (ElementNotFoundException enfe)
-    {
+    } catch (ElementNotFoundException enfe) {
       PostThread t = new PostThread();
       t.start();
       return t;
     }
   }
 
-  private void pushThread(PostThread t)
-  {
-    synchronized (tpLock)
-    {
+  private void pushThread(PostThread t) {
+    synchronized (tpLock) {
       threadPool.push(t);
     }
   }
 
-  private class PostThread extends Thread
-  {
+  private class PostThread extends Thread {
     boolean running;
-    int type, key,x,y,mods;
+    int type, key, x, y, mods;
     Lock l;
 
-    public PostThread()
-    {
+    public PostThread() {
       l = new Lock();
     }
 
-    public void set(int type, int key, int x, int y, int mods)
-    {
+    public void set(int type, int key, int x, int y, int mods) {
       this.key = key;
       this.x = x;
       this.y = y;
       this.mods = mods;
-      synchronized (l)
-      {
+      synchronized (l) {
         this.type = type;
       }
     }
 
-    public void kill()
-    {
+    public void kill() {
       running = false;
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
       running = true;
-      while (running)
-      {
+      while (running) {
         int type;
-        synchronized (l)
-        {
+        synchronized (l) {
           type = this.type;
         }
         if (type == 0) {
           Vm.sleep(1);
-        } else
-        {
+        } else {
           mw._postEvent(type, key, x, y, mods, 0);
           this.type = 0;
           pushThread(this);
@@ -361,49 +331,43 @@ public class UIRobot
     }
   }
 
-  private void play(final int[] items, final int n, final boolean dump, final int repeat)
-  {
-    if (tpLock == null){
+  private void play(final int[] items, final int n, final boolean dump, final int repeat) {
+    if (tpLock == null) {
       tpLock = new Lock();
     }
-    new Thread()
-    {
+    new Thread() {
       @Override
-      public void run()
-      {
+      public void run() {
         String fileName = "";
-        try
-        {
+        try {
           ListBox lb = null;
           ControlBox cb = null;
           if (!dump) {
             status = PLAYBACK;
-          } else
-          {
+          } else {
             lb = new ListBox();
             lb.enableHorizontalScroll();
-            cb = new ControlBox(TITLE,"Robot dump",lb,Control.FILL,Control.FIT, new String[]{"Ok"});
+            cb = new ControlBox(TITLE, "Robot dump", lb, Control.FILL, Control.FIT, new String[] { "Ok" });
             cb.transitionEffect = Container.TRANSITION_NONE;
             cb.setBackForeColors(Color.ORANGE, 1);
           }
           abort = false;
           for (int r = 1; !abort && r <= repeat && (dump || status == PLAYBACK); r++) {
-            for (int i = 0; i < n && (dump || status == PLAYBACK); i++)
-            {
+            for (int i = 0; i < n && (dump || status == PLAYBACK); i++) {
               abort = false;
               String item = recordedRobots[items == null ? i : items[i]];
-              fileName = item.substring(0,item.indexOf(' '));
-              File f = new File(fileName.indexOf('/') <= 0 ? Settings.appPath+"/"+fileName : fileName,File.READ_WRITE);
+              fileName = item.substring(0, item.indexOf(' '));
+              File f = new File(fileName.indexOf('/') <= 0 ? Settings.appPath + "/" + fileName : fileName,
+                  File.READ_WRITE);
               robotFileName = f.getPath();
               DataStreamLE ds = new DataStreamLE(f);
-              String st = "Starting "+fileName;
+              String st = "Starting " + fileName;
               if (repeat > 1) {
-                st += " (run "+r+" of "+repeat+")";
+                st += " (run " + r + " of " + repeat + ")";
               }
               Vm.debug(st);
-              if (!dump)
-              {
-                showMessage(st,null,1500,false);
+              if (!dump) {
+                showMessage(st, null, 1500, false);
                 if (Vm.isKeyDown(SpecialKeys.SHIFT)) {
                   abort = true;
                 }
@@ -411,26 +375,23 @@ public class UIRobot
                 lb.add(st);
               }
               totalTime = 0;
-              for (int j = 0; !abort && (dump || status == PLAYBACK); j++)
-              {
-                int type  = ds.readInt();
-                int key   = ds.readInt();
-                int x     = ds.readInt();
-                int y     = ds.readInt();
-                int mods  = ds.readInt();
+              for (int j = 0; !abort && (dump || status == PLAYBACK); j++) {
+                int type = ds.readInt();
+                int key = ds.readInt();
+                int x = ds.readInt();
+                int y = ds.readInt();
+                int mods = ds.readInt();
                 int delay = ds.readInt();
                 totalTime += delay;
                 if (!dump && delay > 0) {
                   Vm.sleep(delay);
                 }
-                if (Vm.isKeyDown(SpecialKeys.SHIFT))
-                {
+                if (Vm.isKeyDown(SpecialKeys.SHIFT)) {
                   abort = true;
                   break;
                 }
-                if (dump || Settings.onJavaSE)
-                {
-                  String s = dumpEvent(j,type,key,x,y,mods,delay);
+                if (dump || Settings.onJavaSE) {
+                  String s = dumpEvent(j, type, key, x, y, mods, delay);
                   if (!dump && Settings.onJavaSE) {
                     Vm.debug(s);
                   }
@@ -441,141 +402,124 @@ public class UIRobot
                 if (type == UIRobotEvent.ROBOT_EOF) {
                   break;
                 }
-                if (!dump)
-                {
+                if (!dump) {
                   PostThread pt = popThread();
-                  pt.set(type,key,x,y,mods);
+                  pt.set(type, key, x, y, mods);
                 }
               }
               f.close();
-              if (!dump && !abort)
-              {
+              if (!dump && !abort) {
                 Vm.sleep(1000);
                 Window.repaintActiveWindows();
-                try
-                {
+                try {
                   boolean ok = compareScreenShots(fileName);
-                  showMessage("Finished "+fileName+".\nScreenshot comparison "+(ok?"succeed":"FAILED"),null,ok ? 1500 : 2500, !ok);
-                }
-                catch (FileNotFoundException fnfe)
-                {
-                  showMessage("Finished "+fileName+".\nScreenshot not found",null,1500,false);
+                  showMessage("Finished " + fileName + ".\nScreenshot comparison " + (ok ? "succeed" : "FAILED"), null,
+                      ok ? 1500 : 2500, !ok);
+                } catch (FileNotFoundException fnfe) {
+                  showMessage("Finished " + fileName + ".\nScreenshot not found", null, 1500, false);
                   Vm.debug("One of the image files was not found during robot test comparison.");
                 }
+              } else if (dump) {
+                lb.add("====================");
               }
-              else
-                if (dump)
-                {
-                  lb.add("====================");
-                }
             }
           }
-          if (dump)
-          {
+          if (dump) {
             cb.popup();
-          }
-          else
-          {
+          } else {
             // kill all tasks in the thread pool
             for (int i = threadPool.size(); --i >= 0;) {
-              ((PostThread)threadPool.items[i]).kill();
+              ((PostThread) threadPool.items[i]).kill();
             }
             threadPool.removeAllElements();
             if (!abort) {
               Vm.sleep(500); // give a time so all can get killed
-            } else
-              if (Settings.onJavaSE) {
-                Vm.debug("UIRobot ABORTED");
-              }
+            } else if (Settings.onJavaSE) {
+              Vm.debug("UIRobot ABORTED");
+            }
             status = IDLE;
             abort = false;
           }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
           e.printStackTrace();
           status = IDLE;
-          robotFailed(fileName,"Exception thrown: "+e);
+          robotFailed(fileName, "Exception thrown: " + e);
         }
         if (autolaunch) {
           recordedRobots = null;
-        }               
+        }
       }
     }.start();
   }
 
-  private String formatTime(int t)
-  {
-    int ms = t % 1000; t /= 1000;
-    int s = t % 60; t /= 60;
-    int m = t % 60; t /= 60;
+  private String formatTime(int t) {
+    int ms = t % 1000;
+    t /= 1000;
+    int s = t % 60;
+    t /= 60;
+    int m = t % 60;
+    t /= 60;
     int h = t % 24;
     StringBuffer sb = new StringBuffer(20);
-    if (h > 0){
+    if (h > 0) {
       sb.append(h).append('h');
     }
-    if (h > 0 || m > 0){
+    if (h > 0 || m > 0) {
       sb.append(m).append('m');
     }
-    if (h > 0 || m > 0 || s > 0){
+    if (h > 0 || m > 0 || s > 0) {
       sb.append(s).append('s');
     }
-    if (ms < 100){
+    if (ms < 100) {
       sb.append('0');
     }
-    if (ms < 10 ){
+    if (ms < 10) {
       sb.append('0');
     }
     sb.append(ms).append("ms");
     return sb.toString();
   }
 
-  private void robotFailed(String fileName, String reason)
-  {
-    Vm.debug("robot "+fileName+" failed");
+  private void robotFailed(String fileName, String reason) {
+    Vm.debug("robot " + fileName + " failed");
     UIRobotEvent ev = new UIRobotEvent(UIRobotEvent.ROBOT_FAILED, fileName, reason);
     MainWindow.getMainWindow().postEvent(ev);
-    if (!ev.consumed && listeners != null){
+    if (!ev.consumed && listeners != null) {
       for (int i = listeners.size(); --i >= 0 && !ev.consumed;) {
-        ((UIRobotListener)listeners.items[i]).robotFailed(ev);
+        ((UIRobotListener) listeners.items[i]).robotFailed(ev);
       }
-    }         
+    }
   }
 
-  private void robotSucceed(String fileName)
-  {
-    Vm.debug("robot "+fileName+" succeed");
+  private void robotSucceed(String fileName) {
+    Vm.debug("robot " + fileName + " succeed");
     UIRobotEvent ev = new UIRobotEvent(UIRobotEvent.ROBOT_SUCCEED, fileName, null);
     MainWindow.getMainWindow().postEvent(ev);
-    if (!ev.consumed && listeners != null){
+    if (!ev.consumed && listeners != null) {
       for (int i = listeners.size(); --i >= 0 && !ev.consumed;) {
-        ((UIRobotListener)listeners.items[i]).robotSucceed(ev);
+        ((UIRobotListener) listeners.items[i]).robotSucceed(ev);
       }
-    }         
+    }
   }
 
-  private void saveScreenShot(String fileName, boolean recording) throws IOException, ImageException
-  {
+  private void saveScreenShot(String fileName, boolean recording) throws IOException, ImageException {
     fileName = getScreenShotName(fileName, recording);
-    File f = new File(fileName,File.CREATE_EMPTY);
+    File f = new File(fileName, File.CREATE_EMPTY);
     Image img = MainWindow.getScreenShot();
     img.createPng(f);
-    f.close();      
+    f.close();
   }
 
-  private String getScreenShotName(String fileName, boolean recording)
-  {
-    return fileName.substring(0,fileName.length()-6) + (recording ? "_rec":"_play") + ".png";
+  private String getScreenShotName(String fileName, boolean recording) {
+    return fileName.substring(0, fileName.length() - 6) + (recording ? "_rec" : "_play") + ".png";
   }
 
-  private static byte []cmpbuf1, cmpbuf2;
+  private static byte[] cmpbuf1, cmpbuf2;
 
-  private boolean compareScreenShots(String fileName) throws FileNotFoundException, IOException, ImageException
-  {
+  private boolean compareScreenShots(String fileName) throws FileNotFoundException, IOException, ImageException {
     saveScreenShot(fileName, false);
     // compare the recorded and playback images
-    if (cmpbuf1 == null)
-    {
+    if (cmpbuf1 == null) {
       cmpbuf1 = new byte[2048];
       cmpbuf2 = new byte[2048];
     }
@@ -588,10 +532,9 @@ public class UIRobot
     int sr = frec.getSize();
     int sp = fply.getSize();
     boolean same = sr == sp;
-    while (same)
-    {
-      int r1 = frec.readBytes(cmp1,0,cmp1.length);
-      int r2 = fply.readBytes(cmp2,0,cmp2.length);
+    while (same) {
+      int r1 = frec.readBytes(cmp1, 0, cmp1.length);
+      int r2 = fply.readBytes(cmp2, 0, cmp2.length);
       if (r1 <= 0) {
         break;
       }
@@ -607,37 +550,42 @@ public class UIRobot
     }
     frec.close();
     fply.close();
-    if (same){
+    if (same) {
       robotSucceed(fileName);
-    }else {
-      robotFailed(fileName,"Screenshots don't match");
+    } else {
+      robotFailed(fileName, "Screenshots don't match");
     }
     return same;
   }
 
-  private String dumpEvent(int j, int type, int key, int x, int y, int mods, int delay)
-  {
-    switch (type)
-    {
-    case UIRobotEvent.ROBOT_EOF:     return "ROBOT FINISHED"+" @ "+delay+"ms - "+formatTime(totalTime);
-    case PenEvent.PEN_DOWN:          return "PEN_DOWN  "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
-    case PenEvent.PEN_UP:            return "PEN_UP    "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
-    case PenEvent.PEN_DRAG:          return "PEN_DRAG  "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
-    case KeyEvent.KEY_PRESS:         return "KEY_PRESS "+(key < 10 ? "  " : key < 100 ? " " : "")+key+" '"+(char)key+"'"+(mods == 0 ? " @ " : " - "+mods+" @ ")+delay+"ms - "+formatTime(totalTime);
-    case KeyEvent.SPECIAL_KEY_PRESS: return "SPECIAL_KEY_PRESS "+key+(mods == 0 ? " @ " : " ("+mods+") @ ")+delay+"ms - "+formatTime(totalTime);
+  private String dumpEvent(int j, int type, int key, int x, int y, int mods, int delay) {
+    switch (type) {
+    case UIRobotEvent.ROBOT_EOF:
+      return "ROBOT FINISHED" + " @ " + delay + "ms - " + formatTime(totalTime);
+    case PenEvent.PEN_DOWN:
+      return "PEN_DOWN  " + x + "," + y + " @ " + delay + "ms - " + formatTime(totalTime);
+    case PenEvent.PEN_UP:
+      return "PEN_UP    " + x + "," + y + " @ " + delay + "ms - " + formatTime(totalTime);
+    case PenEvent.PEN_DRAG:
+      return "PEN_DRAG  " + x + "," + y + " @ " + delay + "ms - " + formatTime(totalTime);
+    case KeyEvent.KEY_PRESS:
+      return "KEY_PRESS " + (key < 10 ? "  " : key < 100 ? " " : "") + key + " '" + (char) key + "'"
+          + (mods == 0 ? " @ " : " - " + mods + " @ ") + delay + "ms - " + formatTime(totalTime);
+    case KeyEvent.SPECIAL_KEY_PRESS:
+      return "SPECIAL_KEY_PRESS " + key + (mods == 0 ? " @ " : " (" + mods + ") @ ") + delay + "ms - "
+          + formatTime(totalTime);
     }
     return "";
   }
 
-  private int showMessage(String msg, String[] btns, int delay, boolean error)
-  {
-    MessageBox mb = delay > 0 ? new MessageBox(TITLE,msg,null) : btns == null ? new MessageBox(TITLE, msg) : new MessageBox(TITLE,msg,btns);
+  private int showMessage(String msg, String[] btns, int delay, boolean error) {
+    MessageBox mb = delay > 0 ? new MessageBox(TITLE, msg, null)
+        : btns == null ? new MessageBox(TITLE, msg) : new MessageBox(TITLE, msg, btns);
     mb.transitionEffect = Container.TRANSITION_NONE;
-    mb.setBackForeColors(error ? Color.interpolate(Color.RED,Color.ORANGE) : Color.ORANGE, 1);
-    if (delay == 0){
+    mb.setBackForeColors(error ? Color.interpolate(Color.RED, Color.ORANGE) : Color.ORANGE, 1);
+    if (delay == 0) {
       mb.popup();
-    }else
-    {
+    } else {
       mb.popupNonBlocking();
       Vm.sleep(delay);
       mb.unpop();
@@ -646,10 +594,8 @@ public class UIRobot
   }
 
   /* Called from the Window class to record the event posted */
-  public void onEvent(int type, int key, int x, int y, int modifiers)
-  {
-    switch (type)
-    {
+  public void onEvent(int type, int key, int x, int y, int modifiers) {
+    switch (type) {
     case PenEvent.PEN_DOWN:
     case PenEvent.PEN_UP:
     case PenEvent.PEN_DRAG:
@@ -662,8 +608,7 @@ public class UIRobot
       // skip all others
       return;
     }
-    try
-    {
+    try {
       if (flog == null) {
         return;
       }
@@ -679,85 +624,74 @@ public class UIRobot
       fds.writeInt(modifiers);
       fds.writeInt(elapsed);
       if (Settings.onJavaSE) {
-        Vm.debug((counter++)+" "+type+" "+key+" "+x+" "+y+" "+modifiers+" "+elapsed);
+        Vm.debug((counter++) + " " + type + " " + key + " " + x + " " + y + " " + modifiers + " " + elapsed);
       }
-    }
-    catch (Exception ee)
-    {
-      MessageBox.showException(ee,true);
+    } catch (Exception ee) {
+      MessageBox.showException(ee, true);
     }
   }
 
-  public void stop() throws Exception
-  {
-    if (status == RECORDING)
-    {
-      onEvent(UIRobotEvent.ROBOT_EOF,0,0,0,0);
+  public void stop() throws Exception {
+    if (status == RECORDING) {
+      onEvent(UIRobotEvent.ROBOT_EOF, 0, 0, 0, 0);
       flog.close();
       flog = null;
       saveScreenShot(robotFileName, true);
       fillListOfRecordedRobots();
-      showMessage("Finished recording",null,2000,false);
+      showMessage("Finished recording", null, 2000, false);
     }
     status = IDLE;
   }
 
-  private static class StrTime implements Comparable
-  {
+  private static class StrTime implements Comparable {
     String s;
     long l;
 
-    StrTime(String s, Time t)
-    {
+    StrTime(String s, Time t) {
       this.s = s;
       l = t.getTimeLong();
     }
 
     @Override
-    public int compareTo(Object other) throws ClassCastException
-    {
-      StrTime st = (StrTime)other;
+    public int compareTo(Object other) throws ClassCastException {
+      StrTime st = (StrTime) other;
       long res = l - st.l;
       return res > 0 ? 1 : res < 0 ? -1 : 0;
     }
 
   }
 
-  private void fillListOfRecordedRobots() throws Exception
-  {
+  private void fillListOfRecordedRobots() throws Exception {
     String[] list = new File(Settings.appPath).listFiles();
     recordedRobots = null;
-    if (list != null && list.length > 0)
-    {
+    if (list != null && list.length > 0) {
       Vector v = new Vector(10);
-      for (int i =0; i < list.length; i++) {
-        if (list[i].endsWith(".robot"))
-        {
-          File f = new File(Settings.appPath+"/"+list[i],File.READ_WRITE);
+      for (int i = 0; i < list.length; i++) {
+        if (list[i].endsWith(".robot")) {
+          File f = new File(Settings.appPath + "/" + list[i], File.READ_WRITE);
           Time t = f.getTime(File.TIME_MODIFIED);
           f.close();
-          v.addElement(new StrTime(list[i]+" ("+new Date(t)+" "+t+")", t));
+          v.addElement(new StrTime(list[i] + " (" + new Date(t) + " " + t + ")", t));
         }
       }
       int n = v.size();
-      if (n > 0)
-      {
+      if (n > 0) {
         v.qsort();
         recordedRobots = new String[n];
         while (--n >= 0) {
-          recordedRobots[n] = ((StrTime)v.items[n]).s;
+          recordedRobots[n] = ((StrTime) v.items[n]).s;
         }
       }
     }
   }
 
   Vector listeners;
+
   /** Adds a listener for UIRobot events.
    * @see totalcross.unit.UIRobotListener
    */
-  public void addUIRobotListener(UIRobotListener listener)
-  {
-    if (listeners == null){
+  public void addUIRobotListener(UIRobotListener listener) {
+    if (listeners == null) {
       listeners = new Vector(2);
     }
     listeners.addElement(listener);
@@ -766,8 +700,7 @@ public class UIRobot
   /** Removes a listener for UIRobot events.
    * @see totalcross.unit.UIRobotListener
    */
-  public void removeUIRobotListener(UIRobotListener listener)
-  {
+  public void removeUIRobotListener(UIRobotListener listener) {
     listeners.removeElement(listener);
   }
 

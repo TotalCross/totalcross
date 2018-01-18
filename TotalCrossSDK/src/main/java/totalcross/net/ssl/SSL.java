@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /*
  *  Copyright(C) 2006 Cameron Rich
  *
@@ -66,8 +64,7 @@ import totalcross.util.Hashtable;
 /**
  * A representation of an SSL connection.
  */
-public class SSL
-{
+public class SSL {
   Object ssl;
   Socket socket;
   TrustManager[] _trustMgrs; // skip consistency check
@@ -76,10 +73,8 @@ public class SSL
 
   static private final Hashtable cache = new Hashtable(17);
 
-  static void cachePutSSL(Socket s, SSL ssl)
-  {
-    synchronized(cache)
-    {
+  static void cachePutSSL(Socket s, SSL ssl) {
+    synchronized (cache) {
       if (ssl == null) {
         cache.remove(s);
       } else {
@@ -87,11 +82,10 @@ public class SSL
       }
     }
   }
-  static SSL cacheGetSSL(Socket s)
-  {
-    synchronized(cache)
-    {
-      return (SSL)cache.get(s);
+
+  static SSL cacheGetSSL(Socket s) {
+    synchronized (cache) {
+      return (SSL) cache.get(s);
     }
   }
 
@@ -99,14 +93,12 @@ public class SSL
    * Store the reference to an SSL context.
    * @param ssl A reference to an SSL object.
    */
-  protected SSL(Object ssl, Socket socket)
-  {
+  protected SSL(Object ssl, Socket socket) {
     this.ssl = ssl;
     this.socket = socket;
-    ((javax.net.ssl.SSLSocket)ssl).addHandshakeCompletedListener(new HandshakeCompletedListener() {
+    ((javax.net.ssl.SSLSocket) ssl).addHandshakeCompletedListener(new HandshakeCompletedListener() {
       @Override
-      public void handshakeCompleted(HandshakeCompletedEvent arg)
-      {
+      public void handshakeCompleted(HandshakeCompletedEvent arg) {
         status = Constants.SSL_OK;
       }
     });
@@ -120,15 +112,11 @@ public class SSL
    * is up to the application to close the socket.
    * @throws IOException 
    */
-  final public void dispose() throws IOException
-  {
-    try
-    {
-      ((javax.net.ssl.SSLSocket)ssl).close();
+  final public void dispose() throws IOException {
+    try {
+      ((javax.net.ssl.SSLSocket) ssl).close();
       cachePutSSL(socket, null);
-    }
-    catch (java.io.IOException e)
-    {
+    } catch (java.io.IOException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -137,8 +125,7 @@ public class SSL
    * Return the result of a handshake.
    * @return SSL_OK if the handshake is complete and ok.
    */
-  final public int handshakeStatus()
-  {
+  final public int handshakeStatus() {
     return status;
   }
 
@@ -150,12 +137,10 @@ public class SSL
    * - TLS_RSA_WITH_RC4_128_SHA      (0x05)
    * - TLS_RSA_WITH_RC4_128_MD5      (0x04)
    */
-  final public byte getCipherId()
-  {
-    if (ssl != null)
-    {
-      String cs = ((javax.net.ssl.SSLSocket)ssl).getSession().getCipherSuite();
-      if      (cs.equals("TLS_RSA_WITH_AES_128_CBC_SHA")) {
+  final public byte getCipherId() {
+    if (ssl != null) {
+      String cs = ((javax.net.ssl.SSLSocket) ssl).getSession().getCipherSuite();
+      if (cs.equals("TLS_RSA_WITH_AES_128_CBC_SHA")) {
         return Constants.TLS_RSA_WITH_AES_128_CBC_SHA;
       } else if (cs.equals("TLS_RSA_WITH_AES_256_CBC_SHA")) {
         return Constants.TLS_RSA_WITH_AES_256_CBC_SHA;
@@ -176,10 +161,9 @@ public class SSL
    * A SSLv23 handshake may have only 16 valid bytes.
    * @return The session id as a 32 byte sequence.
    */
-  final public byte[] getSessionId()
-  {
-    if (ssl != null){
-      return ((javax.net.ssl.SSLSocket)ssl).getSession().getId();
+  final public byte[] getSessionId() {
+    if (ssl != null) {
+      return ((javax.net.ssl.SSLSocket) ssl).getSession().getId();
     }
     return null;
   }
@@ -205,18 +189,13 @@ public class SSL
    * @return The appropriate string (or null if not defined)
    * @throws CryptoException 
    */
-  final public String getCertificateDN(int component) throws CryptoException
-  {
-    if (ssl != null)
-    {
+  final public String getCertificateDN(int component) throws CryptoException {
+    if (ssl != null) {
       SSLSession session = ((javax.net.ssl.SSLSocket) ssl).getSession();
       java.security.cert.Certificate chain[];
-      try
-      {
+      try {
         chain = session.getPeerCertificates();
-      }
-      catch (javax.net.ssl.SSLPeerUnverifiedException e)
-      {
+      } catch (javax.net.ssl.SSLPeerUnverifiedException e) {
         throw new CryptoException(e.getMessage());
       }
       if (chain == null || chain.length == 0 || chain[0] == null) {
@@ -225,8 +204,7 @@ public class SSL
 
       X500Principal principal = null;
 
-      switch (component)
-      {
+      switch (component) {
       // issuer X500
       case Constants.SSL_X509_CA_CERT_COMMON_NAME:
       case Constants.SSL_X509_CA_CERT_ORGANIZATION:
@@ -234,7 +212,7 @@ public class SSL
         principal = ((java.security.cert.X509Certificate) chain[0]).getIssuerX500Principal();
         break;
 
-        // subject X500
+      // subject X500
       case Constants.SSL_X509_CERT_COMMON_NAME:
       case Constants.SSL_X509_CERT_ORGANIZATION:
       case Constants.SSL_X509_CERT_ORGANIZATIONAL_NAME:
@@ -252,8 +230,7 @@ public class SSL
       }
 
       int s;
-      switch (component)
-      {
+      switch (component) {
 
       case Constants.SSL_X509_CA_CERT_COMMON_NAME:
       case Constants.SSL_X509_CERT_COMMON_NAME:
@@ -266,8 +243,7 @@ public class SSL
       case Constants.SSL_X509_CA_CERT_ORGANIZATION:
       case Constants.SSL_X509_CERT_ORGANIZATION:
         s = x500.indexOf("O=");
-        if (s >= 0)
-        {
+        if (s >= 0) {
           int lc = x500.indexOf(',', s);
           s += 2;
           if (lc >= s) {
@@ -303,19 +279,15 @@ public class SSL
    * @throws SocketTimeoutException
    * @throws IOException 
    */
-  final public int read(SSLReadHolder rh) throws SocketTimeoutException, IOException
-  {
-    if (ssl != null)
-    {
-      try
-      {
+  final public int read(SSLReadHolder rh) throws SocketTimeoutException, IOException {
+    if (ssl != null) {
+      try {
         javax.net.ssl.SSLSocket sslSocket = (javax.net.ssl.SSLSocket) ssl;
         sslSocket.setSoTimeout(socket.readTimeout);
 
         InputStream is = sslSocket.getInputStream();
         int r = is.read(); // first, read one byte using the timeout
-        if (r != -1)
-        {
+        if (r != -1) {
           int count = is.available();
           byte[] buf = rh.m_buf = new byte[count + 1];
 
@@ -326,9 +298,7 @@ public class SSL
 
           return count + 1;
         }
-      }
-      catch (java.io.IOException e)
-      {
+      } catch (java.io.IOException e) {
         throw new IOException(e.getMessage());
       }
     }
@@ -342,8 +312,7 @@ public class SSL
    * @return The number of bytes sent, or if < 0 if an error.
    * @throws IOException 
    */
-  final public int write(byte[] out_data) throws IOException
-  {
+  final public int write(byte[] out_data) throws IOException {
     return write(out_data, out_data.length);
   }
 
@@ -354,17 +323,12 @@ public class SSL
    * @return The number of bytes sent, or if < 0 if an error.
    * @throws IOException 
    */
-  final public int write(byte[] out_data, int out_len) throws IOException
-  {
-    if (ssl != null)
-    {
-      try
-      {
-        ((javax.net.ssl.SSLSocket)ssl).getOutputStream().write(out_data, 0, out_len);
+  final public int write(byte[] out_data, int out_len) throws IOException {
+    if (ssl != null) {
+      try {
+        ((javax.net.ssl.SSLSocket) ssl).getOutputStream().write(out_data, 0, out_len);
         return out_len;
-      }
-      catch (java.io.IOException e)
-      {
+      } catch (java.io.IOException e) {
         throw new IOException(e.getMessage());
       }
     }
@@ -378,28 +342,23 @@ public class SSL
    * @return SSL_OK if the certificate is verified.
    * @throws CryptoException 
    */
-  final public int verifyCertificate() throws CryptoException
-  {
-    for (int i = 0; i < _trustMgrs.length; i++)
-    {
-      try
-      {
-        Certificate[] certs = ((javax.net.ssl.SSLSocket)ssl).getSession().getPeerCertificates();
-        java.security.cert.X509Certificate[] _certs = new java.security.cert.X509Certificate[certs.length]; 
+  final public int verifyCertificate() throws CryptoException {
+    for (int i = 0; i < _trustMgrs.length; i++) {
+      try {
+        Certificate[] certs = ((javax.net.ssl.SSLSocket) ssl).getSession().getPeerCertificates();
+        java.security.cert.X509Certificate[] _certs = new java.security.cert.X509Certificate[certs.length];
         for (int c = 0; c < certs.length; c++) {
-          _certs[c] = (java.security.cert.X509Certificate)certs[c];
+          _certs[c] = (java.security.cert.X509Certificate) certs[c];
         }
 
-        javax.net.ssl.X509TrustManager x509_tm = (javax.net.ssl.X509TrustManager)_trustMgrs[i];
+        javax.net.ssl.X509TrustManager x509_tm = (javax.net.ssl.X509TrustManager) _trustMgrs[i];
         x509_tm.checkServerTrusted(_certs, "RSA");
 
         // found one trust manager that could verify the peer certificate chain
         return Constants.SSL_OK;
-      }
-      catch (SSLPeerUnverifiedException ex) { /* no remote certificate */ }
-      catch (ValidatorException ex)         { /* remote certificate is not trusted! */ }
-      catch (CertificateException ex)
-      {
+      } catch (SSLPeerUnverifiedException ex) {
+        /* no remote certificate */ } catch (ValidatorException ex) {
+        /* remote certificate is not trusted! */ } catch (CertificateException ex) {
         throw new CryptoException(ex.getMessage());
       }
     }
@@ -414,17 +373,12 @@ public class SSL
    * @return SSL_OK if renegotiation instantiation was ok
    * @throws IOException 
    */
-  final public int renegotiate() throws IOException
-  {
-    if (ssl != null)
-    {
-      try
-      {
+  final public int renegotiate() throws IOException {
+    if (ssl != null) {
+      try {
         status = Constants.SSL_HANDSHAKE_IN_PROGRESS;
-        ((javax.net.ssl.SSLSocket)ssl).startHandshake();
-      }
-      catch (java.io.IOException e)
-      {
+        ((javax.net.ssl.SSLSocket) ssl).startHandshake();
+      } catch (java.io.IOException e) {
         throw new IOException(e.getMessage());
       }
     }
@@ -435,8 +389,7 @@ public class SSL
    * @return the last exception occurred in this SSL connection.
    * @since TotalCross 1.20
    */
-  final public Exception getLastException()
-  {
+  final public Exception getLastException() {
     return lastException;
   }
 }

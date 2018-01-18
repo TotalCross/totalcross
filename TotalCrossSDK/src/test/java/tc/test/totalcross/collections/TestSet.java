@@ -17,11 +17,9 @@ import java.util.Set;
 
 import totalcross.unit.TestCase;
 
-public class TestSet extends TestCase
-{
+public class TestSet extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test8 test1 = new Test8();
     Set test2 = new Test8();
 
@@ -61,101 +59,81 @@ public class TestSet extends TestCase
     assertFalse(test1.removeAll(null));
     assertFalse(test2.removeAll(null));
 
-    try
-    {
+    try {
       test1.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("1");
     }
-    try
-    {
+    try {
       test2.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("2");
     }
   }
 }
 
-class Test8 implements Set
-{
+class Test8 implements Set {
   @Override
-  public int size()
-  {
+  public int size() {
     return 0;
   }
 
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return false;
   }
 
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     return false;
   }
 
   @Override
-  public Iterator iterator()
-  {
+  public Iterator iterator() {
     return null;
   }
 
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     return null;
   }
 
   @Override
-  public Object[] toArray(Object[] a)
-  {
+  public Object[] toArray(Object[] a) {
     return null;
   }
 
   @Override
-  public boolean add(Object e)
-  {
+  public boolean add(Object e) {
     return false;
   }
 
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     return false;
   }
 
   @Override
-  public boolean containsAll(Collection c)
-  {
+  public boolean containsAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean addAll(Collection c)
-  {
+  public boolean addAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean retainAll(Collection c)
-  {
+  public boolean retainAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean removeAll(Collection c)
-  {
+  public boolean removeAll(Collection c) {
     return false;
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
   }
 }

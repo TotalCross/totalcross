@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.tree;
 
 import totalcross.util.Vector;
@@ -25,12 +23,11 @@ import totalcross.util.Vector;
  * This class defines the requirements for an object that can be used as a
  * tree node in a Tree. 
  * 
- */ 
+ */
 
-public class Node extends Vector implements totalcross.util.Comparable
-{
+public class Node extends Vector implements totalcross.util.Comparable {
   /** This node's parent (root node is when the parent node = null). */
-  protected Node           parent;                
+  protected Node parent;
 
   /** The user's object that can be set with anything you want.
    * 
@@ -45,14 +42,14 @@ public class Node extends Vector implements totalcross.util.Comparable
    {
       String txt;
       public Item(String s) {txt = s;}
-
+  
       public void initUI()
       {
          add(new Check("Here"),LEFT,CENTER,PARENTSIZE+50,PREFERRED);
          add(new Button(txt),AFTER,CENTER,PARENTSIZE+50,PREFERRED);
       }
    }
-
+  
    public void initUI()
    {
       try
@@ -77,18 +74,18 @@ public class Node extends Vector implements totalcross.util.Comparable
    }
    * </pre>
    */
-  public Object            userObject;
+  public Object userObject;
 
   /** The user's int that can be set with anything you want.
    * @since TotalCross 1.25 
    */
-  public int               userInt; // guich@tc125_30
+  public int userInt; // guich@tc125_30
 
   /** flag to determine if this node can have children */
-  public boolean           allowsChildren;
+  public boolean allowsChildren;
 
   /** flag to determine if the leaf node has been clicked before */
-  public boolean           visited;
+  public boolean visited;
 
   /** flag to determine if this node is checked (in multiple-selection trees). */
   public boolean isChecked;
@@ -110,8 +107,7 @@ public class Node extends Vector implements totalcross.util.Comparable
   /**
    * Default constructor to create a tree node that has no parent and no children, but which allows children.
    */
-  public Node()
-  {
+  public Node() {
     this("");
   }
 
@@ -122,8 +118,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param userObject
    *           the user object.
    */
-  public Node(Object userObject)
-  {
+  public Node(Object userObject) {
     super(5);
     this.userObject = userObject;
   }
@@ -135,9 +130,8 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param newChild
    *           the new child node to add to the end of the child vector.
    */
-  public void add(Node newChild)
-  {
-    if (newChild.parent != null){
+  public void add(Node newChild) {
+    if (newChild.parent != null) {
       newChild.removeFromParent();
     }
     newChild.parent = this;
@@ -149,8 +143,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the children vector of this node.
    */
-  public Vector breadthFirstVector()
-  {
+  public Vector breadthFirstVector() {
     Vector v = new Vector(count);
     breadthFirst(v, this);
     return v;
@@ -164,11 +157,10 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param node
    *           the node to traverse
    */
-  private void breadthFirst(Vector v, Node node)
-  {
+  private void breadthFirst(Vector v, Node node) {
     v.addElement(node);
     for (int i = 0, n = node.count; i < n; i++) {
-      breadthFirst(v, (Node)node.items[i]);
+      breadthFirst(v, (Node) node.items[i]);
     }
   }
 
@@ -178,10 +170,9 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the child node that immediately follows aChild node.
    */
-  public Node getChildAfter(Node aChild)
-  {
+  public Node getChildAfter(Node aChild) {
     int pos = indexOf(aChild);
-    if (pos >= 0 && pos < count - 1){
+    if (pos >= 0 && pos < count - 1) {
       return (Node) items[pos + 1];
     }
     return null;
@@ -193,10 +184,9 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the child node that immediately precede aChild node.
    */
-  public Node getChildBefore(Node aChild)
-  {
+  public Node getChildBefore(Node aChild) {
     int pos = indexOf(aChild);
-    if (pos > 0){
+    if (pos > 0) {
       return (Node) items[pos - 1];
     }
     return null;
@@ -207,9 +197,8 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return this node's first child, or null if there's none.
    */
-  public Node getFirstChild()
-  {
-    return count == 0 ? null : (Node)items[0];
+  public Node getFirstChild() {
+    return count == 0 ? null : (Node) items[0];
   }
 
   /**
@@ -217,9 +206,8 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return this node's last child, or null if there's none.
    */
-  public Node getLastChild()
-  {
-    return count == 0 ? null : (Node)items[count-1];
+  public Node getLastChild() {
+    return count == 0 ? null : (Node) items[count - 1];
   }
 
   /**
@@ -227,8 +215,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the number of levels above this node -- the distance from the root to this node
    */
-  public int getLevel()
-  {
+  public int getLevel() {
     int level = -1;
     for (Node node = this; node != null; node = node.parent) {
       level++;
@@ -241,8 +228,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the node name of this node.
    */
-  public String getNodeName()
-  {
+  public String getNodeName() {
     return userObject == null ? "" : userObject.toString();
   }
 
@@ -254,8 +240,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @return the next sibling of this node in the parent's children array. Returns null if this node has no parent or
    *         is the parent's last child.
    */
-  public Node getNextSibling()
-  {
+  public Node getNextSibling() {
     return parent != null ? parent.getChildAfter(this) : null;
   }
 
@@ -267,16 +252,14 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @return the previous sibling of this node in the parent's children array. Returns null if this node has no parent
    *         or is the parent's in the tree.
    */
-  public Node getPreviousSibling()
-  {
+  public Node getPreviousSibling() {
     return parent != null ? parent.getChildBefore(this) : null;
   }
 
   /**
    * Method to return this node's parent or null if this node has no parent.
    */
-  public Node getParent()
-  {
+  public Node getParent() {
     return parent;
   }
 
@@ -285,8 +268,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the path from the root, to get to this node.
    */
-  public Node[] getPath()
-  {
+  public Node[] getPath() {
     Vector v = new Vector();
     pathFromRootToNode(v, this);
 
@@ -301,8 +283,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the path from this node to the root node, including the root node.
    */
-  protected Node[] getPathToRoot()
-  {
+  protected Node[] getPathToRoot() {
     Vector v = new Vector();
     pathFromNodeToRoot(v, this);
 
@@ -319,10 +300,8 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param node
    *           the specified node.
    */
-  private void pathFromRootToNode(Vector v, Node node)
-  {
-    if (node != null)
-    {
+  private void pathFromRootToNode(Vector v, Node node) {
+    if (node != null) {
       pathFromRootToNode(v, node.parent);
       v.addElement(node);
     }
@@ -336,10 +315,8 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param node
    *           the specified node.
    */
-  private void pathFromNodeToRoot(Vector v, Node node)
-  {
-    if (node != null)
-    {
+  private void pathFromNodeToRoot(Vector v, Node node) {
+    if (node != null) {
       v.addElement(node);
       pathFromNodeToRoot(v, node.parent);
     }
@@ -350,10 +327,9 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the root of the tree that contains this node.
    */
-  public Node getRoot()
-  {
+  public Node getRoot() {
     Node node = this;
-    while (!node.isRoot()){
+    while (!node.isRoot()) {
       node = node.parent;
     }
     return node;
@@ -364,8 +340,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return the user object path, from the root, to get to this node.
    */
-  public Object[] getUserObjectPath()
-  {
+  public Object[] getUserObjectPath() {
     Node nodes[] = getPath();
     Object obj[] = new Object[nodes.length];
     for (int i = 0; i < obj.length; i++) {
@@ -385,20 +360,16 @@ public class Node extends Vector implements totalcross.util.Comparable
    *           the position in the children vector to insert newChild.
    * @return the child index.
    */
-  public int insert(Node newChild, int childIndex)
-  {
-    if (newChild.parent != null){
+  public int insert(Node newChild, int childIndex) {
+    if (newChild.parent != null) {
       newChild.removeFromParent();
     }
 
-    try
-    {
+    try {
       insertElementAt(newChild, childIndex);
       newChild.parent = this;
       return childIndex < 0 || childIndex >= count ? indexOf(newChild) : childIndex;
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       addElement(newChild);
       newChild.parent = this;
       return count - 1;
@@ -410,8 +381,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return true if this node has no children.
    */
-  public boolean isLeaf()
-  {
+  public boolean isLeaf() {
     return count == 0;
   }
 
@@ -420,16 +390,14 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return true if this node has no children.
    */
-  public boolean isLeaf(boolean useAllowsChildren)
-  {
+  public boolean isLeaf(boolean useAllowsChildren) {
     return count == 0 && (!useAllowsChildren || !this.allowsChildren);
   }
 
   /**
    * Method to return true if this node is a root. Root node is node that has a null parent node.
    */
-  public boolean isRoot()
-  {
+  public boolean isRoot() {
     return parent == null;
   }
 
@@ -440,9 +408,8 @@ public class Node extends Vector implements totalcross.util.Comparable
    *           the node to deterimine if it's a shild of this node.
    * @return true if aNode is a child of this node.
    */
-  public boolean isNodeChild(Node aNode)
-  {
-    if (aNode.parent == this){
+  public boolean isNodeChild(Node aNode) {
+    if (aNode.parent == this) {
       for (int i = 0; i < count; i++) {
         if (aNode == items[i]) {
           return true;
@@ -457,8 +424,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    *
    * @return true if anotherNode is a sibling of (has the same parent as) this node.
    */
-  public boolean isNodeSibling(Node anotherNode)
-  {
+  public boolean isNodeSibling(Node anotherNode) {
     return parent != null && parent == anotherNode.parent;
   }
 
@@ -468,11 +434,9 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param childIndex
    *           the index of the this node's children to be removed
    */
-  public void remove(int childIndex)
-  {
-    if (childIndex > -1 && childIndex < count)
-    {
-      ((Node)items[childIndex]).parent = null;
+  public void remove(int childIndex) {
+    if (childIndex > -1 && childIndex < count) {
+      ((Node) items[childIndex]).parent = null;
       removeElementAt(childIndex);
     }
   }
@@ -483,10 +447,8 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param aChild
    *           the child node to remove.
    */
-  public void remove(Node aChild)
-  {
-    if (aChild.parent == this)
-    {
+  public void remove(Node aChild) {
+    if (aChild.parent == this) {
       removeElement(aChild);
       aChild.parent = null;
     }
@@ -496,10 +458,9 @@ public class Node extends Vector implements totalcross.util.Comparable
    * Method to remove all of this node's children, setting their parents to null.
    * If you don't want to set their parents to null, call removeAllElements instead.
    */
-  public void removeAllChildren()
-  {
-    for (int i = 0,n=count; i < n; i++) {
-      ((Node)items[i]).parent = null;
+  public void removeAllChildren() {
+    for (int i = 0, n = count; i < n; i++) {
+      ((Node) items[i]).parent = null;
     }
     removeAllElements();
   }
@@ -507,8 +468,7 @@ public class Node extends Vector implements totalcross.util.Comparable
   /**
    * Method to remove the subtree rooted at this node from the tree, giving this node a null parent.
    */
-  public void removeFromParent()
-  {
+  public void removeFromParent() {
     parent.remove(this);
   }
 
@@ -518,8 +478,7 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @param parent
    *           the newParent node
    */
-  public void setParent(Node parent)
-  {
+  public void setParent(Node parent) {
     this.parent = parent;
   }
 
@@ -530,24 +489,21 @@ public class Node extends Vector implements totalcross.util.Comparable
    * @return the result of sending toString() to this node's user object, or null if this node has no user object.
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return getNodeName();
   }
 
   @Override
-  public int compareTo(Object o)
-  {
+  public int compareTo(Object o) {
     Node other = (Node) o;
-    if (other.userObject instanceof totalcross.util.Comparable){
+    if (other.userObject instanceof totalcross.util.Comparable) {
       return ((totalcross.util.Comparable) userObject).compareTo((totalcross.util.Comparable) other.userObject);
     }
     return this.equals(other) ? 0 : -1;
   }
 
   @Override
-  public boolean equals(Object o)
-  {
+  public boolean equals(Object o) {
     return o.equals(userObject);
   }
 }

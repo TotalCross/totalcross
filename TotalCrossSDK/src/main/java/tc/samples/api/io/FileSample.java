@@ -30,25 +30,19 @@ import totalcross.util.Date;
 import totalcross.util.InvalidDateException;
 import totalcross.util.Vector;
 
-public class FileSample extends BaseContainer implements Runnable
-{
-  private String rootPath = Settings.appPath+"/";
+public class FileSample extends BaseContainer implements Runnable {
+  private String rootPath = Settings.appPath + "/";
 
-  private boolean recursiveList(String path, Vector v)
-  {
-    if (path == null){
+  private boolean recursiveList(String path, Vector v) {
+    if (path == null) {
       return false;
     }
-    try
-    {
+    try {
       File file = new File(path);
       String[] list = file.listFiles();
-      if (list != null)
-      {
-        for (int i = 0; i < list.length; i++)
-        {
-          if (list[i] != null)
-          {
+      if (list != null) {
+        for (int i = 0; i < list.length; i++) {
+          if (list[i] != null) {
             v.addElement(path + list[i]);
             if (list[i].endsWith("/")) {
               recursiveList(path + list[i], v);
@@ -57,9 +51,7 @@ public class FileSample extends BaseContainer implements Runnable
         }
       }
       file.close();
-    }
-    catch (IOException ioe)
-    {
+    } catch (IOException ioe) {
       ioe.printStackTrace();
       Vm.debug(ioe.getMessage());
       return false;
@@ -67,46 +59,37 @@ public class FileSample extends BaseContainer implements Runnable
     return true;
   }
 
-  private void testFileList()
-  {
+  private void testFileList() {
     log("===== testFileList =====");
     Vector v = new Vector(50);
-    if (!recursiveList(rootPath, v)){
+    if (!recursiveList(rootPath, v)) {
       log("recursiveList threw an exception");
-    }else
-    {
+    } else {
       log("recursiveList successful");
       int start;
       start = Vm.getTimeStamp();
       String[] files = (String[]) v.toObjectArray();
-      if (files == null)
-      {
+      if (files == null) {
         log("recursiveList found no files");
-        files = new String[] {"No files"};
-      }
-      else
-      {
+        files = new String[] { "No files" };
+      } else {
         log("recursiveList found " + files.length);
-        if (files[0].charAt(1) == '[')
-        {
+        if (files[0].charAt(1) == '[') {
           files[0] = files[0].substring(1); // remove the preceding slash
         }
       }
-      add(new ComboBox(files), LEFT, TOP, FILL,PREFERRED);
+      add(new ComboBox(files), LEFT, TOP, FILL, PREFERRED);
       log("recursiveList took " + (Vm.getTimeStamp() - start) + "ms");
     }
   }
 
-  private void testDirectory()
-  {
+  private void testDirectory() {
     log("===== testDirectory =====");
-    try
-    {
+    try {
       File f = new File(rootPath + "TempDir");
       boolean exists = f.exists();
       log(rootPath + "TempDir.exists? " + exists);
-      if (!exists)
-      {
+      if (!exists) {
         log("Creating dir...");
         f.createDir();
       }
@@ -117,22 +100,17 @@ public class FileSample extends BaseContainer implements Runnable
       log(rootPath + "TempDir.exists after delete? " + f.exists());
 
       log("testDirectory successful");
-    }
-    catch (IOException ioe)
-    {
+    } catch (IOException ioe) {
       log("testDirectory threw an exception " + ioe.getMessage());
       ioe.printStackTrace();
     }
   }
 
-  private void testFileRename()
-  {
+  private void testFileRename() {
     log("===== testFileRename =====");
-    try
-    {
+    try {
       File f = new File(rootPath + "TempRename");
-      if (!f.exists())
-      {
+      if (!f.exists()) {
         log(rootPath + "TempRename does not exist. Creating...");
         f.createDir();
       }
@@ -159,19 +137,15 @@ public class FileSample extends BaseContainer implements Runnable
       log(rootPath + "TestRename.exists? " + f.exists());
 
       log("testFileRename successful");
-    }
-    catch (IOException ioe)
-    {
+    } catch (IOException ioe) {
       log("testFileRename threw an exception:\n" + ioe.getMessage());
       ioe.printStackTrace();
     }
   }
 
-  private void testFileReadWrite()
-  {
+  private void testFileReadWrite() {
     log("===== testFileReadWrite =====");
-    try
-    {
+    try {
       File f = new File(rootPath + "Teste.txt", File.CREATE);
       log("writing values to file...");
       DataStream ds = new DataStream(f);
@@ -196,39 +170,34 @@ public class FileSample extends BaseContainer implements Runnable
       log("file deleted? " + !f.exists());
 
       log("testFileReadWrite successful");
-    }
-    catch (totalcross.io.IOException ioe)
-    {
+    } catch (totalcross.io.IOException ioe) {
       log("Test failed");
       log("testFileReadWrite threw an exception " + ioe.getMessage());
       ioe.printStackTrace();
     }
   }
 
-  private String getAttrDescription(int attr)
-  {
+  private String getAttrDescription(int attr) {
     String s = "";
-    if ((attr & File.ATTR_ARCHIVE) != 0){
+    if ((attr & File.ATTR_ARCHIVE) != 0) {
       s += "A";
     }
-    if ((attr & File.ATTR_HIDDEN) != 0){
+    if ((attr & File.ATTR_HIDDEN) != 0) {
       s += "H";
     }
-    if ((attr & File.ATTR_READ_ONLY) != 0){
+    if ((attr & File.ATTR_READ_ONLY) != 0) {
       s += "R";
     }
-    if ((attr & File.ATTR_SYSTEM) != 0){
+    if ((attr & File.ATTR_SYSTEM) != 0) {
       s += "S";
     }
     return s;
   }
 
-  private void testAttrTime()
-  {
+  private void testAttrTime() {
     log("===== testAttrTime =====");
     log("creating file " + rootPath + "TestAttr.txt");
-    try
-    {
+    try {
       File f = new File(rootPath + "TestAttr.txt", File.CREATE);
       int attr = f.getAttributes();
       log("File attributes: " + getAttrDescription(attr));
@@ -240,34 +209,25 @@ public class FileSample extends BaseContainer implements Runnable
       Time t;
       log("File Created Time:");
       t = f.getTime(File.TIME_CREATED);
-      try
-      {
+      try {
         log("" + new Date(t) + " " + t);
-      }
-      catch (InvalidDateException ide)
-      {
+      } catch (InvalidDateException ide) {
         log(ide.getMessage());
       }
 
       log("File Modified Time:");
       t = f.getTime(File.TIME_MODIFIED);
-      try
-      {
+      try {
         log("" + new Date(t) + " " + t);
-      }
-      catch (InvalidDateException ide)
-      {
+      } catch (InvalidDateException ide) {
         log(ide.getMessage());
       }
 
       log("File Acessed Time:");
       t = f.getTime(File.TIME_ACCESSED);
-      try
-      {
+      try {
         log("" + new Date(t) + " " + t);
-      }
-      catch (InvalidDateException ide)
-      {
+      } catch (InvalidDateException ide) {
         log(ide.getMessage());
       }
 
@@ -276,12 +236,9 @@ public class FileSample extends BaseContainer implements Runnable
       f.setTime(File.TIME_MODIFIED, new Time(2000, 3, 25, 13, 30, 15, 0));
       log("File Modified Time now is:");
       t = f.getTime(File.TIME_MODIFIED);
-      try
-      {
+      try {
         log("" + new Date(t) + " " + t);
-      }
-      catch (InvalidDateException ide)
-      {
+      } catch (InvalidDateException ide) {
         log(ide.getMessage());
       }
 
@@ -292,9 +249,7 @@ public class FileSample extends BaseContainer implements Runnable
       log("File deleted? " + !f.exists());
 
       log("testAttrTime successful");
-    }
-    catch (totalcross.io.IOException ioe)
-    {
+    } catch (totalcross.io.IOException ioe) {
       log("Test failed");
       log("testAttrTime threw an exception " + ioe.getMessage());
       ioe.printStackTrace();
@@ -302,17 +257,13 @@ public class FileSample extends BaseContainer implements Runnable
   }
 
   @Override
-  public void run()
-  {
+  public void run() {
     MessageBox mb = new MessageBox("Attention", "Please wait,\nrunning tests...", null);
     mb.popupNonBlocking();
     testSDCards();
-    try
-    {
+    try {
       testFileList();
-    }
-    catch (OutOfMemoryError oome)
-    {
+    } catch (OutOfMemoryError oome) {
       log("Not all files are shown");
     }
     testAttrTime();
@@ -323,26 +274,23 @@ public class FileSample extends BaseContainer implements Runnable
     mb.unpop();
   }
 
-  private void testSDCards()
-  {
-    if (Settings.platform.equals(Settings.ANDROID)){
+  private void testSDCards() {
+    if (Settings.platform.equals(Settings.ANDROID)) {
       for (int i = 0; i <= 9; i++) {
-        try
-        {
+        try {
           if (File.isCardInserted(i)) {
-            log("/sdcard"+i+" exists");
+            log("/sdcard" + i + " exists");
           }
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
       }
     }
   }
 
   @Override
-  public void initUI()
-  {
+  public void initUI() {
     super.initUI();
-    addLog(LEFT, TOP + fmH*2, FILL, FILL,null);
+    addLog(LEFT, TOP + fmH * 2, FILL, FILL, null);
     MainWindow.getMainWindow().runOnMainThread(this); // allow animation
   }
 }

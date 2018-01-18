@@ -14,24 +14,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
 /**
  * GameEngine exception. Note that it extends RuntimeException, and, thus, is unchecked.
  */
-public class GameEngineException extends RuntimeException
-{
+public class GameEngineException extends RuntimeException {
   /** Constructs an empty Exception. */
-  public GameEngineException()
-  {
+  public GameEngineException() {
   }
 
   /** Constructs an exception with the given message. */
-  public GameEngineException(String msg)
-  {
+  public GameEngineException(String msg) {
     super(msg);
   }
 }
-

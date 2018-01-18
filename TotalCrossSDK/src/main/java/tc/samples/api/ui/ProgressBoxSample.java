@@ -26,46 +26,35 @@ import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 import totalcross.ui.gfx.Color;
 
-public class ProgressBoxSample extends BaseContainer
-{
+public class ProgressBoxSample extends BaseContainer {
   ButtonMenu menu;
 
   @Override
-  public void initUI()
-  {
-    try
-    {
+  public void initUI() {
+    try {
       super.initUI();
 
-      String[] items =
-        {
-            "Small ProgressBox (style 1)",
-            "Big ProgressBox (style 1)",
-            "Small ProgressBox (style 2)",
-            "Big ProgressBox (style 2)"
-        };
+      String[] items = { "Small ProgressBox (style 1)", "Big ProgressBox (style 1)", "Small ProgressBox (style 2)",
+          "Big ProgressBox (style 2)" };
 
       menu = new ButtonMenu(items, ButtonMenu.SINGLE_COLUMN);
       menu.pressedColor = Color.GREEN;
-      add(menu,LEFT,TOP,FILL,FILL);
+      add(menu, LEFT, TOP, FILL, FILL);
 
       setInfo("Each test takes 5 seconds");
-    }
-    catch (Exception ee)
-    {
-      MessageBox.showException(ee,true);
+    } catch (Exception ee) {
+      MessageBox.showException(ee, true);
     }
   }
 
   @Override
-  public void onEvent(Event e)
-  {
-    if (e.type == ControlEvent.PRESSED && e.target == menu)
-    {
+  public void onEvent(Event e) {
+    if (e.type == ControlEvent.PRESSED && e.target == menu) {
       int sel = menu.getSelectedIndex();
       Spinner.spinnerType = sel >= 2 ? Spinner.ANDROID : Spinner.IPHONE;
-      String msg = sel == 0 || sel == 2 ? "Loading, please wait..." : "This device will explode\nin 5 seconds...\nthrow it away!";
-      ProgressBox pb = new ProgressBox("Message",msg,null);
+      String msg = sel == 0 || sel == 2 ? "Loading, please wait..."
+          : "This device will explode\nin 5 seconds...\nthrow it away!";
+      ProgressBox pb = new ProgressBox("Message", msg, null);
       pb.popupNonBlocking();
       // we can't just block using Vm.sleep because it would also 
       // block a screen rotation from correctly paint the screen

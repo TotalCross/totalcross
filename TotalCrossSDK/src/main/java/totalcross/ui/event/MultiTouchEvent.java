@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
 import totalcross.ui.Control;
@@ -31,12 +29,11 @@ import totalcross.ui.Control;
  * </ol>
  */
 
-public class MultiTouchEvent extends Event
-{
+public class MultiTouchEvent extends Event {
   /** The event type for a pen or mouse down. */
   public static final int SCALE = 250;
 
-  protected static final String[] EVENT_NAME = {"SCALE"};
+  protected static final String[] EVENT_NAME = { "SCALE" };
 
   /** The current scale value. */
   public double scale;
@@ -44,8 +41,7 @@ public class MultiTouchEvent extends Event
   /** Updates this event setting also the timestamp, consumed and target.
    * @since TotalCross 1.0
    */
-  public MultiTouchEvent update(Control c, double scale)
-  {
+  public MultiTouchEvent update(Control c, double scale) {
     this.type = SCALE;
     timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.
     consumed = false;
@@ -55,15 +51,12 @@ public class MultiTouchEvent extends Event
   }
 
   /** Returns the event name. Used to debugging. */
-  public static String getEventName(int type)
-  {
-    return SCALE <= type && type <= SCALE ? EVENT_NAME[type-250] : "Not a MultiTouchEvent";
+  public static String getEventName(int type) {
+    return SCALE <= type && type <= SCALE ? EVENT_NAME[type - 250] : "Not a MultiTouchEvent";
   }
 
   @Override
-  public String toString()
-  {
-    return EVENT_NAME[type-250]+" scale: "+scale+" "+super.toString();
+  public String toString() {
+    return EVENT_NAME[type - 250] + " scale: " + scale + " " + super.toString();
   }
 }
-

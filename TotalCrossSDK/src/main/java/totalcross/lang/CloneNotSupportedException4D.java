@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package totalcross.lang;
 
 /**
@@ -66,13 +65,11 @@ package totalcross.lang;
  * @see Object#clone()
  * @status updated to 1.4
  */
-public class CloneNotSupportedException4D extends Exception
-{
+public class CloneNotSupportedException4D extends Exception {
   /**
    * Create an exception without a message.
    */
-  public CloneNotSupportedException4D()
-  {
+  public CloneNotSupportedException4D() {
   }
 
   /**
@@ -80,8 +77,7 @@ public class CloneNotSupportedException4D extends Exception
    *
    * @param s the error message
    */
-  public CloneNotSupportedException4D(String s)
-  {
+  public CloneNotSupportedException4D(String s) {
     super(s);
   }
 }

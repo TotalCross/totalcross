@@ -24,8 +24,7 @@ import totalcross.io.IOException;
  * 
  * @since TotalCross 1.15
  */
-public class RemoteDevice
-{
+public class RemoteDevice {
   /** The Bluetooth specification calls this name the "Bluetooth device name" or the "user-friendly name". */
   String friendlyName;
 
@@ -44,8 +43,7 @@ public class RemoteDevice
    *           the address of the Bluetooth device as a 12 character hex string
    * @since TotalCross 1.15
    */
-  protected RemoteDevice(String address)
-  {
+  protected RemoteDevice(String address) {
     this.address = address;
   }
 
@@ -58,8 +56,7 @@ public class RemoteDevice
    *         name then an empty string will be returned
    * @since TotalCross 1.15
    */
-  public String getFriendlyName() throws IOException
-  {
+  public String getFriendlyName() throws IOException {
     return friendlyName;
   }
 
@@ -70,8 +67,7 @@ public class RemoteDevice
    * @return the Bluetooth address of the remote device
    * @since TotalCross 1.15
    */
-  public String getBluetoothAddress()
-  {
+  public String getBluetoothAddress() {
     return address;
   }
 
@@ -82,8 +78,7 @@ public class RemoteDevice
    * @since TotalCross 1.30
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return address + " - " + friendlyName;
   }
 }

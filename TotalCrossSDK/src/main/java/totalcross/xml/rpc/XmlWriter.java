@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.rpc;
 
 import totalcross.sys.Convert;
@@ -47,29 +45,25 @@ import totalcross.sys.Convert;
  * @author Maintained by Nimkathana (<a href="http://www.nimkathana.com">www.nimkathana.com</a>)
  * @author Original by IOP GmbH (<a href="http://www.iop.de">www.iop.de</a>)
  */
-public class XmlWriter
-{
+public class XmlWriter {
   private StringBuffer buf = new StringBuffer(4000);
   private String header = "<?xml version=\"1.0\"?>";
 
   /**
    */
-  public XmlWriter()
-  {
+  public XmlWriter() {
     buf.append(header);
   }
 
   /** Resets this XmlWriter so it can be used again */
-  public void reset()
-  {
+  public void reset() {
     buf.setLength(header.length()); // keep only the header
   }
 
   /**
    * Write the given text.
    */
-  public void write(String text)
-  {
+  public void write(String text) {
     buf.append(text);
   }
 
@@ -81,8 +75,7 @@ public class XmlWriter
    * @return All that was written to the internal buffer
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     return buf.append('\n').toString();
   }
 
@@ -92,8 +85,7 @@ public class XmlWriter
    * @return All that was written to the internal buffer
    * @since TotalCross 1.23
    */
-  public byte[] getBytes()
-  {
+  public byte[] getBytes() {
     return Convert.getBytes(buf.append('\n'));
   }
 
@@ -103,8 +95,7 @@ public class XmlWriter
    * @param elem
    *           The element of the opening tag
    */
-  public void startElement(String elem)
-  {
+  public void startElement(String elem) {
     buf.append('<').append(elem).append('>');
   }
 
@@ -114,8 +105,7 @@ public class XmlWriter
    * @param elem
    *           The element of the closing tag
    */
-  public void endElement(String elem)
-  {
+  public void endElement(String elem) {
     buf.append("</").append(elem).append('>');
   }
 
@@ -125,8 +115,7 @@ public class XmlWriter
    * @param text
    *           The character data to be formatted
    */
-  public void chardata(String text)
-  {
+  public void chardata(String text) {
     text = Convert.replace(text, "&", "&amp;"); // this must go first!
     text = Convert.replace(text, "<", "&lt;");
     text = Convert.replace(text, ">", "&gt;");

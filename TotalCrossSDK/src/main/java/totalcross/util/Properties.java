@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util;
 
 import totalcross.io.DataStream;
@@ -52,8 +50,7 @@ import totalcross.sys.Convert;
  * @see totalcross.util.Properties.Boolean
  * @see totalcross.util.Properties.Long
  */
-public class Properties
-{
+public class Properties {
   private Hashtable props;
   /**
    * Avoids that the load method gets into an infinite loop if the file is
@@ -63,14 +60,12 @@ public class Properties
    */
   public static int MAX_PROPS = 1000; // guich@556_2
 
-  public Properties()
-  {
+  public Properties() {
     props = new Hashtable(13);
   }
 
   /** Stores the given keys/values pairs in a new Properties. */
-  public Properties(String[] keys, Value[] values)
-  {
+  public Properties(String[] keys, Value[] values) {
     int n = keys.length;
     props = new Hashtable(n << 1);
     for (int i = 0; i < n; i++) {
@@ -79,8 +74,7 @@ public class Properties
   }
 
   /** Represents a generic value that can be stored here. */
-  public abstract static class Value
-  {
+  public abstract static class Value {
     /** Read-only property, which identifies the value type */
     public char type;
 
@@ -92,21 +86,18 @@ public class Properties
   }
 
   /** Implements a value of type String */
-  public static class Str extends Value
-  {
+  public static class Str extends Value {
     public final static char TYPE = 'S';
-    public String            value;
+    public String value;
 
-    public Str(String value)
-    {
+    public Str(String value) {
       this.value = value;
       type = TYPE;
       typeStr = "String";
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return value;
     }
 
@@ -117,8 +108,7 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return value.hashCode();
     }
 
@@ -129,8 +119,7 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
       if (this == obj) {
         return true;
       }
@@ -145,21 +134,18 @@ public class Properties
   }
 
   /** Implements a value of type int */
-  public static class Int extends Value
-  {
+  public static class Int extends Value {
     public final static char TYPE = 'I';
-    public int               value;
+    public int value;
 
-    public Int(int value)
-    {
+    public Int(int value) {
       this.value = value;
       type = TYPE;
       typeStr = "int";
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return Convert.toString(value);
     }
 
@@ -170,8 +156,7 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return value;
     }
 
@@ -182,8 +167,7 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
       if (this == obj) {
         return true;
       }
@@ -191,25 +175,22 @@ public class Properties
         return value == ((Int) obj).value;
       }
       return false;
-    }      
+    }
   }
 
   /** Implements a value of type double */
-  public static class Double extends Value
-  {
+  public static class Double extends Value {
     public final static char TYPE = 'D';
-    public double            value;
+    public double value;
 
-    public Double(double value)
-    {
+    public Double(double value) {
       this.value = value;
       type = TYPE;
       typeStr = "double";
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return Convert.toString(value);
     }
 
@@ -235,10 +216,9 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       long v = Convert.doubleToLongBits(value);
-      return (int)(v^(v>>>32));
+      return (int) (v ^ (v >>> 32));
     }
 
     /**
@@ -272,8 +252,7 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
       if (this == obj) {
         return true;
       }
@@ -281,25 +260,22 @@ public class Properties
         return Convert.doubleToLongBits(value) == Convert.doubleToLongBits(((Double) obj).value);
       }
       return false;
-    }      
+    }
   }
 
   /** Implements a value of type boolean */
-  public static class Boolean extends Value
-  {
+  public static class Boolean extends Value {
     public final static char TYPE = 'B';
-    public boolean           value;
+    public boolean value;
 
-    public Boolean(boolean value)
-    {
+    public Boolean(boolean value) {
       this.value = value;
       type = TYPE;
       typeStr = "boolean";
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return value ? "1" : "0";
     }
 
@@ -311,8 +287,7 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return value ? 1231 : 1237;
     }
 
@@ -323,34 +298,30 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
       if (this == obj) {
         return true;
-      }         
+      }
       if (obj instanceof Boolean) {
         return value == ((Boolean) obj).value;
       }
       return false;
-    }        
+    }
   }
 
   /** Implements a value of type long */
-  public static class Long extends Value
-  {
+  public static class Long extends Value {
     public final static char TYPE = 'L';
-    public long              value;
+    public long value;
 
-    public Long(long value)
-    {
+    public Long(long value) {
       this.value = value;
       type = TYPE;
       typeStr = "long";
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return Convert.toString(value);
     }
 
@@ -368,9 +339,8 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public int hashCode()
-    {
-      return (int)(value^(value>>>32));
+    public int hashCode() {
+      return (int) (value ^ (value >>> 32));
     }
 
     /**
@@ -380,70 +350,60 @@ public class Properties
      * @since TotalCross 1.25
      */
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
       if (this == obj) {
         return true;
-      }         
+      }
       if (obj instanceof Long) {
         return value == ((Long) obj).value;
       }
       return false;
-    }       
+    }
   }
 
   /** Put the given key/value pair in the hashtable that stores the properties. */
-  public void put(String key, Value v)
-  {
+  public void put(String key, Value v) {
     props.put(key, v);
   }
 
   /** Get the value given the key from the hashtable that stores the properties. */
-  public Value get(String key)
-  {
+  public Value get(String key) {
     return (Value) props.get(key);
   }
 
   /** Returns the number of properties */
-  public int size()
-  {
+  public int size() {
     return props.size();
   }
 
   /** Returns a Vector with the current keys */
-  public Vector getKeys()
-  {
+  public Vector getKeys() {
     return props.getKeys();
   }
 
   /** Clears this property */
-  public void clear()
-  {
+  public void clear() {
     props.clear();
   }
 
   /** Remove a value from the property */
-  public void remove(String key)
-  {
+  public void remove(String key) {
     props.remove(key);
   }
 
   /** Save all properties in the given DataStream
    * @throws totalcross.io.IOException */
-  public void save(DataStream ds) throws totalcross.io.IOException
-  {
+  public void save(DataStream ds) throws totalcross.io.IOException {
     // get all keys, store everything in database
     Vector vec = props.getKeys();
     int n = vec.size();
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
       String key = (String) vec.items[i];
       Value v = (Value) props.get(key);
       byte type = (byte) v.type;
       ds.writeByte(type);
       ds.writeString(key);
-      switch (type)
-      {
+      switch (type) {
       case Str.TYPE:
         ds.writeString(((Str) v).value);
         break;
@@ -472,8 +432,7 @@ public class Properties
    *
    * @throws totalcross.io.IOException
    */
-  public void load(DataStream ds) throws totalcross.io.IOException
-  {
+  public void load(DataStream ds) throws totalcross.io.IOException {
     load(ds, true);
   }
 
@@ -485,21 +444,17 @@ public class Properties
    * @param cleanBeforeLoad
    * @throws totalcross.io.IOException
    */
-  public void load(DataStream ds, boolean cleanBeforeLoad) throws totalcross.io.IOException
-  {
-    if (cleanBeforeLoad){
+  public void load(DataStream ds, boolean cleanBeforeLoad) throws totalcross.io.IOException {
+    if (cleanBeforeLoad) {
       props.clear();
     }
     // read and populate the options hashtable from pdb
-    try
-    {
-      for (int i = MAX_PROPS; i >= 0; i--)
-      {
+    try {
+      for (int i = MAX_PROPS; i >= 0; i--) {
         byte type = ds.readByte();
         String key = ds.readString();
         Value v = null;
-        switch (type)
-        {
+        switch (type) {
         case Str.TYPE:
           v = new Str(ds.readString());
           break;
@@ -520,9 +475,7 @@ public class Properties
           props.put(key, v);
         }
       }
-    }
-    catch (EOFException e)
-    {
+    } catch (EOFException e) {
       // Don't throw EOF.
     }
   }
@@ -541,8 +494,7 @@ public class Properties
    * @return the received StringBuffer sb
    * @since TotalCross 1.25
    */
-  public StringBuffer dumpKeysValues(StringBuffer sb, String keyvalueSeparator, String lineSeparator)
-  {
-    return props.dumpKeysValues(sb, keyvalueSeparator, lineSeparator);      
+  public StringBuffer dumpKeysValues(StringBuffer sb, String keyvalueSeparator, String lineSeparator) {
+    return props.dumpKeysValues(sb, keyvalueSeparator, lineSeparator);
   }
 }

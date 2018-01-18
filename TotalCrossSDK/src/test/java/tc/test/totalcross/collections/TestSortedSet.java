@@ -19,11 +19,9 @@ import java.util.SortedSet;
 
 import totalcross.unit.TestCase;
 
-public class TestSortedSet extends TestCase
-{
+public class TestSortedSet extends TestCase {
   @Override
-  public void testRun()
-  {
+  public void testRun() {
     Test10 test1 = new Test10();
     SortedSet test2 = new Test10();
     Set test3 = new Test10();
@@ -76,169 +74,140 @@ public class TestSortedSet extends TestCase
     assertFalse(test2.removeAll(null));
     assertFalse(test3.removeAll(null));
 
-    try
-    {
+    try {
       test1.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("1");
     }
-    try
-    {
+    try {
       test2.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("2");
     }
-    try
-    {
+    try {
       test3.clear();
-    }
-    catch (Throwable throwable)
-    {
+    } catch (Throwable throwable) {
       fail("3");
     }
 
     assertEquals(null, test1.comparator());
     assertEquals(null, test2.comparator());
-    assertEquals(null, ((SortedSet)test3).comparator());
+    assertEquals(null, ((SortedSet) test3).comparator());
 
     assertEquals(null, test1.subSet(null, null));
     assertEquals(null, test2.subSet(null, null));
-    assertEquals(null, ((SortedSet)test3).subSet(null, null));
+    assertEquals(null, ((SortedSet) test3).subSet(null, null));
 
     assertEquals(null, test1.headSet(null));
     assertEquals(null, test2.headSet(null));
-    assertEquals(null, ((SortedSet)test3).headSet(null));
+    assertEquals(null, ((SortedSet) test3).headSet(null));
 
     assertEquals(null, test1.tailSet(null));
     assertEquals(null, test2.tailSet(null));
-    assertEquals(null, ((SortedSet)test3).tailSet(null));
+    assertEquals(null, ((SortedSet) test3).tailSet(null));
 
     assertEquals(null, test1.first());
     assertEquals(null, test2.first());
-    assertEquals(null, ((SortedSet)test3).first());
+    assertEquals(null, ((SortedSet) test3).first());
 
     assertEquals(null, test1.last());
     assertEquals(null, test2.last());
-    assertEquals(null, ((SortedSet)test3).last());
+    assertEquals(null, ((SortedSet) test3).last());
   }
 }
 
-class Test10 implements SortedSet
-{
+class Test10 implements SortedSet {
   @Override
-  public int size()
-  {
+  public int size() {
     return 0;
   }
 
   @Override
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return false;
   }
 
   @Override
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     return false;
   }
 
   @Override
-  public Iterator iterator()
-  {
+  public Iterator iterator() {
     return null;
   }
 
   @Override
-  public Object[] toArray()
-  {
+  public Object[] toArray() {
     return null;
   }
 
   @Override
-  public Object[] toArray(Object[] a)
-  {
+  public Object[] toArray(Object[] a) {
     return null;
   }
 
   @Override
-  public boolean add(Object e)
-  {
+  public boolean add(Object e) {
     return false;
   }
 
   @Override
-  public boolean remove(Object o)
-  {
+  public boolean remove(Object o) {
     return false;
   }
 
   @Override
-  public boolean containsAll(Collection c)
-  {
+  public boolean containsAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean addAll(Collection c)
-  {
+  public boolean addAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean retainAll(Collection c)
-  {
+  public boolean retainAll(Collection c) {
     return false;
   }
 
   @Override
-  public boolean removeAll(Collection c)
-  {
+  public boolean removeAll(Collection c) {
     return false;
   }
 
   @Override
-  public void clear()
-  {
+  public void clear() {
   }
 
   @Override
-  public Comparator comparator()
-  {
+  public Comparator comparator() {
     return null;
   }
 
   @Override
-  public SortedSet subSet(Object fromElement, Object toElement)
-  {
+  public SortedSet subSet(Object fromElement, Object toElement) {
     return null;
   }
 
   @Override
-  public SortedSet headSet(Object toElement)
-  {
+  public SortedSet headSet(Object toElement) {
     return null;
   }
 
   @Override
-  public SortedSet tailSet(Object fromElement)
-  {
+  public SortedSet tailSet(Object fromElement) {
     return null;
   }
 
   @Override
-  public Object first()
-  {
+  public Object first() {
     return null;
   }
 
   @Override
-  public Object last()
-  {
+  public Object last() {
     return null;
   }
 }

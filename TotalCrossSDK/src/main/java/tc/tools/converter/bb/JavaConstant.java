@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bb;
 
 import tc.tools.converter.bb.constant.Class;
@@ -28,8 +26,7 @@ import tc.tools.converter.bb.constant.UTF8;
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class JavaConstant implements JavaClassStructure
-{
+public class JavaConstant implements JavaClassStructure {
   private JavaClass jclass;
   public byte tag;
   public ConstantInfo info;
@@ -49,35 +46,29 @@ public class JavaConstant implements JavaClassStructure
   /**
    * @param jclass
    */
-  public JavaConstant(JavaClass jclass)
-  {
+  public JavaConstant(JavaClass jclass) {
     this.jclass = jclass;
   }
 
   @Override
-  public java.lang.String toString()
-  {
+  public java.lang.String toString() {
     return info.toString();
   }
 
   @Override
-  public int length()
-  {
+  public int length() {
     return 1 + info.length();
   }
 
-  public int slots()
-  {
+  public int slots() {
     return (tag == CONSTANT_LONG || tag == CONSTANT_DOUBLE) ? 2 : 1;
   }
 
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
     tag = ds.readByte();
 
-    switch (tag)
-    {
+    switch (tag) {
     case CONSTANT_UTF8:
       info = new UTF8();
       break;
@@ -117,67 +108,63 @@ public class JavaConstant implements JavaClassStructure
   }
 
   @Override
-  public void save(DataStream ds) throws IOException
-  {
+  public void save(DataStream ds) throws IOException {
     ds.writeByte(tag);
     info.save(ds);
   }
 
-  public static JavaConstant createConstant(JavaClass jclass, byte tag, Object value1, Object value2)
-  {
+  public static JavaConstant createConstant(JavaClass jclass, byte tag, Object value1, Object value2) {
     JavaConstant constant = searchConstant(jclass, tag, value1, value2);
-    if (constant == null)
-    {
+    if (constant == null) {
       ConstantInfo info = null;
-      switch (tag)
-      {
+      switch (tag) {
       case JavaConstant.CONSTANT_UTF8:
         info = new UTF8();
-        ((UTF8)info).value = (java.lang.String)value1;
+        ((UTF8) info).value = (java.lang.String) value1;
         break;
       case JavaConstant.CONSTANT_INTEGER:
         info = new Integer();
-        ((Integer)info).value = ((java.lang.Integer)value1).intValue();
+        ((Integer) info).value = ((java.lang.Integer) value1).intValue();
         break;
       case JavaConstant.CONSTANT_FLOAT:
         info = new Float();
-        ((Float)info).value = ((java.lang.Float)value1).floatValue();
+        ((Float) info).value = ((java.lang.Float) value1).floatValue();
         break;
       case JavaConstant.CONSTANT_LONG:
         info = new Long();
-        ((Long)info).value = ((java.lang.Long)value1).longValue();
+        ((Long) info).value = ((java.lang.Long) value1).longValue();
         break;
       case JavaConstant.CONSTANT_DOUBLE:
         info = new Double();
-        ((Double)info).value = ((java.lang.Double)value1).doubleValue();
+        ((Double) info).value = ((java.lang.Double) value1).doubleValue();
         break;
       case JavaConstant.CONSTANT_CLASS:
         info = new Class(jclass);
-        ((Class)info).value = (JavaConstant)value1;
+        ((Class) info).value = (JavaConstant) value1;
         break;
       case JavaConstant.CONSTANT_STRING:
         info = new String(jclass);
-        ((String)info).value = (JavaConstant)value1;
+        ((String) info).value = (JavaConstant) value1;
         break;
       case JavaConstant.CONSTANT_FIELD_REF:
         info = new FieldRef(jclass);
-        ((FieldRef)info).value1 = (JavaConstant)value1;
-        ((FieldRef)info).value2 = (JavaConstant)value2;
+        ((FieldRef) info).value1 = (JavaConstant) value1;
+        ((FieldRef) info).value2 = (JavaConstant) value2;
         break;
       case JavaConstant.CONSTANT_METHOD_REF:
         info = new MethodRef(jclass);
-        ((MethodRef)info).value1 = (JavaConstant)value1;
-        ((MethodRef)info).value2 = (JavaConstant)value2;
+        ((MethodRef) info).value1 = (JavaConstant) value1;
+        ((MethodRef) info).value2 = (JavaConstant) value2;
         break;
       case JavaConstant.CONSTANT_INTERFACE_METHOD_REF:
         info = new InterfaceMethodRef(jclass);
-        ((InterfaceMethodRef)info).value1 = (JavaConstant)value1;
-        ((InterfaceMethodRef)info).value2 = (JavaConstant)value2;
+        ((InterfaceMethodRef) info).value1 = (JavaConstant) value1;
+        ((InterfaceMethodRef) info).value2 = (JavaConstant) value2;
         break;
       case JavaConstant.CONSTANT_NAME_AND_TYPE:
         info = new NameAndType(jclass);
-        ((NameAndType)info).value1 = (JavaConstant)value1;
-        ((NameAndType)info).value2 = (JavaConstant)value2;
+        ((NameAndType) info).value1 = (JavaConstant) value1;
+        ((NameAndType) info).value2 = (JavaConstant) value2;
         break;
       default:
         return null;
@@ -193,51 +180,50 @@ public class JavaConstant implements JavaClassStructure
     return constant;
   }
 
-  private static JavaConstant searchConstant(JavaClass jclass, byte tag, Object value1, Object value2)
-  {
+  private static JavaConstant searchConstant(JavaClass jclass, byte tag, Object value1, Object value2) {
     JavaConstant constant;
 
     int count = jclass.constantPool.size();
-    for (int i = 1; i < count; i++)
-    {
-      constant = (JavaConstant)jclass.constantPool.items[i];
-      if (constant.tag == tag)
-      {
+    for (int i = 1; i < count; i++) {
+      constant = (JavaConstant) jclass.constantPool.items[i];
+      if (constant.tag == tag) {
         boolean result = false;
-        switch (tag)
-        {
+        switch (tag) {
         case CONSTANT_UTF8:
-          result = ((UTF8)constant.info).value.equals(value1);
+          result = ((UTF8) constant.info).value.equals(value1);
           break;
         case CONSTANT_INTEGER:
-          result = ((Integer)constant.info).value == ((java.lang.Integer)value1).intValue();
+          result = ((Integer) constant.info).value == ((java.lang.Integer) value1).intValue();
           break;
         case CONSTANT_FLOAT:
-          result = ((Float)constant.info).value == ((java.lang.Float)value1).floatValue();
+          result = ((Float) constant.info).value == ((java.lang.Float) value1).floatValue();
           break;
         case CONSTANT_LONG:
-          result = ((Long)constant.info).value == ((java.lang.Long)value1).longValue();
+          result = ((Long) constant.info).value == ((java.lang.Long) value1).longValue();
           break;
         case CONSTANT_DOUBLE:
-          result = ((Double)constant.info).value == ((java.lang.Double)value1).doubleValue();
+          result = ((Double) constant.info).value == ((java.lang.Double) value1).doubleValue();
           break;
         case CONSTANT_CLASS:
-          result = ((Class)constant.info).value.equals(value1);
+          result = ((Class) constant.info).value.equals(value1);
           break;
         case CONSTANT_STRING:
-          result = ((String)constant.info).value.equals(value1);
+          result = ((String) constant.info).value.equals(value1);
           break;
         case CONSTANT_FIELD_REF:
-          result = ((FieldRef)constant.info).value1.equals(value1) && ((FieldRef)constant.info).value2.equals(value2);
+          result = ((FieldRef) constant.info).value1.equals(value1) && ((FieldRef) constant.info).value2.equals(value2);
           break;
         case CONSTANT_METHOD_REF:
-          result = ((MethodRef)constant.info).value1.equals(value1) && ((MethodRef)constant.info).value2.equals(value2);
+          result = ((MethodRef) constant.info).value1.equals(value1)
+              && ((MethodRef) constant.info).value2.equals(value2);
           break;
         case CONSTANT_INTERFACE_METHOD_REF:
-          result = ((InterfaceMethodRef)constant.info).value1.equals(value1) && ((InterfaceMethodRef)constant.info).value2.equals(value2);
+          result = ((InterfaceMethodRef) constant.info).value1.equals(value1)
+              && ((InterfaceMethodRef) constant.info).value2.equals(value2);
           break;
         case CONSTANT_NAME_AND_TYPE:
-          result = ((NameAndType)constant.info).value1.equals(value1) && ((NameAndType)constant.info).value2.equals(value2);
+          result = ((NameAndType) constant.info).value1.equals(value1)
+              && ((NameAndType) constant.info).value2.equals(value2);
           break;
         }
 

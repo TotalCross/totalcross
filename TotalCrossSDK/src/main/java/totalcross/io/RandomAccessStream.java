@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 /**
@@ -23,8 +21,7 @@ package totalcross.io;
  * 
  * @since TotalCross 1.01
  */
-public abstract class RandomAccessStream extends Stream
-{
+public abstract class RandomAccessStream extends Stream {
   /** The index of the next position to read or write in the stream */
   protected int pos;
 
@@ -43,8 +40,7 @@ public abstract class RandomAccessStream extends Stream
    *            if an I/O error has occurred.
    * @since TotalCross 1.2
    */
-  public int getPos() throws totalcross.io.IOException
-  {
+  public int getPos() throws totalcross.io.IOException {
     return pos;
   }
 

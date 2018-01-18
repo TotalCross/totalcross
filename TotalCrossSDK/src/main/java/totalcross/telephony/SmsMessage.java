@@ -5,8 +5,10 @@ public class SmsMessage {
 
   String displayOriginatingAddress;
   String displayMessageBody;
+  byte[] userData;
 
-  private SmsMessage() {}
+  private SmsMessage() {
+  }
 
   /**
    * Returns the originating address, or email from address if this message was from an email
@@ -22,5 +24,9 @@ public class SmsMessage {
    */
   public String getDisplayMessageBody() {
     return displayMessageBody;
+  }
+  
+  public byte[] getUserData() {
+    return userData;
   }
 }

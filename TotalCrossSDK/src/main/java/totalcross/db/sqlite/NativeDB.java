@@ -19,15 +19,14 @@ package totalcross.db.sqlite;
 import java.sql.SQLException;
 
 /** This class provides a thin JNI layer over the SQLite3 C API. */
-final class NativeDB extends DB
-{
+final class NativeDB extends DB {
   /** SQLite connection handle. */
   long pointer;
 
   /**
    * Loads the SQLite interface backend.
    */
-  native static void load() throws Exception; 
+  native static void load() throws Exception;
 
   // WRAPPER FUNCTIONS ////////////////////////////////////////////
 
@@ -377,7 +376,8 @@ final class NativeDB extends DB
    */
 
   @Override
-  native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+  native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer)
+      throws SQLException;
 
   /**
    * @see org.sqlite.DB#restore(java.lang.String, java.lang.String,
@@ -385,7 +385,8 @@ final class NativeDB extends DB
    */
 
   @Override
-  native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+  native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer)
+      throws SQLException;
 
   // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
 
@@ -406,8 +407,7 @@ final class NativeDB extends DB
    * @param msg Message for the SQLException.
    * @throws SQLException
    */
-  static void throwex(String msg) throws SQLException 
-  {
+  static void throwex(String msg) throws SQLException {
     throw new SQLException(msg);
   }
 }

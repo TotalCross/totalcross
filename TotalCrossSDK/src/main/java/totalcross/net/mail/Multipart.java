@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.io.ByteArrayStream;
@@ -31,9 +29,8 @@ import totalcross.util.Vector;
  * 
  * @since TotalCross 1.13
  */
-public class Multipart
-{
-  private static final byte[] slash2x = {'-','-'};
+public class Multipart {
+  private static final byte[] slash2x = { '-', '-' };
   /** List of parts contained in this container */
   protected Vector parts = new Vector();
 
@@ -44,13 +41,11 @@ public class Multipart
 
   final byte[] boundary = ("===" + new Time().getTimeLong()).getBytes();
 
-  public Multipart()
-  {
+  public Multipart() {
     subType = MIXED;
   }
 
-  public Multipart(String subType)
-  {
+  public Multipart(String subType) {
     this.subType = subType;
   }
 
@@ -61,8 +56,7 @@ public class Multipart
    *           part to be added to this part container.
    * @since TotalCross 1.13
    */
-  public void addPart(Part part)
-  {
+  public void addPart(Part part) {
     parts.addElement(part);
   }
 
@@ -77,19 +71,18 @@ public class Multipart
    *            if an error occurs fetching the data to be written
    * @since TotalCross 1.13
    */
-  public void writeTo(Stream stream) throws IOException, MessagingException
-  {
+  public void writeTo(Stream stream) throws IOException, MessagingException {
     stream.writeBytes(Convert.CRLF_BYTES);
     if (subType.equals(FORM_DATA)) //flsobral@tc125_36: added support for the content type "form-data" with chunked transfer encoding when used by HttpStream.
     {
       stream = new ChunkedStream(stream);
       ((ChunkedStream) stream).start();
     }
-    stream.writeBytes("MIME Multipart Media Encapsulation, Type: multipart/" + subType + ", Boundary: \"" + new String(boundary) + "\"");
+    stream.writeBytes("MIME Multipart Media Encapsulation, Type: multipart/" + subType + ", Boundary: \""
+        + new String(boundary) + "\"");
 
     int len = parts.size();
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
       stream.writeBytes(Convert.CRLF_BYTES);
       stream.writeBytes(slash2x);
       stream.writeBytes(boundary);
@@ -102,9 +95,8 @@ public class Multipart
     stream.writeBytes(slash2x);
     stream.writeBytes(Convert.CRLF_BYTES);
 
-    if (stream instanceof ChunkedStream)
-    {
-      ((ChunkedStream) stream).flush();      
+    if (stream instanceof ChunkedStream) {
+      ((ChunkedStream) stream).flush();
       stream = ((ChunkedStream) stream).s;
     }
   }
@@ -114,43 +106,36 @@ public class Multipart
    * 
    * @since TotalCross 1.25
    */
-  private class ChunkedStream extends Socket
-  {
+  private class ChunkedStream extends Socket {
     private final int SIZE = 1024;
     ByteArrayStream bas = new ByteArrayStream(SIZE);
     public Stream s;
     boolean start = false;
 
-    public ChunkedStream(Stream s)
-    {
+    public ChunkedStream(Stream s) {
       this.s = s;
     }
 
     @Override
-    public int writeBytes(byte[] buf, int start, int count) throws IOException
-    {
+    public int writeBytes(byte[] buf, int start, int count) throws IOException {
       bas.writeBytes(buf, start, count);
       return count;
     }
 
-    public void start() throws IOException
-    {
+    public void start() throws IOException {
       flush();
       start = true;
     }
 
-    public void flush() throws IOException
-    {
+    public void flush() throws IOException {
       int chunkSize = bas.getPos();
-      if (chunkSize > 0)
-      {
+      if (chunkSize > 0) {
         if (start) {
           s.writeBytes(Convert.toString(chunkSize, 16) + Convert.CRLF);
         }
         int written = 0;
         byte[] basbuf = bas.getBuffer();
-        do
-        {
+        do {
           written += s.writeBytes(basbuf, written, chunkSize - written);
         } while (written < chunkSize);
         bas.reset();
@@ -158,18 +143,15 @@ public class Multipart
     }
 
     @Override
-    public void close() throws IOException
-    {
-      if (s != null)
-      {
+    public void close() throws IOException {
+      if (s != null) {
         flush();
         s = null;
       }
     }
 
     @Override
-    protected void finalize()
-    {
+    protected void finalize() {
     }
-  }  
+  }
 }

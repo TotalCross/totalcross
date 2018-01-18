@@ -14,23 +14,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 /** Thrown when a file was not found. */
 
-public class FileNotFoundException extends IOException
-{
+public class FileNotFoundException extends IOException {
   /** Constructs an empty Exception. */
-  public FileNotFoundException()
-  {
+  public FileNotFoundException() {
     super();
   }
 
   /** Constructs an exception with the given message. */
-  public FileNotFoundException(String path)
-  {
+  public FileNotFoundException(String path) {
     super("File not found: " + path);
   }
 
@@ -42,9 +37,9 @@ public class FileNotFoundException extends IOException
   {
     String msg = getMessage();
     int idx;
-    if (msg != null && (idx=msg.indexOf(':')) >= 0){
+    if (msg != null && (idx = msg.indexOf(':')) >= 0) {
       msg = msg.substring(idx).trim();
-    }else {
+    } else {
       msg = "";
     }
     return msg;

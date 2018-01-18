@@ -179,8 +179,7 @@ import totalcross.util.Properties;
  * 
  * @since TotalCross 1.13
  */
-public class MailSession extends Properties
-{
+public class MailSession extends Properties {
   private static MailSession defaultInstance = new MailSession();
 
   /** Default user name for SMTP. */
@@ -231,8 +230,7 @@ public class MailSession extends Properties
   public static final String POP3_TIMEOUT = "mail.pop3.timeout";
   public static final String POP3_PASS = "mail.pop3.password";
 
-  protected MailSession()
-  {
+  protected MailSession() {
     super();
     put(SMTP_CONNECTIONTIMEOUT, new Int(Socket.DEFAULT_OPEN_TIMEOUT));
     put(SMTP_TIMEOUT, new Int(Socket.DEFAULT_WRITE_TIMEOUT));
@@ -248,8 +246,7 @@ public class MailSession extends Properties
    * @return the new MailSession
    * @since TotalCross 1.13
    */
-  public static MailSession getInstance()
-  {
+  public static MailSession getInstance() {
     return new MailSession();
   }
 
@@ -259,8 +256,7 @@ public class MailSession extends Properties
    * @return the static instance of MailSession.
    * @since TotalCross 1.13
    */
-  public static MailSession getDefaultInstance()
-  {
+  public static MailSession getDefaultInstance() {
     return defaultInstance;
   }
 
@@ -272,9 +268,8 @@ public class MailSession extends Properties
    * @return a Store object, or null if a provider for the given protocol is not found.
    * @since TotalCross 1.13
    */
-  public Store getStore(String protocol)
-  {
-    if (protocol.equals("pop3")){
+  public Store getStore(String protocol) {
+    if (protocol.equals("pop3")) {
       return new POP3Store(this);
     }
     return null;
@@ -287,12 +282,11 @@ public class MailSession extends Properties
    * @param protocol
    * @return a Transport object
    */
-  public Transport getTransport(String protocol)
-  {
-    if (protocol.equals("smtp")){
+  public Transport getTransport(String protocol) {
+    if (protocol.equals("smtp")) {
       return new SMTPTransport(this);
     }
-    if (protocol.equals("smtps")){
+    if (protocol.equals("smtps")) {
       return new SMTPSSLTransport(this);
     }
     return null;
@@ -303,8 +297,7 @@ public class MailSession extends Properties
    * before reading from the DataStream.
    */
   @Override
-  public void load(DataStream ds) throws IOException
-  {
+  public void load(DataStream ds) throws IOException {
     super.load(ds, false);
   }
 
@@ -315,10 +308,9 @@ public class MailSession extends Properties
    * @param key 
    * @return
    */
-  Value getNotNull(String key)
-  {
+  Value getNotNull(String key) {
     Value v = this.get(key);
-    if (v == null){
+    if (v == null) {
       throw new NullPointerException("Property '" + key + "' is null");
     }
     return v;

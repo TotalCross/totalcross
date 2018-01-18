@@ -111,6 +111,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTexture"), &tuiI_freeTexture);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFade_i"), &tuiI_applyFade_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeResizeJpeg_ssi"), &tuiI_nativeResizeJpeg_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCircleAA_iiibbbbb"), &tugG_drawCircleAA_iiibbbbb);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillShadedRect_iiiibbiii"), &tugG_fillShadedRect_iiiibbiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
@@ -313,6 +314,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getHostAddress_s"), &tnCM_getHostAddress_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getHostName_s"), &tnCM_getHostName_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getLocalHost"), &tnCM_getLocalHost);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnCM_getLocalHostName"), &tnCM_getLocalHostName);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_isAvailable_i"), &tnCM_isAvailable_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tnCM_releaseResources"), &tnCM_releaseResources);
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_socketCreate_siib"), &tnS_socketCreate_siib);
@@ -414,7 +416,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_searchBytes_Bii"), &tiPDBF_searchBytes_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_getDeviceAlias"), &tiF_getDeviceAlias);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_create_sii"), &tiF_create_sii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tiF_nativeClose"), &tiF_nativeClose);
+   htPutPtr(&htNativeProcAddresses, hashCode("tiF_close"), &tiF_close);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_isCardInserted_i"), &tiF_isCardInserted_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_createDir"), &tiF_createDir);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_delete"), &tiF_delete);
@@ -499,17 +501,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_gcd_IIi"), &tuBI_gcd_IIi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_intLength_i"), &tuBI_intLength_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_intLength_Ii"), &tuBI_intLength_Ii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_iii"), &tidsS_setParam_iii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_commitBarcodeParams"), &tidsS_commitBarcodeParams);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeLength_iiii"), &tidsS_setBarcodeLength_iiii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getData"), &tidsS_getData);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getScanManagerVersion"), &tidsS_getScanManagerVersion);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getScanPortDriverVersion"), &tidsS_getScanPortDriverVersion);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_deactivate"), &tidsS_deactivate);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_ss"), &tidsS_setParam_ss);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__open_si"), &tdsNDB__open_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__close"), &tdsNDB__close);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__exec_s"), &tdsNDB__exec_s);
@@ -560,7 +551,19 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_setVisibleD_b"), &tmA_setVisibleD_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_isVisibleD"), &tmA_isVisibleD);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendTextMessage_sss"), &ttSM_sendTextMessage_sss);
-   htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_s"), &ttSM_registerSmsReceiver_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendDataMessage_ssiB"), &ttSM_sendDataMessage_ssiB);
+   htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_si"), &ttSM_registerSmsReceiver_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tfiFII_getToken"), &tfiFII_getToken);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_iii"), &tidsS_setParam_iii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_commitBarcodeParams"), &tidsS_commitBarcodeParams);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeLength_iiii"), &tidsS_setBarcodeLength_iiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getData"), &tidsS_getData);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getScanManagerVersion"), &tidsS_getScanManagerVersion);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getScanPortDriverVersion"), &tidsS_getScanPortDriverVersion);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_deactivate"), &tidsS_deactivate);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_ss"), &tidsS_setParam_ss);
    htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
 }

@@ -33,8 +33,7 @@ import totalcross.util.NotInstalledException;
  * @see {@link Place}
  * @since TotalCross 1.3
  */
-public class GoogleMaps
-{
+public class GoogleMaps {
   /** Used in the flags argument of showRoute: shows the satellite photos. */
   public static final int SHOW_SATELLITE_PHOTOS = 1;
   /** Used in the flags argument of showRoute: use waze to show the route of the current location to a target
@@ -46,14 +45,12 @@ public class GoogleMaps
    * @see {@link Shape}
    * @see {@link Place}
    */
-  public abstract static class MapItem
-  {
+  public abstract static class MapItem {
     abstract void serialize(StringBuffer sb);
   }
 
-  private static int toCoordI(double v)
-  {
-    return (int)(v * 1e6);
+  private static int toCoordI(double v) {
+    return (int) (v * 1e6);
   }
 
   /** A map item that represents a circle.
@@ -66,8 +63,7 @@ public class GoogleMaps
       c.rad = 70;
    * </pre>
    */
-  public static class Circle extends MapItem
-  {
+  public static class Circle extends MapItem {
     /** Center of the circle */
     public double lat, lon;
     /** The radius; if > 0, its computed as meters; if < 0, its computed as delta of the coordinates */
@@ -78,9 +74,9 @@ public class GoogleMaps
     public int color;
 
     @Override
-    void serialize(StringBuffer sb)
-    {
-      sb.append("*C*,").append(toCoordI(lat)).append(",").append(toCoordI(lon)).append(",").append(rad).append(",").append(filled).append(",").append(color);
+    void serialize(StringBuffer sb) {
+      sb.append("*C*,").append(toCoordI(lat)).append(",").append(toCoordI(lon)).append(",").append(rad).append(",")
+          .append(filled).append(",").append(color);
     }
   }
 
@@ -93,8 +89,7 @@ public class GoogleMaps
       s1.lons = new double[]{-38.483424, -38.483524, -38.483124};
    * </pre>
    */
-  public static class Shape extends MapItem
-  {
+  public static class Shape extends MapItem {
     /** The coordinates of the polygon */
     public double[] lats, lons;
     /** Set if the item is filled or not */
@@ -103,8 +98,7 @@ public class GoogleMaps
     public int color;
 
     @Override
-    void serialize(StringBuffer sb)
-    {
+    void serialize(StringBuffer sb) {
       sb.append("*S*,").append(lats.length).append(",");
       for (int i = 0; i < lats.length; i++) {
         sb.append(toCoordI(lats[i])).append(",").append(toCoordI(lons[i])).append(",");
@@ -112,6 +106,7 @@ public class GoogleMaps
       sb.append(filled).append(",").append(color);
     }
   }
+
   /** A map item that represents a place in the map. It shows with a pin, and above it, a balloon with a text. 
    * <pre>
    * GoogleMaps.Place p1 = new GoogleMaps.Place();
@@ -126,10 +121,9 @@ public class GoogleMaps
    * p1.detail = "Av Norte 2920\nLuciano Cavalcante\nCeará - Brazil";
    * </pre>
    */
-  public static class Place extends MapItem
-  {
+  public static class Place extends MapItem {
     /** The location of the place */
-    public double lat,lon;
+    public double lat, lon;
     /** An optional caption of the place; shown in bold */
     public String caption;
     /** The detail of the place. Use \n to split lines. Cannot be null. */
@@ -142,19 +136,17 @@ public class GoogleMaps
     public int detColor;
     /** The item pin's color. Alpha defaults to 255 if not specified. */
     public int pinColor;
-    /** The percentage of the font based on the device's original font size. Defaults to 100. */      
+    /** The percentage of the font based on the device's original font size. Defaults to 100. */
     public int fontPerc = 100;
 
     @Override
-    void serialize(StringBuffer sb)
-    {
-      sb.append("*P*,\"").append(caption==null?null:caption.replace('"','\'')).append("\",\"").append(detail.replace('"','\''))
-      .append("\",").append(toCoordI(lat)).append(",").append(toCoordI(lon)).append(",").append(backColor)
-      .append(",").append(capColor).append(",").append(detColor).append(",").append(pinColor).append(",").append(fontPerc);
+    void serialize(StringBuffer sb) {
+      sb.append("*P*,\"").append(caption == null ? null : caption.replace('"', '\'')).append("\",\"")
+          .append(detail.replace('"', '\'')).append("\",").append(toCoordI(lat)).append(",").append(toCoordI(lon))
+          .append(",").append(backColor).append(",").append(capColor).append(",").append(detColor).append(",")
+          .append(pinColor).append(",").append(fontPerc);
     }
   }
-
-
 
   /** Shows the given address in a separate viewer.
    * 
@@ -180,8 +172,7 @@ public class GoogleMaps
    * @see Convert#removeAccentuation(String)
    */
   @ReplacedByNativeOnDeploy
-  public static boolean showAddress(String address, boolean showSatellitePhotos)
-  {
+  public static boolean showAddress(String address, boolean showSatellitePhotos) {
     return true;
   }
 
@@ -191,8 +182,8 @@ public class GoogleMaps
    */
   @Deprecated
   @ReplacedByNativeOnDeploy
-  public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos) throws NotInstalledException
-  {
+  public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos)
+      throws NotInstalledException {
     return showRoute(addressI, addressF, traversedPoints, SHOW_SATELLITE_PHOTOS);
   }
 
@@ -204,8 +195,8 @@ public class GoogleMaps
    * @see Convert#removeAccentuation(String)
    */
   @ReplacedByNativeOnDeploy
-  public static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags) throws NotInstalledException
-  {
+  public static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags)
+      throws NotInstalledException {
     return true;
   }
 
@@ -217,13 +208,11 @@ public class GoogleMaps
    * @see {@link Shape}
    * @see {@link Place}
    */
-  public static boolean showMap(MapItem[] items, boolean showSatellitePhotos)
-  {
+  public static boolean showMap(MapItem[] items, boolean showSatellitePhotos) {
     StringBuffer sb = new StringBuffer(items.length * 100);
     sb.append("***");
     items[0].serialize(sb);
-    for (int i = 1; i < items.length; i++)
-    {
+    for (int i = 1; i < items.length; i++) {
       sb.append("|");
       items[i].serialize(sb);
     }
@@ -233,31 +222,29 @@ public class GoogleMaps
   /** Returns the location after searching Google. Requires internet connection and waits up to 20 seconds for an answer. 
    * Returns the lat/lon pair, or null if a bad response code was returned. 
    */
-  public static double[] getLocation(String address) throws IOException, InvalidNumberException
-  {
+  public static double[] getLocation(String address) throws IOException, InvalidNumberException {
     // connect to map web service
-    String url = "http://maps.googleapis.com/maps/api/geocode/xml?address=" + Convert.removeAccentuation(address).replace("  "," ").replace(' ','+') + "&sensor=false";
+    String url = "http://maps.googleapis.com/maps/api/geocode/xml?address="
+        + Convert.removeAccentuation(address).replace("  ", " ").replace(' ', '+') + "&sensor=false";
     HttpStream hs = new HttpStream(new URI(url));
-    if (hs.badResponseCode)
-    {
-      Vm.debug("getLocation \""+url+"\" returned response code: "+hs.responseCode);
+    if (hs.badResponseCode) {
+      Vm.debug("getLocation \"" + url + "\" returned response code: " + hs.responseCode);
       return null;
     }
     ByteArrayStream bas = new ByteArrayStream(2048);
     bas.readFully(hs, 5, 2048);
     String s = new String(bas.getBuffer(), 0, bas.available()).toLowerCase();
-    if (s.contains("<location_type>approximate</location_type>"))
-    {
-      Vm.debug("getLocation \""+url+"\" returned a bad location from google maps");
+    if (s.contains("<location_type>approximate</location_type>")) {
+      Vm.debug("getLocation \"" + url + "\" returned a bad location from google maps");
       return null;
     }
-    int idx1 = s.indexOf("<lat>"), idx2 = s.indexOf("</lat>",idx1);
-    int idx3 = s.indexOf("<lng>"), idx4 = s.indexOf("</lng>",idx1);
-    if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1){
+    int idx1 = s.indexOf("<lat>"), idx2 = s.indexOf("</lat>", idx1);
+    int idx3 = s.indexOf("<lng>"), idx4 = s.indexOf("</lng>", idx1);
+    if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1) {
       return null;
     }
-    String lat = s.substring(idx1+5,idx2);
-    String lon = s.substring(idx3+5,idx4);
-    return new double[]{Convert.toDouble(lat),Convert.toDouble(lon)};
+    String lat = s.substring(idx1 + 5, idx2);
+    String lon = s.substring(idx3 + 5, idx4);
+    return new double[] { Convert.toDouble(lat), Convert.toDouble(lon) };
   }
 }

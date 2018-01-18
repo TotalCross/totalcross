@@ -9,19 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter.bytecode;
 
-public class BC117_lneg extends Arithmetic
-{
-  public BC117_lneg()
-  {
-    super(0,-1,-1,LONG);
+public class BC117_lneg extends Arithmetic {
+  public BC117_lneg() {
+    super(0, -1, -1, LONG);
   }
+
   @Override
-  public void exec()
-  {
-    stack[stackPtr-1].asLong = -stack[stackPtr-1].asLong;
+  public void exec() {
+    stack[stackPtr - 1].asLong = -stack[stackPtr - 1].asLong;
   }
 }

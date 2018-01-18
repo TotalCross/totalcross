@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /*
  *  Copyright(C) 2006 Cameron Rich
  *
@@ -46,8 +44,7 @@ import totalcross.net.Socket;
 /**
  * A base object for SSLServer/SSLClient.
  */
-public class SSLCTX4D
-{
+public class SSLCTX4D {
   /**
    * A reference to the real client/server context. For internal use only.
    */
@@ -57,8 +54,7 @@ public class SSLCTX4D
 
   protected Object nativeHeap;
 
-  protected SSLCTX4D(int options, int num_sessions)
-  {
+  protected SSLCTX4D(int options, int num_sessions) {
     create4D(options, num_sessions);
   }
 
@@ -72,7 +68,6 @@ public class SSLCTX4D
 
   native public int objLoad4D(int obj_type, byte[] data, int len, String password);
 
-
   native public SSL newClient4D(Socket socket, byte[] session_id);
 
   native public SSL newServer4D(Socket socket);
@@ -80,14 +75,11 @@ public class SSLCTX4D
   @Override
   protected final void finalize() //flsobral@tc114_36: finalize support.
   {
-    try
-    {
+    try {
       if (dontFinalize != true) {
         dispose4D();
       }
+    } catch (Throwable t) {
     }
-    catch (Throwable t)
-    {
-    }
-  }     
+  }
 }

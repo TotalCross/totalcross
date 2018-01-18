@@ -9,14 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.test.converter.testfiles;
 
-public class BC016to017
-{
-  public BC016to017()
-  {
+public class BC016to017 {
+  public BC016to017() {
     byte b;
     b = -128;
     b = 127;
@@ -32,6 +28,9 @@ public class BC016to017
     s = 2047;
     s = 2048;
 
-    if (false) {s = b; b = (byte)s;} // remove warnings
+    if (false) {
+      s = b;
+      b = (byte) s;
+    } // remove warnings
   }
 }

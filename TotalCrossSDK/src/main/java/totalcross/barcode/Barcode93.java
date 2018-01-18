@@ -63,68 +63,26 @@ public class Barcode93 extends Barcode {
    * index 2 = Thirth escape char used in ASCII_CHARS array
    * index 3 = Fourth escape char used in ASCII_CHARS array
    */
-  static byte ESCAPE_BARS[][] = { { 1, 2, 1, 2, 1, 1 }, {
-    3, 1, 2, 1, 1, 1 }, {
-      3, 1, 1, 1, 2, 1 }, {
-        1, 2, 2, 2, 1, 1 }
-  };
+  static byte ESCAPE_BARS[][] = { { 1, 2, 1, 2, 1, 1 }, { 3, 1, 2, 1, 1, 1 }, { 3, 1, 1, 1, 2, 1 },
+      { 1, 2, 2, 2, 1, 1 } };
 
   /** The bars to generate the code.
    */
-  static byte BARS[][] = { { 1, 3, 1, 1, 1, 2 }, {
-    1, 1, 1, 2, 1, 3 }, {
-      1, 1, 1, 3, 1, 2 }, {
-        1, 1, 1, 4, 1, 1 }, {
-          1, 2, 1, 1, 1, 3 }, {
-            1, 2, 1, 2, 1, 2 }, {
-              1, 2, 1, 3, 1, 1 }, {
-                1, 1, 1, 1, 1, 4 }, {
-                  1, 3, 1, 2, 1, 1 }, {
-                    1, 4, 1, 1, 1, 1 }, {
-                      2, 1, 1, 1, 1, 3 }, {
-                        2, 1, 1, 2, 1, 2 }, {
-                          2, 1, 1, 3, 1, 1 }, {
-                            2, 2, 1, 1, 1, 2 }, {
-                              2, 2, 1, 2, 1, 1 }, {
-                                2, 3, 1, 1, 1, 1 }, {
-                                  1, 1, 2, 1, 1, 3 }, {
-                                    1, 1, 2, 2, 1, 2 }, {
-                                      1, 1, 2, 3, 1, 1 }, {
-                                        1, 2, 2, 1, 1, 2 }, {
-                                          1, 3, 2, 1, 1, 1 }, {
-                                            1, 1, 1, 1, 2, 3 }, {
-                                              1, 1, 1, 2, 2, 2 }, {
-                                                1, 1, 1, 3, 2, 1 }, {
-                                                  1, 2, 1, 1, 2, 2 }, {
-                                                    1, 3, 1, 1, 2, 1 }, {
-                                                      2, 1, 2, 1, 1, 2 }, {
-                                                        2, 1, 2, 2, 1, 1 }, {
-                                                          2, 1, 1, 1, 2, 2 }, {
-                                                            2, 1, 1, 2, 2, 1 }, {
-                                                              2, 2, 1, 1, 2, 1 }, {
-                                                                2, 2, 2, 1, 1, 1 }, {
-                                                                  1, 1, 2, 1, 2, 2 }, {
-                                                                    1, 1, 2, 2, 2, 1 }, {
-                                                                      1, 2, 2, 1, 2, 1 }, {
-                                                                        1, 2, 3, 1, 1, 1 }, {
-                                                                          1, 2, 1, 1, 3, 1 }, {
-                                                                            3, 1, 1, 1, 1, 2 }, {
-                                                                              3, 1, 1, 2, 1, 1 }, {
-                                                                                3, 2, 1, 1, 1, 1 }, {
-                                                                                  1, 1, 2, 1, 3, 1 }, {
-                                                                                    1, 1, 3, 1, 2, 1 }, {
-                                                                                      2, 1, 1, 1, 3, 1 }, {
-                                                                                        1, 2, 1, 2, 1, 1 }, {
-                                                                                          3, 1, 2, 1, 1, 1 }, {
-                                                                                            3, 1, 1, 1, 2, 1 }, {
-                                                                                              1, 2, 2, 2, 1, 1 }
-  };
+  static byte BARS[][] = { { 1, 3, 1, 1, 1, 2 }, { 1, 1, 1, 2, 1, 3 }, { 1, 1, 1, 3, 1, 2 }, { 1, 1, 1, 4, 1, 1 },
+      { 1, 2, 1, 1, 1, 3 }, { 1, 2, 1, 2, 1, 2 }, { 1, 2, 1, 3, 1, 1 }, { 1, 1, 1, 1, 1, 4 }, { 1, 3, 1, 2, 1, 1 },
+      { 1, 4, 1, 1, 1, 1 }, { 2, 1, 1, 1, 1, 3 }, { 2, 1, 1, 2, 1, 2 }, { 2, 1, 1, 3, 1, 1 }, { 2, 2, 1, 1, 1, 2 },
+      { 2, 2, 1, 2, 1, 1 }, { 2, 3, 1, 1, 1, 1 }, { 1, 1, 2, 1, 1, 3 }, { 1, 1, 2, 2, 1, 2 }, { 1, 1, 2, 3, 1, 1 },
+      { 1, 2, 2, 1, 1, 2 }, { 1, 3, 2, 1, 1, 1 }, { 1, 1, 1, 1, 2, 3 }, { 1, 1, 1, 2, 2, 2 }, { 1, 1, 1, 3, 2, 1 },
+      { 1, 2, 1, 1, 2, 2 }, { 1, 3, 1, 1, 2, 1 }, { 2, 1, 2, 1, 1, 2 }, { 2, 1, 2, 2, 1, 1 }, { 2, 1, 1, 1, 2, 2 },
+      { 2, 1, 1, 2, 2, 1 }, { 2, 2, 1, 1, 2, 1 }, { 2, 2, 2, 1, 1, 1 }, { 1, 1, 2, 1, 2, 2 }, { 1, 1, 2, 2, 2, 1 },
+      { 1, 2, 2, 1, 2, 1 }, { 1, 2, 3, 1, 1, 1 }, { 1, 2, 1, 1, 3, 1 }, { 3, 1, 1, 1, 1, 2 }, { 3, 1, 1, 2, 1, 1 },
+      { 3, 2, 1, 1, 1, 1 }, { 1, 1, 2, 1, 3, 1 }, { 1, 1, 3, 1, 2, 1 }, { 2, 1, 1, 1, 3, 1 }, { 1, 2, 1, 2, 1, 1 },
+      { 3, 1, 2, 1, 1, 1 }, { 3, 1, 1, 1, 2, 1 }, { 1, 2, 2, 2, 1, 1 } };
 
   /**
    * Code 93 chars ordered by code93 value
    */
-  public static String CHARS =
-      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*&#@";
+  public static String CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*&#@";
 
   /** ASCII chars representation in Code 93 using escape chars.
    * First digit is escape char using this convention:
@@ -138,136 +96,136 @@ public class Barcode93 extends Barcode {
    */
   public static String ASCII_CHARS = "&U" +
 
-		//NUL
-		"*A" + //SOH
-		"*B" + //STX
-		"*C" + //ETX
-		"*D" + //EOT
-		"*E" + //ENQ
-		"*F" + //ACK
-		"*G" + //BEL
-		"*H" + //BS
-		"*I" + //TAB
-		"*J" + //LF
-		"*K" + //VT
-		"*L" + //FF
-		"*M" + //CR
-		"*N" + //SO
-		"*O" + //SI
-		"*P" + //DLE
-		"*Q" + //DC1
-		"*R" + //DC2
-		"*S" + //DC3
-		"*T" + //DC4
-		"*U" + //NAK
-		"*V" + //SYN
-		"*W" + //ETB
-		"*X" + //CAN
-		"*Y" + //EM
-		"*Z" + //SUB
-		"&A" + //ESC
-		"&B" + //FS
-		"&C" + //GS
-		"&D" + //RS
-		"&E" + //US
-		"  " + //Space
-		"#A" + //!
-		"#B" + //"
-		"#C" + //#
-		" $" +
-		//$ 	    It's also valid to use "#D" but it uses an extra char
-		" %" + //%		It's also valid to use "#E" but it uses an extra char
-		"#F" + //&
-		"#G" + //'
-		"#H" + //(
-		"#I" + //)
-		"#J" + //*
-		" +" + //+		It's also valid to use "#K" but it uses an extra char
-		"#L" + //
-		" -" + //-		It's also valid to use "#M" but it uses an extra char
-		" ." + //.		It's also valid to use "#N" but it uses an extra char
-		" /" + ///		It's also valid to use "#O" but it uses an extra char
-		" 0" + //0		It's also valid to use "#P" but it uses an extra char
-		" 1" + //1		It's also valid to use "#Q" but it uses an extra char
-		" 2" + //2		It's also valid to use "#R" but it uses an extra char
-		" 3" + //3		It's also valid to use "#S" but it uses an extra char
-		" 4" + //4		It's also valid to use "#T" but it uses an extra char
-		" 5" + //5		It's also valid to use "#U" but it uses an extra char
-		" 6" + //6		It's also valid to use "#V" but it uses an extra char
-		" 7" + //7		It's also valid to use "#W" but it uses an extra char
-		" 8" + //8		It's also valid to use "#X" but it uses an extra char
-		" 9" + //9		It's also valid to use "#Y" but it uses an extra char
-		"#Z" + //:
-		"&F" + //;
-		"&G" + //<
-		"&H" + //;
-		"&I" + //;
-		"&J" + //;
-		"&V" + //@
-		" A" + //A
-		" B" + //B
-		" C" + //C
-		" D" + //D
-		" E" + //E
-		" F" + //F
-		" G" + //G
-		" H" + //H
-		" I" + //I
-		" J" + //J
-		" K" + //K
-		" L" + //L
-		" M" + //M
-		" N" + //N
-		" O" + //O
-		" P" + //P
-		" Q" + //Q
-		" R" + //R
-		" S" + //S
-		" T" + //T
-		" U" + //U
-		" V" + //V
-		" W" + //W
-		" X" + //X
-		" Y" + //Y
-		" Z" + //Z
-		"&K" + //[
-		"&L" + //\
-		"&M" + //]
-		"&N" + //^
-		"&O" + //_
-		"&W" + //`
-		"@A" + //a
-		"@B" + //b
-		"@C" + //c
-		"@D" + //d
-		"@E" + //e
-		"@F" + //f
-		"@G" + //g
-		"@H" + //h
-		"@I" + //i
-		"@J" + //j
-		"@K" + //k
-		"@L" + //l
-		"@M" + //m
-		"@N" + //n
-		"@O" + //o
-		"@P" + //p
-		"@Q" + //q
-		"@R" + //r
-		"@S" + //s
-		"@T" + //t
-		"@U" + //u
-		"@V" + //v
-		"@W" + //w
-		"@X" + //x
-		"@Y" + //y
-		"@Z" + //z
-		"&P" + //{
-		"&Q" + // 
-		"&R" + //}
-		"&S" + //~
-		"&T" //DEL
-		;
+  //NUL
+      "*A" + //SOH
+      "*B" + //STX
+      "*C" + //ETX
+      "*D" + //EOT
+      "*E" + //ENQ
+      "*F" + //ACK
+      "*G" + //BEL
+      "*H" + //BS
+      "*I" + //TAB
+      "*J" + //LF
+      "*K" + //VT
+      "*L" + //FF
+      "*M" + //CR
+      "*N" + //SO
+      "*O" + //SI
+      "*P" + //DLE
+      "*Q" + //DC1
+      "*R" + //DC2
+      "*S" + //DC3
+      "*T" + //DC4
+      "*U" + //NAK
+      "*V" + //SYN
+      "*W" + //ETB
+      "*X" + //CAN
+      "*Y" + //EM
+      "*Z" + //SUB
+      "&A" + //ESC
+      "&B" + //FS
+      "&C" + //GS
+      "&D" + //RS
+      "&E" + //US
+      "  " + //Space
+      "#A" + //!
+      "#B" + //"
+      "#C" + //#
+      " $" +
+      //$ 	    It's also valid to use "#D" but it uses an extra char
+      " %" + //%		It's also valid to use "#E" but it uses an extra char
+      "#F" + //&
+      "#G" + //'
+      "#H" + //(
+      "#I" + //)
+      "#J" + //*
+      " +" + //+		It's also valid to use "#K" but it uses an extra char
+      "#L" + //
+      " -" + //-		It's also valid to use "#M" but it uses an extra char
+      " ." + //.		It's also valid to use "#N" but it uses an extra char
+      " /" + ///		It's also valid to use "#O" but it uses an extra char
+      " 0" + //0		It's also valid to use "#P" but it uses an extra char
+      " 1" + //1		It's also valid to use "#Q" but it uses an extra char
+      " 2" + //2		It's also valid to use "#R" but it uses an extra char
+      " 3" + //3		It's also valid to use "#S" but it uses an extra char
+      " 4" + //4		It's also valid to use "#T" but it uses an extra char
+      " 5" + //5		It's also valid to use "#U" but it uses an extra char
+      " 6" + //6		It's also valid to use "#V" but it uses an extra char
+      " 7" + //7		It's also valid to use "#W" but it uses an extra char
+      " 8" + //8		It's also valid to use "#X" but it uses an extra char
+      " 9" + //9		It's also valid to use "#Y" but it uses an extra char
+      "#Z" + //:
+      "&F" + //;
+      "&G" + //<
+      "&H" + //;
+      "&I" + //;
+      "&J" + //;
+      "&V" + //@
+      " A" + //A
+      " B" + //B
+      " C" + //C
+      " D" + //D
+      " E" + //E
+      " F" + //F
+      " G" + //G
+      " H" + //H
+      " I" + //I
+      " J" + //J
+      " K" + //K
+      " L" + //L
+      " M" + //M
+      " N" + //N
+      " O" + //O
+      " P" + //P
+      " Q" + //Q
+      " R" + //R
+      " S" + //S
+      " T" + //T
+      " U" + //U
+      " V" + //V
+      " W" + //W
+      " X" + //X
+      " Y" + //Y
+      " Z" + //Z
+      "&K" + //[
+      "&L" + //\
+      "&M" + //]
+      "&N" + //^
+      "&O" + //_
+      "&W" + //`
+      "@A" + //a
+      "@B" + //b
+      "@C" + //c
+      "@D" + //d
+      "@E" + //e
+      "@F" + //f
+      "@G" + //g
+      "@H" + //h
+      "@I" + //i
+      "@J" + //j
+      "@K" + //k
+      "@L" + //l
+      "@M" + //m
+      "@N" + //n
+      "@O" + //o
+      "@P" + //p
+      "@Q" + //q
+      "@R" + //r
+      "@S" + //s
+      "@T" + //t
+      "@U" + //u
+      "@V" + //v
+      "@W" + //w
+      "@X" + //x
+      "@Y" + //y
+      "@Z" + //z
+      "&P" + //{
+      "&Q" + // 
+      "&R" + //}
+      "&S" + //~
+      "&T" //DEL
+  ;
 
   /** Creates a new Barcode39.
    */
@@ -285,6 +243,7 @@ public class Barcode93 extends Barcode {
     checksumText = false;
 
   }
+
   /** Gets the maximum width that the barcode will occupy.
    *  The lower left corner is always (0, 0).
    * @return the size the barcode occupies.
@@ -307,6 +266,7 @@ public class Barcode93 extends Barcode {
     }
     return fullWidth;
   }
+
   /** Creates the bars.
    * @param text the text to create the bars. This text does not include the start and
    * stop characters
@@ -319,10 +279,7 @@ public class Barcode93 extends Barcode {
     for (k = 0; k < text.length(); ++k) {
       int idx = CHARS.indexOf(text.charAt(k));
       if (idx < 0) {
-        throw new IllegalArgumentException(
-            "The character '"
-                + text.charAt(k)
-                + "' is illegal in code 93.");
+        throw new IllegalArgumentException("The character '" + text.charAt(k) + "' is illegal in code 93.");
       }
       System.arraycopy(BARS[idx], 0, bars, (k * 6) + 6, 6);
     }
@@ -330,6 +287,7 @@ public class Barcode93 extends Barcode {
 
     return bars;
   }
+
   /** Converts the ASCII text into a normal, escaped text,
    * ready to generate bars.
    * @param text the extended text
@@ -340,8 +298,7 @@ public class Barcode93 extends Barcode {
     for (int k = 0; k < text.length(); ++k) {
       char c = text.charAt(k);
       if (c > 127 || c < 0) {
-        throw new IllegalArgumentException(
-            "The character " + c + " is not supported in Code 93");
+        throw new IllegalArgumentException("The character " + c + " is not supported in Code 93");
       }
       char c1 = ASCII_CHARS.charAt(c * 2);
       char c2 = ASCII_CHARS.charAt(c * 2 + 1);
@@ -352,6 +309,7 @@ public class Barcode93 extends Barcode {
     }
     return out;
   }
+
   /** Calculates the checksum.
    * @param text the text
    * @return the checksum
@@ -368,10 +326,7 @@ public class Barcode93 extends Barcode {
       int idx = CHARS.indexOf(checksum.charAt(k));
       if (idx < 0) {
 
-        throw new IllegalArgumentException(
-            "The character '"
-                + checksum.charAt(k)
-                + "' is illegal in code 93.");
+        throw new IllegalArgumentException("The character '" + checksum.charAt(k) + "' is illegal in code 93.");
 
       }
       sum += (idx) * (weight + 1);
@@ -388,10 +343,7 @@ public class Barcode93 extends Barcode {
       int idx = CHARS.indexOf(checksum.charAt(k));
       if (idx < 0) {
 
-        throw new IllegalArgumentException(
-            "The character '"
-                + checksum.charAt(k)
-                + "' is illegal in code 93.");
+        throw new IllegalArgumentException("The character '" + checksum.charAt(k) + "' is illegal in code 93.");
 
       }
       sum += (idx) * (weight + 1);
@@ -403,6 +355,7 @@ public class Barcode93 extends Barcode {
 
     return checksum;
   }
+
   /** Places the barcode in a Image. The
    * The bars and text are written in the following colors:<p>
    * <P><TABLE BORDER=1>
@@ -437,10 +390,7 @@ public class Barcode93 extends Barcode {
    * @param textColor the color of the text. It can be <CODE>-1</CODE>
    */
   @Override
-  public void placeBarcode(
-      Image i,
-      int barColor,
-      int textColor) {
+  public void placeBarcode(Image i, int barColor, int textColor) {
     String fullCode = code;
     int barStartX = 0;
     int barStartY = 0;
@@ -470,12 +420,12 @@ public class Barcode93 extends Barcode {
 
     int textStartX = 0;
     switch (textAlignment) {
-    case Barcode.ALIGN_LEFT :
+    case Barcode.ALIGN_LEFT:
       break;
-    case Barcode.ALIGN_RIGHT :
+    case Barcode.ALIGN_RIGHT:
       textStartX = imageX - fontX;
       break;
-    default :
+    default:
       textStartX = (imageX - fontX) / 2;
       break;
     }
@@ -498,11 +448,8 @@ public class Barcode93 extends Barcode {
       int w = (bars[k] * x);
       if (print) {
 
-        g.fillRect(
-            quietZone + scale(imageX, fullWidth, barStartX),
-            scale(imageY, barHeight, barStartY),
-            scale(imageX, fullWidth, w),
-            Math.round(barHeight));
+        g.fillRect(quietZone + scale(imageX, fullWidth, barStartX), scale(imageY, barHeight, barStartY),
+            scale(imageX, fullWidth, w), Math.round(barHeight));
       }
       print = !print;
       barStartX += w;

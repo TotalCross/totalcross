@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.dialog;
 
 import totalcross.sys.Convert;
@@ -65,16 +63,15 @@ import totalcross.util.Vector;
  * @since TotalCross 1.22
  */
 
-public class TimeBox extends Window
-{
+public class TimeBox extends Window {
   protected Button btOK, btClear;
-  protected Radio btAM,btPM;
+  protected Radio btAM, btPM;
   protected Visor visor;
   private RadioGroupController rg;
   private int pos;
   private Time sentTime;
-  private char []chars;
-  private Button []btNumbers = new Button[10];
+  private char[] chars;
+  private Button[] btNumbers = new Button[10];
 
   /** Used in the button. Change it if you want to localize the text. */
   public static String okCaption = "OK";
@@ -87,14 +84,12 @@ public class TimeBox extends Window
   public static boolean hideIfInvalid = true;
 
   /** Constructs a TimeBox with time set to midnight. */
-  public TimeBox()
-  {
-    this(new Time(0,0,0,0,0,0,0));
+  public TimeBox() {
+    this(new Time(0, 0, 0, 0, 0, 0, 0));
   }
 
   /** Constructs a TimeBox with the given time. If the time is invalid, it is set to midnight. */
-  public TimeBox(Time time)
-  {
+  public TimeBox(Time time) {
     super(uiAndroid ? "" : "         ", uiAndroid ? ROUND_BORDER : RECT_BORDER);
     setTime(time);
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
@@ -104,71 +99,63 @@ public class TimeBox extends Window
   }
 
   /** Set the time, if it was not yet set in the constructor. */
-  public void setTime(Time time)
-  {
+  public void setTime(Time time) {
     this.sentTime = time;
-    if (!time.isValid()){
+    if (!time.isValid()) {
       time.hour = time.minute = time.second = 0;
     }
   }
 
   @Override
-  public void onFontChanged()
-  {
-    visor.setFont(Font.getFont(this.font.name, this.font.style == 1, this.font.size+2));
+  public void onFontChanged() {
+    visor.setFont(Font.getFont(this.font.name, this.font.style == 1, this.font.size + 2));
   }
 
-  private class Visor extends Container
-  {
-    private int w0,wp;
+  private class Visor extends Container {
+    private int w0, wp;
 
-    public Visor()
-    {
+    public Visor() {
       setBorderStyle(uiVista ? BORDER_SIMPLE : BORDER_LOWERED);
       setBackColor(UIColors.timeboxVisorBack);
     }
 
     @Override
-    public void onFontChanged()
-    {
+    public void onFontChanged() {
       w0 = fm.charWidth('0');
-      wp = (w0 - fm.charWidth(':'))/2;
+      wp = (w0 - fm.charWidth(':')) / 2;
     }
 
     @Override
-    public void onPaint(Graphics g)
-    {
+    public void onPaint(Graphics g) {
       super.onPaint(g);
-      int xx = (this.width-w0*8)/2;
-      int yy = (this.height-fmH)/2;
+      int xx = (this.width - w0 * 8) / 2;
+      int yy = (this.height - fmH) / 2;
       g.backColor = UIColors.timeboxVisorCursor;
-      g.fillRect(pos * w0 + xx-2, yy, w0+2,fmH);
+      g.fillRect(pos * w0 + xx - 2, yy, w0 + 2, fmH);
       g.foreColor = getForeColor();
       int sh = TimeBox.this.textShadowColor;
-      for (int i =0; i < chars.length; i++, xx += w0) {
-        g.drawText(chars, i, 1, i == 2 || i == 5 ? xx+wp : xx, yy, sh != -1, sh);
+      for (int i = 0; i < chars.length; i++, xx += w0) {
+        g.drawText(chars, i, 1, i == 2 || i == 5 ? xx + wp : xx, yy, sh != -1, sh);
       }
     }
 
     @Override
-    public int getPreferredHeight()
-    {
+    public int getPreferredHeight() {
       return fmH + 4;
     }
   }
 
   @Override
-  protected void onPopup()
-  {
+  protected void onPopup() {
     pos = 0;
     removeAll();
     setInsets(0, 0, 0, 5);
 
-    Button.commonGap = Settings.fingerTouch && fmH > 15 ? fmH*2/3 : fmH/2;
+    Button.commonGap = Settings.fingerTouch && fmH > 15 ? fmH * 2 / 3 : fmH / 2;
     btNumbers[7] = new Button("7");
     int wh = btNumbers[7].getPreferredWidth();
 
-    setRect(CENTER, CENTER, wh * 3 + 2 + getClientRect().x*2 + 10, WILL_RESIZE);
+    setRect(CENTER, CENTER, wh * 3 + 2 + getClientRect().x * 2 + 10, WILL_RESIZE);
 
     visor = new Visor();
     onFontChanged();
@@ -189,18 +176,24 @@ public class TimeBox extends Window
     add(btNumbers[0] = new Button("0"), SAME, AFTER + 1, wh * 3 + 2, SAME, btNumbers[1]);
 
     // trick: store in appId the button's value (+10)
-    btNumbers[1].appId = 11; btNumbers[2].appId = 12; btNumbers[3].appId = 13;
-    btNumbers[4].appId = 14; btNumbers[5].appId = 15; btNumbers[6].appId = 16;
-    btNumbers[7].appId = 17; btNumbers[8].appId = 18; btNumbers[9].appId = 19; btNumbers[0].appId = 10;
+    btNumbers[1].appId = 11;
+    btNumbers[2].appId = 12;
+    btNumbers[3].appId = 13;
+    btNumbers[4].appId = 14;
+    btNumbers[5].appId = 15;
+    btNumbers[6].appId = 16;
+    btNumbers[7].appId = 17;
+    btNumbers[8].appId = 18;
+    btNumbers[9].appId = 19;
+    btNumbers[0].appId = 10;
 
-    if (!Settings.is24Hour)
-    {
+    if (!Settings.is24Hour) {
       Spacer l;
       add(l = new Spacer(), CENTER, AFTER + 2);
       rg = new RadioGroupController();
-      add(btAM = new Radio("am", rg), LEFT + 5, SAME+fmH/2, l.getX() - 5, PREFERRED);
-      add(btPM = new Radio("pm", rg), AFTER, SAME+fmH/2, FILL - 5, PREFERRED, l);
-      add(new Spacer(1,fmH/2),CENTER,AFTER+2);
+      add(btAM = new Radio("am", rg), LEFT + 5, SAME + fmH / 2, l.getX() - 5, PREFERRED);
+      add(btPM = new Radio("pm", rg), AFTER, SAME + fmH / 2, FILL - 5, PREFERRED, l);
+      add(new Spacer(1, fmH / 2), CENTER, AFTER + 2);
       btAM.leftJustify = btPM.leftJustify = true;
       btAM.clearValueInt = 1;
     }
@@ -215,17 +208,19 @@ public class TimeBox extends Window
 
     Button.commonGap = 0;
 
-    if (Settings.is24Hour){
-      tabOrder = new Vector(new Control[]{btNumbers[9],btNumbers[8],btNumbers[7],btNumbers[6],btNumbers[5],btNumbers[4],btNumbers[3],btNumbers[2],btNumbers[1],btNumbers[0],btOK,btClear});
-    }else
-    {
+    if (Settings.is24Hour) {
+      tabOrder = new Vector(new Control[] { btNumbers[9], btNumbers[8], btNumbers[7], btNumbers[6], btNumbers[5],
+          btNumbers[4], btNumbers[3], btNumbers[2], btNumbers[1], btNumbers[0], btOK, btClear });
+    } else {
       rg.setSelectedIndex(sentTime.hour <= 11 ? 0 : 1);
       if (sentTime.hour >= 12) {
         sentTime.hour -= 12;
       }
-      tabOrder = new Vector(new Control[]{btNumbers[9],btNumbers[8],btNumbers[7],btNumbers[6],btNumbers[5],btNumbers[4],btNumbers[3],btNumbers[2],btNumbers[1],btNumbers[0],btAM,btPM,btOK,btClear});
-    }            
-    String s = Convert.zeroPad(sentTime.hour,2)+":"+Convert.zeroPad(sentTime.minute,2)+":"+Convert.zeroPad(sentTime.second,2);
+      tabOrder = new Vector(new Control[] { btNumbers[9], btNumbers[8], btNumbers[7], btNumbers[6], btNumbers[5],
+          btNumbers[4], btNumbers[3], btNumbers[2], btNumbers[1], btNumbers[0], btAM, btPM, btOK, btClear });
+    }
+    String s = Convert.zeroPad(sentTime.hour, 2) + ":" + Convert.zeroPad(sentTime.minute, 2) + ":"
+        + Convert.zeroPad(sentTime.second, 2);
     chars = s.toCharArray();
     enableButtons();
 
@@ -233,124 +228,96 @@ public class TimeBox extends Window
   }
 
   /** Returns the time placed in this control, which is the time passed in the constructor (if any) updated with the hours, minutes and seconds. */
-  public Time getTime()
-  {
-    sentTime.hour   = (chars[0]-'0')*10 + (chars[1]-'0');
-    sentTime.minute = (chars[3]-'0')*10 + (chars[4]-'0');
-    sentTime.second = (chars[6]-'0')*10 + (chars[7]-'0');
+  public Time getTime() {
+    sentTime.hour = (chars[0] - '0') * 10 + (chars[1] - '0');
+    sentTime.minute = (chars[3] - '0') * 10 + (chars[4] - '0');
+    sentTime.second = (chars[6] - '0') * 10 + (chars[7] - '0');
 
-    if (!Settings.is24Hour && rg.getSelectedIndex() == 1){
+    if (!Settings.is24Hour && rg.getSelectedIndex() == 1) {
       sentTime.hour += 12;
     }
     return sentTime;
   }
 
   @Override
-  public void reposition()
-  {
-    setRect(CENTER,CENTER,KEEP,KEEP);
+  public void reposition() {
+    setRect(CENTER, CENTER, KEEP, KEEP);
   }
 
   @Override
-  public void onEvent(Event event)
-  {
-    switch (event.type)
-    {
-    case KeyEvent.KEY_PRESS:
-    {
-      KeyEvent ke = (KeyEvent)event;
-      if ('0' <= ke.key && ke.key <= '9')
-      {
-        if (isShown((char)ke.key)) {
-          onKey((char)ke.key);
+  public void onEvent(Event event) {
+    switch (event.type) {
+    case KeyEvent.KEY_PRESS: {
+      KeyEvent ke = (KeyEvent) event;
+      if ('0' <= ke.key && ke.key <= '9') {
+        if (isShown((char) ke.key)) {
+          onKey((char) ke.key);
         }
       }
       break;
     }
-    case KeyEvent.SPECIAL_KEY_PRESS:
-    {
-      KeyEvent ke = (KeyEvent)event;
-      if (ke.isUpKey())
-      {
+    case KeyEvent.SPECIAL_KEY_PRESS: {
+      KeyEvent ke = (KeyEvent) event;
+      if (ke.isUpKey()) {
         chars[pos]++;
         if (chars[pos] > '9' || !isShown(chars[pos])) {
           chars[pos] = '0';
         }
         Window.needsPaint = true;
-      }
-      else
-        if (ke.isDownKey())
-        {
-          chars[pos]--;
-          if (chars[pos] < '0')
-          {
-            chars[pos] = (char)('9'+1);
-            do
-            {
-              chars[pos]--;
-            }
-            while (!isShown(chars[pos]));
-          }
-          Window.needsPaint = true;
+      } else if (ke.isDownKey()) {
+        chars[pos]--;
+        if (chars[pos] < '0') {
+          chars[pos] = (char) ('9' + 1);
+          do {
+            chars[pos]--;
+          } while (!isShown(chars[pos]));
         }
-        else
-          if (ke.isNextKey())
-          {
-            if (++pos == 8) {
-              pos = 0;
-            }
-            if (pos == 2 || pos == 5) {
-              pos++;
-            }
-            enableButtons();
-          }
-          else
-            if (ke.isPrevKey())
-            {
-              if (--pos == -1) {
-                pos = 7;
-              }
-              if (pos == 2 || pos == 5) {
-                pos--;
-              }
-              enableButtons();
-            }
-            else
-              if (ke.isActionKey()) {
-                doClose();
-              } else
-                if (ke.key == SpecialKeys.ESCAPE) {
-                  doClear();
-                }
+        Window.needsPaint = true;
+      } else if (ke.isNextKey()) {
+        if (++pos == 8) {
+          pos = 0;
+        }
+        if (pos == 2 || pos == 5) {
+          pos++;
+        }
+        enableButtons();
+      } else if (ke.isPrevKey()) {
+        if (--pos == -1) {
+          pos = 7;
+        }
+        if (pos == 2 || pos == 5) {
+          pos--;
+        }
+        enableButtons();
+      } else if (ke.isActionKey()) {
+        doClose();
+      } else if (ke.key == SpecialKeys.ESCAPE) {
+        doClear();
+      }
       break;
     }
-    case ControlEvent.PRESSED:
-    {
+    case ControlEvent.PRESSED: {
       Control c = (Control) event.target;
       if (c.appId > 0) {
-        onKey((char)(c.appId-10 + '0'));
-      } else
-        if (event.target == btOK) {
-          doClose();
-        } else
-          if (event.target == btClear) {
-            doClear();
-          }
+        onKey((char) (c.appId - 10 + '0'));
+      } else if (event.target == btOK) {
+        doClose();
+      } else if (event.target == btClear) {
+        doClear();
+      }
       break;
     }
     }
   }
 
-  private void doClear()
-  {
+  private void doClear() {
     clear();
     chars[0] = chars[1] = chars[3] = chars[4] = chars[6] = chars[7] = '0';
     pos = 0;
     enableButtons();
   }
 
-  private void doClose()
-  {
+  private void doClose() {
     for (pos = 0; pos < 8; pos++) // check all positions before closing
     {
       if (pos == 2 || pos == 5) {
@@ -361,22 +328,19 @@ public class TimeBox extends Window
     unpop();
   }
 
-  private void onKey(char key)
-  {
+  private void onKey(char key) {
     chars[pos++] = key;
-    if (pos == 2 || pos == 5)
-    {
+    if (pos == 2 || pos == 5) {
       pos++; // skip the :
     }
-    if (pos == 8){
+    if (pos == 8) {
       pos = 0;
     }
     enableButtons();
   }
 
   @Override
-  protected void postUnpop()
-  {
+  protected void postUnpop() {
     postPressedEvent();
   }
 
@@ -385,15 +349,13 @@ public class TimeBox extends Window
   private final static int M2 = 4;
   private final static int S2 = 7;
 
-  private void enableButtons()
-  {  
+  private void enableButtons() {
     // 01234567
     // 00:00:00
     boolean aboveH1 = pos > H1;
     boolean aboveH2 = pos > H2;
     boolean on2 = pos == H2 || pos == M2 || pos == S2;
-    if (Settings.is24Hour)
-    {
+    if (Settings.is24Hour) {
       boolean fourOrMore = aboveH2 || (aboveH1 && chars[0] <= '1');
       show(3, aboveH1);
       show(4, fourOrMore);
@@ -402,9 +364,7 @@ public class TimeBox extends Window
       show(7, on2 && fourOrMore);
       show(8, on2 && fourOrMore);
       show(9, on2 && fourOrMore);
-    }
-    else
-    {
+    } else {
       boolean ok2_5 = aboveH2 || (aboveH1 && chars[0] == '0');
       show(2, ok2_5);
       show(3, ok2_5);
@@ -415,24 +375,22 @@ public class TimeBox extends Window
       show(8, ok2_5 && on2);
       show(9, ok2_5 && on2);
     }
-    if (!isShown(chars[pos])){
+    if (!isShown(chars[pos])) {
       chars[pos] = '0';
     }
     Window.needsPaint = true;
   }
 
-  private void show(int idx, boolean ok)
-  {
+  private void show(int idx, boolean ok) {
     Button b = btNumbers[idx];
-    if (hideIfInvalid){
+    if (hideIfInvalid) {
       b.setVisible(ok);
-    }else {
+    } else {
       b.setEnabled(ok);
     }
   }
 
-  private boolean isShown(char c)
-  {
+  private boolean isShown(char c) {
     Button b = btNumbers[c - '0'];
     return hideIfInvalid ? b.isVisible() : b.isEnabled();
   }

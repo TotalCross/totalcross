@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.util;
 
 import totalcross.sys.Convert;
@@ -43,16 +41,14 @@ import totalcross.sys.Vm;
  * </pre>
  * This Vector class does not support Generics; use the ArrayList class instead.
  */
-public class Vector
-{
+public class Vector {
   /** This member is public for fast access. Always use the correct methods
    * for add and remove, otherwise you'll be in trouble. */
   public Object items[];
   protected int count;
 
   /** Constructs an empty vector. */
-  public Vector()
-  {
+  public Vector() {
     this(8);
   }
 
@@ -61,9 +57,8 @@ public class Vector
    * the initial size of the vector's internal object array. The vector
    * will grow as needed when objects are added.
    */
-  public Vector(int size)
-  {
-    if (size < 0){
+  public Vector(int size) {
+    if (size < 0) {
       throw new IllegalArgumentException("The argument 'size' must be non-negative");
     }
     items = new Object[size];
@@ -85,30 +80,27 @@ public class Vector
    * If there are no elements in this vector, returns null.
    * Note that if the elements are Strings, you can cast the result to a String[] array.
    */
-  public Object []toObjectArray()
-  {
-    if (count == 0)
-    {
+  public Object[] toObjectArray() {
+    if (count == 0) {
       return null; // guich@200b2
     }
     Object objs[];
-    if (items[0] instanceof String){
+    if (items[0] instanceof String) {
       objs = new String[count];
-    }else {
+    } else {
       objs = new Object[count];
     }
-    if (count > 0){
+    if (count > 0) {
       Vm.arrayCopy(items, 0, objs, 0, count);
     }
     return objs;
   }
 
   /** Pushes an object. */ // guich@102
-  public void push(Object obj)
-  {
-    if (count < items.length){
+  public void push(Object obj) {
+    if (count < items.length) {
       items[count++] = obj;
-    }else {
+    } else {
       insertElementAt(obj, count);
     }
   }
@@ -116,10 +108,8 @@ public class Vector
   /** Returns the last object, removing it.
    * @throws totalcross.util.ElementNotFoundException When the stack is empty.
    */ // guich@102
-  public Object pop() throws ElementNotFoundException
-  {
-    if (count > 0)
-    {
+  public Object pop() throws ElementNotFoundException {
+    if (count > 0) {
       Object o = items[--count];
       items[count] = null; // let gc do their work
       return o;
@@ -130,10 +120,9 @@ public class Vector
   /** Returns the last object, without removing it.
    * @throws totalcross.util.ElementNotFoundException When the stack is empty.
    */ // guich@102
-  public Object peek() throws ElementNotFoundException
-  {
-    if (count > 0){
-      return items[count-1];
+  public Object peek() throws ElementNotFoundException {
+    if (count > 0) {
+      return items[count - 1];
     }
     throw new ElementNotFoundException("Empty stack");
   }
@@ -143,34 +132,30 @@ public class Vector
    * @param n How many elements to get from the top; must be a positive number.
    * @throws totalcross.util.ElementNotFoundException When the stack is empty.
    */ // guich@102
-  public Object peek(int n) throws ElementNotFoundException
-  {
-    if (n < 0){
+  public Object peek(int n) throws ElementNotFoundException {
+    if (n < 0) {
       throw new IllegalArgumentException("Argument 'n' must be positive.");
     }
-    if (count > 0){
-      return items[count-1-n];
+    if (count > 0) {
+      return items[count - 1 - n];
     }
     throw new ElementNotFoundException("Empty stack");
   }
 
   /** Pops n last elements from the stack.
    */
-  public void pop(int n)
-  {
-    if (count >= n){
+  public void pop(int n) {
+    if (count >= n) {
       count -= n;
-    }else {
+    } else {
       throw new IllegalArgumentException();
     }
   }
 
   /** Returns the last object, removing it, or the given default value
    */
-  public Object pop(Object def)
-  {
-    if (count > 0)
-    {
+  public Object pop(Object def) {
+    if (count > 0) {
       Object o = items[--count];
       items[count] = null; // let gc do their work
       return o;
@@ -181,23 +166,19 @@ public class Vector
   /** Returns the last object, without removing it, or the given default value.
    * 
    */
-  public Object peek(Object def)
-  {
-    return count > 0 ? items[count-1] : def;
+  public Object peek(Object def) {
+    return count > 0 ? items[count - 1] : def;
   }
-
 
   /** Returns if this Vector is empty.
    * @since TotalCross 1.0.
    */
-  public boolean isEmpty()
-  {
+  public boolean isEmpty() {
     return count == 0;
   }
 
   /** Returns the number of objects in the vector. */
-  public int size()
-  {
+  public int size() {
     return count;
   }
 
@@ -214,13 +195,13 @@ public class Vector
    */
   public void setSize(int newSize) throws ArrayIndexOutOfBoundsException // flsobral@tc112: Throw AIOOBE instead of IllegalArgument to match the Java implementation.
   {
-    if (newSize < 0){
+    if (newSize < 0) {
       throw new ArrayIndexOutOfBoundsException("Argument 'newSize' must be positive.");
     }
 
-    if (newSize < count){
+    if (newSize < count) {
       Convert.fill(items, newSize, items.length, null);
-    }else // growing
+    } else // growing
     {
       //         while (newSize > items.length) 
       ensureCapacity(newSize); // grow buffer to reach newSize
@@ -232,8 +213,7 @@ public class Vector
    * Finds the index of the given object. The list is searched using a O(n) linear
    * search through all the objects in the vector.
    */
-  public int indexOf(Object elem)
-  {
+  public int indexOf(Object elem) {
     return indexOf(elem, 0);
   }
 
@@ -241,11 +221,9 @@ public class Vector
    * Finds the index of the given object. The list is searched using a O(n) linear
    * search starting in startIndex up through all the objects in the vector.
    */
-  public int indexOf(Object obj, int startIndex)
-  {
-    if (obj != null)
-    {
-      Object []its = items; // guich@560_13: cache to speedup performance
+  public int indexOf(Object obj, int startIndex) {
+    if (obj != null) {
+      Object[] its = items; // guich@560_13: cache to speedup performance
       int n = count;
       for (int i = startIndex; i < n; i++) {
         if (its[i] != null && its[i].equals(obj)) {
@@ -257,8 +235,7 @@ public class Vector
   }
 
   /** Deletes the object reference at the given index. */
-  public void removeElementAt(int index)
-  {
+  public void removeElementAt(int index) {
     if (0 <= index && index < count) // guich@566_33
     {
       count--;
@@ -270,16 +247,14 @@ public class Vector
   }
 
   /** Inserts the object at the given index. If index is less than 0 or above the number of elements, it is inserted at the end. */
-  public void insertElementAt(Object obj, int index)
-  {
-    if (index < 0 || index > count)
-    {
+  public void insertElementAt(Object obj, int index) {
+    if (index < 0 || index > count) {
       index = count; // guich@200b3: check if index is valid
     }
-    if (count == items.length){
+    if (count == items.length) {
       ensureCapacity(items.length + 1);
     }
-    if (index != count){
+    if (index != count) {
       Vm.arrayCopy(items, index, items, index + 1, count - index);
     }
     items[index] = obj;
@@ -287,11 +262,10 @@ public class Vector
   }
 
   /** Adds an object to the end of the vector. */
-  public void addElement(Object obj)
-  {
-    if (count < items.length){
+  public void addElement(Object obj) {
+    if (count < items.length) {
       items[count++] = obj;
-    }else {
+    } else {
       insertElementAt(obj, count);
     }
   }
@@ -306,7 +280,7 @@ public class Vector
   public void addElements(Object[] objects) // flsobral@tc113_39: new method to add array of objects.
   {
     int newSize = count + objects.length;
-    if (items.length < newSize){
+    if (items.length < newSize) {
       ensureCapacity(newSize);
     }
     Vm.arrayCopy(objects, 0, items, count, objects.length); //flsobral@tc120_33: inserting elements one position higher than it should.
@@ -324,7 +298,7 @@ public class Vector
   public void addElementsNotNull(Object[] objects) // guich@tc124_8
   {
     int newSize = count + objects.length;
-    if (items.length < newSize){
+    if (items.length < newSize) {
       ensureCapacity(newSize);
     }
     for (int i = 0; i < objects.length; i++) {
@@ -335,11 +309,9 @@ public class Vector
   }
 
   /** Deletes the object. */
-  public boolean removeElement(Object obj)
-  {
-    int i = indexOf(obj,0);
-    if (i >= 0)
-    {
+  public boolean removeElement(Object obj) {
+    int i = indexOf(obj, 0);
+    if (i >= 0) {
       removeElementAt(i);
       return true;
     }
@@ -348,8 +320,7 @@ public class Vector
 
   /** Clears all elements in this vector and sets the count to 0. Note that this method sets all items in this vector to <code>null</code>,
    * so, if you had directly assigned an array to this vector, all items inside it will be nulled. */
-  public void removeAllElements()
-  {
+  public void removeAllElements() {
     Convert.fill(items, 0, count, null);
     count = 0;
   }
@@ -359,16 +330,15 @@ public class Vector
      if they are not strings, Convert.qsort will try to discover the type. */
   public void qsort() // flsobral@tc100b4_22: changed return type to void.
   {
-    if (count > 0){
-      Convert.qsort(items, 0, count-1);
+    if (count > 0) {
+      Convert.qsort(items, 0, count - 1);
     }
   }
 
   /** Sorts the elements of this Vector, with the given sort type. */
-  public void qsort(int sortType)
-  {
-    if (count > 0){
-      Convert.qsort(items, 0, count-1, sortType);
+  public void qsort(int sortType) {
+    if (count > 0) {
+      Convert.qsort(items, 0, count - 1, sortType);
     }
   }
 
@@ -377,28 +347,26 @@ public class Vector
      if they are not strings, Convert.qsort will try to discover the type. */
   public void qsort(boolean ascending) // flsobral@tc100b4_22: changed return type to void.
   {
-    if (count > 0){
-      Convert.qsort(items, 0, count-1, Convert.SORT_AUTODETECT, ascending);
+    if (count > 0) {
+      Convert.qsort(items, 0, count - 1, Convert.SORT_AUTODETECT, ascending);
     }
   }
 
   /** Sorts the elements of this Vector, with the given sort type and order. */
-  public void qsort(int sortType, boolean ascending)
-  {
-    if (count > 0){
-      Convert.qsort(items, 0, count-1, sortType, ascending);
+  public void qsort(int sortType, boolean ascending) {
+    if (count > 0) {
+      Convert.qsort(items, 0, count - 1, sortType, ascending);
     }
   }
 
   /** Dumps the contents of this vector and returns a string of it.
    * If the number of elements is big, it can take a lot of memory!
    */
-  public String dump()
-  {
+  public String dump() {
     StringBuffer sb = new StringBuffer(1024);
     sb.append(super.toString()).append('\n');
     sb.append("Number of elements: ").append(count).append('\n');
-    for (int i =0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
       sb.append('[').append(i).append("] = ").append(items[i]).append('\n');
     }
     return sb.toString();
@@ -408,8 +376,7 @@ public class Vector
    * If the out vector is greater than the current size, the remaining positions will remain unchanged.
    * @since TotalCross 1.0 beta 4
    */
-  public void copyInto(Object[] out)
-  {
+  public void copyInto(Object[] out) {
     Vm.arrayCopy(items, 0, out, 0, count);
   }
 
@@ -420,12 +387,10 @@ public class Vector
    * 
    * @param minCapacity the desired minimum capacity
    */
-  public void ensureCapacity(int minCapacity)
-  {
-    if (minCapacity > 0 && items.length < minCapacity)
-    {
+  public void ensureCapacity(int minCapacity) {
+    if (minCapacity > 0 && items.length < minCapacity) {
       // On device, grows 20% + 1. On Java, grows 100% + 1.
-      int newSize = (Settings.onJavaSE ? minCapacity*2 : minCapacity*12/10) + 1; // flsobral@tc110_5: new size is >= current size + 1.- guich@tc112_6: +1 in both cases
+      int newSize = (Settings.onJavaSE ? minCapacity * 2 : minCapacity * 12 / 10) + 1; // flsobral@tc110_5: new size is >= current size + 1.- guich@tc112_6: +1 in both cases
       Object newItems[] = new Object[newSize];
       Vm.arrayCopy(items, 0, newItems, 0, count);
       items = newItems;
@@ -436,25 +401,22 @@ public class Vector
    * @since TotalCross 1.13 
    */
   @Override
-  public String toString()
-  {
-    return super.toString()+" size: "+count+", items: "+toString(",");
+  public String toString() {
+    return super.toString() + " size: " + count + ", items: " + toString(",");
   }
-
 
   /** Returns the items of this vector separated by the given string.
    * @since TotalCross 1.13 
    */
-  public String toString(String separator)
-  {
-    StringBuffer sb = new StringBuffer(10*count);
+  public String toString(String separator) {
+    StringBuffer sb = new StringBuffer(10 * count);
     for (int i = 0, n = count; i < n; i++) {
       if (items[i] != null) {
         sb.append(items[i].toString()).append(separator);
       }
     }
-    if (sb.length() > 0){
-      sb.setLength(sb.length()-separator.length());
+    if (sb.length() > 0) {
+      sb.setLength(sb.length() - separator.length());
     }
     return sb.toString();
   }
@@ -467,8 +429,7 @@ public class Vector
    * @return true if this vector contains the specified element
    * @since TotalCross 1.15
    */
-  public boolean contains(Object o)
-  {
+  public boolean contains(Object o) {
     return indexOf(o) >= 0;
   }
 
@@ -481,16 +442,14 @@ public class Vector
    */
   public void reverse() // guich@tc115_70
   {
-    for (int i = 0, j = count - 1; i < j; i++, j--)
-    {
+    for (int i = 0, j = count - 1; i < j; i++, j--) {
       Object temp = items[i];
       items[i] = items[j];
       items[j] = temp;
     }
   }
 
-  public Object elementAt(int i)
-  {
+  public Object elementAt(int i) {
     return items[i];
   }
 }
