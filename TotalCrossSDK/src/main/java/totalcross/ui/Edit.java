@@ -33,6 +33,7 @@ import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PressListener;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
+import totalcross.ui.Edit;
 import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
