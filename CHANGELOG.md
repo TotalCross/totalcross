@@ -22,25 +22,26 @@ All notable changes to this project will be documented in this file.
 - Fixed Check and Radio sending PRESSED event when `setChecked` is called, even when `Settings.sendPressEventOnChange` is set to false
 - Fixed Launcher to better handle missing or bogus font files when running on desktop
 - On Graphics, fixed `NullPointerException` and `ArrayIndexOutOfBoundsException` when repaint is called from a thread
-- Fixed `ProgressBar` to retain the z-order when its value is updated [issue 80](https://gitlab.com/totalcross/TotalCross/issues/80)
+- Fixed `ProgressBar` to retain the z-order when its value is updated #80
 - Fixed iOS icons by adding method `colorDist (int rgb1, int rgb2)` and `addFillPoint (int x, int y)`
 - Fixed `ImageControl` zooming with poor quality, it was scaling the resized image displayed in the control instead of the original image
 - Fixed usage of internal scanners on Android devices
 - Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
-- Fixed barcode reading with Motorola scanners when the digits of both halves of the barcode were the same (such as 10161016 or 10201020) - [issue 106](https://gitlab.com/totalcross/TotalCross/issues/106)
+- Fixed barcode reading with Motorola scanners when the digits of both halves of the barcode were the same (such as 10161016 or 10201020) - #106
 - Fixed Switch disappearing on Android - calculation of alpha channel applied to the switch was wrong
 - Fixed `NullPointerException` in `Graphics.drawText` that would occur under some situations when the UI is loaded from a thread
 - Fixed Window incorrectly calling `onClickedOutside` when a two-finger movement is performed
 - Fixed `MaterialEffect` to not apply effects during a flick
 
 ### Added
-- Added support to Bematech scanner back to the SDK - [issue 100](https://gitlab.com/totalcross/TotalCross/issues/100)
+- Added support to Bematech scanner back to the SDK - #100
 - Added `Settings.showUIErrors`, which can be set to false to disable UI errors that are shown in desktop only.
 - Added `Flick.dontPropagate`, which can be useful if you have two or more intrinsic `ScrollContainers` and dont want to propagate the scroll among them
 - Added `ScrollContainer.canShowScrollBar`s, which gives child classes finer control on whether scrollbars should be displayed or not
 - Added `ComboBox.getArrowColor` and now you can change the arrow color at runtime
 - Added classes `java.awt.Dimension` and its dependencies - `java.awt.geom.Dimension2D`, `java.lang.InternalError`, `java.lang.VirtualMachineError`
 - Added method `Long.toString(long i, int radix)` to `java.lang.Long`
+- Added method `ConnectionManager.getLocalHostName` to retrieve the host name of the local host - [issue 41](https://gitlab.com/totalcross/TotalCross/issues/41)
 
 ### Changes
 - The tcvm.dll no longer requires elevated privileges to be run on Windows desktop
