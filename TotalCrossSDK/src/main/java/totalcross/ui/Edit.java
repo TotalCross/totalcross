@@ -1240,7 +1240,7 @@ public class Edit extends Control implements TextControl, TimerListener {
     }
   }
 
-  void shiftScreen(boolean force) {
+  protected void shiftScreen(boolean force) {
      if (Settings.unmovableSIP && (force || !Window.isSipShown())) { // guich@tc126_21
         Window ww = getParentWindow();
         if (ww != null)
@@ -1370,14 +1370,8 @@ public class Edit extends Control implements TextControl, TimerListener {
         {
           Control next;
           if (parent != null && (next=parent.moveFocusToNextEditable(this, ke.modifiers == 0)) != null) {
-             for (Container p = parent; p != null; p = p.parent) // if next is inside a ScrollContainer, scroll to it
-                if (p instanceof ScrollContainer) {
-                   ((ScrollContainer)p).scrollToControl(next);
-                   break;
-                }                           
-             if (next instanceof Edit)
-                ((Edit)next).shiftScreen(true); // update screen shift position when user press ENTER
-             return;
+              shiftTo(next);
+              return;
           }
         }
         boolean loseFocus = moveFocus || ke.key == SpecialKeys.ESCAPE;
@@ -1681,6 +1675,16 @@ public class Edit extends Control implements TextControl, TimerListener {
     if (isTopMost()) {
       Window.needsPaint = true; // must repaint everything due to a possible background image
     }
+  }
+  protected void shiftTo(Control next) {
+    for (Container p = parent; p != null; p = p.parent) { // if next is inside a ScrollContainer, scroll to it
+      if (p instanceof ScrollContainer) {
+        ((ScrollContainer)p).scrollToControl(next);
+        break;
+      }
+    }
+    if (next instanceof Edit)
+      ((Edit)next).shiftScreen(true); // update screen shift position when user press ENTER
   }
 
   private boolean showClipboardMenu() {
