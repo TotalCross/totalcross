@@ -1309,9 +1309,13 @@ public class Control extends GfxSurface {
             throw new RuntimeException("You can't use FILL with BEFORE, CENTER or BOTTOM for control " + toString());
           }
         }
-        if (height < 0 || width < 0) {
-          throw new RuntimeException(
-              "Invalid resulting values in width,height for control " + toString() + ": " + width + "," + height);
+        if (height < 0 && width < 0) {
+          throw new RuntimeException("Invalid resulting values in width,height for control "+toString()+": "+width+","+height);
+        } else if (width < 0) {
+          throw new RuntimeException("Invalid resulting values in width for control "+toString()+": "+width);
+        }
+        else if (height < 0) {
+          throw new RuntimeException("Invalid resulting values in height for control "+toString()+": "+height);
         }
       }
     }
