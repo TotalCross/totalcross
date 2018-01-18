@@ -103,7 +103,9 @@ public class Whiteboard extends Control {
     int lastColor = gImg.foreColor;
     if (image == null) {
       gImg.backColor = backColor;
-      gImg.fillRect(0, 0, width, height);
+      if (!transparentBackground) {
+        gImg.fillRect(0, 0, width, height);
+      } 
     }
     if (borderColor != -1) {
       gImg.foreColor = borderColor;
