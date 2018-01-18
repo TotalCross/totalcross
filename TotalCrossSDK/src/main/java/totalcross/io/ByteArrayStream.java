@@ -319,4 +319,9 @@ public class ByteArrayStream extends RandomAccessStream {
     }
     mark(); // flsobral@tc100b4: replaced reset() by mark().
   }
+
+  /** Writes a single byte */
+  public void write(int b) {
+    writeBytes(new byte[] {(byte)b},0,1);
+  }
 }
