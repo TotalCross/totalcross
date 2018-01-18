@@ -111,6 +111,19 @@ public abstract class Stream extends Connection {
   }
 
   /**
+   * Writes a single byte to the stream.
+   *
+   * @param b
+   *           the byte to write (only least significant byte is written)
+   * @return the number of bytes actually written
+   * @throws totalcross.io.IOException
+   * @since TotalCross 4.1.1
+   */
+  public int write(int b) throws totalcross.io.IOException {
+    return writeBytes(new byte[] { (byte) b }, 0, 1);
+  }
+
+  /**
    * Skips over and discards n bytes of data from this stream. The skip method may, for a variety of reasons, end up
    * skipping over some smaller number of bytes, possibly 0. This may result from any of a number of conditions;
    * reaching end of file before n bytes have been skipped is only one possibility. The actual number of bytes skipped
