@@ -28,7 +28,6 @@ All notable changes to this project will be documented in this file.
 - Fixed usage of internal scanners on Android devices
 - Fixed bug where screen was not being shifted when changing focus between Edits using `PEN_UP` or ENTER
 - Fixed barcode reading with Motorola scanners when the digits of both halves of the barcode were the same (such as 10161016 or 10201020) - #106
-- Fixed Switch disappearing on Android - calculation of alpha channel applied to the switch was wrong
 - Fixed `NullPointerException` in `Graphics.drawText` that would occur under some situations when the UI is loaded from a thread
 - Fixed Window incorrectly calling `onClickedOutside` when a two-finger movement is performed
 - Fixed `MaterialEffect` to not apply effects during a flick
