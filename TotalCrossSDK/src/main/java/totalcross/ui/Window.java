@@ -858,6 +858,7 @@ public class Window extends Container {
     }
 
     if (isKeyEvent) {
+      tempFocus = null; // key events must always go to _focus
       _keyEvent.key = key;
       _keyEvent.modifiers = modifiers;
       _keyEvent.type = type;
