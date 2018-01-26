@@ -129,7 +129,8 @@ public class LineReader {
 
   /**
    * Read more bytes from the stream. If there's no data immediately to be
-   * read, waits 100ms and try again, up to <code>maxTries</code> times.
+   * read, it causes the current thread to yield the current use of CPU before 
+   * attempting a new read, up to <code>maxTries</code> times.
    *
    * @throws totalcross.io.IOException
    */
@@ -141,7 +142,7 @@ public class LineReader {
     int r = f.readBytes(readBuf.getBuffer(), readBuf.getPos(), readBuf.available());
     if (r < 0) {
       for (int i = maxTries - 1; i >= 0; i--) {
-        Vm.sleep(100);
+        Thread.yield();
         r = f.readBytes(readBuf.getBuffer(), readBuf.getPos(), readBuf.available());
         if (r > 0) {
           break;
