@@ -321,7 +321,7 @@ public class UIRobot {
           type = this.type;
         }
         if (type == 0) {
-          Vm.sleep(1);
+          Thread.yield();
         } else {
           mw._postEvent(type, key, x, y, mods, 0);
           this.type = 0;

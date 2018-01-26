@@ -1535,7 +1535,7 @@ public class Control extends GfxSurface {
           Window.repaintActiveWindows();
         } else {
           MainWindow.mainWindowInstance.setTimerInterval(1);
-          Vm.safeSleep(1);
+          Thread.yield();
         }
       } else if (asWindow != null) // guich@200b4: if this is a Window, paint everything
       {
@@ -1990,7 +1990,7 @@ public class Control extends GfxSurface {
         @Override
         public void run() {
           updateScreen();
-          Vm.sleep(1);
+          Thread.yield();
           callingUpdScr = false;
         }
       });

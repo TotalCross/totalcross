@@ -194,7 +194,7 @@ public class Spinner extends Control implements Runnable {
     {
       step();
       if (!MainWindow.isMainThread()) {
-        Vm.sleep(1);
+    	  Thread.yield();
       }
       last = now;
     }

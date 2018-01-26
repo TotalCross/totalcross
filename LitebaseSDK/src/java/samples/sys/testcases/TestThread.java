@@ -51,15 +51,17 @@ final class LBThread implements Runnable
 	   {
 	      // Opens the connection with Litebase: one for each thread.
 	      LitebaseConnection conn = AllTests.getInstance("Test");
-	      if (doSleep) 
-	         Vm.sleep(1);
+	      if (doSleep) {
+	    	  Thread.yield();
+	      }
 	      
 	      // Creates the table.
 	      if (conn.exists("person" + tableId))
 	         conn.executeUpdate("drop table person" + tableId);
 	      conn.execute("create table person" + tableId + " (id int primary key, name char(30))");
-	      if (doSleep) 
-	         Vm.sleep(1);
+	      if (doSleep) {
+	    	  Thread.yield();
+	      }
 	      
 	      // Empties the table.
 	      conn.executeUpdate("delete from person" + tableId);
@@ -69,14 +71,16 @@ final class LBThread implements Runnable
 	      PreparedStatement stmt = conn.prepareStatement("insert into person" + tableId + " (id,name) values(?, ?)");
 	      while (++i < 100)
 	      {
-	         if (i == 50 && doSleep) 
-	            Vm.sleep(1);
+	         if (i == 50 && doSleep) {
+	        	 Thread.yield();
+	         }
 	         stmt.setInt(0, i);
 	         stmt.setString(1, "Name " + i);
 	         stmt.executeUpdate();
 	      }
-	      if (doSleep) 
-	         Vm.sleep(1);
+	      if (doSleep) {
+	    	  Thread.yield();
+	      }
       	
 	      // Searches the entire table to see if it was built correctly.
          ResultSet resultSet = conn.executeQuery("select * from person" + tableId);
@@ -91,8 +95,9 @@ final class LBThread implements Runnable
             name = resultSet.getString("Name");
             if (!name.equals("Name " + i))
             	throw new Exception(name + " != Name " + i);
-            if (doSleep) 
-               Vm.sleep(1);
+            if (doSleep) {
+            	Thread.yield();
+            }
          }
          
          // Searches the table using the index.
@@ -101,8 +106,9 @@ final class LBThread implements Runnable
          resultSet.close();
          if (rowCount != 50)
             throw new Exception(rowCount + " != 50"); 
-         if (doSleep) 
-            Vm.sleep(1);
+         if (doSleep) {
+        	 Thread.yield();
+         }
          conn.closeAll();
          
          LitebaseConnection.setLogger(LitebaseConnection.getLogger()); // Tests the logger.

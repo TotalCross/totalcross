@@ -260,7 +260,7 @@ public class Container extends Control {
             g.drawImage(screen0, 0, 0);
             g.drawImage(screen1, 0, 0);
             updateScreen();
-            Vm.sleep(1);
+            Thread.yield();
           }
         } else {
           int w = totalcross.sys.Settings.screenWidth;
