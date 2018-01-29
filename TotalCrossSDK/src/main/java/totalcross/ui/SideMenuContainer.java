@@ -60,6 +60,7 @@ public class SideMenuContainer extends Container {
     }
 
     topMenu = new TopMenu(items, LEFT, Window.RECT_BORDER);
+    topMenu.canDrag = false;
     topMenu.percWidth = 85;
     topMenu.totalTime = 250;
     topMenu.autoClose = true;
