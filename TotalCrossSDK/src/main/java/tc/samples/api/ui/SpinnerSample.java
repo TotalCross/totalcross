@@ -80,6 +80,8 @@ public class SpinnerSample extends BaseContainer {
           repaintNow();
           int end = Vm.getTimeStamp() + 5000;
           while (Vm.getTimeStamp() < end) {
+            // Ygor: I deprecated the update() method because it is synchronous and blocking. 
+            // The start() and stop() methods should be used instead.
             sp.update(); // this makes the magic that updates the spinner
             // you may do other processing here...
           }
