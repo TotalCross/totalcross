@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Added `ScrollContainer.setScrollBars` to allow subclasses to add or remove scrollbars after its creation
 - On Android, Chrome no longer supports using the scheme prefix to display local files. Added workaround to `Vm.exec` to keep backwards compatibility - #148
 - Added `Settings.ANDROID_ID`, refer to the Android [documentation](https://developer.android.com/reference/android/provider/Settings.Secure.html#ANDROID_ID) for more details
+- Added limited support for running Intents through Vm.exec on Android - #155
 
 ### Changes
 - `Whiteboard` now supports usage of `transparentBackground` to ignore the background color and generate images with transparent background - #153
