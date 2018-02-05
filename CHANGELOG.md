@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added `Edit.canMoveFocus` to disable focus change
 - Added `Stream.write(int)`, convenience method to write a single byte to the stream
 - Added `ScrollContainer.setScrollBars` to allow subclasses to add or remove scrollbars after its creation
+- On Android, Chrome no longer supports using the scheme prefix to display local files. Added workaround to `Vm.exec` to keep backwards compatibility - #148
 
 ### Changes
 - `Whiteboard` now supports usage of `transparentBackground` to ignore the background color and generate images with transparent background - #153
