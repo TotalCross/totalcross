@@ -936,6 +936,22 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
               i.setData(uriData);
             }
            startActivity(i);
+         } else if (command.equalsIgnoreCase("intent") && args != null) {
+           org.json.JSONObject j = new org.json.JSONObject(args);
+           final String intentPackage = j.optString("package");
+           final String intentData = j.optString("data");
+           final String intentType = j.optString("type");
+           
+           Intent i = new Intent(Intent.ACTION_VIEW);
+           if (intentPackage != null) {
+             i.setPackage(intentPackage);
+           }
+           if (intentData != null && intentType != null) {
+             i.setDataAndType(Uri.parse(intentData), intentType);
+           } else if (intentData != null) {
+             i.setData(Uri.parse(intentData));
+           }
+           startActivity(i);
          }
          else
          if (command.toLowerCase().endsWith(".apk"))
