@@ -1018,4 +1018,11 @@ public final class Settings {
 
   /** Set to false to disable UI positional errors that are shown in Java SE */
   public static boolean showUIErrors = true;
+  
+  /**
+   * On Android it has the value of Settings.Secure.ANDROID_ID.
+   * Refer to the Android documentation for more details about this identifier:
+   * https://developer.android.com/reference/android/provider/Settings.Secure.html#ANDROID_ID
+   */
+  public static final String ANDROID_ID = null;
 }

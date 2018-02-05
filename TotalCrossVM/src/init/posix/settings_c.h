@@ -399,6 +399,15 @@ bool fillSettings(Context currentContext)
       (*env)->DeleteLocalRef(env, jStringField);
       setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "esn") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
+   
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "ANDROID_ID", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
+      setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "ANDROID_ID") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+   }
 
    // device capabilities
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "virtualKeyboard", "Z");

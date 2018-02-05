@@ -70,6 +70,7 @@ public final class Settings4A
    public static String iccid;
    public static String serialNumber;
    public static String macAddress;
+   public static String ANDROID_ID;
 
    // device capabilities
    public static boolean virtualKeyboard;
@@ -253,6 +254,8 @@ public final class Settings4A
 
       if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR && macAddress != null) // no else here!
          serialNumber = String.valueOf(((long)macAddress.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
+      
+      ANDROID_ID = Settings.Secure.getString(Launcher4A.loader.getContentResolver(), Settings.Secure.ANDROID_ID);
       
       // virtualKeyboard
       virtualKeyboard = true; // always available on droid?
