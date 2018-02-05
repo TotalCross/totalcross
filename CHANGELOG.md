@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## 4.1.1 - 
 
+### Highlights
+- Launcher default color depth changed from 16 bpp to 24 bpp
+
 ### Fixed
 - Fixed `Switch` disappearing on Android - calculation of alpha channel applied to the switch was wrong
 - Fixed `Socket` and `HttpStream` to properly handle EOF during read operation
