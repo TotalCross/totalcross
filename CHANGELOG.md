@@ -1,7 +1,7 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## 4.1.1 - 
+## 4.1.1 - 2018-02-06
 
 ### Highlights
 - Launcher default color depth changed from 16 bpp to 24 bpp
