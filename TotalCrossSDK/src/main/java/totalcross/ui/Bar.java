@@ -513,7 +513,7 @@ public class Bar extends Container {
         add(spr, lastAtRight != null ? BEFORE : RIGHT, SAME, lastAtRight);
         boolean old = Settings.showUIErrors;
         Settings.showUIErrors = false; // ignore title if there is not enough space
-        add(title, AFTER, TOP, FIT, FILL,spl);
+        add(title, AFTER, TOP, FIT, FILL, spl);
         Settings.showUIErrors = old;
       }
       if (spinner != null) {

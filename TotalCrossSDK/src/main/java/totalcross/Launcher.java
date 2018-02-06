@@ -103,7 +103,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   public Hashtable htAttachedFiles = new Hashtable(5); // guich@566_28
   public static int userFontSize = -1;
 
-  private int toBpp = -1;
+  private int toBpp = 24;
   private int toWidth = -1;
   private int toHeight = -1;
   private String className;
@@ -643,9 +643,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
     if (toScale == -1) {
       toScale = toWidth < 240 ? 2 : 1;
-    }
-    if (toBpp == -1) {
-      toBpp = isApplication ? 16 : 32;
     }
 
     Settings.dataPath = newDataPath;
@@ -2149,8 +2146,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           String name = z.names[i];
           String ss = name.substring(name.lastIndexOf('$') + 2, name.lastIndexOf('u'));
           int size = toInt(ss);
-          if (!sizes.contains(size))
+          if (!sizes.contains(size)) {
             sizes.addElement(size);
+          }
         }
         sizes.qsort();
         fi.sizes = sizes.toIntArray();
@@ -2344,7 +2342,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   public void alert(String msg) {
     if (!started) {
-      System.out.println("Alert: "+msg);
+      System.out.println("Alert: " + msg);
     } else {
       alert.setText(msg);
       alert.setVisible(true);

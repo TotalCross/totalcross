@@ -195,6 +195,7 @@ public final class Vm {
    * <li> Vm.exec("viewer","/sdcard/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed. Returns -1 if args is null, -2 if file was not found.
    * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
    * <li> Vm.exec("broadcast","broadcast package",flags,true); -- sends a broadcast intent. "flag" is used in intent.addFlags if different of 0.
+   * <li> Vm.exec("intent","{\"package\":\"com.company.application\",\"data\":\"file:///sdcard/something.pdf\",\"type\":\"application/pdf\"}",flags,true); -- starts an Intent with given values for package, data and type. The args value is expected to be a valid json object, you may use the class JSONObject to get a valid json string.
    * </ul>
    * <p>
    * In iOS, the following work as in Android. Note that since iOS does not have a sdcard, you must extract or copy the files to your application's directory (Settings.appPath).

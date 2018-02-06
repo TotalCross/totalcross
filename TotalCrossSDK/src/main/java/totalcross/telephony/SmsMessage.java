@@ -25,7 +25,7 @@ public class SmsMessage {
   public String getDisplayMessageBody() {
     return displayMessageBody;
   }
-  
+
   public byte[] getUserData() {
     return userData;
   }

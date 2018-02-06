@@ -174,6 +174,7 @@ public class Window extends Container {
   private static int lastType, lastTime, lastX, lastY;
   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.ANDROID.equals(Settings.platform) ? 40 : 0;
   private String oldTitle;
+  private boolean forceShifted;
   protected int footerH;
   /** Use the same color in border and in body */
   public boolean sameBackgroundColor;
@@ -857,6 +858,7 @@ public class Window extends Container {
     }
 
     if (isKeyEvent) {
+      tempFocus = null; // key events must always go to _focus
       _keyEvent.key = key;
       _keyEvent.modifiers = modifiers;
       _keyEvent.type = type;
@@ -970,8 +972,12 @@ public class Window extends Container {
       }
 
       tempFocus = c;
-      if (Flick.currentFlick == null && c != _focus && c.focusOnPenDown && !c.focusLess) {
-        setFocus(c);
+      forceShifted = false;
+      if (Flick.currentFlick == null && c.focusOnPenDown && !c.focusLess) { // if flicking, do not transfer focus
+        forceShifted = c == _focus || (c.isEnabled() && (c instanceof Edit || c instanceof MultiEdit));
+        if (c != _focus) {
+          setFocus(c);
+        }
       }
       tempFocus = c;
     }
@@ -1030,7 +1036,7 @@ public class Window extends Container {
 
       if (type == PenEvent.PEN_UP) {
         if (Settings.unmovableSIP && (isScreenShifted() || isSipShown())) {
-          boolean keepShifted = tempFocus != null && tempFocus.willOpenKeyboard();
+          boolean keepShifted = forceShifted || (tempFocus != null && tempFocus.willOpenKeyboard());
           if (!keepShifted && tempFocus != null) {
             Control c = tempFocus;
             while (c != null && !(c instanceof Scrollable)) {
@@ -1048,10 +1054,9 @@ public class Window extends Container {
               setSIP(SIP_HIDE, null, false);
               needsPaint = true;
             }
+          } else if (tempFocus != null && tempFocus instanceof Edit) {
+            ((Edit) tempFocus).shiftTo(tempFocus);
           }
-          else
-          if (tempFocus != null && tempFocus instanceof Edit) // shifts screen when focus change when user does a pen up
-            ((Edit)tempFocus).shiftScreen(true);
         }
 
         if (!firstDrag) {

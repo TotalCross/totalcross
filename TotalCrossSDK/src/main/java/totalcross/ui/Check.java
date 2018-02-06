@@ -122,7 +122,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
         checked0 = checked;
         checked = !checked;
         if (effect == null) {
-           postPressedEvent();
+          postPressedEvent();
         } else {
           sendPressAfterEffect = true;
         }
@@ -166,9 +166,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
       if (effect != null) {
         sendPressAfterEffect = sendPress;
         effect.startEffect();
-      }
-      else
-      if (sendPress) {
+      } else if (sendPress) {
         postPressedEvent();
       }
     }

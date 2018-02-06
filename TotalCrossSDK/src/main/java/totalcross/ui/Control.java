@@ -18,6 +18,7 @@
 package totalcross.ui;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
@@ -291,7 +292,7 @@ public class Control extends GfxSurface {
   protected Font setFont;
   protected Control setRel;
   protected boolean repositionAllowed;
-  protected int tempW=-1; // used in flowContainer
+  protected int tempW = -1; // used in flowContainer
   protected TranslucentShape translucentShape = TranslucentShape.NONE;
 
   /** The shadow color to be applied to this control. */
@@ -1272,10 +1273,12 @@ public class Control extends GfxSurface {
       {
         if (cli.width == 0 || cli.height == 0) {
           boolean zeroIsValid = false;
-          for (Control c = parent; c != null && !zeroIsValid; c = c.parent)
+          for (Control c = parent; c != null && !zeroIsValid; c = c.parent) {
             zeroIsValid = c instanceof AccordionContainer;
-          if (!zeroIsValid) // when a Control is inside a AccordionContainer, it can reach size 0, so we just ignore the exception
-            throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
+          }
+          if (!zeroIsValid) { // when a Control is inside a AccordionContainer, it can reach size 0, so we just ignore the exception
+            throw new RuntimeException(parent + " must have its bounds set before calling " + this + ".setRect"); // guich@300_28
+          }
         } else if (x + y + width + height > RANGE) {
           String error = "";
           if (isOnlyForSize(x) || isOnlyForY(x)) {
@@ -1309,9 +1312,13 @@ public class Control extends GfxSurface {
             throw new RuntimeException("You can't use FILL with BEFORE, CENTER or BOTTOM for control " + toString());
           }
         }
-        if (height < 0 || width < 0) {
+        if (height < 0 && width < 0) {
           throw new RuntimeException(
               "Invalid resulting values in width,height for control " + toString() + ": " + width + "," + height);
+        } else if (width < 0) {
+          throw new RuntimeException("Invalid resulting values in width for control " + toString() + ": " + width);
+        } else if (height < 0) {
+          throw new RuntimeException("Invalid resulting values in height for control " + toString() + ": " + height);
         }
       }
     }

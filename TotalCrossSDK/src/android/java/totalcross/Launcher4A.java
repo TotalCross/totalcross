@@ -363,6 +363,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          return false;
       }      
+      
+      public CharSequence getTextBeforeCursor(int n, int flags)
+      {
+         return "aaaaaa"; // used in TC8000, when user try to do backspace on an Edit that has text but nothing was typed yet. Android thinks that there is no characters before the cursor and does not issue the backspace key.
+      }
    }
    
    private boolean isSamsungKeyboard() {
@@ -475,7 +480,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             char[] chars = str.toCharArray();
             for (int i =0; i < chars.length; i++)
-               eventThread.pushEvent(KEY_PRESS, chars[i],chars[i],0,event.getMetaState(),0);
+               eventThread.pushEvent(KEY_PRESS, chars[i],0,0,event.getMetaState(),0);
          }
          break;
       }

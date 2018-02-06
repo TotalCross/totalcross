@@ -137,7 +137,7 @@ public class Flick implements PenListener, TimerListener {
    * at the topmost one to prevent this from occuring.
    */
   public boolean dontPropagate;
-   
+
   /**
    * Create a Flick animation object for a FlickableContainer.
    */
@@ -356,9 +356,9 @@ public class Flick implements PenListener, TimerListener {
     if (currentFlick != null || dragId != e.dragId) {
       return;
     }
-   if (dontPropagate) {
-     e.consumed = true;
-   }
+    if (dontPropagate) {
+      e.consumed = true;
+    }
 
     dragId = -1; // the drag event sequence has ended
     t0 = Vm.getTimeStamp();
