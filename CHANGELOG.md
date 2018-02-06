@@ -1,6 +1,31 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.1 - 
+
+### Highlights
+- Launcher default color depth changed from 16 bpp to 24 bpp
+
+### Fixed
+- Fixed `Switch` disappearing on Android - calculation of alpha channel applied to the switch was wrong
+- Fixed `Socket` and `HttpStream` to properly handle EOF during read operation
+- Fixed screen not being shifted when device is in landscape
+- Fixed issue where a focused `Edit` would not receive keypress events
+- Fixed bug in `Edit` on Android - backspace events would not be issued when the Edit had text but had not received any typing events
+
+### Added
+- Added `Edit.canMoveFocus` to disable focus change
+- Added `Stream.write(int)`, convenience method to write a single byte to the stream
+- Added `ScrollContainer.setScrollBars` to allow subclasses to add or remove scrollbars after its creation
+- On Android, Chrome no longer supports using the scheme prefix to display local files. Added workaround to `Vm.exec` to keep backwards compatibility - #148
+- Added `Settings.ANDROID_ID`, refer to the Android [documentation](https://developer.android.com/reference/android/provider/Settings.Secure.html#ANDROID_ID) for more details
+- Added limited support for running Intents through Vm.exec on Android - #155
+
+### Changes
+- `Whiteboard` now supports usage of `transparentBackground` to ignore the background color and generate images with transparent background - #153
+- Pressing ENTER in a set of `Edit` inside a `ScrollContainer` will now automatically scroll to the next control
+- Improved `Control.setRect` error messages, it will now throw distinct messages for invalid width or height
+
 ## 4.1.0 - 2018-01-15
 
 ### Highlights
