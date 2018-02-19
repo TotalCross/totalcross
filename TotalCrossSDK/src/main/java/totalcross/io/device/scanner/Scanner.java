@@ -299,7 +299,7 @@ public class Scanner {
       dest = Window.getTopMost();
     }
     // convert from the type to the internal event id
-    int id = type == 2 ? ScanEvent.BATTERY_ERROR : type == 1 ? ScanEvent.SCANNED/* 0 */ : ScanEvent.TRIGGERED;
+    int id = type % 1100 == 2 ? ScanEvent.BATTERY_ERROR : type % 1100 == 1 ? ScanEvent.SCANNED/* 0 */ : ScanEvent.TRIGGERED;
     // dispatch to the listener
     se.update(id);
     dest.postEvent(se);
