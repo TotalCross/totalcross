@@ -78,13 +78,9 @@ public class Scanner {
 
   private static Runnable scannerLoader = () -> {
     if (Settings.isWindowsCE()) {
-      if ("Marvell".equalsIgnoreCase(Settings.deviceId) || "CipherLab Inc".equalsIgnoreCase(Settings.deviceId)) {
-        driverLoaded = Vm.attachNativeLibrary("OpticonH16");
-      } else {
-        driverLoaded = Vm.attachNativeLibrary("Motorola") || Vm.attachNativeLibrary("Dolphin")
-            || Vm.attachNativeLibrary("Intermec") || Vm.attachNativeLibrary("Pidion")
-            || Vm.attachNativeLibrary("Bematech");
-      }
+      driverLoaded = Vm.attachNativeLibrary("Motorola") || Vm.attachNativeLibrary("Dolphin")
+          || Vm.attachNativeLibrary("Intermec") || Vm.attachNativeLibrary("Pidion")
+          || Vm.attachNativeLibrary("Bematech") || Vm.attachNativeLibrary("OpticonH16");
       if (!driverLoaded && tries++ == 0) {
         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
       }
