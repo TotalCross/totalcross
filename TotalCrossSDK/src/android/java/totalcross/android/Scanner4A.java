@@ -25,17 +25,20 @@ public class Scanner4A {
   public static IScanner scanner;
 
   static boolean scannerActivate() {
-    String id = Settings4A.deviceId.toLowerCase();
-    if (id.contains("honeywell")) {
-      scanner = new HoneywellScanner();
-    } else if (id.equalsIgnoreCase("intermec") || id.contains("foxconn")) {
-      scanner = new IntermecScanner();
-    } else if (id.contains("motorola")) {
-      try {
-        if (Class.forName("com.symbol.emdk.EMDKManager") != null) {
-          scanner = new MotorolaScanner();
-        }
-      } catch (ClassNotFoundException e) {
+    // Motorola/Symbol devices
+    try {
+      if (Class.forName("com.symbol.emdk.EMDKManager") != null) {
+        scanner = new MotorolaScanner();
+      }
+    } catch (ClassNotFoundException e) {
+    }
+
+    if (scanner == null) {
+      String id = Settings4A.deviceId.toLowerCase();
+      if (id.contains("honeywell")) {
+        scanner = new HoneywellScanner();
+      } else if (id.equalsIgnoreCase("intermec") || id.contains("foxconn")) {
+        scanner = new IntermecScanner();
       }
     }
     return scanner != null ? scanner.scannerActivate() : false;
