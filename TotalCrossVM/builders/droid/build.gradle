@@ -153,7 +153,10 @@ android {
  }
 
 dependencies {
-	compile fileTree(dir: 'src/main/libs', include: ['*.jar'])
+	// com.symbol.emdk must be excluded from compile and added as provided
+	compile fileTree(dir: 'src/main/libs', include: ['*.jar'], exclude: ['com.symbol.emdk-*.jar'])
+	provided files('src/main/libs/com.symbol.emdk-6.7.jar')
+	
 	compile 'com.google.android.gms:play-services-ads:' + googleGmsVersion
 	compile 'com.google.android.gms:play-services-location:' + googleGmsVersion
 	compile 'com.google.android.gms:play-services-maps:' + googleGmsVersion

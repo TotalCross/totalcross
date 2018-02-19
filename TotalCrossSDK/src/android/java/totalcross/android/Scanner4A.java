@@ -33,10 +33,15 @@ public class Scanner4A
       else
       if (id.equalsIgnoreCase("intermec") || id.contains("foxconn"))
          scanner = new IntermecScanner();
-      else
-      if (id.contains("motorola"))
-         scanner = new MotorolaScanner();
-      return scanner.scannerActivate();
+      else if (id.contains("motorola")) {
+        try {
+          if (Class.forName("com.symbol.emdk.EMDKManager") != null) {
+            scanner = new MotorolaScanner();
+          }
+        } catch (ClassNotFoundException e) {
+        }
+      }
+      return scanner != null ? scanner.scannerActivate() : false;
    }
    
    static boolean setBarcodeParam(int barcodeType, boolean enable)
