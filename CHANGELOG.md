@@ -52,6 +52,113 @@ Using the argument is still allowed, but a message is printed informing of this 
   - Fixed icon problem
   - Changed to use a temporary folder during the process
 
+## 5.0.0 - 2019-04-15
+
+### Highlights
+- TotalCross is now aware of the device's screen pixel density and uses this information to scale UI elements uniformly on different platforms. 
+ - The font size is now expressed in scaleable pixels (sp) and will now scale uniformly on different screens. The font size should now be expressed as a constant value or based on `Settings.deviceFontHeight`, but **never** based on the screen's resolution or target platform.
+
+> :information_source: **Existing applications may require adjustments to their font sizes!**
+
+- Improved overrall UI responsiveness and reduced application start time on Android
+ - Several `Vm.sleep` calls in the vm had their time reduced by 50% or more, some calls were replaced with `Thread.yield()`
+ - On Android and Java, reduced overhead in the event thread to improve UI responsiveness
+
+#### Screen density support
+All graphical components can now be scaled to have approximately the same physical height on any screen resolution.
+
+##### Density by OS
+- Android and iOS: these devices expose a manufacturer-provided screen density value. On TotalCross 5 applications, this value is retrieved by default and used to ensure consistent component sizes across devices
+- Java: based on scale, e.g. /scale 0.5 = density 2.0, you can try different densities on the emulator by changing the scale command line argument
+- Win32 and WinCE: Most Windows devices do not natively expose screen density information and, thus, are kept at density 1.0.
+To improve the look and feel on smaller screens, we use a density of 0.75 on screens with width or height less than 320
+- Other platforms: nothing changed (= density 1.0)
+
+##### Font
+The font size is now expressed in scalable pixels (sp), this abstracts away the actual physical dimension (screen pixels) of the font. This way, their actual physical size is calculated based on the screen density. e.g:
+A font with size of 20sp with different screen resolutions:
+- Density 1.0: actual size 20 pixels
+- Density 1.5: actual size 30 pixels
+- Density 2.0: actual size 40 pixels
+- Density 0.75: actual size 15 pixels
+This change shall render TotalCross apps ready for different screen sizes with minimal implementation effort. 
+
+>>>
+**Updating for 5.0**
+
+Using Font.getDefaultFontSize is no longer necessary, you may now use constant values and the font size will be adjusted accordingly. 
+Applications that tried to “guess” the appropriate font size based on screen resolution may need adjustments.
+Applications that used Settings.uiAdjustmentsBasedOnFontHeight should have their graphical components resized more uniformly across different platforms and screen densities.
+>>>
+
+##### Density Independent Pixels
+Controls may now have their dimensions expressed in density independent pixels units (dp), which are scaled for the screen based on its pixel density. e.g:
+```java
+// adds Button with height of 20dp
+add(new Button("Ok"), RIGHT, BOTTOM, PREFERRED, DP + 20);
+```
+This is now the preferred way of setting the control’s dimensions.
+
+#### Improved support for animations
+We now provide a central update event that controls can register for. This event fires periodically and is meant to be used to drive all animations in the framework.
+In comparison to using timer events for animations, this approach uses less CPU and memory, and behaves better under high CPU usage scenarios.
+
+>>>
+**Updating for 5.0**
+
+Several classes were updated to use the new update events and the effect on them should be noticeable without any changes. In special, we would like to highlight the  ScrollContainer and the ControlAnimation components. 
+Users are encouraged to replace similar uses of threads, sleeps and timer events with update events.
+>>>
+
+#### Smoother scrolling
+The ScrollContainer and the Flick components were updated to provide smoother and more precise scrolling. The changes include the usage of quadratic easing animation and exponential decay.
+The Flick also factors in the screen’s pixel density and offers the user the option of tuning the flick acceleration.
+Lastly, Flick also supports consecutive drags to increase the scrolling speed.
+
+>>>
+**Updating for 5.0**
+
+Most of the changes made are transparent to the user, but there were some breaking changes on Flick. User may have to remove the usage of fields that are no longer available.
+>>>
+
+#### Icon control
+With the new Icon control it’s easier to add beautiful and meaningful icons to your application.
+
+This is now the preferred way of adding icons to your application and should be favored over image files. One major reason to favor icon font sets over images is that they are highly scalable and will look sharp in any resolution while using only a fraction of the system resources an image would use.
+Material Icons are already bundled with the sdk and the IconType interface may be used to implement more font sets.
+
+#### Alpha support for Labels and Icons
+It’s now possible to change the opacity of text and icons within Label or Icon controls. This is a key feature to design beautiful applications, as it allows text to remain legible over any background color.
+Transparent status bar
+
+Currently only supported on Android, but iOS support will be ready soon.
+
+#### Navigation Drawer
+All the previously listed changes were put in use to futher develop the SideMenuContainer, complying with the Navigation Drawer pattern defined by the Material Design guidelines (https://material.io/guidelines/patterns/navigation-drawer.html):
+- Action bar height is now 20 dp
+- Bar title and menu items using the Roboto Medium font (when available)
+- Labels and icons now use the correct font size, weight and opacity
+- Keylines and margins are respected both inside and outside the side menu (with a special exception for really small screens)
+- Smooth slide-in and out effects, with fade effect during slide removed
+- Resting elevation over the content
+- Swipe to open support is still in its early stages, but should be functional for most applications
+- Adjusts automatically when used with transparent status bar
+
+### Added
+- SideMenuContainer.Sub, a collapsible submenu for the navigation drawer
+- MaterialWindow, a popup window that slides from the bottom to the top of the screen
+
+### Changed
+- Camera: On Android, choosing an image from the Gallery no longer creates a copy of it when not necessary (images from a cloud service still require a local copy) - TotalCross#400
+- Java
+  - ByteArrayOutputStream: added several missing methods - TotalCross#478
+  - System: added method `arraycopy`
+  - Charset: method forName now correctly validates the given charset name and may throw `IllegalCharsetNameException`
+  - String: added constructor `String(byte[] value, int offset, int count, String encoding)` to allow the creation of strings with a given supported enconding
+ 
+### Deprecated
+- Settings: deprecated field `WINDOWSPHONE`, which will be removed in a future release
+
 ## 4.3.7 - 2019-05-06
 
 ### Added
