@@ -78,13 +78,9 @@ public class Scanner {
 
   private static Runnable scannerLoader = () -> {
     if (Settings.isWindowsCE()) {
-      if ("Marvell".equalsIgnoreCase(Settings.deviceId) || "CipherLab Inc".equalsIgnoreCase(Settings.deviceId)) {
-        driverLoaded = Vm.attachNativeLibrary("OpticonH16");
-      } else {
-        driverLoaded = Vm.attachNativeLibrary("Motorola") || Vm.attachNativeLibrary("Dolphin")
-            || Vm.attachNativeLibrary("Intermec") || Vm.attachNativeLibrary("Pidion")
-            || Vm.attachNativeLibrary("Bematech");
-      }
+      driverLoaded = Vm.attachNativeLibrary("Motorola") || Vm.attachNativeLibrary("Dolphin")
+          || Vm.attachNativeLibrary("Intermec") || Vm.attachNativeLibrary("Pidion")
+          || Vm.attachNativeLibrary("Bematech") || Vm.attachNativeLibrary("OpticonH16");
       if (!driverLoaded && tries++ == 0) {
         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
       }
@@ -303,7 +299,7 @@ public class Scanner {
       dest = Window.getTopMost();
     }
     // convert from the type to the internal event id
-    int id = type == 2 ? ScanEvent.BATTERY_ERROR : type == 1 ? ScanEvent.SCANNED/* 0 */ : ScanEvent.TRIGGERED;
+    int id = type % 1100 == 2 ? ScanEvent.BATTERY_ERROR : type % 1100 == 1 ? ScanEvent.SCANNED/* 0 */ : ScanEvent.TRIGGERED;
     // dispatch to the listener
     se.update(id);
     dest.postEvent(se);
