@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.2 - 2018-02-20
+
+### Fixed
+- Fixed support for WinCE based scanners that use OpticonH16.dll
+
+### Added
+- Added support for native laser scanning for Android based Symbol/Motorola scanners
+
 ## 4.1.1 - 2018-02-06
 
 ### Highlights
