@@ -1,7 +1,7 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 4.2.0
 
 ### Highlights
 - Improved overrall UI responsiveness and reduced application start time on Android
