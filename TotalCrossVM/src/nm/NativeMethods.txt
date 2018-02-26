@@ -548,3 +548,4 @@ totalcross/telephony/SmsManager|public native void sendTextMessage(String destin
 totalcross/telephony/SmsManager|public native void sendDataMessage(String destinationAddress, String scAddress, int port, byte []data);
 totalcross/telephony/SmsManager|public native void registerSmsReceiver(totalcross.telephony.SmsReceiver receiver, int port);
 totalcross/firebase/iid/FirebaseInstanceId|public native String getToken();
+totalcross/notification/NotificationManager|public void notify(totalross.notification.Notification notification);

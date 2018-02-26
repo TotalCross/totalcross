@@ -114,7 +114,9 @@ set(SOURCES
     ${TC_SRCDIR}/nm/pim/POutlook.c
 
     ${TC_SRCDIR}/nm/money/money.c
-
+    
+    ${TC_SRCDIR}/nm/notification/notification.c
+    
     ${TC_SRCDIR}/nm/phone/Dial.c
     ${TC_SRCDIR}/nm/phone/SMS.c
     ${TC_SRCDIR}/nm/phone/CellInfo.c

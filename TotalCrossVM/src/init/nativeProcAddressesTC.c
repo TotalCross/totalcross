@@ -554,6 +554,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendDataMessage_ssiB"), &ttSM_sendDataMessage_ssiB);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_si"), &ttSM_registerSmsReceiver_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tfiFII_getToken"), &tfiFII_getToken);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnNM_notify_n"), &tnNM_notify_n);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_iii"), &tidsS_setParam_iii);

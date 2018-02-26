@@ -398,6 +398,8 @@
 		37430B751EEECEEB008D89DF /* firebase.c in Sources */ = {isa = PBXBuildFile; fileRef = 37430B731EEECEEB008D89DF /* firebase.c */; };
 		37430B761EEECEEB008D89DF /* firebase.h in Headers */ = {isa = PBXBuildFile; fileRef = 37430B741EEECEEB008D89DF /* firebase.h */; };
 		3790A20F1F6317F100F012F1 /* firebase_c.m in Sources */ = {isa = PBXBuildFile; fileRef = 3790A20E1F6317F100F012F1 /* firebase_c.m */; };
+		37530B751EEECEEB008D89DF /* notification.c in Sources */ = {isa = PBXBuildFile; fileRef = 37730B771EEECEF2008D89DF /* notification.c */; };
+		37A0A20F1F6317F100F012F1 /* notification_c.m in Sources */ = {isa = PBXBuildFile; fileRef = 37830B771EEECEF2008D89DF /* notification_c.m */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A1BF9211D4B8CF6009A7B42 /* pngdebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */; };
 		3A1BF9221D4B8CF6009A7B42 /* pnginfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A1BF91D1D4B8CF6009A7B42 /* pnginfo.h */; };
@@ -832,6 +834,8 @@
 		37430B731EEECEEB008D89DF /* firebase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = firebase.c; path = firebase/firebase.c; sourceTree = "<group>"; };
 		37430B741EEECEEB008D89DF /* firebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = firebase.h; path = firebase/firebase.h; sourceTree = "<group>"; };
 		3790A20E1F6317F100F012F1 /* firebase_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = firebase_c.m; path = firebase/darwin/firebase_c.m; sourceTree = "<group>"; };
+		37730B771EEECEF2008D89DF /* notification.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = notification.c; path = notification/notification.c; sourceTree = "<group>"; };
+		37830B771EEECEF2008D89DF /* notification_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = notification_c.m; path = notification/darwin/notification_c.m; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngdebug.h; sourceTree = "<group>"; };
 		3A1BF91D1D4B8CF6009A7B42 /* pnginfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pnginfo.h; sourceTree = "<group>"; };
@@ -1126,6 +1130,7 @@
 		0F8C8AB01549CFC700E0967F /* nm */ = {
 			isa = PBXGroup;
 			children = (
+				37530B771EEECEF2008D89DF /* notification */,
 				37430B771EEECEF2008D89DF /* firebase */,
 				4B12E2711ED4C501008E304D /* telephony */,
 				15A29AD8189C4D27007C420B /* db */,
@@ -1896,6 +1901,23 @@
 			name = darwin;
 			sourceTree = "<group>";
 		};
+		37530B771EEECEF2008D89DF /* notification */ = {
+			isa = PBXGroup;
+			children = (
+				37630B771EEECEF2008D89DF /* darwin */,
+				37730B771EEECEF2008D89DF /* notification.c */,
+			);
+			name = notification;
+			sourceTree = "<group>";
+		};
+		37630B771EEECEF2008D89DF /* darwin */ = {
+			isa = PBXGroup;
+			children = (
+				37830B771EEECEF2008D89DF /* notification_c.m */,
+			);
+			name = darwin;
+			sourceTree = "<group>";
+		};
 		3A8C3EC3159E4A3900D3E666 /* darwin */ = {
 			isa = PBXGroup;
 			children = (
@@ -2271,6 +2293,7 @@
 				0F8C8CC31549CFC700E0967F /* jdsample.c in Sources */,
 				0F8C8CC41549CFC700E0967F /* jerror.c in Sources */,
 				3790A20F1F6317F100F012F1 /* firebase_c.m in Sources */,
+				37A0A20F1F6317F100F012F1 /* notification_c.m in Sources */,
 				0F8C8CC61549CFC700E0967F /* jfdctfst.c in Sources */,
 				0F8C8CC71549CFC700E0967F /* jidctfst.c in Sources */,
 				0F8C8CC81549CFC700E0967F /* jidctred.c in Sources */,
@@ -2371,6 +2394,7 @@
 				0F8C8DDF1549CFC700E0967F /* context.c in Sources */,
 				0F8C8DE11549CFC700E0967F /* objectmemorymanager.c in Sources */,
 				37430B751EEECEEB008D89DF /* firebase.c in Sources */,
+				37530B751EEECEEB008D89DF /* notification.c in Sources */,
 				0F8C8DE71549CFC700E0967F /* tcclass.c in Sources */,
 				0F8C8DE91549CFC700E0967F /* tcexception.c in Sources */,
 				0F8C8DEB1549CFC700E0967F /* tcfield.c in Sources */,
