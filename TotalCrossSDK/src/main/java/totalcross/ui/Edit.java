@@ -1943,7 +1943,7 @@ public class Edit extends Control implements TextControl, TimerListener {
         if (slow) {
           inccap = fcap.size == fmH ? -1 : 1;
           addTimerListener(this);
-          tea = addTimer(10);
+          tea = addTimer(1);
         } else {
           inccap = fmHtarget - fcap.size;
           singleStep();
