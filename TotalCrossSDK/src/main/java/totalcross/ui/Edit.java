@@ -1342,6 +1342,9 @@ public class Edit extends Control implements TextControl, TimerListener {
           newInsertPos = len;
         }
       }
+      if (uiMaterial && caption != null) {
+        animateMaterial(true);
+      }
       break;
     case ControlEvent.FOCUS_OUT:
       if (cursorShowing) {
@@ -1585,9 +1588,6 @@ public class Edit extends Control implements TextControl, TimerListener {
       } else if (captionPress != null && captionIcon != null && pe.x <= captionIcon.getWidth()) {
         captionPress.onIconPress();
       } else {
-        if (uiMaterial && caption != null) {
-          animateMaterial(true);
-        }
         if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled()) {
           if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos) {
             showClipboardMenu();
