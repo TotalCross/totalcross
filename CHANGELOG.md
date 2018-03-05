@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 - Improved overrall UI responsiveness and reduced application start time on Android
  - Several `Vm.sleep` calls in the vm had their time reduced by 50% or more, some calls were replaced with `Thread.yield()`
  - On Android and Java, reduced overhead in the event thread to improve UI responsiveness
+- Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
+ - Notification is crashing on iOS 10+
+ - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
 
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
