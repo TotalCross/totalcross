@@ -15,6 +15,11 @@ All notable changes to this project will be documented in this file.
 - Fixed Edit's material caption animation when navigating using the keyboard
 - Fixed `WrapInputStream.read()` - the value returned is now between the range 0-255, as specified by the `InpuStream.read()` documentation. The class `WrapInputStream` is used by `Stream.asInputStream()`
 
+### Added
+- Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
+
+> This is an incubating feature and subject to API changes
+
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
 - Changes `LineReader` to use `Thread.yield()` between read attempts instead of stoping the Vm for 100 ms
