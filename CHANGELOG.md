@@ -11,10 +11,19 @@ All notable changes to this project will be documented in this file.
  - Notification is crashing on iOS 10+
  - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
 
+### Fixed
+- Fixed Edit's material caption animation when navigating using the keyboard
+- Fixed `WrapInputStream.read()` - the value returned is now between the range 0-255, as specified by the `InpuStream.read()` documentation. The class `WrapInputStream` is used by `Stream.asInputStream()`
+
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
 - Changes `LineReader` to use `Thread.yield()` between read attempts instead of stoping the Vm for 100 ms
 - Spinner's implementation changed to use TimerEvent instead of threads to perform the animation
+- Edit's material caption animation is faster and will no longer get mixed with the blinking cursor
+- `WrapInputStream.read(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
+- `WrapOutputStream.write(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
+- `WrapInputStream.close()` will now properly close the underlying stream
+- `WrapOutputStream.close()` will now properly close the underlying stream
 
 ## 4.1.4 - 2018-05-17
 
