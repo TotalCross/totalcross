@@ -215,11 +215,7 @@ class WrapInputStream extends InputStream {
 
   @Override
   public int read(byte b[], int off, int len) throws IOException {
-    try {
       return stream.readBytes(b, off, len);
-    } catch (totalcross.io.IOException e) {
-      throw new java.io.IOException(e);
-    }
   }
 
 }
@@ -238,18 +234,13 @@ class WrapOutputStream extends OutputStream {
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    try {
       do {
         int delta;
         delta = stream.writeBytes(b, off, len);
         off += delta;
       } while (off < len);
-    } catch (totalcross.io.IOException e) {
-      throw new java.io.IOException(e);
     }
   }
-
-}
 
 class WrapFromInputStream extends Stream {
   InputStream inputStream;
