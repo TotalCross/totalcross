@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 - Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
  - Notification is crashing on iOS 10+
  - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
+- Added support for fast IDCT scaling on jpeg images. Combined with the usage of the new utility classes to manage scaling jpeg images, this can greatly reduce the memory footprint of jpeg images and improve graphical performance.
+
+> :information_source: **Using this approach to handle images of approximately 800x800 on medium sized devices can reduce memory consumption by up to 80% while doubling the image loading speed!**
 
 ### Fixed
 - Fixed Edit's material caption animation when navigating using the keyboard
@@ -18,7 +21,11 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
 
-> This is an incubating feature and subject to API changes
+> :construction: This is an incubating feature and subject to API changes
+
+- Added utility classes `SimpleImageInfo` and `ImageLoader` to help managing multiple scaled instances of the same image
+
+> :construction: This is an incubating feature and subject to API changes
 
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
