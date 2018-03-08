@@ -63,6 +63,13 @@ public class Image4D extends GfxSurface {
   // statics
   public static final int NO_TRANSPARENT_COLOR = -2;
 
+  /*
+   * DO NOT REMOVE!
+   * Empty default constructor is required for easy native object creation.
+   */
+  private Image4D() {
+  }
+
   public Image4D(int width, int height) throws ImageException {
     this.width = width;
     this.height = height;
@@ -727,4 +734,7 @@ public class Image4D extends GfxSurface {
   }
 
   native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
+
+  native static Image getScaledJpeg(Stream s, int scale_num, int scale_denom)
+      throws java.io.IOException, ImageException;
 }

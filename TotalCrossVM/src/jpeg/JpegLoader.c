@@ -77,7 +77,7 @@ int jpegWrite(void *buff, int count, JPEGFILE *in)
 }
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4)
+void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4, int32 scale_num, int32 scale_denom)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -140,6 +140,10 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    /* override with specified decompression parameters */
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
    cinfo.dct_method = JDCT_IFAST;
+   if (scale_num > 1 || scale_denom > 1) {
+      cinfo.scale_num = scale_num;
+      cinfo.scale_denom = scale_denom;
+   }
 
    jpeg_calc_output_dimensions(&cinfo); /* Calculate output image dimensions so we can allocate space */
 

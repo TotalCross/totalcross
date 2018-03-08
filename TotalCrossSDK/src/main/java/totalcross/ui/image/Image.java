@@ -19,7 +19,9 @@ package totalcross.ui.image;
 
 import java.awt.GraphicsEnvironment;
 import java.io.ByteArrayInputStream;
+
 import javax.imageio.ImageIO;
+
 import totalcross.Launcher;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.CRC32Stream;
@@ -2457,5 +2459,10 @@ public class Image extends GfxSurface {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+  }
+
+  static Image getScaledJpeg(Stream s, int scale_num, int scale_denom) throws java.io.IOException, ImageException {
+    double scale = (double) scale_num / (double) scale_denom;
+    return new Image(s).hwScaledBy(scale, scale);
   }
 }

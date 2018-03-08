@@ -18,7 +18,7 @@
 #include "darwin/image_Image_c.h"
 #endif
 
-void jpegLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
+void jpegLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4, int32 scale_num, int32 scale_denom);
 void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
 
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
          pngLoad(p->currentContext, imageObj, null, null, tcz, magic);
       else
-         jpegLoad(p->currentContext, imageObj, null, null, tcz, magic);
+         jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 1, 1);
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
    if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
       pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic);
    else
-      jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic);
+      jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 1, 1);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native public void changeColors(int from, int to);
@@ -193,6 +193,27 @@ TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p) // totalcross/ui/image/Image n
    
    resizeImageAtPath(input_path, output_path, maxPixelSize);
 #endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_getScaledJpeg_sii(NMParams p) // totalcross/ui/image/Image native static Image getScaledJpeg(Stream s, int scale_num, int scale_denom) throws java.io.IOException, ImageException;
+{
+   TCObject streamObj = p->obj[0];
+   int32 scale_num = p->i32[0];
+   int32 scale_denom = p->i32[1];
+   TCObject bufferObj; 
+   TCObject imageObj;
+   Method initMethod;
+   
+   if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL
+         && (imageObj = createObject(p->currentContext, "totalcross.ui.image.Image")) != NULL
+         && (initMethod = getMethod(OBJ_CLASS(imageObj), false, "init", 0)) != NULL ) {
+      jpegLoad(p->currentContext, imageObj, streamObj, bufferObj, null, null, scale_num, scale_denom);
+      executeMethod(p->currentContext, initMethod, imageObj);
+      
+      p->retO = imageObj;
+   }
+   setObjectLock(imageObj, UNLOCKED);
+   setObjectLock(bufferObj, UNLOCKED);
 }
 
 #ifdef ENABLE_TEST_SUITE
