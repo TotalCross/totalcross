@@ -215,9 +215,13 @@ class WrapInputStream extends InputStream {
 
   @Override
   public int read(byte b[], int off, int len) throws IOException {
-      return stream.readBytes(b, off, len);
+    return stream.readBytes(b, off, len);
   }
 
+  @Override
+  public void close() throws IOException {
+    stream.close();
+  }
 }
 
 class WrapOutputStream extends OutputStream {
@@ -234,13 +238,18 @@ class WrapOutputStream extends OutputStream {
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-      do {
-        int delta;
-        delta = stream.writeBytes(b, off, len);
-        off += delta;
-      } while (off < len);
-    }
+    do {
+      int delta;
+      delta = stream.writeBytes(b, off, len);
+      off += delta;
+    } while (off < len);
   }
+  
+  @Override
+  public void close() throws IOException {
+    stream.close();
+  }
+}
 
 class WrapFromInputStream extends Stream {
   InputStream inputStream;
