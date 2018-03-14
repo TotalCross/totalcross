@@ -7,6 +7,13 @@ buildscript {
 		classpath 'com.google.gms:google-services:3.0.0'
     }
 }
+
+allprojects {
+	task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
+		gradleVersion = '2.11'
+	}
+}
+
 apply plugin: 'android'
 
 android {

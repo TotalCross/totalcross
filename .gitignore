@@ -32,7 +32,6 @@ TotalCrossVM/builders/vc*/**/*.lib
 TotalCrossVM/builders/vc*/**/*.dll
 TotalCrossVM/builders/droid/build/
 TotalCrossVM/builders/droid/.gradle/
-TotalCrossVM/builders/droid/gradle/
 TotalCrossVM/builders/droid/src/main/libs/armeabi/
 
 # Files from vim
