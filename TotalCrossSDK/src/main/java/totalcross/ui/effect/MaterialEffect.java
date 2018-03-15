@@ -32,7 +32,7 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
   private static final int TIMER_INTERVAL = 10;
   private TimerEvent te;
   private Image matImg;
-  private Control target;
+  private final Control target;
   private int px, py, max, alpha, iniDn, iniUp;
   private boolean isDown, sideEffOnly;
   private int x = X_UNSET, y, w, h;
@@ -51,6 +51,11 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
   @Override
   public boolean isRunning() {
     return te != null;
+  }
+  
+  @Override
+  protected void finalize() {
+    target.removePenListener(this);
   }
 
   @Override
@@ -144,16 +149,16 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
 
   @Override
   public void penDown(PenEvent e) {
-    if (!sideEffOnly && Flick.currentFlick == null) { // guich@20171004 - if material is applied during a flick, it halts the flick making a strange effect
-      if (isRunning()) {
-        postEvent();
+      if (!sideEffOnly && Flick.currentFlick == null) { // guich@20171004 - if material is applied during a flick, it halts the flick making a strange effect
+        if (isRunning()) {
+          postEvent();
+        }
+        x = X_UNSET;
+        px = e.x;
+        py = e.y;
+        isDown = true;
+        start(false);
       }
-      x = X_UNSET;
-      px = e.x;
-      py = e.y;
-      isDown = true;
-      start(false);
-    }
   }
 
   PenEvent penUp;
@@ -164,7 +169,7 @@ public class MaterialEffect extends UIEffects implements PenListener, TimerListe
     if (sideEffOnly) {
       start(true);
     }
-    if (sideEffect == null && enabled) {
+    if (sideEffect == null && enabled && this.target.effect == this) {
       e.consumed = true; // post pressed event only when effect finishes
     }
     iniUp = Vm.getTimeStamp();
