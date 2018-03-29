@@ -4,9 +4,6 @@ All notable changes to this project will be documented in this file.
 ## 4.2.0
 
 ### Highlights
-- Improved overrall UI responsiveness and reduced application start time on Android
- - Several `Vm.sleep` calls in the vm had their time reduced by 50% or more, some calls were replaced with `Thread.yield()`
- - On Android and Java, reduced overhead in the event thread to improve UI responsiveness
 - Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
  - Notification is crashing on iOS 10+
  - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
@@ -14,9 +11,6 @@ All notable changes to this project will be documented in this file.
 
 > :information_source: **Using this approach to handle images of approximately 800x800 on medium sized devices can reduce memory consumption by up to 80% while doubling the image loading speed!**
 
-### Fixed
-- Fixed Edit's material caption animation when navigating using the keyboard
-- Fixed `WrapInputStream.read()` - the value returned is now between the range 0-255, as specified by the `InpuStream.read()` documentation. The class `WrapInputStream` is used by `Stream.asInputStream()`
 
 ### Added
 - Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
@@ -26,16 +20,6 @@ All notable changes to this project will be documented in this file.
 - Added utility classes `SimpleImageInfo` and `ImageLoader` to help managing multiple scaled instances of the same image
 
 > :construction: This is an incubating feature and subject to API changes
-
-### Changes
-- Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
-- Changes `LineReader` to use `Thread.yield()` between read attempts instead of stoping the Vm for 100 ms
-- Spinner's implementation changed to use TimerEvent instead of threads to perform the animation
-- Edit's material caption animation is faster and will no longer get mixed with the blinking cursor
-- `WrapInputStream.read(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
-- `WrapOutputStream.write(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
-- `WrapInputStream.close()` will now properly close the underlying stream
-- `WrapOutputStream.close()` will now properly close the underlying stream
 
 ## 4.1.4 - 2018-05-17
 
