@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed Edit's material caption animation when navigating using the keyboard
 - Fixed `WrapInputStream.read()` - the value returned is now between the range 0-255, as specified by the `InpuStream.read()` documentation. The class `WrapInputStream` is used by `Stream.asInputStream()`
+- Fixed `MaterialEffect` to stop discarding `PEN_UP` events sent to the target Control **after** the effect is removed from the target Control
+- Implemented `ConnectionManager.getLocalHost()` for iOS
+- On iOS, fixed keyboard being closed when navigating to the next text input control using the "Done" button
+- Fixed `SideMenuContainer` -  the sidemenu is no longer draggable
+- Fixed retrieval of the device's current time on newer Android devices (and possibly other POSIX compliant platforms) - #147
 
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
