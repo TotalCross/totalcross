@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - On iOS, fixed keyboard being closed when navigating to the next text input control using the "Done" button
 - Fixed `SideMenuContainer` -  the sidemenu is no longer draggable
 - Fixed retrieval of the device's current time on newer Android devices (and possibly other POSIX compliant platforms) - #147
+- Fixed `BarButton` only firing a pressed event targeting itself when Material UI style is used - #176
 
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
