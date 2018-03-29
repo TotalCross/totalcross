@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## 4.2.0
 
 ### Highlights
+- Improved some Color methods to produce better results by properly weighting the RGB components according to our perception of color brightness 
 - Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
  - Notification is crashing on iOS 10+
  - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
