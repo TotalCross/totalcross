@@ -7,13 +7,20 @@ All notable changes to this project will be documented in this file.
 - Improved overrall UI responsiveness and reduced application start time on Android
  - Several `Vm.sleep` calls in the vm had their time reduced by 50% or more, some calls were replaced with `Thread.yield()`
  - On Android and Java, reduced overhead in the event thread to improve UI responsiveness
-- Improved some Color methods to produce better results by properly weighting the RGB components according to our perception of color brightness 
+
+### Fixed
+- Fixed Edit's material caption animation when navigating using the keyboard
+- Fixed `WrapInputStream.read()` - the value returned is now between the range 0-255, as specified by the `InpuStream.read()` documentation. The class `WrapInputStream` is used by `Stream.asInputStream()`
 
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
 - Changes `LineReader` to use `Thread.yield()` between read attempts instead of stoping the Vm for 100 ms
 - Spinner's implementation changed to use TimerEvent instead of threads perform the animation
-
+- Edit's material caption animation is faster and will no longer get mixed with the blinking cursor
+- `WrapInputStream.read(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
+- `WrapOutputStream.write(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
+- `WrapInputStream.close()` will now properly close the underlying stream
+- `WrapOutputStream.close()` will now properly close the underlying stream
 
 ## 4.1.2 - 2018-02-20
 
