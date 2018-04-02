@@ -208,9 +208,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (h == 0 || w == 0 || !loader.isInteractive()) {
         return;
       }
-      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
-      Display display = wm.getDefaultDisplay();
-      int screenHeight = display.getHeight(); //Loader.mainView.getHeight();
+      Rect rect = holder.getSurfaceFrame();
+      int screenHeight = rect.bottom;
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
