@@ -205,7 +205,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
-      if (h == 0 || w == 0 || appPaused) return;
+      if (h == 0 || w == 0 || !loader.isInteractive()) {
+        return;
+      }
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       int screenHeight = display.getHeight(); //Loader.mainView.getHeight();
@@ -234,7 +236,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    private void sendScreenChangeEvent()
    {
-      if (appPaused) return;
+      if (!loader.isInteractive()) {
+        return;
+      }
+      
       eventThread.invokeInEventThread(false, new Runnable()
       {
          public void run()
