@@ -198,8 +198,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private int getOrientation()
    {
-      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
-      return wm.getDefaultDisplay().getOrientation();
+      return loader.getResources().getConfiguration().orientation;
    }
    
    private android.view.Surface lastSurface;
