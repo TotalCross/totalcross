@@ -270,6 +270,15 @@ static void privateGetDateTime(int32* year, int32* month, int32* day, int32* hou
    // as explained here http://linux.die.net/man/2/gettimeofday
    gettimeofday(&tv, NULL);
    secsSince = tv.tv_sec;
+   
+   /*
+    * According to POSIX.1-2004, localtime() is required to behave as though 
+    * tzset(3) was called, while localtime_r() does not have this requirement. 
+    * For portable code tzset(3) should be called before localtime_r().
+    * 
+    * https://linux.die.net/man/3/localtime_r
+    */
+   tzset();
    localtime_r(&secsSince, &tm);
 
    *year   = tm.tm_year + 1900;

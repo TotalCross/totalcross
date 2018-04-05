@@ -17,8 +17,16 @@
  #include "win/ConnectionManager_c.h"
 #elif defined (ANDROID)
  #include "android/ConnectionManager_c.h"
-#elif defined (darwin)
+#elif defined (POSIX)
+ #define _GNU_SOURCE    # required for NI_NUMERICHOST
+ #include <arpa/inet.h>
+ #include <sys/socket.h>
+ #include <ifaddrs.h>
+ #include <stdio.h>
+ #include <netdb.h>
+#if defined (darwin)
  #include <unistd.h>
+#endif
 #endif
 
 // static fields
@@ -211,12 +219,33 @@ TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager na
    char szHostAddress[16];
    szHostAddress[0] = 0;
 
-   if (CmGetLocalHost(szHostAddress) != NO_ERROR || szHostAddress[0] == 0)
+   if (CmGetLocalHost(szHostAddress) != NO_ERROR || szHostAddress[0] == 0) {
       xstrcpy(szHostAddress, "127.0.0.1");
+   }
    p->retO = createStringObjectFromCharP(p->currentContext, szHostAddress, -1);
-#else
-   p->retO = createStringObjectFromCharP(p->currentContext, "127.0.0.1", -1);
+#elif defined POSIX // https://stackoverflow.com/questions/33125710/how-to-get-ipv6-interface-address-using-getifaddr-function
+   struct ifaddrs *ifa, *ifa_tmp;
+   char addr[50];
+  
+   p->retO = null;
+    
+   if (getifaddrs(&ifa) != -1) {
+      for (ifa_tmp = ifa; ifa_tmp; ifa_tmp = ifa_tmp->ifa_next) {
+         if (ifa_tmp->ifa_addr->sa_family == AF_INET) {
+            struct sockaddr_in *in = (struct sockaddr_in*) ifa_tmp->ifa_addr;
+            inet_ntop(AF_INET, &in->sin_addr, addr, sizeof(addr));
+            if (!strEq(addr, "127.0.0.1")) {
+               p->retO = createStringObjectFromCharP(p->currentContext, addr, -1);
+               break;
+            }
+         }
+      }
+   }
 #endif
+	
+   if (p->retO == null) {
+      p->retO = createStringObjectFromCharP(p->currentContext, "127.0.0.1", -1);
+   }
    setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////

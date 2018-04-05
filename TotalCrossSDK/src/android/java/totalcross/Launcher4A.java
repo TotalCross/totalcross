@@ -198,18 +198,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private int getOrientation()
    {
-      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
-      return wm.getDefaultDisplay().getOrientation();
+      return loader.getResources().getConfiguration().orientation;
    }
    
    private android.view.Surface lastSurface;
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
-      if (h == 0 || w == 0 || appPaused) return;
-      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
-      Display display = wm.getDefaultDisplay();
-      int screenHeight = display.getHeight(); //Loader.mainView.getHeight();
+      if (h == 0 || w == 0 || !loader.isInteractive()) {
+        return;
+      }
+      Rect rect = holder.getSurfaceFrame();
+      int screenHeight = rect.bottom;
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
@@ -235,7 +235,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    private void sendScreenChangeEvent()
    {
-      if (appPaused) return;
+      if (!loader.isInteractive()) {
+        return;
+      }
+      
       eventThread.invokeInEventThread(false, new Runnable()
       {
          public void run()

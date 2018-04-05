@@ -259,9 +259,7 @@ public class Bar extends Container {
             removeTimer(repeatTimer);
           }
           if (!fired) {
-            if (listeners != null) {
-              postPressedEvent();
-            }
+            postPressedEvent();
             if (parent != null) {
               parent.postPressedEvent();
             }
