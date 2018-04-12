@@ -1,7 +1,7 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 4.1.3 - 2018-04-12
 
 ### Fixed
 - Fixed Edit's material caption animation when navigating using the keyboard
@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Fixed retrieval of the device's current time on newer Android devices (and possibly other POSIX compliant platforms) - #147
 - Fixed `BarButton` only firing a pressed event targeting itself when Material UI style is used - #176
 - Fixed redraw after the device is unlocked on Moto G5 Plus - #173
+- Fixed javadocs not being included with the SDK
 
 ### Changes
 - Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
