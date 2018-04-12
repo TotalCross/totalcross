@@ -913,6 +913,6 @@ public class MainWindow extends Window implements totalcross.MainClass {
       } catch (Exception e) {
       }
     }
-    Vm.sleep(1);
+    Thread.yield();
   }
 }

@@ -85,7 +85,7 @@ public class ThreadSample extends BaseContainer implements Runnable {
   private void restartThread(boolean changeDir) {
     running = false;
     while (!finished) {
-      Vm.sleep(1);
+      Thread.yield();
     }
     if (changeDir) {
       direction = -direction;

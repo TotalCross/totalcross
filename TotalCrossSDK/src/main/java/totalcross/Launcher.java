@@ -408,7 +408,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           @Override
           public void run() {
             while (mainWindow == null) {
-              Vm.sleep(1);
+              Thread.yield();
             }
             mainWindow.appStarting(isDemo ? 80 : -1);
             if (isApplication) {

@@ -989,7 +989,8 @@ public class Edit extends Control implements TextControl, TimerListener {
       g.draw3dRect(0, 0, this.width, this.height, Graphics.R3D_EDIT, false, false, fourColors); // draw the border and erase the rect
     }
     cursorX = charPos2x(insertPos);
-    if (hasFocus && isEnabled() && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
+    if (tea == null /* do not draw the cursor while the caption animation is running */
+        && hasFocus && isEnabled() && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
     {
       // draw cursor
       if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
@@ -1342,6 +1343,9 @@ public class Edit extends Control implements TextControl, TimerListener {
           newInsertPos = len;
         }
       }
+      if (uiMaterial && caption != null) {
+        animateMaterial(true);
+      }
       break;
     case ControlEvent.FOCUS_OUT:
       if (cursorShowing) {
@@ -1585,9 +1589,6 @@ public class Edit extends Control implements TextControl, TimerListener {
       } else if (captionPress != null && captionIcon != null && pe.x <= captionIcon.getWidth()) {
         captionPress.onIconPress();
       } else {
-        if (uiMaterial && caption != null) {
-          animateMaterial(true);
-        }
         if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled()) {
           if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos) {
             showClipboardMenu();
@@ -1943,7 +1944,7 @@ public class Edit extends Control implements TextControl, TimerListener {
         if (slow) {
           inccap = fcap.size == fmH ? -1 : 1;
           addTimerListener(this);
-          tea = addTimer(10);
+          tea = addTimer(1);
         } else {
           inccap = fmHtarget - fcap.size;
           singleStep();

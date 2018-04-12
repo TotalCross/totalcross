@@ -135,20 +135,21 @@ public class LitebaseConnection4D
     */
    private LitebaseConnection4D() {}
    
-   // juliana@201_26: created a default getInstance() which creates a new Litebase connection with the current application id.
-   /**
-    * Creates a Litebase connection for the default creator id, storing the database as a flat file. This method avoids the creation of more than one 
-    * instance with the same creator id, which would lead to performance and memory problems. Using this method, the strings are stored in the 
-    * unicode format. 
-    *
-    * @return A Litebase instance.
-    */
-   public static LitebaseConnection4D getInstance()
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      return privateGetInstance();
-   }
+  // juliana@201_26: created a default getInstance() which creates a new Litebase connection with the current application id.
+  /**
+   * Creates a Litebase connection for the default creator id, storing the database as a flat file.
+   * This method avoids the creation of more than one instance with the same creator id, which would
+   * lead to performance and memory problems. Using this method, the strings are stored in the
+   * unicode format.
+   *
+   * @return A Litebase instance.
+   */
+  public static LitebaseConnection4D getInstance() {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    return privateGetInstance();
+  }
    
    /**
     * Creates a Litebase connection for the default creator id, storing the database as a flat file. This method avoids the creation of more than one 
@@ -159,20 +160,22 @@ public class LitebaseConnection4D
     */
    private static native LitebaseConnection4D privateGetInstance();
    
-   /**
-    * Creates a Litebase connection for the given creator id, storing the database as a flat file. This method avoids the creation of more than one 
-    * instance with the same creator id, which would lead to performance and memory problems. Using this method, the strings are stored in the 
-    * unicode format.
-    *
-    * @param appCrid The creator id, which may (or not) be the same one of the current application and MUST be 4 characters long.
-    * @return A Litebase instance.
-    */
-   public static LitebaseConnection4D getInstance(String appCrid) 
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      return privateGetInstance(appCrid);
-   }
+  /**
+   * Creates a Litebase connection for the given creator id, storing the database as a flat file.
+   * This method avoids the creation of more than one instance with the same creator id, which would
+   * lead to performance and memory problems. Using this method, the strings are stored in the
+   * unicode format.
+   *
+   * @param appCrid The creator id, which may (or not) be the same one of the current application
+   *     and MUST be 4 characters long.
+   * @return A Litebase instance.
+   */
+  public static LitebaseConnection4D getInstance(String appCrid) {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    return privateGetInstance(appCrid);
+  }
    
    /**
     * Creates a Litebase connection for the given creator id, storing the database as a flat file. This method avoids the creation of more than one 
@@ -186,33 +189,41 @@ public class LitebaseConnection4D
     */
    private static native LitebaseConnection4D privateGetInstance(String appCrid) throws DriverException, NullPointerException;
    
-   /**
-    * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
-    * one instance with the same creator id and parameters, which would lead to performance and memory problems.
-    *
-    * @param appCrid The creator id, which may be the same one of the current application and MUST be 4 characters long.
-    * @param params Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
-    * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
-    * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
-    * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
-    * cryptography. Notice that path must be absolute, not relative.
-    * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
-    * creator id.
-    * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
-    * <p>It is not recommended to create the databases directly on the PDA. Memory cards are FIVE TIMES SLOWER than the main memory, so it will take
-    * a long time to create the tables. Even if the NVFS volume is used, it can be very slow. It is better to create the tables on the desktop, and 
-    * copy everything to the memory card or to the NVFS volume.
-    * <p>Due to the slowness of a memory card and the NVFS volume, all queries will be stored in the main memory; only tables and indexes will be 
-    * stored on the card or on the NVFS volume.
-    * <p> An exception will be raised if tables created with an ascii kind of connection are oppened with an unicode connection and vice-versa.
-    * @return A Litebase instance.
-    */
-   public static LitebaseConnection4D getInstance(String appCrid, String params)
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      return privateGetInstance(appCrid, params);
-   }
+  /**
+   * Creates a LitebaseConnection for the given creator id and with the given connection param list.
+   * This method avoids the creation of more than one instance with the same creator id and
+   * parameters, which would lead to performance and memory problems.
+   *
+   * @param appCrid The creator id, which may be the same one of the current application and MUST be
+   *     4 characters long.
+   * @param params Only the folder where it is desired to store the tables, <code>null</code>, if it
+   *     is desired to use the current data path, or <code>
+   *     chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format
+   *     </code> can be <code>ascii</code> or <code>unicode</code>, <code>source_path</code> is the
+   *     folder where the tables will be stored, and crypto must be used if the tables of the
+   *     connection use cryptography. The params can be entered in any order. If only the path is
+   *     passed as a parameter, unicode is used and there is no cryptography. Notice that path must
+   *     be absolute, not relative.
+   *     <p>Note that databases belonging to multiple applications can be stored in the same path,
+   *     since all tables are prefixed by the application's creator id.
+   *     <p>Also notice that to store Litebase files on card on Pocket PC, just set the second
+   *     parameter to the correct directory path.
+   *     <p>It is not recommended to create the databases directly on the PDA. Memory cards are FIVE
+   *     TIMES SLOWER than the main memory, so it will take a long time to create the tables. Even
+   *     if the NVFS volume is used, it can be very slow. It is better to create the tables on the
+   *     desktop, and copy everything to the memory card or to the NVFS volume.
+   *     <p>Due to the slowness of a memory card and the NVFS volume, all queries will be stored in
+   *     the main memory; only tables and indexes will be stored on the card or on the NVFS volume.
+   *     <p>An exception will be raised if tables created with an ascii kind of connection are
+   *     oppened with an unicode connection and vice-versa.
+   * @return A Litebase instance.
+   */
+  public static LitebaseConnection4D getInstance(String appCrid, String params) {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    return privateGetInstance(appCrid, params);
+  }
    
    /**
     * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
@@ -423,18 +434,18 @@ public class LitebaseConnection4D
     */
    public native RowIterator4D getRowIterator(String tableName);
 
-   // juliana@210_3: LitebaseConnection.getLogger() and LitebaseConnection.setLogger() are no longer deprecated.
-   /**
-    * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
-    * 
-    * @return The logger.
-    */
-   public static Logger getLogger()
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      return privateGetLogger();
-   }
+  // juliana@210_3: LitebaseConnection.getLogger() and LitebaseConnection.setLogger() are no longer deprecated.
+  /**
+   * Gets the Litebase logger. The fields should be used unless using the logger within threads.
+   *
+   * @return The logger.
+   */
+  public static Logger getLogger() {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    return privateGetLogger();
+  }
    
    /**
     * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
@@ -444,18 +455,19 @@ public class LitebaseConnection4D
     */
    private static native Logger privateGetLogger() throws DriverException;
 
-   /**
-    * Sets the litebase logger. This enables log messages for all queries and statements of Litebase and can be very useful to help finding bugs in 
-    * the system. Logs take up memory space, so turn them on only when necessary. The fields should be used unless using the logger within threads.
-    * 
-    * @param logger The logger.
-    */
-   public static void setLogger(Logger logger)
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      privateSetLogger(logger);
-   }
+  /**
+   * Sets the litebase logger. This enables log messages for all queries and statements of Litebase
+   * and can be very useful to help finding bugs in the system. Logs take up memory space, so turn
+   * them on only when necessary. The fields should be used unless using the logger within threads.
+   *
+   * @param logger The logger.
+   */
+  public static void setLogger(Logger logger) {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    privateSetLogger(logger);
+  }
    
    /**
     * Sets the litebase logger. This enables log messages for all queries and statements of Litebase and can be very useful to help finding bugs in 
@@ -465,18 +477,19 @@ public class LitebaseConnection4D
     */
    private static native void privateSetLogger(Logger logger);
 
-   /**
-    * Gets the default Litebase logger. When this method is called for the first time, a new <code>PDBFile</code> is created and a log record 
-    * started. In the subsequent calls, the same <code>PDBFile</code> is used, but in different log records.
-    * 
-    * @return The default Litebase logger.
-    */
-   public static Logger getDefaultLogger()
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      return privateGetDefaultLogger();
-   }
+  /**
+   * Gets the default Litebase logger. When this method is called for the first time, a new <code>
+   * PDBFile</code> is created and a log record started. In the subsequent calls, the same <code>
+   * PDBFile</code> is used, but in different log records.
+   *
+   * @return The default Litebase logger.
+   */
+  public static Logger getDefaultLogger() {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    return privateGetDefaultLogger();
+  }
    
    /**
     * Gets the default Litebase logger. When this method is called for the first time, a new <code>PDBFile</code> is created and a log record 
@@ -487,18 +500,18 @@ public class LitebaseConnection4D
     */
    private static native Logger privateGetDefaultLogger() throws DriverException;
 
-   /**
-    * Deletes all log files found in the device. If log is enabled, the current log file is not affected by this command. It only deletes PDB log 
-    * files.
-    * 
-    * @return the number of files deleted.
-    */
-   public static int deleteLogFiles()
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      return privateDeleteLogFiles();
-   }
+  /**
+   * Deletes all log files found in the device. If log is enabled, the current log file is not
+   * affected by this command. It only deletes PDB log files.
+   *
+   * @return the number of files deleted.
+   */
+  public static int deleteLogFiles() {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    return privateDeleteLogFiles();
+  }
    
    /**
     * Deletes all log files found in the device. If log is enabled, the current log file is not affected by this command. It only deletes PDB log 
@@ -508,41 +521,41 @@ public class LitebaseConnection4D
     */
    private static native int privateDeleteLogFiles();
 
-   // guich@566_32 rnovais@570_77
-   /**
-    * This is a handy method that can be used to reproduce all commands of a log file. This is intended to be used by the development team only. 
-    * Here's a sample on how to use it:
-    * 
-    * <pre>
-    * String []sql =
-    * {
-    *    &quot;new LitebaseConnection(MBSL,null)&quot;,
-    *    &quot;create table PRODUTO (IDPRODUTO int, IDPRODUTOERP char(10), IDGRUPOPRODUTO int, IDSUBGRUPOPRODUTO int, IDEMPRESA char(20), 
-    *                                DESCRICAO char(100), UNDCAIXA char(10), PESO float, UNIDADEMEDIDA char(3),
-    *                                EMBALAGEM char(10), PORCTROCA float, PERMITETROCA int)&quot;,
-    *    &quot;create index IDX_PRODUTO_1 on PRODUTO(IDPRODUTO)&quot;,
-    *    &quot;create index IDX_PRODUTO_2 on PRODUTO(IDGRUPOPRODUTO)&quot;,
-    *    &quot;create index IDX_PRODUTO_3 on PRODUTO(IDEMPRESA)&quot;,
-    *    &quot;create index IDX_PRODUTO_4 on PRODUTO(DESCRICAO)&quot;,
-    *    &quot;closeAll&quot;,
-    *    &quot;new LitebaseConnection(MBSL,null)&quot;,
-    *    &quot;insert into PRODUTO values(1,'19132', 2, 1, '1', 2, '3', 'ABSORVENTE SILHO ABAS', '5', 13, 'PCT', '20X30', 10, 0)&quot;,
-    *  };
-    *  LitebaseConnection.processLogs(sql, true);
-    * </pre>
-    * 
-    * @param sql The string array of SQL commands to be executed.
-    * @param params The parameters to open a connection.
-    * @param isDebug Indicates if debug information is to displayed on the debug console.
-    * @return The LitebaseConnection instance created, or <code>null</code> if <code>closeAll</code> was the last command executed (or no commands 
-    * were executed at all).
-    */
-   public static LitebaseConnection4D processLogs(String[] sql, String params, boolean isDebug)
-   {
-      while (!isDriverLoaded)
-         Vm.sleep(1);
-      return privateProcessLogs(sql, params, isDebug);
-   }
+  // guich@566_32 rnovais@570_77
+  /**
+   * This is a handy method that can be used to reproduce all commands of a log file. This is
+   * intended to be used by the development team only. Here's a sample on how to use it:
+   *
+   * <pre>
+   * String []sql =
+   * {
+   *    &quot;new LitebaseConnection(MBSL,null)&quot;,
+   *    &quot;create table PRODUTO (IDPRODUTO int, IDPRODUTOERP char(10), IDGRUPOPRODUTO int, IDSUBGRUPOPRODUTO int, IDEMPRESA char(20),
+   *                                DESCRICAO char(100), UNDCAIXA char(10), PESO float, UNIDADEMEDIDA char(3),
+   *                                EMBALAGEM char(10), PORCTROCA float, PERMITETROCA int)&quot;,
+   *    &quot;create index IDX_PRODUTO_1 on PRODUTO(IDPRODUTO)&quot;,
+   *    &quot;create index IDX_PRODUTO_2 on PRODUTO(IDGRUPOPRODUTO)&quot;,
+   *    &quot;create index IDX_PRODUTO_3 on PRODUTO(IDEMPRESA)&quot;,
+   *    &quot;create index IDX_PRODUTO_4 on PRODUTO(DESCRICAO)&quot;,
+   *    &quot;closeAll&quot;,
+   *    &quot;new LitebaseConnection(MBSL,null)&quot;,
+   *    &quot;insert into PRODUTO values(1,'19132', 2, 1, '1', 2, '3', 'ABSORVENTE SILHO ABAS', '5', 13, 'PCT', '20X30', 10, 0)&quot;,
+   *  };
+   *  LitebaseConnection.processLogs(sql, true);
+   * </pre>
+   *
+   * @param sql The string array of SQL commands to be executed.
+   * @param params The parameters to open a connection.
+   * @param isDebug Indicates if debug information is to displayed on the debug console.
+   * @return The LitebaseConnection instance created, or <code>null</code> if <code>closeAll</code>
+   *     was the last command executed (or no commands were executed at all).
+   */
+  public static LitebaseConnection4D processLogs(String[] sql, String params, boolean isDebug) {
+    while (!isDriverLoaded) {
+      Thread.yield();
+    }
+    return privateProcessLogs(sql, params, isDebug);
+  }
    
    /**
     * This is a handy method that can be used to reproduce all commands of a log file. This is intended to be used by the development team only. 

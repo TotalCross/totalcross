@@ -210,18 +210,18 @@ class WrapInputStream extends InputStream {
       return -1;
     }
 
-    return b[0];
+    return b[0] & 0xFF;
   }
 
   @Override
   public int read(byte b[], int off, int len) throws IOException {
-    try {
-      return stream.readBytes(b, off, len);
-    } catch (totalcross.io.IOException e) {
-      throw new java.io.IOException(e);
-    }
+    return stream.readBytes(b, off, len);
   }
 
+  @Override
+  public void close() throws IOException {
+    stream.close();
+  }
 }
 
 class WrapOutputStream extends OutputStream {
@@ -238,17 +238,17 @@ class WrapOutputStream extends OutputStream {
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    try {
-      do {
-        int delta;
-        delta = stream.writeBytes(b, off, len);
-        off += delta;
-      } while (off < len);
-    } catch (totalcross.io.IOException e) {
-      throw new java.io.IOException(e);
-    }
+    do {
+      int delta;
+      delta = stream.writeBytes(b, off, len);
+      off += delta;
+    } while (off < len);
   }
-
+  
+  @Override
+  public void close() throws IOException {
+    stream.close();
+  }
 }
 
 class WrapFromInputStream extends Stream {

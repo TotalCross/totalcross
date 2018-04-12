@@ -1232,4 +1232,22 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       }
     }
   }
+  
+  private PowerManager powerManager;
+  
+  /**
+   * On Android 4.4W+, it will correctly return if the device is awake and ready
+   * for user interaction
+   * 
+   * @return True if the device is in an interactive state.
+   */
+  public boolean isInteractive() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+      if (powerManager == null) {
+        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+      }
+      return powerManager.isInteractive();
+    }
+    return !Launcher4A.appPaused;
+  }
 }

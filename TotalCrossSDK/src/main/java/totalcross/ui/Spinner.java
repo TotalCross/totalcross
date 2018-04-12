@@ -18,6 +18,8 @@ package totalcross.ui;
 
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.TimerListener;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
 
@@ -31,7 +33,7 @@ import totalcross.ui.image.Image;
  * 
  * @since TotalCross 1.3
  */
-public class Spinner extends Control implements Runnable {
+public class Spinner extends Control implements TimerListener {
   /** Used in the type field */
   public static final int IPHONE = 1;
   /** Used in the type field */
@@ -47,8 +49,10 @@ public class Spinner extends Control implements Runnable {
   private static Image[] loaded = new Image[4];
   private static String[] files = { null, "totalcross/res/spinner_iphone.gif", "totalcross/res/spinner_android.gif",
       "totalcross/res/spinner_sync.gif", };
-  private boolean running;
+  private TimerEvent timerEventReference = null;
   private Image anim, anim0;
+  private int timestep = 80;
+  private boolean running;
 
   private int type = -1;
 
@@ -153,11 +157,16 @@ public class Spinner extends Control implements Runnable {
       return;
     }
     running = true;
-    new Thread(this).start();
+    this.timerEventReference = this.addTimer(timestep);
+    this.addTimerListener(this);
+    //new Thread(this).start();
   }
 
   /** Stops the spinning thread. */
   public void stop() {
+	this.removeTimer(this.timerEventReference);
+	this.timerEventReference = null;
+	this.removeTimerListener(this);
     running = false;
   }
 
@@ -176,27 +185,39 @@ public class Spinner extends Control implements Runnable {
       safeRepaintNow();
     }
   }
-
+  
   @Override
-  public void run() {
-    while (running) {
-      step();
-      Vm.sleep(anim != null ? 80 : 120); // with safeSleep, the vm starts to behave slowly and strangely
-    }
+  public void timerTriggered(TimerEvent e) {
+	step();
   }
 
   int last;
 
-  /** Updates the spinner; call this when using the spinner inside a loop. */
+  /** Updates the spinner; call this when using the spinner inside a loop. Deprecated, use the Start() and Stop() methods*/
+  @Deprecated
   public void update() {
     int now = Vm.getTimeStamp();
     if ((now - last) > (anim != null ? 80 : 120)) // prevents calling pumpEvents too fast
     {
       step();
       if (!MainWindow.isMainThread()) {
-        Vm.sleep(1);
+    	  Thread.yield();
       }
       last = now;
     }
+  }
+
+
+  /** Gets the timestep used to change images
+   *  @return time in milliseconds
+   */
+  public int getTimestep() {
+	return timestep;
+  }
+  /** Sets the timestep used to change images.
+   *  @param timestep time in milliseconds
+   */
+  public void setTimestep(int timestep) {
+	this.timestep = timestep;
   }
 }

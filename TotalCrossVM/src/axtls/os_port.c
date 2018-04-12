@@ -119,7 +119,7 @@ EXP_FUNC const char *asc_time_h(const time_h *t, char *buffer)
 }
 //-fdie@20090325
 
-#if !defined _INC_TIME_INL
+#if !defined _INC_TIME_INL && !defined _INC_TIME
 char* ctime(const time_t* timer)
 {
 	static char ascbuf[ASC_BUFF_SIZE];

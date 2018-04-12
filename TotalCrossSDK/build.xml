@@ -165,6 +165,9 @@ target: javadoc
   	<replacefilter
   		token=" class ${str} "
   		value=" class%%${str} "/>
+  	<replacefilter
+  		token=" interface ${str} "
+  		value=" interface%%${str} "/>
 	<replacefilter
 		token=" ${str} "
 		value=" totalcross.lang.${str} "/>
@@ -177,6 +180,9 @@ target: javadoc
 	<replacefilter
 		token=" class%%${str} "
 		value=" class ${str} "/>
+	<replacefilter
+		token=" interface%%${str} "
+		value=" interface ${str} "/>
   </replace>
 </target>
 
@@ -227,7 +233,7 @@ target: javadoc
   <exec dir="${java.home}/bin" executable="javadoc">
     <arg line="-sourcepath ${output}/javadoc"/>
     <arg line="-d ${docs}/html"/>
-    <arg line="-doctitle 'TotalCross SDK ${versionStr}.${buildNumber} (&lt;a href='https://gitlab.com/totalcross/TotalCross/blob/master/CHANGELOG.md' _target=blank &gt;changelogs&lt;/a&gt;).'"/>
+    <arg line="-doctitle 'TotalCross SDK ${versionStr} (&lt;a href='https://gitlab.com/totalcross/TotalCross/blob/v${versionStr}/CHANGELOG.md' target='_blank' &gt;changelogs&lt;/a&gt;).'"/>
     <arg line="-source 1.8"/>
     <arg line="-subpackages litebase -subpackages totalcross"/>
   </exec>

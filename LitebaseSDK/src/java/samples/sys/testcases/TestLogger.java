@@ -47,8 +47,9 @@ public class TestLogger  extends TestCase
       LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();   
       LitebaseConnection.logger.dispose(true);
       LitebaseConnection.logger = null;
-      while (Vm.getTimeStamp() - time < 2000)
-         Vm.sleep(1);
+      while (Vm.getTimeStamp() - time < 2000) {
+         Thread.yield();
+      }
       LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();   
       assertEquals(1, LitebaseConnection.deleteLogFiles());
       LitebaseConnection.logger.dispose(true);
@@ -60,14 +61,16 @@ public class TestLogger  extends TestCase
       LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();   
       LitebaseConnection.logger.dispose(true);
       LitebaseConnection.logger = null;
-      while (Vm.getTimeStamp() - time < 1000)
-         Vm.sleep(1);
+      while (Vm.getTimeStamp() - time < 1000) {
+    	  Thread.yield();
+      }
       time = Vm.getTimeStamp();
       LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();   
       LitebaseConnection.logger.dispose(true);
       LitebaseConnection.logger = null;
-      while (Vm.getTimeStamp() - time < 1000)
-         Vm.sleep(1);
+      while (Vm.getTimeStamp() - time < 1000) {
+    	  Thread.yield();
+      }
       LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();   
       assertEquals(2, LitebaseConnection.deleteLogFiles());
       LitebaseConnection.logger.dispose(true);
