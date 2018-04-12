@@ -1,6 +1,31 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.3 - 2018-04-12
+
+### Fixed
+- Fixed Edit's material caption animation when navigating using the keyboard
+- Fixed `WrapInputStream.read()` - the value returned is now between the range 0-255, as specified by the `InpuStream.read()` documentation. The class `WrapInputStream` is used by `Stream.asInputStream()`
+- Fixed `MaterialEffect` to stop discarding `PEN_UP` events sent to the target Control **after** the effect is removed from the target Control
+- Implemented `ConnectionManager.getLocalHost()` for iOS
+- On iOS, fixed keyboard being closed when navigating to the next text input control using the "Done" button
+- Fixed `SideMenuContainer` -  the sidemenu is no longer draggable
+- Fixed retrieval of the device's current time on newer Android devices (and possibly other POSIX compliant platforms) - #147
+- Fixed `BarButton` only firing a pressed event targeting itself when Material UI style is used - #176
+- Fixed redraw after the device is unlocked on Moto G5 Plus - #173
+- Fixed javadocs not being included with the SDK
+
+### Changes
+- Usage of `Vm.sleep(1)` in the SDK replaced with `Thread.yield()` for clarity sake
+- Changes `LineReader` to use `Thread.yield()` between read attempts instead of stoping the Vm for 100 ms
+- Spinner's implementation changed to use TimerEvent instead of threads perform the animation
+- Edit's material caption animation is faster and will no longer get mixed with the blinking cursor
+- `WrapInputStream.read(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
+- `WrapOutputStream.write(B[], I, I)` no longer rethrows `totalcross.io.IOException` as `java.io.IOException`
+- `WrapInputStream.close()` will now properly close the underlying stream
+- `WrapOutputStream.close()` will now properly close the underlying stream
+- Changed the way we obtain the current device orientation and screen dimensions on Android, the previous implementations were deprecated
+
 ## 4.1.2 - 2018-02-20
 
 ### Fixed
