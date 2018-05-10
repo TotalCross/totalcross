@@ -115,16 +115,6 @@
 </target>   
 	
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: build
-
--description:
-        build everything
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="build" depends="info" description="build everything">
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: clean
 
 -description:
@@ -144,6 +134,9 @@ target: clean
 		</delete>
 	</then>
 	</if>
+  <delete includeemptydirs="true" failonerror="false">
+    <fileset dir="${sdk.root}/build" excludes="libs/**/*, classes/**/*"/>
+  </delete>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

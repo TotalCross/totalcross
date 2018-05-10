@@ -168,8 +168,10 @@ target: createSkeleton - Create the folders from scratch
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="createSkeleton" depends="updateCompilerDate" description="copy the changed files to the SDK">
-   <delete dir="${base.target.path}/TotalCross*" failonerror="yes" />
+   <echo message="Building TotalCross SDK build ${buildNumber}"/>
    <mkdir dir="${target.sdk.path}/dist/vm"/>
+   
+   <ant antfile="build.xml" dir="${sdk.path}" target="clean"           inheritAll="false"/>
 
    <echo message="Copying SDK"/>
    <copy todir="${target.sdk.path}" overwrite="yes" >
@@ -179,6 +181,14 @@ target: createSkeleton - Create the folders from scratch
    <copy todir="${target.sdk.path}" file="${sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
    <replaceregexp file="${target.sdk.path}/src/main/java/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
+   
+   <!-- copy the changed files to the release folder -->
+   <mkdir dir="${target.sdk.path}/dist/vm" />
+   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${sdk.path}/dist/vm" includes="*.tcz" /></copy>
+   <copy todir="${target.sdk.path}/dist"> <fileset dir="${sdk.path}/dist" includes="*.jar" /></copy>
+
+   <copy todir="${sdk.path}/dist/vm"> <fileset dir="${target.sdk.path}/dist/vm" includes="**/*" /></copy>
+   <copy todir="${sdk.path}/dist"> <fileset dir="${target.sdk.path}/dist" includes="*.jar" /></copy>   
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -186,18 +196,6 @@ target: buildSkeleton - Build the folders
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildSkeleton" >
-   <echo message="Building TotalCross SDK build ${buildNumber}"/>
-   <ant antfile="build.xml" dir="${sdk.path}" target="clean"           inheritAll="false"/>
-   <ant antfile="build.xml" dir="${sdk.path}" target="build"           inheritAll="false"/>
-   <ant antfile="build.xml" dir="${sdk.path}" target="javadoc"         inheritAll="false">
-      <property name="buildNumber" value="${buildNumber}"/>
-   </ant>
-
-   <!-- copy the changed files to the release folder -->
-   <mkdir dir="${target.sdk.path}/dist/vm" />
-   <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${sdk.path}/docs/html" /></copy>
-   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${sdk.path}/dist/vm" includes="*.tcz" /></copy>
-   <copy todir="${target.sdk.path}/dist"> <fileset dir="${sdk.path}/dist" includes="*.jar" /></copy>
 </target>
 
 <target name="buildSamples_sdk" >
@@ -255,6 +253,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
       <fileset dir="${target.litebase.path}/dist/samples" />
    </copy>
+   <copy todir="${target.sdk3.path}/docs/html"> <fileset dir="${sdk.path}/docs/html" /></copy>
    <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
    <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
    
@@ -462,6 +461,7 @@ target: Linux builds
 </target>
 
 <target name="packageLinux" >
+	<mkdir dir="${base.temp.path}" />
     <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
       <classpath>
       	  <pathelement location="${sdk.path}/dist/totalcross-sdk.jar"/>
