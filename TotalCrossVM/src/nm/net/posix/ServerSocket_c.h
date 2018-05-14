@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #ifdef darwin
 #include <sys/select.h>
+#include <sys/time.h>
 #endif
 
 typedef int SOCKET;
