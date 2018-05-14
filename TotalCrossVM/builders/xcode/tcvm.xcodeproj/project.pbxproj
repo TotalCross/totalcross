@@ -425,7 +425,6 @@
 		3ABDFBD81EEECB2D008C0A79 /* imageImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3ABDFBD51EEECB2D008C0A79 /* imageImage.h */; };
 		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 		4B12E2731ED4C517008E304D /* SmsManager.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B12E2721ED4C517008E304D /* SmsManager.c */; };
-		CEFA5142181EF13F00B1B00A /* shell.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513E181EF13F00B1B00A /* shell.c */; };
 		CEFA5143181EF13F00B1B00A /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513F181EF13F00B1B00A /* sqlite3.c */; };
 		CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5140181EF13F00B1B00A /* sqlite3.h */; };
 		CEFA5145181EF13F00B1B00A /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5141181EF13F00B1B00A /* sqlite3ext.h */; };
@@ -861,7 +860,6 @@
 		3ABDFBD51EEECB2D008C0A79 /* imageImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imageImage.h; sourceTree = "<group>"; };
 		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 		4B12E2721ED4C517008E304D /* SmsManager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SmsManager.c; path = telephony/SmsManager.c; sourceTree = "<group>"; };
-		CEFA513E181EF13F00B1B00A /* shell.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shell.c; path = sqlite/shell.c; sourceTree = "<group>"; };
 		CEFA513F181EF13F00B1B00A /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = sqlite/sqlite3.c; sourceTree = "<group>"; };
 		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
 		CEFA5141181EF13F00B1B00A /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3ext.h; path = sqlite/sqlite3ext.h; sourceTree = "<group>"; };
@@ -1925,7 +1923,6 @@
 		CEFA5146181EF15300B1B00A /* sqlite */ = {
 			isa = PBXGroup;
 			children = (
-				CEFA513E181EF13F00B1B00A /* shell.c */,
 				CEFA513F181EF13F00B1B00A /* sqlite3.c */,
 				CEFA5140181EF13F00B1B00A /* sqlite3.h */,
 				CEFA5141181EF13F00B1B00A /* sqlite3ext.h */,
@@ -2355,7 +2352,6 @@
 				0F8C8D9D1549CFC700E0967F /* ZipFile.c in Sources */,
 				CEFA5143181EF13F00B1B00A /* sqlite3.c in Sources */,
 				0F8C8D9E1549CFC700E0967F /* zip_ZLib.c in Sources */,
-				CEFA5142181EF13F00B1B00A /* shell.c in Sources */,
 				0F8C8DA01549CFC700E0967F /* xml_XmlTokenizer.c in Sources */,
 				0F8C8DA21549CFC700E0967F /* palmdb.c in Sources */,
 				0F8C8DC01549CFC700E0967F /* png.c in Sources */,
