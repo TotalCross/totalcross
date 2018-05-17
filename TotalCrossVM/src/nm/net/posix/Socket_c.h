@@ -23,6 +23,7 @@
 #endif
 
 #if defined (darwin)
+#include <sys/time.h>
 #include <arpa/inet.h>
 #include <err.h>
 #endif

@@ -40,3 +40,5 @@ TotalCrossVM/builders/droid/src/main/libs/armeabi/
 *.bsc
 *.sbr
 BuildLog.htm
+TotalCrossVM/builders/vc2008/build/
+TotalCrossVM/builders/vc2008/.gradle/
