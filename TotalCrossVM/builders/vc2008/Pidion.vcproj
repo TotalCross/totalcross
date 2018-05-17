@@ -18,7 +18,7 @@
 		<Configuration
 			Name="Debug|Pocket PC 2003 (ARMV4)"
 			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/build/tmp/$(ProjectName)-$(PlatformName)-$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
@@ -109,7 +109,7 @@
 		<Configuration
 			Name="Release|Pocket PC 2003 (ARMV4)"
 			OutputDirectory="$(SolutionDir)/../../../../output/release/TotalCrossSDK/dist/vm/wince"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(PlatformName)/Pidion/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/build/tmp/$(ProjectName)-$(PlatformName)-$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\BuildLog.htm"
