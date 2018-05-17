@@ -1,6 +1,11 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.1.4 - 2018-05-17
+
+### Highlights
+- TotalCross is now built with the iOS 11 SDK, as a side effect the minimum iOS version supported by TotalCross is now 8.0 (up from 5.1.1). Applications published on the Apple Store must be updated.
+
 ## 4.1.3 - 2018-04-12
 
 ### Fixed
