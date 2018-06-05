@@ -14,6 +14,7 @@ package tc.tools.deployer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import de.schlichtherle.truezip.file.TFile;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStream;
 import totalcross.io.File;
@@ -161,14 +162,28 @@ public class Utils {
     Vector vextra = new Vector(100);
     for (int i = v.size(); --i >= 0;) {
       String[] pathnames = totalcross.sys.Convert.tokenizeString((String) v.items[i], ',');
-      String pathname = pathnames[0];
-      if (pathname.endsWith("/")) // a folder?
-      {
+      final String pathname = pathnames[0];
+      if (pathname.endsWith("/")) { // a folder?
         v.removeElementAt(i);
         String[] ff = new File(findPath(pathname, true)).listFiles();
         if (ff != null) {
           for (int j = 0; j < ff.length; j++) {
             vextra.addElement(pathname + ff[j] + (pathnames.length > 1 && acceptsPath ? "," + pathnames[1] : ""));
+          }
+        }
+      } else if (pathname.endsWith(".tcz")) {
+        File ff = new File(pathname);
+        if (!ff.exists()) {
+          ff = new File(Utils.findPath(pathname, true));
+        }
+        if (ff.exists()) {
+          for (int idx = 1 ; true ; idx++) {
+            final String pathname2 = ff.getPath().substring(0, pathname.length() - 4) + "_" + idx + "lib.tcz";
+            File ff2 = new File(pathname2);
+            if (!ff2.exists()) {
+              break;
+            }
+            vextra.addElement(pathname2);
           }
         }
       }
