@@ -254,9 +254,15 @@ public class Deployer4IPhoneIPA {
       icon.input(new ByteArrayInputStream(Bitmaps.IOS_ICONS[i].getImage()));
       icons[i] = new NSString(Bitmaps.IOS_ICONS[i].name);
     }
-
-    NSArray iconBundle = new NSArray(icons);
-    rootDict.put("CFBundleIconFiles", iconBundle);
+    
+    NSDictionary bundlePrimaryIcon = new NSDictionary();
+    bundlePrimaryIcon.put("CFBundleIconName", "Icon");
+    bundlePrimaryIcon.put("CFBundleIconFiles", new NSArray(icons));
+    
+    NSDictionary bundleIcons = new NSDictionary();
+    bundleIcons.put("CFBundlePrimaryIcon", bundlePrimaryIcon);
+    
+    rootDict.put("CFBundleIcons", bundleIcons);
   }
 
   protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification,
