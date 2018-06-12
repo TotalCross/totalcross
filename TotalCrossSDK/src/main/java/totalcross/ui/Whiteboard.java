@@ -97,6 +97,7 @@ public class Whiteboard extends Control {
   public void setImage(Image image) throws ImageException {
     isEmpty = image == null;
     this.img = image == null ? new Image(width, height) : image;
+    isEmpty = false;
     this.gImg = img.getGraphics();
     gImg.foreColor = desiredPenColor != -1 ? desiredPenColor : Color.BLACK;
     //gImg.useAA = useAA;
