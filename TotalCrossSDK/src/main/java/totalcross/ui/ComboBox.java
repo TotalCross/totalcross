@@ -378,8 +378,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
   }
 
   private int getTextY() {
-    boolean isString = pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String;
-    if (isString && caption == null) {
+    if (caption == null) {
       return (height - fmH) / 2;
     }
     int ret = getPreferredHeight();
