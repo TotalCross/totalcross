@@ -139,7 +139,7 @@ public class ImageControl extends Control {
     }
     PenEvent pe;
     if (isPressedEventsEnabled && event.type == PenEvent.PEN_UP && !hadParentScrolled()
-        && contains(((PenEvent) event).x, ((PenEvent) event).y)) {
+        && isInsideOrNear(((PenEvent) event).x, ((PenEvent) event).y)) {
       postPressedEvent();
     } else if (isEventEnabled) {
       switch (event.type) {
