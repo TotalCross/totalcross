@@ -43,7 +43,6 @@ public class ImageControl extends Control {
   private int startX, startY;
   private Coord c = new Coord();
   private boolean isEventEnabled, canDrag, isPressedEventsEnabled;
-  private UIEffects effect;
   private double lasthwScale;
   /** Set to true to center the image in the control when it is loaded */
   public boolean centerImage;
