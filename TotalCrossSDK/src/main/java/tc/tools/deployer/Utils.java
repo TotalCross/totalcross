@@ -174,7 +174,10 @@ public class Utils {
       } else if (pathname.endsWith(".tcz")) {
         File ff = new File(pathname);
         if (!ff.exists()) {
-          ff = new File(Utils.findPath(pathname, true));
+          final String p = Utils.findPath(pathname, true);
+          if (p != null) {
+            ff = new File(p);
+          }
         }
         if (ff.exists()) {
           for (int idx = 1 ; true ; idx++) {
