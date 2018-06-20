@@ -67,6 +67,7 @@ import totalcross.ui.Label;
 import totalcross.ui.MainWindow;
 import totalcross.ui.UIColors;
 import totalcross.ui.Window;
+import totalcross.ui.dialog.MessageBox;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.KeyEvent;
 import totalcross.ui.event.MultiTouchEvent;
@@ -2323,11 +2324,37 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           if (email != null && email.length() > 0) {
             try {
               Class.forName("tc.tools.RegisterSDK").getConstructor(String.class, String.class).newInstance(email, null);
+              
+              new Thread() {
+                  @Override
+                  public void run() {
+                    try {
+                      new URL("http://www.superwaba.net/SDKRegistrationService/PingService?CHAVE=" + email)
+                          .openConnection().getInputStream().close();
+                    } catch (Throwable e) {
+                    }
+                  }
+                }.start(); // keep track of TC usage
+                
+                Activate.this.unpop();
+              
             } catch (Exception e1) {
-              e1.printStackTrace();
+            	
+							e1.printStackTrace();
+
+							MessageBox mb = new MessageBox("Error to validate KEY",
+									"Try again or get a new KEY at www.totalcross.com", new String[] { "Close" });
+							mb.setBackColor(totalcross.ui.gfx.Color.getRGB(250, 250, 250));
+							mb.setForeColor(0x000000);
+							mb.popup();
             }
+          }else {
+    			MessageBox mb = new MessageBox("Error to validate KEY", "Please insert a valid KEY or get a new one at www.totalcross.com", new String[]{"Close"});
+      			mb.setBackColor(totalcross.ui.gfx.Color.getRGB(250, 250, 250));
+    	        	mb.setForeColor(0x000000);
+      			mb.popup();
           }
-          Activate.this.unpop();
+
         }
       });
 
