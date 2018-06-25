@@ -49,6 +49,7 @@ public class NinePatch {
   public static final int TAB = 8;
   public static final int GRID = 9;
   public static final int TAB2 = 10;
+  public static final int MULTIBUTTON = 11;
 
   static NinePatch instance;
 
@@ -66,19 +67,19 @@ public class NinePatch {
       parts = new Parts[] { load(Resources.button, 7, 4), load(Resources.edit, 16, 2), load(Resources.combobox, 5, 2),
           load(Resources.listbox, 5, 3), load(Resources.multiedit, 9, 4), load(Resources.progressbarv, 9, 4),
           load(Resources.scrollposh, 3, 2), load(Resources.scrollposv, 3, 2), load(Resources.tab, 10, 4),
-          load(Resources.grid, 5, 3), load(Resources.tab2, 18, 3), };
+          load(Resources.grid, 5, 3), load(Resources.tab2, 18, 3), load(Resources.multibutton, 5, 2), };
       break;
     case Settings.Material:
       parts = new Parts[] { load(Resources.button, 7, 3), null, load(Resources.combobox, 5, 2),
           load(Resources.listbox, 5, 3), null, load(Resources.progressbarv, 9, 4), load(Resources.scrollposh, 3, 2),
           load(Resources.scrollposv, 3, 2), load(Resources.tab, 10, 4), load(Resources.grid, 5, 3),
-          load(Resources.tab2, 10, 2), };
+          load(Resources.tab2, 10, 2), load(Resources.multibutton, 5, 2), };
       break;
     default:
       parts = new Parts[] { load(Resources.button, 7, 1), load(Resources.edit, 5, 3), load(Resources.combobox, 5, 2),
           load(Resources.listbox, 5, 3), load(Resources.multiedit, 9, 4), load(Resources.progressbarv, 9, 4),
           load(Resources.scrollposh, 3, 2), load(Resources.scrollposv, 3, 2), load(Resources.tab, 10, 4),
-          load(Resources.grid, 5, 3), load(Resources.tab2, 10, 2), };
+          load(Resources.grid, 5, 3), load(Resources.tab2, 10, 2), load(Resources.multibutton, 5, 2), };
       break;
     }
   }

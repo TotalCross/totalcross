@@ -41,6 +41,7 @@ public class Resources {
   public static Image button;
   public static Image edit;
   public static Image combobox;
+  public static Image multibutton;
   public static Image listbox;
   public static Image multiedit;
   public static Image progressbarv;
@@ -100,6 +101,12 @@ public class Resources {
       } catch (ImageException e) {
       }
     }
+    if(multibutton == null) {
+  	  try {
+  		  multibutton = new Image(folder + "multibutton.png");
+  	  } catch (ImageException e) {
+      }
+      }
     if (listbox == null) {
       try {
         listbox = new Image(folder + "listbox.png");
