@@ -298,8 +298,11 @@ public final class RegisterSDK {
   }
 
   private static void storeActivationKey(String activationKey) throws IOException {
-    try (FileOutputStream fos = new FileOutputStream(
-        new File(AppDirsFactory.getInstance().getUserDataDir(null, null, "TotalCross"), "key.dat"))) {
+    File parent = new File(AppDirsFactory.getInstance().getUserDataDir(null, null, "TotalCross"));
+    if (!parent.exists()) {
+      parent.mkdirs();
+    }
+    try (FileOutputStream fos = new FileOutputStream(new File(parent, "key.dat"))) {
       fos.write(activationKey.getBytes(Charset.forName("UTF-8")));
     }
   }
