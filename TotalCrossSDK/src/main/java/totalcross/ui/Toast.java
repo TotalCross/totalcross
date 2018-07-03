@@ -36,11 +36,11 @@ public class Toast {
   public static final int INFINITE = Convert.MAX_INT_VALUE;
   public static final int INFINITE_NOANIM = Convert.MIN_INT_VALUE;;
 
-  /** Shows a toast message using the given parameters on the top most window.
+  /** Shows a toast message using the given parameters on the main window.
    * @see #show(String, int, Window)
    */
   public static void show(String message, int delay) {
-    show(message, delay, Window.getTopMost());
+    show(message, delay, MainWindow.getMainWindow());
   }
 
   /** Shows a toast message using the given parameters on the given window.
