@@ -877,7 +877,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Tim
             case SpecialKeys.PAGE_DOWN:
               if (!editable && !hasCursorWhenNotEditable) {
                 sb.onEvent(event);
-              } else if (numberTextLines > 0 && newInsertPos <= first.items[numberTextLines - 1]) // -1 guich@573_44: check if > 0
+              } else if (numberTextLines-1 > 0 && newInsertPos <= first.items[numberTextLines - 2]) // -1 guich@573_44: check if > 0
               {
                 charPosToZ(newInsertPos, z1);
                 z1.x = z3.x; // kmeehl@tc100: remember the previous horizontal position
