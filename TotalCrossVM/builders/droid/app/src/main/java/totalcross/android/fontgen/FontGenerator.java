@@ -137,7 +137,7 @@ public class FontGenerator
       for (float i = size/2; i < MAX_FONT_SIZE*2; i+=0.01)
       {
          paint.setTextSize(i);
-         paint.getTextBounds("Ãg_",0,3,r);
+         paint.getTextBounds("Ãƒg_",0,3,r);
          //int maxH = (int)(Math.abs(paint.descent()) + Math.abs(paint.ascent()));
          int realH = Math.abs(r.top - r.bottom);
          //AndroidUtils.debug(i+": "+realH);
@@ -158,7 +158,7 @@ public class FontGenerator
       Canvas g;
       Paint paint = setFontSize(size, ttf);
       Rect r = new Rect();
-      paint.getTextBounds("Ã",0,1,r);
+      paint.getTextBounds("Ãƒ",0,1,r);
       int yy = Math.abs(r.top - r.bottom);
 
       // Note: Sun's JDK does not return a optimal width value for the

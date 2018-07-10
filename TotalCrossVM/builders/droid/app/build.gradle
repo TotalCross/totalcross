@@ -1,0 +1,153 @@
+
+
+apply plugin: 'com.android.application'
+
+ repositories { 
+     jcenter()
+     maven {
+         url "http://maven.totalcross.com/artifactory/build"
+         credentials {
+             username = 'builder'
+             password = 's3nh4d0bu1ld3r'
+         }
+     }
+ }
+
+android {
+    compileSdkVersion 27
+    compileOptions {
+    	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        applicationId "totalcross.android"
+        minSdkVersion 10
+        targetSdkVersion 27
+        versionCode 305419896
+        versionName "!1.0!"
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                abiFilters "armeabi-v7a"
+                arguments "-DANDROID_TOOLCHAIN=gcc"
+                cppFlags "-std=c++14"
+            }
+        }
+    }
+    
+    signingConfigs {
+        config {
+            keyAlias 'tcandroidkey'
+            keyPassword '@ndroidsw'
+            storeFile file('../tcandroidkey.keystore')
+            storePassword '@ndroid$w'
+        }
+    }
+
+    flavorDimensions "deploy"
+    productFlavors {
+        standard { dimension "deploy" }
+        singleApk { dimension "deploy" }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+    task assembleAssets(type:Zip) {
+        outputs.upToDateWhen { false }
+        from ('../../../../TotalCrossSDK/dist/vm') {
+            include 'TCBase.tcz'
+            include 'TCUI.tcz'
+        }
+        from ('../../../../TotalCrossSDK/etc/fonts') {
+            include 'TCFont.tcz'
+        }
+        from ('../../../../LitebaseSDK/dist/lib/') {
+            include 'LitebaseLib.tcz'
+        }
+        entryCompression ZipEntryCompression.STORED
+        baseName 'tcfiles'
+        destinationDir file('src/main/assets') // directory that you want your archive to be placed in
+    }
+
+    task copyApk << {
+        copy {
+			from fileTree('build/outputs/apk').files
+			into '../../../../../output/release/TotalCrossSDK/dist/vm/android'
+			include '**/app-standard-release.apk'
+			rename { String fileName ->
+				fileName.replace('app-standard-release', 'TotalCross')
+			}
+        }
+        copy {
+            from zipTree('build/outputs/apk/singleApk/release/app-singleApk-release.apk').files
+            into '../../../../../output/release/TotalCrossSDK/etc/tools/android'
+            include 'AndroidManifest.xml', 'resources.arsc'
+            rename { String fileName ->
+                fileName.replace('.', '_singleapk.')
+            }
+        }
+    }
+
+	assemble.mustRunAfter assembleAssets
+	copyApk.mustRunAfter assemble
+    project.afterEvaluate{
+	    applicationVariants.all { com.android.build.gradle.api.ApplicationVariant variant ->
+		    	variant.assemble.dependsOn(['assembleAssets'])
+		}
+	}
+}
+
+dependencies {
+	// com.symbol.emdk must be excluded from compile and added as provided
+    implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['com.symbol.emdk-*.jar'])
+    compileOnly fileTree(dir: 'libs', include: ['com.symbol.emdk-6.7.jar'])
+
+    implementation 'com.google.android.gms:play-services-ads:' + googleGmsVersion
+    implementation 'com.google.android.gms:play-services-maps:' + googleGmsVersion
+    implementation 'com.google.android.gms:play-services-location:' + googleGmsVersion
+    implementation 'com.google.firebase:firebase-core:' + googleGmsVersion
+    implementation 'com.google.firebase:firebase-messaging:' + googleGmsVersion
+
+    implementation 'com.github.cliftonlabs:json-simple:2.1.2'
+
+    // Supports Android 4.0.3 and later (API level 15)
+    implementation 'com.journeyapps:zxing-android-embedded:2.3.0@aar'
+
+    // Supports Android 2.1 and later (API level 7), but not optimal for later Android versions.
+    // If you only plan on supporting Android 4.0.3 and up, you don't need to include this.
+    implementation 'com.journeyapps:zxing-android-legacy:2.3.0@aar'
+
+    // Convenience library to launch the scanning Activities.
+    // It automatically picks the best scanning library from the above two, depending on the
+    // Android version and what is available.
+    implementation 'com.journeyapps:zxing-android-integration:2.3.0@aar'
+
+    // Version 3.0.x of zxing core contains some code that is not compatible on Android 2.2 and earlier.
+    // This mostly affects encoding, but you should test if you plan to support these versions.
+    // Older versions e.g. 2.2 may also work if you need support for older Android versions.
+    implementation 'com.google.zxing:core:3.2.0'
+
+    // Enables MultiDex. This allows the app to have more than 64k methods
+    implementation 'com.android.support:multidex:1.0.1'
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+   
+    implementation(group: 'ScanditBarcodeScanner', name: 'ScanditBarcodeScanner', version: 'b1', ext: 'aar')
+}
