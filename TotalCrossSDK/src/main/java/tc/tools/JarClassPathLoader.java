@@ -27,15 +27,19 @@ public class JarClassPathLoader {
   }
 
   public static void addURL(URL u) throws java.io.IOException {
-    URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-    Class<?> sysclass = URLClassLoader.class;
+    ClassLoader cl = ClassLoader.getSystemClassLoader();
 
-    try {
-      Method method = sysclass.getDeclaredMethod("addURL", parameters);
-      method.setAccessible(true);
-      method.invoke(sysloader, new Object[] { u });
-    } catch (Throwable t) {
-      throw new java.io.IOException("Error, could not add URL to system classloader", t);
+    if (cl instanceof URLClassLoader) {
+      URLClassLoader sysloader = (URLClassLoader) cl;
+      Class<?> sysclass = URLClassLoader.class;
+
+      try {
+        Method method = sysclass.getDeclaredMethod("addURL", parameters);
+        method.setAccessible(true);
+        method.invoke(sysloader, new Object[] { u });
+      } catch (Throwable t) {
+        throw new java.io.IOException("Error, could not add URL to system classloader", t);
+      }
     }
   }
 }

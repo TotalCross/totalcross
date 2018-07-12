@@ -208,6 +208,22 @@ task totalcrossJar(type: Jar) {
         }
         rename ".*", "pom.xml"
     }
+    
+    // collect path to all the jars inside etc folders
+    def names = []
+	fileTree('etc/libs').visit {
+		if (it.name.endsWith('.jar')) {
+			names << '../etc/libs/' + it.relativePath
+		}
+	}
+	fileTree('etc/tools/ipa').visit {
+		if (it.name.endsWith('.jar')) {
+			names << '../etc/tools/ipa/' + it.relativePath
+		}
+	}
+	manifest {
+		attributes("Class-Path": names.join(' '))
+	}
 }
 
 // tcbase.jar
