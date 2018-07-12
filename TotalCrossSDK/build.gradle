@@ -99,6 +99,8 @@ repositories {
 }
 
 dependencies {
+    retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.5.4'
+
     // https://mvnrepository.com/artifact/org.vafer/jdeb
     compile(group: 'org.vafer', name: 'jdeb', version: '0.7') {
 		exclude group: 'org.bouncycastle'
