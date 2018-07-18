@@ -2,8 +2,7 @@ package jdkcompat.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
-import org.bouncycastle.util.Arrays;
+import java.util.Arrays;
 
 import totalcross.sys.Vm;
 
