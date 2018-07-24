@@ -35,6 +35,8 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       for (AccordionContainer a : l) {
         if (a.isExpanded()) {
           a.collapse(showAnimation);
+          if(a.acCaption != null)
+        	  a.acCaption.invert();
         }
       }
     }
@@ -48,6 +50,7 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    * If defined as a negative value, the minimum height will be computed as -minH * font_height
    */
   public int minH = fmH + Edit.prefH;
+  private Caption acCaption;
   private Group group;
   private boolean showUIErrorsOld;
 
@@ -65,12 +68,16 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
 
     public Caption(String caption) {
       this.lCaption = new Label(caption);
+      if(acCaption == null)
+    	  acCaption = this;
     }
 
     public Caption(Label lCaption, Button btExpanded, Button btCollapsed) {
       this.lCaption = lCaption;
       this.btExpanded = btExpanded;
       this.btCollapsed = btCollapsed;
+      if(acCaption == null)
+    	  acCaption = this;
     }
 
     @Override
