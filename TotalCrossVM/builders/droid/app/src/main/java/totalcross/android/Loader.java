@@ -25,6 +25,7 @@ import android.app.*;
 import android.content.*;
 import android.content.pm.*;
 import android.content.pm.PackageManager.*;
+import android.content.pm.PackageManager;
 import android.content.res.*;
 import android.database.*;
 import android.graphics.*;
@@ -39,6 +40,7 @@ import android.view.ViewGroup.*;
 import android.view.inputmethod.*;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
+import android.support.v4.app.ActivityCompat;
 import com.google.android.gms.ads.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -55,7 +57,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-public class Loader extends Activity implements BarcodeReadListener, TextToSpeech.OnInitListener
+public class Loader extends Activity implements BarcodeReadListener, TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
 {
   public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
   public Handler achandler;
@@ -418,7 +420,11 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
 
    private void dialNumber(String number)
    {
+	try {
     startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number)));
+    } catch (SecurityException e) {
+    	e.printStackTrace();
+    }
   }
 
   public static final int DIAL = 1;
@@ -1249,5 +1255,31 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       return powerManager.isInteractive();
     }
     return !Launcher4A.appPaused;
+  }
+  
+  public static interface PermissionRequestCodes {
+	  public static int READ_PHONE_STATE = 0;
+	  public static int ACCESS_FINE_LOCATION = 1;
+  }
+  
+  public void onRequestPermissionsResult (int requestCode, 
+          String[] permissions, 
+          int[] grantResults) {
+	  switch (requestCode) {
+	  case PermissionRequestCodes.READ_PHONE_STATE: {
+          // If request is cancelled, the result arrays are empty.
+          if (grantResults.length > 0
+              && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+        	  Settings4A.fillTelephonySettings();
+              // permission was granted, yay! Do the
+              // contacts-related task you need to do.
+          } else {
+        	  System.exit(3);
+              // permission denied, boo! Disable the
+              // functionality that depends on this permission.
+          }
+	  } break;
+	  }
   }
 }
