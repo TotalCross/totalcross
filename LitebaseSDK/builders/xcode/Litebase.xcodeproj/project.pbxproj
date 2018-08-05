@@ -422,6 +422,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/litebase",
 					"$(PROJECT_DIR)/../../../TotalCrossVM/src/tcvm",
 					"$(PROJECT_DIR)/../../../TotalCrossVM/src/util",
 					"$(PROJECT_DIR)/../../../TotalCrossVM/src/nm/io",
@@ -457,6 +459,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/litebase",
 					"$(PROJECT_DIR)/../../../TotalCrossVM/src/tcvm",
 					"$(PROJECT_DIR)/../../../TotalCrossVM/src/util",
 					"$(PROJECT_DIR)/../../../TotalCrossVM/src/nm/io",

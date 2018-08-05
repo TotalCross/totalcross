@@ -373,7 +373,11 @@ public class NativeMethodsPrototypeGenerator {
       if (makeNativeHT) {
         FileWriter fw = new FileWriter(new File(nativeHTPath, "nativeProcAddresses" + nativeHTSuffix + ".c"));
         fw.write("#include \"tcvm.h\"\n");
-        fw.write("#include \"NativeMethods.h\"\n");
+        if ("TC".equals(nativeHTSuffix)) {
+          fw.write("#include \"nm/NativeMethods.h\"\n");
+        } else {
+          fw.write("#include \"NativeMethods.h\"\n");
+        }
         fw.write("#include \"utils.h\"\n\n");
 
         fw.write("void fillNativeProcAddresses" + nativeHTSuffix + "()\n{\n");
