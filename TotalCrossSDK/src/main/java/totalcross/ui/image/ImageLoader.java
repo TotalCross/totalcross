@@ -80,13 +80,13 @@ public class ImageLoader {
         //      Stream f = Stream.asStream(is);
         i = Image.getScaledJpeg(f, scale_num, scale_denom).smoothScaledFixedAspectRatio(
             desiredWidth < desiredHeight ? desiredWidth : desiredHeight, desiredHeight < desiredWidth);
-        mipmap.put(key, i);
+//        mipmap.put(key, i);
         return i;
       }
     } else {
       // not jpeg, just rescale
       i = new Image(path).getSmoothScaledInstance(desiredWidth, desiredHeight);
-      mipmap.put(key, i);
+//      mipmap.put(key, i);
       return i;
     }
   }
