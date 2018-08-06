@@ -77,11 +77,15 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
       String ret = isHigh ? (gps != null ? lastGps : null) : (googleApiClient != null ? lastGps : null);
       //lastGps = NOGPS;
       Location fusedLocation = null;
+      try {
       if ((ret == null || ret.equals(NOGPS)) && googleApiClient != null && (fusedLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient)) != null)
       {
          onLocationChanged(fusedLocation);
          ret = lastGps;
          lastGps = NOGPS;
+      }
+      } catch (SecurityException e) {
+         e.printStackTrace();
       }
       return ret;
    }
@@ -111,12 +115,16 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
    {
       if (gps != null && (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX)) 
       {
+        try {
          GpsStatus status = gps.getGpsStatus(null);
          Iterable<GpsSatellite> sats = status.getSatellites();
          validSatellites = 0;
          for (GpsSatellite sat : sats)
             if (sat.usedInFix())
                validSatellites++;
+        } catch (SecurityException e) {
+        	e.printStackTrace();
+        }
       }
    }
 
@@ -135,8 +143,12 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
       if (isHigh && gps == null)
       {
          gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
+         try {
          gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, instance);
          gps.addGpsStatusListener(instance);
+	     } catch (SecurityException e) {
+		     e.printStackTrace();
+		 }
       }      
       if (!isHigh && googleApiClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
       {
@@ -152,7 +164,11 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
          
          // try only to get satellite information, since this is not given by Google Play Services
          gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
+         try {
          gps.addGpsStatusListener(this);
+         } catch (SecurityException e) {
+         	e.printStackTrace();
+         }    
       }
    }
    public void stopGps()
@@ -192,7 +208,11 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
    public void onConnected(Bundle arg0)
    {
       if (googleApiClient != null)
+    	try {
          LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+        } catch (SecurityException e) {
+        	e.printStackTrace();
+        }
    }
 
    public void onConnectionSuspended(int arg0)

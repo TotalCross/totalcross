@@ -1,5 +1,5 @@
 #include "tcvm.h"
-#include "NativeMethods.h"
+#include "nm/NativeMethods.h"
 #include "utils.h"
 
 void fillNativeProcAddressesTC()

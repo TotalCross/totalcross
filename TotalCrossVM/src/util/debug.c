@@ -60,7 +60,7 @@ TC_API bool debug(const char *s, ...)
    if (debugstr == null) // guich@tc120_3: check disableDebug
    {
 #ifdef ANDROID   
-      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
+      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s, "");
 #endif         
       return false;  
    }

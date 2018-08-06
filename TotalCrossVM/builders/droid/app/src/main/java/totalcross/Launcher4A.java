@@ -1030,7 +1030,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          Location position = null;
          for (String p : pros)
          {
+            try {
             position = loc.getLastKnownLocation(p);
+            } catch (SecurityException e) {
+            	e.printStackTrace();
+            }
             if (position != null)
                return new double[]{position.getLatitude(),position.getLongitude()};
          }
