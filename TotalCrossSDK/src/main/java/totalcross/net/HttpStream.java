@@ -40,21 +40,81 @@ import totalcross.util.IOUtils;
  * message-body. If you are having read problems, try to increase the timeout with Options.readtimeout.
  *
  * <p>
- * Here is an example showing data being read from records in a PDBFile:
+ * Here is an example showing a rest consumer class managing data from an restful webservice:
  *
  * <pre>
- * public boolean verifyLogin()
- * {
- *    String url = &quot;http://www.totalcross.com.br/tests/legalizePalm.jsp?login=&quot; + login + &quot;&amp;passwd=&quot; + passwd;
- *    HttpStream hs = new HttpStream(new URI(url));
- *    byte[] buf = new byte[hs.contentLength];
- *    hs.readBytes(buf, 0, hs.contentLength);
- *    String str = new String(buf);
- *    return (str.equals(&quot;yes&quot;));
- * }
+ * import totalcross.io.IOException;
+ * import totalcross.net.HttpStream;
+ * import totalcross.net.URI;
+ * import totalcross.net.UnknownHostException;
+ * import totalcross.net.ssl.SSLSocketFactory;
+ * import totalcross.sys.Vm;
+ * 
+ * public class RestConsumerApplication {
+ * 	
+ * 	public static final String CONTENT_TYPE_JSON = "application/json";
+ * 	
+ * 	public static void printResponse (HttpStream hs) {
+ * 		byte[] buf = new byte[hs.contentLength];
+ *     try {
+ * 			hs.readBytes(buf, 0, hs.contentLength);
+ * 			Vm.debug("status:" + hs.getStatus());
+ * 			Vm.debug("response:" + new String(buf));
+ * 		} catch (IOException e) {
+ * 			// TODO Auto-generated catch block
+ * 			e.printStackTrace();
+ * 		}
+ * 	}
+ * 	
+ * 	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException {
+ * 
+ * 		String getString = "https://jsonplaceholder.typicode.com/posts/1";
+ * 		String postString = "https://jsonplaceholder.typicode.com/posts";
+ * 		String putString = "https://jsonplaceholder.typicode.com/posts/1";
+ * 		String deleteString = "https://jsonplaceholder.typicode.com/posts/1";
+ * 		String patchString = "https://jsonplaceholder.typicode.com/posts/1";
+ * 		
+ * 		HttpStream httpStream		;
+ * 		HttpStream.Options options = new HttpStream.Options();
+ * 		options.socketFactory = new SSLSocketFactory(); // In case https protocol is required	
+ * 			
+ * 		Vm.debug("=============  GET  ==============");
+ * 		
+ * 		options.httpType = HttpStream.GET;
+ * 		httpStream = new HttpStream(new URI(getString), options);
+ * 		printResponse(httpStream);
+ * 		
+ * 		Vm.debug("=============  POST  ==============");
+ * 		
+ * 		options.httpType = HttpStream.POST;
+ * 		options.setContentType(CONTENT_TYPE_JSON);	
+ * 		options.data = "{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}";
+ * 		
+ *  		httpStream = new HttpStream(new URI(postString), options);
+ * 		printResponse(httpStream);
+ * 		
+ * 		Vm.debug("=============  PUT  ==============");
+ * 		
+ * 		options.httpType = HttpStream.PUT;
+ * 		options.data = "{\"id\": 1, \"title\": \"new title\", \"body\": \"bar\", \"userId\": 1}";
+ * 		httpStream = new HttpStream(new URI(putString), options);
+ * 		printResponse(httpStream);
+ * 		
+ * 		Vm.debug("=============  PATCH  ==============");
+ * 				
+ * 		options.httpType = HttpStream.PATCH;
+ * 		options.data = "{\"title\": \"new title 2\"}";
+ * 		httpStream = new HttpStream(new URI(patchString), options);
+ * 		printResponse(httpStream);
+ * 		
+ * 		Vm.debug("=============  DELETE  ==============");
+ * 		
+ * 		options.httpType = HttpStream.DELETE;
+ * 		httpStream = new HttpStream(new URI(deleteString), options);
+ * 		printResponse(httpStream);	
+ * 	}	
+ * } 
  * </pre>
- *
- * At this case, the page legalizePalm verifies login and passwd, returning "yes" if it's ok, and "no" otherwise.<p/>
  * 
  * See also the <a href="https://github.com/TotalCross/tc-utilities/blob/master/src/main/java/com/tc/utils/utilities/io/HttpConn.java">HttpConn</a>
  * wrapper and the <a href="https://github.com/TotalCross/tc-utilities/blob/master/src/main/java/com/tc/utils/utilities/io/HttpMethod.java">enumeration of common HTTP methods</a>.
@@ -164,8 +224,24 @@ public class HttpStream extends Stream {
    */
   public static final String POST = "POST ";
 
+  /** Used in the httpType field
+   * @see Options#httpType
+   */
+  public static final String PUT = "PUT ";
+  
+  /** Used in the httpType field
+   * @see Options#httpType
+   */
+  public static final String PATCH = "PATCH ";
+  
+  /** Used in the httpType field
+   * @see Options#httpType
+   */
+  public static final String DELETE = "DELETE ";
+  
+  
   /**
-   * This static class is used by one the constructor methods.
+   * This static class is used by one of the constructor methods.
    * It allows to tune the Stream to behave in variant ways.
    */
   public static class Options {
@@ -203,6 +279,7 @@ public class HttpStream extends Stream {
      * @see #postSuffix
      * @see #postDataSB
      */
+    @Deprecated
     public String postData;
     /**
      * Set this with your post commands to send a post. The final data string will be the concatenation of postPrefix+postDataSB+postData+postSuffix.
@@ -210,6 +287,7 @@ public class HttpStream extends Stream {
      * @see #postSuffix
      * @since TotalCross 1.23
      */
+    @Deprecated
     public StringBuffer postDataSB;
     /**
      * Set this with your post commands to send a post. The final data string will be the concatenation of postPrefix+postDataSB+postData+postSuffix.
@@ -218,6 +296,7 @@ public class HttpStream extends Stream {
      * @see #postDataSB
      * @since TotalCross 1.23
      */
+    @Deprecated
     public String postPrefix; // guich@tc123_39
     /**
      * Set this with your post commands to send a post. The final data string will be the concatenation of postPrefix+postDataSB+postData+postSuffix.
@@ -226,8 +305,44 @@ public class HttpStream extends Stream {
      * @see #postDataSB
      * @since TotalCross 1.23
      */
+    @Deprecated
     public String postSuffix; // guich@tc123_39
 
+    /**
+     * Set this with your POST/PUT/PATCH/DELETE commands. The final data string will be the concatenation of dataPrefix+dataSB+data+dataSuffix.
+     * @see #dataPrefix
+     * @see #postSuffix
+     * @see #dataSB
+     */
+    public String data;
+    
+    /**
+     * Set this with your POST/PUT/PATCH/DELETE commands. The final data string will be the concatenation of dataPrefix+dataSB+data+dataSuffix.
+     * @see #dataPrefix
+     * @see #postSuffix
+     * @since TotalCross 1.23
+     */
+    public StringBuffer dataSB;
+    
+    /**
+     * Set this with your POST/PUT/PATCH/DELETE commands. The final data string will be the concatenation of dataPrefix+dataSB+data+dataSuffix.
+     * @see #postSuffix
+     * @see #data
+     * @see #dataSB
+     * @since TotalCross 1.23
+     */
+    public String dataPrefix; // guich@tc123_39
+    
+    /**
+     * Set this with your POST/PUT/PATCH/DELETE commands. The final data string will be the concatenation of dataPrefix+dataSB+data+dataSuffix.
+     * @see #dataPrefix
+     * @see #data
+     * @see #dataSB
+     * @since TotalCross 1.23
+     */
+    public String dataSuffix; // guich@tc123_39
+
+    
     /** The headers used in POST. These are the default:<br>
      * Content-Type: application/x-www-form-urlencoded<br>
      */
@@ -290,6 +405,9 @@ public class HttpStream extends Stream {
      * </pre>
      * @see #GET
      * @see #POST
+     * @see #PUT
+     * @see #PATCH
+     * @see #
      * @since TotalCross 1.23
      */
     public String httpType = GET;
@@ -695,20 +813,27 @@ public class HttpStream extends Stream {
 
     options.requestHeaders.dumpKeysValues(sb, ": ", Convert.CRLF);
     sb.append(Convert.CRLF);
-
+    	
     if (options.partContent == null && shouldSendData(options)) {
-      int len = 0;
-      if (options.postPrefix != null) {
-        len += cc.chars2bytes(options.postPrefix.toCharArray(), 0, options.postPrefix.length()).length;
+    	
+    	String prefix = options.dataPrefix != null? options.dataPrefix : options.postPrefix;
+    	String suffix = options.dataSuffix != null? options.dataSuffix : options.postSuffix;
+    	String dataAux = options.data != null? options.data : options.postData;
+    	StringBuffer dataSBAux = options.dataSB != null? options.dataSB : options.postDataSB;
+    	
+    	
+    	int len = 0;
+      if (prefix != null) {
+        len += cc.chars2bytes(prefix.toCharArray(), 0, prefix.length()).length;
       }
-      if (options.postDataSB != null) {
-        len += cc.chars2bytes(options.postDataSB.toString().toCharArray(), 0, options.postDataSB.length()).length;
+      if (dataSBAux != null) {
+        len += cc.chars2bytes(dataSBAux.toString().toCharArray(), 0, dataSBAux.length()).length;
       }
-      if (options.postData != null) {
-        len += cc.chars2bytes(options.postData.toCharArray(), 0, options.postData.length()).length;
+      if (dataAux != null) {
+        len += cc.chars2bytes(dataAux.toCharArray(), 0, dataAux.length()).length;
       }
-      if (options.postSuffix != null) {
-        len += cc.chars2bytes(options.postSuffix.toCharArray(), 0, options.postSuffix.length()).length;
+      if (suffix != null) {
+        len += cc.chars2bytes(suffix.toCharArray(), 0, suffix.length()).length;
       }
 
       if (len > 0) {
@@ -749,7 +874,7 @@ public class HttpStream extends Stream {
   }
 
   protected boolean shouldSendData(Options options) {
-    return POST.equals(options.httpType) || options.doPost || options.sendData;
+    return !GET.equals(options.httpType) || options.doPost || options.sendData;
   }
 
   protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException {
@@ -758,23 +883,30 @@ public class HttpStream extends Stream {
     bytes = null;
 
     if (shouldSendData(options)) {
-      if (options.postPrefix != null) {
-        bytes = cc.chars2bytes(options.postPrefix.toCharArray(), 0, options.postPrefix.length());
+    	
+    	// postPrefix, postSuffix, postData and postDataSB are deprecated but they still work    	
+    	String prefix = options.dataPrefix != null? options.dataPrefix : options.postPrefix;
+    	String suffix = options.dataSuffix != null? options.dataSuffix : options.postSuffix;
+    	String dataAux = options.data != null? options.data : options.postData;
+    	StringBuffer dataSBAux = options.dataSB != null? options.dataSB : options.postDataSB;
+    	
+      if (prefix != null) {
+        bytes = cc.chars2bytes(prefix.toCharArray(), 0, prefix.length());
         writeBytes(bytes, 0, bytes.length);
         bytes = null;
       }
-      if (options.postDataSB != null) {
-        bytes = cc.chars2bytes(options.postDataSB.toString().toCharArray(), 0, options.postDataSB.length());
+      if (dataSBAux != null) {
+        bytes = cc.chars2bytes(dataSBAux.toString().toCharArray(), 0, dataSBAux.length());
         writeBytes(bytes, 0, bytes.length);
         bytes = null;
       }
-      if (options.postData != null) {
-        bytes = cc.chars2bytes(options.postData.toCharArray(), 0, options.postData.length());
+      if (dataAux != null) {
+        bytes = cc.chars2bytes(dataAux.toCharArray(), 0, dataAux.length());
         writeBytes(bytes, 0, bytes.length);
         bytes = null;
       }
-      if (options.postSuffix != null) {
-        bytes = cc.chars2bytes(options.postSuffix.toCharArray(), 0, options.postSuffix.length());
+      if (suffix != null) {
+        bytes = cc.chars2bytes(suffix.toCharArray(), 0, suffix.length());
         writeBytes(bytes, 0, bytes.length);
         bytes = null;
       }
