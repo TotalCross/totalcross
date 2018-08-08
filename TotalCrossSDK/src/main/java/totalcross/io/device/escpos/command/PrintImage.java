@@ -4,12 +4,44 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
-public enum PrintImage implements Command {
-  Instance;
+public class PrintImage {
+  
+  private Image image;
+  private byte align = Justification.LEFT;
+  private boolean dither = true;
+  private int width;
+  
+  public PrintImage(Image image) {
+    this.image = image;
+  }
+  
+  public PrintImage align(byte align) {
+    this.align = align;
+    return this;
+  }
+  
+  public PrintImage dither(boolean enabled) {
+    this.dither = enabled;
+    return this;
+  }
+  
+  public PrintImage width(int width) {
+    this.width = width;
+    return this;
+  }
+  
+  public void print(OutputStream out) throws ImageException, IOException {
+    Image toPrint = image;
+    if (image.getWidth() > width) {
+      toPrint = image.hwScaledFixedAspectRatio(width, false);
+    }
+    this.printImage(out, toPrint, width, toPrint.getHeight(), align, dither, false);
+  }
 
-  public void printImage(
-      OutputStream out, Image image, int width, int height, int align, boolean dither, boolean crop)
+  private void printImage(
+      OutputStream out, Image image, int width, int height, byte align, boolean dither, boolean crop)
       throws IOException {
     int[] argb = new int[width * height];
     byte[] row = new byte[width * 4];
@@ -17,7 +49,7 @@ public enum PrintImage implements Command {
     for (int i = 0; i < height; i++) {
       image.getPixelRow(row, i);
       for (int j = 0; j < width; j++) {
-        int k = j * 4;
+        int k = j << 2;
         int r = row[k++] & 0xFF;
         int g = row[k++] & 0xFF;
         int b = row[k++] & 0xFF;
@@ -43,6 +75,7 @@ public enum PrintImage implements Command {
     }
     buf = new byte[width * 3 + 9];
     synchronized (this) {
+      // lineSpacing
       bufOffs = 0;
       buf[(bufOffs++)] = 27;
       buf[(bufOffs++)] = 51;
@@ -50,14 +83,17 @@ public enum PrintImage implements Command {
       out.write(buf, 0, bufOffs);
 
       bufOffs = 0;
+      // align
       buf[(bufOffs++)] = 27;
       buf[(bufOffs++)] = 97;
       buf[(bufOffs++)] = ((byte) align);
+      
+      // esc *
       buf[(bufOffs++)] = 27;
       buf[(bufOffs++)] = 42;
       buf[(bufOffs++)] = 33;
       buf[(bufOffs++)] = ((byte) (width % 256));
-      buf[(bufOffs++)] = ((byte) (width / 256));
+      buf[(bufOffs++)] = ((byte) (width >> 8));
       buf[(buf.length - 1)] = 10;
 
       int j = 0;
@@ -68,16 +104,18 @@ public enum PrintImage implements Command {
             buf[i] = 0;
           }
         }
+        int k = (j % 24 >> 3);
         for (int i = 0; i < width; offs++) {
-          int tmp331_330 = (bufOffs + i * 3 + j % 24 / 8);
+          int tmp331_330 = (bufOffs + i * 3 + k);
           byte[] tmp331_313 = buf;
           tmp331_313[tmp331_330] =
-              ((byte) (tmp331_313[tmp331_330] | (byte) ((argb[offs] < 128 ? 1 : 0) << 7 - j % 8)));
+              ((byte) (tmp331_313[tmp331_330] | (byte) ((argb[offs] < 128 ? 1 : 0) << 7 - (j & (8 - 1)))));
           i++;
         }
       }
 
       out.write(buf);
+      out.write(new byte[1024]);
     }
   }
 
@@ -99,7 +137,7 @@ public enum PrintImage implements Command {
           error = v - 255;
         }
         if (x != stopXM1) {
-          int ed = grayscale[(offs + 1)] + error * 7 / 16;
+          int ed = grayscale[(offs + 1)] + (error * 7 >> 4);
           ed = ed > 255 ? 255 : ed < 0 ? 0 : ed;
           grayscale[(offs + 1)] = ed;
         }
@@ -107,7 +145,7 @@ public enum PrintImage implements Command {
           int i = -1;
           for (int j = 0; i <= 1; j++) {
             if ((x + i >= 0) && (x + i < width)) {
-              int ed = grayscale[(offs + width + i)] + error * coef[j] / 16;
+              int ed = grayscale[(offs + width + i)] + (error * coef[j] >> 4);
               ed = ed > 255 ? 255 : ed < 0 ? 0 : ed;
               grayscale[(offs + width + i)] = ed;
             }
@@ -131,9 +169,5 @@ public enum PrintImage implements Command {
     int newHeight = height - offset / width;
 
     return newHeight;
-  }
-
-  @Override
-  public void write(OutputStream out) throws IOException { // TODO Auto-generated method stub
   }
 }

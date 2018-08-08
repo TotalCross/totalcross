@@ -1,0 +1,34 @@
+package totalcross.io.device.escpos.command;
+
+public interface EscPosCommands {
+  public static final byte BEL = 0x07;
+  public static final byte HT = 0x09;
+  public static final byte LF = 0x0A;
+  public static final byte FF = 0x0C;
+  public static final byte CR = 0x0C;
+  public static final byte NULL = 0x00;
+
+  public static final byte ESC = 0x1B;
+  public static final byte[] ESC_INIT = new byte[] { ESC, (byte) '@' };
+  public static final byte[] ESC_FEED_PAPER = new byte[] { ESC, (byte) 'J' };
+  public static final byte[] ESC_FEED_LINES = new byte[] { ESC, (byte) 'd' };
+  public static final byte[] ESC_PRINT_MODE = new byte[] { ESC, (byte) '!' };
+  public static final byte[] ESC_UNDERLINE = new byte[] { ESC, (byte) '-' };
+  public static final byte[] ESC_EMPHASIZE = new byte[] { ESC, (byte) 'E' };
+  public static final byte[] ESC_DOUBLESTRIKE = new byte[] { ESC, (byte) 'G' };
+  public static final byte[] ESC_ROTATE = new byte[] { ESC, (byte) 'V' };
+  public static final byte[] ESC_PRINT_POSITION = new byte[] { ESC, (byte) '$' };
+  public static final byte[] ESC_HORIZONTAL_TAB_POSITION = new byte[] { ESC, (byte) 'D' };
+  public static final byte[] ESC_DEFAULT_LINE_SPACING = new byte[] { ESC, (byte) '2' };
+  public static final byte[] ESC_LINE_SPACING = new byte[] { ESC, (byte) '3' };
+  public static final byte[] ESC_CHARACTER_SPACING = new byte[] { ESC, (byte) ' ' };
+  public static final byte[] ESC_JUSTIFICATION = new byte[] { ESC, (byte) 'a' };
+  
+  public static final byte GS = 0x1D;
+  public static final byte[] GS_CHARACTER_SIZE = new byte[] { GS, (byte) '!' };
+  public static final byte[] GS_REVERSE_BW = new byte[] { GS, (byte) 'B' };
+  public static final byte[] GS_LEFT_MARGIN = new byte[] { GS, (byte) 'L' };
+
+  // Barcode
+  public static final byte[] GS_HRI = new byte[] { GS, (byte) 'H' };
+}
