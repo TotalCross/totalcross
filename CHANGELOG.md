@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 ## 4.2.0
 
 ### Highlights
+- Android release is now built with SDK 27 (previous releases were built with SDK 22) and the latest NDK r17b (up from NDK r8b!)
+ - The minimum SDK level required to run TotalCross applications remains unchanged (SDK 10)
+ - Applied the Android recommended changes to better handle activities and contexts to prevent possible resource 
+ - TotalCross now asks for the user permission to access phone state and location on startup
 - Improved some Color methods to produce better results by properly weighting the RGB components according to our perception of color brightness 
 - Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
  - Notification is crashing on iOS 10+
@@ -12,6 +16,22 @@ All notable changes to this project will be documented in this file.
 
 > :information_source: **Using this approach to handle images of approximately 800x800 on medium sized devices can reduce memory consumption by up to 80% while doubling the image loading speed!**
 
+### Fixed
+- Deploy will now correctly package tcz dependencies that were split over multiple files - TotalCross#214
+- Fixed vertical alignment of text inside a ComboBox - TotalCross#192
+- Removed duplicated field `effect` from ImageControl
+- Fixed detection of pressed events on ImageControl
+- Added protection for unlikely (but possible) NPE during deploy
+- Fixed bug during activation with some JDK versions - a FileNotFoundException could be thrown when trying to recursively create directories for a new file
+- Fixed Toast appearing relative to the `topMost` window, when it should always be relative to the MainWindow
+- Fixed graphical bug with MultiButton - a transparent ComboBox arrow was being drawn on the background of the MultiButton (!)
+- Fixed PushButtonGroup drag event to allow "giving up" on a press event by dragging outside the button bounds after a press
+- Fixed text being hidden on MultiEdit with Material style
+- Fixed deploy with Java 10, dependencies are now listed in the jar's Manifest
+
+### Changes
+- Whiteboard no longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
+- The Launche (simulator) can no longer be used without an activation key
 
 ### Added
 - Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
