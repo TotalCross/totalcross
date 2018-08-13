@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+﻿<?xml version="1.0" encoding="iso-8859-1"?>
 <!--
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
@@ -385,8 +385,8 @@ target: IPhone builds
       <classpath>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
-         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-1.56.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-1.56.jar"/>
          <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
          <pathelement location="${tools}/ipa/dd-plist.jar"/>
          <pathelement location="${etc}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
@@ -404,8 +404,8 @@ target: IPhone builds
          <pathelement location="${path.to.invalidator}"/>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
-         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-1.56.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-1.56.jar"/>
          <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
          <pathelement location="${etc}/libs/commons/commons-compress-1.4.jar"/>
          <pathelement location="${tools}/ipa/dd-plist.jar"/>
