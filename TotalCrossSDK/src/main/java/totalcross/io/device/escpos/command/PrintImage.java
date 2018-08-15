@@ -35,7 +35,7 @@ public class PrintImage {
   public void print(OutputStream out) throws ImageException, IOException {
     Image toPrint = image;
     if (image.getWidth() > width) {
-      toPrint = image.hwScaledFixedAspectRatio(width, false);
+      toPrint = image.smoothScaledFixedAspectRatio(width, false);
     }
     this.printImage(out, toPrint, width, toPrint.getHeight(), align, dither, false);
   }
