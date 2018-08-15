@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- Default external -->
+    <external-path name="external_files" path="."/>
+    
+    <!-- https://stackoverflow.com/a/44512761/1308605 -->
+    <root-path name="external_files_storage" path="/storage/" />
+    
+    <!-- https://stackoverflow.com/a/48778397/1308605 -->
+    <external-files-path name="external_files_path" path="/"/>
+    
+    <!-- 
+    	https://inthecheesefactory.com/blog/how-to-share-access-to-file-with-fileprovider-on-android-nougat/en
+    	
+		Egor Makouski
+		Didn't work on Nexus devices. Solved by changing external_files to sdcard.
+     -->
+    <external-path name="sdcard" path="."/>
+    
+    <!-- Default internal -->
+    <files-path name="files_path" path="." />
+</paths>

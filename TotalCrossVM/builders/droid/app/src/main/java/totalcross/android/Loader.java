@@ -41,6 +41,7 @@ import android.view.inputmethod.*;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import com.google.android.gms.ads.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -356,6 +357,16 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       AndroidUtils.handleException(e, false);
     }
   }
+   
+   private Uri getFileUri4Intent(File file) {
+	   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+      	 return FileProvider.getUriForFile(this,
+ 		        /*BuildConfig.APPLICATION_ID +*/ "com.totalcross.fileprovider",
+ 		        file);
+	   } else { 
+		   return Uri.fromFile(file);
+	   } 
+   }
 
   private String imageFN;
   //private static final int CAMERA_CUSTOM = 0;
@@ -393,8 +404,9 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          else
          if ("SK GT-7340".equals(deviceId))
          {
-        Uri outputFileUri = Uri.fromFile(new File(s));
+        Uri outputFileUri = getFileUri4Intent(new File(s));
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
         startActivityForResult(intent, CAMERA_PIC_REQUEST);
          }
@@ -869,9 +881,10 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             {
                Intent intent = new Intent();
                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+               intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                intent.setAction(android.content.Intent.ACTION_VIEW);
                intent.setClassName("cn.wps.moffice_eng", "cn.wps.moffice.documentmanager.PreStartActivity");
-               Uri uri = Uri.fromFile(f);
+               Uri uri = getFileUri4Intent(f);
                intent.setData(uri);
                startActivity(intent);
             }
@@ -895,10 +908,11 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
                File pdfFile = new File(args);
                if(pdfFile.exists()) 
                {
-                   Uri path = Uri.fromFile(pdfFile); 
+                   Uri path = getFileUri4Intent(pdfFile);
                    Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
                    pdfIntent.setDataAndType(path, "application/pdf");
                    pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                   pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                    try
                    {
                        startActivity(pdfIntent);
@@ -964,7 +978,8 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          {
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.setDataAndType(Uri.fromFile(new File(command)), "application/vnd.android.package-archive");
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            i.setDataAndType(getFileUri4Intent(new File(command)), "application/vnd.android.package-archive");
             startActivity(i);
          }
          else
