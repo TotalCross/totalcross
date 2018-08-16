@@ -188,7 +188,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Tim
   /** Constructs a MultiEdit with 1 pixel as space between lines and with no lines.
    * You must set the bounds using FILL or FIT. */
   public MultiEdit() {
-    this(0, 1);
+    this(1, 1);
   }
 
   /** Constructor for a text Edit with a vertical scroll Bar, gap is 1
