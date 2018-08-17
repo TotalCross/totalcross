@@ -18,6 +18,7 @@
 package totalcross.ui;
 
 import totalcross.res.Resources;
+import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.ui.effect.MaterialEffect;
 import totalcross.ui.effect.UIEffects;
@@ -60,7 +61,7 @@ import totalcross.util.Hashtable;
  */
 
 public class Radio extends Control implements TextControl, MaterialEffect.SideEffect {
-  private String text;
+  private String displayedText, text;
   private boolean checked, checked0;
   RadioGroupController radioGroup;
   private int colors[] = new int[4];
@@ -68,7 +69,10 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   private int textW;
   private int alphaSel = 255;
   private boolean animating;
-
+  public boolean autoSplit = true;
+  private int lastASW;
+  private String[] lines = Label.emptyStringArray;
+  
   /** Sets the text color of the check. Defaults to the foreground color. 
    * @since TotalCross 2.0.
    */
@@ -88,7 +92,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
 
   /** Creates a radio control displaying the given text. */
   public Radio(String text) {
-    this.text = text;
+    this.displayedText = this.text = text;
     textW = fm.stringWidth(text);
     effect = UIEffects.get(this);
   }
@@ -106,6 +110,17 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     return radioGroup;
   }
 
+  int getMaxTextWidth() {
+    if (autoSplit) {
+      int max = 0;
+      for (int i = lines.length - 1; i >= 0; i--) {
+        max = Math.max(fm.stringWidth(lines[i]), max);
+      }
+      return max;
+    }
+    return textW;
+  }
+  
   /** "Merge" the colors between the original grayscale image and the current foreground. */
   private Image getImage(boolean isSelected) throws Exception {
     if (vistaSelected == null) {
@@ -133,9 +148,9 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   /** Sets the text. */
   @Override
   public void setText(String text) {
-    this.text = text;
-    Window.needsPaint = true;
+    this.displayedText = this.text = text;
     onFontChanged();
+    Window.needsPaint = true;
   }
 
   /** Gets the text displayed in the radio. */
@@ -172,16 +187,16 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     }
   }
 
-  /** returns the preffered width of this control. */
+  /** returns the preferred width of this control. */
   @Override
   public int getPreferredWidth() {
-    return textW + 2 + getPreferredHeight(); // use getPreferredHeight since it may be overloaded
+    return getFont().fm.stringWidth(text) + /*Radio symbol width*/ fmH + Edit.prefH + 2;
   }
 
-  /** returns the preffered height of this control. */
+  /** returns the preferred height of this control. */
   @Override
   public int getPreferredHeight() {
-    return fmH + Edit.prefH;
+    return fmH * lines.length + Edit.prefH;
   }
 
   /** Called by the system to pass events to the radio control. */
@@ -262,7 +277,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
 
   @Override
   protected void onFontChanged() {
-    textW = fm.stringWidth(this.text);
+    textW = fm.stringWidth(this.displayedText);
     onColorsChanged(false);
   }
 
@@ -313,10 +328,17 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     }
 
     // draw label
-    yy = (this.height - fmH) >> 1;
-    xx = leftJustify ? (uiFlat ? fmH / 2 + 4 : getPreferredHeight() + 1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
+    yy = (this.height - fmH * lines.length) >> 1;
+    xx = uiFlat ? fmH / 2 + 4 : fmH + Edit.prefH + 2;
     g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor, backColor)) : cColor;
-    g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
+    for (int i = 0; i < lines.length; i++, yy += fmH) {
+      g.drawText(
+          lines[i],
+          leftJustify ? xx : (this.width - fm.stringWidth(lines[i])),
+          yy,
+          textShadowColor != -1,
+          textShadowColor);
+    }
   }
 
   private void drawBack(boolean big, boolean enabled, Graphics g) {
@@ -420,7 +442,30 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
       sendPressAfterEffect = false;
     }
   }
+  
+  @Override
+  protected void onBoundsChanged(boolean screenChanged) {
+    if (autoSplit && this.width > 0 && this.width != lastASW) { // only if PREFERRED was choosen in first setRect
+      lastASW = this.width;
+      int wh = fmH + Edit.prefH;
+      split(this.width - wh - 2);
+      if (PREFERRED - RANGE <= setH && setH <= PREFERRED + RANGE) {
+        setRect(KEEP, KEEP, KEEP, getPreferredHeight() + setH - PREFERRED);
+      }
+    }
+  }
 
+  /**
+   * Splits the text to the given width.
+   * 
+   * @since TotalCross 4.2.0
+   * @see #autoSplit
+   */
+  public void split(int maxWidth) {
+    displayedText = Convert.insertLineBreak(maxWidth, fm, text); // text cannot be assigned here or originalText will be overwritten
+    lines = text.equals("") ? new String[] { "" } : Convert.tokenizeString(displayedText, '\n');
+  }
+  
   @Override
   public void sidePaint(Graphics g, int alpha) {
     if (!checked0) {
