@@ -28,10 +28,11 @@ All notable changes to this project will be documented in this file.
 - Fixed PushButtonGroup drag event to allow "giving up" on a press event by dragging outside the button bounds after a press
 - Fixed text being hidden on MultiEdit with Material style
 - Fixed deploy with Java 10, dependencies are now listed in the jar's Manifest
+- Fixed AccordionContainer's arrows not changing state when switching focus between multiple collapsible panes
 
 ### Changes
 - Whiteboard no longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
-- The Launche (simulator) can no longer be used without an activation key
+- The Launcher (simulator) can no longer be used without an activation key
 
 ### Added
 - Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
