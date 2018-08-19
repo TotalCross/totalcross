@@ -3,13 +3,14 @@ package totalcross.io.device.escpos.command;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import totalcross.io.device.escpos.EscPosConstants;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 
 public class PrintImage {
   
   private Image image;
-  private byte align = Justification.LEFT;
+  private byte align = EscPosConstants.JUSTIFICATION_LEFT;
   private boolean dither = true;
   private int width;
   

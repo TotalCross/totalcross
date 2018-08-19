@@ -1,33 +1,27 @@
 package totalcross.io.device.escpos;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import totalcross.io.device.escpos.command.Barcode;
-import totalcross.io.device.escpos.command.CharacterSize;
 import totalcross.io.device.escpos.command.Command;
-import totalcross.io.device.escpos.command.Cut;
-import totalcross.io.device.escpos.command.DrawerKick;
 import totalcross.io.device.escpos.command.EscPosCommands;
-import totalcross.io.device.escpos.command.Justification;
+import totalcross.io.device.escpos.command.DrawerKick;
 import totalcross.io.device.escpos.command.PrintImage;
 import totalcross.io.device.escpos.command.QRCode;
-import totalcross.io.device.escpos.command.Raw;
-import totalcross.io.device.escpos.command.TextPrintMode;
 import totalcross.ui.image.ImageException;
 
-public class EscPosPrinter {
+public class EscPosPrintStream extends FilterOutputStream {
 
   public static interface PaperSize {
     public static final int A7 = 384;
     public static final int A8 = 576;
   }
 
-  private final OutputStream out;
-
-  public EscPosPrinter(OutputStream out) {
-    this.out = out;
+  public EscPosPrintStream(OutputStream out) {
+    super(out);
   }
 
   /**
@@ -38,7 +32,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter initialize() throws IOException {
+  public EscPosPrintStream initialize() throws IOException {
     out.write(EscPosCommands.ESC_INIT);
     return this;
   }
@@ -51,12 +45,12 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter feed() throws IOException {
+  public EscPosPrintStream feed() throws IOException {
     out.write(EscPosCommands.FF);
     return this;
   }
 
-  public EscPosPrinter ff() throws IOException {
+  public EscPosPrintStream ff() throws IOException {
     out.write(EscPosCommands.FF);
     return this;
   }
@@ -69,12 +63,18 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter lineFeed() throws IOException {
+  public EscPosPrintStream lineFeed() throws IOException {
+    out.write(EscPosCommands.LF);
+    return this;
+  }
+  
+
+  public EscPosPrintStream println() throws IOException {
     out.write(EscPosCommands.LF);
     return this;
   }
 
-  public EscPosPrinter lf() throws IOException {
+  public EscPosPrintStream lf() throws IOException {
     out.write(EscPosCommands.LF);
     return this;
   }
@@ -85,12 +85,12 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter carriageReturn() throws IOException {
+  public EscPosPrintStream carriageReturn() throws IOException {
     out.write(EscPosCommands.CR);
     return this;
   }
 
-  public EscPosPrinter cr() throws IOException {
+  public EscPosPrintStream cr() throws IOException {
     out.write(EscPosCommands.CR);
     return this;
   }
@@ -102,12 +102,12 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter horizontalTab() throws IOException {
+  public EscPosPrintStream horizontalTab() throws IOException {
     out.write(EscPosCommands.HT);
     return this;
   }
 
-  public EscPosPrinter ht() throws IOException {
+  public EscPosPrintStream ht() throws IOException {
     out.write(EscPosCommands.HT);
     return this;
   }
@@ -118,12 +118,12 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter buzzer() throws IOException {
+  public EscPosPrintStream buzzer() throws IOException {
     out.write(EscPosCommands.BEL);
     return this;
   }
 
-  public EscPosPrinter bel() throws IOException {
+  public EscPosPrintStream bel() throws IOException {
     out.write(EscPosCommands.BEL);
     return this;
   }
@@ -140,7 +140,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter feedPaper(int lines) throws IOException {
+  public EscPosPrintStream feedPaper(int lines) throws IOException {
     if (lines < 0 || lines > 255) {
       throw new IllegalArgumentException("The lines is out of range");
     }
@@ -156,7 +156,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter feedLines(int n) throws IOException {
+  public EscPosPrintStream feedLines(int n) throws IOException {
     if (n < 0 || n > 255) {
       throw new IllegalArgumentException("The lines is out of range");
     }
@@ -173,7 +173,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter textPrintMode(int textPrintMode) throws IOException {
+  public EscPosPrintStream textPrintMode(int textPrintMode) throws IOException {
     out.write(EscPosCommands.ESC_PRINT_MODE);
     out.write((byte) textPrintMode);
     return this;
@@ -187,7 +187,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter textSize(byte characterSize) throws IOException {
+  public EscPosPrintStream textSize(byte characterSize) throws IOException {
     out.write(EscPosCommands.GS_CHARACTER_SIZE);
     out.write(characterSize);
     return this;
@@ -200,7 +200,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter underline(boolean enable) throws IOException {
+  public EscPosPrintStream underline(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_UNDERLINE);
     out.write((byte) (enable ? 1 : 0));
     return this;
@@ -213,7 +213,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter emphasize(boolean enable) throws IOException {
+  public EscPosPrintStream emphasize(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_EMPHASIZE);
     out.write((byte) (enable ? 1 : 0));
     return this;
@@ -226,7 +226,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter doubleStrike(boolean enable) throws IOException {
+  public EscPosPrintStream doubleStrike(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_DOUBLESTRIKE);
     out.write((byte) (enable ? 1 : 0));
     return this;
@@ -239,7 +239,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter reverseWhiteBlack(boolean enable) throws IOException {
+  public EscPosPrintStream reverseWhiteBlack(boolean enable) throws IOException {
     out.write(EscPosCommands.GS_REVERSE_BW);
     out.write((byte) (enable ? 1 : 0));
     return this;
@@ -252,7 +252,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter rotate(boolean enable) throws IOException {
+  public EscPosPrintStream rotate(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_ROTATE);
     out.write((byte) (enable ? 1 : 0));
     return this;
@@ -267,7 +267,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter rotate(byte value) throws IOException {
+  public EscPosPrintStream rotate(byte value) throws IOException {
     out.write(EscPosCommands.ESC_ROTATE);
     out.write(value);
     return this;
@@ -282,7 +282,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter absolutePrintPosition(int n) throws IOException {
+  public EscPosPrintStream absolutePrintPosition(int n) throws IOException {
     out.write(EscPosCommands.ESC_PRINT_POSITION);
     out.write((byte) (n & 0xFF));
     out.write((byte) ((n >> 8) & 0xFF));
@@ -297,7 +297,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter horizontalTabPosition(byte... tabPositions) throws IOException {
+  public EscPosPrintStream horizontalTabPosition(byte... tabPositions) throws IOException {
     if (tabPositions.length > 32) {
       throw new IllegalArgumentException();
     }
@@ -313,7 +313,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter resetLineSpacing() throws IOException {
+  public EscPosPrintStream resetLineSpacing() throws IOException {
     out.write(EscPosCommands.ESC_DEFAULT_LINE_SPACING);
     return this;
   }
@@ -326,7 +326,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter lineSpacing(int spacing) throws IOException {
+  public EscPosPrintStream lineSpacing(int spacing) throws IOException {
     if (spacing < 0 || spacing > 255) {
       throw new IllegalArgumentException("The spacing is out of range");
     }
@@ -344,7 +344,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter characterSpacing(int spacing) throws IOException {
+  public EscPosPrintStream characterSpacing(int spacing) throws IOException {
     if (spacing < 0 || spacing > 255) {
       throw new IllegalArgumentException("The spacing is out of range");
     }
@@ -361,8 +361,8 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter align(byte alignment) throws IOException {
-    if (alignment < Justification.LEFT || alignment > Justification.RIGHT) {
+  public EscPosPrintStream align(byte alignment) throws IOException {
+    if (alignment < EscPosConstants.JUSTIFICATION_LEFT || alignment > EscPosConstants.JUSTIFICATION_RIGHT) {
       throw new IllegalArgumentException();
     }
     out.write(EscPosCommands.ESC_JUSTIFICATION);
@@ -370,8 +370,8 @@ public class EscPosPrinter {
     return this;
   }
 
-  public EscPosPrinter justification(byte alignment) throws IOException {
-    if (alignment < Justification.LEFT || alignment > Justification.RIGHT) {
+  public EscPosPrintStream justification(byte alignment) throws IOException {
+    if (alignment < EscPosConstants.JUSTIFICATION_LEFT || alignment > EscPosConstants.JUSTIFICATION_RIGHT) {
       throw new IllegalArgumentException();
     }
     out.write(EscPosCommands.ESC_JUSTIFICATION);
@@ -388,7 +388,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter leftMargin(int margin) throws IOException {
+  public EscPosPrintStream leftMargin(int margin) throws IOException {
     if (margin < 0 || margin > 65535) {
       throw new IllegalArgumentException();
     }
@@ -405,8 +405,8 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter cut(byte cut) throws IOException {
-    if (cut < Cut.FULL || cut > Cut.PART) {
+  public EscPosPrintStream cut(byte cut) throws IOException {
+    if (cut < EscPosConstants.CUT_FULL || cut > EscPosConstants.CUT_PART) {
       throw new IllegalArgumentException();
     }
     out.write(EscPosCommands.GS_CUT);
@@ -414,7 +414,7 @@ public class EscPosPrinter {
     return this;
   }
 
-  public EscPosPrinter kick(DrawerKick kick) {
+  public EscPosPrintStream kick(DrawerKick kick) {
     if (kick != null)
       try {
         kick.write(out);
@@ -424,7 +424,7 @@ public class EscPosPrinter {
     return this;
   }
 
-  public EscPosPrinter kick(DrawerKick kick, int t1Pulse, int t2Pulse) {
+  public EscPosPrintStream kick(DrawerKick kick, int t1Pulse, int t2Pulse) {
     if (kick != null)
       try {
         kick.write(out, t1Pulse <= 0 ? 0 : t1Pulse, t2Pulse <= 0 ? 0 : t2Pulse);
@@ -446,7 +446,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter turnOff() throws IOException {
+  public EscPosPrintStream turnOff() throws IOException {
     out.write(EscPosCommands.ESC_TURN_OFF);
     return this;
   }
@@ -465,7 +465,7 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter selfTest() throws IOException {
+  public EscPosPrintStream selfTest() throws IOException {
     out.write(EscPosCommands.ESC_SELF_TEST);
     return this;
   }
@@ -483,94 +483,62 @@ public class EscPosPrinter {
    * @return This EscPosPrinter.
    * @throws IOException
    */
-  public EscPosPrinter shortSelfTest() throws IOException {
+  public EscPosPrintStream shortSelfTest() throws IOException {
     out.write(EscPosCommands.ESC_SELF_TEST);
     return this;
   }
 
-  public EscPosPrinter image(PrintImage image) throws ImageException, IOException {
-    image.print(out);
-    return this;
-  }
-
-  public EscPosPrinter setLineSpace(int lines) throws IOException {
-    if (lines < 0 || lines > 255) {
-      throw new IllegalArgumentException("The lines is out of range");
+  public EscPosPrintStream printLogo(byte size) throws IOException {
+    if (size < EscPosConstants.LOGO_NORMAL || size > EscPosConstants.LOGO_QUADRUPLE) {
+      throw new IllegalArgumentException();
     }
-    byte[] buf = new byte[] { (byte) 27, (byte) 51, (byte) (lines & 255) };
-    Raw.Instance.write(out, buf);
+    out.write(EscPosCommands.GS_PRINT_DOWNLOADED_BIT_IMAGE);
+    out.write(size);
     return this;
   }
-
-  public EscPosPrinter printLogo() throws IOException {
-    byte[] buf = new byte[3];
-    buf[0] = (byte) 29;
-    buf[1] = (byte) 47;
-    Raw.Instance.write(out, buf);
-    return this;
-  }
-
-  public EscPosPrinter barcode(Barcode barcode) throws IOException {
-    barcode.write(out);
-    //    byte[] buf = new byte[3];
-    //    buf[0] = (byte) 29;
-    //    buf[1] = (byte) 47;
-    //    Raw.Instance.write(out, buf);
-    return this;
-  }
-
-  public EscPosPrinter qrcode(QRCode qrcode) throws IOException {
-    qrcode.write(out);
-    return this;
-  }
-
-  public EscPosPrinter execute(Command... commands) throws IOException {
+  
+  public EscPosPrintStream execute(Command... commands) throws IOException {
     for (Command command : commands) {
       command.write(out);
     }
     return this;
   }
 
-  @Override
-  public String toString() {
-    return out.toString();
-  }
-
-  public EscPosPrinter raw(int val) {
-    try {
-      Raw.Instance.write(out, val);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+  public EscPosPrintStream print(int val) throws IOException {
+    out.write(val);
     return this;
   }
 
-  public EscPosPrinter raw(byte val) {
-    try {
-      Raw.Instance.write(out, val);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+  public EscPosPrintStream print(byte val) throws IOException {
+    out.write(val);
     return this;
   }
 
-  public EscPosPrinter raw(byte... vals) {
-    if (vals != null)
-      try {
-        Raw.Instance.write(out, vals);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+  public EscPosPrintStream print(byte... vals) throws IOException {
+    out.write(vals);
     return this;
   }
 
-  public EscPosPrinter text(String text) {
-    if (text != null)
-      try {
-        Raw.Instance.write(out, text);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+  public EscPosPrintStream print(CharSequence text) throws IOException {
+    out.write(text.toString().getBytes());
+    return this;
+  }
+  
+  public EscPosPrintStream print(PrintImage image) throws ImageException, IOException {
+    image.print(out);
+    this.println();
+    return this;
+  }
+
+  public EscPosPrintStream print(Barcode barcode) throws IOException {
+    barcode.write(out);
+    this.println();
+    return this;
+  }
+
+  public EscPosPrintStream print(QRCode qrcode) throws IOException {
+    qrcode.write(out);
+    this.println();
     return this;
   }
 }

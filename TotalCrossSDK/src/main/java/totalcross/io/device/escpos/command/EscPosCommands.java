@@ -25,12 +25,13 @@ public interface EscPosCommands {
   public static final byte[] ESC_JUSTIFICATION = new byte[] { ESC, (byte) 'a' };
   public static final byte[] ESC_TURN_OFF = new byte[] { ESC, (byte) '+' };
   public static final byte[] ESC_SELF_TEST = new byte[] { ESC, (byte) '.' };
-  
+
   public static final byte GS = 0x1D;
   public static final byte[] GS_CHARACTER_SIZE = new byte[] { GS, (byte) '!' };
   public static final byte[] GS_REVERSE_BW = new byte[] { GS, (byte) 'B' };
   public static final byte[] GS_LEFT_MARGIN = new byte[] { GS, (byte) 'L' };
   public static final byte[] GS_CUT = new byte[] { GS, (byte) 'V' };
+  public static final byte[] GS_PRINT_DOWNLOADED_BIT_IMAGE = new byte[] { GS, (byte) '/' };
 
   // Barcode
   public static final byte[] GS_HRI = new byte[] { GS, (byte) 'H' };
