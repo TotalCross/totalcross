@@ -3,7 +3,6 @@ package totalcross.io.device.escpos;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 
 import totalcross.io.device.escpos.command.Barcode;
 import totalcross.io.device.escpos.command.Command;
@@ -13,11 +12,6 @@ import totalcross.io.device.escpos.command.QRCode;
 import totalcross.ui.image.ImageException;
 
 public class EscPosPrintStream extends FilterOutputStream {
-
-  public static interface PaperSize {
-    public static final int A7 = 384;
-    public static final int A8 = 576;
-  }
 
   public EscPosPrintStream(OutputStream out) {
     super(out);
@@ -66,7 +60,6 @@ public class EscPosPrintStream extends FilterOutputStream {
     out.write(EscPosCommands.LF);
     return this;
   }
-  
 
   public EscPosPrintStream println() throws IOException {
     out.write(EscPosCommands.LF);
@@ -475,7 +468,7 @@ public class EscPosPrintStream extends FilterOutputStream {
     out.write(size);
     return this;
   }
-  
+
   public EscPosPrintStream execute(Command... commands) throws IOException {
     for (Command command : commands) {
       command.write(out);
@@ -502,7 +495,7 @@ public class EscPosPrintStream extends FilterOutputStream {
     out.write(text.toString().getBytes());
     return this;
   }
-  
+
   public EscPosPrintStream print(PrintImage image) throws ImageException, IOException {
     image.print(out);
     this.println();
