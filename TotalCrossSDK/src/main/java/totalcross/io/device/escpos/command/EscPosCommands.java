@@ -25,6 +25,7 @@ public interface EscPosCommands {
   public static final byte[] ESC_JUSTIFICATION = new byte[] { ESC, (byte) 'a' };
   public static final byte[] ESC_TURN_OFF = new byte[] { ESC, (byte) '+' };
   public static final byte[] ESC_SELF_TEST = new byte[] { ESC, (byte) '.' };
+  public static final byte[] ESC_PAGE_MODE = new byte[] { ESC, (byte) 'L' };
 
   public static final byte GS = 0x1D;
   public static final byte[] GS_CHARACTER_SIZE = new byte[] { GS, (byte) '!' };
@@ -35,4 +36,6 @@ public interface EscPosCommands {
 
   // Barcode
   public static final byte[] GS_HRI = new byte[] { GS, (byte) 'H' };
+  public static final byte[] GS_BARCODE_HEIGHT = new byte[] { GS, (byte) 'h' };
+  public static final byte[] GS_BARCODE_WIDTH = new byte[] { GS, (byte) 'w' };
 }
