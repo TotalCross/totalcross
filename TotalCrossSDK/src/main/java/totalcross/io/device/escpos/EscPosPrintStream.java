@@ -8,7 +8,6 @@ import java.io.UncheckedIOException;
 import totalcross.io.device.escpos.command.Barcode;
 import totalcross.io.device.escpos.command.Command;
 import totalcross.io.device.escpos.command.EscPosCommands;
-import totalcross.io.device.escpos.command.DrawerKick;
 import totalcross.io.device.escpos.command.PrintImage;
 import totalcross.io.device.escpos.command.QRCode;
 import totalcross.ui.image.ImageException;
@@ -411,26 +410,6 @@ public class EscPosPrintStream extends FilterOutputStream {
     }
     out.write(EscPosCommands.GS_CUT);
     out.write(cut);
-    return this;
-  }
-
-  public EscPosPrintStream kick(DrawerKick kick) {
-    if (kick != null)
-      try {
-        kick.write(out);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    return this;
-  }
-
-  public EscPosPrintStream kick(DrawerKick kick, int t1Pulse, int t2Pulse) {
-    if (kick != null)
-      try {
-        kick.write(out, t1Pulse <= 0 ? 0 : t1Pulse, t2Pulse <= 0 ? 0 : t2Pulse);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
     return this;
   }
 
