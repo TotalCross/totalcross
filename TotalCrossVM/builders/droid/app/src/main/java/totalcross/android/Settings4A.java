@@ -372,7 +372,7 @@ public final class Settings4A
 	       != PackageManager.PERMISSION_GRANTED) {
 			   // request permissions
 		        ActivityCompat.requestPermissions(Launcher4A.loader,
-		                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+		                new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
 		                Loader.PermissionRequestCodes.ACCESS_FINE_LOCATION);
 		   }
 	   }
