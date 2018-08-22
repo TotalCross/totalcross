@@ -16,6 +16,8 @@
 
 package totalcross.sys;
 
+import java.io.File;
+
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 import totalcross.ui.IVirtualKeyboard;
 import totalcross.util.Hashtable;
@@ -451,7 +453,23 @@ public final class Settings {
    * @see #dataPath
    * @since SuperWaba 5.81
    */
-  public static String appPath; // guich@581_1
+  public static String appPath = initAppPath();
+
+  static String initAppPath() {
+    String basePath = null;
+    try {
+      basePath = System.getProperty("user.dir");
+      if (basePath != null && basePath.indexOf(File.separatorChar) >= 0 && !basePath.endsWith(File.separator)) {
+        basePath += File.separator;
+      }
+    } catch (SecurityException se) {
+    }
+    return basePath;
+  }
+
+  static String initAppPath4D() {
+    return null;
+  }
 
   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. 
    * In Windows 32, the X button will still be visible, but clicking on it will not close the application;

@@ -423,7 +423,7 @@ public class Image extends GfxSurface {
 
   /** Returns a new Graphics instance that can be used to drawing in this image. */
   public Graphics getGraphics() {
-    if (Launcher.instance.mainWindow != null) {
+    if (Launcher.instance != null && Launcher.instance.mainWindow != null) {
       gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
     }
     gfx.refresh(0, 0, width, height, 0, 0, null);
