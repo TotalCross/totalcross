@@ -8,31 +8,42 @@ All notable changes to this project will be documented in this file.
  - The minimum SDK level required to run TotalCross applications remains unchanged (SDK 10)
  - Applied the Android recommended changes to better handle activities and contexts to prevent possible resource 
  - TotalCross now asks for the user permission to access phone state and location on startup
+
+:construction: **On Android, features that require user permission during runtime may not be working. Please report if you have any trouble with permissions.**
+
 - Improved some Color methods to produce better results by properly weighting the RGB components according to our perception of color brightness 
 - Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
  - Notification is crashing on iOS 10+
  - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
+ - Notification crashing application on Android - TotalCross#255
 - Added support for fast IDCT scaling on jpeg images. Combined with the usage of the new utility classes to manage scaling jpeg images, this can greatly reduce the memory footprint of jpeg images and improve graphical performance.
 
 > :information_source: **Using this approach to handle images of approximately 800x800 on medium sized devices can reduce memory consumption by up to 80% while doubling the image loading speed!**
 
+- EscPosPrintStream - New API to handle ESC/POS printer commands!
+
 ### Fixed
-- Deploy will now correctly package tcz dependencies that were split over multiple files - TotalCross#214
-- Fixed vertical alignment of text inside a ComboBox - TotalCross#192
-- Removed duplicated field `effect` from ImageControl
-- Fixed detection of pressed events on ImageControl
-- Added protection for unlikely (but possible) NPE during deploy
+- Deploy: Will now correctly package tcz dependencies that were split over multiple files - TotalCross#214
+- ComboBox: Fixed vertical alignment of text - TotalCross#192
+- ImageControl: Removed duplicated field `effect`
+- ImageControl: Fixed detection of press events
+- Deploy: Added protection for unlikely (but possible) NPE
 - Fixed bug during activation with some JDK versions - a FileNotFoundException could be thrown when trying to recursively create directories for a new file
-- Fixed Toast appearing relative to the `topMost` window, when it should always be relative to the MainWindow
-- Fixed graphical bug with MultiButton - a transparent ComboBox arrow was being drawn on the background of the MultiButton (!)
-- Fixed PushButtonGroup drag event to allow "giving up" on a press event by dragging outside the button bounds after a press
-- Fixed text being hidden on MultiEdit with Material style
-- Fixed deploy with Java 10, dependencies are now listed in the jar's Manifest
-- Fixed AccordionContainer's arrows not changing state when switching focus between multiple collapsible panes
+- Toast: Fixed Toast appearing relative to the `topMost` window, when it should always be relative to the MainWindow
+- MultiButton: Fixed graphical bug - a transparent ComboBox arrow was being drawn on the background of the MultiButton (!)
+- PushButtonGroup: fixed drag event to allow "giving up" on a press event by dragging outside the button bounds after a press
+- MultiEdit: Fixed text being hidden with Material style
+- Deploy: Fixed deploy with Java 10, dependencies are now listed in the jar's Manifest
+- AccordionContainer: Fixed arrows not changing state when switching focus between multiple collapsible panes
+- Deploy: Fixed NPE when deploying for Win32 without initializing Launcher.instance - TotalCross#165
+- CalculatorBox: Fixed enconding error with plus-minus sign - TotalCross#206
+- Grid: Fixed column width wrong resize when dragging edge to before column start - TotalCross#186
 
 ### Changes
 - Whiteboard no longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
 - The Launcher (simulator) can no longer be used without an activation key
+- Updated version of the Bouncy Castle dependency
+- On Java, Settings.appPath is now initialized even if the Launcher isn't executed - TotalCross#165
 
 ### Added
 - Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
@@ -42,6 +53,11 @@ All notable changes to this project will be documented in this file.
 - Added utility classes `SimpleImageInfo` and `ImageLoader` to help managing multiple scaled instances of the same image
 
 > :construction: This is an incubating feature and subject to API changes
+
+- Added class EscPosPrintStream which supports several ESC/POS printer commands
+- Java: Added classes ByteArrayOutputStream and UncheckedIOException
+- HttpStream: Added support for http methods PUT, PATCH and DELETE in class HttpStream - TotalCross#240
+- Radio: Added feature autosplit - TotalCross#180
 
 ## 4.1.4 - 2018-05-17
 
