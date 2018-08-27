@@ -47,6 +47,10 @@ import java.net.*;
 import java.util.*;
 import java.util.zip.*;
 
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
+import android.Manifest;
+
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener
 {
    public static final boolean GENERATE_FONT = false;
@@ -1724,4 +1728,52 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static void enableSmsReceiver(boolean enabled, int port) {
       loader.enableSmsReceiver(enabled, port);
    }
+   
+  public static int requestPermissions(int requestCode, String... permissions) {
+    List<String> missingPermissions = new ArrayList<>();
+    for (String permission : permissions) {
+      if (ContextCompat.checkSelfPermission(Launcher4A.loader, permission)
+          != PackageManager.PERMISSION_GRANTED) {
+        missingPermissions.add(permission);
+      }
+    }
+    if (missingPermissions.size() == 0) {
+      return GRANTED;
+    }
+    // request permissions
+    ActivityCompat.requestPermissions(
+        Launcher4A.loader,
+        missingPermissions.toArray(new String[missingPermissions.size()]),
+        requestCode);
+    return REQUESTING;
+  }
+
+  public static final int REQUESTING = 0;
+  public static final int GRANTED = 1;
+  public static final int DENIED = -1;
+
+  public static int storagePermissionInitialized = DENIED;
+
+  public static int requestStoragePermission() {
+    if (storagePermissionInitialized == GRANTED) {
+      return GRANTED;
+    }
+    storagePermissionInitialized = REQUESTING;
+    if (requestPermissions(
+            Loader.PermissionRequestCodes.EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        == GRANTED) {
+      storagePermissionInitialized = GRANTED;
+      return GRANTED;
+    }
+    while (storagePermissionInitialized == REQUESTING) {
+      try {
+        Thread.sleep(10);
+      } catch (Exception e) {
+      }
+    }
+
+    return storagePermissionInitialized;
+  }
 }

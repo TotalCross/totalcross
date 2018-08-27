@@ -186,6 +186,18 @@ Err fileCreateDir(TCHARP path, int32 slot)
    return NO_ERROR;
 
 error:
+#if defined(ANDROID)
+   if (errno == EACCES) {
+	   // ask for permission and get result
+	   JNIEnv* env = getJNIEnv();
+	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
+	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+	   if (result <= 0) {
+		   return EACCES;
+	   }
+	   return fileCreateDir(path, slot);
+   }
+#endif
    return errno;
 }
 

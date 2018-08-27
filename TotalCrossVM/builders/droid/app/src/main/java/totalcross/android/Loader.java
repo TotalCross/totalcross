@@ -1275,6 +1275,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
   public static interface PermissionRequestCodes {
 	  public static int READ_PHONE_STATE = 0;
 	  public static int ACCESS_FINE_LOCATION = 1;
+	  public static int EXTERNAL_STORAGE = 2;
   }
   
   public void onRequestPermissionsResult (int requestCode, 
@@ -1295,6 +1296,19 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
               // functionality that depends on this permission.
           }
 	  } break;
-	  }
+      case PermissionRequestCodes.EXTERNAL_STORAGE:
+        {
+          // If request is cancelled, the result arrays are empty.
+          if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Launcher4A.storagePermissionInitialized = Launcher4A.GRANTED;
+            // permission was granted, yay!
+          } else {
+            Launcher4A.storagePermissionInitialized = Launcher4A.DENIED;
+            // permission denied, boo! Disable the
+            // functionality that depends on this permission.
+          }
+        }
+        break;
+    }
   }
 }
