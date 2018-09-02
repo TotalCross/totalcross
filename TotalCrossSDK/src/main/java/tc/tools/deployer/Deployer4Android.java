@@ -555,6 +555,8 @@ public class Deployer4Android {
         } else if (s.endsWith("google_measurement_service")) {
           strings[i] = newTcPackage + s.substring(oldPackage.length());
         }
+      } else if ("com.totalcross.android.fileprovider".equals(s)) {
+        strings[i] = s.replace("android", targetTCZ);
       }
       if (oldPackage != null && s.equals(oldPackage)) {
         strings[i] = newPackage;

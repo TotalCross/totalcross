@@ -57,7 +57,7 @@
         </service>
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.totalcross.fileprovider"
+            android:authorities="com.totalcross.android.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
