@@ -1,4 +1,4 @@
-package totalcross.io.device.escpos.command;
+package totalcross.io.device.escpos;
 
 public interface EscPosCommands {
   public static final byte BEL = 0x07;
@@ -25,6 +25,7 @@ public interface EscPosCommands {
   public static final byte[] ESC_JUSTIFICATION = new byte[] { ESC, (byte) 'a' };
   public static final byte[] ESC_TURN_OFF = new byte[] { ESC, (byte) '+' };
   public static final byte[] ESC_SELF_TEST = new byte[] { ESC, (byte) '.' };
+  public static final byte[] ESC_SHORT_SELF_TEST = new byte[] { ESC, (byte) 'T' };
   public static final byte[] ESC_PAGE_MODE = new byte[] { ESC, (byte) 'L' };
 
   public static final byte GS = 0x1D;

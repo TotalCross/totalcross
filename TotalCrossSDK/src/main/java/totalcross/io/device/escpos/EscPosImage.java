@@ -1,49 +1,56 @@
-package totalcross.io.device.escpos.command;
+package totalcross.io.device.escpos;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import totalcross.io.device.escpos.EscPosConstants;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 
-public class PrintImage {
-  
+/**
+ * Printable ESC/POS image representation.
+ * 
+ * @author Fábio Sobral
+ */
+public class EscPosImage implements EscPosPrintObject {
+
   private Image image;
-  private byte align = EscPosConstants.JUSTIFICATION_LEFT;
+  private byte align = EscPosConstants.ALIGN_LEFT;
   private boolean dither = true;
   private int width;
-  
-  public PrintImage(Image image) {
+  private Image toPrint;
+
+  public EscPosImage(Image image) {
     this.image = image;
   }
-  
-  public PrintImage align(byte align) {
+
+  public EscPosImage align(byte align) {
     this.align = align;
     return this;
   }
-  
-  public PrintImage dither(boolean enabled) {
+
+  public EscPosImage dither(boolean enabled) {
     this.dither = enabled;
     return this;
   }
-  
-  public PrintImage width(int width) {
+
+  public EscPosImage width(int width) throws ImageException {
     this.width = width;
-    return this;
-  }
-  
-  public void print(OutputStream out) throws ImageException, IOException {
-    Image toPrint = image;
     if (image.getWidth() > width) {
       toPrint = image.smoothScaledFixedAspectRatio(width, false);
+    }
+    return this;
+  }
+
+  @Override
+  public void write(OutputStream out) throws IOException {
+    if (toPrint == null) {
+      toPrint = image;
     }
     this.printImage(out, toPrint, width, toPrint.getHeight(), align, dither, false);
   }
 
-  private void printImage(
-      OutputStream out, Image image, int width, int height, byte align, boolean dither, boolean crop)
-      throws IOException {
+  private void printImage(OutputStream out, Image image, int width, int height, byte align, boolean dither,
+      boolean crop) throws IOException {
     int[] argb = new int[width * height];
     byte[] row = new byte[width * 4];
 
@@ -87,8 +94,8 @@ public class PrintImage {
       // align
       buf[(bufOffs++)] = 27;
       buf[(bufOffs++)] = 97;
-      buf[(bufOffs++)] = ((byte) align);
-      
+      buf[(bufOffs++)] = (align);
+
       // esc *
       buf[(bufOffs++)] = 27;
       buf[(bufOffs++)] = 42;
@@ -109,8 +116,8 @@ public class PrintImage {
         for (int i = 0; i < width; offs++) {
           int tmp331_330 = (bufOffs + i * 3 + k);
           byte[] tmp331_313 = buf;
-          tmp331_313[tmp331_330] =
-              ((byte) (tmp331_313[tmp331_330] | (byte) ((argb[offs] < 128 ? 1 : 0) << 7 - (j & (8 - 1)))));
+          tmp331_313[tmp331_330] = ((byte) (tmp331_313[tmp331_330]
+              | (byte) ((argb[offs] < 128 ? 1 : 0) << 7 - (j & (8 - 1)))));
           i++;
         }
       }
@@ -123,7 +130,7 @@ public class PrintImage {
   private static void ditherImageByFloydSteinberg(int[] grayscale, int width, int height) {
     int stopXM1 = width - 1;
     int stopYM1 = height - 1;
-    int[] coef = {3, 5, 1};
+    int[] coef = { 3, 5, 1 };
 
     int y = 0;
     for (int offs = 0; y < height; y++) {

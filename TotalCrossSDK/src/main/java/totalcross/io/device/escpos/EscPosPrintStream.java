@@ -4,26 +4,41 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import totalcross.io.device.escpos.command.Barcode;
-import totalcross.io.device.escpos.command.Command;
-import totalcross.io.device.escpos.command.EscPosCommands;
-import totalcross.io.device.escpos.command.PrintImage;
-import totalcross.io.device.escpos.command.QRCode;
-import totalcross.ui.image.ImageException;
-
+/**
+ * Adds functionality to another output stream, namely the ability to print
+ * representations of various data values conveniently through ESC/POS commands.
+ *
+ * <p>
+ * All characters printed by a <code>EscPosPrintStream</code> are converted into
+ * bytes using the platform's default character encoding.
+ *
+ * @author Fábio Sobral
+ * @since TotalCross 4.2.0
+ */
 public class EscPosPrintStream extends FilterOutputStream {
 
+  /**
+   * Creates an output stream filter for ESC/POS commands built on top of the
+   * specified underlying output stream.
+   *
+   * @param out
+   *          the underlying output stream to be assigned to the field
+   *          <tt>this.out</tt> for later use, or <code>null</code> if this
+   *          instance is to be created without an underlying stream.
+   */
   public EscPosPrintStream(OutputStream out) {
     super(out);
   }
 
   /**
-   * Initialize printer. </br>
+   * Initialize printer.
+   * <p>
    * Clears the data in the print buffer and resets the printer modes to the
    * modes that were in effect when the power was turned on.
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream initialize() throws IOException {
     out.write(EscPosCommands.ESC_INIT);
@@ -31,41 +46,78 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Print and return to standard mode (in page mode). </br>
+   * Print and return to standard mode (in page mode).
+   * <p>
    * In page mode, prints all the data in the print buffer collectively and
    * switches from page mode to standard mode.
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream feed() throws IOException {
     out.write(EscPosCommands.FF);
     return this;
   }
 
+  /**
+   * Print and return to standard mode (in page mode).
+   * <p>
+   * In page mode, prints all the data in the print buffer collectively and
+   * switches from page mode to standard mode.
+   * 
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosPrintStream#feed()
+   */
   public EscPosPrintStream ff() throws IOException {
     out.write(EscPosCommands.FF);
     return this;
   }
 
   /**
-   * Print and line feed.</br>
+   * Print and line feed.
+   * <p>
    * Prints the data in the print buffer and feeds one line, based on the
    * current line spacing.
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream lineFeed() throws IOException {
     out.write(EscPosCommands.LF);
     return this;
   }
 
+  /**
+   * Print and line feed.
+   * <p>
+   * Prints the data in the print buffer and feeds one line, based on the
+   * current line spacing.
+   * 
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosPrintStream#lineFeed()
+   */
   public EscPosPrintStream println() throws IOException {
     out.write(EscPosCommands.LF);
     return this;
   }
 
+  /**
+   * Print and line feed.
+   * <p>
+   * Prints the data in the print buffer and feeds one line, based on the
+   * current line spacing.
+   * 
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosPrintStream#lineFeed()
+   */
   public EscPosPrintStream lf() throws IOException {
     out.write(EscPosCommands.LF);
     return this;
@@ -76,29 +128,50 @@ public class EscPosPrintStream extends FilterOutputStream {
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream carriageReturn() throws IOException {
     out.write(EscPosCommands.CR);
     return this;
   }
 
+  /**
+   * Print and carriage return.
+   * 
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosPrintStream#carriageReturn()
+   */
   public EscPosPrintStream cr() throws IOException {
     out.write(EscPosCommands.CR);
     return this;
   }
 
   /**
-   * Horizontal tab.</br>
+   * Horizontal tab.
+   * <p>
    * Moves the print position to the next horizontal tab position.
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream horizontalTab() throws IOException {
     out.write(EscPosCommands.HT);
     return this;
   }
 
+  /**
+   * Horizontal tab.
+   * <p>
+   * Moves the print position to the next horizontal tab position.
+   * 
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosPrintStream#horizontalTab()
+   */
   public EscPosPrintStream ht() throws IOException {
     out.write(EscPosCommands.HT);
     return this;
@@ -109,35 +182,48 @@ public class EscPosPrintStream extends FilterOutputStream {
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream buzzer() throws IOException {
     out.write(EscPosCommands.BEL);
     return this;
   }
 
+  /**
+   * Sounds the buzzer.
+   * 
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosPrintStream#buzzer()
+   */
   public EscPosPrintStream bel() throws IOException {
     out.write(EscPosCommands.BEL);
     return this;
   }
 
   /**
-   * Print and feed paper.</br>
+   * Print and feed paper.
+   * <p>
    * Prints the data in the print buffer and feeds the paper n × (vertical or
-   * horizontal motion unit).</br>
-   * 0.00492610837 inches</br>
-   * 0,125 mm</br>
+   * horizontal motion unit).
+   * <p>
+   * A motion unit usually measures 1/203 inches or 0.125 mm.
    * 
-   * @param lines
-   *          0 ≤ n ≤ 255
+   * @param n
+   *          the motion units value to feed, must be inside the range [0,255]
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument n is outside the range [0,255]
    * @throws IOException
+   *           if an I/O error occurs.
    */
-  public EscPosPrintStream feedPaper(int lines) throws IOException {
-    if (lines < 0 || lines > 255) {
-      throw new IllegalArgumentException("The lines is out of range");
+  public EscPosPrintStream feedPaper(int n) throws IOException {
+    if (n < 0 || n > 255) {
+      throw new IllegalArgumentException("The value of argument 'n' is out of range");
     }
     out.write(EscPosCommands.ESC_FEED_PAPER);
-    out.write((byte) lines);
+    out.write((byte) n);
     return this;
   }
 
@@ -145,12 +231,16 @@ public class EscPosPrintStream extends FilterOutputStream {
    * Prints the data in the print buffer and feeds n lines.
    * 
    * @param n
+   *          the number of lines to feed, must be inside the range [0,255]
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument n is outside the range [0,255]
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream feedLines(int n) throws IOException {
     if (n < 0 || n > 255) {
-      throw new IllegalArgumentException("The lines is out of range");
+      throw new IllegalArgumentException("The value of argument 'n' is out of range");
     }
     out.write(EscPosCommands.ESC_FEED_LINES);
     out.write((byte) n);
@@ -158,14 +248,34 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Select print mode(s)
+   * Select print mode(s).
+   * <p>
+   * The argument textPrintMode must be one of the EscPosConstants.TEXTPRINTMODE
+   * constants defined, or any valid combination of them ored together.
+   * <p>
+   * Other values in the range [0,255] may be supported by selected printers,
+   * refer to your printer documentation for more details.
    * 
-   * @see TextPrintMode
    * @param textPrintMode
+   *          one of the EscPosConstants.TEXTPRINTMODE constants, or any valid
+   *          combination of them ored together.
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument textPrintMode is outside the range
+   *           [0,255]
    * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosConstants#TEXTPRINTMODE_FONT_1
+   * @see EscPosConstants#TEXTPRINTMODE_FONT_2
+   * @see EscPosConstants#TEXTPRINTMODE_EMPHASIZED
+   * @see EscPosConstants#TEXTPRINTMODE_DOUBLE_HEIGHT
+   * @see EscPosConstants#TEXTPRINTMODE_DOUBLE_WIDTH
+   * @see EscPosConstants#TEXTPRINTMODE_UNDERLINE
    */
   public EscPosPrintStream textPrintMode(int textPrintMode) throws IOException {
+    if (textPrintMode < 0 || textPrintMode > 255) {
+      throw new IllegalArgumentException("The value of argument 'textPrintMode' is out of range");
+    }
     out.write(EscPosCommands.ESC_PRINT_MODE);
     out.write((byte) textPrintMode);
     return this;
@@ -173,11 +283,27 @@ public class EscPosPrintStream extends FilterOutputStream {
 
   /**
    * Select character size
+   * <p>
+   * The argument characterSize must be one of the EscPosConstants.CHARACTERSIZE
+   * constants, or a combination of a width constant with a height constant ored
+   * together.
+   * <p>
+   * Most printers support only single or double width/height (constants 1 or
+   * 2), but other values in the range [0,255] may be supported by selected
+   * printers, refer to your printer documentation for more details.
    * 
    * @see CharacterSize
    * @param characterSize
+   *          one of the EscPosConstants.CHARACTERSIZE constants, or a
+   *          combination of a width constant with a height constant ored
+   *          together.
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosConstants#CHARACTERSIZE_WIDTH_1
+   * @see EscPosConstants#CHARACTERSIZE_WIDTH_2
+   * @see EscPosConstants#CHARACTERSIZE_HEIGHT_1
+   * @see EscPosConstants#CHARACTERSIZE_HEIGHT_2
    */
   public EscPosPrintStream textSize(byte characterSize) throws IOException {
     out.write(EscPosCommands.GS_CHARACTER_SIZE);
@@ -189,8 +315,10 @@ public class EscPosPrintStream extends FilterOutputStream {
    * Turn underline mode on/off.
    * 
    * @param enable
+   *          sets the command to enable or disable underline mode
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream underline(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_UNDERLINE);
@@ -202,8 +330,10 @@ public class EscPosPrintStream extends FilterOutputStream {
    * Turn emphasized mode on/off.
    * 
    * @param enable
+   *          sets the command to enable or disable emphasize mode
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream emphasize(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_EMPHASIZE);
@@ -215,8 +345,10 @@ public class EscPosPrintStream extends FilterOutputStream {
    * Turn double-strike mode on/off.
    * 
    * @param enable
+   *          sets the command to enable or disable double-strike mode
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream doubleStrike(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_DOUBLESTRIKE);
@@ -228,8 +360,11 @@ public class EscPosPrintStream extends FilterOutputStream {
    * Turn white/black reverse print mode on/off.
    * 
    * @param enable
+   *          sets the command to enable or disable white/black reverse print
+   *          mode
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream reverseWhiteBlack(boolean enable) throws IOException {
     out.write(EscPosCommands.GS_REVERSE_BW);
@@ -241,8 +376,10 @@ public class EscPosPrintStream extends FilterOutputStream {
    * Turn 90° clockwise rotation mode on/off.
    * 
    * @param enable
+   *          sets the command to enable or disable 90° clockwise rotation mode
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream rotate(boolean enable) throws IOException {
     out.write(EscPosCommands.ESC_ROTATE);
@@ -251,13 +388,17 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Sets 90° clockwise rotation with given value.</br>
-   * Provided for printers that define other values for rotation besides on/off,
-   * refer to your printer manual for more information.
+   * Sets 90° clockwise rotation with given value.
+   * <p>
+   * Provided for printers that define other values for rotation mode besides
+   * on/off, refer to your printer documentation for more information.
    * 
    * @param value
+   *          a valid value for the 'ESC V' command as defined by your printer
+   *          documentation
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream rotate(byte value) throws IOException {
     out.write(EscPosCommands.ESC_ROTATE);
@@ -266,15 +407,25 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Set absolute print position.</br>
+   * Set absolute print position.
+   * <p>
    * Moves the print position to n × (horizontal or vertical motion unit) from
    * the left edge of the print area.
+   * <p>
+   * A motion unit usually measures 1/203 inches or 0.125 mm.
    * 
    * @param n
+   *          the motion units value to set for the absolute print position from
+   *          the left edge of the print area, which mus be in the range
+   *          [0,65535]
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream absolutePrintPosition(int n) throws IOException {
+    if (n < 0 || n > 65535) {
+      throw new IllegalArgumentException("The value of argument 'n' is out of range");
+    }
     out.write(EscPosCommands.ESC_PRINT_POSITION);
     out.write((byte) (n & 0xFF));
     out.write((byte) ((n >> 8) & 0xFF));
@@ -282,19 +433,56 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Set horizontal tab positions. </br>
-   * !!!
+   * Set horizontal tab positions.
+   * <p>
+   * A maximum of 32 horizontal tab positions in ascending order can be set,
+   * with each value in the range [0,255].
+   * <p>
+   * Executing this method with no arguments clears all the set tab positions.
+   * <p>
+   * ATTENTION: The maximum amount of tab positions may be lower for some
+   * printers - usually any data past the accepted maximum of tab positions will
+   * be processed as general data. Refer to your printer documentation before
+   * using this command with more than 8 tab positions.
+   * <p>
+   * Devices with known maximum number of tab positions:
+   * <li>Datecs DPP-350: 32</li>
+   * <li>Leopardo A7: 8</li>
+   * <p>
    * 
    * @param tabPositions
+   *          A maximum of 32 tab positions in ascending orders, with each value
+   *          in the range [0,255], or empty to clear all the set tab positions.
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the maximum number of tab positions is greater than 32, OR if
+   *           any given tab position is outside the range [0,255], OR if any
+   *           given tab position is less than or equal the preceding value.
    * @throws IOException
+   *           if an I/O error occurs.
    */
-  public EscPosPrintStream horizontalTabPosition(byte... tabPositions) throws IOException {
+  public EscPosPrintStream horizontalTabPosition(int... tabPositions) throws IOException {
     if (tabPositions.length > 32) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("A maximum of 32 tab positions may be specified");
+    }
+    int lastPosition = 0;
+    final int length = tabPositions.length;
+    for (int i = 0; i < length; i++) {
+      final int tabPosition = tabPositions[i];
+      if (tabPosition < 0 || tabPosition > 255) {
+        throw new IllegalArgumentException(
+            "The value of the " + (i + 1) + "º tabPosition is is outside the range [0,255]");
+      }
+      if (tabPosition <= lastPosition) {
+        throw new IllegalArgumentException(
+            "The value of the " + (i + 1) + "º tabPosition is less than or equal to the preceding value");
+      }
+      lastPosition = tabPosition;
     }
     out.write(EscPosCommands.ESC_HORIZONTAL_TAB_POSITION);
-    out.write(tabPositions);
+    for (int tabPosition : tabPositions) {
+      out.write((byte) tabPosition);
+    }
     out.write(EscPosCommands.NULL);
     return this;
   }
@@ -304,6 +492,7 @@ public class EscPosPrintStream extends FilterOutputStream {
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream resetLineSpacing() throws IOException {
     out.write(EscPosCommands.ESC_DEFAULT_LINE_SPACING);
@@ -311,60 +500,78 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Set line spacing.</br>
+   * Set line spacing.
+   * <p>
    * Sets the line spacing to n × (vertical or horizontal motion unit).
+   * <p>
+   * A motion unit usually measures 1/203 inches or 0.125 mm.
    * 
-   * @param spacing
+   * @param n
+   *          the size of the line spacing in motion units, which must be inside
+   *          the range [0,255]
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument n is outside the range [0,255]
    * @throws IOException
+   *           if an I/O error occurs.
    */
-  public EscPosPrintStream lineSpacing(int spacing) throws IOException {
-    if (spacing < 0 || spacing > 255) {
-      throw new IllegalArgumentException("The spacing is out of range");
+  public EscPosPrintStream lineSpacing(int n) throws IOException {
+    if (n < 0 || n > 255) {
+      throw new IllegalArgumentException("The value of argument 'n' is out of range");
     }
     out.write(EscPosCommands.ESC_LINE_SPACING);
-    out.write((byte) spacing);
+    out.write((byte) n);
     return this;
   }
 
   /**
-   * Set right-side character spacing.</br>
+   * Set right-side character spacing.
+   * <p>
    * Sets the right-side character spacing to n × (horizontal or vertical motion
    * unit).
+   * <p>
+   * A motion unit usually measures 1/203 inches or 0.125 mm.
    * 
-   * @param spacing
+   * @param n
+   *          the size of the line spacing in motion units, which must be inside
+   *          the range [0,255]
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument n is outside the range [0,255]
    * @throws IOException
+   *           if an I/O error occurs.
    */
-  public EscPosPrintStream characterSpacing(int spacing) throws IOException {
-    if (spacing < 0 || spacing > 255) {
-      throw new IllegalArgumentException("The spacing is out of range");
+  public EscPosPrintStream characterSpacing(int n) throws IOException {
+    if (n < 0 || n > 255) {
+      throw new IllegalArgumentException("The value of argument 'n' is out of range");
     }
     out.write(EscPosCommands.ESC_CHARACTER_SPACING);
-    out.write((byte) spacing);
+    out.write((byte) n);
     return this;
   }
 
   /**
-   * Select justification.
+   * Select alignment.
+   * <p>
+   * Sets the printing alignment to either ALIGN_LEFT, ALIGN_CENTER or
+   * ALIGN_RIGHT.
    * 
-   * @see Justification
    * @param alignment
+   *          the printing alignment, which must be either ALIGN_LEFT,
+   *          ALIGN_CENTER or ALIGN_RIGHT.
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument alignment is not ALIGN_LEFT,
+   *           ALIGN_CENTER or ALIGN_RIGHT.
    * @throws IOException
+   *           if an I/O error occurs.
+   * @see EscPosConstants#ALIGN_LEFT
+   * @see EscPosConstants#ALIGN_CENTER
+   * @see EscPosConstants#ALIGN_RIGHT
    */
   public EscPosPrintStream align(byte alignment) throws IOException {
-    if (alignment < EscPosConstants.JUSTIFICATION_LEFT || alignment > EscPosConstants.JUSTIFICATION_RIGHT) {
-      throw new IllegalArgumentException();
-    }
-    out.write(EscPosCommands.ESC_JUSTIFICATION);
-    out.write(alignment);
-    return this;
-  }
-
-  public EscPosPrintStream justification(byte alignment) throws IOException {
-    if (alignment < EscPosConstants.JUSTIFICATION_LEFT || alignment > EscPosConstants.JUSTIFICATION_RIGHT) {
-      throw new IllegalArgumentException();
+    if (alignment < EscPosConstants.ALIGN_LEFT || alignment > EscPosConstants.ALIGN_RIGHT) {
+      throw new IllegalArgumentException("The value of argument 'alignment' is invalid");
     }
     out.write(EscPosCommands.ESC_JUSTIFICATION);
     out.write(alignment);
@@ -372,21 +579,29 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Set left margin.</br>
-   * In standard mode, sets the left margin to (nL + nH × 256) × (horizontal
-   * motion unit) from the left edge of the printable area.
+   * Set left margin.
+   * <p>
+   * In standard mode, sets the left margin to n × (horizontal motion unit) from
+   * the left edge of the printable area.
+   * <p>
+   * A motion unit usually measures 1/203 inches or 0.125 mm.
    * 
-   * @param margin
+   * @param n
+   *          the motion units value to set the left margin, must be inside the
+   *          range [0,65535]
    * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument n is outside the range [0,65535]
    * @throws IOException
+   *           if an I/O error occurs.
    */
-  public EscPosPrintStream leftMargin(int margin) throws IOException {
-    if (margin < 0 || margin > 65535) {
-      throw new IllegalArgumentException();
+  public EscPosPrintStream leftMargin(int n) throws IOException {
+    if (n < 0 || n > 65535) {
+      throw new IllegalArgumentException("The value of argument 'n' is out of range");
     }
     out.write(EscPosCommands.GS_LEFT_MARGIN);
-    out.write((byte) (margin & 0xFF));
-    out.write((byte) ((margin >> 8) & 0xFF));
+    out.write((byte) (n & 0xFF));
+    out.write((byte) ((n >> 8) & 0xFF));
     return this;
   }
 
@@ -394,12 +609,17 @@ public class EscPosPrintStream extends FilterOutputStream {
    * Select cut mode and cut paper.
    * 
    * @param cut
+   *          the cut mode, which must be either CUT_FULL or CUT_PART.
+   * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           if the value of argument cut is not either CUT_FULL or CUT_PART
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream cut(byte cut) throws IOException {
     if (cut < EscPosConstants.CUT_FULL || cut > EscPosConstants.CUT_PART) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("The value of argument 'cut' is invalid");
     }
     out.write(EscPosCommands.GS_CUT);
     out.write(cut);
@@ -407,16 +627,18 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
-   * Switch OFF the printer.</br>
-   * </br>
+   * Switch OFF the printer.
+   * <p>
    * This command is not listed in the original ESC/POS Manual, refer to the
-   * printer's manual to verify support for this command.</br>
-   * </br>
+   * printer's manual to verify support for this command.
+   * <p>
    * Known supported devices:
-   * <li>Datecs DPP-350</li> </br>
+   * <li>Datecs DPP-350</li>
+   * <p>
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream turnOff() throws IOException {
     out.write(EscPosCommands.ESC_TURN_OFF);
@@ -426,16 +648,18 @@ public class EscPosPrintStream extends FilterOutputStream {
   /**
    * Prints test page and self-diagnostic information. The self-diagnostic
    * information includes print density, print head temperature, battery
-   * voltage, baud rate in case of work via RS232 and others.</br>
-   * </br>
+   * voltage, baud rate in case of work via RS232 and others.
+   * <p>
    * This command is not listed in the original ESC/POS Manual, refer to the
-   * printer's manual to verify support for this command.</br>
-   * </br>
+   * printer's manual to verify support for this command.
+   * <p>
    * Known supported devices:
-   * <li>Datecs DPP-350</li> </br>
+   * <li>Datecs DPP-350</li>
+   * <p>
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream selfTest() throws IOException {
     out.write(EscPosCommands.ESC_SELF_TEST);
@@ -444,22 +668,31 @@ public class EscPosPrintStream extends FilterOutputStream {
 
   /**
    * Prints current printer parameters, including intensity, temperature of the
-   * print head, battery voltage, speed in case of serial connection, etc.</br>
-   * </br>
+   * print head, battery voltage, speed in case of serial connection, etc.
+   * <p>
    * This command is not listed in the original ESC/POS Manual, refer to the
-   * printer's manual to verify support for this command.</br>
-   * </br>
+   * printer's manual to verify support for this command.
+   * <p>
    * Known supported devices:
-   * <li>Datecs DPP-350</li> </br>
+   * <li>Datecs DPP-350</li>
+   * <p>
    * 
    * @return This EscPosPrinter.
    * @throws IOException
+   *           if an I/O error occurs.
    */
   public EscPosPrintStream shortSelfTest() throws IOException {
-    out.write(EscPosCommands.ESC_SELF_TEST);
+    out.write(EscPosCommands.ESC_SHORT_SELF_TEST);
     return this;
   }
 
+  /**
+   * 
+   * @param val
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
   public EscPosPrintStream printLogo(byte size) throws IOException {
     if (size < EscPosConstants.LOGO_NORMAL || size > EscPosConstants.LOGO_QUADRUPLE) {
       throw new IllegalArgumentException();
@@ -469,48 +702,119 @@ public class EscPosPrintStream extends FilterOutputStream {
     return this;
   }
 
-  public EscPosPrintStream execute(Command... commands) throws IOException {
-    for (Command command : commands) {
-      command.write(out);
-    }
+  /**
+   * Writes the specified byte to the underlying stream.
+   *
+   * @param b
+   *          the <code>byte</code>.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
+  public EscPosPrintStream print(byte b) throws IOException {
+    out.write(b);
     return this;
   }
 
-  public EscPosPrintStream print(int val) throws IOException {
-    out.write(val);
+  /**
+   * Writes the specified byte to the underlying stream. The general contract
+   * for <code>write</code> is that one byte is written to the output stream.
+   * The byte to be written is the eight low-order bits of the argument
+   * <code>b</code>. The 24 high-order bits of <code>b</code> are ignored.
+   *
+   * @param b
+   *          the <code>byte</code>.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
+  public EscPosPrintStream print(int b) throws IOException {
+    out.write(b);
     return this;
   }
 
-  public EscPosPrintStream print(byte val) throws IOException {
-    out.write(val);
+  /**
+   * Writes <code>len</code> bytes from the specified byte array starting at
+   * offset <code>off</code> to the underlying output stream.
+   * <p>
+   * If <code>b</code> is <code>null</code>, a <code>NullPointerException</code>
+   * is thrown.
+   * <p>
+   * If <code>off</code> is negative, or <code>len</code> is negative, or
+   * <code>off+len</code> is greater than the length of the array
+   * <code>b</code>, then an <tt>IndexOutOfBoundsException</tt> is thrown.
+   *
+   * @param b
+   *          the data.
+   * @param off
+   *          the start offset in the data.
+   * @param len
+   *          the number of bytes to write.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
+  public EscPosPrintStream print(byte b[], int off, int len) throws IOException {
+    out.write(b, off, len);
     return this;
   }
 
-  public EscPosPrintStream print(byte... vals) throws IOException {
-    out.write(vals);
+  /**
+   * Writes the given bytes to the underlying output stream.
+   *
+   * @param b
+   *          the data.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
+  public EscPosPrintStream print(byte... b) throws IOException {
+    out.write(b);
     return this;
   }
 
+  /**
+   * Writes the given text to the underlying stream.
+   * <p>
+   * All characters are converted into bytes using the platform's default
+   * character encoding.
+   * 
+   * @param text
+   *          the data
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
   public EscPosPrintStream print(CharSequence text) throws IOException {
     out.write(text.toString().getBytes());
     return this;
   }
 
-  public EscPosPrintStream print(PrintImage image) throws ImageException, IOException {
-    image.print(out);
+  /**
+   * Writes an EscPosPrintObject to the underlying stream.
+   * 
+   * @param printStruct
+   *          an object that writes its own set of ESC/POS commands
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
+  public EscPosPrintStream print(EscPosPrintObject printStruct) throws IOException {
+    printStruct.write(out);
     this.println();
     return this;
   }
 
-  public EscPosPrintStream print(Barcode barcode) throws IOException {
-    barcode.write(out);
-    this.println();
-    return this;
-  }
-
-  public EscPosPrintStream print(QRCode qrcode) throws IOException {
-    qrcode.write(out);
-    this.println();
+  /**
+   * Writes a set of EscPosPrintObject to the underlying stream.
+   * 
+   * @param commands
+   *          a set of EscPosPrintStruct
+   * @return This EscPosPrinter.
+   * @throws IOException
+   *           if an I/O error occurs.
+   */
+  public EscPosPrintStream print(EscPosPrintObject... commands) throws IOException {
+    for (EscPosPrintObject command : commands) {
+      command.write(out);
+      this.println();
+    }
     return this;
   }
 }

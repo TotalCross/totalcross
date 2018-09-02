@@ -5,9 +5,9 @@ public interface EscPosConstants {
   public static final int PAPER_A7 = 384;
   public static final int PAPER_A8 = 576;
 
-  public static final byte JUSTIFICATION_LEFT = 0x00;
-  public static final byte JUSTIFICATION_CENTER = 0x01;
-  public static final byte JUSTIFICATION_RIGHT = 0x02;
+  public static final byte ALIGN_LEFT = 0x00;
+  public static final byte ALIGN_CENTER = 0x01;
+  public static final byte ALIGN_RIGHT = 0x02;
 
   public static final byte LOGO_NORMAL = 0x00;
   public static final byte LOGO_DOUBLE_WIDTH = 0x01;

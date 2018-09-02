@@ -1,16 +1,21 @@
-package totalcross.io.device.escpos.command;
+package totalcross.io.device.escpos;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class Barcode implements Command {
+/**
+ * Printable ESC/POS bar code representation.
+ * 
+ * @author Fábio Sobral
+ */
+public class EscPosBarcode implements EscPosPrintObject {
 
   public static final byte TEXTPRINTINGPOSITION_NONE = 0;
   public static final byte TEXTPRINTINGPOSITION_ABOVE = 1;
   public static final byte TEXTPRINTINGPOSITION_BELOW = 2;
   public static final byte TEXTPRINTINGPOSITION_BOTH = 3;
 
-  public enum BarcodeType {
+  public enum EscPosBarcodeType {
     UPCA(65, 11),
     UPCE(66, 11),
     EAN13(67, 12),
@@ -28,27 +33,35 @@ public class Barcode implements Command {
     public final int lengthMin;
     public final int lengthMax;
 
-    private BarcodeType(int type, int length) {
+    private EscPosBarcodeType(int type, int length) {
       this.type = type;
       this.lengthMin = this.lengthMax = length;
     }
 
-    private BarcodeType(int type, int lengthMin, int lengthMax) {
+    private EscPosBarcodeType(int type, int lengthMin, int lengthMax) {
       this.type = type;
       this.lengthMin = lengthMin;
       this.lengthMax = lengthMax;
     }
   }
 
-  private final BarcodeType type;
-  private final String data;
+  private final EscPosBarcodeType type;
+  private final byte[] data;
   private int height = -1;
   private int width = -1;
   private byte textPrintingPosition = -1;
 
-  public Barcode(BarcodeType type, CharSequence data) {
+  public EscPosBarcode(final EscPosBarcodeType type, final CharSequence data) {
     this.type = type;
-    this.data = data.toString();
+    this.data = data.toString().getBytes();
+
+    if (type.lengthMin == type.lengthMax && this.data.length != type.lengthMin) {
+      throw new IllegalArgumentException(
+          "The length of " + type.toString() + " barcode data must be " + type.lengthMin + " symbols");
+    } else if (this.data.length < type.lengthMin || this.data.length > type.lengthMax) {
+      throw new IllegalArgumentException(
+          "The length of barcode data must be between " + type.lengthMin + " and " + type.lengthMax + " symbols");
+    }
   }
 
   /**
@@ -58,7 +71,7 @@ public class Barcode implements Command {
    * @param textPrintingPosition
    * @return
    */
-  public Barcode textPrintingPosition(byte textPrintingPosition) {
+  public EscPosBarcode textPrintingPosition(byte textPrintingPosition) {
     if (textPrintingPosition < TEXTPRINTINGPOSITION_NONE || textPrintingPosition > TEXTPRINTINGPOSITION_BOTH) {
       throw new IllegalArgumentException();
     }
@@ -81,7 +94,7 @@ public class Barcode implements Command {
    * @param n
    * @return
    */
-  public Barcode height(int n) {
+  public EscPosBarcode height(int n) {
     if (n < 0 || n > 255) {
       throw new IllegalArgumentException();
     }
@@ -102,7 +115,7 @@ public class Barcode implements Command {
    * @param n
    * @return
    */
-  public Barcode width(int n) {
+  public EscPosBarcode width(int n) {
     if (width < 0) {
       throw new IllegalArgumentException();
     }
@@ -112,13 +125,6 @@ public class Barcode implements Command {
 
   @Override
   public void write(OutputStream out) throws IOException {
-    byte[] b = data.getBytes();
-
-    if (b.length < this.type.lengthMin || b.length > this.type.lengthMax) {
-      // handle better later
-      throw new IllegalArgumentException();
-    }
-
     if (height > 0) {
       out.write(EscPosCommands.GS_BARCODE_HEIGHT);
       out.write((byte) height);
@@ -132,68 +138,18 @@ public class Barcode implements Command {
       out.write(textPrintingPosition);
     }
 
-    byte[] buf = new byte[(b.length + 21 - 15)];
+    byte[] buf = new byte[(data.length + 6)];
     int i = 0;
-    //    buf[0] = (byte) 27;
     int i2 = i + 1;
-    //    buf[i] = (byte) 97;
-    //    i = i2 + 1;
-    //    buf[i2] = (byte) this.mSettings.barcodeAlign;
-    //    i2 = i + 1;
-    //    buf[i2] = (byte) 29;
-    //    i2 = i + 1;
-    //    buf[i] = (byte) 102;
-    //    i = i2 + 1;
-    //    buf[i2] = (byte) this.mSettings.barcodeHriFont;
-
-    //    switch (type) {
-    //        case UPCA /*65*/:
-    //            if (data.length != 11) {
-    //                throw new IllegalArgumentException("The length of UPCA barcode data must be 11 symbols");
-    //            }
-    //            break;
-    //        case UPCE /*66*/:
-    //            if (data.length != 11) {
-    //                throw new IllegalArgumentException("The length of UPCE barcode data must be 11 symbols");
-    //            }
-    //            break;
-    //        case EAN13 /*67*/:
-    //            if (data.length != 12) {
-    //                throw new IllegalArgumentException("The length of EAN13 barcode data must be 12 symbols");
-    //            }
-    //            break;
-    //        case EAN8 /*68*/:
-    //            if (data.length != 7) {
-    //                throw new IllegalArgumentException("The length of EAN8 barcode data must be 7 symbols");
-    //            }
-    //            break;
-    //        case CODE39 /*69*/:
-    //        case ITF /*70*/:
-    //        case CODABAR /*71*/:
-    //        case CODE93 /*72*/:
-    //        case CODE128 /*73*/:
-    //        case CODE128AUTO /*75*/:
-    //        case EAN128 /*76*/:
-    //            if (data.length < 1 || data.length > 255) {
-    //                throw new IllegalArgumentException("The length of barcode data must be between 1 and 255 symbols");
-    //            }
-    //        case PDF417 /*74*/:
-    //            if (data.length < 1 || data.length > 1000) {
-    //                throw new IllegalArgumentException("The length of PDF417 barcode data must be between 1 and 1000 symbols");
-    //            }
-    //        default:
-    //            throw new IllegalArgumentException("Invalid barcode type");
-    //    }
-    i2 = i + 1;
     //GS k
     buf[i] = (byte) 29;
     i = i2 + 1;
     buf[i2] = (byte) 107;
     i2 = i + 1;
     buf[i] = (byte) type.type;
-    if (type.type == 73 && b[0] != (byte) 123) {
+    if (type.type == 73 && data[0] != (byte) 123) {
       i = i2 + 1;
-      buf[i2] = (byte) (b.length + 2);
+      buf[i2] = (byte) (data.length + 2);
       i2 = i + 1;
       buf[i] = (byte) 123;
       i = i2 + 1;
@@ -203,19 +159,19 @@ public class Barcode implements Command {
       i = i2 + 1;
       buf[i2] = (byte) 0;
       i2 = i + 1;
-      buf[i] = (byte) (b.length & 255);
+      buf[i] = (byte) (data.length & 255);
       i = i2 + 1;
-      buf[i2] = (byte) ((b.length >> 8) & 255);
+      buf[i2] = (byte) ((data.length >> 8) & 255);
       i2 = i;
     } else {
       i = i2 + 1;
-      buf[i2] = (byte) b.length;
+      buf[i2] = (byte) data.length;
       i2 = i;
     }
     int i3 = 0;
-    while (i3 < b.length) {
+    while (i3 < data.length) {
       i = i2 + 1;
-      buf[i2] = b[i3];
+      buf[i2] = data[i3];
       i3++;
       i2 = i;
     }

@@ -1,9 +1,14 @@
-package totalcross.io.device.escpos.command;
+package totalcross.io.device.escpos;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class QRCode implements Command {
+/**
+ * Printable ESC/POS QR code representation.
+ * 
+ * @author Fábio Sobral
+ */
+public class EscPosQRCode implements EscPosPrintObject {
   public interface Size {
     public static final byte SMALLEST = 1;
     public static final byte SMALLER = 4;
@@ -21,17 +26,25 @@ public class QRCode implements Command {
     public static final byte HIGH = 4;
   }
 
-  public final byte size;
-  public final byte eccl;
-  public final byte[] data;
+  private byte size = Size.REGULAR;
+  private byte eccl = ErrorCorrectionLevel.MEDIUM;
+  private byte[] data;
 
-  QRCode(byte size, byte eccl, byte[] data) {
-    this.size = size;
-    this.eccl = eccl;
+  public EscPosQRCode(byte[] data) {
     this.data = data;
     if (data.length == 0) {
       throw new IllegalArgumentException();
     }
+  }
+
+  public EscPosQRCode size(byte size) {
+    this.size = size;
+    return this;
+  }
+
+  public EscPosQRCode errorCorrectionLevel(byte eccl) {
+    this.eccl = eccl;
+    return this;
   }
 
   @Override
@@ -67,31 +80,4 @@ public class QRCode implements Command {
     out.write(buf);
   }
 
-  public static class Builder {
-    private byte size = Size.REGULAR;
-    private byte eccl = ErrorCorrectionLevel.MEDIUM;
-    private byte[] data;
-
-    public Builder() {
-    }
-
-    public Builder size(byte size) {
-      this.size = size;
-      return this;
-    }
-
-    public Builder errorCorrectionLevel(byte eccl) {
-      this.eccl = eccl;
-      return this;
-    }
-
-    public Builder data(byte[] data) {
-      this.data = data;
-      return this;
-    }
-
-    public QRCode build() {
-      return new QRCode(size, eccl, data);
-    }
-  }
 }
