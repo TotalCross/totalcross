@@ -28,10 +28,10 @@ public class File4D extends RandomAccessStream implements FileStates {
   int slot;
   boolean dontFinalize;
 
-  static final boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
+  static final boolean isAndroid = Settings.ANDROID.equals(Settings.platform);
   static final boolean isIOS = Settings.isIOS();
-  static final boolean isWP8 = Settings.platform.equals(Settings.WINDOWSPHONE);
-  static final boolean isWin32 = Settings.platform.equals(Settings.WIN32);
+  static final boolean isWP8 = Settings.WINDOWSPHONE.equals(Settings.platform);
+  static final boolean isWin32 = Settings.WIN32.equals(Settings.platform);
   static final boolean isWinCE = Settings.isWindowsCE();
   public static final int CLOSED = 6;
 
