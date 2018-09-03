@@ -101,6 +101,22 @@ android {
                 fileName.replace('.', '_singleapk.')
             }
         }
+        copy {
+            from fileTree('build/intermediates/res/standard/release').files
+            into '../../../../../output/release/TotalCrossSDK/etc/launchers/android'
+            include 'resources-standardRelease.ap_'
+            rename { String fileName ->
+                fileName.replace('-standardRelease', '')
+            }
+        }
+        copy {
+            from fileTree('build/intermediates/res/standard/release').files
+            into '../../../../../TotalCrossSDK/etc/launchers/android'
+            include 'resources-standardRelease.ap_'
+            rename { String fileName ->
+                fileName.replace('-standardRelease', '')
+            }
+        }
     }
 
 	assemble.mustRunAfter assembleAssets
