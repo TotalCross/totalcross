@@ -38,12 +38,18 @@ All notable changes to this project will be documented in this file.
 - Deploy: Fixed NPE when deploying for Win32 without initializing Launcher.instance - TotalCross#165
 - CalculatorBox: Fixed enconding error with plus-minus sign - TotalCross#206
 - Grid: Fixed column width wrong resize when dragging edge to before column start - TotalCross#186
+- MultiEdit: Fixed bug that made every even character to disappear when you typed and reappear when you typed the next one
+- Deploy: Fixed rare (but possible) NPE during deploy
 
 ### Changes
 - Whiteboard no longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
 - The Launcher (simulator) can no longer be used without an activation key
 - Updated version of the Bouncy Castle dependency
 - On Java, Settings.appPath is now initialized even if the Launcher isn't executed - TotalCross#165
+- ListBox: Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpfu
+- ComboBox: Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
+
+
 
 ### Added
 - Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
