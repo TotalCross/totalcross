@@ -3,6 +3,10 @@ package totalcross.io.device.escpos;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+
+import totalcross.sys.Convert;
 
 /**
  * Adds functionality to another output stream, namely the ability to print
@@ -16,6 +20,8 @@ import java.io.OutputStream;
  * @since TotalCross 4.2.0
  */
 public class EscPosPrintStream extends FilterOutputStream {
+
+  private Charset charset = Convert.charsetForName("ISO8859-1");
 
   /**
    * Creates an output stream filter for ESC/POS commands built on top of the
@@ -687,6 +693,44 @@ public class EscPosPrintStream extends FilterOutputStream {
   }
 
   /**
+   * Sets the default charset to be used when printing CharSequence to the
+   * underlying stream.
+   * 
+   * @param charset
+   *          The {@link Charset} to be used to encode the data
+   * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           If the given charset is null
+   */
+  public EscPosPrintStream charset(Charset charset) throws IllegalArgumentException {
+    if (charset == null) {
+      throw new IllegalArgumentException();
+    }
+    this.charset = charset;
+    return this;
+  }
+
+  /**
+   * Sets the default charset to be used when printing CharSequence to the
+   * underlying stream.
+   * 
+   * @param charsetName
+   *          The name of a supported {@link charset}
+   * @return This EscPosPrinter.
+   * @throws IllegalArgumentException
+   *           If the given charsetName is null
+   * @throws UnsupportedEncodingException
+   *           If no support for the named charset is available
+   */
+  public EscPosPrintStream charset(String charsetName) throws IllegalArgumentException, UnsupportedEncodingException {
+    if (charsetName == null) {
+      throw new IllegalArgumentException();
+    }
+    this.charset = Charset.forName(charsetName);
+    return this;
+  }
+
+  /**
    * 
    * @param val
    * @return This EscPosPrinter.
@@ -782,7 +826,7 @@ public class EscPosPrintStream extends FilterOutputStream {
    *           if an I/O error occurs.
    */
   public EscPosPrintStream print(CharSequence text) throws IOException {
-    out.write(text.toString().getBytes());
+    out.write(text.toString().getBytes(charset));
     return this;
   }
 
