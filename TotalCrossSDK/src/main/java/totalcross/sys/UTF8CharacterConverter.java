@@ -31,7 +31,15 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  * @see     CharacterConverter
  * @author  Pierre G. Richard
  */
-public class UTF8CharacterConverter extends CharacterConverter {
+public class UTF8CharacterConverter extends AbstractCharacterConverter {
+
+  protected UTF8CharacterConverter() {
+    super("UTF-8", new String[] {
+        "unicode-1-1-utf-8",
+        "UTF8"
+    });
+  }
+
   /**
    * Convert UTF-8 bytes to UCS-2 characters
    *

@@ -11,6 +11,7 @@
 
 package tc.test.totalcross.sys;
 
+import totalcross.sys.Convert;
 import totalcross.sys.UTF8CharacterConverter;
 import totalcross.unit.TestCase;
 
@@ -23,7 +24,7 @@ public class UTF8CharacterConverterTest extends TestCase {
       srcChars[i + 128] = (char) (i + 0x80); // will be converted to 2 bytes
       srcChars[i + 256] = (char) (i + 0x800); // will be converted to 3 bytes
     }
-    UTF8CharacterConverter cc = new UTF8CharacterConverter();
+    UTF8CharacterConverter cc = (UTF8CharacterConverter) Convert.charsetForName("UTF-8");
     byte[] dstBytes = cc.chars2bytes(srcChars, 0, srcChars.length); // convert to bytes
     char[] dstChars = cc.bytes2chars(dstBytes, 0, dstBytes.length); // and convert back to chars
 

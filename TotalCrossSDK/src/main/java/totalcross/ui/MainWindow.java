@@ -231,7 +231,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
                 @Override
                 protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException {
                   String str = sb.toString();
-                  byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
+                  byte[] bytes = ((CharacterConverter) Convert.charsetForName("ISO-8859-1")).chars2bytes(str.toCharArray(), 0, sb.length());
                   writeBytes(bytes, 0, bytes.length);
                   // content length
                   writeBytes(infobytes, 0, infobytes.length);
