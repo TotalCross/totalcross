@@ -95,7 +95,7 @@ public class EscPosBarcode implements EscPosPrintObject {
    * @return
    */
   public EscPosBarcode height(int n) {
-    if (n < 0 || n > 255) {
+    if (n < 1 || n > 255) {
       throw new IllegalArgumentException();
     }
     this.height = n;
@@ -109,14 +109,14 @@ public class EscPosBarcode implements EscPosPrintObject {
    * default value 3.</br>
    * </br>
    * Known models range and default values:
-   * <li>Datecs DPP-350: 2 ≤ n ≤ 4 wih default value of 3</li>
-   * <li>Leopardo A7: 1 ≤ n ≤ 4 wih default value of 2</li> </br>
+   * <li>Datecs DPP-350: 2 ≤ n ≤ 4 with default value of 3</li>
+   * <li>Leopardo A7: 1 ≤ n ≤ 4 with default value of 2</li> </br>
    * 
    * @param n
    * @return
    */
   public EscPosBarcode width(int n) {
-    if (width < 0) {
+    if (n < 0) {
       throw new IllegalArgumentException();
     }
     this.width = n;
@@ -129,11 +129,11 @@ public class EscPosBarcode implements EscPosPrintObject {
       out.write(EscPosCommands.GS_BARCODE_HEIGHT);
       out.write((byte) height);
     }
-    if (width > 0) {
+    if (width >= 0) {
       out.write(EscPosCommands.GS_BARCODE_WIDTH);
       out.write((byte) width);
     }
-    if (textPrintingPosition > 0) {
+    if (textPrintingPosition >= 0) {
       out.write(EscPosCommands.GS_HRI);
       out.write(textPrintingPosition);
     }
