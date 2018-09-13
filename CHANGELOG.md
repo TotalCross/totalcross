@@ -42,14 +42,12 @@ All notable changes to this project will be documented in this file.
 - Deploy: Fixed rare (but possible) NPE during deploy
 
 ### Changes
-- Whiteboard no longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
-- The Launcher (simulator) can no longer be used without an activation key
+- Whiteboard: No longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
+- Launcher: The Launcher (simulator) can no longer be used without an activation key
 - Updated version of the Bouncy Castle dependency
 - On Java, Settings.appPath is now initialized even if the Launcher isn't executed - TotalCross#165
 - ListBox: Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpfu
 - ComboBox: Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
-
-
 
 ### Added
 - Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
@@ -64,6 +62,15 @@ All notable changes to this project will be documented in this file.
 - Java: Added classes ByteArrayOutputStream and UncheckedIOException
 - HttpStream: Added support for http methods PUT, PATCH and DELETE in class HttpStream - TotalCross#240
 - Radio: Added feature autosplit - TotalCross#180
+- Java: Added classes Charset and UnsupportedCharsetException, added also `String.getBytes(Charset)`
+
+> The existing CharacterConverter class and subclasses were changed to extend AbstractCharacterConverter, which extends Charset. The actual support to Java Charset is almost none, the main goal is to allow the usage `String.getBytes(Charset)` with the existing CharacterConverter and let users encode strings with different charsets without changing the charset used by the rest of the application through Convert.setDefaultConverter.
+
+- Added Cp437CharacterConverter, which supports encoding and decoding characters using the CP-437 charset (also known as IBM437, windows-437, among others). Especifically added to be used with EscPosPrintStream to properly support writing text to Leopardo A7.
+- Convert:
+  - Added method `charsetForName(String name)`, which returns one of the registered charsets available
+  - Added method `registerCharacterConverter(AbstractCharacterConverter characterConverter)`, which allows users to create and registers their own subclass of AbstractCharacterConverter to support custom encodings
+  - Added several aliases to the existing ISO-8859-1 and UTF-8 CharacterConverter classes and changed `setDefaultConverter` to be case insensitive and support any of listed aliases.
 
 ## 4.1.4 - 2018-05-17
 
