@@ -29,7 +29,7 @@ Err NmNotify(TCObject title, TCObject text)
 							initWithCharacters:String_charsStart(text) 
 							length:String_charsLen(text)
 						] autorelease];
-
+    
     if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
         // iOS 7.1 or earlier. Disable the deprecation warnings.
 #pragma clang diagnostic push
@@ -50,27 +50,27 @@ Err NmNotify(TCObject title, TCObject text)
 		content.title = nsTitle;
 		content.body = nsText;
 		content.sound = [UNNotificationSound defaultSound];
-
-		// Objective-C
-		UNTimeIntervalNotificationTrigger *trigger = 
+        [content setValue:@YES forKey:@"shouldAlwaysAlertWhileAppIsForeground"];
+		
+        UNTimeIntervalNotificationTrigger *trigger =
 			[UNTimeIntervalNotificationTrigger 
-				triggerWithTimeInterval:1 
-				repeats:YES
+				triggerWithTimeInterval:1
+				repeats:NO
 			];
-                                  
-		// Objective-C
-		NSString *identifier = @"UYLLocalNotification";
-		UNNotificationRequest *request = 
+		
+        NSString *identifier = @"UYLLocalNotification";
+        UNNotificationRequest *request =
 			[UNNotificationRequest 
 				requestWithIdentifier:identifier
 				content:content 
 				trigger:trigger
 			];
 
-		// Objective-C
 		UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 		[center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
-		    if (error != nil) {
+            [nsTitle release];
+            [nsTitle release];
+            if (error != nil) {
 		        NSLog(@"Something went wrong: %@",error);
 		    }
 		}];

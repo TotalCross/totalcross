@@ -24,7 +24,9 @@
 // running iOS 10 and above.
 #if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 @interface AppDelegate () <UNUserNotificationCenterDelegate>
+
 @end
+
 #endif
 
 // Copied from Apple's header in case it is missing in some cases (e.g. pre-Xcode 8 builds).
@@ -134,6 +136,7 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
             | UNAuthorizationOptionBadge;
             [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:authOptions completionHandler:^(BOOL granted, NSError * _Nullable error) {
             }];
+        application.applicationIconBadgeNumber = 0;
 #endif
     }
         // [END register_for_notifications]
