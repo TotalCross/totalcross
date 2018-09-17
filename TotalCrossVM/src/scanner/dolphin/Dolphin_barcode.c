@@ -136,6 +136,7 @@ LRESULT ScanMonitorThread()
 	  if (!scanning && isScanKeyDown())
       {
          scanning = 1;
+		 checkDigit = 0;
 		 xmemzero(barcode, MAX_MESSAGE_LENGTH);
          nResult = decWaitForDecodeProc(500, (BYTE*) barcode, (BYTE*) &cCodeID,(BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, CheckOnSCAN);
          if (nResult == RESULT_SUCCESS)
