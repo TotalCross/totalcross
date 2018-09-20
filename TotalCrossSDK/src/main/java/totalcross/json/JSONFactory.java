@@ -138,7 +138,7 @@ public class JSONFactory {
           } else if (parameterType.isAssignableFrom(Boolean.class)) {
             method.invoke(object, jsonObject.getBoolean(name));
           } else {
-            method.invoke(object, parse(jsonObject.getJSONObject(name), parameterType.getClass()));
+            method.invoke(object, parse(jsonObject.getJSONObject(name), parameterType));
           }
         }
       }
