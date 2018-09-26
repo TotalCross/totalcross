@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0610"
+   LastUpgradeVersion = "1000"
    version = "1.8">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -77,11 +77,6 @@
          <AdditionalOption
             key = "MallocStackLogging"
             value = ""
-            isEnabled = "YES">
-         </AdditionalOption>
-         <AdditionalOption
-            key = "NSDOLoggingEnabled"
-            value = "YES"
             isEnabled = "YES">
          </AdditionalOption>
       </AdditionalOptions>

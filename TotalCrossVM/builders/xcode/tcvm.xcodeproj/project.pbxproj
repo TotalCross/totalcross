@@ -2432,7 +2432,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				EXPORTED_SYMBOLS_FILE = "$(PROJECT_DIR)/../../src/tcvm/tcvm.h";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -2464,7 +2464,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
@@ -2487,7 +2487,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				EXPORTED_SYMBOLS_FILE = "$(PROJECT_DIR)/../../src/tcvm/tcvm.h";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					POSIX,
@@ -2528,7 +2528,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
-				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				EXPORTED_SYMBOLS_FILE = "$(PROJECT_DIR)/../../src/tcvm/tcvm.h";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -2548,7 +2548,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/tcvm.dst;
-				EXPORTED_SYMBOLS_FILE = tcvm/tcvm.h;
+				EXPORTED_SYMBOLS_FILE = "$(PROJECT_DIR)/../../src/tcvm/tcvm.h";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
