@@ -165,7 +165,11 @@ public class Utils {
       final String pathname = pathnames[0];
       if (pathname.endsWith("/")) { // a folder?
         v.removeElementAt(i);
-        String[] ff = new File(findPath(pathname, true)).listFiles();
+        String foundPath = findPath(pathname, true);
+        if (foundPath == null) {
+        	throw new IOException("Invalid path in pkg file: " + pathname);
+        }
+        String[] ff = new File(foundPath).listFiles();
         if (ff != null) {
           for (int j = 0; j < ff.length; j++) {
             vextra.addElement(pathname + ff[j] + (pathnames.length > 1 && acceptsPath ? "," + pathnames[1] : ""));
