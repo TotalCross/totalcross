@@ -255,6 +255,10 @@ task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar
     libraryjars "${System.getProperty('java.home')}/lib/jsse.jar"
     libraryjars files(configurations.compile.collect())
     
+    keepattributes 'SourceFile,LineNumberTable'
+    renamesourcefileattribute 'totalcross-sdk-' + project.version
+    printmapping 'build/libs/totalcross-sdk-' + project.version + '.map'
+    
 	doLast{
       ant.signjar(
                   jar: myProguardTask.outputs.files.singleFile,
