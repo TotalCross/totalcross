@@ -5,8 +5,9 @@ import java.io.OutputStream;
 
 /**
  * Printable ESC/POS bar code representation.
- * 
+ *
  * @author Fábio Sobral
+ * @since TotalCross 4.2.0
  */
 public class EscPosBarcode implements EscPosPrintObject {
 
@@ -57,22 +58,31 @@ public class EscPosBarcode implements EscPosPrintObject {
 
     if (type.lengthMin == type.lengthMax && this.data.length != type.lengthMin) {
       throw new IllegalArgumentException(
-          "The length of " + type.toString() + " barcode data must be " + type.lengthMin + " symbols");
+          "The length of "
+              + type.toString()
+              + " barcode data must be "
+              + type.lengthMin
+              + " symbols");
     } else if (this.data.length < type.lengthMin || this.data.length > type.lengthMax) {
       throw new IllegalArgumentException(
-          "The length of barcode data must be between " + type.lengthMin + " and " + type.lengthMax + " symbols");
+          "The length of barcode data must be between "
+              + type.lengthMin
+              + " and "
+              + type.lengthMax
+              + " symbols");
     }
   }
 
   /**
-   * Selects the print position of Human Readable Interpretation (HRI)
-   * characters when printing a bar code.
-   * 
+   * Selects the print position of Human Readable Interpretation (HRI) characters when printing a
+   * bar code.
+   *
    * @param textPrintingPosition
    * @return
    */
   public EscPosBarcode textPrintingPosition(byte textPrintingPosition) {
-    if (textPrintingPosition < TEXTPRINTINGPOSITION_NONE || textPrintingPosition > TEXTPRINTINGPOSITION_BOTH) {
+    if (textPrintingPosition < TEXTPRINTINGPOSITION_NONE
+        || textPrintingPosition > TEXTPRINTINGPOSITION_BOTH) {
       throw new IllegalArgumentException();
     }
     this.textPrintingPosition = textPrintingPosition;
@@ -80,17 +90,18 @@ public class EscPosBarcode implements EscPosPrintObject {
   }
 
   /**
-   * Sets the bar code height to n dots.</br>
-   * </br>
-   * The original ESC/POS Manual defines the bar code height in dots, but the
-   * actual size of a dot and the default value for n and may differ for each
-   * device.</br>
-   * For instance, the default bar code height for devices with dot size of
-   * 0.125mm (1/203 inches) is 162. </br>
-   * Known default values:
-   * <li>Datecs DPP-350: 162</li>
-   * <li>Leopardo A7: 36</li> </br>
-   * 
+   * Sets the bar code height to n dots.
+   *
+   * <p>The original ESC/POS Manual defines the bar code height in dots, but the actual size of a
+   * dot and the default value for n and may differ for each device.
+   *
+   * <p>For instance, the default bar code height for devices with dot size of 0.125mm (1/203
+   * inches) is 162.
+   *
+   * <p>Known default values:
+   * <li>Datecs DPP-350: 162
+   * <li>Leopardo A7: 36
+   *
    * @param n
    * @return
    */
@@ -103,15 +114,14 @@ public class EscPosBarcode implements EscPosPrintObject {
   }
 
   /**
-   * Sets the bar code width.</br>
-   * </br>
-   * The units for n depends on the printer model - usually 2 ≤ n ≤ 6 with
-   * default value 3.</br>
-   * </br>
-   * Known models range and default values:
-   * <li>Datecs DPP-350: 2 ≤ n ≤ 4 with default value of 3</li>
-   * <li>Leopardo A7: 1 ≤ n ≤ 4 with default value of 2</li> </br>
-   * 
+   * Sets the bar code width.
+   *
+   * <p>The units for n depends on the printer model - usually 2 ≤ n ≤ 6 with default value 3.
+   *
+   * <p>Known models range and default values:
+   * <li>Datecs DPP-350: 2 ≤ n ≤ 4 with default value of 3
+   * <li>Leopardo A7: 1 ≤ n ≤ 4 with default value of 2
+   *
    * @param n
    * @return
    */

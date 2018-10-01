@@ -5,8 +5,9 @@ import java.io.OutputStream;
 
 /**
  * Printable ESC/POS QR code representation.
- * 
+ *
  * @author Fábio Sobral
+ * @since TotalCross 4.2.0
  */
 public class EscPosQRCode implements EscPosPrintObject {
   public interface Size {
@@ -79,5 +80,4 @@ public class EscPosQRCode implements EscPosPrintObject {
     }
     out.write(buf);
   }
-
 }

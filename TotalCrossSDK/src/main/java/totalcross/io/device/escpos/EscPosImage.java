@@ -8,8 +8,9 @@ import totalcross.ui.image.ImageException;
 
 /**
  * Printable ESC/POS image representation.
- * 
+ *
  * @author Fábio Sobral
+ * @since TotalCross 4.2.0
  */
 public class EscPosImage implements EscPosPrintObject {
 
@@ -49,8 +50,15 @@ public class EscPosImage implements EscPosPrintObject {
     this.printImage(out, toPrint, width, toPrint.getHeight(), align, dither, false);
   }
 
-  private void printImage(OutputStream out, Image image, int width, int height, byte align, boolean dither,
-      boolean crop) throws IOException {
+  private void printImage(
+      OutputStream out,
+      Image image,
+      int width,
+      int height,
+      byte align,
+      boolean dither,
+      boolean crop)
+      throws IOException {
     int[] argb = new int[width * height];
     byte[] row = new byte[width * 4];
 
@@ -116,8 +124,10 @@ public class EscPosImage implements EscPosPrintObject {
         for (int i = 0; i < width; offs++) {
           int tmp331_330 = (bufOffs + i * 3 + k);
           byte[] tmp331_313 = buf;
-          tmp331_313[tmp331_330] = ((byte) (tmp331_313[tmp331_330]
-              | (byte) ((argb[offs] < 128 ? 1 : 0) << 7 - (j & (8 - 1)))));
+          tmp331_313[tmp331_330] =
+              ((byte)
+                  (tmp331_313[tmp331_330]
+                      | (byte) ((argb[offs] < 128 ? 1 : 0) << 7 - (j & (8 - 1)))));
           i++;
         }
       }
@@ -130,7 +140,7 @@ public class EscPosImage implements EscPosPrintObject {
   private static void ditherImageByFloydSteinberg(int[] grayscale, int width, int height) {
     int stopXM1 = width - 1;
     int stopYM1 = height - 1;
-    int[] coef = { 3, 5, 1 };
+    int[] coef = {3, 5, 1};
 
     int y = 0;
     for (int offs = 0; y < height; y++) {
