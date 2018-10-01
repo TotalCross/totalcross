@@ -1,20 +1,22 @@
 package totalcross.notification;
 
-import java.awt.AWTException;
-import java.awt.Image;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
+import java.awt.*;
 import java.awt.TrayIcon.MessageType;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
+/**
+ * Class to notify the user of events that happen. This is how you tell the user that something has
+ * happened in the background.
+ *
+ * @author Fábio Sobral
+ * @since TotalCross 4.2.0
+ */
 public class NotificationManager {
 
   private static NotificationManager instance;
 
-  private NotificationManager() {
-  }
+  private NotificationManager() {}
 
   public static NotificationManager getInstance() {
     if (instance == null) {
@@ -22,7 +24,12 @@ public class NotificationManager {
     }
     return instance;
   }
-  
+
+  /**
+   * Post a notification to be shown in the status bar.
+   *
+   * @param notification
+   */
   @ReplacedByNativeOnDeploy
   public void notify(Notification notification) {
     SystemTray tray = SystemTray.getSystemTray();
@@ -40,7 +47,6 @@ public class NotificationManager {
     try {
       tray.add(trayIcon);
     } catch (AWTException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 
