@@ -646,7 +646,7 @@ target: vs2008
 <target name="buildVisualStudio2008" >
    <echo message="GENERATING WIN32 and WINCE"/>
    
-   <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
+   <mkdir dir="${target.sdk.path}/dist/vm/win32"/>
    <exec executable="${msvc.path}" failonerror="yes">
       <arg line='${msvc.project.path}/TCVM.sln /rebuild "Release|Win32"'/>
    </exec>
