@@ -135,8 +135,24 @@ target: makeNativeHT - updates the native methods hash table.
       classpath="${path.to.prototypeGenerator}"
       fork="yes"
    >
-      <arg line="makeNativeHT TC ${source.vm.path}/src/init ${source.vm.path}/src/nm/NativeMethods.txt ${source.vm.path}/src/scanner/NativeMethods.txt" />
+  	<arg line="makeNativeHT TC ${source.vm.path}/src/init ${source.vm.path}/src/nm/NativeMethods.txt ${source.vm.path}/src/scanner/NativeMethods.txt" />
    </java>
+	
+	<java
+	   classname="tc.tools.NativeMethodsPrototypeGenerator"
+	   classpath="${path.to.prototypeGenerator}"
+	   fork="yes"
+	>
+	   <arg line="${source.vm.path}/src/nm/NativeMethods.txt" />
+	</java>
+	
+	<java
+	   classname="tc.tools.NativeMethodsPrototypeGenerator"
+	   classpath="${path.to.prototypeGenerator}"
+	   fork="yes"
+	>
+	   <arg line="${source.vm.path}/src/scanner/NativeMethods.txt" />
+	</java>    
 </target>
    
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

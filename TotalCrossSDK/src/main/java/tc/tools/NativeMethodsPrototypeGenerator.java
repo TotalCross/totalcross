@@ -29,6 +29,8 @@ import java.util.stream.Stream;
 /** Created by guich to help the implementation of native methods in the TotalCross vm. */
 
 public class NativeMethodsPrototypeGenerator {
+  public static String inputFilePath;
+  
   public static void main(String[] argv) {
     try {
       if (argv.length < 1) // guich@330_10
@@ -46,7 +48,8 @@ public class NativeMethodsPrototypeGenerator {
           }
           makeNativeHT = true;
         } else {
-          v.addAll(readFile(argv[0]));
+          inputFilePath = argv[0];
+          v.addAll(readFile(inputFilePath));
           makeTestCases = argv.length >= 2
               && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
         }
@@ -354,7 +357,11 @@ public class NativeMethodsPrototypeGenerator {
   private static void println(String s) {
     try {
       if (fos == null) {
-        fos = new FileOutputStream("NativeMethodsPrototypes.txt");
+        if (inputFilePath != null) {
+          fos = new FileOutputStream(new File(new File(inputFilePath).getParentFile(), "NativeMethodsPrototypes.txt"));
+        } else {
+          fos = new FileOutputStream("NativeMethodsPrototypes.txt");
+        }
       }
       fos.write(s.getBytes());
       //System.out.println(s);
