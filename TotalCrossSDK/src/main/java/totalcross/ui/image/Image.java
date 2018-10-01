@@ -19,6 +19,7 @@ package totalcross.ui.image;
 
 import java.awt.GraphicsEnvironment;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
@@ -2460,9 +2461,83 @@ public class Image extends GfxSurface {
       e.printStackTrace();
     }
   }
+  
+  private static final double F1_8 = 12.5;
+  private static final double F1_4 = 25;
+  private static final double F1_2 = 50;
+  
+  public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
+      throws java.io.IOException, ImageException {
+    SimpleImageInfo sif = null;
 
-  static Image getScaledJpeg(Stream s, int scale_num, int scale_denom) throws java.io.IOException, ImageException {
-    double scale = (double) scale_num / (double) scale_denom;
-    return new Image(s).hwScaledBy(scale, scale);
+    if (path != null) {
+      byte[] b = Vm.getFile(path);
+      if (b != null) {
+        try (ByteArrayStream bas = new ByteArrayStream(b)) {
+          InputStream is = bas.asInputStream();
+          sif = new SimpleImageInfo(is);
+        }
+      } else {
+        try (File f = new File(path, File.READ_ONLY)) {
+          InputStream is = f.asInputStream();
+          sif = new SimpleImageInfo(is);
+        }
+      }
+    }
+
+    if (sif == null) {
+      throw new java.io.IOException();
+    }
+    if (!"image/jpeg".equals(sif.getMimeType())) {
+      throw new ImageException(null);
+    }
+
+    final double p1 = targetWidth * 100 / sif.getWidth();
+    final double p2 = targetHeight * 100 / sif.getHeight();
+    final double p = Math.min(p1, p2);
+
+    int scale_denom;
+    if (p < F1_8) {
+      scale_denom = 8; // 1/8
+    } else if (p < F1_4) {
+      scale_denom = 4; // 1/4
+    } else if (p < F1_2) {
+      scale_denom = 2; // 1/2
+    } else {
+      scale_denom = 1; // original size
+    }
+    
+    final double scale = 1.0 / scale_denom;
+    return new Image(path).smoothScaledBy(scale, scale);
+  }
+
+  public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
+      throws java.io.IOException, ImageException {
+    SimpleImageInfo sif = null;
+
+    if (path != null) {
+      byte[] b = Vm.getFile(path);
+      if (b != null) {
+        try (ByteArrayStream bas = new ByteArrayStream(b)) {
+          InputStream is = bas.asInputStream();
+          sif = new SimpleImageInfo(is);
+        }
+      } else {
+        try (File f = new File(path, File.READ_ONLY)) {
+          InputStream is = f.asInputStream();
+          sif = new SimpleImageInfo(is);
+        }
+      }
+    }
+
+    if (sif == null) {
+      throw new java.io.IOException();
+    }
+    if (!"image/jpeg".equals(sif.getMimeType())) {
+      throw new ImageException(null);
+    }
+
+    final double scale = scaleNumerator / scaleDenominator;
+    return new Image(path).smoothScaledBy(scale, scale);
   }
 }

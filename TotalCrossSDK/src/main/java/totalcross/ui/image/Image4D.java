@@ -735,6 +735,9 @@ public class Image4D extends GfxSurface {
 
   native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
 
-  native static Image getScaledJpeg(Stream s, int scale_num, int scale_denom)
+  public static native Image getJpegBestFit(String path, int targetWidth, int targetHeight)
+      throws java.io.IOException, ImageException;
+
+  public static native Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException;
 }
