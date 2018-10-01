@@ -19,6 +19,12 @@
 
 #include "cdjpeg.h"     /* Common decls for cjpeg/djpeg applications */
 
+#if defined _WINDOWS || defined WINCE
+#ifndef fmin
+#define fmin(a, b) min(a,b)
+#endif
+#endif
+
 // Read the JPEG Input file.
 int jpegRead(void *buff, int count, JPEGFILE *in)
 {
@@ -148,7 +154,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    if (targetWidthOrScaleNum > 0 && targetHeightOrScaleDenom > 0) {
       double p1 = targetWidthOrScaleNum * 100 / cinfo.image_width;
       double p2 = targetHeightOrScaleDenom * 100 / cinfo.image_height;
-      double p = min(p1, p2);
+      double p = fmin(p1, p2);
       int32 scale_num2 = 1;
       int32 scale_denom2;
       
