@@ -105,7 +105,7 @@ public class MultiButton extends Control {
         if (selColor == -1) {
           selColor = Color.darker(backColor, 64);
         }
-        npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, c, false);
+        npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIBUTTON, width, height, c, false);
         npsel = NinePatch.getInstance().getPressedInstance(npback, backColor, selColor);
         npback.alphaMask = alphaValue;
       }

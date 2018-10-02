@@ -186,8 +186,8 @@ public class Deploy {
 
   private void addJars() throws IOException {
     //flsobral@tc210: dynamically load some useful libs for handling files and compression 
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-147.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-147.jar");
+    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-1.56.jar");
+    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-1.56.jar");
     JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-io-2.2.jar");
     JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-compress-1.4.jar");
     JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-file-7.5.1.jar");
@@ -202,31 +202,20 @@ public class Deploy {
   }
 
   private void showException(Throwable e, String extraMsg) {
-    System.out.println();
-    System.out.println();
-    System.out.println("################################# FATAL ERROR ##################################");
+    System.err.println("################################# FATAL ERROR ##################################");
     if (J2TC.currentClass != null) {
-      System.out.println("Class: " + J2TC.currentClass);
+      System.err.println("Class: " + J2TC.currentClass);
     }
     if (J2TC.currentMethod != null) {
-      System.out.println("Method: " + J2TC.currentMethod);
+      System.err.println("Method: " + J2TC.currentMethod);
     }
-    System.out.println("Exception type: " + e.getClass().getName());
-    if (e.getMessage() != null) {
-      System.out.println("Exception message: " + e.getMessage());
-    }
-    System.out.println("Exception stack trace:");
-
-    java.io.StringWriter sw = new java.io.StringWriter(); // guich@tc100b4_6: with StringWriter it always works
-    e.printStackTrace(new java.io.PrintWriter(sw));
-    String stacktrace = sw.toString();
-    stacktrace = stacktrace.substring(stacktrace.indexOf('\n') + 1);
-    System.out.println("   " + stacktrace.trim().replace("\t", "   "));
+    
+    e.printStackTrace(System.err);
 
     if (extraMsg != null) {
-      System.out.println(extraMsg);
+      System.err.println(extraMsg);
     }
-    System.out.println("################################################################################");
+    System.err.println("################################################################################");
     if (waitIfError) {
       try {
         System.out.print("Press enter to quit ");

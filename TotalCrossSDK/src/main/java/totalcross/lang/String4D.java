@@ -17,7 +17,11 @@
 
 package totalcross.lang;
 
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.text.Collator;
+
+import totalcross.sys.AbstractCharacterConverter;
 import totalcross.sys.Convert;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.regex.MatchIterator;
@@ -301,6 +305,19 @@ public final class String4D implements Comparable<String4D>, CharSequence {
    */
   public byte[] getBytes() {
     return Convert.charConverter.chars2bytes(chars, 0, chars.length);
+  }
+
+  public byte[] getBytes(Charset charset) {
+    if (charset instanceof AbstractCharacterConverter) {
+      AbstractCharacterConverter converter = (AbstractCharacterConverter) charset;
+      return converter.chars2bytes(chars, 0, chars.length);
+    }
+    return getBytes();
+  }
+
+  public byte[] getBytes(String charsetName) throws UnsupportedCharsetException {
+    Charset charset = Charset.forName(charsetName);
+    return getBytes(charset);
   }
 
   /** Returns a new instance of this string converted to upper case */

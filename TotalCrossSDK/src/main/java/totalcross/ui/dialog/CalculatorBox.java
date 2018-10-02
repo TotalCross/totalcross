@@ -175,7 +175,7 @@ public class CalculatorBox extends Window {
 
     // numeric pad
     if (numericPad == null) {
-      add(numericPad = new PushButtonGroup(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "±" },
+      add(numericPad = new PushButtonGroup(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "\u00b1" },
           false, -1, 2, 10, 4, true, PushButtonGroup.BUTTON));
       numericPad.setFont(font.adjustedBy(2));
       numericPad.setFocusLess(true); // guich@320_32

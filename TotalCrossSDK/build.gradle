@@ -17,7 +17,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
-version = '4.1.4'
+version = '4.2.0'
 group = 'com.totalcross'
 
 // can't be used yet, enconding is a mess
@@ -29,6 +29,8 @@ configurations {
 
 retrolambda {
   javaVersion JavaVersion.VERSION_1_7
+  defaultMethods true
+  incremental true
 }
 
 jar {
@@ -99,6 +101,8 @@ repositories {
 }
 
 dependencies {
+    retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.5.4'
+
     // https://mvnrepository.com/artifact/org.vafer/jdeb
     compile(group: 'org.vafer', name: 'jdeb', version: '0.7') {
 		exclude group: 'org.bouncycastle'
@@ -208,6 +212,22 @@ task totalcrossJar(type: Jar) {
         }
         rename ".*", "pom.xml"
     }
+    
+    // collect path to all the jars inside etc folders
+    def names = []
+	fileTree('etc/libs').visit {
+		if (it.name.endsWith('.jar')) {
+			names << '../etc/libs/' + it.relativePath
+		}
+	}
+	fileTree('etc/tools/ipa').visit {
+		if (it.name.endsWith('.jar')) {
+			names << '../etc/tools/ipa/' + it.relativePath
+		}
+	}
+	manifest {
+		attributes("Class-Path": names.join(' '))
+	}
 }
 
 // tcbase.jar
@@ -236,6 +256,10 @@ task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar
     libraryjars "${System.getProperty('java.home')}/lib/jce.jar"
     libraryjars "${System.getProperty('java.home')}/lib/jsse.jar"
     libraryjars files(configurations.compile.collect())
+    
+    keepattributes 'SourceFile,LineNumberTable'
+    renamesourcefileattribute 'totalcross-sdk-' + project.version
+    printmapping 'build/libs/totalcross-sdk-' + project.version + '.map'
     
 	doLast{
       ant.signjar(

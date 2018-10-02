@@ -111,9 +111,17 @@ public class JSONFactory {
       String methodName = method.getName();
       Class<?>[] paramTypes = method.getParameterTypes();
       if (paramTypes != null && paramTypes.length == 1 && methodName.length() > 3 && methodName.startsWith("set")) {
-        String name = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
-        if ((jsonObject.isNull(name))) {
-          name = name.toLowerCase();
+        final String originalName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+        String name = null;
+        // look for the field name in the json based on the method name
+        if (!jsonObject.isNull(originalName)) {
+          name = originalName;
+        } else if (jsonObject.isNull(name = originalName.toLowerCase())) {
+          // not found as-is or loweracased? try replacing camel case with underscore
+          final String underscoredName = originalName.replaceAll("(.)(\\p{Upper})", "$1_$2").toLowerCase();
+          if (!jsonObject.isNull(underscoredName)) {
+            name = underscoredName;
+          }
         }
         if (!jsonObject.isNull(name)) {
           Class<?> parameterType = method.getParameterTypes()[0];
@@ -138,7 +146,7 @@ public class JSONFactory {
           } else if (parameterType.isAssignableFrom(Boolean.class)) {
             method.invoke(object, jsonObject.getBoolean(name));
           } else {
-            method.invoke(object, parse(jsonObject.getJSONObject(name), parameterType.getClass()));
+            method.invoke(object, parse(jsonObject.getJSONObject(name), parameterType));
           }
         }
       }

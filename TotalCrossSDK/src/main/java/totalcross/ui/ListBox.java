@@ -396,10 +396,44 @@ public class ListBox extends Container implements Scrollable {
 
   /** Adds an array of Objects to the Listbox */
   public void add(Object[] moreItems) {
-    add(moreItems, 0, moreItems.length);
+    int size = moreItems.length;
+    if (itemCount == 0) // guich@310_5: directly assign the array if this listbox is empty
+    {
+      Object[] array = new Object[size];
+      Vm.arrayCopy(moreItems, 0, array, 0, size);
+      this.items = new Vector(array);
+      itemCount = size;
+      if (ivWidths != null) {
+        enableHorizontalScroll(); // just recompute for all items
+      }
+    } else {
+      int n = size; //moreItems.length; // guich@450_36
+      itemCount += n;
+      for (int i = 0; i < n; i++) {
+        items.addElement(moreItems[i]);
+      }
+      if (ivWidths != null) // guichich@560_9
+      {
+        int w, m = 0, mx = -xOffsetMin;
+        for (int i = 0; i < n; i++) {
+          ivWidths.addElement(w = fm.stringWidth(moreItems[i].toString()));
+          if (w > mx) {
+            m = w;
+          }
+        }
+        verifyItemWidth(m);
+      }
+    }
+    sbar.setEnabled(isEnabled() && visibleItems < itemCount);
+    sbar.setMaximum(itemCount); // guich@210_12: forgot this line!
   }
 
-  /** Adds a range of an array of Objects to the Listbox */
+  /**
+   * Adds a range of an array of Objects to the Listbox
+   * 
+   * @deprecated Use {@link #add(Object[])} instead
+   */
+  @Deprecated
   public void add(Object[] moreItems, int startAt, int size) {
     int realSize = moreItems.length < startAt + size ? moreItems.length - startAt : size;
     if (itemCount == 0) // guich@310_5: directly assign the array if this listbox is empty

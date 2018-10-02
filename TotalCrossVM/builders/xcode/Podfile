@@ -22,3 +22,9 @@ target 'tcvm' do
   pod 'Firebase/Messaging', '4.3.0'
   pod 'FirebaseInstanceID', '2.0.4'
 end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    puts "#{target.name}"
+  end
+end

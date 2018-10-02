@@ -29,9 +29,8 @@ import totalcross.sys.UTF8CharacterConverter;
  * @since TotalCross 1.27
  */
 class SDPInputStream extends DataStream {
-  final private static UTF8CharacterConverter converterUTF8 = new UTF8CharacterConverter();
-  final private static CharacterConverter converterASCII = new CharacterConverter();
-
+  final private static UTF8CharacterConverter converterUTF8 = (UTF8CharacterConverter) Convert.charsetForName("UTF-8");
+  final private static CharacterConverter converterASCII = (CharacterConverter) Convert.charsetForName("ISO-8859-1");
   public SDPInputStream(byte[] input) {
     super(new ByteArrayStream(input), true);
   }

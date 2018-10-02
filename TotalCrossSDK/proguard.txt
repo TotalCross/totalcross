@@ -5,7 +5,6 @@
 -dontoptimize
 -overloadaggressively
 -ignorewarnings
--printmapping 'out.map'
 # removes classes 4D
 -assumenosideeffects class * {
 ! *4D(...);

@@ -13,12 +13,13 @@
 
 #include "tcvm.h"
 #include "ImagePrimitives_c.h"
+#include "io/File.h"
 
 #if defined darwin
 #include "darwin/image_Image_c.h"
 #endif
 
-void jpegLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
+void jpegLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4, int32 scale_num, int32 scale_denom);
 void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
 
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +39,7 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
          pngLoad(p->currentContext, imageObj, null, null, tcz, magic);
       else
-         jpegLoad(p->currentContext, imageObj, null, null, tcz, magic);
+         jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, 0);
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -53,7 +54,7 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
    if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
       pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic);
    else
-      jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic);
+      jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, 0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native public void changeColors(int from, int to);
@@ -193,6 +194,96 @@ TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p) // totalcross/ui/image/Image n
    
    resizeImageAtPath(input_path, output_path, maxPixelSize);
 #endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image native public static totalcross.ui.image.Image getJpegBestFit(String path, int targetWidth, int targetHeight) throws java.io.IOException, totalcross.ui.image.ImageException;
+{
+   TCObject pathObj = p->obj[0];
+   int32 targetWidth = p->i32[0];
+   int32 targetHeight = p->i32[1];
+   TCObject bufferObj = null; 
+   TCObject imageObj = null;
+   TCObject fileObj = null;
+   Method initMethod;
+   Method fileConstructor;
+   char szPath[MAX_PATHNAME];
+   TCZFile tcz;
+
+   String2CharPBuf(pathObj, szPath);
+   tcz = tczGetFile(szPath, false);
+
+   if ((imageObj = createObject(p->currentContext, "totalcross.ui.image.Image")) != NULL
+         && (initMethod = getMethod(OBJ_CLASS(imageObj), false, "init", 0)) != NULL ) {
+      if (tcz != null) {
+         jpegLoad(p->currentContext, imageObj, null, null, tcz, null, targetWidth, targetHeight);
+      } else if ((fileObj = createObject(p->currentContext, "totalcross.io.File")) != NULL) {
+         fileConstructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
+         if (fileConstructor != null) {
+            executeMethod(p->currentContext, fileConstructor, fileObj, pathObj, READ_ONLY);
+            if (p->currentContext->thrownException == null) {
+               if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
+                  jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, targetWidth, targetHeight);
+               }
+            }
+         }
+      }
+   }
+
+   p->retO = imageObj;
+   if (imageObj != null) {
+      setObjectLock(imageObj, UNLOCKED);
+   }
+   if (bufferObj != null) {
+      setObjectLock(bufferObj, UNLOCKED);
+   }
+   if (fileObj != null) {
+      setObjectLock(fileObj, UNLOCKED);
+   }
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image native public static totalcross.ui.image.Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator) throws java.io.IOException, totalcross.ui.image.ImageException;
+{
+   TCObject pathObj = p->obj[0];
+   int32 scaleNumerator = p->i32[0];
+   int32 scaleDenominator = p->i32[1];
+   TCObject bufferObj = null; 
+   TCObject imageObj = null;
+   TCObject fileObj = null;
+   Method initMethod;
+   Method fileConstructor;
+   char szPath[MAX_PATHNAME];
+   TCZFile tcz;
+
+   String2CharPBuf(pathObj, szPath);
+   tcz = tczGetFile(szPath, false);
+
+   if ((imageObj = createObject(p->currentContext, "totalcross.ui.image.Image")) != NULL
+         && (initMethod = getMethod(OBJ_CLASS(imageObj), false, "init", 0)) != NULL ) {
+      if (tcz != null) {
+         jpegLoad(p->currentContext, imageObj, null, null, tcz, null, -scaleNumerator, -scaleDenominator);
+      } else if ((fileObj = createObject(p->currentContext, "totalcross.io.File")) != NULL) {
+         fileConstructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
+         if (fileConstructor != null) {
+            executeMethod(p->currentContext, fileConstructor, fileObj, pathObj, READ_ONLY);
+            if (p->currentContext->thrownException == null) {
+               if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
+                  jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, -scaleNumerator, -scaleDenominator);
+               }
+            }
+         }
+      }
+   }
+
+   p->retO = imageObj;
+   if (imageObj != null) {
+      setObjectLock(imageObj, UNLOCKED);
+   }
+   if (bufferObj != null) {
+      setObjectLock(bufferObj, UNLOCKED);
+   }
+   if (fileObj != null) {
+      setObjectLock(fileObj, UNLOCKED);
+   }
 }
 
 #ifdef ENABLE_TEST_SUITE

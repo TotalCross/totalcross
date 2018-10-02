@@ -196,7 +196,12 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
     Window.needsPaint = true;
   }
 
-  /** Adds an array of Objects to the Listbox */
+  /**
+   * Adds an array of Objects to the Listbox
+   * 
+   * @deprecated Use {@link #add(Object[])} instead.
+   */
+  @Deprecated
   public void add(Object[] items, int startAt, int size) {
     pop.lb.add(items, startAt, size);
     Window.needsPaint = true;
@@ -378,8 +383,7 @@ public class ComboBox extends Container implements TimerListener, MaterialEffect
   }
 
   private int getTextY() {
-    boolean isString = pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String;
-    if (isString && caption == null) {
+    if (caption == null) {
       return (height - fmH) / 2;
     }
     int ret = getPreferredHeight();

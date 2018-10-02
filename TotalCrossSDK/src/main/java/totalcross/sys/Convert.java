@@ -17,13 +17,18 @@
 
 package totalcross.sys;
 
-import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.Launcher;
 import totalcross.ui.font.FontMetrics;
 import totalcross.util.Comparable;
 import totalcross.util.Date;
-import totalcross.util.Hashtable;
 import totalcross.util.InvalidDateException;
 import totalcross.util.Vector;
 
@@ -88,9 +93,37 @@ public final class Convert {
    * @see totalcross.sys.CharacterConverter
    * @see totalcross.sys.UTF8CharacterConverter
    */
-  public static totalcross.sys.CharacterConverter charConverter = new totalcross.sys.CharacterConverter();
+  public static totalcross.sys.AbstractCharacterConverter charConverter = new totalcross.sys.CharacterConverter();
 
-  private static Hashtable htConvs = new Hashtable(1);
+  private static Map<String, AbstractCharacterConverter> htConvs = new HashMap<>();
+  static {
+    // ISO-8859-1
+    AbstractCharacterConverter iso88591_1 = new CharacterConverter();
+    htConvs.put("", iso88591_1);
+    registerCharacterConverter(iso88591_1);
+
+    // UTF-8
+    registerCharacterConverter(new UTF8CharacterConverter());
+
+    // Code Page 437
+    registerCharacterConverter(new Cp437CharacterConverter());
+  }
+
+  /**
+   * Registers the given subclass of AbstractCharacterConverter to the list of
+   * encodings supported to this instance of the running TotalCross VM
+   * 
+   * @param characterConverter
+   *          the AbstractCharacterConverter to be registered to this instance
+   *          of the running TotalCross VM
+   */
+  public static void registerCharacterConverter(AbstractCharacterConverter characterConverter) {
+    htConvs.put(characterConverter.name().toLowerCase(), characterConverter);
+    Set<String> aliases = characterConverter.aliases();
+    for (String alias : aliases) {
+      htConvs.put(alias.toLowerCase(), characterConverter);
+    }
+  }
 
   /** Changes the default Character Converter to the given one.
    * Use like
@@ -105,22 +138,30 @@ public final class Convert {
    * @see totalcross.sys.UTF8CharacterConverter
    */
   public static boolean setDefaultConverter(String name) {
-    if (name == null) {
-      throw new NullPointerException("Argument 'name' cannot have a null value");
-    }
-    boolean ok = true;
-    CharacterConverter cc = (CharacterConverter) htConvs.get(name);
+    AbstractCharacterConverter cc = (AbstractCharacterConverter) charsetForName(name);
     if (cc == null) {
-      try {
-        cc = (CharacterConverter) Class.forName("totalcross.sys." + name + "CharacterConverter").newInstance();
-      } catch (Exception e) {
-        cc = new CharacterConverter();
-        ok = false;
-      }
-      htConvs.put(name, cc);
+      return false;
     }
     charConverter = cc;
-    return ok;
+    return true;
+  }
+
+  /**
+   * Returns a charset object for the named charset.
+   * 
+   * @param charsetName
+   *          The name of the requested charset; may be either a canonical name
+   *          or an alias
+   * @return A charset object for the named charset or null if no support for
+   *         the named charset is available
+   * @throws IllegalArgumentException
+   *           If the given charsetName is null
+   */
+  public static Charset charsetForName(String charsetName) throws IllegalArgumentException {
+    if (charsetName == null) {
+      throw new IllegalArgumentException();
+    }
+    return htConvs.get(charsetName.toLowerCase());
   }
 
   /** The minimum char value: '\u0000' */

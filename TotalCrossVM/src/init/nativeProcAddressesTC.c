@@ -1,5 +1,5 @@
 #include "tcvm.h"
-#include "NativeMethods.h"
+#include "nm/NativeMethods.h"
 #include "utils.h"
 
 void fillNativeProcAddressesTC()
@@ -112,6 +112,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFade_i"), &tuiI_applyFade_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeResizeJpeg_ssi"), &tuiI_nativeResizeJpeg_ssi);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegBestFit_sii"), &tuiI_getJpegBestFit_sii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegScaled_sii"), &tuiI_getJpegScaled_sii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCircleAA_iiibbbbb"), &tugG_drawCircleAA_iiibbbbb);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillShadedRect_iiiibbiii"), &tugG_fillShadedRect_iiiibbiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
@@ -554,6 +556,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendDataMessage_ssiB"), &ttSM_sendDataMessage_ssiB);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_si"), &ttSM_registerSmsReceiver_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tfiFII_getToken"), &tfiFII_getToken);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnNM_notify_n"), &tnNM_notify_n);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_iii"), &tidsS_setParam_iii);

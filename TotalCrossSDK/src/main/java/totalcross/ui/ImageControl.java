@@ -43,7 +43,6 @@ public class ImageControl extends Control {
   private int startX, startY;
   private Coord c = new Coord();
   private boolean isEventEnabled, canDrag, isPressedEventsEnabled;
-  private UIEffects effect;
   private double lasthwScale;
   /** Set to true to center the image in the control when it is loaded */
   public boolean centerImage;
@@ -140,7 +139,7 @@ public class ImageControl extends Control {
     }
     PenEvent pe;
     if (isPressedEventsEnabled && event.type == PenEvent.PEN_UP && !hadParentScrolled()
-        && contains(((PenEvent) event).x, ((PenEvent) event).y)) {
+        && isInsideOrNear(((PenEvent) event).x, ((PenEvent) event).y)) {
       postPressedEvent();
     } else if (isEventEnabled) {
       switch (event.type) {

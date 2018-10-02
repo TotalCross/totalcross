@@ -12,6 +12,7 @@
 package tc.test.totalcross.sys;
 
 import totalcross.sys.CharacterConverter;
+import totalcross.sys.Convert;
 import totalcross.unit.TestCase;
 
 public class CharacterConverterTest extends TestCase {
@@ -23,7 +24,7 @@ public class CharacterConverterTest extends TestCase {
       srcChars[i] = (char) i;
       srcBytes[i] = (byte) i;
     }
-    CharacterConverter cc = new CharacterConverter();
+    CharacterConverter cc = (CharacterConverter) Convert.charsetForName("ISO-8859-1");
     char[] dstChars = cc.bytes2chars(srcBytes, 0, srcBytes.length);
     byte[] dstBytes = cc.chars2bytes(srcChars, 0, srcChars.length);
 

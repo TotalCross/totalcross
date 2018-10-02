@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import totalcross.sys.CharacterConverter;
+import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 
 /**
@@ -366,7 +367,7 @@ public class InputStreamReader4D extends Reader {
   private static final int BUFFER_SIZE = 16 * 1024;
   private byte[] readBytesBuff = new byte[BUFFER_SIZE];
 
-  private CharacterConverter cconv = new CharacterConverter();
+  private CharacterConverter cconv = (CharacterConverter) Convert.charsetForName("ISO-8859-1");
 
   /**
    * This method reads up to <code>length</code> characters from the stream into

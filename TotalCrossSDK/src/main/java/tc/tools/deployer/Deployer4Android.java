@@ -245,7 +245,7 @@ public class Deployer4Android {
       }
       InputStream zis = inf.getInputStream(ze2);
       if (name.indexOf("tcfiles.zip") >= 0) {
-        insertTCFiles_zip(ze2, zos);
+        continue; // skip tcfiles from resources
       } else if (name.indexOf("resources.arsc") >= 0) {
         zos.putNextEntry(ze2);
         insertResources_arsc(zis, zos);
@@ -267,6 +267,10 @@ public class Deployer4Android {
       zos.closeEntry();
       zis.close();
     }
+    ZipEntry ze2 = new ZipEntry("assets/tcfiles.zip");
+    insertTCFiles_zip(ze2, zos);
+    zos.closeEntry();
+    
     if (singleApk) {
       processClassesDexes(tcFolder + "TotalCross.apk", zos);
       copyZipEntries(tcFolder + "TotalCross.apk", "res", zos);
@@ -555,6 +559,8 @@ public class Deployer4Android {
         } else if (s.endsWith("google_measurement_service")) {
           strings[i] = newTcPackage + s.substring(oldPackage.length());
         }
+      } else if ("com.totalcross.android.fileprovider".equals(s)) {
+        strings[i] = s.replace("android", targetTCZ);
       }
       if (oldPackage != null && s.equals(oldPackage)) {
         strings[i] = newPackage;

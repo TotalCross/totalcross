@@ -426,4 +426,8 @@
 #define SmsMessage_displayMessageBody(o)              *getInstanceFieldObject(o, "displayMessageBody", "totalcross.telephony.SmsMessage")
 #define SmsMessage_userData(o)                        *getInstanceFieldObject(o, "userData", "totalcross.telephony.SmsMessage")
 
+//totalcross.notification.Notification
+#define Notification_title(o)                     	*getInstanceFieldObject(o, "title", "totalcross.notification.Notification")
+#define Notification_text(o)       					*getInstanceFieldObject(o, "text", "totalcross.notification.Notification")
+
 #endif

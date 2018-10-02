@@ -124,6 +124,8 @@ TC_API void tuiI_freeTexture(NMParams p);
 TC_API void tuiI_applyFade_i(NMParams p);
 TC_API void tuiI_createJpg_si(NMParams p);
 TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p);
+TC_API void tuiI_getJpegBestFit_sii(NMParams p);
+TC_API void tuiI_getJpegScaled_sii(NMParams p);
 TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p);
 TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
@@ -577,6 +579,7 @@ TC_API void ttSM_sendTextMessage_sss(NMParams p);
 TC_API void ttSM_sendDataMessage_ssiB(NMParams p);
 TC_API void ttSM_registerSmsReceiver_si(NMParams p);
 TC_API void tfiFII_getToken(NMParams p);
+TC_API void tnNM_notify_n(NMParams p);
 
 #ifdef __cplusplus
 }

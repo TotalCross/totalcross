@@ -403,6 +403,7 @@ public class Grid extends Container implements Scrollable {
   private boolean isScrolling;
   private boolean scScrolled;
   private int lineH;
+  private boolean uIalreadyInitted = false;
 
   /**
    * This will create a grid with the given captions, column widths, information
@@ -1476,7 +1477,7 @@ public class Grid extends Container implements Scrollable {
         continue;
       }
       if (newWidths[i] < 0) {
-        widths[i] = percW * -widths[i] / 100;
+        widths[i] = !uIalreadyInitted ? (percW * -widths[i] / 100) : captionWidths[i];
       }
       int cw = captionWidths[i] = fm.stringWidth(captions[i]) + 3;
       if (widths[i] <= cw && !titleMayBeClipped) {
@@ -1587,6 +1588,7 @@ public class Grid extends Container implements Scrollable {
     tabOrder.removeAllElements(); // don't let get into us on focus traversal
     onBoundsChanged(false);
     setWidths(originalWidths);
+    uIalreadyInitted = true;
     setTooltipRect();
     tip.borderColor = Color.BLACK;
   }

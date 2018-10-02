@@ -25,10 +25,10 @@ import totalcross.net.mail.MessagingException;
 import totalcross.net.mail.Multipart;
 import totalcross.net.mail.Part;
 import totalcross.net.ssl.SSLSocket;
+import totalcross.sys.AbstractCharacterConverter;
 import totalcross.sys.CharacterConverter;
 import totalcross.sys.Convert;
 import totalcross.sys.Settings;
-import totalcross.sys.UTF8CharacterConverter;
 import totalcross.sys.Vm;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
@@ -502,7 +502,7 @@ public class HttpStream extends Stream {
   /** Returns true if the response code represents an error. */
   public boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
 
-  private CharacterConverter cc = new CharacterConverter();
+  private AbstractCharacterConverter cc = (CharacterConverter) Convert.charsetForName("ISO-8859-1");
 
   @Override
   public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
@@ -633,11 +633,7 @@ public class HttpStream extends Stream {
       if (contentType != null && contentType.indexOf("charset") != -1) {
         options.postHeaders.put("Content-Type", contentType + ";charset=\"" + options.encoding + "\"");
       }
-      if (options.encoding == Options.CHARSET_ISO88591) {
-        cc = new CharacterConverter();
-      } else if (options.encoding == Options.CHARSET_UTF8) {
-        cc = new UTF8CharacterConverter();
-      }
+      cc = (AbstractCharacterConverter) Convert.charsetForName(options.encoding);
     }
 
     if (GET.equals(options.httpType)) {

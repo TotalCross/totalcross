@@ -19,6 +19,12 @@
 
 #include "cdjpeg.h"     /* Common decls for cjpeg/djpeg applications */
 
+#if defined _WINDOWS || defined WINCE
+#ifndef fmin
+#define fmin(a, b) min(a,b)
+#endif
+#endif
+
 // Read the JPEG Input file.
 int jpegRead(void *buff, int count, JPEGFILE *in)
 {
@@ -76,8 +82,12 @@ int jpegWrite(void *buff, int count, JPEGFILE *in)
    return current;
 }
 
+#define F1_8 12.5
+#define F1_4 25
+#define F1_2 50
+
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4)
+void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -120,6 +130,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
       heapDestroy(heap);
       if (tcz != null)
          tczClose(tcz);
+	  throwException(currentContext, ImageException, null);
       return; // throwImageException(...);
    }
    /* Start decompressor */
@@ -140,6 +151,29 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    /* override with specified decompression parameters */
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
    cinfo.dct_method = JDCT_IFAST;
+   if (targetWidthOrScaleNum > 0 && targetHeightOrScaleDenom > 0) {
+      double p1 = targetWidthOrScaleNum * 100 / cinfo.image_width;
+      double p2 = targetHeightOrScaleDenom * 100 / cinfo.image_height;
+      double p = fmin(p1, p2);
+      int32 scale_num2 = 1;
+      int32 scale_denom2;
+      
+      if (p < F1_8) {
+         scale_denom2 = 8; // 1/8
+      } else if (p < F1_4) {
+         scale_denom2 = 4; // 1/4
+      } else if (p < F1_2) {
+         scale_denom2 = 2; // 1/2
+      } else {
+         scale_denom2 = 1; // original size
+      }
+
+      cinfo.scale_num = scale_num2;
+      cinfo.scale_denom = scale_denom2;
+   } else if (targetWidthOrScaleNum < 0 && targetHeightOrScaleDenom < 0) {
+      cinfo.scale_num = -targetWidthOrScaleNum;
+      cinfo.scale_denom = -targetHeightOrScaleDenom;
+   }
 
    jpeg_calc_output_dimensions(&cinfo); /* Calculate output image dimensions so we can allocate space */
 

@@ -33,8 +33,29 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  * @see totalcross.sys.UTF8CharacterConverter 
  */
 
-public class CharacterConverter {
+public class CharacterConverter extends AbstractCharacterConverter {
+  
+  protected CharacterConverter() {
+    super("ISO-8859-1", new String[] {
+        "819",
+        "ISO8859-1",
+        "l1",
+        "ISO_8859-1:1987",
+        "ISO_8859-1",
+        "8859_1",
+        "iso-ir-100",
+        "latin1",
+        "cp819",
+        "ISO8859_1",
+        "IBM819",
+        "ISO_8859_1",
+        "IBM-819",
+        "csISOLatin1"
+    });
+  }
+  
   /** Converts the given byte array range to a char array. */
+  @Override
   @ReplacedByNativeOnDeploy
   public char[] bytes2chars(byte bytes[], int offset, int length) {
     char[] value = new char[length];
@@ -45,6 +66,7 @@ public class CharacterConverter {
   }
 
   /** Converts the given char array range to a byte array. */
+  @Override
   @ReplacedByNativeOnDeploy
   public byte[] chars2bytes(char chars[], int offset, int length) {
     byte[] bytes = new byte[length];

@@ -14,6 +14,7 @@
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 #import <ScanditBarcodeScanner/ScanditBarcodeScanner.h>
+#import <AVFoundation/AVFoundation.h>
 
 #define LKLayer CALayer
 
@@ -315,28 +316,82 @@ int isShown;
 
 -(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t
 {
-   callingCamera = true;
+   callingCamera = false;
    imageFileName = fileName;
    imageW = w;
    imageH = h;
-   dispatch_sync(dispatch_get_main_queue(), ^
-   {
-      imagePicker = [[UIImagePickerController alloc] init];
-      if(t != 3 && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
-      {
-         [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
-         imagePicker.allowsEditing = NO;
-      }
-      else
-         [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-      [imagePicker setDelegate:self];
-      [self presentModalViewController:imagePicker animated:NO];
-   });
-   while (callingCamera)
-      Sleep(100);
-   UIDeviceOrientation o = [child_view getOrientation];
-   if (o != UIDeviceOrientationLandscapeLeft && o != UIDeviceOrientationLandscapeRight) // when the camera comes back from landscape and we call updateLayout, the screen gets painted as if it was in portrait. this hack makes the screen a bit better, but still buggy.
-      [self updateLayout];
+
+   	AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];   
+   if (t != 3) {
+	    if(authStatus == AVAuthorizationStatusAuthorized)
+	    {
+	        NSLog(@"%@", @"You have camera access");
+	    }
+	    else if(authStatus == AVAuthorizationStatusDenied)
+	    {
+	        NSLog(@"%@", @"Denied camera access");
+	
+			/*
+	        [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+	            if(granted){
+	                NSLog(@"Granted access to %@", AVMediaTypeVideo);
+	            } else {
+	                NSLog(@"Not granted access to %@", AVMediaTypeVideo);
+	            }
+	        }];
+	        */
+	    }
+	    else if(authStatus == AVAuthorizationStatusRestricted)
+	    {
+	        NSLog(@"%@", @"Restricted, normally won't happen");
+	    }
+	    else if(authStatus == AVAuthorizationStatusNotDetermined)
+	    {
+	    	callingCamera = true;
+	        NSLog(@"%@", @"Camera access not determined. Ask for permission.");
+	
+	        [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+	            if(granted){
+	                NSLog(@"Granted access to %@", AVMediaTypeVideo);
+	            } else {
+	                NSLog(@"Not granted access to %@", AVMediaTypeVideo);
+	            }
+	            callingCamera = false;
+	        }];
+	    }
+	    else
+	    {
+	        NSLog(@"%@", @"Camera access unknown error.");
+	    }
+	   while (callingCamera)
+	      Sleep(100);
+	      
+	    if(authStatus == AVAuthorizationStatusNotDetermined) {
+	      authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+	    }
+    }
+    
+    callingCamera = true;
+    if (t == 3 || authStatus == AVAuthorizationStatusAuthorized) {
+	   dispatch_sync(dispatch_get_main_queue(), ^
+	   {
+	      imagePicker = [[UIImagePickerController alloc] init];
+	      if(t != 3 && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+	      {
+	         [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+	         imagePicker.allowsEditing = NO;
+	      }
+	      else
+	         [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+	      [imagePicker setDelegate:self];
+	      [self presentModalViewController:imagePicker animated:NO];
+	   });
+	   while (callingCamera)
+	      Sleep(100);
+	   UIDeviceOrientation o = [child_view getOrientation];
+	   if (o != UIDeviceOrientationLandscapeLeft && o != UIDeviceOrientationLandscapeRight) // when the camera comes back from landscape and we call updateLayout, the screen gets painted as if it was in portrait. this hack makes the screen a bit better, but still buggy.
+	      [self updateLayout];
+   }
    return imageFileName != null;
 }
 
