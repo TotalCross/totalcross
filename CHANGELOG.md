@@ -4,73 +4,95 @@ All notable changes to this project will be documented in this file.
 ## 4.2.0
 
 ### Highlights
-- Android release is now built with SDK 27 (previous releases were built with SDK 22) and the latest NDK r17b (up from NDK r8b!)
- - The minimum SDK level required to run TotalCross applications remains unchanged (SDK 10)
- - Applied the Android recommended changes to better handle activities and contexts to prevent possible resource 
- - TotalCross now asks for the user permission to access phone state and location on startup
+- Android
+  - Android package is now built with SDK 27 (previous releases were built with SDK 22) and the latest NDK r17b (up from NDK r8b!) - The minimum SDK level required to run TotalCross applications remains unchanged (SDK 10)
+  - Applied the Android recommended changes to better handle activities and contexts to prevent possible resource 
+  - TotalCross now asks for the user permission to access phone state and location on startup
 
 :construction: **On Android, features that require user permission during runtime may not be working. Please report if you have any trouble with permissions.**
 
-- Improved some Color methods to produce better results by properly weighting the RGB components according to our perception of color brightness 
-- Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
- - Notification is crashing on iOS 10+
- - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
- - Notification crashing application on Android - TotalCross#255
-- Added support for fast IDCT scaling on jpeg images. Combined with the usage of the new utility classes to manage scaling jpeg images, this can greatly reduce the memory footprint of jpeg images and improve graphical performance.
+- iOS
+  - iOS package is now built with SDK 12
+  - Added permission request to use the camera
+
+- General
+  - Improved some Color methods to produce better results by properly weighting the RGB components according to our perception of color brightness 
+  - Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
+    - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
+    - Notification crashing application on Android - TotalCross#255
+  - EscPosPrintStream - New API to handle ESC/POS printer commands
+  - Added support for fast IDCT scaling on jpeg images. Combined with the usage of the new utility classes to manage scaling jpeg images, this can greatly reduce the memory footprint of jpeg images and improve graphical performance.
 
 > :information_source: **Using this approach to handle images of approximately 800x800 on medium sized devices can reduce memory consumption by up to 80% while doubling the image loading speed!**
 
-- EscPosPrintStream - New API to handle ESC/POS printer commands!
-
 ### Fixed
-- Deploy: Will now correctly package tcz dependencies that were split over multiple files - TotalCross#214
-- ComboBox: Fixed vertical alignment of text - TotalCross#192
-- ImageControl: Removed duplicated field `effect`
-- ImageControl: Fixed detection of press events
-- Deploy: Added protection for unlikely (but possible) NPE
 - Fixed bug during activation with some JDK versions - a FileNotFoundException could be thrown when trying to recursively create directories for a new file
-- Toast: Fixed Toast appearing relative to the `topMost` window, when it should always be relative to the MainWindow
-- MultiButton: Fixed graphical bug - a transparent ComboBox arrow was being drawn on the background of the MultiButton (!)
-- PushButtonGroup: fixed drag event to allow "giving up" on a press event by dragging outside the button bounds after a press
-- MultiEdit: Fixed text being hidden with Material style
-- Deploy: Fixed deploy with Java 10, dependencies are now listed in the jar's Manifest
-- AccordionContainer: Fixed arrows not changing state when switching focus between multiple collapsible panes
-- Deploy: Fixed NPE when deploying for Win32 without initializing Launcher.instance - TotalCross#165
-- CalculatorBox: Fixed enconding error with plus-minus sign - TotalCross#206
-- Grid: Fixed column width wrong resize when dragging edge to before column start - TotalCross#186
-- MultiEdit: Fixed bug that made every even character to disappear when you typed and reappear when you typed the next one
-- Deploy: Fixed rare (but possible) NPE during deploy
+- Deploy
+  - Will now correctly package tcz dependencies that were split over multiple files - TotalCross#214
+  - Added protection for unlikely (but possible) NPE
+  - Fixed deploy with Java 10, dependencies are now listed in the jar's Manifest
+  - Fixed NPE when deploying for Win32 without initializing Launcher.instance - TotalCross#165
+  - Fixed rare (but possible) NPE during deploy
+  - Fix path for Win32 dll, case sensitive systems expect binaries on lowercased folders - TotalCross#274
+- Scanner
+  - Fixed barcode scanning on Dolphin/Honeywell devices - value of barcode's check digit was being carried over to the calculation of the check digit on the next reading - TotalCross#228
+- ComboBox
+  - Fixed vertical alignment of text - TotalCross#192
+- ImageControl
+  - Removed duplicated field `effect`
+  - Fixed detection of press events
+- Toast
+  - Fixed Toast appearing relative to the `topMost` window, when it should always be relative to the MainWindow
+- MultiButton
+  - Fixed graphical bug - a transparent ComboBox arrow was being drawn on the background of the MultiButton (!)
+- PushButtonGroup
+  - Fixed drag event to allow "giving up" on a press event by dragging outside the button bounds after a press
+- MultiEdit
+  - Fixed text being hidden with Material style
+  - Fixed bug that made every even character to disappear when you typed and reappear when you typed the next one
+- AccordionContainer
+  - Fixed arrows not changing state when switching focus between multiple collapsible panes
+- CalculatorBox
+  - Fixed enconding error with plus-minus sign - TotalCross#206
+- Grid
+  - Fixed column width wrong resize when dragging edge to before column start - TotalCross#186
+- JSONFactory
+  - Fixed recursive creation of complex objects
+  - Improved JSON parser to map methods camel cased to underscored fields in the JSON object
 
 ### Changes
-- Whiteboard: No longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
-- Launcher: The Launcher (simulator) can no longer be used without an activation key
 - Updated version of the Bouncy Castle dependency
 - On Java, Settings.appPath is now initialized even if the Launcher isn't executed - TotalCross#165
-- ListBox: Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpfu
-- ComboBox: Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
+- Launcher
+  - The Launcher (simulator) can no longer be used without an activation key
+- Deploy
+  - Check paths from pkg file and throw more meaningful error message when a path is invalid
+  - Print Deploy exceptions on System.err instead of System.out and using the default stack trace output
+- Whiteboard
+  - No longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
+- ListBox
+  - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpfu
+- ComboBox
+  - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
+- Radio
+  - Added feature autosplit - TotalCross#180
 
 ### Added
-- Added static method `Image.getScaledJpeg` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
-
-> :construction: This is an incubating feature and subject to API changes
-
-- Added utility classes `SimpleImageInfo` and `ImageLoader` to help managing multiple scaled instances of the same image
-
-> :construction: This is an incubating feature and subject to API changes
-
-- Added class EscPosPrintStream which supports several ESC/POS printer commands
-- Java: Added classes ByteArrayOutputStream and UncheckedIOException
-- HttpStream: Added support for http methods PUT, PATCH and DELETE in class HttpStream - TotalCross#240
-- Radio: Added feature autosplit - TotalCross#180
-- Java: Added classes Charset and UnsupportedCharsetException, added also `String.getBytes(Charset)`
-
-> The existing CharacterConverter class and subclasses were changed to extend AbstractCharacterConverter, which extends Charset. The actual support to Java Charset is almost none, the main goal is to allow the usage `String.getBytes(Charset)` with the existing CharacterConverter and let users encode strings with different charsets without changing the charset used by the rest of the application through Convert.setDefaultConverter.
-
+- EscPosPrintStream - New API which supports several ESC/POS printer commands - refer to the class documentation and samples for more information
+- Notification and NotificatonManager - Allows the creation and presentation of local notifications to the user, currently implemented for Android, iOS and Java.
+- ImageLoader - New class to help managing image resources, especially jpeg images. Currently no caching is done by the class.
+- Image
+  - Added static methods `Image.getJpegScaled` and `Image.getJpegBestFit` to load jpeg files using fast IDCT scale, more about this [here](http://jpegclub.org/djpeg/)
+- Java
+  - Added classes ByteArrayOutputStream and UncheckedIOException 
+  - Added classes Charset and UnsupportedCharsetException, added also `String.getBytes(Charset)`
 - Added Cp437CharacterConverter, which supports encoding and decoding characters using the CP-437 charset (also known as IBM437, windows-437, among others). Especifically added to be used with EscPosPrintStream to properly support writing text to Leopardo A7.
-- Convert:
+- Convert
   - Added method `charsetForName(String name)`, which returns one of the registered charsets available
   - Added method `registerCharacterConverter(AbstractCharacterConverter characterConverter)`, which allows users to create and registers their own subclass of AbstractCharacterConverter to support custom encodings
   - Added several aliases to the existing ISO-8859-1 and UTF-8 CharacterConverter classes and changed `setDefaultConverter` to be case insensitive and support any of listed aliases.
+
+> The existing CharacterConverter class and subclasses were changed to extend AbstractCharacterConverter, which extends Charset. The actual support to Java Charset is almost none, the main goal is to allow the usage `String.getBytes(Charset)` with the existing CharacterConverter and let users encode strings with different charsets without changing the charset used by the rest of the application through Convert.setDefaultConverter.
 
 ## 4.1.4 - 2018-05-17
 
