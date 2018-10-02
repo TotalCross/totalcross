@@ -1,7 +1,7 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## 4.2.0
+## 4.2.0 - 2018-10-01
 
 ### Highlights
 - Android
@@ -17,9 +17,7 @@ All notable changes to this project will be documented in this file.
 
 - General
   - Improved some Color methods to produce better results by properly weighting the RGB components according to our perception of color brightness 
-  - Added support for local notifications on JDK, Android and iOS. Known bugs and limitations:
-    - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
-    - Notification crashing application on Android - TotalCross#255
+  - Added support for local notifications on JDK, Android and iOS.
   - EscPosPrintStream - New API to handle ESC/POS printer commands
   - Added support for fast IDCT scaling on jpeg images. Combined with the usage of the new utility classes to manage scaling jpeg images, this can greatly reduce the memory footprint of jpeg images and improve graphical performance.
 
@@ -71,7 +69,7 @@ All notable changes to this project will be documented in this file.
 - Whiteboard
   - No longer recreates the content image when repositioned - TotalCross#187, TotalCross#196
 - ListBox
-  - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpfu
+  - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
 - ComboBox
   - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
 - Radio
@@ -93,6 +91,19 @@ All notable changes to this project will be documented in this file.
   - Added several aliases to the existing ISO-8859-1 and UTF-8 CharacterConverter classes and changed `setDefaultConverter` to be case insensitive and support any of listed aliases.
 
 > The existing CharacterConverter class and subclasses were changed to extend AbstractCharacterConverter, which extends Charset. The actual support to Java Charset is almost none, the main goal is to allow the usage `String.getBytes(Charset)` with the existing CharacterConverter and let users encode strings with different charsets without changing the charset used by the rest of the application through Convert.setDefaultConverter.
+
+### Deprecated
+- ListBox
+  - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
+- ComboBox
+  - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
+
+### Known issues
+- Notification
+  - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
+  - Notification crashing application on Android - TotalCross#255
+- PushButtonGroup
+  - The fix for the drag event caused PushButtonGroup to be unclickable on Win32, affecting all dialogs - TotalCross#263
 
 ## 4.1.4 - 2018-05-17
 
