@@ -99,6 +99,9 @@ All notable changes to this project will be documented in this file.
   - Deprecated method `add(Object[] moreItems, int startAt, int size)` as it was redundant and more confusing than helpful
 
 ### Known issues
+- iOS
+  - Applications signed for enterprise distribution cannot run on iOS 12 - apparently it fails to validate the certification chain that validates the signed application. It's not clear yet if this was an intended change or a bug, but there's no word from Apple about it yet.
+  - Applications signed for distribution through the AppStore cannot be uploaded because of changes on the way image resources are handled starting from iOS 11. We are working on a definite fix for this, in the mean time feel free to contact us to manually package the application for the AppStore. 
 - Notification
   - Android lacks support for custom images for notifications, only the default TotalCross logo is supported
   - Notification crashing application on Android - TotalCross#255
