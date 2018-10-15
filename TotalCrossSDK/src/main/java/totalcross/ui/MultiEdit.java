@@ -22,6 +22,7 @@ import totalcross.sys.Settings;
 import totalcross.sys.SpecialKeys;
 import totalcross.sys.Vm;
 import totalcross.ui.dialog.KeyboardBox;
+import totalcross.ui.dialog.keyboard.VirtualKeyboard;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.Event;
@@ -446,9 +447,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Tim
     if (Settings.virtualKeyboard) {
       _onEvent(new Event(ControlEvent.FOCUS_IN, this, 0)); // simulate a focus in event.
     } else {
-      if (Edit.keyboard == null) {
-        Edit.keyboard = new KeyboardBox();
-      }
+      Edit.keyboard = VirtualKeyboard.getInstance(this);
       showInputWindow(Edit.keyboard);
     }
   }
