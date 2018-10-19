@@ -844,10 +844,8 @@ public class ListContainer extends ScrollContainer {
         child.setRect(KEEP, KEEP, FILL, KEEP, null, true);
         if (child.asContainer != null && child.asContainer.numChildren > 0) {
           Control[] children2 = ((Container) child).getChildren();
-          if (children2 != null) {
-            for (int j = children2.length; --j >= 0;) {
-              children2[j].reposition();
-            }
+          for (int j = children2.length; --j >= 0; ) {
+            children2[j].reposition();
           }
         }
       }

@@ -56,7 +56,7 @@ class Cell extends ScrollContainer implements SizeDelimiter {
     int minWidth = Math.max(parent.getWidth(), getMinWidth(this, 0));
     LayoutContext lc2 = new LayoutContext(minWidth, this);
     Control[] children = bag.getChildren();
-    if (children == null) {
+    if (children.length == 0) {
       resize(1, 1); // make sure size is never 0
       setBackColor(style.backColor);
     } else {
@@ -87,7 +87,7 @@ class Cell extends ScrollContainer implements SizeDelimiter {
 
     if (control instanceof Container) {
       Control[] children = ((Container) control).getChildren();
-      for (int i = children == null ? 0 : children.length; --i >= 0;) {
+      for (int i = children.length; --i >= 0;) {
         curWidth = getMinWidth(children[i], curWidth);
       }
     }
