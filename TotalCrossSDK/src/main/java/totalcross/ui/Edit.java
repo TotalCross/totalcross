@@ -26,6 +26,7 @@ import totalcross.ui.dialog.CalculatorBox;
 import totalcross.ui.dialog.CalendarBox;
 import totalcross.ui.dialog.KeyboardBox;
 import totalcross.ui.dialog.TimeBox;
+import totalcross.ui.dialog.keyboard.VirtualKeyboard;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 import totalcross.ui.event.KeyEvent;
@@ -198,7 +199,7 @@ public class Edit extends Control implements TextControl, TimerListener {
 
   protected String validChars; // guich
   /** The KeyboardBox used in all Edits. */
-  public static KeyboardBox keyboard; // guich
+  public static VirtualKeyboard keyboard; // guich
   /** The CalendarBox used in all Edits. */
   public static CalendarBox calendar; // guich
   /** The CalculatorBox used in all Edits. */
@@ -1235,11 +1236,10 @@ public class Edit extends Control implements TextControl, TimerListener {
         }
       }
     } else {
-      if (keyboard == null) {
-        keyboard = new KeyboardBox();
-      }
-      keyboard.tempTitle = keyboardTitle;
-      showInputWindow(keyboard);
+		keyboard = VirtualKeyboard.getInstance(this);
+		keyboard.setValidChars(validChars);
+		keyboard.tempTitle = keyboardTitle;
+		showInputWindow(keyboard);
     }
   }
 

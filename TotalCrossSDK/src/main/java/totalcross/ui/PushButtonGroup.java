@@ -126,8 +126,6 @@ public class PushButtonGroup extends Control {
    */
   public int[] colspan, rowspan;
   
-  private boolean cancelDrag;
-
   /** Create the button matrix.
        @param names captions of the buttons. You can specify some names as null so the button is not displayed. This is good if you're creating a button matrix and want to hide some buttons definetively (you can hide some buttons temporarily setting the hiden array). You can also use the <code>hidden</code> property to dynamically show/hide buttons.
        @param atLeastOne if true, at least one button must be selected
@@ -165,7 +163,6 @@ public class PushButtonGroup extends Control {
     colspan = new int[count];
     rowspan = new int[count];
     effect = UIEffects.get(this);
-    cancelDrag = false;
   }
 
   /** Create the button matrix, with insideGap = 4, selected = -1, atLeastOne = false, allSameWidth = true and type = BUTTON.
@@ -555,9 +552,13 @@ public class PushButtonGroup extends Control {
       if (actLikeButton && autoRepeat) {
         autoRepeatTimer = addTimer(INITIAL_DELAY);
       }
-      break;
     case PenEvent.PEN_DRAG:
-      cancelDrag = true;
+      if (!isEnabled() || (actLikeButton && Settings.fingerTouch)) {
+        break;
+      }
+      if (sel != selectedIndex && (!atLeastOne || sel != -1)) {
+        setSelectedIndex(selAtPenDown == sel ? sel : -1);
+      }      	
       break;
     case KeyEvent.KEY_PRESS:
     case KeyEvent.SPECIAL_KEY_PRESS:
@@ -605,19 +606,16 @@ public class PushButtonGroup extends Control {
         break;
       }
     case PenEvent.PEN_UP:
-    	if (!cancelDrag) {
-    		if (autoRepeat && autoRepeatTimer != null) {
-			  disableAutoRepeat();
-			}
-			if (isEnabled() && (!Settings.fingerTouch || !hadParentScrolled())) {
-			  if (actLikeButton && Settings.fingerTouch) {
-			    setSelectedIndex(sel);
-			    repaintNow();
-			  }
-			  setSelectedIndex(sel, Settings.fingerTouch);
-			}
-    	}
-    	cancelDrag = false;
+		if (autoRepeat && autoRepeatTimer != null) {
+		  disableAutoRepeat();
+		}
+		if (isEnabled() && (!Settings.fingerTouch || !hadParentScrolled())) {
+		  if (actLikeButton && Settings.fingerTouch) {
+		    setSelectedIndex(sel);
+		    repaintNow();
+		  }
+		  setSelectedIndex(sel, Settings.fingerTouch);
+		}
     	break;
     case KeyEvent.ACTION_KEY_PRESS:
       if (Settings.geographicalFocus) {
