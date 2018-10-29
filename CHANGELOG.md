@@ -1,6 +1,19 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.1 - 2018-10-19
+
+### Fixed
+- Notification
+  - Fixed notification crashing on Android - TotalCross#255
+  - Clicking on a notification will no longer start a new instance of the application if there's already one running on background
+- PushButtonGroup
+  - Fixed regression on PushButtonGroup that made them unclickable on Win32, affecting all dialogs - TotalCross#263
+
+### Changes
+- Added a new virtual keyboard that looks more closely to the Android native keyboard and is now the default for Edit and MultiEdit.
+- HttpStream: Added support for http methods PUT, PATCH and DELETE in class HttpStream - TotalCross#240
+
 ## 4.2.0 - 2018-10-01
 
 ### Highlights
