@@ -48,11 +48,6 @@ TC_API void tumC_nativeClick(NMParams p) // totalcross/ui/media/Camera native pr
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tumC_initCamera(NMParams p) // totalcross/ui/media/Camera native private void initCamera();
-{
-   UNUSED(p)
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tumC_nativeFinalize(NMParams p) // totalcross/ui/media/Camera native private void nativeFinalize();
 {
    UNUSED(p)
