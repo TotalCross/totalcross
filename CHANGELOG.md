@@ -1,6 +1,16 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.2 - 2018-10-29
+
+### Fixed
+- Camera
+  - Fixed CAMERA_CUSTOM not taking pictures when the device is held on vertical position, this affected a few models, most notably Samsung tablets - TotalCross#233
+
+### Changes
+- Container
+  - Method getChildren changed to return an empty array instead of null when the container has no children.
+
 ## 4.2.1 - 2018-10-19
 
 ### Fixed
