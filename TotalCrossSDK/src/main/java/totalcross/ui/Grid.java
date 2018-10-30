@@ -2238,10 +2238,16 @@ public class Grid extends Container implements Scrollable {
     }
     if (itemsCount > 1 && vItems != null) {
       int sortType, lin = 0;
+      boolean containsDouble = false;
       do {
-        sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(getItem(lin)[col])
-            : sortTypes[col]; // guich@565_1: support numeric sort
-      } while (sortType == Convert.SORT_STRING && ++lin < itemsCount);
+      	if(sortTypes[col] != Convert.SORT_AUTODETECT) {
+      		sortType = sortTypes[col];
+      		break;
+      	}
+        sortType =  Convert.detectSortType(getItem(lin)[col]);
+        if(sortType == Convert.SORT_DOUBLE) containsDouble = true;
+        if(containsDouble && sortType == Convert.SORT_INT) sortType = Convert.SORT_DOUBLE; 
+      } while (sortType != Convert.SORT_STRING && ++lin < itemsCount);
       try {
         // autodetect the sort type
         switch (sortType) {
