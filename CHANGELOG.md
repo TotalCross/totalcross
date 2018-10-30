@@ -1,7 +1,7 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## 4.2.2 - 2018-10-29
+## 4.2.2 - 2018-10-30
 
 ### Fixed
 - Camera
