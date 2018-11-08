@@ -1,6 +1,13 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.3 - 2018-11-07
+
+### Fixed
+- Fixed regression with the Android deploy that would produce an apk not acceptable by the Play Store
+- Radio
+  - Fixed autoSplit when the control width is set to PREFERRED
+
 ## 4.2.2 - 2018-10-30
 
 ### Fixed
