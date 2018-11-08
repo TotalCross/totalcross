@@ -233,10 +233,8 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished {
       for (int i = 0; i < items.length; i++) {
         if (items[i].asContainer != null) {
           Control[] c = items[i].asContainer.getChildren();
-          if (c != null) {
-            for (int j = c.length; --j >= 0;) {
-              c[j].reposition();
-            }
+          for (int j = c.length; --j >= 0; ) {
+            c[j].reposition();
           }
         }
       }

@@ -88,7 +88,6 @@ totalcross/ui/media/MediaClip|native public void reset();
 totalcross/ui/media/MediaClip|native private void nativeClose();
 totalcross/ui/media/MediaClip|native public void record(int samplesPerSecond, int bitsPerSample, boolean stereo);
 totalcross/ui/media/Camera|native private String nativeClick();
-totalcross/ui/media/Camera|native private void initCamera();
 totalcross/ui/media/Camera|native private void nativeFinalize();
 totalcross/ui/media/Camera|static native private String getNativeResolutions();
 totalcross/ui/image/Image|native private void imageLoad(String path);

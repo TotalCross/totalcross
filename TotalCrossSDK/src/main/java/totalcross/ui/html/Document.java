@@ -912,10 +912,8 @@ public class Document extends ScrollContainer {
 
     if (control instanceof Container && !(control instanceof StopLayout)) {
       Control[] children = ((Container) control).getChildren();
-      if (children != null) {
-        for (int i = children.length; --i >= 0;) {
-          layout(children[i], lc);
-        }
+      for (int i = children.length; --i >= 0; ) {
+        layout(children[i], lc);
       }
     }
   }
@@ -926,7 +924,7 @@ public class Document extends ScrollContainer {
 
     if (control instanceof Container) {
       Control[] children = ((Container) control).getChildren();
-      for (int i = children == null ? 0 : children.length; --i >= 0;) {
+      for (int i = children.length; --i >= 0;) {
         maxWidth = getMaxWidth(children[i], maxWidth);
       }
     }

@@ -276,6 +276,14 @@ public class CameraViewer extends Activity // guich@tc126_34
                   if (camera != null)
                   {
                      buttonClick.setClickable(false);
+                     Camera.Parameters parameters = camera.getParameters();
+                     parameters.setRotation(rotation);
+                     try {
+                    	 camera.setParameters(parameters);
+                    	 camera.reconnect();
+                     } catch (Exception re) {
+                    	 AndroidUtils.handleException(re, false);
+                     }
                      camera.takePicture(null, null, jpegCallback);
                   }
                   else
@@ -310,6 +318,8 @@ public class CameraViewer extends Activity // guich@tc126_34
       });
    }
    
+   int rotation = 0;
+   
   /** Adjusts camera rotation so the resulting image is always rotated correctly */
   private void enablePictureOrientationDetection() {
     OrientationEventListener mOrientationListener =
@@ -322,20 +332,10 @@ public class CameraViewer extends Activity // guich@tc126_34
             android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
             android.hardware.Camera.getCameraInfo(cameraId, info);
             orientation = (orientation + 45) / 90 * 90;
-            int rotation = 0;
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
               rotation = (info.orientation - orientation + 360) % 360;
             } else { // back-facing camera
               rotation = (info.orientation + orientation) % 360;
-            }
-            if (camera != null) {
-              Camera.Parameters parameters = camera.getParameters();
-              parameters.setRotation(rotation);
-              try {
-                camera.setParameters(parameters);
-              } catch (RuntimeException re) {
-                AndroidUtils.handleException(re, false);
-              }
             }
           }
         };

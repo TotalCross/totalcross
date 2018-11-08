@@ -156,6 +156,8 @@ public class Container extends Control {
 
   // a private id used in the ListContainer class
   int containerId;
+  
+  private static final Control[] NO_CHILDREN = new Control[0];
 
   /** Creates a container with the default colors.
    * Important note: this container has no default size.
@@ -579,10 +581,10 @@ public class Container extends Control {
     }
   }
 
-  /** Return an array of Controls that are added to this Container. If there are no Controls, returns null. */
+  /** Return an array of Controls that are added to this Container. */
   public Control[] getChildren() {
     if (numChildren == 0) {
-      return null;
+      return NO_CHILDREN;
     }
     Control[] ac = new Control[numChildren];
     Control child = this.tail;
@@ -985,14 +987,16 @@ public class Container extends Control {
     return borderStyle;
   }
 
-  /** Removes all controls inside this container.
+  /**
+   * Removes all controls inside this container.
+   *
    * @since TotalCross 1.0
    */
   public void removeAll() {
-    Control[] c = getChildren();
-    if (c != null) {
-      for (int i = 0; i < c.length; i++) {
-        remove(c[i]);
+    if (numChildren > 0) {
+      Control[] c = getChildren();
+      for (Control control : c) {
+        remove(control);
       }
     }
   }

@@ -448,7 +448,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     if (autoSplit && this.width > 0 && this.width != lastASW) { // only if PREFERRED was choosen in first setRect
       lastASW = this.width;
       int wh = fmH + Edit.prefH;
-      split(this.width - wh - 2);
+      split(this.width - wh);
       if (PREFERRED - RANGE <= setH && setH <= PREFERRED + RANGE) {
         setRect(KEEP, KEEP, KEEP, getPreferredHeight() + setH - PREFERRED);
       }

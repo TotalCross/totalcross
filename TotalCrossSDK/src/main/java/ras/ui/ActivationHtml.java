@@ -74,13 +74,11 @@ public class ActivationHtml extends Container {
     int minY = 100000;
     Control c = null;
     Control[] cc = doc.getBagChildren();
-    if (cc != null) {
-      for (int i = cc.length; --i >= 0;) {
-        if (cc[i] instanceof Edit) {
-          if (cc[i].getY() < minY) {
-            minY = cc[i].getY();
-            c = cc[i];
-          }
+    for (int i = cc.length; --i >= 0; ) {
+      if (cc[i] instanceof Edit) {
+        if (cc[i].getY() < minY) {
+          minY = cc[i].getY();
+          c = cc[i];
         }
       }
     }
