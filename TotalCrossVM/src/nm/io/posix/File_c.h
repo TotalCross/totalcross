@@ -93,14 +93,28 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
    }
    fref->handle = fopen(path, rwMode);
    if (!fref->handle)
-      return errno;
+      goto error;
 #if defined(darwin) // TODO@ app permissions
    else
    if (mode == CREATE || mode == CREATE_EMPTY)
       fchmod(fileno(fref->handle), S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
 
-   return NO_ERROR;
+    return NO_ERROR;
+error:
+#if defined(ANDROID)
+   if (errno == EACCES) {
+	   // ask for permission and get result
+	   JNIEnv* env = getJNIEnv();
+	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
+	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+	   if (result <= 0) {
+		   return EACCES;
+	   }
+	   return fileCreate(fref, path, mode, slot);
+   }
+#endif
+   return errno;
 }
 
 /*
