@@ -1729,51 +1729,102 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.enableSmsReceiver(enabled, port);
    }
    
-  public static int requestPermissions(int requestCode, String... permissions) {
-    List<String> missingPermissions = new ArrayList<>();
-    for (String permission : permissions) {
-      if (ContextCompat.checkSelfPermission(Launcher4A.loader, permission)
-          != PackageManager.PERMISSION_GRANTED) {
-        missingPermissions.add(permission);
-      }
-    }
-    if (missingPermissions.size() == 0) {
-      return GRANTED;
-    }
-    // request permissions
-    ActivityCompat.requestPermissions(
-        Launcher4A.loader,
-        missingPermissions.toArray(new String[missingPermissions.size()]),
-        requestCode);
-    return REQUESTING;
-  }
+    public static final PermissionHandler PHONE_STATE = new PermissionHandler(
+            Loader.PermissionRequestCodes.READ_PHONE_STATE,
+            Manifest.permission.READ_PHONE_STATE);
 
-  public static final int REQUESTING = 0;
-  public static final int GRANTED = 1;
-  public static final int DENIED = -1;
+    public static final PermissionHandler LOCATION = new PermissionHandler(
+            Loader.PermissionRequestCodes.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION);
 
-  public static int storagePermissionInitialized = DENIED;
-
-  public static int requestStoragePermission() {
-    if (storagePermissionInitialized == GRANTED) {
-      return GRANTED;
-    }
-    storagePermissionInitialized = REQUESTING;
-    if (requestPermissions(
+    public static final PermissionHandler STORAGE = new PermissionHandler(
             Loader.PermissionRequestCodes.EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        == GRANTED) {
-      storagePermissionInitialized = GRANTED;
-      return GRANTED;
-    }
-    while (storagePermissionInitialized == REQUESTING) {
-      try {
-        Thread.sleep(10);
-      } catch (Exception e) {
-      }
+            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+    public static final PermissionHandler CAMERA = new PermissionHandler(
+            Loader.PermissionRequestCodes.CAMERA,
+            Manifest.permission.CAMERA);
+
+    public static class PermissionHandler {
+
+        public static final int REQUESTING = 0;
+        public static final int GRANTED = 1;
+        public static final int DENIED = -1;
+
+        public int permissionInitialized = DENIED;
+
+        public final int requestCode;
+        public final String[] permissions;
+
+        public static final HashMap<Integer, PermissionHandler> permissionHandlerMap = new HashMap<>();
+
+        public PermissionHandler(int requestCode, String... permissions) {
+            this.requestCode = requestCode;
+            this.permissions = permissions;
+            permissionHandlerMap.put(requestCode, this);
+        }
+
+        public int requestPermissions(int requestCode, String... permissions) {
+            List<String> missingPermissions = new ArrayList<>();
+            for (String permission : permissions) {
+                if (ContextCompat
+                        .checkSelfPermission(Launcher4A.loader, permission) != PackageManager.PERMISSION_GRANTED) {
+                    missingPermissions.add(permission);
+                }
+            }
+            if (missingPermissions.size() == 0) {
+                return GRANTED;
+            }
+            // request permissions
+            ActivityCompat.requestPermissions(
+                    Launcher4A.loader,
+                    missingPermissions.toArray(new String[missingPermissions.size()]),
+                    requestCode);
+            return REQUESTING;
+        }
+
+        public int requestPermissions() {
+            if (permissionInitialized == GRANTED) {
+                return GRANTED;
+            }
+            permissionInitialized = REQUESTING;
+            if (requestPermissions(requestCode, permissions) == GRANTED) {
+                permissionInitialized = GRANTED;
+                return GRANTED;
+            }
+            while (permissionInitialized == REQUESTING) {
+                try {
+                    Thread.sleep(10);
+                } catch (Exception e) {
+                }
+            }
+            return permissionInitialized;
+        }
+
+        public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                this.permissionInitialized = Launcher4A.PermissionHandler.GRANTED;
+                // permission was granted, yay!
+            } else {
+                this.permissionInitialized = Launcher4A.PermissionHandler.DENIED;
+                // permission denied, boo!
+                // Disable the functionality that depends on this permission.
+            }
+        }
     }
 
-    return storagePermissionInitialized;
-  }
+    public static int requestStoragePermission() {
+        return STORAGE.requestPermissions();
+    }
+
+    public static int requestCameraPermission() {
+        return CAMERA.requestPermissions();
+    }
+
+    public static int requestPhoneStatePermission() {
+        return PHONE_STATE.requestPermissions();
+    }
 }

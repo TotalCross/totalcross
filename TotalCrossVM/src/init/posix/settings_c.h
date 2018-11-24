@@ -276,6 +276,12 @@ void updateDaylightSavings(Context currentContext)
 bool fillSettings(Context currentContext)
 {
    JNIEnv* env = getJNIEnv();
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestPhoneStatePermission", "()I");
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+   if (result <= 0) {
+       return false;
+   }
+   
    jclass jSettingsClass = androidFindClass(env, "totalcross/android/Settings4A");
    jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "()V");
    (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod);

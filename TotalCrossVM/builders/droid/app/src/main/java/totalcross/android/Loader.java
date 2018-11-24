@@ -375,62 +375,53 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
   private static final int FROM_GALLERY = 3;
   private static String[] cameraTypes = { "CUSTOM", "NATIVE", "NATIVE_NOCOPY", "GALLERY", "UNDEFINED" };
   private int cameraType;
-   private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType)
-   {
-      try
-      {
-      imageFN = s;
-      this.cameraType = cameraType;
-         String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
-         AndroidUtils.debug("Taking photo "+width+"x"+height+" from "+cameraTypes[0 <= cameraType && cameraType <= 3 ? cameraType : 4]);
-         if (cameraType == FROM_GALLERY)
-         {
-        Intent i = new Intent();
-        i.setType("image/*");
-        i.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(i, SELECT_PICTURE);
-         }
-         else
-         if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY)
-         {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
-        values.put(MediaStore.Images.Media.IS_PRIVATE, 1);
-        capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);
-        startActivityForResult(intent, EXTCAMERA_RETURN);
-         }
-         else
-         if ("SK GT-7340".equals(deviceId))
-         {
-        Uri outputFileUri = getFileUri4Intent(new File(s));
-        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
-        startActivityForResult(intent, CAMERA_PIC_REQUEST);
-         }
-         else
-         {
-        Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".CameraViewer"));
-        intent.putExtra("file", s);
-        intent.putExtra("quality", quality);
-        intent.putExtra("width", width);
-        intent.putExtra("height", height);
-        intent.putExtra("allowRotation", allowRotation);
-        startActivityForResult(intent, TAKE_PHOTO);
-        Launcher4A.instance.nativeInitSize(null, -998, 0);
-      }
-      AndroidUtils.debug("Launched photo");
-      }
-      catch (Throwable e)
-      {
-      AndroidUtils.handleException(e, false);
-      Launcher4A.pictureTaken(1);
-    }
-  }
 
-   private void dialNumber(String number)
+    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType) {
+        try {
+            imageFN = s;
+            this.cameraType = cameraType;
+            String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " "
+                    + Build.MODEL.replaceAll("\\P{ASCII}", " ");
+            AndroidUtils.debug(
+                    "Taking photo " + width + "x" + height + " from "
+                            + cameraTypes[0 <= cameraType && cameraType <= 3 ? cameraType : 4]);
+            if (cameraType == FROM_GALLERY) {
+                Intent i = new Intent();
+                i.setType("image/*");
+                i.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(i, SELECT_PICTURE);
+            } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
+                values.put(MediaStore.Images.Media.IS_PRIVATE, 1);
+                capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);
+                startActivityForResult(intent, EXTCAMERA_RETURN);
+            } else if ("SK GT-7340".equals(deviceId)) {
+                Uri outputFileUri = getFileUri4Intent(new File(s));
+                Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
+                startActivityForResult(intent, CAMERA_PIC_REQUEST);
+            } else {
+                Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".CameraViewer"));
+                intent.putExtra("file", s);
+                intent.putExtra("quality", quality);
+                intent.putExtra("width", width);
+                intent.putExtra("height", height);
+                intent.putExtra("allowRotation", allowRotation);
+                startActivityForResult(intent, TAKE_PHOTO);
+                Launcher4A.instance.nativeInitSize(null, -998, 0);
+            }
+            AndroidUtils.debug("Launched photo");
+        } catch (Throwable e) {
+            AndroidUtils.handleException(e, false);
+            Launcher4A.pictureTaken(1);
+        }
+    }
+
+    private void dialNumber(String number)
    {
 	try {
     startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number)));
@@ -1272,43 +1263,33 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
     return !Launcher4A.appPaused;
   }
   
-  public static interface PermissionRequestCodes {
-	  public static int READ_PHONE_STATE = 0;
-	  public static int ACCESS_FINE_LOCATION = 1;
-	  public static int EXTERNAL_STORAGE = 2;
-  }
-  
-  public void onRequestPermissionsResult (int requestCode, 
-          String[] permissions, 
-          int[] grantResults) {
-	  switch (requestCode) {
-	  case PermissionRequestCodes.READ_PHONE_STATE: {
-          // If request is cancelled, the result arrays are empty.
-          if (grantResults.length > 0
-              && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-        	  Settings4A.fillTelephonySettings();
-              // permission was granted, yay! Do the
-              // contacts-related task you need to do.
-          } else {
-        	  System.exit(3);
-              // permission denied, boo! Disable the
-              // functionality that depends on this permission.
-          }
-	  } break;
-      case PermissionRequestCodes.EXTERNAL_STORAGE:
-        {
-          // If request is cancelled, the result arrays are empty.
-          if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Launcher4A.storagePermissionInitialized = Launcher4A.GRANTED;
-            // permission was granted, yay!
-          } else {
-            Launcher4A.storagePermissionInitialized = Launcher4A.DENIED;
-            // permission denied, boo! Disable the
-            // functionality that depends on this permission.
-          }
-        }
-        break;
+    public static interface PermissionRequestCodes {
+        public static int READ_PHONE_STATE = 0;
+        public static int ACCESS_FINE_LOCATION = 1;
+        public static int EXTERNAL_STORAGE = 2;
+        public static int CAMERA = 3;
     }
-  }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Launcher4A.PermissionHandler permissionHandler = Launcher4A.PermissionHandler.permissionHandlerMap
+                .get(requestCode);
+        if (permissionHandler != null) {
+            permissionHandler.onRequestPermissionsResult(permissions, grantResults);
+        }
+
+        switch (requestCode) {
+        case PermissionRequestCodes.READ_PHONE_STATE:
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                Settings4A.fillTelephonySettings();
+                // permission was granted, yay!
+            } else {
+                System.exit(3);
+                // permission denied, boo!
+                // Disable the functionality that depends on this permission.
+            }
+            break;
+        }
+    }
 }
