@@ -361,7 +361,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
    private Uri getFileUri4Intent(File file) {
 	   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
       	 return FileProvider.getUriForFile(this,
- 		        /*BuildConfig.APPLICATION_ID +*/ "com.totalcross.fileprovider",
+ 		         "com.totalcross." + Launcher4A.instance.tczname + ".fileprovider",
  		        file);
 	   } else { 
 		   return Uri.fromFile(file);

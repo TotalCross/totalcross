@@ -76,6 +76,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static String appPath;
    private static android.text.ClipboardManager clip;
+   public final String tczname;
    
    public static Handler viewhandler = new Handler()
    {
@@ -135,6 +136,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public Launcher4A(Loader context, String tczname, String appPath, String cmdline, boolean isSingleAPK)
    {
       super(context);
+      this.tczname = tczname;
       // read all apk names, before loading the vm
       activityManager = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
       if (!isSingleAPK)
