@@ -1829,4 +1829,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
     public static int requestPhoneStatePermission() {
         return PHONE_STATE.requestPermissions();
     }
+    
+    public static int requestLocationPermission() {
+        return LOCATION.requestPermissions();
+    }
 }
