@@ -234,7 +234,6 @@ public class CameraViewer extends Activity // guich@tc126_34
    public void onCreate(Bundle savedInstanceState)
    {
       super.onCreate(savedInstanceState);
-      enablePictureOrientationDetection();
       setContentView(R.layout.main);
       setTitle("");
       Bundle b = getIntent().getExtras();
@@ -319,31 +318,6 @@ public class CameraViewer extends Activity // guich@tc126_34
    }
    
    int rotation = 0;
-   
-  /** Adjusts camera rotation so the resulting image is always rotated correctly */
-  private void enablePictureOrientationDetection() {
-    OrientationEventListener mOrientationListener =
-        new OrientationEventListener(getApplicationContext()) {
-          @Override
-          public void onOrientationChanged(int orientation) {
-            if (orientation == ORIENTATION_UNKNOWN) {
-              return;
-            }
-            android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-            android.hardware.Camera.getCameraInfo(cameraId, info);
-            orientation = (orientation + 45) / 90 * 90;
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-              rotation = (info.orientation - orientation + 360) % 360;
-            } else { // back-facing camera
-              rotation = (info.orientation + orientation) % 360;
-            }
-          }
-        };
-
-    if (mOrientationListener.canDetectOrientation()) {
-      mOrientationListener.enable();
-    }
-  }
 
    // Handles data for jpeg picture
    PictureCallback jpegCallback = new PictureCallback()
