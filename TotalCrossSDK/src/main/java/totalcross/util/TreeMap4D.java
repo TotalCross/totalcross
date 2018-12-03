@@ -57,6 +57,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.lang.Comparable;
 
 /**
  * This class provides a red-black tree implementation of the SortedMap
