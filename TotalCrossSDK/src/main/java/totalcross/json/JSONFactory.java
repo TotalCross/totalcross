@@ -114,12 +114,29 @@ public class JSONFactory {
         final String originalName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
         String name = null;
         // look for the field name in the json based on the method name
-        if (!jsonObject.isNull(originalName)) {
+        if (jsonObject.has(originalName)) {
           name = originalName;
-        } else if (jsonObject.isNull(name = originalName.toLowerCase())) {
-          // not found as-is or loweracased? try replacing camel case with underscore
-          final String underscoredName = originalName.replaceAll("(.)(\\p{Upper})", "$1_$2").toLowerCase();
-          if (!jsonObject.isNull(underscoredName)) {
+        } else if (!jsonObject.has(name = originalName.toLowerCase())) {
+          // not found as-is or lowercased? try replacing camel case with underscore
+            /*
+             * originally done using regex, but totalcross implementation has some bugs and
+             * until they are fixed this is done looping through the characters
+             * originalName.replaceAll("(.)(\\p{Upper})", "$1_$2").toLowerCase();
+             */
+          StringBuilder sb = new StringBuilder();
+          boolean lastWasUnderscored = false;
+          for(int i = 0 ; i < originalName.length() ; i++) {
+              char c = originalName.charAt(i);
+              if (!lastWasUnderscored && Character.isUpperCase(c)) {
+                  lastWasUnderscored = true;
+                  sb.append('_');
+              } else {
+                  lastWasUnderscored = false;
+              }
+              sb.append(Character.toLowerCase(c));
+          }
+          final String underscoredName = sb.toString();
+          if (jsonObject.has(underscoredName)) {
             name = underscoredName;
           }
         }
