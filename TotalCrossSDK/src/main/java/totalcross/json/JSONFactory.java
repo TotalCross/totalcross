@@ -1,6 +1,7 @@
 package totalcross.json;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ import java.util.List;
  */
 public class JSONFactory {
   public static <T> List<T> asList(String json, Class<T> classOfT) throws InstantiationException,
-      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException {
+      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
     List<T> list = new ArrayList<T>();
     try {
       JSONArray jsonArray = new JSONArray(json);
@@ -64,7 +65,7 @@ public class JSONFactory {
   }
 
   public static <T> T parse(String json, Class<T> classOfT) throws InstantiationException, IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException, JSONException {
+      IllegalArgumentException, InvocationTargetException, JSONException, NoSuchMethodException, SecurityException {
     if (classOfT.isArray()) {
       T array;
       try {
@@ -83,29 +84,52 @@ public class JSONFactory {
   }
 
   public static <T> T parse(JSONArray jsonArray, Class<T> classOfT) throws InstantiationException,
-      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException {
+  IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
+      return parse(null, jsonArray, classOfT);
+  }
+  
+  private static <T> T parse(Object outerObject, JSONArray jsonArray, Class<T> classOfT) throws InstantiationException,
+      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
     if (classOfT.isArray()) {
       T array;
       try {
         array = classOfT.cast(Array.newInstance(classOfT.getComponentType(), jsonArray.length()));
         for (int i = jsonArray.length() - 1; i >= 0; i--) {
-          Array.set(array, i, parse(jsonArray.getJSONObject(i), classOfT.getComponentType()));
+          Array.set(array, i, parse(outerObject, jsonArray.getJSONObject(i), classOfT.getComponentType()));
         }
       } catch (JSONException e) {
         array = classOfT.cast(Array.newInstance(classOfT.getComponentType(), 1));
-        Array.set(array, 0, parse(jsonArray, classOfT.getComponentType()));
+        Array.set(array, 0, parse(outerObject, jsonArray, classOfT.getComponentType()));
       }
       return array;
     }
-    return parse(jsonArray, classOfT);
+    return parse(outerObject, jsonArray, classOfT);
+  }
+  
+  public static <T> T parse(JSONObject jsonObject, Class<T> classOfT) throws InstantiationException,
+  IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, NoSuchMethodException, SecurityException {
+      return parse(null, jsonObject, classOfT);
   }
 
-  public static <T> T parse(JSONObject jsonObject, Class<T> classOfT) throws InstantiationException,
-      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException {
+  private static <T> T parse(Object outerObject, JSONObject jsonObject, Class<T> classOfT) throws InstantiationException,
+      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, NoSuchMethodException, SecurityException {
     if (classOfT.isArray()) {
       throw new IllegalArgumentException();
     }
-    T object = classOfT.newInstance();
+    T object = null;
+    try {
+        object = classOfT.newInstance();
+    } catch (InstantiationException e) {
+        if (outerObject != null && classOfT.getName().indexOf(outerObject.getClass().getName()) != -1) {
+            Constructor<T> constructorOfT = classOfT.getDeclaredConstructor(outerObject.getClass());
+            if (constructorOfT != null) {
+                object = constructorOfT.newInstance(outerObject);
+            }
+        }
+        if (object == null) {
+            throw e;
+        }
+    }
     Method[] methods = classOfT.getMethods();
     for (Method method : methods) {
       String methodName = method.getName();
@@ -162,8 +186,10 @@ public class JSONFactory {
             method.invoke(object, jsonObject.getLong(name));
           } else if (parameterType.isAssignableFrom(Boolean.class)) {
             method.invoke(object, jsonObject.getBoolean(name));
+          } else if (parameterType.isArray()) {
+            method.invoke(object, parse(object, jsonObject.getJSONArray(name), parameterType));
           } else {
-            method.invoke(object, parse(jsonObject.getJSONObject(name), parameterType));
+            method.invoke(object, parse(object, jsonObject.getJSONObject(name), parameterType));
           }
         }
       }
