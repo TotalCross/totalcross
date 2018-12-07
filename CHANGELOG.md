@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.5 - 2018-11-29
+
+### Fixed
+- Fixed location permission request
+
+### Changes
+- Camera: Removed picture rotation detection on Android - it was source of intermittent bugs on some Samsung and Motorola devices
+
 ## 4.2.4 - 2018-11-26
 
 ### Fixed
