@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.7 - 2018-12-06
+
+### Fixed
+- Camera: Added request for external storage permission - TotalCross#304
+- JSONFactory
+  - Fixed processing of arrays in complex objects and added support for non-static inner classes - TotalCross#326
+  - Fixes bug on json parsing caused by usage of a regex expression
+
 ## 4.2.6 - 2018-12-03
 
 ### Fixed
