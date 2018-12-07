@@ -28,17 +28,20 @@ void JNICALL Java_totalcross_Launcher4A_pictureTaken(JNIEnv *env, jclass _class,
 static TCObject Camera_getNativeResolutions(Context currentContext)
 {
    JNIEnv *env = getJNIEnv();
-   jstring src = (*env)->CallStaticObjectMethod(env, applicationClass, jgetNativeResolutions); 
    TCObject ret = null;
-   if (src != null)              
-   {
-      const char *str = (*env)->GetStringUTFChars(env, src, 0);
-      if (str) 
-      {
-         ret = createStringObjectFromCharP(currentContext,(CharP)str,-1);
-         (*env)->ReleaseStringUTFChars(env, src, str);
-      }
-      (*env)->DeleteLocalRef(env, src); // guich@tc125_1
+   
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+   if (result > 0) {
+       jstring src = (*env)->CallStaticObjectMethod(env, applicationClass, jgetNativeResolutions); 
+       if (src != null) {
+          const char *str = (*env)->GetStringUTFChars(env, src, 0);
+          if (str) {
+             ret = createStringObjectFromCharP(currentContext,(CharP)str,-1);
+             (*env)->ReleaseStringUTFChars(env, src, str);
+          }
+          (*env)->DeleteLocalRef(env, src); // guich@tc125_1
+       }
    }
    return ret;
 }
@@ -56,6 +59,13 @@ static void cameraClick(NMParams p)
    bool isPhoto = Camera_captureMode(obj) == 0;
    if (env)                      
    {
+	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
+	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+	   if (result <= 0) {
+		   p->retO = null;
+		   return;
+	   }
+	   
       char fileName[MAX_PATHNAME];
       JChar jfn[MAX_PATHNAME];
       jstring s;

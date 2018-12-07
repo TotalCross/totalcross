@@ -28,19 +28,22 @@ TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native 
    Err err;
 
 #ifdef ANDROID   
-   if ((err = nativeStartGPS(p->obj[0])) > 0)
+   if ((err = nativeStartGPS(p->obj[0])) != NO_ERROR)
 #else
-   if ((err = nativeStartGPS()) > 0)
+   if ((err = nativeStartGPS()) != NO_ERROR)
 #endif
    {
-      if (err == 2)
+      if (err == 2) {
          throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
-      else
+      }
 #ifdef ANDROID
-      throwException(p->currentContext, IOException, err == 1 ? "No environment" : "Unknown error");
-#else         
-      throwExceptionWithCode(p->currentContext, IOException, err);
-#endif      
+      else if (err == 1) {
+         throwException(p->currentContext, IOException, "No environment");
+      }
+#endif
+      else {
+         throwExceptionWithCode(p->currentContext, IOException, err);
+      }
    }
    p->retI = (err == NO_ERROR);
 #elif defined (WP8)

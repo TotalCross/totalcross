@@ -30,17 +30,22 @@ TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scan
    JNIEnv* env = getJNIEnv();         
    TCObject mode = p->obj[0];
    TCObject o = null;
-   jstring jmode = mode == null ? null : (*env)->NewString(env, (jchar*) String_charsStart(mode), String_charsLen(mode));
-   jstring result = (*env)->CallStaticObjectMethod(env, applicationClass, jzxing, jmode);
-   (*env)->DeleteLocalRef(env, jmode);
-   if (result != null)
-   {
-      const jchar *str = (*env)->GetStringChars(env, result, 0);
-      if (str)
-         o = createStringObjectFromJCharP(p->currentContext, (JCharP)str, (*env)->GetStringLength(env, result));
-      (*env)->ReleaseStringChars(env, result, str);
+   
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+   if (result > 0) {
+       jstring jmode = mode == null ? null : (*env)->NewString(env, (jchar*) String_charsStart(mode), String_charsLen(mode));
+       jstring result = (*env)->CallStaticObjectMethod(env, applicationClass, jzxing, jmode);
+       (*env)->DeleteLocalRef(env, jmode);
+       if (result != null)
+       {
+          const jchar *str = (*env)->GetStringChars(env, result, 0);
+          if (str)
+             o = createStringObjectFromJCharP(p->currentContext, (JCharP)str, (*env)->GetStringLength(env, result));
+          (*env)->ReleaseStringChars(env, result, str);
+       }
+       (*env)->DeleteLocalRef(env, result); // guich@tc125_1
    }
-   (*env)->DeleteLocalRef(env, result); // guich@tc125_1
    p->retO = o;
 #elif defined darwin
     TCObject mode = p->obj[0];

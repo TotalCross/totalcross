@@ -21,6 +21,13 @@ static Err nativeStartGPS(TCObject gpsObject)
    jstring jgpsData;
    if (!env)
       return 1;
+   
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestLocationPermission", "()I");
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+   if (result <= 0) {
+       return EACCES;
+   }
+   
    jgpsData = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_START, GPS_precision(gpsObject)); // guich@tc125_1
    if (jgpsData != null) (*env)->DeleteLocalRef(env, jgpsData);
    return jgpsData == null ? 2 : NO_ERROR;

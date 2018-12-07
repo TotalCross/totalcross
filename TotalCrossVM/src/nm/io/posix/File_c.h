@@ -93,14 +93,28 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
    }
    fref->handle = fopen(path, rwMode);
    if (!fref->handle)
-      return errno;
+      goto error;
 #if defined(darwin) // TODO@ app permissions
    else
    if (mode == CREATE || mode == CREATE_EMPTY)
       fchmod(fileno(fref->handle), S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
 
-   return NO_ERROR;
+    return NO_ERROR;
+error:
+#if defined(ANDROID)
+   if (errno == EACCES) {
+	   // ask for permission and get result
+	   JNIEnv* env = getJNIEnv();
+	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
+	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+	   if (result <= 0) {
+		   return EACCES;
+	   }
+	   return fileCreate(fref, path, mode, slot);
+   }
+#endif
+   return errno;
 }
 
 /*
@@ -217,12 +231,12 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
    struct stat statData;
 
    if (stat(path, &statData))
-      return errno;
+      goto error;
 
    if (S_ISDIR(statData.st_mode))
    {
       if (rmdir(path))
-         return errno;
+          goto error;
       return NO_ERROR;
    }
 
@@ -230,9 +244,23 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
       fclose(fref->handle);
 
    if (unlink(path))
-      return errno;
+       goto error;
 
    return NO_ERROR;
+error:
+#if defined(ANDROID)
+   if (errno == EACCES) {
+       // ask for permission and get result
+       JNIEnv* env = getJNIEnv();
+       jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
+       jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+       if (result <= 0) {
+           return EACCES;
+       }
+       return fileDelete(fref, path, slot, isOpen);
+   }
+#endif
+   return errno;
 }
 
 /*
@@ -316,13 +344,28 @@ static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 #if defined(HAVE_STATFS)
       struct statfs sfs;
       if (statfs(szPath, &sfs))
-         return errno;
+         goto error;
       fbytes = (int64)sfs.f_blocks * sfs.f_bsize;
 #endif
 
       *size = (fbytes > I64_CONST(0x7FFFFFFF)) ? 0x7FFFFFFF : (int32) fbytes;
    }
    return NO_ERROR;
+
+error:
+#if defined(ANDROID)
+   if (errno == EACCES) {
+       // ask for permission and get result
+       JNIEnv* env = getJNIEnv();
+       jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
+       jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+       if (result <= 0) {
+           return EACCES;
+       }
+       return fileGetSize(fref, szPath, size);
+   }
+#endif
+   return errno;
 }
 
 /*

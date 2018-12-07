@@ -275,106 +275,84 @@ public final class Settings4A
             return c[i];
       return ' ';
    }
-   
-   public static void fillTelephonySettings() {
-	   if (ContextCompat.checkSelfPermission(Launcher4A.loader,
-			   Manifest.permission.READ_PHONE_STATE)
-       != PackageManager.PERMISSION_GRANTED) {
-		   // request permissions
-	        ActivityCompat.requestPermissions(Launcher4A.loader,
-	                new String[]{Manifest.permission.READ_PHONE_STATE},
-	                Loader.PermissionRequestCodes.READ_PHONE_STATE);
-	   } else {
-		   String id1,id2;
-	      // imei
-	      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.loader.getSystemService(Context.TELEPHONY_SERVICE);
-	      try {   
-	      lineNumber = telephonyMgr.getLine1Number();
-		  } catch (SecurityException e) {
-		  	e.printStackTrace();
-		  }
-	      // handle dual-sim phones. Usually, they overload the method with a
-	      Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
-	      Method[] mtds = cc.getDeclaredMethods();
-	      int toFind = 2;
-	      for (int i = mtds.length; --i >= 0;)
-	      {
-	         Method m = mtds[i];
-	         String signat = m.toString();
-	         String name = m.getName();
-	         if (name.startsWith("getDeviceId") && signat.endsWith("(int)"))
-	         {
-	            try
-	            {
-	               id1 = (String)m.invoke(telephonyMgr, new Integer(0));
-	               id2 = (String)m.invoke(telephonyMgr, new Integer(0));
-	               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
-	                  imei = id1;
-	               // dual-sim support
-	               id1 = (String)m.invoke(telephonyMgr, new Integer(1));
-	               id2 = (String)m.invoke(telephonyMgr, new Integer(1));
-	               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
-	                  imei2 = id1;
 
-	               if (--toFind == 0) break;
-	            }
-	            catch (Exception ee)
-	            {
-	               AndroidUtils.handleException(ee,false);
-	            }
-	         }
-	         else
-	         if (name.startsWith("getSimSerialNumber") && signat.endsWith("(int)"))
-	         {
-	            try
-	            {
-	               id1 = (String)m.invoke(telephonyMgr, new Integer(0));
-	               id2 = (String)m.invoke(telephonyMgr, new Integer(0));
-	               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
-	                  iccid = id1;
-	               if (--toFind == 0) break;
-	            }
-	            catch (Exception ee)
-	            {
-	               AndroidUtils.handleException(ee,false);
-	            }
-	         }
-	      }
-	         
-	      if (imei == null)
-	      {
-	    	 try {
-	         id1 = telephonyMgr.getDeviceId(); // try to get the imei
-	         id2 = telephonyMgr.getDeviceId();
-	         if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
-	            imei = id1;
-	         } catch (SecurityException e) {
-	        	e.printStackTrace();
-	         }
-	      }
+    public static void fillTelephonySettings() {
+        String id1, id2;
+        // imei
+        TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.loader
+                .getSystemService(Context.TELEPHONY_SERVICE);
+        try {
+            lineNumber = telephonyMgr.getLine1Number();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+        // handle dual-sim phones. Usually, they overload the method with a
+        Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
+        Method[] mtds = cc.getDeclaredMethods();
+        int toFind = 2;
+        for (int i = mtds.length; --i >= 0;) {
+            Method m = mtds[i];
+            String signat = m.toString();
+            String name = m.getName();
+            if (name.startsWith("getDeviceId") && signat.endsWith("(int)")) {
+                try {
+                    id1 = (String) m.invoke(telephonyMgr, new Integer(0));
+                    id2 = (String) m.invoke(telephonyMgr, new Integer(0));
+                    if (id1 != null && id1.equals(id2)) {
+                        imei = id1; // some devices return a dumb imei each time getDeviceId is called
+                    }
+                    // dual-sim support
+                    id1 = (String) m.invoke(telephonyMgr, new Integer(1));
+                    id2 = (String) m.invoke(telephonyMgr, new Integer(1));
+                    if (id1 != null && id1.equals(id2)) {
+                        imei2 = id1; // some devices return a dumb imei each time getDeviceId is called
+                    }
+                    if (--toFind == 0) {
+                        break;
+                    }
+                } catch (Exception ee) {
+                    AndroidUtils.handleException(ee, false);
+                }
+            } else if (name.startsWith("getSimSerialNumber") && signat.endsWith("(int)")) {
+                try {
+                    id1 = (String) m.invoke(telephonyMgr, new Integer(0));
+                    id2 = (String) m.invoke(telephonyMgr, new Integer(0));
+                    if (id1 != null && id1.equals(id2)) {
+                        iccid = id1; // some devices return a dumb imei each time getDeviceId is called
+                    }
+                    if (--toFind == 0) {
+                        break;
+                    }
+                } catch (Exception ee) {
+                    AndroidUtils.handleException(ee, false);
+                }
+            }
+        }
 
-	      // iccid
-	      if (iccid == null)
-	      {
-	    	try {
-	         id1 = telephonyMgr.getSimSerialNumber();
-	         id2 = telephonyMgr.getSimSerialNumber();
-	         if (id1 != null && id1.equals(id2))
-	            iccid = id1;
-	        } catch (SecurityException e) {
-	        	e.printStackTrace();
-	        }
-	      }
-	      telephonyInitialized = true;
-	      
-		   if (ContextCompat.checkSelfPermission(Launcher4A.loader,
-				   Manifest.permission.ACCESS_FINE_LOCATION)
-	       != PackageManager.PERMISSION_GRANTED) {
-			   // request permissions
-		        ActivityCompat.requestPermissions(Launcher4A.loader,
-		                new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-		                Loader.PermissionRequestCodes.ACCESS_FINE_LOCATION);
-		   }
-	   }
-   }
+        if (imei == null) {
+            try {
+                id1 = telephonyMgr.getDeviceId(); // try to get the imei
+                id2 = telephonyMgr.getDeviceId();
+                if (id1 != null && id1.equals(id2)) {
+                    imei = id1; // some devices return a dumb imei each time getDeviceId is called
+                }
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // iccid
+        if (iccid == null) {
+            try {
+                id1 = telephonyMgr.getSimSerialNumber();
+                id2 = telephonyMgr.getSimSerialNumber();
+                if (id1 != null && id1.equals(id2)) {
+                    iccid = id1;
+                }
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
+        }
+        telephonyInitialized = true;
+    }
 }
