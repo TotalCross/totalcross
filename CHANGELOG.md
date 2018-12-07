@@ -1,6 +1,15 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.6 - 2018-12-03
+
+### Fixed
+- Vm.exec: Added permission REQUEST_INSTALL_PACKAGES to allow the application to install an apk on Android 8+
+- TreeMap: Fixed import of java.lang.Comparable
+
+### Changes
+- Scanner: Added camera permission request on Android (ZXing/Scandit)
+
 ## 4.2.5 - 2018-11-29
 
 ### Fixed
