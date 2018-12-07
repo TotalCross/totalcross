@@ -1,6 +1,17 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.4 - 2018-11-26
+
+### Fixed
+- Fixed permission requests for File constructor, delete and getSize on Android 6+ - TotalCross#317
+- Fixed permission request for Camera on Android 6+
+- Fixed Vm.exec on Android: intents were not being able to pass external files to other applications - TotalCross#69, TotalCross#320, TotalCross#232
+fixes 
+
+### Changes
+- GPS permission is no longer requested when the application is launched, instead the permission is automatically requested when required by the application
+
 ## 4.2.3 - 2018-11-07
 
 ### Fixed
