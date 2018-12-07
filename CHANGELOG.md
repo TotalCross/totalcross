@@ -1,6 +1,49 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.2.7 - 2018-12-06
+
+### Fixed
+- Camera: Added request for external storage permission - TotalCross#304
+- JSONFactory
+  - Fixed processing of arrays in complex objects and added support for non-static inner classes - TotalCross#326
+  - Fixes bug on json parsing caused by usage of a regex expression
+
+## 4.2.6 - 2018-12-03
+
+### Fixed
+- Vm.exec: Added permission REQUEST_INSTALL_PACKAGES to allow the application to install an apk on Android 8+
+- TreeMap: Fixed import of java.lang.Comparable
+
+### Changes
+- Scanner: Added camera permission request on Android (ZXing/Scandit)
+
+## 4.2.5 - 2018-11-29
+
+### Fixed
+- Fixed location permission request
+
+### Changes
+- Camera: Removed picture rotation detection on Android - it was source of intermittent bugs on some Samsung and Motorola devices
+
+## 4.2.4 - 2018-11-26
+
+### Fixed
+- Fixed permission requests for File constructor, delete and getSize on Android 6+ - TotalCross#317
+- Fixed permission request for Camera on Android 6+
+- Fixed Vm.exec on Android: intents were not being able to pass external files to other applications - TotalCross#69, TotalCross#320, TotalCross#232
+fixes 
+
+### Changes
+- GPS permission is no longer requested when the application is launched, instead the permission is automatically requested when required by the application
+
+## 4.2.3 - 2018-11-07
+
+### Fixed
+- Fixed regression with the Android deploy that would produce an apk not acceptable by the Play Store
+- Radio
+  - Fixed autoSplit when the control width is set to PREFERRED
+
 ## 4.2.2 - 2018-10-30
 
 ### Fixed
