@@ -44,8 +44,10 @@
 	</array>
 	<key>UIRequiresFullScreen</key>
 	<true/>
-	<key>UIFileSharingEnabled</key>
-	<true/>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>UILaunchStoryboardName</key>
+    <string>Default</string>
 	<key>UIStatusBarHidden</key>
 	<false/>
 	<key>UIStatusBarStyle</key>

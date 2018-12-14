@@ -16,6 +16,7 @@
 		0F5AF51B1507FA3600D6142B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F5AF51A1507FA3600D6142B /* ViewController.m */; };
 		0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */; };
 		0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318C21513DE2F001EE647 /* CFNetwork.framework */; };
+		0FC6D3EE21C3E1D900D898AB /* Default-812h@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0FC6D3EB21C3E1D900D898AB /* Default-812h@3x.png */; };
 		37D71CAD1F6097BD0040D2A4 /* PushKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37D71CAC1F6097BD0040D2A4 /* PushKit.framework */; };
 		3A0CE75615A493CC00E24110 /* NSString+MD5Addition.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */; };
 		3A0CE75715A493CC00E24110 /* UIDevice+IdentifierAddition.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */; };
@@ -77,6 +78,7 @@
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
+		0FC6D3EB21C3E1D900D898AB /* Default-812h@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-812h@3x.png"; sourceTree = "<group>"; };
 		37D71CAC1F6097BD0040D2A4 /* PushKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PushKit.framework; path = System/Library/Frameworks/PushKit.framework; sourceTree = SDKROOT; };
 		3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+MD5Addition.m"; path = "../../../src/init/darwin/NSString+MD5Addition.m"; sourceTree = "<group>"; };
 		3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIDevice+IdentifierAddition.m"; path = "../../../src/init/darwin/UIDevice+IdentifierAddition.m"; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
+				0FC6D3EB21C3E1D900D898AB /* Default-812h@3x.png */,
 				3A7CDBBE1A0D4F500006A94A /* Default-568h@2x.png */,
 				0F5AF50D1507FA3600D6142B /* TotalCross */,
 				0F5AF5061507FA3600D6142B /* Frameworks */,
@@ -331,6 +334,7 @@
 			files = (
 				0F5AF5121507FA3600D6142B /* InfoPlist.strings in Resources */,
 				3A7CDBBF1A0D4F500006A94A /* Default-568h@2x.png in Resources */,
+				0FC6D3EE21C3E1D900D898AB /* Default-812h@3x.png in Resources */,
 				3AC055B71F9418EB0023D206 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
