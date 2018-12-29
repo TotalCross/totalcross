@@ -205,9 +205,12 @@ AXTLS_FILES =                          \
 	$(sourcedir)/axtls/x509.c           \
 	$(sourcedir)/axtls/tls1.c           \
 	$(sourcedir)/axtls/tls1_svr.c       \
-	$(sourcedir)/axtls/tls1_clnt.c
+	$(sourcedir)/axtls/tls1_clnt.c      \
+	$(sourcedir)/openbsd/libutil/pkcs5_pbkdf2.c
 
 libaxtls_la_SOURCES = ${AXTLS_FILES}
+
+libaxtls_la_CFLAGS = ${AM_CFLAGS} -I${sourcedir}/axtls 
 
 libnmnet_la_CFLAGS = ${AM_CFLAGS} -I${sourcedir}/axtls -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
 

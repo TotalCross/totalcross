@@ -393,6 +393,7 @@
 		0F8C8E371549CFC700E0967F /* zutil.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8C591549CFC700E0967F /* zutil.h */; };
 		0FAA49A71549D7B30039F4BF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FAA49A61549D7B30039F4BF /* UIKit.framework */; };
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
+		0FD86D6C21D6F35400701A33 /* pkcs5_pbkdf2.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FD86D6B21D6F35400701A33 /* pkcs5_pbkdf2.c */; };
 		15A29ADA189C4D3C007C420B /* NativeDB.c in Sources */ = {isa = PBXBuildFile; fileRef = 15A29AD9189C4D3C007C420B /* NativeDB.c */; };
 		15E4ED11189C35510012D8ED /* Reflection.c in Sources */ = {isa = PBXBuildFile; fileRef = 15E4ED10189C35510012D8ED /* Reflection.c */; };
 		37430B751EEECEEB008D89DF /* firebase.c in Sources */ = {isa = PBXBuildFile; fileRef = 37430B731EEECEEB008D89DF /* firebase.c */; };
@@ -829,6 +830,7 @@
 		0F8C8C591549CFC700E0967F /* zutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zutil.h; sourceTree = "<group>"; };
 		0FAA49A61549D7B30039F4BF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
+		0FD86D6B21D6F35400701A33 /* pkcs5_pbkdf2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pkcs5_pbkdf2.c; sourceTree = "<group>"; };
 		15A29AD9189C4D3C007C420B /* NativeDB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = NativeDB.c; path = db/NativeDB.c; sourceTree = "<group>"; };
 		15E4ED10189C35510012D8ED /* Reflection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Reflection.c; sourceTree = "<group>"; };
 		37430B731EEECEEB008D89DF /* firebase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = firebase.c; path = firebase/firebase.c; sourceTree = "<group>"; };
@@ -920,9 +922,26 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		0F5495EB21D6F21400692ABB /* openbsd */ = {
+			isa = PBXGroup;
+			children = (
+				0F5495EC21D6F21F00692ABB /* libutil */,
+			);
+			path = openbsd;
+			sourceTree = "<group>";
+		};
+		0F5495EC21D6F21F00692ABB /* libutil */ = {
+			isa = PBXGroup;
+			children = (
+				0FD86D6B21D6F35400701A33 /* pkcs5_pbkdf2.c */,
+			);
+			path = libutil;
+			sourceTree = "<group>";
+		};
 		0F8C89FA1549CFC700E0967F /* src */ = {
 			isa = PBXGroup;
 			children = (
+				0F5495EB21D6F21400692ABB /* openbsd */,
 				CEFA5146181EF15300B1B00A /* sqlite */,
 				0F8C89FB1549CFC700E0967F /* axtls */,
 				0F8C8A181549CFC700E0967F /* event */,
@@ -2307,6 +2326,7 @@
 				0F8C8CD51549CFC700E0967F /* rdbmp.c in Sources */,
 				0F8C8CDF1549CFC700E0967F /* libtcvm.m in Sources */,
 				0F8C8CE11549CFC700E0967F /* ioapi.c in Sources */,
+				0FD86D6C21D6F35400701A33 /* pkcs5_pbkdf2.c in Sources */,
 				0F8C8CE31549CFC700E0967F /* unzip.c in Sources */,
 				3ABDFBD71EEECB2D008C0A79 /* image_Image_c.m in Sources */,
 				0F8C8CE51549CFC700E0967F /* zip.c in Sources */,

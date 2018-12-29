@@ -458,6 +458,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("txXT_tokenizeBytes_B"), &txXT_tokenizeBytes_B);
    htPutPtr(&htNativeProcAddresses, hashCode("txXT_endTokenize_B"), &txXT_endTokenize_B);
    htPutPtr(&htNativeProcAddresses, hashCode("txXT_nativeCreate"), &txXT_nativeCreate);
+   htPutPtr(&htNativeProcAddresses, hashCode("tcpPBKDF2WHSHA1F_generateSecretI"), &tcpPBKDF2WHSHA1F_generateSecretI);
    htPutPtr(&htNativeProcAddresses, hashCode("tcdMD5D_init"), &tcdMD5D_init);
    htPutPtr(&htNativeProcAddresses, hashCode("tcdMD5D_process_B"), &tcdMD5D_process_B);
    htPutPtr(&htNativeProcAddresses, hashCode("tcdSHA1D_init"), &tcdSHA1D_init);

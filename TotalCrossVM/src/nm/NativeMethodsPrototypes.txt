@@ -454,6 +454,7 @@ TC_API void txXT_setCdataContents_Bii(NMParams p);
 TC_API void txXT_tokenizeBytes_B(NMParams p);
 TC_API void txXT_endTokenize_B(NMParams p);
 TC_API void txXT_nativeCreate(NMParams p);
+TC_API void tcpPBKDF2WHSHA1F_generateSecretI(NMParams p);
 TC_API void tcdMD5D_init(NMParams p);
 TC_API void tcdMD5D_process_B(NMParams p);
 TC_API void tcdSHA1D_init(NMParams p);
@@ -2371,6 +2372,10 @@ TC_API void txXT_endTokenize_B(NMParams p) // totalcross/xml/XmlTokenizer native
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void txXT_nativeCreate(NMParams p) // totalcross/xml/XmlTokenizer native private void nativeCreate();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tcpPBKDF2WHSHA1F_generateSecretI(NMParams p) // totalcross/crypto/provider/PBKDF2WithHmacSHA1Factory native private byte[] generateSecretImpl(char []password, byte []salt, int iterations, int keyLength);
 {
 }
 //////////////////////////////////////////////////////////////////////////

@@ -155,7 +155,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\core\wince;..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;ENABLE_TEST_SUITE;_MSC_VER=1200"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -365,7 +365,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
+				AdditionalIncludeDirectories="..\..\src\core\wince;..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;DISABLE_RAS;_MSC_VER=1200;_WINDOWS_"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -577,7 +577,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
+				AdditionalIncludeDirectories="..\..\src\core\wince;..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL;DISABLE_RAS;_MSC_VER=1200"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -2860,6 +2860,26 @@
 			>
 			<File
 				RelativePath="..\..\src\sqlite\sqlite3.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="openbsd"
+			>
+			<Filter
+				Name="libutil"
+				>
+				<File
+					RelativePath="..\..\src\openbsd\libutil\pkcs5_pbkdf2.c"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="core"
+			>
+			<File
+				RelativePath="..\..\src\core\wince\stdint.h"
 				>
 			</File>
 		</Filter>
