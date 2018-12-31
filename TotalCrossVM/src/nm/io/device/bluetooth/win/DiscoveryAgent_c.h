@@ -450,19 +450,25 @@ Err nativeSearchServices(Context currentContext, TCObject remoteDevice, ServiceS
             int32 result;
             TCObject byteArray;
             TCObject serviceRecordArray = createArrayObject(serviceSearchP->currentContext, "[totalcross.io.device.bluetooth.ServiceRecord", serviceRecordHandleArrayLen);
-            for (i = 0 ; i < serviceRecordHandleArrayLen ; i++)
-            {
-               TCObject serviceRecord = createObject(serviceSearchP->currentContext, "totalcross.io.device.bluetooth.ServiceRecord");
-               Method readSDP = getMethod(OBJ_CLASS(serviceRecord), false, "readSDP", 3, "totalcross.io.device.bluetooth.RemoteDevice", BYTE_ARRAY, INT_ARRAY);
-               
-               getServiceAttributes(currentContext, serviceRecordHandleArray[i], *btAddr, attrSet, &byteArray);
-               result = executeMethod(serviceSearchP->currentContext, readSDP, serviceRecord, remoteDevice, byteArray, attrSet).asInt32;
-
-               *((TCObjectArray) ARRAYOBJ_START(serviceRecordArray) + i) = serviceRecord;
+            if (serviceRecordArray != null) {
+                Method readSDP = getMethod(loadClass(serviceSearchP->currentContext,"totalcross.io.device.bluetooth.ServiceRecord",false), false, "readSDP", 3, "totalcross.io.device.bluetooth.RemoteDevice", BYTE_ARRAY, INT_ARRAY);
+                if (readSDP != null) {
+                    for (i = 0 ; i < serviceRecordHandleArrayLen ; i++) {
+                       TCObject serviceRecord = createObject(serviceSearchP->currentContext, "totalcross.io.device.bluetooth.ServiceRecord");
+                       if (serviceRecord != null) {
+                           getServiceAttributes(currentContext, serviceRecordHandleArray[i], *btAddr, attrSet, &byteArray);
+                           result = executeMethod(serviceSearchP->currentContext, readSDP, serviceRecord, remoteDevice, byteArray, attrSet).asInt32;
+            
+                           *((TCObjectArray) ARRAYOBJ_START(serviceRecordArray) + i) = serviceRecord;
+                           setObjectLock(serviceRecord, UNLOCKED);
+                       }
+                    }
+                    xfree(serviceRecordHandleArray);
+                    executeMethod(serviceSearchP->currentContext, serviceSearchP->servicesDiscovered, serviceSearchP->listener, 0, serviceRecordArray);
+                    executeMethod(serviceSearchP->currentContext, serviceSearchP->serviceSearchCompleted, serviceSearchP->listener, 0, SERVICE_SEARCH_COMPLETED);
+                }
+                setObjectLock(serviceRecordArray, UNLOCKED);
             }
-            xfree(serviceRecordHandleArray);
-            executeMethod(serviceSearchP->currentContext, serviceSearchP->servicesDiscovered, serviceSearchP->listener, 0, serviceRecordArray);
-            executeMethod(serviceSearchP->currentContext, serviceSearchP->serviceSearchCompleted, serviceSearchP->listener, 0, SERVICE_SEARCH_COMPLETED);
          }
       }
    }
