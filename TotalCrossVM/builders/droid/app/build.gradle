@@ -51,6 +51,7 @@ android {
     productFlavors {
         standard { dimension "deploy" }
         singleApk { dimension "deploy" }
+        includeSms { dimension "deploy" }
     }
     buildTypes {
         release {
@@ -99,6 +100,14 @@ android {
             include 'AndroidManifest.xml', 'resources.arsc'
             rename { String fileName ->
                 fileName.replace('.', '_singleapk.')
+            }
+        }
+        copy {
+            from zipTree('build/outputs/apk/includeSms/release/app-includeSms-release.apk').files
+            into '../../../../../output/release/TotalCrossSDK/etc/tools/android'
+            include 'AndroidManifest.xml', 'resources.arsc'
+            rename { String fileName ->
+                fileName.replace('.', '_includeSms.')
             }
         }
         copy {
