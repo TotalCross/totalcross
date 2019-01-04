@@ -8,7 +8,12 @@ All notable changes to this project will be documented in this file.
 - Removed SMS permissions from Android manifest when using the default deploy options, and added the new option /include_sms to deploy including them
 
 ### Fixed
-- iOS: Fixed screen dimensions on IPhone XS
+- iOS
+  - Fixed screen dimensions on IPhone XS
+- Resign script tccodesign: 
+  - Fixed issue with provided mobileprovision not being added to the Xcode mobileprovisions folder
+  - Temp files are now removed before the script execution
+  - Fixed issue with certificate name in the following format: iPhone Distribution|Developer: Provided Name (Team ID)
 - ImageList: Fixed bug introduced in version 4.2.0 with the correcion of issue TotalCross#192 - TotalCross#291
 - DiscoveryAgend: Fixed potential leaks when using service discovery on WinCE
 - Grid: Fixed sorting different types of data in Grid - TotalCross#297
