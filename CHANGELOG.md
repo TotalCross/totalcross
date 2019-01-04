@@ -1,6 +1,27 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.0 - 2019-01-04
+
+### Highlights
+- Added implementation of PBKDF2WithHmacSHA1
+- Removed SMS permissions from Android manifest when using the default deploy options, and added the new option /include_sms to deploy including them
+
+### Fixed
+- iOS: Fixed screen dimensions on IPhone XS
+- ImageList: Fixed bug introduced in version 4.2.0 with the correcion of issue TotalCross#192 - TotalCross#291
+- DiscoveryAgend: Fixed potential leaks when using service discovery on WinCE
+- Grid: Fixed sorting different types of data in Grid - TotalCross#297
+
+### Changed
+- Removed SMS permissions from Android manifest when using the default deploy options, and added the new option /include_sms to deploy including them
+
+### Added
+- Added implementation of PBKDF2WithHmacSHA1
+
+### Known issues
+- Local notifications do not work on Android 8+. This is caused by a change in the security requirements of the Android native notification API that was not listed in the platform's release changelog. This issue will be fixed on the next release of TotalCross 5, but a fix for version 4 won't be issued to maintain our current compatibility with older Android devices.
+
 ## 4.2.7 - 2018-12-06
 
 ### Fixed
