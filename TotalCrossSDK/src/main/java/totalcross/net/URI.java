@@ -52,7 +52,8 @@ public class URI {
    * @param spec String that holds the specified URI
    */
   public URI(String spec) {
-    init(spec.getBytes(), 0, spec.length(), null, false);
+    final byte[] b = spec.getBytes();
+    init(b, 0, b.length, null, false);
   }
 
   /**
@@ -62,7 +63,8 @@ public class URI {
    * @param baseURI base URI for deriving relative components
    */
   public URI(String spec, URI baseURI) {
-    init(spec.getBytes(), 0, spec.length(), baseURI, false);
+    final byte[] b = spec.getBytes();
+    init(b, 0, b.length, baseURI, false);
   }
 
   /**
@@ -149,7 +151,7 @@ public class URI {
     // '/' or '?' or something else. | - an absolute URI with '/' or '?' following the scheme | Strip off the query part
     for (i = start; i < end; ++i) {
       if (spec[i] == '?') {
-        query = new ByteString(i + 1, end - (i + 1), spec);
+        query = new ByteString(i + 1, spec.length - (i + 1), spec);
         end = i;
         break;
       }
