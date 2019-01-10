@@ -779,8 +779,20 @@ public class HttpStream extends Stream {
       }
       // server path
       sb.append(serverPath);
-      if (uri.query != null) {
-        sb.append("?").append(uri.query.toString());
+      if (uri.query != null && uri.query.len > 0) {
+          sb.append('?');
+          String[] tokens = Convert.tokenizeString(uri.query.toString(), '&');
+          for (String token : tokens) {
+              String[] args = Convert.tokenizeString(token, '=');
+              sb.append(args[0]);
+              if (args.length > 1) {
+                  sb.append('=').append(URI.encode(args[1]));
+              }
+              sb.append('&');
+          }
+          if (tokens.length > 0) {
+              sb.setLength(sb.length() - 1);
+          }
       }
       options.doGet = false;
     }
@@ -798,8 +810,19 @@ public class HttpStream extends Stream {
           sb.append("/");
         }
         if (uri.query != null && uri.query.len > 0) {
-          sb.append("?");
-          sb.append(uri.query.toString());
+            sb.append('?');
+            String[] tokens = Convert.tokenizeString(uri.query.toString(), '&');
+            for (String token : tokens) {
+                String[] args = Convert.tokenizeString(token, '=');
+                sb.append(args[0]);
+                if (args.length > 1) {
+                    sb.append('=').append(URI.encode(args[1]));
+                }
+                sb.append('&');
+            }
+            if (tokens.length > 0) {
+                sb.setLength(sb.length() - 1);
+            }
         }
       }
     }
