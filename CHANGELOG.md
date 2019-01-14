@@ -1,6 +1,20 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.1 - 2019-01-14
+
+### Fixed
+- URI: Fixed parse of multibyte characters
+- Camera: Fixed regression in release 4.2.2 - TotalCross#346
+- ArcChart: Fixed coloring of chart when a single series represents 100% of the data - TotalCross#350
+
+### Changed
+- HttpStream: Query parameters are now encoded to support the usage of unsafe characters 
+
+### Known issues
+- iOS
+  - Using the "hide keyboard" button on the keyboard makes it unavailable for the application - TotalCross#347
+
 ## 4.3.0 - 2019-01-04
 
 ### Highlights
