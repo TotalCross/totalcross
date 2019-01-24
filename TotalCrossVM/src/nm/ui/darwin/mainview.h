@@ -32,6 +32,7 @@
    int lastOrientationSentToVM;
    // keyboard
    UITextView* kbd;
+   UIView* kbdDisabled;
    NSRange lastRange;
    // camera
    NSString* imageFileName;

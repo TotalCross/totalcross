@@ -32,6 +32,10 @@ extern bool isIpad;
 
 @implementation MainViewController
 
+- (BOOL)disablesAutomaticKeyboardDismissal {
+    return NO;
+}
+
 bool initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
@@ -78,7 +82,7 @@ bool iosLowMemory;
    int orientation = [child_view getOrientation];
    if (orientation != lastOrientationSentToVM)
    {
-      [self destroySIP];
+      //[self destroySIP];
       lastOrientationSentToVM = orientation;
       child_view.frame = [child_view getBounds]; // SET THE CHILD_VIEW FRAME
       CGSize res = [child_view getResolution];
@@ -93,8 +97,8 @@ bool iosLowMemory;
    self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
-
    kbd = [[UITextView alloc] init];
+    kbdDisabled = [[UIView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
    kbd.autocapitalizationType = UITextAutocapitalizationTypeNone;
    kbd.returnKeyType = UIReturnKeyDone;
@@ -117,11 +121,11 @@ int isShown;
    if (options == SIP_HIDE)
       [ self destroySIP ];
    else
-   {                       
-      isShown = true;
+   {
       [ self setFirstOrientation ];
       [ child_view addSubview: kbd ];
       [ kbd becomeFirstResponder ];
+    
    }
 }
 
@@ -185,7 +189,7 @@ int isShown;
 {
    if (keyboardH != 0) 
       return;
-
+   isShown = true;
    // Get the size of the keyboard.
    NSDictionary* info = [notif userInfo];
    NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
@@ -204,6 +208,8 @@ int isShown;
        nil
       ]
    ];
+    isShown = false;
+    [kbdDisabled becomeFirstResponder];
 }
 
 -(void) readBarcode:(NSString*) mode
