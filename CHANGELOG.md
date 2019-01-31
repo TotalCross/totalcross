@@ -1,6 +1,12 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.2 - 2019-01-31
+
+### Fixed
+- iOS
+  - Usage of "hide keyboard" button on the keyboard - TotalCross#347
+
 ## 4.3.1 - 2019-01-14
 
 ### Fixed
