@@ -296,7 +296,7 @@ task deployTcbase(type:JavaExec, dependsOn: [myProguardTask, tcbaseJar]) {
 		'/n', 'TCBase', 
 		'-win32', 
 		'/a', 'TCvm', 
-		'/r', '5443444B314891CE3D2DD791'
+		'/r', '5443444B3018A93884C5D622'
 		]
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
@@ -308,7 +308,7 @@ task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
 		'/n', 'TCUI', 
 		'-win32', 
 		'/a', 'TCvm', 
-		'/r', '5443444B314891CE3D2DD791'
+		'/r', '5443444B3018A93884C5D622'
 		]
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
