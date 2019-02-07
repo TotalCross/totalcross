@@ -929,6 +929,7 @@ public class Utils {
     if (keystore == null) {
       throw new DeployerException("File security/tcandroidkey.keystore not found!");
     }
+    keystore = new java.io.File(keystore).getAbsolutePath();
     Vector v = new Vector(10);
     v.addElement(jarsignerExe);
     if (DeploySettings.dJavaVersion >= 1.7) {
