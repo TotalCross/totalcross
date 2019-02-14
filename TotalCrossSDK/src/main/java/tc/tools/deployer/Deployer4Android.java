@@ -250,7 +250,7 @@ public class Deployer4Android {
       }
       InputStream zis = inf.getInputStream(ze2);
       if (name.indexOf("tcfiles.zip") >= 0) {
-        continue; // skip tcfiles from resources
+        insertTCFiles_zip(ze2, zos);
       } else if (name.indexOf("resources.arsc") >= 0) {
         zos.putNextEntry(ze2);
         insertResources_arsc(zis, zos);
@@ -272,10 +272,6 @@ public class Deployer4Android {
       zos.closeEntry();
       zis.close();
     }
-    ZipEntry ze2 = new ZipEntry("assets/tcfiles.zip");
-    insertTCFiles_zip(ze2, zos);
-    zos.closeEntry();
-    
     if (singleApk) {
       processClassesDexes(tcFolder + "TotalCross.apk", zos);
       copyZipEntries(tcFolder + "TotalCross.apk", "res", zos);
