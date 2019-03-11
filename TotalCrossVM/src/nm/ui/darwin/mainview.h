@@ -21,12 +21,12 @@
 #import <CoreLocation/CLLocation.h>
 #import <CoreLocation/CLLocationManager.h>
 #import <CoreLocation/CLLocationManagerDelegate.h>
-
+#import <WebKit/WebKit.h>
 #include "GraphicsPrimitives.h"
 #import "childview.h"
 #import "sipargs.h"
 
-@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate, AVCaptureMetadataOutputObjectsDelegate>
+@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate, UIDocumentInteractionControllerDelegate, AVCaptureMetadataOutputObjectsDelegate>
 {
    NSMutableArray* _events;
    ChildView *child_view;
@@ -54,7 +54,7 @@
    int locationFlags, locationDate, locationTime, locationSat, locationCount;
    double locationVeloc, locationPDOP, locationDir;
    double locationLat, locationLon;
-   UIWebView* webView;
+   WKWebView * webView;
 }
 - (bool)hasEvents;
 - (void)addEvent:(NSDictionary*)event;
@@ -75,6 +75,7 @@
 - (int) gpsUpdateLocation;
 - (IBAction)closeWebView:(id)sender;
 - (IBAction)closeBarcode:(id)sender;
+- (UIViewController *) documentInteractionControllerViewControllerForPreview : (UIDocumentInteractionController *) controller;
 @end
 
 typedef struct

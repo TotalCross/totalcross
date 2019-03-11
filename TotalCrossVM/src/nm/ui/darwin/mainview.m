@@ -37,6 +37,10 @@ extern bool isIpad;
     return NO;
 }
 
+- (UIViewController *) documentInteractionControllerViewControllerForPreview: (UIDocumentInteractionController *) controller {
+    return self;
+}
+
 bool initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
