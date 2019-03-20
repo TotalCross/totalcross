@@ -626,14 +626,6 @@ public class HttpStream extends Stream {
   public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
     int lastRead = IOUtils.EOF;
     int bytesRead = 0;
-    if (contentLength != -1) {
-      if (contentRead == contentLength) {
-        return 0;
-      }
-      if (contentLength - contentRead < count) {
-        count = contentLength - contentRead;
-      }
-    }
 
     if (ofsStart < ofsEnd) {
       int len = ofsEnd - ofsStart;
