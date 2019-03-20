@@ -19,8 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 
@@ -682,7 +682,7 @@ public class Deployer4Android {
     }
 
     Utils.preprocessPKG(vLocals, true);
-    writeVlocals(baos, vector2list(vLocals, new ArrayList<String>()));
+    writeVlocals(baos, vector2set(vLocals, new HashSet<String>()));
 
     // add the file UNCOMPRESSED
     byte[] bytes = baos.toByteArray();
@@ -691,16 +691,16 @@ public class Deployer4Android {
     z.write(bytes);
   }
 
-  public static <E> List<E> vector2list(Vector vec, List<E> list) {
+  public static <E> Set<E> vector2set(Vector vec, Set<E> set) {
     for (int i = 0, n = vec.size(); i < n; i++) {
       @SuppressWarnings("unchecked")
       E item = (E) vec.items[i];
-      list.add(item);
+      set.add(item);
     }
-    return list;
+    return set;
   }
 
-  private void writeVlocals(ByteArrayOutputStream baos, List<String> vLocals) throws IOException {
+  private void writeVlocals(ByteArrayOutputStream baos, Set<String> vLocals) throws IOException {
     ZipOutputStream zos = new ZipOutputStream(baos);
     for (String item : vLocals) {
       String[] pathnames = totalcross.sys.Convert.tokenizeString(item, ',');
