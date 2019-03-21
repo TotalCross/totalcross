@@ -1,6 +1,21 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.3 - 2019-03-14
+
+- Changed generation of the TotalCross SDK jar:
+  - Annotations `@Deprecated` and `@ReplacedByNativeOnDeploy` are no longer stripped by ProGuard - TotalCross#411
+  - Argument names are no longer obfuscated
+  - The javadoc jar is now being deployed to our Maven repository - TotalCross#391
+
+### Fixed
+- Android
+  - Fixed deploy not being able to sign the apk when TOTALCROSS3_HOME is set with a relative path - TotalCross#275
+  - Reverts change on deploy that seems to be causing the assets to double the size in the apk
+  - Fixed Camera NATIVE support
+- iOS
+  - Fixed screen resolution for newer models such as iPhone XS - TotalCross#308
+
 ## 4.3.2 - 2019-01-31
 
 ### Fixed
