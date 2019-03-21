@@ -1,6 +1,13 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.4 - 2019-03-20
+
+### Fixed
+- Android
+  - Reverted back the change reverted on last release and finally fixed the bug that was causing the assets to touble in size - TotalCross#358
+- HttpStream: Fixed read operation not retuning EOF when the correct content length is provided on the reply - TotalCross#464
+
 ## 4.3.3 - 2019-03-14
 
 - Changed generation of the TotalCross SDK jar:
