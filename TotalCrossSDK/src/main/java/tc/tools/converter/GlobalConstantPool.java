@@ -121,7 +121,9 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
     vI32.addElement(temp);
     vI64.addElement(temp);
     vDbl.addElement(temp);
-    vCls.addElement(temp);
+    if (vCls.isEmpty() ) {
+        vCls.addElement(temp);
+    }
     vStr.addElement(temp);
     vMtd.addElement(temp);
     vSF.addElement(temp);
