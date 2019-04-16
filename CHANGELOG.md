@@ -1,6 +1,87 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.6 - 2019-04-13
+
+### Highlights
+- Dropped support for Windows Phone 8
+
+### Changed
+- HttpStream: Reverts change "Query parameters are now encoded to support the usage of unsafe characters" introduced in 4.3.1 - TotalCross#482, TotalCross#483
+
+## 4.3.5 - 2019-04-01
+
+### Fixed
+- Deploy: Fixed bug that would cause a method signature to be included in the constant pool as a class - TotalCross#139, TotalCross#468
+
+## 4.3.4 - 2019-03-20
+
+### Fixed
+- Android
+  - Reverted back the change reverted on last release and finally fixed the bug that was causing the assets to touble in size - TotalCross#358
+- HttpStream: Fixed read operation not retuning EOF when the correct content length is provided on the reply - TotalCross#464
+
+## 4.3.3 - 2019-03-14
+
+- Changed generation of the TotalCross SDK jar:
+  - Annotations `@Deprecated` and `@ReplacedByNativeOnDeploy` are no longer stripped by ProGuard - TotalCross#411
+  - Argument names are no longer obfuscated
+  - The javadoc jar is now being deployed to our Maven repository - TotalCross#391
+
+### Fixed
+- Android
+  - Fixed deploy not being able to sign the apk when TOTALCROSS3_HOME is set with a relative path - TotalCross#275
+  - Reverts change on deploy that seems to be causing the assets to double the size in the apk
+  - Fixed Camera NATIVE support
+- iOS
+  - Fixed screen resolution for newer models such as iPhone XS - TotalCross#308
+
+## 4.3.2 - 2019-01-31
+
+### Fixed
+- iOS
+  - Usage of "hide keyboard" button on the keyboard - TotalCross#347
+
+## 4.3.1 - 2019-01-14
+
+### Fixed
+- URI: Fixed parse of multibyte characters
+- Camera: Fixed regression in release 4.2.2 - TotalCross#346
+- ArcChart: Fixed coloring of chart when a single series represents 100% of the data - TotalCross#350
+
+### Changed
+- HttpStream: Query parameters are now encoded to support the usage of unsafe characters 
+
+### Known issues
+- iOS
+  - Using the "hide keyboard" button on the keyboard makes it unavailable for the application - TotalCross#347
+
+## 4.3.0 - 2019-01-04
+
+### Highlights
+- Added implementation of PBKDF2WithHmacSHA1
+- Removed SMS permissions from Android manifest when using the default deploy options, and added the new option /include_sms to deploy including them
+
+### Fixed
+- iOS
+  - Fixed screen dimensions on IPhone XS
+- Resign script tccodesign: 
+  - Fixed issue with provided mobileprovision not being added to the Xcode mobileprovisions folder
+  - Temp files are now removed before the script execution
+  - Fixed issue with certificate name in the following format: iPhone Distribution|Developer: Provided Name (Team ID)
+- ImageList: Fixed bug introduced in version 4.2.0 with the correcion of issue TotalCross#192 - TotalCross#291
+- DiscoveryAgend: Fixed potential leaks when using service discovery on WinCE
+- Grid: Fixed sorting different types of data in Grid - TotalCross#297
+
+### Changed
+- Removed SMS permissions from Android manifest when using the default deploy options, and added the new option /include_sms to deploy including them
+
+### Added
+- Added implementation of PBKDF2WithHmacSHA1
+
+### Known issues
+- Local notifications do not work on Android 8+. This is caused by a change in the security requirements of the Android native notification API that was not listed in the platform's release changelog. This issue will be fixed on the next release of TotalCross 5, but a fix for version 4 won't be issued to maintain our current compatibility with older Android devices.
+
 ## 4.2.7 - 2018-12-06
 
 ### Fixed
