@@ -1,6 +1,11 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.5 - 2019-04-01
+
+### Fixed
+- Deploy: Fixed bug that would cause a method signature to be included in the constant pool as a class - TotalCross#139, TotalCross#468
+
 ## 4.3.4 - 2019-03-20
 
 ### Fixed
