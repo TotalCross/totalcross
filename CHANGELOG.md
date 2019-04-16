@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.6 - 2019-04-13
+
+### Highlights
+- Dropped support for Windows Phone 8
+
+### Changed
+- HttpStream: Reverts change "Query parameters are now encoded to support the usage of unsafe characters" introduced in 4.3.1 - TotalCross#482, TotalCross#483
+
 ## 4.3.5 - 2019-04-01
 
 ### Fixed
