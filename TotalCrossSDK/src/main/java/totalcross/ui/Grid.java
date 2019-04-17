@@ -403,7 +403,6 @@ public class Grid extends Container implements Scrollable {
   private boolean isScrolling;
   private boolean scScrolled;
   private int lineH;
-  private boolean uIalreadyInitted = false;
 
   /**
    * This will create a grid with the given captions, column widths, information
@@ -1477,7 +1476,7 @@ public class Grid extends Container implements Scrollable {
         continue;
       }
       if (newWidths[i] < 0) {
-        widths[i] = !uIalreadyInitted ? (percW * -widths[i] / 100) : captionWidths[i];
+		widths[i] = percW * -widths[i] / 100;
       }
       int cw = captionWidths[i] = fm.stringWidth(captions[i]) + 3;
       if (widths[i] <= cw && !titleMayBeClipped) {
@@ -1588,7 +1587,6 @@ public class Grid extends Container implements Scrollable {
     tabOrder.removeAllElements(); // don't let get into us on focus traversal
     onBoundsChanged(false);
     setWidths(originalWidths);
-    uIalreadyInitted = true;
     setTooltipRect();
     tip.borderColor = Color.BLACK;
   }
@@ -1971,8 +1969,13 @@ public class Grid extends Container implements Scrollable {
           if (dx > width / 2) {
             dx = width / 2;
           }
+          int oldWidth = widths[rl];
           widths[rl] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
-          setWidths(widths);
+          if(widths[rl] > captionWidths[rl]) {
+        	  setWidths(widths);
+          } else {
+        	  widths[rl] = oldWidth;
+          }
           Window.needsPaint = true;
           e.consumed = true;
         } else if (Settings.fingerTouch) {
@@ -2016,8 +2019,13 @@ public class Grid extends Container implements Scrollable {
             if (dx > this.width) {
               dx = this.width;
             }
+            int oldWidth = widths[rl];
             widths[rl] = resizingOrigWidth + dx;
-            setWidths(widths);
+            if(widths[rl] > captionWidths[rl]) {
+          	  setWidths(widths);
+            } else {
+          	  widths[rl] = oldWidth;
+            }
             e.consumed = Window.needsPaint = true;
             resizingLine = -1;
           } else if (showPlOnNextPenUp != -1) {
