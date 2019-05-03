@@ -16,6 +16,7 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 #import <UIKit/UITextView.h>
 #import <CoreLocation/CLLocation.h>
 #import <CoreLocation/CLLocationManager.h>
@@ -25,7 +26,7 @@
 #import "childview.h"
 #import "sipargs.h"
 
-@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate>
+@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate, AVCaptureMetadataOutputObjectsDelegate>
 {
    NSMutableArray* _events;
    ChildView *child_view;
@@ -38,6 +39,15 @@
    NSString* imageFileName;
    int imageW,imageH;
    UIImagePickerController *imagePicker;
+   // barcode
+   AVCaptureSession *_session;
+   AVCaptureDevice *_device;
+   AVCaptureDeviceInput *_input;
+   AVCaptureMetadataOutput *_output;
+   AVCaptureVideoPreviewLayer *_prevLayer;
+   UIButton *barCodeButton;
+   UIView *_highlightView;
+   NSTimeInterval timeSpentReadingTheSameBarCode;
    // gps
 @public   
    CLLocationManager* locationManager;
@@ -46,7 +56,6 @@
    double locationLat, locationLon;
    UIWebView* webView;
 }
-
 - (bool)hasEvents;
 - (void)addEvent:(NSDictionary*)event;
 - (bool)isEventAvailable;

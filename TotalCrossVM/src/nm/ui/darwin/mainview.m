@@ -27,6 +27,7 @@ SBSBarcodePicker *picker;
 UIWindow* barwindow;
 static bool callingBarcode;
 static char barcode[2048];
+static NSMutableString *currBarcode;
 extern int32 iosScale;
 extern bool isIpad;
 
@@ -105,6 +106,7 @@ bool iosLowMemory;
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
    kbd.autocorrectionType = UITextAutocorrectionTypeNo;
    kbd.delegate = self;
+    currBarcode = [NSMutableString stringWithString:@""];
 }
 
 int isShown;
@@ -218,9 +220,7 @@ int isShown;
    barcode[0] = 0;
     dispatch_sync(dispatch_get_main_queue(), ^
     {
-       if (barwindow != NULL)
-          barwindow.hidden = NO;
-       else
+       if([mode length] >= 6 && [[mode substringWithRange:NSMakeRange(0, 6)] isEqualToString:@"scandit"])
        {
           [SBSLicense setAppKey:[mode substringFromIndex:8]];
           
@@ -257,26 +257,69 @@ int isShown;
           [picker.overlayController setCameraSwitchVisibility:SBSCameraSwitchVisibilityOnTablet];
           [picker setAllowedInterfaceOrientations:UIInterfaceOrientationMaskAll];
           picker.scanDelegate = self;
-          
-          barwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-          
-          UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-          [button addTarget:DEVICE_CTX->_mainview action:@selector(closeBarcode:) forControlEvents:UIControlEventTouchUpInside];
-          [button setTitle:@" X " forState:UIControlStateNormal];
-          [button setBackgroundColor:[UIColor colorWithRed:0.5f green:0.5f blue:0.5f alpha:0.5f]];
-          [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-          int h = button.font.pointSize*2;
-          button.font = [UIFont fontWithName:button.font.fontName size:h];
-          button.frame = CGRectMake(0,20,h*3/2,h*3/2);
-          [barwindow setRootViewController:picker];
-          [barwindow makeKeyAndVisible];
-          [barwindow addSubview:button];
+           [self mountBarCodeWindow:NULL];
+           // Open the camera and start scanning barcodes
+           [picker startScanning];
+       } else {
+           _session = [[AVCaptureSession alloc] init];
+           _device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+           NSError *error = nil;
+           _input = [AVCaptureDeviceInput deviceInputWithDevice:_device error:&error];
+           if (_input) {
+               [_session addInput:_input];
+           } else {
+               NSLog(@"Error: %@", error);
+           }
+           
+           _output = [[AVCaptureMetadataOutput alloc] init];
+           [_output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
+           [_session addOutput:_output];
+           
+           _output.metadataObjectTypes = [_output availableMetadataObjectTypes];
+           
+           _prevLayer = [AVCaptureVideoPreviewLayer layerWithSession:_session];
+           _prevLayer.frame = self.view.bounds;
+           _prevLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+           [self mountBarCodeWindow:_prevLayer];
+           [_session startRunning];
        }
-       // Open the camera and start scanning barcodes
-       [picker startScanning];
+       
     });
    while (callingBarcode)
       Sleep(100);
+}
+
+- (void)mountBarCodeWindow:(AVCaptureVideoPreviewLayer *) layer{
+    if(barwindow == NULL) {
+        barwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        
+         barCodeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [barCodeButton addTarget:DEVICE_CTX->_mainview action:@selector(closeBarcode:) forControlEvents:UIControlEventTouchUpInside];
+        [barCodeButton setTitle:@" X " forState:UIControlStateNormal];
+        [barCodeButton setBackgroundColor:[UIColor colorWithRed:0.5f green:0.5f blue:0.5f alpha:0.5f]];
+        [barCodeButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        int h = barCodeButton.font.pointSize*2;
+        barCodeButton.font = [UIFont fontWithName:barCodeButton.font.fontName size:h];
+        barCodeButton.frame = CGRectMake(0,20,h*3/2,h*3/2);
+        [barwindow setRootViewController:picker];
+        [barwindow makeKeyAndVisible];
+        [barwindow addSubview:barCodeButton];
+
+       
+        
+    }
+    if(layer) {
+        [barwindow.layer addSublayer: layer];
+        
+        [barwindow bringSubviewToFront:barCodeButton];
+        
+        _highlightView = [[UIView alloc] init];
+        _highlightView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
+        _highlightView.layer.borderColor = [UIColor greenColor].CGColor;
+        _highlightView.layer.borderWidth = 3;
+        [barwindow addSubview:_highlightView];
+    }
+    barwindow.hidden = NO;
 }
 
 - (void)barcodePicker:(SBSBarcodePicker *)thePicker didScan:(SBSScanSession *)session {
@@ -294,9 +337,45 @@ int isShown;
    callingBarcode = false;
 }
 
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection
+{
+    CGRect highlightViewRect = CGRectZero;
+    AVMetadataMachineReadableCodeObject *barCodeObject;
+    NSString *detectionString = nil;
+    NSArray *barCodeTypes = @[AVMetadataObjectTypeUPCECode, AVMetadataObjectTypeCode39Code, AVMetadataObjectTypeCode39Mod43Code,
+                              AVMetadataObjectTypeEAN13Code, AVMetadataObjectTypeEAN8Code, AVMetadataObjectTypeCode93Code, AVMetadataObjectTypeCode128Code,
+                              AVMetadataObjectTypePDF417Code, AVMetadataObjectTypeQRCode, AVMetadataObjectTypeAztecCode];
+    
+    for (AVMetadataObject *metadata in metadataObjects) {
+        for (NSString *type in barCodeTypes) {
+            if ([metadata.type isEqualToString:type])
+            {
+                barCodeObject = (AVMetadataMachineReadableCodeObject *)[_prevLayer transformedMetadataObjectForMetadataObject:(AVMetadataMachineReadableCodeObject *)metadata];
+                detectionString = [(AVMetadataMachineReadableCodeObject *)metadata stringValue];
+                highlightViewRect = barCodeObject.bounds;
+                _highlightView.frame = highlightViewRect;
+                NSString *currBar = [NSString stringWithCString:barcode encoding:NSASCIIStringEncoding];
+                if(![detectionString isEqualToString:currBar]) {
+                    timeSpentReadingTheSameBarCode = ([[NSDate date] timeIntervalSince1970]*1000);
+                    strncpy(barcode, [detectionString cStringUsingEncoding: NSASCIIStringEncoding], MIN([detectionString length], sizeof(barcode)));
+                }
+                else {
+                    NSTimeInterval currTime = ([[NSDate date] timeIntervalSince1970]*1000) - timeSpentReadingTheSameBarCode;
+                    if(currTime > 1500) {
+                        [self closeBarcode:0];
+                    }
+                }
+                break;
+            }
+        }
+    }
+    
+}
+
 -(IBAction)closeBarcode:(id)sender
 {
-   [picker stopScanning];
+   if(picker != null) [picker stopScanning];
+   if(_session != null)[_session stopRunning];
    barwindow.hidden = YES;
    callingBarcode = false;
 }
