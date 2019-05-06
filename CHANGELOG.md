@@ -1,6 +1,11 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.7 - 2019-05-06
+
+### Added
+- Added support for native barcode scanning on iOS, without using any external library - TotalCross#333
+
 ## 4.3.6 - 2019-04-13
 
 ### Highlights
