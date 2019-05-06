@@ -89,7 +89,6 @@ TC_API void tumMC_reset(NMParams p);
 TC_API void tumMC_nativeClose(NMParams p);
 TC_API void tumMC_record_iib(NMParams p);
 TC_API void tumC_nativeClick(NMParams p);
-TC_API void tumC_initCamera(NMParams p);
 TC_API void tumC_nativeFinalize(NMParams p);
 TC_API void tumC_getNativeResolutions(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
@@ -454,6 +453,7 @@ TC_API void txXT_setCdataContents_Bii(NMParams p);
 TC_API void txXT_tokenizeBytes_B(NMParams p);
 TC_API void txXT_endTokenize_B(NMParams p);
 TC_API void txXT_nativeCreate(NMParams p);
+TC_API void tcpPBKDF2WHSHA1F_generateSecretI(NMParams p);
 TC_API void tcdMD5D_init(NMParams p);
 TC_API void tcdMD5D_process_B(NMParams p);
 TC_API void tcdSHA1D_init(NMParams p);
@@ -911,10 +911,6 @@ TC_API void tumMC_record_iib(NMParams p) // totalcross/ui/media/MediaClip native
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tumC_nativeClick(NMParams p) // totalcross/ui/media/Camera native private String nativeClick();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tumC_initCamera(NMParams p) // totalcross/ui/media/Camera native private void initCamera();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2371,6 +2367,10 @@ TC_API void txXT_endTokenize_B(NMParams p) // totalcross/xml/XmlTokenizer native
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void txXT_nativeCreate(NMParams p) // totalcross/xml/XmlTokenizer native private void nativeCreate();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tcpPBKDF2WHSHA1F_generateSecretI(NMParams p) // totalcross/crypto/provider/PBKDF2WithHmacSHA1Factory native private byte[] generateSecretImpl(char []password, byte []salt, int iterations, int keyLength);
 {
 }
 //////////////////////////////////////////////////////////////////////////

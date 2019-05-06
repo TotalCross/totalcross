@@ -579,6 +579,7 @@ TC_API void ttSM_sendDataMessage_ssiB(NMParams p);
 TC_API void ttSM_registerSmsReceiver_si(NMParams p);
 TC_API void tfiFII_getToken(NMParams p);
 TC_API void tnNM_notify_n(NMParams p);
+TC_API void tcpPBKDF2WHSHA1F_generateSecretI(NMParams p);
 
 #ifdef __cplusplus
 }

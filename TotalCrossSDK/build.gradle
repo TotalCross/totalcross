@@ -17,11 +17,16 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
-version = '4.2.7'
+version = '4.3.6'
 group = 'com.totalcross'
 
 // can't be used yet, enconding is a mess
 compileJava.options.encoding = 'UTF-8'
+
+javadoc {
+	failOnError = false
+	options.encoding = 'UTF-8'
+}
 
 configurations { 
 	obfuscatedArchive
@@ -197,6 +202,14 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     }
 }
 
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	baseName = "totalcross-sdk"
+    classifier = 'javadoc'
+    from (javadoc.destinationDir) {
+    	exclude 'jdkcompat*/**', 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    }
+}
+
 // totalcross.jar
 task totalcrossJar(type: Jar) {
     baseName = "totalcross-sdk"
@@ -282,7 +295,7 @@ artifacts {
         // can also set classifier, extension, name, etc as needed (some defaults will be inferred from the filename)
         // see https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/ConfigurablePublishArtifact.html
     }
-    archives sourcesJar, tcbaseJar, tcuiJar
+    archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
 }
 
 tasks.withType(Jar) {
@@ -296,7 +309,7 @@ task deployTcbase(type:JavaExec, dependsOn: [myProguardTask, tcbaseJar]) {
 		'/n', 'TCBase', 
 		'-win32', 
 		'/a', 'TCvm', 
-		'/r', '5443444B314891CE3D2DD791'
+		'/r', '5443444B3018A93884C5D622'
 		]
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
@@ -308,7 +321,7 @@ task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
 		'/n', 'TCUI', 
 		'-win32', 
 		'/a', 'TCvm', 
-		'/r', '5443444B314891CE3D2DD791'
+		'/r', '5443444B3018A93884C5D622'
 		]
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }

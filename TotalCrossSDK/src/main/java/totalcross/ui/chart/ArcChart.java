@@ -146,8 +146,7 @@ public class ArcChart extends Chart {
         ;
       } else {
         int bc = parent.getBackColor();
-        ;
-        g.foreColor = bc; // fixed color when only 1 serie has value > 0
+        g.foreColor = is3d || sum == v ? color : bc; // fixed color when only 1 serie has value > 0
         g.backColor = color;
         g.fillPie(xx, yy, rr, last, current);
         g.foreColor = bc;

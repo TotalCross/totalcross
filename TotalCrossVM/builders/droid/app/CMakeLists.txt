@@ -32,6 +32,8 @@ set(SOURCES
     ${TC_SRCDIR}/axtls/tls1.c
     ${TC_SRCDIR}/axtls/tls1_svr.c
     ${TC_SRCDIR}/axtls/tls1_clnt.c
+    
+    ${TC_SRCDIR}/openbsd/libutil/pkcs5_pbkdf2.c
 
     ${TC_SRCDIR}/tcvm/tcthread.c
     ${TC_SRCDIR}/tcvm/tcclass.c

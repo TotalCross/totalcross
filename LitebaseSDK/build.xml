@@ -186,7 +186,7 @@ target: device
     <arg line="/a LBTC"/>
     <arg line="${tcdeploy_line}"/>
     <arg line="-win32"/>
-    <arg line="/r 5443444B314891CE3D2DD791"/>
+    <arg line="/r 5443444B3018A93884C5D622"/>
   </java>
 
   <copy file="${output}/install/win32/LitebaseLib.tcz" todir="${dist}/lib"/>

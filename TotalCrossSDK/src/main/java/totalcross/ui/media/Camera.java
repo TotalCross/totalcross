@@ -169,7 +169,11 @@ public class Camera {
         || Settings.platform.equals(Settings.ANDROID)
         || Settings.platform.equals(Settings.WINDOWSPHONE)) {
       if (initialDir != null) {
-        new File(initialDir).createDir();
+        try {
+            new File(initialDir).createDir();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
       }
       return this.nativeClick();
     } else {

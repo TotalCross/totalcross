@@ -452,6 +452,7 @@ totalcross/xml/XmlTokenizer|native protected void setCdataContents(byte []input,
 totalcross/xml/XmlTokenizer|native private void tokenizeBytes(byte []input) throws SyntaxException;
 totalcross/xml/XmlTokenizer|native private void endTokenize(byte []input) throws SyntaxException;
 totalcross/xml/XmlTokenizer|native private void nativeCreate();
+totalcross/crypto/provider/PBKDF2WithHmacSHA1Factory|native private byte[] generateSecretImpl(char []password, byte []salt, int iterations, int keyLength);
 totalcross/crypto/digest/MD5Digest|native private void init() throws totalcross.crypto.NoSuchAlgorithmException;
 totalcross/crypto/digest/MD5Digest|native protected final byte[] process(byte []data);
 totalcross/crypto/digest/SHA1Digest|native private void init() throws totalcross.crypto.NoSuchAlgorithmException;

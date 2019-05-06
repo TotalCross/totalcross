@@ -912,11 +912,11 @@
 			Name="Testsuite"
 			>
 			<File
-				RelativePath="..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.c"
+				RelativePath="..\..\..\TotalCrossVM\src\tests\tc_testsuite.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"
+				RelativePath="..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"
 				>
 			</File>
 		</Filter>

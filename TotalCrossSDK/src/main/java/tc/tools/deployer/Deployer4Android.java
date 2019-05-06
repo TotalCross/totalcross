@@ -19,8 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 
@@ -111,6 +111,7 @@ public class Deployer4Android {
   private static String targetDir, sourcePackage, targetPackage, targetTCZ, jarOut, fileName;
   private String tcFolder;
   private boolean singleApk;
+  private boolean includeSms;
 
   byte[] buf = new byte[8192];
 
@@ -125,7 +126,11 @@ public class Deployer4Android {
     if (!f.exists()) {
       f.mkdirs();
     }
+    includeSms = DeploySettings.includeSms;
     singleApk = DeploySettings.packageVM;
+    if (includeSms) {
+        singleApk = true;
+    }
     if (!singleApk) {
       targetPackage = "totalcross/app/" + fileName.toLowerCase();
       if (!DeploySettings.quiet) {
@@ -449,12 +454,16 @@ public class Deployer4Android {
 
   private void insertAndroidManifest_xml(InputStream zis, OutputStream zos) throws Exception {
     totalcross.io.ByteArrayStream bas;
-    if (!singleApk) {
-      bas = readInputStream(zis);
+    if (includeSms) {
+        byte[] bytes = Utils.loadFile(DeploySettings.etcDir + "tools/android/AndroidManifest_includeSms.xml", true);
+        bas = new totalcross.io.ByteArrayStream(bytes);
+        bas.skipBytes(bytes.length);
+    } else if (singleApk) {
+        byte[] bytes = Utils.loadFile(DeploySettings.etcDir + "tools/android/AndroidManifest_singleapk.xml", true);
+        bas = new totalcross.io.ByteArrayStream(bytes);
+        bas.skipBytes(bytes.length);
     } else {
-      byte[] bytes = Utils.loadFile(DeploySettings.etcDir + "tools/android/AndroidManifest_singleapk.xml", true);
-      bas = new totalcross.io.ByteArrayStream(bytes);
-      bas.skipBytes(bytes.length);
+        bas = readInputStream(zis);
     }
     bas.mark();
     totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
@@ -608,11 +617,16 @@ public class Deployer4Android {
   private void insertResources_arsc(InputStream zis, OutputStream zos) throws Exception {
     byte[] all;
     byte[] key;
-    if (singleApk) {
-      key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
-          (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'n', (byte) 0, 'd',
-          (byte) 0, 'r', (byte) 0, 'o', (byte) 0, 'i', (byte) 0, 'd', (byte) 0 };
-      all = Utils.loadFile(DeploySettings.etcDir + "tools/android/resources_singleapk.arsc", true);
+    if (includeSms) {
+        key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
+                (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'n', (byte) 0, 'd',
+                (byte) 0, 'r', (byte) 0, 'o', (byte) 0, 'i', (byte) 0, 'd', (byte) 0 };
+            all = Utils.loadFile(DeploySettings.etcDir + "tools/android/resources_includeSms.arsc", true);
+    } else if (singleApk) {
+        key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
+                (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'n', (byte) 0, 'd',
+                (byte) 0, 'r', (byte) 0, 'o', (byte) 0, 'i', (byte) 0, 'd', (byte) 0 };
+            all = Utils.loadFile(DeploySettings.etcDir + "tools/android/resources_singleapk.arsc", true);
     } else {
       key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
           (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'p', (byte) 0, 'p',
@@ -668,7 +682,7 @@ public class Deployer4Android {
     }
 
     Utils.preprocessPKG(vLocals, true);
-    writeVlocals(baos, vector2list(vLocals, new ArrayList<String>()));
+    writeVlocals(baos, vector2set(vLocals, new HashSet<String>()));
 
     // add the file UNCOMPRESSED
     byte[] bytes = baos.toByteArray();
@@ -677,16 +691,16 @@ public class Deployer4Android {
     z.write(bytes);
   }
 
-  public static <E> List<E> vector2list(Vector vec, List<E> list) {
+  public static <E> Set<E> vector2set(Vector vec, Set<E> set) {
     for (int i = 0, n = vec.size(); i < n; i++) {
       @SuppressWarnings("unchecked")
       E item = (E) vec.items[i];
-      list.add(item);
+      set.add(item);
     }
-    return list;
+    return set;
   }
 
-  private void writeVlocals(ByteArrayOutputStream baos, List<String> vLocals) throws IOException {
+  private void writeVlocals(ByteArrayOutputStream baos, Set<String> vLocals) throws IOException {
     ZipOutputStream zos = new ZipOutputStream(baos);
     for (String item : vLocals) {
       String[] pathnames = totalcross.sys.Convert.tokenizeString(item, ',');

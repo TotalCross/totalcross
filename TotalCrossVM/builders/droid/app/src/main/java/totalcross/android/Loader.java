@@ -50,6 +50,7 @@ import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.text.SimpleDateFormat;
 import com.scandit.barcodepicker.*;
 import com.scandit.recognition.*;
 
@@ -176,15 +177,30 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       Launcher4A.callingZXing = false;
       break;
          case EXTCAMERA_RETURN:
-         {
-            if (capturedImageURI == null)
-            {
-        AndroidUtils.debug("capturedImageURI is null!");
-        Launcher4A.pictureTaken(0);
-        break;
-      }
+        {
+            if (resultCode == RESULT_OK) {
+                String capturedImageFilePath = capturedImageURI.getPath();
+                try {
+                    AndroidUtils.copyFile(capturedImageFilePath, imageFN);
+                    Launcher4A.pictureTaken(0);
+                } catch (IOException e) {
+                    AndroidUtils.handleException(e, false);
+                }
+                try {
+                    new File(capturedImageFilePath).delete();
+                } catch (Exception e) {
+                    AndroidUtils.handleException(e, false);
+                }
+            } else {
+                Launcher4A.pictureTaken(1);
+                break;
+            }
+            
+            if (true) {
+                break;
+            }
       String[] projection = { MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED };
-      Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null);
+      Cursor cursor = getContentResolver().query(capturedImageURI, projection, null, null, null);
 
       String capturedImageFilePath = null;
       if (cursor.moveToFirst()) {
@@ -375,6 +391,19 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
   private static final int FROM_GALLERY = 3;
   private static String[] cameraTypes = { "CUSTOM", "NATIVE", "NATIVE_NOCOPY", "GALLERY", "UNDEFINED" };
   private int cameraType;
+  
+  private File createImageFile() throws IOException {
+      // Create an image file name
+      String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+      String imageFileName = "JPEG_" + timeStamp + "_";
+      File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+      File image = File.createTempFile(
+          imageFileName,  /* prefix */
+          ".jpg",         /* suffix */
+          storageDir      /* directory */
+      );
+      return image;
+  }
 
     private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType) {
         try {
@@ -391,13 +420,24 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
                 i.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(i, SELECT_PICTURE);
             } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
-                values.put(MediaStore.Images.Media.IS_PRIVATE, 1);
-                capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);
-                startActivityForResult(intent, EXTCAMERA_RETURN);
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                // Ensure that there's a camera activity to handle the intent
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    // Create the File where the photo should go
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile();
+                    } catch (IOException ex) {
+                        // Error occurred while creating the File
+                        ex.printStackTrace();
+                    }
+                    // Continue only if the File was successfully created
+                    if (photoFile != null) {
+                        capturedImageURI = Uri.fromFile(new File(photoFile.getAbsolutePath()));
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getFileUri4Intent(photoFile));
+                        startActivityForResult(takePictureIntent, EXTCAMERA_RETURN);
+                    }
+                }
             } else if ("SK GT-7340".equals(deviceId)) {
                 Uri outputFileUri = getFileUri4Intent(new File(s));
                 Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
