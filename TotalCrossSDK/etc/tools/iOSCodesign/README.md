@@ -17,8 +17,8 @@ To run this script will need:
 Having all of those parameters, you will be able to run the following command: 
  
 ```
-./tccodesign --ipa path/to/to-be-signed.ipa --icon path/to/icon.png --provision-file path/to/provision-file.mobileprovision --certificate 'IPhone Distribution: XXXX Company YYYYY' -m [ad-hoc | app-store | enterprise | development]
+./tccodesign --ipa path/to/to-be-signed.ipa --icon path/to/icon.png --provision-file path/to/provision-file.mobileprovision --certificate 'IPhone Distribution: XXXX Company YYYYY' -m [ad-hoc | app-store | enterprise | development] --output path/to/export/folder
 
 ```
 
-This will generate an **Totalcross.ipa** inside `[tccodesign.sh directory]/build`.
+If --output or -o is was not specified  the resigned app **Appname.ipa** will be exported to `[tccodesign.sh directory]/build`.

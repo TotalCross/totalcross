@@ -16,7 +16,7 @@
   # `brew install imagemagick`
 
 sourceIconName=$1
-BASEDIR=$(dirname $0)
+BASEDIR=$2
 # Ensure we're running in location of script.
 #cd "`dirname $0`"
 
