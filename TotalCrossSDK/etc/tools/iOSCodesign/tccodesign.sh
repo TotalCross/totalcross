@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash 
 
 # Parse variables
 POSITIONAL=()
@@ -72,6 +72,7 @@ echo ======================= LOG =========================
 
 
 #create temp dir
+$(mkdir -p "${workDir}/tmp")
 tempDir="$(mktemp -d ${workDir}/tmp/foo.XXXX)"
 
 echo "Removing temp files..."
