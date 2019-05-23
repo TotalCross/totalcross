@@ -24,9 +24,9 @@ package totalcross.util.zip;
 public class ZipEntry {
   String name; // entry name
   int dostime = -1; // modification time (in DOS time)
-  int crc = -1; // crc-32 of entry data
-  int size = -1; // uncompressed size of entry data
-  int csize = -1; // compressed size of entry data
+  long crc = -1; // crc-32 of entry data
+  long size = -1; // uncompressed size of entry data
+  long csize = -1; // compressed size of entry data
   int method = -1; // compression method
   byte[] extra; // optional extra field data for entry
   String comment; // optional comment string for entry
@@ -288,14 +288,5 @@ public class ZipEntry {
   @Override
   public int hashCode() {
     return ((java.util.zip.ZipEntry) zipEntry).hashCode();
-  }
-
-  /* implemented only for BlackBerry */
-  final int getDOSTime() {
-    return 0;
-  }
-
-  /* implemented only for BlackBerry */
-  final void setDOSTime(int dostime) {
   }
 }
