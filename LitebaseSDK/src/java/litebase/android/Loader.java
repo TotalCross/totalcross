@@ -34,7 +34,7 @@ public class Loader extends Activity
       try
       {
          AndroidUtils.initialize(this);
-         AndroidUtils.checkInstall();
+         AndroidUtils.checkInstall(getApplicationContext());
          setResult(RESULT_OK);
          finish();
       }

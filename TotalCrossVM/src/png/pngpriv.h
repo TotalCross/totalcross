@@ -70,7 +70,7 @@
 #  include "pnglibconf.h"
 #endif
 
-#ifdef darwin
+#if defined darwin || defined ANDROID
 #define PNG_ARM_NEON_OPT 0
 #endif
 

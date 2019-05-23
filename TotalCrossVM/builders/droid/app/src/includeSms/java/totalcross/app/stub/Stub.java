@@ -26,6 +26,10 @@ public class Stub extends Activity
 {
    private class LengthyTask extends AndroidUtils.StartupTask 
    {
+       public LengthyTask(Activity activity) {
+           super(activity);
+       }
+       
       protected void onPostExecute(Integer result) 
       {
          try
@@ -46,7 +50,7 @@ public class Stub extends Activity
       try
       {
          AndroidUtils.initialize(this);
-         new LengthyTask().execute((Object)null);
+         new LengthyTask(this).execute((Object)null);
       }
       catch (Exception e)
       {
