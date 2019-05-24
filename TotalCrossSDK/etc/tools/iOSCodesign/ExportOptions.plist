@@ -8,8 +8,8 @@
 	<string>enterprise</string>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>com.totalcross.sdk</key>
-		<string>TotalCross Wildcard</string>
+		<key>com.example.app</key>
+		<string>Provision Name</string>
 	</dict>
 	<key>signingCertificate</key>
 	<string>iPhone Distribution</string>
