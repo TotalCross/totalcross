@@ -323,9 +323,9 @@ TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream nati
          ZipEntry_method(zipEntryObj) = (int32)file_info.compression_method;
          ZipEntry_comment(zipEntryObj) = zipEntryCommentObj;
          ZipEntry_extra(zipEntryObj) = zipEntryExtraObj;
-         ZipEntry_crc(zipEntryObj) = (int32)file_info.crc;
-         ZipEntry_size(zipEntryObj) = (int32)file_info.uncompressed_size;
-         ZipEntry_csize(zipEntryObj) = (int32)file_info.compressed_size;
+         ZipEntry_crc(zipEntryObj) = (int64)file_info.crc;
+         ZipEntry_size(zipEntryObj) = (int64)file_info.uncompressed_size;
+         ZipEntry_csize(zipEntryObj) = (int64)file_info.compressed_size;
          p->retO = zipEntryObj;
       }
       setObjectLock(zipEntryCommentObj, UNLOCKED);
@@ -397,8 +397,8 @@ TC_API void tuzZS_putNextEntry_z(NMParams p) // totalcross/util/zip/ZipStream na
    // close the previous entry if method was STORED
    if (lastEntryObj != null && zipNativeP->method != Z_DEFLATED)
    {
-      int size = 0;
-      int crc = 0;
+      int64 size = 0;
+      int64 crc = 0;
 
       if (ZipEntry_size(lastEntryObj) > 0)
          size = ZipEntry_size(lastEntryObj);
@@ -458,8 +458,8 @@ TC_API void tuzZS_closeEntry(NMParams p) // totalcross/util/zip/ZipStream native
       err = unzCloseCurrentFile(zipNativeP->zipFile);
    else if (mode == 1) // DEFLATE
    {
-      int size = 0;
-      int crc = 0;
+      int64 size = 0;
+      int64 crc = 0;
       if (lastEntryObj != null && zipNativeP->method != Z_DEFLATED)
       {
          if (ZipEntry_size(lastEntryObj) > 0)
@@ -562,8 +562,8 @@ TC_API void tuzZS_close(NMParams p) // totalcross/util/zip/ZipStream native publ
       // close the previous entry if method was STORED
       if (lastEntryObj != null && zipNativeP->method != Z_DEFLATED)
       {
-         int size = 0;
-         int crc = 0;
+         int64 size = 0;
+         int64 crc = 0;
 
          if (ZipEntry_size(lastEntryObj) > 0)
             size = ZipEntry_size(lastEntryObj);

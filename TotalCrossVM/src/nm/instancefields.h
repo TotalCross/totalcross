@@ -408,10 +408,10 @@
 // totalcross.util.zip.ZipEntry
 #define ZipEntry_name(o)               FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define ZipEntry_time(o)               FIELD_I32(o, 0)
-#define ZipEntry_crc(o)                FIELD_I32(o, 1)
-#define ZipEntry_size(o)               FIELD_I32(o, 2)
-#define ZipEntry_csize(o)              FIELD_I32(o, 3)
-#define ZipEntry_method(o)             FIELD_I32(o, 4)
+#define ZipEntry_crc(o)                FIELD_I64(o, OBJ_CLASS(o), 0)
+#define ZipEntry_size(o)               FIELD_I64(o, OBJ_CLASS(o), 1)
+#define ZipEntry_csize(o)              FIELD_I64(o, OBJ_CLASS(o), 2)
+#define ZipEntry_method(o)             FIELD_I32(o, 1)
 #define ZipEntry_extra(o)              FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define ZipEntry_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
 
