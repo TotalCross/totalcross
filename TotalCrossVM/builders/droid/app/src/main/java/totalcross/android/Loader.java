@@ -93,7 +93,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
         return;
       }
       onCreateCalled = true;
-      AndroidUtils.checkInstall();
+      AndroidUtils.checkInstall(getApplicationContext());
       runVM();
       }
       catch (Throwable e)

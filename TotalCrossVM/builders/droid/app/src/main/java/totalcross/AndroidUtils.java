@@ -13,6 +13,7 @@
 
 package totalcross;
 
+import java.lang.ref.WeakReference;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
@@ -98,11 +99,26 @@ public class AndroidUtils
    {
       private ProgressDialog dialog;
       
+      // Weak references will still allow the Activity to be garbage-collected
+      private final WeakReference<Activity> weakActivity;
+      
+      protected StartupTask (Activity activity) {
+          this.weakActivity = new WeakReference<>(activity);
+      }
+      
       protected Integer doInBackground(Object... params)
       {
          try
          {
-            checkInstall(this);
+             Activity activity = weakActivity.get();
+             if (activity == null
+                 || activity.isFinishing()
+                 || activity.isDestroyed()) {
+               // activity is no longer valid, don't do anything!
+               return null;
+             }
+             
+            checkInstall(activity.getApplicationContext(), this);
             if (dialog != null)
                dialog.dismiss();
          }
@@ -146,39 +162,45 @@ public class AndroidUtils
          return path;
       }
    }
-   
-   private static void loadTCVM()
+
+    private static void loadTCVM(Context context) {
+        try {
+            System.load(getRealPath(context.getApplicationInfo().nativeLibraryDir) + "/libtcvm.so");
+        } catch (Throwable e1) {
+            handleException(e1, false);
+
+            try {
+                // to bypass problems of getting access to a file, we create files and folders natively, where we can specify the file attributes.
+                String sharedId = pinfo.sharedUserId;
+                String tczname = sharedId.substring(sharedId.lastIndexOf('.') + 1);
+                System.load(getRealPath("/data/data/totalcross." + tczname + "/lib") + "/libtcvm.so"); // for single apk
+            } catch (Throwable e2) {
+                handleException(e2, false);
+
+                try {
+                    System.load(getRealPath("/data/data/totalcross.android/lib") + "/libtcvm.so");
+                } catch (UnsatisfiedLinkError e3) {
+                    handleException(e3, false);
+                    error("The TotalCross Virtual Machine was not found!", true);
+                    while (true) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+   public static void checkInstall(Context context) throws Exception
    {
-      try // to bypass problems of getting access to a file, we create files and folders natively, where we can specify the file attributes.
-      {
-         String sharedId = pinfo.sharedUserId;
-         String tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
-         System.load(getRealPath("/data/data/totalcross." + tczname + "/lib")+"/libtcvm.so"); // for single apk
-      }
-      catch (Throwable ule) 
-      {
-         try
-         {
-            System.load(getRealPath("/data/data/totalcross.android/lib")+"/libtcvm.so");
-         }
-         catch (UnsatisfiedLinkError ule2)
-         {
-            handleException(ule2,false);
-            error("The TotalCross Virtual Machine was not found!",true);
-            while (true)
-               try {Thread.sleep(500);} catch (Exception e) {}
-         }
-      }
+      checkInstall(context, null);
    }
    
-   public static void checkInstall() throws Exception
+   public static void checkInstall(Context context, StartupTask task) throws Exception
    {
-      checkInstall(null);
-   }
-   
-   public static void checkInstall(StartupTask task) throws Exception
-   {
-      loadTCVM();
+      loadTCVM(context);
       String appName = main.getClass().getName();  
       String pack = appName.substring(0,appName.lastIndexOf('.'));
       AssetFileDescriptor file = main.getAssets().openFd("tcfiles.zip");

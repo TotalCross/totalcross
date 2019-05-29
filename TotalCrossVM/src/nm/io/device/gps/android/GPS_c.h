@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+#include <errno.h>
 
 #define GPSFUNC_START   7
 #define GPSFUNC_STOP    8
