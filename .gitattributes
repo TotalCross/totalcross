@@ -17,4 +17,3 @@ Launcher             -text
 *.jad                -text
 *.cod                -text
 *.mobileprovision    text  eol=lf
-Settings.java        merge=union
