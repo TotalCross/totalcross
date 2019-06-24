@@ -9,6 +9,13 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed bug with large CRC or size values overflowing 32 bit integer - TotalCross#529
 
+### Changed
+- tccodesign script
+  - Added --output parameter
+  - Removed lined that deletes UIStoryLaunch
+  - Fixed icon problem
+  - Changed to use a temporary folder during the process
+
 ## 4.3.7 - 2019-05-06
 
 ### Added
