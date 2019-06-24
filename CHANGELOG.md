@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.8 - 2019-05-31
+
+### Highlights
+- Added support for Android 64 bits - TotalCross#515
+
+### Fixed
+- Fixed bug with large CRC or size values overflowing 32 bit integer - TotalCross#529
+
 ## 4.3.7 - 2019-05-06
 
 ### Added
