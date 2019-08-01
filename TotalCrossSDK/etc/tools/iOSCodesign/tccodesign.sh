@@ -131,6 +131,7 @@ if [ "${apsType}" = "development" ] || [ "${apsType}" = "production" ] # mobile 
 then
 /usr/bin/codesign -f -s "${certificateName}" --entitlements "${tempDir}/TotalCross.entitlements" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
 else
+defaults delete "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Info.plist" UIBackgroundModes
 /usr/bin/codesign -f -s "${certificateName}" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
 fi
 
