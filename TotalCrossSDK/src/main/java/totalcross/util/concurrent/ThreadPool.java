@@ -88,7 +88,6 @@ public class ThreadPool {
     @Override
     protected void finalize() throws Throwable {
 	this.shutdown();
-	super.finalize();
     }
 
     private class PoolWorker extends Thread {
