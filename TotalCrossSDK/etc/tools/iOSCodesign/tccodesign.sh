@@ -75,12 +75,6 @@ echo ======================= LOG =========================
 $(mkdir -p "${workDir}/tmp")
 tempDir="$(mktemp -d ${workDir}/tmp/foo.XXXX)"
 
-echo "Removing temp files..."
-$(rm -R "${workDir}/build")
-$(rm -R "${workDir}/Assets.xcassets")
-$(rm -R "${workDir}/temp")
-$(rm "${workDir}/Info.plist")
-
 appDir=$(unzip -l "${ipaDest}" | egrep -o -m1 'Payload.*.app');
 appName=$(echo "${appDir}" | sed -e 's/Payload\/\(.*\).app/\1/')
 
@@ -91,13 +85,18 @@ cp -R "${BASEDIR}/TotalCross.xcarchive/" "${tempDir}/${appName}.xcarchive/"
 mv "${tempDir}/${appName}.xcarchive/Products/Applications/TotalCross.app" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
 
 # Extract plist and tczs from ipa
-unzip -jo "${ipaDest}" "${appDir}/Info.plist" -d "${tempDir}/"
+unzip -jo "${ipaDest}" "${appDir}/Info.plist" -d "${tempDir}"
+# Extract GoogleService-Info and convert to binary format
+unzip -jo "${ipaDest}" "${appDir}/GoogleService-Info.plist" -d "${tempDir}"
+# Extract all tczs
 unzip -jo "${ipaDest}" "${appDir}/*.tcz" -d "${tempDir}/tczs"
 
-# Copy tczs to temp/${appName}.xcarquive/Products/Applications/*.app/
+# Copy tczs to ${tempDir}/${appName}.xcarquive/Products/Applications/*.app/
 cp "${tempDir}"/tczs/*.tcz "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
-# Copia Infoplist to temp/${appName}.xcarquive/Products/Applications/*.app/
+# Copy Infoplist to ${tempDir}/${appName}.xcarquive/Products/Applications/*.app/
 cp "${tempDir}/Info.plist" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
+# Copy GoogleService-Info
+cp "${tempDir}/GoogleService-Info.plist" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
 
 # Build assets.car
 bash "${BASEDIR}/xcassetsGenerator.sh" "${sourceImage}" "${tempDir}"
@@ -113,11 +112,28 @@ defaults delete "${tempDir}/${appName}.xcarchive/Products/Applications/${appName
 /usr/libexec/PlistBuddy -x -c "Merge ${tempDir}/assets/partial.plist" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Info.plist"
 defaults write "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Info.plist" DTPlatformVersion 12.0
 defaults write "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Info.plist" DTSDKName iphoneos12.0
-	
+
+# Modify entitlements for push notification
+cp "${workDir}/TotalCross.entitlements" "${tempDir}/TotalCross.entitlements"
+
+ if [ $method != "development" ]
+ then
+     plutil -replace aps-environment -string production "${tempDir}/TotalCross.entitlements"
+ fi
+
 #Signing 
 rm -rf "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/_CodeSignature"
 cp "${provisionFile}" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/embedded.mobileprovision"
+
+#Check if mobileprovision contains aps-environment in its entitlements
+apsType=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:aps-environment' /dev/stdin <<< $(security cms -D -i "${provisionFile}"))
+if [ "${apsType}" = "development" ] || [ "${apsType}" = "production" ] # mobile provision contains aps-envenrionment in its Entitlements
+then
+/usr/bin/codesign -f -s "${certificateName}" --entitlements "${tempDir}/TotalCross.entitlements" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
+else
+defaults delete "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Info.plist" UIBackgroundModes
 /usr/bin/codesign -f -s "${certificateName}" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
+fi
 
 #Build ExportOptions.plist
 cp "${workDir}/ExportOptions.plist" "${tempDir}/"
@@ -154,6 +170,4 @@ defaults write "${tempDir}/${appName}.xcarchive/Info" ApplicationProperties -dic
 defaults write "${tempDir}/${appName}.xcarchive/Info" Name "${appName}"
 defaults write "${tempDir}/${appName}.xcarchive/Info" SchemeName "${appName}"
 
-rm -R "${workDir}/build"
-rm -R "${workDir}/Assets.xcassets"
 xcodebuild -exportArchive -archivePath "${tempDir}/${appName}.xcarchive" -exportPath "${output}" -exportOptionsPlist "${tempDir}/ExportOptions.plist"
