@@ -1,6 +1,8 @@
 -keepattributes MethodParameters
+
 -keepparameternames
 -keepattributes Deprecated
+-keepattributes Signature
 -keepattributes ReplacedByNativeOnDeploy
 -keepattributes *Annotation*
 -keepattributes Exceptions
@@ -36,6 +38,8 @@
 	<fields>;
     <methods>;
 }
+
+
 
 # public classes on the "ras" package
 -keep public class ras.** 
