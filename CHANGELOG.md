@@ -29,6 +29,18 @@ Using the argument is still allowed, but a message is printed informing of this 
 - Camera: partially reverted changes introduced in version 4.3.3 that caused problems on some devices - TotalCross#574
 - Grid: fixed column width sizing - TotalCross#480
 
+## 5.1.2 - 2019-08-05
+
+### Highlights
+- Added support for generating QR codes natively on the device - TotalCross#540
+
+> :information_source: **This feature is available on all supported devices, but not on the simulator yet. Refer to the documentation for more information and sample usage**
+
+### Fixed
+- Camera: Fixed `CAMERA_NATIVE_NOCOPY` - TotalCross#554
+- Fixed support to listening events on Android hardware buttons, broken on version 5.1.0 - TotalCross#557, TotalCross#559, TotalCross#560
+- ComboBox: Fixed support for option usePopMenu
+
 ## 4.3.9 - 2019-08-05
 
 ### Fixed
