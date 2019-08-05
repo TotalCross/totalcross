@@ -17,7 +17,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "..\tcvm\tcvm.h"
+#include "tcvm.h"
 #ifdef __cplusplus
 }
 #endif
