@@ -37,6 +37,11 @@ Using the argument is still allowed, but a message is printed informing of this 
 ### Added
 - Added classes `AsyncTask` and `ThreadPool` to improve concurrency support, refer to the documentation and the PlayBook for more information and samples
 
+## 5.1.1 - 2019-07-16
+
+### Fixed
+- Fixed push and local notifications for Android 8+ - TotalCross#316
+
 ## 5.1.0 - 2019-07-04
 
 ### Highlights
