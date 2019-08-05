@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 - tccodesign script: fixed support for push notification
 
 ### Added
-- Added classes AsyncTask and ThreadPool to improve concurrency support
+- Added classes `AsyncTask` and `ThreadPool` to improve concurrency support, refer to the documentation and the PlayBook for more information and samples
 
 ## 4.3.8 - 2019-05-31
 
