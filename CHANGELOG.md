@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.3.9 - 2019-08-05
+
+### Fixed
+- tccodesign script: fixed support for push notification
+
+### Added
+- Added classes AsyncTask and ThreadPool to improve concurrency support
+
 ## 4.3.8 - 2019-05-31
 
 ### Highlights
