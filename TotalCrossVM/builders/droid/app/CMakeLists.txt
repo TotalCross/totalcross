@@ -298,7 +298,7 @@ include_directories(${TC_SRCDIR}/zlib)
 
 include_directories(${TC_SRCDIR}/zlib)
 
-add_definitions(-DTOTALCROSS -DTC_EXPORTS -DANDROID -DFORCE_LIBC_ALLOC)
+add_definitions(-DTOTALCROSS -DTC_EXPORTS -DANDROID)
 add_library(tcvm SHARED ${SOURCES})
 
 
