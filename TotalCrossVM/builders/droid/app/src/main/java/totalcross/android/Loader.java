@@ -176,72 +176,54 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       Launcher4A.zxingResult = result.getContents();
       Launcher4A.callingZXing = false;
       break;
-         case EXTCAMERA_RETURN:
-        {
-            if (resultCode == RESULT_OK) {
-                String capturedImageFilePath = capturedImageURI.getPath();
+        case EXTCAMERA_RETURN: {
+            if (capturedImageURI == null) {
+                AndroidUtils.debug("capturedImageURI is null!");
+                Launcher4A.pictureTaken(0);
+                break;
+            }
+            String[] projection = { MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED };
+            Cursor cursor = getContentResolver().query(capturedImageURI, projection, null, null, null);
+
+            String capturedImageFilePath = null;
+            if (cursor.moveToFirst()) {
+                capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+            }
+            if (capturedImageFilePath == null) {
+                resultCode = RESULT_OK + 1; // error, no file
+            } else {
                 try {
                     AndroidUtils.copyFile(capturedImageFilePath, imageFN);
-                    Launcher4A.pictureTaken(0);
+
+                    long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
+                    autoRotatePhoto(imageFN);
+                    // if the file was deleted, delete from database too
+                    if (cameraType == CAMERA_NATIVE_NOCOPY) {
+                        try {
+                            // on android 2.3 the getContentResolver() code does not work, so we
+                            // just ensure that we delete the file
+                            try {
+                                new File(capturedImageFilePath).delete();
+                            } catch (Exception e) {
+                            }
+                            getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID
+                                    + "=" + cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)), null);
+                            removeLastImageFromGallery(date);
+                        } catch (Exception e) {
+                            AndroidUtils.handleException(e, false);
+                        }
+                    }
+                } catch (FileNotFoundException e) {
+                    resultCode = RESULT_OK + 1; // error, can't open stream
+                    AndroidUtils.debug("It seems you have cancelled out the photo...");
                 } catch (IOException e) {
+                    resultCode = RESULT_OK + 1; // error, generic IO excpetion
                     AndroidUtils.handleException(e, false);
                 }
-                try {
-                    new File(capturedImageFilePath).delete();
-                } catch (Exception e) {
-                    AndroidUtils.handleException(e, false);
-                }
-            } else {
-                Launcher4A.pictureTaken(1);
-                break;
             }
-            
-            if (true) {
-                break;
-            }
-      String[] projection = { MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED };
-      Cursor cursor = getContentResolver().query(capturedImageURI, projection, null, null, null);
-
-      String capturedImageFilePath = null;
-      if (cursor.moveToFirst()) {
-        capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-      }
-      if (capturedImageFilePath == null) {
-        resultCode = RESULT_OK + 1; // error, no file
-      } else {
-        try {
-          AndroidUtils.copyFile(capturedImageFilePath, imageFN);
-
-          long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
-          autoRotatePhoto(imageFN);
-          // if the file was deleted, delete from database too
-          if (cameraType == CAMERA_NATIVE_NOCOPY) {
-            try {
-              // on android 2.3 the getContentResolver() code does not work, so we
-              // just ensure that we delete the file
-              try {
-                new File(capturedImageFilePath).delete();
-              } catch (Exception e) {
-              }
-              getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-									BaseColumns._ID + "=" + cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)),
-									null);
-              removeLastImageFromGallery(date);
-            } catch (Exception e) {
-              AndroidUtils.handleException(e, false);
-            }
-          }
-        } catch (FileNotFoundException e) {
-          resultCode = RESULT_OK + 1; // error, can't open stream
-          AndroidUtils.debug("It seems you have cancelled out the photo...");
-        } catch (IOException e) {
-          resultCode = RESULT_OK + 1; // error, generic IO excpetion
-          AndroidUtils.handleException(e, false);
+            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            break;
         }
-      }
-      Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
-      break;
-    }
     }
   }
 
@@ -420,24 +402,13 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
                 i.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(i, SELECT_PICTURE);
             } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                // Ensure that there's a camera activity to handle the intent
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    // Create the File where the photo should go
-                    File photoFile = null;
-                    try {
-                        photoFile = createImageFile();
-                    } catch (IOException ex) {
-                        // Error occurred while creating the File
-                        ex.printStackTrace();
-                    }
-                    // Continue only if the File was successfully created
-                    if (photoFile != null) {
-                        capturedImageURI = Uri.fromFile(new File(photoFile.getAbsolutePath()));
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getFileUri4Intent(photoFile));
-                        startActivityForResult(takePictureIntent, EXTCAMERA_RETURN);
-                    }
-                }
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
+                values.put(MediaStore.Images.Media.IS_PRIVATE, 1);
+                capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);
+                startActivityForResult(intent, EXTCAMERA_RETURN);
             } else if ("SK GT-7340".equals(deviceId)) {
                 Uri outputFileUri = getFileUri4Intent(new File(s));
                 Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
