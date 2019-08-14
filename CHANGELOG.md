@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.4.0 - 2019-08-14
+
+### Fixed
+- Android: removed compile flag that caused applications to be unbearably slow in old or low-end devices - TotalCross#561, TotalCross#580
+- tccodesign script: fixed script not copying pkg files - TotalCross#572
+- Camera: partially reverted changes introduced in version 4.3.3 that caused problems on some devices - TotalCross#574
+- Grid: fixed column width sizing - TotalCross#480
+
 ## 4.3.9 - 2019-08-05
 
 ### Fixed
