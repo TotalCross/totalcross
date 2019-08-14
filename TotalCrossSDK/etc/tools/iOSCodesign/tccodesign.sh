@@ -90,6 +90,8 @@ unzip -jo "${ipaDest}" "${appDir}/Info.plist" -d "${tempDir}"
 unzip -jo "${ipaDest}" "${appDir}/GoogleService-Info.plist" -d "${tempDir}"
 # Extract all tczs
 unzip -jo "${ipaDest}" "${appDir}/*.tcz" -d "${tempDir}/tczs"
+# Extract files in pkg folder
+unzip -jo "${ipaDest}" "${appDir}/pkg/*" -d "${tempDir}/pkg"
 
 # Copy tczs to ${tempDir}/${appName}.xcarquive/Products/Applications/*.app/
 cp "${tempDir}"/tczs/*.tcz "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
@@ -97,6 +99,9 @@ cp "${tempDir}"/tczs/*.tcz "${tempDir}/${appName}.xcarchive/Products/Application
 cp "${tempDir}/Info.plist" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
 # Copy GoogleService-Info
 cp "${tempDir}/GoogleService-Info.plist" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
+# Copy files in pkg folder
+cp -R "${tempDir}/pkg" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/pkg"
+
 
 # Build assets.car
 bash "${BASEDIR}/xcassetsGenerator.sh" "${sourceImage}" "${tempDir}"
