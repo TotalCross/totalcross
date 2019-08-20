@@ -296,9 +296,11 @@ include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
 include_directories(${TC_SRCDIR}/zlib)
 
-include_directories(${TC_SRCDIR}/zlib)
-
 add_definitions(-DTOTALCROSS -DTC_EXPORTS -DANDROID)
+if ("${ANDROID_ABI}" MATCHES "arm64-v8a")
+	add_definitions(-DFORCE_LIBC_ALLOC)
+endif()
+
 add_library(tcvm SHARED ${SOURCES})
 
 
