@@ -24,6 +24,9 @@ TotalCrossVM/src/launchers/android/gen
 TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/UserInterfaceState.xcuserstate
 TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/xcdebugger/Breakpoints.xcbkptlist
 
+# Intermediate files
+*.o
+
 # Files generated from VisualStudio
 *.ilk
 *.exp
