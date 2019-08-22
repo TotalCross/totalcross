@@ -1,6 +1,14 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.4.1 - 2019-08-22
+
+### Highlights
+- Android: raised target sdk version to API level 28 to comply with Play Store's latest requirements.
+
+### Fixed
+- Android: fixed support for 64 bits devices
+
 ## 4.4.0 - 2019-08-14
 
 ### Fixed
