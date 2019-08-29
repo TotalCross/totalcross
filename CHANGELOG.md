@@ -2,7 +2,15 @@
 All notable changes to this project will be documented in this file.
 
 ## 5.1.3 - 2019-08-28
-TODO
+
+### Fixed
+- Edit
+  - Fixed bug with masks containing two consecutive non-alphanumeric characters -  [TotalCross#581](https://gitlab.com/totalcross/TotalCross/issues/581#note_203298404)
+  - When used for dates, the calendar now properly opens at the date informed on the edit - TotalCross#550
+  - Fixed getCopy() to properly function when the Edit uses the field decimalPlaces - TotalCross#505
+- Spinner: fixed Spinner animation repainting over previous frames - TotalCross#568
+- OutlinedEdit: fixed NPE when using the cancel button on CalendarBox - TotalCross#547
+- PopupMenu: fixed performance issues with Material style caused by onPaint recreating the ninepatch on every refresh. This change also affects the performance of other components that may use PopupMenu, such as ComboBox.
 
 ## 4.4.2 - 2019-11-28
 
