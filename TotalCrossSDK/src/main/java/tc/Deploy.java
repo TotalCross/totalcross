@@ -122,20 +122,25 @@ public class Deploy {
           new Deployer4Applet();
         }
         if ((options & BUILD_IPHONE) != 0) {
-          if (Deployer4IPhoneIPA.certStorePath == null) {
-            System.out.println("Warning: /m option not found, ignoring iOS deployment.");
-          } else {
-            if (Deployer4IPhoneIPA.appleCertStore == null) {
-              throw new DeployerException(
-                  "Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: "
-                      + Deployer4IPhoneIPA.certStorePath);
-            } else if (Deployer4IPhoneIPA.mobileProvision == null) {
-              throw new DeployerException(
-                  "Failed to build the ipa for iOS distribution: Couldn't find the mobile provision at: "
-                      + Deployer4IPhoneIPA.certStorePath);
-            }
-            new Deployer4IPhoneIPA();
+          if (Deployer4IPhoneIPA.certStorePath == null) { // Use default
+            Deployer4IPhoneIPA.certStorePath = DeploySettings.etcDir + "tools"+ File.separator + "ipa";
+            Deployer4IPhoneIPA.buildIPA = true;
+            Deployer4IPhoneIPA.mobileProvision =
+                    new File(Deployer4IPhoneIPA.certStorePath, "dummy.mobileprovision");
+            Deployer4IPhoneIPA.appleCertStore =
+                    new File(Deployer4IPhoneIPA.certStorePath, "dummyStore.p12");
           }
+          if (Deployer4IPhoneIPA.appleCertStore == null) {
+            throw new DeployerException(
+                    "Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: "
+                            + Deployer4IPhoneIPA.certStorePath);
+          } else if (Deployer4IPhoneIPA.mobileProvision == null) {
+            throw new DeployerException(
+                    "Failed to build the ipa for iOS distribution: Couldn't find the mobile provision at: "
+                            + Deployer4IPhoneIPA.certStorePath);
+          }
+          Deployer4IPhoneIPA.iosKeystoreInit();
+          new Deployer4IPhoneIPA();
         }
         if ((options & BUILD_WP8) != 0) {
           new Deployer4WP8();
@@ -318,7 +323,9 @@ public class Deploy {
             }
           }
           break;
-        case 'm':
+        case 'm': // This parameters is now deprecated
+
+          Deployer4IPhoneIPA.isUsingMParam = true;
           Deployer4IPhoneIPA.buildIPA = true;
           File folder = new File(args[++i]);
           Deployer4IPhoneIPA.certStorePath = folder.getPath();
@@ -328,7 +335,6 @@ public class Deploy {
               String fileNameLower = fileName.toLowerCase();
               if (fileNameLower.endsWith(".mobileprovision")) {
                 Deployer4IPhoneIPA.mobileProvision = new File(dir, fileName);
-                System.out.println("Mobile provision: " + Deployer4IPhoneIPA.mobileProvision.getAbsolutePath());
               } else if (fileNameLower.endsWith(".p12")) {
                 Deployer4IPhoneIPA.appleCertStore = new File(dir, fileName);
               }

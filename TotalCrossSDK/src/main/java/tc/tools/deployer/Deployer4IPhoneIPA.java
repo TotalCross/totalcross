@@ -74,6 +74,8 @@ public class Deployer4IPhoneIPA {
 
   static MobileProvision Provision;
 
+  public static boolean isUsingMParam;
+
   public Deployer4IPhoneIPA() throws Exception {
     if (mobileProvision == null || appleCertStore == null || iosKeyStore == null
         || iosDistributionCertificate == null) {
@@ -142,6 +144,18 @@ public class Deployer4IPhoneIPA {
     } catch (FileNotFoundException e) {
       System.out
           .println("Could not find 'GoogleService-Info.plist', thus Firebase will be ignored further on (iOS deploy)");
+    }
+
+    /**
+     * Parameter /m deprecated
+     */
+    if(isUsingMParam) {
+      System.out.println("####################################################################################################################");
+      System.out
+              .println("Parameter /m is deprecated! Now you can package an ipa file without using certificate. Certificates are required in \n" +
+                      "a next step for resigning your iOS app.\n" +
+                      "See: https://totalcross.gitbook.io/playbook/learn-totalcross/deploy-your-app-android-ios-and-windows/deploy-ios");
+      System.out.println("####################################################################################################################");
     }
 
     Hashtable ht = new Hashtable(13);
