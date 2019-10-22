@@ -58,7 +58,7 @@ Using the argument is still allowed, but a message is printed informing of this 
 - tccodesign script: fixed support for push notification
 
 ### Added
-- Added classes `[AsyncTask](https://totalcross.gitbook.io/playbook/apis/asynchronous-task#using-asynctask-class-to-execute-background-tasks)` and `ThreadPool` to improve concurrency support, refer to the documentation and the PlayBook for more information and samples
+- Added classes [AsyncTask](https://totalcross.gitbook.io/playbook/apis/asynchronous-task#using-asynctask-class-to-execute-background-tasks) and `ThreadPool` to improve concurrency support, refer to the documentation and the PlayBook for more information and samples
 
 ## 5.1.1 - 2019-07-16
 
