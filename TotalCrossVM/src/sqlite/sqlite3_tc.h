@@ -23,12 +23,14 @@
 #include <linux/mman.h>
 #endif
 
+#if !defined(FORCE_LIBC_ALLOC)
 #undef malloc
 #undef free
 #undef realloc
 #define malloc xmalloc
 #define free xfree
 #define realloc xrealloc
+#endif
 
 /* other changes to work with totalcross:
 
