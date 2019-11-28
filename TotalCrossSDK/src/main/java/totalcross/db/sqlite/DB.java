@@ -18,6 +18,8 @@ package totalcross.db.sqlite;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 
+import totalcross.util.Vector;
+
 /*
  * This class is the interface to SQLite. It provides some helper functions
  * used by other parts of the driver. The goal of the helper functions here
@@ -39,8 +41,8 @@ abstract class DB implements Codes {
   long commit;
 
   /** Tracer for statements to avoid unfinalized statements on db close. */
-  //private Vector stmts = new Vector(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
-  //public totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
+  private Vector stmts = new Vector(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
+  public totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
 
   public static interface ProgressObserver {
     public void progress(int remaining, int pageCount);
@@ -172,11 +174,11 @@ abstract class DB implements Codes {
     }
     closed = true;
     // finalize any remaining statements before closing db
-    //        synchronized (stmtsLock) 
-    //        {
-    //            for (int i = stmts.size(); --i >= 0;)
-    //               ((Stmt)stmts.items[i]).close();
-    //        }
+    synchronized (stmtsLock) 
+    {
+      for (int i = stmts.size(); --i >= 0;)
+          ((Stmt)stmts.items[i]).close();
+    }
 
     // remove memory used by user-defined functions
     //free_functions();
@@ -205,10 +207,10 @@ abstract class DB implements Codes {
       finalize(stmt);
     }
     stmt.pointer = prepare(stmt.sql);
-    //        synchronized (stmtsLock) 
-    //        {
-    //           stmts.addElement(stmt);
-    //        }
+    synchronized (stmtsLock) 
+    {
+      stmts.addElement(stmt);
+    }
   }
 
   @Override
