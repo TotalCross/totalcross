@@ -1,6 +1,18 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.4.2 - 2019-11-28
+
+### Highlights
+- Deploy: Deprecated argument '/m'
+
+The deployer now automatically uses the dummy certificate and mobile provision located inside the folder {TOTALCROSS3_HOME}/etc/tools/ipa. 
+
+Using the argument is still allowed, but a message is printed informing of this change.
+
+### Fixed
+- Android: fixed SQLite performance on 64 bits devices - TotalCross#588
+
 ## 4.4.1 - 2019-08-22
 
 ### Highlights
