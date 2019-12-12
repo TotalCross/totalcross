@@ -68,7 +68,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:..\\..\\..\\..\\..\\output\\release\\TotalCrossSDK\\dist\\vm\\wince\\TotalCross.CAB"
+        "OutputFilename" = "8:..\\..\\..\\..\\output\\release\\TotalCrossSDK\\dist\\vm\\wince\\TotalCross.CAB"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
         "SignOutput" = "11:FALSE"
@@ -82,7 +82,7 @@
         {
             "{BA458234-9B71-4F46-8107-E91156377184}:_197BE8F6E62E45A084B8960698CA4F88"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\TotalCross\\LitebaseSDK\\dist\\lib\\LitebaseLib.tcz"
+            "SourcePath" = "8:..\\..\\..\\..\\LitebaseSDK\\dist\\lib\\LitebaseLib.tcz"
             "TargetName" = "8:LitebaseLib.tcz"
             "Tag" = "8:"
             "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"
@@ -190,7 +190,7 @@
         {
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_21A1A9411F234F248ED3EED8B51565A3"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\output\\release\\LitebaseSDK\\dist\\lib\\wince\\Litebase.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\output\\release\\LitebaseSDK\\dist\\lib\\wince\\Litebase.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"
@@ -216,7 +216,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_BFA146B52640409DA38BD571171AD87E"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\output\\release\\TotalCrossSDK\\dist\\vm\\wince\\TCVM.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\output\\release\\TotalCrossSDK\\dist\\vm\\wince\\TCVM.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"

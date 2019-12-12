@@ -107,7 +107,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../../output/release/TotalCrossSDK/dist/vm/win32"
+			OutputDirectory="$(SolutionDir)/../../../output/release/TotalCrossSDK/dist/vm/win32"
 			IntermediateDirectory="$(SolutionDir)/build/tmp/$(ProjectName)-$(PlatformName)-$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"

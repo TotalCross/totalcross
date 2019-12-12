@@ -1,5 +1,6 @@
 *.txt                text
 *.vcproj             eol=crlf
+*.vddproj            eol=crlf
 *.sh                 eol=lf
 *.mk                 eol=lf
 Makefile             eol=lf

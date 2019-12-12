@@ -13,14 +13,14 @@
 <property name="sdk.root"     value="${basedir}"/>
 
 <!-- default path of the TotalCrossSDK, could be overriden with -Dtcsdk.root=<path> -->
-<property name="tcsdk.root"   value="${sdk.root}/../../TotalCross/TotalCrossSDK"/>
+<property name="tcsdk.root"   value="${sdk.root}/../TotalCrossSDK"/>
 
 <description>
   This buildfile is used to build the Litebase java based components.
 </description>
 
 <!-- import ANT Contrib -->
-<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>  
+<taskdef classpath="${tcsdk.root}/etc/tools/ant/ant-contrib-1.0b3.jar" resource="net/sf/antcontrib/antcontrib.properties"/>  
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    setup all build process properties.

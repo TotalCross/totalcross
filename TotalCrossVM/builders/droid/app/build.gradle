@@ -88,7 +88,7 @@ android {
     task copyApk << {
         copy {
 			from fileTree('build/outputs/apk').files
-			into '../../../../../output/release/TotalCrossSDK/dist/vm/android'
+			into '../../../../output/release/TotalCrossSDK/dist/vm/android'
 			include '**/app-standard-release.apk'
 			rename { String fileName ->
 				fileName.replace('app-standard-release', 'TotalCross')
@@ -96,7 +96,7 @@ android {
         }
         copy {
             from zipTree('build/outputs/apk/singleApk/release/app-singleApk-release.apk').files
-            into '../../../../../output/release/TotalCrossSDK/etc/tools/android'
+            into '../../../../output/release/TotalCrossSDK/etc/tools/android'
             include 'AndroidManifest.xml', 'resources.arsc'
             rename { String fileName ->
                 fileName.replace('.', '_singleapk.')
@@ -104,7 +104,7 @@ android {
         }
         copy {
             from zipTree('build/outputs/apk/includeSms/release/app-includeSms-release.apk').files
-            into '../../../../../output/release/TotalCrossSDK/etc/tools/android'
+            into '../../../../output/release/TotalCrossSDK/etc/tools/android'
             include 'AndroidManifest.xml', 'resources.arsc'
             rename { String fileName ->
                 fileName.replace('.', '_includeSms.')
@@ -112,7 +112,7 @@ android {
         }
         copy {
             from fileTree('build/intermediates/res/standard/release').files
-            into '../../../../../output/release/TotalCrossSDK/etc/launchers/android'
+            into '../../../../output/release/TotalCrossSDK/etc/launchers/android'
             include 'resources-standardRelease.ap_'
             rename { String fileName ->
                 fileName.replace('-standardRelease', '')

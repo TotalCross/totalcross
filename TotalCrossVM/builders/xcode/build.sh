@@ -1,83 +1,105 @@
 #!/bin/bash
 
-type=""
-norasid=""
-password=""
-keychain="$HOME/Library/Keychains/$(whoami).keychain"
-extra_defines=""
-
-function display_help
-{
-  echo "`basename $0` arguments:"
-  echo "  -release <type>    specifies the build release type, either demo, ras or noras (which in this case must also specify the id)."
-  echo "  -help              this help message"
-  echo "  -keychain <path>   path to the keychain, the default keychain will be used if not provided"
-  echo "  -password <pw>     password to unlock the keychain"
-  exit
+mensagem2jeff() {
+	echo "=== $* ==="
 }
 
-while [ $1 ];
-do
-  case "$1" in
-    -c|-clean)
-      do_clean=1
-      shift
-      ;;
-    -r|-release)
-      shift
-      type="$1"
-      if [ $type == "noras" ]; then
-        shift
-        export norasid="$1"
-      fi
-      shift
-      ;;
-    -p|-password)
-      shift
-      password="$1"
-      shift
-      ;;
-    -k|-keychain)
-      shift
-      keychain="$1"
-      shift
-      ;;
-    -h|-help)
-      display_help # a function ;-)
-      # no shifting needed here, we'll quit!
-      exit
-      ;;
-    *)
-      echo "Error: Unknown option: $1" >&2
-      exit 1
-      ;;
-  esac
-done
+if [ false ]; then
+(
+  mensagem2jeff "STARTED TC-SDK BUILD"
 
-if [ $type != "demo" ] && [ $type != "ras" ] && [ $type != "noras" ]; then
-	echo "Error: Must specify a build type, either demo, ras or noras."
-	exit 2
+  curl https://totalcross-transfer.s3-us-west-2.amazonaws.com/ScanditBarcodeScanner.framework-b1.zip --output ScanditBarcodeScanner.framework-b1.zip
+  unzip ScanditBarcodeScanner.framework-b1.zip
+
+  if [ -f Podfile ]; then
+    mensagem2jeff "COM Podfile"
+    
+    #which pod && POD_EXEC=pod || {
+      # pod not installed in path
+      #POD_EXEC=`gem which cocoapods | sed 's_gems/.*$_bin/pod_'`
+    #}
+    #echo $POD_EXEC
+    #$POD_EXEC install
+    /usr/local/bin/pod install
+    
+    /usr/bin/xcodebuild -workspace TotalCross.xcworkspace -list
+  fi
+  
+  xcode_run() {
+    echo "rodando o build para schema '$1'"
+    /usr/bin/xcodebuild -workspace TotalCross.xcworkspace -scheme "$1" -configuration Release build GCC_PREPROCESSOR_DEFINITIONS="POSIX linux darwin TOTALCROSS TC_EXPORTS FORCE_LIBC_ALLOC ENABLE_DEMO" RUN_CLANG_STATIC_ANALYZER=${USE_STATIC_ANALYZER}    
+  }
+  
+  xcode_clean() {
+    echo "rodando o clean para schema '$1'"
+    /usr/bin/xcodebuild -workspace TotalCross.xcworkspace -scheme "$1" -configuration Release clean GCC_PREPROCESSOR_DEFINITIONS="POSIX linux darwin TOTALCROSS TC_EXPORTS FORCE_LIBC_ALLOC ENABLE_DEMO" RUN_CLANG_STATIC_ANALYZER=${USE_STATIC_ANALYZER}    
+  }
+  
+  has_google_toolbox=false
+  has_pods_totalcross=false
+  
+  schemas=`/usr/bin/xcodebuild -workspace TotalCross.xcworkspace -list`
+  
+  for schema in $schemas; do
+    xcode_clean "$schema"
+    
+    echo "analizando schema $schema"
+    case "$schema" in
+      GoogleToolboxForMac)
+        has_google_toolbox=true
+        ;;
+      Pods-TotalCross)
+        has_pods_totalcross=true
+        ;;
+    esac
+  done
+  
+  $has_google_toolbox && xcode_run GoogleToolboxForMac
+  $has_pods_totalcross && xcode_run Pods-TotalCross
+  
+  for schema in $schemas; do
+    case "$schema" in
+      TotalCross)
+        echo "deixando schema TotalCross por último"
+        ;;
+      GoogleToolboxForMac|Pods-TotalCross|*copy)
+        echo "ignorando schema $schema"
+        ;;
+      *)
+        xcode_run "$schema"
+        ;;
+    esac
+  done
+  xcode_run TotalCross
+  ######/usr/bin/xcodebuild -workspace TotalCross.xcworkspace -scheme TotalCross -configuration Release clean build GCC_PREPROCESSOR_DEFINITIONS="POSIX linux darwin TOTALCROSS TC_EXPORTS FORCE_LIBC_ALLOC ENABLE_DEMO" RUN_CLANG_STATIC_ANALYZER=${USE_STATIC_ANALYZER}
+  #else
+  #  mensagem2jeff "SEM Podfile"
+  #  /usr/bin/xcodebuild -project tcvm.xcodeproj -alltargets -configuration Release clean build GCC_PREPROCESSOR_DEFINITIONS="POSIX linux darwin TOTALCROSS TC_EXPORTS FORCE_LIBC_ALLOC ENABLE_DEMO" RUN_CLANG_STATIC_ANALYZER=${USE_STATIC_ANALYZER}
+  #fi
+
+  
+)
+
+(
+  if [ ! -f ${PROJECT_PATH}/Podfile ]; then
+  mensagem2jeff "IGNORANDO BUILD LITEBASE POR QUESTÕES DE JÁ FOI FEITO NA NOVA ITERAÇÃO"
+    #cd TotalCross/LitebaseSDK/builders/xcode
+    #mensagem2jeff "BUILD LITEBASE"
+    #/usr/bin/xcodebuild -alltargets -project Litebase.xcodeproj -configuration Release clean build GCC_PREPROCESSOR_DEFINITIONS="POSIX linux darwin LB_EXPORTS FORCE_LIBC_ALLOC ENABLE_DEMO" RUN_CLANG_STATIC_ANALYZER=${USE_STATIC_ANALYZER}
+  else
+    mensagem2jeff "IGNORANDO BUILD LITEBASE POR QUESTÕES DE JÁ FOI FEITO COM PODFILE"
+  fi
+)
+
+(
+  if [ -d TotalCross/TotalCrossVM/libs/zxing/iphone/ZXingWidget ]
+  then
+     mensagem2jeff "BUILD ZXING"
+     cd TotalCross/TotalCrossVM/libs/zxing/iphone/ZXingWidget
+     /usr/bin/xcodebuild -alltargets -project ZXingWidget.xcodeproj -configuration Release clean build RUN_CLANG_STATIC_ANALYZER=${USE_STATIC_ANALYZER}
+  fi
+)
+
+mensagem2jeff "TERMINOU BUILD BONITO"
+
 fi
-if [ $type == "noras" ] && [ $norasid == "" ]; then
-	echo "Error: Must specify a norasid for build type noras."
-	exit 3
-fi
-
-if [ $type == "demo" ]; then
-   extra_defines="ENABLE_DEMO"
-fi
-
-cd $(dirname $0)
-basedir=$(cd -- "../../../.." && pwd -P 2>/dev/null | pwd -P)
-
-cd $basedir/Litebase/LitebaseSDK/builders/xcode
-/usr/bin/xcodebuild -alltargets -project Litebase.xcodeproj -configuration Release clean build GCC_PREPROCESSOR_DEFINITIONS="POSIX linux darwin LB_EXPORTS FORCE_LIBC_ALLOC $extra_defines"
-
-cd $basedir/TotalCross/TotalCrossVM/builders/xcode
-/usr/bin/xcodebuild -alltargets -project tcvm.xcodeproj -configuration Release clean build GCC_PREPROCESSOR_DEFINITIONS="POSIX linux darwin TOTALCROSS TC_EXPORTS FORCE_LIBC_ALLOC $extra_defines"
-
-/usr/bin/security list-keychains -s $keychain
-/usr/bin/security default-keychain -d user -s $keychain
-/usr/bin/security unlock-keychain -p $password $keychain
-/usr/bin/xcodebuild -alltargets -project TotalCross.xcodeproj -configuration Release build
-/usr/bin/xcrun -sdk iphoneos PackageApplication -v $basedir/TotalCross/TotalCrossVM/builders/xcode/build/Release-iphoneos/TotalCross.app -o $basedir/TotalCross/TotalCrossVM/builders/xcode/build/Release-iphoneos/TotalCross.ipa
