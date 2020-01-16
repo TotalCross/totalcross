@@ -61,7 +61,7 @@ class SQLColumnListClause
 
       SQLResultSetField[] fieldList2 = columnListClause.fieldList;
 
-      // If a field of one list has an index of a column different of the same member of the other list or they don´t match concerning the ordering 
+      // If a field of one list has an index of a column different of the same member of the other list or they don't match concerning the ordering 
       // of the result, the lists are considered to be different.
       while (--len >= 0)
          if (fieldList[len].tableColIndex != fieldList2[len].tableColIndex)

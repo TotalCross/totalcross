@@ -24,9 +24,6 @@
   This build file is used to build the TotalCross SDK.
 </description>
 	
-<!-- import ANT Contrib -->
-<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         setup all build process properties.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
@@ -37,10 +34,13 @@
 <property name="docs"                   value="${sdk.root}/docs"/>
 <property name="fonts"                  value="${etc}/fonts"/>
 <property name="tools"                  value="${etc}/tools"/>
-<property name="output"                 value="${sdk.root}/../../temp"/>
-<property name="target"                 value="${sdk.root}/../../output"/>
+<property name="output"                 value="${sdk.root}/../temp"/>
+<property name="target"                 value="${sdk.root}/../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 <property name="lb.src"                 value="${sdk.root}/../LitebaseSDK/src/java"/>
+
+<!-- import ANT Contrib -->
+<taskdef classpath="${etc}/tools/ant/ant-contrib-1.0b3.jar" resource="net/sf/antcontrib/antcontrib.properties"/>
 
 <!-- define proguard task -->
 <taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpath="${etc}/obfuscator/proguard.jar" />
