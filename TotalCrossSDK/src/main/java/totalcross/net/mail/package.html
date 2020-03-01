@@ -1,0 +1,70 @@
+<html>
+<BODY>
+Support for sending and receiving e-mails. Check the MailTest sample.
+<br><br>
+First you need to configure the SMTP properties:
+<pre>
+MailSession session = MailSession.getDefaultInstance();
+session.put(MailSession.SMTP_HOST, new Properties.Str("smtp.sample.com")); // SMTP host address
+session.put(MailSession.SMTP_PORT, new Properties.Int(25)); // unless noticed otherwise by the server, SMTP uses port 25
+session.put(MailSession.SMTP_USER, new Properties.Str("foo@bar.com")); // usually the full e-mail address
+session.put(MailSession.SMTP_PASS, new Properties.Str("VerySecurePassword")); // e-mail account password
+</pre>
+Sending a simple e-mail message:
+<pre>
+Message myMessage = new Message(); // our new message
+myMessage.from = new Address("foo@bar.com", "Mr. Foo"); // the e-mail address I wan't to be visible to the recipient and a personal name.
+myMessage.addRecipient(RecipientType.TO, new Address("someone@somewhere.com", null)); // the recipient of the e-mail
+myMessage.subject = "Testing SMTP with authentication"; // e-mail subject
+myMessage.setText("This is just a test message"); // simple e-mail with plain text
+Transport.send(myMessage); // sends our message using the propert Transport for this Message, and the properties defined on the default MailSession.
+</pre>
+Sending an e-mail with attachments:
+<pre> 
+// text part
+Part textPart = new Part();
+textPart.setText("Plain text");
+// image part
+Part imagePart = new Part();
+File image = new File("/myImage.png", File.READ_WRITE); // keep file open!
+imagePart.setContent(image, "image/png");
+imagePart.fileName = "myImage.png";
+// create the multiparts
+Multipart multipart = new Multipart();
+multipart.addPart(textPart);
+multipart.addPart(imagePart);
+// create the message
+Message myMessage = new Message();
+myMessage.setContent(multipart);
+myMessage.subject = "E-mail with attachment";
+myMessage.from = new Address("from@someone.com", "Someone name");
+myMessage.addRecipient(Message.RecipientType.TO, new Address("to@url.com", "ToMe"));
+// send the message
+Transport.send(myMessage);
+// close the image file AFTER the message is sent
+image.close();
+</pre>
+Receive a message, and open the first one available.
+<pre>
+MailSession session = MailSession.getDefaultInstance();
+session.put(MailSession.POP3_HOST, new Properties.Str("pop3.sample.com"));
+session.put(MailSession.POP3_PORT, new Properties.Int(110));
+session.put(MailSession.POP3_USER, new Properties.Str("foo@bar.com"));
+session.put(MailSession.POP3_PASS, new Properties.Str("VerySecurePassword"));
+
+Store store = MailSession.getDefaultInstance().getStore("pop3");
+store.connect();
+Folder folder = store.getFolder("INBOX");
+folder.open();
+int messageCount = folder.getMessageCount();
+if (messageCount > 0)
+{
+   Message msg = folder.getMessage(1);
+   String msgContent = (String) msg.getContent();
+   if (msgContent != null)
+      new MessageBox(msg.from.address, msgContent).popup();
+}
+folder.close(true);
+store.close();</pre>
+</body>
+</html>
