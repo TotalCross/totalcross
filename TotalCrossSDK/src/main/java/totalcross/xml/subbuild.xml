@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+
+
+-->
+
+<project name="buildlib">
+
+<import file="${sdk.root}/build.xml"/>
+
+<target name="init"/> <!-- avoid calling init from the main build.xml -->
+
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    These parameters are set by the caller and may be overriden:
+    <property name="warp.files"   value="${temp.arch.o}" />
+    <property name="warp.options" value="/lg" />>
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="sub-warp">
+  <antcall target="app-warp">
+    <param name="warp.name"         value="XPlatXML"/>
+    <param name="warp.includes"     value="superwaba.ext.xplat.xml"/>
+    <param name="warp.targetDir"    value="${lib}/xplat"/>
+  </antcall>
+</target>
+
+</project>

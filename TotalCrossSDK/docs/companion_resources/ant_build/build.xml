@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+-->
+
+<project name="ACME" default="deploy" basedir=".">
+
+<description>
+  Sample build file for TotalCross applications.
+</description>
+
+<!-- this target displays a help message which documents this configuration file features -->
+
+<target name="help">
+  <echo message="Type 'ant -p' to list all available targets."/>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: init
+
+-description:
+        setup all build process properties.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="init">
+
+  <!-- PROPERTIES THAT MUST BE CUSTOMIZED -->
+
+  <!-- The SDK root -->
+  <property name="sdk.root"   value="C:/TotalCrossSDK"/>
+
+  <!-- Place here one of these options:
+     1. The path and name of the class that extends MainWindow (must end with .class)
+        E.G.: C:/ACME/main/Live.class
+     2. The path to the jar that contains all classes and resources
+        E.G.: C:/ACME/Live.jar
+     3. The path to where the class that extends MainWindow is located
+        E.G.: C:/ACME/main
+     Note that the full path is not required, it can be a relative path.
+     The deployed files will be stored in the current path.
+  -->
+  <property name="app.name"   value=""/>
+
+  <!-- Platforms to deploy. E.G.: -palm -wince -win32
+       Note: only -palm -iphone are supported under linux -->
+  <property name="platforms"  value="-all"/>
+
+  <!-- Any extra arguments you want to pass to the deployer -->
+  <property name="extra.args" value=""/>
+
+  <!-- The target directory where the files will be created. -->
+  <property name="target.dir" value="." />
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: clean
+
+-description:
+        remove the install folder
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="clean" depends="init" description="Remove the install folder" >
+  <delete dir="${target.dir}/install" />
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: deploy
+
+-description:
+        build a TotalCross application
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="deploy" if="app.name" depends="init" description="Deploy a TotalCross application" >
+   <echo message="Deploy the ${app.name}" />
+   <mkdir dir="${target.dir}" />
+
+	<java classname="tc.Deploy" fork="yes" dir="${target.dir}">
+      <classpath>
+           <pathelement location="${sdk.root}/dist/tc.jar"/>
+       </classpath>
+       <arg line="${app.name}"  />
+       <arg line="${extra.args}"/>
+       <arg line="${platforms}" />
+   </java>
+</target>
+
+</project>
