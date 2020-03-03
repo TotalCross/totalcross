@@ -59,3 +59,7 @@ TotalCrossVM/builders/vc2008/.gradle/
 TotalCrossVM/builders/gcc-linux-arm/tcvm/**/bin
 TotalCrossVM/builders/gcc-linux-arm/launcher/**/bin
 TotalCrossVM/builders/gcc-linux-arm/sdl/**/build
+
+.settings
+.classpath
+.project

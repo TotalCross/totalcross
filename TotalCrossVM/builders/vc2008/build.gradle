@@ -1,0 +1,11 @@
+def msvcPath = 'C:/"Program Files (x86)/Microsoft Visual Studio 9.0"/Common7/IDE/devenv.exe'
+
+task buildWin32(type:Exec) {
+	commandLine 'cmd', '/c', msvcPath + ' TCVM.sln /rebuild "Release|Win32"'
+}
+
+task buildWinCE(type:Exec) {
+	commandLine 'cmd', '/c', msvcPath + ' TCVM.sln /rebuild "Release|Pocket PC 2003 (ARMV4)"'
+}
+	
+// REG QUERY HKLM\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0\Setup\VS /v EnvironmentPath

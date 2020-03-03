@@ -1,0 +1,16 @@
+#define IDS_APP_TITLE                   1
+#define IDC_IMAGINGSAMPLE               2
+#define IDI_IMAGINGSAMPLE               101
+#define IDR_MENU                        102
+#define IDS_TOOLS                       103
+#define ID_OPTIONS_ENABLEAIMER          32771
+#define ID_OPTIONS_ENABLEILLUMINATION   32772
+#define ID_OPTIONS_ENABLEHISTOGRAM      32773
+#define ID_OPTIONS_INCGAMMA             32774
+#define ID_OPTIONS_DECGAMMA             32775
+#define ID_OPTIONS_HIGHRES              32776
+#define ID_OPTIONS_LOWRES               32777
+#define ID_FILE_SAVEIMAGE               32778
+#define ID_FILE_SAVEIMAGEEXIT           32779
+#define IDM_FILE_EXIT                   40001
+#define IDC_STATIC                      -1
