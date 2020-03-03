@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="totalcross.app.stub"
+      android:versionCode="305419896"
+      android:versionName="!1.0!"
+      android:sharedUserId="totalcross.app.sharedid"
+      >
+    <application android:icon="@drawable/icon" android:label="Stub"
+     android:theme="@style/TCThemeNS" >
+        <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
+        <activity android:name=".Stub">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <receiver android:name=".StartupIntentReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+    <uses-sdk android:minSdkVersion="4" />
+
+</manifest> 
