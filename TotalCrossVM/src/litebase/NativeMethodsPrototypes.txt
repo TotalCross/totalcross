@@ -1,0 +1,574 @@
+
+TC_API void lRI_next(NMParams p);
+TC_API void lRI_nextNotSynced(NMParams p);
+TC_API void lRI_setSynced(NMParams p);
+TC_API void lRI_setNotSynced(NMParams p);
+TC_API void lRI_close(NMParams p);
+TC_API void lRI_reset(NMParams p);
+TC_API void lRI_getShort_i(NMParams p);
+TC_API void lRI_getInt_i(NMParams p);
+TC_API void lRI_getLong_i(NMParams p);
+TC_API void lRI_getFloat_i(NMParams p);
+TC_API void lRI_getDouble_i(NMParams p);
+TC_API void lRI_getString_i(NMParams p);
+TC_API void lRI_getBlob_i(NMParams p);
+TC_API void lRI_getDate_i(NMParams p);
+TC_API void lRI_getDateTime_i(NMParams p);
+TC_API void lRI_isNull_i(NMParams p);
+TC_API void lLC_privateGetInstance(NMParams p);
+TC_API void lLC_privateGetInstance_s(NMParams p);
+TC_API void lLC_privateGetInstance_ss(NMParams p);
+TC_API void lLC_getSourcePath(NMParams p);
+TC_API void lLC_execute_s(NMParams p);
+TC_API void lLC_executeUpdate_s(NMParams p);
+TC_API void lLC_executeQuery_s(NMParams p);
+TC_API void lLC_prepareStatement_s(NMParams p);
+TC_API void lLC_getCurrentRowId_s(NMParams p);
+TC_API void lLC_getRowCount_s(NMParams p);
+TC_API void lLC_setRowInc_si(NMParams p);
+TC_API void lLC_exists_s(NMParams p);
+TC_API void lLC_closeAll(NMParams p);
+TC_API void lLC_purge_s(NMParams p);
+TC_API void lLC_getRowCountDeleted_s(NMParams p);
+TC_API void lLC_getRowIterator_s(NMParams p);
+TC_API void lLC_privateGetLogger(NMParams p);
+TC_API void lLC_privateSetLogger_l(NMParams p);
+TC_API void lLC_privateGetDefaultLogger(NMParams p);
+TC_API void lLC_privateDeleteLogFiles(NMParams p);
+TC_API void lLC_privateProcessLogs_Ssb(NMParams p);
+TC_API void lLC_recoverTable_s(NMParams p);
+TC_API void lLC_convert_s(NMParams p);
+TC_API void lLC_getSlot(NMParams p);
+TC_API void lLC_isOpen_s(NMParams p);
+TC_API void lLC_dropDatabase_ssi(NMParams p);
+TC_API void lLC_isTableProperlyClosed_s(NMParams p);
+TC_API void lLC_listAllTables(NMParams p);
+TC_API void lLC_encryptTables_ssi(NMParams p);
+TC_API void lLC_decryptTables_ssi(NMParams p);
+TC_API void lRS_getResultSetMetaData(NMParams p);
+TC_API void lRS_close(NMParams p);
+TC_API void lRS_beforeFirst(NMParams p);
+TC_API void lRS_afterLast(NMParams p);
+TC_API void lRS_first(NMParams p);
+TC_API void lRS_last(NMParams p);
+TC_API void lRS_next(NMParams p);
+TC_API void lRS_prev(NMParams p);
+TC_API void lRS_getShort_i(NMParams p);
+TC_API void lRS_getShort_s(NMParams p);
+TC_API void lRS_getInt_i(NMParams p);
+TC_API void lRS_getInt_s(NMParams p);
+TC_API void lRS_getLong_i(NMParams p);
+TC_API void lRS_getLong_s(NMParams p);
+TC_API void lRS_getFloat_i(NMParams p);
+TC_API void lRS_getFloat_s(NMParams p);
+TC_API void lRS_getDouble_i(NMParams p);
+TC_API void lRS_getDouble_s(NMParams p);
+TC_API void lRS_getChars_i(NMParams p);
+TC_API void lRS_getChars_s(NMParams p);
+TC_API void lRS_getString_i(NMParams p);
+TC_API void lRS_getString_s(NMParams p);
+TC_API void lRS_getBlob_i(NMParams p);
+TC_API void lRS_getBlob_s(NMParams p);
+TC_API void lRS_getStrings_i(NMParams p);
+TC_API void lRS_getStrings(NMParams p);
+TC_API void lRS_getDate_i(NMParams p);
+TC_API void lRS_getDate_s(NMParams p);
+TC_API void lRS_getDateTime_i(NMParams p);
+TC_API void lRS_getDateTime_s(NMParams p);
+TC_API void lRS_absolute_i(NMParams p);
+TC_API void lRS_relative_i(NMParams p);
+TC_API void lRS_getRow(NMParams p);
+TC_API void lRS_setDecimalPlaces_ii(NMParams p);
+TC_API void lRS_getRowCount(NMParams p);
+TC_API void lRS_isNull_i(NMParams p);
+TC_API void lRS_isNull_s(NMParams p);
+TC_API void lRS_rowToString(NMParams p);
+TC_API void lRSMD_getColumnCount(NMParams p);
+TC_API void lRSMD_getColumnDisplaySize_i(NMParams p);
+TC_API void lRSMD_getColumnLabel_i(NMParams p);
+TC_API void lRSMD_getColumnType_i(NMParams p);
+TC_API void lRSMD_getColumnTypeName_i(NMParams p);
+TC_API void lRSMD_getColumnTableName_i(NMParams p);
+TC_API void lRSMD_getColumnTableName_s(NMParams p);
+TC_API void lRSMD_hasDefaultValue_i(NMParams p);
+TC_API void lRSMD_hasDefaultValue_s(NMParams p);
+TC_API void lRSMD_isNotNull_i(NMParams p);
+TC_API void lRSMD_isNotNull_s(NMParams p);
+TC_API void lRSMD_getPKColumnIndices_s(NMParams p);
+TC_API void lRSMD_getPKColumnNames_s(NMParams p);
+TC_API void lRSMD_getDefaultValue_i(NMParams p);
+TC_API void lRSMD_getDefaultValue_s(NMParams p);
+TC_API void lPS_executeQuery(NMParams p);
+TC_API void lPS_executeUpdate(NMParams p);
+TC_API void lPS_setShort_is(NMParams p);
+TC_API void lPS_setInt_ii(NMParams p);
+TC_API void lPS_setLong_il(NMParams p);
+TC_API void lPS_setFloat_id(NMParams p);
+TC_API void lPS_setDouble_id(NMParams p);
+TC_API void lPS_setString_is(NMParams p);
+TC_API void lPS_setBlob_iB(NMParams p);
+TC_API void lPS_setDate_id(NMParams p);
+TC_API void lPS_setDateTime_id(NMParams p);
+TC_API void lPS_setDateTime_it(NMParams p);
+TC_API void lPS_setNull_i(NMParams p);
+TC_API void lPS_clearParameters(NMParams p);
+TC_API void lPS_toString(NMParams p);
+TC_API void lPS_close(NMParams p);
+TC_API void lPS_isValid(NMParams p);
+
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_close(NMParams p) // litebase/RowIterator public native void close();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_reset(NMParams p) // litebase/RowIterator public native void reset();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getShort_i(NMParams p) // litebase/RowIterator public native short getShort(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getInt_i(NMParams p) // litebase/RowIterator public native int getInt(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getLong_i(NMParams p) // litebase/RowIterator public native long getLong(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getFloat_i(NMParams p) // litebase/RowIterator public native double getFloat(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getDouble_i(NMParams p) // litebase/RowIterator public native double getDouble(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getString_i(NMParams p) // litebase/RowIterator public native String getString(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getBlob_i(NMParams p) // litebase/RowIterator public native byte[] getBlob(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getDate_i(NMParams p) // litebase/RowIterator public native totalcross.util.Date getDate(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_getDateTime_i(NMParams p) // litebase/RowIterator public native totalcross.sys.Time getDateTime(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boolean isNull(int column) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateGetInstance(NMParams p) // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateGetInstance();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateGetInstance_s(NMParams p) // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateGetInstance(String appCrid) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateGetInstance_ss(NMParams p) // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateGetInstance(String appCrid, String params) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public native String getSourcePath() throws IllegalStateException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_execute_s(NMParams p) // litebase/LitebaseConnection public native void execute(String sql);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_executeUpdate_s(NMParams p) // litebase/LitebaseConnection public native int executeUpdate(String sql);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_executeQuery_s(NMParams p) // litebase/LitebaseConnection public native litebase.ResultSet executeQuery(String sql);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection public native litebase.PrepareStatement prepareStatement(String sql) throws OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_getCurrentRowId_s(NMParams p) // litebase/LitebaseConnection public native int getCurrentRowId(String tableName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_getRowCount_s(NMParams p) // litebase/LitebaseConnection public native int getRowCount(String tableName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_setRowInc_si(NMParams p) // litebase/LitebaseConnection public native void setRowInc(String tableName, int inc) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public native boolean exists(String tableName) throws DriverException; 
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public native void closeAll() throws IllegalStateException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_purge_s(NMParams p) // litebase/LitebaseConnection public native int purge(String tableName) throws DriverException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_getRowCountDeleted_s(NMParams p) // litebase/LitebaseConnection public native int getRowCountDeleted(String tableName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection public native litebase.RowIterator getRowIterator(String tableName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateGetLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger privateGetLogger();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateSetLogger_l(NMParams p) // litebase/LitebaseConnection public static native void privateSetLogger(totalcross.util.Logger logger);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger privateGetDefaultLogger() throws DriverException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection public static native int privateDeleteLogFiles();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_privateProcessLogs_Ssb(NMParams p) // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateProcessLogs(String []sql, String params, boolean isDebug) throws DriverException, NullPointerException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_recoverTable_s(NMParams p) // litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws DriverException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_convert_s(NMParams p) // litebase/LitebaseConnection public native void convert(String tableName) throws DriverException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_getSlot(NMParams p) // litebase/LitebaseConnection public native int getSlot();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public boolean isOpen(String tableName) throws DriverException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_dropDatabase_ssi(NMParams p) // litebase/LitebaseConnection public native static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_isTableProperlyClosed_s(NMParams p) // litebase/LitebaseConnection public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_listAllTables(NMParams p) // litebase/LitebaseConnection public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_encryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void encryptTables(String crid, String sourcePath, int slot); 
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_decryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void decryptTables(String crid, String sourcePath, int slot);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getResultSetMetaData(NMParams p) // litebase/ResultSet public native litebase.ResultSetMetaData getResultSetMetaData();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_close(NMParams p) // litebase/ResultSet public native void close() throws IllegalStateException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void beforeFirst() throws IllegalStateException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void afterLast();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_first(NMParams p) // litebase/ResultSet public native boolean first();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_last(NMParams p) // litebase/ResultSet public native boolean last();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_next(NMParams p) // litebase/ResultSet public native boolean next();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_prev(NMParams p) // litebase/ResultSet public native boolean prev();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getShort_i(NMParams p) // litebase/ResultSet public native short getShort(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getShort_s(NMParams p) // litebase/ResultSet public native short getShort(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getInt_i(NMParams p) // litebase/ResultSet public native int getInt(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getInt_s(NMParams p) // litebase/ResultSet public native int getInt(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getLong_i(NMParams p) // litebase/ResultSet public native long getLong(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getLong_s(NMParams p) // litebase/ResultSet public native long getLong(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getFloat_i(NMParams p) // litebase/ResultSet public native double getFloat(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getFloat_s(NMParams p) // litebase/ResultSet public native double getFloat(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getDouble_i(NMParams p) // litebase/ResultSet public native double getDouble(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getDouble_s(NMParams p) // litebase/ResultSet public native double getDouble(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getChars_i(NMParams p) // litebase/ResultSet public native char[] getChars(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getChars_s(NMParams p) // litebase/ResultSet public native char[] getChars(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getString_i(NMParams p) // litebase/ResultSet public native String getString(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getString_s(NMParams p) // litebase/ResultSet public native String getString(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getBlob_i(NMParams p) // litebase/ResultSet public native byte[] getBlob(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getBlob_s(NMParams p) // litebase/ResultSet public native byte[] getBlob(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getStrings_i(NMParams p) // litebase/ResultSet public native String[][] getStrings(int count);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getStrings(NMParams p) // litebase/ResultSet public native String[][] getStrings();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getDate_i(NMParams p) // litebase/ResultSet public native totalcross.util.Date getDate(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getDate_s(NMParams p) // litebase/ResultSet public native totalcross.util.Date getDate(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native totalcross.sys.Time getDateTime(int colIdx);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getDateTime_s(NMParams p) // litebase/ResultSet public native totalcross.sys.Time getDateTime(String colName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native boolean absolute(int row);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native boolean relative(int rows);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRow();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public native void setDecimalPlaces(int col, int places) throws DriverException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int getRowCount();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean isNull(int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean isNull(String colName) throws NullPointerException;  
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getColumnDisplaySize_i(NMParams p) // litebase/ResultSetMetaData public native int getColumnDisplaySize(int column) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnLabel(int column) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData public native int getColumnType(int column) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getColumnTypeName_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnTypeName(int column);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnTableName(int columnIdx) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getColumnTableName_s(NMParams p) // litebase/ResultSetMetaData public native String getColumnTableName(String columnName) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_hasDefaultValue_i(NMParams p) // litebase/ResultSetMetaData public native boolean hasDefaultValue(int columnIndex) throws DriverException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_hasDefaultValue_s(NMParams p) // litebase/ResultSetMetaData public native boolean hasDefaultValue(String columnName) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws DriverException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_isNotNull_s(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getPKColumnIndices_s(NMParams p) // litebase/ResultSetMetaData public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getPKColumnNames_s(NMParams p) // litebase/ResultSetMetaData public native String[] getPKColumnNames(String tableName) throws NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getDefaultValue_i(NMParams p) // litebase/ResultSetMetaData public native String getDefaultValue(int columnIndex) throws DriverException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lRSMD_getDefaultValue_s(NMParams p) // litebase/ResultSetMetaData public native String getDefaultValue(String columnName) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_executeQuery(NMParams p) // litebase/PreparedStatement public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public native int executeUpdate() throws DriverException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setShort_is(NMParams p) // litebase/PreparedStatement public native void setShort(int index, short value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setInt_ii(NMParams p) // litebase/PreparedStatement public native void setInt(int index, int value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setLong_il(NMParams p) // litebase/PreparedStatement public native void setLong(int index, long value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setFloat_id(NMParams p) // litebase/PreparedStatement public native void setFloat(int index, double value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setDouble_id(NMParams p) // litebase/PreparedStatement public native void setDouble(int index, double value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public native void setString(int index, String value) throws OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public native void setBlob(int index, byte []value) throws SQLParseException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setDate_id(NMParams p) // litebase/PreparedStatement public native void setDate(int index, totalcross.util.Date) throws OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setDateTime_id(NMParams p) // litebase/PreparedStatement public native void setDateTime(int index, totalcross.util.Date);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setDateTime_it(NMParams p) // litebase/PreparedStatement public native void setDateTime(int index, totalcross.sys.Time) throws OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public native void setNull(int index) throws SQLParseException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public native void clearParameters();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native String toString();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_close(NMParams p) // litebase/PreparedStatement public native void close();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_isValid(NMParams p) // litebase/PreparedStatement public native boolean isValid();
+{
+}
