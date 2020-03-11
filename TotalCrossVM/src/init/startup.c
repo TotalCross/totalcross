@@ -196,51 +196,6 @@ static void checkFullScreenPlatform() // guich@tc120_59
 #define ISWILLACTIVATE 3
 #define ISACTIVATED 4
 #define ISNORAS 5
-static int checkActivation(Context currentContext)
-{
-#ifdef HEADLESS
-    return ISNORAS;
-#else
-   TCClass c;
-   TCObject rasClientInstance, ret;
-   Method m;
-   uint8 *retb;
-
-   // load ActivationClient
-   c = loadClass(currentContext, "ras.ActivationClient", true);
-   if (currentContext->thrownException)
-      return ISFAILED;
-   m = getMethod(c, true, "getInstance", 0);
-   rasClientInstance = executeMethod(currentContext, m).asObj;
-   if (!rasClientInstance || currentContext->thrownException)
-      return ISFAILED;
-   
-   // noras has priority over ras
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
-   ret = executeMethod(currentContext, m, rasClientInstance).asObj;
-
-   // if readKey is null, the application was not signed!
-   if (ret == null || currentContext->thrownException)
-   {
-#ifdef DEBUG // let debug on IDEs
-      return ISACTIVATED;
-#else
-      return ISFAILED;
-#endif
-   }
-   retb = (uint8*)ARRAYOBJ_START(ret);
-
-   // check if free sdk
-   if (strEqn(retb, "TCST",4))
-	  return ISFREE;              
-	if (strEqn(retb, "TCDK",4))
-	  return ISNORAS;
-
-   // could not activate noras, try ras
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
-   return executeMethod(currentContext, m, rasClientInstance).asInt32 == 1 ? ISACTIVATED : ISWILLACTIVATE;
-#endif
-}
 
 TC_API int32 startProgram(Context currentContext)
 {
@@ -251,16 +206,6 @@ TC_API int32 startProgram(Context currentContext)
    if (!loadLibraries(currentContext, vmPath, true))
       return exitProgram(115);
    
-   retc = checkActivation(currentContext);
-   switch (retc)
-   {
-      case ISNOTSIGNED: return exitProgram(120);
-      case ISFAILED   : return exitProgram(121);
-#if defined(WINCE) || defined(WP8) || (defined(linux) && !defined(ANDROID) && !defined(darwin)) // win32 is allowed
-	  case ISFREE     : return exitProgram(122); // exit silently
-#endif
-   }
-        
 #if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
    {
       TCHAR litebasePath[MAX_PATHNAME];
