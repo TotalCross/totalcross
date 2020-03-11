@@ -488,7 +488,6 @@ totalcross/db/sqlite/NativeDB|protected native void _close() throws SQLException
 totalcross/db/sqlite/NativeDB|protected native int _exec(String sql) throws SQLException;
 totalcross/db/sqlite/NativeDB|native int shared_cache(boolean enable);
 totalcross/db/sqlite/NativeDB|native int enable_load_extension(boolean enable);
-totalcross/db/sqlite/NativeDB|native int enable_see_extension();
 totalcross/db/sqlite/NativeDB|native void interrupt();
 totalcross/db/sqlite/NativeDB|native void busy_timeout(int ms);
 totalcross/db/sqlite/NativeDB|protected native long prepare(String sql) throws SQLException;

@@ -247,7 +247,7 @@ PALMDB_FILES =                                \
 	$(TC_SRCDIR)/palmdb/palmdb.c
 	
 SQLITE_FILES =                               \
-	$(TC_SRCDIR)/sqlite/see-sqlite3.c        \
+	$(TC_SRCDIR)/sqlite/sqlite3.c        \
 	$(TC_SRCDIR)/nm/db/NativeDB.c               
 
 SCANNER_FILES =                                \

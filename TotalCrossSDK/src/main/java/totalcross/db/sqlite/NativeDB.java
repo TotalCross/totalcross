@@ -65,9 +65,6 @@ final class NativeDB extends DB {
   @Override
   native int enable_load_extension(boolean enable);
 
-  @Override
-  native int enable_see_extension();
-  
   /**
    * @see org.sqlite.DB#interrupt()
    */

@@ -298,7 +298,7 @@ INIT_FILES =                                   \
 	$(SRCDIR)/init/globals.c                \
 	$(SRCDIR)/init/settings.c \
         ${SRCDIR}/init/nativeProcAddressesTC.c \
-		  ${SRCDIR}/sqlite/see-sqlite3.c \
+		  ${SRCDIR}/sqlite/sqlite3.c \
 		${SRCDIR}/nm/db/NativeDB.c
 
 QRCODE_FILES = 								\
