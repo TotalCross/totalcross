@@ -520,7 +520,6 @@ TC_API void tdsNDB__close(NMParams p);
 TC_API void tdsNDB__exec_s(NMParams p);
 TC_API void tdsNDB_shared_cache_b(NMParams p);
 TC_API void tdsNDB_enable_load_extension_b(NMParams p);
-TC_API void tdsNDB_enable_see_extension(NMParams p);
 TC_API void tdsNDB_interrupt(NMParams p);
 TC_API void tdsNDB_busy_timeout_i(NMParams p);
 TC_API void tdsNDB_prepare_s(NMParams p);

@@ -490,7 +490,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__exec_s"), &tdsNDB__exec_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_shared_cache_b"), &tdsNDB_shared_cache_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_enable_load_extension_b"), &tdsNDB_enable_load_extension_b);
-   htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_enable_see_extension"), &tdsNDB_enable_see_extension);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_interrupt"), &tdsNDB_interrupt);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_busy_timeout_i"), &tdsNDB_busy_timeout_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_prepare_s"), &tdsNDB_prepare_s);

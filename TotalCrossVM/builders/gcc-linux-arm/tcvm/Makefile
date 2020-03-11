@@ -252,7 +252,7 @@ EVENT_FILES =                              \
 	$(SRCDIR)/event/Event.c
 
 SQLITE3_FILES =    \
-    $(SRCDIR)/litebase/Index.c \
+	$(SRCDIR)/litebase/Index.c \
     $(SRCDIR)/litebase/Key.c \
     $(SRCDIR)/litebase/lbFile.c \
     $(SRCDIR)/litebase/Litebase.c \
@@ -298,7 +298,7 @@ INIT_FILES =                                   \
 	$(SRCDIR)/init/globals.c                \
 	$(SRCDIR)/init/settings.c \
         ${SRCDIR}/init/nativeProcAddressesTC.c \
-		  ${SRCDIR}/sqlite/see-sqlite3.c \
+		  ${SRCDIR}/sqlite/sqlite3.c \
 		${SRCDIR}/nm/db/NativeDB.c
 
 QRCODE_FILES = 								\

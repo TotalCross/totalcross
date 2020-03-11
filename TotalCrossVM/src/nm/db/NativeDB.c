@@ -136,44 +136,6 @@ TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/N
 	p->retI = sqlite3_enable_load_extension(gethandle(p->currentContext, this_), enable);
    UNLOCKDB
 }
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_enable_see_extension(NMParams p) // totalcross/db/sqlite/NativeDB native int enable_see_extension();
-{
-    TRACE("tdsNDB_enable_see_extension")
-    TCObject this_ = p->obj[0];
-    TCClass c;
-    TCObject rasClientInstance, ret;
-    Method m;
-    uint8 *retb;
-
-   // load ActivationClient
-   c = loadClass(p->currentContext, "ras.ActivationClient", true);
-   if (p->currentContext->thrownException) {
-      return;
-   }
-   
-   m = getMethod(c, true, "getInstance", 0);
-   rasClientInstance = executeMethod(p->currentContext, m).asObj;
-   if (!rasClientInstance || p->currentContext->thrownException) {
-      return;
-   }
-   
-   // noras has priority over ras
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
-   ret = executeMethod(p->currentContext, m, rasClientInstance).asObj;
-   // if readKey is null, the application was not signed!
-   if (ret == null || p->currentContext->thrownException) {
-      return;
-   }
-   retb = (uint8*)ARRAYOBJ_START(ret);
-
-   p->obj[0] = this_;
-   {
-       LOCKDB
-       sqlite3_activate_see(retb);
-       UNLOCKDB
-   }
-}
 
 static CharP newSafeString(TCObject strObj, int32 *outlen)
 {

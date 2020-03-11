@@ -133,12 +133,6 @@ public class SQLiteConfig {
     pragmaParams.remove(Pragma.DATE_PRECISION.pragmaName);
     pragmaParams.remove(Pragma.DATE_CLASS.pragmaName);
     pragmaParams.remove(Pragma.DATE_STRING_FORMAT.pragmaName);
-    pragmaParams.put("key", "");
-    pragmaParams.put("hexkey", "");
-    pragmaParams.put("textkey", "");
-    pragmaParams.put("rekey", "");
-    pragmaParams.put("hexrekey", "");
-    pragmaParams.put("textrekey", "");
 
     Statement stat = conn.createStatement();
     try {

@@ -111,7 +111,6 @@ public class SQLiteConnection implements Connection {
       db.shared_cache(config.isEnabledSharedCache());
     }
     db.enable_load_extension(config.isEnabledLoadExtension());
-    db.enable_see_extension();
 
     // set pragmas
     config.apply(this);
@@ -361,7 +360,6 @@ public class SQLiteConnection implements Connection {
    * @throws SQLException 
    * @see java.sql.Connection#getMetaData()
    */
-  @Override
   public DatabaseMetaData getMetaData() throws SQLException {
     checkOpen();
 
