@@ -216,7 +216,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 // totalcross.jar
 task totalcrossJar(type: Jar) {
     baseName = "totalcross-sdk"
-    classifier = 'intermediate'
+    // classifier = 'intermediate'
     
     from(sourceSets.desktop.output) {
         exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
@@ -245,6 +245,29 @@ task totalcrossJar(type: Jar) {
 	manifest {
 		attributes("Class-Path": names.join(' '))
 	}
+    doLast {
+        signJar
+    }
+
+}
+
+task signJar {
+    try {
+        ant.signjar(
+            jar: 'build/libs/totalcross-sdk-' + project.version + '.jar',
+            signedJar: 'build/libs/totalcross-sdk-' + project.version + '.jar',
+            alias:'tcandroidkey',
+            storetype:"jks",
+            keystore: "$System.env.TC_PATH_TO_KEY_STORE",
+            storepass: "$System.env.TC_STORE_PASSWORD",
+            keypass: "$System.env.TC_STORE_KEY",
+            verbose:true,
+            preservelastmodified:"true"
+        )
+    } catch (Exception e) {
+        logger.warn("TC_PATH_TO_KEY_STORE or TC_STORE_PASSWORD or TC_STORE_KEY not defined! Jar won't be signed")
+    }
+    
 }
 
 // tcbase.jar
@@ -263,42 +286,7 @@ task tcuiJar(type: Jar) {
     }
 }
 
-task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar) {
-    configuration 'proguard.txt'
-
-    injars 'build/libs/totalcross-sdk-' + project.version + '-intermediate.jar'
-    outjars 'build/libs/totalcross-sdk-' + project.version + '.jar'
-
-    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-    libraryjars "${System.getProperty('java.home')}/lib/jce.jar"
-    libraryjars "${System.getProperty('java.home')}/lib/jsse.jar"
-    libraryjars files(configurations.compile.collect())
-    
-    keepattributes 'SourceFile,LineNumberTable'
-    renamesourcefileattribute 'totalcross-sdk-' + project.version
-    printmapping 'build/libs/totalcross-sdk-' + project.version + '.map'
-    
-	doLast{
-      ant.signjar(
-                  jar: myProguardTask.outputs.files.singleFile,
-                  signedJar: myProguardTask.outputs.files.singleFile,
-                  alias:'tcandroidkey',
-                  storetype:"jks",
-                  keystore: new File("etc/security/tcandroidkey.keystore").getAbsolutePath(),
-                  storepass:"@ndroid\$w",
-                  keypass:"@ndroidsw",
-                  verbose:true,
-                  preservelastmodified:"true"
-      )
-    }
-}
-
 artifacts {
-    obfuscatedArchive( myProguardTask.outputs.files.singleFile ) {
-        builtBy myProguardTask
-        // can also set classifier, extension, name, etc as needed (some defaults will be inferred from the filename)
-        // see https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/ConfigurablePublishArtifact.html
-    }
     archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
 }
 
@@ -306,7 +294,7 @@ tasks.withType(Jar) {
     includeEmptyDirs = false
 }
 
-task deployTcbase(type:JavaExec, dependsOn: [myProguardTask, tcbaseJar]) {
+task deployTcbase(type:JavaExec, dependsOn: [totalcrossJar, tcbaseJar]) {
 	main = 'tc.Deploy'
 	args = [
 		'build/libs/tcbase-' + project.version + '.jar', 
@@ -317,7 +305,7 @@ task deployTcbase(type:JavaExec, dependsOn: [myProguardTask, tcbaseJar]) {
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
 
-task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
+task deployTcui(type:JavaExec, dependsOn: [totalcrossJar, tcuiJar]) {
 	main = 'tc.Deploy'
 	args = [
 		'build/libs/tcui-' + project.version + '.jar', 
@@ -339,7 +327,7 @@ task dist(dependsOn: build) {
 		}
 	
 		copy { 
-			from myProguardTask.outputs.files.singleFile
+			from 'build/libs/totalcross-sdk-'+project.version+'.jar'
 			into 'dist/'
 			rename  { String fileName ->
 	    				fileName.replace('-' + project.version, '')
@@ -348,4 +336,4 @@ task dist(dependsOn: build) {
 	}
 }
 
-build.finalizedBy(myProguardTask, deployTcbase, deployTcui)
+build.finalizedBy(deployTcbase, deployTcui)
