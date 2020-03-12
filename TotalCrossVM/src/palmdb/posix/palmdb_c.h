@@ -25,12 +25,12 @@
 
 typedef FILE* PDBFileRef;
 
-Err inline_ PDBGetLastErr()
+Err  PDBGetLastErr()
 {
    return errno;
 }
 
-bool inline_ PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
+bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
 {
    if (readOnly)
    {
@@ -56,42 +56,42 @@ bool inline_ PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFil
    return *fileRef != NULL;
 }
 
-bool inline_ PDBCloseFile(PDBFileRef fileRef)
+bool  PDBCloseFile(PDBFileRef fileRef)
 {
    return fclose(fileRef) == 0;
 }
 
-bool inline_ PDBRename(TCHARP oldName, TCHARP newName)
+bool  PDBRename(TCHARP oldName, TCHARP newName)
 {
    return rename(oldName, newName) == 0;
 }
 
-bool inline_ PDBRemove(TCHARP fileName)
+bool  PDBRemove(TCHARP fileName)
 {
    return remove(fileName) == 0;
 }
 
-bool inline_ PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
+bool  PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 {
    return (*read = (int32)fread(buf, 1, size, fileRef)) > 0;
 }
 
-bool inline_ PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
+bool  PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
    return (int32)fseek(fileRef, offset, SEEK_SET) == 0 && (*read = (int32)fread(buf, 1, size, fileRef)) > 0; // guich@tc122_53: don't test for the amount of bytes read - no other platforms do this, and will make it impossible to delete an empty pdb
 }
 
-bool inline_ PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
+bool  PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 {
    return (*written = (int32)fwrite(buf, 1, size, fileRef)) > 0;
 }
 
-bool inline_ PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
+bool  PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
    return (int32)fseek(fileRef, offset, SEEK_SET) == 0 && (*written = (int32)fwrite(buf, 1, size, fileRef)) > 0; // guich@tc122_53
 }
 
-bool inline_ PDBGetFileSize (PDBFileRef fileRef, int32* size)
+bool  PDBGetFileSize (PDBFileRef fileRef, int32* size)
 {
    // Record the current position
    uint32 pos = (int32)ftell(fileRef);
@@ -109,7 +109,7 @@ bool inline_ PDBGetFileSize (PDBFileRef fileRef, int32* size)
    return ((int32)size != -1);
 }
 
-bool inline_ PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
+bool  PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 {
    // Exact behavior expected ???
    // Write operations extend the file automatically
