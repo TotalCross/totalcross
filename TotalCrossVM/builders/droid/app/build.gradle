@@ -7,11 +7,13 @@ apply plugin: 'com.android.application'
      maven {
          url "http://maven.totalcross.com/artifactory/build"
          credentials {
-             username = 'builder'
-             password = 's3nh4d0bu1ld3r'
+             username = "$System.env.TC_REPO_USERNAME"
+             password = "$System.env.TC_REPO_PASSWORD"
          }
      }
  }
+
+def buildType // stores build type, debug or release
 
 android {
     compileSdkVersion 28
@@ -41,9 +43,9 @@ android {
     signingConfigs {
         config {
             keyAlias 'tcandroidkey'
-            keyPassword '@ndroidsw'
-            storeFile file('../tcandroidkey.keystore')
-            storePassword '@ndroid$w'
+            keyPassword "$System.env.TC_KEY_PASSWORD"
+            storeFile file("$System.env.TC_PATH_TO_KEY_STORE")
+            storePassword "$System.env.TC_STORE_PASSWORD"
         }
     }
 
@@ -58,9 +60,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
+            buildType = 'release'
         }
         debug {
-            signingConfig signingConfigs.config
+            buildType = 'debug'
         }
     }
     externalNativeBuild {
@@ -85,51 +88,56 @@ android {
         destinationDir file('src/main/assets') // directory that you want your archive to be placed in
     }
 
-    task copyApk << {
+    task copyApk <<{
         copy {
 			from fileTree('build/outputs/apk').files
-			into '../../../../output/release/TotalCrossSDK/dist/vm/android'
-			include '**/app-standard-release.apk'
+			into "../../../../output/${buildType}/TotalCrossSDK/dist/vm/android"
+			include "**/app-standard-${buildType}.apk"
 			rename { String fileName ->
-				fileName.replace('app-standard-release', 'TotalCross')
+				fileName.replace("app-standard-${buildType}", 'TotalCross')
 			}
+            eachFile { println it.file }
         }
         copy {
-            from zipTree('build/outputs/apk/singleApk/release/app-singleApk-release.apk').files
-            into '../../../../output/release/TotalCrossSDK/etc/tools/android'
+            from zipTree("build/outputs/apk/singleApk/${buildType}/app-singleApk-${buildType}.apk").files
+            into "../../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
             include 'AndroidManifest.xml', 'resources.arsc'
             rename { String fileName ->
                 fileName.replace('.', '_singleapk.')
             }
+            eachFile { println it.file }
         }
         copy {
-            from zipTree('build/outputs/apk/includeSms/release/app-includeSms-release.apk').files
-            into '../../../../output/release/TotalCrossSDK/etc/tools/android'
+            from zipTree("build/outputs/apk/includeSms/${buildType}/app-includeSms-${buildType}.apk").files
+            into "../../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
             include 'AndroidManifest.xml', 'resources.arsc'
             rename { String fileName ->
                 fileName.replace('.', '_includeSms.')
             }
+            eachFile { println it.file }
         }
         copy {
-            from fileTree('build/intermediates/res/standard/release').files
-            into '../../../../output/release/TotalCrossSDK/etc/launchers/android'
-            include 'resources-standardRelease.ap_'
+            from fileTree('build/intermediates/res/standard/' + buildType).files
+            into '../../../../output/' + buildType + '/TotalCrossSDK/etc/launchers/android'
+            include 'resources-standard' + buildType.capitalize() + '.ap_'
             rename { String fileName ->
-                fileName.replace('-standardRelease', '')
+                fileName.replace('-standard' + buildType.capitalize(), '')
             }
+            eachFile { println it.file }
         }
         copy {
-            from fileTree('build/intermediates/res/standard/release').files
+            from fileTree('build/intermediates/res/standard/' + buildType).files
             into '../../../../TotalCrossSDK/etc/launchers/android'
-            include 'resources-standardRelease.ap_'
+            include 'resources-standard' + buildType.capitalize() + '.ap_'
             rename { String fileName ->
-                fileName.replace('-standardRelease', '')
+                fileName.replace('-standard' + buildType.capitalize(), '')
             }
+            eachFile { println it.file }
         }
     }
 
 	assemble.mustRunAfter assembleAssets
-	copyApk.mustRunAfter assemble
+	assemble.finalizedBy copyApk
     project.afterEvaluate{
 	    applicationVariants.all { com.android.build.gradle.api.ApplicationVariant variant ->
 		    	variant.assemble.dependsOn(['assembleAssets'])
@@ -138,9 +146,7 @@ android {
 }
 
 dependencies {
-	// com.symbol.emdk must be excluded from compile and added as provided
-    implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['com.symbol.emdk-*.jar'])
-    compileOnly fileTree(dir: 'libs', include: ['com.symbol.emdk-6.7.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'com.android.support:appcompat-v7:26.0.2'
 
@@ -175,8 +181,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-   
-    implementation(group: 'ScanditBarcodeScanner', name: 'ScanditBarcodeScanner', version: 'b1', ext: 'aar')
     
     implementation 'com.android.support:customtabs:25.1.0'
     

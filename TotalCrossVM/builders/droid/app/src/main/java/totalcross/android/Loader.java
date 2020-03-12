@@ -47,15 +47,12 @@ import com.google.android.gms.ads.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.zxing.integration.android.*;
-import com.intermec.aidc.*;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.concurrent.*;
 import java.text.SimpleDateFormat;
-import com.scandit.barcodepicker.*;
-import com.scandit.recognition.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -64,7 +61,7 @@ import org.json.simple.parser.ParseException;
 
 import  android.support.customtabs.CustomTabsIntent;
 
-public class Loader extends Activity implements BarcodeReadListener, TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
+public class Loader extends Activity implements TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
 {
   public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
   public Handler achandler;
@@ -691,22 +688,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             case ZXING_SCAN:
             {
         String cmd = b.getString("zxing.mode");
-               if (cmd.startsWith("scandit:"))
-               {
-          String key = cmd.substring(8);
-          Intent intent = new Intent(Loader.this, BarcodePickerActivity.class);
-          ScanditLicense.setAppKey(key);
-          intent.putExtra("appKey", key);
-                  intent.putExtra("enabledSymbologies", new int[] {
-                     Barcode.SYMBOLOGY_EAN13,
-                     Barcode.SYMBOLOGY_EAN8,
-                     Barcode.SYMBOLOGY_UPCA,
-                     Barcode.SYMBOLOGY_UPCE
-                  });
-          startActivityForResult(intent, FROM_SCANDIT);
-               }
-               else
-               {
+               
           StringTokenizer st = new StringTokenizer(cmd, "&");
           String mode = "SCAN_MODE";
           String scanmsg = "";
@@ -722,7 +704,6 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
                      else
                      if (s1.equalsIgnoreCase("msg"))
               scanmsg = s2;
-          }
 
           IntentIntegrator integrator = new IntentIntegrator(Loader.this);
                   if (mode.equalsIgnoreCase("1D"))
@@ -1121,19 +1102,6 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
 
   public String strBarcodeData;
   public static Semaphore semaphore = new Semaphore(1);
-
-   public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
-   {
-      try
-	   {
-      semaphore.acquire();
-    }
-	   catch (InterruptedException exception) {}
-    strBarcodeData = aBarcodeReadEvent.getBarcodeData();
-    semaphore.release();
-
-    Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
-  }
 
    public void onNewIntent(Intent i) 
    {

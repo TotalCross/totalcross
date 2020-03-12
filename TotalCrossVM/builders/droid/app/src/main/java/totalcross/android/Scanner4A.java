@@ -28,7 +28,6 @@ public class Scanner4A {
     // Motorola/Symbol devices
     try {
       if (Class.forName("com.symbol.emdk.EMDKManager") != null) {
-        scanner = new MotorolaScanner();
       }
     } catch (ClassNotFoundException e) {
     }
@@ -36,9 +35,7 @@ public class Scanner4A {
     if (scanner == null) {
       String id = Settings4A.deviceId.toLowerCase();
       if (id.contains("honeywell")) {
-        scanner = new HoneywellScanner();
       } else if (id.equalsIgnoreCase("intermec") || id.contains("foxconn")) {
-        scanner = new IntermecScanner();
       }
     }
     return scanner != null ? scanner.scannerActivate() : false;

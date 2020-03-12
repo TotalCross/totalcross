@@ -326,7 +326,7 @@ include_directories(${SKIA_DIR}/svg)
 include_directories(${SKIA_DIR}/utils)
 
 
-add_definitions(-DTOTALCROSS -DTC_EXPORTS -DANDROID -DSQLITE_HAS_CODEC)
+add_definitions(-DTOTALCROSS -DTC_EXPORTS -DANDROID)
 if ("${ANDROID_ABI}" MATCHES "arm64-v8a")
 	add_definitions(-DFORCE_LIBC_ALLOC)
 endif()
