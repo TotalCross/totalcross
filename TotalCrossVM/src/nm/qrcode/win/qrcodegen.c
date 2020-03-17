@@ -27,6 +27,11 @@
 #include <string.h>
 #include "qrcodegen.h"
 
+#ifdef WINCE
+#undef assert
+#define assert(x) 
+#endif
+
 #ifndef QRCODEGEN_TEST
 	#define testable static  // Keep functions private
 #else
