@@ -337,8 +337,8 @@ bool initGlobals()
 	initAygshell();
    coreDll = LoadLibrary(TEXT("coredll.dll"));
    cellcoreDll = LoadLibrary(TEXT("cellcore.dll"));
-#elif defined HEADLESS
-    initGpiod();
+#elif defined (HEADLESS) && defined (__ARM__)
+   initGpiod();
 #endif
    return true;
 }
@@ -361,8 +361,8 @@ void destroyGlobals()
   closeAygshell();
    if (coreDll != null) FreeLibrary(coreDll);
    if (cellcoreDll != null) FreeLibrary(cellcoreDll);
-#elif defined HEADLESS
-    closeGpiod();
+#elif defined (HEADLESS) && defined (__ARM__)
+   closeGpiod();
 #endif
 }
 
