@@ -14,7 +14,7 @@
 #if defined (WIN32) || defined (WINCE)
 #elif defined (ANDROID)
 #elif defined (darwin)
-#elif defined (HEADLESS) && defined (__ARM__)
+#elif defined (HEADLESS) && defined (__arm__)
  #include "posix/Gpiod_c.h"
 #endif
 
@@ -25,7 +25,7 @@ typedef struct _NATIVE_HANDLE {
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGC_open_i(NMParams p)
 {
-#if defined (HEADLESS) && defined (__ARM__)
+#if defined (HEADLESS) && defined (__arm__)
     TCObject gpiodChipObj = null;
     int32 bank  = p->i32[0];
     TCObject handleObj = null;
@@ -51,7 +51,7 @@ TC_API void tidgGC_open_i(NMParams p)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGL_open_gi(NMParams p)
 {
-#if defined (HEADLESS) && defined (__ARM__)
+#if defined (HEADLESS) && defined (__arm__)
     TCObject gpiodChipObj = p->obj[0];
     TCObject gpiodLineObj = null;
     int32 line  = p->i32[0];
@@ -80,7 +80,7 @@ TC_API void tidgGL_open_gi(NMParams p)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGL_requestOutput_si(NMParams p)
 {
-#if defined (HEADLESS) && defined (__ARM__)
+#if defined (HEADLESS) && defined (__arm__)
     TCObject gpiodLineObj = p->obj[0];
     NATIVE_HANDLE* lineHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(GpiodLine_handle(gpiodLineObj));
     TCObject consumerObj = p->obj[1];
@@ -96,7 +96,7 @@ TC_API void tidgGL_requestOutput_si(NMParams p)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGL_setValue_i(NMParams p)
 {
-#if defined (HEADLESS) && defined (__ARM__)
+#if defined (HEADLESS) && defined (__arm__)
     TCObject gpiodLineObj = p->obj[0];
     NATIVE_HANDLE* lineHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(GpiodLine_handle(gpiodLineObj));
     int32 value = p->i32[0];
@@ -109,7 +109,7 @@ TC_API void tidgGL_setValue_i(NMParams p)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGL_requestInput_s(NMParams p)
 {
-#if defined (HEADLESS) && defined (__ARM__)
+#if defined (HEADLESS) && defined (__arm__)
     TCObject gpiodLineObj = p->obj[0];
     NATIVE_HANDLE* lineHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(GpiodLine_handle(gpiodLineObj));
     TCObject consumerObj = p->obj[1];
@@ -124,7 +124,7 @@ TC_API void tidgGL_requestInput_s(NMParams p)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGL_getValue(NMParams p)
 {
-#if defined (HEADLESS) && defined (__ARM__)
+#if defined (HEADLESS) && defined (__arm__)
     TCObject gpiodLineObj = p->obj[0];
     NATIVE_HANDLE* lineHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(GpiodLine_handle(gpiodLineObj));
 
