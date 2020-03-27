@@ -340,7 +340,7 @@ set_target_properties( # Specifies the target library.
                        PROPERTIES IMPORTED_LOCATION
 
                        # Provides the path to the library you want to import.
-                       ${SKIA_DIR}/libs/${ANDROID_ABI}/libskia.so )
+                       ${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libskia.so )
 
 
 # Searches for a specified prebuilt library and stores the path as a
