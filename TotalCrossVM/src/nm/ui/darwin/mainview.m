@@ -13,7 +13,6 @@
 #import <QuartzCore/QuartzCore.h>
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
-#import <ScanditBarcodeScanner/ScanditBarcodeScanner.h>
 #import <AVFoundation/AVFoundation.h>
 
 #define LKLayer CALayer
@@ -23,7 +22,6 @@ int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
 static bool callingCamera;
-SBSBarcodePicker *picker;
 UIWindow* barwindow;
 static bool callingBarcode;
 
@@ -228,47 +226,6 @@ int isShown;
    barcode[0] = 0;
     dispatch_sync(dispatch_get_main_queue(), ^
     {
-       if([mode length] >= 6 && [[mode substringWithRange:NSMakeRange(0, 6)] isEqualToString:@"scandit"])
-       {
-          [SBSLicense setAppKey:[mode substringFromIndex:8]];
-          
-          SBSScanSettings* settings = [SBSScanSettings defaultSettings];
-          
-          //By default, all symbologies are turned off so you need to explicity enable the desired simbologies.
-          NSSet *symbologiesToEnable = [NSSet setWithObjects:
-                                        @(SBSSymbologyEAN13) ,
-                                        @(SBSSymbologyUPC12),
-                                        @(SBSSymbologyEAN8),
-                                        @(SBSSymbologyUPCE),
-                                        @(SBSSymbologyCode39) ,
-                                        @(SBSSymbologyCode128),
-                                        @(SBSSymbologyITF),
-                                        @(SBSSymbologyQR),
-                                        @(SBSSymbologyDatamatrix), nil];
-          [settings enableSymbologies:symbologiesToEnable];
-          
-          
-          // Some 1d barcode symbologies allow you to encode variable-length data. By default, the
-          // Scandit BarcodeScanner SDK only scans barcodes in a certain length range. If your
-          // application requires scanning of one of these symbologies, and the length is falling
-          // outside the default range, you may need to adjust the "active symbol counts" for this
-          // symbology. This is shown in the following 3 lines of code.
-          
-          SBSSymbologySettings *symSettings = [settings settingsForSymbology:SBSSymbologyCode39];
-          symSettings.activeSymbolCounts = [NSSet setWithObjects:@7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, nil];
-          
-          // Initialize the barcode picker - make sure you set the app key above
-          picker = [[SBSBarcodePicker alloc] initWithSettings:settings];
-          
-          // only show camera switch button on tablets. For all other devices the switch button is
-          // hidden, even if they have a front camera.
-          [picker.overlayController setCameraSwitchVisibility:SBSCameraSwitchVisibilityOnTablet];
-          [picker setAllowedInterfaceOrientations:UIInterfaceOrientationMaskAll];
-          picker.scanDelegate = self;
-           [self mountBarCodeWindow:NULL];
-           // Open the camera and start scanning barcodes
-           [picker startScanning];
-       } else {
            _session = [[AVCaptureSession alloc] init];
            _device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
            NSError *error = nil;
@@ -290,59 +247,23 @@ int isShown;
            _prevLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
            [self mountBarCodeWindow:_prevLayer];
            [_session startRunning];
-       }
-       
+              
     });
    while (callingBarcode)
       Sleep(100);
 }
 
 - (void)mountBarCodeWindow:(AVCaptureVideoPreviewLayer *) layer{
-    if(barwindow == NULL) {
-        barwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        
-         barCodeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        [barCodeButton addTarget:DEVICE_CTX->_mainview action:@selector(closeBarcode:) forControlEvents:UIControlEventTouchUpInside];
-        [barCodeButton setTitle:@" X " forState:UIControlStateNormal];
-        [barCodeButton setBackgroundColor:[UIColor colorWithRed:0.5f green:0.5f blue:0.5f alpha:0.5f]];
-        [barCodeButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        int h = barCodeButton.font.pointSize*2;
-        barCodeButton.font = [UIFont fontWithName:barCodeButton.font.fontName size:h];
-        barCodeButton.frame = CGRectMake(0,20,h*3/2,h*3/2);
-        [barwindow setRootViewController:picker];
-        [barwindow makeKeyAndVisible];
-        [barwindow addSubview:barCodeButton];
-
-       
-        
-    }
-    if(layer) {
-        [barwindow.layer addSublayer: layer];
-        
-        [barwindow bringSubviewToFront:barCodeButton];
-        
-        _highlightView = [[UIView alloc] init];
-        _highlightView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
-        _highlightView.layer.borderColor = [UIColor greenColor].CGColor;
-        _highlightView.layer.borderWidth = 3;
-        [barwindow addSubview:_highlightView];
-    }
+    [barwindow.layer addSublayer: layer];
+    
+    [barwindow bringSubviewToFront:barCodeButton];
+    
+    _highlightView = [[UIView alloc] init];
+    _highlightView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
+    _highlightView.layer.borderColor = [UIColor greenColor].CGColor;
+    _highlightView.layer.borderWidth = 3;
+    [barwindow addSubview:_highlightView];
     barwindow.hidden = NO;
-}
-
-- (void)barcodePicker:(SBSBarcodePicker *)thePicker didScan:(SBSScanSession *)session {
-   
-   [session stopScanning];
-   SBSCode *code = [session.newlyRecognizedCodes objectAtIndex:0];
-   
-   barwindow.hidden = YES;
-   //[barwindow resignKeyWindow];
-   //[barwindow removeFromSuperview];
-   
-   //NSString *symbology = code.symbologyString;
-   NSString *str = code.data;
-   strncpy(barcode, [str cStringUsingEncoding: NSASCIIStringEncoding], MIN([str length], sizeof(barcode)));
-   callingBarcode = false;
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection
@@ -382,7 +303,6 @@ int isShown;
 
 -(IBAction)closeBarcode:(id)sender
 {
-   if(picker != null) [picker stopScanning];
    if(_session != null)[_session stopRunning];
    barwindow.hidden = YES;
    callingBarcode = false;
