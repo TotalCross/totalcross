@@ -1,6 +1,3 @@
-[submodule "TotalCrossVM/deps/wince-deps"]
-	path = TotalCrossVM/deps/wince-deps
-	url = git@gitlab.com:totalcross/wince-deps.git
 [submodule "TotalCrossVM/deps/SDL"]
 	path = TotalCrossVM/deps/SDL
 	url = https://github.com/SDL-mirror/SDL.git
