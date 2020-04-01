@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+-->
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/extra">
+	<info organisation="superwaba" module="ant-jars" />
+	<dependencies>
+		<!-- orangevolt: used to access the windows registry -->
+		<dependency org="orangevolt-ant-tasks" name="orangevolt-ant-tasks" rev="1.3.8" />
+		<!-- used by our ant scripts -->
+		<dependency org="ant-contrib" name="ant-contrib" rev="1.0b3" transitive="false" />
+		<!-- jodconverter: used convert the companion to pdf -->
+		<dependency org="org.artofsolving.jodconverter" name="jodconverter-core" rev="3.0-beta-4">
+			<artifact name="jodconverter-core" ext="jar" />
+			<exclude name="sigar" ext="jar" />
+		</dependency>
+		<!-- jsch: used for ssh connections -->
+      <dependency org="com.jcraft" name="jsch" rev="0.1.46">
+          <artifact name="jsch" ext="jar"/>
+      </dependency>
+	</dependencies>
+</ivy-module>
