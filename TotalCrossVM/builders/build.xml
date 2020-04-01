@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+-->
+
+<project name="TotalCross SDK deploy" default="help" basedir=".">
+
+<description>
+   This file is used to deploy the TotalCross C based components.
+</description>
+
+<!-- import ANT Contrib -->
+<taskdef classpath="${tc.sdk.path}/etc/tools/ant/ant-contrib-1.0b3.jar" resource="net/sf/antcontrib/antcontrib.properties"/>
+<!-- <taskdef resource="com/orangevolt/tools/ant/taskdefs.properties"/> -->
+	
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   setup all build process properties.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<condition property="exe" value=".exe" else=""><os family="windows" /></condition>
+
+<!-- load platform environment variables -->
+<property environment="env"/>
+
+<!-- compiler settings -->
+<condition property="rootpath" value="${basedir}/../..">
+	<os family="unix"/>
+</condition>
+<property name="rootpath"      value="p:"/> <!-- MUST BE ABSOLUTE PATH -->
+<property file="${rootpath}/userpaths.properties"/>
+<property name="buildNumber" value="-1" /> <!-- set by jenkins -->
+
+<!-- javac settings -->
+<property name="compile.listfiles"       value="no"/>
+<property name="compile.target"          value="7"/>
+<property name="compile.source"          value="7"/>
+<property name="compile.debug"           value="yes"/>
+<property name="compile.optimize"        value="yes"/>
+
+<!-- IDEs and compilers project files -->
+<property name="msvc.project.path" value="${basedir}/vc2008"/>
+<property name="evc.project.path"  value="${basedir}/evc3"/>
+<property name="gcc.project.path"  value="${basedir}/gcc-posix"/>
+<property name="evc.project"       value="${evc.project.path}/TotalCross.vcw"/>
+<property name="android.project.path" value="${basedir}/android"/>
+<property name="android.temp"      value="${android.project.path}/apps/tcvm/deploy" />
+
+<!-- properties regarding the TC paths -->
+<!--property name="target.sdk.path"   value="t:/SDK/TotalCrossSDK"/-->
+
+<property name="base.target.path"  value="${basedir}/../../../output/release"/>
+<property name="source.vm.path"    value="${basedir}/.."/>
+<property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
+<property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
+<property name="sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
+<property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK/src/main/java"/>
+<property name="source.sdk.path.android"   value="${basedir}/../../TotalCrossVM/builders/droid/app/src/main/java"/>
+<property name="base.temp.path"    value="${basedir}/../../../temp"/>
+<property name="etc"               value="${sdk.path}/etc"/>
+<property name="tools"             value="${etc}/tools"/>
+
+<condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
+<condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
+<property name="apk" value="${android.temp}/TotalCross.apk" />
+
+<!-- installshield paths -->
+<property file="${rootpath}/ishield.properties"/>
+
+<!-- builder and iphone information -->
+<property file="${rootpath}/buildserver.properties"/>
+
+<mkdir dir="${sdk.path}/dist" />
+	
+<property name="BRANCH" value="master" />
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ getVersion
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
+<loadfile srcfile="${source.sdk.path}/totalcross/sys/Settings.java" property="tc.version">
+	<filterchain>
+		<linecontains>
+			<contains value="versionStr"/>
+		</linecontains>
+		<striplinebreaks/>
+		<tokenfilter>
+			<replacestring from="public" to=""/>
+			<replacestring from="static" to=""/>
+			<replacestring from="final" to=""/>
+			<replacestring from="String" to=""/>
+			<replacestring from="versionStr" to=""/>
+			<replacestring from="=" to=""/>
+			<deletecharacters chars='";'/>
+			<trim/>
+		</tokenfilter>
+	</filterchain>
+</loadfile>
+<echo message="TotalCross version : '${tc.version}'"/>
+	
+<!-- this target displays a help message which documents this configuration file features -->
+
+<target name="help" >
+  <echo message="To see the possible targets, type 'ant -p'"/>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: makeNativeHT - updates the native methods hash table.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="makeNativeHT" description = "Build the native hashtable for ios" >
+   <property name="path.to.prototypeGenerator" value="${base.temp.path}/nmPrototypeGenerator" />
+   <mkdir dir="${path.to.prototypeGenerator}" />
+
+   <javac
+      srcdir="${source.sdk.path}/tc/tools/"
+      encoding="ISO-8859-1"
+      debug="${compile.debug}"
+      optimize="${compile.optimize}"
+      target="${compile.target}"
+      source="${compile.source}"
+      includes="NativeMethodsPrototypeGenerator.java"
+      destdir="${path.to.prototypeGenerator}"
+      nowarn="true"
+    includeAntRuntime="false"
+   />
+   <java
+      classname="tc.tools.NativeMethodsPrototypeGenerator"
+      classpath="${path.to.prototypeGenerator}"
+      fork="yes"
+   >
+  	<arg line="makeNativeHT TC ${source.vm.path}/src/init ${source.vm.path}/src/nm/NativeMethods.txt ${source.vm.path}/src/scanner/NativeMethods.txt" />
+   </java>
+	
+	<java
+	   classname="tc.tools.NativeMethodsPrototypeGenerator"
+	   classpath="${path.to.prototypeGenerator}"
+	   fork="yes"
+	>
+	   <arg line="${source.vm.path}/src/nm/NativeMethods.txt" />
+	</java>
+	
+	<java
+	   classname="tc.tools.NativeMethodsPrototypeGenerator"
+	   classpath="${path.to.prototypeGenerator}"
+	   fork="yes"
+	>
+	   <arg line="${source.vm.path}/src/scanner/NativeMethods.txt" />
+	</java>    
+</target>
+   
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildWin32 - Generate the files for Windows 98 and beyond
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildWin32_sdk" >
+   <echo message="GENERATING WIN32 FILES - SDK"/>
+   
+   <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
+   </exec>
+</target>
+
+<!-- updates the file that stores the compilation date. -->
+<target name="updateCompilerDate" >
+   <tstamp />
+   <echo message="Compiler date: ${DSTAMP}" />
+   <concat destfile="${source.vm.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
+   <concat destfile="${source.sdk.path}/ras/CompilationDate4D.java">package ras; public class CompilationDate4D {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
+
+   <replace file="${source.sdk.path}/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+   <replace file="${source.sdk.path.android}/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: createSkeleton - Create the folders from scratch
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="createSkeleton" depends="updateCompilerDate" description="copy the changed files to the SDK">
+   <echo message="Building TotalCross SDK build ${buildNumber}"/>
+   <mkdir dir="${target.sdk.path}/dist/vm"/>
+   
+   <ant antfile="build.xml" dir="${sdk.path}" target="clean"           inheritAll="false"/>
+
+   <echo message="Copying SDK"/>
+   <copy todir="${target.sdk.path}" overwrite="yes" >
+      <fileset dir="${sdk.path}"
+         excludes=".*,.settings/**,etc/tools/jdeb/**,src/**/tc/samples/app/activation/**,src/**/totalcross/zxing/**,src/android/**,src/**/*.html,**/subbuild.xml,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/**/ras/**,src/test/**,src/**/tc/tools/**,src/**/totalcross/**/*4?.java,tc/*.java,src/**/totalcross/lang/**"/>
+      </copy>
+   <copy todir="${target.sdk.path}" file="${sdk.path}/license.txt" overwrite="yes"  />
+   <copy file="${sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
+   <replaceregexp file="${target.sdk.path}/src/main/java/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
+   
+   <!-- copy the changed files to the release folder -->
+   <mkdir dir="${target.sdk.path}/dist/vm" />
+   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${sdk.path}/dist/vm" includes="*.tcz" /></copy>
+   <copy todir="${target.sdk.path}/dist"> <fileset dir="${sdk.path}/dist" includes="*.jar" /></copy>
+
+   <copy todir="${sdk.path}/dist/vm"> <fileset dir="${target.sdk.path}/dist/vm" includes="**/*" /></copy>
+   <copy todir="${sdk.path}/dist"> <fileset dir="${target.sdk.path}/dist" includes="*.jar" /></copy>   
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildSkeleton - Build the folders
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildSkeleton" >
+</target>
+
+<target name="buildSamples_sdk" >
+	<ant antfile="build.xml" dir="${sdk.path}" target="samples"         inheritAll="false"/>
+	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${sdk.path}/dist/samples" /></copy>
+</target>
+
+<target name="buildJava_sdk" >
+
+  <ant antfile="build.xml" dir="${sdk.path}" target="clean" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${sdk.path}" target="desktop" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${sdk.path}" target="desktop_web" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${sdk.path}" target="device" inheritAll="false"/>
+
+  <copy toDir="${target.sdk.path}/dist">
+   <fileset dir="${sdk.path}/dist" includes="*.jar"/>
+  </copy>
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildInstalls - run installshield to create the SDK and Samples
+        installers for win32
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="reorganizeSamples" >
+  <property name="samples"  value="${target.sdk3.path}/dist/samples/"/>
+
+  <move todir="${samples}/app/Breakout"    failonerror="no"> <fileset dir="${samples}/Breakout"/>    </move>
+  <move todir="${samples}/app/Scape"       failonerror="no"> <fileset dir="${samples}/Scape"/>       </move>
+  <move todir="${samples}/app/Calculator"  failonerror="no"> <fileset dir="${samples}/Calculator"/>  </move>
+  <move todir="${samples}/app/BtChat"      failonerror="no"> <fileset dir="${samples}/BtChat"/>      </move>
+  <move todir="${samples}/app/WorldWatch"  failonerror="no"> <fileset dir="${samples}/WorldWatch"/>  </move>
+                                   
+  <move todir="${samples}/service/GPSLogger"           failonerror="no"> <fileset dir="${samples}/GPSLogger"/>           </move>
+  <move todir="${samples}/service/GPSLoggerController" failonerror="no"> <fileset dir="${samples}/GPSLoggerController"/> </move>
+  <move todir="${samples}/service/GPSLoggerViewer"     failonerror="no"> <fileset dir="${samples}/GPSLoggerViewer"/>     </move>
+  <move todir="${samples}/service/MailController"      failonerror="no"> <fileset dir="${samples}/MailController"/>      </move>
+  <move todir="${samples}/service/MailService"         failonerror="no"> <fileset dir="${samples}/MailService"/>         </move>
+  <move todir="${samples}/service/MailViewer"          failonerror="no"> <fileset dir="${samples}/MailViewer"/>          </move>
+   
+</target>   
+                                  
+<target name="createTotalCross3" description="create the TotalCross3 folder from TotalCrossSDK and LitebaseSDK">
+
+  <property name="target.litebase.path"  value="${target.sdk.path}/../LitebaseSDK"/>
+
+   <delete dir="${target.sdk3.path}"/>
+   <mkdir dir="${target.sdk3.path}"/>
+   
+   <!-- totalcross -->
+   <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
+   
+   <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
+   <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
+      <fileset dir="${target.litebase.path}/dist/samples" />
+   </copy>
+   <copy todir="${target.sdk3.path}/docs/html"> <fileset dir="${sdk.path}/docs/html" /></copy>
+   <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
+   <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
+   
+   <copy todir="${target.sdk3.path}" file="${sdk.path}/license.txt" overwrite="yes"  />
+   <copy file="${sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
+   
+   <antcall target="reorganizeSamples" />
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   merge TotalCrossSDK + LitebaseSDK into TotalCross3 
+   and create file TotalCross3.exe
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildInstalls_sdk" >
+  
+  <antcall target="createTotalCross3" />
+
+  <property name="target.file"  value="${target.sdk.path}/../../../TotalCross3"/>
+
+  <!-- delete old files -->
+  <delete file="${target.file}" />
+
+  <!-- update readme files -->
+  <copy file="SDK_sfx.diz" toDir="${rootpath}/">
+    <filterset>
+      <filter token="VERSION" value="${tc.version}"/>
+    </filterset>
+  </copy>
+
+  <echo message="Creating ${target.file} file..."/>
+  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+     <arg line='a -sfx -y -ep1 -m5 -md64m -ma5 -r -s -idq -zSDK_sfx.diz ${target.file}.exe ${target.sdk3.path}\*.*'/>
+  </exec>
+  <!--exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+     <arg line='a -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file}.rar ${target.sdk3.path}\*.*'/>
+  </exec-->
+
+  <!-- delete temp files -->
+  <delete file="${rootpath}/SDK_sfx.diz"/>
+  
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: IPhone builds
+
+  1. build the tcvm, launcher
+  2. copy the launcher
+  3. copy the tcvm & tcpriv
+  4. create a rep for the tcvm and the samples
+  5. ftp to the sw.com.br
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildIPhone_sdk_base" >
+  <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
+    <property name="arg_clean" value="-clean" />
+    <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  </then>
+  <else>
+    <property name="arg_clean" value="" />
+  </else>
+  </if>
+  
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+</target>
+
+<target name="ios_build">
+   <fail unless="build.name" />
+   <fail unless="build.includes" />
+   <fail unless="copy.from" />
+   <fail unless="copy.to" />
+
+   <property name="remote.path" value="~/ios_workspace/${build.name}/${env.COMPUTERNAME}" />
+
+   <tar
+      basedir="${basedir}/../../.."
+      includes="${build.includes}"
+      destfile="${base.temp.path}/TotalCross_${build.name}.tgz"
+      compression="gzip"
+      longfile="gnu" />
+   <sshexec command="
+      rm -Rf ${remote.path};
+      mkdir -p ${remote.path}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+   <scp
+      file="${base.temp.path}/TotalCross_${build.name}.tgz"
+      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
+      trust="yes" password="${buildserver.pass}" port="22" />
+
+   <sshexec command="
+      tar -zxpf ${remote.path}/TotalCross_${build.name}.tgz -C ${remote.path};
+      bash -l ${remote.path}/TotalCross/TotalCrossVM/builders/${build.name}/build.sh -clean -r demo -p ${buildserver.pass}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+
+   <mkdir dir="${copy.to}" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/builders/${build.name}/${copy.from}" todir="${copy.to}" trust="yes" password="${buildserver.pass}" port="22" />
+</target>
+
+<target name="ios_xcode" >
+   <antcall target="ios_build">
+      <param name="build.name"      value="xcode" />
+      <param name="build.includes"  value="TotalCross/TotalCrossVM/src/**, TotalCross/TotalCrossVM/builders/xcode/**, Litebase/LitebaseSDK/src/native/**, Litebase/LitebaseSDK/builders/xcode/**" />
+      <param name="copy.from"       value="build/Release-iphoneos/TotalCross.ipa" />
+      <param name="copy.to"         value="${sdk.path}/dist/vm/ios" />
+   </antcall>
+   <antcall target="invalidate-ipas">
+      <param name="ipa.files"      value="${sdk.path}/dist/vm/ios/TotalCross.ipa" />
+   </antcall>
+</target>
+
+<target name="invalidate-ipas" >
+   <property name="path.to.invalidator" value="${base.temp.path}/invalidator" />
+   <mkdir dir="${path.to.invalidator}" />
+   <property name="ipa.files" value="${target.sdk.path}/dist/vm/ios/TotalCross.ipa" />
+
+   <javac
+      srcdir="${source.sdk.path}/tc/tools/"
+      encoding="ISO-8859-1"
+      debug="${compile.debug}"
+      optimize="${compile.optimize}"
+      target="${compile.target}"
+      source="${compile.source}"
+      includes="InvalidateIPA.java, deployer/ipa/**"
+      destdir="${path.to.invalidator}"
+      nowarn="true"
+    includeAntRuntime="false"
+   >
+      <classpath>
+         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-1.56.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-1.56.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
+         <pathelement location="${tools}/ipa/dd-plist.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
+      </classpath>
+   </javac>
+   <java
+      classname="tc.tools.InvalidateIPA"
+      fork="yes"
+   >
+      <classpath>
+         <pathelement location="${path.to.invalidator}"/>
+         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-1.56.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-1.56.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-compress-1.4.jar"/>
+         <pathelement location="${tools}/ipa/dd-plist.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
+      </classpath>
+      <arg line="${tools} ${ipa.files}" />
+   </java>
+</target>
+
+<target name="buildIPhone_sdk_clean" >
+  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
+  <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+</target>
+
+<target name="buildIPhone_sdk" >
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+</target>
+
+<target name="copyIPhoneTCVM_sdk" >
+   <antcall target="copyIPhoneTCVM">
+      <param name="type" value="demo" />
+      <param name="target.path" value="${target.sdk.path}" />
+   </antcall>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: Linux builds
+
+  1. build the tcvm, launcher
+  2. copy the launcher
+  3. copy the tcvm
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildLinux_sdk_clean" >
+  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
+  <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+
+  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+</target>
+
+<target name="buildLinux_sdk" >
+  <sshexec command="bash -l ~/build.sh -tcvm -linux -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+</target>
+
+<target name="copyLinuxLauncher_sdk" >
+  <scp file="${buildserver.tc.linux.path}/demo/Launcher" todir="${sdk.path}/etc/launchers/linux" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+</target>
+
+<target name="packageLinux" >
+	<mkdir dir="${base.temp.path}" />
+    <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
+      <classpath>
+      	  <pathelement location="${sdk.path}/dist/totalcross-sdk.jar"/>
+          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+          <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+          <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+      </classpath>
+      <arg line="-n TotalCross"/>
+      <arg line="-c 'TotalCross VM'"/>
+      <arg line="-d 'The TotalCross Virtual Machine'"/>
+      <arg line="-v ${tc.version}"/>
+      <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
+      <arg line="-t ${target.path}/dist/vm/linux"/>
+      <arg value="${sdk.path}/dist/vm/TCBase.tcz"/>
+      <arg value="${sdk.path}/dist/vm/TCUI.tcz"/>
+      <arg value="${sdk.path}/etc/fonts/TCFont.tcz"/>
+      <arg value="${sdk.path}/etc/fonts/Material Icons.tcz"/>
+    </java>
+</target>
+
+<target name="packageLinux_sdk" >
+   <antcall target="packageLinux">
+      <param name="type" value="demo" />
+      <param name="target.path" value="${target.sdk.path}" />
+   </antcall>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: Android builds
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="clean_android_native" description="Cleans the native files for Android" >
+  <delete dir="${base.temp.path}/android/TotalCross" failonerror="false" />
+</target>
+
+<target name="build_android_native" description="Compiles libtcvm.so for Android">
+	<trycatch>
+		<try>
+			<delete dir="${source.vm.path}/native" failonerror="false" />
+			<copy todir="${source.vm.path}" overwrite="true">
+				<fileset dir="${basedir}/../../../Litebase/LitebaseSDK/src">
+					<include name="native/**/*" />
+					<exclude name="native/jni/**/*" />
+				</fileset>
+			</copy>
+			<property name="type" value="demo" />
+			<exec dir="${source.vm.path}/src" executable="cmd.exe" failonerror="true">
+				<env key="TYPE" value="${type}" />
+				<env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
+				<arg line="/c ${android.ndk.path}/ndk-build" />
+			</exec>
+			<sleep seconds="3" />
+		</try>
+		<finally>
+			<delete dir="${source.vm.path}/native" failonerror="false" />
+		</finally>
+	</trycatch>
+</target>
+
+<target name="build_android_java" description="Builds the TotalCross.apk for Android">
+  
+  <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
+  <!-- create the temp folder -->
+  <delete dir="${android.temp}" failonerror="false" />
+  <sleep seconds="1"/>
+  <mkdir dir="${android.temp}" />
+
+	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="clean" inheritAll="false"/>
+	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="release" inheritAll="false"/>
+
+</target>
+
+<target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
+   <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
+      <fileset dir="${base.temp.path}/android/TotalCross/${type}/libs" >
+         <include name="**/*.so" />
+      </fileset>
+   </copy>
+  <retry retrycount="3">
+    <antcall target="build_android_java" />
+  </retry>
+</target>
+
+<target name="adb" description="Just installs TotalCross on Android (no build is performed)." >
+  <property name="apk" value="${apk}" />
+  <exec executable="adb${exe}" >
+   <arg line="install -r ${apk}" />
+  </exec>
+</target>
+
+<target name="install_android" depends="buildAndroid_sdkNoClean,adb" description="Builds and installs TotalCross on Android." />
+
+<target name="buildAndroid_sdkNoClean">
+  <delete dir="${android.project.path}/out/src" />
+  <antcall target="build_android" >
+	<param name="type" value="demo" />
+	</antcall>	
+  <copy file="${android.temp}/TotalCross.apk" todir="${target.sdk.path}/dist/vm/android" overwrite="true" />
+  <copy file="${android.temp}/AndroidManifest_singleapk.xml" todir="${target.sdk.path}/etc/tools/android" />
+  <copy file="${android.temp}/resources_singleapk.arsc"      todir="${target.sdk.path}/etc/tools/android" />
+</target>   
+
+<target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: checks if we must update the versions of the files prior to a build.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="checkVersionOnProjects" >
+ <loadfile srcfile="${msvc.project.path}/TCVM.vcproj" property="version.updated">
+   <filterchain>
+     <linecontains>
+       <contains value='Version="${tc.version}"'/>
+     </linecontains>
+   </filterchain>
+ </loadfile>
+
+  <fail unless="version.updated" message="************************************* Please update the project version information on vc2008, EVC, gcc-arm/vm/resources.rcp!!! **********"/>
+</target>
+
+<target name="buildPostInstall" >
+
+  <property name="temp" value="${sdk.path}/build/classes/java/main" />
+
+  <java classname="tc.Deploy" fork="yes" dir="${temp}">
+	<env key="TOTALCROSS_HOME" value="${sdk.path}"/>
+   <classpath>
+   	<pathelement location="${temp}"/>
+   </classpath>
+   <arg line="PostInstall.class -win32"/>
+   <arg line="/r 5443444B3018A93884C5D622"/>
+  </java>
+  
+  <copy file="${temp}/install/win32/PostInstall.exe" todir="${target.sdk.path}" />
+  <copy file="${temp}/install/win32/PostInstall.tcz" todir="${target.sdk.path}" />
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildWinCE
+
+       call evc commandline compiler
+       Important: to be able to compile some of these files, you must delete wce211\bin
+       and copy the wce300\bin to wce211\bin (thus, updating all old compilers to new versions)
+       these folders are located under <program files>\Microsoft eMbedded Tools\EVC\
+
+       Note that the compiler may hang at random step, you just press ^c and start over again. M$ things...
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+    <target name="buildWinCE_sdk">
+        <echo message="GENERATING WINCE FILES - SDK" />
+        <exec executable="${msvc.path}" failonerror="yes">
+            <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
+        </exec>
+        <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+          <fileset dir="${sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+        </copy>
+        <delete failonerror="no">
+            <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+        </delete>
+    </target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: vs2008
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="buildVisualStudio2008" >
+   <echo message="GENERATING WIN32 and WINCE"/>
+   
+   <mkdir dir="${target.sdk.path}/dist/vm/win32"/>
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.sln /rebuild "Release|Win32"'/>
+   </exec>
+	
+    <exec executable="${msvc.path}" failonerror="yes">
+        <arg line='${msvc.project.path}/TCVM.sln /rebuild "Release|Pocket PC 2003 (ARMV4)"' />
+    </exec>
+    <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+      <fileset dir="${sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+    </copy>
+    <delete failonerror="no">
+        <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+    </delete>
+</target>
+
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: build targets
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+ 
+<target name="build_iphone" >
+  <fail unless="type" />
+  <antcall target="buildIPhone_sdk_base" />
+  <antcall target="copyIPhoneLauncher_sdk" />
+</target>
+
+<target name="copyIPhoneLauncher_sdk" />
+<target name="copyIPhoneTCVM" />
+<target name="buildWin32_vms" />
+<target name="buildWin32_vms_noras" />
+<target name="buildInstalls_vms" />
+<target name="buildInstalls_vms_noras" />
+<target name="build-theos-launcher" />
+<target name="ios_theos" />
+<target name="copyIPhoneTCVM_vms" />
+<target name="copyIPhoneTCVM_vms_noras" />
+<target name="buildIPhone_vms" />
+<target name="buildIPhone_vms_noras" />
+<target name="packageLinux_vms" />
+<target name="packageLinux_vms_noras" />
+<target name="buildLinux_vms" />
+<target name="buildLinux_vms_noras" />
+<target name="buildAndroid_vms" />
+<target name="buildAndroid_vms_noras" />
+<target name="buildWinCE_vms" />
+<target name="buildWinCE_vms_noras" />
+<target name="buildWinCECabsSingle" />
+    
+</project>

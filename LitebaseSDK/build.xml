@@ -54,7 +54,7 @@
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
-<taskdef name="proguard" classpath="${tcsdk.root}/etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/>
+<!-- <taskdef name="proguard" classpath="${tcsdk.root}/etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/> -->
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  get-version
