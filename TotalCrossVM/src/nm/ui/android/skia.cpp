@@ -6,7 +6,7 @@
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 #else
-#ifndef __arm__
+#if !defined(__arm__) && !defined(ANDROID)
 #include <GL/gl.h>
 #else
 #include <EGL/egl.h>
