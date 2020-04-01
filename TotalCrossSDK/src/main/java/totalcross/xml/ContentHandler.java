@@ -108,4 +108,18 @@ public abstract class ContentHandler {
    */
   public void cdata(int tag, String cdata) {
   }
+
+  /**
+   * Name of the tag.
+   *
+   * <p>The XmlReader will invoke this method at the beginning of every
+   * element in the XML document. All of the element's content will be
+   * reported in order. </p>
+   * @param tag
+   *           tag identifier for this element
+   * @param name
+   *           tag name
+   */
+  public void tagName(int tag, String name) {
+  }
 }
