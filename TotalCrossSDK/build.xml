@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+-->
+
+<project name="TotalCross" default="help" basedir=".">
+
+<property name="sdk.root"  value="${basedir}"/>
+
+<description>
+  This build file is used to build the TotalCross SDK.
+</description>
+	
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        setup all build process properties.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
+	
+<property name="src"                    value="${sdk.root}/src/main/java"/>
+<property name="resources"              value="${sdk.root}/src/main/resources"/>
+<property name="etc"                    value="${sdk.root}/etc"/>
+<property name="docs"                   value="${sdk.root}/docs"/>
+<property name="fonts"                  value="${etc}/fonts"/>
+<property name="tools"                  value="${etc}/tools"/>
+<property name="output"                 value="${sdk.root}/../temp"/>
+<property name="target"                 value="${sdk.root}/../output"/>
+<property name="dist"                   value="${sdk.root}/dist"/>
+<property name="lb.src"                 value="${sdk.root}/../LitebaseSDK/src/java"/>
+
+<!-- import ANT Contrib -->
+<taskdef classpath="${etc}/tools/ant/ant-contrib-1.0b3.jar" resource="net/sf/antcontrib/antcontrib.properties"/>
+
+<!-- define proguard task -->
+<!-- <taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpath="${etc}/obfuscator/proguard.jar" /> -->
+	
+<!-- load platform environment variables -->
+<property environment="env"/>
+
+<!-- set host platform properties -->
+<condition property="os.win32" value="true">
+ <os family="windows"/>
+</condition>
+<condition property="os.linux" value="true">
+ <os family="unix"/>
+</condition>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ get-version
+
+-description:
+        retrieves the TotalCross version from the file "totalcross/sys/Settings.java"
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
+<loadfile srcfile="${src}/totalcross/sys/Settings.java" property="versionStr">
+	<filterchain>
+		<linecontains>
+			<contains value="versionStr"/>
+		</linecontains>
+		<striplinebreaks/>
+		<tokenfilter>
+			<replacestring from="public" to=""/>
+			<replacestring from="static" to=""/>
+			<replacestring from="String" to=""/>
+			<replacestring from="versionStr" to=""/>
+			<replacestring from="=" to=""/>
+			<deletecharacters chars='";'/>
+			<trim/>
+		</tokenfilter>
+	</filterchain>
+</loadfile>
+<loadfile srcfile="${src}/totalcross/sys/Settings.java" property="versionNumber">
+	<filterchain>
+		<linecontains>
+			<contains value="int version"/>
+		</linecontains>
+		<striplinebreaks/>
+		<tokenfilter>
+			<replacestring from="public" to=""/>
+			<replacestring from="static" to=""/>
+			<replacestring from="int" to=""/>
+			<replacestring from="version" to=""/>
+			<replacestring from="=" to=""/>
+			<deletecharacters chars=';'/>
+			<trim/>
+		</tokenfilter>
+	</filterchain>
+</loadfile>
+<!-- -comment out this whole block if you don't have Ant 1.6 or later -->
+
+<!-- define the default version number -->
+<property name="versionStr" value="X.XX"/>
+<property name="versionNumber" value="100"/>
+
+<!-- this target displays a help message which documents this configuration file features -->
+<target name="help" depends="info">
+   <echo message="Type 'ant -p' to list all available targets."/>
+</target>
+   
+<target name="info">
+   <echo message="Host platform is ${os.name}"/>
+   <echo message="TotalCross version: '${versionStr} (${versionNumber})'"/>
+</target>   
+	
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: clean
+
+-description:
+        remove the build folder
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="clean" depends="info">
+	<available file="${output}" property="output.exists" />
+	<if>
+	 	<equals arg1="${output.exists}" arg2="true" />
+	<then>
+		<delete includeemptydirs="true">
+			<fileset dir="${output}">
+				<include name="**/*"/>
+				<exclude name="**/eclipse/**/*"/>
+			</fileset>
+		</delete>
+	</then>
+	</if>
+  <delete includeemptydirs="true" failonerror="false">
+    <fileset dir="${sdk.root}/build" excludes="libs/**/*, classes/**/*"/>
+  </delete>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: javadoc
+
+-description:
+        build the TotalCross Javadocs
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="replaceJavaLang">
+  <replace dir="${output}/javadoc/" >
+  	<include name="**/*.java"/>
+	<replacefilter
+		token="(${str} "
+		value="(totalcross.lang.${str} "/>
+	<replacefilter
+		token=",${str} "
+		value=",totalcross.lang.${str} "/>
+  	<replacefilter
+  		token=" class ${str} "
+  		value=" class%%${str} "/>
+  	<replacefilter
+  		token=" interface ${str} "
+  		value=" interface%%${str} "/>
+	<replacefilter
+		token=" ${str} "
+		value=" totalcross.lang.${str} "/>
+	<replacefilter
+		token="${str}["
+		value="totalcross.lang.${str}["/>
+	<replacefilter
+		token="java.lang.${str}"
+		value="totalcross.lang.${str}"/>
+	<replacefilter
+		token=" class%%${str} "
+		value=" class ${str} "/>
+	<replacefilter
+		token=" interface%%${str} "
+		value=" interface ${str} "/>
+  </replace>
+</target>
+
+<target name="javadoc" description="build the javadoc.">
+
+  <mkdir dir="${docs}/html" />
+  <delete>
+    <fileset dir="${docs}/html" excludes="*.gif"/>
+  </delete>
+
+  <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
+  <mkdir dir="${output}/javadoc" />
+
+  <!-- join lb javadoc -->  
+  <copy todir="${output}/javadoc"><fileset dir="${lb.src}" excludes="**/*4D*,tc/**,litebase/android/**"/></copy>
+  <replace dir="${output}/javadoc/litebase" token="native public" value="//native public"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="public static native" value="//public static native"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="native static" value="//native static"><include name="**/*.java"/></replace>
+
+  <copy todir="${output}/javadoc">
+    <fileset dir="${src}" excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
+  </copy>
+  <echo message="Removing 4D methods" />
+  <taskdef name="removemethod" classname="tc.tools.ant.RemoveMethod" classpath="${etc}/tools/ant/tctasks.jar" />
+  <removemethod methodname=".+(4D)" keeporiginal="false">
+    <fileset dir="${output}/javadoc" includes="totalcross/**/*.java" />
+  </removemethod>
+  
+  <!-- +hack to generate java.lang package documentation -->
+  <copy todir="${output}/javadoc/totalcross/lang">
+    <fileset dir="${src}/totalcross/lang"/>
+    <globmapper from="*4D.java" to="*.java"/>
+  </copy>
+  <delete file="${output}/javadoc/totalcross/lang/Array4D.java" />
+
+  <replace dir="${output}/javadoc/totalcross/lang" token="4D"><include name="**/*.java"/></replace>
+  <!-- -hack -->
+
+  <!-- replace java.lang.* to totalcross.lang.* so the user goes to the correct package when viewing the javadoc. -->
+  <antcall target="replaceJavaLang"><param name="str" value="Class"/></antcall>
+  <antcall target="replaceJavaLang"><param name="str" value="StringBuffer"/></antcall>
+  <antcall target="replaceJavaLang"><param name="str" value="String"/></antcall>
+  <antcall target="replaceJavaLang"><param name="str" value="Object"/></antcall>
+  <antcall target="replaceJavaLang"><param name="str" value="Runnable"/></antcall>
+  <antcall target="replaceJavaLang"><param name="str" value="Thread"/></antcall>
+  <antcall target="replaceJavaLang"><param name="str" value="Throwable"/></antcall>
+
+  <exec dir="${java.home}/bin" executable="javadoc">
+    <arg line="-sourcepath ${output}/javadoc"/>
+    <arg line="-d ${docs}/html"/>
+    <arg line="-doctitle 'TotalCross SDK ${versionStr} (&lt;a href='https://gitlab.com/totalcross/TotalCross/blob/v${versionStr}/CHANGELOG.md' target='_blank' &gt;changelogs&lt;/a&gt;).'"/>
+    <arg line="-source 1.8"/>
+    <arg line="-subpackages litebase -subpackages totalcross"/>
+  </exec>
+
+  <!-- replace all references in the javadocs, even if they don't create a link. -->
+  <replace dir="${docs}/html/" token="java.lang." value="totalcross.lang."><include name="**/*.html"/></replace>
+
+  <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
+</target>
+
+</project>

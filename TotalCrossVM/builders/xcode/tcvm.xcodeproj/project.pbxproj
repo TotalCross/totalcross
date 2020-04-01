@@ -443,7 +443,6 @@
 		3ABDFBD81EEECB2D008C0A79 /* imageImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3ABDFBD51EEECB2D008C0A79 /* imageImage.h */; };
 		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 		4B12E2731ED4C517008E304D /* SmsManager.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B12E2721ED4C517008E304D /* SmsManager.c */; };
-		66E1D0FA3325D3976FC404B4 /* libPods-tcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1874401925DA7F517DE9BE04 /* libPods-tcvm.a */; };
 		CEFA5148181EF24700B1B00A /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = CEFA5147181EF24700B1B00A /* mainview.m */; };
 		FAD6683823E495B2001E5CBA /* Gpiod.c in Sources */ = {isa = PBXBuildFile; fileRef = FAD6683723E495B2001E5CBA /* Gpiod.c */; };
 /* End PBXBuildFile section */
@@ -863,7 +862,6 @@
 		0FEF0A78242D38F700E66964 /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libsqlite3.0.tbd; sourceTree = DEVELOPER_DIR; };
 		15A29AD9189C4D3C007C420B /* NativeDB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = NativeDB.c; path = db/NativeDB.c; sourceTree = "<group>"; };
 		15E4ED10189C35510012D8ED /* Reflection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Reflection.c; sourceTree = "<group>"; };
-		1874401925DA7F517DE9BE04 /* libPods-tcvm.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tcvm.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37430B731EEECEEB008D89DF /* firebase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = firebase.c; path = firebase/firebase.c; sourceTree = "<group>"; };
 		37430B741EEECEEB008D89DF /* firebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = firebase.h; path = firebase/firebase.h; sourceTree = "<group>"; };
 		37730B771EEECEF2008D89DF /* notification.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = notification.c; path = notification/notification.c; sourceTree = "<group>"; };
@@ -898,10 +896,8 @@
 		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 		4B12E2721ED4C517008E304D /* SmsManager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SmsManager.c; path = telephony/SmsManager.c; sourceTree = "<group>"; };
 		CEFA5147181EF24700B1B00A /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; };
-		D49C30B7839DE1B2C73836D6 /* Pods-tcvm.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tcvm.release.xcconfig"; path = "Target Support Files/Pods-tcvm/Pods-tcvm.release.xcconfig"; sourceTree = "<group>"; };
 		D598D4801EB7AFFC005C3DAE /* ScanditBarcodeScanner.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ScanditBarcodeScanner.framework; sourceTree = "<group>"; };
 		DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		EE95298B14B3733478223162 /* Pods-tcvm.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tcvm.debug.xcconfig"; path = "Target Support Files/Pods-tcvm/Pods-tcvm.debug.xcconfig"; sourceTree = "<group>"; };
 		FAD6683723E495B2001E5CBA /* Gpiod.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Gpiod.c; path = ../gpiod/Gpiod.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -913,7 +909,6 @@
 				0F2691442270FEF80080E11C /* libskia.a in Frameworks */,
 				0FAA49A71549D7B30039F4BF /* UIKit.framework in Frameworks */,
 				0F003EB7150FEBBF004F0653 /* Foundation.framework in Frameworks */,
-				66E1D0FA3325D3976FC404B4 /* libPods-tcvm.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -929,7 +924,6 @@
 				0F8C89FA1549CFC700E0967F /* src */,
 				0F003EB5150FEBBF004F0653 /* Frameworks */,
 				0F003EB4150FEBBF004F0653 /* Products */,
-				E71041B0A90420BBC9398BB4 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -953,7 +947,6 @@
 				0F003EC4150FEBBF004F0653 /* SenTestingKit.framework */,
 				00CFDF6A1138442D0091FFFF /* ImageIO.framework */,
 				DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */,
-				1874401925DA7F517DE9BE04 /* libPods-tcvm.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2052,15 +2045,6 @@
 			name = sqlite;
 			sourceTree = "<group>";
 		};
-		E71041B0A90420BBC9398BB4 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				EE95298B14B3733478223162 /* Pods-tcvm.debug.xcconfig */,
-				D49C30B7839DE1B2C73836D6 /* Pods-tcvm.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		FAD6683523E49530001E5CBA /* gpiod */ = {
 			isa = PBXGroup;
 			children = (
@@ -2306,7 +2290,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0F003ED7150FEBBF004F0653 /* Build configuration list for PBXNativeTarget "tcvm" */;
 			buildPhases = (
-				12F6EAB3F6AD6AE88FEE52DE /* [CP] Check Pods Manifest.lock */,
 				0F003EAF150FEBBF004F0653 /* Sources */,
 				0F003EB0150FEBBF004F0653 /* Frameworks */,
 				0F003EB1150FEBBF004F0653 /* Headers */,
@@ -2346,31 +2329,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		12F6EAB3F6AD6AE88FEE52DE /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-tcvm-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0F003EAF150FEBBF004F0653 /* Sources */ = {
@@ -2717,7 +2675,6 @@
 		};
 		0F003ED8150FEBBF004F0653 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EE95298B14B3733478223162 /* Pods-tcvm.debug.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_ENABLE_MODULES = YES;
@@ -2729,17 +2686,7 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "tcvm-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"COCOAPODS=1",
-					"$(inherited)",
-					"GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1",
-					"$(inherited)",
-					"PB_FIELD_32BIT=1",
-					"PB_NO_PACKED_STRUCTS=1",
-					"PB_ENABLE_MALLOC=1",
-				);
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lskia",
@@ -2752,7 +2699,6 @@
 		};
 		0F003ED9150FEBBF004F0653 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D49C30B7839DE1B2C73836D6 /* Pods-tcvm.release.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_ENABLE_MODULES = YES;
