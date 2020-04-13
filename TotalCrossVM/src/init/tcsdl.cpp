@@ -32,7 +32,7 @@ int initSDL(ScreenSurface screen) {
   // create the window like normal
   window = SDL_CreateWindow("TotalCross SDK", SDL_WINDOWPOS_UNDEFINED,
                             SDL_WINDOWPOS_UNDEFINED, rect.w, rect.h, 
-                            SDL_WINDOW_FULLSCREEN);
+                            SDL_WINDOW_OPENGL);
   if(window == NULL) {
     printf("SDL_Init failed: window %s\n", SDL_GetError());
   }
