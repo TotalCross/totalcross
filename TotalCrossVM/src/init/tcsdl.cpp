@@ -56,8 +56,7 @@ int initSDL(ScreenSurface screen) {
   // texture = SDL_CreateTexture(renderer, pixelformat,
   //                             SDL_TEXTUREACCESS_STREAMING, texWidth, texHeight);
 sdlsurface = SDL_GetWindowSurface(window);
-if(sdlsurface == NULL ) printf("SDL_Init failed: init %s\n", SDL_GetError());  
-  printf("5 %d\n", sdlsurface);
+if(sdlsurface == NULL ) printf("SDL_Init failed: init %s\n", SDL_GetError());
   timeout = SDL_GetTicks() + TICKS_FOR_NEXT_FRAME;
   return 1;
 }

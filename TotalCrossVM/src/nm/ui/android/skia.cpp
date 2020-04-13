@@ -93,18 +93,14 @@ void initSkia(int w, int h)
 {
     SKIA_TRACE()
 #ifdef HEADLESS
-    printf("6\n");
     // SkImageInfo ii = SkImageInfo::Make(w, h, kRGB_565_SkColorType, kPremul_SkAlphaType);
-    printf("7\n");
     // bitmap.allocPixels(ii, ii.minRowBytes());
 
         // SkBitmap bitmap;
            bitmap.installPixels(SkImageInfo::Make(w, h, 
            (SkColorType)ColorFormatSDL2Skia(sdlsurface->format->format), kPremul_SkAlphaType), sdlsurface->pixels, sdlsurface->pitch);
 
-    printf("8\n");
     canvas = new SkCanvas(bitmap);
-    printf("9\n");
 #else
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
     // the different OpenGL variants (Core, ES, etc). Most of the code bellow is dedicated to create
@@ -134,8 +130,6 @@ void initSkia(int w, int h)
     surface = gpuSurface;
     canvas = gpuCanvas;
 #endif
-
-    printf("10\n");
     // The forepaint is used for "draw" methods
     forePaint.setStyle(SkPaint::kStroke_Style);
     forePaint.setTextSize(16);
@@ -150,10 +144,8 @@ void initSkia(int w, int h)
 
     backPaint.setAntiAlias(true);
     backPaint.setLCDRenderText(true);
-    printf("11\n");
     canvas->clear(SK_ColorWHITE);
     flushSkia();
-    printf("12\n");
 }
 
 // Tells Skia to fullfill all draw commands
