@@ -21,7 +21,7 @@ SKIADIR = /skia
 endif
 
 ifndef LIBS
-LIBS = -L. -lskia -lstdc++ -lpthread -lEGL -lfontconfig $(SDLDIR)/build/libSDL2.a
+LIBS = -L. -lskia -lstdc++ -lpthread -lEGL -lfontconfig -lSDL2main -lSDL2 -lSDL2_image 
 endif
 
 SKIA_INC=$(addprefix -I,$(wildcard $(SKIADIR)/*))
