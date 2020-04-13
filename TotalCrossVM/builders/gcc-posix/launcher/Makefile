@@ -1,4 +1,4 @@
-LDFLAGS = -ldl
+LDFLAGS = -ldl -no-pie
 
 ifndef BLDDIR
 BLDDIR = /build
