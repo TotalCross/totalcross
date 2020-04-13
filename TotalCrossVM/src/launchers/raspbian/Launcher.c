@@ -38,25 +38,20 @@ static int executeProgram(char* cmdline)
    int ret = 0;
    ExecuteProgramProc fExecuteProgram = NULL;
    Handle tcvm;
-   printf("2\n");
    tcvm = tryOpen("./libtcvm");                        // load in current folder - otherwise, we'll not be able to debug
-   printf("1 - %d \n", tcvm);
    
    if (!tcvm) {
       printf("%s\n", dlerror());
       tcvm = tryOpen("../libtcvm");                  // load in parent folder
    }
-   printf("2 - %d \n", tcvm);
    if (!tcvm) {
       printf("%s\n", dlerror());
       tcvm = tryOpen("/usr/lib/totalcross/libtcvm"); // load in most common absolute path
    }
-   printf("3 - %d \n", tcvm);
    if (!tcvm) {
       printf("%s\n", dlerror());
       return 10000;
    }
-   printf("4 - %d \n", tcvm);
    fExecuteProgram = (ExecuteProgramProc)dlsym(tcvm, TEXT("executeProgram"));
    if (!fExecuteProgram)
       return 10001;
@@ -90,7 +85,6 @@ static int screen_height = 0;
 
 int main(int argc, const char *argv[])
 {
-   printf("1\n");
    char cmdline[512];
    xmemzero(cmdline,sizeof(cmdline));
    if (argv)
