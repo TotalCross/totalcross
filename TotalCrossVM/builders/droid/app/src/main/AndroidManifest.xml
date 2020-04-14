@@ -22,7 +22,6 @@
         <uses-library android:name="com.symbol.emdk" android:required="false" />
         <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|fontScale|keyboard" 
-        android:windowSoftInputMode="adjustResize"
         android:maxAspectRatio="2.33"
         />
         <activity android:name=".RouteViewer"/>
