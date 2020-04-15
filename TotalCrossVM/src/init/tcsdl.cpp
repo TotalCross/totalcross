@@ -11,7 +11,7 @@
 
 #include "tcvm.h"
 #include "tcsdl.h"
-#include "SDL.h"
+#include "SDL2/SDL.h"
 #include "SkImageInfo.h"
 
 static SDL_Texture

@@ -31,7 +31,5 @@ fi
 export SRCDIR="$WORKDIR"/../../../src
 export BLDDIR="${WORKDIR}"
 export SKIADIR="${WORKDIR}"/../../../deps/skia
-export SDLDIR="${WORKDIR}"/../sdl
-export SDL_INC="${WORKDIR}"/../../../deps/SDL/include
 export LIBS="${WORKDIR}/libskia.a -lstdc++ -lpthread -lfontconfig -lGL -lSDL2main -lSDL2"
 bash -c "make  -j$(($(nproc) + 2)) -f ${WORKDIR}/Makefile"

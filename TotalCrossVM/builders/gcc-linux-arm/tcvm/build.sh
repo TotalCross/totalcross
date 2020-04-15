@@ -10,7 +10,7 @@ sudo docker run \
 -v $WORKDIR:/build \
 -v $WORKDIR/../../../deps/skia:/skia \
 -v $WORKDIR/../sdl:/sdl \
--v $WORKDIR/../../../deps/SDL/include:/sdl_include \
+-v $WORKDIR/../../../deps/SDL/include:/SDL2 \
 -v $WORKDIR/../../../src:/src \
 -t totalcross/cross-compile \
 bash -c "make  -j$(($(nproc) + 2)) -f /build/Makefile"

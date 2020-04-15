@@ -9,7 +9,7 @@ SDLDIR=/sdl
 endif
 
 ifndef SDL_INC
-SDL_INC=/sdl_include
+SDL_INC=/
 endif
 $(info SDL inc is: [${SDL_INC}])
 ifndef SRCDIR

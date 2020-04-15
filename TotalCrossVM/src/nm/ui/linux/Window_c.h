@@ -8,7 +8,7 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-#include "SDL.h"
+#include "SDL2/SDL.h"
 #include "../Window.h"
 
 static int32 sip;

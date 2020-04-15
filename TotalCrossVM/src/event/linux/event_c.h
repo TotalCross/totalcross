@@ -14,7 +14,7 @@
 #ifndef HEADLESS
 #include <directfb.h>
 #else
-#include "SDL.h"
+#include "SDL2/SDL.h"
 #include "../../init/tcsdl.h"
 #endif
 
