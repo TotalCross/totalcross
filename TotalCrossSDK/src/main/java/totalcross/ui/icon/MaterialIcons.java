@@ -966,7 +966,7 @@ public enum MaterialIcons implements IconType {
 
   @Override
   public String fontName() {
-	  if (Settings.isOpenGL || !Settings.onJavaSE) {
+	  if (Settings.isOpenGL) {
 		  return "MaterialIcons-Regular";
 	  } else {
 		  return "Material Icons";
