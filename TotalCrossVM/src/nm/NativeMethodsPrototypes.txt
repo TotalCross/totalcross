@@ -92,6 +92,7 @@ TC_API void tumC_nativeClick(NMParams p);
 TC_API void tumC_nativeFinalize(NMParams p);
 TC_API void tumC_getNativeResolutions(NMParams p);
 TC_API void tumY_play(NMParams p);
+TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
 TC_API void tuiI_changeColors_ii(NMParams p);
@@ -905,6 +906,10 @@ TC_API void tumC_getNativeResolutions(NMParams p) // totalcross/ui/media/Camera 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tumYP_play_scbsiiiisiibi(NMParams p) // totalcross/ui/media/YoutubePlayer private void play(String url, YoutubePlayer.Callback callback, boolean autoPlay, String quality, int policy, int color, int option, int end, String hl, int loop, int rel, boolean showInfo, int start);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
 {
 }
 //////////////////////////////////////////////////////////////////////////
