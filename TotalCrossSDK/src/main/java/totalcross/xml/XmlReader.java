@@ -542,7 +542,7 @@ public class XmlReader extends XmlTokenizer {
    */
   private void reportStartTag() {
     flushAttribute();
-    cntHandler.tagName(tagNameHashId, tagName);
+    cntHandler.tagName(tagNameHashId, tagName, attList);
     cntHandler.startElement(tagNameHashId, attList);
     attList.clear();
   }
