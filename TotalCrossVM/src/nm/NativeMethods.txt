@@ -91,6 +91,7 @@ totalcross/ui/media/MediaClip|native public void record(int samplesPerSecond, in
 totalcross/ui/media/Camera|native private String nativeClick();
 totalcross/ui/media/Camera|native private void nativeFinalize();
 totalcross/ui/media/Camera|static native private String getNativeResolutions();
+totalcross/ui/image/Image|native public void applyChanges();
 totalcross/ui/image/Image|native private void imageLoad(String path);
 totalcross/ui/image/Image|native private void imageParse(totalcross.io.Stream in, byte []buf);
 totalcross/ui/image/Image|native public void changeColors(int from, int to);
@@ -107,7 +108,6 @@ totalcross/ui/image/Image|native public static void nativeResizeJpeg(String inpu
 totalcross/ui/image/Image|native public static totalcross.ui.image.Image getJpegBestFit(String path, int targetWidth, int targetHeight) throws java.io.IOException, totalcross.ui.image.ImageException;
 totalcross/ui/image/Image|native public static totalcross.ui.image.Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator) throws java.io.IOException, totalcross.ui.image.ImageException;
 totalcross/ui/gfx/Graphics|native protected void create(totalcross.ui.gfx.GfxSurface surface);
-totalcross/ui/gfx/Graphics|native public void applyChanges();
 totalcross/ui/gfx/Graphics|native public void dither(int x, int y, int w, int h);
 totalcross/ui/gfx/Graphics|native public void drawEllipse(int xc, int yc, int rx, int ry);
 totalcross/ui/gfx/Graphics|native public void fillEllipse(int xc, int yc, int rx, int ry);
