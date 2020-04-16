@@ -1,7 +1,9 @@
 #!/bin/bash -x
 BASEDIR=$(dirname $0)
 WORKDIR=$(cd $BASEDIR; pwd)
-export SRCDIR="$WORKDIR"/../../../src/launchers/linux
-export BLDDIR="${WORKDIR}"
 
-make -f "$WORKDIR"/Makefile
+# execute docker run
+sudo docker run \
+-v $WORKDIR:/build \
+-v $WORKDIR/../../../src:/src \
+-t totalcross/amd64-cross-compile:bionic
