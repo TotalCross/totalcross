@@ -2,6 +2,8 @@
 BASEDIR=$(dirname $0)
 WORKDIR=$(cd $BASEDIR; pwd)
 
+sudo rm -Rf bin
+
 # execute docker run
 sudo docker run \
 -v $WORKDIR:/build \
