@@ -104,6 +104,8 @@ set(SOURCES
 
     ${TC_SRCDIR}/nm/lang/Reflection.c
     ${TC_SRCDIR}/nm/lang/Class.c
+    ${TC_SRCDIR}/nm/lang/cpproc.c
+    ${TC_SRCDIR}/nm/lang/Runtime.c
     ${TC_SRCDIR}/nm/lang/Object.c
     ${TC_SRCDIR}/nm/lang/String.c
     ${TC_SRCDIR}/nm/lang/StringBuffer.c

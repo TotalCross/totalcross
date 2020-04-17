@@ -347,6 +347,7 @@ java/lang/Throwable|native private void printStackTraceNative();
 java/lang/Thread|native public static void yield();
 java/lang/Thread|native public void start();       
 java/lang/Thread|native public static java.lang.Thread currentThread();
+java/jdkcompat/lang/Runtime4D|native public Proccess exec(String[] cmdarray, String[] envp, String dirPath);
 java/util/Locale|native static String getDefaultToString();
 totalcross/io/device/RadioDevice|native public static boolean isSupported(int type) throws IllegalArgumentException;
 totalcross/io/device/RadioDevice|native public static int getState(int type) throws IllegalArgumentException;
