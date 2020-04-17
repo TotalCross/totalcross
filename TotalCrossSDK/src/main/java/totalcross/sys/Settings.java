@@ -37,7 +37,7 @@ public final class Settings {
   public static int version = 603;
 
   /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
-  public static String versionStr = "6.0.3";
+  public static String versionStr = "6.0.4";
 
   /** Current build number for the TotalCross SDK.
    * @since TotalCross 1.53 
