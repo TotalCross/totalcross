@@ -1,6 +1,28 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.0.4 - 2020-04-20
+  
+### Highlights  
+- Fixed build for all available platforms on public repository  
+- Skia for Android  
+  
+### Fixed  
+- Build: Added some build.xml for Ant build (without ProGuard)  
+- Fixed Android buildType  
+- Fixed WinCE, Win32, Android and Linux x86-64 VM build 
+- Fix Linux x86-64 launcher (*x-sharedlib* to *x-executable*)
+- Added iOS files  
+  
+### Changed  
+- Added Skia for Android  
+- Added tag name to XML's ContentHandler
+- ~~SDL statically linked~~ SDL dynamically linked for Linux x86-64
+- Disabled screen shifting when keyboard is over edit (not working on Android)
+
+## 5.1.4 to 6.0.3
+The remaining changelogs will be added later
+
 ## 5.1.3 - 2019-08-28
 
 ### Fixed
