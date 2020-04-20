@@ -8,14 +8,18 @@
  *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
- *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 2.1    *
  *  A copy of this license is located in file license.txt at the root of this    *
  *  SDK or can be downloaded here:                                               *
- *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *  http://www.gnu.org/licenses/lgpl-2.1.txt                                     *
  *                                                                               *
  *********************************************************************************/
 
 package tc.tools.deployer;
+
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 
 import totalcross.io.File;
 import totalcross.sys.Vm;
@@ -89,6 +93,14 @@ public class Deployer4Linux {
       // set the executable flag
       java.io.File ff = new java.io.File(out);
       ff.setExecutable(true, false);
+
+      // TCBase & other default tczs
+      List<java.io.File> defaultTczs = DeploySettings.getDefaultTczs();
+      for (java.io.File file : defaultTczs) {
+          FileUtils.copyFileToDirectory(file, new java.io.File(targetDir));
+      }
+      FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "/linux/libtcvm.so"),
+                                    new java.io.File(targetDir));
     }
     System.out.println("... Files written to folder " + targetDir);
   }

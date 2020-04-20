@@ -9,14 +9,17 @@
  *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
- *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 2.1    *
  *  A copy of this license is located in file license.txt at the root of this    *
  *  SDK or can be downloaded here:                                               *
- *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *  http://www.gnu.org/licenses/lgpl-2.1.txt                                     *
  *                                                                               *
  *********************************************************************************/
 
 package totalcross.xml;
+
+
+import java.io.UnsupportedEncodingException;
 
 import totalcross.io.Stream;
 
@@ -59,6 +62,11 @@ public class XmlReader extends XmlTokenizer {
    */
   protected int tagNameHashId;
 
+  /**
+   * String of the current tag name, set by <code>foundStartTagName</code>.
+   */
+  protected String tagName;
+  
   private StringBuffer pcdata; //CKC
   private int state;
   private int newlineSignificant;
@@ -287,6 +295,7 @@ public class XmlReader extends XmlTokenizer {
    */
   protected int getTagCode(byte b[], int offset, int count) {
     int i = b[offset];
+    tagName = new String(b).substring(offset, offset + count);
     if ('a' <= i) {
       i -= ('a' - 'A'); // fast toUpper
     }
@@ -533,6 +542,7 @@ public class XmlReader extends XmlTokenizer {
    */
   private void reportStartTag() {
     flushAttribute();
+    cntHandler.tagName(tagNameHashId, tagName);
     cntHandler.startElement(tagNameHashId, attList);
     attList.clear();
   }

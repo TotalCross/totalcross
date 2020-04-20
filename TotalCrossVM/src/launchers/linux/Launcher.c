@@ -39,14 +39,22 @@ static int executeProgram(char* cmdline)
    ExecuteProgramProc fExecuteProgram = NULL;
    Handle tcvm;
    tcvm = tryOpen("./libtcvm");                        // load in current folder - otherwise, we'll not be able to debug
-   if (!tcvm)
-      tcvm = tryOpen("../libtcvm");                  // load in parent folder
-
-   if (!tcvm)
-      tcvm = tryOpen("/usr/lib/totalcross/libtcvm"); // load in most common absolute path
-   if (!tcvm)
-      return 10000;
    
+   if (!tcvm) {
+      printf("%s\n", dlerror());
+      tcvm = tryOpen("../libtcvm");                  // load in parent folder
+   }
+
+   if (!tcvm) {
+      printf("%s\n", dlerror());
+      tcvm = tryOpen("/usr/lib/totalcross/libtcvm"); // load in most common absolute path
+   }
+
+   if (!tcvm) {
+      printf("%s\n", dlerror());
+      return 10000;
+   }
+
    fExecuteProgram = (ExecuteProgramProc)dlsym(tcvm, TEXT("executeProgram"));
    
    if (!fExecuteProgram)

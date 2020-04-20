@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+-->
+<project name="TotalCross" default="install" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+   <property environment="env" />
+
+   <property name="ant.lib.dir" value="${env.ANT_HOME}/lib" />
+
+   <property name="ivy.install.version" value="2.2.0" />
+   <property name="ivy.jar.file" value="${ant.lib.dir}/ivy.jar" />
+
+   <target name="help">
+      <echo message="Type 'ant -p' to list all available targets." />
+   </target>
+
+   <target name="install" depends="install_ivy, install_dependencies">
+      <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+      <taskdef resource="com/orangevolt/tools/ant/taskdefs.properties" />
+
+      <!-- Get the Visual Studio path -->
+      <trycatch>
+        <try>
+           <win32.registry root="HKEY_LOCAL_MACHINE"
+                           key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\devenv.exe">
+              <get property="devenv.path" entry="" />
+           </win32.registry>
+           <propertyregex override="yes"
+                          property="devenv.path"
+                          input="${devenv.path}"
+                          regexp="([^\.]*)\.exe"
+                          replace="\1.com" />
+           <propertyregex override="yes"
+                          property="devenv.path"
+                          input="${devenv.path}"
+                          regexp="\\"
+                          replace="/" />
+        </try>
+        <catch>
+          <property  name="devenv.path" value="" />
+        </catch>
+      </trycatch>
+      <trycatch>
+        <try>
+           <win32.registry root="HKEY_LOCAL_MACHINE"
+                           key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\evc.exe">
+              <get property="evc.path" entry="" />
+           </win32.registry>
+           <propertyregex override="yes"
+                          property="evc.path"
+                          input="${evc.path}"
+                          regexp="\\"
+                          replace="/" />
+        </try>
+        <catch>
+          <property  name="evc.path" value="" />
+        </catch>
+      </trycatch>
+      <trycatch>
+        <try>
+           <win32.registry root="HKEY_LOCAL_MACHINE"
+                           key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\WinRAR.exe">
+              <get property="winrar.path" entry="Path" />
+           </win32.registry>
+           <propertyregex override="yes"
+                          property="winrar.path"
+                          input="${winrar.path}"
+                          regexp="\\"
+                          replace="/" />
+        </try>
+        <catch>
+          <property  name="winrar.path" value="" />
+        </catch>
+      </trycatch>
+
+      <echo file="P:/userpaths.properties"
+         message="msvc.path=${devenv.path}${line.separator}evc.path=${evc.path}${line.separator}winrar.path=${winrar.path}${line.separator}cygwin.path=c:/cygwin"/>
+   </target>
+
+   <target name="install_ivy">
+      <!-- download Ivy from website so that it can be used even without any special installation -->
+      <echo message="installing ivy..." />
+      <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+           dest="${ivy.jar.file}"
+           usetimestamp="true" />
+
+      <!-- this instance of ant won't recognize ivy tasks if the jar was downloaded by the previous step. So we have to explicitly load ivy tasks from it. -->
+      <taskdef resource="org/apache/ivy/ant/antlib.xml"
+               uri="antlib:org.apache.ivy.ant"
+               classpath="${ivy.jar.file}" />
+   </target>
+
+   <target name="install_dependencies">
+      <!-- let ivy resolve any other dependencies -->
+      <ivy:configure file="${basedir}/ivysettings.xml" />
+
+      <!-- force ivy resolution -->
+      <ivy:resolve file="${basedir}/ivy_ant-jars.xml" />
+      <ivy:resolve file="${basedir}/ivy_extlibs.xml" />
+
+      <!-- retrieve jars used by ant -->
+      <ivy:retrieve file="${basedir}/ivy_ant-jars.xml"
+                    module="ant-jars"
+                    pattern="${ant.lib.dir}/[artifact]-[revision].[ext]" />
+
+      <!-- import antcontrib so we can use it below -->
+      <taskdef resource="net/sf/antcontrib/antlib.xml">
+         <classpath>
+            <fileset dir="${ant.lib.dir}">
+               <include name="ant-contrib*.jar" />
+            </fileset>
+         </classpath>
+      </taskdef>
+
+      <!-- retrieve extlibs -->
+      <ivy:retrieve file="${basedir}/ivy_extlibs.xml"
+                    module="extlibs"
+                    pattern="${env.EXTLIBS_HOME}/[artifact]-[revision].[ext]" />
+
+      <!-- remove the suffix "-noversion" -->
+      <move todir="${env.EXTLIBS_HOME}">
+         <fileset dir="${env.EXTLIBS_HOME}" />
+         <mapper type="regexp" from="(.*)-noversion(.*)" to="\1\2" />
+      </move>
+
+      <!-- for each zip file, delete the local folder and unzip it again -->
+      <for param="file">
+         <path>
+            <fileset dir="${env.EXTLIBS_HOME}" includes="*.zip" />
+         </path>
+         <sequential>
+            <propertyregex override="yes"
+                           property="name"
+                           input="@{file}"
+                           regexp="([^\.]*)\.zip"
+                           replace="\1" />
+            <delete dir="${name}" />
+            <unzip src="@{file}" dest="${env.EXTLIBS_HOME}" />
+         </sequential>
+      </for>
+
+      <!-- do the same for tgz -->
+      <for param="file">
+         <path>
+            <fileset dir="${env.EXTLIBS_HOME}" includes="*.tgz" />
+         </path>
+         <sequential>
+            <untar src="@{file}" dest="${env.EXTLIBS_HOME}" compression="gzip" />
+         </sequential>
+      </for>
+   </target>
+
+   <target name="jodconverter" description="Converts OpenOffice/LibreOffice documents">
+      <fail unless="from" />
+      <fail unless="to" />
+
+      <delete file="${to}" />
+
+      <!-- Get the Open Office path -->
+      <win32.registry root="HKEY_LOCAL_MACHINE"
+                      key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\soffice.exe">
+         <get property="soffice.path" entry="Path" />
+      </win32.registry>
+
+      <java classname="org.artofsolving.jodconverter.cli.Convert" fork="yes" dir="${ant.lib.dir}">
+         <classpath>
+            <fileset dir="${ant.lib.dir}">
+               <include name="jodconverter-core*.jar" />
+            </fileset>
+         </classpath>
+         <!-- set the environment variable office.home with the soffice path -->
+         <sysproperty key="office.home" value="${soffice.path}" />
+         <arg line='"${from}"' />
+         <arg line='"${to}"' />
+      </java>
+
+      <available file="${to}" property="file.generated" />
+      <fail unless="file.generated" message="THE CONVERSION FAILED. PLEASE TRY AGAIN" />
+   </target>
+</project>

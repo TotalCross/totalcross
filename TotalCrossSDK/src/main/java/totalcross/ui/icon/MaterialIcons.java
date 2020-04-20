@@ -7,10 +7,10 @@
  *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
- *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 2.1    *
  *  A copy of this license is located in file license.txt at the root of this    *
  *  SDK or can be downloaded here:                                               *
- *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *  http://www.gnu.org/licenses/lgpl-2.1.txt                                     *
  *                                                                               *
  *********************************************************************************/
 
@@ -966,7 +966,7 @@ public enum MaterialIcons implements IconType {
 
   @Override
   public String fontName() {
-	  if (Settings.isOpenGL || !Settings.onJavaSE) {
+	  if (Settings.isOpenGL) {
 		  return "MaterialIcons-Regular";
 	  } else {
 		  return "Material Icons";

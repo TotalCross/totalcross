@@ -243,8 +243,7 @@ TC_API int32 startProgram(Context currentContext)
       Method mainMtd = getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN);
       if (!mainMtd) return exitProgram(117);
       if (isMainWindow) waitUntilStarted();
-      executeMethod(currentContext, mainMtd, mainClass, 
-         retc == ISNORAS ? -999998 : retc == ISACTIVATED ? -1 : retc == ISWILLACTIVATE ? -999999 : 0);
+      executeMethod(currentContext, mainMtd, mainClass, -1);
       // 7. call the main event loop
       if (isMainWindow) mainEventLoop(currentContext); // in the near future, MainClass apps will also receive events.
       // 8. call appEnding
