@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class Proccess {
 
     boolean isAlive;
+    private InputStream inputStream;
 
     abstract void destroy();
 

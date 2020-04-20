@@ -431,10 +431,16 @@
 //java.nio.channels.FileChannelImpl
 #define FileChannelImpl_nfd(o)          FIELD_I32(o, 0)
 
+//java.io.FileInputStream
+#define FileInputStream_fileChannel     FIELD_OBJ(o, OBJ_CLASS(o), 0)
+
 //java.nio.ByteBuffer
 #define ByteBuffer_array(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define ByteBuffer_offset(o)            FIELD_I32(o, 0)
 #define ByteBuffer_length(o)            FIELD_I32(o, 1)
+
+//java.lang.Proccess
+#define Proccess_inputStream(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
 
 
 #endif
