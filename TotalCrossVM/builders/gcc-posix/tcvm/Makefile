@@ -4,32 +4,20 @@ ifndef BLDDIR
 BLDDIR = /build
 endif
 
-ifndef SDLDIR
-SDLDIR=/sdl
-endif
-
-ifndef SDL_INC
-SDL_INC=/sdl_include
-endif
-$(info SDL inc is: [${SDL_INC}])
-ifndef SRCDIR
-SRCDIR = /src
-endif
-
 ifndef SKIADIR
 SKIADIR = /skia
 endif
 
 ifndef LIBS
-LIBS = -L. -lskia -lstdc++ -lpthread -lEGL -lfontconfig $(SDLDIR)/build/libSDL2.a
+LIBS = -L. -lskia -lstdc++ -lpthread -lEGL -lfontconfig -lSDL2main -lSDL2
 endif
 
 SKIA_INC=$(addprefix -I,$(wildcard $(SKIADIR)/*))
 INCDIR = $(BLDDIR)/inc
 
 OBJDIR = $(BLDDIR)/bin
-CFLAGS = -DHAVE_MREMAP=0 -Dlinux -fPIC -shared -c -Os -Wall -DNDEBUG -Wunused-function -Wno-import -fno-strict-aliasing -DHEADLESS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -DSQLITE_HAS_CODEC -I$(SDL_INC) -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase -I$(SRCDIR)/nm/ui/android  
-CXXFLAGS = -Os -Wall -fPIC -shared -DNDEBUG -DHEADLESS -DPOSIX -lpthread -std=c++11 $(SKIA_INC) -I$(SDL_INC) -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase -I$(SRCDIR)/nm/ui/android
+CFLAGS = -DHAVE_MREMAP=0 -Dlinux -fPIC -shared -c -Os -Wall -DNDEBUG -Wunused-function -Wno-import -fno-strict-aliasing -DHEADLESS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -DSQLITE_HAS_CODEC -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase -I$(SRCDIR)/nm/ui/android  
+CXXFLAGS = -Os -Wall -fPIC -shared -DNDEBUG -DHEADLESS -DPOSIX -lpthread -std=c++11 $(SKIA_INC) -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase -I$(SRCDIR)/nm/ui/android
 CXX_SOURCES = $(SRCDIR)/init/tcsdl.cpp \
 $(SRCDIR)/nm/ui/android/skia.cpp 
 
@@ -85,8 +73,8 @@ NM_IO_FILES =                                   \
 	$(SRCDIR)/nm/io/device/scanner/zxing.c    \
 	$(SRCDIR)/nm/io/device/gps/GPS.c    \
 	$(SRCDIR)/nm/io/device/bluetooth/DiscoveryAgent.c    \
-        $(SRCDIR)/nm/io/device/bluetooth/SerialPortClient.c    \
-        $(SRCDIR)/nm/io/device/bluetooth/SerialPortServer.c
+	$(SRCDIR)/nm/io/device/bluetooth/SerialPortClient.c    \
+	$(SRCDIR)/nm/io/device/bluetooth/SerialPortServer.c
 
 
 NM_LANG_FILES =                               \
@@ -140,9 +128,9 @@ AXTLS_FILES =                          \
 NM_PIM_FILES =                             \
 	$(SRCDIR)/nm/pim/POutlook.c     \
 	$(SRCDIR)/nm/firebase/firebase.c     \
-$(SRCDIR)/nm/notification/notification.c     \
-$(SRCDIR)/nm/cielo/printer/PrinterManager.c     \
-$(SRCDIR)/scanner/ios/ios_barcode.c     
+	$(SRCDIR)/nm/notification/notification.c     \
+	$(SRCDIR)/nm/cielo/printer/PrinterManager.c     \
+	$(SRCDIR)/scanner/ios/ios_barcode.c     
 
 NM_SYS_FILES =                             \
 	$(SRCDIR)/nm/sys/Vm.c                   \
@@ -161,8 +149,8 @@ NM_UI_FILES =                              \
 	$(SRCDIR)/nm/ui/MainWindow.c            \
 	$(SRCDIR)/nm/ui/media_Sound.c           \
 	$(SRCDIR)/nm/ui/media_MediaClip.c       \
-        $(SRCDIR)/nm/ui/media_Camera.c       \
-        $(SRCDIR)/nm/ui/YoutubePlayer.c       \
+	$(SRCDIR)/nm/ui/media_Camera.c       \
+	$(SRCDIR)/nm/ui/YoutubePlayer.c       \
 	$(SRCDIR)/nm/ui/Window.c
 
 NM_UTIL_FILES =                            \
@@ -281,25 +269,25 @@ SQLITE3_FILES =    \
     $(SRCDIR)/litebase/parser/SQLSelectStatement.c \
     $(SRCDIR)/litebase/parser/SQLUpdateStatement.c
 
-VM_FILES =                                     \
-	$(SRCDIR)/tcvm/tcclass.c                \
-	$(SRCDIR)/tcvm/tcmethod.c               \
-	$(SRCDIR)/tcvm/tcfield.c                \
-	$(SRCDIR)/tcvm/tcthread.c               \
-	$(SRCDIR)/tcvm/tcexception.c            \
-	$(SRCDIR)/tcvm/objectmemorymanager.c    \
-	$(SRCDIR)/tcvm/context.c                \
+VM_FILES = \
+	$(SRCDIR)/tcvm/tcclass.c \
+	$(SRCDIR)/tcvm/tcmethod.c \
+	$(SRCDIR)/tcvm/tcfield.c \
+	$(SRCDIR)/tcvm/tcthread.c \
+	$(SRCDIR)/tcvm/tcexception.c \
+	$(SRCDIR)/tcvm/objectmemorymanager.c \
+	$(SRCDIR)/tcvm/context.c \
 	$(SRCDIR)/tcvm/tcvm.c
 
-INIT_FILES =                                   \
-	${EXTRA_INIT_FILES}                        \
+INIT_FILES =                                \
+	${EXTRA_INIT_FILES}                     \
 	$(SRCDIR)/init/demo.c                   \
 	$(SRCDIR)/init/startup.c                \
 	$(SRCDIR)/init/globals.c                \
-	$(SRCDIR)/init/settings.c \
-        ${SRCDIR}/init/nativeProcAddressesTC.c \
-		  ${SRCDIR}/sqlite/sqlite3.c \
-		${SRCDIR}/nm/db/NativeDB.c
+	$(SRCDIR)/init/settings.c               \
+	${SRCDIR}/init/nativeProcAddressesTC.c  \
+	${SRCDIR}/sqlite/sqlite3.c              \
+	${SRCDIR}/nm/db/NativeDB.c
 
 QRCODE_FILES = 								\
 	${SRCDIR}/nm/qrcode/qrcode_generation.c \

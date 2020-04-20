@@ -8,10 +8,10 @@
  *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
- *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 2.1    *
  *  A copy of this license is located in file license.txt at the root of this    *
  *  SDK or can be downloaded here:                                               *
- *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *  http://www.gnu.org/licenses/lgpl-2.1.txt                                     *
  *                                                                               *
  *********************************************************************************/
 
@@ -37,7 +37,7 @@ public final class Settings {
   public static int version = 603;
 
   /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
-  public static String versionStr = "6.0.3";
+  public static String versionStr = "6.0.4";
 
   /** Current build number for the TotalCross SDK.
    * @since TotalCross 1.53 

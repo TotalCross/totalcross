@@ -3024,27 +3024,27 @@ static void shiftScreen(Context currentContext) {
     shiftY = *shiftYfield;
     shiftH = *shiftHfield;
     
-#if defined ANDROID || defined darwin
-    checkKeyboardAndSIP(currentContext, &shiftY, &shiftH); // Adjust shift according to the keyboard
-    int32 delta = shiftY - screen.screenH;
-#ifdef ANDROID
-    delta = -delta;
-#endif
-    if(lastShiftY == shiftY) return;
-    debug("c shiftY: %d", shiftY);
-    debug("c screenH: %d", screen.screenH); 
-    if(shiftY == 0) {
-        skia_shiftScreen(0, -screenY); // return to origin
-        screenY = 0;
-    }
-    else {
-        delta -= screenY;
-        skia_shiftScreen(0, delta);
-        screenY += delta;
-    }
-    //screenY += delta;
-    lastShiftY = shiftY;
-#endif
+// #if defined ANDROID || defined darwin
+//     checkKeyboardAndSIP(currentContext, &shiftY, &shiftH); // Adjust shift according to the keyboard
+//     int32 delta = shiftY - screen.screenH;
+// #ifdef ANDROID
+//     delta = 0;
+// #endif
+//     if(lastShiftY == shiftY) return;
+//     debug("c shiftY: %d", shiftY);
+//     debug("c screenH: %d", screen.screenH); 
+//     if(shiftY == 0) {
+//         skia_shiftScreen(0, -screenY); // return to origin
+//         screenY = 0;
+//     }
+//     else {
+//         delta -= screenY;
+//         skia_shiftScreen(0, delta);
+//         screenY += delta;
+//     }
+//     //screenY += delta;
+//     lastShiftY = shiftY;
+// #endif
 }
 #endif
 

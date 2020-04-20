@@ -1,6 +1,241 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.0.4 - 2020-04-20
+  
+### Highlights  
+- Fixed build for all available platforms on public repository  
+- Skia for Android  
+  
+### Fixed  
+- Build: Added some build.xml for Ant build (without ProGuard)  
+- Fixed Android buildType  
+- Fixed WinCE, Win32, Android and Linux x86-64 VM build 
+- Fix Linux x86-64 launcher (*x-sharedlib* to *x-executable*)
+- Added iOS files  
+  
+### Changed  
+- Added Skia for Android  
+- Added tag name to XML's ContentHandler
+- ~~SDL statically linked~~ SDL dynamically linked for Linux x86-64
+- Disabled screen shifting when keyboard is over edit (not working on Android)
+
+## 5.1.4 to 6.0.3
+The remaining changelogs will be added later
+
+## 5.1.3 - 2019-08-28
+
+### Fixed
+- Edit
+  - Fixed bug with masks containing two consecutive non-alphanumeric characters -  [TotalCross#581](https://gitlab.com/totalcross/TotalCross/issues/581#note_203298404)
+  - When used for dates, the calendar now properly opens at the date informed on the edit - TotalCross#550
+  - Fixed getCopy() to properly function when the Edit uses the field decimalPlaces - TotalCross#505
+- Spinner: fixed Spinner animation repainting over previous frames - TotalCross#568
+- OutlinedEdit: fixed NPE when using the cancel button on CalendarBox - TotalCross#547
+- PopupMenu: fixed performance issues with Material style caused by onPaint recreating the ninepatch on every refresh. This change also affects the performance of other components that may use PopupMenu, such as ComboBox.
+
+## 4.4.1 - 2019-08-22
+
+### Highlights
+- Android: raised target sdk version to API level 28 to comply with Play Store's latest requirements.
+
+### Fixed
+- Android: fixed support for 64 bits devices
+
+## 4.4.0 - 2019-08-14
+
+### Fixed
+- Android: removed compile flag that caused applications to be unbearably slow in old or low-end devices - TotalCross#561, TotalCross#580
+- tccodesign script: fixed script not copying pkg files - TotalCross#572
+- Camera: partially reverted changes introduced in version 4.3.3 that caused problems on some devices - TotalCross#574
+- Grid: fixed column width sizing - TotalCross#480
+
+## 5.1.2 - 2019-08-05
+
+### Highlights
+- Added support for generating QR codes natively on the device - TotalCross#540
+
+> :information_source: **This feature is available on all supported devices, but not on the simulator yet. Refer to the documentation for more information and sample usage**
+
+### Fixed
+- Camera: Fixed `CAMERA_NATIVE_NOCOPY` - TotalCross#554
+- Fixed support to listening events on Android hardware buttons, broken on version 5.1.0 - TotalCross#557, TotalCross#559, TotalCross#560
+- ComboBox: Fixed support for option usePopMenu
+
+## 4.3.9 - 2019-08-05
+
+### Fixed
+- tccodesign script: fixed support for push notification
+
+### Added
+- Added classes `AsyncTask` and `ThreadPool` to improve concurrency support, refer to the documentation and the PlayBook for more information and samples
+
+## 5.1.1 - 2019-07-16
+
+### Fixed
+- Fixed push and local notifications for Android 8+ - TotalCross#316
+
+## 5.1.0 - 2019-07-04
+
+### Highlights
+- YouTube Player: New API for displaying YouTube videos on Android and iOS
+- Added support for text prediction when using native keyboard on Android and iOS
+
+### Fixed
+- ListContainer: Fixed Check on ListContainer - TotalCross#393
+- InputBox: Removed dummy mask that caused trouble when using setMode - TotalCross#506 
+- Toast: Fixed using '\n' on the String used on Toast.show - TotalCross#498
+- Button: Fixed using an image and no text position - TotalCross#527
+- Edit: Fixed base line not showing when running on devices with DP smaller than 1, such as most WinCE devices - TotalCross#389
+- PopupMenu: Fixed the Android UI style - TotalCross#369
+
+### Changed
+- TabbedContainer: Improved graphical performance and responsiveness
+
+### Added
+- MultiEdit: Added fields to set the text gap - TotalCross#489
+- Button: Added constant CENTRALIZE to centralize image and text buttons - TotalCross#498
+- Settings: Added field `allowBackup`, which may be used to disable Android's automate cloud backup - TotalCross#548
+
+## 4.3.8 - 2019-05-31
+
+### Highlights
+- Added support for Android 64 bits - TotalCross#515
+
+### Fixed
+- Fixed bug with large CRC or size values overflowing 32 bit integer - TotalCross#529
+
+### Changed
+- tccodesign script
+  - Added --output parameter
+  - Removed lined that deletes UIStoryLaunch
+  - Fixed icon problem
+  - Changed to use a temporary folder during the process
+
+## 5.0.1 - 2019-05-07
+
+### Added
+- Added support for printing on Cielo Lio devices with embedded printer. Refer to the class `totalcross.cielo.sdk.printer.PrinterManager` for usage information.
+
+### Fixed
+- Grid: fixed column width sizing - TotalCross#480
+- Button: fixed position of contents based on the gap value - TotalCross#487
+- CalendarBox: fixed calculation of font size - TotalCross#397
+- VirtualKeyboard: fixed Clear button and text input look - TotalCross#397
+- Socket: fixed support for open timeout on iOS - TotalCross#128
+
+## 5.0.0 - 2019-04-15
+
+### Highlights
+- TotalCross is now aware of the device's screen pixel density and uses this information to scale UI elements uniformly on different platforms. 
+ - The font size is now expressed in scaleable pixels (sp) and will now scale uniformly on different screens. The font size should now be expressed as a constant value or based on `Settings.deviceFontHeight`, but **never** based on the screen's resolution or target platform.
+
+> :information_source: **Existing applications may require adjustments to their font sizes!**
+
+- Improved overrall UI responsiveness and reduced application start time on Android
+ - Several `Vm.sleep` calls in the vm had their time reduced by 50% or more, some calls were replaced with `Thread.yield()`
+ - On Android and Java, reduced overhead in the event thread to improve UI responsiveness
+
+#### Screen density support
+All graphical components can now be scaled to have approximately the same physical height on any screen resolution.
+
+##### Density by OS
+- Android and iOS: these devices expose a manufacturer-provided screen density value. On TotalCross 5 applications, this value is retrieved by default and used to ensure consistent component sizes across devices
+- Java: based on scale, e.g. /scale 0.5 = density 2.0, you can try different densities on the emulator by changing the scale command line argument
+- Win32 and WinCE: Most Windows devices do not natively expose screen density information and, thus, are kept at density 1.0.
+To improve the look and feel on smaller screens, we use a density of 0.75 on screens with width or height less than 320
+- Other platforms: nothing changed (= density 1.0)
+
+##### Font
+The font size is now expressed in scalable pixels (sp), this abstracts away the actual physical dimension (screen pixels) of the font. This way, their actual physical size is calculated based on the screen density. e.g:
+A font with size of 20sp with different screen resolutions:
+- Density 1.0: actual size 20 pixels
+- Density 1.5: actual size 30 pixels
+- Density 2.0: actual size 40 pixels
+- Density 0.75: actual size 15 pixels
+This change shall render TotalCross apps ready for different screen sizes with minimal implementation effort. 
+
+>>>
+**Updating for 5.0**
+
+Using Font.getDefaultFontSize is no longer necessary, you may now use constant values and the font size will be adjusted accordingly. 
+Applications that tried to “guess” the appropriate font size based on screen resolution may need adjustments.
+Applications that used Settings.uiAdjustmentsBasedOnFontHeight should have their graphical components resized more uniformly across different platforms and screen densities.
+>>>
+
+##### Density Independent Pixels
+Controls may now have their dimensions expressed in density independent pixels units (dp), which are scaled for the screen based on its pixel density. e.g:
+```java
+// adds Button with height of 20dp
+add(new Button("Ok"), RIGHT, BOTTOM, PREFERRED, DP + 20);
+```
+This is now the preferred way of setting the control’s dimensions.
+
+#### Improved support for animations
+We now provide a central update event that controls can register for. This event fires periodically and is meant to be used to drive all animations in the framework.
+In comparison to using timer events for animations, this approach uses less CPU and memory, and behaves better under high CPU usage scenarios.
+
+>>>
+**Updating for 5.0**
+
+Several classes were updated to use the new update events and the effect on them should be noticeable without any changes. In special, we would like to highlight the  ScrollContainer and the ControlAnimation components. 
+Users are encouraged to replace similar uses of threads, sleeps and timer events with update events.
+>>>
+
+#### Smoother scrolling
+The ScrollContainer and the Flick components were updated to provide smoother and more precise scrolling. The changes include the usage of quadratic easing animation and exponential decay.
+The Flick also factors in the screen’s pixel density and offers the user the option of tuning the flick acceleration.
+Lastly, Flick also supports consecutive drags to increase the scrolling speed.
+
+>>>
+**Updating for 5.0**
+
+Most of the changes made are transparent to the user, but there were some breaking changes on Flick. User may have to remove the usage of fields that are no longer available.
+>>>
+
+#### Icon control
+With the new Icon control it’s easier to add beautiful and meaningful icons to your application.
+
+This is now the preferred way of adding icons to your application and should be favored over image files. One major reason to favor icon font sets over images is that they are highly scalable and will look sharp in any resolution while using only a fraction of the system resources an image would use.
+Material Icons are already bundled with the sdk and the IconType interface may be used to implement more font sets.
+
+#### Alpha support for Labels and Icons
+It’s now possible to change the opacity of text and icons within Label or Icon controls. This is a key feature to design beautiful applications, as it allows text to remain legible over any background color.
+Transparent status bar
+
+Currently only supported on Android, but iOS support will be ready soon.
+
+#### Navigation Drawer
+All the previously listed changes were put in use to futher develop the SideMenuContainer, complying with the Navigation Drawer pattern defined by the Material Design guidelines (https://material.io/guidelines/patterns/navigation-drawer.html):
+- Action bar height is now 20 dp
+- Bar title and menu items using the Roboto Medium font (when available)
+- Labels and icons now use the correct font size, weight and opacity
+- Keylines and margins are respected both inside and outside the side menu (with a special exception for really small screens)
+- Smooth slide-in and out effects, with fade effect during slide removed
+- Resting elevation over the content
+- Swipe to open support is still in its early stages, but should be functional for most applications
+- Adjusts automatically when used with transparent status bar
+
+### Added
+- SideMenuContainer.Sub, a collapsible submenu for the navigation drawer
+- MaterialWindow, a popup window that slides from the bottom to the top of the screen
+
+### Changed
+- Camera: On Android, choosing an image from the Gallery no longer creates a copy of it when not necessary (images from a cloud service still require a local copy) - TotalCross#400
+- Java
+  - ByteArrayOutputStream: added several missing methods - TotalCross#478
+  - System: added method `arraycopy`
+  - Charset: method forName now correctly validates the given charset name and may throw `IllegalCharsetNameException`
+  - String: added constructor `String(byte[] value, int offset, int count, String encoding)` to allow the creation of strings with a given supported enconding
+ 
+### Deprecated
+- Settings: deprecated field `WINDOWSPHONE`, which will be removed in a future release
+
+## 4.3.7 - 2019-05-06
+
+### Added
+- Added support for native barcode scanning on iOS, without using any external library - TotalCross#333
+
 ## 4.3.6 - 2019-04-13
 
 ### Highlights
