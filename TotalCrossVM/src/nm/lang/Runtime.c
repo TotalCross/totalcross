@@ -3,11 +3,14 @@
 #include "cpproc.h"
 #include <sys/types.h>
 
-TC_API void jjl_exec_SSs(NMParams p) {
+TC_API void jlR_exec_SSs(NMParams p) {
     int fds[CPIO_EXEC_NUM_PIPES];
     TCObject cmd = p->obj[1];
     TCObject envp = p->obj[2];
     TCObject dirPath = p->obj[3];
+    TCObject fileChannelIn;
+    TCObject fileChannelOut;
+    TCObject fileChannelErr;
     // Method getPath = getMethod(OBJ_CLASS(file), false, "getPath", 0);
     // TValue filePathValue = executeMethod(mainContext, getPath, file);
     // TCObject filePath = filePathValue.asObj;
@@ -59,5 +62,10 @@ TC_API void jjl_exec_SSs(NMParams p) {
         printf("erro %d", err);
     }
     
-    
+    fileChannelIn = createObject(p->currentContext, "java.nio.channels.FileChannelImpl");
+    if(fileChannelIn == NULL) {
+        //nothing here
+    }
+    FileChannelImpl_nfd(fileChannelIn) = fds[1];
+
 }
