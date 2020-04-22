@@ -13,10 +13,14 @@ public class FileOutputStream4D extends OutputStream {
         this.fileChannel = fileChannel;
     }
 
-
     @Override
     public void write(int b) throws IOException {
         
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        fileChannel.write(b, off, len);
     }
 
 }

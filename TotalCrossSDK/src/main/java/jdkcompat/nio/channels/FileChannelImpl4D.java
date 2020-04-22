@@ -37,6 +37,9 @@ public class FileChannelImpl4D extends FileChannel {
         return 0;
     }
 
+    
+    native public int write(byte[] src, int offset, int length) throws IOException;
+
     @Override
     public int write(ByteBuffer src) throws IOException {
         // TODO Auto-generated method stub

@@ -68,7 +68,11 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setLong_ol"), &jlrF_setLong_ol);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setFloat_od"), &jlrF_setFloat_od);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setDouble_od"), &jlrF_setDouble_od);
-   htPutPtr(&htNativeProcAddresses, hashCode("jjl_exec_SSs"), &jjl_exec_SSs);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlR_exec_SSs"), &jlR_exec_SSs);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read"), &jncFCI_read);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read_b"), &jncFCI_read_b);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read_Bii"), &jncFCI_read_Bii);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_write_Bii"), &jncFCI_write_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showAddress_sb"), &tmGM_showAddress_sb);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showRoute_sssi"), &tmGM_showRoute_sssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_create"), &tucL_create);

@@ -12,6 +12,8 @@ TC_API void jlR_exec_SSs(NMParams p) {
     TCObject fileChannelOut;
     TCObject fileChannelErr;
     TCObject fileInputStream;
+    TCObject fileOutputStream;
+    TCObject fileErrInputStream;
     TCObject process;
     // Method getPath = getMethod(OBJ_CLASS(file), false, "getPath", 0);
     // TValue filePathValue = executeMethod(mainContext, getPath, file);
@@ -65,18 +67,50 @@ TC_API void jlR_exec_SSs(NMParams p) {
     }
     
     fileChannelIn = createObject(p->currentContext, "java.nio.channels.FileChannelImpl");
-    if(fileChannelIn == NULL) {
+    if(fileChannelIn == NULL) { 
         //nothing here
 		return;
     }
     FileChannelImpl_nfd(fileChannelIn) = fds[1];
     fileInputStream = createObject(p->currentContext, "java.io.FileInputStream");
-    FileInputStream_fileChannel(fileInputStream) = fileChannelIn;
     if(fileInputStream == NULL) {
         //nothing here(for now)
 		return;
     }
+    FileInputStream_fileChannel(fileInputStream) = fileChannelIn;
+
+    fileChannelOut = createObject(p->currentContext, "java.nio.channels.FileChannelImpl");
+    if(fileChannelOut == NULL) {
+        //nothing here
+		return;
+    }
+    FileChannelImpl_nfd(fileChannelOut) = fds[2];
+    fileOutputStream = createObject(p->currentContext, "java.io.FileOutputStream");
+    if(fileOutputStream == NULL) {
+        //nothing here for now
+        return;
+    }
+    FileOutputStream_fileChannel(fileOutputStream) = fileChannelOut;
+
+    fileChannelErr = createObject(p->currentContext, "java.nio.channels.FileChannelImpl");
+    if (fileChannelErr == NULL)
+    {
+        //nothing here for now
+        return;
+    }
+    FileChannelImpl_nfd(fileChannelErr) = fds[1];
+    fileErrInputStream = createObject(p->currentContext, "java.io.FileInputStream");
+    if (fileErrInputStream == NULL)
+    {
+        //nothing here for now
+        return;
+    }
+    FileInputStream_fileChannel(fileErrInputStream) = fileChannelErr;
+    
+
     process = createObject(p->currentContext, "java.lang.ProcessImpl");
     ProcessImpl_inputStream(process) = fileInputStream;
+    ProcessImpl_outputStream(process) = fileOutputStream;
+    ProcessImpl_errorStream(process) = fileErrInputStream;
     p->retO = process;
 }
