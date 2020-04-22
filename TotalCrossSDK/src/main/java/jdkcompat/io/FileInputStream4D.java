@@ -2,15 +2,14 @@ package jdkcompat.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
-import jdkcompat.nio.channels.FileChannelImpl;
+import jdkcompat.nio.channels.FileChannelImpl4D;
 
 
 public class FileInputStream4D extends InputStream {
-    FileChannelImpl fileChannel;
+    FileChannelImpl4D fileChannel;
 
-    FileInputStream4D(FileChannelImpl fileChannel) {
+    FileInputStream4D(FileChannelImpl4D fileChannel) {
         this.fileChannel = fileChannel;
     }
 
@@ -21,12 +20,12 @@ public class FileInputStream4D extends InputStream {
 
     @Override
     public int read(byte[] dst) throws IOException {
-        return fileChannel.read(ByteBuffer.wrap(dst, 0, dst.length));
+        return fileChannel.read(dst, 0, dst.length);
     }
 
     @Override
     public int read(byte[] dsts, int offset, int length) throws IOException {
-        return fileChannel.read(ByteBuffer.wrap(dsts, offset, length));
+        return fileChannel.read(dsts, offset, length);
     }
 
     @Override

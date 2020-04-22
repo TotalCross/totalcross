@@ -12,7 +12,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
     TCObject fileChannelOut;
     TCObject fileChannelErr;
     TCObject fileInputStream;
-    TCObject proccess;
+    TCObject process;
     // Method getPath = getMethod(OBJ_CLASS(file), false, "getPath", 0);
     // TValue filePathValue = executeMethod(mainContext, getPath, file);
     // TCObject filePath = filePathValue.asObj;
@@ -67,14 +67,16 @@ TC_API void jlR_exec_SSs(NMParams p) {
     fileChannelIn = createObject(p->currentContext, "java.nio.channels.FileChannelImpl");
     if(fileChannelIn == NULL) {
         //nothing here
+		return;
     }
     FileChannelImpl_nfd(fileChannelIn) = fds[1];
     fileInputStream = createObject(p->currentContext, "java.io.FileInputStream");
     FileInputStream_fileChannel(fileInputStream) = fileChannelIn;
     if(fileInputStream == NULL) {
         //nothing here(for now)
+		return;
     }
-    proccess = createObject(p->currentContext, "java.lang.Proccess");
-    Proccess_inputStream(proccess) = fileInputStream;
-    p->retO = proccess;
+    process = createObject(p->currentContext, "java.lang.ProcessImpl");
+    ProcessImpl_inputStream(process) = fileInputStream;
+    p->retO = process;
 }

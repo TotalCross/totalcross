@@ -8,15 +8,15 @@ import java.nio.channels.FileLock;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
-public class FileChannelImpl extends FileChannel {
+public class FileChannelImpl4D extends FileChannel {
 
     private int nfd = -1;
 
-    FileChannelImpl(int fd) {
+    FileChannelImpl4D(int fd) {
         this.nfd = fd;
     }
 
-    FileChannelImpl() {
+    FileChannelImpl4D() {
 
     }
 
@@ -28,6 +28,8 @@ public class FileChannelImpl extends FileChannel {
 
     @Override
     native public int read(ByteBuffer dst) throws IOException;
+
+    native public int read(byte[] dst, int offset, int length) throws IOException;
 
     @Override
     public long read(ByteBuffer[] dsts, int offset, int length) throws IOException {
