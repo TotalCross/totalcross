@@ -33,21 +33,23 @@ TC_API void jlR_exec_SSs(NMParams p) {
     if(cmd != NULL)
     {
         cmdArrayLen = cmd->arrayLen;
-        cmdArray = malloc(sizeof(char*) * cmdArrayLen);
+        cmdArray = malloc(sizeof(char*) * (cmdArrayLen + 1));
 
         for(j = 0; j < cmdArrayLen; j++) {
             cmdArray[j] = String2CharP(*((TCObjectArray) ARRAYOBJ_START(cmd) + j));
         }
+		cmdArray[cmdArrayLen] = NULL;
     } else { 
         cmdArrayLen = 0;
     }
     if(envp != NULL)
     {
         envpArrayLen = envp->arrayLen;
-        envpArray = malloc(sizeof(char*) * envpArrayLen);
+        envpArray = malloc(sizeof(char*) * (envpArrayLen + 1));
         for(j = 0; j < envpArrayLen; j++) {
             envpArray[j] = String2CharP(*((TCObjectArray) ARRAYOBJ_START(envp) + j));
         }
+		envpArray[envpArrayLen] = NULL;
     } else { 
         envpArrayLen = 0;
     }
