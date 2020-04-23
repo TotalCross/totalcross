@@ -6,6 +6,8 @@ import java.io.OutputStream;
 public class ProcessImpl4D extends Process {
 
     InputStream inputStream;
+    OutputStream outputStream;
+    InputStream errorStream;
 
     @Override
     public void destroy() {
@@ -21,20 +23,17 @@ public class ProcessImpl4D extends Process {
 
     @Override
     public InputStream getErrorStream() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.errorStream;
     }
 
     @Override
     public InputStream getInputStream() {
-        // TODO Auto-generated method stub
         return this.inputStream;
     }
 
     @Override
     public OutputStream getOutputStream() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.outputStream;
     }
 
     @Override
