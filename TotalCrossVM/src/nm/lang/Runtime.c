@@ -71,7 +71,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
         //nothing here
 		return;
     }
-    FileChannelImpl_nfd(fileChannelIn) = fds[1];
+    FileChannelImpl_nfd(fileChannelIn) = fds[0];
     fileInputStream = createObject(p->currentContext, "java.io.FileInputStream");
     if(fileInputStream == NULL) {
         //nothing here(for now)
@@ -84,7 +84,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
         //nothing here
 		return;
     }
-    FileChannelImpl_nfd(fileChannelOut) = fds[2];
+    FileChannelImpl_nfd(fileChannelOut) = fds[1];
     fileOutputStream = createObject(p->currentContext, "java.io.FileOutputStream");
     if(fileOutputStream == NULL) {
         //nothing here for now
@@ -98,7 +98,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
         //nothing here for now
         return;
     }
-    FileChannelImpl_nfd(fileChannelErr) = fds[1];
+    FileChannelImpl_nfd(fileChannelErr) = fds[2];
     fileErrInputStream = createObject(p->currentContext, "java.io.FileInputStream");
     if (fileErrInputStream == NULL)
     {
