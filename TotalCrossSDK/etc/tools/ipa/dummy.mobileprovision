@@ -1,0 +1,39 @@
+Ü<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ApplicationIdentifierPrefix</key>
+	<array>
+		<string>ABCDEFGHIJ</string>
+	</array>
+	<key>CreationDate</key>
+	<date>2012-07-01T00:00:00Z</date>
+	<key>Entitlements</key>
+	<dict>
+		<key>application-identifier</key>
+		<string>ABCDEFGHIJ.com.application.name</string>
+		<key>get-task-allow</key>
+		<false/>
+		<key>keychain-access-groups</key>
+		<array>
+			<string>ABCDEFGHIJ.*</string>
+		</array>
+	</dict>
+	<key>ExpirationDate</key>
+	<date>2015-03-27T00:00:00Z</date>
+	<key>Name</key>
+	<string>Dummy Provision</string>
+	<key>ProvisionsAllDevices</key>
+	<true/>
+	<key>TeamIdentifier</key>
+	<array>
+		<string>ABCDEFGHIJ</string>
+	</array>
+	<key>TimeToLive</key>
+	<integer>999</integer>
+	<key>UUID</key>
+	<string>F47EEDA3-835B-4917-8C9C-ED1893906E00</string>
+	<key>Version</key>
+	<integer>1</integer>
+</dict>
+</plist>

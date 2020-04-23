@@ -1,0 +1,35 @@
+language: android
+dist: trusty
+
+
+jdk:
+  - openjdk8
+
+services:
+  - docker
+
+before_install:
+  - yes | sdkmanager "platforms;android-28"
+  - yes | sdkmanager "ndk-bundle"
+  - echo y | sdkmanager "ndk;17.2.4988734"
+  - sudo apt-get -y install ant
+
+install: true
+
+script:
+# Build SDK
+- cd $TRAVIS_BUILD_DIR/TotalCrossSDK ; sh ./gradlew clean dist --console=plain
+- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders ; ant makeNativeHT
+- cd $TRAVIS_BUILD_DIR/LitebaseSDK/builders ; ant makeNativeHT
+- cd $TRAVIS_BUILD_DIR/LitebaseSDK ; ant device
+## Build linux-arm target
+#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/sdl ; ./build.sh
+#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/launcher ; ./build.sh
+#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/tcvm ; ./build.sh
+## Build linux target
+#- export WORKSPACE=$TRAVIS_BUILD_DIR ; cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-posix/launcher ; ./build.sh
+#- export WORKSPACE=$TRAVIS_BUILD_DIR ; cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-posix/tcvm ; ./build.sh
+## Build Android
+#- sudo apt-get install -y ninja-build
+#- mkdir -p ~/.android && touch ~/.android/repositories.cfg
+#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/droid/ ; sh ./gradlew clean assembleRelease copyApk --console=plain

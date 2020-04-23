@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project>
+
+<project name="Obfuscate" default="obfuscate" basedir=".">
+
+<taskdef name="proguard" classpath="proguard.jar" classname="proguard.ant.ProGuardTask"/>
+
+<target name="obfuscate" description="Obfuscates the in.jar file into the out.jar file">
+
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="true" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="desktop_map.txt">
+       <injar path="in.jar" />
+       <outjar path="out.jar" />
+
+       <keep name="*"><field  access="public protected" /><method access="public protected" /></keep>
+       <!-- keep some method names, otherwise Hashtable class will not work. -->
+       <keepclasseswithmembernames>
+         <method name="toString" />
+         <method name="equals" />
+         <method name="hashCode" />
+       </keepclasseswithmembernames>
+   </proguard>
+
+</target>
+
+</project>
