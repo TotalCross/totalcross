@@ -15,51 +15,44 @@ TC_API void jlR_exec_SSs(NMParams p) {
     TCObject fileOutputStream;
     TCObject fileErrInputStream;
     TCObject process;
-    // Method getPath = getMethod(OBJ_CLASS(file), false, "getPath", 0);
-    // TValue filePathValue = executeMethod(mainContext, getPath, file);
-    // TCObject filePath = filePathValue.asObj;
-    char *cmdArray = String2CharP(cmd);
-    char *envpArray = String2CharP(envp);
-    char *filePathArray = String2CharP(dirPath);
-    int cmdArrayLen = strlen(cmdArray);
-    int envpArrayLen = strlen(envpArray);
+    char** cmdArray;
+    char** envpArray;
+    char* filePathArray = String2CharP(dirPath);
+    int cmdArrayLen;
+    int envpArrayLen;
     int filePathArrayLen = strlen(filePathArray);
     char* strings;
     int i;
+	int j;
     int num_strings = 0;
     char **newEnviron = NULL;
     int pipe_count = 3;
     pid_t pid = -1;
     int err;
 
-    if((strings = malloc (((cmdArrayLen + 1)
-			  + (envpArray != NULL ? envpArrayLen + 1 : 0)
-			  + (filePathArray !=
-			     NULL ? 1 : 0)) * sizeof (*strings))) == NULL)
+    if(cmd != NULL)
     {
-        //error message here
-    }
-    for (i = 0; i < cmdArrayLen; i++)
-    {
-      if ((strings[num_strings++] = cmdArray[i]) == NULL)
-	    {
-            //done here?
+        cmdArrayLen = cmd->arrayLen;
+        cmdArray = malloc(sizeof(char*) * cmdArrayLen);
+
+        for(j = 0; j < cmdArrayLen; j++) {
+            cmdArray[j] = String2CharP(*((TCObjectArray) ARRAYOBJ_START(cmd) + j));
         }
+    } else { 
+        cmdArrayLen = 0;
     }
-    strings[num_strings++] = NULL;
-    if (envpArray != NULL)
+    if(envp != NULL)
     {
-        newEnviron = strings + num_strings;
-        for (i = 0; i < envpArrayLen; i++)
-        {
-            if ((strings[num_strings++] = envpArray[i]) == NULL)
-            {
-                //done here?
-            }
+        envpArrayLen = envp->arrayLen;
+        envpArray = malloc(sizeof(char*) * envpArrayLen);
+        for(j = 0; j < envpArrayLen; j++) {
+            envpArray[j] = String2CharP(*((TCObjectArray) ARRAYOBJ_START(envp) + j));
         }
-        strings[num_strings++] = NULL;	/* terminate array with NULL */
+    } else { 
+        envpArrayLen = 0;
     }
-    err = cpproc_forkAndExec(strings, newEnviron, fds, pipe_count, &pid, filePathArray);
+
+    err = cpproc_forkAndExec(cmdArray, envpArray, fds, pipe_count, &pid, filePathArray);
     if(err != 0) 
     {
         //error message
