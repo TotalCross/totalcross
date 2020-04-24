@@ -78,7 +78,7 @@ int cpproc_forkAndExec (char * const *commandLine, char * const * newEnviron,
 
       close_all_fds(local_fds, pipe_count * 2);
 
-      // i = chdir(wd);
+      i = chdir(wd);
       /* FIXME: Handle the return value */
       if (newEnviron == NULL)
 	execvp(commandLine[0], commandLine);
