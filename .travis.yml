@@ -1,35 +1,63 @@
-language: android
-dist: trusty
-
+language: java
 
 jdk:
   - openjdk8
 
+env:
+  global:
+    - WORKSPACE=$TRAVIS_BUILD_DIR
+    - ANDROID_HOME=$HOME/android-sdk
+    - ANDROID_NDK_ROOT=$ANDROID_HOME/ndk-bundle
+    - ANDROID_NDK_HOME=$ANDROID_NDK_ROOT
+
 services:
   - docker
 
-before_install:
-  - yes | sdkmanager "platforms;android-28"
-  - yes | sdkmanager "ndk-bundle"
-  - echo y | sdkmanager "ndk;17.2.4988734"
-  - sudo apt-get -y install ant
+before_cache:
+  # Do not cache a few Gradle files/directories (see https://docs.travis-ci.com/user/languages/java/#Caching)
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
-install: true
+cache:
+  directories:
+    # Android SDK
+    - $HOME/android-sdk-dl
+    - $HOME/android-sdk
+
+    # Gradle dependencies
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+    # Android build cache (see http://tools.android.com/tech-docs/build-cache)
+    - $HOME/.android/build-cache
+
+install:
+  - set -e
+  - sudo apt-get -y install ant ninja-build
+  # Download and unzip the Android SDK tools (if not already there thanks to the cache mechanism)
+  # Latest version available here: https://developer.android.com/studio/#command-tools
+  - if test ! -e $HOME/android-sdk-dl/sdk-tools.zip ; then curl https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip > $HOME/android-sdk-dl/sdk-tools.zip ; fi
+  - unzip -qq -n $HOME/android-sdk-dl/sdk-tools.zip -d $HOME/android-sdk
+  # Install or update Android SDK components (will not do anything if already up to date thanks to the cache mechanism)
+  - echo y | $HOME/android-sdk/tools/bin/sdkmanager 'platform-tools' > /dev/null
+  - echo y | $HOME/android-sdk/tools/bin/sdkmanager 'build-tools;28.0.3' > /dev/null
+  - echo y | $HOME/android-sdk/tools/bin/sdkmanager 'platforms;android-28' > /dev/null
+  - echo y | $HOME/android-sdk/tools/bin/sdkmanager "ndk-bundle" > /dev/null
+  - echo y | $HOME/android-sdk/tools/bin/sdkmanager "ndk;17.2.4988734" > /dev/null
 
 script:
-# Build SDK
-- cd $TRAVIS_BUILD_DIR/TotalCrossSDK ; sh ./gradlew clean dist --console=plain
-- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders ; ant makeNativeHT
-- cd $TRAVIS_BUILD_DIR/LitebaseSDK/builders ; ant makeNativeHT
-- cd $TRAVIS_BUILD_DIR/LitebaseSDK ; ant device
-## Build linux-arm target
-#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/sdl ; ./build.sh
-#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/launcher ; ./build.sh
-#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/tcvm ; ./build.sh
-## Build linux target
-#- export WORKSPACE=$TRAVIS_BUILD_DIR ; cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-posix/launcher ; ./build.sh
-#- export WORKSPACE=$TRAVIS_BUILD_DIR ; cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-posix/tcvm ; ./build.sh
-## Build Android
-#- sudo apt-get install -y ninja-build
-#- mkdir -p ~/.android && touch ~/.android/repositories.cfg
-#- cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/droid/ ; sh ./gradlew clean assembleRelease copyApk --console=plain
+  - set -e
+    # Build SDK
+  - cd $TRAVIS_BUILD_DIR/TotalCrossSDK ; sh ./gradlew clean dist --console=plain
+  - cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders ; ant makeNativeHT
+  - cd $TRAVIS_BUILD_DIR/LitebaseSDK/builders ; ant makeNativeHT
+  - cd $TRAVIS_BUILD_DIR/LitebaseSDK ; ant device
+    # Build linux-arm target
+  - cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/sdl ; ./build.sh
+  - cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/launcher ; ./build.sh
+  - cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-linux-arm/tcvm ; ./build.sh
+    # Build linux target
+  - cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-posix/launcher ; ./build.sh
+  - cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/gcc-posix/tcvm ; ./build.sh
+    # Build Android
+  - cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders/droid/ ; sh ./gradlew clean assembleRelease copyApk --console=plain
