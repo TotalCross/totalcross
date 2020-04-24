@@ -347,7 +347,7 @@ java/lang/Throwable|native private void printStackTraceNative();
 java/lang/Thread|native public static void yield();
 java/lang/Thread|native public void start();       
 java/lang/Thread|native public static java.lang.Thread currentThread();
-java/lang/Runtime4D|native public Process exec(String[] cmdarray, String[] envp, String dirPath);
+java/lang/Runtime|native public Process exec(String[] cmdarray, String[] envp, String dirPath);
 java/nio/channels/FileChannelImpl|native public int read() throws IOException;
 java/nio/channels/FileChannelImpl|native public int read(ByteBuffer dst) throws IOException;
 java/nio/channels/FileChannelImpl|native public int read(byte[] dst, int offset, int length) throws IOException;

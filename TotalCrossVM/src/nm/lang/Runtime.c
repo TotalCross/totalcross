@@ -55,7 +55,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
         envpArrayLen = 0;
         envpArray = NULL;
     }
-    
+
     err = cpproc_forkAndExec(cmdArray, envpArray, fds, pipe_count, &pid, NULL);
     if(err != 0) 
     {
@@ -68,7 +68,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
         //nothing here
 		return;
     }
-    FileChannelImpl_nfd(fileChannelIn) = fds[CPIO_EXEC_STDIN];
+    FileChannelImpl_nfd(fileChannelIn) = fds[CPIO_EXEC_STDOUT];
     fileInputStream = createObject(p->currentContext, "java.io.FileInputStream");
     if(fileInputStream == NULL) {
         //nothing here(for now)
@@ -81,7 +81,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
         //nothing here
 		return;
     }
-    FileChannelImpl_nfd(fileChannelOut) = fds[CPIO_EXEC_STDOUT];
+    FileChannelImpl_nfd(fileChannelOut) = fds[CPIO_EXEC_STDIN];
     fileOutputStream = createObject(p->currentContext, "java.io.FileOutputStream");
     if(fileOutputStream == NULL) {
         //nothing here for now
