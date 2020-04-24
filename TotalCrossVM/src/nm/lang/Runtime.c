@@ -17,15 +17,11 @@ TC_API void jlR_exec_SSs(NMParams p) {
     TCObject process;
     char** cmdArray;
     char** envpArray;
-    char* filePathArray = String2CharP(dirPath);
+    char* filePathArray;
     int cmdArrayLen;
     int envpArrayLen;
-    int filePathArrayLen = strlen(filePathArray);
-    char* strings;
     int i;
 	int j;
-    int num_strings = 0;
-    char **newEnviron = NULL;
     int pipe_count = 3;
     pid_t pid = -1;
     int err;
@@ -55,8 +51,15 @@ TC_API void jlR_exec_SSs(NMParams p) {
         envpArrayLen = 0;
         envpArray = NULL;
     }
+    if(dirPath != NULL) {
+        filePathArray = String2CharP(dirPath);
+    } else {
+        filePathArray = NULL;
+    }
 
-    err = cpproc_forkAndExec(cmdArray, envpArray, fds, pipe_count, &pid, NULL);
+
+
+    err = cpproc_forkAndExec(cmdArray, envpArray, fds, pipe_count, &pid, filePathArray);
     if(err != 0) 
     {
         //error message
