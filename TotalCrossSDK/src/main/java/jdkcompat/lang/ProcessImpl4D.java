@@ -8,18 +8,13 @@ public class ProcessImpl4D extends Process {
     InputStream inputStream;
     OutputStream outputStream;
     InputStream errorStream;
+    int pid;
 
     @Override
-    public void destroy() {
-        // TODO Auto-generated method stub
-
-    }
+    native public void destroy();
 
     @Override
-    public int exitValue() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+    native public int exitValue();
 
     @Override
     public InputStream getErrorStream() {
@@ -37,9 +32,6 @@ public class ProcessImpl4D extends Process {
     }
 
     @Override
-    public int waitFor() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+    native public int waitFor();
 
 }
