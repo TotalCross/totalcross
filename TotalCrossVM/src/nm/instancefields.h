@@ -445,7 +445,8 @@
 //java.lang.Process
 #define ProcessImpl_inputStream(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define ProcessImpl_outputStream(o)        FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define ProcessImpl_errorStream(o)        FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define ProcessImpl_errorStream(o)         FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define ProcessImpl_pid(o)                 FIELD_I32(o, 0)
 
 
 #endif

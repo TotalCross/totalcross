@@ -27,8 +27,22 @@ TC_API void jncFCI_read_Bii(NMParams p) {
     int32 offset = p->i32[0];
     int32 length = p->i32[1];
     int32 fd = FileChannelImpl_nfd(fileChannel);
-    void* arrayStart = ARRAYOBJ_START(byteBuffer) + offset;
-    int32 ret = read(fd, arrayStart, length);
+    void* arrayStart;
+    int32 ret;
+    if(byteBuffer == NULL) {
+        throwNullArgumentException(p->currentContext, "b");
+        return;
+    }
+    if(offset < 0 || length < 0 || length > (ARRAYOBJ_LEN(byteBuffer) + offset)) {
+        throwException(p->currentContext, IndexOutOfBoundsException, NULL);
+        return;
+    }
+    arrayStart = ARRAYOBJ_START(byteBuffer) + offset;
+    ret = read(fd, arrayStart, length);
+    if(ret < 0) {
+        throwException(p->currentContext, "java.io.IOException", strerror(errno));
+        return;
+    }
     p->retI = ret;
 }
 
@@ -38,7 +52,21 @@ TC_API void jncFCI_write_Bii(NMParams p) {
     int32 offset = p->i32[0];
     int32 length = p->i32[1];
     int32 fd = FileChannelImpl_nfd(fileChannel);
-    void* arrayStart = ARRAYOBJ_START(byteBuffer) + offset;
-    int32 ret = write(fd, arrayStart, length);
+    void* arrayStart;
+    int32 ret;
+    if(byteBuffer == NULL) {
+        throwNullArgumentException(p->currentContext, "b");
+        return;
+    }
+    if(offset < 0 || length < 0 || length > (ARRAYOBJ_LEN(byteBuffer) + offset)) {
+        throwException(p->currentContext, IndexOutOfBoundsException, NULL);
+        return;
+    }
+    arrayStart = ARRAYOBJ_START(byteBuffer) + offset;
+    ret = write(fd, arrayStart, length);
+    if(ret < 0) {
+        throwException(p->currentContext, "java.io.IOException", strerror(errno));
+        return;
+    }
     p->retI = ret;
 }

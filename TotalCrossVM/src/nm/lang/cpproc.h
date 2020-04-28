@@ -35,8 +35,8 @@ exception statement from your version. */
 
 #include <sys/types.h>
 
-#define CPIO_EXEC_STDIN 0
-#define CPIO_EXEC_STDOUT 1
+#define CPIO_EXEC_STDOUT 0
+#define CPIO_EXEC_STDIN 1
 #define CPIO_EXEC_STDERR 2
 #define CPIO_EXEC_NUM_PIPES 3
 

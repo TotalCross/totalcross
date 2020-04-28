@@ -12,28 +12,29 @@ TC_API void jlPI_waitFor(NMParams p) {
     /* Try to reap a child process, but don't block */
     err = cpproc_waitpid(ProcessImpl_pid(process), &status, &pid, 0);
     if (err == 0 && pid == 0) {
-        //nothing here for now
+        p->retI = 0;
         return;
     }
 
 
     /* Check result from waitpid() */
-    if (err != 0)
-    {
-        if (err == ECHILD || err == EINTR){
-            return;
+    if (err != 0) {
+        if (err == EINTR){
+            throwExceptionNamed(p->currentContext, "java.lang.InterruptedException", NULL);
         }
-        throwExceptionNamed(p->currentContext, "java.lang.InternalError", null);
         return;
     }
 
     /* Get exit code; for signal termination return negative signal value XXX */
-    if (WIFEXITED (status))
+    if (WIFEXITED (status)) {
         status =  WEXITSTATUS (status);
-    else if (WIFSIGNALED (status))
+    }
+    else if (WIFSIGNALED (status)) {
         status = - WTERMSIG (status);
-    else
-        return;		/* process merely stopped; ignore */
+    }
+    else {
+        status = 0; /* process merely stopped; ignore */
+    }
 
     /* Done */
     p->retI = status;
@@ -47,28 +48,30 @@ TC_API void jlPI_exitValue(NMParams p) {
     /* Try to reap a child process, but don't block */
     err = cpproc_waitpid(ProcessImpl_pid(process), &status, &pid, WNOHANG);
     if (err == 0 && pid == 0) {
-        throwExceptionNamed(p->currentContext, "java.lang.IllegalThreadStateException", null);
+        throwExceptionNamed(p->currentContext, "java.lang.IllegalThreadStateException", NULL);
         return;
     }
 
 
     /* Check result from waitpid() */
-    if (err != 0)
-    {
+    if (err != 0) {
         if (err == ECHILD || err == EINTR){
             return;
         }
-        throwExceptionNamed(p->currentContext, "java.lang.InternalError", null);
+        throwExceptionNamed(p->currentContext, "java.lang.InternalError", NULL);
         return;
     }
 
     /* Get exit code; for signal termination return negative signal value XXX */
-    if (WIFEXITED (status))
+    if (WIFEXITED (status)) {
         status =  WEXITSTATUS (status);
-    else if (WIFSIGNALED (status))
+    }
+    else if (WIFSIGNALED (status)) {
         status = - WTERMSIG (status);
-    else
-        return;		/* process merely stopped; ignore */
+    }
+    else {
+        status = 0; /* process merely stopped; ignore */
+    }
 
     /* Done */
     p->retI = status;
