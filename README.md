@@ -4,6 +4,7 @@ TotalCross is an open source and free GUI Creator for embedded systems and a fra
 
 ## How TotalCross works?
 ![Usage flow](https://i.imgur.com/Df3NGui.png)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
 
 The developer can use Kotlin or Java to create applications using TotalCross Java API which provides rich GUI components.  The application source code is then compiled resulting in the ByteCode Java, which is converted to our TotalCross Optimized Bytecode, packaged and distributed for the platforms the user specified which can be window and Linux desktop, iOS, Android and Linux arm.
 
@@ -47,3 +48,6 @@ To find out what TotalCross world domination plans are, just click [here](https:
 * [Youtube](https://www.youtube.com/channel/UCSXUBRBC4Ec3_o9R7-3XX-w);
 * [Twitter](https://twitter.com/TotalCross);
 * [Instagram](https://www.instagram.com/totalcross/).
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_large)
