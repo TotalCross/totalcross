@@ -68,6 +68,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setLong_ol"), &jlrF_setLong_ol);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setFloat_od"), &jlrF_setFloat_od);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setDouble_od"), &jlrF_setDouble_od);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlR_loadLibrary_s"), &jlR_loadLibrary_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showAddress_sb"), &tmGM_showAddress_sb);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showRoute_sssi"), &tmGM_showRoute_sssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_create"), &tucL_create);
@@ -304,6 +305,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_readWriteBytes_Biib"), &tnS_readWriteBytes_Biib);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_serversocketCreate_iiis"), &tnSS_serversocketCreate_iiis);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_nativeClose"), &tnSS_nativeClose);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnTCNI_invokeMethod_ssO"), &tnTCNI_invokeMethod_ssO);
    htPutPtr(&htNativeProcAddresses, hashCode("tpCI_loadResources"), &tpCI_loadResources);
    htPutPtr(&htNativeProcAddresses, hashCode("tpCI_releaseResources"), &tpCI_releaseResources);
    htPutPtr(&htNativeProcAddresses, hashCode("tpCI_update"), &tpCI_update);

@@ -52,4 +52,6 @@ public class Runtime4D {
     public Process exec(String command) {
         return exec(command, null);
     }
+
+    native public void loadLibrary(String libname);
 }

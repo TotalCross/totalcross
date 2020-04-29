@@ -42,6 +42,8 @@ RUN apt-get update && \
     apt-get install -y libglvnd-dev || apt-get -f install; \
     apt-get clean
 
+RUN apt-get install -y libffi-dev
+
 RUN git clone https://github.com/SDL-mirror/SDL.git \
         --branch=release-2.0.10 \
         --single-branch \

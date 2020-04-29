@@ -44,12 +44,23 @@ VoidP privateLoadLibrary(CharP libName)
    if (library == null)
       library = tryAt(vmPath,"/lib/",libName); // needed for single apk applications
 #endif      
-   if (library == null)
+   if (library == null) {
       library = tryAt("","",libName);
-   if (library == null)
+   }
+
+   if (library == null) {
+      library = tryAt("./","",libName);
+   }
+
+   if (library == null) {
       library = tryAt("../","",libName);
-   if (library == null)
+   }
+
+   if (library == null) {
       library = tryAt(vmPath,"/",libName);
+   }
+
+   if (library == null)
    return library;
 }
 

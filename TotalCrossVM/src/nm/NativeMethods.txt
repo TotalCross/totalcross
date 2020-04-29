@@ -263,6 +263,7 @@ totalcross/pim/ce/builtin/IPOutlookItemCollection|native public static String ne
 totalcross/pim/ce/builtin/IPOutlookItemCollection|native public static String getITaskString(String oid);
 totalcross/pim/ce/builtin/IPOutlookItemCollection|native public static void removeITask(String oid);
 totalcross/pim/ce/builtin/IPOutlookItemCollection|native public static int editITask(String restriction, String subject, String categories, String startDate, String dueDate, String importance, String complete, String isRecurring, String duration, String recurrenceType, String occurrences, String interval, String dayOfWeek, String dayOfMonth, String weekOfMonth, String monthOfYear, String patternStartDate, String patternEndDate, String startTime, String endTime, String noEndDate, String sensitivity, String teamTask, String reminderIsSet, String reminderOptions, String reminderTime, String note);
+totalcross/native/TCNI|native public static Object invokeMethod(String moduleName, String methodName, Object ... params);
 totalcross/net/ssl/SSL|native public void dispose();
 totalcross/net/ssl/SSL|native public int handshakeStatus();
 totalcross/net/ssl/SSL|native public byte getCipherId();
@@ -349,6 +350,7 @@ java/lang/Thread|native public static void yield();
 java/lang/Thread|native public void start();       
 java/lang/Thread|native public static java.lang.Thread currentThread();
 java/lang/Runtime|native public java.lang.Process exec(String []cmdarray, String []envp, String dirPath);
+java/lang/Runtime|native public java.lang.Process loadLibrary(String libname);
 java/lang/ProcessImpl|native public int waitFor();
 java/lang/ProcessImpl|native public int exitValue();
 java/lang/ProcessImpl|native public int destroy();

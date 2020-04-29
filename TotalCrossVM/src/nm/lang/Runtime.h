@@ -11,5 +11,6 @@
 #define FILE_STREAM_OUTPUT 1
 
 TCObject createFileStream(Context context, const int streamType, int fd);
+extern void *handle;
 
 #endif
