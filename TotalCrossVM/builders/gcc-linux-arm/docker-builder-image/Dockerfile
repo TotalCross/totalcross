@@ -16,6 +16,7 @@ RUN apt-get install -y build-essential mercurial make cmake autoconf automake \
 RUN apt-get install -y libwayland-dev libxkbcommon-dev wayland-protocols
 RUN apt-get install -y libgles1-mesa-dev || apt-get -f install
 RUN apt-get install -y build-essential libgtk-3-dev
+RUN apt-get install -y libsdl2-dev
 ENV BUILD_FOLDER /build
 
 WORKDIR ${BUILD_FOLDER}
