@@ -1,5 +1,6 @@
 #include "FileChannelImpl.h"
 #include "xtypes.h"
+#include "errno.h"
 
 TC_API void jncFCI_read(NMParams p) {
     TCObject fileChannel = p->obj[0];
@@ -40,7 +41,7 @@ TC_API void jncFCI_read_Bii(NMParams p) {
     arrayStart = ARRAYOBJ_START(byteBuffer) + offset;
     ret = read(fd, arrayStart, length);
     if(ret < 0) {
-        throwException(p->currentContext, "java.io.IOException", strerror(errno));
+        throwExceptionNamed(p->currentContext, "java.io.IOException", strerror(errno));
         return;
     }
     p->retI = ret;
@@ -65,7 +66,7 @@ TC_API void jncFCI_write_Bii(NMParams p) {
     arrayStart = ARRAYOBJ_START(byteBuffer) + offset;
     ret = write(fd, arrayStart, length);
     if(ret < 0) {
-        throwException(p->currentContext, "java.io.IOException", strerror(errno));
+        throwExceptionNamed(p->currentContext, "java.io.IOException", strerror(errno));
         return;
     }
     p->retI = ret;
