@@ -2,6 +2,8 @@
 
 TotalCross is an open source and free GUI Creator for embedded systems and a framework for developing cross-platform applications for android, iOS, wince, windows and desktop, Linux desktop and Linux arm using Kotlin or Java or any Java Based language.
 
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
+
 ## How TotalCross works?
 ![Usage flow](https://i.imgur.com/Df3NGui.png)
 
