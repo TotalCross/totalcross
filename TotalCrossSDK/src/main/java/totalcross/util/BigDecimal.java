@@ -1,20 +1,13 @@
-/*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 1999-2006 Free Software Foundation, Inc.                       *
- *  Copyright (C) 2009-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 2.1    *
- *  A copy of this license is located in file license.txt at the root of this    *
- *  SDK or can be downloaded here:                                               *
- *  http://www.gnu.org/licenses/lgpl-2.1.txt                                     *
- *                                                                               *
- *********************************************************************************/
-
+// Copyright (C) 1999-2006 Free Software Foundation, Inc.
+// Copyright (C) 2009-2013 SuperWaba Ltda. 
+//
+// TotalCross Software Development Kit
+//
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 /* java.math.BigDecimal -- Arbitrary precision decimals.
    Copyright (C) 1999, 2000, 2001, 2003, 2005, 2006 Free Software Foundation, Inc.
 

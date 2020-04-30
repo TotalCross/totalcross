@@ -1,17 +1,14 @@
-/*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 1991-1996, Thomas G. Lane.                                     *
- *  Copyright (C) 2003 Jaxo-Systems (Pierre G. Richard)                          *
- *  Copyright (C) 2003-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *********************************************************************************/
-
-
+// Copyright (C) 1991-1996, Thomas G. Lane.
+// Copyright (C) 2003 Jaxo-Systems (Pierre G. Richard)
+// Copyright (C) 2003-2013 SuperWaba Ltda.
+//
+// TotalCross Software Development Kit
+//
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /*
 * This software is based in part on the work of the Independent JPEG Group.

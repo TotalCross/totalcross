@@ -1,18 +1,17 @@
-/*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *********************************************************************************/
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+//
+// TotalCross Software Development Kit
+//
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 
 
-#define CDILU 199 // Ç
-#define CDILL 231 // ç
+#define CDILU 199 // ï¿½
+#define CDILL 231 // ï¿½
 
 extern TCObject testfont;
 
@@ -580,7 +579,7 @@ TESTCASE(tsC_getBreakPos_fsiib) // totalcross/sys/Convert native public static i
    int32 i32buf[3];
    TCObject sb;
    TCObject charArray;
-   CharP buf = "A SuperWaba é uma plataforma para desenvolvimento de aplicações para PDA(Personal Digital Assistants) e Smartphones.";
+   CharP buf = "A SuperWaba ï¿½ uma plataforma para desenvolvimento de aplicaï¿½ï¿½es para PDA(Personal Digital Assistants) e Smartphones.";
    JCharP jbuf;
    int32* start;
    int32* width;

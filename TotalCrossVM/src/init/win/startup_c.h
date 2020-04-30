@@ -1,13 +1,12 @@
-/*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *********************************************************************************/
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+//
+// TotalCross Software Development Kit
+//
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 TC_API DWORD TSV_Close(DWORD dwData) {return 0;}
 TC_API DWORD TSV_Deinit(DWORD dwData) {return 0;}

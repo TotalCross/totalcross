@@ -1,13 +1,12 @@
-/*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *********************************************************************************/
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+//
+// TotalCross Software Development Kit
+//
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 
 
@@ -416,7 +415,7 @@ TESTCASE(tsV_clipboardPaste) // totalcross/sys/Vm native public static String cl
    // copy
    tsV_clipboardCopy_s(&p1);
    
-#ifndef WP8   //XXX ver se dá para fazer isso de outro modo
+#ifndef WP8   //XXX ver se dï¿½ para fazer isso de outro modo
    // paste
    tsV_clipboardPaste(&p2);
    ASSERT1_EQUALS(NotNull, p2.retO);

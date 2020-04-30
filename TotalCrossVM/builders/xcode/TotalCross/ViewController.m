@@ -1,10 +1,13 @@
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
 //
-//  ViewController.m
-//  TotalCross
+// TotalCross Software Development Kit
 //
-//  Created by Guilherme Hazan on 3/7/12.
-//  Copyright (c) 2012 SuperWaba Ltda. All rights reserved.
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #import "ViewController.h"
 

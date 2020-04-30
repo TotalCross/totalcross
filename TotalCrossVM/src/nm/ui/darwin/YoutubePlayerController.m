@@ -1,10 +1,13 @@
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
 //
-//  YoutubePlayer.m
-//  tcvm
+// TotalCross Software Development Kit
 //
-//  Created by Italo Yeltsin Medeiros Bruno on 22/05/19.
-//  Copyright © 2019 SuperWaba Ltda. All rights reserved.
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>

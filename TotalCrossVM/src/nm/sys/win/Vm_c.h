@@ -1,13 +1,12 @@
-/*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *********************************************************************************/
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+//
+// TotalCross Software Development Kit
+//
+// This library and virtual machine is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #if !defined(WINCE) && !defined(WP8)
 #include <tlhelp32.h>
@@ -184,7 +183,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
             err = RegQueryValueEx(handle,null,null,null,(uint8 *)fullname,&size);
             if (err == 0)
             {
-               // returns something like "%ProgramFiles%\Windows NT\Acessórios\WORDPAD.EXE" "%1"
+               // returns something like "%ProgramFiles%\Windows NT\Acessï¿½rios\WORDPAD.EXE" "%1"
                // get the first part
                char* f = fullname;
                if (*f == '"')
@@ -255,7 +254,7 @@ void vmSetAutoOff(bool enable)
 }
 
 //////////// START OF KEY INTERCEPTION FUNCTIONS
-//XXX: O que são hot keys? Não faço a menor idéia do que fazer aqui e acho que nem faz sentido
+//XXX: O que sï¿½o hot keys? Nï¿½o faï¿½o a menor idï¿½ia do que fazer aqui e acho que nem faz sentido
 void registerHotkeys(Int32Array keys, bool isRegister)
 {
    if (mainHWnd != null)
