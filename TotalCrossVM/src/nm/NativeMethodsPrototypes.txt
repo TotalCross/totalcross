@@ -1614,7 +1614,7 @@ TC_API void tpcbIPOIC_editITask_ssssssssssss(NMParams p) // totalcross/pim/ce/bu
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnT_invokeMethod(NMParams p) // totalcross/native/TCNI native public static Object invokeMehotd (String moduleName, String methodName, Object ... params);
+TC_API void tnT_invokeMethod(NMParams p) // totalcross/native/TCNI native public static Object invokeMethod (String moduleName, String methodName, Class class, Object ... params);
 {
 }
 //////////////////////////////////////////////////////////////////////////

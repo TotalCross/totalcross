@@ -311,7 +311,7 @@ TC_API void tnsSSLCTX_newServer_s(NMParams p);
 TC_API void tnsSSLU_getConfig_i(NMParams p);
 TC_API void tnsSSLU_displayError_i(NMParams p);
 TC_API void tnsSSLU_version(NMParams p);
-TC_API void tnTCNI_invokeMethod_ssO(NMParams p);
+TC_API void tnTCNI_invokeMethod_sscO(NMParams p);
 TC_API void tnCM_loadResources(NMParams p);
 TC_API void tnCM_setDefaultConfiguration_is(NMParams p);
 TC_API void tnCM_open(NMParams p);

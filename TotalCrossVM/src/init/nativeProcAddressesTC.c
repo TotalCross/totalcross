@@ -305,7 +305,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_readWriteBytes_Biib"), &tnS_readWriteBytes_Biib);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_serversocketCreate_iiis"), &tnSS_serversocketCreate_iiis);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_nativeClose"), &tnSS_nativeClose);
-   htPutPtr(&htNativeProcAddresses, hashCode("tnTCNI_invokeMethod_ssO"), &tnTCNI_invokeMethod_ssO);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnTCNI_invokeMethod_sscO"), &tnTCNI_invokeMethod_sscO);
    htPutPtr(&htNativeProcAddresses, hashCode("tpCI_loadResources"), &tpCI_loadResources);
    htPutPtr(&htNativeProcAddresses, hashCode("tpCI_releaseResources"), &tpCI_releaseResources);
    htPutPtr(&htNativeProcAddresses, hashCode("tpCI_update"), &tpCI_update);
