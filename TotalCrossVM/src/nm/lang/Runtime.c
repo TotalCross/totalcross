@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include "xtypes.h"
 #include "../../util/nativelib.h"
-void * handle;
+#include "utils.h"
 
 TC_API void jlR_exec_SSs(NMParams p) {
 #if defined(linux) && !defined(darwin)
@@ -162,12 +162,20 @@ TCObject createFileStream(Context context, const int streamType, int fd) {
  *  returns: void
  */
 TC_API void jlR_loadLibrary_s(NMParams p) {
+    
     TCObject libnameStrObj = p->obj[1];
     char * libname = String2CharP(libnameStrObj); 
+    void * handle;
     handle = loadLibrary(libname);
     if(!handle) {
         char errorMessage[PATH_MAX];
         xstrprintf(errorMessage, "Could not find lib%s.so",libname);
         throwException(p->currentContext, RuntimeException, errorMessage);
     }
+
+    if(htLoadedLibraries.size == 0) {
+        htLoadedLibraries = htNew(0xff, NULL);
+    }
+
+    htPutPtr(&htLoadedLibraries, hashCode(libname), handle);
 }

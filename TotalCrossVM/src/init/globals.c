@@ -7,6 +7,9 @@
 
 #include "tcvm.h"
 
+// tcni.c
+Hashtable htLoadedLibraries = { 0 };
+
 // tcclass.c
 Hashtable htLoadedClasses = { 0 };
 TCClassArray vLoadedClasses = { 0 };

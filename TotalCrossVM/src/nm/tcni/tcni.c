@@ -2,7 +2,6 @@
 #include "tcvm.h"
 #include <ffi.h>
 #include <dlfcn.h>
-#include "../lang/Runtime.h"
 
 ffi_type getffiType(Context context, TCObject * arg) {
     TCClass c = (TCClass)OBJ_CLASS(arg);
@@ -35,7 +34,10 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
     char * module = String2CharP(p->obj[0]);
     char * method = String2CharP(p->obj[1]);
     char* className = p->obj[2] == NULL ? NULL :String2CharP(p->obj[2]);
-
+    void* handle;
+    handle = htGetPtr(&htLoadedLibraries, hashCode(module));
+    printf("lib addres: %d", handle);
+    // TODO implement for null 
     TCObject *tcArgs = ARRAYOBJ_START(p->obj[3]);
     int argArrLen = ARRAYLEN(tcArgs);
     ffi_type **argTypes;
