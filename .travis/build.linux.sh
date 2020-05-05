@@ -11,16 +11,27 @@ unzip -q ./cloud.zip
 
 gcloud config set disable_usage_reporting false
 gcloud auth activate-service-account --key-file ~/jenkins-sa.json
-
+gcloud config set project totalcross
 TIMESTAMP=`date +%s`
+VMNAME=build-windows-$TIMESTAMP
 
-gcloud compute instances create build-windows-$TIMESTAMP \
-      --create-disk image=build-windows,image-project=totalcross,size=50 \
-      --zone us-central1-b
+gcloud compute instances create $VMNAME \
+      --image-family build-windows \
+      --image-project totalcross
 
-#gcloud compute scp folder_you_want_to_copy/ build-windows-cccccc:~/
-gcloud compute ssh -t build-windows-CCCC YOUR_COMMAND
-gcloud compute instances delete build-windows-$TIMESTAMP
+echo "HELLO!!! 1"
+gcloud compute scp  $TRAVIS_BUILD_DIR $VMNAME:~/
+
+echo "HELLO!!! 2"
+
+
+gcloud compute instances describe build-windows-1588718628 --format='value(networkInterfaces[0].accessConfigs[0].natIP)' --zone us-central1-b
+
+echo "Is the IP above?"
+
+#gcloud compute ssh -t build-windows-CCCC YOUR_COMMAND
+
+gcloud compute instances delete $VMNAME
 
 
 exit 0
