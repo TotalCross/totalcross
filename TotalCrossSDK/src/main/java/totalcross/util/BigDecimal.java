@@ -3,10 +3,6 @@
 //
 // TotalCross Software Development Kit
 //
-// This library and virtual machine is distributed in the hope that it will
-// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 /* java.math.BigDecimal -- Arbitrary precision decimals.
    Copyright (C) 1999, 2000, 2001, 2003, 2005, 2006 Free Software Foundation, Inc.
