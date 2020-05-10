@@ -1,8 +1,6 @@
 // Copyright (C) 2000-2001 Arthur van Hoff
 // Copyright (C) 2000-2013 SuperWaba Ltda. 
 //
-// TotalCross Software Development Kit
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 
 package totalcross.util;

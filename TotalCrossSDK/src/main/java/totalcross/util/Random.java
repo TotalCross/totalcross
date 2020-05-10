@@ -1,8 +1,6 @@
 // Copyright (C) 2001 Sean Luke <seanl@cs.umd.edu>
 // Copyright (C) 2001-2013 SuperWaba Ltda. 
 //
-// TotalCross Software Development Kit
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.util;
 

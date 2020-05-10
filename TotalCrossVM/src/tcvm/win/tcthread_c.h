@@ -1,11 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
 // Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
 //
-// TotalCross Software Development Kit
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
-//
-// TotalCross Software Development Kit
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #define CONVERT_PRIORITY(v) (7 - ((v-1)*7/9)) // java 1=min, 10=max; windows: 7=min, 0=max

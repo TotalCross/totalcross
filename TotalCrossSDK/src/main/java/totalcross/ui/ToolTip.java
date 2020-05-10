@@ -1,8 +1,6 @@
 // Copyright (C) 2003 Arnaud Farine
 // Copyright (C) 2003-2013 SuperWaba Ltda. 
 //
-// TotalCross Software Development Kit
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 
 package totalcross.ui;

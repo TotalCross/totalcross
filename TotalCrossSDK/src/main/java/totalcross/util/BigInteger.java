@@ -1,8 +1,6 @@
 // Copyright (C) 1998-2006 Free Software Foundation, Inc. 
 // Copyright (C) 2009-2013 SuperWaba Ltda. 
 //
-// TotalCross Software Development Kit
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 
 /* java.math.BigInteger -- Arbitary precision integers

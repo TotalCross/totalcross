@@ -1,8 +1,6 @@
 // Copyright (C) 1999-2006 Free Software Foundation, Inc.
 // Copyright (C) 2009-2013 SuperWaba Ltda. 
 //
-// TotalCross Software Development Kit
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 /* java.math.BigDecimal -- Arbitrary precision decimals.
    Copyright (C) 1999, 2000, 2001, 2003, 2005, 2006 Free Software Foundation, Inc.

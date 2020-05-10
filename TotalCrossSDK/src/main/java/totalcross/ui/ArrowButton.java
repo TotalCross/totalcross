@@ -1,7 +1,5 @@
 // Copyright (C) 2008-2013 SuperWaba Ltda. 
 //
-// TotalCross Software Development Kit
-//
 // SPDX-License-Identifier: LGPL-2.1-only
 
 package totalcross.ui;
