@@ -29,6 +29,7 @@ TC_API Hashtable htNew(int32 count, Heap heap)
    // already done in xmalloc - xmemzero(iht.items,count*TSIZE);
    iht.hash  = count-1;
    iht.threshold = count;// * 75 / 100;
+   iht.initialized = 1;
    return iht;
 }
 
