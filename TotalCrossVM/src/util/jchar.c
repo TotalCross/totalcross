@@ -23,6 +23,12 @@ TC_API CharP JCharP2CharP(JCharP js, int32 len)
    return JCharP2CharPBuf(js, len, (CharP)xmalloc(len+1));
 }
 
+TC_API CharP JCharP2CharPHeap(JCharP js, int32 len, Heap heap)
+{
+   if (len < 0 ) len = JCharPLen(js);
+   return JCharP2CharPBuf(js, len, (CharP)heapAlloc(heap, len+1));
+}
+
 TC_API JCharP CharP2JCharPBuf(CharP s, int32 len, JCharP buffer, bool endWithZero)
 {
    JCharP js = buffer;

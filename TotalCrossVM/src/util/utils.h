@@ -137,6 +137,7 @@ typedef CharP (*TCHARP2CharPBufFunc)(TCHARP js, CharP buffer);
 /// Handy functions to convert a Java String into a char* and TCHAR*
 #define String2CharP(strObj) JCharP2CharP(String_charsStart(strObj), String_charsLen(strObj))
 #define String2CharPBuf(strObj, buf) JCharP2CharPBuf(String_charsStart(strObj), String_charsLen(strObj), buf)
+#define String2CharPHeap(strObj, heap) JCharP2CharPHeap(String_charsStart(strObj), String_charsLen(strObj), heap)
 #define String2TCHARP(strObj) JCharP2TCHARP(String_charsStart(strObj), String_charsLen(strObj))
 #define String2TCHARPBuf(strObj, buf) JCharP2TCHARPBuf(String_charsStart(strObj), String_charsLen(strObj), buf)
 
