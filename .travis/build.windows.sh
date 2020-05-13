@@ -43,8 +43,12 @@ VM_EXTERNAL_IP=$(gcloud compute instances describe $VMNAME --format='value(netwo
 if [ "$VM_EXTERNAL_IP" = "" ] ; then remove_vm 1 "Unknown IP"; fi
 echo "Using external IP '$VM_EXTERNAL_IP'"
 
+echo "Sleeping for 100 seconds, waiting the Windows machine to boot"
+sleep 100
+
+echo Trying to connect with VM
 # create dir
-sshpass -p $VM_WINDOWS_PASS ssh -oStrictHostKeyChecking=no -oConnectTimeout=600 totalcrossplatform@$VM_EXTERNAL_IP "mkdir %userprofile%\\tc_repo\\" || remove_vm $? "Create folder"
+sshpass -p $VM_WINDOWS_PASS ssh -oStrictHostKeyChecking=no totalcrossplatform@$VM_EXTERNAL_IP "mkdir %userprofile%\\tc_repo\\" || remove_vm $? "Create folder"
 echo "TC folder created"
 
 # copy files
