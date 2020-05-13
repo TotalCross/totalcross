@@ -1,41 +1,6 @@
 #!/bin/bash
 
 # Break when error occurs
-
-openssl aes-256-cbc -d -a -pass pass:$JENKINKS_PASS -in jenkins-sa.json.enc -out ~/jenkins-sa.json -d 
-
-cd ~
-curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-290.0.1-windows-x86_64.zip -o ~/cloud.zip
-unzip -q ./cloud.zip
-./google-cloud-sdk/install.sh --quiet
-
-gcloud config set disable_usage_reporting false
-gcloud auth activate-service-account --key-file ~/jenkins-sa.json
-gcloud config set project totalcross
-TIMESTAMP=`date +%s`
-VMNAME=build-windows-$TIMESTAMP
-
-gcloud compute instances create $VMNAME \
-      --image-family build-windows \
-      --image-project totalcross
-
-echo "HELLO!!! 1"
-gcloud compute scp  $TRAVIS_BUILD_DIR $VMNAME:~/
-
-echo "HELLO!!! 2"
-
-
-gcloud compute instances describe build-windows-1588718628 --format='value(networkInterfaces[0].accessConfigs[0].natIP)' --zone us-central1-b
-
-echo "Is the IP above?"
-
-#gcloud compute ssh -t build-windows-CCCC YOUR_COMMAND
-
-gcloud compute instances delete $VMNAME
-
-
-exit 0
-
 set -e
 
 # Prepare environment

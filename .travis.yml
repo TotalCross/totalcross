@@ -1,20 +1,24 @@
 jobs:
   include:
-#    - os: linux
-#      language: java
-#      jdk: openjdk8
-#      services: docker
-#    - os: osx
-#      osx_image: xcode11.3
-#      language: objective_c
-#    - os: windows
-#      language: bash
+   - os: linux
+     env: WINDOWS=1
+#   - os: linux
+#     env: WINDOWS=0
+#     language: java
+#     jdk: openjdk8
+#     services: docker
+#   - os: osx
+#     osx_image: xcode11.3
+#     language: objective_c
+#   - os: windows
+#     language: bash
 
 addons:
   apt:
     packages:
     - ant
     - ninja-build
+    - sshpass
   homebrew:
     packages:
     - gradle
@@ -44,7 +48,5 @@ cache:
     - $HOME/.gradle/wrapper/
     # Android build cache (see http://tools.android.com/tech-docs/build-cache)
     - $HOME/.android/build-cache
-    # Visual Studio
-    - $HOME/visualstudio
 
-script: $TRAVIS_BUILD_DIR/.travis/build.$TRAVIS_OS_NAME.sh
+script: if [ "$WINDOWS" = "1" ] ; then $TRAVIS_BUILD_DIR/.travis/build.windows.sh ; else $TRAVIS_BUILD_DIR/.travis/build.$TRAVIS_OS_NAME.sh ; fi
