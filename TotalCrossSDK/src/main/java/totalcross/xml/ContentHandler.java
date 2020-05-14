@@ -120,6 +120,6 @@ public abstract class ContentHandler {
    * @param name
    *           tag name
    */
-  public void tagName(int tag, String name) {
+  public void tagName(int tag, String name, AttributeList atts) {
   }
 }
