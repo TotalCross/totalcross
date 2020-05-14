@@ -1,11 +1,7 @@
-/*********************************************************************************
- *  Copyright (C) 2002 Guilherme Campos Hazan <guich@superwaba.org.>             *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library is NOT free software.                                           *
- *  Once you paid for it, you can use it in how many devices you want.           *
- *                                                                               *
- *********************************************************************************/
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <tcvm.h>
 #include "..\barcode.h"

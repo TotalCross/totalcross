@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!--
-/*********************************************************************************
- *  TotalCross Virtual Machine, version 1                                        *
- *  Copyright (C) 2007-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *********************************************************************************/
-
+// Copyright (C) 2007-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 -->
 
 <project name="Litebase" default="help" basedir=".">
