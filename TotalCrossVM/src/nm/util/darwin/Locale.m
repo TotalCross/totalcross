@@ -1,10 +1,7 @@
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
 //
-//  Locale.m
-//  tcvm
-//
-//  Created by Italo on 09/11/18.
-//  Copyright © 2018 SuperWaba Ltda. All rights reserved.
-//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #import <Foundation/Foundation.h>
 #include <tcvm.h>

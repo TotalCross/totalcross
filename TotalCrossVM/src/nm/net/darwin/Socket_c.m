@@ -1,8 +1,7 @@
-/*********************************************************************************
- *  TotalCross Virtual Machine, version 1                                        *
- *  Copyright (C) 2007-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *********************************************************************************/
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #import <CoreFoundation/CoreFoundation.h>
 #include <sys/socket.h>
