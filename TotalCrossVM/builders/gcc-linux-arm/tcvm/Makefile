@@ -84,11 +84,7 @@ NM_LANG_FILES =                               \
 	$(SRCDIR)/nm/lang/StringBuffer.c        \
 	$(SRCDIR)/nm/lang/Thread.c              \
 	$(SRCDIR)/nm/lang/Throwable.c           \
-	$(SRCDIR)/nm/lang/Reflection.c			\
-	${SRCDIR}/nm/lang/Runtime.c				\
-	${SRCDIR}/nm/lang/cpproc.c 				\
-	${SRCDIR}/nm/nio/channels/FileChannelImpl.c \
-	${SRCDIR}/nm/lang/Process.c
+	$(SRCDIR)/nm/lang/Reflection.c
 
 NM_NET_FILES =                         \
 	$(SRCDIR)/nm/net/ssl_SSL.c       \
