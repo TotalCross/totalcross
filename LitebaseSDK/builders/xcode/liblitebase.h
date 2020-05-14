@@ -1,10 +1,7 @@
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
 //
-//  Litebase.h
-//  Litebase
-//
-//  Created by Guilherme Hazan on 4/30/12.
-//  Copyright (c) 2012 SuperWaba Ltda. All rights reserved.
-//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #import <Foundation/Foundation.h>
 

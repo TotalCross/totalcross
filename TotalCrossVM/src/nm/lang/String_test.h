@@ -1,13 +1,7 @@
-/*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *********************************************************************************/
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
 
 
@@ -20,14 +14,14 @@ TESTCASE(jlS_toUpperCase) // java/lang/String native public String toUpperCase()
    tzero(p);
    p.currentContext = currentContext;
    p.obj = &obj;
-   obj = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   obj = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(obj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, obj);
    jlS_toUpperCase(&p);
    ASSERT1_EQUALS(NotNull, p.retO);
    ASSERT2_EQUALS(I32, String_charsLen(obj), String_charsLen(p.retO));
    res8 = String2CharP(p.retO);
-   ASSERT2_EQUALS(Sz, res8, "ERA UMA CASA TÃO ENGRAÇADA, NÃO TINHA MESA, NÃO TINHA NADA.");
+   ASSERT2_EQUALS(Sz, res8, "ERA UMA CASA Tï¿½O ENGRAï¿½ADA, Nï¿½O TINHA MESA, Nï¿½O TINHA NADA.");
    finish:
    xfree(res8);
 }
@@ -40,14 +34,14 @@ TESTCASE(jlS_toLowerCase) // java/lang/String native public String toLowerCase()
    tzero(p);
    p.currentContext = currentContext;
    p.obj = &obj;
-   obj = createStringObjectFromCharP(currentContext, "eRA UMA CASA TÃO ENGRAÇADA, NÃO TINHA MESA, NÃO TINHA NADA.",-1);
+   obj = createStringObjectFromCharP(currentContext, "eRA UMA CASA Tï¿½O ENGRAï¿½ADA, Nï¿½O TINHA MESA, Nï¿½O TINHA NADA.",-1);
    setObjectLock(obj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, obj);
    jlS_toLowerCase(&p);
    ASSERT1_EQUALS(NotNull, p.retO);
    ASSERT2_EQUALS(I32, String_charsLen(obj), String_charsLen(p.retO));
    res8 = String2CharP(p.retO);
-   ASSERT2_EQUALS(Sz, res8, "era uma casa tão engraçada, não tinha mesa, não tinha nada.");
+   ASSERT2_EQUALS(Sz, res8, "era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.");
    finish:
    xfree(res8);
 }
@@ -124,7 +118,7 @@ static JChar valueOfChar(Context currentContext, JChar c)
 TESTCASE(jlS_valueOf_c) // java/lang/String native public static String valueOf(char c);
 {
    ASSERT2_EQUALS(U16, 'a',valueOfChar(currentContext, 'a'));
-   ASSERT2_EQUALS(U16, 'ç',valueOfChar(currentContext, 'ç'));
+   ASSERT2_EQUALS(U16, 'ï¿½',valueOfChar(currentContext, 'ï¿½'));
    ASSERT2_EQUALS(U16, 0x1E00,valueOfChar(currentContext, (JChar)0x1E00));
    finish: ;
 }
@@ -167,7 +161,7 @@ TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
 
    tzero(p);
    p.currentContext = currentContext;
-   obj = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   obj = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(obj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, obj);
    p.obj = &obj;
@@ -178,7 +172,7 @@ TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
    jlS_indexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 0);
 
-   i = 231/*'ç'*/;
+   i = 231/*'ï¿½'*/;
    jlS_indexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 22);
 
@@ -190,7 +184,7 @@ TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
    jlS_indexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 58);
 
-   i = 227/*'ã'*/;
+   i = 227/*'ï¿½'*/;
    jlS_indexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 14);
 
@@ -213,7 +207,7 @@ TESTCASE(jlS_indexOf_ii) // java/lang/String native public int indexOf(int c, in
 
    tzero(p);
    p.currentContext = currentContext;
-   obj = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   obj = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(obj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, obj);
    p.obj = &obj;
@@ -228,15 +222,15 @@ TESTCASE(jlS_indexOf_ii) // java/lang/String native public int indexOf(int c, in
    jlS_indexOf_ii(&p);
    ASSERT2_EQUALS(I32, p.retI, -1);
 
-   is[0] = 231/*'ç'*/; is[1] = 0;
+   is[0] = 231/*'ï¿½'*/; is[1] = 0;
    jlS_indexOf_ii(&p);
    ASSERT2_EQUALS(I32, p.retI, 22);
 
-   is[0] = 231/*'ç'*/; is[1] = 22;
+   is[0] = 231/*'ï¿½'*/; is[1] = 22;
    jlS_indexOf_ii(&p);
    ASSERT2_EQUALS(I32, p.retI, 22);
 
-   is[0] = 231/*'ç'*/; is[1] = 23;
+   is[0] = 231/*'ï¿½'*/; is[1] = 23;
    jlS_indexOf_ii(&p);
    ASSERT2_EQUALS(I32, p.retI, -1);
 
@@ -252,8 +246,8 @@ TESTCASE(jlS_equals_o) // java/lang/String native public boolean equals(Object o
    p.obj = objs;
    p.retI = 999; // 0 will be the first test result
 
-   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
-   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada!",-1);
+   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada!",-1);
    setObjectLock(objs[0], UNLOCKED);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[0]);
@@ -261,7 +255,7 @@ TESTCASE(jlS_equals_o) // java/lang/String native public boolean equals(Object o
    jlS_equals_o(&p);
    ASSERT2_EQUALS(I32, p.retI, 0);
 
-   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[1]);
    jlS_equals_o(&p);
@@ -283,8 +277,8 @@ TESTCASE(jlS_compareTo_s) // java/lang/String native public int compareTo(String
    p.currentContext = currentContext;
    p.obj = objs;
 
-   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
-   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada!",-1);
+   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada!",-1);
    setObjectLock(objs[0], UNLOCKED);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[0]);
@@ -293,7 +287,7 @@ TESTCASE(jlS_compareTo_s) // java/lang/String native public int compareTo(String
    jlS_compareTo_s(&p);
    ASSERT2_EQUALS(I32, p.retI, '.'-'!');
 
-   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[1]);
    jlS_compareTo_s(&p);
@@ -312,9 +306,9 @@ TESTCASE(jlS_copyChars_CiCii) // java/lang/String native static boolean copyChar
    p.obj = objs;
    p.i32 = i;
 
-   objs[0] = createStringObjectFromCharP(currentContext, "não tinha mesa",-1);
-   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada!",-1);
-   res     = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha mesa!",-1);
+   objs[0] = createStringObjectFromCharP(currentContext, "nï¿½o tinha mesa",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada!",-1);
+   res     = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha mesa!",-1);
    setObjectLock(objs[0], UNLOCKED);
    setObjectLock(objs[1], UNLOCKED);
    setObjectLock(res, UNLOCKED);
@@ -349,8 +343,8 @@ TESTCASE(jlS_indexOf_si) // java/lang/String native public int indexOf(String c,
    p.obj = objs;
    p.i32 = &s;
 
-   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
-   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada!",-1);
+   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada!",-1);
    setObjectLock(objs[0], UNLOCKED);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[0]);
@@ -364,7 +358,7 @@ TESTCASE(jlS_indexOf_si) // java/lang/String native public int indexOf(String c,
    jlS_indexOf_si(&p);
    ASSERT2_EQUALS(I32, p.retI, -1);
 
-   objs[1] = createStringObjectFromCharP(currentContext, "não tinha nada.",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "nï¿½o tinha nada.",-1);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[1]);
 
@@ -395,7 +389,7 @@ TESTCASE(jlS_hashCode) // java/lang/String native public int hashCode();
    p.currentContext = currentContext;
    p.obj = &obj;
 
-   obj = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   obj = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(obj, UNLOCKED);
    jlS_hashCode(&p);
    ASSERT2_EQUALS(I32, p.retI, 313238293);
@@ -524,8 +518,8 @@ TESTCASE(jlS_equalsIgnoreCase_s) // java/lang/String native public boolean equal
    p.obj = objs;
    p.retI = 999; // 0 will be the first test result
 
-   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
-   objs[1] = createStringObjectFromCharP(currentContext, "eRA UMA CASA TÃO ENGRAÇADA, NÃO TINHA MESA, NÃO TINHA NADA.",-1);
+   objs[0] = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "eRA UMA CASA Tï¿½O ENGRAï¿½ADA, Nï¿½O TINHA MESA, Nï¿½O TINHA NADA.",-1);
    setObjectLock(objs[0], UNLOCKED);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[0]);
@@ -533,7 +527,7 @@ TESTCASE(jlS_equalsIgnoreCase_s) // java/lang/String native public boolean equal
    jlS_equalsIgnoreCase_s(&p);
    ASSERT2_EQUALS(I32, p.retI, 1);
 
-   objs[1] = createStringObjectFromCharP(currentContext, "eRA UMA CASA TÃO ENGRAÇADA, NÃO TINHA MESA, NÃO TINHA NADA!",-1);
+   objs[1] = createStringObjectFromCharP(currentContext, "eRA UMA CASA Tï¿½O ENGRAï¿½ADA, Nï¿½O TINHA MESA, Nï¿½O TINHA NADA!",-1);
    setObjectLock(objs[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objs[1]);
    jlS_equalsIgnoreCase_s(&p);
@@ -585,7 +579,7 @@ TESTCASE(jlS_lastIndexOf_ii) // java/lang/String native public int lastIndexOf(i
 
    tzero(p);
    p.currentContext = currentContext;
-   obj = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   obj = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(obj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, obj);
    p.obj = &obj;
@@ -600,7 +594,7 @@ TESTCASE(jlS_lastIndexOf_ii) // java/lang/String native public int lastIndexOf(i
    jlS_lastIndexOf_ii(&p);
    ASSERT2_EQUALS(I32, p.retI, 0);
 
-   is[0] = 227; is[1] = 13; // ã
+   is[0] = 227; is[1] = 13; // ï¿½
    jlS_lastIndexOf_ii(&p);
    ASSERT2_EQUALS(I32, p.retI, -1);
 
@@ -623,7 +617,7 @@ TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(in
 
    tzero(p);
    p.currentContext = currentContext;
-   obj = createStringObjectFromCharP(currentContext, "Era uma casa tão engraçada, não tinha mesa, não tinha nada.",-1);
+   obj = createStringObjectFromCharP(currentContext, "Era uma casa tï¿½o engraï¿½ada, nï¿½o tinha mesa, nï¿½o tinha nada.",-1);
    setObjectLock(obj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, obj);
    p.obj = &obj;
@@ -634,7 +628,7 @@ TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(in
    jlS_lastIndexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 0);
 
-   i = 231/*'ç'*/;
+   i = 231/*'ï¿½'*/;
    jlS_lastIndexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 22);
 
@@ -646,7 +640,7 @@ TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(in
    jlS_lastIndexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 58);
 
-   i = 227/*'ã'*/;
+   i = 227/*'ï¿½'*/;
    jlS_lastIndexOf_i(&p);
    ASSERT2_EQUALS(I32, p.retI, 45);
 
