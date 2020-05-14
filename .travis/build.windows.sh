@@ -11,9 +11,25 @@ remove_vm() {
 }
 
 
-
 # get cloud credentials
 openssl aes-256-cbc -d -a -pass pass:$JENKINKS_PASS -in jenkins-sa.json.enc -out ~/jenkins-sa.json -d || exit 1
+
+# compile SDK
+cd $TRAVIS_BUILD_DIR/TotalCrossSDK ; sh ./gradlew clean dist --console=plain
+cd $TRAVIS_BUILD_DIR/TotalCrossVM/builders ; ant makeNativeHT
+cd $TRAVIS_BUILD_DIR/LitebaseSDK/builders ; ant makeNativeHT
+cd $TRAVIS_BUILD_DIR/LitebaseSDK ; ant device
+
+# clean up files
+cd $TRAVIS_BUILD_DIR
+rm -rf .git
+rm -rf gradle
+rm -rf TotalCrossVM/builders/vc2013
+rm -rf TotalCrossSDK/build
+rm -rf TotalCrossSDK/etc/tools/sqlite
+rm -rf TotalCrossSDK/etc/tools/jdeb
+rm -rf TotalCrossSDK/etc/libs
+
 
 cd ~
 curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-290.0.1-windows-x86_64.zip -o ~/cloud.zip || exit 1
