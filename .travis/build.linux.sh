@@ -2,6 +2,7 @@
 
 # Break when error occurs
 set -e
+source $TRAVIS_BUILD_DIR/.travis/common.sh
 
 # Prepare environment
 #sudo apt-get update

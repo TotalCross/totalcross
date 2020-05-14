@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source $TRAVIS_BUILD_DIR/.travis/common.sh
 
 remove_vm() {
     STATUS=$1
