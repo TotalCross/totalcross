@@ -47,7 +47,9 @@ static bool privateDebug(char* str)
       }
       else
       {
-         fputs(str,fdebug);
+         fputs(str,fdebug);   
+         printf(str);
+         printf("\n");
          err = (fputs("\n",fdebug) >= 0);
          fflush(fdebug);
          fsync(fileno(fdebug));
