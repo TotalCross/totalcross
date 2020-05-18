@@ -32,7 +32,9 @@ public class FileChannelImpl4D extends FileChannel {
     }
 
     @Override
-    native public int read(ByteBuffer dst) throws IOException;
+   public int read(ByteBuffer dst) throws IOException {
+      return 0;
+   }
 
     native public int read(byte[] dst, int offset, int length) throws IOException;
 
