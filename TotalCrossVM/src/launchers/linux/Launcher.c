@@ -38,22 +38,20 @@ static int executeProgram(char* cmdline)
       printf("%s\n", dlerror());
       tcvm = tryOpen("../libtcvm");                  // load in parent folder
    }
-
    if (!tcvm) {
       printf("%s\n", dlerror());
       tcvm = tryOpen("/usr/lib/totalcross/libtcvm"); // load in most common absolute path
    }
-
    if (!tcvm) {
       printf("%s\n", dlerror());
       return 10000;
    }
-
    fExecuteProgram = (ExecuteProgramProc)dlsym(tcvm, TEXT("executeProgram"));
-   
    if (!fExecuteProgram)
       return 10001;
+
    ret = fExecuteProgram(cmdline); // call the function now
+
    dlclose(tcvm); // free the library
    return ret;
 }
@@ -83,13 +81,11 @@ int main(int argc, const char *argv[])
 {
    char cmdline[512];
    xmemzero(cmdline,sizeof(cmdline));
-   
    if (argv)
    {
       xstrcpy(cmdline, argv[0]);
       xstrcat(cmdline, ".tcz");
    }
-
    if (argc > 1 || args[0] != '1') // if there's a commandline passed by the system or one passed by the user
    {
       xstrcat(cmdline, " /cmd ");
@@ -99,6 +95,7 @@ int main(int argc, const char *argv[])
       int n = argc;
       while (n-- > 1)
       {
+         //printf("n: %d:%s\n", n, *p);
          xstrcat(cmdline, " ");
          xstrcat(cmdline, *p++);
       }
