@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -56,27 +54,6 @@ static int executeProgram(char* cmdline)
    return ret;
 }
 
-#if 0
-#include <directfb.h>
-#include <stdio.h>
-
-static IDirectFB *dfb = NULL;
-static IDirectFBSurface *primary = NULL;
-static int screen_width  = 0;
-static int screen_height = 0;
-
-#define DFBCHECK(x...)                                         \
-  {                                                            \
-    DFBResult err = x;                                         \
-                                                               \
-    if (err != DFB_OK)                                         \
-      {                                                        \
-        fprintf( stderr, "%s <%d>:\n\t", __FILE__, __LINE__ ); \
-        DirectFBErrorFatal( #x, err );                         \
-      }                                                        \
-  }
-#endif
-
 int main(int argc, const char *argv[])
 {
    char cmdline[512];
@@ -95,38 +72,9 @@ int main(int argc, const char *argv[])
       int n = argc;
       while (n-- > 1)
       {
-         //printf("n: %d:%s\n", n, *p);
          xstrcat(cmdline, " ");
          xstrcat(cmdline, *p++);
       }
    }
-
-#if 0
-   DFBSurfaceDescription dsc;
-   DFBCHECK (DirectFBInit (&argc, &argv));
-   DFBCHECK (DirectFBCreate (&dfb));
-   DFBCHECK (dfb->SetCooperativeLevel (dfb, DFSCL_FULLSCREEN));
-   dsc.flags = DSDESC_CAPS;
-   dsc.caps  = DSCAPS_PRIMARY | DSCAPS_FLIPPING;
-
-   IDirectFBDisplayLayer *layer;
-   DFBCHECK(dfb->GetDisplayLayer(dfb, DLID_PRIMARY, &layer));
-   layer->EnableCursor(layer, 1);
-   //DFBCHECK(layer->SetRotation(layer, 180));
-
-   DFBCHECK (dfb->CreateSurface( dfb, &dsc, &primary ));
-   DFBCHECK (primary->GetSize (primary, &screen_width, &screen_height));
-   DFBCHECK (primary->FillRectangle (primary, 0, 0, screen_width, screen_height));
-   DFBCHECK (primary->SetColor (primary, 0x80, 0x80, 0xff, 0xff));
-   DFBCHECK (primary->DrawLine (primary,
-                                  0, screen_height / 2,
-                   screen_width - 1, screen_height / 2));
-   DFBCHECK (primary->Flip (primary, NULL, 0));
-   Sleep(5);
-   primary->Release( primary );
-   dfb->Release( dfb );
-   exit(0);
-#endif
-
    return executeProgram(cmdline); // in tcvm\startup.c
 }
