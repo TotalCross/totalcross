@@ -6,7 +6,7 @@ endif
 $(info $$buld dir is [${BLDDIR}])
 
 ifndef SRCDIR
-SRCDIR = /src/launchers/raspbian
+SRCDIR = /src/launchers/linux
 endif
 
 INCDIR = $(SRCDIR)/../../util
