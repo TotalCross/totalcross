@@ -98,7 +98,7 @@ void initSkia(int w, int h)
 #ifdef HEADLESS
     bitmap.installPixels(SkImageInfo::Make(w, 
                                            h, 
-                                           (SkColorType)colorType(pixelFormatSDL(surfaceSDL->format->format)), kPremul_SkAlphaType), surfaceSDL->pixels, surfaceSDL->pitch);
+                                           (SkColorType)colorType(pixelFormatSDL()), kPremul_SkAlphaType), pixels, pitch);
     canvas = new SkCanvas(bitmap);
 #else
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract

@@ -15,12 +15,12 @@ extern "C" {
     #include "GraphicsPrimitives.h"
 
     extern SDL_Window *window;
-    extern SDL_Surface *surfaceSDL;
-
+    extern Uint32 *pixels;
+    extern int pitch;
     int initSDL(ScreenSurface screen);
     void updateScreenSDL(int w, int h, int pitch,void *pixels);
     void presentSDL();
-    int pixelFormatSDL(int pixelFormat);
+    int pixelFormatSDL();
 
 #ifdef __cplusplus
 }

@@ -9,8 +9,8 @@
 #include "tcsdl.h"
 
 SDL_Window *window;
-SDL_Surface *surfaceSDL;
-
+Uint32 *pixels;
+int pitch;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 
@@ -50,34 +50,35 @@ int initSDL(ScreenSurface screen) {
  
   // Set render driver 
   SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name);
-  
-  // Get the SDL surface associated with the window.
-  // MUST BE DONE AFTER THE RENDERER
-  surfaceSDL = SDL_GetWindowSurface(window);
-  if(surfaceSDL == NULL) {
-    printf("SDL_GetWindowSurface failed: %s\n", SDL_GetError());
-  }
 
   // Set renderer dimensions
   SDL_GetRendererOutputSize(renderer, &screen->screenW, &screen->screenH);
-	
+  
   // MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
-  texture = SDL_CreateTexture(renderer, surfaceSDL->format->format, SDL_TEXTUREACCESS_STREAMING, (int)screen->screenW, (int)screen->screenH);
+  texture = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_STREAMING, (int)screen->screenW, (int)screen->screenH);
+
+  // Get pixel format struct 
+  SDL_PixelFormat *pixelformat = SDL_AllocFormat(SDL_GetWindowPixelFormat(window));
 
   // Adjusts screen's BPP
-  screen->bpp = surfaceSDL->format->BitsPerPixel;
+  screen->bpp = pixelformat->BitsPerPixel;
   // Adjusts screen's pixel format
-  screen->pixels = (uint8*)surfaceSDL->pixels;
+  screen->pixels = (uint8*)1;
   // Set surface pitch 
-  screen->pitch = surfaceSDL->pitch;
+  screen->pitch = pixelformat->BytesPerPixel * screen->screenW;
 
+  // Global var to Skia
+  // MUST BE CHANGED
+  pitch = screen->pitch;
+  pixels = (Uint32 *)malloc(screen->pitch * screen->screenH);
+  
   return 1;
 }
 
 void updateScreenSDL(int w, int h, int pitch,void *pixels) {
   // Update the given texture rectangle with new pixel data.
   SDL_UpdateTexture(texture, NULL, pixels, pitch);
-  // Call SDL render present 
+  // Call SDL render present
   presentSDL();
 }
 
@@ -90,8 +91,8 @@ void presentSDL() {
   SDL_RenderClear(renderer);
 }
 
-int pixelFormatSDL (int pixelFormat) {
-  switch (pixelFormat) { 
+int pixelFormatSDL () {
+  switch (SDL_GetWindowPixelFormat(window)) { 
     case SDL_PIXELFORMAT_UNKNOWN    	: return  0;
     case SDL_PIXELFORMAT_INDEX1LSB	  : return  1;
     case SDL_PIXELFORMAT_INDEX1MSB		: return  2;
@@ -129,4 +130,5 @@ int pixelFormatSDL (int pixelFormat) {
     case SDL_PIXELFORMAT_UYVY		      : return 34;
     case SDL_PIXELFORMAT_YVYU		      : return 35;
   }
+  return -1;
 }
