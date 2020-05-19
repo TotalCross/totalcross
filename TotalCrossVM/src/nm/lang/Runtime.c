@@ -22,7 +22,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
     char* filePathArray;
     int cmdArrayLen;
     int envpArrayLen;
-int j;
+    int j;
     int pipe_count = 3;
     pid_t pid = -1;
     int err;
