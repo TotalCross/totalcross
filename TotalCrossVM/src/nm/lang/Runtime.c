@@ -117,7 +117,6 @@ cleanup:
     if(heap != NULL) {
         heapDestroy(heap);
     }
-return;
 }
 
 TCObject createFileStream(Context context, const int streamType, int fd) {
