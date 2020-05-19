@@ -43,7 +43,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
             char* s = heapAlloc(heap, (String_charsLen(o) + 1) * sizeof(char));
             cmdArray[j] = String2CharPBuf(o, s);
         }
-		cmdArray[cmdArrayLen] = NULL;
+        cmdArray[cmdArrayLen] = NULL;
     } else { 
         cmdArrayLen = 0;
         cmdArray = NULL;
@@ -56,7 +56,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
             char* s = heapAlloc(heap, (String_charsLen(o) + 1) * sizeof(char));
             envpArray[j] = String2CharPBuf(o, s);
         }
-		envpArray[envpArrayLen] = NULL;
+        envpArray[envpArrayLen] = NULL;
     } else { 
         envpArrayLen = 0;
         envpArray = NULL;
@@ -124,13 +124,13 @@ TCObject createFileStream(Context context, const int streamType, int fd) {
     TCObject fileStream;
     TCObject fileChannel = createObject(context, "java.nio.channels.FileChannelImpl");
     if(fileChannel == NULL) {
-		return NULL;
+        return NULL;
     }
     FileChannelImpl_nfd(fileChannel) = fd;
     fileStream = createObject(context, streamType == FILE_STREAM_OUTPUT ? "java.io.FileOutputStream" : "java.io.FileInputStream");
     if(fileStream == NULL) {
         setObjectLock(fileChannel, UNLOCKED);
-		return NULL;
+        return NULL;
     }
 
     if(streamType == FILE_STREAM_OUTPUT) {
