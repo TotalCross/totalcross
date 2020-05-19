@@ -20,7 +20,7 @@ A clear and concise description of what you expected to happen.
 ## Screenshots or videos
 If applicable, add screenshots or videos to help explain your problem.
 
-# Devices:
+## Devices:
 Please complete the following information:
  - Device: [e.g. Raspberry Pi 3 model b+]
  - OS: [e.g. Linux Raspbian]
