@@ -73,7 +73,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlPI_exitValue"), &jlPI_exitValue);
    htPutPtr(&htNativeProcAddresses, hashCode("jlPI_destroy"), &jlPI_destroy);
    htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read"), &jncFCI_read);
-   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read_b"), &jncFCI_read_b);
    htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read_Bii"), &jncFCI_read_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_write_Bii"), &jncFCI_write_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showAddress_sb"), &tmGM_showAddress_sb);

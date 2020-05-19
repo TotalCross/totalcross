@@ -19,26 +19,6 @@ TC_API void jncFCI_read(NMParams p) {
     p->retI = buffer;
 }
 
-TC_API void jncFCI_read_b(NMParams p) {
-    TCObject fileChannel = p->obj[0];
-    TCObject byteBuffer = p->obj[1];
-    if(byteBuffer == NULL) {
-        throwNullArgumentException(p->currentContext, "b");
-        return;
-    }
-    int32 fd = FileChannelImpl_nfd(fileChannel);
-    TCObject byteBufferArray = ByteBuffer_array(byteBuffer);
-    int32 byteBufferOffset = ByteBuffer_offset(byteBuffer);
-    int32 byteBufferLength = ByteBuffer_length(byteBuffer);
-    void* arrayStart = ARRAYOBJ_START(byteBufferArray);
-    int32 ret = read(fd, arrayStart, byteBufferLength);
-    if(ret < 0) {
-        throwExceptionNamed(p->currentContext, "java.io.IOException", strerror(errno));
-        return;
-    }
-    p->retI = ret;
-}
-
 TC_API void jncFCI_read_Bii(NMParams p) {
     TCObject fileChannel = p->obj[0];
     TCObject byteArray = p->obj[1];
