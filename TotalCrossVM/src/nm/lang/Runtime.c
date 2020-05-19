@@ -8,8 +8,6 @@
 #include "errno.h"
 #include <sys/types.h>
 
-
-
 TC_API void jlR_exec_SSs(NMParams p) {
     int fds[CPIO_EXEC_NUM_PIPES];
     TCObject cmd = p->obj[1];
@@ -24,7 +22,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
     char* filePathArray;
     int cmdArrayLen;
     int envpArrayLen;
-	int j;
+int j;
     int pipe_count = 3;
     pid_t pid = -1;
     int err;
@@ -82,7 +80,7 @@ TC_API void jlR_exec_SSs(NMParams p) {
     
     fileInputStream = createFileStream(p->currentContext, FILE_STREAM_INPUT, fds[CPIO_EXEC_STDIN]);
     if(fileInputStream == NULL) {
-		goto cleanup;
+	goto cleanup;
     }
 
     fileOutputStream = createFileStream(p->currentContext, FILE_STREAM_OUTPUT, fds[CPIO_EXEC_STDOUT]);
