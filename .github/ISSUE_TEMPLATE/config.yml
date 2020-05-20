@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: TotalCross Community on Telegram
+    url: https://t.me/totalcrosscommunity
+    about: Please ask and answer questions here.
+  - name: TotalCross email contact
+    url: mailto:vaneska.sousa@totalcross.com
+    about: Please report security vulnerabilities here.
