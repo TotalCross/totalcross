@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #include "gfx_ex.h"
 
 void privateScreenChange(int32 w, int32 h)
@@ -20,7 +18,7 @@ void privateScreenChange(int32 w, int32 h)
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
 #ifdef SKIA_H
-   initSDL(screen);
+   TCSDL_Init(screen);
 #elif !defined HEADLESS
    DFBResult err;
    IDirectFB *_dfb;

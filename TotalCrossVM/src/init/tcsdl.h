@@ -17,10 +17,10 @@ extern "C" {
     extern SDL_Window *window;
     extern Uint32 *pixels;
     extern int pitch;
-    int initSDL(ScreenSurface screen);
-    void updateScreenSDL(int w, int h, int pitch,void *pixels);
-    void presentSDL();
-    int pixelFormatSDL();
+    int TCSDL_Init(ScreenSurface screen);
+    void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
+    void TCSDL_Present();
+    int TCSDL_PixelFormat();
 
 #ifdef __cplusplus
 }

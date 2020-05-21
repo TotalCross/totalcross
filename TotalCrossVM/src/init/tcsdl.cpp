@@ -16,7 +16,7 @@ int pitch;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 
-int initSDL(ScreenSurface screen) {
+int TCSDL_Init(ScreenSurface screen) {
   // Only init video (without audio)
   if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
     printf("SDL_Init failed: %s\n", SDL_GetError());
@@ -114,14 +114,14 @@ int initSDL(ScreenSurface screen) {
   return 1;
 }
 
-void updateScreenSDL(int w, int h, int pitch,void *pixels) {
+void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels) {
   // Update the given texture rectangle with new pixel data.
   SDL_UpdateTexture(texture, NULL, pixels, pitch);
   // Call SDL render present
-  presentSDL();
+  TCSDL_Present();
 }
 
-void presentSDL() {
+void TCSDL_Present() {
   // Copy a portion of the texture to the current rendering target
   SDL_RenderCopy(renderer, texture, NULL, NULL);
   // Update the screen with rendering performed
@@ -130,7 +130,7 @@ void presentSDL() {
   SDL_RenderClear(renderer);
 }
 
-int pixelFormatSDL () {
+int TCSDL_PixelFormat () {
   switch (SDL_GetWindowPixelFormat(window)) { 
     case SDL_PIXELFORMAT_UNKNOWN    	: return  0;
     case SDL_PIXELFORMAT_INDEX1LSB	  : return  1;
