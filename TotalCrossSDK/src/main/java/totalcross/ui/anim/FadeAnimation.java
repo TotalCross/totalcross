@@ -24,6 +24,7 @@ public class FadeAnimation extends ControlAnimation {
     at = _maxFade = maxFade;
     a = fadeIn ? 0 : maxFade;
     af = fadeIn ? maxFade : 0;
+    useOffscreen = true;
     releaseScreenShot = maxFade == 255;
   }
 
