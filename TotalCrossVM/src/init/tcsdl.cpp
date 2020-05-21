@@ -14,52 +14,92 @@ int pitch;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 
+#define IS_NULL(x)      ((x) == NULL)
+#define NOT_SUCCESS(x)  ((x) < 0)
+
+/* 
+ * 
+ *
+ *
+ */
 int initSDL(ScreenSurface screen) {
   // Only init video (without audio)
-  if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-    printf("SDL_Init failed: %s\n", SDL_GetError()); 
+  if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
+    printf("SDL_Init failed: %s\n", SDL_GetError());
+    return 0;
   }
 
   // Get the desktop area represented by a display, with the primary
-  // display located at 0,0 based on rect allocated on initial position
-  SDL_Rect rect;
-  if(SDL_GetDisplayBounds(DISPLAY_INDEX, &rect) < 0 ) {
+  // display located at 0,0 based on viewport allocated on initial position
+  SDL_Rect viewport;
+  if(NOT_SUCCESS(SDL_GetDisplayBounds(DISPLAY_INDEX, &viewport))) {
     printf("SDL_GetDisplayBounds failed: %s\n", SDL_GetError());
+    return 0;
   }
 
   // Create the window
-  window = SDL_CreateWindow("TotalCross SDK", 
-                            SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED, 
-                            rect.w, 
-                            rect.h, 
-                            SDL_WINDOW_FULLSCREEN);
-  if(window == NULL) {
+  if(IS_NULL(window = SDL_CreateWindow(
+                                "TotalCross SDK", 
+                                SDL_WINDOWPOS_UNDEFINED,
+                                SDL_WINDOWPOS_UNDEFINED, 
+                                viewport.w, 
+                                viewport.h, 
+                                SDL_WINDOW_FULLSCREEN))) {
     printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
+    return 0;
   }
 
   // Create a 2D rendering context for a window.
   renderer = SDL_CreateRenderer(window, -1, NO_FLAGS);
   if(renderer == NULL) {
     printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
+    return 0;
   }
 
   // Get renderer driver information
   SDL_RendererInfo rendererInfo;
-  SDL_GetRendererInfo(renderer, &rendererInfo);
- 
-  // Set render driver 
-  SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name);
+  if (NOT_SUCCESS(SDL_GetRendererInfo(renderer, &rendererInfo))) {
+    printf("SDL_GetRendererInfo failed: %s\n", SDL_GetError());
+    return 0;
+  } else {
+    // Set render driver 
+    if ((SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name)) == SDL_FALSE) {
+      printf("SDL_SetHint failed: %s\n", SDL_GetError());
+      return 0;
+    }
+  }
 
   // Set renderer dimensions
-  SDL_GetRendererOutputSize(renderer, &screen->screenW, &screen->screenH);
+  if (NOT_SUCCESS(SDL_GetRendererOutputSize(
+                                renderer, 
+                                &screen->screenW, 
+                                &screen->screenH))) {
+    printf("SDL_GetRendererOutputSize failed: %s\n", SDL_GetError());
+    return 0;
+  }
   
+  Uint32 windowPixelFormat;
+  if (SDL_PIXELFORMAT_UNKNOWN == (windowPixelFormat = SDL_GetWindowPixelFormat(window))) {
+    printf("SDL_GetWindowPixelFormat failed: %s\n", SDL_GetError());
+    return 0;
+  }
+
   // MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
-  texture = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_STREAMING, (int)screen->screenW, (int)screen->screenH);
-
+  if (IS_NULL(texture = SDL_CreateTexture(
+                              renderer, 
+                              windowPixelFormat, 
+                              SDL_TEXTUREACCESS_STREAMING, 
+                              (int)screen->screenW, 
+                              (int)screen->screenH))) {
+    printf("SDL_CreateTexture failed: %s\n", SDL_GetError());
+    return 0;
+  }
   // Get pixel format struct 
-  SDL_PixelFormat *pixelformat = SDL_AllocFormat(SDL_GetWindowPixelFormat(window));
-
+  SDL_PixelFormat *pixelformat;
+  if (IS_NULL(pixelformat = SDL_AllocFormat(windowPixelFormat))) {
+    printf("SDL_AllocFormat failed: %s\n", SDL_GetError());
+    return 0;
+  }
   // Adjusts screen's BPP
   screen->bpp = pixelformat->BitsPerPixel;
   // Adjusts screen's pixel format
