@@ -5,6 +5,8 @@
 
 #define DISPLAY_INDEX 0
 #define NO_FLAGS 0
+#define IS_NULL(x)      ((x) == NULL)
+#define NOT_SUCCESS(x)  ((x) < 0)
 
 #include "tcsdl.h"
 
@@ -14,14 +16,6 @@ int pitch;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 
-#define IS_NULL(x)      ((x) == NULL)
-#define NOT_SUCCESS(x)  ((x) < 0)
-
-/* 
- * 
- *
- *
- */
 int initSDL(ScreenSurface screen) {
   // Only init video (without audio)
   if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
@@ -72,8 +66,8 @@ int initSDL(ScreenSurface screen) {
   // Set renderer dimensions
   if (NOT_SUCCESS(SDL_GetRendererOutputSize(
                                 renderer, 
-                                &screen->screenW, 
-                                &screen->screenH))) {
+                                &viewport.w, 
+                                &viewport.h))) {
     printf("SDL_GetRendererOutputSize failed: %s\n", SDL_GetError());
     return 0;
   }
@@ -89,8 +83,8 @@ int initSDL(ScreenSurface screen) {
                               renderer, 
                               windowPixelFormat, 
                               SDL_TEXTUREACCESS_STREAMING, 
-                              (int)screen->screenW, 
-                              (int)screen->screenH))) {
+                              viewport.w, 
+                              viewport.h))) {
     printf("SDL_CreateTexture failed: %s\n", SDL_GetError());
     return 0;
   }
@@ -100,6 +94,11 @@ int initSDL(ScreenSurface screen) {
     printf("SDL_AllocFormat failed: %s\n", SDL_GetError());
     return 0;
   }
+
+  // Adjusts screen width to the viewport
+  screen->screenW = viewport.w;
+  // Adjusts screen height to the viewport
+  screen->screenH = viewport.h;
   // Adjusts screen's BPP
   screen->bpp = pixelformat->BitsPerPixel;
   // Adjusts screen's pixel format
