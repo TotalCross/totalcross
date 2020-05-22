@@ -1,9 +1,5 @@
 #!/bin/bash
 
-mkdir -p /tmp/output/windows
-echo TEST >/tmp/output/windows/data
-exit 0
-
 source $TRAVIS_BUILD_DIR/.travis/common.sh
 
 remove_vm() {
