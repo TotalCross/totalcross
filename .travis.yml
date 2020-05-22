@@ -50,4 +50,38 @@ jobs:
       on:
         branch: travis
 
+addons:
+  apt:
+    packages:
+    - ant
+    - ninja-build
+    - sshpass
+  homebrew:
+    packages:
+    - cocoapods
+    taps: homebrew/cask-versions
+    casks: adoptopenjdk8
+
+env:
+  global:
+    - WORKSPACE=$TRAVIS_BUILD_DIR
+    - ANDROID_HOME=$HOME/android-sdk
+    - ANDROID_NDK_ROOT=$ANDROID_HOME/ndk-bundle
+    - ANDROID_NDK_HOME=$ANDROID_NDK_ROOT
+
+before_cache:
+  # Do not cache a few Gradle files/directories (see https://docs.travis-ci.com/user/languages/java/#Caching)
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    # Android SDK
+    - $HOME/android-sdk-dl
+    - $HOME/android-sdk
+    # Gradle dependencies
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    # Android build cache (see http://tools.android.com/tech-docs/build-cache)
+    - $HOME/.android/build-cache
 
