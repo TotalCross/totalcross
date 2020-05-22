@@ -1,5 +1,9 @@
 #!/bin/bash
 
+mkdir -p /tmp/output/linux
+echo TEST >/tmp/output/linux/data
+exit 0
+
 # Break when error occurs
 set -e
 source $TRAVIS_BUILD_DIR/.travis/common.sh

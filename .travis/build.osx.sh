@@ -1,5 +1,9 @@
 #!/bin/bash
 
+mkdir -p /tmp/output/osx
+echo TEST >/tmp/output/osx/data
+exit 0
+
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
 source $TRAVIS_BUILD_DIR/.travis/common.sh
 
