@@ -68,7 +68,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
 #ifdef SKIA_H
-   initSkia(screen->screenW, screen->screenH);
+   initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch);
 #endif
    return true;
 }

@@ -92,13 +92,13 @@ std::vector<SkBitmap> textures;
 
 std::map<std::string, int> typefaceIndexMap;
 
-void initSkia(int w, int h)
+void initSkia(int w, int h, void * pixels, int pitch)
 {
     SKIA_TRACE()
 #ifdef HEADLESS
     bitmap.installPixels(SkImageInfo::Make(w, 
                                            h, 
-                                           (SkColorType)colorType(TCSDL_PixelFormat()), kPremul_SkAlphaType), pixels, pitch);
+                                           (SkColorType)colorType(TCSDL_PixelFormat()), kPremul_SkAlphaType), (Uint32 *)pixels, pitch);
     canvas = new SkCanvas(bitmap);
 #else
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract

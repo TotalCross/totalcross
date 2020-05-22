@@ -17,7 +17,7 @@ typedef uint32 Pixel32; // 32 bpp
 typedef Pixel32 Pixel;
 
 int colorType(int index);
-void initSkia(int w, int h);
+void initSkia(int w, int h, void * pixels, int pitch);
 void flushSkia();
 
 int skia_makeTypeface(char* name, void *data, int32 size);

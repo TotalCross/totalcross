@@ -15,8 +15,7 @@ extern "C" {
     #include "GraphicsPrimitives.h"
 
     extern SDL_Window *window;
-    extern Uint32 *pixels;
-    extern int pitch;
+    
     int TCSDL_Init(ScreenSurface screen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
     void TCSDL_Present();

@@ -11,8 +11,7 @@
 #include "tcsdl.h"
 
 SDL_Window *window;
-Uint32 *pixels;
-int pitch;
+
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 
@@ -101,15 +100,10 @@ int TCSDL_Init(ScreenSurface screen) {
   screen->screenH = viewport.h;
   // Adjusts screen's BPP
   screen->bpp = pixelformat->BitsPerPixel;
-  // Adjusts screen's pixel format
-  screen->pixels = (uint8*)1;
   // Set surface pitch 
   screen->pitch = pixelformat->BytesPerPixel * screen->screenW;
-
-  // Global var to Skia
-  // MUST BE CHANGED
-  pitch = screen->pitch;
-  pixels = (Uint32 *)malloc(screen->pitch * screen->screenH);
+  // Adjusts screen's pixel  surface
+  screen->pixels = (uint8*)malloc(screen->pitch * screen->screenH);
   
   return 1;
 }
