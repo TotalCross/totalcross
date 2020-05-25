@@ -94,6 +94,8 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
       SCREEN_EX(screen)->layer->Release (SCREEN_EX(screen)->layer);
    if (SCREEN_EX(screen)->primary)
       SCREEN_EX(screen)->primary->Release (SCREEN_EX(screen)->primary);
+#else
+   TCSDL_Destroy(screen);
 #endif
 }
 

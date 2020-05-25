@@ -15,10 +15,11 @@ extern "C" {
     #include "GraphicsPrimitives.h"
 
     extern SDL_Window *window;
-    
-    int TCSDL_Init(ScreenSurface screen);
+
+    bool TCSDL_Init(ScreenSurface screen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
     void TCSDL_Present();
+    void TCSDL_Destroy(ScreenSurface screen);
     int TCSDL_PixelFormat();
 
 #ifdef __cplusplus

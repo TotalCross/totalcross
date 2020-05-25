@@ -15,11 +15,21 @@ SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 
-int TCSDL_Init(ScreenSurface screen) {
+/*
+ * Init steps to create a window and texture to Skia handling
+ *
+ * Args:
+ * - ScreenSurface from TotalCross globals 
+ * 
+ * Return:
+ * - false on failure
+ * - true on success 
+ */
+bool TCSDL_Init(ScreenSurface screen) {
   // Only init video (without audio)
   if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
     printf("SDL_Init failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
 
   // Get the desktop area represented by a display, with the primary
@@ -27,7 +37,7 @@ int TCSDL_Init(ScreenSurface screen) {
   SDL_Rect viewport;
   if(NOT_SUCCESS(SDL_GetDisplayBounds(DISPLAY_INDEX, &viewport))) {
     printf("SDL_GetDisplayBounds failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
 
   // Create the window
@@ -39,14 +49,14 @@ int TCSDL_Init(ScreenSurface screen) {
                                 viewport.h, 
                                 SDL_WINDOW_FULLSCREEN))) {
     printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
 
   // Create a 2D rendering context for a window.
   renderer = SDL_CreateRenderer(window, -1, NO_FLAGS);
   if(renderer == NULL) {
     printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
 
   // Get renderer driver information
@@ -58,7 +68,7 @@ int TCSDL_Init(ScreenSurface screen) {
     // Set render driver 
     if ((SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name)) == SDL_FALSE) {
       printf("SDL_SetHint failed: %s\n", SDL_GetError());
-      return 0;
+      return false;
     }
   }
 
@@ -68,13 +78,14 @@ int TCSDL_Init(ScreenSurface screen) {
                                 &viewport.w, 
                                 &viewport.h))) {
     printf("SDL_GetRendererOutputSize failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
   
+  // Get window pixel format
   Uint32 windowPixelFormat;
   if (SDL_PIXELFORMAT_UNKNOWN == (windowPixelFormat = SDL_GetWindowPixelFormat(window))) {
     printf("SDL_GetWindowPixelFormat failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
 
   // MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
@@ -85,13 +96,13 @@ int TCSDL_Init(ScreenSurface screen) {
                               viewport.w, 
                               viewport.h))) {
     printf("SDL_CreateTexture failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
   // Get pixel format struct 
   SDL_PixelFormat *pixelformat;
   if (IS_NULL(pixelformat = SDL_AllocFormat(windowPixelFormat))) {
     printf("SDL_AllocFormat failed: %s\n", SDL_GetError());
-    return 0;
+    return false;
   }
 
   // Adjusts screen width to the viewport
@@ -104,10 +115,20 @@ int TCSDL_Init(ScreenSurface screen) {
   screen->pitch = pixelformat->BytesPerPixel * screen->screenW;
   // Adjusts screen's pixel  surface
   screen->pixels = (uint8*)malloc(screen->pitch * screen->screenH);
-  
-  return 1;
+
+  SDL_FreeFormat(pixelformat);
+
+  return true;
 }
 
+/*
+ * Update the given texture rectangle with new pixel data.
+ * 
+ * # MUST BE REVIEWED
+ * 
+ * SDL_UpdateTexture it's too slow and our implementation 
+ * depends on it
+ */
 void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels) {
   // Update the given texture rectangle with new pixel data.
   SDL_UpdateTexture(texture, NULL, pixels, pitch);
@@ -115,6 +136,9 @@ void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels) {
   TCSDL_Present();
 }
 
+/*
+ * Update the screen with rendering performed
+ */
 void TCSDL_Present() {
   // Copy a portion of the texture to the current rendering target
   SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -124,6 +148,23 @@ void TCSDL_Present() {
   SDL_RenderClear(renderer);
 }
 
+/*
+ * Destroy all SDL allocated variables
+ */
+void TCSDL_Destroy(ScreenSurface screen) {
+  if (screen->pixels != NULL) {
+    free(screen->pixels);
+  }
+
+  SDL_DestroyTexture(texture);
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
+
+/*
+ * Returns window pixel format ID
+ */
 int TCSDL_PixelFormat () {
   switch (SDL_GetWindowPixelFormat(window)) { 
     case SDL_PIXELFORMAT_UNKNOWN    	: return  0;
