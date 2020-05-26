@@ -25,7 +25,7 @@ static SDL_Texture *texture;
  * - false on failure
  * - true on success 
  */
-bool TCSDL_Init(ScreenSurface screen) {
+bool TCSDL_Init(ScreenSurface screen, const char* title) {
   // Only init video (without audio)
   if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
     printf("SDL_Init failed: %s\n", SDL_GetError());
@@ -42,7 +42,7 @@ bool TCSDL_Init(ScreenSurface screen) {
 
   // Create the window
   if(IS_NULL(window = SDL_CreateWindow(
-                                "TotalCross SDK", 
+                                title, 
                                 SDL_WINDOWPOS_UNDEFINED,
                                 SDL_WINDOWPOS_UNDEFINED, 
                                 viewport.w, 

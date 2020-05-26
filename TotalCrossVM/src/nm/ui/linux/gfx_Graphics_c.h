@@ -18,7 +18,7 @@ void privateScreenChange(int32 w, int32 h)
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
 #ifdef SKIA_H
-   TCSDL_Init(screen);
+   TCSDL_Init(screen, exeName);
 #elif !defined HEADLESS
    DFBResult err;
    IDirectFB *_dfb;

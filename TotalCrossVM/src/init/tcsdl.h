@@ -16,7 +16,7 @@ extern "C" {
 
     extern SDL_Window *window;
 
-    bool TCSDL_Init(ScreenSurface screen);
+    bool TCSDL_Init(ScreenSurface screen, const char* title);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
     void TCSDL_Present();
     void TCSDL_Destroy(ScreenSurface screen);
