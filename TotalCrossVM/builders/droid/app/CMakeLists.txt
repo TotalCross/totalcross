@@ -111,6 +111,10 @@ set(SOURCES
     ${TC_SRCDIR}/nm/lang/StringBuffer.c
     ${TC_SRCDIR}/nm/lang/Thread.c
     ${TC_SRCDIR}/nm/lang/Throwable.c
+    ${TC_SRCDIR}/nm/lang/Process.c
+    ${TC_SRCDIR}/nm/lang/Runtime.c
+    ${TC_SRCDIR}/nm/lang/cpproc.c
+    ${TC_SRCDIR}/nm/nio/channels/FileChannelImpl.c
 
     ${TC_SRCDIR}/nm/net/ssl_SSL.c
     ${TC_SRCDIR}/nm/net/ServerSocket.c

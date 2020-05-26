@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 TC_API void jlR_exec_SSs(NMParams p) {
+#if defined(HEADLESS)
     int fds[CPIO_EXEC_NUM_PIPES];
     TCObject cmd = p->obj[1];
     TCObject envp = p->obj[2];
@@ -115,6 +116,9 @@ cleanup:
     if(heap != NULL) {
         heapDestroy(heap);
     }
+#else
+    throwException(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
 }
 
 TCObject createFileStream(Context context, const int streamType, int fd) {
