@@ -1,43 +1,43 @@
-# TotalCross - A Free and Open GUI Creator for embedded system and mobile applications
+# TotalCross - A Free and Open GUI Creator for embedded systems and mobile applications
 
-TotalCross is an open source and free GUI Creator for embedded systems and a framework for developing cross-platform applications for android, iOS, wince, windows and desktop, Linux desktop and Linux arm using Kotlin or Java or any Java Based language.
+TotalCross is an open source and free GUI Creator for embedded systems and a framework for developing cross-platform applications for Android, iOS, WinCE, Windows and desktop, Linux desktop and Linux ARM using Kotlin or Java or any Java Based language.
 
 ## How TotalCross works?
 ![Usage flow](https://i.imgur.com/Df3NGui.png)
 
-The developer can use Kotlin or Java to create applications using TotalCross Java API which provides rich GUI components.  The application source code is then compiled resulting in the ByteCode Java, which is converted to our TotalCross Optimized Bytecode, packaged and distributed for the platforms the user specified which can be window and Linux desktop, iOS, Android and Linux arm.
+You can use Kotlin or Java to create applications using TotalCross Java API which provides rich GUI components.  The application source code is then compiled resulting in ByteCode Java, which is converted to TotalCross Optimized Bytecode, packaged and distributed to the platforms the user specifies which can be Window and Linux desktop, iOS, Android and Linux ARM.
 
 ## What is inside this repository?
-O TotalCross SDK is comprised by two main components:
+The TotalCross SDK, comprised by two main components:
 
-* TotalCross Java API -  It is the combination of several apis such as GUI components, database and GPIO to create a single more robust API that guarantees quality and support in application development
-* TCVM. - The heart of totalcross sdk is present our virtual machine, originally idealized in a master's thesis, and already built and improved over 10 years. It's log-based (Java) architecture, bytecode "itself with its own folders" for the most frequent and implemented **almost 100% with C guarantees performance equivalent to native development**. To read more about the TCVM click here.
+* TotalCross Java API -  Combination of several APIs such as GUI components, Database and GPIO to create a single more robust API that guarantees quality and support in application development.
+* TCVM. - Totalcross Virtual Machine, originally idealized as a Master's Thesis, has been built and improved over 10 years. It's log-based (Java) architecture, bytecode "itself with its own folders" for the most frequent and implemented **almost 100% with C guarantees performance equivalent to native development**. To read more about the TCVM click here.
 
 ## Community
-The TotalCross's big dream is to build a large and supportive community of enthusiastic mobile and embedded developers. You can be part of the [telegram](https://t.me/totalcrosscommunity) and here on [GitHub](https://github.com/totalcross/totalcross).
+TotalCross's goal is to build a large and supportive community composed by enthusiastic mobile and embedded developers. You can be part of the [telegram](https://t.me/totalcrosscommunity) and here on [GitHub](https://github.com/totalcross/totalcross).
 ### Developing for TotalCross
 
 In order to create a better tool and develop GUI for embedded systems and develop cross platform applications, it helps us in the community, so we have separated some challenges for those who want to contribute:
 
 * Creating graphical components in the Java API:
     * Create support for maps;
-    * Create customize widgets on camera.
+    * Create customized widgets on camera.
 * Improving the TC Java API:
     * Adding API port for Python.
-* Improving a TC VM 
+* Improving the TCVM 
     * Create support for external and native libraries.
 * Interacting in the [issues repository](https://github.com/TotalCross/totalcross/issues);
-    * Report and fixes new bugs;
+    * Reporting and fixing new bugs;
     * Responding issues report;
-    * Suggest and vote on new features.
-* Make documentation easier and more complete:
+    * Suggesting and voting on new features.
+* Making documentation more clear and complete:
     * Improving the [getting started](https://learn.totalcross.com/get-started/);
-    * Point out points of documentation improvements and suggest new themes by opening [issues](https://github.com/TotalCross/totalcross/issues).
+    * Pointing out improvements needed in our documentation and suggest new themes by opening [issues](https://github.com/TotalCross/totalcross/issues).
 
 ##### 👉 [See how to be a contributor](CONTRIBUTING.md)!
 
 ## RoadMap
-To find out what TotalCross world domination plans are, just click [here](https://learn.totalcross.com/roadmap).
+To find out what TotalCross world domination plans are, by clicking [here](https://learn.totalcross.com/roadmap).
 
 ### Where you can find us
 * [Docs](learn.totalcross.com);
