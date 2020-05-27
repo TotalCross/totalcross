@@ -265,6 +265,7 @@ if(UNIX AND NOT (DEFINED ANDROID_ABI OR APPLE))
     ${SOURCES}
     ${TC_SRCDIR}/nm/io/device/gpiod/posix/gpiodLib.c
     ${TC_SRCDIR}/nm/tcni/tcni.c
+    ${TC_SRCDIR}/nm/tcni/tcni_types.c				
   )
 endif(UNIX AND NOT (DEFINED ANDROID_ABI OR APPLE))
 

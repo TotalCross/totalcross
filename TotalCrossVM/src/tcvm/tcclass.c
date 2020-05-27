@@ -773,6 +773,14 @@ Type type2javaType(CharP type)
    }
 }
 
+TCClass getTargetClass(TCObject o)
+{
+   TCClass ret = o ? OBJ_CLASS(o) : null;
+   if (ret && strEq(ret->name, "java.lang.Class"))
+	  xmoveptr(&ret, ARRAYOBJ_START(Class_nativeStruct(o)));
+   return ret;
+}
+
 bool isSuperClass(TCClass s, TCClass t) // s instanceof t
 {
    int32 i;

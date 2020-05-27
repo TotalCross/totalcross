@@ -9,13 +9,6 @@
 
 TC_API void jlC_forName_s(NMParams p);
 
-static TCClass getTargetClass(TCObject o)
-{
-   TCClass ret = o ? OBJ_CLASS(o) : null;
-   if (ret && strEq(ret->name, "java.lang.Class"))
-	  xmoveptr(&ret, ARRAYOBJ_START(Class_nativeStruct(o)));
-   return ret;
-}
 void createClassObject(Context currentContext, CharP className, Type type, TCObject* ret, bool* isNew)
 {
    TCObject ptrObj=null;
