@@ -60,7 +60,7 @@ ls -l ~/Library/MobileDevice/Provisioning\ Profiles
 
 xcodebuild -workspace TotalCross.xcworkspace -scheme TotalCross archive -archivePath build/TotalCross.xcarchive CODE_SIGN_IDENTITY="Apple Development: Italo Medeiros Bruno" PROVISIONING_PROFILE="TotalCross_WildCard_Development" teamID=$TC_TEAM_ID -configuration Debug -quiet
 
-xcodebuild -exportArchive -archivePath build/TotalCross.xcarchive -exportPath build/TotalCross.ipa -exportOptionsPlist ExportOptions.plist
+xcodebuild -exportArchive -archivePath build/TotalCross.xcarchive -exportPath build -exportOptionsPlist ExportOptions.plist
 
 
 # Copy files to collect
