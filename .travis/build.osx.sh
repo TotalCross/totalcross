@@ -66,4 +66,4 @@ xcodebuild -exportArchive -archivePath build/TotalCross.xcarchive -exportPath bu
 # Copy files to collect
 mkdir -p /tmp/output/osx
 cp build/TotalCross.ipa /tmp/output/osx/
-cp build/TotalCross.xcarchive /tmp/output/osx/
+cp -R build/TotalCross.xcarchive /tmp/output/osx/
