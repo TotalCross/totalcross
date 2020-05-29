@@ -8,6 +8,7 @@
 #include "errno.h"
 
 TC_API void jncFCI_read(NMParams p) {
+#if defined(HEADLESS)
     TCObject fileChannel = p->obj[0];
     int32 fd = FileChannelImpl_nfd(fileChannel);
     int32 buffer;
@@ -17,9 +18,13 @@ TC_API void jncFCI_read(NMParams p) {
         return;
     }
     p->retI = buffer;
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
 }
 
 TC_API void jncFCI_read_Bii(NMParams p) {
+#if defined(HEADLESS)
     TCObject fileChannel = p->obj[0];
     TCObject byteArray = p->obj[1];
     int32 offset = p->i32[0];
@@ -42,9 +47,13 @@ TC_API void jncFCI_read_Bii(NMParams p) {
         return;
     }
     p->retI = ret;
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
 }
 
 TC_API void jncFCI_write_Bii(NMParams p) {
+#if defined(HEADLESS)
     TCObject fileChannel = p->obj[0];
     TCObject byteArray = p->obj[1];
     int32 offset = p->i32[0];
@@ -67,4 +76,7 @@ TC_API void jncFCI_write_Bii(NMParams p) {
         return;
     }
     p->retI = ret;
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
 }

@@ -119,7 +119,7 @@ cleanup:
         heapDestroy(heap);
     }
 #else
-    throwException(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
 #endif
 }
 
