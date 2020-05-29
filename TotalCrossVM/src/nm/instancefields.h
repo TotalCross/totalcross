@@ -428,4 +428,20 @@
 #define GpiodChip_handle(o)             *getInstanceFieldObject(o, "handle", "totalcross.io.device.gpiod.GpiodChip")
 #define GpiodLine_handle(o)             *getInstanceFieldObject(o, "handle", "totalcross.io.device.gpiod.GpiodLine")
 
+//java.nio.channels.FileChannelImpl
+#define FileChannelImpl_nfd(o)          FIELD_I32(o, 0)
+
+//java.io.FileInputStream
+#define FileInputStream_fileChannel(o)     FIELD_OBJ(o, OBJ_CLASS(o), 0)
+
+//java.io.FileOutputStream
+#define FileOutputStream_fileChannel(o)    FIELD_OBJ(o, OBJ_CLASS(o), 0)
+
+//java.lang.Process
+#define ProcessImpl_inputStream(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define ProcessImpl_outputStream(o)        FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define ProcessImpl_errorStream(o)         FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define ProcessImpl_pid(o)                 FIELD_I32(o, 0)
+
+
 #endif
