@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "Runtime.h"
+#if defined(HEADLESS)
 #include "cpproc.h"
+#endif
 #include "errno.h"
 #include <sys/types.h>
 
