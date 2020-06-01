@@ -1196,6 +1196,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\nm\lang\Runtime.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\nm\lang\String.c"
 					>
 				</File>

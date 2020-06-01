@@ -402,6 +402,12 @@
 		0F99631A22BBFCB0004B0602 /* YoutubePlayer.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F99631822BBFCB0004B0602 /* YoutubePlayer.c */; };
 		0F99631B22BBFCB0004B0602 /* YoutubePlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F99631922BBFCB0004B0602 /* YoutubePlayer.h */; };
 		0FAA49A71549D7B30039F4BF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FAA49A61549D7B30039F4BF /* UIKit.framework */; };
+		0FAF7773248582FF0017BC81 /* Process.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FAF7771248582FF0017BC81 /* Process.c */; };
+		0FAF7774248582FF0017BC81 /* Process.h in Headers */ = {isa = PBXBuildFile; fileRef = 0FAF7772248582FF0017BC81 /* Process.h */; };
+		0FAF777D248583420017BC81 /* FileChannelImpl.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FAF777B248583420017BC81 /* FileChannelImpl.c */; };
+		0FAF777E248583420017BC81 /* FileChannelImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 0FAF777C248583420017BC81 /* FileChannelImpl.h */; };
+		0FB08349248188A200563C9E /* Runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FB08347248188A100563C9E /* Runtime.c */; };
+		0FB0834A248188A200563C9E /* Runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 0FB08348248188A100563C9E /* Runtime.h */; };
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
 		0FBD3BD921A6CFCD0074F712 /* skia.h in Headers */ = {isa = PBXBuildFile; fileRef = 0FBD3BD721A6CFCD0074F712 /* skia.h */; };
 		0FBD3BDA21A6CFCD0074F712 /* skia.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FBD3BD821A6CFCD0074F712 /* skia.cpp */; };
@@ -851,6 +857,12 @@
 		0F99631822BBFCB0004B0602 /* YoutubePlayer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = YoutubePlayer.c; sourceTree = "<group>"; };
 		0F99631922BBFCB0004B0602 /* YoutubePlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YoutubePlayer.h; sourceTree = "<group>"; };
 		0FAA49A61549D7B30039F4BF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		0FAF7771248582FF0017BC81 /* Process.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Process.c; sourceTree = "<group>"; };
+		0FAF7772248582FF0017BC81 /* Process.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Process.h; sourceTree = "<group>"; };
+		0FAF777B248583420017BC81 /* FileChannelImpl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FileChannelImpl.c; sourceTree = "<group>"; };
+		0FAF777C248583420017BC81 /* FileChannelImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileChannelImpl.h; sourceTree = "<group>"; };
+		0FB08347248188A100563C9E /* Runtime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Runtime.c; sourceTree = "<group>"; };
+		0FB08348248188A100563C9E /* Runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Runtime.h; sourceTree = "<group>"; };
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
 		0FBD3BD721A6CFCD0074F712 /* skia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = skia.h; path = ../android/skia.h; sourceTree = "<group>"; };
 		0FBD3BD821A6CFCD0074F712 /* skia.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = skia.cpp; path = ../android/skia.cpp; sourceTree = "<group>"; };
@@ -1196,6 +1208,7 @@
 		0F8C8AB01549CFC700E0967F /* nm */ = {
 			isa = PBXGroup;
 			children = (
+				0FAF7779248583420017BC81 /* nio */,
 				0FE380562282353600E9B185 /* cielo */,
 				37530B771EEECEF2008D89DF /* notification */,
 				37430B771EEECEF2008D89DF /* firebase */,
@@ -1385,6 +1398,10 @@
 		0F8C8AE91549CFC700E0967F /* lang */ = {
 			isa = PBXGroup;
 			children = (
+				0FAF7771248582FF0017BC81 /* Process.c */,
+				0FAF7772248582FF0017BC81 /* Process.h */,
+				0FB08347248188A100563C9E /* Runtime.c */,
+				0FB08348248188A100563C9E /* Runtime.h */,
 				15E4ED10189C35510012D8ED /* Reflection.c */,
 				0F8C8AEA1549CFC700E0967F /* Class.c */,
 				0F8C8AEB1549CFC700E0967F /* Class_test.h */,
@@ -1952,6 +1969,23 @@
 			path = zlib;
 			sourceTree = "<group>";
 		};
+		0FAF7779248583420017BC81 /* nio */ = {
+			isa = PBXGroup;
+			children = (
+				0FAF777A248583420017BC81 /* channels */,
+			);
+			path = nio;
+			sourceTree = "<group>";
+		};
+		0FAF777A248583420017BC81 /* channels */ = {
+			isa = PBXGroup;
+			children = (
+				0FAF777B248583420017BC81 /* FileChannelImpl.c */,
+				0FAF777C248583420017BC81 /* FileChannelImpl.h */,
+			);
+			path = channels;
+			sourceTree = "<group>";
+		};
 		0FE380562282353600E9B185 /* cielo */ = {
 			isa = PBXGroup;
 			children = (
@@ -2155,6 +2189,7 @@
 				0F8C8D301549CFC700E0967F /* ServerSocket_c.h in Headers */,
 				0F8C8D311549CFC700E0967F /* Socket_c.h in Headers */,
 				0F8C8D321549CFC700E0967F /* CellInfo_c.h in Headers */,
+				0FAF777E248583420017BC81 /* FileChannelImpl.h in Headers */,
 				0F8C8D331549CFC700E0967F /* Dial_c.h in Headers */,
 				0F8C8D361549CFC700E0967F /* Dial_c.h in Headers */,
 				0F8C8D381549CFC700E0967F /* CellInfo_c.h in Headers */,
@@ -2164,6 +2199,7 @@
 				0F8C8D3D1549CFC700E0967F /* POutlook_test.h in Headers */,
 				0F8C8D3E1549CFC700E0967F /* Vm_c.h in Headers */,
 				0F8C8D411549CFC700E0967F /* Convert_test.h in Headers */,
+				0FB0834A248188A200563C9E /* Runtime.h in Headers */,
 				0F8C8D441549CFC700E0967F /* Registry_c.h in Headers */,
 				0F8C8D451549CFC700E0967F /* Vm_c.h in Headers */,
 				0F8C8D461549CFC700E0967F /* Registry_c.h in Headers */,
@@ -2278,6 +2314,7 @@
 				0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */,
 				0F7CBA0C1552CCB100E9BD43 /* nativeProcAddressesTC.h in Headers */,
 				3A11E08A15791A9D00F883EC /* childview.h in Headers */,
+				0FAF7774248582FF0017BC81 /* Process.h in Headers */,
 				3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */,
 				3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */,
 			);
@@ -2342,6 +2379,7 @@
 				0F8C8C5D1549CFC700E0967F /* bigint.c in Sources */,
 				0F8C8C621549CFC700E0967F /* crypto_misc.c in Sources */,
 				0F8C8C631549CFC700E0967F /* hmac.c in Sources */,
+				0FAF7773248582FF0017BC81 /* Process.c in Sources */,
 				0F8C8C641549CFC700E0967F /* loader.c in Sources */,
 				CEFA5148181EF24700B1B00A /* mainview.m in Sources */,
 				0F8C8C651549CFC700E0967F /* md2.c in Sources */,
@@ -2374,6 +2412,7 @@
 				0F8C8CA41549CFC700E0967F /* jccoefct.c in Sources */,
 				0F99630B22BBED8C004B0602 /* YoutubePlayerController.m in Sources */,
 				0F8C8CA51549CFC700E0967F /* jccolor.c in Sources */,
+				0FAF777D248583420017BC81 /* FileChannelImpl.c in Sources */,
 				0F8C8CA61549CFC700E0967F /* jcdctmgr.c in Sources */,
 				0F8C8CA71549CFC700E0967F /* jchuff.c in Sources */,
 				0F8C8CA91549CFC700E0967F /* jcinit.c in Sources */,
@@ -2450,6 +2489,7 @@
 				0F8C8D281549CFC700E0967F /* ServerSocket.c in Sources */,
 				0F8C8D2A1549CFC700E0967F /* Socket.c in Sources */,
 				0F8C8D2C1549CFC700E0967F /* ssl_SSL.c in Sources */,
+				0FB08349248188A200563C9E /* Runtime.c in Sources */,
 				0F8C8D341549CFC700E0967F /* CellInfo.c in Sources */,
 				0FE380612282354400E9B185 /* PrinterManager.c in Sources */,
 				0F8C8D351549CFC700E0967F /* Dial.c in Sources */,
