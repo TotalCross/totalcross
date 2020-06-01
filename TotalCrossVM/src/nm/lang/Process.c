@@ -9,6 +9,7 @@
 #include <signal.h>
 
 TC_API void jlPI_waitFor(NMParams p) {
+#if defined(HEADLESS)
     TCObject process = p->obj[0];
     int status;
     pid_t pid;
@@ -42,9 +43,13 @@ TC_API void jlPI_waitFor(NMParams p) {
 
     /* Done */
     p->retI = status;
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
 }
 
 TC_API void jlPI_exitValue(NMParams p) {
+#if defined(HEADLESS)
     TCObject process = p->obj[0];
     int status;
     pid_t pid;
@@ -79,11 +84,18 @@ TC_API void jlPI_exitValue(NMParams p) {
 
     /* Done */
     p->retI = status;
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
 }
 
 TC_API void jlPI_destroy(NMParams p) {
+#if defined(HEADLESS)
     TCObject process = p->obj[0];
     int pid = ProcessImpl_pid(process);
     int err;
     err = cpproc_kill(pid, SIGKILL);
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
 }
