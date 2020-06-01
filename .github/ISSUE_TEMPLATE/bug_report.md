@@ -1,3 +1,12 @@
+---
+name: Bug report
+about: Create a bug report to help us improve
+title: ''
+labels: bug
+assignees: ''
+
+---
+
 ## Issue Title
 A clear and objective resume of the bug.
 
@@ -24,8 +33,8 @@ If applicable, add screenshots or videos to help explain your problem.
 Please complete the following information:
  - Device: [e.g. Raspberry Pi 3 model b+]
  - OS: [e.g. Linux Raspbian]
- - OS Version [e.g. 10]
- - TotalCross Version [e.g. 6.0.4]
+ - OS Version: [e.g. 10]
+ - TotalCross Version: [e.g. 6.0.4]
 
 ## Additional context
 Add any other context about the problem here.
