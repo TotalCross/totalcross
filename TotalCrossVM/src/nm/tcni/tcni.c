@@ -1,8 +1,13 @@
 #include "tcni.h"
 #include "tcvm.h"
+
+#ifdef HEADLESS
+
 #include "tcni_types.h"
 #include <ffi.h>
 #include <dlfcn.h>
+
+#endif
 
 Hashtable validTypes = {0};
 
@@ -32,10 +37,12 @@ TCObject callArrayReturnFunc (char *className, int argsLen, void **args, ffi_typ
         u_int8_t *aux = ARRAYOBJ_START(ret);
         xmemmove(aux, pointer, size);
     }
-    return ret; 
+    return ret;
+
 }
 
 TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
+#ifdef linux
     init(&validTypes);
     if(p->obj[0] == NULL) {
         throwNullArgumentException(p->currentContext, "module");
@@ -188,5 +195,8 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
         if (ret != NULL) {
             setObjectLock(p->retO = ret, UNLOCKED);
         }
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on Linux");
+#endif
 }
 

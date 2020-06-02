@@ -162,7 +162,7 @@ TCObject createFileStream(Context context, const int streamType, int fd) {
  *  returns: void
  */
 TC_API void jlR_loadLibrary_s(NMParams p) {
-    
+#ifdef linux
     TCObject libnameStrObj = p->obj[1];
     if(!libnameStrObj) {
         throwException(p->currentContext, NullPointerException, "libname cannot be null.");
@@ -196,4 +196,7 @@ TC_API void jlR_loadLibrary_s(NMParams p) {
     
     cleanup:
         xfree(libname);
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on Linux");
+#endif
 }
