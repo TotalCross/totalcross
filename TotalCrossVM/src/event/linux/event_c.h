@@ -23,7 +23,7 @@ bool privateIsEventAvailable()
 
 void handleFingerTouchEvent(SDL_Event event) {
    int width = 0, height = 0;
-   SDL_GetWindowSize(window, &width, &height);
+   TCSDL_GetWindowSize(&screen, &width, &height);
    int32 x = event.tfinger.x * width, y = event.tfinger.y * height;
    switch (event.type) {
       case SDL_FINGERDOWN: 
@@ -187,11 +187,11 @@ void privatePumpEvent(Context currentContext)
       if(event.type == SDL_WINDOWEVENT) {
          if(event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
             int width, height;
-            SDL_GetWindowSize(window, &width, &height);
+            TCSDL_GetWindowSize(&screen, &width, &height);
             // screenChange(mainContext, width, height,0,0,false);
             printf("Exe log: size changed!\n");
          }
-         presentSDL();
+         TCSDL_Present();
       }
       if(event.type >= SDL_FINGERDOWN && event.type <= SDL_FINGERMOTION) { // Finger Touch Events
          handleFingerTouchEvent(event);

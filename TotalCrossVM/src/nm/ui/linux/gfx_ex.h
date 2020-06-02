@@ -11,18 +11,24 @@
 #define SETPIXEL32(r,g,b) (((r) << 16) | ((g) << 8) | (b))           // 00RRGGBB
 #define SETPIXEL565(r,g,b) ((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3))) // bits RRRRRGGGGGGBBBBB
 
-#ifndef HEADLESS
+#ifdef HEADLESS
+#include "SDL2/SDL.h"
+#else
 #include <directfb.h>
 #endif
 
-typedef struct
+typedef struct TScreenSurfaceEx
 {
-#ifndef HEADLESS
+#ifdef HEADLESS
+   SDL_Window *window;
+   SDL_Renderer *renderer;
+   SDL_Texture *texture;
+#else
    IDirectFB *dfb;
    IDirectFBSurface *primary;
    IDirectFBDisplayLayer *layer;
    IDirectFBEventBuffer *events;
 #endif
-} TScreenSurfaceEx, *ScreenSurfaceEx;
+} *ScreenSurfaceEx, TScreenSurfaceEx;
 
 #endif
