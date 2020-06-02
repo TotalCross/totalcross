@@ -92,13 +92,13 @@ std::vector<SkBitmap> textures;
 
 std::map<std::string, int> typefaceIndexMap;
 
-void initSkia(int w, int h, void * pixels, int pitch)
+void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
 #ifdef HEADLESS
     bitmap.installPixels(SkImageInfo::Make(w, 
                                            h, 
-                                           (SkColorType)colorType(TCSDL_PixelFormat()), kPremul_SkAlphaType), (Uint32 *)pixels, pitch);
+                                           (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), (Uint32 *)pixels, pitch);
     canvas = new SkCanvas(bitmap);
 #else
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
@@ -580,44 +580,21 @@ extern "C" JNIEXPORT void JNICALL Java_totalcross_Launcher4A_drawIntoBitmap(JNIE
 }
 #endif
 
-int colorType(int index) {
-    switch (index) {
-        case  0 : return kUnknown_SkColorType  ;
-        case  1 : return kUnknown_SkColorType  ;
-        case  2 : return kUnknown_SkColorType  ;
-        case  3 : return kUnknown_SkColorType  ;
-        case  4 : return kUnknown_SkColorType  ;
-        case  5 : return kUnknown_SkColorType  ;
-        case  6 : return kUnknown_SkColorType  ;
-        case  7 : return kUnknown_SkColorType  ;
-        case  8 : return kUnknown_SkColorType  ;
-        case  9 : return kUnknown_SkColorType  ;
-        case 10 : return kARGB_4444_SkColorType;
-        case 11 : return kUnknown_SkColorType  ;
-        case 12 : return kUnknown_SkColorType  ;
-        case 13 : return kUnknown_SkColorType  ;
-        case 14 : return kUnknown_SkColorType  ;
-        case 15 : return kRGBA_8888_SkColorType;
-        case 16 : return kUnknown_SkColorType  ;
-        case 17 : return kUnknown_SkColorType  ;
-        case 18 : return kRGB_565_SkColorType  ;
-        case 19 : return kUnknown_SkColorType  ;
-        case 20 : return kUnknown_SkColorType  ;
-        case 21 : return kUnknown_SkColorType  ;
-        case 22 : return kBGRA_8888_SkColorType;
-        case 23 : return kRGBA_8888_SkColorType;
-        case 24 : return kBGRA_8888_SkColorType;
-        case 25 : return kBGRA_8888_SkColorType;
-        case 26 : return kUnknown_SkColorType  ;
-        case 27 : return kRGBA_8888_SkColorType;
-        case 28 : return kUnknown_SkColorType  ;
-        case 29 : return kBGRA_8888_SkColorType;
-        case 30 : return kUnknown_SkColorType  ;
-        case 31 : return kUnknown_SkColorType  ;
-        case 32 : return kUnknown_SkColorType  ;
-        case 33 : return kUnknown_SkColorType  ;
-        case 34 : return kUnknown_SkColorType  ;
-        case 35 : return kUnknown_SkColorType  ;
-        default : return kUnknown_SkColorType  ;
+#ifdef HEADLESS
+int32 colorType(uint32 pixelformat) {
+    if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED16) {
+        if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB) {
+            if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_565) {
+                return kRGB_565_SkColorType;
+            }
+        }
+    } else if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED32) {
+        if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB) {
+            if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_8888) {
+                return kBGRA_8888_SkColorType;
+            }
+        }
     }
+    return kUnknown_SkColorType;
 }
+#endif

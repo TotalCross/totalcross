@@ -17,8 +17,11 @@ void privateScreenChange(int32 w, int32 h)
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
+#ifdef __arm__
+   *(tcSettings.isFullScreenPtr)=true;
+#endif
 #ifdef SKIA_H
-   TCSDL_Init(screen, exeName);
+   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
 #elif !defined HEADLESS
    DFBResult err;
    IDirectFB *_dfb;
@@ -68,7 +71,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
 #ifdef SKIA_H
-   initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch);
+   initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch, screen->pixelformat);
 #endif
    return true;
 }

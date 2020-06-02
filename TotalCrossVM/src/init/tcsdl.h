@@ -14,13 +14,11 @@ extern "C" {
     #include "SDL2/SDL.h"
     #include "GraphicsPrimitives.h"
 
-    extern SDL_Window *window;
-
-    bool TCSDL_Init(ScreenSurface screen, const char* title);
+    bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
     void TCSDL_Present();
     void TCSDL_Destroy(ScreenSurface screen);
-    int TCSDL_PixelFormat();
+    void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height);
 
 #ifdef __cplusplus
 }
