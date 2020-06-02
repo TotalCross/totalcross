@@ -11,7 +11,7 @@ assignees: ''
 A clear and objective resume of the bug.
 
 ## Describe the bug
-A clear and concise description of what the bug is.
+A clear and concise description of what the bug is and the actual behavior.
 
 ## To Reproduce
 To reproduce the error, the code must also be sent. It can be the origin of your application or an example (as long as it faithfully reproduces the error you are getting in the original application). 
