@@ -5,83 +5,168 @@
 
 #define DISPLAY_INDEX 0
 #define NO_FLAGS 0
+#define IS_NULL(x)      ((x) == NULL)
+#define NOT_SUCCESS(x)  ((x) != 0)
+#define SUCCESS(x)      ((x) == 0)
 
 #include "tcsdl.h"
-
-SDL_Window *window;
-SDL_Surface *surfaceSDL;
 
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 
-int initSDL(ScreenSurface screen) {
+/*
+ * Init steps to create a window and texture to Skia handling
+ *
+ * Args:
+ * - ScreenSurface from TotalCross globals 
+ * 
+ * Return:
+ * - false on failure
+ * - true on success 
+ */
+bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
+  SDL_Window *window;
   // Only init video (without audio)
-  if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-    printf("SDL_Init failed: %s\n", SDL_GetError()); 
+  if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
+    printf("SDL_Init failed: %s\n", SDL_GetError());
+    return false;
   }
 
   // Get the desktop area represented by a display, with the primary
-  // display located at 0,0 based on rect allocated on initial position
-  SDL_Rect rect;
-  if(SDL_GetDisplayBounds(DISPLAY_INDEX, &rect) < 0 ) {
+  // display located at 0,0 based on viewport allocated on initial position
+  int (*TCSDL_GetDisplayBounds)(int, SDL_Rect*) = 
+#ifdef __arm__                  
+    &SDL_GetDisplayBounds;
+#else                           
+    &SDL_GetDisplayUsableBounds;
+#endif
+
+  SDL_Rect viewport;
+  if(NOT_SUCCESS(TCSDL_GetDisplayBounds(DISPLAY_INDEX, &viewport))) {
     printf("SDL_GetDisplayBounds failed: %s\n", SDL_GetError());
+    return false;
   }
+
+  // Adjust height on desktop, it should not affect fullscreen (y should be 0)
+  viewport.h -= viewport.y;
 
   // Create the window
-  window = SDL_CreateWindow("TotalCross SDK", 
-                            SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED, 
-                            rect.w, 
-                            rect.h, 
-                            SDL_WINDOW_FULLSCREEN);
-  if(window == NULL) {
+  if(IS_NULL(window = SDL_CreateWindow(
+                                title, 
+                                viewport.x,
+                                viewport.y, 
+                                viewport.w, 
+                                viewport.h, 
+                                (fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_MAXIMIZED)
+                                ))) {
     printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
+    return false;
   }
 
-  // Create a 2D rendering context for a window.
-  renderer = SDL_CreateRenderer(window, -1, NO_FLAGS);
-  if(renderer == NULL) {
+  // Get the size of the window's client area
+  SDL_GetWindowSize(window, &viewport.w, &viewport.h);
+
+  // Create a 2D rendering context for a window
+  if(IS_NULL(renderer = SDL_CreateRenderer(window, -1, NO_FLAGS))) {
     printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
+    return false;
   }
 
   // Get renderer driver information
   SDL_RendererInfo rendererInfo;
-  SDL_GetRendererInfo(renderer, &rendererInfo);
- 
-  // Set render driver 
-  SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name);
-  
-  // Get the SDL surface associated with the window.
-  // MUST BE DONE AFTER THE RENDERER
-  surfaceSDL = SDL_GetWindowSurface(window);
-  if(surfaceSDL == NULL) {
-    printf("SDL_GetWindowSurface failed: %s\n", SDL_GetError());
+  if (NOT_SUCCESS(SDL_GetRendererInfo(renderer, &rendererInfo))) {
+    printf("SDL_GetRendererInfo failed: %s\n", SDL_GetError());
+    return 0;
+  } else {
+    // Set render driver 
+    if ((SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name)) == SDL_FALSE) {
+      printf("SDL_SetHint failed: %s\n", SDL_GetError());
+      return false;
+    }
   }
 
   // Set renderer dimensions
-  SDL_GetRendererOutputSize(renderer, &screen->screenW, &screen->screenH);
-	
+  if (NOT_SUCCESS(SDL_GetRendererOutputSize(
+                                renderer, 
+                                &viewport.w, 
+                                &viewport.h))) {
+    printf("SDL_GetRendererOutputSize failed: %s\n", SDL_GetError());
+    return false;
+  }
+  
+  // Get window pixel format
+  Uint32 windowPixelFormat;
+  if (SDL_PIXELFORMAT_UNKNOWN == (windowPixelFormat = SDL_GetWindowPixelFormat(window))) {
+    printf("SDL_GetWindowPixelFormat failed: %s\n", SDL_GetError());
+    return false;
+  }
+
   // MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
-  texture = SDL_CreateTexture(renderer, surfaceSDL->format->format, SDL_TEXTUREACCESS_STREAMING, (int)screen->screenW, (int)screen->screenH);
+  if (IS_NULL(texture = SDL_CreateTexture(
+                              renderer, 
+                              windowPixelFormat, 
+                              SDL_TEXTUREACCESS_STREAMING, 
+                              viewport.w, 
+                              viewport.h))) {
+    printf("SDL_CreateTexture failed: %s\n", SDL_GetError());
+    return false;
+  }
+  // Get pixel format struct 
+  SDL_PixelFormat *pixelformat;
+  if (IS_NULL(pixelformat = SDL_AllocFormat(windowPixelFormat))) {
+    printf("SDL_AllocFormat failed: %s\n", SDL_GetError());
+    return false;
+  }
 
+  // Adjusts screen width to the viewport
+  screen->screenW = viewport.w;
+  // Adjusts screen height to the viewport
+  screen->screenH = viewport.h;
   // Adjusts screen's BPP
-  screen->bpp = surfaceSDL->format->BitsPerPixel;
-  // Adjusts screen's pixel format
-  screen->pixels = (uint8*)surfaceSDL->pixels;
+  screen->bpp = pixelformat->BitsPerPixel;
   // Set surface pitch 
-  screen->pitch = surfaceSDL->pitch;
+  screen->pitch = pixelformat->BytesPerPixel * screen->screenW;
+  // pixel order
+  screen->pixelformat = windowPixelFormat;
+  // Adjusts screen's pixel surface
+  if (IS_NULL(screen->pixels = (uint8*) malloc(screen->pitch * screen->screenH))) {
+    printf("Failed to alloc %d bytes for pixel surface\n", (screen->pitch * screen->screenH));
+    return false;
+  }
 
-  return 1;
+  if (IS_NULL(screen->extension = (ScreenSurfaceEx) malloc(sizeof(TScreenSurfaceEx)))) {
+    free(screen->pixels);
+    printf("Failed to alloc TScreenSurfaceEx of %l bytes\n", sizeof(TScreenSurfaceEx));
+    return false; 
+  }
+  SCREEN_EX(screen)->window = window;
+  SCREEN_EX(screen)->renderer = renderer;
+  SCREEN_EX(screen)->texture = texture;
+
+  SDL_FreeFormat(pixelformat);
+
+  return true;
 }
 
-void updateScreenSDL(int w, int h, int pitch,void *pixels) {
+/*
+ * Update the given texture rectangle with new pixel data.
+ * 
+ * # MUST BE REVIEWED
+ * 
+ * SDL_UpdateTexture it's too slow and our implementation 
+ * depends on it
+ */
+void TCSDL_UpdateTexture(int w, int h, int pitch, void *pixels) {
   // Update the given texture rectangle with new pixel data.
   SDL_UpdateTexture(texture, NULL, pixels, pitch);
-  // Call SDL render present 
-  presentSDL();
+  // Call SDL render present
+  TCSDL_Present();
 }
 
-void presentSDL() {
+/*
+ * Update the screen with rendering performed
+ */
+void TCSDL_Present() {
   // Copy a portion of the texture to the current rendering target
   SDL_RenderCopy(renderer, texture, NULL, NULL);
   // Update the screen with rendering performed
@@ -90,43 +175,23 @@ void presentSDL() {
   SDL_RenderClear(renderer);
 }
 
-int pixelFormatSDL (int pixelFormat) {
-  switch (pixelFormat) { 
-    case SDL_PIXELFORMAT_UNKNOWN    	: return  0;
-    case SDL_PIXELFORMAT_INDEX1LSB	  : return  1;
-    case SDL_PIXELFORMAT_INDEX1MSB		: return  2;
-    case SDL_PIXELFORMAT_INDEX4LSB		: return  3;
-    case SDL_PIXELFORMAT_INDEX4MSB	  : return  4;
-    case SDL_PIXELFORMAT_INDEX8		    : return  5;
-    case SDL_PIXELFORMAT_RGB332		    : return  6;
-    case SDL_PIXELFORMAT_RGB444		    : return  7;
-    case SDL_PIXELFORMAT_RGB555		    : return  8;
-    case SDL_PIXELFORMAT_BGR555	      : return  9;
-    case SDL_PIXELFORMAT_ARGB4444	    : return 10;
-    case SDL_PIXELFORMAT_RGBA4444	    : return 11;
-    case SDL_PIXELFORMAT_ABGR4444		  : return 12;
-    case SDL_PIXELFORMAT_BGRA4444	    : return 13;
-    case SDL_PIXELFORMAT_ARGB1555	    : return 14;
-    case SDL_PIXELFORMAT_RGBA5551	    : return 15;
-    case SDL_PIXELFORMAT_ABGR1555	    : return 16;
-    case SDL_PIXELFORMAT_BGRA5551	    : return 17;
-    case SDL_PIXELFORMAT_RGB565		    : return 18;
-    case SDL_PIXELFORMAT_BGR565	      : return 19;
-    case SDL_PIXELFORMAT_RGB24		    : return 20;
-    case SDL_PIXELFORMAT_BGR24	      : return 21;
-    case SDL_PIXELFORMAT_RGB888	      : return 22;
-    case SDL_PIXELFORMAT_RGBX8888   	: return 23;
-    case SDL_PIXELFORMAT_BGR888	      : return 24;
-    case SDL_PIXELFORMAT_BGRX8888	    : return 25;
-    case SDL_PIXELFORMAT_ARGB8888	    : return 26;
-    case SDL_PIXELFORMAT_RGBA8888		  : return 27;
-    case SDL_PIXELFORMAT_ABGR8888		  : return 28;
-    case SDL_PIXELFORMAT_BGRA8888	    : return 29;
-    case SDL_PIXELFORMAT_ARGB2101010	: return 30;
-    case SDL_PIXELFORMAT_YV12		      : return 31;
-    case SDL_PIXELFORMAT_IYUV		      : return 32;
-    case SDL_PIXELFORMAT_YUY2		      : return 33;
-    case SDL_PIXELFORMAT_UYVY		      : return 34;
-    case SDL_PIXELFORMAT_YVYU		      : return 35;
+/*
+ * Destroy all SDL allocated variables
+ */
+void TCSDL_Destroy(ScreenSurface screen) {
+  if (screen->pixels != NULL) {
+    free(screen->pixels);
   }
+
+  if (SCREEN_EX(screen) != NULL) {
+    SDL_DestroyTexture(SCREEN_EX(screen)->texture);
+    SDL_DestroyRenderer(SCREEN_EX(screen)->renderer);
+    SDL_DestroyWindow(SCREEN_EX(screen)->window);
+    free(SCREEN_EX(screen));
+  }
+  SDL_Quit();
+}
+
+void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height) {
+  SDL_GetWindowSize(SCREEN_EX(screen)->window, width, height);
 }

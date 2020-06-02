@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #include "gfx_ex.h"
 
 void privateScreenChange(int32 w, int32 h)
@@ -19,8 +17,11 @@ void privateScreenChange(int32 w, int32 h)
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
+#ifdef __arm__
+   *(tcSettings.isFullScreenPtr)=true;
+#endif
 #ifdef SKIA_H
-   initSDL(screen);
+   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
 #elif !defined HEADLESS
    DFBResult err;
    IDirectFB *_dfb;
@@ -70,7 +71,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
 #ifdef SKIA_H
-   initSkia(screen->screenW, screen->screenH);
+   initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch, screen->pixelformat);
 #endif
    return true;
 }
@@ -96,6 +97,8 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
       SCREEN_EX(screen)->layer->Release (SCREEN_EX(screen)->layer);
    if (SCREEN_EX(screen)->primary)
       SCREEN_EX(screen)->primary->Release (SCREEN_EX(screen)->primary);
+#else
+   TCSDL_Destroy(screen);
 #endif
 }
 

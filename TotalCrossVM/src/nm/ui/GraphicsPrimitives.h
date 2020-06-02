@@ -20,10 +20,8 @@
  #include "darwin/gfx_ex.h"
 #elif defined(ANDROID)
  #include "android/gfx_ex.h"
-#elif defined(linux)
- #ifdef TOTALCROSS
-  #include "linux/gfx_ex.h"
- #endif
+#elif defined(linux) || defined HEADLESS
+ #include "linux/gfx_ex.h"
 #endif
 #include "xtypes.h"
 #ifdef __cplusplus
@@ -65,6 +63,7 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    int32 hRes, vRes;
    void *extension; // platform specific data
    int32 shiftY;
+   uint32 pixelformat;
 } *ScreenSurface, TScreenSurface;
 
 

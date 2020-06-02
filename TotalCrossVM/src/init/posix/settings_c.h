@@ -486,7 +486,11 @@ bool fillSettings(Context currentContext)
    *getStaticFieldObject(currentContext, settingsClass, "platform") = *getStaticFieldObject(currentContext, settingsClass, platform); //flsobral@tc126_38: fixed implementation of Settings.platform for iPhone and iPad.
    *tcSettings.virtualKeyboardPtr = *tcSettings.fingerTouchPtr = 1;
 #elif defined linux
+#if defined __arm__
+   platform = "Linux_ARM";
+#else
    platform = "Linux";
+#endif
    *tcSettings.virtualKeyboardPtr = 0;
 #else
 #error "not supported platform"

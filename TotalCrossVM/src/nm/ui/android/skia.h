@@ -16,8 +16,10 @@ typedef unsigned int uint32;
 typedef uint32 Pixel32; // 32 bpp
 typedef Pixel32 Pixel;
 
-int colorType(int index);
-void initSkia(int w, int h);
+#ifdef HEADLESS
+int32 colorType(uint32 pixelformat);
+#endif
+void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
 void flushSkia();
 
 int skia_makeTypeface(char* name, void *data, int32 size);
