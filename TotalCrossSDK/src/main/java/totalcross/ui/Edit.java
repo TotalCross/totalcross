@@ -1402,7 +1402,9 @@ protected int gap;
   private void showVirtualKeyboard() {
     if (!Settings.enableVirtualKeyboard) {
       ;
-    } else if (virtualKeyboard && editable && !"".equals(validChars)) {
+    } else if (virtualKeyboard && editable && !"".equals(validChars) &&
+      (Settings.platform.equals(Settings.ANDROID) || Settings.isIOS() || Settings.isWindowsCE())
+    ) {
       if (Settings.customKeyboard != null) {
         Settings.customKeyboard.show(this, validChars);
       } else {
@@ -1753,7 +1755,7 @@ protected int gap;
           if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos) {
             showClipboardMenu();
           } else if (wasFocusInOnPenDown || !Window.isScreenShifted()) {
-              popupKCC();
+            popupKCC();
           }
         }
       }
