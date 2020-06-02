@@ -1219,7 +1219,9 @@ public class Edit extends Control implements TextControl, TimerListener {
   private void showVirtualKeyboard() {
     if (!Settings.enableVirtualKeyboard) {
       ;
-    } else if (virtualKeyboard && editable && !"".equals(validChars)) {
+    } else if (virtualKeyboard && editable && !"".equals(validChars) &&
+      (Settings.platform.equals(Settings.ANDROID) || Settings.isIOS() || Settings.isWindowsCE())
+    ) {
       if (Settings.customKeyboard != null) {
         Settings.customKeyboard.show(this, validChars);
       } else {
