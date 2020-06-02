@@ -27,7 +27,7 @@ Depending on the case, it is also important to describe the steps to reproduce t
 A clear and concise description of what you expected to happen.
 
 ## Screenshots or videos
-If applicable, add screenshots or videos to help explain your problem.
+If applicable, add some screenshots and/or videos to help to explain your problem.
 
 ## Devices:
 Please complete the following information:
