@@ -136,6 +136,8 @@ public final class Settings {
   public static final String ANDROID = "Android";
   /** Underlying platform is iPad. To be used with the <code>platform</code> member. */
   public static final String IPAD = "iPad";
+  /** Underlying platform is Linux ARM. To be used with the <code>platform</code> member. */  
+  public static final String LINUX_ARM = "Linux_ARM";
 
   /** Field that returns the current platform name.
    * The possible return values are the constants described below.
@@ -150,6 +152,7 @@ public final class Settings {
    * @see #ANDROID      
    * @see #isWindowsCE()
    * @see #isIOS()
+   * @see #LINUX_ARM
    */
   public static String platform;
 
