@@ -36,8 +36,9 @@ The TotalCross SDK, comprised by two main components:
 * TCVM. - Totalcross Virtual Machine, originally idealized as a Master's Thesis, has been built and improved over 10 years. It's log-based (Java) architecture, bytecode "itself with its own folders" for the most frequent and implemented **almost 100% with C guarantees performance equivalent to native development**. To read more about the TCVM click here.
 
 ## Community
-TotalCross's goal is to build a large and supportive community composed by enthusiastic mobile and embedded developers. You can be part of the [telegram](https://t.me/totalcrosscommunity) and here on [GitHub](https://github.com/totalcross/totalcross).
-### Developing for TotalCross
+The TotalCross's big dream is to build a large and supportive community of enthusiastic mobile and embedded developers. You can be part of the [telegram](https://t.me/totalcrosscommunity) and here on [GitHub](https://github.com/totalcross/totalcross).
+
+### Be a TotalCross contributor
 
 In order to create a better tool and develop GUI for embedded systems and develop cross platform applications, it helps us in the community, so we have separated some challenges for those who want to contribute:
 
@@ -57,6 +58,13 @@ In order to create a better tool and develop GUI for embedded systems and develo
     * Pointing out improvements needed in our documentation and suggest new themes by opening [issues](https://github.com/TotalCross/totalcross/issues).
 
 ##### 👉 [See how to be a contributor](CONTRIBUTING.md)!
+
+### Your contributors
+These people have helped make TotalCross better with rich discusses, bug reports, open issues, and making public content (videos, articles and etc):
+* [@otavio](https://github.com/otavio)
+* [@jeffque](https://github.com/jeffque)
+* [@microhobby](https://github.com/microhobby)
+
 
 ## RoadMap
 To find out what TotalCross world domination plans are, by clicking [here](https://learn.totalcross.com/roadmap).
