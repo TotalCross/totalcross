@@ -152,7 +152,7 @@ bool initGLES(ScreenSurface screen)
 	    glStencilMask(0xffffffff);
 	    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	
-   initSkia(width, height);
+   initSkia(width, height, NULL, screen->pitch, screen->pixelformat);
 
    return true;
 }
@@ -203,7 +203,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    screen->pixels = (uint8*)1;
  
 #ifdef SKIA_H
-   initSkia(screen->screenW, screen->screenH);
+   initSkia(screen->screenW, screen->screenH, NULL, screen->pitch, screen->pixelformat);
 #endif
    
    return screen->pixels != null;
