@@ -21,7 +21,7 @@
 ## What is TotalCross?
 TotalCross is tools to make easy and fast GUI creation:
  
-* KnowCode:  A computer vision project to help developers to build their screen faster based on image made by design using a library to allow run android XML UI + TotalCross SDK on Linux Arm, iOS, Android and more;
+* [KnowCode](https://github.com/TotalCross/KnowCodeXML):  A computer vision project that aims to help developers build their screens faster based on image made by designers and generate totocross screens ready to run on Android, iOS and Linux ARM devices
 * TotalCross SDK (or just TotalCross): Is an open source and free GUI Creator for embedded systems and a framework for developing cross-platform applications for Android, iOS, WinCE, Windows and desktop, Linux desktop and Linux ARM using Kotlin or Java or any Java Based language.
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
