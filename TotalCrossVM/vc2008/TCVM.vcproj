@@ -1826,6 +1826,14 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="tcni"
+				>
+				<File
+					RelativePath="..\..\src\nm\tcni\tcni.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="ZLib"
