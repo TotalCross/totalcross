@@ -6,6 +6,9 @@
 #include "Runtime.h"
 #if defined(HEADLESS)
 #include "cpproc.h"
+#include <sys/types.h>
+#include "errno.h"
+#include <dlfcn.h>
 #endif
 #include "errno.h"
 #include <sys/types.h>
