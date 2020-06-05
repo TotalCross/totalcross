@@ -1,7 +1,7 @@
 #include "tcni.h"
 #include "tcvm.h"
 
-#ifdef HEADLESS
+#if defined(linux) && !defined(darwin)
 
 #include "tcni_types.h"
 #include <ffi.h>
@@ -11,38 +11,8 @@
 
 Hashtable validTypes = {0};
 
-
-TCObject callArrayReturnFunc (char *className, int argsLen, void **args, ffi_type **argTypes, void * func, NMParams p) {
-    TCObject ret = NULL;
-    ffi_cif cif;
-    // set array size as first argument
-    argTypes[0] = &ffi_type_pointer;
-    int size = 0;
-    int *size_p = &size;
-    args[0] = &size_p; 
-
-    ffi_status status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, argsLen, &ffi_type_pointer, argTypes);
-    if (status != FFI_OK) {
-        throwException(p->currentContext, RuntimeException, "failed to prepare cif from libffi");
-        return NULL;
-    }
-    // prepare to call
-    void *pointer = NULL;
-    ffi_call(&cif, FFI_FN(func), &pointer, args);
-
-    if(size > 0 ) {
-        TCNIType *type = htGetPtr(&validTypes, hashCode(className));
-        int len = size/type->size; // number of elements of the java array
-        ret = createArrayObject(p->currentContext, type->name, len);
-        u_int8_t *aux = ARRAYOBJ_START(ret);
-        xmemmove(aux, pointer, size);
-    }
-    return ret;
-
-}
-
 TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
-#ifdef linux
+#if defined(linux) && !defined(darwin)
     init(&validTypes);
     if(p->obj[0] == NULL) {
         throwNullArgumentException(p->currentContext, "module");
@@ -65,16 +35,14 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
     IF_HEAP_ERROR(heap)
     {
         throwException(p->currentContext, OutOfMemoryError, NULL);
-        goto cleanup;
+//        goto cleanup;
     }
 
     // for static calls args begin from 0
     char* module = String2CharPHeap(p->obj[0], heap);
     char* method = String2CharPHeap(p->obj[1], heap);
-    printf("method: %s\n", method);
-    
-    char * className = getTargetClass(p->obj[2])->name;
-    printf("class name: %s\n", className);
+    char * className = getTargetJavaClass(p->obj[2])->name;
+
     TCNIType *tc_type = (TCNIType*)htGetPtr(&validTypes, hashCode(className));
     if(!tc_type) {
         throwException(
@@ -82,10 +50,8 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
             RuntimeException, 
             "Invalid type for return."
             );
+        goto cleanup;
     }
-    bool isReturnTypeArr = className[0] == '['; // arrays class name starts with [
-    bool isReturnTypeVoid = strEq(className, "java.lang.Void");
-    printf("is return type arr: %s\n", isReturnTypeArr ? "true" : "false");
     void* handle = NULL;
     ffi_type **argTypes = NULL;
     void **args = NULL;
@@ -117,7 +83,7 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
     }
 
     int32 argArrLen = 0;
-    if(isReturnTypeArr || (p->obj[3] && ARRAYOBJ_LEN(p->obj[3]) > 1)) { // if there is some arg 
+    if(tc_type->is_array || (p->obj[3] && ARRAYOBJ_LEN(p->obj[3]) > 1)) { // if there is some arg 
         TCObject *tcArgs = NULL;
         if(p->obj[3] && ARRAYOBJ_LEN(p->obj[3]) > 1) {
             tcArgs = ARRAYOBJ_START(p->obj[3]);
@@ -126,7 +92,7 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
         if(tcArgs) {
             argArrLen = ARRAYLEN(tcArgs);
         }
-        if(isReturnTypeArr)  { // increase args size and reserves first  argument to the array length
+        if(tc_type->is_array)  { // increase args size and reserves first  argument to the array length
             argArrLen++;
             i++;
         }
@@ -138,7 +104,6 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
             TCObject o = tcArgs[i];
             args[i] = NULL;
             if(o != NULL) {
-                printf("arg tc type: %s\n", OBJ_CLASS(o)->name);
                 TCNIType *arg_tc_type = htGetPtr(&validTypes, hashCode(OBJ_CLASS(o)->name));
                 if(arg_tc_type == NULL) {
                     throwException(p->currentContext, RuntimeException, "Invalid type. Accepted types are: String, int, double and float.");
@@ -154,42 +119,36 @@ TC_API void tnTCNI_invokeMethod_sscO (NMParams p) {
             
         }
     }
-    printf("return type: %s\n", className);
-    // Describe the interface of add_data to libffi.
-    if(isReturnTypeVoid) {
-        ffi_cif cif;
-        ffi_status status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, argArrLen, &ffi_type_void, argTypes);
-        if (status != FFI_OK) {
-            throwException(p->currentContext, RuntimeException, "failed to prepare cif from libffi");
-            goto cleanup;
+
+    if(tc_type) { // compatible type
+        int size = 0;
+        int *size_p = &size;
+        bool is_f_type_pointer = tc_type->f_type->type == ffi_type_pointer.type;
+        if(tc_type->is_array) {
+            argTypes[0] = &ffi_type_pointer;
+            args[0] = &size_p;
         }
-        ffi_call(&cif, FFI_FN(fn), NULL, args);
-        goto cleanup;
-    }
-    if(isReturnTypeArr) { // return type array
-        ret = callArrayReturnFunc(className, argArrLen, args, argTypes, fn, p);
-    }
-    else { // return type primitive
-        printf("p return 1\n");
         ffi_cif cif;
         ffi_status status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, argArrLen, tc_type->f_type, argTypes);
         if (status != FFI_OK) {
             throwException(p->currentContext, RuntimeException, "failed to prepare cif from libffi");
             goto cleanup;
         }
-        printf("p return 2\n");
-        bool isReturnTypeString = strEq(className, "java.lang.String");
-        void* r_value = isReturnTypeVoid || isReturnTypeString ? NULL : heapAlloc(heap, tc_type->size);
-        printf("p return 3\n");
-        ffi_call(&cif, FFI_FN(fn), isReturnTypeString ? &r_value : r_value, args);
-        printf("p return 4\n");
+        void* r_value = tc_type->is_void || is_f_type_pointer ? NULL 
+            : heapAlloc(heap, tc_type->size);
+        ffi_call(&cif, FFI_FN(fn), is_f_type_pointer ? &r_value : r_value, args);
         
-        if(!isReturnTypeVoid) 
+        if(tc_type->is_array && size != 0)  {
+            int len = size/tc_type->size;
+            ret = convert_to_tc_array (p->currentContext, r_value, tc_type->name, size, len);     
+        }
+        else if(!tc_type->is_void) {
             ret = (*tc_type->convert_to_tc)(p->currentContext, r_value);
-        printf("p return 5\n");
-
+        }
     }
-
+    else {
+        throwException(p->currentContext, RuntimeException, "Imcompatible return type");
+    }
     cleanup:
         heapDestroy(heap);
         if (ret != NULL) {

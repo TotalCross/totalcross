@@ -162,7 +162,7 @@ TCObject createFileStream(Context context, const int streamType, int fd) {
  *  returns: void
  */
 TC_API void jlR_loadLibrary_s(NMParams p) {
-#ifdef linux
+#if defined(linux) && !defined(darwin)
     TCObject libnameStrObj = p->obj[1];
     if(!libnameStrObj) {
         throwException(p->currentContext, NullPointerException, "libname cannot be null.");

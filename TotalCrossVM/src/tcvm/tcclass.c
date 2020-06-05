@@ -773,11 +773,25 @@ Type type2javaType(CharP type)
    }
 }
 
-TCClass getTargetClass(TCObject o)
+TC_API TCClass getTargetJavaClass(TCObject o)
 {
+   
    TCClass ret = o ? OBJ_CLASS(o) : null;
    if (ret && strEq(ret->name, "java.lang.Class"))
 	  xmoveptr(&ret, ARRAYOBJ_START(Class_nativeStruct(o)));
+   else if(ret && strEq(ret->name, "java.lang.String")) {
+       char buf[1024];
+       ret = loadClass(lifeContext, String2CharPBuf(o, buf), false);
+   }
+   return ret;
+}
+
+TCClass getTargetClass(TCObject o)
+{
+   
+   TCClass ret = o ? OBJ_CLASS(o) : null;
+   if (ret && strEq(ret->name, "java.lang.Class"))
+      xmoveptr(&ret, ARRAYOBJ_START(Class_nativeStruct(o)));
    return ret;
 }
 

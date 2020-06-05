@@ -628,6 +628,8 @@ bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2,
 Type type2javaType(CharP type);
 bool isSuperClass(TCClass s, TCClass t);
 
+TC_API TCClass getTargetJavaClass(TCObject o);
+
 TCClass getTargetClass(TCObject o);
 
 #define CLASS_OUT_OF_MEMORY ((TCClass)-1)
