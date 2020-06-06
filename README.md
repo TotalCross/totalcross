@@ -19,10 +19,10 @@
 </div>
 
 ## What is TotalCross?
-TotalCross is tools to make easy and fast GUI creation:
+TotalCross is a tool to make easy and fast GUI creation:
  
-* [KnowCode](https://github.com/TotalCross/KnowCodeXML):  A computer vision project that aims to help developers build their screens faster based on image made by designers and generate totocross screens ready to run on Android, iOS and Linux ARM devices
-* TotalCross SDK (or just TotalCross): Is an open source and free GUI Creator for embedded systems and a framework for developing cross-platform applications for Android, iOS, WinCE, Windows and desktop, Linux desktop and Linux ARM using Kotlin or Java or any Java Based language.
+* [KnowCode](https://github.com/TotalCross/KnowCodeXML): A computer vision project to help developers build user interfaces in less time. A library that converts a design image to a file that runs android XML UI + TotalCross SDK on Linux Arm, iOS, Android and more;
+* TotalCross SDK: Is a free open source GUI Creator and framework for developing cross-platform applications for Embedded Systems, Android, iOS, Wince, Windows and Linux desktop applications, and Linux Arm. Current supported languages are Kotlin, Java and any Java Based language.
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
 
@@ -35,12 +35,12 @@ You can use Kotlin or Java to create applications using TotalCross Java API whic
 The TotalCross SDK, comprised by two main components:
 
 * TotalCross Java API - Combination of several APIs such as GUI components, Database and GPIO to create a single more robust API that guarantees quality and support in application development.
-* TCVM -  Totalcross Virtual Machine, originally idealized as a Master's Thesis, has been built and improved over 10 years. It's log-based (Java) architecture, bytecode "itself with its own folders" for the most frequent and implemented **almost 100% with C guarantees performance equivalent to native development**. To read more about the TCVM click here.
+* TCVM -  Totalcross Virtual Machine, originally idealized as a Master's Thesis, has been built and improved over 10 years. It's log-based (Java) architecture, bytecode "itself with its own folders" for the most frequent and implemented **almost 100% with C guarantees performance equivalent to native development**. To read more about the TCVM click [here](https://learn.totalcross.com/#virtual-machine-features).
 
 ## Community
 TotalCross's goal is to build a large and supportive community composed by enthusiastic mobile and embedded developers. You can be part of the [telegram](https://t.me/totalcrosscommunity) and here on [GitHub](https://github.com/totalcross/totalcross).
 
-### Be a TotalCross contributor
+### Become a TotalCross contributor
 
 In order to create a better tool and develop GUI for embedded systems and develop cross platform applications, it helps us in the community, so we have separated some challenges for those who want to contribute:
 
@@ -61,8 +61,8 @@ In order to create a better tool and develop GUI for embedded systems and develo
 
 ##### 👉 [See how to be a contributor](CONTRIBUTING.md)!
 
-### Your contributors
-These people have helped make TotalCross better with rich discusses, bug reports, open issues, and making public content (videos, articles and etc):
+### Our contributors
+These people have helped make TotalCross better by enriching ongoing discussions, reporting bugs, opening issues, and publishing relevant content (videos, articles and etc):
 * [@otavio](https://github.com/otavio)
 * [@jeffque](https://github.com/jeffque)
 * [@microhobby](https://github.com/microhobby)
