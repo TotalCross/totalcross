@@ -19,6 +19,7 @@ import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.ElementNotFoundException;
+import totalcross.util.UnitsConverter;
 import totalcross.util.Vector;
 
 /**
@@ -84,6 +85,12 @@ public class Container extends Control {
    */
   public int borderColor = -1;
 
+    /**
+   * Border Radius, used when border style is @see BORDER_ROUNDED
+   * 
+   */
+  protected int borderRadius = UnitsConverter.toPixels(DP + 12);
+  
   /**
    * Defines the total transition time. Defaults to 1000 (1 second).
    * 
@@ -620,8 +627,18 @@ public class Container extends Control {
 	      break;
 	
 	    case BORDER_ROUNDED:
-	      g.drawWindowBorder(0, 0, width, height, 0, 0, borderColor != -1 ? borderColor : getForeColor(), b, b, b, 2,
-	          false);
+        if(Settings.onJavaSE) { // used on simulator
+          g.drawWindowBorder(0, 0, width, height, 0, 0, borderColor != -1 ? borderColor : getForeColor(), b, b, b, 2,
+              false);
+        }
+        else {
+          g.backColor = backColor;
+          g.fillRoundRect(0, 0, width, height, borderRadius);
+          if(borderColor != -1 ) {
+            g.foreColor = borderColor;
+            g.drawRoundRect(0, 0, width, height, borderRadius);
+          }
+        }
 	      break;
 	
 	    default:
@@ -1069,4 +1086,23 @@ public class Container extends Control {
    */
   public void onSwapFinished() {
   }
+
+  /**
+   * get border radius for border style @see BORDER_ROUNDED. Default value is 12dp.
+   * (Not used on JAVA simulator)
+   * @return
+   */
+  public int getBorderRadius() {
+    return borderRadius;
+  }
+
+  /**
+   * Set border radius for border style @see BORDER_ROUNDED. Default value is 12dp.
+   * (Not used on JAVA simulator)
+   * @param borderRadius border radius in pixels. 
+   */
+  public void setBorderRadius(int borderRadius) {
+    this.borderRadius = borderRadius;
+  }
+
 }
