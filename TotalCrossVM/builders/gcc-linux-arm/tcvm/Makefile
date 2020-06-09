@@ -16,8 +16,10 @@ SKIA_INC=$(addprefix -I,$(wildcard $(SKIADIR)/*))
 INCDIR = $(BLDDIR)/inc
 
 OBJDIR = $(BLDDIR)/bin
-CFLAGS = -DHAVE_MREMAP=0 -Dlinux -fPIC -shared -c -Os -Wall -DNDEBUG -Wunused-function -Wno-import -fno-strict-aliasing -DHEADLESS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -DSQLITE_HAS_CODEC -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase  -I$(SRCDIR)/nm/ui/android
-CXXFLAGS = -Os -Wall -fPIC -shared -DNDEBUG -DHEADLESS -DPOSIX -lpthread -std=c++11 $(SKIA_INC) -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase -I$(SRCDIR)/nm/ui/android
+
+CFLAGS += -DHAVE_MREMAP=0 -Dlinux -fPIC -shared -c -Os -Wall -DNDEBUG -Wunused-function -Wno-import -fno-strict-aliasing -DHEADLESS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -DSQLITE_HAS_CODEC -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase  -I$(SRCDIR)/nm/ui/android
+CXXFLAGS += -Os -Wall -fPIC -shared -DNDEBUG -DHEADLESS -DPOSIX -lpthread -std=c++11 $(SKIA_INC) -I$(SRCDIR) -I$(SRCDIR)/tcvm -I$(SRCDIR)/util -I$(SRCDIR)/zlib -I$(SRCDIR)/nm -I$(SRCDIR)/axtls -I$(SRCDIR)/event -I$(SRCDIR)/scanner -I$(SRCDIR)/nm/ui -I$(SRCDIR)/nm/ui/linux -I$(SRCDIR)/nm/io -I$(SRCDIR)/nm/lang -I$(SRCDIR)/litebase/parser  -I$(SRCDIR)/litebase -I$(SRCDIR)/nm/ui/android
+
 CXX_SOURCES = $(SRCDIR)/init/tcsdl.cpp \
 $(SRCDIR)/nm/ui/android/skia.cpp 
 
