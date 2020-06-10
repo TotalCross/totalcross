@@ -17,7 +17,6 @@ import totalcross.util.UnitsConverter;
  * 
  */
 public class Switch extends Control implements PathAnimation.SetPosition, AnimationFinished {
-  private Image barOn, barOff;
   private Image ballOn, ballOff;
   private boolean isIos, dragged, wasChecked;
   private int startDragPos, dragBarPos, dragBarSize, dragBarMin, dragBarMax;
@@ -52,12 +51,12 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
       colorBallOn = 0x6200ee;
     }
     this.isIos = !androidType;
+    setDoEffect(false);
     effect = UIEffects.get(this);
   }
 
   @Override
   public void onBoundsChanged(boolean b) {
-    barOn = ballOn = ballOff = null;
     dragBarSize = height;
     dragBarMin = 0;
     dragBarMax = width - dragBarSize + (uiMaterial ? 0 : -1);
@@ -65,7 +64,6 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
 
   @Override
   public void onColorsChanged(boolean b) {
-    barOn = ballOn = ballOff = null;
     //effect.color = Color.brighter(backColor);
   }
 
@@ -121,32 +119,13 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
       if (ballOn == null) {
         buildBall();
       }
-      if (barOn == null) {
-        buildBar();
-      }
 
       final int perc = dragBarPos * 100 / dragBarMax;
       if (getDoEffect() && effect != null) {
         effect.paintEffect(g);
       }
       boolean on = isOn();
-      int dy = uiMaterial ? height/2 - barOn.getHeight()/2 : 0;
-      if (!uiMaterial) {
-        barOn.alphaMask = alphaValue;
-        g.drawImage(barOn, 0, dy);
-        barOn.alphaMask = 255;
-      } else {
-        barOn.alphaMask = alphaValue * perc / 100;
-        barOff.alphaMask = 255 - barOn.alphaMask;
-        if (perc != 100) {
-          g.drawImage(barOff, 0, dy);
-        }
-        if (perc != 0) {
-          g.drawImage(barOn, 0, dy);
-        }
-        barOff.alphaMask = barOn.alphaMask = 255;
-      }
-
+      buildBar(on);
       // text
       if (on && textBackOn != null) // text at left
       {
@@ -203,35 +182,16 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
     }
   }
 
-  private void buildBar() throws Exception {
+  private void buildBar(boolean on) throws Exception {
     int h = uiMaterial ? height / 3 * 2 : height;
+    int barY = (height - h)/2;
     int fillB = !isEnabled() ? Color.interpolate(backColor, parent.backColor) : backColor;
-    Image barLR = (uiMaterial ? Resources.switchBrd : isIos ? Resources.switchBrdIos : Resources.switchBrdAnd)
-    		.smoothScaledFixedAspectRatio(uiMaterial || isIos ? h : h - 2, true); // left/right
-    int bw = barLR.getWidth() / 2;
-    Image barMid = uiMaterial ? null : Resources.switchBack.getSmoothScaledInstance(width - 2 * bw, h); // mid
-    barOn = new Image(width, h);
-    
-    Graphics gg = barOn.getGraphics();
-    if (!uiMaterial) {
-      gg.drawImage(barMid, bw, isIos ? 0 : -1);
-      
-      // draw left
-	  gg.setClip(0, 0, bw, h);
-	  gg.drawImage(barLR, 0, 0);
-	  
-	  // draw right
-	  gg.setClip(width - bw - 1, 0, bw, h);
-	  gg.drawImage(barLR, width - 2 * bw - 1, 0);
-	  gg.clearClip();
-    } else {
-      gg.backColor = Color.WHITE;
-      gg.fillRoundRect(2, 0, width - 2, h, h);
-      barOff = barOn.getCopy();
-      barOff.applyColor2(uiMaterial ? colorBarOff : fillB);
-    }
-    
-    barOn.applyColor2(uiMaterial ? colorBarOn : fillB);
+    Graphics g = getGraphics();
+    int gap = UnitsConverter.toPixels(DP + 2);
+    g.backColor = on && uiMaterial? colorBarOn : fillB;
+    g.fillRoundRect(gap, barY, width - 2 * gap, h, h);
+    g.foreColor = Color.getCursorColor(g.backColor);
+    g.drawRoundRect(gap, barY, width - 2 * gap, h, h);
   }
 
   @Override
