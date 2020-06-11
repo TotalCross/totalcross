@@ -10,8 +10,6 @@
 #include "errno.h"
 #include <dlfcn.h>
 #endif
-#include "errno.h"
-#include <sys/types.h>
 
 TC_API void jlR_exec_SSs(NMParams p) {
 #if defined(HEADLESS)
