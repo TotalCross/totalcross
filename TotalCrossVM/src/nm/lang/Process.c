@@ -9,7 +9,7 @@
 #include <signal.h>
 
 TC_API void jlPI_waitFor(NMParams p) {
-#if defined(HEADLESS)
+#if defined(linux) && !defined(darwin)
     TCObject process = p->obj[0];
     int status;
     pid_t pid;
