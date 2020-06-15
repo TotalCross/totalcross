@@ -8,7 +8,7 @@
 #include "errno.h"
 
 TC_API void jncFCI_read(NMParams p) {
-#if defined(HEADLESS)
+#if defined(linux) && !defined(darwin)
     TCObject fileChannel = p->obj[0];
     int32 fd = FileChannelImpl_nfd(fileChannel);
     int32 buffer;
@@ -24,7 +24,7 @@ TC_API void jncFCI_read(NMParams p) {
 }
 
 TC_API void jncFCI_read_Bii(NMParams p) {
-#if defined(HEADLESS)
+#if defined(linux) && !defined(darwin)
     TCObject fileChannel = p->obj[0];
     TCObject byteArray = p->obj[1];
     int32 offset = p->i32[0];
@@ -53,7 +53,7 @@ TC_API void jncFCI_read_Bii(NMParams p) {
 }
 
 TC_API void jncFCI_write_Bii(NMParams p) {
-#if defined(HEADLESS)
+#if defined(linux) && !defined(darwin)
     TCObject fileChannel = p->obj[0];
     TCObject byteArray = p->obj[1];
     int32 offset = p->i32[0];

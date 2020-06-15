@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "Runtime.h"
-#if defined(HEADLESS)
+#if defined(linux) && !defined(darwin)
 #include "cpproc.h"
 #include <sys/types.h>
 #include "errno.h"
@@ -12,7 +12,7 @@
 #endif
 
 TC_API void jlR_exec_SSs(NMParams p) {
-#if defined(HEADLESS)
+#if defined(linux) && !defined(darwin)
     int fds[CPIO_EXEC_NUM_PIPES];
     TCObject cmd = p->obj[1];
     TCObject envp = p->obj[2];
