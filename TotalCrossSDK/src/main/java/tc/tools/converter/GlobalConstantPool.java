@@ -402,15 +402,6 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       value = to;
     }
 
-    // free sdk limitation
-    if (DeploySettings.rasKey == null && value.indexOf('.') != -1) {
-      String pkg = value.substring(0, value.lastIndexOf('.'));
-      if (Deploy.FREE_EXCLUDED_CLASSES.indexOf(pkg + ",") != -1) {
-        throw new DeployerException("The class " + value + " is not allowed in the FREE SDK. The excluded classes are: "
-            + Deploy.FREE_EXCLUDED_CLASSES);
-      }
-    }
-
     if (htCls.exists(value)) {
       return ((TCValue) htCls.get(value)).index;
     }
