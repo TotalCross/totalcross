@@ -47,9 +47,6 @@ public class Deploy {
   public static final int BUILD_WINMO = 512; // guich@tc125_17
   public static final int BUILD_ALL = 0xFFFF;
 
-  public static final String FREE_EXCLUDED_CLASSES = "totalcross.io.device.gps,litebase,totalcross.map,";
-  public static final int FREE_MAX_SIZE = 150000;
-
   private boolean waitIfError; // guich@tc111_24
 
   public Deploy(String[] args) throws Exception {
@@ -387,7 +384,6 @@ public class Deploy {
         }
       }
     }
-    DeploySettings.isFreeSDK = false;
     return options;
   }
 
