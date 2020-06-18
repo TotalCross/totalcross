@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import tc.tools.JarClassPathLoader;
-import tc.tools.RegisterSDK;
 import tc.tools.converter.J2TC;
 import tc.tools.deployer.Bitmaps;
 import tc.tools.deployer.DeploySettings;
@@ -24,7 +23,6 @@ import tc.tools.deployer.Deployer4WinCE;
 import tc.tools.deployer.Deployer4LinuxArm;
 import tc.tools.deployer.DeployerException;
 import tc.tools.deployer.Utils;
-import totalcross.sys.Convert;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.IntHashtable;
 
@@ -47,7 +45,6 @@ public class Deploy {
   public static final int BUILD_IPHONE = 128;
   public static final int BUILD_ANDROID = 256;
   public static final int BUILD_WINMO = 512; // guich@tc125_17
-  private static int FREE_BLOCKED_PLATFORMS = BUILD_WINCE | BUILD_WINMO | BUILD_LINUX;
   public static final int BUILD_ALL = 0xFFFF;
 
   public static final String FREE_EXCLUDED_CLASSES = "totalcross.io.device.gps,litebase,totalcross.map,";
@@ -356,6 +353,7 @@ public class Deploy {
           DeploySettings.quiet = false;
           break;
         case 'r':
+          i++; // Ignore next argument
           break;
         case 't':
           DeploySettings.testClass = true;
