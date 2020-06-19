@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import tc.tools.JarClassPathLoader;
-import tc.tools.RegisterSDK;
 import tc.tools.converter.J2TC;
 import tc.tools.deployer.Bitmaps;
 import tc.tools.deployer.DeploySettings;
@@ -24,7 +23,6 @@ import tc.tools.deployer.Deployer4WinCE;
 import tc.tools.deployer.Deployer4LinuxArm;
 import tc.tools.deployer.DeployerException;
 import tc.tools.deployer.Utils;
-import totalcross.sys.Convert;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.IntHashtable;
 
@@ -47,14 +45,9 @@ public class Deploy {
   public static final int BUILD_IPHONE = 128;
   public static final int BUILD_ANDROID = 256;
   public static final int BUILD_WINMO = 512; // guich@tc125_17
-  private static int FREE_BLOCKED_PLATFORMS = BUILD_WINCE | BUILD_WINMO | BUILD_LINUX;
   public static final int BUILD_ALL = 0xFFFF;
 
-  public static final String FREE_EXCLUDED_CLASSES = "totalcross.io.device.gps,litebase,totalcross.map,";
-  public static final int FREE_MAX_SIZE = 150000;
-
   private boolean waitIfError; // guich@tc111_24
-  public static String activationKey;
 
   public Deploy(String[] args) throws Exception {
     try {
@@ -71,7 +64,6 @@ public class Deploy {
       // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
       String fileName = args[0];
       int options = parseOptions(args);
-      new RegisterSDK(activationKey);
 
       Deployer4IPhoneIPA.iosKeystoreInit();
 
@@ -358,15 +350,7 @@ public class Deploy {
           DeploySettings.quiet = false;
           break;
         case 'r':
-          String key = args[++i].toUpperCase();
-          if (key.startsWith("%")) {
-            key = System.getenv(key.substring(1, key.length() - 1));
-          }
-          if (key == null || key.length() != 24) {
-            throw new DeployerException(
-                "The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX; optionally, you can use %key% to refer to an environment variable");
-          }
-          activationKey = key;
+          i++; // Ignore next argument
           break;
         case 't':
           DeploySettings.testClass = true;
@@ -397,26 +381,6 @@ public class Deploy {
 
         default:
           throw new DeployerException("Invalid option: " + op);
-        }
-      }
-    }
-    if (activationKey == null) {
-      activationKey = RegisterSDK.getStoredActivationKey();
-    }
-    if (activationKey == null) {
-      throw new DeployerException(
-          "You must provide a registration key! If you're a PROFESSIONAL or ENTERPRISE, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a STARTER, the key was sent to the email that you used to download the SDK.");
-    } else {
-      DeploySettings.rasKey = Convert.hexStringToBytes(activationKey, true);
-      DeploySettings.isFreeSDK = new String(DeploySettings.rasKey, 0, 4).equals("TCST");
-      System.out.println("The application was signed with the given registration key.");
-
-      if (DeploySettings.isFreeSDK) {
-        if (options == BUILD_ALL) {
-          options &= ~FREE_BLOCKED_PLATFORMS;
-        } else if ((options & FREE_BLOCKED_PLATFORMS) != 0) {
-          throw new DeployerException(
-              "The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
         }
       }
     }
@@ -467,7 +431,6 @@ public class Deploy {
             + "   /p      : Package the vm and litebase with the application, creating a single installation file. "
             + "The SDK must be in the path or in the TOTALCROSS3_HOME environment variable. "
             + "The files are always installed at the same folder of the application, so each application will have its own vm.\n"
-            + "   /r key  : Specify a registration key to be used to activate TotalCross when required\n"
             + "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n"
             + "   /v      : Verbose output for information messages\n"
             + "   /w      : Waits for a key press if an error occurs\n"
