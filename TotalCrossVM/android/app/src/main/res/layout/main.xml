@@ -1,34 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:orientation="vertical" android:layout_width="fill_parent"
   android:layout_height="fill_parent" android:id="@+id/layout">
-  <FrameLayout android:id="@+id/preview"
-    android:layout_weight="1" android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-  </FrameLayout>
-  <LinearLayout 
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="1dip"
-        >
+    <FrameLayout android:id="@+id/preview"
+        android:layout_weight="1" android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+    </FrameLayout>
+    <ImageButton
+        android:text="Click"
+        android:id="@+id/buttonClick"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_margin="16dp"
+        android:background="@drawable/click"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        />
+    <ImageButton
+        android:id="@+id/face"
+        android:background="@drawable/face"
+        android:layout_width="24dp"
+        android:layout_height="17.03dp"
+        android:layout_margin="16dp"
 
-    <Button 
-        android:text="Click" 
-        android:id="@+id/buttonClick" 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
         />
 
-    <Button 
-        android:text="Exit" 
-        android:id="@+id/buttonExit" 
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" 
-        />
-
-    </LinearLayout>
-</LinearLayout>
+</RelativeLayout>

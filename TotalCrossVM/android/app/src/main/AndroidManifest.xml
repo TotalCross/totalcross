@@ -8,7 +8,7 @@
     >
     
    	<uses-sdk tools:overrideLibrary="com.cielo.lio, cielo.sdk.ordermanager, cielo.printer.client"/>
-
+    <uses-feature android:name="android.hardware.camera2.full" />
     <application android:icon="@drawable/icon" 
     	android:label="TotalCross Virtual Machine"
          android:theme="@style/TCThemeNS" android:name="android.support.multidex.MultiDexApplication"
@@ -20,6 +20,7 @@
         <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
         <meta-data android:name="android.max_aspect" android:value="2.33" />
         <uses-library android:name="com.symbol.emdk" android:required="false" />
+
         <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|fontScale|keyboard" 
         android:maxAspectRatio="2.33"
@@ -30,6 +31,7 @@
         android:theme="@android:style/Theme.NoTitleBar"
         />
         <activity android:name=".CameraViewer" />
+        <activity android:name=".CameraViewer2" />
         <activity android:name=".MapViewer" />
         <activity android:name=".YoutubePlayer"></activity>
         <uses-library android:name="com.google.android.maps" android:required="false" />
@@ -118,6 +120,11 @@
     <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.flash" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera2" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera2.front" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera2.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera2.flash" android:required="false"/>
+
     <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
     <uses-feature android:name="android.hardware.microphone" android:required="false"/>
     <uses-feature android:name="android.hardware.location" android:required="false"/>

@@ -429,7 +429,10 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                 intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
                 startActivityForResult(intent, CAMERA_PIC_REQUEST);
             } else {
-                Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".CameraViewer"));
+                String clsName =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ?
+                            ".CameraViewer2" : ".CameraViewer";
+                Intent intent = new Intent(this, Class.forName(totalcrossPKG + clsName));
                 intent.putExtra("file", s);
                 intent.putExtra("quality", quality);
                 intent.putExtra("width", width);
@@ -440,6 +443,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
             }
             AndroidUtils.debug("Launched photo");
         } catch (Throwable e) {
+            e.printStackTrace();
             AndroidUtils.handleException(e, false);
             Launcher4A.pictureTaken(1);
         }

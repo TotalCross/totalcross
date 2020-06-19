@@ -49,7 +49,7 @@ public class CameraViewer extends Activity // guich@tc126_34
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
          // Install a SurfaceHolder.Callback so we get notified when the
          // underlying surface is created and destroyed.
-         holder = getHolder(); 
+         holder = getHolder();
          holder.addCallback(this); 
          holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); // DON'T REMOVE THIS! 2.3 (LEVEL 10) STILL REQUIRES IT 
       }
@@ -57,7 +57,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       // Called once the holder is ready
       public void surfaceCreated(SurfaceHolder holder)
       {
-         startPreview();
+         startPreview(currentCamera);
       }
 
       // Called when the holder is destroyed
@@ -74,27 +74,27 @@ public class CameraViewer extends Activity // guich@tc126_34
          if (camera != null)
          {
             Camera.Parameters parameters = camera.getParameters();
-			
+
    			Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(cameraId, info);
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             int degrees = 0;
-            switch (rotation) 
+            switch (rotation)
             {
-               case Surface.ROTATION_0: 
-                  degrees = 0; 
+               case Surface.ROTATION_0:
+                  degrees = 0;
                   break;
-               case Surface.ROTATION_90: 
-                  degrees = 90; 
+               case Surface.ROTATION_90:
+                  degrees = 90;
                   break;
-               case Surface.ROTATION_180: 
-                  degrees = 180; 
+               case Surface.ROTATION_180:
+                  degrees = 180;
                   break;
-               case Surface.ROTATION_270: 
+               case Surface.ROTATION_270:
                   degrees = 270;
             }
 
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) 
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT)
             {
                result = (info.orientation + degrees) % 360;
                result = (360 - result) % 360;  // compensate the mirror
@@ -102,10 +102,10 @@ public class CameraViewer extends Activity // guich@tc126_34
                result = (info.orientation - degrees + 360) % 360;
             }
             camera.setDisplayOrientation(result);
-		
+
             parameters.setPictureFormat(PixelFormat.JPEG);
             if (Build.VERSION.SDK_INT >= 14 && getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS) && !inFocusExclusionList())
-               parameters.setFocusMode("continuous-picture"); // FOCUS_MODE_CONTINUOUS_PICTURE 
+               parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
             if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
             int ww = Math.max(width,height);
@@ -136,6 +136,7 @@ public class CameraViewer extends Activity // guich@tc126_34
    SurfaceHolder holder; 
    Camera camera; 
    boolean isMovie;
+   static int currentCamera = Camera.CameraInfo.CAMERA_FACING_BACK;
    boolean allowRotation;
    String fileName;
    int stillQuality, width,height;
@@ -144,13 +145,30 @@ public class CameraViewer extends Activity // guich@tc126_34
    int cameraId;
    int result;
 
-   private void startPreview()
+   @Override
+   public void onBackPressed() {
+//      super.onBackPressed();
+      stopRecording();
+      setResult(RESULT_CANCELED);
+      finish();
+   }
+
+   public void changeCamera() {
+      currentCamera =
+              currentCamera == Camera.CameraInfo.CAMERA_FACING_FRONT ?
+                      Camera.CameraInfo.CAMERA_FACING_BACK :
+                      Camera.CameraInfo.CAMERA_FACING_FRONT;
+      stopPreview();
+      recreate();
+   }
+
+   private void startPreview(int cameraFace)
    {
       if (camera == null)
          try
          {
             // The Surface has been created, acquire the camera and tell it where to draw.
-            if ((camera = Camera.open()) == null)
+            if ((camera = Camera.open(cameraFace)) == null)
             {
                Method getNumberOfCameras = android.hardware.Camera.class.getMethod("getNumberOfCameras");
                if (getNumberOfCameras != null)
@@ -237,20 +255,13 @@ public class CameraViewer extends Activity // guich@tc126_34
       preview = new Preview(this); 
       ((FrameLayout) findViewById(R.id.preview)).addView(preview);
 
-      final Button buttonExit = (Button) findViewById(R.id.buttonExit);
-      buttonExit.setOnClickListener(new OnClickListener()
-      {
-         public void onClick(View v)
-         {
-			   stopRecording();
-            setResult(RESULT_CANCELED);
-            finish();
-         }
+      final ImageButton changeCamera = (ImageButton) findViewById(R.id.face);
+      changeCamera.setOnClickListener((v) -> {
+         changeCamera();
       });
-      
-      final Button buttonClick = (Button) findViewById(R.id.buttonClick);
-      buttonClick.setText(isMovie ? "Start" : "Click");
-      buttonExit.setText("Exit");
+
+      final ImageButton buttonClick = (ImageButton) findViewById(R.id.buttonClick);
+      if(isMovie) buttonClick.setBackgroundResource(R.drawable.record);
       buttonClick.setOnClickListener(new OnClickListener()
       {
          public void onClick(View v)
@@ -260,7 +271,7 @@ public class CameraViewer extends Activity // guich@tc126_34
                if (!isMovie)
                {
                   if (camera == null) // guich@tc130: prevent NPE
-                     startPreview();
+                     startPreview(currentCamera);
                   if (camera != null)
                   {
                      buttonClick.setClickable(false);
@@ -284,7 +295,7 @@ public class CameraViewer extends Activity // guich@tc126_34
                {
                   if (recorder == null)
                   {
-                     buttonClick.setText("Stop");
+                     buttonClick.setBackgroundResource(R.drawable.stoprecord);
                      startRecording();
                   }
                   else
@@ -315,7 +326,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       {
          try
          {
-            FileOutputStream outStream = new FileOutputStream(fileName); 
+               FileOutputStream outStream = new FileOutputStream(fileName);
             outStream.write(data);
             outStream.close();
             Loader.autoRotatePhoto(fileName);

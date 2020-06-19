@@ -1751,7 +1751,7 @@ protected int gap;
       } else if (captionPress != null && captionIcon != null && pe.x <= captionIcon.getWidth()) {
         captionPress.onIconPress();
       } else {
-        if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled()) {
+        if (kbdType != KBD_NONE && !hadParentScrolled()) {
           if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos) {
             showClipboardMenu();
           } else if (wasFocusInOnPenDown || !Window.isScreenShifted()) {
