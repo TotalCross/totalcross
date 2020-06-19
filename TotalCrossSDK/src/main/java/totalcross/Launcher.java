@@ -43,7 +43,6 @@ import java.util.zip.ZipInputStream;
 import net.coobird.thumbnailator.Thumbnails;
 import sun.awt.image.ToolkitImage;
 import tc.tools.JarClassPathLoader;
-import tc.tools.RegisterSDK;
 import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
@@ -51,19 +50,13 @@ import totalcross.sys.Settings;
 import totalcross.sys.SpecialKeys;
 import totalcross.sys.Time;
 import totalcross.sys.Vm;
-import totalcross.ui.Button;
 import totalcross.ui.Control;
-import totalcross.ui.Edit;
-import totalcross.ui.Label;
 import totalcross.ui.MainWindow;
 import totalcross.ui.UIColors;
 import totalcross.ui.Window;
-import totalcross.ui.dialog.MessageBox;
-import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.KeyEvent;
 import totalcross.ui.event.MultiTouchEvent;
 import totalcross.ui.event.PenEvent;
-import totalcross.ui.event.PressListener;
 import totalcross.util.Hashtable;
 import totalcross.util.IntHashtable;
 import totalcross.util.zip.TCZ;
@@ -121,7 +114,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private TCEventThread eventThread;
   private boolean isMainClass;
   private boolean isDemo;
-  private String activationKey;
   private boolean fastScale;
   
   private double toScaleValue = -1;
@@ -201,9 +193,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       }
 
       fillSettings();
-      if (isApplication && !className.equals("tc.Help") && activationKey != null) {
-        Class.forName("tc.tools.RegisterSDK").getConstructor(String.class).newInstance(activationKey);
-      }
 
       try {
         _class = getClass(); // guich@500_1: we can use ourselves
@@ -233,9 +222,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         // NOTE: java will call a partially constructed object if show() is called before all the objects are constructed
         if (isApplication) {
           frame = new LauncherFrame();
-          if (activationKey == null) {
-            new Activate().popup();
-          }
           requestFocus();
         } else {
           setLayout(new java.awt.BorderLayout());
@@ -268,11 +254,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         exit(-1);
       }
     } catch (Exception ee) {
-      String name = ee.getClass().getSimpleName();
-      if (name.equals("RegisterSDKException")) {
-        System.out.println("SDK registration returned: " + ee.getMessage());
-        exit(-2);
-      }
       if (showInstructionsOnError) {
         showInstructions();
       }
@@ -406,18 +387,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
               Thread.yield();
             }
             mainWindow.appStarting(isDemo ? 80 : -1);
-            if (isApplication) {
-              new Thread() {
-                @Override
-                public void run() {
-                  try {
-                    new URL("http://www.superwaba.net/SDKRegistrationService/PingService?CHAVE=" + activationKey)
-                        .openConnection().getInputStream().close();
-                  } catch (Throwable e) {
-                  }
-                }
-              }.start(); // keep track of TC usage
-            }
           } // guich@200b4_107 - guich@570_3: check if mainWindow is not null to avoid problems when running on Linux. seems that the paint event is being generated before the start one.
         });
       } catch (Throwable e) {
@@ -457,8 +426,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
     System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
     System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
-    System.out.println(
-        "   /r <key>         : specify a registration key to be used to activate TotalCross when required. You may use %key%, where key is an environment variable");
     System.out.println("The class name that extends MainWindow must always be the last argument");
     System.out.println("Please notice that the Launcher automatically scales down the resolution to fit in the display, to disable this behavior you may include the argument scale with the value 1");
   }
@@ -542,14 +509,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             }
           }
           System.out.println("Screen is " + toWidth + "x" + toHeight + "x" + toBpp);
-        } else if (args[i].equalsIgnoreCase("/r")) {
-          activationKey = args[++i].toUpperCase();
-          if (activationKey.startsWith("%")) {
-            activationKey = System.getenv(activationKey.substring(1, activationKey.length() - 1));
-          }
-          if (activationKey == null || activationKey.length() != 24) {
-            throw new RuntimeException("Invalid registration key: " + activationKey);
-          }
+        } else if (args[i++].equalsIgnoreCase("/r")) {
+          // Ignore next argument
         } else if (args[i].equalsIgnoreCase("/pos")) /* x,y */
         {
           String[] scr = tokenizeString(args[++i].toLowerCase(), ',');
@@ -568,15 +529,15 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         } else if (args[i].equalsIgnoreCase("/uiStyle")) {
           String next = args[++i];
           if (next.equalsIgnoreCase("Flat")) {
-            toUI = Settings.Flat;
+            toUI = Settings.FLAT_UI;
           } else if (next.equalsIgnoreCase("Vista")) {
-            toUI = Settings.Vista;
+            toUI = Settings.VISTA_UI;
           } else if (next.equalsIgnoreCase("Android")) {
-            toUI = Settings.Android;
+            toUI = Settings.ANDROID_UI;
           } else if (next.equalsIgnoreCase("Holo")) {
-            toUI = Settings.Holo;
+            toUI = Settings.HOLO_UI;
           } else if (next.equalsIgnoreCase("Material")) {
-            toUI = Settings.Material;
+            toUI = Settings.MATERIAL_UI;
           } else {
             throw new Exception();
           }
@@ -682,13 +643,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     toScale = Math.abs(toScaleValue) / toDensityValue;
 
     Settings.dataPath = newDataPath;
-    if (isApplication && activationKey == null) {
-      activationKey = RegisterSDK.getStoredActivationKey();
-    }
-    if (activationKey != null && activationKey.length() != 24) {
-      System.err.println("The registration key has incorrect length: " + activationKey.length() + " but must have 24");
-      System.exit(0);
-    }
   }
 
   private String[] tokenizeString(String string, char c) {
@@ -1910,7 +1864,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       totalcross.sys.Settings.screenWidthInDPI = 96;
     }
     totalcross.sys.Settings.romVersion = 0x02000000;
-    totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.Vista;
+    totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.VISTA_UI;
     totalcross.sys.Settings.screenWidth = toWidth;
     totalcross.sys.Settings.screenHeight = toHeight;
     totalcross.sys.Settings.onJavaSE = true;
@@ -2345,76 +2299,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
     public void setText(String s) {
       ta.setText(s);
-    }
-  }
-
-  private class Activate extends Window {
-
-    public Activate() {
-      super("Activation Key required", ROUND_BORDER);
-      this.fadeOtherWindows = true;
-      this.canDrag = false;
-    }
-
-    @Override
-    public void initUI() {
-      Label lblKey = new Label("Activation Key");
-      final Edit edKey = new Edit();
-      edKey.setMaxLength(24);
-
-      add(lblKey, CENTER, CENTER - 50);
-      add(edKey, LEFT + 20, AFTER, FILL - 20, PREFERRED);
-
-      Button btOk = new Button("  OK  ");
-      add(btOk, CENTER, AFTER + 10);
-      btOk.addPressListener(new PressListener() {
-
-        @Override
-        public void controlPressed(ControlEvent e) {
-          String email = edKey.getText();
-          if (email != null && email.length() > 0) {
-            try {
-              Class.forName("tc.tools.RegisterSDK").getConstructor(String.class, String.class).newInstance(email, null);
-              
-              new Thread() {
-                  @Override
-                  public void run() {
-                    try {
-                      new URL("http://www.superwaba.net/SDKRegistrationService/PingService?CHAVE=" + email)
-                          .openConnection().getInputStream().close();
-                    } catch (Throwable e) {
-                    }
-                  }
-                }.start(); // keep track of TC usage
-                
-                Activate.this.unpop();
-              
-            } catch (Exception e1) {
-            	
-							e1.printStackTrace();
-
-							MessageBox mb = new MessageBox("Error to validate KEY",
-									"Try again or get a new KEY at www.totalcross.com", new String[] { "Close" });
-							mb.setBackColor(totalcross.ui.gfx.Color.getRGB(250, 250, 250));
-							mb.setForeColor(0x000000);
-							mb.popup();
-            }
-          }else {
-    			MessageBox mb = new MessageBox("Error to validate KEY", "Please insert a valid KEY or get a new one at www.totalcross.com", new String[]{"Close"});
-      			mb.setBackColor(totalcross.ui.gfx.Color.getRGB(250, 250, 250));
-    	        	mb.setForeColor(0x000000);
-      			mb.popup();
-          }
-
-        }
-      });
-
-      add(new Label("Register at totalcross.com"), CENTER, BOTTOM - 20);
-    }
-
-    @Override
-    protected void onPopup() {
-      setRect(CENTER, CENTER, SCREENSIZE + 90, SCREENSIZE + 60);
     }
   }
 
