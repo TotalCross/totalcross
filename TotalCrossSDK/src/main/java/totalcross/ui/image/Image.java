@@ -17,11 +17,15 @@
 
 package totalcross.ui.image;
 
-import java.awt.GraphicsEnvironment;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import totalcross.Launcher;
 import totalcross.io.ByteArrayStream;
@@ -40,7 +44,6 @@ import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.GfxSurface;
 import totalcross.ui.gfx.Graphics;
-import totalcross.util.Vector;
 import totalcross.util.zip.ZLib;
 
 /**
@@ -1753,65 +1756,109 @@ public class Image extends GfxSurface {
    *           position of the image in a multi-image file must start (and default to) zero.
    */
   private void imageLoad(byte[] input, int len) throws ImageException {
-    try {
-      ImageLoader loader = new ImageLoader(input, len);
-      loader.load(this, 20000000);
-      if (!loader.isSupported) {
-        throw new ImageException(
-            "TotalCross does not support grayscale+alpha PNG images. Save the image as color (24 bpp).");
+      Image loaded = new ImageLoader().load(input, len);
+      if (loaded != null) {
+        int fc = loaded.frameCount;
+        loaded.frameCount = 1; // guich@tc100b5: cannot be 0
+        this.copyFrom(loaded);
+        if (fc > 0) {
+          this.comment = loaded.comment == null ? "FC=" + fc : loaded.comment;
+        }
       }
-    } catch (InterruptedException ex) {
-      throw new ImageException(ex.getMessage());
-    }
   }
 
-  static class ImageLoader implements java.awt.image.ImageConsumer {
-    private java.awt.image.ImageProducer producer;
-    private int width, height;
-    private Image imageCur;
-    private boolean isImageComplete;
-    private byte[] imgBytes;
-    private boolean isGif;
-    private Vector frames = new Vector(5);
-    private java.awt.image.ColorModel colorModel;
-    boolean isSupported = true;
+  static class ImageLoader {
     private int transparentColor = -3;
-    private boolean useAlpha;
+
+    private int[] convertBufferedImageToPixels(BufferedImage image, int[] pixelsOut, final int width,
+        final int height) {
+      int[] result = pixelsOut != null ? pixelsOut : new int[width * height];
+
+      final java.awt.image.ColorModel colorModel = image.getColorModel();
+      int index;
+      if (transparentColor == -3) { // guich@tc130: not already changed?
+        if ((colorModel instanceof java.awt.image.IndexColorModel)
+            && (-1 != (index = ((java.awt.image.IndexColorModel) colorModel).getTransparentPixel()))) {
+          transparentColor = colorModel.getRGB(index & 0xFF) & 0xFFFFFF;
+        }
+      }
+      if (transparentColor >= 0) {
+        // fill all pixels with the transparent color
+        Convert.fill(result, 0, result.length, transparentColor | 0xFF000000);
+      }
+      image.getRGB(0, 0, image.getWidth(), image.getHeight(), result, 0, width);
+
+      return result;
+    }
+
+    private static final short readShort(byte buf[], int off) {
+      return (short) ((buf[off] & 0xFF) | ((buf[off + 1] & 0xFF) << 8));
+    }
+
+    public ImageLoader() {
+    }
 
     /**
-     * Create a ImageLoader object to grab frames from the image <code>img</code>
+     * Grab frames from the image <code>img</code>
      *
-     * @param input
-     *           the input stream where the image to retrieve the image data comes from
+     * @param input the input stream where the image to retrieve the image data
+     *              comes from
+     * @throws ImageException
      */
-    public ImageLoader(byte[] input, int len) {
-      this.imgBytes = input;
-      this.isImageComplete = true;
+    public Image load(byte[] input, int len) throws ImageException {
+      Image image = null;
+      final List<Image> frames = new ArrayList<>(5);
       try {
-        java.awt.Component component = new java.awt.Component() {
-        };
-        java.awt.MediaTracker tracker = new java.awt.MediaTracker(component);
+        final ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(input, 0, len));
+        final ImageReader reader = ImageIO.getImageReaders(stream).next();
+        reader.setInput(stream);
 
-        java.awt.Image image = GraphicsEnvironment.isHeadless() ? ImageIO.read(new ByteArrayInputStream(input, 0, len))
-            : java.awt.Toolkit.getDefaultToolkit().createImage(input, 0, len);
+        if (new String(input, 0, 3).equals("GIF")) {
+          /*
+           * The width and height of each frame may differ, so we must first get the
+           * dimensions of the entire file.
+           */
+          final int width = readShort(input, 6);
+          final int height = readShort(input, 8);
 
-        tracker.addImage(image, 0);
-        tracker.waitForAll();
-        if (!tracker.isErrorAny()) {
-          this.isImageComplete = false;
-          this.producer = image.getSource();
-          this.width = -1;
-          this.height = -1;
+          try {
+            /* final int count = reader.getNumImages(true); */
+            for (int index = 0; /* index < count */; index++) {
+              final BufferedImage frame = reader.read(index);
+              image = new Image(width, height);
+              image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
+              frames.add(image);
+            }
+          } catch (IndexOutOfBoundsException e) {
+            /*
+             * Getting the number of frames may require a full scan of the file. It's better
+             * just to keep reading and stop at the exception.
+             */
+          }
+          image = joinImages(frames);
+        } else {
+          final BufferedImage frame = reader.read(0);
+          final int width = frame.getWidth();
+          final int height = frame.getHeight();
+
+          image = new Image(width, height);
+          if (new String(input, 1, 3).equals("PNG")) {
+            fillPNGInformations(input, image);
+          }
+          image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
         }
-      } catch (InterruptedException e) {
       } catch (java.io.IOException e) {
         // should never happen
         e.printStackTrace();
       }
+      return image;
     }
 
-    private void getPNGInformations(byte[] input, Image imgCur) // a shame that Java doesn't support retrieving the comments!
-    {
+    private void fillPNGInformations(byte[] input, Image img) throws ImageException {
+      // a shame that Java doesn't support retrieving the comments!
+      boolean useAlpha = false;
+      boolean isSupported = true;
+
       byte[] bytes = new byte[4];
       int colorType = 0;
       try {
@@ -1837,25 +1884,25 @@ public class Image extends GfxSurface {
           } else if (id.equals("tRNS")) // guich@tc100b5_4
           {
             switch (len) {
-            case 6: // RGB
-              transparentColor = Color.getRGBEnsureRange(ds.readUnsignedShort(), ds.readUnsignedShort(),
-                  ds.readUnsignedShort());
-              bas.skipBytes(-6);
-              break;
-            case 256: // palettized? find the color that is transparent (0)
-              if (colorType == 3) {
-                useAlpha = true;
-              }
-              for (int i = 0, pos = bas.getPos(); i < 256; i++, pos++) {
-                if (input[pos] == 0) {
-                  if (plteLen == 768) {
-                    transparentColor = Color.getRGB(input[pltePos + i * 3] & 0xFF, input[pltePos + i * 3 + 1] & 0xFF,
-                        input[pltePos + i * 3 + 2] & 0xFF);
-                  }
-                  break;
+              case 6: // RGB
+                transparentColor = Color.getRGBEnsureRange(ds.readUnsignedShort(), ds.readUnsignedShort(),
+                    ds.readUnsignedShort());
+                bas.skipBytes(-6);
+                break;
+              case 256: // palettized? find the color that is transparent (0)
+                if (colorType == 3) {
+                  useAlpha = true;
                 }
-              }
-              break;
+                for (int i = 0, pos = bas.getPos(); i < 256; i++, pos++) {
+                  if (input[pos] == 0) {
+                    if (plteLen == 768) {
+                      transparentColor = Color.getRGB(input[pltePos + i * 3] & 0xFF, input[pltePos + i * 3 + 1] & 0xFF,
+                          input[pltePos + i * 3 + 2] & 0xFF);
+                    }
+                    break;
+                  }
+                }
+                break;
             }
           } else if (id.equals("IEND")) {
             break;
@@ -1864,206 +1911,42 @@ public class Image extends GfxSurface {
             if (type.equals("Comment")) {
               bytes = new byte[len - type.length() - 1];
               ds.readBytes(bytes);
-              imageCur.comment = new String(bytes);
+              img.comment = new String(bytes);
             } else {
               bas.skipBytes(-type.length() - 1); // guich@tc100b5_31: go back if its not our comment
             }
           }
           ds.skipBytes(len + 4); // skip data and crc
         }
+        if (!useAlpha && transparentColor != -3) {
+          img.setTransparentColor(transparentColor);
+        }
       } catch (Exception e) {
       }
-    }
 
-    /**
-     * Fill the fields of an empty image
-     *
-     * @param image
-     *           Image in which the fields need to be filled
-     * @param millis
-     *           time out - if 0, it waits forever
-     */
-    public synchronized void load(Image image, int millis) throws InterruptedException {
-      Image loaded = load(millis);
-      if (loaded != null) {
-        int fc = loaded.frameCount;
-        loaded.frameCount = 1; // guich@tc100b5: cannot be 0
-        image.copyFrom(loaded);
-        if (fc > 0) {
-          image.comment = loaded.comment == null ? "FC=" + fc : loaded.comment;
-        }
-        if (!useAlpha && transparentColor != -3) {
-          image.setTransparentColor(transparentColor);
-        }
+      if (!isSupported) {
+        throw new ImageException(
+            "TotalCross does not support grayscale+alpha PNG images. Save the image as color (24 bpp).");
       }
     }
 
-    /**
-     * Create the array of Image
-     *
-     * @param millis
-     *           time out - if 0, it waits forever
-     * @return an array of Image, an image per frame
-     */
-    public synchronized Image load(int millis) throws InterruptedException {
-      if (!isImageComplete) {
-        int stopTime = millis + Vm.getTimeStamp();
-        producer.startProduction(this);
-        while (!isImageComplete) {
-          if (millis <= 0) {
-            wait(0);
-          } else {
-            long remainTime = stopTime - Vm.getTimeStamp();
-            if (remainTime <= 0) {
-              break;
-            }
-            wait(remainTime);
-          }
-        }
-      }
-      return imageCur;
-    }
-
-    @Override
-    public void setDimensions(int width, int height) {
-      this.width = width;
-      this.height = height;
-    }
-
-    @Override
-    public void setHints(int hints) {
-    }
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    public void setProperties(java.util.Hashtable props) {
-    }
-
-    @Override
-    public void setColorModel(java.awt.image.ColorModel model) {
-      this.colorModel = model;
-    }
-
-    @Override
-    public final void setPixels(int x, int y, int w, int h, java.awt.image.ColorModel model, byte pixels[], int off,
-        int scansize) {
-      if (imageStarted()) {
-        int p[] = (int[]) imageCur.pixels;
-        int jMax = y + h;
-        int iMax = x + w;
-        if (useAlpha) {
-          for (int j = y; j < jMax; ++j, off += scansize) {
-            for (int i = j * width + x, ii = x, k = off; ii < iMax; ii++) {
-              p[i++] = model.getRGB(pixels[k++] & 0xFF);
-            }
-          }
-        } else {
-          for (int j = y; j < jMax; ++j, off += scansize) {
-            for (int i = j * width + x, ii = x, k = off; ii < iMax; ii++) {
-              p[i++] = model.getRGB(pixels[k++] & 0xFF) | 0xFF000000;
-            }
-          }
-        }
-
-      }
-    }
-
-    @Override
-    public final void setPixels(int x, int y, int w, int h, java.awt.image.ColorModel model, int pixels[], int off,
-        int scansize) {
-      if (imageStarted()) {
-        int[] p = (int[]) imageCur.pixels;
-        int jMax = y + h;
-        int iMax = x + w;
-        if (useAlpha) {
-          for (int j = y; j < jMax; ++j, off += scansize) {
-            for (int i = j * width + x, ii = x, k = off; ii < iMax; ii++) {
-              p[i++] = model.getRGB(pixels[k++]);
-            }
-          }
-        } else {
-          for (int j = y; j < jMax; ++j, off += scansize) {
-            for (int i = j * width + x, ii = x, k = off; ii < iMax; ii++) {
-              p[i++] = model.getRGB(pixels[k++]) | 0xFF000000;
-            }
-          }
-        }
-      }
-    }
-
-    /**
-     * Create a new current Image if necessary
-     *
-     * @return true if the image was created, false otherwise.
-     */
-    private final boolean imageStarted() {
-      if (imageCur == null) {
-        if (width < 0 || height < 0) {
-          return false;
-        } else {
-          try {
-            imageCur = new Image(width, height);
-          } catch (ImageException e) {
-            return false;
-          }
-          if (new String(imgBytes, 1, 3).equals("PNG")) {
-            getPNGInformations(imgBytes, imageCur);
-          } else if (new String(imgBytes, 0, 3).equals("GIF")) {
-            isGif = true;
-          }
-          //
-          int index;
-          if (transparentColor == -3) // guich@tc130: not already changed?
-          {
-            if ((colorModel instanceof java.awt.image.IndexColorModel)
-                && (-1 != (index = ((java.awt.image.IndexColorModel) colorModel).getTransparentPixel()))) {
-              transparentColor = colorModel.getRGB(index & 0xFF) & 0xFFFFFF;
-            }
-          }
-          if (transparentColor >= 0) {
-            // fill all pixels with the transparent color
-            int[] p = (int[]) imageCur.pixels;
-            Convert.fill(p, 0, p.length, transparentColor | 0xFF000000);
-          }
-        }
-      }
-      return true;
-    }
-
-    private boolean arraysEquals(int[] pix1, int[] pix2) {
-      if (pix1.length != pix2.length) {
-        return false;
-      }
-      try {
-        return java.util.Arrays.equals(pix1, pix2); // jdk 1.2.x available?
-      } catch (Throwable t) {
-      }
-      for (int i = 0; i < pix1.length; i++) {
-        if (pix1[i] != pix2[i]) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    private void joinImages() {
-      int n = frames.size();
-      if (n == 1) {
-        imageCur = (Image) frames.items[0];
-      } else {
+    private Image joinImages(List<Image> images) {
+      int n = images.size();
+      Image resultImage = images.get(n - 1);
+      if (n > 1) {
         try {
           int totalW = 0;
-          int totalH = imageCur.height;
+          int totalH = resultImage.height;
           for (int i = 0; i < n; i++) {
-            totalW += ((Image) frames.items[i]).width;
+            totalW += images.get(i).width;
           }
           Image temp = new Image(totalW, totalH);
           temp.frameCount = n;
-          temp.comment = imageCur.comment;
+          temp.comment = resultImage.comment;
           int[] dest = (int[]) temp.pixels;
           int xx = 0;
           for (int i = 0; i < n; i++) {
-            Image img = (Image) frames.items[i];
+            Image img = images.get(i);
             int[] src = (int[]) img.pixels;
             int w = img.width;
             for (int yy = 0; yy < totalH; yy++) {
@@ -2071,47 +1954,12 @@ public class Image extends GfxSurface {
             }
             xx += w;
           }
-          imageCur = temp;
+          resultImage = temp;
         } catch (Exception e) {
-          imageCur = (Image) frames.items[0]; // if an error occurs, we assume only the first frame
+          resultImage = images.get(0); // if an error occurs, we assume only the first frame
         }
       }
-    }
-
-    @Override
-    public synchronized void imageComplete(int status) {
-      switch (status) {
-      default:
-      case IMAGEERROR:
-      case IMAGEABORTED:
-        if (isGif && frames.size() > 0) {
-          joinImages();
-        } else {
-          Vm.warning("ImageLoader: error");
-        }
-        isImageComplete = true;
-        break;
-      case STATICIMAGEDONE:
-      case SINGLEFRAMEDONE:
-        if (!isGif) {
-          isImageComplete = true;
-        } else {
-          // since jdk can't correctly tell when the last frame of a multi-frame GIF
-          // was reached, we have to keep loading until we repeat the first one.
-          if (frames.size() > 0 && arraysEquals((int[]) imageCur.pixels, (int[]) ((Image) frames.items[0]).pixels)) {
-            joinImages();
-            isImageComplete = true;
-          } else {
-            frames.push(imageCur);
-            imageCur = null;
-          }
-        }
-        break;
-      }
-      if (isImageComplete) {
-        producer.removeConsumer(this);
-        notifyAll();
-      }
+      return resultImage;
     }
   }
 
