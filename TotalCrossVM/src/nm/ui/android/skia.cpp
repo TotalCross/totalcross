@@ -5,9 +5,14 @@
 
 #include "skia.h"
 
-#if defined darwin
+#if __APPLE__
+#ifdef darwin
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
+#else
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#endif
 #else
 #if !defined(__arm__) && !defined(ANDROID)
 #include <GL/gl.h>
