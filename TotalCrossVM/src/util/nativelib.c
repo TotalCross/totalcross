@@ -9,7 +9,7 @@
  #include "win/nativelib_c.h"
 #else
  #include "posix/nativelib_c.h"
-#if defined (darwin) && !defined (THEOS)
+#if __APPLE__
 #undef bool
 #define bool int
 #endif

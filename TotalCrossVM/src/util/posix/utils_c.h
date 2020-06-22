@@ -13,7 +13,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#if defined(darwin)
+#if __APPLE__
 
 #include <mach/mach.h>
 #include <mach/mach_host.h>

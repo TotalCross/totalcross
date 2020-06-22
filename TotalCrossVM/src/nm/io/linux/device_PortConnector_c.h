@@ -5,7 +5,7 @@
 
 
 
-#ifndef darwin
+#ifndef __APPLE__
 #include <features.h>
 #endif
 #include <stdio.h>   /* Standard input/output definitions */
