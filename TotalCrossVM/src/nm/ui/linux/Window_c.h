@@ -2,7 +2,11 @@
 // Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+#if __APPLE__
+#include "SDL.h"
+#else
 #include "SDL2/SDL.h"
+#endif
 #include "../Window.h"
 
 static int32 sip;

@@ -8,7 +8,11 @@
 #ifndef HEADLESS
 #include <directfb.h>
 #else
+#if __APPLE__
+#include "SDL.h"
+#else
 #include "SDL2/SDL.h"
+#endif
 #endif
 
 int32 privateKeyPortable2Device(PortableSpecialKeys key)

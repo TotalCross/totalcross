@@ -12,7 +12,11 @@
 #define SETPIXEL565(r,g,b) ((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3))) // bits RRRRRGGGGGGBBBBB
 
 #ifdef HEADLESS
+#if __APPLE__
+#include "SDL.h"
+#else
 #include "SDL2/SDL.h"
+#endif
 #else
 #include <directfb.h>
 #endif
