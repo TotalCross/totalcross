@@ -11,7 +11,11 @@ extern "C" {
 #endif
 
     #include "tcvm.h"
+    #if __APPLE__
+    #include "SDL.h"
+    #else
     #include "SDL2/SDL.h"
+    #endif
     #include "GraphicsPrimitives.h"
 
     bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
