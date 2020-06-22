@@ -105,7 +105,7 @@ typedef TCHAR* TCHARP;
 
 #if !defined(__cplusplus) && !defined(__OBJC__) && !defined(_STDBOOL_H)
 #define _STDBOOL_H // prevent stdbool.h include on darwin
-#if defined (darwin) && !defined (THEOS)
+#if __APPLE__
 #undef bool
 #define bool int
 #else

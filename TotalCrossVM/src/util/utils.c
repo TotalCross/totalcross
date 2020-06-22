@@ -20,7 +20,7 @@
  #include "posix/utils_c.h"
 #endif
 
-#if defined (darwin) && !defined (THEOS)
+#if __APPLE__
 #undef bool
 #define bool int
 #endif

@@ -466,7 +466,7 @@ static bool htmDispose()
 extern size_t  _msize(void *);
 #endif
 
-#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+#if !defined(USE_MEMCHECKER) && !defined(__APPLE__) && !defined(ANDROID)
 #ifndef __clang__
 size_t dlmalloc_usable_size(void*); 
 #endif
@@ -617,7 +617,7 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
 // fdie: If you want to use a memory checking tool such as Valgrind,
 // you have to define USE_MEMCHECKER to limit your memory use to the requested
 // memory size or the checking tool may detect many false memory corruptions.
-#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+#if !defined(USE_MEMCHECKER) && !defined(__APPLE__) && !defined(ANDROID)
    size = getPtrSize(p);
 #endif
 
@@ -761,7 +761,7 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
 // fdie: If you want to use a memory checking tool such as Valgrind,
 // you have to define USE_MEMCHECKER to limit your memory use to the requested
 // memory size or the checking tool may detect many false memory corruptions.
-#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+#if !defined(USE_MEMCHECKER) && !defined(__APPLE__) && !defined(ANDROID)
    size = getPtrSize(p);
 #endif
    if (origSize > oldSize) // if size increased, erase the new memory area
@@ -839,7 +839,7 @@ TC_API uint8 *privateXcalloc(uint32 NumOfElements,uint32 SizeOfElements,const ch
 // fdie: If you want to use a memory checking tool such as Valgrind,
 // you have to define USE_MEMCHECKER to limit your memory use to the requested
 // memory size or the checking tool may detect many false memory corruptions.
-#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+#if !defined(USE_MEMCHECKER) && !defined(__APPLE__) && !defined(ANDROID)
    size = getPtrSize(p);
 #endif
 
