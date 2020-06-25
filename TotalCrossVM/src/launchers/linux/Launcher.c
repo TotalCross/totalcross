@@ -18,13 +18,13 @@ typedef int (*ExecuteProgramProc)(char* args);
 
 typedef void *Handle;
 
-static Handle tryOpen(const char *prefix)
+static Handle tryOpen(const char *prefix, const char* libname)
 {
    char path[MAX_PATHNAME];
 #if __APPLE__
-   snprintf(path, MAX_PATHNAME, "%s.dylib", prefix);
+   snprintf(path, MAX_PATHNAME, "%s/%s.dylib", prefix, libname);
 #else
-   snprintf(path, MAX_PATHNAME, "%s.so", prefix);
+   snprintf(path, MAX_PATHNAME, "%s/%s.so", prefix, libname);
 #endif
    return dlopen(path, RTLD_LAZY);
 }
@@ -34,15 +34,21 @@ static int executeProgram(char* cmdline)
    int ret = 0;
    ExecuteProgramProc fExecuteProgram = NULL;
    Handle tcvm;
-   tcvm = tryOpen("./libtcvm");                        // load in current folder - otherwise, we'll not be able to debug
+   tcvm = tryOpen(
+#ifdef CURRENT_DEBUG_PATH
+               CURRENT_DEBUG_PATH
+#else
+               "."
+#endif
+               , "libtcvm");                        // load in current folder - otherwise, we'll not be able to debug
    
    if (!tcvm) {
       printf("%s\n", dlerror());
-      tcvm = tryOpen("../libtcvm");                  // load in parent folder
+      tcvm = tryOpen("..", "libtcvm");                  // load in parent folder
    }
    if (!tcvm) {
       printf("%s\n", dlerror());
-      tcvm = tryOpen("/usr/lib/totalcross/libtcvm"); // load in most common absolute path
+      tcvm = tryOpen("/usr/lib/totalcross", "libtcvm"); // load in most common absolute path
    }
    if (!tcvm) {
       printf("%s\n", dlerror());

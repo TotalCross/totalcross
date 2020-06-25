@@ -481,6 +481,10 @@ endif(DEFINED ANDROID_ABI)
 add_definitions(-DTOTALCROSS -DTC_EXPORTS)
 
 
+if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
+  add_definitions(-DCURRENT_DEBUG_PATH="${CMAKE_CURRENT_BINARY_DIR}")
+endif(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
+
 link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
