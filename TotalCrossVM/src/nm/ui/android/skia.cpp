@@ -597,6 +597,7 @@ int32 colorType(uint32 pixelformat) {
             }
         }
     }
+    debug("Unsupported pixel format %s, try mapping your color format on %s - %s", SDL_GetPixelFormatName(pixelformat), __FILE__, __FUNCTION__);
     return kUnknown_SkColorType;
 }
 #endif
