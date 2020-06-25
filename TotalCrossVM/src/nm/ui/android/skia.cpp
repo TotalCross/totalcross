@@ -588,9 +588,11 @@ int32 colorType(uint32 pixelformat) {
                 return kRGB_565_SkColorType;
             }
         }
-    } else if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED32) {
-        if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB) {
-            if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_8888) {
+    }
+    else if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED32) {
+        if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_8888) {
+            if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB ||
+                SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_ARGB) {
                 return kBGRA_8888_SkColorType;
             }
         }
