@@ -21,7 +21,11 @@ typedef void *Handle;
 static Handle tryOpen(const char *prefix)
 {
    char path[MAX_PATHNAME];
+#if __APPLE__
+   snprintf(path, MAX_PATHNAME, "%s.dylib", prefix);
+#else
    snprintf(path, MAX_PATHNAME, "%s.so", prefix);
+#endif
    return dlopen(path, RTLD_LAZY);
 }
 
