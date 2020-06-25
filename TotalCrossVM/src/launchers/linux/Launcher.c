@@ -58,19 +58,25 @@ int main(int argc, const char *argv[])
 {
    char cmdline[512];
    xmemzero(cmdline,sizeof(cmdline));
+   int argvIndex = 0;
    if (argv)
    {
-      xstrcpy(cmdline, argv[0]);
+      if (argc > 1 && 
+         xstrlen(argv[0]) >= 8 &&
+         memcmp(argv[0] + xstrlen(argv[0]) - 8, "Launcher", 8) == 0) {
+         argvIndex = 1;
+      }
+      xstrcpy(cmdline, argv[argvIndex++]);
       xstrcat(cmdline, ".tcz");
    }
-   if (argc > 1 || args[0] != '1') // if there's a commandline passed by the system or one passed by the user
+   if (argc > argvIndex || args[0] != '1') // if there's a commandline passed by the system or one passed by the user
    {
       xstrcat(cmdline, " /cmd ");
       if (args[0] != '1')
          xstrcat(cmdline, args);
-      const char **p = argv + 1;
+      const char **p = argv + argvIndex;
       int n = argc;
-      while (n-- > 1)
+      while (n-- > argvIndex)
       {
          xstrcat(cmdline, " ");
          xstrcat(cmdline, *p++);
