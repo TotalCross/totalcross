@@ -764,7 +764,12 @@ FILE* findFile(CharP name, CharP pathOut)
    char fullName[MAX_PATHNAME];
 
    // 1. search in current folder
-   xstrprintf(fullName,"%s",name);
+#ifdef CURRENT_DEBUG_PATH
+   xstrprintf(fullName,"%s/%s", CURRENT_DEBUG_PATH, name);
+#else
+   xstrprintf(fullName,"%s", name);
+#endif
+
    f = fopen(fullName,"rb");
    // 2. search in vmPath
    if (f == null)
