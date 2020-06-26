@@ -234,11 +234,6 @@ public class Animation extends Control {
       
       framesBuffer.setCurrentFrame(curFrame);
     }
-    
-    System.out.println("W:" + framesBuffer.getWidth());
-    System.out.println("H:" + framesBuffer.getHeight());
-    System.out.println("N:" + framesBuffer.getFrameCount());
-    System.out.println("C:" + framesBuffer.getCurrentFrame());
 
     // flsobral@tc100b5_6: argument doClip is now true, this avoids exceptions when the image is larger than the screen.
     gfx.drawImage(framesBuffer, 0, 0, true);
