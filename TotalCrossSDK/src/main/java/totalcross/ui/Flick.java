@@ -1,11 +1,12 @@
 package totalcross.ui;
 
+import totalcross.sys.Settings;
 import totalcross.sys.Vm;
-import totalcross.ui.anim.EasingCurves;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PenListener;
-import totalcross.ui.event.UpdateListener;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.TimerListener;
 import totalcross.ui.font.Font;
 import totalcross.util.Vector;
 
@@ -23,7 +24,7 @@ import totalcross.util.Vector;
  * 
  * This class is for internal use. You should use the ScrollContainer class instead.
  */
-public class Flick implements PenListener, UpdateListener {
+public class Flick implements PenListener, TimerListener {
   public static final int BOTH_DIRECTIONS = 0;
   public static final int HORIZONTAL_DIRECTION_ONLY = 1;
   public static final int VERTICAL_DIRECTION_ONLY = 2;
@@ -34,6 +35,12 @@ public class Flick implements PenListener, UpdateListener {
    * Indicates that a flick animation is running. Only one can run at a time.
    */
   public static Flick currentFlick;
+
+  /**
+   * Desired animation frame rate in frames/second.
+   */
+  public static int defaultFrameRate = 40; // each frame with 25ms
+  public int frameRate = defaultFrameRate;
 
   /**
    * Shortest flick animation allowed to start in milliseconds. Used to compute the minimum initial velocity. If a
@@ -51,16 +58,16 @@ public class Flick implements PenListener, UpdateListener {
    * before constructing the control and then set it back to the original value (2500) after the control
    * is constructed.
    */
-  public static int defaultLongestFlick = 1500;
+  public static int defaultLongestFlick = 2500;
   public int longestFlick = defaultLongestFlick;
-  
-  /** 
-   * Multiplier applied to all Flicks acceleration. Use this value to make flicks faster/slower.
-   * If you only need to set the flick acceleration multiplier for a single Flick object, use
-   * the 'flickAccelerationMultiplier' property instead
-   */ 
-  public static double defaultFlickAccelerationMultiplier = 1;
-  public double flickAccelerationMultiplier = defaultFlickAccelerationMultiplier; 
+
+  /**
+   * Flick acceleration in inches/second^2. This value simulates friction to slow the flick motion.
+   * Defaults to 2.95 for screen height > 320, or 1.6 otherwise.
+   */
+  public static double defaultFlickAcceleration = Math.max(Settings.screenWidth, Settings.screenHeight)
+      / Font.NORMAL_SIZE / (Settings.platform.equals(Settings.ANDROID) ? 10.0 : 5.0);
+  public double flickAcceleration = defaultFlickAcceleration;
 
   // Device pixel densities in dpi.
   private int resX, resY;
@@ -72,7 +79,7 @@ public class Flick implements PenListener, UpdateListener {
   private double pixelAccelerationX;
   private double pixelAccelerationY;
 
-  /** Signed acceleration used during a flick animation. Negative when motion is positive. */
+  // Signed acceleration used during a flick animation. Negative when motion is positive.
   private double a;
 
   // Beginning of a drag
@@ -92,10 +99,13 @@ public class Flick implements PenListener, UpdateListener {
   private int flickPos;
 
   // Ending time of a flick.
-  private int animationDuration;
+  private int t1;
 
   // Direction of a flick.
   private int flickDirection;
+
+  // Timer that runs the flick animation.
+  TimerEvent timer;
 
   // Container owning this Flick object.
   private Scrollable target;
@@ -120,8 +130,8 @@ public class Flick implements PenListener, UpdateListener {
    */
   public static boolean isDragging;
 
-  /** The maximum acceleration that can be applied when the user keep dragging the container. Defaults to 5. */
-  public int maximumAccelerationMultiplier = 3;
+  /** The maximum accelleration that can be applied when the user keep dragging the container. Defaults to 5. */
+  public int maximumAccelerationMultiplier = 5;
 
   /** When a ScrollContainer is inside another one, by default, both can be scrolled at the same time. Set this flag to false
    * at the topmost one to prevent this from occuring.
@@ -134,6 +144,7 @@ public class Flick implements PenListener, UpdateListener {
   public Flick(Scrollable s) {
     target = s;
     addEvents((Control) s);
+    timer = new TimerEvent();
   }
 
   /** Call this method to set the PagePosition control that will be updated with the current page
@@ -179,6 +190,7 @@ public class Flick implements PenListener, UpdateListener {
 
   private void addEvents(Control c) {
     c.addPenListener(this);
+    c.addTimerListener(this);
     // So a container event listener can listen to events targeting the container's children.
     c.callListenersOnAllTargets = true;
   }
@@ -186,6 +198,7 @@ public class Flick implements PenListener, UpdateListener {
   /** Remove a previously added event source. */
   public void removeEventSource(Control c) {
     c.removePenListener(this);
+    c.removeTimerListener(this);
     // So a container event listener can listen to events targeting the container's children.
     c.callListenersOnAllTargets = false;
   }
@@ -195,12 +208,22 @@ public class Flick implements PenListener, UpdateListener {
     stop(false);
     this.dragId = dragId;
 
-    pixelAccelerationX = flickAccelerationMultiplier * Font.getDefaultFontSize() / 1000000.0;
-    pixelAccelerationY = flickAccelerationMultiplier * Font.getDefaultFontSize() / 1000000.0;
+    // Adjust resolutions, which can change during rotation. some devices don't report properly.
+    resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
+    resY = Settings.screenHeightInDPI <= 0 ? 96 : Settings.screenHeightInDPI;
+
+    if (Control.isTablet) {
+      // Prefer high density on high res screens
+      resX = (resX < 150) ? 240 : resX;
+      resY = (resY < 150) ? 240 : resY;
+    }
+
+    // Convert inches/second^2 to pixels/millisecond^2
+    pixelAccelerationX = flickAcceleration * resX / 1000000.0;
+    pixelAccelerationY = flickAcceleration * resY / 1000000.0;
 
     a = v0 = 0;
-    flickDirection = flickPos = t0 = animationDuration = 0;
-    oldFlickMotion=0;
+    flickDirection = flickPos = t0 = t1 = 0;
     dragT0 = t;
     dragX0 = dragX = x;
     dragY0 = dragY = y;
@@ -339,7 +362,7 @@ public class Flick implements PenListener, UpdateListener {
 
     dragId = -1; // the drag event sequence has ended
     t0 = Vm.getTimeStamp();
-    oldFlickMotion=0;
+
     // If this penUp event was sent too fast, assume it was sent 1 millisecond
     // after the start of the drag so we can do our computations here.
     if (t0 <= dragT0) {
@@ -378,7 +401,7 @@ public class Flick implements PenListener, UpdateListener {
         }
       }
     }
-    
+
     if (scrollDistance != 0) {
       boolean isHorizontal = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.LEFT;
       boolean forward = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.DOWN;
@@ -394,7 +417,7 @@ public class Flick implements PenListener, UpdateListener {
         a = lastA;
       }
       forward = a < 0;
-      animationDuration = longestFlick;
+      t1 = longestFlick;
       if (lastFlickDirection != 0 && lastFlickDirection != flickDirection) {
         consecutiveDragCount = 0;
       }
@@ -450,11 +473,10 @@ public class Flick implements PenListener, UpdateListener {
         scrollDistanceRemaining += (consecutiveDragCount - 1) * scrollDistance; // acceleration
       }
 
-      v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * animationDuration * animationDuration / 2) / animationDuration;
+      v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
       if (a > 0) {
         v0 = -v0;
       }
-      
     } else if (cancelFlick) {
       return;
     } else {
@@ -478,15 +500,15 @@ public class Flick implements PenListener, UpdateListener {
       }
 
       // When the flick ends. No rounding is done, the maximum rounding error is 1 millisecond.
-      animationDuration = (int) (-v0 / a);
-      
+      t1 = (int) (-v0 / a);
+
       // Reject animations that are too slow and apply the speed limit.
-      if (animationDuration < shortestFlick) {
+      if (t1 < shortestFlick) {
         return;
       }
-      if (animationDuration > longestFlick) {
-        animationDuration = longestFlick;
-        v0 = -animationDuration * a;
+      if (t1 > longestFlick) {
+        t1 = longestFlick;
+        v0 = -t1 * a;
       }
     }
 
@@ -499,10 +521,7 @@ public class Flick implements PenListener, UpdateListener {
         callListeners(true, false);
         currentFlick = this;
         flickPos = 0;
-        if(((Control) target)!=null) {
-      	  targetFmH=((Control) target).fmH / 8;
-        }
-        MainWindow.mainWindowInstance.addUpdateListener(this);
+        ((Control) target).addTimer(timer, 1000 / frameRate);
       }
     }
   }
@@ -532,7 +551,7 @@ public class Flick implements PenListener, UpdateListener {
 
     if (calledFlickStarted) {
       calledFlickStarted = false;
-      MainWindow.getMainWindow().removeUpdateListener(this);
+      ((Control) target).removeTimer(timer);
       callListeners(false, atPenDown);
       target.flickEnded(atPenDown);
     }
@@ -548,88 +567,64 @@ public class Flick implements PenListener, UpdateListener {
   /**
    * Processes timer ticks to run the animation.
    */
-  
-  int oldFlickMotion;
-  int targetFmH;
-    
   @Override
-   public void updateListenerTriggered(int elapsedMilliseconds) {
-      double timePassed = Vm.getTimeStamp() - t0;
-      
-      int newFlickPos;
-      int flickMotion = 0;
-      if(scrollDistance==0) {
-   	  int flickAce=0;
-   	  if(flickDirection==DragEvent.RIGHT || flickDirection==DragEvent.LEFT) {
-   		  flickAce=(currentFlick.dragX-currentFlick.dragX0);
-   	  }
-   	  if(flickDirection==DragEvent.UP || flickDirection==DragEvent.DOWN){
-   		  flickAce=(currentFlick.dragY-currentFlick.dragY0);
-   	  }
-   	  flickAce= flickAce < 0 ? -flickAce : flickAce;
-   	  int newFlickMotion = (int) (flickAce/2*consecutiveDragCount*EasingCurves.OutQuadratic(0,targetFmH,animationDuration, timePassed));
-   	  flickMotion = (newFlickMotion - oldFlickMotion);
-   	  oldFlickMotion=newFlickMotion;
-   	           
-   	  if(flickDirection==DragEvent.UP) {
-   		  flickMotion*=-1;
-   	  }
-   	  
-   	  newFlickPos = flickMotion;
-   	  flickPos = newFlickPos;		  
-      }else {
-          // No rounding is done, the maximum rounding error is 1 pixel.
-    	  newFlickPos = (int) (v0 * timePassed + a * timePassed * timePassed / 2.0);
-    	  int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
-          // check if the amount will overflow the scrollDistance
-          if (absNewFlickPos > scrollDistanceRemaining) {
-            newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
-          }
-          flickMotion = newFlickPos - flickPos;
-          flickPos = newFlickPos;
+  public void timerTriggered(TimerEvent e) {
+    if (e == timer && !totalcross.unit.UIRobot.abort) {
+      double t = Vm.getTimeStamp() - t0;
+
+      // No rounding is done, the maximum rounding error is 1 pixel.
+      int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
+      int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
+      // check if the amount will overflow the scrollDistance
+      if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) {
+        newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
       }
-      
+      int flickMotion = newFlickPos - flickPos;
+      flickPos = newFlickPos;
       boolean endReached = flickMotion == 0;
-      
+
       if (!endReached) {
-    	  switch (flickDirection) {
-   	  	case DragEvent.UP:
-   	  	case DragEvent.DOWN:
-   	  		if (listeners != null) {
-   	  			for (int i = listeners.size(); --i >= 0;) {
-   	  				((Scrollable) listeners.items[i]).scrollContent(0, -flickMotion, true);
-   	  			}
-   	  		}
-   	  		if (!target.scrollContent(0, -flickMotion, true)) {
-   	  			endReached = true;
-   	  		}
-   	  		break;
-   	
-   	    case DragEvent.LEFT:
-   	    case DragEvent.RIGHT:
-   	    	if (listeners != null) {
-   	    		for (int i = listeners.size(); --i >= 0;) {
-   	    			((Scrollable) listeners.items[i]).scrollContent(-flickMotion, 0, true);
-   	    		}
-   	    	}
-   	    	if (!target.scrollContent(-flickMotion, 0, true)) {
-   	    		endReached = true;
-   	    	}
-   	    	break;
-    	  }
+        switch (flickDirection) {
+        case DragEvent.UP:
+        case DragEvent.DOWN:
+          if (listeners != null) {
+            for (int i = listeners.size(); --i >= 0;) {
+              ((Scrollable) listeners.items[i]).scrollContent(0, -flickMotion, true);
+            }
+          }
+          if (!target.scrollContent(0, -flickMotion, true)) {
+            endReached = true;
+          }
+          break;
+
+        case DragEvent.LEFT:
+        case DragEvent.RIGHT:
+          if (listeners != null) {
+            for (int i = listeners.size(); --i >= 0;) {
+              ((Scrollable) listeners.items[i]).scrollContent(-flickMotion, 0, true);
+            }
+          }
+          if (!target.scrollContent(-flickMotion, 0, true)) {
+            endReached = true;
+          }
+          break;
+        }
       }
-   	
-   	if (endReached || currentFlick == null || timePassed > animationDuration) // Reached the end.
-   	{
-   	  lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
-   	  stop(false);
-   	}
-   	if (pagepos != null) {
-   	  int p = target.getScrollPosition(flickDirection);
-   	  if (p < 0) {
-   	    p = -p;
-   	  }
-   	  pagepos.setPosition((p / scrollDistance) + 1);
-   	}
+      if (endReached || currentFlick == null || t > t1) // Reached the end.
+      {
+        lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
+        stop(false);
+      }
+      if (pagepos != null) {
+        int p = target.getScrollPosition(flickDirection);
+        if (p < 0) {
+          p = -p;
+        }
+        pagepos.setPosition((p / scrollDistance) + 1);
+      }
+
+      e.consumed = true;
+    }
   }
+
 }
