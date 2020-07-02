@@ -285,14 +285,12 @@ public class Deploy {
                 "Invalid /a format. The arguments must be passed between \"\", like in /a \"all the arguments to be passed to the callee application\"");
           }
           break;
-        //$START:REMOVE-ON-SDK-GENERATION$                         
         case 'd':
           J2TC.dump = true;
           if (op.length() == 3 && op.charAt(2) == '2') {
             J2TC.dumpBytecodes = true;
           }
           break;
-        //$END:REMOVE-ON-SDK-GENERATION$
         case 's':
           DeploySettings.autoSign = true;
           if (i < args.length - 1) {
@@ -416,30 +414,27 @@ public class Deploy {
         + "\n" + "You can also use the options:\n"
         + "   /a ApId : Assigns the application id; can only be used for libraries or passing a tcz file\n"
         + "   /autostart: automatically starts the application after a boot is completed. Currently works for Android only.\n"
-        + "   /c cmd  : Specify a command line to be passed to the application");
-    //$START:REMOVE-ON-SDK-GENERATION$                         
-    System.out.println("   /d      : Dump generated opcodes for the program\n"
-        + "   /d2     : Dump generated opcodes, including java bytecodes");
-    //$END:REMOVE-ON-SDK-GENERATION$
-    System.out.println(
-        "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Supports: android. E.G.: /i android\n"
-            + "   /k      : Keep the exe and other temporary files during wince generation\n"
-            + "   /kn     : As /k, but does not create the cab files for wince\n"
-            + "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"
-            + "   /n name : Override the name of the tcz file with the given name\n"
-            + "   /o path : Override the output folder with the given path (defaults to the current folder)\n"
-            + "   /p      : Package the vm and litebase with the application, creating a single installation file. "
-            + "The SDK must be in the path or in the TOTALCROSS3_HOME environment variable. "
-            + "The files are always installed at the same folder of the application, so each application will have its own vm.\n"
-            + "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n"
-            + "   /v      : Verbose output for information messages\n"
-            + "   /w      : Waits for a key press if an error occurs\n"
-            + "   /x list : Comma-separated list of class names that must be excluded (in a starts-with manner). E.G.: \"/x com/framework/\" \n"
-            + "\n" + "   The easiest way to create an icon is to provide an 'appicon.png' file of SQUARED size 256x256"
-            + "which will be automatically converted to the target icon sizes. Put the file in the src folder."
-            + "If your icon source is VECTOR-based, you may create better icons by exporting to png at the following sizes: "
-            + "icon76x76.png, icon96x96.png, icon120x120.png, icon144x144.png, icon152x152.png, icon192x192. "
-            + "Note that TotalCross' algorithm used to downscale the icons, CATMULL-ROM, is the best of the world for that."
-            + "");
+        + "   /c cmd  : Specify a command line to be passed to the application\n"
+        + "   /d      : Dump generated opcodes for the program\n"
+        + "   /d2     : Dump generated opcodes, including java bytecodes\n"
+        + "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Supports: android. E.G.: /i android\n"
+        + "   /k      : Keep the exe and other temporary files during wince generation\n"
+        + "   /kn     : As /k, but does not create the cab files for wince\n"
+        + "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"
+        + "   /n name : Override the name of the tcz file with the given name\n"
+        + "   /o path : Override the output folder with the given path (defaults to the current folder)\n"
+        + "   /p      : Package the vm and litebase with the application, creating a single installation file. "
+        + "The SDK must be in the path or in the TOTALCROSS3_HOME environment variable. "
+        + "The files are always installed at the same folder of the application, so each application will have its own vm.\n"
+        + "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n"
+        + "   /v      : Verbose output for information messages\n"
+        + "   /w      : Waits for a key press if an error occurs\n"
+        + "   /x list : Comma-separated list of class names that must be excluded (in a starts-with manner). E.G.: \"/x com/framework/\" \n"
+        + "\n" + "   The easiest way to create an icon is to provide an 'appicon.png' file of SQUARED size 256x256"
+        + "which will be automatically converted to the target icon sizes. Put the file in the src folder."
+        + "If your icon source is VECTOR-based, you may create better icons by exporting to png at the following sizes: "
+        + "icon76x76.png, icon96x96.png, icon120x120.png, icon144x144.png, icon152x152.png, icon192x192. "
+        + "Note that TotalCross' algorithm used to downscale the icons, CATMULL-ROM, is the best of the world for that."
+        + "");
   }
 }
