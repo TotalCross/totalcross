@@ -1,6 +1,3 @@
-import java.util.regex.*
-import org.apache.tools.ant.filters.*
-
 buildscript {
   repositories {
     maven {
@@ -48,12 +45,6 @@ task wrapper(type: Wrapper) {
    gradleVersion = '4.0.1'
 }
 
-class RemoveFromSdkFilter extends FilterReader {
-    RemoveFromSdkFilter(Reader input) {
-        super(new StringReader(Pattern.compile('//\\$START:REMOVE-ON-SDK-GENERATION.*?//\\$END:REMOVE-ON-SDK-GENERATION\\$', Pattern.DOTALL).matcher(input.text).replaceAll('')))
-    }
-}
-
 sourceSets {
     main {
         java {
@@ -81,7 +72,6 @@ task prepareSources(type: Copy) {
         exclude 'samples/**', 'litebase/android/**', '**/*4D.java'
     }
     into('build/src/desktop/java')
-    filter(RemoveFromSdkFilter)
 }
 
 // Prepare sources, before compile

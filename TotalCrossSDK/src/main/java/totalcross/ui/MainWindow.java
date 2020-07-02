@@ -147,153 +147,6 @@ public class MainWindow extends Window implements totalcross.MainClass {
    */
   protected FirebaseMessagingService initFirebaseMessagingService() { return  new FirebaseMessagingService();}
 
-  //$START:REMOVE-ON-SDK-GENERATION$   
-  private static void sendStats() {
-    try {
-      try (File appcr4shedFile = new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE)) {
-        appcr4shedFile.delete();
-      }
-      Settings.abortedOnLastRun = true;
-      // if appCrashed doesn't exists, its because it exitted normally
-      final byte[] dconbytes = readDebugConsole();
-      new Thread() {// app crashed exists, send report
-        @Override
-        public void run() {
-          try {
-            boolean createdBugRep = Settings.ANDROID.equals(Settings.platform)
-                && Vm.exec("bugreport", null, 0, true) == 1;
-            StringBuffer sb = new StringBuffer(128);
-            sb.append("classname='").append(MainWindow.getMainWindow().getClass().getName()).append("'")
-                .append(",platform='").append(Settings.platform).append("'").append(",wres=")
-                .append(Settings.screenWidth).append(",hres=").append(Settings.screenHeight).append(",fonth=")
-                .append(Settings.deviceFontHeight).append(",tcver='").append(Settings.versionStr).append('.')
-                .append(Settings.buildNumber).append("'").append(",romver=").append(Settings.romVersion)
-                .append(",deviceid='").append(Settings.deviceId).append("'").append(",activkey='")
-                .append(Settings.activationKey).append("'");
-            if (Settings.bugreportUser != null) {
-              sb.append(",bruser='").append(Settings.bugreportUser).append("'");
-            }
-            if (Settings.applicationId != null) {
-              sb.append(",appid='").append(Settings.applicationId).append("'");
-            }
-            if (Settings.romSerialNumber != null) {
-              sb.append(",serial='").append(Settings.romSerialNumber).append("'");
-            }
-            if (Settings.imei != null) {
-              sb.append(",imei='").append(Settings.imei).append("'");
-            }
-            if (Settings.appVersion != null) {
-              sb.append(",appver='").append(Settings.appVersion).append("'");
-            }
-            if (Settings.bugreportEmail != null) {
-              sb.append(",bremail='").append(Settings.bugreportEmail).append("'");
-            }
-            if (Settings.companyInfo != null) {
-              sb.append(",compinfo='").append(Settings.companyInfo.replace(',', ';')).append("'");
-            }
-            byte[] info = Convert.getBytes(sb);
-            totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(256);
-            ZLibStream z = new ZLibStream(bas, CompressedStream.DEFLATE);
-            z.writeBytes(info);
-            z.close();
-            final byte[] infobytes = bas.toByteArray();
-            final byte[] bugrbytes;
-            if (createdBugRep) {
-              try (File test = new File("/sdcard/IssueReport/bugreport.zip")) {
-                if (test.exists()) {
-                  try (File asRead = new File("/sdcard/IssueReport/bugreport.zip", File.READ_WRITE);
-                      ByteArrayStream readFromFile = new ByteArrayStream(asRead.getSize());) {
-                    IOUtils.copy(asRead.asInputStream(), readFromFile.asOutputStream(), 4096);
-                    bugrbytes = readFromFile.toByteArray();
-                    asRead.delete();
-                  }
-                } else {
-                  bugrbytes = new byte[0];
-                }
-              }
-            } else {
-              bugrbytes = new byte[0];
-            }
-            //HttpStream
-            totalcross.net.HttpStream.Options options = new totalcross.net.HttpStream.Options();
-            options.openTimeOut = 30000;
-            options.readTimeOut = options.writeTimeOut = 60000;
-            options.httpType = totalcross.net.HttpStream.POST;
-            //options.postHeaders.put("Content-Type","application/octet-stream");
-            options.postHeaders.put("Info-u-len", String.valueOf(info.length));
-            options.postHeaders.put("Info-c-len", String.valueOf(infobytes.length));
-            options.postHeaders.put("Content-Length",
-                String.valueOf(bugrbytes.length + infobytes.length + dconbytes.length));
-            options.postHeaders.put("Bugr-len", String.valueOf(bugrbytes.length));
-            options.postHeaders.put("DCon-len", String.valueOf(dconbytes.length));
-            for (int i = 0; i < 200; i++) {
-              try (totalcross.net.HttpStream httpStream = new totalcross.net.HttpStream(
-                  new totalcross.net.URI("http://www.superwaba.net/SDKRegistrationService/BugReportService"), options) {
-                @Override
-                protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException {
-                  String str = sb.toString();
-                  byte[] bytes = ((CharacterConverter) Convert.charsetForName("ISO-8859-1")).chars2bytes(str.toCharArray(), 0, sb.length());
-                  writeBytes(bytes, 0, bytes.length);
-                  // content length
-                  writeBytes(infobytes, 0, infobytes.length);
-                  if (bugrbytes.length > 0) {
-                    writeBytes(bugrbytes, 0, bugrbytes.length);
-                  }
-                  if (dconbytes.length > 0) {
-                    writeBytes(dconbytes, 0, dconbytes.length);
-                  }
-                }
-              }) {
-                break;
-              } catch (IOException e) {
-                Vm.sleep(60000);
-              }
-            }
-          } catch (Throwable t) {
-            if (Settings.buildNumber == 0) {
-              t.printStackTrace();
-              // ignore
-            }
-          }
-        }
-      }.start();
-    } catch (OutOfMemoryError oome) {
-    } catch (Throwable t) {// FileNotFound
-    }
-    try (File appCr4shed = new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.CREATE_EMPTY)) {
-    } catch (Throwable t) {
-      t.printStackTrace();
-    } // restarting app
-  }
-
-  private static byte[] readDebugConsole() {
-    String name = Convert.appendPath(Settings.appPath, "DebugConsole.txt");
-    byte[] ret = new byte[0];
-    try (File debug = new File(name, File.READ_ONLY)) {
-      if (debug.getSize() == 0) {
-        return new byte[0];
-      }
-
-      totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(debug.getSize() / 10);
-      try (ZipStream zstream = new ZipStream(bas, CompressedStream.DEFLATE)) {
-        zstream.putNextEntry(new ZipEntry("dc.z"));
-        IOUtils.copy(debug.asInputStream(), zstream.asOutputStream(), 4096);
-        zstream.closeEntry();
-      }
-      ret = bas.toByteArray();
-    } catch (OutOfMemoryError oome) {
-    } catch (FileNotFoundException fnfe) {
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    if (ret != null) {// if we read the file, erase it to prevent sending again with the same data
-      Vm.debug(Vm.ERASE_DEBUG);
-    }
-    return ret;
-  }
-  //$END:REMOVE-ON-SDK-GENERATION$
-
   /** Returns true if this is the main thread.
    * @since TotalCross 2.0
    */
@@ -644,12 +497,6 @@ public class MainWindow extends Window implements totalcross.MainClass {
   }
 
   private void startProgram() {
-    //$START:REMOVE-ON-SDK-GENERATION$
-    if (!Settings.onJavaSE && (Settings.applicationId == null
-        || (!Settings.applicationId.equals("HmG4") && !Settings.applicationId.equals("DetM")))) {
-      sendStats();
-    }
-    //$END:REMOVE-ON-SDK-GENERATION$
     initUICalled = Window.needsPaint = true;
     initUI();
     Window.needsPaint = Graphics.needsUpdate = true; // required by device
@@ -691,29 +538,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
         exit(0);
         return;
       }
-      //$START:REMOVE-ON-SDK-GENERATION$
-      if (timeAvailable == -999998) {
-        Settings.activationId = "NO ACTIVATION";
-        startProgram();
-      } else if (timeAvailable == -999999)
-        try {
-          timeAvailable = -1;
-          Window w = (Window) Class.forName("ras.ui.ActivationWindow").newInstance();
-          w.addWindowListener(new WindowListener() {
-
-            @Override
-            public void windowClosed(ControlEvent e) {
-              startProgram();
-            }
-          });
-          w.popupNonBlocking();
-        } catch (Exception e) {
-          Vm.alert("Fatal error: " + e.getMessage() + ". Exiting...");
-          exit(1);
-          return;
-        } else 
-        //$END:REMOVE-ON-SDK-GENERATION$
-        startProgram();
+      startProgram();
     }
     int minInterval = 0;
     TimerEvent timer = firstTimer;
