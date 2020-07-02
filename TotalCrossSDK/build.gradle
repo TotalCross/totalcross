@@ -48,35 +48,15 @@ task wrapper(type: Wrapper) {
 sourceSets {
     main {
         java {
-            exclude 'ras/UtilsInfoProviderImpl.java'
         }
     }
-    desktop {
+    litebase {
         java {
-            srcDirs = ['build/src/desktop/java']
-        }
-        resources {
-            srcDirs = ['src/main/resources']
+            srcDirs = [new File(project.rootDir, '../LitebaseSDK/src/java')]
+            exclude 'samples/**', 'litebase/android/**', '**/*4D.java'
         }
         compileClasspath += sourceSets.main.runtimeClasspath
     }
-}
-
-// Prepare sources for compilation
-task prepareSources(type: Copy) {
-    from('src/main/java') {
-        exclude 'tc/samples/**', 'tc/tools/InvalidateIPA*'
-		exclude { FileTreeElement elem -> (elem.path.contains('ras/') && !elem.path.contains('ras/ActivationClient.java') && !elem.path.contains('ras/ActivationException.java'))}    	
-    }
-    from(new File(project.rootDir, '../LitebaseSDK/src/java')) {
-        exclude 'samples/**', 'litebase/android/**', '**/*4D.java'
-    }
-    into('build/src/desktop/java')
-}
-
-// Prepare sources, before compile
-compileJava {
-    dependsOn prepareSources
 }
 
 buildscript {
@@ -190,16 +170,17 @@ publishing {
 task sourcesJar(type: Jar, dependsOn: classes) {
 	baseName = "totalcross-sdk"
     classifier = 'sources'
-    from (sourceSets.desktop.allSource) { 
-    	exclude 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    from (sourceSets.main.allSource) { 
+    	exclude 'tc/**', '**/*4A.java', '**/*4D.java'
     }
+    from (sourceSets.litebase.allSource)
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	baseName = "totalcross-sdk"
     classifier = 'javadoc'
     from (javadoc.destinationDir) {
-    	exclude 'jdkcompat*/**', 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    	exclude 'jdkcompat*/**', 'tc/**', '**/*4A.java', '**/*4D.java'
     }
 }
 
@@ -208,9 +189,10 @@ task totalcrossJar(type: Jar) {
     baseName = "totalcross-sdk"
     // classifier = 'intermediate'
     
-    from(sourceSets.desktop.output) {
+    from(sourceSets.main.output) {
         exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
     }
+    from(sourceSets.litebase.output)
     from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
     from new File(project.rootDir, 'etc/fonts/Material Icons.tcz')
     into("META-INF/maven/$project.group/$baseName") {
@@ -264,7 +246,7 @@ task signJar {
 task tcbaseJar(type: Jar) {
     baseName = "tcbase"
     from(sourceSets.main.output) {
-        exclude '**/*4A.*', '**/*4B.*', '**/*4B$*', 'PostInstall.*', 'totalcross/Launcher*', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA.java'
+        exclude '**/*4A.*', 'totalcross/Launcher*', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA*'
     }
 }
 
