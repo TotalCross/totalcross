@@ -57,13 +57,7 @@ public class NumericAndSymbolsKeyboard extends Container {
 
   public Button btSlash;
 
-  private int screenWidth, screenHeight, topHeight;
-
-  public NumericAndSymbolsKeyboard(Integer width, Integer height, Integer topHeight) {
-    this.screenWidth = width != null ? width : Settings.screenWidth;
-    this.screenHeight = height != null ? height : Settings.screenHeight;
-    this.topHeight = topHeight != null ? topHeight : 0;
-
+  public NumericAndSymbolsKeyboard() {
     // First line
     bt1 = new Button("1");
     bt2 = new Button("2");
@@ -116,21 +110,10 @@ public class NumericAndSymbolsKeyboard extends Container {
 
   @Override
   public void initUI() {
-    final float X = screenWidth * 0.01f;
-    final float Y = screenHeight * 0.01f;
-    final int HEIGHT_BUTTON = (int) (((screenHeight - (6 * Y)) / 4));
-    final int WIDTH_BUTTON = (int) (((screenWidth - (11 * X)) / 10));
-
-    setRect(LEFT, TOP + topHeight, FILL, FILL);
-
-    // last line
-    add(btComma);
-    add(btPeriod);
-    add(btSpace);
-    add(btSlash);
-    add(btnABC);
-    add(btCancel);
-    add(btDel);
+    final float X = width * 0.01f;
+    final float Y = height * 0.01f;
+    final int HEIGHT_BUTTON = this.fm.height * 3;
+    final int WIDTH_BUTTON = (int) (((width - (11 * X)) / 10));
 
     final int aLeft = LEFT + (int) X;
     final int hGap = (int) X;
@@ -138,12 +121,12 @@ public class NumericAndSymbolsKeyboard extends Container {
     final int aHeight = HEIGHT_BUTTON;
 
     // Last line
-    btnABC.setRect(aLeft, BOTTOM - vGap, WIDTH_BUTTON * 2, aHeight);
-    btComma.setRect(AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
-    btPeriod.setRect(AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
-    btSpace.setRect(AFTER + hGap, SAME, (WIDTH_BUTTON * 3), aHeight);
-    btSlash.setRect(AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
-    btCancel.setRect(AFTER + hGap, SAME, FILL - hGap, aHeight);
+    add(btnABC, aLeft, BOTTOM - vGap, WIDTH_BUTTON * 2, aHeight);
+    add(btComma, AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
+    add(btPeriod, AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
+    add(btSpace, AFTER + hGap, SAME, (WIDTH_BUTTON * 3), aHeight);
+    add(btSlash, AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
+    add(btCancel, AFTER + hGap, SAME, FILL - hGap, aHeight);
 
     // Third line
     addButtonLine(
@@ -213,5 +196,6 @@ public class NumericAndSymbolsKeyboard extends Container {
     button.setForeColor(FORE_COLOR);
     button.setFont(font);
     button.setBackColor(Color.getRGB(233, 233, 235));
+    button.effect = null;
   }
 }
