@@ -55,13 +55,7 @@ public class AlphabetKeyboard extends Container {
 
   public Button btSlash;
 
-  private int screenWidth, screenHeight, topHeight;
-
-  public AlphabetKeyboard(Integer width, Integer height, Integer topHeight) {
-    this.screenWidth = width != null ? width : Settings.screenWidth;
-    this.screenHeight = height != null ? height : Settings.screenHeight;
-    this.topHeight = topHeight != null ? topHeight : 0;
-
+  public AlphabetKeyboard() {
     // First line
     btQ = new Button("Q");
     btW = new Button("W");
@@ -110,31 +104,22 @@ public class AlphabetKeyboard extends Container {
 
   @Override
   public void initUI() {
-    final float X = screenWidth * 0.01f;
-    final float Y = screenHeight * 0.01f;
-    final int HEIGHT_BUTTON = (int) (((screenHeight - (6 * Y)) / 4));
-    final int WIDTH_BUTTON = (int) (((screenWidth - (11 * X)) / 10));
-
-    setRect(LEFT, TOP + topHeight, FILL, FILL);
-
-    add(btComma);
-    add(btPeriod);
-    add(btSpace);
-    add(btSlash);
-    add(btn123);
-    add(btCancel);
+    final float X = width * 0.01f;
+    final float Y = height * 0.01f;
+    final int HEIGHT_BUTTON = this.fm.height * 3;
+    final int WIDTH_BUTTON = (int) (((width - (11 * X)) / 10));
 
     final int aLeft = LEFT + (int) X;
     final int hGap = (int) X;
     final int vGap = (int) (Y);
     final int aHeight = HEIGHT_BUTTON;
 
-    btn123.setRect(aLeft, BOTTOM - vGap, WIDTH_BUTTON * 2, aHeight);
-    btComma.setRect(AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
-    btPeriod.setRect(AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
-    btSpace.setRect(AFTER + hGap, SAME, (WIDTH_BUTTON * 3), aHeight);
-    btSlash.setRect(AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
-    btCancel.setRect(AFTER + hGap, SAME, FILL - hGap, aHeight);
+    add(btn123, aLeft, BOTTOM - vGap, WIDTH_BUTTON * 2, aHeight);
+    add(btComma, AFTER + hGap, SAME, WIDTH_BUTTON, aHeight, btn123);
+    add(btPeriod, AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
+    add(btSpace, AFTER + hGap, SAME, (WIDTH_BUTTON * 3), aHeight);
+    add(btSlash, AFTER + hGap, SAME, WIDTH_BUTTON, aHeight);
+    add(btCancel, AFTER + hGap, SAME, FILL - hGap, aHeight);
 
     // Third line
     addButtonLine(
@@ -190,7 +175,7 @@ public class AlphabetKeyboard extends Container {
     btDel.setBackForeColors(Color.getRGB(143, 152, 162), Color.WHITE);
   }
 
-  private void addButtonLine(
+  private void  addButtonLine(
       int WIDTH_BUTTON, int aLeft, int hGap, int vGap, int aHeight, Button... buttons) {
     add(buttons[0], aLeft, BEFORE - vGap, WIDTH_BUTTON, aHeight);
     configureKeyboardKey(buttons[0]);
@@ -205,6 +190,7 @@ public class AlphabetKeyboard extends Container {
     button.setForeColor(FORE_COLOR);
     button.setFont(font);
     button.setBackColor(Color.getRGB(233, 233, 235));
+    button.effect = null;
   }
 
   public void changeCase(boolean toUpperCase) {

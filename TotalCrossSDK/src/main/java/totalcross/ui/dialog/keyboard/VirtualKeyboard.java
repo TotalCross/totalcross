@@ -13,6 +13,10 @@ import totalcross.ui.Control;
 import totalcross.ui.Edit;
 import totalcross.ui.MultiEdit;
 import totalcross.ui.Window;
+import totalcross.ui.anim.ControlAnimation;
+import totalcross.ui.anim.ControlAnimation.AnimationFinished;
+import totalcross.ui.anim.FadeAnimation;
+import totalcross.ui.anim.PathAnimation;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.Event;
 import totalcross.ui.event.KeyEvent;
@@ -63,6 +67,11 @@ public class VirtualKeyboard extends Window {
   private boolean dragStarted;
 
   private static boolean changeOrientation = false;
+
+  private int animDir = BOTTOM;
+  protected int totalTime = 400;
+  private ControlAnimation currentAnimation;
+  private boolean fadeOnPopAndUnpop = true;
 
   public static void orientationChanged(boolean changed) {
     changeOrientation = changed;
@@ -124,7 +133,8 @@ public class VirtualKeyboard extends Window {
     /* Constant that defines the vertical factor . */
     float Y = Settings.screenHeight * 0.01f;
 
-    setRect(LEFT, BOTTOM, FILL, SCREENSIZE + 50);
+    // Places the keyboard outside the screen with valid width and height for placing children
+    setRect(100000, 100000, SCREENSIZE, (int) (this.fm.height * 16.5), null, true);
 
     setInsets(0, 0, 0, 0);
 
@@ -195,13 +205,7 @@ public class VirtualKeyboard extends Window {
     int buttonWidth = 2 * fmH;
 
     int WIDTH_BUTTON = (int) ((Settings.screenWidth - (5 * X)) / 4);
-    int HEIGHT_BUTTON =
-        (int)
-            (6
-                * ((Settings.screenHeight < Settings.screenWidth
-                        ? Settings.screenWidth
-                        : Settings.screenHeight)
-                    * 0.01));
+    int HEIGHT_BUTTON = this.fm.height * 3;
 
     valueEdit.setRect(
         LEFT + ((int) X), TOP + (int) (Y), (int) ((WIDTH_BUTTON * 3) + (2 * X)), HEIGHT_BUTTON);
@@ -221,16 +225,10 @@ public class VirtualKeyboard extends Window {
     add(btnAbc);
     btnAbc.setVisible(false);
     add(btn123);
-    alfaKeyboard =
-        new AlphabetKeyboard(
-            getAbsoluteRect().width,
-            getAbsoluteRect().height - (HEIGHT_BUTTON + (int) (Y)),
-            HEIGHT_BUTTON + (int) (Y));
-    numericKeyboard =
-        new NumericAndSymbolsKeyboard(
-            getAbsoluteRect().width,
-            getAbsoluteRect().height - (HEIGHT_BUTTON + (int) (Y)),
-            HEIGHT_BUTTON + (int) (Y));
+    alfaKeyboard = new AlphabetKeyboard();
+    add(alfaKeyboard, LEFT, AFTER, FILL, FILL, valueEdit);
+    numericKeyboard = new NumericAndSymbolsKeyboard();
+    add(numericKeyboard, LEFT, AFTER, FILL, FILL, valueEdit);
 
     backspaceEvent.type = KeyEvent.KEY_PRESS;
     backspaceEvent.target = valueEdit;
@@ -246,7 +244,7 @@ public class VirtualKeyboard extends Window {
     //      btn123.setForeColor(BLUE_COLOR);
     //    }
   }
-
+  
   @Override
   protected void onPopup() {
     btnCancelPressed = false;
@@ -260,6 +258,45 @@ public class VirtualKeyboard extends Window {
     } else {
       clrIcon.setVisible(true);
     }
+    
+    if (currentAnimation != null) {
+      return;
+    }
+
+    currentAnimation = PathAnimation.create(this, BOTTOM, null, totalTime);
+    if (fadeOnPopAndUnpop) {
+      currentAnimation.with(FadeAnimation.create(this, true, null, totalTime));
+    }
+    currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
+      @Override
+      public void onAnimationFinished(ControlAnimation anim) {
+        currentAnimation = null;
+      }
+    });
+    currentAnimation.start();
+  }
+
+  protected void setRect(boolean screenResized) {
+    int ww = setW = SCREENSIZE;
+    switch (animDir) {
+    case LEFT:
+      setRect(0 - ww, TOP, ww, FILL, null, screenResized);
+      break;
+    case RIGHT:
+      setRect(RIGHT + ww, TOP, ww, FILL, null, screenResized);
+      break;
+    default:
+      resetSetPositions(); // required to make sure the height gets updated by the following setRect
+      setRect(LEFT, animDir, ww, SCREENSIZE + 50, null, screenResized);
+      break;
+    }
+    Window.needsPaint = true;
+  }
+  
+  @Override
+  public void popup() {
+    setRect(false);
+    super.popup();
   }
 
   @Override
@@ -271,6 +308,30 @@ public class VirtualKeyboard extends Window {
   public void postUnpop() {
     Window.getTopMost().repaintNow();
     isOpen = false;
+  }
+
+  @Override
+  public void unpop() {
+    if (currentAnimation != null) {
+      return;
+    }
+
+    if (animDir == CENTER) {
+      currentAnimation = FadeAnimation.create(this, false, null, totalTime);
+    } else {
+      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime);
+      if (fadeOnPopAndUnpop) {
+        currentAnimation.with(FadeAnimation.create(this, false, null, totalTime));
+      }
+    }
+    currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
+      @Override
+      public void onAnimationFinished(ControlAnimation anim) {
+        currentAnimation = null;
+        VirtualKeyboard.super.unpop();
+      }
+    });
+    currentAnimation.start();
   }
 
   /**
@@ -606,8 +667,8 @@ public class VirtualKeyboard extends Window {
 
   @Override
   public void screenResized() {
-    super.screenResized();
-    unpop();
+    setRect(true);
+    reposition(true);
   }
 
   /** Background Container used on MainWindow*/
