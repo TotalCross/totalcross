@@ -35,8 +35,6 @@ public class AnonymousUserData {
 
     private AnonymousUserData() {
         config = loadConfiguration();
-        if (config != null) {
-        }
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
     }
 
@@ -47,6 +45,13 @@ public class AnonymousUserData {
         return instance;
     }
 
+    /**
+     * Always returns a valid config object. An empty one is returned if anything
+     * fails, not exception is thrown.
+     * 
+     * This must be transparent for the user, no exception or stack trace should
+     * interrupt the usage of the SDK or pollute the standard output.
+     */
     public static JSONObject loadConfiguration() {
         JSONObject config = null;
         final File configDir = new File(AppDirsFactory.getInstance().getUserConfigDir("TotalCross", null, null)
@@ -71,7 +76,7 @@ public class AnonymousUserData {
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
-        return config;
+        return config == null ? new JSONObject() : config;
     }
 
     private static JSONObject readJsonObject(Stream stream) throws IOException {
