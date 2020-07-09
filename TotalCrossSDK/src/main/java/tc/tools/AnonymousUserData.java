@@ -82,23 +82,17 @@ public class AnonymousUserData {
             // ask for permission
         }
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            try (HttpStream hs = new HttpStream(new URI(POST_LAUNCHER), getPostOptions(clazz + " " + String.join(" ", args)))) {
-            } catch (java.io.IOException e1) {
-                e1.printStackTrace();
-            }
+            doPost(POST_LAUNCHER, clazz + " " + String.join(" ", args));
         }
     }
 
     public void deploy(String... args) {
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            try (HttpStream hs = new HttpStream(new URI(POST_DEPLOY), getPostOptions(String.join(" ", args)))) {
-            } catch (java.io.IOException e1) {
-                e1.printStackTrace();
-            }
+            doPost(POST_DEPLOY, String.join(" ", args));
         }
     }
 
-    private HttpStream.Options getPostOptions (String args) {
+    private void doPost(String url, String args) {
         HttpStream.Options options = new HttpStream.Options();
         options.httpType = HttpStream.POST;
         // options.socketFactory = new SSLSocketFactory();
@@ -112,7 +106,10 @@ public class AnonymousUserData {
         dataJson.put("args", args);
         options.data = dataJson.toString();
 
-        return options;
+        try (HttpStream hs = new HttpStream(new URI(url), options)) {
+        } catch (java.io.IOException e1) {
+            e1.printStackTrace();
+        }
     }
 
 }
