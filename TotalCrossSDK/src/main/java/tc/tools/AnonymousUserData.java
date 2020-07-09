@@ -4,7 +4,6 @@
 package tc.tools;
 
 import java.awt.GraphicsEnvironment;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -99,7 +98,7 @@ public class AnonymousUserData {
         }
     }
 
-    public void launcher(String clazz, String... args) {
+    public void launcher(String... args) {
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
             final String[] options = new String[] { "Yes, send anonymous reports", "Don't send" };
             int dialogResult = JOptionPane.showOptionDialog(null, POPUP_TEXT, "", JOptionPane.YES_NO_OPTION,
@@ -114,14 +113,14 @@ public class AnonymousUserData {
             } catch (FileNotFoundException e) {
             }
         }
-        doPost(POST_LAUNCHER, clazz + " " + String.join(" ", args));
+        doPost(POST_LAUNCHER, args);
     }
 
     public void deploy(String... args) {
-        doPost(POST_DEPLOY, String.join(" ", args));
+        doPost(POST_DEPLOY, args);
     }
 
-    private void doPost(String url, String args) {
+    private void doPost(String url, String... args) {
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
             HttpStream.Options options = new HttpStream.Options();
             options.httpType = HttpStream.POST;
@@ -133,7 +132,7 @@ public class AnonymousUserData {
             dataJson.put("os", System.getProperty("os.name"));
             dataJson.put("tc_version", Settings.versionStr);
             dataJson.put("date", sdf.format(new Date()));
-            dataJson.put("args", args);
+            dataJson.put("args", String.join(" ", args));
             options.data = dataJson.toString();
 
             try (HttpStream hs = new HttpStream(new URI(url), options)) {
