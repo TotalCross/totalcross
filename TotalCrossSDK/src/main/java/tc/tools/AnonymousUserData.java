@@ -6,7 +6,8 @@ package tc.tools;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -53,20 +54,16 @@ public class AnonymousUserData {
         configDir.mkdirs();
         final File configFile = new File(configDir, "config.json");
         try (FileInputStream fis = new FileInputStream(configFile)) {
-            ByteArrayStream bas = new ByteArrayStream(4096);
-            bas.readFully(Stream.asStream(fis), 10, 4096);
-            config = new JSONObject(new String(bas.getBuffer(), 0, bas.available(), "UTF-8"));
+            config = readJsonObject(Stream.asStream(fis));
         } catch (FileNotFoundException e) {
             HttpStream.Options options = new HttpStream.Options();
             // options.socketFactory = new SSLSocketFactory();
             try (HttpStream hs = new HttpStream(new URI(GET_UUID), options)) {
-                ByteArrayStream bas = new ByteArrayStream(4096);
-                bas.readFully(hs, 10, 4096);
-                config = new JSONObject(new String(bas.getBuffer(), 0, bas.available(), "UTF-8"));
-                config.put("userUuid",  config.remove("uuid"));
+                config = readJsonObject(hs);
+                config.put("userUuid", config.remove("uuid"));
 
-                try (FileOutputStream fos = new FileOutputStream(configFile)) {
-                    fos.write(bas.getBuffer(), 0, bas.available());
+                try (PrintWriter writer = new PrintWriter(configFile)) {
+                    writer.write(config.toString());
                 }
             } catch (java.io.IOException e1) {
                 e1.printStackTrace();
@@ -75,6 +72,14 @@ public class AnonymousUserData {
             e.printStackTrace();
         }
         return config;
+    }
+
+    private static JSONObject readJsonObject(Stream stream) throws IOException {
+        try (ByteArrayStream bas = new ByteArrayStream(4096)) {
+            bas.readFully(stream, 10, 4096);
+            JSONObject jsonObject = new JSONObject(new String(bas.getBuffer(), 0, bas.available(), "UTF-8"));
+            return jsonObject;
+        }
     }
 
     public void launcher(String clazz, String... args) {
