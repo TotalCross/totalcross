@@ -99,9 +99,9 @@ public class AnonymousUserData {
 
     public void launcher(String clazz, String... args) {
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
+            final String[] options = new String[] { "Yes, send anonymous reports", "Don't send" };
             int dialogResult = JOptionPane.showOptionDialog(null, POPUP_TEXT, "", JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes, send anonymous reports", "Don't send" },
-                    null);
+                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             if (dialogResult == JOptionPane.YES_OPTION) {
                 config.put("userAcceptedToProvideAnonymousData", true);
             } else if (dialogResult == JOptionPane.NO_OPTION) {
