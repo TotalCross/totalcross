@@ -82,14 +82,7 @@ public class AnonymousUserData {
             // ask for permission
         }
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            HttpStream.Options options = new HttpStream.Options();
-            // options.socketFactory = new SSLSocketFactory();
-            options.httpType = HttpStream.POST;
-            options.postHeaders.put("accept", "application/json");
-            options.postHeaders.put("Content-Type", "application/json");
-            options.data = collectData(clazz + " " + String.join(" ", args));
-
-            try (HttpStream hs = new HttpStream(new URI(POST_LAUNCHER), options)) {
+            try (HttpStream hs = new HttpStream(new URI(POST_LAUNCHER), getPostOptions(clazz + " " + String.join(" ", args)))) {
             } catch (java.io.IOException e1) {
                 e1.printStackTrace();
             }
@@ -98,27 +91,28 @@ public class AnonymousUserData {
 
     public void deploy(String... args) {
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            HttpStream.Options options = new HttpStream.Options();
-            // options.socketFactory = new SSLSocketFactory();
-            options.httpType = HttpStream.POST;
-            options.postHeaders.put("accept", "application/json");
-            options.postHeaders.put("Content-Type", "application/json");
-            options.data = collectData(String.join(" ", args));
-
-            try (HttpStream hs = new HttpStream(new URI(POST_DEPLOY), options)) {
+            try (HttpStream hs = new HttpStream(new URI(POST_DEPLOY), getPostOptions(String.join(" ", args)))) {
             } catch (java.io.IOException e1) {
                 e1.printStackTrace();
             }
         }
     }
 
-    private String collectData (String args) {
+    private HttpStream.Options getPostOptions (String args) {
+        HttpStream.Options options = new HttpStream.Options();
+        options.httpType = HttpStream.POST;
+        // options.socketFactory = new SSLSocketFactory();
+        options.postHeaders.put("accept", "application/json");
+        options.postHeaders.put("Content-Type", "application/json");
+
         JSONObject dataJson = new JSONObject(config, new String[] { "userUuid" });
         dataJson.put("os", System.getProperty("os.name"));
         dataJson.put("tc_version", Settings.versionStr);
         dataJson.put("date", sdf.format(new Date()));
         dataJson.put("args", args);
-        return dataJson.toString();
+        options.data = dataJson.toString();
+
+        return options;
     }
 
 }
