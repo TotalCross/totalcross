@@ -82,10 +82,8 @@ public class AnonymousUserData {
                     writer.write(config.toString());
                 }
             } catch (java.io.IOException e1) {
-                e1.printStackTrace();
             }
         } catch (java.io.IOException e) {
-            e.printStackTrace();
         }
         return config == null ? new JSONObject() : config;
     }
@@ -137,7 +135,6 @@ public class AnonymousUserData {
 
             try (HttpStream hs = new HttpStream(new URI(url), options)) {
             } catch (java.io.IOException e1) {
-                e1.printStackTrace();
             }
         }
     }
