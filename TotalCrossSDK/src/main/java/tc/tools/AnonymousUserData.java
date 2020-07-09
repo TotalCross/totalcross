@@ -26,7 +26,7 @@ import totalcross.sys.Settings;
 
 public class AnonymousUserData {
 
-    private static final String BASE_URL = "http://aqueous-plateau-93003.herokuapp.com/api/v1/";
+    private static final String BASE_URL = "https://aqueous-plateau-93003.herokuapp.com/api/v1/";
     private static final String GET_UUID = BASE_URL + "users/get-anonymous-uuid";
     private static final String POST_LAUNCHER = BASE_URL + "launch";
     private static final String POST_DEPLOY = BASE_URL + "deploy";
@@ -72,7 +72,7 @@ public class AnonymousUserData {
             config = readJsonObject(Stream.asStream(fis));
         } catch (FileNotFoundException e) {
             HttpStream.Options options = new HttpStream.Options();
-            // options.socketFactory = new SSLSocketFactory();
+            options.socketFactory = new SSLSocketFactory();
             try (HttpStream hs = new HttpStream(new URI(GET_UUID), options)) {
                 config = readJsonObject(hs);
                 config.put("userUuid", config.remove("uuid"));
@@ -119,7 +119,7 @@ public class AnonymousUserData {
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
             HttpStream.Options options = new HttpStream.Options();
             options.httpType = HttpStream.POST;
-            // options.socketFactory = new SSLSocketFactory();
+            options.socketFactory = new SSLSocketFactory();
             options.postHeaders.put("accept", "application/json");
             options.postHeaders.put("Content-Type", "application/json");
 
