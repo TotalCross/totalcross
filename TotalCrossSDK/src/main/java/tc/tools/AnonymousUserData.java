@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools;
 
+import java.awt.GraphicsEnvironment;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,6 +12,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.swing.JOptionPane;
 
 import net.harawata.appdirs.AppDirsFactory;
 import totalcross.io.ByteArrayStream;
@@ -26,6 +30,12 @@ public class AnonymousUserData {
     private static final String GET_UUID = BASE_URL + "users/get-anonymous-uuid";
     private static final String POST_LAUNCHER = BASE_URL + "launch";
     private static final String POST_DEPLOY = BASE_URL + "deploy";
+
+    private static final String POPUP_TEXT = "We'd like to collect anonymous telemetry data to help us prioritize \n"
+            + "improvements. This includes how often you deploy and launches \n"
+            + "(on simulator) your app, witch OS you deploy for, your timezone and \n"
+            + "which totalcross version you're using. We do not collect any personal \n"
+            + "data or sensitive information. Do you allow TotalCross to send us \n" + "anonymous report?";
 
     private static AnonymousUserData instance;
 
@@ -88,8 +98,15 @@ public class AnonymousUserData {
     }
 
     public void launcher(String clazz, String... args) {
-        if (config.isNull("userAcceptedToProvideAnonymousData")) {
-            // ask for permission
+        if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
+            int dialogResult = JOptionPane.showOptionDialog(null, POPUP_TEXT, "", JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes, send anonymous reports", "Don't send" },
+                    null);
+            if (dialogResult == JOptionPane.YES_OPTION) {
+                config.put("userAcceptedToProvideAnonymousData", true);
+            } else if (dialogResult == JOptionPane.NO_OPTION) {
+                config.put("userAcceptedToProvideAnonymousData", false);
+            }
         }
         doPost(POST_LAUNCHER, clazz + " " + String.join(" ", args));
     }
