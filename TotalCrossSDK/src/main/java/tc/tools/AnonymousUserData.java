@@ -39,6 +39,8 @@ public class AnonymousUserData {
 
     private static AnonymousUserData instance;
 
+    private static File configFile;
+
     private JSONObject config;
 
     private SimpleDateFormat sdf;
@@ -67,7 +69,7 @@ public class AnonymousUserData {
         final File configDir = new File(AppDirsFactory.getInstance().getUserConfigDir("TotalCross", null, null)
                 .replace("Application Support", "Preferences")); // this replace only works on macos
         configDir.mkdirs();
-        final File configFile = new File(configDir, "config.json");
+        configFile = new File(configDir, "config.json");
         try (FileInputStream fis = new FileInputStream(configFile)) {
             config = readJsonObject(Stream.asStream(fis));
         } catch (FileNotFoundException e) {
@@ -106,6 +108,10 @@ public class AnonymousUserData {
                 config.put("userAcceptedToProvideAnonymousData", true);
             } else if (dialogResult == JOptionPane.NO_OPTION) {
                 config.put("userAcceptedToProvideAnonymousData", false);
+            }
+            try (PrintWriter writer = new PrintWriter(configFile)) {
+                writer.write(config.toString());
+            } catch (FileNotFoundException e) {
             }
         }
         doPost(POST_LAUNCHER, clazz + " " + String.join(" ", args));
