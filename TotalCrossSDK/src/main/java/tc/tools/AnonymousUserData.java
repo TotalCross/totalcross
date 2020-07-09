@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 
 import net.harawata.appdirs.AppDirsFactory;
@@ -28,16 +27,14 @@ public class AnonymousUserData {
     private static final String POST_DEPLOY = BASE_URL + "deploy";
 
     private static AnonymousUserData instance;
-    private final String ID;
 
-    private JSONObject config = new JSONObject();
+    private JSONObject config;
 
     private SimpleDateFormat sdf;
 
     private AnonymousUserData() {
-        ID = getStoredActivationKey();
-        if (ID != null) {
-            config.put("userUuid", ID);
+        config = loadConfiguration();
+        if (config != null) {
         }
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
     }
@@ -49,8 +46,8 @@ public class AnonymousUserData {
         return instance;
     }
 
-    public static String getStoredActivationKey() {
-        String activationKey = null;
+    public static JSONObject loadConfiguration() {
+        JSONObject config = null;
         final File configDir = new File(AppDirsFactory.getInstance().getUserConfigDir("TotalCross", null, null)
                 .replace("Application Support", "Preferences")); // this replace only works on macos
         configDir.mkdirs();
@@ -58,16 +55,15 @@ public class AnonymousUserData {
         try (FileInputStream fis = new FileInputStream(configFile)) {
             ByteArrayStream bas = new ByteArrayStream(4096);
             bas.readFully(Stream.asStream(fis), 10, 4096);
-            JSONObject o = new JSONObject(new String(bas.getBuffer(), 0, bas.available(), "UTF-8"));
-            activationKey = o.optString("uuid");
+            config = new JSONObject(new String(bas.getBuffer(), 0, bas.available(), "UTF-8"));
         } catch (FileNotFoundException e) {
             HttpStream.Options options = new HttpStream.Options();
             // options.socketFactory = new SSLSocketFactory();
             try (HttpStream hs = new HttpStream(new URI(GET_UUID), options)) {
                 ByteArrayStream bas = new ByteArrayStream(4096);
                 bas.readFully(hs, 10, 4096);
-                JSONObject o = new JSONObject(new String(bas.getBuffer(), 0, bas.available(), "UTF-8"));
-                activationKey = o.optString("uuid");
+                config = new JSONObject(new String(bas.getBuffer(), 0, bas.available(), "UTF-8"));
+                config.put("userUuid",  config.remove("uuid"));
 
                 try (FileOutputStream fos = new FileOutputStream(configFile)) {
                     fos.write(bas.getBuffer(), 0, bas.available());
@@ -78,43 +74,51 @@ public class AnonymousUserData {
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
-        return activationKey;
+        return config;
     }
 
     public void launcher(String clazz, String... args) {
-        HttpStream.Options options = new HttpStream.Options();
-        // options.socketFactory = new SSLSocketFactory();
-        options.httpType = HttpStream.POST;
-        options.postHeaders.put("accept", "application/json");
-        options.postHeaders.put("Content-Type", "application/json");
-        JSONObject dataJson = new JSONObject(config, new String[] { "userUuid" });
-        dataJson.put("os", System.getProperty("os.name"));
-        dataJson.put("tc_version", Settings.versionStr);
-        dataJson.put("date", sdf.format(new Date()));
-        dataJson.put("args", clazz + " " + Arrays.toString(args));
-        options.data = dataJson.toString();
+        if (config.isNull("userAcceptedToProvideAnonymousData")) {
+            // ask for permission
+        }
+        if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
+            HttpStream.Options options = new HttpStream.Options();
+            // options.socketFactory = new SSLSocketFactory();
+            options.httpType = HttpStream.POST;
+            options.postHeaders.put("accept", "application/json");
+            options.postHeaders.put("Content-Type", "application/json");
+            options.data = collectData(clazz + " " + String.join(" ", args));
 
-        try (HttpStream hs = new HttpStream(new URI(POST_LAUNCHER), options)) {
-        } catch (java.io.IOException e1) {
-            e1.printStackTrace();
+            try (HttpStream hs = new HttpStream(new URI(POST_LAUNCHER), options)) {
+            } catch (java.io.IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
     public void deploy(String... args) {
-        HttpStream.Options options = new HttpStream.Options();
-        options.socketFactory = new SSLSocketFactory();
-        options.httpType = HttpStream.POST;
+        if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
+            HttpStream.Options options = new HttpStream.Options();
+            // options.socketFactory = new SSLSocketFactory();
+            options.httpType = HttpStream.POST;
+            options.postHeaders.put("accept", "application/json");
+            options.postHeaders.put("Content-Type", "application/json");
+            options.data = collectData(String.join(" ", args));
+
+            try (HttpStream hs = new HttpStream(new URI(POST_DEPLOY), options)) {
+            } catch (java.io.IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+
+    private String collectData (String args) {
         JSONObject dataJson = new JSONObject(config, new String[] { "userUuid" });
         dataJson.put("os", System.getProperty("os.name"));
         dataJson.put("tc_version", Settings.versionStr);
         dataJson.put("date", sdf.format(new Date()));
-        dataJson.put("args", Arrays.toString(args));
-        options.data = dataJson.toString();
-
-        try (HttpStream hs = new HttpStream(new URI(POST_DEPLOY), options)) {
-        } catch (java.io.IOException e1) {
-            e1.printStackTrace();
-        }
+        dataJson.put("args", args);
+        return dataJson.toString();
     }
 
 }
