@@ -172,7 +172,7 @@ public class Deploy {
       showException(e, null);
       throw e;
     } finally {
-      AnonymousUserData.getInstance().deploy(args);
+      AnonymousUserData.instance().deploy(args);
     }
   }
 

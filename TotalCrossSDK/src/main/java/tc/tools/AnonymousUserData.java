@@ -38,7 +38,7 @@ public class AnonymousUserData {
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
     }
 
-    public static AnonymousUserData getInstance() {
+    public static AnonymousUserData instance() {
         if (instance == null) {
             instance = new AnonymousUserData();
         }

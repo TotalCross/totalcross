@@ -466,7 +466,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   protected void parseArguments(String clazz, String... args) {
-    AnonymousUserData.getInstance().launcher(clazz, args);
+    AnonymousUserData.instance().launcher(clazz, args);
     int n = args.length, i = 0;
     String newDataPath = null;
     try {
