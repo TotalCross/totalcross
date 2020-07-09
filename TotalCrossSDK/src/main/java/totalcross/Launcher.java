@@ -43,6 +43,7 @@ import java.util.zip.ZipInputStream;
 import net.coobird.thumbnailator.Thumbnails;
 import sun.awt.image.ToolkitImage;
 import tc.tools.JarClassPathLoader;
+import tc.tools.AnonymousUserData;
 import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
@@ -465,6 +466,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   protected void parseArguments(String clazz, String... args) {
+    AnonymousUserData.getInstance().launcher(clazz, args);
     int n = args.length, i = 0;
     String newDataPath = null;
     try {
