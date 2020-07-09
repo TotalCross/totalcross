@@ -81,34 +81,32 @@ public class AnonymousUserData {
         if (config.isNull("userAcceptedToProvideAnonymousData")) {
             // ask for permission
         }
-        if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            doPost(POST_LAUNCHER, clazz + " " + String.join(" ", args));
-        }
+        doPost(POST_LAUNCHER, clazz + " " + String.join(" ", args));
     }
 
     public void deploy(String... args) {
-        if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            doPost(POST_DEPLOY, String.join(" ", args));
-        }
+        doPost(POST_DEPLOY, String.join(" ", args));
     }
 
     private void doPost(String url, String args) {
-        HttpStream.Options options = new HttpStream.Options();
-        options.httpType = HttpStream.POST;
-        // options.socketFactory = new SSLSocketFactory();
-        options.postHeaders.put("accept", "application/json");
-        options.postHeaders.put("Content-Type", "application/json");
+        if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
+            HttpStream.Options options = new HttpStream.Options();
+            options.httpType = HttpStream.POST;
+            // options.socketFactory = new SSLSocketFactory();
+            options.postHeaders.put("accept", "application/json");
+            options.postHeaders.put("Content-Type", "application/json");
 
-        JSONObject dataJson = new JSONObject(config, new String[] { "userUuid" });
-        dataJson.put("os", System.getProperty("os.name"));
-        dataJson.put("tc_version", Settings.versionStr);
-        dataJson.put("date", sdf.format(new Date()));
-        dataJson.put("args", args);
-        options.data = dataJson.toString();
+            JSONObject dataJson = new JSONObject(config, new String[] { "userUuid" });
+            dataJson.put("os", System.getProperty("os.name"));
+            dataJson.put("tc_version", Settings.versionStr);
+            dataJson.put("date", sdf.format(new Date()));
+            dataJson.put("args", args);
+            options.data = dataJson.toString();
 
-        try (HttpStream hs = new HttpStream(new URI(url), options)) {
-        } catch (java.io.IOException e1) {
-            e1.printStackTrace();
+            try (HttpStream hs = new HttpStream(new URI(url), options)) {
+            } catch (java.io.IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
