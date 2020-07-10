@@ -26,7 +26,7 @@ import totalcross.sys.Settings;
 
 public class AnonymousUserData {
 
-    private static final String BASE_URL = "https://aqueous-plateau-93003.herokuapp.com/api/v1/";
+    private static final String BASE_URL = "https://statistics.totalcross.com/api/v1/";
     private static final String GET_UUID = BASE_URL + "users/get-anonymous-uuid";
     private static final String POST_LAUNCHER = BASE_URL + "launch";
     private static final String POST_DEPLOY = BASE_URL + "deploy";
