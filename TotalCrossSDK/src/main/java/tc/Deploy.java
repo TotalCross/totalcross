@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import tc.tools.JarClassPathLoader;
+import tc.tools.AnonymousUserData;
 import tc.tools.converter.J2TC;
 import tc.tools.deployer.Bitmaps;
 import tc.tools.deployer.DeploySettings;
@@ -170,6 +171,8 @@ public class Deploy {
     } catch (Exception e) {
       showException(e, null);
       throw e;
+    } finally {
+      AnonymousUserData.instance().deploy(args);
     }
   }
 
