@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 import net.harawata.appdirs.AppDirsFactory;
@@ -32,7 +33,7 @@ public class AnonymousUserData {
 
     private static final String POPUP_TEXT = "We'd like to collect anonymous telemetry data to help us prioritize \n"
             + "improvements. This includes how often you deploy and launches \n"
-            + "(on simulator) your app, witch OS you deploy for, your timezone and \n"
+            + "(on simulator) your app, which OS you deploy for, your timezone and \n"
             + "which totalcross version you're using. We do not collect any personal \n"
             + "data or sensitive information. Do you allow TotalCross to send us \n" + "anonymous report?";
 
@@ -99,8 +100,9 @@ public class AnonymousUserData {
     public void launcher(String... args) {
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
             final String[] options = new String[] { "Yes, send anonymous reports", "Don't send" };
+            final ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("tc/crossy.png"));
             int dialogResult = JOptionPane.showOptionDialog(null, POPUP_TEXT, "", JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    JOptionPane.QUESTION_MESSAGE, icon, options, options[0]);
             if (dialogResult == JOptionPane.YES_OPTION) {
                 config.put("userAcceptedToProvideAnonymousData", true);
             } else if (dialogResult == JOptionPane.NO_OPTION) {
