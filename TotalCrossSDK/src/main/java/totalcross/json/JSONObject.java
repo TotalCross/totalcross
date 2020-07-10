@@ -805,7 +805,6 @@ public class JSONObject {
     try {
       return this.getBoolean(key);
     } catch (Exception e) {
-      e.printStackTrace();
       return defaultValue;
     }
   }
@@ -838,7 +837,6 @@ public class JSONObject {
     try {
       return this.getDouble(key);
     } catch (Exception e) {
-      e.printStackTrace();
       return defaultValue;
     }
   }
@@ -871,7 +869,6 @@ public class JSONObject {
     try {
       return this.getInt(key);
     } catch (Exception e) {
-      e.printStackTrace();
       return defaultValue;
     }
   }
@@ -930,7 +927,6 @@ public class JSONObject {
     try {
       return this.getLong(key);
     } catch (Exception e) {
-      e.printStackTrace();
       return defaultValue;
     }
   }
