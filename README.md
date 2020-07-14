@@ -4,6 +4,8 @@
 <h1> TotalCross</h1> </div>
 <p align="center">Create your Graphical User Inteface in <em><strong>record time!</strong></em></p>
 
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
+
 ## Start coding with TotalCross
 
 TotalCross exists to make Graphical User Interface creation easy.
