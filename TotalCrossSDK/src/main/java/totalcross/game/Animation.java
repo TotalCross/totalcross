@@ -22,7 +22,6 @@ import totalcross.ui.image.ImageException;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-@Deprecated
 public class Animation extends Control {
   /** 
    * Sets to true to stop the animation if its parent window is not the top most. 

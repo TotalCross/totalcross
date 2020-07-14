@@ -7,7 +7,6 @@ package totalcross.game;
 
 import totalcross.ui.event.EventHandler;
 
-@Deprecated
 public interface AnimationHandler extends EventHandler {
 
 }

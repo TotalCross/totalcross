@@ -12,7 +12,6 @@ package totalcross.game;
  * has a given rank and is composed by a score and a performer name.
  * @see HighScores
  */
-@Deprecated
 public class HighScoreEntry {
   private HighScores parent;
   /** The performer's name. */

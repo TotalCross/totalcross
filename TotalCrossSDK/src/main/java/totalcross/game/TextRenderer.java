@@ -83,7 +83,6 @@ import totalcross.util.Hashtable;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-@Deprecated
 public class TextRenderer {
   /*
    * share all digit renderings by font.
