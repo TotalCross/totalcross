@@ -83,6 +83,7 @@ sk_sp<SkSurface> surface;
 SkCanvas *canvas;
 SkPaint forePaint; // used for contours
 SkPaint backPaint; // used for fills
+SkPaint alphaPaint; // used for alphaMask
 SkBitmap bitmap;
 #define TYPEFACE_LEN 32
 sk_sp<SkTypeface> typefaces[TYPEFACE_LEN];
@@ -246,12 +247,13 @@ void skia_restoreClip()
     canvas->restore();
 }
 
-void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32 srcW, int32 srcH, int32 w, int32 h, int32 dstX, int32 dstY, int32 doClip)
+void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32 srcW, int32 srcH, int32 w, int32 h, int32 dstX, int32 dstY, int32 alphaMask, int32 doClip)
 {
     SKIA_TRACE()
 
+    alphaPaint.setAlpha(alphaMask);
     canvas->drawBitmapRect(textures[id], SkRect::MakeXYWH(srcX, srcY, w, h),
-                           SkRect::MakeXYWH(dstX, dstY, w, h), nullptr);
+                           SkRect::MakeXYWH(dstX, dstY, w, h), &alphaPaint);
 }
 
 // The getPixel call demands a 1-pixel readback from the GPU. Avoid it if possible.
