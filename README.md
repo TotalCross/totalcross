@@ -1,81 +1,295 @@
-<div align="center"> <h1> TotalCross </h1> </div>
+<a href="https://totalcross.com/" target="_blank">![TotalCross](./logo_header.png)</a>
 
-![TotalCross](https://i.imgur.com/f8qEAoK.png)
+<div align="center"> 
+<h1> TotalCross</h1> </div>
+<p align="center">Create your Graphical User Inteface in <em><strong>record time!</strong></em></p>
 
-<div align="center">
-  <a href="https://learn.totalcross.com/documentation/get-started" target="_blank">Try in 8 minutes</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://totalcross.com/" target="_blank">Website</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="http://learn.totalcross.com/" target="_blank">Docs</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://medium.com/totalcross-community" target="_blank">Blog</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://t.me/totalcrosscommunity" target="_blank">Telegram</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://www.youtube.com/c/totalcross" target="_blank">Videos</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://totalcross.com/community/" target="_blank">Community</a>
-</div>
+## Start coding with TotalCross
 
-## What is TotalCross?
-TotalCross is a tool to make easy and fast GUI creation:
- 
-* [KnowCode](https://github.com/TotalCross/KnowCodeXML): A computer vision project to help developers build user interfaces in less time. A library that converts a design image to a file that runs android XML UI + TotalCross SDK on Linux Arm, iOS, Android and more;
-* TotalCross SDK: Is a free open source GUI Creator and framework for developing cross-platform applications for Embedded Systems, Android, iOS, Wince, Windows and Linux desktop applications, and Linux Arm. Current supported languages are Kotlin, Java and any Java Based language.
+TotalCross exists to make Graphical User Interface creation easy.
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
+To start you only need to install it in your machine, and you have two options:
 
-## How TotalCross SDK works?
-![Usage flow](https://i.imgur.com/Df3NGui.png)
+### Install TotalCross VSCode plugin
 
-You can use Kotlin or Java to create applications using TotalCross Java API which provides rich GUI components.  The application source code is then compiled resulting in ByteCode Java, which is converted to TotalCross Optimized Bytecode, packaged and distributed to the platforms the user specifies which can be Window and Linux desktop, iOS, Android and Linux ARM.
+The quickest way to start using TotalCross is to download the [VSCode plugin](https://marketplace.visualstudio.com/items?itemName=totalcross.vscode-totalcross). We highly recommend this route as it is a smoother process.
 
-## What is inside this repository?
-The TotalCross SDK, comprised by two main components:
+Make sure all dependencies are fulfilled ([Java JDK 1.8+](https://www.azul.com/downloads/zulu-community/?version=java-8-lts&architecture=x86-64-bit&package=jdk), [Maven 3.6.2+](https://maven.apache.org/download.cgi), and
+[Microsoft Java Extension Plugin](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack)), create a new project, and you are ready to go!
 
-* TotalCross Java API - Combination of several APIs such as GUI components, Database and GPIO to create a single more robust API that guarantees quality and support in application development.
-* TCVM -  Totalcross Virtual Machine, originally idealized as a Master's Thesis, has been built and improved over 10 years. It's log-based (Java) architecture, bytecode "itself with its own folders" for the most frequent and implemented **almost 100% with C guarantees performance equivalent to native development**. To read more about the TCVM click [here](https://learn.totalcross.com/#virtual-machine-features).
+### ... or Compile TotalCross yourself
 
-## Community
-TotalCross's goal is to build a large and supportive community composed by enthusiastic mobile and embedded developers. You can be part of the [telegram](https://t.me/totalcrosscommunity) and here on [GitHub](https://github.com/totalcross/totalcross).
+If you prefer to clone our repository and compile it yourself the process is a bit more involved, but we'll guide you through it.
 
-### Become a TotalCross contributor
+First you will build the TotalCross SDK and next you will build the TotalCross VM.
 
-In order to create a better tool and develop GUI for embedded systems and develop cross platform applications, it helps us in the community, so we have separated some challenges for those who want to contribute:
+#### Building TotalCross SDK
 
-* Creating graphical components in the Java API:
-    * Create support for maps;
-    * Create customized widgets on camera.
-* Improving the TC Java API:
-    * Adding API port for Python.
-* Improving the TCVM: 
-    * Create support for external and native libraries.
-* Interacting in the [issues repository](https://github.com/TotalCross/totalcross/issues);
-    * Reporting and fixing new bugs;
-    * Responding issues report;
-    * Suggesting and voting on new features.
-* Making documentation more clear and complete:
-    * Improving the [getting started](https://learn.totalcross.com/get-started/);
-    * Pointing out improvements needed in our documentation and suggest new themes by opening [issues](https://github.com/TotalCross/totalcross/issues).
+After cloning the project (`git clone https://github.com/TotalCross/totalcross.git TotalCross`) you will have:
 
-##### 👉 [See how to be a contributor](CONTRIBUTING.md)!
+```bash
+TotalCross/
+├─ LitebaseSDK/
+├─ TotalCrossSDK/
+└─ TotalCrossVM/
+```
 
-### Our contributors
-These people have helped make TotalCross better by enriching ongoing discussions, reporting bugs, opening issues, and publishing relevant content (videos, articles and etc):
-* [@otavio](https://github.com/otavio)
-* [@jeffque](https://github.com/jeffque)
-* [@microhobby](https://github.com/microhobby)
+You will need to enter inside `TotalCrossSDK` folder, please:
 
+```bash
+$ cd TotalCrossSDK
+```
+
+The next step you need to call _Gradle_:
+
+```bash
+~/TotalCrossSDK$ ./gradlew dist
+```
+
+If you don't have any package errors, your folder will be something like this:
+
+```bash
+TotalCross
+├─ LitebaseSDK
+├─ TotalCrossSDK
+│    ├─ bin/
+│    ├─ build/
+│    ├─ dist/
+│    │    ├─vm/
+│    │    │    ├─ TCBase.tcz
+│    │    │    ├─ TCFont.tcz
+│    │    │    └─ TCUI.tcz
+│    │    └─totalcross-sdk.jar
+│    ├─ docs/
+│    ├─ etc/
+│    ├─ gradle/
+│    ├─ src/
+│    ├─ build.gradle
+│    ├─ build.xml
+│    ├─ gradlew
+│    ├─ gradlew.bat
+│    ├─ license.txt
+│    └─ proguard.txt
+└─ TotalCrossVM
+```
+
+Look to the `dist` folder, if you have the same files you just need to copy `dist` to your valid SDK folder
+
+```bash
+~/TotalCrossSDK$ cp -r dist $PATH_TO_VALID_SDK/
+```
+
+#### Build TotalCross SDK
+
+These are the steps to generate your custom VM. Our build process **needs Docker**, please [install it](https://docs.docker.com/get-docker/) and check your installation:
+
+```bash
+$ docker --version
+```
+
+After cloning the project (`git clone https://github.com/TotalCross/totalcross.git TotalCross`) you will have:
+
+```bash
+TotalCross/
+├─ LitebaseSDK/
+├─ TotalCrossSDK/
+└─ TotalCrossVM/
+```
+
+You will need to enter inside `TotalCrossVM/builders` folder, please:
+
+```bash
+$ cd TotalCrossVM/builders
+```
+
+Your folder structure will be something like this:
+
+```bash
+TotalCross
+├─ LitebaseSDK
+├─ TotalCrossSDK
+└─ TotalCrossVM
+     ├─ builders/
+     │    ├─ droid/
+     │    ├─ gcc-linux-arm/
+     │    ├─ gcc-posix/
+     │    ├─ vc2008/
+     │    ├─ vc2013/
+     │    ├─ vc2017/
+     │    ├─ xcode/
+     │    └─ build.xml
+     ├─ deps/
+     └─ src/
+```
+
+### Linux x86-64
+
+Enter into `gcc-posix` folder:
+
+```bash
+~TotalCrossVM/builders$ cd gcc-posix
+```
+
+First, let's build the docker image:
+
+```bash
+~TotalCrossVM/builders/gcc-posix$ cd docker
+~TotalCrossVM/builders/gcc-posix/docker$ ./build.sh
+```
+
+If you have no problems you should check the image:
+
+```bash
+~TotalCrossVM/builders/gcc-posix/docker$ docker images
+REPOSITORY                              TAG                 IMAGE ID            CREATED             SIZE
+totalcross/amd64-cross-compile          bionic              cd8fb68f0fc6        a minute ago        1.03GB
+<none>                                  <none>              1a0e943d6239        27 hours ago        464MB
+.
+.
+.
+~TotalCrossVM/builders/gcc-posix/docker$ cd ..
+```
+
+Next, let's build `libtcvm.so`:
+
+```bash
+~TotalCrossVM/builders/gcc-posix$ cd tcvm
+~TotalCrossVM/builders/gcc-posix/tcvm$ ./build.sh
+```
+
+If you don't have any build errors, your folder will be something like this:
+
+```bash
+TotalCross
+├─ LitebaseSDK
+├─ TotalCrossSDK
+└─ TotalCrossVM
+     ├─ builders/
+     │    ├─ droid/
+     │    ├─ gcc-linux-arm/
+     │    ├─ gcc-posix/
+     │    │    ├─ docker
+     │    │    ├─ launcher
+     │    │    └─ tcvm
+     │    │         ├─ bin/
+     │    │         │    └─ libtcvm.so
+     │    │         ├─ build.sh
+     │    │         ├─ libskia.a
+     │    │         └─ Makefile
+     │    ├─ vc2008/
+     │    ├─ vc2013/
+     │    ├─ vc2017/
+     │    ├─ xcode/
+     │    └─ build.xml
+     ├─ deps/
+     └─ src/
+```
+
+Look to the `bin` folder, now you just need to copy `libtcvm.so` to your valid SDK folder
+
+```bash
+~TotalCrossVM/builders/gcc-posix/tcvm$ cp bin/libtcvm.so $PATH_TO_VALID_SDK/dist/vm/linux
+```
+
+### Linux ARM
+
+Enter into `gcc-linux-arm` folder:
+
+```bash
+~TotalCrossVM/builders$ cd gcc-linux-arm
+```
+
+First, let's build the docker image:
+
+```bash
+~TotalCrossVM/builders/gcc-linux-arm$ cd docker-builder-image
+~TotalCrossVM/builders/gcc-linux-arm/docker-builder-image$ ./build.sh
+```
+
+If you have no problems you should check the image:
+
+```bash
+~TotalCrossVM/builders/gcc-posix/docker$ docker images
+REPOSITORY                              TAG                 IMAGE ID            CREATED             SIZE
+totalcross/totalcross/cross-compile     latest              cd8fb68f0fc6        a minute ago        1.03GB
+<none>                                  <none>              1a0eea5a6dv0        15 hours ago        1.46GB
+.
+.
+.
+~TotalCrossVM/builders/gcc-linux-arm/docker-builder-image$ cd ..
+```
+
+Next, let's build `libtcvm.so`:
+
+```bash
+~TotalCrossVM/builders/gcc-linux-arm$ cd tcvm
+~TotalCrossVM/builders/gcc-linux-arm/tcvm$ ./build.sh
+```
+
+If you don't have any build errors, your folder will be something like this:
+
+```bash
+TotalCross
+├─ LitebaseSDK
+├─ TotalCrossSDK
+└─ TotalCrossVM
+     ├─ builders/
+     │    ├─ droid/
+     │    ├─ gcc-linux-arm/
+     │    │    ├─ docker-builder-image
+     │    │    ├─ launcher
+     │    │    └─ tcvm
+     │    │         ├─ bin/
+     │    │         │    └─ libtcvm.so
+     │    │         ├─ build.sh
+     │    │         ├─ libskia.a
+     │    │         └─ Makefile
+     │    ├─ gcc-posix/
+     │    ├─ vc2008/
+     │    ├─ vc2013/
+     │    ├─ vc2017/
+     │    ├─ xcode/
+     │    └─ build.xml
+     ├─ deps/
+     └─ src/
+```
+
+Look to the `bin` folder, now you just need to copy `libtcvm.so` to your valid SDK folder
+
+```bash
+~TotalCrossVM/builders/gcc-linux-arm/tcvm$ cp bin/libtcvm.so $PATH_TO_VALID_SDK/dist/vm/linux_arm
+```
+
+## What next?
+
+Check our documentation for a [quick starting guide](https://learn.totalcross.com/documentation/get-started) (aprox. 8 minutes) and learn how TotalCross Components will save you tons of time when you build your GUI.
+
+## Have any questions?
+
+Join our [Telegram group](https://t.me/totalcrosscommunity). [Bruno](https://github.com/brunoamuniz) and [Italo](https://github.com/ItaloYeltsin) are super quick to welcome and provide help to new users.
+
+There's also a handy [FAQ.md](./FAQ.md) file with all sorts of useful information, as what is inside this repo, how TotalCross works, how to become a contributor, and more.
+
+## Our contributors
+
+We'd like to give a BIG shout-out to our three first external contributors! These people have helped make TotalCross better by enriching ongoing discussions, reporting bugs, opening issues, and publishing relevant content (videos, articles and etc):
+
+- [@otavio](https://github.com/otavio)
+- [@jeffque](https://github.com/jeffque)
+- [@microhobby](https://github.com/microhobby)
+
+Guys, you rock!
 
 ## RoadMap
-To find out what TotalCross world domination plans are, by clicking [here](https://learn.totalcross.com/roadmap).
 
-### Where you can find us
-* [Docs](learn.totalcross.com);
-* [Issues](gitlab.com/totalcross/totalcross/issues);
-* [Telegram](https://t.me/totalcrosscommunity);
-* [Medium](https://medium.com/totalcross-community/about);
-* [Youtube](https://www.youtube.com/channel/UCSXUBRBC4Ec3_o9R7-3XX-w);
-* [Twitter](https://twitter.com/TotalCross);
-* [Instagram](https://www.instagram.com/totalcross/).
+Find out what TotalCross world domination plans are by clicking [here](https://learn.totalcross.com/roadmap).
+
+### Where you can find us:
+
+- [Docs](learn.totalcross.com);
+- [Issues](gitlab.com/totalcross/totalcross/issues);
+- [Telegram](https://t.me/totalcrosscommunity);
+- [Medium](https://medium.com/totalcross-community/about);
+- [Youtube](https://www.youtube.com/channel/UCSXUBRBC4Ec3_o9R7-3XX-w);
+- [Twitter](https://twitter.com/TotalCross);
+- [Instagram](https://www.instagram.com/totalcross/).
