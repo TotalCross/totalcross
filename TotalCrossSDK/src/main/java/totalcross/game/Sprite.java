@@ -147,7 +147,6 @@ import totalcross.ui.image.ImageException;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-@Deprecated
 public class Sprite {
   /**
    * Sprite center position.

@@ -84,7 +84,6 @@ import totalcross.ui.dialog.MessageBox;
  * @author Frank Diebolt
  * @version 1.0
  */
-@Deprecated
 public class HighScores extends PDBFile {
   private final static String dbName_suffix = "_HSC.";
   private final static String dbType = ".DATA";
