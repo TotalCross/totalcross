@@ -400,7 +400,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       return image;
   }
 
-    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType) {
+    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int captureMode) {
         try {
             imageFN = s;
             this.cameraType = cameraType;
@@ -438,6 +438,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                 intent.putExtra("width", width);
                 intent.putExtra("height", height);
                 intent.putExtra("allowRotation", allowRotation);
+                intent.putExtra("captureMode", captureMode);
                 startActivityForResult(intent, TAKE_PHOTO);
                 Launcher4A.instance.nativeInitSize(null, -998, 0);
             }
@@ -635,7 +636,8 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
         break;
       case CAMERA:
                captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
-                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"),b.getInt("showCamera.cameraType"));
+                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"),b.getInt("showCamera.cameraType")
+                                                                , b.getInt("showCamera.captureMode"));
         break;
       case TITLE:
         setTitle(b.getString("setDeviceTitle.title"));

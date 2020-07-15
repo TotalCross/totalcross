@@ -50,7 +50,8 @@ static void cameraClick(NMParams p)
    bool allowRotation = Camera_allowRotation(obj);
    int cameraType = Camera_cameraType(obj);
    JNIEnv *env = getJNIEnv();      
-   bool isPhoto = Camera_captureMode(obj) == 0;
+   int captureMode = Camera_captureMode(obj);
+   bool isPhoto = captureMode == 0;
    if (env)                      
    {
 	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
@@ -87,7 +88,7 @@ static void cameraClick(NMParams p)
       }
       CharP2JCharPBuf(fileName,len,jfn,true);
       s = (*env)->NewString(env,jfn,len);
-      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType); 
+      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType, captureMode); 
       for (takingPicture = true; takingPicture;) // block vm until the picture is taken
          Sleep(250);
       switch (code)
