@@ -26,7 +26,7 @@
 
 TotalCross exists to make Graphical User Interface creation easy.
 
-To start you only need to install it in your machine, and you have two options:
+To start you only need to install it on your machine, and you have two options:
 
 ### Install TotalCross VSCode plugin
 
@@ -35,15 +35,16 @@ The quickest way to start using TotalCross is to download the [VSCode plugin](ht
 Make sure all dependencies are fulfilled ([Java JDK 1.8+](https://www.azul.com/downloads/zulu-community/?version=java-8-lts&architecture=x86-64-bit&package=jdk), [Maven 3.6.2+](https://maven.apache.org/download.cgi), and
 [Microsoft Java Extension Plugin](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack)), create a new project, and you are ready to go!
 
-### ... or Compile TotalCross yourself!
+### ... or run TotalCross from scratch yourself!
 
-If you prefer to compile TotalCross yourself so you can develop on your choice of IDE, clone our [HelloWorld](https://github.com/TotalCross/HelloWorld) repository, make sure you have all dependencies listed above in place, run `mvn package` and you are ready to go!
+If you prefer to run TotalCross yourself so you can develop on your choice of IDE, clone our [HelloWorld](https://github.com/TotalCross/HelloWorld) repository, make sure you have all dependencies listed above in place, run `mvn package` and you are ready to go!
 
 ## Usage
 
 This is how you create a button with TotalCross:
 
-```package com.totalcross;
+```java
+package com.totalcross;
 import totalcross.ui.gfx.Color;
 import totalcross.sys.Settings;
 import totalcross.ui.Button;
@@ -65,7 +66,7 @@ public class HelloWorld extends MainWindow {
 
 This is how you extend a button to full screen width:
 
-```
+```java
      @Override
      public void initUI() {
         btnRed = new Button("Red");
@@ -76,7 +77,7 @@ This is how you extend a button to full screen width:
 
 This is how you round borders on a button:
 
-```
+```java
      @Override
      public void initUI() {
         btnRed = new Button("Red", Button.BORDER_ROUND);
@@ -87,7 +88,7 @@ This is how you round borders on a button:
 
 This is how event handling happens:
 
-```
+```java
      @Override
      public void initUI() {
         btnRed = new Button("Red", Button.BORDER_ROUND);
