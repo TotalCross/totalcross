@@ -4,6 +4,22 @@
 <h1> TotalCross</h1> </div>
 <p align="center">Create your Graphical User Inteface in <em><strong>record time!</strong></em></p>
 
+<div align="center">
+  <a href="https://learn.totalcross.com/documentation/get-started" target="_blank">Try in 8 minutes</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="https://totalcross.com/" target="_blank">Website</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="http://learn.totalcross.com/" target="_blank">Docs</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="https://medium.com/totalcross-community" target="_blank">Blog</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="https://t.me/totalcrosscommunity" target="_blank">Telegram</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="https://www.youtube.com/c/totalcross" target="_blank">Videos</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="https://totalcross.com/community/" target="_blank">Community</a>
+</div>
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
 
 ## Start coding with TotalCross
