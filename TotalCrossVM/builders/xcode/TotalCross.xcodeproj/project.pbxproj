@@ -289,7 +289,7 @@
 				ORGANIZATIONNAME = "SuperWaba Ltda";
 				TargetAttributes = {
 					0F5AF5021507FA3600D6142B = {
-						DevelopmentTeam = R8FWE2RXQV;
+						DevelopmentTeam = W5Y7X2NKUL;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -550,7 +550,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.totalcross.sdk;
+				PRODUCT_BUNDLE_IDENTIFIER = com.totalcross.vm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
@@ -594,7 +594,7 @@
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos",
 				);
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.totalcross.sdk;
+				PRODUCT_BUNDLE_IDENTIFIER = com.totalcross.vm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
