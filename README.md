@@ -1,4 +1,4 @@
-<a href="https://totalcross.com/" target="_blank">![TotalCross](./logo_header.png)</a>
+<div align="center"> <a href="https://totalcross.com/" target="_blank"> <img src="./totalcross.gif" alt="totalcross logo"/></a></div>
 
 <div align="center"> 
 <h1> TotalCross</h1> </div>
@@ -67,7 +67,6 @@ public class HelloWorld extends MainWindow {
 This is how you extend a button to full screen width:
 
 ```java
-     @Override
      public void initUI() {
         btnRed = new Button("Red");
         btnRed.setBackForeColors(Color.RED, Color.WHITE);
@@ -78,7 +77,6 @@ This is how you extend a button to full screen width:
 This is how you round borders on a button:
 
 ```java
-     @Override
      public void initUI() {
         btnRed = new Button("Red", Button.BORDER_ROUND);
         btnRed.setBackForeColors(Color.RED, Color.WHITE);
@@ -89,7 +87,6 @@ This is how you round borders on a button:
 This is how event handling happens:
 
 ```java
-     @Override
      public void initUI() {
         btnRed = new Button("Red", Button.BORDER_ROUND);
         btnRed.setBackForeColors(Color.RED, Color.WHITE);
