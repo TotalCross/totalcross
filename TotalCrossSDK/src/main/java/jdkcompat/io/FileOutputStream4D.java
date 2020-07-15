@@ -20,7 +20,7 @@ public class FileOutputStream4D extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        
+
     }
 
     @Override
@@ -28,4 +28,13 @@ public class FileOutputStream4D extends OutputStream {
         fileChannel.write(b, off, len);
     }
 
+    @Override
+    public void close() throws IOException {
+        fileChannel.close();
+    }
+
+    @Override
+    protected void finalize() throws IOException {
+        this.close();
+    }
 }

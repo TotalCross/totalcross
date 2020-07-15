@@ -5,9 +5,8 @@
 
 package jdkcompat.nio.channels;
 
-import java.io.Closeable;
+import java.nio.channels.spi.AbstractInterruptibleChannel;
 
-public abstract class FileChannel4D implements Closeable{
-    
+public abstract class FileChannel4D extends AbstractInterruptibleChannel {
 
 }
