@@ -22,7 +22,7 @@
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
 
-## Start coding with TotalCross
+## Install
 
 TotalCross exists to make Graphical User Interface creation easy.
 
@@ -35,252 +35,76 @@ The quickest way to start using TotalCross is to download the [VSCode plugin](ht
 Make sure all dependencies are fulfilled ([Java JDK 1.8+](https://www.azul.com/downloads/zulu-community/?version=java-8-lts&architecture=x86-64-bit&package=jdk), [Maven 3.6.2+](https://maven.apache.org/download.cgi), and
 [Microsoft Java Extension Plugin](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack)), create a new project, and you are ready to go!
 
-### ... or Compile TotalCross yourself
+### ... or Compile TotalCross yourself!
 
-If you prefer to clone our repository and compile it yourself the process is a bit more involved, but we'll guide you through it.
+If you prefer to compile TotalCross yourself so you can develop on your choice of IDE, clone our [HelloWorld](https://github.com/TotalCross/HelloWorld) repository, make sure you have all dependencies listed above in place, run `mvn package` and you are ready to go!
 
-First you will build the TotalCross SDK and next you will build the TotalCross VM.
+## Usage
 
-#### Building TotalCross SDK
+This is how you create a button with TotalCross:
 
-After cloning the project (`git clone https://github.com/TotalCross/totalcross.git TotalCross`) you will have:
+```package com.totalcross;
+import totalcross.ui.gfx.Color;
+import totalcross.sys.Settings;
+import totalcross.ui.Button;
+import totalcross.ui.MainWindow;
+public class HelloWorld extends MainWindow {
 
-```bash
-TotalCross/
-├─ LitebaseSDK/
-├─ TotalCrossSDK/
-└─ TotalCrossVM/
+    private Button btnRed;
+    public HelloWorld(){
+        setUIStyle(Settings.MATERIAL_UI);
+    }
+    @Override
+    public void initUI(){
+        btnRed = new Button("Red");
+        btnRed.setBackForeColors(Color.RED, Color.WHITE);
+        add(btnRed, CENTER,CENTER );
+    }
+}
 ```
 
-You will need to enter inside `TotalCrossSDK` folder, please:
+This is how you extend a button to full screen width:
 
-```bash
-$ cd TotalCrossSDK
+```
+     @Override
+     public void initUI() {
+        btnRed = new Button("Red");
+        btnRed.setBackForeColors(Color.RED, Color.WHITE);
+        add(btnRed, CENTER, CENTER, PARENTSIZE, PREFERRED);
+    }
 ```
 
-The next step you need to call _Gradle_:
+This is how you round borders on a button:
 
-```bash
-~/TotalCrossSDK$ ./gradlew dist
+```
+     @Override
+     public void initUI() {
+        btnRed = new Button("Red", Button.BORDER_ROUND);
+        btnRed.setBackForeColors(Color.RED, Color.WHITE);
+        add(btnRed, CENTER, CENTER, PARENTSIZE, PREFERRED);
+    }
 ```
 
-If you don't have any package errors, your folder will be something like this:
+This is how event handling happens:
 
-```bash
-TotalCross
-├─ LitebaseSDK
-├─ TotalCrossSDK
-│    ├─ bin/
-│    ├─ build/
-│    ├─ dist/
-│    │    ├─vm/
-│    │    │    ├─ TCBase.tcz
-│    │    │    ├─ TCFont.tcz
-│    │    │    └─ TCUI.tcz
-│    │    └─totalcross-sdk.jar
-│    ├─ docs/
-│    ├─ etc/
-│    ├─ gradle/
-│    ├─ src/
-│    ├─ build.gradle
-│    ├─ build.xml
-│    ├─ gradlew
-│    ├─ gradlew.bat
-│    ├─ license.txt
-│    └─ proguard.txt
-└─ TotalCrossVM
+```
+     @Override
+     public void initUI() {
+        btnRed = new Button("Red", Button.BORDER_ROUND);
+        btnRed.setBackForeColors(Color.RED, Color.WHITE);
+        btnRed.addPressListener((event) -> {
+            // DO SOMETHING
+        })
+        add(btnRed, CENTER, CENTER, PARENTSIZE, PREFERRED);
+    }
+
 ```
 
-Look to the `dist` folder, if you have the same files you just need to copy `dist` to your valid SDK folder
-
-```bash
-~/TotalCrossSDK$ cp -r dist $PATH_TO_VALID_SDK/
-```
-
-#### Build TotalCross SDK
-
-These are the steps to generate your custom VM. Our build process **needs Docker**, please [install it](https://docs.docker.com/get-docker/) and check your installation:
-
-```bash
-$ docker --version
-```
-
-After cloning the project (`git clone https://github.com/TotalCross/totalcross.git TotalCross`) you will have:
-
-```bash
-TotalCross/
-├─ LitebaseSDK/
-├─ TotalCrossSDK/
-└─ TotalCrossVM/
-```
-
-You will need to enter inside `TotalCrossVM/builders` folder, please:
-
-```bash
-$ cd TotalCrossVM/builders
-```
-
-Your folder structure will be something like this:
-
-```bash
-TotalCross
-├─ LitebaseSDK
-├─ TotalCrossSDK
-└─ TotalCrossVM
-     ├─ builders/
-     │    ├─ droid/
-     │    ├─ gcc-linux-arm/
-     │    ├─ gcc-posix/
-     │    ├─ vc2008/
-     │    ├─ vc2013/
-     │    ├─ vc2017/
-     │    ├─ xcode/
-     │    └─ build.xml
-     ├─ deps/
-     └─ src/
-```
-
-### Linux x86-64
-
-Enter into `gcc-posix` folder:
-
-```bash
-~TotalCrossVM/builders$ cd gcc-posix
-```
-
-First, let's build the docker image:
-
-```bash
-~TotalCrossVM/builders/gcc-posix$ cd docker
-~TotalCrossVM/builders/gcc-posix/docker$ ./build.sh
-```
-
-If you have no problems you should check the image:
-
-```bash
-~TotalCrossVM/builders/gcc-posix/docker$ docker images
-REPOSITORY                              TAG                 IMAGE ID            CREATED             SIZE
-totalcross/amd64-cross-compile          bionic              cd8fb68f0fc6        a minute ago        1.03GB
-<none>                                  <none>              1a0e943d6239        27 hours ago        464MB
-.
-.
-.
-~TotalCrossVM/builders/gcc-posix/docker$ cd ..
-```
-
-Next, let's build `libtcvm.so`:
-
-```bash
-~TotalCrossVM/builders/gcc-posix$ cd tcvm
-~TotalCrossVM/builders/gcc-posix/tcvm$ ./build.sh
-```
-
-If you don't have any build errors, your folder will be something like this:
-
-```bash
-TotalCross
-├─ LitebaseSDK
-├─ TotalCrossSDK
-└─ TotalCrossVM
-     ├─ builders/
-     │    ├─ droid/
-     │    ├─ gcc-linux-arm/
-     │    ├─ gcc-posix/
-     │    │    ├─ docker
-     │    │    ├─ launcher
-     │    │    └─ tcvm
-     │    │         ├─ bin/
-     │    │         │    └─ libtcvm.so
-     │    │         ├─ build.sh
-     │    │         ├─ libskia.a
-     │    │         └─ Makefile
-     │    ├─ vc2008/
-     │    ├─ vc2013/
-     │    ├─ vc2017/
-     │    ├─ xcode/
-     │    └─ build.xml
-     ├─ deps/
-     └─ src/
-```
-
-Look to the `bin` folder, now you just need to copy `libtcvm.so` to your valid SDK folder
-
-```bash
-~TotalCrossVM/builders/gcc-posix/tcvm$ cp bin/libtcvm.so $PATH_TO_VALID_SDK/dist/vm/linux
-```
-
-### Linux ARM
-
-Enter into `gcc-linux-arm` folder:
-
-```bash
-~TotalCrossVM/builders$ cd gcc-linux-arm
-```
-
-First, let's build the docker image:
-
-```bash
-~TotalCrossVM/builders/gcc-linux-arm$ cd docker-builder-image
-~TotalCrossVM/builders/gcc-linux-arm/docker-builder-image$ ./build.sh
-```
-
-If you have no problems you should check the image:
-
-```bash
-~TotalCrossVM/builders/gcc-posix/docker$ docker images
-REPOSITORY                              TAG                 IMAGE ID            CREATED             SIZE
-totalcross/totalcross/cross-compile     latest              cd8fb68f0fc6        a minute ago        1.03GB
-<none>                                  <none>              1a0eea5a6dv0        15 hours ago        1.46GB
-.
-.
-.
-~TotalCrossVM/builders/gcc-linux-arm/docker-builder-image$ cd ..
-```
-
-Next, let's build `libtcvm.so`:
-
-```bash
-~TotalCrossVM/builders/gcc-linux-arm$ cd tcvm
-~TotalCrossVM/builders/gcc-linux-arm/tcvm$ ./build.sh
-```
-
-If you don't have any build errors, your folder will be something like this:
-
-```bash
-TotalCross
-├─ LitebaseSDK
-├─ TotalCrossSDK
-└─ TotalCrossVM
-     ├─ builders/
-     │    ├─ droid/
-     │    ├─ gcc-linux-arm/
-     │    │    ├─ docker-builder-image
-     │    │    ├─ launcher
-     │    │    └─ tcvm
-     │    │         ├─ bin/
-     │    │         │    └─ libtcvm.so
-     │    │         ├─ build.sh
-     │    │         ├─ libskia.a
-     │    │         └─ Makefile
-     │    ├─ gcc-posix/
-     │    ├─ vc2008/
-     │    ├─ vc2013/
-     │    ├─ vc2017/
-     │    ├─ xcode/
-     │    └─ build.xml
-     ├─ deps/
-     └─ src/
-```
-
-Look to the `bin` folder, now you just need to copy `libtcvm.so` to your valid SDK folder
-
-```bash
-~TotalCrossVM/builders/gcc-linux-arm/tcvm$ cp bin/libtcvm.so $PATH_TO_VALID_SDK/dist/vm/linux_arm
-```
+Cool, right? Easy as pie! :)
 
 ## What next?
 
-Check our documentation for a [quick starting guide](https://learn.totalcross.com/documentation/get-started) (aprox. 8 minutes) and learn how TotalCross Components will save you tons of time when you build your GUI.
+Check out our [documentation](https://learn.totalcross.com/documentation/components) or read through a [quick starting guide](https://learn.totalcross.com/documentation/get-started) (aprox. 8 minutes) and learn how TotalCross Components will save you tons of time when you build your GUI.
 
 ## Have any questions?
 
