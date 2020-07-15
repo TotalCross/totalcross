@@ -92,7 +92,7 @@ This is how event handling happens:
         btnRed.setBackForeColors(Color.RED, Color.WHITE);
         btnRed.addPressListener((event) -> {
             // DO SOMETHING
-        })
+        });
         add(btnRed, CENTER, CENTER, PARENTSIZE, PREFERRED);
     }
 
