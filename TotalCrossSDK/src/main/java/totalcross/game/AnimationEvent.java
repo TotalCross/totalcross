@@ -11,7 +11,6 @@ import totalcross.ui.event.Event;
 /**
  * Events posted by an animation control.
  */
-@Deprecated
 public class AnimationEvent extends Event<AnimationHandler> {
   /** 
    * The event type when the animation loops. 

@@ -34,7 +34,6 @@ import totalcross.ui.image.ImageException;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-@Deprecated
 public class AnimatedButton extends Animation {
   /**
    * Defines the frames animation order. In the case of <code>S</code> states button of <code>F</code> frames per state, 

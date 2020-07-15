@@ -8,7 +8,6 @@ package totalcross.game;
 /**
  * GameEngine exception. Note that it extends RuntimeException, and, thus, is unchecked.
  */
-@Deprecated
 public class GameEngineException extends RuntimeException {
   /** Constructs an empty Exception. */
   public GameEngineException() {

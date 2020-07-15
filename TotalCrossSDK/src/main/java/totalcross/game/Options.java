@@ -87,7 +87,6 @@ import totalcross.util.Properties;
  * @author Frank Diebolt
  * @version 1.0
  */
-@Deprecated
 public class Options extends Properties {
   private PDBFile cat;
   private final static String dbName_suffix = "_OPT.";

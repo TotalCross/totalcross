@@ -26,7 +26,6 @@ import totalcross.ui.image.ImageException;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-@Deprecated
 class GameEngineMainWindow extends MainWindow {
   /**
    * TotalCross game API version.

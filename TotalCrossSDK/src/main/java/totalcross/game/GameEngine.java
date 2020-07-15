@@ -197,7 +197,6 @@ import totalcross.ui.image.ImageException;
  * @author Guilherme Campos Hazan
  * @version 1.1
  */
-@Deprecated
 public abstract class GameEngine extends GameEngineMainWindow {
   public final static int GAME_ENGINE_VERSION = 110; // version 1.1 - remodeled by guich
   /**
