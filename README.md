@@ -2,7 +2,7 @@
 
 <div align="center"> 
 <h1> TotalCross</h1> </div>
-<p align="center">Create your Graphical User Inteface in <em><strong>record time!</strong></em></p>
+<p align="center">The fastest way to build GUI for embedded devices</strong></em></p>
 
 <div align="center">
   <a href="https://learn.totalcross.com/documentation/get-started" target="_blank">Try in 8 minutes</a>
