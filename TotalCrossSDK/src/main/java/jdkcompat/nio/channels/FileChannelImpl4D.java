@@ -32,9 +32,9 @@ public class FileChannelImpl4D extends FileChannel {
     }
 
     @Override
-   public int read(ByteBuffer dst) throws IOException {
-      return 0;
-   }
+    public int read(ByteBuffer dst) throws IOException {
+        return 0;
+    }
 
     native public int read(byte[] dst, int offset, int length) throws IOException;
 
@@ -44,7 +44,6 @@ public class FileChannelImpl4D extends FileChannel {
         return 0;
     }
 
-    
     native public int write(byte[] src, int offset, int length) throws IOException;
 
     @Override
@@ -102,7 +101,7 @@ public class FileChannelImpl4D extends FileChannel {
     }
 
     @Override
-      public int read(ByteBuffer dst, long position) throws IOException {
+    public int read(ByteBuffer dst, long position) throws IOException {
         // TODO Auto-generated method stub
         return 0;
     }
@@ -132,9 +131,5 @@ public class FileChannelImpl4D extends FileChannel {
     }
 
     @Override
-    protected void implCloseChannel() throws IOException {
-        // TODO Auto-generated method stub
-
-    }
-
+    protected native void implCloseChannel() throws IOException;
 }

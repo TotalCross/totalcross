@@ -10,7 +10,6 @@ import java.io.InputStream;
 
 import jdkcompat.nio.channels.FileChannelImpl4D;
 
-
 public class FileInputStream4D extends InputStream {
     FileChannelImpl4D fileChannel;
 
@@ -43,5 +42,8 @@ public class FileInputStream4D extends InputStream {
         return fileChannel.available();
     }
 
-    
+    @Override
+    protected void finalize() throws IOException {
+        this.close();
+    }
 }

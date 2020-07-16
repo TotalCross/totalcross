@@ -80,3 +80,19 @@ TC_API void jncFCI_write_Bii(NMParams p) {
     throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
 #endif
 }
+
+TC_API void jncFCI_implCloseChannel(NMParams p) {
+#if defined(linux) && !defined(darwin)
+    TCObject fileChannel = p->obj[0];
+    int32 fd = FileChannelImpl_nfd(fileChannel);
+
+    if (fd != -1) {
+        if (close(fd) != 0) {
+            throwExceptionNamed(p->currentContext, "java.io.IOException", strerror(errno));
+        }
+        FileChannelImpl_nfd(fileChannel) = -1;
+    }
+#else
+    throwExceptionNamed(p->currentContext, "java.lang.UnsupportedOperationException", "this method only works on linux");
+#endif
+}

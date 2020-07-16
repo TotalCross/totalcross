@@ -354,6 +354,7 @@ java/lang/ProcessImpl|native public int destroy();
 java/nio/channels/FileChannelImpl|native public int read() throws IOException;
 java/nio/channels/FileChannelImpl|native public int read(byte[] b, int offset, int length) throws IOException;
 java/nio/channels/FileChannelImpl|native public int write(byte[] b, int offset, int length) throws IOException;
+java/nio/channels/FileChannelImpl|native protected void implCloseChannel() throws IOException;
 java/util/Locale|native static String getDefaultToString();
 totalcross/io/device/RadioDevice|native public static boolean isSupported(int type) throws IllegalArgumentException;
 totalcross/io/device/RadioDevice|native public static int getState(int type) throws IllegalArgumentException;
