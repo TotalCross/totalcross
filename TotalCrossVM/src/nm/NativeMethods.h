@@ -81,6 +81,7 @@ TC_API void jlPI_destroy(NMParams p);
 TC_API void jncFCI_read(NMParams p);
 TC_API void jncFCI_read_Bii(NMParams p);
 TC_API void jncFCI_write_Bii(NMParams p);
+TC_API void jncFCI_implCloseChannel(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tmGM_showRoute_sssi(NMParams p);
 TC_API void tucL_create(NMParams p);
