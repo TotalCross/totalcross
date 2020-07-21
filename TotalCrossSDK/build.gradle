@@ -13,13 +13,16 @@ apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.8
 version = '6.1.0'
 group = 'com.totalcross'
 archivesBaseName = 'totalcross-sdk'
 
 // can't be used yet, enconding is a mess
 compileJava.options.encoding = 'UTF-8'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+}
 
 javadoc {
 	failOnError = false
