@@ -191,8 +191,8 @@ publishing {
 task signJar {
     try {
         ant.signjar(
-            jar: 'build/libs/totalcross-sdk-' + project.version + '.jar',
-            signedJar: 'build/libs/totalcross-sdk-' + project.version + '.jar',
+            jar: jar.archivePath,
+            signedJar: jar.archivePath,
             alias:'tcandroidkey',
             storetype:"jks",
             keystore: "$System.env.TC_PATH_TO_KEY_STORE",
@@ -230,21 +230,25 @@ tasks.withType(Jar) {
 task deployTcbase(type:JavaExec, dependsOn: [jar, tcbaseJar]) {
 	main = 'tc.Deploy'
 	args = [
-		'build/libs/tcbase-' + project.version + '.jar', 
+		tcbaseJar.archivePath, 
 		'/n', 'TCBase', 
 		'/a', 'TCvm'
 		]
-	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
+	classpath = files(
+        jar.archivePath, 
+        configurations.runtime.collect())
 }
 
 task deployTcui(type:JavaExec, dependsOn: [jar, tcuiJar]) {
 	main = 'tc.Deploy'
 	args = [
-		'build/libs/tcui-' + project.version + '.jar', 
+		tcuiJar.archivePath, 
 		'/n', 'TCUI', 
 		'/a', 'TCvm'
 		]
-	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
+	classpath = files(
+        jar.archivePath, 
+        configurations.runtime.collect())
 }
 
 task dist(dependsOn: build) {
@@ -258,7 +262,7 @@ task dist(dependsOn: build) {
 		}
 	
 		copy { 
-			from 'build/libs/totalcross-sdk-'+project.version+'.jar'
+			from jar.archivePath
 			into 'dist/'
 			rename  { String fileName ->
 	    				fileName.replace('-' + project.version, '')
