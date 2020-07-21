@@ -38,12 +38,6 @@ retrolambda {
   incremental true
 }
 
-jar {
-    manifest {
-        attributes('Main-Class': 'totalcross.Launcher')
-    }
-}
-
 task wrapper(type: Wrapper) {
    gradleVersion = '4.0.1'
 }
@@ -143,6 +137,34 @@ dependencies {
     compile(group: 'com.totalcross.annotations', name: 'totalcross-annotations', version: '1.0.0')
 }
 
+jar {
+    baseName = "totalcross-sdk"
+    classifier = 'intermediate'
+
+    from(sourceSets.desktop.output) {
+        exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
+    }
+    from(sourceSets.litebase.output)
+    from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
+    from new File(project.rootDir, 'etc/fonts/Material Icons.tcz')
+    into("META-INF/maven/$project.group/$baseName") {
+        from {
+            generatePomFileForMavenCustomPublication
+        }
+        rename ".*", "pom.xml"
+    }
+
+    // collect all dependencies
+    int i = 0;
+    String classpathVar = configurations.compile.collect { " libs/" + (i++==0?String.format("%0\$-50s", it.getName()):String.format("%0\$-62s", it.getName()))   }.join(" ");
+    manifest {
+        attributes('Main-Class': 'totalcross.Launcher')
+        manifest {
+            attributes(
+            "Class-Path": classpathVar)
+        }
+    }
+}
 publishing {
     publications {
         mavenCustom(MavenPublication) {
@@ -179,7 +201,6 @@ publishing {
             */
 
             from components.java
-            artifact totalcrossJar
         }
     }
 }
@@ -194,39 +215,6 @@ publishing {
     }
 }
 
-
-// totalcross.jar
-task totalcrossJar(type: Jar) {
-    baseName = "totalcross-sdk"
-    classifier = 'intermediate'
-    
-    from(sourceSets.desktop.output) {
-        exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
-    }
-    from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
-    into("META-INF/maven/$project.group/$baseName") {
-        from {
-            generatePomFileForMavenCustomPublication
-        }
-        rename ".*", "pom.xml"
-    }
-    
-    // collect path to all the jars inside etc folders
-    def names = []
-	fileTree('etc/libs').visit {
-		if (it.name.endsWith('.jar')) {
-			names << '../etc/libs/' + it.relativePath
-		}
-	}
-	fileTree('etc/tools/ipa').visit {
-		if (it.name.endsWith('.jar')) {
-			names << '../etc/tools/ipa/' + it.relativePath
-		}
-	}
-	manifest {
-		attributes("Class-Path": names.join(' '))
-	}
-}
 
 // tcbase.jar
 task tcbaseJar(type: Jar) {
@@ -278,7 +266,7 @@ tasks.withType(Jar) {
     includeEmptyDirs = false
 }
 
-task deployTcbase(type:JavaExec, dependsOn: [myProguardTask, tcbaseJar]) {
+task deployTcbase(type:JavaExec, dependsOn: [jar, myProguardTask, tcbaseJar]) {
 	main = 'tc.Deploy'
 	args = [
 		'build/libs/tcbase-' + project.version + '.jar', 
@@ -290,7 +278,7 @@ task deployTcbase(type:JavaExec, dependsOn: [myProguardTask, tcbaseJar]) {
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
 
-task deployTcui(type:JavaExec, dependsOn: [myProguardTask, tcuiJar]) {
+task deployTcui(type:JavaExec, dependsOn: [jar, myProguardTask, tcuiJar]) {
 	main = 'tc.Deploy'
 	args = [
 		'build/libs/tcui-' + project.version + '.jar', 
