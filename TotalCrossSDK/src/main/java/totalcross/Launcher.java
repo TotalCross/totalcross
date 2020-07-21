@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Panel;
@@ -25,6 +26,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 import java.awt.image.MemoryImageSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +45,6 @@ import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 import net.coobird.thumbnailator.Thumbnails;
-import sun.awt.image.ToolkitImage;
 import tc.tools.AnonymousUserData;
 import tc.tools.JarClassPathLoader;
 import tc.tools.deployer.DeploySettings;
@@ -129,11 +130,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     addMouseListener(this);
     addMouseWheelListener(this);
     addMouseMotionListener(this);
-    try {
-      Runtime.runFinalizersOnExit(true);
-    } catch (Throwable t) {
-    }
-    //try {System.runFinalizersOnExit(true);} catch (Throwable t) {} // guich@300_31
     try {
       JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/jna-4.2.2.jar");
       JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/jna-platform-4.2.2.jar");
@@ -1221,14 +1217,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         if (fastScale) {
             g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this);
         } else {
-            /*
-             * Required to force ToolkitImage to create the BufferedImage object, otherwise
-             * calling getBufferedImage returns null
-             */
-            ((ToolkitImage) screenImg).getWidth();
-            
             try {
-                g.drawImage(Thumbnails.of(((ToolkitImage) screenImg).getBufferedImage()).size(ww, hh).asBufferedImage(), 0, 0, this);
+                g.drawImage(Thumbnails.of(toBufferedImage(screenImg)).size(ww, hh).asBufferedImage(), 0, 0, this);
             } catch (java.io.IOException e) {
                 e.printStackTrace();
             }
@@ -1242,6 +1232,21 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
     // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
     //java.util.Arrays.fill(pixels, getScreenColor(UIColors.shiftScreenColor));
+  }
+
+  public static BufferedImage toBufferedImage(java.awt.Image img) {
+    if (img instanceof BufferedImage) {
+      return (BufferedImage) img;
+    }
+
+    BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null),
+        BufferedImage.TYPE_INT_ARGB);
+
+    Graphics2D graphics = bufferedImage.createGraphics();
+    graphics.drawImage(img, 0, 0, null);
+    graphics.dispose();
+
+    return bufferedImage;
   }
 
   //static int count;
