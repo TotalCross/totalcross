@@ -167,14 +167,6 @@ publishing {
     }
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-	baseName = "totalcross-sdk"
-    classifier = 'sources'
-    from (sourceSets.main.allSource) { 
-    	exclude 'tc/**', '**/*4A.java', '**/*4D.java'
-    }
-    from (sourceSets.litebase.allSource)
-}
 
 // totalcross.jar
 task totalcrossJar(type: Jar) {
@@ -295,6 +287,19 @@ task dist(dependsOn: build) {
 }
 
 build.finalizedBy(deployTcbase, deployTcui)
+
+/**
+    Sources
+*/
+task sourcesJar(type: Jar) {
+	baseName = "totalcross-sdk"
+    classifier = 'sources'
+    from (sourceSets.main.allSource) { 
+    	exclude 'tc/**', '**/*4A.java', '**/*4D.java'
+    }
+    from (sourceSets.litebase.allSource)
+}
+javadoc.finalizedBy(sourcesJar)
 
 /** 
     Javadoc
