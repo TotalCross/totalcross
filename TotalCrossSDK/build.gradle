@@ -202,14 +202,6 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     }
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	baseName = "totalcross-sdk"
-    classifier = 'javadoc'
-    from (javadoc.destinationDir) {
-    	exclude 'jdkcompat*/**', 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
-    }
-}
-
 // totalcross.jar
 task totalcrossJar(type: Jar) {
     baseName = "totalcross-sdk"
@@ -289,15 +281,6 @@ task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar
     }
 }
 
-artifacts {
-    obfuscatedArchive( myProguardTask.outputs.files.singleFile ) {
-        builtBy myProguardTask
-        // can also set classifier, extension, name, etc as needed (some defaults will be inferred from the filename)
-        // see https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/ConfigurablePublishArtifact.html
-    }
-    archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
-}
-
 tasks.withType(Jar) {
     includeEmptyDirs = false
 }
@@ -347,3 +330,25 @@ task dist(dependsOn: build) {
 }
 
 build.finalizedBy(myProguardTask, deployTcbase, deployTcui)
+
+/** 
+    Javadoc
+ */
+task javadocJar(type: Jar) {
+    baseName = "totalcross-sdk"
+    classifier = 'javadoc'
+    from javadoc {
+    	exclude 'jdkcompat*/**', 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    }
+}
+javadoc.finalizedBy(javadocJar)
+
+artifacts {
+    obfuscatedArchive( myProguardTask.outputs.files.singleFile ) {
+        builtBy myProguardTask
+        // can also set classifier, extension, name, etc as needed (some defaults will be inferred from the filename)
+        // see https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/ConfigurablePublishArtifact.html
+    }
+    archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
+}
+
