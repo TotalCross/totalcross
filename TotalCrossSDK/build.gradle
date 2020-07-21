@@ -259,8 +259,7 @@ task deployTcbase(type:JavaExec, dependsOn: [totalcrossJar, tcbaseJar]) {
 	args = [
 		'build/libs/tcbase-' + project.version + '.jar', 
 		'/n', 'TCBase', 
-		'/a', 'TCvm', 
-		'/r', '5443444B3018A93884C5D622'
+		'/a', 'TCvm'
 		]
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
@@ -270,8 +269,7 @@ task deployTcui(type:JavaExec, dependsOn: [totalcrossJar, tcuiJar]) {
 	args = [
 		'build/libs/tcui-' + project.version + '.jar', 
 		'/n', 'TCUI', 
-		'/a', 'TCvm', 
-		'/r', '5443444B3018A93884C5D622'
+		'/a', 'TCvm'
 		]
 	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
 }
