@@ -176,14 +176,6 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from (sourceSets.litebase.allSource)
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	baseName = "totalcross-sdk"
-    classifier = 'javadoc'
-    from (javadoc.destinationDir) {
-    	exclude 'jdkcompat*/**', 'tc/**', '**/*4A.java', '**/*4D.java'
-    }
-}
-
 // totalcross.jar
 task totalcrossJar(type: Jar) {
     baseName = "totalcross-sdk"
@@ -258,10 +250,6 @@ task tcuiJar(type: Jar) {
     }
 }
 
-artifacts {
-    archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
-}
-
 tasks.withType(Jar) {
     includeEmptyDirs = false
 }
@@ -309,3 +297,19 @@ task dist(dependsOn: build) {
 }
 
 build.finalizedBy(deployTcbase, deployTcui)
+
+/** 
+    Javadoc
+ */
+task javadocJar(type: Jar) {
+    baseName = "totalcross-sdk"
+    classifier = 'javadoc'
+    from javadoc {
+    	exclude 'jdkcompat*/**', 'tc/**', '**/*4A.java', '**/*4D.java'
+    }
+}
+javadoc.finalizedBy(javadocJar)
+
+artifacts {
+    archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
+}
