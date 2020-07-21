@@ -49,6 +49,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 import tc.tools.JarClassPathLoader;
@@ -1919,7 +1921,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   static final int AA_4BPP = 1;
   static final int AA_8BPP = 2;
   private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
-  static Hashtable htBaseFonts = new Hashtable(5); // 
+  static Hashtable htBaseFonts = new Hashtable(5);
+  private Map<String, String> loadedFontsMap = new HashMap<>();
 
   static totalcross.ui.font.Font getBaseFont(String name, boolean bold, int size, String suffix) {
     String key = name + "|" + bold + "|" + size + "|" + suffix;
@@ -1954,6 +1957,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   private UserFont loadUF(String fontName, String suffix) {
+    boolean hasTriedToLoadBefore = loadedFontsMap.containsKey(fontName.toLowerCase());
+    if (hasTriedToLoadBefore && loadedFontsMap.get(fontName.toLowerCase()) == null) {
+      return null;
+    }
     try {
       if (totalcross.ui.font.Font.baseChar == ' ' && !fontName.endsWith("noaa")) // test if there's another 8bpp native font. - base font
       {
@@ -1995,9 +2002,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         return uf;
       }
 
+      boolean hasTriedToLoadBefore = loadedFontsMap.containsKey(fontName.toLowerCase());
       if (fontName.charAt(0) == '$') {
         print("Native fonts are not supported on Desktop");
-      } else {
+      } else if (!hasTriedToLoadBefore || loadedFontsMap.get(fontName.toLowerCase()) != null) {
         // first, try to load the font itself using the current font pattern
         uf = loadUF(fontName, suffix);
         if (uf == null) {
@@ -2130,7 +2138,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           if (is == null) {
             is = openInputStream("etc/fonts/" + fileName); // if looking for the default font when debugging, use etc/fonts
             if (is == null) {
-              throw new Exception("file " + fileName + " not found"); // loaded = false
+              loadedFontsMap.put(fontName.toLowerCase(), null);
+              throw new Exception("file " + fileName + " " + sufix + " not found"); // loaded = false
             }
           }
         }
@@ -2155,6 +2164,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         fi.sizes = sizes.toIntArray();
         z.bag = fi;
         loadedTCZs.put(fileName.toLowerCase(), z);
+        loadedFontsMap.put(fontName.toLowerCase(), fileName);
       }
       fontName += sufix;
       int index = z.findNamePosition(fontName.toLowerCase());
