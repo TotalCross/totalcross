@@ -16,6 +16,7 @@ apply plugin: 'maven-publish'
 sourceCompatibility = 1.8
 version = '6.1.0'
 group = 'com.totalcross'
+archivesBaseName = 'totalcross-sdk'
 
 // can't be used yet, enconding is a mess
 compileJava.options.encoding = 'UTF-8'
@@ -111,8 +112,6 @@ dependencies {
 }
 
 jar {
-    baseName = "totalcross-sdk"
-
     exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
     from(sourceSets.litebase.output)
     from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
@@ -271,7 +270,6 @@ build.finalizedBy(deployTcbase, deployTcui)
     Sources
 */
 task sourcesJar(type: Jar) {
-	baseName = "totalcross-sdk"
     classifier = 'sources'
     from (sourceSets.main.allSource) { 
     	exclude 'tc/**', '**/*4A.java', '**/*4D.java'
@@ -284,7 +282,6 @@ javadoc.finalizedBy(sourcesJar)
     Javadoc
  */
 task javadocJar(type: Jar) {
-    baseName = "totalcross-sdk"
     classifier = 'javadoc'
     from javadoc {
     	exclude 'jdkcompat*/**', 'tc/**', '**/*4A.java', '**/*4D.java'
