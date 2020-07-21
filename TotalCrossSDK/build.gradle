@@ -216,6 +216,25 @@ publishing {
 }
 
 
+task signJar {
+    try {
+        ant.signjar(
+            jar: jar.archivePath,
+            signedJar: jar.archivePath,
+            alias:'tcandroidkey',
+            storetype:"jks",
+            keystore: "$System.env.TC_PATH_TO_KEY_STORE",
+            storepass: "$System.env.TC_STORE_PASSWORD",
+            keypass: "$System.env.TC_STORE_KEY",
+            verbose:true,
+            preservelastmodified:"true"
+        )
+    } catch (Exception e) {
+        logger.warn("TC_PATH_TO_KEY_STORE or TC_STORE_PASSWORD or TC_STORE_KEY not defined! Jar won't be signed")
+    }
+    
+}
+
 // tcbase.jar
 task tcbaseJar(type: Jar) {
     baseName = "tcbase"
@@ -269,25 +288,27 @@ tasks.withType(Jar) {
 task deployTcbase(type:JavaExec, dependsOn: [jar, myProguardTask, tcbaseJar]) {
 	main = 'tc.Deploy'
 	args = [
-		'build/libs/tcbase-' + project.version + '.jar', 
+		tcbaseJar.archivePath, 
 		'/n', 'TCBase', 
-		'-win32', 
 		'/a', 'TCvm', 
 		'/r', '5443444B3018A93884C5D622'
 		]
-	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
+	classpath = files(
+        jar.archivePath, 
+        configurations.runtime.collect())
 }
 
 task deployTcui(type:JavaExec, dependsOn: [jar, myProguardTask, tcuiJar]) {
 	main = 'tc.Deploy'
 	args = [
-		'build/libs/tcui-' + project.version + '.jar', 
+		tcuiJar.archivePath, 
 		'/n', 'TCUI', 
-		'-win32', 
 		'/a', 'TCvm', 
 		'/r', '5443444B3018A93884C5D622'
 		]
-	classpath = files('build/libs/totalcross-sdk-' + project.version + '.jar', configurations.runtime.collect())
+	classpath = files(
+        jar.archivePath, 
+        configurations.runtime.collect())
 }
 
 task dist(dependsOn: build) {
@@ -295,8 +316,8 @@ task dist(dependsOn: build) {
 	doLast{
 		copy { 
 			from 'etc/fonts/TCFont.tcz'
-			from 'build/libs/install/win32/TCUI.tcz'
-			from 'build/libs/install/win32/TCBase.tcz'
+			from 'build/libs/TCUI.tcz'
+			from 'build/libs/TCBase.tcz'
 			into 'dist/vm/'
 		}
 	
