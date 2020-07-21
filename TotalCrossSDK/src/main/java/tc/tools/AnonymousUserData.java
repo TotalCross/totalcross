@@ -73,17 +73,6 @@ public class AnonymousUserData {
         try (FileInputStream fis = new FileInputStream(configFile)) {
             config = readJsonObject(Stream.asStream(fis));
         } catch (FileNotFoundException e) {
-            HttpStream.Options options = new HttpStream.Options();
-            options.socketFactory = new SSLSocketFactory();
-            try (HttpStream hs = new HttpStream(new URI(GET_UUID), options)) {
-                config = readJsonObject(hs);
-                config.put("userUuid", config.remove("uuid"));
-
-                try (PrintWriter writer = new PrintWriter(configFile)) {
-                    writer.write(config.toString());
-                }
-            } catch (IOException e1) {
-            }
         } catch (IOException e) {
         }
         return config == null ? new JSONObject() : config;
@@ -120,24 +109,48 @@ public class AnonymousUserData {
         doPost(POST_DEPLOY, args);
     }
 
+    private void doGetUUID() {
+        HttpStream.Options options = new HttpStream.Options();
+        options.socketFactory = new SSLSocketFactory();
+        try (HttpStream hs = new HttpStream(new URI(GET_UUID), options)) {
+            JSONObject ret = readJsonObject(hs);
+            config.put("userUuid", ret.get("uuid"));
+
+            try (PrintWriter writer = new PrintWriter(configFile)) {
+                writer.write(config.toString());
+            } catch (FileNotFoundException e) {
+            }
+        } catch (IOException e1) {
+        }
+    }
+
     private void doPost(String url, String... args) {
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            HttpStream.Options options = new HttpStream.Options();
-            options.httpType = HttpStream.POST;
-            options.socketFactory = new SSLSocketFactory();
-            options.postHeaders.put("accept", "application/json");
-            options.postHeaders.put("Content-Type", "application/json");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!config.has("userUuid")) {
+                        doGetUUID();
+                    }
 
-            JSONObject dataJson = new JSONObject(config, new String[] { "userUuid" });
-            dataJson.put("os", System.getProperty("os.name"));
-            dataJson.put("tc_version", Settings.versionStr);
-            dataJson.put("date", sdf.format(new Date()));
-            dataJson.put("args", String.join(" ", args));
-            options.data = dataJson.toString();
+                    HttpStream.Options options = new HttpStream.Options();
+                    options.httpType = HttpStream.POST;
+                    options.socketFactory = new SSLSocketFactory();
+                    options.postHeaders.put("accept", "application/json");
+                    options.postHeaders.put("Content-Type", "application/json");
 
-            try (HttpStream hs = new HttpStream(new URI(url), options)) {
-            } catch (IOException e1) {
-            }
+                    JSONObject dataJson = new JSONObject(config, new String[] { "userUuid" });
+                    dataJson.put("os", System.getProperty("os.name"));
+                    dataJson.put("tc_version", Settings.versionStr);
+                    dataJson.put("date", sdf.format(new Date()));
+                    dataJson.put("args", String.join(" ", args));
+                    options.data = dataJson.toString();
+
+                    try (HttpStream hs = new HttpStream(new URI(url), options)) {
+                    } catch (IOException e1) {
+                    }
+                }
+            }).start();
         }
     }
 
