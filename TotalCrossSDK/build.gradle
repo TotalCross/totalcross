@@ -19,6 +19,7 @@ apply plugin: 'maven-publish'
 sourceCompatibility = 1.8
 version = '4.4.5'
 group = 'com.totalcross'
+archivesBaseName = 'totalcross-sdk'
 
 // can't be used yet, enconding is a mess
 compileJava.options.encoding = 'UTF-8'
@@ -138,7 +139,6 @@ dependencies {
 }
 
 jar {
-    baseName = "totalcross-sdk"
     classifier = 'intermediate'
 
     from(sourceSets.desktop.output) {
@@ -316,7 +316,6 @@ build.finalizedBy(myProguardTask, deployTcbase, deployTcui)
     Sources
 */
 task sourcesJar(type: Jar) {
-	baseName = "totalcross-sdk"
     classifier = 'sources'
     from (sourceSets.desktop.allSource) { 
     	exclude 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
@@ -328,7 +327,6 @@ javadoc.finalizedBy(sourcesJar)
     Javadoc
  */
 task javadocJar(type: Jar) {
-    baseName = "totalcross-sdk"
     classifier = 'javadoc'
     from javadoc {
     	exclude 'jdkcompat*/**', 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
