@@ -1,6 +1,101 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+# 6.1.0 - July 2020
+Welcome to the July 2020 release (version 6.1.0). We hope you enjoy the updates in this version. The key highlights are:
+  - **Maven plugin new version** - your pom.xml file should change;
+  - **KnowCode Compatibility** - It is now possible to run Android XMLs Layouts on Linux Arm;
+  - **Virtual Keyboard** - New look and animations;
+  - **Using external applications** - Through the runtime.exec method;
+  - **Anonymous user statistics** - There is now an option to contribute by sending anonymous data;
+  - **Changing the SDL implementation** - Removing the SDL code from within the TotalCross SDK and changing the static to dynamic link.
+
+Join our [community on the telegram](https://t.me/totalcrosscommunity) to suggest activities and learn about development for embedded systems.
+
+## Maven plugin new version
+After the latest *Language Support for Java* extension updates, some systems had compatibility issues with Java 11. We launched a new version of the TotalCross maven plugin to solve them, the *1.1.6*. You must change the following line:
+```xml
+...
+
+<plugin>
+  <groupId>com.totalcross</groupId>
+  <artifactId>totalcross-maven-plugin</artifactId>
+  <!-- This line: -->
+  <version>1.1.6</version>
+  <configuration>
+    <name>${project.name}</name>
+    <platforms>
+    
+...
+```
+## KnowCode compatibility
+In this version, a *name tag was added to ContentHandler* (Pull request [#20](https://github.com/TotalCross/totalcross/pull/20)), making it possible for [KnowCode](https://github.com/totalcross/KnowCodeXML), a tool that uses a neural network, to convert [interface images to XML and TotalCross, allowing it to run on Linux Arm](https://opensource.com/article/20/5/linux-arm-ui) with the **same performance** as an application built directly with the TotalCross SDK.
+
+![Imgur](https://i.imgur.com/3NJZSE9.gif)
+
+Find out how to use KnowCode by clicking [here](https://www.youtube.com/watch?v=7o3p14wQPsE).
+
+## Virtual Keyboard
+In this milestone some improvements were implemented in the keyboard, which are:
+- In Linux Arm the virtual keyboard is enabled by default. To disable it just put `Settings.virtualKeyboard = false` in your `MainWindow` class; 
+- In order to improve performance and make the design cleaner, the *ripple effect* animation on the keyboard buttons was removed;
+- In order to obtain more effective responsiveness, the calculations of width and height were changed, leaving it less dependent on absolute values;
+- To make the interface richer, *sliding animation* was added to the *popup* and *unpopup* of the virtual keyboard. You can see these changes in detail in pull requests [#40](https://github.com/TotalCross/totalcross/pull/40) and [#65](https://github.com/TotalCross/totalcross/pull/65).
+
+In the images below you can see the visual difference:
+
+**Before**:
+
+![Imgur](https://i.imgur.com/PuMckm5.gif)
+
+**After**:
+
+![Imgur](https://i.imgur.com/DMEZysz.gif)
+
+# External applications
+To allow the use of external libraries in the simplest way possible is one of TotalCross goals. There is a [branch in our repository](https://github.com/TotalCross/totalcross/tree/feature/tcni-rebased) called `feature/tcni-rebased` which (still a Proof Of Concept) allows the use of these external libraries
+
+> TCNI is a foreign function interface programming framework that enables TotalCross/Java code running in a Java virtual machine to call and be called by native applications and libraries written in other languages ​​such as C, C ++ and assembly.
+
+But while TCNI is not ready to be launched, we have developed a middle ground **that allows the use of external applications** in TotalCross, through the method `runtime.exec()`. This method creates a new process and executes the command you passed in this new process (Pull request [#21](https://github.com/TotalCross/totalcross/pull/21)). 
+
+For example, create a python script to access a temperature sensor and with the `runtime.exec()` get the return of it, as you can see in this [example](https://www.linkedin.com/posts/brunoamuniz_android-linux-linuxarm-activity-6686008251059847168-u-Sr):
+
+![Imgur](https://i.imgur.com/AvVBa0G.gif)
+
+To better understand how it works using a sample application click [here](https://learn.totalcross.com/documentation/guides/running-c++-applications-with-totalcross).
+
+# Anonymous user statistics:
+
+When TotalCross decided to become a free and open source tool, the decision was made to no longer require an activation key from the user, which was previously necessary to differentiate free users from customers. As this removal would imply resolving a series of errors and making many changes, the team decided to generate an eternal and unlimited key and use it as a default, provisionally, until we resolve some pending issues and can go back to this point and withdraw it for good.
+
+So in 6.1.0 we went back to that and removed the activation key, including the class `register.java`, as you can see in detail in pull request [#53](https://github.com/TotalCross/totalcross/pull/53).
+
+And to better track which users preferences when using the TotalCross SDK, we **set up the SDK to ask if the developer wants to contribute anonymous data** and if the answer is positive, we record parameters for Deploy, timezone, launchers, operating system version and version of TotalCross used.
+
+![Imgur](https://i.imgur.com/UYrYUEU.png)
+
+You can see the details of the implementation in Pull Request [#66](https://github.com/TotalCross/totalcross/pull/66).
+
+# Change in SDL implementation
+
+We chose to remove SDL code from the SDK TotalCross in this version **to improve the build organization** and allow people **to customize the build** of their facilities according to their hardware.
+
+In addition, we changed the SDL link from static to dynamic because: 
+- Allows the distribution to have corrections and be used without having to compile the TC again but the guy needs to install the SDL before TotalCross
+- Avoids License compliance problems as [FOSSA](https://app.fossa.com/account/login?next=%2F) warns about the SDL license (GPLv3).
+
+For details, see pull requests [#23](https://github.com/TotalCross/totalcross/pull/23), [#24](https://github.com/TotalCross/totalcross/pull/24), and [#68](https://github.com/TotalCross/totalcross/pull/68).
+
+## Other changes:
+- [Reverted scroll flick animation](https://github.com/TotalCross/totalcross/pull/54) back to a previous version to fix a bug that caused the content to be pulled back after a scroll; 
+- Fixed [creation of TotalCross modules (*.tcz* files) using Java headless](https://github.com/TotalCross/totalcross/pull/45);
+- Fixed [round border on Container](https://github.com/TotalCross/totalcross/pull/47); 
+- Fixed [Switch Bar not being drawn](https://github.com/TotalCross/totalcross/pull/49);
+- Fixed [wrong size returned by `FontMetrics.stringWidth(String s)`](https://github.com/TotalCross/totalcross/pull/50) on devices that use skia with .ttf file type fonts. 
+- Fixed [Torizon/Wayland SDL](https://github.com/TotalCross/totalcross/pull/35) initialization; 
+- Fixed [FadeAnimation](https://github.com/TotalCross/totalcross/pull/33): the animation is now working as intended.
+
 ## 6.0.4 - 2020-04-20
   
 ### Highlights  
