@@ -68,14 +68,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setLong_ol"), &jlrF_setLong_ol);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setFloat_od"), &jlrF_setFloat_od);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setDouble_od"), &jlrF_setDouble_od);
-   htPutPtr(&htNativeProcAddresses, hashCode("jlR_exec_SSs"), &jlR_exec_SSs);
-   htPutPtr(&htNativeProcAddresses, hashCode("jlPI_waitFor"), &jlPI_waitFor);
-   htPutPtr(&htNativeProcAddresses, hashCode("jlPI_exitValue"), &jlPI_exitValue);
-   htPutPtr(&htNativeProcAddresses, hashCode("jlPI_destroy"), &jlPI_destroy);
-   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read"), &jncFCI_read);
-   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read_Bii"), &jncFCI_read_Bii);
-   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_write_Bii"), &jncFCI_write_Bii);
-   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_implCloseChannel"), &jncFCI_implCloseChannel);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showAddress_sb"), &tmGM_showAddress_sb);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showRoute_sssi"), &tmGM_showRoute_sssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_create"), &tucL_create);
@@ -90,6 +82,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntry_s"), &tuzZF_getEntry_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntryStream_s"), &tuzZF_getEntryStream_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_fromText_s"), &tumS_fromText_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tumYP_play_scbii"), &tumYP_play_scbii);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_toText_s"), &tumS_toText_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_play_s"), &tumS_play_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_beep"), &tumS_beep);
@@ -104,7 +97,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tumC_nativeClick"), &tumC_nativeClick);
    htPutPtr(&htNativeProcAddresses, hashCode("tumC_nativeFinalize"), &tumC_nativeFinalize);
    htPutPtr(&htNativeProcAddresses, hashCode("tumC_getNativeResolutions"), &tumC_getNativeResolutions);
-   htPutPtr(&htNativeProcAddresses, hashCode("tumYP_play_scbii"), &tumYP_play_scbii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyChanges"), &tuiI_applyChanges);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageLoad_s"), &tuiI_imageLoad_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageParse_sB"), &tuiI_imageParse_sB);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_changeColors_ii"), &tuiI_changeColors_ii);
@@ -115,15 +108,14 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeEquals_i"), &tuiI_nativeEquals_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyColor2_i"), &tuiI_applyColor2_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setTransparentColor_i"), &tuiI_setTransparentColor_i);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyChanges"), &tuiI_applyChanges);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTexture"), &tuiI_freeTexture);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFade_i"), &tuiI_applyFade_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeResizeJpeg_ssi"), &tuiI_nativeResizeJpeg_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegBestFit_sii"), &tuiI_getJpegBestFit_sii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegScaled_sii"), &tuiI_getJpegScaled_sii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawEllipse_iiii"), &tugG_drawEllipse_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillEllipse_iiii"), &tugG_fillEllipse_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawArc_iiidd"), &tugG_drawArc_iiidd);
@@ -137,7 +129,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_getPixel_ii"), &tugG_getPixel_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_setPixel_ii"), &tugG_setPixel_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawLine_iiii"), &tugG_drawLine_iiii);
-    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawLine_iiiii"), &tugG_drawLine_iiiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawLine_iiiii"), &tugG_drawLine_iiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawDots_iiii"), &tugG_drawDots_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawRect_iiii"), &tugG_drawRect_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillRect_iiii"), &tugG_fillRect_iiii);
@@ -362,6 +354,14 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlT_yield"), &jlT_yield);
    htPutPtr(&htNativeProcAddresses, hashCode("jlT_start"), &jlT_start);
    htPutPtr(&htNativeProcAddresses, hashCode("jlT_currentThread"), &jlT_currentThread);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlR_exec_SSs"), &jlR_exec_SSs);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlPI_waitFor"), &jlPI_waitFor);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlPI_exitValue"), &jlPI_exitValue);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlPI_destroy"), &jlPI_destroy);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read"), &jncFCI_read);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_read_Bii"), &jncFCI_read_Bii);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_write_Bii"), &jncFCI_write_Bii);
+   htPutPtr(&htNativeProcAddresses, hashCode("jncFCI_implCloseChannel"), &jncFCI_implCloseChannel);
    htPutPtr(&htNativeProcAddresses, hashCode("juL_getDefaultToString"), &juL_getDefaultToString);
    htPutPtr(&htNativeProcAddresses, hashCode("tidRD_isSupported_i"), &tidRD_isSupported_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tidRD_getState_i"), &tidRD_getState_i);
@@ -370,6 +370,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tidPC_nativeClose"), &tidPC_nativeClose);
    htPutPtr(&htNativeProcAddresses, hashCode("tidPC_setFlowControl_b"), &tidPC_setFlowControl_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tidPC_readCheck"), &tidPC_readCheck);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidPC_readWriteBytes_Biib"), &tidPC_readWriteBytes_Biib);
    htPutPtr(&htNativeProcAddresses, hashCode("tidbDA_nativeDiscoveryAgent"), &tidbDA_nativeDiscoveryAgent);
    htPutPtr(&htNativeProcAddresses, hashCode("tidbDA_cancelInquiry_d"), &tidbDA_cancelInquiry_d);
    htPutPtr(&htNativeProcAddresses, hashCode("tidbDA_cancelServiceSearch_i"), &tidbDA_cancelServiceSearch_i);
@@ -387,6 +388,12 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tidgGPS_startGPS"), &tidgGPS_startGPS);
    htPutPtr(&htNativeProcAddresses, hashCode("tidgGPS_updateLocation"), &tidgGPS_updateLocation);
    htPutPtr(&htNativeProcAddresses, hashCode("tidgGPS_stopGPS"), &tidgGPS_stopGPS);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGC_open_i"), &tidgGC_open_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_open_gi"), &tidgGL_open_gi);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_requestOutput_si"), &tidgGL_requestOutput_si);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_setValue_i"), &tidgGL_setValue_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_requestInput_s"), &tidgGL_requestInput_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_getValue"), &tidgGL_getValue);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_create_sssi"), &tiPDBF_create_sssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_rename_s"), &tiPDBF_rename_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_addRecord_i"), &tiPDBF_addRecord_i);
@@ -548,6 +555,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tfiFII_getToken"), &tfiFII_getToken);
    htPutPtr(&htNativeProcAddresses, hashCode("tnNM_notify_n"), &tnNM_notify_n);
    htPutPtr(&htNativeProcAddresses, hashCode("tcspPM_internalPrintText_ssp"), &tcspPM_internalPrintText_ssp);
+   htPutPtr(&htNativeProcAddresses, hashCode("tqQRC_nativeGetBytes_sii"), &tqQRC_nativeGetBytes_sii);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_iii"), &tidsS_setParam_iii);
@@ -560,12 +568,4 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_ss"), &tidsS_setParam_ss);
    htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
-   htPutPtr(&htNativeProcAddresses, hashCode("tqQRC_nativeGetBytes_sii"), &tqQRC_nativeGetBytes_sii);
-   
-   htPutPtr(&htNativeProcAddresses, hashCode("tidgGC_open_i"), &tidgGC_open_i);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_open_gi"), &tidgGL_open_gi);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_requestOutput_si"), &tidgGL_requestOutput_si);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_setValue_i"), &tidgGL_setValue_i);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_requestInput_s"), &tidgGL_requestInput_s);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_getValue"), &tidgGL_getValue);
 }

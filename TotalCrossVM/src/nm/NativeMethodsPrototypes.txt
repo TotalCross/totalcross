@@ -63,11 +63,6 @@ TC_API void jlrF_setInt_oi(NMParams p);
 TC_API void jlrF_setLong_ol(NMParams p);
 TC_API void jlrF_setFloat_od(NMParams p);
 TC_API void jlrF_setDouble_od(NMParams p);
-TC_API void jlR_exec_SSs(NMParams p);
-TC_API void jncFCI_read(NMParams p);
-TC_API void jncFCI_read_Bii(NMParams p);
-TC_API void jncFCI_write_Bii(NMParams p);
-TC_API void jncFCI_implCloseChannel(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tmGM_showRoute_sssi(NMParams p);
 TC_API void tucL_create(NMParams p);
@@ -82,6 +77,7 @@ TC_API void tuzZF_entries(NMParams p);
 TC_API void tuzZF_getEntry_s(NMParams p);
 TC_API void tuzZF_getEntryStream_s(NMParams p);
 TC_API void tumS_fromText_s(NMParams p);
+TC_API void tumYP_play_scbii(NMParams p);
 TC_API void tumS_toText_s(NMParams p);
 TC_API void tumS_play_s(NMParams p);
 TC_API void tumS_beep(NMParams p);
@@ -96,7 +92,6 @@ TC_API void tumMC_record_iib(NMParams p);
 TC_API void tumC_nativeClick(NMParams p);
 TC_API void tumC_nativeFinalize(NMParams p);
 TC_API void tumC_getNativeResolutions(NMParams p);
-TC_API void tumY_play(NMParams p);
 TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
@@ -108,13 +103,14 @@ TC_API void tuiI_applyColor_i(NMParams p);
 TC_API void tuiI_nativeEquals_i(NMParams p);
 TC_API void tuiI_applyColor2_i(NMParams p);
 TC_API void tuiI_setTransparentColor_i(NMParams p);
+TC_API void tuiI_freeTexture(NMParams p);
 TC_API void tuiI_applyFade_i(NMParams p);
 TC_API void tuiI_createJpg_si(NMParams p);
 TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p);
 TC_API void tuiI_getJpegBestFit_sii(NMParams p);
 TC_API void tuiI_getJpegScaled_sii(NMParams p);
-TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
+TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawEllipse_iiii(NMParams p);
 TC_API void tugG_fillEllipse_iiii(NMParams p);
 TC_API void tugG_drawArc_iiidd(NMParams p);
@@ -128,6 +124,7 @@ TC_API void tugG_fillCircle_iii(NMParams p);
 TC_API void tugG_getPixel_ii(NMParams p);
 TC_API void tugG_setPixel_ii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
+TC_API void tugG_drawLine_iiiii(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
 TC_API void tugG_fillRect_iiii(NMParams p);
@@ -152,7 +149,6 @@ TC_API void tugG_fillPolygonGradient_IIi(NMParams p);
 TC_API void tugG_getRGB_Iiiiii(NMParams p);
 TC_API void tugG_setRGB_Iiiiii(NMParams p);
 TC_API void tugG_fadeScreen_i(NMParams p);
-TC_API void tugG_drawThickLine_iiiii(NMParams p);
 TC_API void tufF_fontCreate(NMParams p);
 TC_API void tufFM_fontMetricsCreate(NMParams p);
 TC_API void tufFM_charWidth_c(NMParams p);
@@ -353,6 +349,14 @@ TC_API void jlT_printStackTraceNative(NMParams p);
 TC_API void jlT_yield(NMParams p);
 TC_API void jlT_start(NMParams p);
 TC_API void jlT_currentThread(NMParams p);
+TC_API void jlR_exec_SSs(NMParams p);
+TC_API void jlPI_waitFor(NMParams p);
+TC_API void jlPI_exitValue(NMParams p);
+TC_API void jlPI_destroy(NMParams p);
+TC_API void jncFCI_read(NMParams p);
+TC_API void jncFCI_read_Bii(NMParams p);
+TC_API void jncFCI_write_Bii(NMParams p);
+TC_API void jncFCI_implCloseChannel(NMParams p);
 TC_API void juL_getDefaultToString(NMParams p);
 TC_API void tidRD_isSupported_i(NMParams p);
 TC_API void tidRD_getState_i(NMParams p);
@@ -361,6 +365,7 @@ TC_API void tidPC_create_iiiii(NMParams p);
 TC_API void tidPC_nativeClose(NMParams p);
 TC_API void tidPC_setFlowControl_b(NMParams p);
 TC_API void tidPC_readCheck(NMParams p);
+TC_API void tidPC_readWriteBytes_Biib(NMParams p);
 TC_API void tidbDA_nativeDiscoveryAgent(NMParams p);
 TC_API void tidbDA_cancelInquiry_d(NMParams p);
 TC_API void tidbDA_cancelServiceSearch_i(NMParams p);
@@ -378,6 +383,12 @@ TC_API void tidbSPC_close(NMParams p);
 TC_API void tidgGPS_startGPS(NMParams p);
 TC_API void tidgGPS_updateLocation(NMParams p);
 TC_API void tidgGPS_stopGPS(NMParams p);
+TC_API void tidgGC_open_i(NMParams p);
+TC_API void tidgGL_open_gi(NMParams p);
+TC_API void tidgGL_requestOutput_si(NMParams p);
+TC_API void tidgGL_setValue_i(NMParams p);
+TC_API void tidgGL_requestInput_s(NMParams p);
+TC_API void tidgGL_getValue(NMParams p);
 TC_API void tiPDBF_create_sssi(NMParams p);
 TC_API void tiPDBF_rename_s(NMParams p);
 TC_API void tiPDBF_addRecord_i(NMParams p);
@@ -854,6 +865,10 @@ TC_API void tumS_fromText_s(NMParams p) // totalcross/ui/media/Sound native publ
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tumYP_play_scbii(NMParams p) // totalcross/ui/media/YoutubePlayer native private void play(String url, YoutubePlayer.Callback callback, boolean autoPlay, int end, int start);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tumS_toText_s(NMParams p) // totalcross/ui/media/Sound native public static String toText(String params);
 {
 }
@@ -910,10 +925,6 @@ TC_API void tumC_getNativeResolutions(NMParams p) // totalcross/ui/media/Camera 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tumYP_play_scbsiiiisiibi(NMParams p) // totalcross/ui/media/YoutubePlayer private void play(String url, YoutubePlayer.Callback callback, boolean autoPlay, String quality, int policy, int color, int option, int end, String hl, int loop, int rel, boolean showInfo, int start);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
 {
 }
@@ -958,6 +969,10 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native public void applyFade(int fadeValue);
 {
 }
@@ -978,11 +993,11 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
+TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
+TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1035,6 +1050,10 @@ TC_API void tugG_setPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native pu
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by, int c);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1131,10 +1150,6 @@ TC_API void tugG_setRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native public static void fadeScreen(int fadeValue);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1938,6 +1953,38 @@ TC_API void jlT_currentThread(NMParams p) // java/lang/Thread native public stat
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void jlR_exec_SSs(NMParams p) // java/lang/Runtime native public java.lang.Process exec(String []cmdarray, String []envp, String dirPath);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlPI_waitFor(NMParams p) // java/lang/ProcessImpl native public int waitFor();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlPI_exitValue(NMParams p) // java/lang/ProcessImpl native public int exitValue();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlPI_destroy(NMParams p) // java/lang/ProcessImpl native public int destroy();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jncFCI_read(NMParams p) // java/nio/channels/FileChannelImpl native public int read() throws IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jncFCI_read_Bii(NMParams p) // java/nio/channels/FileChannelImpl native public int read(byte []b, int offset, int length) throws IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jncFCI_write_Bii(NMParams p) // java/nio/channels/FileChannelImpl native public int write(byte []b, int offset, int length) throws IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jncFCI_implCloseChannel(NMParams p) // java/nio/channels/FileChannelImpl native protected void implCloseChannel() throws IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void juL_getDefaultToString(NMParams p) // java/util/Locale native static String getDefaultToString();
 {
 }
@@ -1967,6 +2014,10 @@ TC_API void tidPC_setFlowControl_b(NMParams p) // totalcross/io/device/PortConne
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_readCheck(NMParams p) // totalcross/io/device/PortConnector native public int readCheck();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidPC_readWriteBytes_Biib(NMParams p) // totalcross/io/device/PortConnector native public int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2035,6 +2086,30 @@ TC_API void tidgGPS_updateLocation(NMParams p) // totalcross/io/device/gps/GPS n
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGPS_stopGPS(NMParams p) // totalcross/io/device/gps/GPS native private void stopGPS();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGC_open_i(NMParams p) // totalcross/io/device/gpiod/GpiodChip native public static totalcross.io.device.gpiod.GpiodChip open(int bank);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGL_open_gi(NMParams p) // totalcross/io/device/gpiod/GpiodLine native public static totalcross.io.device.gpiod.GpiodLine open(totalcross.io.device.gpiod.GpiodChip chip, int line);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGL_requestOutput_si(NMParams p) // totalcross/io/device/gpiod/GpiodLine native public int requestOutput(String consumer, int defaultValue);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGL_setValue_i(NMParams p) // totalcross/io/device/gpiod/GpiodLine native public int setValue(int value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGL_requestInput_s(NMParams p) // totalcross/io/device/gpiod/GpiodLine native public int requestInput(String consumer);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGL_getValue(NMParams p) // totalcross/io/device/gpiod/GpiodLine native public int getValue();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2682,6 +2757,6 @@ TC_API void tcspPM_internalPrintText_ssp(NMParams p) // totalcross/cielo/sdk/pri
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tqQRC_nativeGetBytes_sii(NMParams p) // totalcross/qrcode private native byte[][] nativeGetBytes(String text, int errorCorrection, int version);
+TC_API void tqQRC_nativeGetBytes_sii(NMParams p) // totalcross/qrcode/QRCode private native byte[][] nativeGetBytes(String text, int errorCorrection, int version);
 {
 }
