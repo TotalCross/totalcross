@@ -392,6 +392,7 @@ TC_API void tidPC_create_iiiii(NMParams p);
 TC_API void tidPC_nativeClose(NMParams p);
 TC_API void tidPC_setFlowControl_b(NMParams p);
 TC_API void tidPC_readCheck(NMParams p);
+TC_API void tidPC_readWriteBytes_Biib(NMParams p);
 TC_API void tidbDA_nativeDiscoveryAgent(NMParams p);
 TC_API void tidbDA_cancelInquiry_d(NMParams p);
 TC_API void tidbDA_cancelServiceSearch_i(NMParams p);
