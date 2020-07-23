@@ -14,7 +14,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
-version = '6.0.4'
+version = '6.1.0'
 group = 'com.totalcross'
 
 // can't be used yet, enconding is a mess
