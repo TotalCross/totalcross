@@ -585,7 +585,7 @@ public class Image4D extends GfxSurface {
     return i;
   }
 
-  native public Image setTransparentColor4D(int color);
+  native public Image setTransparentColor(int color);
 
   native private void freeTexture();
 
