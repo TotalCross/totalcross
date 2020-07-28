@@ -5,7 +5,7 @@
 <p align="center">The fastest way to build GUI for embedded devices</strong></em></p>
 
 <div align="center">
-  <a href="https://learn.totalcross.com/documentation/get-started" target="_blank">Try in 8 minutes</a>
+  <a href="https://learn.totalcross.com/documentation/get-started" target="_blank">Get Started</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://totalcross.com/" target="_blank">Website</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
