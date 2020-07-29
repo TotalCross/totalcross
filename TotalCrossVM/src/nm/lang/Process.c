@@ -4,9 +4,11 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "Process.h"
+#if defined POSIX || defined ANDROID
 #include "cpproc.h"
 #include "errno.h"
 #include <signal.h>
+#endif
 
 TC_API void jlPI_waitFor(NMParams p) {
 #if defined(linux) && !defined(darwin)
