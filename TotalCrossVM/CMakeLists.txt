@@ -33,7 +33,7 @@ endif(NOT MSVC)
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LB_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src/litebase")
-
+set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
 
 set(SOURCES
     ${TC_SRCDIR}/axtls/aes.c
@@ -324,9 +324,9 @@ endif(NOT MSVC)
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
   set(TCVM_iOS_FILES
-    ${TC_SRCDIR}/../builders/xcode/libtcvm.h
-    ${TC_SRCDIR}/../builders/xcode/libtcvm.m
-    ${TC_SRCDIR}/../builders/xcode/tcvm-Prefix.pch
+    ${IOS_BUNDLE_SRCDIR}/tcvm/libtcvm.h
+    ${IOS_BUNDLE_SRCDIR}/tcvm/libtcvm.m
+    ${IOS_BUNDLE_SRCDIR}/tcvm/tcvm-Prefix.pch
     
     #event\\darwin
     ${TC_SRCDIR}/event/darwin/event.m
@@ -538,7 +538,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER com.totalcross.vm
     XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 8.0
     XCODE_ATTRIBUTE_CLANG_ENABLE_MODULES YES
-    XCODE_ATTRIBUTE_GCC_PREFIX_HEADER "${TC_SRCDIR}/../builders/xcode/tcvm-Prefix.pch"
+    XCODE_ATTRIBUTE_GCC_PREFIX_HEADER "${IOS_BUNDLE_SRCDIR}/tcvm/tcvm-Prefix.pch"
     XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER "YES"
     XCODE_ATTRIBUTE_HEADER_SEARCH_PATHS "${INCLUDED_HEADERS_STR}"
   )

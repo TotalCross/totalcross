@@ -2,13 +2,13 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../../LitebaseSDK/builders/xcode/Litebase.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:TCVM.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:TotalCross.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:tcvm.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:../../../LitebaseSDK/builders/xcode/Litebase.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
