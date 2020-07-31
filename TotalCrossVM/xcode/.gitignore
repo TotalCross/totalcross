@@ -16,6 +16,8 @@ xcuserdata/
 
 ## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
 build/
+Build/
+*-iphoneos/
 DerivedData/
 *.moved-aside
 *.pbxuser
@@ -29,3 +31,10 @@ DerivedData/
 
 ## Gcc Patch
 /*.gcno
+
+## Cmake generated files
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+TCVM.xcodeproj
+cmake_install.cmake

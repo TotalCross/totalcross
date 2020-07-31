@@ -49,6 +49,8 @@ TotalCrossVM/builders/vc2008/.gradle/
 
 # Xcode
 *.xcuserstate
+Breakpoints.xcbkptlist
+*.nib
 
 # Files from VS Code
 /**/.vs
