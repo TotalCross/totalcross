@@ -59,7 +59,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="ARM;_ARM_;NDEBUG;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -90,7 +90,7 @@
 				Version="1.0"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="P:\TotalCrossVM\builders\evc4\ARMV4Rel"
+				AdditionalLibraryDirectories="$(OutDir)"
 				IgnoreDefaultLibraryNames="$(CENoDefaultLib)"
 				ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pdb"
 				StackReserveSize="65536"
@@ -165,7 +165,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="ARM;_ARM_;NDEBUG;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -196,7 +196,7 @@
 				Version="1.0"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="P:\TotalCrossVM\builders\evc4\ARMV4Rel"
+				AdditionalLibraryDirectories="$(OutDir)"
 				IgnoreDefaultLibraryNames="$(CENoDefaultLib)"
 				ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pdb"
 				StackReserveSize="65536"
@@ -271,7 +271,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="ARM;_ARM_;NDEBUG;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -302,7 +302,7 @@
 				Version="1.0"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="P:\TotalCrossVM\builders\evc4\ARMV4Rel"
+				AdditionalLibraryDirectories="$(OutDir)"
 				IgnoreDefaultLibraryNames="$(CENoDefaultLib)"
 				ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pdb"
 				StackReserveSize="65536"
@@ -377,7 +377,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="ARM;_ARM_;NDEBUG;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -408,7 +408,7 @@
 				Version="1.0"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="P:\TotalCrossVM\builders\evc4\ARMV4Rel"
+				AdditionalLibraryDirectories="$(OutDir)"
 				IgnoreDefaultLibraryNames="$(CENoDefaultLib)"
 				ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pdb"
 				StackReserveSize="65536"
@@ -483,7 +483,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="DEBUG;ARM;_ARM_;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pch"
@@ -589,7 +589,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="DEBUG;ARM;_ARM_;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pch"
@@ -695,7 +695,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="DEBUG;ARM;_ARM_;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pch"
@@ -801,7 +801,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\util,..\..\src\tcvm,..\..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\util,..\src\tcvm,..\src\scanner,..\..\deps\wince-deps\WindowsCE\winsock2"
 				PreprocessorDefinitions="DEBUG;ARM;_ARM_;WINCE;_WIN32_WCE=$(CEVER);$(CePlatform);UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/OpticonH16.pch"
@@ -881,7 +881,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\src\scanner\opticonh16\OpticonH16_barcode.c"
+				RelativePath="..\src\scanner\opticonh16\OpticonH16_barcode.c"
 				>
 				<FileConfiguration
 					Name="Release|Smartphone 2003 (ARMV4)"
@@ -962,11 +962,11 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\src\scanner\barcode.h"
+				RelativePath="..\src\scanner\barcode.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\scanner\opticonh16\BCRService.h"
+				RelativePath="..\src\scanner\opticonh16\BCRService.h"
 				>
 			</File>
 		</Filter>

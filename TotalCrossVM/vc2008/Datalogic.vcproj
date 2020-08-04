@@ -115,7 +115,7 @@
 				ExecutionBucket="7"
 				Optimization="0"
 				ImproveFloatingPointConsistency="false"
-				AdditionalIncludeDirectories="..\..\src\util;..\..\src\tcvm;P:\extlibs\Datalogic\Include\Armv4i"
+				AdditionalIncludeDirectories="..\src\util;..\src\tcvm;P:\extlibs\Datalogic\Include\Armv4i"
 				PreprocessorDefinitions="DATALOGIC_EXPORTS;SCAN_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL;"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -329,7 +329,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\scanner\datalogic\Datalogic_barcode.c"
+				RelativePath="..\src\scanner\datalogic\Datalogic_barcode.c"
 				>
 			</File>
 		</Filter>

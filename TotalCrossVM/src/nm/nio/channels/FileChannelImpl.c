@@ -5,7 +5,9 @@
 
 #include "FileChannelImpl.h"
 #include "xtypes.h"
+#if defined(linux) && !defined(darwin)
 #include "errno.h"
+#endif
 
 TC_API void jncFCI_read(NMParams p) {
 #if defined(linux) && !defined(darwin)

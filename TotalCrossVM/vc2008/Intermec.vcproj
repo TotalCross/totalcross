@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="Pidion"
-	ProjectGUID="{3804F950-2D5E-46CB-8BD9-5DBB7C0437BA}"
+	Name="Intermec"
+	ProjectGUID="{1407A4CD-4F45-41E9-A2DB-38B6BC6A6CA8}"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -41,16 +41,16 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\util;..\..\src\tcvm"
+				AdditionalIncludeDirectories="..\src\util;..\src\tcvm;"
 				PreprocessorDefinitions="SCAN_EXPORTS;WINCE;WIN32;_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);DEBUG;_WINDOWS;_USRDLL;ARM;_ARM;_UNICODE;UNICODE"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
-				StructMemberAlignment="3"
 				BufferSecurityCheck="false"
 				FloatingPointModel="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				CompileAs="1"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -67,17 +67,17 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,4.20 /machine:THUMB"
-				OutputFile="$(OutDir)/Pidion.dll"
+				OutputFile="$(OutDir)/Intermec.dll"
 				LinkIncremental="2"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/Pidion.pdb"
+				ProgramDatabaseFile="$(OutDir)/Intermec.pdb"
 				SubSystem="0"
 				StackReserveSize="65536"
 				StackCommitSize="4096"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/Pidion.lib"
+				ImportLibrary="$(OutDir)/Intermec.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -134,8 +134,8 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\util;..\..\src\tcvm"
-				PreprocessorDefinitions="SCAN_EXPORTS;WIN32;NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;_WINDOWS;_USRDLL;PIDION_EXPORTS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
+				AdditionalIncludeDirectories="..\src\util;..\src\tcvm;"
+				PreprocessorDefinitions="SCAN_EXPORTS;WIN32;NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;_WINDOWS;_USRDLL;INTERMEC_EXPORTS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				RuntimeLibrary="0"
 				StructMemberAlignment="3"
 				BufferSecurityCheck="false"
@@ -159,11 +159,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,4.20 /machine:THUMB"
-				OutputFile="$(OutDir)/Pidion.dll"
+				OutputFile="$(OutDir)/Intermec.dll"
 				LinkIncremental="1"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)/Pidion.pdb"
+				ProgramDatabaseFile="$(IntDir)/Intermec.pdb"
 				SubSystem="0"
 				StackReserveSize="65536"
 				StackCommitSize="4096"
@@ -171,7 +171,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(IntDir)/Pidion.lib"
+				ImportLibrary="$(IntDir)/Intermec.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -210,15 +210,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\scanner\pidion\CameraNatives.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\scanner\pidion\PidionLib.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\scanner\pidion\PrinterNatives.cpp"
+				RelativePath="..\src\scanner\intermec\Intermec_barcode.c"
 				>
 			</File>
 		</Filter>

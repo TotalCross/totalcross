@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\src\tcvm;..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -135,7 +135,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\src\tcvm;..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -223,7 +223,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\src\tcvm;..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -294,15 +294,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\sync\Conduit.cpp"
+				RelativePath="..\src\sync\Conduit.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\palmdb\palmdb.c"
+				RelativePath="..\src\palmdb\palmdb.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\palmdb\rapi\palmdb_c.h"
+				RelativePath="..\src\palmdb\rapi\palmdb_c.h"
 				>
 			</File>
 		</Filter>
@@ -312,11 +312,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\sync\Conduit.h"
+				RelativePath="..\src\sync\Conduit.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\palmdb\palmdb.h"
+				RelativePath="..\src\palmdb\palmdb.h"
 				>
 			</File>
 		</Filter>
