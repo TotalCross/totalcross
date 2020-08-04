@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\util;..\..\src\tcvm;..\..\deps\wince-deps\WindowsCE\wce300\PPT2800 PPC\include"
+				AdditionalIncludeDirectories="..\src\util;..\src\tcvm;..\modules\wince-deps\WindowsCE\wce300\PPT2800 PPC\include"
 				PreprocessorDefinitions="SCAN_EXPORTS;WINCE;WIN32;_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);DEBUG;_WINDOWS;_USRDLL;_ARM;ARM;_UNICODE;UNICODE"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -72,7 +72,7 @@
 				AdditionalDependencies="RCMapi32.lib scnapi32.lib"
 				OutputFile="$(OutDir)/Motorola.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\deps\wince-deps\WindowsCE\wce300\PPT2800 PPC\lib\ARM"
+				AdditionalLibraryDirectories="..\modules\wince-deps\WindowsCE\wce300\PPT2800 PPC\lib\ARM"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/Motorola.pdb"
@@ -137,8 +137,8 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="2"
-				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\util;..\..\src\tcvm;..\..\deps\wince-deps\WindowsCE\wce300\PPT2800 PPC\include"
+				FavorSizeOrSpeed="2" 
+				AdditionalIncludeDirectories="..\src\util;..\src\tcvm;..\modules\wince-deps\WindowsCE\wce300\PPT2800 PPC\include"
 				PreprocessorDefinitions="SCAN_EXPORTS;WIN32;NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;_WINDOWS;_USRDLL;MOTOROLA_EXPORTS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				RuntimeLibrary="0"
 				StructMemberAlignment="3"
@@ -166,7 +166,7 @@
 				AdditionalDependencies="RCMapi32.lib scnapi32.lib"
 				OutputFile="$(OutDir)/Motorola.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\deps\wince-deps\WindowsCE\wce300\PPT2800 PPC\lib\ARM"
+				AdditionalLibraryDirectories="..\modules\wince-deps\WindowsCE\wce300\PPT2800 PPC\lib\ARM"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)/Motorola.pdb"
@@ -216,7 +216,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\scanner\symbol\Symbol_barcode.c"
+				RelativePath="..\src\scanner\symbol\Symbol_barcode.c"
 				>
 			</File>
 		</Filter>

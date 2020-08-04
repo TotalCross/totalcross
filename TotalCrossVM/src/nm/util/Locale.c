@@ -30,7 +30,7 @@ TC_API void juL_getDefaultToString(NMParams p) // java/util/Locale native String
     debug(defaultChar);
     p->retO = createStringObjectFromCharP(p->currentContext, defaultChar, xstrlen(defaultChar));
     setObjectLock(p->retO, UNLOCKED);
-#elif defined(WINCE) || defined(WIN32)
+#elif !defined(WINCE) && defined(WIN32)
 	TCHAR value[255];
 	GetLocaleInfo(LOCALE_USER_DEFAULT,	LOCALE_SNAME, value,
 	255);

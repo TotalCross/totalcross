@@ -59,7 +59,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\zlib,..\..\src\nm\net\axssl,..\..\src\tcvm,..\..\src\scanner,..\..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
+				AdditionalIncludeDirectories="..\src\zlib,..\src\nm\net\axssl,..\src\tcvm,..\src\scanner,..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -164,7 +164,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\zlib;..\..\src\nm\net\axssl;..\..\src\tcvm;..\..\src\scanner;..\..\src\util;P:\extlibs\WindowsCE\winsock2"
+				AdditionalIncludeDirectories="..\src\zlib;..\src\nm\net\axssl;..\src\tcvm;..\src\scanner;..\src\util;P:\extlibs\WindowsCE\winsock2"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -269,7 +269,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\zlib,..\..\src\nm\net\axssl,..\..\src\tcvm,..\..\src\scanner,..\..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
+				AdditionalIncludeDirectories="..\src\zlib,..\src\nm\net\axssl,..\src\tcvm,..\src\scanner,..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -374,7 +374,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="..\..\src\zlib,..\..\src\nm\net\axssl,..\..\src\tcvm,..\..\src\scanner,..\..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
+				AdditionalIncludeDirectories="..\src\zlib,..\src\nm\net\axssl,..\src\tcvm,..\src\scanner,..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -479,7 +479,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\scanner,..\..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
+				AdditionalIncludeDirectories="..\src\tcvm,..\src\scanner,..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
 				PreprocessorDefinitions="DEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/Bematech.pch"
@@ -586,7 +586,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\scanner,..\..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
+				AdditionalIncludeDirectories="..\src\tcvm,..\src\scanner,..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
 				PreprocessorDefinitions="DEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/Bematech.pch"
@@ -693,7 +693,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\scanner,..\..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
+				AdditionalIncludeDirectories="..\src\tcvm,..\src\scanner,..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
 				PreprocessorDefinitions="DEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/Bematech.pch"
@@ -800,7 +800,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\scanner,..\..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
+				AdditionalIncludeDirectories="..\src\tcvm,..\src\scanner,..\src\util,P:\extlibs\WindowsCE\winsock2,P:\extlibs\WindowsCE\bematech"
 				PreprocessorDefinitions="DEBUG;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_USRDLL;SCAN_EXPORTS"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/Bematech.pch"
@@ -881,7 +881,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\src\scanner\bematech\Bematech_barcode.c"
+				RelativePath="..\src\scanner\bematech\Bematech_barcode.c"
 				>
 				<FileConfiguration
 					Name="Release|Smartphone 2003 (ARMV4)"
@@ -962,11 +962,11 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\src\scanner\barcode.h"
+				RelativePath="..\src\scanner\barcode.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\scanner\bematech\ZBCRLib.h"
+				RelativePath="..\src\scanner\bematech\ZBCRLib.h"
 				>
 			</File>
 		</Filter>

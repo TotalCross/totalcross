@@ -18,7 +18,7 @@ FOR /F "usebackq tokens=2*" %%A IN (`REG QUERY %KEY_NAME% /v %VALUE_NAME% 2^>nul
 
 @echo ON
 
-"%PATH%" TotalCrossVM\builders\vc2008\TCVM.sln /rebuild "Release|Win32"
+"%PATH%" TCVM.sln /rebuild "Release|Win32"
 
-"%PATH%" TotalCrossVM\builders\vc2008\TCVM.sln /rebuild "Release|Pocket PC 2003 (ARMV4)
+"%PATH%" TCVM.sln /rebuild "Release|Pocket PC 2003 (ARMV4)
 

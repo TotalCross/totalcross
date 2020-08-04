@@ -504,7 +504,7 @@ target_compile_options(tcvm
     >
     $<$<CXX_COMPILER_ID:MSVC>:
       # MSVC warning flags
-      /W4
+      /W3
     >
     $<$<PLATFORM_ID:APPLE>:
       -mmacosx-version-min=10.11
@@ -514,7 +514,7 @@ target_compile_options(tcvm
     >
 )
 # We need to use C++ 11
-if(${CMAKE_VERSION} VERSION_LESS "3.8") 
+if(${CMAKE_VERSION} VERSION_LESS "3.8" OR MSVC) 
   set_target_properties(tcvm PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
@@ -617,7 +617,7 @@ if(MSVC)
     "win"
   )
   set(LAUNCHER_RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/builders/vc2008/tc.rc
+    ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/tc.rc
   )
 else()
   set(LAUNCHER_PATH
@@ -642,4 +642,19 @@ if(MSVC)
 else()
   target_link_libraries(Launcher dl)
 endif(MSVC)
+endif()
+
+if(MSVC)
+  INCLUDE_EXTERNAL_MSPROJECT(Litebase ${CMAKE_CURRENT_SOURCE_DIR}/../LitebaseSDK/builders/vc2008/Litebase.vcproj)
+  if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+    INCLUDE_EXTERNAL_MSPROJECT(Datalogic ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Datalogic.vcproj)
+    INCLUDE_EXTERNAL_MSPROJECT(Dolphin ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Dolphin.vcproj)
+    INCLUDE_EXTERNAL_MSPROJECT(Intermec ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Intermec.vcproj)
+    INCLUDE_EXTERNAL_MSPROJECT(Motorola ${CMAKE_CURRENT_SOURCE_DIR}/vc2008x/Motorola.vcproj)
+    INCLUDE_EXTERNAL_MSPROJECT(OpticonH16 ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/OpticonH16.vcproj)
+    add_dependencies(OpticonH16 tcvm)
+    add_dependencies(Dolphin tcvm)
+    add_dependencies(Intermec tcvm)
+    INCLUDE_EXTERNAL_MSPROJECT(Pidion ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Pidion.vcproj)
+  endif()
 endif()
