@@ -71,6 +71,8 @@ set(SOURCES
 
     ${TC_SRCDIR}/init/demo.c
     ${TC_SRCDIR}/init/globals.c
+    ${TC_SRCDIR}/init/rvmdebug.c
+    ${TC_SRCDIR}/init/rvmdebug_calls.c
     ${TC_SRCDIR}/init/nativeProcAddressesTC.c
     ${TC_SRCDIR}/init/startup.c
     ${TC_SRCDIR}/init/settings.c
