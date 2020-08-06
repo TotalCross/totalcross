@@ -513,8 +513,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             }
           }
           System.out.println("Screen is " + toWidth + "x" + toHeight + "x" + toBpp);
-        } else if (args[i++].equalsIgnoreCase("/r")) {
-          // Ignore next argument
+        } else if (args[i].equalsIgnoreCase("/r")) {
+          ++i;
         } else if (args[i].equalsIgnoreCase("/pos")) /* x,y */
         {
           String[] scr = tokenizeString(args[++i].toLowerCase(), ',');
