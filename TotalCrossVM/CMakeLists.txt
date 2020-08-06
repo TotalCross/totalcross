@@ -480,6 +480,10 @@ else()
 endif(DEFINED ANDROID_ABI)
 add_definitions(-DTOTALCROSS -DTC_EXPORTS)
 
+# Support defining PNG_ARM_NEON_OPT externally
+if(DEFINED PNG_ARM_NEON_OPT)
+  add_definitions(-DPNG_ARM_NEON_OPT=${PNG_ARM_NEON_OPT})
+endif(DEFINED PNG_ARM_NEON_OPT)
 
 if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
   add_definitions(-DCURRENT_DEBUG_PATH="${CMAKE_CURRENT_BINARY_DIR}")
