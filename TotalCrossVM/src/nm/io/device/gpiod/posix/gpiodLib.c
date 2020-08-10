@@ -25,17 +25,18 @@ bool initGpiod()
     gpiodLib = dlopen("libgpiod.so", RTLD_LAZY);
     
     if (gpiodLib == null) {
-           glob_t globbuf;
-           int i;
+        glob_t globbuf;
+        int i;
 
-           glob("/usr/lib/libgpiod.so*", GLOB_DOOFFS, NULL, &globbuf);
-           for (i = globbuf.gl_pathc - 1 ; i >= 0 ; i--) {
-            gpiodLib = dlopen(globbuf.gl_pathv[i], RTLD_LAZY);
-            if (gpiodLib != null) {
-                break;
+        if (glob("/usr/lib/libgpiod.so*", GLOB_DOOFFS, NULL, &globbuf) == 0) {
+            for (i = globbuf.gl_pathc - 1 ; i >= 0 ; i--) {
+                gpiodLib = dlopen(globbuf.gl_pathv[i], RTLD_LAZY);
+                if (gpiodLib != null) {
+                    break;
+                }
             }
-         }
-         globfree(&globbuf);
+            globfree(&globbuf);
+        }
     }
 
     if (gpiodLib != null) {
