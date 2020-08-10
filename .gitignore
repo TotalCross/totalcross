@@ -17,15 +17,13 @@ TotalCrossSDK/etc/tools/android/resources_singleapk.arsc
 TotalCrossSDK/etc/tools/bb/bin/sigtool.set
 TotalCrossSDK/etc/launchers/android/resources\.ap_
 TotalCrossVM/builders/*.tcz
-TotalCrossVM/builders/android/apps/options.mk
-TotalCrossVM/builders/android/apps/tcvm/.settings
 TotalCrossVM/src/init/android/*.h
 TotalCrossVM/src/launchers/android/bin
 TotalCrossVM/src/launchers/android/gen
 TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/UserInterfaceState.xcuserstate
 TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/xcdebugger/Breakpoints.xcbkptlist
-TotalCrossVM/builders/droid/.idea
-TotalCrossVM/builders/droid/app/src/main/assets/tcfiles\.zip
+TotalCrossVM/android/.idea
+TotalCrossVM/android/app/src/main/assets/tcfiles\.zip
 
 # Intermediate files
 *.o
@@ -36,9 +34,9 @@ TotalCrossVM/builders/droid/app/src/main/assets/tcfiles\.zip
 TotalCrossVM/builders/vc*/**/*.pdb
 TotalCrossVM/builders/vc*/**/*.lib
 TotalCrossVM/builders/vc*/**/*.dll
-TotalCrossVM/builders/droid/build/
-TotalCrossVM/builders/droid/.gradle/
-TotalCrossVM/builders/droid/src/main/libs/armeabi/
+TotalCrossVM/android/build/
+TotalCrossVM/anroid/.gradle/
+TotalCrossVM/android/src/main/libs/armeabi/
 
 # Files from vim
 .*.swp

@@ -74,19 +74,19 @@ android {
     
     externalNativeBuild {
         cmake {
-            path "../../../CMakeLists.txt"
+            path "../../CMakeLists.txt"
         }
     }
     task assembleAssets(type:Zip) {
-        outputs.upToDateWhen { false }
-        from ('../../../../TotalCrossSDK/dist/vm') {
+        // outputs.upToDateWhen { false }
+        from ('../../../TotalCrossSDK/dist/vm') {
             include 'TCBase.tcz'
             include 'TCUI.tcz'
         }
-        from ('../../../../TotalCrossSDK/etc/fonts') {
+        from ('../../../TotalCrossSDK/etc/fonts') {
             include 'TCFont.tcz'
         }
-        from ('../../../../LitebaseSDK/dist/lib/') {
+        from ('../../../LitebaseSDK/dist/lib/') {
             include 'LitebaseLib.tcz'
         }
         entryCompression ZipEntryCompression.STORED
@@ -97,7 +97,7 @@ android {
     task copyApk <<{
         copy {
 			from fileTree('build/outputs/apk').files
-			into "../../../../output/${buildType}/TotalCrossSDK/dist/vm/android"
+			into "../../../output/${buildType}/TotalCrossSDK/dist/vm/android"
 			include "**/app-main-${buildType}.apk"
 			rename { String fileName ->
 				fileName.replace("app-main-${buildType}", 'TotalCross')
@@ -106,7 +106,7 @@ android {
         }
         copy {
             from zipTree("build/outputs/apk/singleApk/${buildType}/app-singleApk-${buildType}.apk").files
-            into "../../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
+            into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
             include 'AndroidManifest.xml', 'resources.arsc'
             rename { String fileName ->
                 fileName.replace('.', '_singleapk.')
@@ -115,7 +115,7 @@ android {
         }
         copy {
             from zipTree("build/outputs/apk/includeSms/${buildType}/app-includeSms-${buildType}.apk").files
-            into "../../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
+            into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
             include 'AndroidManifest.xml', 'resources.arsc'
             rename { String fileName ->
                 fileName.replace('.', '_includeSms.')
@@ -124,7 +124,7 @@ android {
         }
         copy {
             from fileTree('build/intermediates/res/main/' + buildType).files
-            into '../../../../output/' + buildType + '/TotalCrossSDK/etc/launchers/android'
+            into '../../../output/' + buildType + '/TotalCrossSDK/etc/launchers/android'
             include 'resources-main' + buildType.capitalize() + '.ap_'
             rename { String fileName ->
                 fileName.replace('-main' + buildType.capitalize(), '')
@@ -133,7 +133,7 @@ android {
         }
         copy {
             from fileTree('build/intermediates/res/main/' + buildType).files
-            into '../../../../TotalCrossSDK/etc/launchers/android'
+            into '../../../TotalCrossSDK/etc/launchers/android'
             include 'resources-main' + buildType.capitalize() + '.ap_'
             rename { String fileName ->
                 fileName.replace('-main' + buildType.capitalize(), '')
