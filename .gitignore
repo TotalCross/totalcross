@@ -63,3 +63,6 @@ TotalCrossVM/builders/gcc-linux-arm/sdl/**/build
 .settings
 .classpath
 .project
+
+# Git
+*.orig
