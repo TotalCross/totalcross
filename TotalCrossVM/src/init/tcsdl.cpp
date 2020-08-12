@@ -92,12 +92,6 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   if (NOT_SUCCESS(SDL_GetRendererInfo(renderer, &rendererInfo))) {
     printf("SDL_GetRendererInfo failed: %s\n", SDL_GetError());
     return 0;
-  } else {
-    // Set render driver 
-    if ((SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name)) == SDL_FALSE) {
-      printf("SDL_SetHint failed: %s\n", SDL_GetError());
-      return false;
-    }
   }
   std::cout << "SDL_RENDER_DRIVER selected : " << rendererInfo.name << '\n';
   
