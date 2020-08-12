@@ -94,6 +94,14 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   // Get the size of the window's client area
   SDL_GetWindowSize(window, &viewport.w, &viewport.h);
 
+  std::cout << "SDL_RENDER_DRIVER available:";
+  for( int i = 0; i < SDL_GetNumRenderDrivers(); ++i ) {
+      SDL_RendererInfo info;
+      SDL_GetRenderDriverInfo( i, &info );
+      std::cout << " " << info.name;
+  }
+  std::cout << '\n';
+
   // Create a 2D rendering context for a window
   if(IS_NULL(renderer = SDL_CreateRenderer(window, -1, NO_FLAGS))) {
     printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
@@ -121,6 +129,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
     printf("SDL_GetRendererOutputSize failed: %s\n", SDL_GetError());
     return false;
   }
+  std::cout << "SDL_RENDER_DRIVER selected : " << rendererInfo.name << '\n';
   
   // Get window pixel format
   Uint32 windowPixelFormat;
