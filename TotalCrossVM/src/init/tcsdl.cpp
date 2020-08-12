@@ -11,6 +11,7 @@
 
 #include "tcsdl.h"
 #include <iostream>
+#include <vector>
 
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
@@ -30,11 +31,33 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   int width = (getenv("TC_WIDTH")  == NULL) ? 640 : std::stoi(getenv("TC_WIDTH"));
   int height= (getenv("TC_HEIGHT") == NULL) ? 400 : std::stoi(getenv("TC_HEIGHT"));
 
+  std::cout << "Testing video drivers..." << '\n';
+  std::vector< bool > drivers( SDL_GetNumVideoDrivers() );
+  
+  for(int i = 0; i < drivers.size(); ++i) {
+      drivers[i] = (0 == SDL_VideoInit(SDL_GetVideoDriver( i )));
+      SDL_VideoQuit();
+  }
+
+  std::cout << "SDL_VIDEODRIVER available:";
+  for( int i = 0; i < drivers.size(); ++i ) {
+      std::cout << " " << SDL_GetVideoDriver( i );
+  }
+  std::cout << '\n';
+
+  std::cout << "SDL_VIDEODRIVER usable   :";
+  for( int i = 0; i < drivers.size(); ++i ) {
+      if( !drivers[ i ] ) continue;
+      std::cout << " " << SDL_GetVideoDriver( i );
+  }
+  std::cout << '\n';
+
   // Only init video (without audio)
   if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
     printf("SDL_Init failed: %s\n", SDL_GetError());
     return false;
   }
+  std::cout << "SDL_VIDEODRIVER selected : " << SDL_GetCurrentVideoDriver() << '\n';
 
   // Get the desktop area represented by a display, with the primary
   // display located at 0,0 based on viewport allocated on initial position
