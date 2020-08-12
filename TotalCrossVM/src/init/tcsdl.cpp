@@ -68,15 +68,6 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
     &SDL_GetDisplayUsableBounds;
 #endif
 
-  SDL_Rect viewport;
-  if(NOT_SUCCESS(TCSDL_GetDisplayBounds(DISPLAY_INDEX, &viewport))) {
-    printf("SDL_GetDisplayBounds failed: %s\n", SDL_GetError());
-    return false;
-  }
-
-  // Adjust height on desktop, it should not affect fullscreen (y should be 0)
-  viewport.h -= viewport.y;
-
   // Create the window
   SDL_Window* window; 
   if(IS_NULL(window = SDL_CreateWindow(
@@ -90,9 +81,6 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
     printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
     return false;
   }
-
-  // Get the size of the window's client area
-  SDL_GetWindowSize(window, &viewport.w, &viewport.h);
 
   std::cout << "SDL_RENDER_DRIVER available:";
   for( int i = 0; i < SDL_GetNumRenderDrivers(); ++i ) {
