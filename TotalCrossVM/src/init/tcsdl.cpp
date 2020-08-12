@@ -10,6 +10,7 @@
 #define SUCCESS(x)      ((x) == 0)
 
 #include "tcsdl.h"
+#include <iostream>
 
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
@@ -25,7 +26,10 @@ static SDL_Texture *texture;
  * - true on success 
  */
 bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
-  SDL_Window *window;
+
+  int width = (getenv("TC_WIDTH")  == NULL) ? 640 : std::stoi(getenv("TC_WIDTH"));
+  int height= (getenv("TC_HEIGHT") == NULL) ? 400 : std::stoi(getenv("TC_HEIGHT"));
+
   // Only init video (without audio)
   if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
     printf("SDL_Init failed: %s\n", SDL_GetError());
@@ -51,13 +55,14 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   viewport.h -= viewport.y;
 
   // Create the window
+  SDL_Window* window; 
   if(IS_NULL(window = SDL_CreateWindow(
                                 title, 
-                                viewport.x,
-                                viewport.y, 
-                                viewport.w, 
-                                viewport.h, 
-                                (fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_MAXIMIZED)
+                                SDL_WINDOWPOS_UNDEFINED,
+                                SDL_WINDOWPOS_UNDEFINED,
+                                width,
+                                height,
+                                (getenv("TC_FULLSCREEN") == NULL) ? SDL_WINDOW_SHOWN : SDL_WINDOW_FULLSCREEN
                                 ))) {
     printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
     return false;
@@ -106,8 +111,8 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
                               renderer, 
                               windowPixelFormat, 
                               SDL_TEXTUREACCESS_STREAMING, 
-                              viewport.w, 
-                              viewport.h))) {
+                              width, 
+                              height))) {
     printf("SDL_CreateTexture failed: %s\n", SDL_GetError());
     return false;
   }
@@ -119,9 +124,9 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   }
 
   // Adjusts screen width to the viewport
-  screen->screenW = viewport.w;
+  screen->screenW = width;
   // Adjusts screen height to the viewport
-  screen->screenH = viewport.h;
+  screen->screenH = height;
   // Adjusts screen's BPP
   screen->bpp = pixelformat->BitsPerPixel;
   // Set surface pitch 
