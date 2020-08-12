@@ -59,15 +59,6 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   }
   std::cout << "SDL_VIDEODRIVER selected : " << SDL_GetCurrentVideoDriver() << '\n';
 
-  // Get the desktop area represented by a display, with the primary
-  // display located at 0,0 based on viewport allocated on initial position
-  int (*TCSDL_GetDisplayBounds)(int, SDL_Rect*) = 
-#ifdef __arm__                  
-    &SDL_GetDisplayBounds;
-#else                           
-    &SDL_GetDisplayUsableBounds;
-#endif
-
   // Create the window
   SDL_Window* window; 
   if(IS_NULL(window = SDL_CreateWindow(
