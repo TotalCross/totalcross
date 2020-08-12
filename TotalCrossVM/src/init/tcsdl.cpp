@@ -120,15 +120,6 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
       return false;
     }
   }
-
-  // Set renderer dimensions
-  if (NOT_SUCCESS(SDL_GetRendererOutputSize(
-                                renderer, 
-                                &viewport.w, 
-                                &viewport.h))) {
-    printf("SDL_GetRendererOutputSize failed: %s\n", SDL_GetError());
-    return false;
-  }
   std::cout << "SDL_RENDER_DRIVER selected : " << rendererInfo.name << '\n';
   
   // Get window pixel format
