@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Find all files we should format and use it as the source for the formatting
+# application. The way to ignore files or directories is adding then to the
+# '.uncrustify-ignore' file.
+source_files() {
+    git ls-files \
+        | grep -E "(\.hpp|\.cpp|\.h|\.c|\.java|\.m)$" \
+        | grep -E -v -f .uncrustify-ignore
+}
+
+this_program=$(basename "$0")
+usage="Usage:
+  $this_program [options] -- check format of the C++/Object C and Java source files
+
+Options:
+    -h --help         Print help and exit
+    -q --quiet        Quiet mode (do not print the diff)
+    -p --apply-patch  Apply diff patch to the source files"
+
+verbose=1
+apply_patch=0
+
+while [ $# -gt 0 ]; do
+  case $1 in
+  -p|--apply-patch)
+      apply_patch=1
+      ;;
+  -q|--quiet)
+      verbose=0
+      ;;
+  -h|--help)
+      echo "$usage"
+      exit 0
+      ;;
+  *)
+      echo "$this_program: Unknown argument '$1'. See '$this_program --help'."
+      exit -1
+      ;;
+  esac
+
+  shift
+done
+
+# stop right here if clang-format does not exist in $PATH
+command -v uncrustify >/dev/null 2>&1 || { echo >&2 "uncrustify executable not found.  Aborting."; exit 1; }
+
+# shamelessy redirecting everything to /dev/null in quiet mode
+if [ $verbose -eq 0 ]; then
+    exec &>/dev/null
+fi
+
+# We use the script path as a base and allow us to go to the source dir, so we
+# can run the script from there.
+sourcedir=$(dirname $0)/..
+cd $sourcedir
+
+
+if [ $apply_patch -eq 1 ]; then
+    source_files | xargs uncrustify \
+                         -c $sourcedir/.uncrustify.cfg \
+                         --no-backup \
+                         --replace
+else
+    source_files | xargs uncrustify \
+                         -c $sourcedir/.uncrustify.cfg \
+                         --check \
+                         $source_files
+fi
+
+exit $?

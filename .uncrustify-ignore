@@ -1,0 +1,10 @@
+TotalCrossVM/modules/*
+TotalCrossVM/deps/*
+TotalCrossVM/src/axtls/*
+TotalCrossVM/src/core/*
+TotalCrossVM/src/jpeg/*
+TotalCrossVM/src/minizip/*
+TotalCrossVM/src/openbsd/*
+TotalCrossVM/src/png/*
+TotalCrossVM/src/sqlite/*
+TotalCrossVM/src/zlib/*
