@@ -1,0 +1,20 @@
+#!/bin/sh
+
+if ! type astyle > /dev/null; then
+    cat <<EOF
+ERROR: The 'astyle' utility is not available in your machine.
+
+Please install it and run the script again. If you are running on a Debian based
+distribution you can run:
+
+$ apt install astyle
+EOF
+    exit 1
+fi
+
+# We use the script path as a base and allow us to go to the source dir, so we
+# can run the script from there.
+sourcedir=$(dirname $0)/..
+
+cd $sourcedir
+astyle --project=.astylerc --recursive '*.java' '*.c??' '*.h??' '*.c' '*.h'
