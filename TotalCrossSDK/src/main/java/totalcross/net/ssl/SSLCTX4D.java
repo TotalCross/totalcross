@@ -16,41 +16,41 @@ import totalcross.net.Socket;
  * A base object for SSLServer/SSLClient.
  */
 public class SSLCTX4D {
-  /**
-   * A reference to the real client/server context. For internal use only.
-   */
-  protected long m_ctx;
+	/**
+	 * A reference to the real client/server context. For internal use only.
+	 */
+	protected long m_ctx;
 
-  boolean dontFinalize; //flsobral@tc114_36: finalize support.
+	boolean dontFinalize; //flsobral@tc114_36: finalize support.
 
-  protected Object nativeHeap;
+	protected Object nativeHeap;
 
-  protected SSLCTX4D(int options, int num_sessions) {
-    create4D(options, num_sessions);
-  }
+	protected SSLCTX4D(int options, int num_sessions) {
+		create4D(options, num_sessions);
+	}
 
-  native void create4D(int options, int num_sessions);
+	native void create4D(int options, int num_sessions);
 
-  native public void dispose4D();
+	native public void dispose4D();
 
-  native public SSL find4D(Socket s);
+	native public SSL find4D(Socket s);
 
-  native public int objLoad4D(int obj_type, totalcross.io.Stream material, String password) throws IOException;
+	native public int objLoad4D(int obj_type, totalcross.io.Stream material,
+								String password) throws IOException;
 
-  native public int objLoad4D(int obj_type, byte[] data, int len, String password);
+	native public int objLoad4D(int obj_type, byte[] data, int len, String password);
 
-  native public SSL newClient4D(Socket socket, byte[] session_id);
+	native public SSL newClient4D(Socket socket, byte[] session_id);
 
-  native public SSL newServer4D(Socket socket);
+	native public SSL newServer4D(Socket socket);
 
-  @Override
-  protected final void finalize() //flsobral@tc114_36: finalize support.
-  {
-    try {
-      if (dontFinalize != true) {
-        dispose4D();
-      }
-    } catch (Throwable t) {
-    }
-  }
+	@Override
+	protected final void finalize() { //flsobral@tc114_36: finalize support.
+		try {
+			if (dontFinalize != true) {
+				dispose4D();
+			}
+		} catch (Throwable t) {
+		}
+	}
 }

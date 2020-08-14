@@ -5,8 +5,8 @@
 package tc.tools.converter.oper;
 
 public class OperandSymD64 extends OperandSymD {
-  public OperandSymD64(int index) {
-    super(index);
-    nWords = 2;
-  }
+	public OperandSymD64(int index) {
+		super(index);
+		nWords = 2;
+	}
 }

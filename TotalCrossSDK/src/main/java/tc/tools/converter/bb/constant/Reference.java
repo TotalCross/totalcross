@@ -10,30 +10,30 @@ import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
 abstract class Reference implements ConstantInfo {
-  private JavaClass jclass;
-  public JavaConstant value;
+	private JavaClass jclass;
+	public JavaConstant value;
 
-  public Reference(JavaClass jclass) {
-    this.jclass = jclass;
-  }
+	public Reference(JavaClass jclass) {
+		this.jclass = jclass;
+	}
 
-  @Override
-  public java.lang.String toString() {
-    return "[" + value.toString() + "]";
-  }
+	@Override
+	public java.lang.String toString() {
+		return "[" + value.toString() + "]";
+	}
 
-  @Override
-  public int length() {
-    return 2;
-  }
+	@Override
+	public int length() {
+		return 2;
+	}
 
-  @Override
-  public void load(DataStream ds) throws IOException {
-    value = jclass.getConstant(ds.readUnsignedShort(), this);
-  }
+	@Override
+	public void load(DataStream ds) throws IOException {
+		value = jclass.getConstant(ds.readUnsignedShort(), this);
+	}
 
-  @Override
-  public void save(DataStream ds) throws IOException {
-    ds.writeShort(jclass.getConstantIndex(value, this));
-  }
+	@Override
+	public void save(DataStream ds) throws IOException {
+		ds.writeShort(jclass.getConstantIndex(value, this));
+	}
 }

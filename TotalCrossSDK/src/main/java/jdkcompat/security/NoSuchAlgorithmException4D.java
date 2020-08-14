@@ -25,46 +25,46 @@ import java.security.GeneralSecurityException;
  */
 public class NoSuchAlgorithmException4D extends GeneralSecurityException {
 
-    private static final long serialVersionUID = -7443947487218346562L;
+	private static final long serialVersionUID = -7443947487218346562L;
 
-    /**
-     * Constructs a new instance of {@code NoSuchAlgorithmException} with the
-     * given message.
-     *
-     * @param msg
-     *            the detail message for this exception.
-     */
-    public NoSuchAlgorithmException4D(String msg) {
-        super(msg);
-    }
+	/**
+	 * Constructs a new instance of {@code NoSuchAlgorithmException} with the
+	 * given message.
+	 *
+	 * @param msg
+	 *            the detail message for this exception.
+	 */
+	public NoSuchAlgorithmException4D(String msg) {
+		super(msg);
+	}
 
-    /**
-     * Constructs a new instance of {@code NoSuchAlgorithmException}.
-     */
-    public NoSuchAlgorithmException4D() {
-    }
+	/**
+	 * Constructs a new instance of {@code NoSuchAlgorithmException}.
+	 */
+	public NoSuchAlgorithmException4D() {
+	}
 
-    /**
-     * Constructs a new instance of {@code NoSuchAlgorithmException} with the
-     * given message and the cause.
-     *
-     * @param message
-     *            the detail message for this exception.
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public NoSuchAlgorithmException4D(String message, Throwable cause) {
-        super(message, cause);
-    }
+	/**
+	 * Constructs a new instance of {@code NoSuchAlgorithmException} with the
+	 * given message and the cause.
+	 *
+	 * @param message
+	 *            the detail message for this exception.
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public NoSuchAlgorithmException4D(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    /**
-     * Constructs a new instance of {@code NoSuchAlgorithmException} with the
-     * cause.
-     *
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public NoSuchAlgorithmException4D(Throwable cause) {
-        super(cause);
-    }
+	/**
+	 * Constructs a new instance of {@code NoSuchAlgorithmException} with the
+	 * cause.
+	 *
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public NoSuchAlgorithmException4D(Throwable cause) {
+		super(cause);
+	}
 }

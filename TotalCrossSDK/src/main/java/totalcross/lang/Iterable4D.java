@@ -49,10 +49,10 @@ import java.util.Iterator;
  * @since 1.5
  */
 public interface Iterable4D<E> {
-  /**
-   * Returns an iterator for the collection.
-   *
-   * @return an iterator.
-   */
-  Iterator<E> iterator();
+	/**
+	 * Returns an iterator for the collection.
+	 *
+	 * @return an iterator.
+	 */
+	Iterator<E> iterator();
 }

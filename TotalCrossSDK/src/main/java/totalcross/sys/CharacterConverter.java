@@ -18,69 +18,67 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  * To find out which <code>sun.io.CharacterEncoder</code> you're using, do:
  * <p><code>System.out.println(""+sun.io.ByteToCharConverter.getDefault());</code>
  * @see totalcross.sys.Convert#charConverter
- * @see totalcross.sys.Convert#setDefaultConverter(String) 
- * @see totalcross.sys.UTF8CharacterConverter 
+ * @see totalcross.sys.Convert#setDefaultConverter(String)
+ * @see totalcross.sys.UTF8CharacterConverter
  */
 
 public class CharacterConverter extends AbstractCharacterConverter {
-  
-  protected CharacterConverter() {
-    super("ISO-8859-1", new String[] {
-        "819",
-        "ISO8859-1",
-        "l1",
-        "ISO_8859-1:1987",
-        "ISO_8859-1",
-        "8859_1",
-        "iso-ir-100",
-        "latin1",
-        "cp819",
-        "ISO8859_1",
-        "IBM819",
-        "ISO_8859_1",
-        "IBM-819",
-        "csISOLatin1"
-    });
-  }
-  
-  /** Converts the given byte array range to a char array. */
-  @Override
-  @ReplacedByNativeOnDeploy
-  public char[] bytes2chars(byte bytes[], int offset, int length) {
-    char[] value = new char[length];
-    for (int i = 0; length-- > 0;) {
-      value[i++] = (char) (bytes[offset++] & 0xFF);
-    }
-    return value;
-  }
 
-  /** Converts the given char array range to a byte array. */
-  @Override
-  @ReplacedByNativeOnDeploy
-  public byte[] chars2bytes(char chars[], int offset, int length) {
-    byte[] bytes = new byte[length];
-    int end = offset + length - 1;
-    int i = 0;
-    for (; offset <= end; offset++) {
-      char c = chars[offset];
-      if (c <= '\377') {
-        bytes[i++] = (byte) c;
-      } else {
-        if ('\uD800' <= c && c <= '\uDBFF') // two-byte characters?
-        {
-          if (offset < end) {
-            offset++;
-          }
-        }
-        bytes[i++] = (byte) '?';
-      }
-    }
-    if (i != length) // will never be greater, always smaller, if unicode chars were found
-    {
-      byte[] temp = new byte[i];
-      Vm.arrayCopy(bytes, 0, temp, 0, i);
-      bytes = temp;
-    }
-    return bytes;
-  }
+	protected CharacterConverter() {
+		super("ISO-8859-1", new String[] {
+				  "819",
+				  "ISO8859-1",
+				  "l1",
+				  "ISO_8859-1:1987",
+				  "ISO_8859-1",
+				  "8859_1",
+				  "iso-ir-100",
+				  "latin1",
+				  "cp819",
+				  "ISO8859_1",
+				  "IBM819",
+				  "ISO_8859_1",
+				  "IBM-819",
+				  "csISOLatin1"
+			  });
+	}
+
+	/** Converts the given byte array range to a char array. */
+	@Override
+	@ReplacedByNativeOnDeploy
+	public char[] bytes2chars(byte bytes[], int offset, int length) {
+		char[] value = new char[length];
+		for (int i = 0; length-- > 0;) {
+			value[i++] = (char)(bytes[offset++] & 0xFF);
+		}
+		return value;
+	}
+
+	/** Converts the given char array range to a byte array. */
+	@Override
+	@ReplacedByNativeOnDeploy
+	public byte[] chars2bytes(char chars[], int offset, int length) {
+		byte[] bytes = new byte[length];
+		int end = offset + length - 1;
+		int i = 0;
+		for (; offset <= end; offset++) {
+			char c = chars[offset];
+			if (c <= '\377') {
+				bytes[i++] = (byte) c;
+			} else {
+				if ('\uD800' <= c && c <= '\uDBFF') { // two-byte characters?
+					if (offset < end) {
+						offset++;
+					}
+				}
+				bytes[i++] = (byte) '?';
+			}
+		}
+		if (i != length) { // will never be greater, always smaller, if unicode chars were found
+			byte[] temp = new byte[i];
+			Vm.arrayCopy(bytes, 0, temp, 0, i);
+			bytes = temp;
+		}
+		return bytes;
+	}
 }

@@ -24,44 +24,44 @@ import java.security.GeneralSecurityException;
  */
 public class KeyException4D extends GeneralSecurityException {
 
-    private static final long serialVersionUID = -7483676942812432108L;
+	private static final long serialVersionUID = -7483676942812432108L;
 
-    /**
-     * Constructs a new instance of {@code KeyException} with the given message.
-     *
-     * @param msg
-     *            the detail message for this exception.
-     */
-    public KeyException4D(String msg) {
-        super(msg);
-    }
+	/**
+	 * Constructs a new instance of {@code KeyException} with the given message.
+	 *
+	 * @param msg
+	 *            the detail message for this exception.
+	 */
+	public KeyException4D(String msg) {
+		super(msg);
+	}
 
-    /**
-     * Constructs a new instance of {@code KeyException}.
-     */
-    public KeyException4D() {
-    }
+	/**
+	 * Constructs a new instance of {@code KeyException}.
+	 */
+	public KeyException4D() {
+	}
 
-    /**
-     * Constructs a new instance of {@code KeyException} with the given message
-     * and the cause.
-     *
-     * @param message
-     *            the detail message for this exception.
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public KeyException4D(String message, Throwable cause) {
-        super(message, cause);
-    }
+	/**
+	 * Constructs a new instance of {@code KeyException} with the given message
+	 * and the cause.
+	 *
+	 * @param message
+	 *            the detail message for this exception.
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public KeyException4D(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    /**
-     * Constructs a new instance of {@code KeyException} with the cause.
-     *
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public KeyException4D(Throwable cause) {
-        super(cause);
-    }
+	/**
+	 * Constructs a new instance of {@code KeyException} with the cause.
+	 *
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public KeyException4D(Throwable cause) {
+		super(cause);
+	}
 }

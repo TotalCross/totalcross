@@ -1,5 +1,5 @@
-// Copyright (C) 2000-2001 Allan C. Solomon 
-// Copyright (C) 2001-2013 SuperWaba Ltda. 
+// Copyright (C) 2000-2001 Allan C. Solomon
+// Copyright (C) 2001-2013 SuperWaba Ltda.
 // Copyright (C) 2013-2020 TotalCross Global Mobile Platform Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
@@ -31,10 +31,10 @@ import totalcross.util.Vector;
  * <br>
  * When the window closes, a PRESSED event is sent to the caller, and the time
  * can be retrieved using getTime. Here's a sample:
- * 
+ *
  * <pre>
  * TimeBox tb;
- * 
+ *
  * public void initUI() {
  * 	try {
  * 		(tb = new TimeBox()).popupNonBlocking();
@@ -42,16 +42,16 @@ import totalcross.util.Vector;
  * 		e.printStackTrace();
  * 	}
  * }
- * 
+ *
  * public void onEvent(Event e) {
  * 	if (e.type == ControlEvent.PRESSED && e.target == tb)
  * 		Vm.debug("ret: " + tb.getTime());
  * }
  * </pre>
- * 
+ *
  * The time can be entered also using the arrow keys and by typing the numbers
  * directly.
- * 
+ *
  * @see #getTime()
  * @since TotalCross 1.22
  */
@@ -65,7 +65,7 @@ public class TimeBox extends Window {
 	private Time sentTime;
 	private char[] chars;
 	private Button[] btNumbers = new Button[10];
-	
+
 	/** Used in the button. Change it if you want to localize the text. */
 	public static String okCaption = "OK";
 	/** Used in the button. Change it if you want to localize the text. */
@@ -93,8 +93,8 @@ public class TimeBox extends Window {
 		fadeOtherWindows = Settings.fadeOtherWindows;
 		setBackColor(UIColors.timeboxBack);
 		setForeColor(UIColors.timeboxFore);
-		
-		
+
+
 	}
 
 	/** Set the time, if it was not yet set in the constructor. */
@@ -116,8 +116,8 @@ public class TimeBox extends Window {
 		public Visor() {
 			setBorderStyle(uiVista ? BORDER_SIMPLE : BORDER_LOWERED);
 			setBackColor(TimeBox.uiMaterial
-					? (UIColors.timeboxVisorBack == -1 ? Color.getRGB("9fffd7") : UIColors.timeboxVisorBack)
-					: (UIColors.timeboxVisorBack == -1 ? Color.WHITE : UIColors.timeboxVisorBack));
+						 ? (UIColors.timeboxVisorBack == -1 ? Color.getRGB("9fffd7") : UIColors.timeboxVisorBack)
+						 : (UIColors.timeboxVisorBack == -1 ? Color.WHITE : UIColors.timeboxVisorBack));
 			setForeColor(UIColors.timeboxVisorFore);
 		}
 
@@ -131,13 +131,15 @@ public class TimeBox extends Window {
 		public void onPaint(Graphics g) {
 			super.onPaint(g);
 
-			setFont(Font.getFont(false, (int) (this.height * 0.55)));
-			if (getFont().size > 42)
+			setFont(Font.getFont(false, (int)(this.height * 0.55)));
+			if (getFont().size > 42) {
 				setFont(Font.getFont(42));
+			}
 
 			int xx = (this.width - w0 * 8) / 2;
 			int yy = (this.height - fmH) / 2;
-			g.backColor = UIColors.timeboxVisorCursor == -1 ? Color.darker(backColor) : UIColors.timeboxVisorCursor;
+			g.backColor = UIColors.timeboxVisorCursor == -1 ? Color.darker(backColor) :
+						  UIColors.timeboxVisorCursor;
 			g.fillCircle(pos * w0 + xx - 2 + w0 / 2, ((this.height + fmH) / 2), this.height / 26);
 			g.foreColor = getForeColor();
 			int sh = TimeBox.this.textShadowColor;
@@ -158,7 +160,7 @@ public class TimeBox extends Window {
 		removeAll();
 		setRect(CENTER, CENTER, SCREENSIZEMIN + 60,
 				Settings.isLandscape() ? (Settings.is24Hour ? SCREENSIZE + 85 : SCREENSIZE + 90)
-						: (Settings.is24Hour ? SCREENSIZE + 60 : SCREENSIZE + 65));
+				: (Settings.is24Hour ? SCREENSIZE + 60 : SCREENSIZE + 65));
 		visor = new Visor();
 		visor.setBorderStyle(BORDER_NONE);
 
@@ -168,14 +170,15 @@ public class TimeBox extends Window {
 		Button.commonGap = Settings.fingerTouch && fmH > 15 ? fmH * 2 / 3 : fmH / 2;
 		btNumbers[1] = new Button("1", Button.BORDER_NONE);
 
-		int gapW = (int) (this.getWidth() * 0.06);
-		int gapH = (int) (this.height * 0.03);
+		int gapW = (int)(this.getWidth() * 0.06);
+		int gapH = (int)(this.height * 0.03);
 
-		int btnSize = Settings.is24Hour ? (int) (this.height * 0.14) : (int) (this.height * 0.12);
+		int btnSize = Settings.is24Hour ? (int)(this.height * 0.14) : (int)(this.height * 0.12);
 
-		setFont(Font.getFont(false, (int) (btnSize * 0.48)));
-		if (getFont().size > 27)
+		setFont(Font.getFont(false, (int)(btnSize * 0.48)));
+		if (getFont().size > 27) {
 			setFont(Font.getFont(27));
+		}
 
 		Font numberFont = getFont();
 
@@ -190,17 +193,17 @@ public class TimeBox extends Window {
 		add(btNumbers[7] = new Button("7", Button.BORDER_NONE), LEFT + gapW, AFTER + gapH, SAME, SAME);
 		add(btNumbers[8] = new Button("8", Button.BORDER_NONE), AFTER + gapW, SAME, SAME, SAME);
 		add(btNumbers[9] = new Button("9", Button.BORDER_NONE), AFTER + gapW, SAME, SAME, SAME);
-		
+
 		add(btBack = new Button("<", Button.BORDER_NONE), LEFT + gapW, AFTER + gapH, SAME, SAME);
 		add(btNumbers[0] = new Button("0", Button.BORDER_NONE), AFTER + gapW, SAME, SAME, SAME);
 		add(btForw = new Button(">", Button.BORDER_NONE), AFTER + gapW, SAME, SAME, SAME);
-		
+
 		for (Button button : btNumbers) {
 			button.transparentBackground = true;
 		}
 		btBack.transparentBackground = true;
 		btForw.transparentBackground = true;
-		
+
 		// trick: store in appId the button's value (+10)
 		btNumbers[0].appId = 10;
 		btNumbers[1].appId = 11;
@@ -229,33 +232,37 @@ public class TimeBox extends Window {
 		add(l = new Spacer(), CENTER, AFTER);
 		setFont(numberFont);
 		setFont(Font.getFont(true, font.percentBy(90).size));
-		add(btOK = new Button(okCaption, Button.BORDER_NONE), LEFT + gapW, SAME, FIT - gapW, PARENTSIZE + 9);
-		add(btClear = new Button(clearCaption, Button.BORDER_NONE), AFTER + gapW, SAME, FILL - gapW, PARENTSIZE + 9, l);
-		
+		add(btOK = new Button(okCaption, Button.BORDER_NONE), LEFT + gapW, SAME, FIT - gapW,
+			PARENTSIZE + 9);
+		add(btClear = new Button(clearCaption, Button.BORDER_NONE), AFTER + gapW, SAME, FILL - gapW,
+			PARENTSIZE + 9, l);
+
 		btOK.transparentBackground = true;
 		btClear.transparentBackground = true;
-		
+
 		btOK.setForeColor(
-				uiMaterial ? (UIColors.timeboxOk == -1 ? Color.darker(visor.getBackColor()) : UIColors.timeboxOk)
-						: (UIColors.timeboxOk == -1 ? Color.BLACK : UIColors.timeboxOk));
+			uiMaterial ? (UIColors.timeboxOk == -1 ? Color.darker(visor.getBackColor()) : UIColors.timeboxOk)
+			: (UIColors.timeboxOk == -1 ? Color.BLACK : UIColors.timeboxOk));
 		btClear.setForeColor(UIColors.timeboxClear);
 
 		Button.commonGap = 0;
 
 		if (Settings.is24Hour) {
 			tabOrder = new Vector(new Control[] { btNumbers[1], btNumbers[2], btNumbers[3], btNumbers[4], btNumbers[5],
-					btNumbers[6], btNumbers[7], btNumbers[8], btNumbers[9], btNumbers[0], btOK, btClear });
+												  btNumbers[6], btNumbers[7], btNumbers[8], btNumbers[9], btNumbers[0], btOK, btClear
+												});
 		} else {
 			rg.setSelectedIndex(sentTime.hour <= 11 ? 0 : 1);
 			if (sentTime.hour >= 12) {
 				sentTime.hour -= 12;
 			}
 			tabOrder = new Vector(new Control[] { btNumbers[1], btNumbers[2], btNumbers[3], btNumbers[4], btNumbers[5],
-					btNumbers[6], btNumbers[7], btNumbers[8], btNumbers[9], btNumbers[0], btAM, btPM, btOK, btClear });
+												  btNumbers[6], btNumbers[7], btNumbers[8], btNumbers[9], btNumbers[0], btAM, btPM, btOK, btClear
+												});
 		}
 
 		String s = Convert.zeroPad(sentTime.hour, 2) + ":" + Convert.zeroPad(sentTime.minute, 2) + ":"
-				+ Convert.zeroPad(sentTime.second, 2);
+				   + Convert.zeroPad(sentTime.second, 2);
 		chars = s.toCharArray();
 		enableButtons();
 
@@ -276,8 +283,9 @@ public class TimeBox extends Window {
 				sentTime.hour += 12;
 			}
 			return sentTime;
-		} else
+		} else {
 			return null;
+		}
 	}
 
 	@Override
@@ -285,25 +293,26 @@ public class TimeBox extends Window {
 		Time tb = getTime();
 		int pb = pos;
 		onPopup();
-		if (tb != null)
+		if (tb != null) {
 			setTime(tb);
+		}
 		pos = pb;
 	}
-	
+
 	/**Changing this method will also change the UIColors.timeboxBack attribute*/
 	@Override
 	public void setBackColor(int c) {
 		UIColors.timeboxBack = c;
 		super.setBackColor(c);
 	}
-	
+
 	/**Changing this method will also change the UIColors.timeboxFore attribute*/
 	@Override
 	public void setForeColor(int c) {
 		UIColors.timeboxFore = c;
 		super.setForeColor(c);
 	}
-	
+
 	/**Changing this method will also change the UIColors.timeboxBack and UIColors.timeboxFore attributes*/
 	@Override
 	public void setBackForeColors(int back, int fore) {
@@ -315,82 +324,82 @@ public class TimeBox extends Window {
 	@Override
 	public void onEvent(Event event) {
 		switch (event.type) {
-		case KeyEvent.KEY_PRESS: {
-			KeyEvent ke = (KeyEvent) event;
-			if ('0' <= ke.key && ke.key <= '9') {
-				if (isShown((char) ke.key)) {
-					onKey((char) ke.key);
+			case KeyEvent.KEY_PRESS: {
+				KeyEvent ke = (KeyEvent) event;
+				if ('0' <= ke.key && ke.key <= '9') {
+					if (isShown((char) ke.key)) {
+						onKey((char) ke.key);
+					}
 				}
+				break;
 			}
-			break;
-		}
-		case KeyEvent.SPECIAL_KEY_PRESS: {
-			KeyEvent ke = (KeyEvent) event;
-			if (ke.isUpKey()) {
-				chars[pos]++;
-				if (chars[pos] > '9' || !isShown(chars[pos])) {
-					chars[pos] = '0';
+			case KeyEvent.SPECIAL_KEY_PRESS: {
+				KeyEvent ke = (KeyEvent) event;
+				if (ke.isUpKey()) {
+					chars[pos]++;
+					if (chars[pos] > '9' || !isShown(chars[pos])) {
+						chars[pos] = '0';
+					}
+					Window.needsPaint = true;
+				} else if (ke.isDownKey()) {
+					chars[pos]--;
+					if (chars[pos] < '0') {
+						chars[pos] = (char)('9' + 1);
+						do {
+							chars[pos]--;
+						} while (!isShown(chars[pos]));
+					}
+					Window.needsPaint = true;
+				} else if (ke.isNextKey()) {
+					if (++pos == 8) {
+						pos = 0;
+					}
+					if (pos == 2 || pos == 5) {
+						pos++;
+					}
+					enableButtons();
+				} else if (ke.isPrevKey()) {
+					if (--pos == -1) {
+						pos = 7;
+					}
+					if (pos == 2 || pos == 5) {
+						pos--;
+					}
+					enableButtons();
+				} else if (ke.isActionKey()) {
+					doClose();
+				} else if (ke.key == SpecialKeys.ESCAPE) {
+					doClear();
 				}
-				Window.needsPaint = true;
-			} else if (ke.isDownKey()) {
-				chars[pos]--;
-				if (chars[pos] < '0') {
-					chars[pos] = (char) ('9' + 1);
-					do {
-						chars[pos]--;
-					} while (!isShown(chars[pos]));
-				}
-				Window.needsPaint = true;
-			} else if (ke.isNextKey()) {
-				if (++pos == 8) {
-					pos = 0;
-				}
-				if (pos == 2 || pos == 5) {
-					pos++;
-				}
-				enableButtons();
-			} else if (ke.isPrevKey()) {
-				if (--pos == -1) {
-					pos = 7;
-				}
-				if (pos == 2 || pos == 5) {
-					pos--;
-				}
-				enableButtons();
-			} else if (ke.isActionKey()) {
-				doClose();
-			} else if (ke.key == SpecialKeys.ESCAPE) {
-				doClear();
+				break;
 			}
-			break;
-		}
-		case ControlEvent.PRESSED: {
-			Control c = (Control) event.target;
-			if (c.appId > 0) {
-				onKey((char) (c.appId - 10 + '0'));
-			} else if (event.target == btOK) {
-				doClose();
-			} else if (event.target == btClear) {
-				doClear();
-			} else if (event.target == btBack){
-				if (--pos == -1) {
-					pos = 7;
+			case ControlEvent.PRESSED: {
+				Control c = (Control) event.target;
+				if (c.appId > 0) {
+					onKey((char)(c.appId - 10 + '0'));
+				} else if (event.target == btOK) {
+					doClose();
+				} else if (event.target == btClear) {
+					doClear();
+				} else if (event.target == btBack) {
+					if (--pos == -1) {
+						pos = 7;
+					}
+					if (pos == 2 || pos == 5) {
+						pos--;
+					}
+					enableButtons();
+				} else if (event.target == btForw) {
+					if (++pos == 8) {
+						pos = 0;
+					}
+					if (pos == 2 || pos == 5) {
+						pos++;
+					}
+					enableButtons();
 				}
-				if (pos == 2 || pos == 5) {
-					pos--;
-				}
-				enableButtons();
-			} else if (event.target == btForw) {
-				if (++pos == 8) {
-					pos = 0;
-				}
-				if (pos == 2 || pos == 5) {
-					pos++;
-				}
-				enableButtons();
+				break;
 			}
-			break;
-		}
 		}
 	}
 
@@ -402,8 +411,7 @@ public class TimeBox extends Window {
 	}
 
 	private void doClose() {
-		for (pos = 0; pos < 8; pos++) // check all positions before closing
-		{
+		for (pos = 0; pos < 8; pos++) { // check all positions before closing
 			if (pos == 2 || pos == 5) {
 				pos++;
 			}

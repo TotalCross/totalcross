@@ -5,25 +5,25 @@
 package jdkcompat.lang.ref;
 
 public abstract class Reference4D<T> {
-  T ref;
+	T ref;
 
-  public T get() {
-    return ref;
-  }
+	public T get() {
+		return ref;
+	}
 
-  public boolean enqueue() {
-    return false;
-  }
+	public boolean enqueue() {
+		return false;
+	}
 
-  public void clear() {
-    ref = null;
-  }
+	public void clear() {
+		ref = null;
+	}
 
-  public boolean isEnqueued() {
-    return false;
-  }
+	public boolean isEnqueued() {
+		return false;
+	}
 
-  Reference4D(T ref) {
-    this.ref = ref;
-  }
+	Reference4D(T ref) {
+		this.ref = ref;
+	}
 }

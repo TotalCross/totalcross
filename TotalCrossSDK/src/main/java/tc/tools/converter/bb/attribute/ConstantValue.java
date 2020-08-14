@@ -10,26 +10,26 @@ import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
 public class ConstantValue implements AttributeInfo {
-  private JavaClass jclass;
+	private JavaClass jclass;
 
-  public JavaConstant value;
+	public JavaConstant value;
 
-  public ConstantValue(JavaClass jclass) {
-    this.jclass = jclass;
-  }
+	public ConstantValue(JavaClass jclass) {
+		this.jclass = jclass;
+	}
 
-  @Override
-  public int length() {
-    return 2;
-  }
+	@Override
+	public int length() {
+		return 2;
+	}
 
-  @Override
-  public void load(DataStream ds) throws IOException {
-    value = jclass.getConstant(ds.readUnsignedShort(), this);
-  }
+	@Override
+	public void load(DataStream ds) throws IOException {
+		value = jclass.getConstant(ds.readUnsignedShort(), this);
+	}
 
-  @Override
-  public void save(DataStream ds) throws IOException {
-    ds.writeShort(jclass.getConstantIndex(value, this));
-  }
+	@Override
+	public void save(DataStream ds) throws IOException {
+		ds.writeShort(jclass.getConstantIndex(value, this));
+	}
 }

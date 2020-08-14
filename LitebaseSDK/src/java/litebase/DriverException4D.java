@@ -11,20 +11,18 @@ package litebase;
  * This exception may be dispatched if any problem, other than a SQL parsing error, occurs. It is an unchecked Exception
  * (it can be thrown any time).
  */
-public class DriverException4D extends RuntimeException
-{
-   /** 
-    * The exception that caused this exception to be dispatched, or null if the cause of this exception was not another exception.
-    */
-   public Exception cause;
-   
-   /**
-    * Constructs a new <code>DriverException</code> exception with the specified detail message.
-    *
-    * @param message the detail message.
-    */
-   DriverException4D(String message)
-   {
-      super(message);
-   }
+public class DriverException4D extends RuntimeException {
+	/**
+	 * The exception that caused this exception to be dispatched, or null if the cause of this exception was not another exception.
+	 */
+	public Exception cause;
+
+	/**
+	 * Constructs a new <code>DriverException</code> exception with the specified detail message.
+	 *
+	 * @param message the detail message.
+	 */
+	DriverException4D(String message) {
+		super(message);
+	}
 }

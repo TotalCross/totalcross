@@ -48,69 +48,69 @@ package totalcross.lang;
  * @status updated to 1.5
  */
 public class UnsupportedOperationException4D extends RuntimeException {
-  /**
-   * Create an exception without a message.
-   */
-  public UnsupportedOperationException4D() {
-  }
+	/**
+	 * Create an exception without a message.
+	 */
+	public UnsupportedOperationException4D() {
+	}
 
-  /**
-   * Create an exception with a message.
-   *
-   * @param s the message
-   */
-  public UnsupportedOperationException4D(String s) {
-    super(s);
-  }
+	/**
+	 * Create an exception with a message.
+	 *
+	 * @param s the message
+	 */
+	public UnsupportedOperationException4D(String s) {
+		super(s);
+	}
 
-  /**
-   * <p>
-   * Constructs a <code>UnsupportedOperationException</code> using
-   * the specified error message, which should give further details
-   * as to the reason for this exception.  The specified cause
-   * <code>Throwable</code> may be used to provide additional history,
-   * with regards to the root of the problem.  It is perfectly valid
-   * for this to be null, if the cause of the problem is unknown.
-   * </p>
-   * <p>
-   * <strong>Note</strong>: the detail message from the cause is not
-   * automatically incorporated into the resulting detail message of
-   * this exception.
-   * </p>
-   * 
-   * @param message the detail message, which should give the reason for
-   *                this exception being thrown.
-   * @param cause the cause of this exception, or null if the cause
-   *              is unknown.
-   * @since 1.5
-   */
-  public UnsupportedOperationException4D(String message, Throwable cause) {
-    super(message, cause);
-  }
+	/**
+	 * <p>
+	 * Constructs a <code>UnsupportedOperationException</code> using
+	 * the specified error message, which should give further details
+	 * as to the reason for this exception.  The specified cause
+	 * <code>Throwable</code> may be used to provide additional history,
+	 * with regards to the root of the problem.  It is perfectly valid
+	 * for this to be null, if the cause of the problem is unknown.
+	 * </p>
+	 * <p>
+	 * <strong>Note</strong>: the detail message from the cause is not
+	 * automatically incorporated into the resulting detail message of
+	 * this exception.
+	 * </p>
+	 *
+	 * @param message the detail message, which should give the reason for
+	 *                this exception being thrown.
+	 * @param cause the cause of this exception, or null if the cause
+	 *              is unknown.
+	 * @since 1.5
+	 */
+	public UnsupportedOperationException4D(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-  /**
-   * <p>
-   * Constructs a <code>UnsupportedOperationException</code> using
-   * the specified cause <code>Throwable</code>, which may be used
-   * to provide additional history, with regards to the root of the
-   * problem.  It is perfectly valid for this to be null, if the
-   * cause of the problem is unknown.
-   * </p>
-   * <p>
-   * The detail message is automatically constructed from the detail
-   * message of the supplied causal exception.  If the cause is null,
-   * then the detail message will also be null.  Otherwise, the detail
-   * message of this exception will be that of the causal exception.
-   * This makes this constructor very useful for simply wrapping another
-   * exception.
-   * </p>
-   * 
-   * @param cause the cause of this exception, or null if the cause
-   *              is unknown.
-   * @since 1.5
-   */
-  public UnsupportedOperationException4D(Throwable cause) {
-    super(cause);
-  }
+	/**
+	 * <p>
+	 * Constructs a <code>UnsupportedOperationException</code> using
+	 * the specified cause <code>Throwable</code>, which may be used
+	 * to provide additional history, with regards to the root of the
+	 * problem.  It is perfectly valid for this to be null, if the
+	 * cause of the problem is unknown.
+	 * </p>
+	 * <p>
+	 * The detail message is automatically constructed from the detail
+	 * message of the supplied causal exception.  If the cause is null,
+	 * then the detail message will also be null.  Otherwise, the detail
+	 * message of this exception will be that of the causal exception.
+	 * This makes this constructor very useful for simply wrapping another
+	 * exception.
+	 * </p>
+	 *
+	 * @param cause the cause of this exception, or null if the cause
+	 *              is unknown.
+	 * @since 1.5
+	 */
+	public UnsupportedOperationException4D(Throwable cause) {
+		super(cause);
+	}
 
 }

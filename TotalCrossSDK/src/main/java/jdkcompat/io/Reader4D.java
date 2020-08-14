@@ -58,221 +58,221 @@ import totalcross.io.IOException;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public abstract class Reader4D implements java.io.Closeable {
-  /**
-   * This is the <code>Object</code> used for synchronizing critical code
-   * sections.  Subclasses should use this variable instead of a
-   * synchronized method or an explicit synchronization on <code>this</code>
-   */
-  protected Object lock;
+	/**
+	 * This is the <code>Object</code> used for synchronizing critical code
+	 * sections.  Subclasses should use this variable instead of a
+	 * synchronized method or an explicit synchronization on <code>this</code>
+	 */
+	protected Object lock;
 
-  /**
-   * Unitializes a <code>Reader</code> that will use the object
-   * itself for synchronization of critical code sections.
-   */
-  protected Reader4D() {
-    this.lock = this;
-  }
+	/**
+	 * Unitializes a <code>Reader</code> that will use the object
+	 * itself for synchronization of critical code sections.
+	 */
+	protected Reader4D() {
+		this.lock = this;
+	}
 
-  /**
-   * Initializes a <code>Reader</code> that will use the specified
-   * <code>Object</code> for synchronization of critical code sections.
-   *
-   * @param lock The <code>Object</code> to use for synchronization
-   */
-  protected Reader4D(Object lock) {
-    this.lock = lock;
-  }
+	/**
+	 * Initializes a <code>Reader</code> that will use the specified
+	 * <code>Object</code> for synchronization of critical code sections.
+	 *
+	 * @param lock The <code>Object</code> to use for synchronization
+	 */
+	protected Reader4D(Object lock) {
+		this.lock = lock;
+	}
 
-  /**
-   * Read chars from a stream and stores them into a caller
-   * supplied buffer.  It starts storing the data at index <code>offset</code>
-   * into the buffer and attempts to read <code>len</code> chars.  This method
-   * can return before reading the number of chars requested.  The actual
-   * number of chars read is returned as an int.  A -1 is returned to indicate
-   * the end of the stream.
-   * <p>
-   * This method will block until some data can be read.
-   * <p>
-   * This method operates by calling the single char <code>read()</code> method
-   * in a loop until the desired number of chars are read.  The read loop
-   * stops short if the end of the stream is encountered or if an IOException
-   * is encountered on any read operation except the first.  If the first
-   * attempt to read a chars fails, the IOException is allowed to propagate
-   * upward.  And subsequent IOException is caught and treated identically
-   * to an end of stream condition.  Subclasses can (and should if possible)
-   * override this method to provide a more efficient implementation.
-   *
-   * @param buf The array into which the chars read should be stored
-   * @param offset The offset into the array to start storing chars
-   * @param count The requested number of chars to read
-   *
-   * @return The actual number of chars read, or -1 if end of stream.
-   *
-   * @exception IOException If an error occurs.
-   */
-  public abstract int read(char buf[], int offset, int count) throws java.io.IOException;
+	/**
+	 * Read chars from a stream and stores them into a caller
+	 * supplied buffer.  It starts storing the data at index <code>offset</code>
+	 * into the buffer and attempts to read <code>len</code> chars.  This method
+	 * can return before reading the number of chars requested.  The actual
+	 * number of chars read is returned as an int.  A -1 is returned to indicate
+	 * the end of the stream.
+	 * <p>
+	 * This method will block until some data can be read.
+	 * <p>
+	 * This method operates by calling the single char <code>read()</code> method
+	 * in a loop until the desired number of chars are read.  The read loop
+	 * stops short if the end of the stream is encountered or if an IOException
+	 * is encountered on any read operation except the first.  If the first
+	 * attempt to read a chars fails, the IOException is allowed to propagate
+	 * upward.  And subsequent IOException is caught and treated identically
+	 * to an end of stream condition.  Subclasses can (and should if possible)
+	 * override this method to provide a more efficient implementation.
+	 *
+	 * @param buf The array into which the chars read should be stored
+	 * @param offset The offset into the array to start storing chars
+	 * @param count The requested number of chars to read
+	 *
+	 * @return The actual number of chars read, or -1 if end of stream.
+	 *
+	 * @exception IOException If an error occurs.
+	 */
+	public abstract int read(char buf[], int offset, int count) throws java.io.IOException;
 
-  /**
-   * Reads chars from a stream and stores them into a caller
-   * supplied buffer.  This method attempts to completely fill the buffer,
-   * but can return before doing so.  The actual number of chars read is
-   * returned as an int.  A -1 is returned to indicate the end of the stream.
-   * <p>
-   * This method will block until some data can be read.
-   * <p>
-   * This method operates by calling an overloaded read method like so:
-   * <code>read(buf, 0, buf.length)</code>
-   *
-   * @param buf The buffer into which the chars read will be stored.
-   *
-   * @return The number of chars read or -1 if end of stream.
-   *
-   * @exception IOException If an error occurs.
-   */
-  public int read(char buf[]) throws java.io.IOException {
-    return read(buf, 0, buf.length);
-  }
+	/**
+	 * Reads chars from a stream and stores them into a caller
+	 * supplied buffer.  This method attempts to completely fill the buffer,
+	 * but can return before doing so.  The actual number of chars read is
+	 * returned as an int.  A -1 is returned to indicate the end of the stream.
+	 * <p>
+	 * This method will block until some data can be read.
+	 * <p>
+	 * This method operates by calling an overloaded read method like so:
+	 * <code>read(buf, 0, buf.length)</code>
+	 *
+	 * @param buf The buffer into which the chars read will be stored.
+	 *
+	 * @return The number of chars read or -1 if end of stream.
+	 *
+	 * @exception IOException If an error occurs.
+	 */
+	public int read(char buf[]) throws java.io.IOException {
+		return read(buf, 0, buf.length);
+	}
 
-  /**
-   * Reads an char from the input stream and returns it
-   * as an int in the range of 0-65535.  This method also will return -1 if
-   * the end of the stream has been reached.
-   * <p>
-   * This method will block until the char can be read.
-   *
-   * @return The char read or -1 if end of stream
-   *
-   * @exception IOException If an error occurs
-   */
-  public int read() throws java.io.IOException {
-    char[] buf = new char[1];
-    int count = read(buf, 0, 1);
-    return count > 0 ? buf[0] : -1;
-  }
+	/**
+	 * Reads an char from the input stream and returns it
+	 * as an int in the range of 0-65535.  This method also will return -1 if
+	 * the end of the stream has been reached.
+	 * <p>
+	 * This method will block until the char can be read.
+	 *
+	 * @return The char read or -1 if end of stream
+	 *
+	 * @exception IOException If an error occurs
+	 */
+	public int read() throws java.io.IOException {
+		char[] buf = new char[1];
+		int count = read(buf, 0, 1);
+		return count > 0 ? buf[0] : -1;
+	}
 
-  //  /** @since 1.5 */
-  //  public int read(CharBuffer buffer) throws java.io.IOException
-  //  {
-  //    // We want to call put(), so we don't manipulate the CharBuffer
-  //    // directly.
-  //    int rem = buffer.remaining();
-  //    char[] buf = new char[rem];
-  //    int result = read(buf, 0, rem);
-  //    if (result != -1)
-  //      buffer.put(buf, 0, result);
-  //    return result;
-  //  }
+	//  /** @since 1.5 */
+	//  public int read(CharBuffer buffer) throws java.io.IOException
+	//  {
+	//    // We want to call put(), so we don't manipulate the CharBuffer
+	//    // directly.
+	//    int rem = buffer.remaining();
+	//    char[] buf = new char[rem];
+	//    int result = read(buf, 0, rem);
+	//    if (result != -1)
+	//      buffer.put(buf, 0, result);
+	//    return result;
+	//  }
 
-  /**
-   * Closes the stream.  Any futher attempts to read from the
-   * stream may generate an <code>IOException</code>.
-   *
-   * @exception IOException If an error occurs
-   */
-  @Override
-  public abstract void close() throws java.io.IOException;
+	/**
+	 * Closes the stream.  Any futher attempts to read from the
+	 * stream may generate an <code>IOException</code>.
+	 *
+	 * @exception IOException If an error occurs
+	 */
+	@Override
+	public abstract void close() throws java.io.IOException;
 
-  /**
-   * Returns a boolean that indicates whether the mark/reset
-   * methods are supported in this class.  Those methods can be used to
-   * remember a specific point in the stream and reset the stream to that
-   * point.
-   * <p>
-   * This method always returns <code>false</code> in this class, but
-   * subclasses can override this method to return <code>true</code> if they
-   * support mark/reset functionality.
-   *
-   * @return <code>true</code> if mark/reset functionality is supported,
-   *         <code>false</code> otherwise
-   *
-   */
-  public boolean markSupported() {
-    return false;
-  }
+	/**
+	 * Returns a boolean that indicates whether the mark/reset
+	 * methods are supported in this class.  Those methods can be used to
+	 * remember a specific point in the stream and reset the stream to that
+	 * point.
+	 * <p>
+	 * This method always returns <code>false</code> in this class, but
+	 * subclasses can override this method to return <code>true</code> if they
+	 * support mark/reset functionality.
+	 *
+	 * @return <code>true</code> if mark/reset functionality is supported,
+	 *         <code>false</code> otherwise
+	 *
+	 */
+	public boolean markSupported() {
+		return false;
+	}
 
-  /**
-   * Marks a position in the input to which the stream can be
-   * "reset" by calling the <code>reset()</code> method.  The parameter
-   * <code>readlimit</code> is the number of chars that can be read from the
-   * stream after setting the mark before the mark becomes invalid.  For
-   * example, if <code>mark()</code> is called with a read limit of 10, then
-   * when 11 chars of data are read from the stream before the
-   * <code>reset()</code> method is called, then the mark is invalid and the
-   * stream object instance is not required to remember the mark.
-   *
-   * @param readLimit The number of chars that can be read before the mark
-   *        becomes invalid
-   *
-   * @exception IOException If an error occurs such as mark not being
-   *            supported for this class
-   */
-  public void mark(int readLimit) throws java.io.IOException {
-    throw new java.io.IOException("mark not supported");
-  }
+	/**
+	 * Marks a position in the input to which the stream can be
+	 * "reset" by calling the <code>reset()</code> method.  The parameter
+	 * <code>readlimit</code> is the number of chars that can be read from the
+	 * stream after setting the mark before the mark becomes invalid.  For
+	 * example, if <code>mark()</code> is called with a read limit of 10, then
+	 * when 11 chars of data are read from the stream before the
+	 * <code>reset()</code> method is called, then the mark is invalid and the
+	 * stream object instance is not required to remember the mark.
+	 *
+	 * @param readLimit The number of chars that can be read before the mark
+	 *        becomes invalid
+	 *
+	 * @exception IOException If an error occurs such as mark not being
+	 *            supported for this class
+	 */
+	public void mark(int readLimit) throws java.io.IOException {
+		throw new java.io.IOException("mark not supported");
+	}
 
-  /**
-   * Resets a stream to the point where the <code>mark()</code>
-   * method was called.  Any chars that were read after the mark point was
-   * set will be re-read during subsequent reads.
-   * <p>
-   * This method always throws an IOException in this class, but subclasses
-   * can override this method if they provide mark/reset functionality.
-   *
-   * @exception IOException Always thrown for this class
-   */
-  public void reset() throws java.io.IOException {
-    throw new java.io.IOException("reset not supported");
-  }
+	/**
+	 * Resets a stream to the point where the <code>mark()</code>
+	 * method was called.  Any chars that were read after the mark point was
+	 * set will be re-read during subsequent reads.
+	 * <p>
+	 * This method always throws an IOException in this class, but subclasses
+	 * can override this method if they provide mark/reset functionality.
+	 *
+	 * @exception IOException Always thrown for this class
+	 */
+	public void reset() throws java.io.IOException {
+		throw new java.io.IOException("reset not supported");
+	}
 
-  /**
-   * Determines whether or not this stream is ready to be
-   * read.  If it returns <code>false</code> the stream may block if a
-   * read is attempted, but it is not guaranteed to do so.
-   * <p>
-   * This method always returns <code>false</code> in this class
-   *
-   * @return <code>true</code> if the stream is ready to be read,
-   * <code>false</code> otherwise.
-   *
-   * @exception IOException If an error occurs
-   */
-  public boolean ready() throws java.io.IOException {
-    return false;
-  }
+	/**
+	 * Determines whether or not this stream is ready to be
+	 * read.  If it returns <code>false</code> the stream may block if a
+	 * read is attempted, but it is not guaranteed to do so.
+	 * <p>
+	 * This method always returns <code>false</code> in this class
+	 *
+	 * @return <code>true</code> if the stream is ready to be read,
+	 * <code>false</code> otherwise.
+	 *
+	 * @exception IOException If an error occurs
+	 */
+	public boolean ready() throws java.io.IOException {
+		return false;
+	}
 
-  /**
-   * Skips the specified number of chars in the stream.  It
-   * returns the actual number of chars skipped, which may be less than the
-   * requested amount.
-   * <p>
-   * This method reads and discards chars into a 256 char array until the
-   * specified number of chars were skipped or until either the end of stream
-   * is reached or a read attempt returns a short count.  Subclasses can
-   * override this method to provide a more efficient implementation where
-   * one exists.
-   *
-   * @param count The requested number of chars to skip
-   *
-   * @return The actual number of chars skipped.
-   *
-   * @exception IOException If an error occurs
-   */
-  public long skip(long count) throws java.io.IOException {
-    if (count <= 0) {
-      return 0;
-    }
-    int bsize = count > 1024 ? 1024 : (int) count;
-    char[] buffer = new char[bsize];
-    long todo = count;
-    synchronized (lock) {
-      while (todo > 0) {
-        int skipped = read(buffer, 0, bsize > todo ? (int) todo : bsize);
-        if (skipped <= 0) {
-          break;
-        }
-        todo -= skipped;
-      }
-    }
-    return count - todo;
-  }
+	/**
+	 * Skips the specified number of chars in the stream.  It
+	 * returns the actual number of chars skipped, which may be less than the
+	 * requested amount.
+	 * <p>
+	 * This method reads and discards chars into a 256 char array until the
+	 * specified number of chars were skipped or until either the end of stream
+	 * is reached or a read attempt returns a short count.  Subclasses can
+	 * override this method to provide a more efficient implementation where
+	 * one exists.
+	 *
+	 * @param count The requested number of chars to skip
+	 *
+	 * @return The actual number of chars skipped.
+	 *
+	 * @exception IOException If an error occurs
+	 */
+	public long skip(long count) throws java.io.IOException {
+		if (count <= 0) {
+			return 0;
+		}
+		int bsize = count > 1024 ? 1024 : (int) count;
+		char[] buffer = new char[bsize];
+		long todo = count;
+		synchronized (lock) {
+			while (todo > 0) {
+				int skipped = read(buffer, 0, bsize > todo ? (int) todo : bsize);
+				if (skipped <= 0) {
+					break;
+				}
+				todo -= skipped;
+			}
+		}
+		return count - todo;
+	}
 }

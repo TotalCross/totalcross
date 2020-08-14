@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC185_invokeinterface extends MethodCall {
-  public BC185_invokeinterface() {
-    super(readUInt16(pc + 1));
-    pcInc = 5;
-  }
+	public BC185_invokeinterface() {
+		super(readUInt16(pc + 1));
+		pcInc = 5;
+	}
 
-  @Override
-  public void exec() {
-  }
+	@Override
+	public void exec() {
+	}
 }

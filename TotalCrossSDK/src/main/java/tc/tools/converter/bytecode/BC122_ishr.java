@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC122_ishr extends Logical {
-  public BC122_ishr() {
-    super(-1, -2, -1, INT);
-  }
+	public BC122_ishr() {
+		super(-1, -2, -1, INT);
+	}
 
-  @Override
-  public void exec() {
-    stack[-2].asInt >>= stack[-1].asInt & 0x1F;
-  }
+	@Override
+	public void exec() {
+		stack[-2].asInt >>= stack[-1].asInt & 0x1F;
+	}
 }

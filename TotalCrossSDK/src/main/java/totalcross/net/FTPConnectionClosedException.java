@@ -9,8 +9,8 @@ package totalcross.net;
  * by timeout.
  */
 public class FTPConnectionClosedException extends Exception {
-  /** Constructs an exception with the given message. */
-  public FTPConnectionClosedException(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public FTPConnectionClosedException(String msg) {
+		super(msg);
+	}
 }

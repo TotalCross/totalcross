@@ -5,15 +5,15 @@
 package tc.tools.converter.bytecode;
 
 public class Monitor extends ByteCode {
-  public Object locker;
-  public int lockerPos;
+	public Object locker;
+	public int lockerPos;
 
-  public Monitor() {
-    this.lockerPos = -1;
-  }
+	public Monitor() {
+		this.lockerPos = -1;
+	}
 
-  @Override
-  public void exec() {
-    this.locker = stack[stackPtr - 1];
-  }
+	@Override
+	public void exec() {
+		this.locker = stack[stackPtr - 1];
+	}
 }

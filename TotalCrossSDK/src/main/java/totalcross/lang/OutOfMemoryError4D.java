@@ -7,7 +7,7 @@ package totalcross.lang;
 
 /**
  * Thrown when no more memory exists to continue the execution of the last requested operation.
- * You should exit the program immediately. 
+ * You should exit the program immediately.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -22,12 +22,12 @@ package totalcross.lang;
  */
 
 public class OutOfMemoryError4D extends Error {
-  /** Constructs an empty Exception. */
-  public OutOfMemoryError4D() {
-  }
+	/** Constructs an empty Exception. */
+	public OutOfMemoryError4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public OutOfMemoryError4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public OutOfMemoryError4D(String msg) {
+		super(msg);
+	}
 }

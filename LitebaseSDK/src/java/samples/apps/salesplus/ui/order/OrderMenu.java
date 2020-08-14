@@ -11,13 +11,12 @@ import samples.apps.salesplus.*;
 /**
  * The order menu.
  */
-public class OrderMenu extends BaseMenu
-{
-   /**
-    * The Constructor.
-    */
-   public OrderMenu()
-   {
-      super(new String[]{"New Order", "Search"}, new int[]{SalesPlus.NEW_ORDER, SalesPlus.ORDER_SEARCH}, false);
-   }
+public class OrderMenu extends BaseMenu {
+	/**
+	 * The Constructor.
+	 */
+	public OrderMenu() {
+		super(new String[] {"New Order", "Search"}, new int[] {SalesPlus.NEW_ORDER, SalesPlus.ORDER_SEARCH},
+			  false);
+	}
 }

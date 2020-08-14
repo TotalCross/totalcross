@@ -10,7 +10,7 @@ package totalcross.ui.image;
  */
 
 public class ImageException extends Exception {
-  public ImageException(String msg) {
-    super(msg);
-  }
+	public ImageException(String msg) {
+		super(msg);
+	}
 }

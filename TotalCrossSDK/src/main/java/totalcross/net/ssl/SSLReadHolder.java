@@ -13,19 +13,19 @@ package totalcross.net.ssl;
  * A holder for data read in an SSL read.
  */
 public class SSLReadHolder {
-  /**
-   * Contruct a new read holder object.
-   */
-  public SSLReadHolder() {
-    m_buf = null;
-  }
+	/**
+	 * Contruct a new read holder object.
+	 */
+	public SSLReadHolder() {
+		m_buf = null;
+	}
 
-  /**
-   * Retrieve the reference to the read data.
-   */
-  public byte[] getData() {
-    return m_buf;
-  }
+	/**
+	 * Retrieve the reference to the read data.
+	 */
+	public byte[] getData() {
+		return m_buf;
+	}
 
-  protected byte[] m_buf;
+	protected byte[] m_buf;
 }

@@ -11,6 +11,5 @@ package litebase;
  *
  * @see LitebaseConnection#recoverTable(String)
  */
-public class TableNotClosedException4D extends RuntimeException
-{
+public class TableNotClosedException4D extends RuntimeException {
 }

@@ -46,23 +46,23 @@ package jdkcompat.lang;
  * @status updated to 1.4
  */
 public class InternalError4D extends VirtualMachineError {
-  /**
-   * Compatible with JDK 1.0+.
-   */
-  private static final long serialVersionUID = -9062593416125562365L;
+	/**
+	 * Compatible with JDK 1.0+.
+	 */
+	private static final long serialVersionUID = -9062593416125562365L;
 
-  /**
-   * Create an error without a message.
-   */
-  public InternalError4D() {
-  }
+	/**
+	 * Create an error without a message.
+	 */
+	public InternalError4D() {
+	}
 
-  /**
-   * Create an error with a message.
-   *
-   * @param s the message
-   */
-  public InternalError4D(String s) {
-    super(s);
-  }
+	/**
+	 * Create an error with a message.
+	 *
+	 * @param s the message
+	 */
+	public InternalError4D(String s) {
+		super(s);
+	}
 }

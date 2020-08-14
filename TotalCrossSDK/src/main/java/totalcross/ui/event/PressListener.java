@@ -8,8 +8,8 @@ package totalcross.ui.event;
 /** Interface used to listen to Press events. */
 
 public interface PressListener extends EventHandler {
-  /** A PRESSED event was dispatched.
-   * @see ControlEvent 
-   */
-  public void controlPressed(ControlEvent e);
+	/** A PRESSED event was dispatched.
+	 * @see ControlEvent
+	 */
+	public void controlPressed(ControlEvent e);
 }

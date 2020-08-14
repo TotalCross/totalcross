@@ -23,46 +23,46 @@ package jdkcompat.security;
  */
 public class GeneralSecurityException4D extends Exception {
 
-    private static final long serialVersionUID = 894798122053539237L;
+	private static final long serialVersionUID = 894798122053539237L;
 
-    /**
-     * Constructs a new instance of {@code GeneralSecurityException} with the
-     * given message.
-     *
-     * @param msg
-     *            the detail message for this exception.
-     */
-    public GeneralSecurityException4D(String msg) {
-        super(msg);
-    }
+	/**
+	 * Constructs a new instance of {@code GeneralSecurityException} with the
+	 * given message.
+	 *
+	 * @param msg
+	 *            the detail message for this exception.
+	 */
+	public GeneralSecurityException4D(String msg) {
+		super(msg);
+	}
 
-    /**
-     * Constructs a new instance of {@code GeneralSecurityException}.
-     */
-    public GeneralSecurityException4D() {
-    }
+	/**
+	 * Constructs a new instance of {@code GeneralSecurityException}.
+	 */
+	public GeneralSecurityException4D() {
+	}
 
-    /**
-     * Constructs a new instance of {@code GeneralSecurityException} with the
-     * given message and the cause.
-     *
-     * @param message
-     *            the detail message for this exception.
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public GeneralSecurityException4D(String message, Throwable cause) {
-        super(message, cause);
-    }
+	/**
+	 * Constructs a new instance of {@code GeneralSecurityException} with the
+	 * given message and the cause.
+	 *
+	 * @param message
+	 *            the detail message for this exception.
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public GeneralSecurityException4D(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    /**
-     * Constructs a new instance of {@code GeneralSecurityException} with the
-     * cause.
-     *
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public GeneralSecurityException4D(Throwable cause) {
-        super(cause);
-    }
+	/**
+	 * Constructs a new instance of {@code GeneralSecurityException} with the
+	 * cause.
+	 *
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public GeneralSecurityException4D(Throwable cause) {
+		super(cause);
+	}
 }

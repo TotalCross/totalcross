@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * General Error class. 
+/**
+ * General Error class.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,16 +21,16 @@ package totalcross.lang;
  */
 
 public class Error4D extends Throwable {
-  /** Constructs an empty Exception. */
-  public Error4D() {
-  }
+	/** Constructs an empty Exception. */
+	public Error4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public Error4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public Error4D(String msg) {
+		super(msg);
+	}
 
-  public Error4D(String msg, Throwable cause) {
-    super(msg, cause);
-  }
+	public Error4D(String msg, Throwable cause) {
+		super(msg, cause);
+	}
 }

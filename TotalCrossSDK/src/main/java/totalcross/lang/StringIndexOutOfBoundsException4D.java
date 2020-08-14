@@ -5,7 +5,7 @@
 
 package totalcross.lang;
 
-/** 
+/**
  * Thrown when you try to create a String using the constructor that receives a byte array, an offset and the length.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
@@ -21,21 +21,21 @@ package totalcross.lang;
  */
 
 public class StringIndexOutOfBoundsException4D extends IndexOutOfBoundsException {
-  /** Constructs an empty Exception. */
-  public StringIndexOutOfBoundsException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public StringIndexOutOfBoundsException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public StringIndexOutOfBoundsException4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public StringIndexOutOfBoundsException4D(String msg) {
+		super(msg);
+	}
 
-  /**
-   * Create an exception noting the illegal index.
-   *
-   * @param index the invalid index
-   */
-  public StringIndexOutOfBoundsException4D(int index) {
-    super("String index out of range: " + index);
-  }
+	/**
+	 * Create an exception noting the illegal index.
+	 *
+	 * @param index the invalid index
+	 */
+	public StringIndexOutOfBoundsException4D(int index) {
+		super("String index out of range: " + index);
+	}
 }

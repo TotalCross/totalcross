@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC015_dconst_1 extends LoadConstant {
-  public BC015_dconst_1() {
-    super(1d);
-  }
+	public BC015_dconst_1() {
+		super(1d);
+	}
 }

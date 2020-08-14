@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC101_lsub extends Arithmetic {
-  public BC101_lsub() {
-    super(-1, -2, -1, LONG);
-  }
+	public BC101_lsub() {
+		super(-1, -2, -1, LONG);
+	}
 
-  @Override
-  public void exec() {
-    stack[stackPtr - 2].asLong -= stack[stackPtr - 1].asLong;
-  }
+	@Override
+	public void exec() {
+		stack[stackPtr - 2].asLong -= stack[stackPtr - 1].asLong;
+	}
 }

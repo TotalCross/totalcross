@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * Thrown when a class was not found during parse of "xxx.class". 
+/**
+ * Thrown when a class was not found during parse of "xxx.class".
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class NoClassDefFoundError4D extends Error {
-  /** Constructs an empty Exception. */
-  public NoClassDefFoundError4D() {
-  }
+	/** Constructs an empty Exception. */
+	public NoClassDefFoundError4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public NoClassDefFoundError4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public NoClassDefFoundError4D(String msg) {
+		super(msg);
+	}
 }

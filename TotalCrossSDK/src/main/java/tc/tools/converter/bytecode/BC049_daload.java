@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC049_daload extends LoadArray {
-  public BC049_daload() {
-    super(0, -2, -1, -2, DOUBLE);
-  }
+	public BC049_daload() {
+		super(0, -2, -1, -2, DOUBLE);
+	}
 }

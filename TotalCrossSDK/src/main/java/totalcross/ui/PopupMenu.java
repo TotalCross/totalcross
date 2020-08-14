@@ -30,19 +30,19 @@ import java.util.ArrayList;
 /**
  * Creates a popup menu with a single line list and some radio buttons at right,
  * like in the Android combobox styles. This is a sample of how to use it:
- * 
+ *
  * <pre>
  * String[] items = { "Always", "Never", "Only in Silent mode", "Only when not in Silent mode",
  * 		"Non of the answers above", };
  * PopupMenu pm = new PopupMenu("Vibrate", items);
  * pm.popup();
  * </pre>
- * 
+ *
  * A PRESSED event is sent when an item is selected.
- * 
+ *
  * Note: the colors must be set before the control's bounds are defined using
  * setRect or add.
- * 
+ *
  */
 
 public class PopupMenu extends Window {
@@ -79,7 +79,7 @@ public class PopupMenu extends Window {
 	/**
 	 * The check color used to fill the radio button used in Android. Defaults to
 	 * the fore color.
-	 * 
+	 *
 	 * @since TotalCross 1.3
 	 */
 	public int checkColor = -1;
@@ -87,14 +87,14 @@ public class PopupMenu extends Window {
 	/**
 	 * Set to true BEFORE popping up the window to enable search on the items of
 	 * this PopupMenu. Note that it only works if the items are ORDERED.
-	 * 
+	 *
 	 * @since TotalCross 1.5
 	 */
 	public boolean enableSearch;
 
 	/**
 	 * Set to false BEFORE popping up the window to disable the Cancel button.
-	 * 
+	 *
 	 * @since TotalCross 1.65
 	 */
 	public boolean enableCancel = true;
@@ -102,7 +102,7 @@ public class PopupMenu extends Window {
 	/**
 	 * Set to true to keep the selected index unchanged if user press the Cancel
 	 * button
-	 * 
+	 *
 	 * @since TotalCross 2.0
 	 */
 	public boolean keepIndexOnCancel;
@@ -123,18 +123,20 @@ public class PopupMenu extends Window {
 	}
 
 	/** Constructs a PopupMenu with the given parameters. */
-	public PopupMenu(String caption, Object[] items, boolean multipleSelection) throws IOException, ImageException {
+	public PopupMenu(String caption, Object[] items, boolean multipleSelection) throws IOException,
+		ImageException {
 		super(caption, NO_BORDER);
 		menu = new ListBox(items);
 		menu.transparentBackground = true;
 
 		int height = menu.getPreferredHeight();
-		maxH = (int) (Settings.screenHeight * 0.60);
+		maxH = (int)(Settings.screenHeight * 0.60);
 		int numItems = maxH / menu.getItemHeight(0) + 1;
-		if (height > maxH)
+		if (height > maxH) {
 			maxH = height = menu.getItemHeight(0) * numItems + menu.paddingBottom;
+		}
 
-		
+
 		this.caption = new Label(caption, LEFT, Color.BLACK, true);
 		this.caption.transparentBackground = false;
 		this.caption.setText(caption = StringUtils.shortText(caption, font.fm, width));
@@ -164,16 +166,16 @@ public class PopupMenu extends Window {
 		setNinePatch(Resources.listbox, 14, 14);
 	}
 
-//	@Override
-//	public void initUI() {
-//		caption.transparentBackground = true;
-//		this.caption.setText(
-//				StringUtils.shortText(caption.getText(), font.fm, width - menu.paddingLeft - menu.paddingRight));
-//		if (title != null && !title.equals(""))
-//			add(caption, CENTER, TOP + fmH / 2);
-//
-//		add(menu, LEFT, title == null || title.equals("") ? TOP : AFTER + menu.paddingTop, FILL, FILL);
-//	}
+	//	@Override
+	//	public void initUI() {
+	//		caption.transparentBackground = true;
+	//		this.caption.setText(
+	//				StringUtils.shortText(caption.getText(), font.fm, width - menu.paddingLeft - menu.paddingRight));
+	//		if (title != null && !title.equals(""))
+	//			add(caption, CENTER, TOP + fmH / 2);
+	//
+	//		add(menu, LEFT, title == null || title.equals("") ? TOP : AFTER + menu.paddingTop, FILL, FILL);
+	//	}
 	private Image getSelectedImage(int color) throws ImageException {
 		// "off" image is a composite of two images: on + selection
 		Image on = off.getFrameInstance(0);
@@ -186,7 +188,7 @@ public class PopupMenu extends Window {
 		try {
 			caption.transparentBackground = true;
 			this.caption.setText(
-					StringUtils.shortText(caption.getText(), font.fm, width - menu.paddingLeft - menu.paddingRight));
+				StringUtils.shortText(caption.getText(), font.fm, width - menu.paddingLeft - menu.paddingRight));
 			if (title != null && !title.equals("")) {
 				System.out.println("Title");
 				add(caption, CENTER, TOP + fmH / 2);
@@ -223,7 +225,7 @@ public class PopupMenu extends Window {
 				ListContainer.Item c = new ListContainer.Item(layout);
 				containers[i] = c;
 				String s = items[i] instanceof String ? (String) items[i]
-						: (items[i] instanceof String[]) ? ((String[]) items[i])[dataCol] : items[i].toString();
+						   : (items[i] instanceof String[]) ? ((String[]) items[i])[dataCol] : items[i].toString();
 				if (enableSearch && s.length() > 0) {
 					char cc = s.charAt(0);
 					if (cc != last) {
@@ -238,14 +240,14 @@ public class PopupMenu extends Window {
 				if (sw <= cw) {
 					c.items = new String[] { "", s, "" };
 				} else {
-					if(uiMaterial) {
+					if (uiMaterial) {
 						String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw, fm, s), '\n');
 						c.items = new String[] { "", "", "" };
 						for (int j = 0, n = Math.min(parts.length, c.items.length); j < n; j++) {
 							c.items[j] = parts[j];
 						}
 					} else {
-						c.items = new String[] {"", s, ""}; 
+						c.items = new String[] {"", s, ""};
 					}
 				}
 				c.appId = i;
@@ -258,9 +260,9 @@ public class PopupMenu extends Window {
 				IntVector v = htSearchKeys.getKeys();
 				v.qsort();
 				add(sc2 = new ScrollContainer(true, false),
-						LEFT + UnitsConverter.toPixels(DP + 2),
-						TOP + UnitsConverter.toPixels(DP + 8), FILL - UnitsConverter.toPixels(DP + 2),
-						DP + 52);
+					LEFT + UnitsConverter.toPixels(DP + 2),
+					TOP + UnitsConverter.toPixels(DP + 8), FILL - UnitsConverter.toPixels(DP + 2),
+					DP + 52);
 				sc2.disableFlick();
 				for (int i = 0; i < v.size(); i++) {
 					String caps = Convert.toString((char) v.items[i]);
@@ -284,9 +286,10 @@ public class PopupMenu extends Window {
 			if (!uiMaterial) {
 				list.setBackColor(Color.WHITE);
 			}
-			add(list, LEFT + UnitsConverter.toPixels(DP + 2), enableSearch || this.caption != null ? AFTER + fmH / 5 : TOP,
-					FILL - UnitsConverter.toPixels(DP + 2), (enableCancel ? FIT : FILL) - fmH / 2,
-					enableSearch ? sc2 : this.caption != null ? this.caption : null);
+			add(list, LEFT + UnitsConverter.toPixels(DP + 2), enableSearch
+				|| this.caption != null ? AFTER + fmH / 5 : TOP,
+				FILL - UnitsConverter.toPixels(DP + 2), (enableCancel ? FIT : FILL) - fmH / 2,
+				enableSearch ? sc2 : this.caption != null ? this.caption : null);
 			list.addContainers(containers);
 			repositionOnSize();
 		} catch (Exception e) {
@@ -324,8 +327,12 @@ public class PopupMenu extends Window {
 		if (pos != -1) {
 			list.disableFlick();
 			int scrollToY = containers[pos].getY();
-			if(list.sbV.getMinimum() > scrollToY) scrollToY = list.sbV.getMinimum() + 1;
-			if(list.sbV.getMaximum() < scrollToY) scrollToY = list.sbV.getMaximum() - 1;
+			if (list.sbV.getMinimum() > scrollToY) {
+				scrollToY = list.sbV.getMinimum() + 1;
+			}
+			if (list.sbV.getMaximum() < scrollToY) {
+				scrollToY = list.sbV.getMaximum() - 1;
+			}
 			list.disableFlick();
 			list.scrollContent(0, scrollToY - list.sbV.getValue(), false);
 			list.enableFlick();
@@ -335,47 +342,47 @@ public class PopupMenu extends Window {
 	@Override
 	public void onEvent(Event event) {
 		switch (event.type) {
-		case KeyEvent.KEY_PRESS:
-			if (enableSearch) {
-				search((char) ((KeyEvent) event).key);
-			}
-			break;
-		case ControlEvent.PRESSED:
-			if (cancel != null && event.target == cancel) {
-				if (!keepIndexOnCancel) {
-					selected = -1;
+			case KeyEvent.KEY_PRESS:
+				if (enableSearch) {
+					search((char)((KeyEvent) event).key);
 				}
-				unpop();
-			}
-			break;
-		case ListContainerEvent.ITEM_SELECTED_EVENT: {
-			ListContainerEvent lce = (ListContainerEvent) event;
-			selected(((Control) lce.source).appId);
-			if (!multipleSelection) {
-				Vm.sleep(100);
-				unpop();
-			}
-			break;
-		}
-		case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: {
-			ListContainerEvent lce = (ListContainerEvent) event;
-			// if (lce.isImage2) since tc 1.5, when this event is sent the image 2 was
-			// already replaced by image 1
-			{
-				int idx;
-				if (event.target instanceof Control) {
-					idx = ((Control) event.target).parent.appId;
-				} else {
-					idx = lce.source.appId;
+				break;
+			case ControlEvent.PRESSED:
+				if (cancel != null && event.target == cancel) {
+					if (!keepIndexOnCancel) {
+						selected = -1;
+					}
+					unpop();
 				}
-				selected(idx);
+				break;
+			case ListContainerEvent.ITEM_SELECTED_EVENT: {
+				ListContainerEvent lce = (ListContainerEvent) event;
+				selected(((Control) lce.source).appId);
 				if (!multipleSelection) {
 					Vm.sleep(100);
 					unpop();
 				}
+				break;
 			}
-			break;
-		}
+			case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: {
+				ListContainerEvent lce = (ListContainerEvent) event;
+				// if (lce.isImage2) since tc 1.5, when this event is sent the image 2 was
+				// already replaced by image 1
+				{
+					int idx;
+					if (event.target instanceof Control) {
+						idx = ((Control) event.target).parent.appId;
+					} else {
+						idx = lce.source.appId;
+					}
+					selected(idx);
+					if (!multipleSelection) {
+						Vm.sleep(100);
+						unpop();
+					}
+				}
+				break;
+			}
 		}
 	}
 
@@ -387,8 +394,9 @@ public class PopupMenu extends Window {
 				try {
 					npback = NinePatch.getInstance().getNormalInstance(npParts, width, height, backColor, false);
 				} catch (ImageException e) {
-					if (Settings.onJavaSE)
+					if (Settings.onJavaSE) {
 						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -404,7 +412,7 @@ public class PopupMenu extends Window {
 
 	@Override
 	public int getPreferredWidth() {
-		if(uiMaterial) {
+		if (uiMaterial) {
 			return menu.getPreferredWidth();
 		} else {
 			return super.getPreferredWidth();
@@ -414,9 +422,9 @@ public class PopupMenu extends Window {
 	@Override
 	public int getPreferredHeight() {
 		return uiMaterial
-				? (caption == null || caption.getText().equals("") ? 0 : menu.paddingTop * 2 + fmH)
-						+ Math.min(menu.getPreferredHeight(), maxH)
-				: super.getPreferredHeight();
+			   ? (caption == null || caption.getText().equals("") ? 0 : menu.paddingTop * 2 + fmH)
+			   + Math.min(menu.getPreferredHeight(), maxH)
+			   : super.getPreferredHeight();
 	}
 
 	/**
@@ -474,10 +482,10 @@ public class PopupMenu extends Window {
 		menu.requestFocus();
 		if (list == null) {
 			int maxW = Math.max(!enableCancel ? 0 : fm.stringWidth(cancelString),
-					title == null ? 0 : titleFont.fm.stringWidth(title)) + fmH * 4;
+								title == null ? 0 : titleFont.fm.stringWidth(title)) + fmH * 4;
 			for (int i = 0; i < itemCount; i++) {
 				String s = items[i] instanceof String ? (String) items[i]
-						: (items[i] instanceof String[]) ? ((String[]) items[i])[dataCol] : items[i].toString();
+						   : (items[i] instanceof String[]) ? ((String[]) items[i])[dataCol] : items[i].toString();
 				int w = fm.stringWidth(s) + (uiMaterial ? fmH * 4 : fmH * 6);
 				if (w > maxW) {
 					maxW = w;

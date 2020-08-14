@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * This exception is used in reflection and is actually never thrown. 
+/**
+ * This exception is used in reflection and is actually never thrown.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class SecurityException4D extends Exception {
-  /** Constructs an empty Exception. */
-  public SecurityException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public SecurityException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public SecurityException4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public SecurityException4D(String msg) {
+		super(msg);
+	}
 }

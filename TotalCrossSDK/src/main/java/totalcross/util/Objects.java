@@ -9,7 +9,7 @@ public final class Objects {
 	private Objects() {}
 
 	public static <T> int compare(T a, T b, Comparator<? super T> c) {
-		return a == b? 0: c.compare(a, b);
+		return a == b ? 0 : c.compare(a, b);
 	}
 
 	public static boolean deepEquals(Object a, Object b) {
@@ -28,7 +28,7 @@ public final class Objects {
 	}
 
 	public static boolean equals(Object a, Object b) {
-		return a == null? b == null: a.equals(b);
+		return a == null ? b == null : a.equals(b);
 	}
 
 	public static int hash(Object... values) {
@@ -42,7 +42,7 @@ public final class Objects {
 	}
 
 	public static int hashCode(Object object) {
-		return object == null? 0: object.hashCode();
+		return object == null ? 0 : object.hashCode();
 	}
 
 	public static boolean isNull(Object obj) {
@@ -76,6 +76,6 @@ public final class Objects {
 	}
 
 	public static String toString(Object o, String nullDefault) {
-		return o == null? nullDefault: o.toString();
+		return o == null ? nullDefault : o.toString();
 	}
 }

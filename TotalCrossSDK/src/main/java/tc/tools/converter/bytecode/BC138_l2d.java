@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC138_l2d extends Conversion {
-  public BC138_l2d() {
-    super(-1, -1, LONG, DOUBLE);
-  }
+	public BC138_l2d() {
+		super(-1, -1, LONG, DOUBLE);
+	}
 
-  @Override
-  public void exec() {
-    stack[stackPtr - 1].asDouble = (double) stack[stackPtr - 1].asLong;
-  }
+	@Override
+	public void exec() {
+		stack[stackPtr - 1].asDouble = (double) stack[stackPtr - 1].asLong;
+	}
 }

@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * Thrown when a class is not found. Were all required tcz/pdb files installed? 
+/**
+ * Thrown when a class is not found. Were all required tcz/pdb files installed?
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class ClassNotFoundException4D extends ReflectiveOperationException {
-  /** Constructs an empty Exception. */
-  public ClassNotFoundException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public ClassNotFoundException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public ClassNotFoundException4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public ClassNotFoundException4D(String msg) {
+		super(msg);
+	}
 }
