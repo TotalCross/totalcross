@@ -10,6 +10,8 @@
 #define SUCCESS(x)      ((x) == 0)
 
 #include "tcsdl.h"
+#include <iostream>
+#include <vector>
 
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
@@ -25,46 +27,59 @@ static SDL_Texture *texture;
  * - true on success 
  */
 bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
-  SDL_Window *window;
+
+  int width = (getenv("TC_WIDTH")  == NULL) ? 640 : std::stoi(getenv("TC_WIDTH"));
+  int height= (getenv("TC_HEIGHT") == NULL) ? 400 : std::stoi(getenv("TC_HEIGHT"));
+
+  std::cout << "Testing video drivers..." << '\n';
+  std::vector< bool > drivers( SDL_GetNumVideoDrivers() );
+  
+  for(int i = 0; i < drivers.size(); ++i) {
+      drivers[i] = (0 == SDL_VideoInit(SDL_GetVideoDriver( i )));
+      SDL_VideoQuit();
+  }
+
+  std::cout << "SDL_VIDEODRIVER available:";
+  for( int i = 0; i < drivers.size(); ++i ) {
+      std::cout << " " << SDL_GetVideoDriver( i );
+  }
+  std::cout << '\n';
+
+  std::cout << "SDL_VIDEODRIVER usable   :";
+  for( int i = 0; i < drivers.size(); ++i ) {
+      if( !drivers[ i ] ) continue;
+      std::cout << " " << SDL_GetVideoDriver( i );
+  }
+  std::cout << '\n';
+
   // Only init video (without audio)
   if(NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
     printf("SDL_Init failed: %s\n", SDL_GetError());
     return false;
   }
-
-  // Get the desktop area represented by a display, with the primary
-  // display located at 0,0 based on viewport allocated on initial position
-  int (*TCSDL_GetDisplayBounds)(int, SDL_Rect*) = 
-#ifdef __arm__                  
-    &SDL_GetDisplayBounds;
-#else                           
-    &SDL_GetDisplayUsableBounds;
-#endif
-
-  SDL_Rect viewport;
-  if(NOT_SUCCESS(TCSDL_GetDisplayBounds(DISPLAY_INDEX, &viewport))) {
-    printf("SDL_GetDisplayBounds failed: %s\n", SDL_GetError());
-    return false;
-  }
-
-  // Adjust height on desktop, it should not affect fullscreen (y should be 0)
-  viewport.h -= viewport.y;
+  std::cout << "SDL_VIDEODRIVER selected : " << SDL_GetCurrentVideoDriver() << '\n';
 
   // Create the window
+  SDL_Window* window; 
   if(IS_NULL(window = SDL_CreateWindow(
                                 title, 
-                                viewport.x,
-                                viewport.y, 
-                                viewport.w, 
-                                viewport.h, 
-                                (fullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_MAXIMIZED)
+                                SDL_WINDOWPOS_UNDEFINED,
+                                SDL_WINDOWPOS_UNDEFINED,
+                                width,
+                                height,
+                                (getenv("TC_FULLSCREEN") == NULL) ? SDL_WINDOW_SHOWN : SDL_WINDOW_FULLSCREEN
                                 ))) {
     printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
     return false;
   }
 
-  // Get the size of the window's client area
-  SDL_GetWindowSize(window, &viewport.w, &viewport.h);
+  std::cout << "SDL_RENDER_DRIVER available:";
+  for( int i = 0; i < SDL_GetNumRenderDrivers(); ++i ) {
+      SDL_RendererInfo info;
+      SDL_GetRenderDriverInfo( i, &info );
+      std::cout << " " << info.name;
+  }
+  std::cout << '\n';
 
   // Create a 2D rendering context for a window
   if(IS_NULL(renderer = SDL_CreateRenderer(window, -1, NO_FLAGS))) {
@@ -77,22 +92,8 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   if (NOT_SUCCESS(SDL_GetRendererInfo(renderer, &rendererInfo))) {
     printf("SDL_GetRendererInfo failed: %s\n", SDL_GetError());
     return 0;
-  } else {
-    // Set render driver 
-    if ((SDL_SetHint(SDL_HINT_RENDER_DRIVER, rendererInfo.name)) == SDL_FALSE) {
-      printf("SDL_SetHint failed: %s\n", SDL_GetError());
-      return false;
-    }
   }
-
-  // Set renderer dimensions
-  if (NOT_SUCCESS(SDL_GetRendererOutputSize(
-                                renderer, 
-                                &viewport.w, 
-                                &viewport.h))) {
-    printf("SDL_GetRendererOutputSize failed: %s\n", SDL_GetError());
-    return false;
-  }
+  std::cout << "SDL_RENDER_DRIVER selected : " << rendererInfo.name << '\n';
   
   // Get window pixel format
   Uint32 windowPixelFormat;
@@ -106,8 +107,8 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
                               renderer, 
                               windowPixelFormat, 
                               SDL_TEXTUREACCESS_STREAMING, 
-                              viewport.w, 
-                              viewport.h))) {
+                              width, 
+                              height))) {
     printf("SDL_CreateTexture failed: %s\n", SDL_GetError());
     return false;
   }
@@ -119,9 +120,9 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   }
 
   // Adjusts screen width to the viewport
-  screen->screenW = viewport.w;
+  screen->screenW = width;
   // Adjusts screen height to the viewport
-  screen->screenH = viewport.h;
+  screen->screenH = height;
   // Adjusts screen's BPP
   screen->bpp = pixelformat->BitsPerPixel;
   // Set surface pitch 
