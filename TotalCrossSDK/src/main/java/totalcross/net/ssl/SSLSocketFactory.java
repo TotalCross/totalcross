@@ -24,6 +24,11 @@ public class SSLSocketFactory extends SocketFactory {
   }
 
   @Override
+  public Socket createSocket(String host, int port) throws UnknownHostException, IOException {
+    return createSocket(host, port, Socket.DEFAULT_OPEN_TIMEOUT);
+  }
+
+  @Override
   public Socket createSocket(String host, int port, int timeout) throws UnknownHostException, IOException {
     return new SSLSocket(host, port, timeout);
   }
