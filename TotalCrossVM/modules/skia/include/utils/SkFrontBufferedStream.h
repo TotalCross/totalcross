@@ -21,19 +21,19 @@
  */
 class SK_API SkFrontBufferedStream {
 public:
-    /**
-     *  Creates a new stream that wraps and buffers an SkStream.
-     *  @param stream SkStream to buffer. If stream is NULL, NULL is
-     *      returned. When this call succeeds (i.e. returns non NULL),
-     *      SkFrontBufferedStream is expected to be the only owner of
-     *      stream, so it should no be longer used directly.
-     *      SkFrontBufferedStream will delete stream upon deletion.
-     *  @param minBufferSize Minimum size of buffer required.
-     *  @return An SkStream that can buffer at least minBufferSize, or
-     *      NULL on failure. The caller is required to delete when finished with
-     *      this object.
-     */
-    static std::unique_ptr<SkStreamRewindable> Make(std::unique_ptr<SkStream> stream,
-                                                    size_t minBufferSize);
+	/**
+	 *  Creates a new stream that wraps and buffers an SkStream.
+	 *  @param stream SkStream to buffer. If stream is NULL, NULL is
+	 *      returned. When this call succeeds (i.e. returns non NULL),
+	 *      SkFrontBufferedStream is expected to be the only owner of
+	 *      stream, so it should no be longer used directly.
+	 *      SkFrontBufferedStream will delete stream upon deletion.
+	 *  @param minBufferSize Minimum size of buffer required.
+	 *  @return An SkStream that can buffer at least minBufferSize, or
+	 *      NULL on failure. The caller is required to delete when finished with
+	 *      this object.
+	 */
+	static std::unique_ptr<SkStreamRewindable> Make(std::unique_ptr<SkStream> stream,
+			size_t minBufferSize);
 };
 #endif  // SkFrontBufferedStream_DEFINED

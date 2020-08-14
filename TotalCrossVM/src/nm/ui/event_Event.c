@@ -8,11 +8,11 @@
 #include "tcvm.h"
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tueE_isAvailable(NMParams p) // totalcross/ui/event/Event native public static boolean isAvailable();
-{
-   p->retI = isEventAvailable();
+TC_API void tueE_isAvailable(NMParams
+							 p) { // totalcross/ui/event/Event native public static boolean isAvailable();
+	p->retI = isEventAvailable();
 }
 
 #ifdef ENABLE_TEST_SUITE
-#include "event_Event_test.h"
+	#include "event_Event_test.h"
 #endif

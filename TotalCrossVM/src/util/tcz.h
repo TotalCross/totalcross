@@ -26,35 +26,33 @@ typedef TTCZFile* TCZFile;
 typedef struct TTCZFileHeader TTCZFileHeader;
 typedef TTCZFileHeader* TCZFileHeader;
 
-struct TTCZFileHeader // common members to all instances
-{
-   CharPArray names;
-   Int32Array offsets;
-   Int32Array uncompressedSizes;
-   int16 version;
-   int16 attr; // see ATTR_xxx above
+struct TTCZFileHeader { // common members to all instances
+	CharPArray names;
+	Int32Array offsets;
+	Int32Array uncompressedSizes;
+	int16 version;
+	int16 attr; // see ATTR_xxx above
 #ifdef ANDROID
-   int32 apkIdx; // index in java's array
-#else      
-   FILE* fin;
-#endif   
-   int32 instanceCount;
-   int32 realFilePos; // the current seek position
-   ConstantPool cp; // this is the Global constant pool that came in this tcz file
-   Heap hheap;
+	int32 apkIdx; // index in java's array
+#else
+	FILE* fin;
+#endif
+	int32 instanceCount;
+	int32 realFilePos; // the current seek position
+	ConstantPool cp; // this is the Global constant pool that came in this tcz file
+	Heap hheap;
 };
 
 /** A TCZ (TotalCross ZLib) file is a kind of zip file. It supports multiple opens and reads
     in the same physical file.
 */
-struct TTCZFile
-{
-   TCZFileHeader header; // common properties
-   uint8 buf[TCZ_BUFFER_SIZE];
-   int32 expectedFilePos; // the expected seek position (may change if several instances are processing the same file)
-   Heap tempHeap; // can be assigned by the user to branch to an error handler if something wrong happens
-   int32 uncompressedSize;
-   z_stream zs;
+struct TTCZFile {
+	TCZFileHeader header; // common properties
+	uint8 buf[TCZ_BUFFER_SIZE];
+	int32 expectedFilePos; // the expected seek position (may change if several instances are processing the same file)
+	Heap tempHeap; // can be assigned by the user to branch to an error handler if something wrong happens
+	int32 uncompressedSize;
+	z_stream zs;
 };
 
 /// Reads a number of bytes from the given tcz. Returns the number of bytes read, if the end of file has been reached
@@ -76,9 +74,9 @@ TCZFile tczFindName(TCZFile tcz, CharP name);
 /// Opens a tcz file from the given FILE. Use only if there's no constant pools in the file, otherwise, use tczLoad.
 /// fileName may be null for font files.
 #ifdef ANDROID
-TCZFile tczOpen(CharP fileName, bool isFont);
+	TCZFile tczOpen(CharP fileName, bool isFont);
 #else
-TCZFile tczOpen(FILE* fin, CharP fileName);
+	TCZFile tczOpen(FILE* fin, CharP fileName);
 #endif
 /// Loads a TotalCross library with the given tcz name. If there's a constant pool in the file,
 /// it is loaded too. Also binds the tcz to the list of open tczs. There's no need to close the returned tcz instance.

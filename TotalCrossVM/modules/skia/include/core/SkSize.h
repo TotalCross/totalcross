@@ -11,82 +11,128 @@
 #include "SkScalar.h"
 
 struct SkISize {
-    int32_t fWidth;
-    int32_t fHeight;
+	int32_t fWidth;
+	int32_t fHeight;
 
-    static SkISize Make(int32_t w, int32_t h) { return {w, h}; }
+	static SkISize Make(int32_t w, int32_t h) {
+		return {w, h};
+	}
 
-    static SkISize MakeEmpty() { return {0, 0}; }
+	static SkISize MakeEmpty() {
+		return {0, 0};
+	}
 
-    void set(int32_t w, int32_t h) { *this = SkISize{w, h}; }
+	void set(int32_t w, int32_t h) {
+		*this = SkISize{w, h};
+	}
 
-    /** Returns true iff fWidth == 0 && fHeight == 0
-     */
-    bool isZero() const { return 0 == fWidth && 0 == fHeight; }
+	/** Returns true iff fWidth == 0 && fHeight == 0
+	 */
+	bool isZero() const {
+		return 0 == fWidth && 0 == fHeight;
+	}
 
-    /** Returns true if either width or height are <= 0 */
-    bool isEmpty() const { return fWidth <= 0 || fHeight <= 0; }
+	/** Returns true if either width or height are <= 0 */
+	bool isEmpty() const {
+		return fWidth <= 0 || fHeight <= 0;
+	}
 
-    /** Set the width and height to 0 */
-    void setEmpty() { fWidth = fHeight = 0; }
+	/** Set the width and height to 0 */
+	void setEmpty() {
+		fWidth = fHeight = 0;
+	}
 
-    int32_t width() const { return fWidth; }
-    int32_t height() const { return fHeight; }
+	int32_t width() const {
+		return fWidth;
+	}
+	int32_t height() const {
+		return fHeight;
+	}
 
-    bool equals(int32_t w, int32_t h) const { return fWidth == w && fHeight == h; }
+	bool equals(int32_t w, int32_t h) const {
+		return fWidth == w && fHeight == h;
+	}
 };
 
 static inline bool operator==(const SkISize& a, const SkISize& b) {
-    return a.fWidth == b.fWidth && a.fHeight == b.fHeight;
+	return a.fWidth == b.fWidth && a.fHeight == b.fHeight;
 }
 
-static inline bool operator!=(const SkISize& a, const SkISize& b) { return !(a == b); }
+static inline bool operator!=(const SkISize& a, const SkISize& b) {
+	return !(a == b);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
 struct SkSize {
-    SkScalar fWidth;
-    SkScalar fHeight;
+	SkScalar fWidth;
+	SkScalar fHeight;
 
-    static SkSize Make(SkScalar w, SkScalar h) { return {w, h}; }
+	static SkSize Make(SkScalar w, SkScalar h) {
+		return {w, h};
+	}
 
-    static SkSize Make(const SkISize& src) {
-        return {SkIntToScalar(src.width()), SkIntToScalar(src.height())};
-    }
+	static SkSize Make(const SkISize& src) {
+		return {SkIntToScalar(src.width()), SkIntToScalar(src.height())};
+	}
 
-    SkSize& operator=(const SkISize& src) {
-        return *this = SkSize{SkIntToScalar(src.fWidth), SkIntToScalar(src.fHeight)};
-    }
+	SkSize& operator=(const SkISize& src) {
+		return *this = SkSize{SkIntToScalar(src.fWidth), SkIntToScalar(src.fHeight)};
+	}
 
-    static SkSize MakeEmpty() { return {0, 0}; }
+	static SkSize MakeEmpty() {
+		return {0, 0};
+	}
 
-    void set(SkScalar w, SkScalar h) { *this = SkSize{w, h}; }
+	void set(SkScalar w, SkScalar h) {
+		*this = SkSize{w, h};
+	}
 
-    /** Returns true iff fWidth == 0 && fHeight == 0
-     */
-    bool isZero() const { return 0 == fWidth && 0 == fHeight; }
+	/** Returns true iff fWidth == 0 && fHeight == 0
+	 */
+	bool isZero() const {
+		return 0 == fWidth && 0 == fHeight;
+	}
 
-    /** Returns true if either widht or height are <= 0 */
-    bool isEmpty() const { return fWidth <= 0 || fHeight <= 0; }
+	/** Returns true if either widht or height are <= 0 */
+	bool isEmpty() const {
+		return fWidth <= 0 || fHeight <= 0;
+	}
 
-    /** Set the width and height to 0 */
-    void setEmpty() { *this = SkSize{0, 0}; }
+	/** Set the width and height to 0 */
+	void setEmpty() {
+		*this = SkSize{0, 0};
+	}
 
-    SkScalar width() const { return fWidth; }
-    SkScalar height() const { return fHeight; }
+	SkScalar width() const {
+		return fWidth;
+	}
+	SkScalar height() const {
+		return fHeight;
+	}
 
-    bool equals(SkScalar w, SkScalar h) const { return fWidth == w && fHeight == h; }
+	bool equals(SkScalar w, SkScalar h) const {
+		return fWidth == w && fHeight == h;
+	}
 
-    SkISize toRound() const { return {SkScalarRoundToInt(fWidth), SkScalarRoundToInt(fHeight)}; }
+	SkISize toRound() const {
+		return {SkScalarRoundToInt(fWidth), SkScalarRoundToInt(fHeight)};
+	}
 
-    SkISize toCeil() const { return {SkScalarCeilToInt(fWidth), SkScalarCeilToInt(fHeight)}; }
+	SkISize toCeil() const {
+		return {SkScalarCeilToInt(fWidth), SkScalarCeilToInt(fHeight)};
+	}
 
-    SkISize toFloor() const { return {SkScalarFloorToInt(fWidth), SkScalarFloorToInt(fHeight)}; }
+	SkISize toFloor() const {
+		return {SkScalarFloorToInt(fWidth), SkScalarFloorToInt(fHeight)};
+	}
 };
 
 static inline bool operator==(const SkSize& a, const SkSize& b) {
-    return a.fWidth == b.fWidth && a.fHeight == b.fHeight;
+	return a.fWidth == b.fWidth && a.fHeight == b.fHeight;
 }
 
-static inline bool operator!=(const SkSize& a, const SkSize& b) { return !(a == b); }
+static inline bool operator!=(const SkSize& a, const SkSize& b) {
+	return !(a == b);
+}
 #endif

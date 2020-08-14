@@ -10,17 +10,17 @@
 #ifndef LITEBASE_MACROS_H
 #define LITEBASE_MACROS_H
 
-/** 
- * The following ifdef block is the standard way of creating macros which makes exporting from a DLL simpler. All files within this DLL are compiled 
+/**
+ * The following ifdef block is the standard way of creating macros which makes exporting from a DLL simpler. All files within this DLL are compiled
  * with the TESTE_EXPORTS symbol defined on the command line. This symbol should not be defined on any project that uses this DLL. This way any other
- * project whose source files include this file see TESTE_API functions as being imported from a DLL, wheras this DLL sees symbols defined with this 
+ * project whose source files include this file see TESTE_API functions as being imported from a DLL, wheras this DLL sees symbols defined with this
  * macro as being exported.
  */
 #if defined (WIN32)
 	#ifdef LB_EXPORTS
-	#define LB_API __declspec(dllexport)
+		#define LB_API __declspec(dllexport)
 	#else
-	#define LB_API __declspec(dllimport)
+		#define LB_API __declspec(dllimport)
 	#endif
 #else
 	#define LB_API extern
@@ -35,19 +35,19 @@
 
 // Macros for path separators.
 #if defined (WIN32)
-   #define PATH_SEPARATOR    '\\'
-   #define NO_PATH_SEPARATOR '/'
+	#define PATH_SEPARATOR    '\\'
+	#define NO_PATH_SEPARATOR '/'
 #else
-   #define PATH_SEPARATOR    '/'
-   #define NO_PATH_SEPARATOR '\\'
+	#define PATH_SEPARATOR    '/'
+	#define NO_PATH_SEPARATOR '\\'
 #endif
 
-// fdie 
+// fdie
 // juliana@202_24: removed problem with double processing.
 // juliana@210_6: removed problem with long processing.
-// Supports ARM's double mixed endianness. This is handled by the READ_DOUBLE macro. The GCCE compiler of the new Symbian S60v3 generates non mixed 
+// Supports ARM's double mixed endianness. This is handled by the READ_DOUBLE macro. The GCCE compiler of the new Symbian S60v3 generates non mixed
 // endianness doubles.
-   #define READ_DOUBLE(destination, source) xmemmove(destination, source, 8) 
+#define READ_DOUBLE(destination, source) xmemmove(destination, source, 8)
 
 // Classes fields.
 // DriverException
@@ -73,7 +73,7 @@
 #define setLitebaseHtPS(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (size_t)v)
 
 // juliana@noidr_1: removed .idr files from all indices and changed its format.
-// LitebaseConnection.nodes 
+// LitebaseConnection.nodes
 #define getLitebaseNodes(o)    ((int32*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 3))
 #define setLitebaseNodes(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (size_t)v)
 
@@ -148,9 +148,9 @@
 // Verifies if the column is defined as not null.
 #define definedAsNotNull(byte) ((((byte) & ATTR_COLUMN_IS_NOT_NULL)))
 
-// Turns a string representing the application id of 4 characters into an integer. 
+// Turns a string representing the application id of 4 characters into an integer.
 #define getAppCridInt(cridStr) \
-(uint32)((uint32)((cridStr)[0]) << 24 | (uint32)((cridStr)[1]) << 16 | (uint32)((cridStr)[2]) << 8 | (uint32)((cridStr)[3]))
+	(uint32)((uint32)((cridStr)[0]) << 24 | (uint32)((cridStr)[1]) << 16 | (uint32)((cridStr)[2]) << 8 | (uint32)((cridStr)[3]))
 
 // Parser macros.
 #define YYPARSE_PARAM    parser                                                      // yyparse() parameter.
@@ -172,62 +172,62 @@
 #define keyEquals(context, key1, key2, size, plainDB) (key2 && !keyCompareTo(context, key1, key2, size, plainDB))
 
 // Indicates if a node of an index is a leaf node.
-#define nodeIsLeaf(node) (*node->children == LEAF) 
+#define nodeIsLeaf(node) (*node->children == LEAF)
 
 // Linked list declaration.
 #define TC_DeclareList(type)										    \
-typedef struct type##s												    \
-{																			    \
-   struct type##s* next;											    \
-   struct type##s* prev;											    \
-   type value;															    \
-} type##s;																    \
-type##s* TC_##type##sAdd(type##s* list, type value, Heap h); \
-type##s* TC_##type##sRemove(type##s* list, type value)		 \
+	typedef struct type##s												    \
+	{																			    \
+		struct type##s* next;											    \
+		struct type##s* prev;											    \
+		type value;															    \
+	} type##s;																    \
+	type##s* TC_##type##sAdd(type##s* list, type value, Heap h); \
+	type##s* TC_##type##sRemove(type##s* list, type value)		 \
 
 // Linked list declaration, with functions to add and remove an element.
 // The function to add an element searchs the list to see if there is a free node to add the element before alocating anything.
 // The funtion to remove an element only invalidates the list position, which can be re-used later on.
 // juliana@221_1: solved a problem that could reduce the free memory too much if many prepared statements were created and collected many times.
 #define TC_ImplementList(type)                                                 \
-type##s* TC_##type##sAdd(type##s* list, type value, Heap heap)                 \
-{                                                                              \
-   if (!list)                                                                  \
-   {                                                                           \
-      (list = (type##s*)TC_heapAlloc(heap, sizeof(type##s)))->value = value;   \
-      list->next = list->prev = list;                                          \
-   }                                                                           \
-   else                                                                        \
-   {                                                                           \
-	   type##s* head = list;										                      \
-      type##s *element;                                                        \
-		do										                                           \
-		{															                            \
-			if (!head->value)								                               \
-			{														                            \
-				head->value = value;							                            \
-				return list;										                         \
-			}														                            \
-			head = head->next;								                            \
-		} while (head != list);															       \
-      (element = (type##s*)TC_heapAlloc(heap,sizeof(type##s)))->value = value; \
-      element->prev = list->prev;                                              \
-      element->next = list;                                                    \
-      list->prev =list->prev->next = element;                                  \
-   }                                                                           \
-   return list;                                                                \
-}                                                                              \
-																	                            \
-type##s* TC_##type##sRemove(type##s* list, type value)                         \
-{                                                                              \
-   type##s* head = list;                                                       \
-   if (head)													                            \
-      do                                                                       \
-      {                                                                        \
-         if (list->value == value)                                             \
-				list->value = null;								                         \
-         list = list->next;                                                    \
-      } while (head != list);                                                  \
-   return head;                                                                \
-}											
+	type##s* TC_##type##sAdd(type##s* list, type value, Heap heap)                 \
+	{                                                                              \
+		if (!list)                                                                  \
+		{                                                                           \
+			(list = (type##s*)TC_heapAlloc(heap, sizeof(type##s)))->value = value;   \
+			list->next = list->prev = list;                                          \
+		}                                                                           \
+		else                                                                        \
+		{                                                                           \
+			type##s* head = list;										                      \
+			type##s *element;                                                        \
+			do										                                           \
+			{															                            \
+				if (!head->value)								                               \
+				{														                            \
+					head->value = value;							                            \
+					return list;										                         \
+				}														                            \
+				head = head->next;								                            \
+			} while (head != list);															       \
+			(element = (type##s*)TC_heapAlloc(heap,sizeof(type##s)))->value = value; \
+			element->prev = list->prev;                                              \
+			element->next = list;                                                    \
+			list->prev =list->prev->next = element;                                  \
+		}                                                                           \
+		return list;                                                                \
+	}                                                                              \
+	\
+	type##s* TC_##type##sRemove(type##s* list, type value)                         \
+	{                                                                              \
+		type##s* head = list;                                                       \
+		if (head)													                            \
+			do                                                                       \
+			{                                                                        \
+				if (list->value == value)                                             \
+					list->value = null;								                         \
+				list = list->next;                                                    \
+			} while (head != list);                                                  \
+		return head;                                                                \
+	}
 #endif

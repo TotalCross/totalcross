@@ -22,11 +22,11 @@ typedef unsigned int GrMTLPixelFormat;
  */
 struct GrMtlTextureInfo {
 public:
-    const void* fTexture; // Pointer to MTLTexture
+	const void* fTexture; // Pointer to MTLTexture
 
-    bool operator==(const GrMtlTextureInfo& that) const {
-        return fTexture == that.fTexture;
-    }
+	bool operator==(const GrMtlTextureInfo& that) const {
+		return fTexture == that.fTexture;
+	}
 };
 
 #endif

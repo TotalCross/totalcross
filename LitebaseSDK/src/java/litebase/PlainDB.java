@@ -541,8 +541,8 @@ class PlainDB {
 					ds.writeInt(value.asShort); // Writes the time.
 					break;
 
-				case SQLElement.BLOB:
-				{ // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
+				case SQLElement.BLOB: {
+					// juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
 					XFile dboFile = dbo;
 
 					if (isTemporary) { // The position of a blob and its table is being written to the temporary table.

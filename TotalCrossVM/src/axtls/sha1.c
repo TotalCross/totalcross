@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -40,152 +40,142 @@
  *  Define the SHA1 circular left shift macro
  */
 #define SHA1CircularShift(bits,word) \
-                (((word) << (bits)) | ((word) >> (32-(bits))))
+	(((word) << (bits)) | ((word) >> (32-(bits))))
 
 /* ----- static functions ----- */
-static void SHA1PadMessage(SHA1_CTX *ctx);
-static void SHA1ProcessMessageBlock(SHA1_CTX *ctx);
+static void SHA1PadMessage(SHA1_CTX* ctx);
+static void SHA1ProcessMessageBlock(SHA1_CTX* ctx);
 
 /**
- * Initialize the SHA1 context 
+ * Initialize the SHA1 context
  */
-void SHA1_Init(SHA1_CTX *ctx)
-{
-    ctx->Length_Low             = 0;
-    ctx->Length_High            = 0;
-    ctx->Message_Block_Index    = 0;
-    ctx->Intermediate_Hash[0]   = 0x67452301;
-    ctx->Intermediate_Hash[1]   = 0xEFCDAB89;
-    ctx->Intermediate_Hash[2]   = 0x98BADCFE;
-    ctx->Intermediate_Hash[3]   = 0x10325476;
-    ctx->Intermediate_Hash[4]   = 0xC3D2E1F0;
+void SHA1_Init(SHA1_CTX* ctx) {
+	ctx->Length_Low             = 0;
+	ctx->Length_High            = 0;
+	ctx->Message_Block_Index    = 0;
+	ctx->Intermediate_Hash[0]   = 0x67452301;
+	ctx->Intermediate_Hash[1]   = 0xEFCDAB89;
+	ctx->Intermediate_Hash[2]   = 0x98BADCFE;
+	ctx->Intermediate_Hash[3]   = 0x10325476;
+	ctx->Intermediate_Hash[4]   = 0xC3D2E1F0;
 }
 
 /**
  * Accepts an array of octets as the next portion of the message.
  */
-void SHA1_Update(SHA1_CTX *ctx, const uint8_t *msg, int len)
-{
-    while (len--)
-    {
-        ctx->Message_Block[ctx->Message_Block_Index++] = (*msg & 0xFF);
-        ctx->Length_Low += 8;
+void SHA1_Update(SHA1_CTX* ctx, const uint8_t* msg, int len) {
+	while (len--) {
+		ctx->Message_Block[ctx->Message_Block_Index++] = (*msg & 0xFF);
+		ctx->Length_Low += 8;
 
-        if (ctx->Length_Low == 0)
-            ctx->Length_High++;
+		if (ctx->Length_Low == 0) {
+			ctx->Length_High++;
+		}
 
-        if (ctx->Message_Block_Index == 64)
-            SHA1ProcessMessageBlock(ctx);
+		if (ctx->Message_Block_Index == 64) {
+			SHA1ProcessMessageBlock(ctx);
+		}
 
-        msg++;
-    }
+		msg++;
+	}
 }
 
 /**
  * Return the 160-bit message digest into the user's array
  */
-void SHA1_Final(uint8_t *digest, SHA1_CTX *ctx)
-{
-    int i;
+void SHA1_Final(uint8_t* digest, SHA1_CTX* ctx) {
+	int i;
 
-    SHA1PadMessage(ctx);
-    memset(ctx->Message_Block, 0, 64);
-    ctx->Length_Low = 0;    /* and clear length */
-    ctx->Length_High = 0;
+	SHA1PadMessage(ctx);
+	memset(ctx->Message_Block, 0, 64);
+	ctx->Length_Low = 0;    /* and clear length */
+	ctx->Length_High = 0;
 
-    for  (i = 0; i < SHA1_SIZE; i++)
-    {
-        digest[i] = ctx->Intermediate_Hash[i>>2] >> 8 * ( 3 - ( i & 0x03 ) );
-    }
+	for (i = 0; i < SHA1_SIZE; i++) {
+		digest[i] = ctx->Intermediate_Hash[i >> 2] >> 8 * (3 - (i & 0x03));
+	}
 }
 
 /**
  * Process the next 512 bits of the message stored in the array.
  */
-static void SHA1ProcessMessageBlock(SHA1_CTX *ctx)
-{
-    const uint32_t K[] =    {       /* Constants defined in SHA-1   */
-                            0x5A827999,
-                            0x6ED9EBA1,
-                            0x8F1BBCDC,
-                            0xCA62C1D6
-                            };
-    int        t;                 /* Loop counter                */
-    uint32_t      temp;              /* Temporary word value        */
-    uint32_t      W[80];             /* Word sequence               */
-    uint32_t      A, B, C, D, E;     /* Word buffers                */
+static void SHA1ProcessMessageBlock(SHA1_CTX* ctx) {
+	const uint32_t K[] =    {       /* Constants defined in SHA-1   */
+		0x5A827999,
+		0x6ED9EBA1,
+		0x8F1BBCDC,
+		0xCA62C1D6
+	};
+	int        t;                 /* Loop counter                */
+	uint32_t      temp;              /* Temporary word value        */
+	uint32_t      W[80];             /* Word sequence               */
+	uint32_t      A, B, C, D, E;     /* Word buffers                */
 
-    /*
-     *  Initialize the first 16 words in the array W
-     */
-    for  (t = 0; t < 16; t++)
-    {
-        W[t] = ctx->Message_Block[t * 4] << 24;
-        W[t] |= ctx->Message_Block[t * 4 + 1] << 16;
-        W[t] |= ctx->Message_Block[t * 4 + 2] << 8;
-        W[t] |= ctx->Message_Block[t * 4 + 3];
-    }
+	/*
+	 *  Initialize the first 16 words in the array W
+	 */
+	for (t = 0; t < 16; t++) {
+		W[t] = ctx->Message_Block[t * 4] << 24;
+		W[t] |= ctx->Message_Block[t * 4 + 1] << 16;
+		W[t] |= ctx->Message_Block[t * 4 + 2] << 8;
+		W[t] |= ctx->Message_Block[t * 4 + 3];
+	}
 
-    for (t = 16; t < 80; t++)
-    {
-       W[t] = SHA1CircularShift(1,W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]);
-    }
+	for (t = 16; t < 80; t++) {
+		W[t] = SHA1CircularShift(1, W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16]);
+	}
 
-    A = ctx->Intermediate_Hash[0];
-    B = ctx->Intermediate_Hash[1];
-    C = ctx->Intermediate_Hash[2];
-    D = ctx->Intermediate_Hash[3];
-    E = ctx->Intermediate_Hash[4];
+	A = ctx->Intermediate_Hash[0];
+	B = ctx->Intermediate_Hash[1];
+	C = ctx->Intermediate_Hash[2];
+	D = ctx->Intermediate_Hash[3];
+	E = ctx->Intermediate_Hash[4];
 
-    for (t = 0; t < 20; t++)
-    {
-        temp =  SHA1CircularShift(5,A) +
-                ((B & C) | ((~B) & D)) + E + W[t] + K[0];
-        E = D;
-        D = C;
-        C = SHA1CircularShift(30,B);
+	for (t = 0; t < 20; t++) {
+		temp =  SHA1CircularShift(5, A) +
+				((B & C) | ((~B) & D)) + E + W[t] + K[0];
+		E = D;
+		D = C;
+		C = SHA1CircularShift(30, B);
 
-        B = A;
-        A = temp;
-    }
+		B = A;
+		A = temp;
+	}
 
-    for (t = 20; t < 40; t++)
-    {
-        temp = SHA1CircularShift(5,A) + (B ^ C ^ D) + E + W[t] + K[1];
-        E = D;
-        D = C;
-        C = SHA1CircularShift(30,B);
-        B = A;
-        A = temp;
-    }
+	for (t = 20; t < 40; t++) {
+		temp = SHA1CircularShift(5, A) + (B ^ C ^ D) + E + W[t] + K[1];
+		E = D;
+		D = C;
+		C = SHA1CircularShift(30, B);
+		B = A;
+		A = temp;
+	}
 
-    for (t = 40; t < 60; t++)
-    {
-        temp = SHA1CircularShift(5,A) +
-               ((B & C) | (B & D) | (C & D)) + E + W[t] + K[2];
-        E = D;
-        D = C;
-        C = SHA1CircularShift(30,B);
-        B = A;
-        A = temp;
-    }
+	for (t = 40; t < 60; t++) {
+		temp = SHA1CircularShift(5, A) +
+			   ((B & C) | (B & D) | (C & D)) + E + W[t] + K[2];
+		E = D;
+		D = C;
+		C = SHA1CircularShift(30, B);
+		B = A;
+		A = temp;
+	}
 
-    for (t = 60; t < 80; t++)
-    {
-        temp = SHA1CircularShift(5,A) + (B ^ C ^ D) + E + W[t] + K[3];
-        E = D;
-        D = C;
-        C = SHA1CircularShift(30,B);
-        B = A;
-        A = temp;
-    }
+	for (t = 60; t < 80; t++) {
+		temp = SHA1CircularShift(5, A) + (B ^ C ^ D) + E + W[t] + K[3];
+		E = D;
+		D = C;
+		C = SHA1CircularShift(30, B);
+		B = A;
+		A = temp;
+	}
 
-    ctx->Intermediate_Hash[0] += A;
-    ctx->Intermediate_Hash[1] += B;
-    ctx->Intermediate_Hash[2] += C;
-    ctx->Intermediate_Hash[3] += D;
-    ctx->Intermediate_Hash[4] += E;
-    ctx->Message_Block_Index = 0;
+	ctx->Intermediate_Hash[0] += A;
+	ctx->Intermediate_Hash[1] += B;
+	ctx->Intermediate_Hash[2] += C;
+	ctx->Intermediate_Hash[3] += D;
+	ctx->Intermediate_Hash[4] += E;
+	ctx->Message_Block_Index = 0;
 }
 
 /*
@@ -200,49 +190,42 @@ static void SHA1ProcessMessageBlock(SHA1_CTX *ctx)
  *
  * @param ctx [in, out] The SHA1 context
  */
-static void SHA1PadMessage(SHA1_CTX *ctx)
-{
-    /*
-     *  Check to see if the current message block is too small to hold
-     *  the initial padding bits and length.  If so, we will pad the
-     *  block, process it, and then continue padding into a second
-     *  block.
-     */
-    if (ctx->Message_Block_Index > 55)
-    {
-        ctx->Message_Block[ctx->Message_Block_Index++] = 0x80;
-        while(ctx->Message_Block_Index < 64)
-        {
-            ctx->Message_Block[ctx->Message_Block_Index++] = 0;
-        }
+static void SHA1PadMessage(SHA1_CTX* ctx) {
+	/*
+	 *  Check to see if the current message block is too small to hold
+	 *  the initial padding bits and length.  If so, we will pad the
+	 *  block, process it, and then continue padding into a second
+	 *  block.
+	 */
+	if (ctx->Message_Block_Index > 55) {
+		ctx->Message_Block[ctx->Message_Block_Index++] = 0x80;
+		while (ctx->Message_Block_Index < 64) {
+			ctx->Message_Block[ctx->Message_Block_Index++] = 0;
+		}
 
-        SHA1ProcessMessageBlock(ctx);
+		SHA1ProcessMessageBlock(ctx);
 
-        while (ctx->Message_Block_Index < 56)
-        {
-            ctx->Message_Block[ctx->Message_Block_Index++] = 0;
-        }
-    }
-    else
-    {
-        ctx->Message_Block[ctx->Message_Block_Index++] = 0x80;
-        while(ctx->Message_Block_Index < 56)
-        {
+		while (ctx->Message_Block_Index < 56) {
+			ctx->Message_Block[ctx->Message_Block_Index++] = 0;
+		}
+	} else {
+		ctx->Message_Block[ctx->Message_Block_Index++] = 0x80;
+		while (ctx->Message_Block_Index < 56) {
 
-            ctx->Message_Block[ctx->Message_Block_Index++] = 0;
-        }
-    }
+			ctx->Message_Block[ctx->Message_Block_Index++] = 0;
+		}
+	}
 
-    /*
-     *  Store the message length as the last 8 octets
-     */
-    ctx->Message_Block[56] = ctx->Length_High >> 24;
-    ctx->Message_Block[57] = ctx->Length_High >> 16;
-    ctx->Message_Block[58] = ctx->Length_High >> 8;
-    ctx->Message_Block[59] = ctx->Length_High;
-    ctx->Message_Block[60] = ctx->Length_Low >> 24;
-    ctx->Message_Block[61] = ctx->Length_Low >> 16;
-    ctx->Message_Block[62] = ctx->Length_Low >> 8;
-    ctx->Message_Block[63] = ctx->Length_Low;
-    SHA1ProcessMessageBlock(ctx);
+	/*
+	 *  Store the message length as the last 8 octets
+	 */
+	ctx->Message_Block[56] = ctx->Length_High >> 24;
+	ctx->Message_Block[57] = ctx->Length_High >> 16;
+	ctx->Message_Block[58] = ctx->Length_High >> 8;
+	ctx->Message_Block[59] = ctx->Length_High;
+	ctx->Message_Block[60] = ctx->Length_Low >> 24;
+	ctx->Message_Block[61] = ctx->Length_Low >> 16;
+	ctx->Message_Block[62] = ctx->Length_Low >> 8;
+	ctx->Message_Block[63] = ctx->Length_Low;
+	SHA1ProcessMessageBlock(ctx);
 }

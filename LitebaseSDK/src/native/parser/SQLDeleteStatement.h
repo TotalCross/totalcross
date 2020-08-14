@@ -13,15 +13,15 @@
 #include "Litebase.h"
 
 /**
- * Initializes a SQL detete statement for a given SQL. 
+ * Initializes a SQL detete statement for a given SQL.
  *
  * @param parser The parse structure with parse information concerning the SQL.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLDeleteStatement</code> structure. 
+ * @return A pointer to a <code>SQLDeleteStatement</code> structure.
  */
 SQLDeleteStatement* initSQLDeleteStatement(LitebaseParser* parser, bool isPrepared);
 
-/* 
+/*
  * Sets the value of a numeric parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -32,9 +32,10 @@ SQLDeleteStatement* initSQLDeleteStatement(LitebaseParser* parser, bool isPrepar
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @thows IllegalStateException If the parameter index is invalid.
  */
-bool setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type);
+bool setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index,
+							 VoidP value, int32 type);
 
-/* 
+/*
  * Sets the value of a string parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -46,7 +47,8 @@ bool setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, in
  * @thows IllegalStateException If the parameter index is invalid.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool setParamValueStringDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, JCharP value, int32 length);
+bool setParamValueStringDel(Context context, SQLDeleteStatement* deleteStmt, int32 index,
+							JCharP value, int32 length);
 
 /**
  * Clears all parameter values of a prepared statement delete.

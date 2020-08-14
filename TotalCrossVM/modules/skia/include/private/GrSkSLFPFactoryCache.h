@@ -21,17 +21,17 @@ class GrSkSLFPFactory;
 // onGetGLSLProcessorKey.
 class GrSkSLFPFactoryCache : public SkNVRefCnt<GrSkSLFPFactoryCache> {
 public:
-    // Returns a factory by its numeric index, or null if no such factory exists. Indices are
-    // allocated by GrSkSLFP::NewIndex().
-    sk_sp<GrSkSLFPFactory> get(int index);
+	// Returns a factory by its numeric index, or null if no such factory exists. Indices are
+	// allocated by GrSkSLFP::NewIndex().
+	sk_sp<GrSkSLFPFactory> get(int index);
 
-    // Stores a new factory with the given index.
-    void set(int index, sk_sp<GrSkSLFPFactory> factory);
+	// Stores a new factory with the given index.
+	void set(int index, sk_sp<GrSkSLFPFactory> factory);
 
-    ~GrSkSLFPFactoryCache();
+	~GrSkSLFPFactoryCache();
 
 private:
-    std::vector<GrSkSLFPFactory*> fFactories;
+	std::vector<GrSkSLFPFactory*> fFactories;
 };
 
 #endif

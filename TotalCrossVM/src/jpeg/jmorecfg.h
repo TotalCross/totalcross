@@ -60,84 +60,84 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
-/* JSAMPLE should be the smallest type that will hold the values 0..255.
- * You can use a signed char by having GETJSAMPLE mask it with 0xFF.
- */
+	/* JSAMPLE should be the smallest type that will hold the values 0..255.
+	* You can use a signed char by having GETJSAMPLE mask it with 0xFF.
+	*/
 
-#ifdef HAVE_UNSIGNED_CHAR
+	#ifdef HAVE_UNSIGNED_CHAR
 
-typedef unsigned char JSAMPLE;
-#define GETJSAMPLE(value)  ((int) (value))
+		typedef unsigned char JSAMPLE;
+		#define GETJSAMPLE(value)  ((int) (value))
 
-#else /* not HAVE_UNSIGNED_CHAR */
+	#else /* not HAVE_UNSIGNED_CHAR */
 
-typedef char JSAMPLE;
-#ifdef CHAR_IS_UNSIGNED
-#define GETJSAMPLE(value)  ((int) (value))
-#else
-#define GETJSAMPLE(value)  ((int) (value) & 0xFF)
-#endif /* CHAR_IS_UNSIGNED */
+		typedef char JSAMPLE;
+		#ifdef CHAR_IS_UNSIGNED
+			#define GETJSAMPLE(value)  ((int) (value))
+		#else
+			#define GETJSAMPLE(value)  ((int) (value) & 0xFF)
+		#endif /* CHAR_IS_UNSIGNED */
 
-#endif /* HAVE_UNSIGNED_CHAR */
+	#endif /* HAVE_UNSIGNED_CHAR */
 
-#define MAXJSAMPLE	255
-#define CENTERJSAMPLE	128
+	#define MAXJSAMPLE	255
+	#define CENTERJSAMPLE	128
 
 #endif /* BITS_IN_JSAMPLE == 8 */
 
 
 #if BITS_IN_JSAMPLE == 9
-/* JSAMPLE should be the smallest type that will hold the values 0..511.
- * On nearly all machines "short" will do nicely.
- */
+	/* JSAMPLE should be the smallest type that will hold the values 0..511.
+	* On nearly all machines "short" will do nicely.
+	*/
 
-typedef short JSAMPLE;
-#define GETJSAMPLE(value)  ((int) (value))
+	typedef short JSAMPLE;
+	#define GETJSAMPLE(value)  ((int) (value))
 
-#define MAXJSAMPLE	511
-#define CENTERJSAMPLE	256
+	#define MAXJSAMPLE	511
+	#define CENTERJSAMPLE	256
 
 #endif /* BITS_IN_JSAMPLE == 9 */
 
 
 #if BITS_IN_JSAMPLE == 10
-/* JSAMPLE should be the smallest type that will hold the values 0..1023.
- * On nearly all machines "short" will do nicely.
- */
+	/* JSAMPLE should be the smallest type that will hold the values 0..1023.
+	* On nearly all machines "short" will do nicely.
+	*/
 
-typedef short JSAMPLE;
-#define GETJSAMPLE(value)  ((int) (value))
+	typedef short JSAMPLE;
+	#define GETJSAMPLE(value)  ((int) (value))
 
-#define MAXJSAMPLE	1023
-#define CENTERJSAMPLE	512
+	#define MAXJSAMPLE	1023
+	#define CENTERJSAMPLE	512
 
 #endif /* BITS_IN_JSAMPLE == 10 */
 
 
 #if BITS_IN_JSAMPLE == 11
-/* JSAMPLE should be the smallest type that will hold the values 0..2047.
- * On nearly all machines "short" will do nicely.
- */
+	/* JSAMPLE should be the smallest type that will hold the values 0..2047.
+	* On nearly all machines "short" will do nicely.
+	*/
 
-typedef short JSAMPLE;
-#define GETJSAMPLE(value)  ((int) (value))
+	typedef short JSAMPLE;
+	#define GETJSAMPLE(value)  ((int) (value))
 
-#define MAXJSAMPLE	2047
-#define CENTERJSAMPLE	1024
+	#define MAXJSAMPLE	2047
+	#define CENTERJSAMPLE	1024
 
 #endif /* BITS_IN_JSAMPLE == 11 */
 
 
 #if BITS_IN_JSAMPLE == 12
-/* JSAMPLE should be the smallest type that will hold the values 0..4095.
- * On nearly all machines "short" will do nicely.
- */
+	/* JSAMPLE should be the smallest type that will hold the values 0..4095.
+	* On nearly all machines "short" will do nicely.
+	*/
 
-typedef short JSAMPLE;
-#define GETJSAMPLE(value)  ((int) (value))
+	typedef short JSAMPLE;
+	#define GETJSAMPLE(value)  ((int) (value))
 
-#define MAXJSAMPLE	4095
-#define CENTERJSAMPLE	2048
+	#define MAXJSAMPLE	4095
+	#define CENTERJSAMPLE	2048
 
 #endif /* BITS_IN_JSAMPLE == 12 */
 
@@ -159,17 +159,17 @@ typedef short JCOEF;
 
 #ifdef HAVE_UNSIGNED_CHAR
 
-typedef unsigned char JOCTET;
-#define GETJOCTET(value)  (value)
+	typedef unsigned char JOCTET;
+	#define GETJOCTET(value)  (value)
 
 #else /* not HAVE_UNSIGNED_CHAR */
 
-typedef char JOCTET;
-#ifdef CHAR_IS_UNSIGNED
-#define GETJOCTET(value)  (value)
-#else
-#define GETJOCTET(value)  ((value) & 0xFF)
-#endif /* CHAR_IS_UNSIGNED */
+	typedef char JOCTET;
+	#ifdef CHAR_IS_UNSIGNED
+		#define GETJOCTET(value)  (value)
+	#else
+		#define GETJOCTET(value)  ((value) & 0xFF)
+	#endif /* CHAR_IS_UNSIGNED */
 
 #endif /* HAVE_UNSIGNED_CHAR */
 
@@ -184,39 +184,39 @@ typedef char JOCTET;
 /* UINT8 must hold at least the values 0..255. */
 
 #ifdef HAVE_UNSIGNED_CHAR
-typedef unsigned char UINT8;
+	typedef unsigned char UINT8;
 #else /* not HAVE_UNSIGNED_CHAR */
-#ifdef CHAR_IS_UNSIGNED
-typedef char UINT8;
-#else /* not CHAR_IS_UNSIGNED */
-typedef short UINT8;
-#endif /* CHAR_IS_UNSIGNED */
+	#ifdef CHAR_IS_UNSIGNED
+		typedef char UINT8;
+	#else /* not CHAR_IS_UNSIGNED */
+		typedef short UINT8;
+	#endif /* CHAR_IS_UNSIGNED */
 #endif /* HAVE_UNSIGNED_CHAR */
 
 /* UINT16 must hold at least the values 0..65535. */
 
 #ifdef HAVE_UNSIGNED_SHORT
-typedef unsigned short UINT16;
+	typedef unsigned short UINT16;
 #else /* not HAVE_UNSIGNED_SHORT */
-typedef unsigned int UINT16;
+	typedef unsigned int UINT16;
 #endif /* HAVE_UNSIGNED_SHORT */
 
 /* INT16 must hold at least the values -32768..32767. */
 
 #ifndef XMD_H			/* X11/xmd.h correctly defines INT16 */
-typedef short INT16;
+	typedef short INT16;
 #endif
 
 /* INT32 must hold at least signed 32-bit values. */
 
 #ifndef XMD_H			/* X11/xmd.h correctly defines INT32 */
-#ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
-#ifndef _BASETSD_H		/* MinGW is slightly different */
-#ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
-typedef long INT32;
-#endif
-#endif
-#endif
+	#ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
+		#ifndef _BASETSD_H		/* MinGW is slightly different */
+			#ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
+				typedef long INT32;
+			#endif
+		#endif
+	#endif
 #endif
 
 /* Datatype used for image dimensions.  The JPEG standard only supports
@@ -255,9 +255,9 @@ typedef unsigned int JDIMENSION;
  */
 
 #ifdef HAVE_PROTOTYPES
-#define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
+	#define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
 #else
-#define JMETHOD(type,methodname,arglist)  type (*methodname) ()
+	#define JMETHOD(type,methodname,arglist)  type (*methodname) ()
 #endif
 
 
@@ -277,7 +277,7 @@ typedef unsigned int JDIMENSION;
  */
 
 #ifndef HAVE_NORETURN_T
-typedef void noreturn_t;
+	typedef void noreturn_t;
 #endif
 
 
@@ -288,11 +288,11 @@ typedef void noreturn_t;
  */
 
 #ifndef FAR
-#ifdef NEED_FAR_POINTERS
-#define FAR  far
-#else
-#define FAR
-#endif
+	#ifdef NEED_FAR_POINTERS
+		#define FAR  far
+	#else
+		#define FAR
+	#endif
 #endif
 
 
@@ -308,10 +308,10 @@ typedef void noreturn_t;
 /* Qt3 defines FALSE and TRUE as "const" variables in qglobal.h */
 typedef int boolean;
 #ifndef FALSE			/* in case these macros already exist */
-#define FALSE	0		/* values of boolean */
+	#define FALSE	0		/* values of boolean */
 #endif
 #ifndef TRUE
-#define TRUE	1
+	#define TRUE	1
 #endif
 #else
 typedef enum { FALSE = 0, TRUE = 1 } boolean;
@@ -327,120 +327,120 @@ typedef enum { FALSE = 0, TRUE = 1 } boolean;
  */
 
 #ifdef JPEG_INTERNALS
-#define JPEG_INTERNAL_OPTIONS
+	#define JPEG_INTERNAL_OPTIONS
 #endif
 
 #ifdef JPEG_INTERNAL_OPTIONS
 
 
-/*
- * These defines indicate whether to include various optional functions.
- * Undefining some of these symbols will produce a smaller but less capable
- * library.  Note that you can leave certain source files out of the
- * compilation/linking process if you've #undef'd the corresponding symbols.
- * (You may HAVE to do that if your compiler doesn't like null source files.)
- */
+	/*
+	* These defines indicate whether to include various optional functions.
+	* Undefining some of these symbols will produce a smaller but less capable
+	* library.  Note that you can leave certain source files out of the
+	* compilation/linking process if you've #undef'd the corresponding symbols.
+	* (You may HAVE to do that if your compiler doesn't like null source files.)
+	*/
 
-/* Capability options common to encoder and decoder: */
+	/* Capability options common to encoder and decoder: */
 
-#define DCT_ISLOW_SUPPORTED	/* slow but accurate integer algorithm */
-#define DCT_IFAST_SUPPORTED	/* faster, less accurate integer method */
-#define DCT_FLOAT_SUPPORTED	/* floating-point: accurate, fast on fast HW */
+	#define DCT_ISLOW_SUPPORTED	/* slow but accurate integer algorithm */
+	#define DCT_IFAST_SUPPORTED	/* faster, less accurate integer method */
+	#define DCT_FLOAT_SUPPORTED	/* floating-point: accurate, fast on fast HW */
 
-/* Encoder capability options: */
+	/* Encoder capability options: */
 
-#define C_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
-#define C_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
-#define C_PROGRESSIVE_SUPPORTED	    /* Progressive JPEG? (Requires MULTISCAN)*/
-#define DCT_SCALING_SUPPORTED	    /* Input rescaling via DCT? (Requires DCT_ISLOW)*/
-#define ENTROPY_OPT_SUPPORTED	    /* Optimization of entropy coding parms? */
-/* Note: if you selected more than 8-bit data precision, it is dangerous to
- * turn off ENTROPY_OPT_SUPPORTED.  The standard Huffman tables are only
- * good for 8-bit precision, so arithmetic coding is recommended for higher
- * precision.  The Huffman encoder normally uses entropy optimization to
- * compute usable tables for higher precision.  Otherwise, you'll have to
- * supply different default Huffman tables.
- * The exact same statements apply for progressive JPEG: the default tables
- * don't work for progressive mode.  (This may get fixed, however.)
- */
-#define INPUT_SMOOTHING_SUPPORTED   /* Input image smoothing option? */
+	#define C_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
+	#define C_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
+	#define C_PROGRESSIVE_SUPPORTED	    /* Progressive JPEG? (Requires MULTISCAN)*/
+	#define DCT_SCALING_SUPPORTED	    /* Input rescaling via DCT? (Requires DCT_ISLOW)*/
+	#define ENTROPY_OPT_SUPPORTED	    /* Optimization of entropy coding parms? */
+	/* Note: if you selected more than 8-bit data precision, it is dangerous to
+	* turn off ENTROPY_OPT_SUPPORTED.  The standard Huffman tables are only
+	* good for 8-bit precision, so arithmetic coding is recommended for higher
+	* precision.  The Huffman encoder normally uses entropy optimization to
+	* compute usable tables for higher precision.  Otherwise, you'll have to
+	* supply different default Huffman tables.
+	* The exact same statements apply for progressive JPEG: the default tables
+	* don't work for progressive mode.  (This may get fixed, however.)
+	*/
+	#define INPUT_SMOOTHING_SUPPORTED   /* Input image smoothing option? */
 
-/* Decoder capability options: */
+	/* Decoder capability options: */
 
-#define D_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
-#define D_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
-#define D_PROGRESSIVE_SUPPORTED	    /* Progressive JPEG? (Requires MULTISCAN)*/
-#define IDCT_SCALING_SUPPORTED	    /* Output rescaling via IDCT? (Requires DCT_ISLOW)*/
-#define SAVE_MARKERS_SUPPORTED	    /* jpeg_save_markers() needed? */
-#define BLOCK_SMOOTHING_SUPPORTED   /* Block smoothing? (Progressive only) */
-#undef  UPSAMPLE_SCALING_SUPPORTED  /* Output rescaling at upsample stage? */
-#define UPSAMPLE_MERGING_SUPPORTED  /* Fast path for sloppy upsampling? */
-#define QUANT_1PASS_SUPPORTED	    /* 1-pass color quantization? */
-#define QUANT_2PASS_SUPPORTED	    /* 2-pass color quantization? */
+	#define D_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
+	#define D_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
+	#define D_PROGRESSIVE_SUPPORTED	    /* Progressive JPEG? (Requires MULTISCAN)*/
+	#define IDCT_SCALING_SUPPORTED	    /* Output rescaling via IDCT? (Requires DCT_ISLOW)*/
+	#define SAVE_MARKERS_SUPPORTED	    /* jpeg_save_markers() needed? */
+	#define BLOCK_SMOOTHING_SUPPORTED   /* Block smoothing? (Progressive only) */
+	#undef  UPSAMPLE_SCALING_SUPPORTED  /* Output rescaling at upsample stage? */
+	#define UPSAMPLE_MERGING_SUPPORTED  /* Fast path for sloppy upsampling? */
+	#define QUANT_1PASS_SUPPORTED	    /* 1-pass color quantization? */
+	#define QUANT_2PASS_SUPPORTED	    /* 2-pass color quantization? */
 
-/* more capability options later, no doubt */
-
-
-/*
- * Ordering of RGB data in scanlines passed to or from the application.
- * If your application wants to deal with data in the order B,G,R, just
- * change these macros.  You can also deal with formats such as R,G,B,X
- * (one extra byte per pixel) by changing RGB_PIXELSIZE.  Note that changing
- * the offsets will also change the order in which colormap data is organized.
- * RESTRICTIONS:
- * 1. The sample applications cjpeg,djpeg do NOT support modified RGB formats.
- * 2. The color quantizer modules will not behave desirably if RGB_PIXELSIZE
- *    is not 3 (they don't understand about dummy color components!).  So you
- *    can't use color quantization if you change that value.
- */
-
-#define RGB_RED		0	/* Offset of Red in an RGB scanline element */
-#define RGB_GREEN	1	/* Offset of Green */
-#define RGB_BLUE	2	/* Offset of Blue */
-#define RGB_PIXELSIZE	3	/* JSAMPLEs per RGB scanline element */
+	/* more capability options later, no doubt */
 
 
-/* Definitions for speed-related optimizations. */
+	/*
+	* Ordering of RGB data in scanlines passed to or from the application.
+	* If your application wants to deal with data in the order B,G,R, just
+	* change these macros.  You can also deal with formats such as R,G,B,X
+	* (one extra byte per pixel) by changing RGB_PIXELSIZE.  Note that changing
+	* the offsets will also change the order in which colormap data is organized.
+	* RESTRICTIONS:
+	* 1. The sample applications cjpeg,djpeg do NOT support modified RGB formats.
+	* 2. The color quantizer modules will not behave desirably if RGB_PIXELSIZE
+	*    is not 3 (they don't understand about dummy color components!).  So you
+	*    can't use color quantization if you change that value.
+	*/
+
+	#define RGB_RED		0	/* Offset of Red in an RGB scanline element */
+	#define RGB_GREEN	1	/* Offset of Green */
+	#define RGB_BLUE	2	/* Offset of Blue */
+	#define RGB_PIXELSIZE	3	/* JSAMPLEs per RGB scanline element */
 
 
-/* If your compiler supports inline functions, define INLINE
- * as the inline keyword; otherwise define it as empty.
- */
-
-#ifndef INLINE
-#ifdef __GNUC__			/* for instance, GNU C knows about inline */
-#define INLINE __inline__
-#endif
-#ifndef INLINE
-#define INLINE			/* default is to define it as empty */
-#endif
-#endif
+	/* Definitions for speed-related optimizations. */
 
 
-/* On some machines (notably 68000 series) "int" is 32 bits, but multiplying
- * two 16-bit shorts is faster than multiplying two ints.  Define MULTIPLIER
- * as short on such a machine.  MULTIPLIER must be at least 16 bits wide.
- */
+	/* If your compiler supports inline functions, define INLINE
+	* as the inline keyword; otherwise define it as empty.
+	*/
 
-#ifndef MULTIPLIER
-#define MULTIPLIER  int		/* type for fastest integer multiply */
-#endif
+	#ifndef INLINE
+		#ifdef __GNUC__			/* for instance, GNU C knows about inline */
+			#define INLINE __inline__
+		#endif
+		#ifndef INLINE
+			#define INLINE			/* default is to define it as empty */
+		#endif
+	#endif
 
 
-/* FAST_FLOAT should be either float or double, whichever is done faster
- * by your compiler.  (Note that this type is only used in the floating point
- * DCT routines, so it only matters if you've defined DCT_FLOAT_SUPPORTED.)
- * Typically, float is faster in ANSI C compilers, while double is faster in
- * pre-ANSI compilers (because they insist on converting to double anyway).
- * The code below therefore chooses float if we have ANSI-style prototypes.
- */
+	/* On some machines (notably 68000 series) "int" is 32 bits, but multiplying
+	* two 16-bit shorts is faster than multiplying two ints.  Define MULTIPLIER
+	* as short on such a machine.  MULTIPLIER must be at least 16 bits wide.
+	*/
 
-#ifndef FAST_FLOAT
-#ifdef HAVE_PROTOTYPES
-#define FAST_FLOAT  float
-#else
-#define FAST_FLOAT  double
-#endif
-#endif
+	#ifndef MULTIPLIER
+		#define MULTIPLIER  int		/* type for fastest integer multiply */
+	#endif
+
+
+	/* FAST_FLOAT should be either float or double, whichever is done faster
+	* by your compiler.  (Note that this type is only used in the floating point
+	* DCT routines, so it only matters if you've defined DCT_FLOAT_SUPPORTED.)
+	* Typically, float is faster in ANSI C compilers, while double is faster in
+	* pre-ANSI compilers (because they insist on converting to double anyway).
+	* The code below therefore chooses float if we have ANSI-style prototypes.
+	*/
+
+	#ifndef FAST_FLOAT
+		#ifdef HAVE_PROTOTYPES
+			#define FAST_FLOAT  float
+		#else
+			#define FAST_FLOAT  double
+		#endif
+	#endif
 
 #endif /* JPEG_INTERNAL_OPTIONS */

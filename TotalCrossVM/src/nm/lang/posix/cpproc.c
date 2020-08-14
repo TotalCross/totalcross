@@ -45,97 +45,95 @@ exception statement from your version. */
 #include <errno.h>
 #include <stdlib.h>
 
-static void close_all_fds(int *fds, int numFds)
-{
-  int i;
+static void close_all_fds(int* fds, int numFds) {
+	int i;
 
-  for (i = 0; i < numFds; i++)
-    close(fds[i]);
-}
-
-int cpproc_forkAndExec (char * const *commandLine, char * const * newEnviron,
-			int *fds, int pipe_count, pid_t *out_pid, const char *wd)
-{
-  int local_fds[6];
-  int i;
-  pid_t pid;
-
-  for (i = 0; i < (pipe_count * 2); i += 2)
-    {
-      if (pipe(&local_fds[i]) < 0)
-	{
-	  int err = errno;
-
-	  close_all_fds(local_fds, i);
-	  
-	  return err;
+	for (i = 0; i < numFds; i++) {
+		close(fds[i]);
 	}
-    }
-  
-  pid = fork();
-  
-  switch (pid)
-    {
-    case 0:
-      dup2(local_fds[0], 0);
-      dup2(local_fds[3], 1);
-      if (pipe_count == 3)
-	dup2(local_fds[5], 2);
-      else
-	dup2(1, 2);
-
-      close_all_fds(local_fds, pipe_count * 2);
-
-      i = chdir(wd);
-      /* FIXME: Handle the return value */
-      if (newEnviron == NULL)
-	execvp(commandLine[0], commandLine);
-      else
-	execve(commandLine[0], commandLine, newEnviron);
-      
-      abort();
-      
-      break;
-    case -1:
-      {
-	int err = errno;
-	
-	close_all_fds(local_fds, pipe_count * 2);
-	return err;
-      }
-    default: 
-      close(local_fds[0]);
-      close(local_fds[3]);
-      if (pipe_count == 3)
-	close(local_fds[5]);
-
-      fds[0] = local_fds[1];
-      fds[1] = local_fds[2];
-      fds[2] = local_fds[4];
-      *out_pid = pid;
-      return 0;
-    }
-
-  /* keep compiler happy */
-
-  return 0;
 }
 
-int cpproc_waitpid (pid_t pid, int *status, pid_t *outpid, int options)
-{
-  pid_t wp = waitpid(pid, status, options);
+int cpproc_forkAndExec(char* const* commandLine, char* const* newEnviron,
+					   int* fds, int pipe_count, pid_t* out_pid, const char* wd) {
+	int local_fds[6];
+	int i;
+	pid_t pid;
 
-  if (wp < 0)
-    return errno;
+	for (i = 0; i < (pipe_count * 2); i += 2) {
+		if (pipe(&local_fds[i]) < 0) {
+			int err = errno;
 
-  *outpid = wp;
-  return 0;
+			close_all_fds(local_fds, i);
+
+			return err;
+		}
+	}
+
+	pid = fork();
+
+	switch (pid) {
+		case 0:
+			dup2(local_fds[0], 0);
+			dup2(local_fds[3], 1);
+			if (pipe_count == 3) {
+				dup2(local_fds[5], 2);
+			} else {
+				dup2(1, 2);
+			}
+
+			close_all_fds(local_fds, pipe_count * 2);
+
+			i = chdir(wd);
+			/* FIXME: Handle the return value */
+			if (newEnviron == NULL) {
+				execvp(commandLine[0], commandLine);
+			} else {
+				execve(commandLine[0], commandLine, newEnviron);
+			}
+
+			abort();
+
+			break;
+		case -1: {
+			int err = errno;
+
+			close_all_fds(local_fds, pipe_count * 2);
+			return err;
+		}
+		default:
+			close(local_fds[0]);
+			close(local_fds[3]);
+			if (pipe_count == 3) {
+				close(local_fds[5]);
+			}
+
+			fds[0] = local_fds[1];
+			fds[1] = local_fds[2];
+			fds[2] = local_fds[4];
+			*out_pid = pid;
+			return 0;
+	}
+
+	/* keep compiler happy */
+
+	return 0;
 }
 
-int cpproc_kill (pid_t pid, int signal)
-{
-  if (kill(pid, signal) < 0)
-    return errno;
+int cpproc_waitpid(pid_t pid, int* status, pid_t* outpid, int options) {
+	pid_t wp = waitpid(pid, status, options);
 
-  return 0;
+	if (wp < 0) {
+		return errno;
+	}
+
+	*outpid = wp;
+	return 0;
+}
+
+int cpproc_kill(pid_t pid, int signal) {
+	if (kill(pid, signal) < 0) {
+		return errno;
+	}
+
+	return 0;
 }

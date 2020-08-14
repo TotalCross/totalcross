@@ -13,7 +13,7 @@
 #include "gl/GrGLTypes.h"
 
 #ifdef SK_VULKAN
-#include "vk/GrVkTypes.h"
+	#include "vk/GrVkTypes.h"
 #endif
 
 /**
@@ -21,51 +21,53 @@
  */
 class GrBackendSemaphore {
 public:
-    // For convenience we just set the backend here to OpenGL. The GrBackendSemaphore cannot be used
-    // until either initGL or initVulkan are called which will set the appropriate GrBackend.
-    GrBackendSemaphore() : fBackend(kOpenGL_GrBackend), fGLSync(0), fIsInitialized(false) {}
+	// For convenience we just set the backend here to OpenGL. The GrBackendSemaphore cannot be used
+	// until either initGL or initVulkan are called which will set the appropriate GrBackend.
+	GrBackendSemaphore() : fBackend(kOpenGL_GrBackend), fGLSync(0), fIsInitialized(false) {}
 
-    void initGL(GrGLsync sync) {
-        fBackend = kOpenGL_GrBackend;
-        fGLSync = sync;
-        fIsInitialized = true;
-    }
+	void initGL(GrGLsync sync) {
+		fBackend = kOpenGL_GrBackend;
+		fGLSync = sync;
+		fIsInitialized = true;
+	}
 
 #ifdef SK_VULKAN
-    void initVulkan(VkSemaphore semaphore) {
-        fBackend = kVulkan_GrBackend;
-        fVkSemaphore = semaphore;
-        fIsInitialized = true;
-    }
+	void initVulkan(VkSemaphore semaphore) {
+		fBackend = kVulkan_GrBackend;
+		fVkSemaphore = semaphore;
+		fIsInitialized = true;
+	}
 #endif
 
-    bool isInitialized() const { return fIsInitialized; }
+	bool isInitialized() const {
+		return fIsInitialized;
+	}
 
-    GrGLsync glSync() const {
-        if (!fIsInitialized || kOpenGL_GrBackend != fBackend) {
-            return 0;
-        }
-        return fGLSync;
-    }
+	GrGLsync glSync() const {
+		if (!fIsInitialized || kOpenGL_GrBackend != fBackend) {
+			return 0;
+		}
+		return fGLSync;
+	}
 
 #ifdef SK_VULKAN
-    VkSemaphore vkSemaphore() const {
-        if (!fIsInitialized || kVulkan_GrBackend != fBackend) {
-            return VK_NULL_HANDLE;
-        }
-        return fVkSemaphore;
-    }
+	VkSemaphore vkSemaphore() const {
+		if (!fIsInitialized || kVulkan_GrBackend != fBackend) {
+			return VK_NULL_HANDLE;
+		}
+		return fVkSemaphore;
+	}
 #endif
 
 private:
-    GrBackend fBackend;
-    union {
-        GrGLsync    fGLSync;
+	GrBackend fBackend;
+	union {
+		GrGLsync    fGLSync;
 #ifdef SK_VULKAN
-        VkSemaphore fVkSemaphore;
+		VkSemaphore fVkSemaphore;
 #endif
-    };
-    bool fIsInitialized;
+	};
+	bool fIsInitialized;
 };
 
 #endif

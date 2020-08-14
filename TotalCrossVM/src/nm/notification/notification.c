@@ -8,19 +8,19 @@
 #include "tcvm.h"
 
 #if defined(ANDROID)
-#include "android/notification_c.h"
+	#include "android/notification_c.h"
 #elif defined (darwin)
-Err NmNotify(TCObject title, TCObject text);
+	Err NmNotify(TCObject title, TCObject text);
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnNM_notify_n(NMParams p) // totalcross/notification/NotificationManager public void notify(Notification notification);
-{
-   TCObject notificationManagerObj = p->obj[0];
-   TCObject notificationObj = p->obj[1];
-   TCObject titleObj = Notification_title(notificationObj);
-   TCObject textObj = Notification_text(notificationObj);
-   
+TC_API void tnNM_notify_n(NMParams
+						  p) { // totalcross/notification/NotificationManager public void notify(Notification notification);
+	TCObject notificationManagerObj = p->obj[0];
+	TCObject notificationObj = p->obj[1];
+	TCObject titleObj = Notification_title(notificationObj);
+	TCObject textObj = Notification_text(notificationObj);
+
 #if defined (ANDROID) || defined (darwin)
 	NmNotify(titleObj, textObj);
 #endif

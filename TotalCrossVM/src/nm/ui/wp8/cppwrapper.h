@@ -13,19 +13,18 @@
 extern "C" {
 #endif
 
-struct eventQueueMember 
-{
+struct eventQueueMember {
 	int type;
 	int key;
 	int x;
 	int y;
 	int modifiers;
-   int count;
+	int count;
 };
 
-char *GetAppPathWP8();
-char *GetVmPathWP8();
-char *GetDisplayNameWP8();
+char* GetAppPathWP8();
+char* GetVmPathWP8();
+char* GetDisplayNameWP8();
 
 // WP8 keyboard functions
 void windowSetSIP(enum TCSIP kb);
@@ -69,15 +68,19 @@ int eventQueueEmpty(void);
 
 void dxGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch);
 void dxUpdateScreen();
-void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int32 color, bool fill);
+void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx,
+				 int32 ty, int32 color, bool fill);
 void dxDrawLine(int x1, int y1, int x2, int y2, int color);
 void dxFillRect(int x1, int y1, int x2, int y2, int color);
 void dxDrawPixelColors(int32* x, int32* y, PixelConv* colors, int32 n);
-void dxDrawPixels(float *glXYA, int count, int color);
-bool dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+void dxDrawPixels(float* glXYA, int count, int color);
+bool dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel* pixels,
+				   int32 width, int32 height, bool onlyAlpha);
 void dxDeleteTexture(TCObject img, int32* textureId);
-void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
-void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY,
+				   int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
+void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2,
+					  bool horiz);
 int32 dxGetSipHeight();
 int32 dxGetScreenSize();
 void dxprivateScreenChange();
@@ -93,7 +96,7 @@ bool privateWindowGetSIP();
 void appExit();
 void appSetFullScreen();
 
-// Settings                   
+// Settings
 bool isVirtualKeyboard();
 int getOSVersion();
 double getDpiX();

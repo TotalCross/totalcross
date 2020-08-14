@@ -4,17 +4,17 @@
 
 #ifdef LIB_INTERNAL
 
-#define ZBCRLIB
+	#define ZBCRLIB
 #else
-      #ifdef __cplusplus
-          #define ZBCRLIB extern "C"	
-      #else
-          #define ZBCRLIB extern
-      #endif 
+	#ifdef __cplusplus
+		#define ZBCRLIB extern "C"
+	#else
+		#define ZBCRLIB extern
+	#endif
 
 #endif
 
-#define   WM_BCR_NOTIFY  (WM_APP + 180) 
+#define   WM_BCR_NOTIFY  (WM_APP + 180)
 
 #define   BCR_NOTIFY_NO_EVENT           0xBC00
 

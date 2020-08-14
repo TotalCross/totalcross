@@ -6,7 +6,7 @@
 #ifndef ERRORMSG_H
 #define ERRORMSG_H
 
-typedef CharP (*getErrorMessageFunc)(int32 errorCode, CharP buffer, uint32 size);
+typedef CharP(*getErrorMessageFunc)(int32 errorCode, CharP buffer, uint32 size);
 
 TC_API CharP getErrorMessage(int32 errorCode, CharP buffer, uint32 size);
 

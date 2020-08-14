@@ -13,24 +13,24 @@
 @synthesize startingPacketNumber;
 @synthesize notificationDelegate;
 
-- (void) incrementStartingPacketNumberBy: (UInt32) inNumPackets {
+- (void) incrementStartingPacketNumberBy: (UInt32)inNumPackets {
 
 	startingPacketNumber += inNumPackets;
 }
 
 
-- (void) setNotificationDelegate: (id) inDelegate {
+- (void) setNotificationDelegate: (id)inDelegate {
 
-    notificationDelegate = inDelegate;
+	notificationDelegate = inDelegate;
 }
 
 - (BOOL) isRunning {
 
 	UInt32		isRunning;
-	UInt32		propertySize = sizeof (UInt32);
+	UInt32		propertySize = sizeof(UInt32);
 	OSStatus	result;
 
-	 result =	AudioQueueGetProperty (
+	result =	AudioQueueGetProperty(
 					queueObject,
 					kAudioQueueProperty_IsRunning,
 					&isRunning,
@@ -50,26 +50,27 @@
 - (void) enableLevelMetering {
 
 	// allocate the memory needed to store audio level information
-	self.audioLevels = (AudioQueueLevelMeterState *) calloc (sizeof (AudioQueueLevelMeterState), audioFormat.mChannelsPerFrame);
+	self.audioLevels = (AudioQueueLevelMeterState*) calloc(sizeof(AudioQueueLevelMeterState),
+					   audioFormat.mChannelsPerFrame);
 
 	UInt32 trueValue = true;
 
-	AudioQueueSetProperty (
+	AudioQueueSetProperty(
 		self.queueObject,
 		kAudioQueueProperty_EnableLevelMetering,
 		&trueValue,
-		sizeof (UInt32)
+		sizeof(UInt32)
 	);
 }
 
 
 // gets audio levels from the audio queue object, to
 // display using the bar graph in the application UI
-- (void) getAudioLevels: (Float32 *) levels peakLevels: (Float32 *) peakLevels {
+- (void) getAudioLevels: (Float32*)levels peakLevels: (Float32*)peakLevels {
 
-	UInt32 propertySize = audioFormat.mChannelsPerFrame * sizeof (AudioQueueLevelMeterState);
+	UInt32 propertySize = audioFormat.mChannelsPerFrame * sizeof(AudioQueueLevelMeterState);
 
-	AudioQueueGetProperty (
+	AudioQueueGetProperty(
 		self.queueObject,
 		(AudioQueuePropertyID) kAudioQueueProperty_CurrentLevelMeter,
 		self.audioLevels,

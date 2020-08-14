@@ -5,13 +5,13 @@
 #include "crypto.h"
 
 #if defined(OPENSSL)
-#include <openssl/md2.h>
-#include <openssl/opensslv.h>
-#include <openssl/crypto.h>
-#include <openssl/fips.h>
-#include <openssl/err.h>
+	#include <openssl/md2.h>
+	#include <openssl/opensslv.h>
+	#include <openssl/crypto.h>
+	#include <openssl/fips.h>
+	#include <openssl/err.h>
 
-const char MD2_version[]="MD2" OPENSSL_VERSION_PTEXT;
+	const char MD2_version[] = "MD2" OPENSSL_VERSION_PTEXT;
 #endif
 
 /* Implemented from RFC1319 The MD2 Message-Digest Algorithm
@@ -19,10 +19,10 @@ const char MD2_version[]="MD2" OPENSSL_VERSION_PTEXT;
 
 #define UCHAR	unsigned char
 
-static void md2_block(MD2_CTX *c, const unsigned char *d);
+static void md2_block(MD2_CTX* c, const unsigned char* d);
 /* The magic S table - I have converted it to hex since it is
  * basically just a random byte string. */
-static MD2_INT S[256]={
+static MD2_INT S[256] = {
 	0x29, 0x2E, 0x43, 0xC9, 0xA2, 0xD8, 0x7C, 0x01,
 	0x3D, 0x36, 0x54, 0xA1, 0xEC, 0xF0, 0x06, 0x13,
 	0x62, 0xA7, 0x05, 0xF3, 0xC0, 0xC7, 0x73, 0x8C,
@@ -55,147 +55,141 @@ static MD2_INT S[256]={
 	0xA6, 0x77, 0x72, 0xF8, 0xEB, 0x75, 0x4B, 0x0A,
 	0x31, 0x44, 0x50, 0xB4, 0x8F, 0xED, 0x1F, 0x1A,
 	0xDB, 0x99, 0x8D, 0x33, 0x9F, 0x11, 0x83, 0x14,
-	};
+};
 
 
 #if defined(OPENSSL)
-const char *MD2_options(void)
-	{
-	if (sizeof(MD2_INT) == 1)
-		return("md2(char)");
-	else
-		return("md2(int)");
+const char* MD2_options(void) {
+	if (sizeof(MD2_INT) == 1) {
+		return ("md2(char)");
+	} else {
+		return ("md2(int)");
 	}
+}
 
-FIPS_NON_FIPS_MD_Init(MD2)
-	{
-	c->num=0;
-	memset(c->state,0,sizeof c->state);
-	memset(c->cksm,0,sizeof c->cksm);
-	memset(c->data,0,sizeof c->data);
+FIPS_NON_FIPS_MD_Init(MD2) {
+	c->num = 0;
+	memset(c->state, 0, sizeof c->state);
+	memset(c->cksm, 0, sizeof c->cksm);
+	memset(c->data, 0, sizeof c->data);
 	return 1;
-	}
+}
 #else
-EXP_FUNC int STDCALL MD2Init(MD2_CTX *c)
-{
-	c->num=0;
-	memset(c->state,0,sizeof c->state);
-	memset(c->cksm,0,sizeof c->cksm);
-	memset(c->data,0,sizeof c->data);
+EXP_FUNC int STDCALL MD2Init(MD2_CTX* c) {
+	c->num = 0;
+	memset(c->state, 0, sizeof c->state);
+	memset(c->cksm, 0, sizeof c->cksm);
+	memset(c->data, 0, sizeof c->data);
 	return 1;
 }
 #endif
 
 #if defined(OPENSSL)
-int MD2Update(MD2_CTX *c, const unsigned char *data, unsigned long len)
+	int MD2Update(MD2_CTX* c, const unsigned char* data, unsigned long len)
 #else
-EXP_FUNC int STDCALL MD2Update (MD2_CTX *c, const uint8_t *data, int len)
+	EXP_FUNC int STDCALL MD2Update(MD2_CTX* c, const uint8_t* data, int len)
 #endif
-	{
-	register UCHAR *p;
+{
+	register UCHAR* p;
 
-	if (len == 0) return 1;
+	if (len == 0) {
+		return 1;
+	}
 
-	p=c->data;
-	if (c->num != 0)
-		{
-		if ((c->num+len) >= MD2_BLOCK)
-			{
-			memcpy(&(p[c->num]),data,MD2_BLOCK-c->num);
-			md2_block(c,c->data);
-			data+=(MD2_BLOCK - c->num);
-			len-=(MD2_BLOCK - c->num);
-			c->num=0;
+	p = c->data;
+	if (c->num != 0) {
+		if ((c->num + len) >= MD2_BLOCK) {
+			memcpy(&(p[c->num]), data, MD2_BLOCK - c->num);
+			md2_block(c, c->data);
+			data += (MD2_BLOCK - c->num);
+			len -= (MD2_BLOCK - c->num);
+			c->num = 0;
 			/* drop through and do the rest */
-			}
-		else
-			{
-			memcpy(&(p[c->num]),data,(int)len);
+		} else {
+			memcpy(&(p[c->num]), data, (int)len);
 			/* data+=len; */
-			c->num+=(int)len;
+			c->num += (int)len;
 			return 1;
-			}
 		}
+	}
 	/* we now can process the input data in blocks of MD2_BLOCK
 	 * chars and save the leftovers to c->data. */
-	while (len >= MD2_BLOCK)
-		{
-		md2_block(c,data);
-		data+=MD2_BLOCK;
-		len-=MD2_BLOCK;
-		}
-	memcpy(p,data,(int)len);
-	c->num=(int)len;
-	return 1;
+	while (len >= MD2_BLOCK) {
+		md2_block(c, data);
+		data += MD2_BLOCK;
+		len -= MD2_BLOCK;
 	}
+	memcpy(p, data, (int)len);
+	c->num = (int)len;
+	return 1;
+}
 
-static void md2_block(MD2_CTX *c, const unsigned char *d)
-	{
-	register MD2_INT t,*sp1,*sp2;
-	register int i,j;
+static void md2_block(MD2_CTX* c, const unsigned char* d) {
+	register MD2_INT t, *sp1, *sp2;
+	register int i, j;
 	MD2_INT state[48];
 
-	sp1=c->state;
-	sp2=c->cksm;
-	j=sp2[MD2_BLOCK-1];
-	for (i=0; i<16; i++)
-		{
-		state[i]=sp1[i];
-		state[i+16]=t=d[i];
-		state[i+32]=(t^sp1[i]);
-		j=sp2[i]^=S[t^j];
+	sp1 = c->state;
+	sp2 = c->cksm;
+	j = sp2[MD2_BLOCK - 1];
+	for (i = 0; i < 16; i++) {
+		state[i] = sp1[i];
+		state[i + 16] = t = d[i];
+		state[i + 32] = (t ^ sp1[i]);
+		j = sp2[i] ^= S[t ^ j];
+	}
+	t = 0;
+	for (i = 0; i < 18; i++) {
+		for (j = 0; j < 48; j += 8) {
+			t = state[j + 0] ^= S[t];
+			t = state[j + 1] ^= S[t];
+			t = state[j + 2] ^= S[t];
+			t = state[j + 3] ^= S[t];
+			t = state[j + 4] ^= S[t];
+			t = state[j + 5] ^= S[t];
+			t = state[j + 6] ^= S[t];
+			t = state[j + 7] ^= S[t];
 		}
-	t=0;
-	for (i=0; i<18; i++)
-		{
-		for (j=0; j<48; j+=8)
-			{
-			t= state[j+ 0]^=S[t];
-			t= state[j+ 1]^=S[t];
-			t= state[j+ 2]^=S[t];
-			t= state[j+ 3]^=S[t];
-			t= state[j+ 4]^=S[t];
-			t= state[j+ 5]^=S[t];
-			t= state[j+ 6]^=S[t];
-			t= state[j+ 7]^=S[t];
-			}
-		t=(t+i)&0xff;
-		}
-	memcpy(sp1,state,16*sizeof(MD2_INT));
+		t = (t + i) & 0xff;
+	}
+	memcpy(sp1, state, 16 * sizeof(MD2_INT));
 
 #if defined(OPENSSL)
-	OPENSSL_cleanse(state,48*sizeof(MD2_INT));
+	OPENSSL_cleanse(state, 48 * sizeof(MD2_INT));
 #else
-	memset(state,0, 48*sizeof(MD2_INT));
+	memset(state, 0, 48 * sizeof(MD2_INT));
 #endif
+}
+
+#if defined(OPENSSL)
+	int MD2Final(MD2_CTX* c, unsigned char* md)
+#else
+	EXP_FUNC int STDCALL MD2Final(MD2_CTX* c, unsigned char* md)
+#endif
+{
+	int i, v;
+	register UCHAR* cp;
+	register MD2_INT* p1, *p2;
+
+	cp = c->data;
+	p1 = c->state;
+	p2 = c->cksm;
+	v = MD2_BLOCK - c->num;
+	for (i = c->num; i < MD2_BLOCK; i++) {
+		cp[i] = (UCHAR)v;
 	}
 
-#if defined(OPENSSL)
-int MD2Final(MD2_CTX *c, unsigned char *md)
-#else
-EXP_FUNC int STDCALL MD2Final(MD2_CTX *c, unsigned char *md)
-#endif
-	{
-	int i,v;
-	register UCHAR *cp;
-	register MD2_INT *p1,*p2;
+	md2_block(c, cp);
 
-	cp=c->data;
-	p1=c->state;
-	p2=c->cksm;
-	v=MD2_BLOCK-c->num;
-	for (i=c->num; i<MD2_BLOCK; i++)
-		cp[i]=(UCHAR)v;
+	for (i = 0; i < MD2_BLOCK; i++) {
+		cp[i] = (UCHAR)p2[i];
+	}
+	md2_block(c, cp);
 
-	md2_block(c,cp);
-
-	for (i=0; i<MD2_BLOCK; i++)
-		cp[i]=(UCHAR)p2[i];
-	md2_block(c,cp);
-
-	for (i=0; i<16; i++)
-		md[i]=(UCHAR)(p1[i]&0xff);
-	memset((char *)&c,0,sizeof(c));
+	for (i = 0; i < 16; i++) {
+		md[i] = (UCHAR)(p1[i] & 0xff);
+	}
+	memset((char*)&c, 0, sizeof(c));
 	return 1;
-	}
+}
 

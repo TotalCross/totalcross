@@ -10,18 +10,16 @@
 
 #include "tcvm.h"
 
-enum
-{
-   WIFI        = 0,
-   PHONE       = 1,
-   BLUETOOTH   = 2,
+enum {
+	WIFI        = 0,
+	PHONE       = 1,
+	BLUETOOTH   = 2,
 };
 
-enum
-{
-   RADIO_STATE_DISABLED          = 0,
-   RADIO_STATE_ENABLED           = 1,
-   BLUETOOTH_STATE_DISCOVERABLE  = 2,
+enum {
+	RADIO_STATE_DISABLED          = 0,
+	RADIO_STATE_ENABLED           = 1,
+	BLUETOOTH_STATE_DISCOVERABLE  = 2,
 };
 
 #endif //RADIODEVICE_H

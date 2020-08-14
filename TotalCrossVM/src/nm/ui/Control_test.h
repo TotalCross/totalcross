@@ -5,8 +5,8 @@
 
 
 
-TESTCASE(tuC_updateScreen) // totalcross/ui/Control native public static void updateScreen();
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(tuC_updateScreen) { // totalcross/ui/Control native public static void updateScreen();
+	TEST_SKIP;
+finish:
+	;
 }

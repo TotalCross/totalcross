@@ -6,26 +6,24 @@
 
 
 #if defined (darwin)
- #ifdef __cplusplus
-  extern "C" {
- #endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 
- void iphone_soundPlay(CharP filename);
- void iphone_soundBeep();
+void iphone_soundPlay(CharP filename);
+void iphone_soundBeep();
 
- #ifdef __cplusplus
-  };
- #endif
+#ifdef __cplusplus
+};
+#endif
 #endif // darwin
 
 
-static void soundPlay(CharP filename)
-{
-   iphone_soundPlay(filename);
+static void soundPlay(CharP filename) {
+	iphone_soundPlay(filename);
 }
 
-static void soundSetEnabled(int b)
-{
+static void soundSetEnabled(int b) {
 }
 
 /*static void soundBeep(void)
@@ -33,7 +31,6 @@ static void soundSetEnabled(int b)
    iphone_soundBeep();
 }*/
 
-bool soundTone(int freq, unsigned short duration)
-{
-   return false;
+bool soundTone(int freq, unsigned short duration) {
+	return false;
 }

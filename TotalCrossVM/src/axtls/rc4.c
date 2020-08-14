@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -39,28 +39,28 @@
 /**
  * Get ready for an encrypt/decrypt operation
  */
-void RC4_setup(RC4_CTX *ctx, const uint8_t *key, int length)
-{
-    int i, j = 0, k = 0, a;
-    uint8_t *m;
+void RC4_setup(RC4_CTX* ctx, const uint8_t* key, int length) {
+	int i, j = 0, k = 0, a;
+	uint8_t* m;
 
-    ctx->x = 0;
-    ctx->y = 0;
-    m = ctx->m;
+	ctx->x = 0;
+	ctx->y = 0;
+	m = ctx->m;
 
-    for (i = 0; i < 256; i++)
-        m[i] = i;
+	for (i = 0; i < 256; i++) {
+		m[i] = i;
+	}
 
-    for (i = 0; i < 256; i++)
-    {
-        a = m[i];
-        j = (uint8_t)(j + a + key[k]);
-        m[i] = m[j]; 
-        m[j] = a;
+	for (i = 0; i < 256; i++) {
+		a = m[i];
+		j = (uint8_t)(j + a + key[k]);
+		m[i] = m[j];
+		m[j] = a;
 
-        if (++k >= length) 
-            k = 0;
-    }
+		if (++k >= length) {
+			k = 0;
+		}
+	}
 }
 
 /**
@@ -68,24 +68,22 @@ void RC4_setup(RC4_CTX *ctx, const uint8_t *key, int length)
  * this is a stream cipher).
  * NOTE: *msg and *out must be the same pointer (performance tweak)
  */
-void RC4_crypt(RC4_CTX *ctx, const uint8_t *msg, uint8_t *out, int length)
-{ 
-    int i;
-    uint8_t *m, x, y, a, b;
+void RC4_crypt(RC4_CTX* ctx, const uint8_t* msg, uint8_t* out, int length) {
+	int i;
+	uint8_t* m, x, y, a, b;
 
-    x = ctx->x;
-    y = ctx->y;
-    m = ctx->m;
+	x = ctx->x;
+	y = ctx->y;
+	m = ctx->m;
 
-    for (i = 0; i < length; i++)
-    {
-        a = m[++x];
-        y += a;
-        m[x] = b = m[y];
-        m[y] = a;
-        out[i] ^= m[(uint8_t)(a + b)];
-    }
+	for (i = 0; i < length; i++) {
+		a = m[++x];
+		y += a;
+		m[x] = b = m[y];
+		m[y] = a;
+		out[i] ^= m[(uint8_t)(a + b)];
+	}
 
-    ctx->x = x;
-    ctx->y = y;
+	ctx->x = x;
+	ctx->y = y;
 }

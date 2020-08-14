@@ -5,8 +5,8 @@
 
 
 
-TESTCASE(XmlTokenizer) // totalcross/xml/XmlTokenizer native public static char resolveCharacterReference(byte []input, int offset, int count);
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(XmlTokenizer) { // totalcross/xml/XmlTokenizer native public static char resolveCharacterReference(byte []input, int offset, int count);
+	TEST_SKIP;
+finish:
+	;
 }

@@ -14,11 +14,11 @@ class SkShader;
 
 class SK_API SkShaderMaskFilter {
 public:
-    static sk_sp<SkMaskFilter> Make(sk_sp<SkShader> shader);
+	static sk_sp<SkMaskFilter> Make(sk_sp<SkShader> shader);
 
 private:
-    static void InitializeFlattenables();
-    friend class SkFlattenable;
+	static void InitializeFlattenables();
+	friend class SkFlattenable;
 };
 
 #endif

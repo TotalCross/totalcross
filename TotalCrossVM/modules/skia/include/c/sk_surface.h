@@ -46,8 +46,8 @@ SK_API sk_surface_t* sk_surface_new_raster(const sk_imageinfo_t*, const sk_surfa
                               properties of the surface.
 */
 SK_API sk_surface_t* sk_surface_new_raster_direct(const sk_imageinfo_t*,
-                                                  void* pixels, size_t rowBytes,
-                                                  const sk_surfaceprops_t* props);
+		void* pixels, size_t rowBytes,
+		const sk_surfaceprops_t* props);
 
 /**
     Decrement the reference count. If the reference count is 1 before

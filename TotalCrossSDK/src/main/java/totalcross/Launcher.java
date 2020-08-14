@@ -1313,7 +1313,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 		return ""; // no path
 	}
 
-	public String getDataPath() { // guich@420_11 - this now is needed because the user may change the datapath anywhere in the program
+	public String
+	getDataPath() { // guich@420_11 - this now is needed because the user may change the datapath anywhere in the program
 		String path = totalcross.sys.Settings.dataPath;
 		if (path != null) {
 			path = path.replace('\\', '/');

@@ -17,11 +17,10 @@
 
 #define GL_CHECK_ERROR //checkGlError(__FILE__,__LINE__);
 
-typedef enum
-{
-   INVTEX_INVALIDATE,
-   INVTEX_DEL_ALL,
-   INVTEX_DEL_ONLYOLD
+typedef enum {
+	INVTEX_INVALIDATE,
+	INVTEX_DEL_ALL,
+	INVTEX_DEL_ONLYOLD
 } INVTEX;
 void invalidateTextures(INVTEX it); // imagePrimitives_c.h
 

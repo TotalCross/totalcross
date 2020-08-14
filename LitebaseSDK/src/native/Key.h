@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 /**
  * Declares functions to deal with the key of a record. It may be any of the SQL types.
  */
@@ -58,7 +58,7 @@ uint8* keySave(Key* key, uint8* dataStream);
  * @param key2 The second key to be compared.
  * @param isNull1 Indicates if the fist key is null.
  * @param plainDB the plainDB of a table if it is necessary to load a string.
- * @return 0 if the keys are identical; a positive number if <code>key1</code> keys are greater than <code>key2</code> keys; otherwise, a negative 
+ * @return 0 if the keys are identical; a positive number if <code>key1</code> keys are greater than <code>key2</code> keys; otherwise, a negative
  * number.
  */
 int32 keyCompareTo(Context context, Key* key1, Key* key2, int32 size, PlainDB* plainDB);

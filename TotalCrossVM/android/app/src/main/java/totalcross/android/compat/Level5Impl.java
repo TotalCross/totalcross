@@ -353,7 +353,8 @@ public class Level5Impl extends Level5 {
 		sst.start();
 	}
 
-	private void btserverClose() { // uuid is currently being ignored, since only one serversocket instance is currently allowed
+	private void
+	btserverClose() { // uuid is currently being ignored, since only one serversocket instance is currently allowed
 		if (serverSocket != null)
 			try {
 				serverSocket.close();  // close the listening socket - does not close the connected client socket

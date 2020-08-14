@@ -5,18 +5,18 @@
 
 
 
-TESTCASE(tuMW_exit_i) // totalcross/ui/MainWindow native public final void exit(int exitCode);
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(tuMW_exit_i) { // totalcross/ui/MainWindow native public final void exit(int exitCode);
+	TEST_SKIP;
+finish:
+	;
 }
-TESTCASE(tuMW_setTimerInterval_i) // totalcross/ui/MainWindow native void setTimerInterval(int n);
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(tuMW_setTimerInterval_i) { // totalcross/ui/MainWindow native void setTimerInterval(int n);
+	TEST_SKIP;
+finish:
+	;
 }
-TESTCASE(tuMW_getCommandLine) // totalcross/ui/MainWindow native public String getCommandLine();
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(tuMW_getCommandLine) { // totalcross/ui/MainWindow native public String getCommandLine();
+	TEST_SKIP;
+finish:
+	;
 }

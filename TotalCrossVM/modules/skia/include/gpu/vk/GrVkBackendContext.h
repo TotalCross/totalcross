@@ -15,19 +15,19 @@
 class GrVkExtensions;
 
 enum GrVkExtensionFlags {
-    kEXT_debug_report_GrVkExtensionFlag    = 0x0001,
-    kNV_glsl_shader_GrVkExtensionFlag      = 0x0002,
-    kKHR_surface_GrVkExtensionFlag         = 0x0004,
-    kKHR_swapchain_GrVkExtensionFlag       = 0x0008,
-    kKHR_win32_surface_GrVkExtensionFlag   = 0x0010,
-    kKHR_android_surface_GrVkExtensionFlag = 0x0020,
-    kKHR_xcb_surface_GrVkExtensionFlag     = 0x0040,
+	kEXT_debug_report_GrVkExtensionFlag    = 0x0001,
+	kNV_glsl_shader_GrVkExtensionFlag      = 0x0002,
+	kKHR_surface_GrVkExtensionFlag         = 0x0004,
+	kKHR_swapchain_GrVkExtensionFlag       = 0x0008,
+	kKHR_win32_surface_GrVkExtensionFlag   = 0x0010,
+	kKHR_android_surface_GrVkExtensionFlag = 0x0020,
+	kKHR_xcb_surface_GrVkExtensionFlag     = 0x0040,
 };
 
 enum GrVkFeatureFlags {
-    kGeometryShader_GrVkFeatureFlag    = 0x0001,
-    kDualSrcBlend_GrVkFeatureFlag      = 0x0002,
-    kSampleRateShading_GrVkFeatureFlag = 0x0004,
+	kGeometryShader_GrVkFeatureFlag    = 0x0001,
+	kDualSrcBlend_GrVkFeatureFlag      = 0x0002,
+	kSampleRateShading_GrVkFeatureFlag = 0x0004,
 };
 
 // It is not guarenteed VkPhysicalDeviceProperties2 will be in the client's header so we forward
@@ -43,28 +43,28 @@ struct VkPhysicalDeviceFeatures2;
 // (either by deleting the struct or manually releasing the refs) before the underlying vulkan
 // device and instance are destroyed.
 struct SK_API GrVkBackendContext {
-    VkInstance                 fInstance;
-    VkPhysicalDevice           fPhysicalDevice;
-    VkDevice                   fDevice;
-    VkQueue                    fQueue;
-    uint32_t                   fGraphicsQueueIndex;
-    uint32_t                   fMinAPIVersion; // Deprecated. Set fInstanceVersion instead.
-    uint32_t                   fInstanceVersion = 0;
-    uint32_t                   fExtensions = 0; // Deprecated. Use fVkExtensions instead.
-    const GrVkExtensions*      fVkExtensions = nullptr;
-    uint32_t                   fFeatures; // Deprecated. Use either fDeviceFeatures[2] instead.
-    // The client can create their VkDevice with either a VkPhysicalDeviceFeatures or
-    // VkPhysicalDeviceFeatures2 struct, thus we have to support taking both. The
-    // VkPhysicalDeviceFeatures2 struct is needed so we know if the client enabled any extension
-    // specific features. If fDeviceFeatures2 is not null then we ignore fDeviceFeatures. If both
-    // fDeviceFeatures and fDeviceFeatures2 are null we will assume no features are enabled.
-    VkPhysicalDeviceFeatures*  fDeviceFeatures = nullptr;
-    VkPhysicalDeviceFeatures2* fDeviceFeatures2 = nullptr;
-    sk_sp<GrVkMemoryAllocator> fMemoryAllocator;
-    GrVkGetProc                fGetProc = nullptr;
-    // This is deprecated and should be set to false. The client is responsible for managing the
-    // lifetime of the VkInstance and VkDevice objects.
-    bool                       fOwnsInstanceAndDevice = false;
+	VkInstance                 fInstance;
+	VkPhysicalDevice           fPhysicalDevice;
+	VkDevice                   fDevice;
+	VkQueue                    fQueue;
+	uint32_t                   fGraphicsQueueIndex;
+	uint32_t                   fMinAPIVersion; // Deprecated. Set fInstanceVersion instead.
+	uint32_t                   fInstanceVersion = 0;
+	uint32_t                   fExtensions = 0; // Deprecated. Use fVkExtensions instead.
+	const GrVkExtensions*      fVkExtensions = nullptr;
+	uint32_t                   fFeatures; // Deprecated. Use either fDeviceFeatures[2] instead.
+	// The client can create their VkDevice with either a VkPhysicalDeviceFeatures or
+	// VkPhysicalDeviceFeatures2 struct, thus we have to support taking both. The
+	// VkPhysicalDeviceFeatures2 struct is needed so we know if the client enabled any extension
+	// specific features. If fDeviceFeatures2 is not null then we ignore fDeviceFeatures. If both
+	// fDeviceFeatures and fDeviceFeatures2 are null we will assume no features are enabled.
+	VkPhysicalDeviceFeatures*  fDeviceFeatures = nullptr;
+	VkPhysicalDeviceFeatures2* fDeviceFeatures2 = nullptr;
+	sk_sp<GrVkMemoryAllocator> fMemoryAllocator;
+	GrVkGetProc                fGetProc = nullptr;
+	// This is deprecated and should be set to false. The client is responsible for managing the
+	// lifetime of the VkInstance and VkDevice objects.
+	bool                       fOwnsInstanceAndDevice = false;
 };
 
 #endif

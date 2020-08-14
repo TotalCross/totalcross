@@ -53,22 +53,22 @@
 
 template <typename D, typename S>
 static constexpr inline
-typename std::enable_if<(std::is_integral<S>::value || std::is_enum<S>::value) &&
-                        (std::is_integral<D>::value || std::is_enum<D>::value), bool>::type
+typename std::enable_if < (std::is_integral<S>::value || std::is_enum<S>::value)&&
+(std::is_integral<D>::value || std::is_enum<D>::value), bool >::type
 /*bool*/ SkTFitsIn(S src) {
-    // SkTFitsIn() is used in public headers, so needs to be written targeting at most C++11.
-    return
+	// SkTFitsIn() is used in public headers, so needs to be written targeting at most C++11.
+	return
 
-    // E.g. (int8_t)(uint8_t) int8_t(-1) == -1, but the uint8_t == 255, not -1.
-    (std::is_signed<S>::value && std::is_unsigned<D>::value && sizeof(S) <= sizeof(D)) ?
-        (S)0 <= src :
+		// E.g. (int8_t)(uint8_t) int8_t(-1) == -1, but the uint8_t == 255, not -1.
+		(std::is_signed<S>::value && std::is_unsigned<D>::value && sizeof(S) <= sizeof(D)) ?
+		(S)0 <= src :
 
-    // E.g. (uint8_t)(int8_t) uint8_t(255) == 255, but the int8_t == -1.
-    (std::is_signed<D>::value && std::is_unsigned<S>::value && sizeof(D) <= sizeof(S)) ?
-        src <= (S)std::numeric_limits<D>::max() :
+		// E.g. (uint8_t)(int8_t) uint8_t(255) == 255, but the int8_t == -1.
+		(std::is_signed<D>::value && std::is_unsigned<S>::value && sizeof(D) <= sizeof(S)) ?
+		src <= (S)std::numeric_limits<D>::max() :
 
-    // else
-        (S)(D)src == src;
+		// else
+		(S)(D)src == src;
 }
 
 #endif

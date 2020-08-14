@@ -30,8 +30,8 @@ bool sqlcolumnlistclauseEquals(SQLColumnListClause* clause1, SQLColumnListClause
  */
 bool sqlcolumnlistclauseContains(SQLColumnListClause* clause, int32 colIndex);
 
-/** 
- * Binds the column information of the underlying order or group by clause to the select clause. 
+/**
+ * Binds the column information of the underlying order or group by clause to the select clause.
  *
  * @param context The thread context where the function is being executed.
  * @param clause The column list clause.
@@ -39,11 +39,12 @@ bool sqlcolumnlistclauseContains(SQLColumnListClause* clause, int32 colIndex);
  * @param columTypes The select clause tables column types.
  * @param tableList The select clause tables.
  * @param tableListSize The number of tables of the select clause.
- * @throws SQLParseException If the column in a group or order by clause is not in the select clause or there is a column of type blob in the 
+ * @throws SQLParseException If the column in a group or order by clause is not in the select clause or there is a column of type blob in the
  * clause.
  */
-bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int8* columnTypes, 
-                                                                                  SQLResultSetTable** tableList, int32 tableListSize);
+bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause,
+									Hashtable* names2Index, int8* columnTypes,
+									SQLResultSetTable** tableList, int32 tableListSize);
 
 /**
  * Finds the best index to use in a sort operation.

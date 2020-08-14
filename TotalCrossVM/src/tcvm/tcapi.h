@@ -14,19 +14,19 @@ TESTE_API functions as being imported from a DLL, wheras this DLL sees symbols
 defined with this macro as being exported.
 */
 #if defined(WIN32) || defined(WINCE)
-#ifdef TC_EXPORTS
-#define TC_API __declspec(dllexport)
+	#ifdef TC_EXPORTS
+		#define TC_API __declspec(dllexport)
+	#else
+		#define TC_API __declspec(dllimport)
+	#endif
 #else
-#define TC_API __declspec(dllimport)
-#endif
-#else
-#define TC_API extern
+	#define TC_API extern
 #endif
 
 #if defined(TC_EXPORTS) || defined(DONT_PREFIX_WITH_TC_FOR_LIBRARIES)
-#define TCAPI_FUNC(x) x
+	#define TCAPI_FUNC(x) x
 #else
-#define TCAPI_FUNC(x) TC_##x
+	#define TCAPI_FUNC(x) TC_##x
 #endif
 
 #define NATIVE_METHOD(x) TC_API void x(NMParams p)

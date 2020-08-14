@@ -5,8 +5,8 @@
 
 
 
-TESTCASE(jlT_printStackTraceNative) // java/lang/Throwable native private void printStackTraceNative();
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(jlT_printStackTraceNative) { // java/lang/Throwable native private void printStackTraceNative();
+	TEST_SKIP;
+finish:
+	;
 }

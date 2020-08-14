@@ -12,16 +12,15 @@
 
 #define errNone 0
 
- #define PALM_ERROR !errNone
- #define DB_NAME_LENGTH 32
- #define DB_FULLNAME_LENGTH DB_NAME_LENGTH + 10
+#define PALM_ERROR !errNone
+#define DB_NAME_LENGTH 32
+#define DB_FULLNAME_LENGTH DB_NAME_LENGTH + 10
 
-enum
-{
-   INVALID        = -1,
-   READ_WRITE     =  3,
-   CREATE         =  4,
-   CREATE_EMPTY   =  5
+enum {
+	INVALID        = -1,
+	READ_WRITE     =  3,
+	CREATE         =  4,
+	CREATE_EMPTY   =  5
 };
 
 

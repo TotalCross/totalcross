@@ -1,12 +1,12 @@
 /*
   Default header file for malloc-2.8.x, written by Doug Lea
   and released to the public domain, as explained at
-  http://creativecommons.org/publicdomain/zero/1.0/ 
- 
+  http://creativecommons.org/publicdomain/zero/1.0/
+
   This header is for ANSI C/C++ only.  You can set any of
   the following #defines before including:
 
-  * If USE_DL_PREFIX is defined, it is assumed that malloc.c 
+  * If USE_DL_PREFIX is defined, it is assumed that malloc.c
     was also compiled with this option, so all routines
     have names starting with "dl".
 
@@ -26,13 +26,13 @@
 // TOTALCROSS BEGIN
 #define USE_DL_PREFIX
 #if defined(WIN32) || defined(WINCE)
-#define MSPACES 1
-#define FOOTERS 1
+	#define MSPACES 1
+	#define FOOTERS 1
 #endif
 
 #if defined WP8
-#undef MSPACES
-#undef FOOTERS
+	#undef MSPACES
+	#undef FOOTERS
 #endif
 // TOTALCROSS END
 
@@ -85,7 +85,7 @@ extern "C" {
 #define dlbulk_free            bulk_free
 #endif /* USE_DL_PREFIX */
 
-#if !NO_MALLINFO 
+#if !NO_MALLINFO
 #ifndef HAVE_USR_INCLUDE_MALLOC_H
 #ifndef _MALLOC_H
 #ifndef MALLINFO_FIELD_TYPE
@@ -94,16 +94,16 @@ extern "C" {
 #ifndef STRUCT_MALLINFO_DECLARED
 #define STRUCT_MALLINFO_DECLARED 1
 struct mallinfo {
-  MALLINFO_FIELD_TYPE arena;    /* non-mmapped space allocated from system */
-  MALLINFO_FIELD_TYPE ordblks;  /* number of free chunks */
-  MALLINFO_FIELD_TYPE smblks;   /* always 0 */
-  MALLINFO_FIELD_TYPE hblks;    /* always 0 */
-  MALLINFO_FIELD_TYPE hblkhd;   /* space in mmapped regions */
-  MALLINFO_FIELD_TYPE usmblks;  /* maximum total allocated space */
-  MALLINFO_FIELD_TYPE fsmblks;  /* always 0 */
-  MALLINFO_FIELD_TYPE uordblks; /* total allocated space */
-  MALLINFO_FIELD_TYPE fordblks; /* total free space */
-  MALLINFO_FIELD_TYPE keepcost; /* releasable (via malloc_trim) space */
+	MALLINFO_FIELD_TYPE arena;    /* non-mmapped space allocated from system */
+	MALLINFO_FIELD_TYPE ordblks;  /* number of free chunks */
+	MALLINFO_FIELD_TYPE smblks;   /* always 0 */
+	MALLINFO_FIELD_TYPE hblks;    /* always 0 */
+	MALLINFO_FIELD_TYPE hblkhd;   /* space in mmapped regions */
+	MALLINFO_FIELD_TYPE usmblks;  /* maximum total allocated space */
+	MALLINFO_FIELD_TYPE fsmblks;  /* always 0 */
+	MALLINFO_FIELD_TYPE uordblks; /* total allocated space */
+	MALLINFO_FIELD_TYPE fordblks; /* total free space */
+	MALLINFO_FIELD_TYPE keepcost; /* releasable (via malloc_trim) space */
 };
 #endif /* STRUCT_MALLINFO_DECLARED */
 #endif  /* _MALLOC_H */
@@ -266,7 +266,7 @@ size_t dlmalloc_max_footprint(void);
   malloc_set_footprint_limit, or the maximum size_t value if
   never set. The returned value reflects a permission. There is no
   guarantee that this number of bytes can actually be obtained from
-  the system.  
+  the system.
 */
 size_t dlmalloc_footprint_limit(void);
 
@@ -312,8 +312,8 @@ size_t dlmalloc_set_footprint_limit(size_t bytes);
 
   malloc_inspect_all is compiled only if MALLOC_INSPECT_ALL is defined.
 */
-void dlmalloc_inspect_all(void(*handler)(void*, void *, size_t, void*),
-                           void* arg);
+void dlmalloc_inspect_all(void(*handler)(void*, void*, size_t, void*),
+						  void* arg);
 
 #if !NO_MALLINFO
 /*
@@ -510,7 +510,7 @@ int  dlmalloc_trim(size_t);
 
   malloc_stats prints only the most commonly interesting statistics.
   More information can be obtained by calling mallinfo.
-  
+
   malloc_stats is not compiled if NO_MALLOC_STATS is defined.
 */
 void  dlmalloc_stats(void);
@@ -610,9 +610,9 @@ void* mspace_realloc(mspace msp, void* mem, size_t newsize);
 void* mspace_realloc_in_place(mspace msp, void* mem, size_t newsize);
 void* mspace_memalign(mspace msp, size_t alignment, size_t bytes);
 void** mspace_independent_calloc(mspace msp, size_t n_elements,
-                                 size_t elem_size, void* chunks[]);
+								 size_t elem_size, void* chunks[]);
 void** mspace_independent_comalloc(mspace msp, size_t n_elements,
-                                   size_t sizes[], void* chunks[]);
+								   size_t sizes[], void* chunks[]);
 size_t mspace_bulk_free(mspace msp, void**, size_t n_elements);
 size_t mspace_usable_size(const void* mem);
 void mspace_malloc_stats(mspace msp);
@@ -621,9 +621,9 @@ size_t mspace_footprint(mspace msp);
 size_t mspace_max_footprint(mspace msp);
 size_t mspace_footprint_limit(mspace msp);
 size_t mspace_set_footprint_limit(mspace msp, size_t bytes);
-void mspace_inspect_all(mspace msp, 
-                        void(*handler)(void *, void *, size_t, void*),
-                        void* arg);
+void mspace_inspect_all(mspace msp,
+						void(*handler)(void*, void*, size_t, void*),
+						void* arg);
 #endif  /* MSPACES */
 
 #ifdef __cplusplus

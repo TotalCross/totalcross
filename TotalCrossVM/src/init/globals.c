@@ -32,14 +32,14 @@ jmethodID jpumpEvents;
 bool appPaused = false;
 #endif
 #if defined(ANDROID) || defined(darwin) || defined(WP8)
-int32 deviceFontHeight = 0;
-int32 iosScale = 0;
+	int32 deviceFontHeight = 0;
+	int32 iosScale = 0;
 #endif
 
 // GoogleMaps.c
 #ifdef ANDROID
-jmethodID jshowGoogleMaps;
-jmethodID jshowRoute;
+	jmethodID jshowGoogleMaps;
+	jmethodID jshowRoute;
 #endif
 
 // startup.c
@@ -51,14 +51,15 @@ bool destroyingApplication = false;
 TCObject mainClass = { 0 };  // the instance being executed
 bool isMainWindow = false;   // extends MainWindow ?
 #if defined(ANDROID)
-JavaVM* androidJVM;
-jobject applicationObj, applicationContext;
-jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A,jSmsManager4A,jNotificationManager4A,jFirebaseInstanceId,jTcFirebaseUtils,jCieloPrinterManager4A;
-jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
-jfieldID jsipVisible,jappTitleH;
-jmethodID jgetHeight;
+	JavaVM* androidJVM;
+	jobject applicationObj, applicationContext;
+	jclass applicationClass, jRadioDevice4A, jBluetooth4A, jConnectionManager4A, jSmsManager4A,
+	jNotificationManager4A, jFirebaseInstanceId, jTcFirebaseUtils, jCieloPrinterManager4A;
+	jfieldID jshowingAlert, jhardwareKeyboardIsVisible;
+	jfieldID jsipVisible, jappTitleH;
+	jmethodID jgetHeight;
 #elif defined WIN32 || defined linux
-TCHAR exeName[MAX_PATHNAME];
+	TCHAR exeName[MAX_PATHNAME];
 #endif
 
 // graphicsprimitives.c
@@ -79,7 +80,7 @@ int32 totalTextureLoaded;
 
 // mem.c
 #ifdef INITIAL_MEM
-uint32 maxAvail = INITIAL_MEM; // in bytes
+	uint32 maxAvail = INITIAL_MEM; // in bytes
 #endif
 bool warnOnExit = false;
 bool leakCheckingEnabled = false;
@@ -97,30 +98,31 @@ int32 minFontSize = 0;
 int32 normalFontSize = 0;
 
 FontFile defaultFont = NULL;
-int32 *tabSizeField = NULL;
+int32* tabSizeField = NULL;
 Hashtable htUF = { 0 };
 VoidPs* openFonts = NULL;
 Heap fontsHeap = NULL;
 
 // win/gfx_Graphics_c.h
 #ifdef WIN32
-HWND mainHWnd = NULL;
-bool bSipUp = false; //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
+	HWND mainHWnd = NULL;
+	bool bSipUp =
+	false; //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
 #endif
 
 // Settings.c
 TCClass settingsClass = { 0 };
 TTCSettings tcSettings = { 0 };
 #if defined (WINCE)
-TVirtualKeyboardSettings vkSettings;
+	TVirtualKeyboardSettings vkSettings;
 #endif
 
 // demo.c
 #ifdef ANDROID
-jmethodID jsetElapsed;
+	jmethodID jsetElapsed;
 #endif
 
-// objectmemorymanager.c 
+// objectmemorymanager.c
 bool callGConMainThread = 0;
 bool disableGC = 0;
 bool runningGC = 0;
@@ -138,7 +140,7 @@ Heap chunksHeap = NULL;
 Stack objStack = NULL;
 #if defined(ENABLE_TEST_SUITE)
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
-bool canTraverse=true;
+bool canTraverse = true;
 TCObjectArray freeList2 = { 0 }; // the array with lists of free objects
 TCObjectArray usedList2 = { 0 }; // the array with lists of used objects (allocated after the last GC)
 TCObjectArray lockList2 = { 0 }; // locked objects list
@@ -170,31 +172,32 @@ Hashtable htMutexes = { 0 };
 
 // file.c
 #ifdef ANDROID
-jmethodID jgetSDCardPath;
+	jmethodID jgetSDCardPath;
 #endif
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
 #if !defined(WIN32) || defined WP8
-void *deviceCtx = NULL; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
+	void* deviceCtx =
+	NULL; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
 #endif
-        
+
 // vm.c
 #ifdef ANDROID
-jmethodID jvmFuncI;
-jmethodID jvmExec;
+	jmethodID jvmFuncI;
+	jmethodID jvmExec;
 #endif
 
 // utils.c
 int32 firstTS = 0;
 #ifdef ANDROID
-jmethodID jlistTCZs,jgetFreeMemory;
+	jmethodID jlistTCZs, jgetFreeMemory;
 #endif
 
 // debug.c
 CharP debugstr = NULL;
 bool consoleAllocated = false;
 #ifdef ANDROID
-jmethodID jalert;
+	jmethodID jalert;
 #endif
 
 // nativelib.c
@@ -206,8 +209,8 @@ Hashtable htNativeProcAddresses = { 0 };
 // tcz.c
 VoidPs* openTCZs = NULL;
 #ifdef ANDROID
-jmethodID jreadTCZ;
-jmethodID jfindTCZ;
+	jmethodID jreadTCZ;
+	jmethodID jfindTCZ;
 #endif
 
 // event.c
@@ -223,23 +226,23 @@ Int32Array interceptedSpecialKeys = NULL;
 // Vm_c.h
 int32 oldAutoOffValue = 0;
 #ifdef ANDROID
-jmethodID jclipboard;
+	jmethodID jclipboard;
 #endif
 
 // Convert.c
-TCObject *charConverterPtr;
+TCObject* charConverterPtr;
 TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
 
 // media_Sound.c
 TSoundSettings soundSettings;
 #ifdef ANDROID
-jmethodID jtone, jsoundToText, jsoundFromText;
-jmethodID jsoundEnable,jsoundPlay;
+	jmethodID jtone, jsoundToText, jsoundFromText;
+	jmethodID jsoundEnable, jsoundPlay;
 #endif
 
 // money
 #ifdef ANDROID
-jmethodID jadsFunc;
+	jmethodID jadsFunc;
 #endif
 
 // ConnectionManager.c
@@ -247,7 +250,7 @@ TCClass connMgrClass = { 0 };
 
 // win/Socket_c.h
 #ifdef WIN32
-int32 WSACount = 0;
+	int32 WSACount = 0;
 #endif
 
 // xml/xml_Tokenizer.c
@@ -259,25 +262,26 @@ Heap heapSSLSocket = NULL;
 DECLARE_MUTEX(htSSL);
 
 #ifdef ANDROID
-jmethodID jshowCamera;
-jmethodID jgetNativeResolutions;
-jmethodID jgetDefaultToString;
-jmethodID jzxing;
-jmethodID jplayYoutube;
+	jmethodID jshowCamera;
+	jmethodID jgetNativeResolutions;
+	jmethodID jgetDefaultToString;
+	jmethodID jzxing;
+	jmethodID jplayYoutube;
 
-// android/GPS_c.h
-jmethodID jgpsFunc;
-jmethodID jcellinfoUpdate;
+	// android/GPS_c.h
+	jmethodID jgpsFunc;
+	jmethodID jcellinfoUpdate;
 
-// android/Dial_c.h
-jmethodID jdial;
+	// android/Dial_c.h
+	jmethodID jdial;
 #endif
 
 // tcthread.c
 int32 threadCount = 0;
 
 // class.c
-TCObject *voidTYPE, *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
+TCObject* voidTYPE, *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE,
+		  *doubleTYPE, *charTYPE;
 
 TCClass cloneable;
 
@@ -296,8 +300,8 @@ bool isMotoQ = false;
 bool isWindowsMobile = false;
 
 #ifdef WINCE
-HINSTANCE coreDll;
-HINSTANCE cellcoreDll;
+	HINSTANCE coreDll;
+	HINSTANCE cellcoreDll;
 #endif
 
 DECLARE_MUTEX(tcz);
@@ -311,62 +315,78 @@ DECLARE_MUTEX(mutexes);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool initGlobals()
-{
+bool initGlobals() {
 	SETUP_MUTEX;
-   INIT_MUTEX(opengl);
-   INIT_MUTEX(omm);
-   INIT_MUTEX(tcz);
-   INIT_MUTEX(metAndCls);
-   INIT_MUTEX(alloc);
-   INIT_MUTEX(screen);
-   INIT_MUTEX(htSSL); 
-   INIT_MUTEX(createdHeaps);
-   INIT_MUTEX(fonts);
-   INIT_MUTEX(mutexes);
+	INIT_MUTEX(opengl);
+	INIT_MUTEX(omm);
+	INIT_MUTEX(tcz);
+	INIT_MUTEX(metAndCls);
+	INIT_MUTEX(alloc);
+	INIT_MUTEX(screen);
+	INIT_MUTEX(htSSL);
+	INIT_MUTEX(createdHeaps);
+	INIT_MUTEX(fonts);
+	INIT_MUTEX(mutexes);
 #if defined (WIN32) || defined (WINCE)
-   initWinsock();
+	initWinsock();
 #endif
 #ifdef WINCE
 	initAygshell();
-   coreDll = LoadLibrary(TEXT("coredll.dll"));
-   cellcoreDll = LoadLibrary(TEXT("cellcore.dll"));
+	coreDll = LoadLibrary(TEXT("coredll.dll"));
+	cellcoreDll = LoadLibrary(TEXT("cellcore.dll"));
 #elif defined (HEADLESS) && defined (__arm__)
-   initGpiod();
+	initGpiod();
 #endif
-   return true;
+	return true;
 }
 
-void destroyGlobals()
-{
-   DESTROY_MUTEX(omm);   
-   DESTROY_MUTEX(tcz);
-   DESTROY_MUTEX(metAndCls);
-   DESTROY_MUTEX(screen);
-   DESTROY_MUTEX(htSSL);
-   DESTROY_MUTEX(createdHeaps);
-   DESTROY_MUTEX(alloc);
-   DESTROY_MUTEX(fonts);
-   DESTROY_MUTEX(mutexes);
+void destroyGlobals() {
+	DESTROY_MUTEX(omm);
+	DESTROY_MUTEX(tcz);
+	DESTROY_MUTEX(metAndCls);
+	DESTROY_MUTEX(screen);
+	DESTROY_MUTEX(htSSL);
+	DESTROY_MUTEX(createdHeaps);
+	DESTROY_MUTEX(alloc);
+	DESTROY_MUTEX(fonts);
+	DESTROY_MUTEX(mutexes);
 #if defined (WIN32) || defined (WINCE)
-   closeWinsock();
+	closeWinsock();
 #endif
 #ifdef WINCE
-  closeAygshell();
-   if (coreDll != null) FreeLibrary(coreDll);
-   if (cellcoreDll != null) FreeLibrary(cellcoreDll);
+	closeAygshell();
+	if (coreDll != null) {
+		FreeLibrary(coreDll);
+	}
+	if (cellcoreDll != null) {
+		FreeLibrary(cellcoreDll);
+	}
 #elif defined (HEADLESS) && defined (__arm__)
-   closeGpiod();
+	closeGpiod();
 #endif
 }
 
-TC_API UInt32 getApplicationId()     {return applicationId;    }
-TC_API CharP  getApplicationIdStr()  {return applicationIdStr; }
-TC_API CharP  getVMPath()            {return vmPath;           }
-TC_API CharP  getAppPath()           {return appPath;          }
-TC_API CharP  getUserName()          {return userName;         }
-TC_API TCObject getMainClass()       {return mainClass;        }
+TC_API UInt32 getApplicationId()     {
+	return applicationId;
+}
+TC_API CharP  getApplicationIdStr()  {
+	return applicationIdStr;
+}
+TC_API CharP  getVMPath()            {
+	return vmPath;
+}
+TC_API CharP  getAppPath()           {
+	return appPath;
+}
+TC_API CharP  getUserName()          {
+	return userName;
+}
+TC_API TCObject getMainClass()       {
+	return mainClass;
+}
 
 #if defined (WIN32)
-TC_API HWND getMainWindowHandle()    {return mainHWnd;         }
+TC_API HWND getMainWindowHandle()    {
+	return mainHWnd;
+}
 #endif

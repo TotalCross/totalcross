@@ -28,17 +28,17 @@ SK_API extern void sk_free(void*);
 SK_API extern void sk_out_of_memory(void);
 
 enum {
-    /**
-     *  If this bit is set, the returned buffer must be zero-initialized. If this bit is not set
-     *  the buffer can be uninitialized.
-     */
-    SK_MALLOC_ZERO_INITIALIZE   = 1 << 0,
+	/**
+	 *  If this bit is set, the returned buffer must be zero-initialized. If this bit is not set
+	 *  the buffer can be uninitialized.
+	 */
+	SK_MALLOC_ZERO_INITIALIZE   = 1 << 0,
 
-    /**
-     *  If this bit is set, the implementation must throw/crash/quit if the request cannot
-     *  be fulfilled. If this bit is not set, then it should return nullptr on failure.
-     */
-    SK_MALLOC_THROW             = 1 << 1,
+	/**
+	 *  If this bit is set, the implementation must throw/crash/quit if the request cannot
+	 *  be fulfilled. If this bit is not set, then it should return nullptr on failure.
+	 */
+	SK_MALLOC_THROW             = 1 << 1,
 };
 /**
  *  Return a block of memory (at least 4-byte aligned) of at least the specified size.
@@ -56,22 +56,22 @@ SK_API extern void* sk_malloc_flags(size_t size, unsigned flags);
 SK_API extern void* sk_realloc_throw(void* buffer, size_t size);
 
 static inline void* sk_malloc_throw(size_t size) {
-    return sk_malloc_flags(size, SK_MALLOC_THROW);
+	return sk_malloc_flags(size, SK_MALLOC_THROW);
 }
 
 static inline void* sk_calloc_throw(size_t size) {
-    return sk_malloc_flags(size, SK_MALLOC_THROW | SK_MALLOC_ZERO_INITIALIZE);
+	return sk_malloc_flags(size, SK_MALLOC_THROW | SK_MALLOC_ZERO_INITIALIZE);
 }
 
 static inline void* sk_calloc_canfail(size_t size) {
 #if defined(IS_FUZZING_WITH_LIBFUZZER)
-    // The Libfuzzer environment is very susceptible to OOM, so to avoid those
-    // just pretend we can't allocate more than 200kb.
-    if (size > 200000) {
-        return nullptr;
-    }
+	// The Libfuzzer environment is very susceptible to OOM, so to avoid those
+	// just pretend we can't allocate more than 200kb.
+	if (size > 200000) {
+		return nullptr;
+	}
 #endif
-    return sk_malloc_flags(size, SK_MALLOC_ZERO_INITIALIZE);
+	return sk_malloc_flags(size, SK_MALLOC_ZERO_INITIALIZE);
 }
 
 // Performs a safe multiply count * elemSize, checking for overflow
@@ -84,22 +84,22 @@ SK_API extern void* sk_realloc_throw(void* buffer, size_t count, size_t elemSize
  */
 static inline void* sk_malloc_canfail(size_t size) {
 #if defined(IS_FUZZING_WITH_LIBFUZZER)
-    // The Libfuzzer environment is very susceptible to OOM, so to avoid those
-    // just pretend we can't allocate more than 200kb.
-    if (size > 200000) {
-        return nullptr;
-    }
+	// The Libfuzzer environment is very susceptible to OOM, so to avoid those
+	// just pretend we can't allocate more than 200kb.
+	if (size > 200000) {
+		return nullptr;
+	}
 #endif
-    return sk_malloc_flags(size, 0);
+	return sk_malloc_flags(size, 0);
 }
 SK_API extern void* sk_malloc_canfail(size_t count, size_t elemSize);
 
 // bzero is safer than memset, but we can't rely on it, so... sk_bzero()
 static inline void sk_bzero(void* buffer, size_t size) {
-    // Please c.f. sk_careful_memcpy.  It's undefined behavior to call memset(null, 0, 0).
-    if (size) {
-        memset(buffer, 0, size);
-    }
+	// Please c.f. sk_careful_memcpy.  It's undefined behavior to call memset(null, 0, 0).
+	if (size) {
+		memset(buffer, 0, size);
+	}
 }
 
 /**
@@ -116,12 +116,12 @@ static inline void sk_bzero(void* buffer, size_t size) {
  * Of the compilers we pay attention to only GCC performs this optimization in practice.
  */
 static inline void* sk_careful_memcpy(void* dst, const void* src, size_t len) {
-    // When we pass >0 len we had better already be passing valid pointers.
-    // So we just need to skip calling memcpy when len == 0.
-    if (len) {
-        memcpy(dst,src,len);
-    }
-    return dst;
+	// When we pass >0 len we had better already be passing valid pointers.
+	// So we just need to skip calling memcpy when len == 0.
+	if (len) {
+		memcpy(dst, src, len);
+	}
+	return dst;
 }
 
 #endif  // SkMalloc_DEFINED

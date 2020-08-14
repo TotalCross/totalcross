@@ -17,8 +17,8 @@
 
 
 #ifdef __cplusplus
-extern "C"{
-#endif 
+extern "C" {
+#endif
 
 // Global constants
 
@@ -51,88 +51,88 @@ extern "C"{
 
 
 
-typedef struct
-{
-   BYTE  *rgbDataBuffer;
-   DWORD dwDataBufferSize;
-   DWORD dwBytesReturned;
-   DWORD   dwTimeout;
-   UINT32   iSymbology;
-   UINT32   iDataType;
-   
-}READ_DATA_STRUCT;
+typedef struct {
+	BYTE*  rgbDataBuffer;
+	DWORD dwDataBufferSize;
+	DWORD dwBytesReturned;
+	DWORD   dwTimeout;
+	UINT32   iSymbology;
+	UINT32   iDataType;
 
-typedef struct
-{
-   size_t   StructSize;
-   BYTE  *rgbDataBuffer;
-   DWORD dwDataBufferSize;
-   DWORD dwBytesReturned;
-   DWORD   dwTimeout;
-   UINT32   iSymbology;
-   UINT32   iDataType;
-   DWORD hDevice;
-   
-}READ_DATA_STRUCT_EX;
+} READ_DATA_STRUCT;
+
+typedef struct {
+	size_t   StructSize;
+	BYTE*  rgbDataBuffer;
+	DWORD dwDataBufferSize;
+	DWORD dwBytesReturned;
+	DWORD   dwTimeout;
+	UINT32   iSymbology;
+	UINT32   iDataType;
+	DWORD hDevice;
+
+} READ_DATA_STRUCT_EX;
 
 
 
-typedef struct
-{
-    DWORD nStructBytes;
-    DWORD nCharsInName;
-    WCHAR rgcFriendlyName[ 64 ];
-    DWORD dwPortID;
-    DWORD nCharsInDeviceType;
-    WCHAR rgcDeviceType[ 64 ];
-    DWORD nCharsInPortName;
-    WCHAR rgcPortName[ 64 ];
+typedef struct {
+	DWORD nStructBytes;
+	DWORD nCharsInName;
+	WCHAR rgcFriendlyName[ 64 ];
+	DWORD dwPortID;
+	DWORD nCharsInDeviceType;
+	WCHAR rgcDeviceType[ 64 ];
+	DWORD nCharsInPortName;
+	WCHAR rgcPortName[ 64 ];
 
-}ITCSCAN_DEVICE_DETAILS;
+} ITCSCAN_DEVICE_DETAILS;
 
-typedef struct 
-{ 
-    DWORD wStructSize;
-    WCHAR rgcSymbologyID[ 10 ];
-    DWORD nActualSymbologyIDBytes;
+typedef struct {
+	DWORD wStructSize;
+	WCHAR rgcSymbologyID[ 10 ];
+	DWORD nActualSymbologyIDBytes;
 }  ITCSCAN_SID;
 
 
 
 // Function declarations
 
-HRESULT ITCSCAN_Open(INT32 *pHandle,LPCTSTR pszDeviceName);
-HRESULT ITCSCAN_Open2(INT32 *pHandle,LPCTSTR pszDeviceName, HWND hwnd); 
+HRESULT ITCSCAN_Open(INT32* pHandle, LPCTSTR pszDeviceName);
+HRESULT ITCSCAN_Open2(INT32* pHandle, LPCTSTR pszDeviceName, HWND hwnd);
 HRESULT ITCSCAN_Close(INT32 pHandle);
-HRESULT ITCSCAN_SyncRead(INT32 pHandle, READ_DATA_STRUCT * pReadDataBlock);
-HRESULT ITCSCAN_SyncReadEx(INT32 pHandle, READ_DATA_STRUCT_EX * pReadDataBlock);
-HRESULT ITCSCAN_SyncReadWSid(INT32 pHandle, READ_DATA_STRUCT * pReadDataBlock, ITCSCAN_SID *pSid);                         
-HRESULT ITCSCAN_CancelRead (INT32 pHandle, BOOL FlushBufferedData,DWORD *pdwTotalDiscardedMessages,DWORD *pdwTotalDiscardedBytes);
-HRESULT ITCSCAN_GetAttribute (INT32 pHandle, int eAttribID, BYTE rgbBuffer[], DWORD dwBufferSize, DWORD *pnBufferData);
-HRESULT ITCSCAN_SetAttribute(INT32 pHandle,int eAttribID,BYTE rgbData[],DWORD dwBufferSize );
-HRESULT ITCSCAN_SetTriggerScanner(INT32 pHandle,bool TriggerOn);
-HRESULT ITCSCAN_GetTriggerScanner(INT32 pHandle,int * pTriggerOn);
-HRESULT ITCSCAN_SetDataLED(INT32 pHandle,bool On);
-HRESULT ITCSCAN_SetReadLED(INT32 pHandle,bool On);
-HRESULT ITCSCAN_SetScannerFilterGrid(INT32 pHandle,LPCTSTR pszGrid);
-HRESULT ITCSCAN_GetScannerFilterGrid(INT32 pHandle,LPTSTR pszGrid, INT32 *Length);
-HRESULT ITCSCAN_SetScannerEnable(INT32 pHandle,INT32 OnOff);
-HRESULT ITCSCAN_GetScannerEnable(INT32 pHandle,INT32 *OnOff);
-LONG ITCSCAN_GetDeviceTotal (DWORD * pdwTotal);
-LONG ITCSCAN_GetDevice (DWORD dwIndex, LPTSTR deviceNameBuffer, DWORD * pBufferLength);
-LONG ITCSCAN_GetDefaultDevice (LPTSTR lpDeviceNameBuffer, DWORD * pBufferLength);
-void ITCSCAN_GetErrorString (HRESULT errorCode, TCHAR *pErrorString);
-HRESULT ITCSCAN_GetBarcodeConfiguration (TCHAR *apScannerConnection, TCHAR *apCfgStr, TCHAR *apCfgValue, INT32 aMaxLen);
-HRESULT ITCSCAN_SetBarcodeConfiguration (TCHAR *apScannerConnection, TCHAR *apCfgStr);
-HRESULT ITCSCAN_SetBarcodeConfigurationFromFile (TCHAR *apCfgStr);
-HRESULT ITCSCAN_GetBarcodeMessage (INT32 pHandle, int *pMsgType, INT32 *pMsgData);
+HRESULT ITCSCAN_SyncRead(INT32 pHandle, READ_DATA_STRUCT* pReadDataBlock);
+HRESULT ITCSCAN_SyncReadEx(INT32 pHandle, READ_DATA_STRUCT_EX* pReadDataBlock);
+HRESULT ITCSCAN_SyncReadWSid(INT32 pHandle, READ_DATA_STRUCT* pReadDataBlock, ITCSCAN_SID* pSid);
+HRESULT ITCSCAN_CancelRead(INT32 pHandle, BOOL FlushBufferedData, DWORD* pdwTotalDiscardedMessages,
+						   DWORD* pdwTotalDiscardedBytes);
+HRESULT ITCSCAN_GetAttribute(INT32 pHandle, int eAttribID, BYTE rgbBuffer[], DWORD dwBufferSize,
+							 DWORD* pnBufferData);
+HRESULT ITCSCAN_SetAttribute(INT32 pHandle, int eAttribID, BYTE rgbData[], DWORD dwBufferSize);
+HRESULT ITCSCAN_SetTriggerScanner(INT32 pHandle, bool TriggerOn);
+HRESULT ITCSCAN_GetTriggerScanner(INT32 pHandle, int* pTriggerOn);
+HRESULT ITCSCAN_SetDataLED(INT32 pHandle, bool On);
+HRESULT ITCSCAN_SetReadLED(INT32 pHandle, bool On);
+HRESULT ITCSCAN_SetScannerFilterGrid(INT32 pHandle, LPCTSTR pszGrid);
+HRESULT ITCSCAN_GetScannerFilterGrid(INT32 pHandle, LPTSTR pszGrid, INT32* Length);
+HRESULT ITCSCAN_SetScannerEnable(INT32 pHandle, INT32 OnOff);
+HRESULT ITCSCAN_GetScannerEnable(INT32 pHandle, INT32* OnOff);
+LONG ITCSCAN_GetDeviceTotal(DWORD* pdwTotal);
+LONG ITCSCAN_GetDevice(DWORD dwIndex, LPTSTR deviceNameBuffer, DWORD* pBufferLength);
+LONG ITCSCAN_GetDefaultDevice(LPTSTR lpDeviceNameBuffer, DWORD* pBufferLength);
+void ITCSCAN_GetErrorString(HRESULT errorCode, TCHAR* pErrorString);
+HRESULT ITCSCAN_GetBarcodeConfiguration(TCHAR* apScannerConnection, TCHAR* apCfgStr,
+										TCHAR* apCfgValue, INT32 aMaxLen);
+HRESULT ITCSCAN_SetBarcodeConfiguration(TCHAR* apScannerConnection, TCHAR* apCfgStr);
+HRESULT ITCSCAN_SetBarcodeConfigurationFromFile(TCHAR* apCfgStr);
+HRESULT ITCSCAN_GetBarcodeMessage(INT32 pHandle, int* pMsgType, INT32* pMsgData);
 
 
 bool ITCSCAN_GetContinuousReadFlag(INT32 pHandle);
 void ITCSCAN_SetContinuousReadFlag(INT32 pHandle, bool ContinReadFlag);
-HRESULT ITCSCAN_SetActionOnNextDevice(INT32 pHandle,int hDevice);
+HRESULT ITCSCAN_SetActionOnNextDevice(INT32 pHandle, int hDevice);
 
-HRESULT ITCSCAN_GetDeviceDetails(INT32 pHandle,DWORD hDevice,ITCSCAN_DEVICE_DETAILS *stDeviceDetails);
+HRESULT ITCSCAN_GetDeviceDetails(INT32 pHandle, DWORD hDevice,
+								 ITCSCAN_DEVICE_DETAILS* stDeviceDetails);
 
 
 #ifdef __cplusplus

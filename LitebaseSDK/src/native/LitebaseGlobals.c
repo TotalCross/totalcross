@@ -15,7 +15,7 @@ Hashtable htCreatedDrivers = { 0 }; // The hash table for the created connection
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // The list of table files currently opened.
 #if defined(POSIX) || defined(ANDROID)
-XFilesList filesList; 
+	XFilesList filesList;
 #endif
 
 // Globals for the parser.
@@ -23,28 +23,29 @@ Hashtable reserved = { 0 };                 // Table containing the reserved wor
 MemoryUsageHT memoryUsage = { 0 };          // Indicates how much memory a select sql command uses in its temporary .db.
 uint8 is[256] = { 0 };                      // An array to help the selection of the kind of the token.
 int8 function_x_datatype[10][7] = { // Matrix of data types which applies to the SQL functions.
-      {FUNCTION_DT_UPPER, FUNCTION_DT_LOWER, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },  
-      {FUNCTION_DT_ABS  , FUNCTION_DT_NONE , FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },     
-      {FUNCTION_DT_ABS  , FUNCTION_DT_NONE , FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },                   
-      {FUNCTION_DT_ABS  , FUNCTION_DT_NONE , FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },                  
-      {FUNCTION_DT_ABS  , FUNCTION_DT_NONE , FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },                  
-      {FUNCTION_DT_ABS  , FUNCTION_DT_NONE , FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },                  
-      {FUNCTION_DT_UPPER, FUNCTION_DT_LOWER, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },  
-      {FUNCTION_DT_NONE , FUNCTION_DT_NONE , FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },         
-      {FUNCTION_DT_YEAR , FUNCTION_DT_MONTH, FUNCTION_DT_DAY,  FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  }, 
-      {FUNCTION_DT_YEAR , FUNCTION_DT_MONTH, FUNCTION_DT_DAY,  FUNCTION_DT_HOUR, FUNCTION_DT_MINUTE, FUNCTION_DT_SECOND, FUNCTION_DT_MILLIS}}; 
+	{FUNCTION_DT_UPPER, FUNCTION_DT_LOWER, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_UPPER, FUNCTION_DT_LOWER, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_YEAR, FUNCTION_DT_MONTH, FUNCTION_DT_DAY,  FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
+	{FUNCTION_DT_YEAR, FUNCTION_DT_MONTH, FUNCTION_DT_DAY,  FUNCTION_DT_HOUR, FUNCTION_DT_MINUTE, FUNCTION_DT_SECOND, FUNCTION_DT_MILLIS}
+};
 
-// An array with the names of the SQL data functions.     
+// An array with the names of the SQL data functions.
 CharP names[10] = {"year", "month", "day", "hour", "minute", "second", "millis", "abs", "upper", "lower"};
 
 // Used to count bits in an index bitmap.
 uint8 bitsInNibble[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
-JChar questionMark[2] = {(JChar)'?', (JChar)'\0'}; // A jchar string representing "?".                           
+JChar questionMark[2] = {(JChar)'?', (JChar)'\0'}; // A jchar string representing "?".
 
 // juliana@253_9: improved Litebase parser.
-                                                                                       
-// Classes used.                                                                       
+
+// Classes used.
 TCClass litebaseConnectionClass = { 0 }; // LitebaseConnection
 TCClass loggerClass = { 0 };             // Logger
 
@@ -59,9 +60,10 @@ DECLARE_MUTEX(files);  // Mutex for the Litebase files list.
 int8 aggregateFunctionsTypes[FUNCTION_AGG_SUM + 1] = {INT_TYPE, UNDEFINED_TYPE, UNDEFINED_TYPE, DOUBLE_TYPE, DOUBLE_TYPE};
 
 // Data Type functions table.
-int8 dataTypeFunctionsTypes[FUNCTION_DT_LOWER + 1] = {SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, 
-                                                                                                      UNDEFINED_TYPE, CHARS_TYPE, CHARS_TYPE};
-// Number of days in a month. 
+int8 dataTypeFunctionsTypes[FUNCTION_DT_LOWER + 1] = {SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE,
+													  UNDEFINED_TYPE, CHARS_TYPE, CHARS_TYPE
+													 };
+// Number of days in a month.
 uint8 monthDays[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 // Each type size in the .db file.
@@ -115,7 +117,7 @@ heapAllocFunc TC_heapAlloc = { 0 };
 heapDestroyPrivateFunc TC_heapDestroyPrivate = { 0 };
 hstrdupFunc TC_hstrdup = { 0 };
 htFreeFunc TC_htFree = { 0 };
-htFreeContextFunc TC_htFreeContext = { 0 }; 
+htFreeContextFunc TC_htFreeContext = { 0 };
 htGet32Func TC_htGet32 = { 0 };
 htGet32InvFunc TC_htGet32Inv = { 0 };
 htGetPtrFunc TC_htGetPtr = { 0 };

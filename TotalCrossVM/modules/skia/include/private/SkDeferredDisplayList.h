@@ -11,10 +11,10 @@
 #include "SkSurfaceCharacterization.h"
 
 #if SK_SUPPORT_GPU
-#include "GrCCPerOpListPaths.h"
-#include "GrOpList.h"
+	#include "GrCCPerOpListPaths.h"
+	#include "GrOpList.h"
 
-#include <map>
+	#include <map>
 #endif
 
 class SkDeferredDisplayListPriv;
@@ -29,47 +29,47 @@ class SK_API SkDeferredDisplayList {
 public:
 
 #if SK_SUPPORT_GPU
-    // This object is the source from which the lazy proxy backing the DDL will pull its backing
-    // texture when the DDL is replayed. It has to be separately ref counted bc the lazy proxy
-    // can outlive the DDL.
-    class LazyProxyData : public SkRefCnt {
-    public:
-        // Upon being replayed - this field will be filled in (by the DrawingManager) with the proxy
-        // backing the destination SkSurface. Note that, since there is no good place to clear it
-        // it can become a dangling pointer.
-        GrRenderTargetProxy*     fReplayDest = nullptr;
-    };
+	// This object is the source from which the lazy proxy backing the DDL will pull its backing
+	// texture when the DDL is replayed. It has to be separately ref counted bc the lazy proxy
+	// can outlive the DDL.
+	class LazyProxyData : public SkRefCnt {
+	public:
+		// Upon being replayed - this field will be filled in (by the DrawingManager) with the proxy
+		// backing the destination SkSurface. Note that, since there is no good place to clear it
+		// it can become a dangling pointer.
+		GrRenderTargetProxy*     fReplayDest = nullptr;
+	};
 #else
-    class LazyProxyData : public SkRefCnt {};
+	class LazyProxyData : public SkRefCnt {};
 #endif
 
-    SkDeferredDisplayList(const SkSurfaceCharacterization& characterization,
-                          sk_sp<LazyProxyData>);
-    ~SkDeferredDisplayList();
+	SkDeferredDisplayList(const SkSurfaceCharacterization& characterization,
+						  sk_sp<LazyProxyData>);
+	~SkDeferredDisplayList();
 
-    const SkSurfaceCharacterization& characterization() const {
-        return fCharacterization;
-    }
+	const SkSurfaceCharacterization& characterization() const {
+		return fCharacterization;
+	}
 
-    // Provides access to functions that aren't part of the public API.
-    SkDeferredDisplayListPriv priv();
-    const SkDeferredDisplayListPriv priv() const;
+	// Provides access to functions that aren't part of the public API.
+	SkDeferredDisplayListPriv priv();
+	const SkDeferredDisplayListPriv priv() const;
 
 private:
-    friend class GrDrawingManager; // for access to 'fOpLists' and 'fLazyProxyData'
-    friend class SkDeferredDisplayListRecorder; // for access to 'fLazyProxyData'
-    friend class SkDeferredDisplayListPriv;
+	friend class GrDrawingManager; // for access to 'fOpLists' and 'fLazyProxyData'
+	friend class SkDeferredDisplayListRecorder; // for access to 'fLazyProxyData'
+	friend class SkDeferredDisplayListPriv;
 
-    const SkSurfaceCharacterization fCharacterization;
+	const SkSurfaceCharacterization fCharacterization;
 
 #if SK_SUPPORT_GPU
-    // This needs to match the same type in GrCoverageCountingPathRenderer.h
-    using PendingPathsMap = std::map<uint32_t, sk_sp<GrCCPerOpListPaths>>;
+	// This needs to match the same type in GrCoverageCountingPathRenderer.h
+	using PendingPathsMap = std::map<uint32_t, sk_sp<GrCCPerOpListPaths>>;
 
-    SkTArray<sk_sp<GrOpList>>    fOpLists;
-    PendingPathsMap              fPendingPaths;  // This is the path data from CCPR.
+	SkTArray<sk_sp<GrOpList>>    fOpLists;
+	PendingPathsMap              fPendingPaths;  // This is the path data from CCPR.
 #endif
-    sk_sp<LazyProxyData>         fLazyProxyData;
+	sk_sp<LazyProxyData>         fLazyProxyData;
 };
 
 #endif

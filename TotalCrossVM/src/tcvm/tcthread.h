@@ -64,33 +64,33 @@ Pthreads on Posix (iPhone, Linux, ...)
 #define MUTEX_VAR(x) x##Mutex
 
 #if defined(WIN32)
- #define MUTEX_TYPE CRITICAL_SECTION
- #define SETUP_MUTEX
+#define MUTEX_TYPE CRITICAL_SECTION
+#define SETUP_MUTEX
 #if defined (WP8)
- // spinCount (semaphore number) initialized with 1
-#define INIT_MUTEX_VAR(x)     do { /*debug("INIT_MUTEX_VAR %s", #x);*/ InitializeCriticalSectionEx(&(x), 1, 0); } while(0)
+	// spinCount (semaphore number) initialized with 1
+	#define INIT_MUTEX_VAR(x)     do { /*debug("INIT_MUTEX_VAR %s", #x);*/ InitializeCriticalSectionEx(&(x), 1, 0); } while(0)
 #else
- #define INIT_MUTEX_VAR(x)    InitializeCriticalSection(&(x))
+	#define INIT_MUTEX_VAR(x)    InitializeCriticalSection(&(x))
 #endif
 #define RESERVE_MUTEX_VAR(x)  do { /*debug("LOCKVAR %s", #x);*/ EnterCriticalSection(&(x)); } while(0)
- #define RELEASE_MUTEX_VAR(x) LeaveCriticalSection(&(x))
- #define DESTROY_MUTEX_VAR(x) DeleteCriticalSection(&(x))
+#define RELEASE_MUTEX_VAR(x) LeaveCriticalSection(&(x))
+#define DESTROY_MUTEX_VAR(x) DeleteCriticalSection(&(x))
 #elif defined(POSIX) || defined(ANDROID)
- #include <pthread.h>
- #if !defined(PTHREAD_MUTEX_RECURSIVE)
- #define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
- #endif
- #define SETUP_MUTEX \
-   pthread_mutexattr_t mutex_attrs; \
-   pthread_mutexattr_init(&mutex_attrs); \
-   pthread_mutexattr_settype(&mutex_attrs, PTHREAD_MUTEX_RECURSIVE)
- #define MUTEX_TYPE pthread_mutex_t
- #define INIT_MUTEX_VAR(x)    pthread_mutex_init(&(x), &mutex_attrs)
- #define RESERVE_MUTEX_VAR(x) pthread_mutex_lock(&(x))
- #define RELEASE_MUTEX_VAR(x) pthread_mutex_unlock(&(x))
- #define DESTROY_MUTEX_VAR(x) pthread_mutex_destroy(&(x))
+#include <pthread.h>
+#if !defined(PTHREAD_MUTEX_RECURSIVE)
+	#define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
+#endif
+#define SETUP_MUTEX \
+	pthread_mutexattr_t mutex_attrs; \
+	pthread_mutexattr_init(&mutex_attrs); \
+	pthread_mutexattr_settype(&mutex_attrs, PTHREAD_MUTEX_RECURSIVE)
+#define MUTEX_TYPE pthread_mutex_t
+#define INIT_MUTEX_VAR(x)    pthread_mutex_init(&(x), &mutex_attrs)
+#define RESERVE_MUTEX_VAR(x) pthread_mutex_lock(&(x))
+#define RELEASE_MUTEX_VAR(x) pthread_mutex_unlock(&(x))
+#define DESTROY_MUTEX_VAR(x) pthread_mutex_destroy(&(x))
 #else
- #error "Mutexes are not implemented"
+#error "Mutexes are not implemented"
 #endif
 
 #define INIT_MUTEX(x)    INIT_MUTEX_VAR(MUTEX_VAR(x))
@@ -115,36 +115,35 @@ extern DECLARE_MUTEX(mutexes);
 
 #if defined(WIN32)
 
- typedef DWORD WINAPI ThreadFunc(VoidP argP);
- typedef HANDLE ThreadHandle;
- typedef struct
- {
-    Context context;
-    TCObject threadObject;
-    ThreadHandle h;
- } *ThreadArgs, TThreadArgs;
+typedef DWORD WINAPI ThreadFunc(VoidP argP);
+typedef HANDLE ThreadHandle;
+typedef struct {
+	Context context;
+	TCObject threadObject;
+	ThreadHandle h;
+}* ThreadArgs, TThreadArgs;
 
 #elif defined(POSIX) || defined(ANDROID)
 
- #include <pthread.h>
- typedef VoidP (*ThreadFunc)(VoidP argP);
- typedef pthread_t ThreadHandle;
- typedef struct
- {
-    TCObject threadObject;
-    Context context;
-    pthread_cond_t state_cv;
-    pthread_mutex_t state_mutex;
-    bool start;
-    ThreadHandle h;
- } *ThreadArgs, TThreadArgs;
+#include <pthread.h>
+typedef VoidP(*ThreadFunc)(VoidP argP);
+typedef pthread_t ThreadHandle;
+typedef struct {
+	TCObject threadObject;
+	Context context;
+	pthread_cond_t state_cv;
+	pthread_mutex_t state_mutex;
+	bool start;
+	ThreadHandle h;
+}* ThreadArgs, TThreadArgs;
 
 #endif
 
 ThreadHandle threadCreateNative(Context context, ThreadFunc t, VoidP args);
 ThreadHandle threadGetCurrent();
 void threadCreateJava(Context currentContext, TCObject this_);
-void threadDestroy(ThreadHandle h, bool threadDestroyingItself); // must be used when exiting the application or the thread itself
+void threadDestroy(ThreadHandle h,
+				   bool threadDestroyingItself); // must be used when exiting the application or the thread itself
 void threadDestroyAll(); // destroy all threads
 
 void freeMutex(int32 hash, VoidP mutex);

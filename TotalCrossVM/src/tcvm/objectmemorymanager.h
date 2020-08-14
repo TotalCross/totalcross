@@ -10,37 +10,44 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-   UNLOCKED,
-   LOCKED,
+typedef enum {
+	UNLOCKED,
+	LOCKED,
 } LockState;
 
 /// ALWAYS call createObject instead of this one, unless you will call another constructor besides of the default one
 TC_API void preallocateArray(Context currentContext, TCObject sample, int32 length);
 typedef void (*preallocateArrayFunc)(Context currentContext, TCObject sample, int32 length);
-TC_API TCObject createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className);
-typedef TCObject (*createObjectWithoutCallingDefaultConstructorFunc)(Context currentContext, CharP className);
+TC_API TCObject createObjectWithoutCallingDefaultConstructor(Context currentContext,
+		CharP className);
+typedef TCObject(*createObjectWithoutCallingDefaultConstructorFunc)(Context currentContext,
+		CharP className);
 TC_API TCObject createObject(Context currentContext, CharP className);
-typedef TCObject (*createObjectFunc)(Context currentContext, CharP className);
-TC_API TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line);
-typedef TCObject (*createByteArrayObjectFunc)(Context currentContext, int32 len);
+typedef TCObject(*createObjectFunc)(Context currentContext, CharP className);
+TC_API TCObject createByteArrayObject(Context currentContext, int32 len, const char* file,
+									  int32 line);
+typedef TCObject(*createByteArrayObjectFunc)(Context currentContext, int32 len);
 TC_API TCObject createArrayObject(Context currentContext, CharP type, int32 len);
-typedef TCObject (*createArrayObjectFunc)(Context currentContext, CharP type, int32 len);
-TC_API TCObject createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI); // always call passing target as a held variable!
-typedef TCObject (*createArrayObjectMultiFunc)(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI); // always call passing target as a held variable!
+typedef TCObject(*createArrayObjectFunc)(Context currentContext, CharP type, int32 len);
+TC_API TCObject createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims,
+									   int32* regI); // always call passing target as a held variable!
+typedef TCObject(*createArrayObjectMultiFunc)(Context currentContext, CharP type, int32 count,
+		uint8* dims, int32* regI); // always call passing target as a held variable!
 /// only allocate space, you must transfer the char array by your own
 TC_API TCObject createStringObjectWithLen(Context currentContext, int32 len);
-typedef TCObject (*createStringObjectWithLenFunc)(Context currentContext, int32 len);
+typedef TCObject(*createStringObjectWithLenFunc)(Context currentContext, int32 len);
 /// if len<0, len is computed from srcChars length
 TC_API TCObject createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int32 len);
-typedef TCObject (*createStringObjectFromJCharPFunc)(Context currentContext, JCharP srcChars, int32 len);
+typedef TCObject(*createStringObjectFromJCharPFunc)(Context currentContext, JCharP srcChars,
+		int32 len);
 /// if len<0, len is computed from srcChars length
 TC_API TCObject createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int32 len);
-typedef TCObject (*createStringObjectFromTCHARPFunc)(Context currentContext, TCHARP srcChars, int32 len);
+typedef TCObject(*createStringObjectFromTCHARPFunc)(Context currentContext, TCHARP srcChars,
+		int32 len);
 /// if len<0, len is computed from srcChars length
 TC_API TCObject createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len);
-typedef TCObject (*createStringObjectFromCharPFunc)(Context currentContext, CharP srcChars, int32 len);
+typedef TCObject(*createStringObjectFromCharPFunc)(Context currentContext, CharP srcChars,
+		int32 len);
 /// if len<0, len is computed from srcChars length, use when creating code for both WinCE and Win32
 #if defined(UNICODE)
 #define createStringObjectFromTCHAR createStringObjectFromJCharP
@@ -87,19 +94,18 @@ typedef void (*setObjectLockFunc)(TCObject o, LockState lock);
  *
  * An Object is composed by its ObjectProperties, followed by a Value array.
  */
-struct TObjectProperties
-{
-   TCClass class_;
-   TCObject next,prev;
-   struct
-   {
-      uint32 size: 30; // object's size
-      uint32 lock: 1;  // lock the object, preventing it from being gc'd. The initial purpose of locking an object was to lock all constant pool strings and speedup the garbage collector process.
-      uint32 mark: 1;  // mark the object during a garbage collect.
+struct TObjectProperties {
+	TCClass class_;
+	TCObject next, prev;
+	struct {
+		uint32 size: 30; // object's size
+	uint32 lock:
+		1;  // lock the object, preventing it from being gc'd. The initial purpose of locking an object was to lock all constant pool strings and speedup the garbage collector process.
+		uint32 mark: 1;  // mark the object during a garbage collect.
 #if TBITS==64
-      uint32 dumb;
+		uint32 dumb;
 #endif
-   };
+	};
 };
 
 typedef uint8* Chunk;

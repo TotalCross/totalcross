@@ -5,13 +5,13 @@
 
 
 
-TESTCASE(jlT_yield) // java/lang/Thread native public static void yield();
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(jlT_yield) { // java/lang/Thread native public static void yield();
+	TEST_SKIP;
+finish:
+	;
 }
-TESTCASE(jlT_start) // java/lang/Thread native public void start();
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(jlT_start) { // java/lang/Thread native public void start();
+	TEST_SKIP;
+finish:
+	;
 }

@@ -6,12 +6,11 @@
 #include "tcvm.h"
 
 #if defined(WINCE) || defined(WIN32)
- #include "win/errormsg_c.h"
+	#include "win/errormsg_c.h"
 #else
- #include "posix/errormsg_c.h"
+	#include "posix/errormsg_c.h"
 #endif
 
-TC_API CharP getErrorMessage(int32 errorCode, CharP buffer, uint32 size)
-{
-   return privateGetErrorMessage(errorCode, buffer, size);
+TC_API CharP getErrorMessage(int32 errorCode, CharP buffer, uint32 size) {
+	return privateGetErrorMessage(errorCode, buffer, size);
 }

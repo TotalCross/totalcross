@@ -17,9 +17,9 @@
 #define DBO_EXT  ".dbo" // Database object files.
 #define IDK_EXT  ".idk" // Index b-tree files.
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 
-// Constants used in date format.  
+// Constants used in date format.
 #define DATE_MDY  1  // rnovais@567_2: month day year.
 #define DATE_DMY  2  // rnovais@567_2: day month year.
 #define DATE_YMD  3  // rnovais@567_2: year month day.
@@ -61,7 +61,7 @@
 #define FUNCTION_AGG_AVG    3  // AVG()
 #define FUNCTION_AGG_SUM    4  // SUM()
 
-// rnovais@568_10: supported DtaType Functions 
+// rnovais@568_10: supported DtaType Functions
 #define FUNCTION_DT_NONE   -1 // No function. 
 #define FUNCTION_DT_YEAR    0 // YEAR()
 #define FUNCTION_DT_MONTH   1 // MONTH()
@@ -79,19 +79,19 @@
 #define WC_TYPE_OR_DIFF_RS   1 // It is an OR of expressions.
 
 // juliana@250_8: now the maximum number of columns, fields, tables, etc is 254 instead of 128 except on palm.
-// guich@561_1: maximums for the parsing process. 
+// guich@561_1: maximums for the parsing process.
 #define MAXIMUMS 254 // guich@561_1: maximums for the parsing process. 
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 #ifdef ANDROID
-#define MAX_OPEN_FILES 512
+	#define MAX_OPEN_FILES 512
 #elif defined darwin
-#define MAX_OPEN_FILES 128
+	#define MAX_OPEN_FILES 128
 #elif defined POSIX
-#define MAX_OPEN_FILES 1024
-#endif 
+	#define MAX_OPEN_FILES 1024
+#endif
 
-// Available operand types. 
+// Available operand types.
 #define OP_NONE                0 // No operator.
 #define OP_BOOLEAN_AND         1 // Boolean operator AND.
 #define OP_BOOLEAN_OR          2 // Boolean operator OR.
@@ -358,7 +358,7 @@
 #define ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER  25 // "Length of default value is bigger than column size."
 #define ERR_NOT_NULL_DEFAULT                26 // "An added column declared as NOT NULL must have a not null default value."
 
-// Driver errors.  
+// Driver errors.
 #define ERR_DRIVER_CLOSED             27 // "This driver instance was closed and can't be used anymore. Please get a new instance of it."
 #define ERR_RESULTSET_CLOSED          28 // "ResultSet already closed!"
 #define ERR_RESULTSETMETADATA_CLOSED  29 // "ResultSetMetaData can't be used after the ResultSet is closed. "
@@ -373,7 +373,7 @@
 #define ERR_TABLE_ALREADY_CREATED  36 // "Table already created: "
 #define ERR_WRONG_STRING_FORMAT    37 // "It is not possible to open a table within a connection with a different string format."
 #define ERR_WRONG_CRYPTO_FORMAT    38 // "It is not possible to open a table within a connection with a different cryptography format."
-   
+
 // ROWID errors.
 #define ERR_ROWID_CANNOT_BE_CHANGED  39 // "ROWID can't be changed by the user!"
 
@@ -384,7 +384,7 @@
 #define ERR_PARAMETER_NOT_DEFINED           43 // "A value was not defined for the parameter "
 #define ERR_INVALID_PARAMETER_INDEX         44 // "Invalid parameter index."
 
-// Rename errors. 
+// Rename errors.
 #define ERR_TABLE_ALREADY_EXIST   45 // "Can't rename table. This table already exists: "
 #define ERR_COLUMN_ALREADY_EXIST  46 // "Column already exists: "
 
@@ -407,7 +407,7 @@
 #define ERR_IS_NOT_AGGREG_FUNCTION             54
 
 // "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause."
-#define ERR_CANNOT_MIX_AGGREG_FUNCTION         55 
+#define ERR_CANNOT_MIX_AGGREG_FUNCTION         55
 
 #define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  56 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
 
@@ -425,12 +425,12 @@
 #define ERR_DROP_PRIMARY_KEY       62 // "Can't drop a primary key index with drop index."
 #define ERR_INDEX_LARGE            63 // "Index too large. It can't have more than 32767 nodes."
 
-// NOT NULL errors. 
+// NOT NULL errors.
 #define ERR_PK_CANT_BE_NULL     64  // "Primary key can't have null." 
 #define ERR_FIELD_CANT_BE_NULL  65  // "Field can't be null: "
 #define ERR_PARAM_NULL          66  // "A parameter in a where clause can't be null."
 
-// Result set errors. 
+// Result set errors.
 #define ERR_RS_INV_POS           67 // "ResultSet in invalid record position: ."
 #define ERR_RS_DEC_PLACES_START  68 // "Invalid value for decimal places: . It must range from -1 to 40."
 
@@ -510,12 +510,12 @@
 #define MAX_SHORT_VALUE   (int16)32767               // The maximum short value: 32767.
 
 #ifdef POSIX // juliana@226_18: minimum float and double values for POSIX are different from IEEE values.
-   #define MIN_FLOAT_VALUE   1.17549435e-38
-   #define MIN_DOUBLE_VALUE  2.2250738585072014e-308
+	#define MIN_FLOAT_VALUE   1.17549435e-38
+	#define MIN_DOUBLE_VALUE  2.2250738585072014e-308
 #else
-   #define MIN_FLOAT_VALUE   1.4e-45    // The minimum float value: 1.4e-45f. 
-   #define MIN_DOUBLE_VALUE  4.9E-324   // The minimum double value: 4.9E-324. 
-#endif 
+	#define MIN_FLOAT_VALUE   1.4e-45    // The minimum float value: 1.4e-45f.
+	#define MIN_DOUBLE_VALUE  4.9E-324   // The minimum double value: 4.9E-324.
+#endif
 #define MAX_FLOAT_VALUE   3.4028235e+38 // The maximum float value: 3.4028235e+38f. 
 
 #endif

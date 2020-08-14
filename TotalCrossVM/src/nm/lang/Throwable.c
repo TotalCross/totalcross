@@ -9,36 +9,34 @@
 
 //////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_TEST_SUITE
-CharP throwableTrace;
+	CharP throwableTrace;
 #endif
 
-void printStackTraceFromObj(TCObject traceObj)
-{
-   if (traceObj)
-   {
-      CharP throwableTrace = String2CharP(traceObj);
-      #ifndef ENABLE_TEST_SUITE
-      if (throwableTrace)
-         debug(throwableTrace);
-      xfree(throwableTrace);
-      #endif
-   }
-   else
-   {
-      #ifndef ENABLE_TEST_SUITE
-      debug("No trace available");
-      #endif
-   }
+void printStackTraceFromObj(TCObject traceObj) {
+	if (traceObj) {
+		CharP throwableTrace = String2CharP(traceObj);
+#ifndef ENABLE_TEST_SUITE
+		if (throwableTrace) {
+			debug(throwableTrace);
+		}
+		xfree(throwableTrace);
+#endif
+	} else {
+#ifndef ENABLE_TEST_SUITE
+		debug("No trace available");
+#endif
+	}
 }
-TC_API void jlT_printStackTraceNative(NMParams p) // java/lang/Throwable native private void printStackTraceNative();
-{
-   TCObject ex;
+TC_API void jlT_printStackTraceNative(NMParams
+									  p) { // java/lang/Throwable native private void printStackTraceNative();
+	TCObject ex;
 
-   ex = p->obj[0];
-   if (ex != null)  
-      printStackTraceFromObj(*Throwable_trace(ex));
+	ex = p->obj[0];
+	if (ex != null) {
+		printStackTraceFromObj(*Throwable_trace(ex));
+	}
 }
 
 #ifdef ENABLE_TEST_SUITE
-#include "Throwable_test.h"
+	#include "Throwable_test.h"
 #endif

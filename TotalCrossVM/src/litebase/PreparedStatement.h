@@ -23,7 +23,7 @@ void freePreparedStatement(int32 unused, TCObject statement);
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
- * @param p->i32[1] The value of the parameter.   
+ * @param p->i32[1] The value of the parameter.
  * @param type The type of the parameter.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws OutOfMemoryError If a memory allocation fails.
@@ -38,13 +38,14 @@ bool psSetNumericParamValue(NMParams p, int32 type);
  * @param string The string object to be inserted.
  * @param index The parameter index.
  * @param stringLength The string length.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-bool psSetStringParamValue(Context context, TCObject stmt, TCObject string, int32 index, int32 stringLength);
+bool psSetStringParamValue(Context context, TCObject stmt, TCObject string, int32 index,
+						   int32 stringLength);
 
 /**
- * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
+ * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled,
  * returns the real sql, filled with the arguments. Used only for the logger.
  *
  * @param context The thread context where the function is being executed.
@@ -62,7 +63,7 @@ TCObject toStringBuffer(Context context, TCObject statement);
 void resetWhereClause(SQLBooleanClause* whereClause, Heap heap);
 
 /**
- * Resets an order by or group by clause because the <code>tableColIndex</code> may change between runs of a prepared statement with a sort field. 
+ * Resets an order by or group by clause because the <code>tableColIndex</code> may change between runs of a prepared statement with a sort field.
  * So, it is necessary to cache the <code>tableColIndex</code> of order by fields.
  *
  * @param orderByClause the order by clause to be reseted.
@@ -81,8 +82,9 @@ void resetColumnListClause(SQLColumnListClause* columnListClause);
  * @param paramCount The number of parameters.
  * @param isPreparedUpdateStmt Indicates if the prepared statement is an update prepared statement or not.
  */
-void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, uint8* paramDefined,  uint8* paramIndexes, int32 nValues, 
-                                                                                                                          int32 paramCount);
+void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, uint8* paramDefined,
+						   uint8* paramIndexes, int32 nValues,
+						   int32 paramCount);
 
 /**
  * Tests if the prepared statement or the driver where it was created is closed.
