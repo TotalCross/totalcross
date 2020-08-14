@@ -8,8 +8,8 @@ package totalcross.ui.event;
 /** Interface used to listen to MultiTouch events. */
 
 public interface MultiTouchListener extends EventHandler {
-  /** A SCALE event was dispatched.
-   * @see PenEvent 
-   */
-  public void scale(MultiTouchEvent e);
+	/** A SCALE event was dispatched.
+	 * @see PenEvent
+	 */
+	public void scale(MultiTouchEvent e);
 }

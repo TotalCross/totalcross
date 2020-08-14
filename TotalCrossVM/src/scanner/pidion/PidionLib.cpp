@@ -1,5 +1,5 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -17,27 +17,25 @@ Context currentContext;
 #ifdef __cplusplus
 extern "C" {
 #endif
-SCAN_API int32 LibOpen(OpenParams params)
-{
-   currentContext = params->currentContext;
-   // load the dll
-   if ((apidll = LoadLibrary(TEXT("bbappapi.dll"))) == null)
-      return false;
-   bool b1 = CameraLibOpen(params);
-   bool b2 = PrinterLibOpen(params);
-   return b1 && b2;
+SCAN_API int32 LibOpen(OpenParams params) {
+	currentContext = params->currentContext;
+	// load the dll
+	if ((apidll = LoadLibrary(TEXT("bbappapi.dll"))) == null) {
+		return false;
+	}
+	bool b1 = CameraLibOpen(params);
+	bool b2 = PrinterLibOpen(params);
+	return b1 && b2;
 }
 
-SCAN_API void LibClose()
-{
-   CameraLibClose();
-   PrinterLibClose();
-   // free the dll
-   if (apidll != null)
-   {
-      FreeLibrary(apidll);
-      apidll = null;
-   }
+SCAN_API void LibClose() {
+	CameraLibClose();
+	PrinterLibClose();
+	// free the dll
+	if (apidll != null) {
+		FreeLibrary(apidll);
+		apidll = null;
+	}
 }
 #ifdef __cplusplus
 }

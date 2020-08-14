@@ -5,6 +5,6 @@ package totalcross.ui.event;
 
 public interface SizeChangeHandler extends EventHandler {
 
-  void onSizeChange(SizeChangeEvent event);
-  
+	void onSizeChange(SizeChangeEvent event);
+
 }

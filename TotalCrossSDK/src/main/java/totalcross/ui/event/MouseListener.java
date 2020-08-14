@@ -6,28 +6,28 @@
 package totalcross.ui.event;
 
 /** Interface used to listen to mouse move events.
- * @since TotalCross 1.27 
+ * @since TotalCross 1.27
  */
 
 public interface MouseListener extends EventHandler {
-  /** A MOUSE_MOVE event was dispatched.
-   * @see PenEvent 
-   */
-  public void mouseMove(MouseEvent e);
+	/** A MOUSE_MOVE event was dispatched.
+	 * @see PenEvent
+	 */
+	public void mouseMove(MouseEvent e);
 
-  /** A MOUSE_IN event was dispatched when the mouse was going into a control.
-   * @see PenEvent 
-   */
-  public void mouseIn(MouseEvent e);
+	/** A MOUSE_IN event was dispatched when the mouse was going into a control.
+	 * @see PenEvent
+	 */
+	public void mouseIn(MouseEvent e);
 
-  /** A MOUSE_OUT event was dispatched when the mouse was going out of a control.
-   * @see PenEvent 
-   */
-  public void mouseOut(MouseEvent e);
+	/** A MOUSE_OUT event was dispatched when the mouse was going out of a control.
+	 * @see PenEvent
+	 */
+	public void mouseOut(MouseEvent e);
 
-  /** The event type for a mouse wheel moving down.
-   * This is a hardware event. 
-   */
-  public void mouseWheel(MouseEvent e);
+	/** The event type for a mouse wheel moving down.
+	 * This is a hardware event.
+	 */
+	public void mouseWheel(MouseEvent e);
 
 }

@@ -62,94 +62,94 @@ import java.util.Vector;
  * @status updated to 1.4
  */
 public class Stack4D<T> extends Vector<T> {
-  // We could use Vector methods internally for the following methods,
-  // but have used Vector fields directly for efficiency (i.e. this
-  // often reduces out duplicate bounds checking).
+	// We could use Vector methods internally for the following methods,
+	// but have used Vector fields directly for efficiency (i.e. this
+	// often reduces out duplicate bounds checking).
 
-  /**
-   * This constructor creates a new Stack, initially empty
-   */
-  public Stack4D() {
-  }
+	/**
+	 * This constructor creates a new Stack, initially empty
+	 */
+	public Stack4D() {
+	}
 
-  /**
-   * Pushes an Object onto the top of the stack.  This method is effectively
-   * the same as addElement(item).
-   *
-   * @param item the Object to push onto the stack
-   * @return the Object pushed onto the stack
-   * @see Vector#addElement(Object)
-   */
-  public T push(T item) {
-    // When growing the Stack, use the Vector routines in case more
-    // memory is needed.
-    // Note: spec indicates that this method *always* returns obj passed in!
+	/**
+	 * Pushes an Object onto the top of the stack.  This method is effectively
+	 * the same as addElement(item).
+	 *
+	 * @param item the Object to push onto the stack
+	 * @return the Object pushed onto the stack
+	 * @see Vector#addElement(Object)
+	 */
+	public T push(T item) {
+		// When growing the Stack, use the Vector routines in case more
+		// memory is needed.
+		// Note: spec indicates that this method *always* returns obj passed in!
 
-    addElement(item);
-    return item;
-  }
+		addElement(item);
+		return item;
+	}
 
-  /**
-   * Pops an item from the stack and returns it.  The item popped is
-   * removed from the Stack.
-   *
-   * @return the Object popped from the stack
-   * @throws EmptyStackException if the stack is empty
-   */
-  @SuppressWarnings("unchecked")
-  public synchronized T pop() {
-    if (elementCount == 0) {
-      throw new EmptyStackException();
-    }
+	/**
+	 * Pops an item from the stack and returns it.  The item popped is
+	 * removed from the Stack.
+	 *
+	 * @return the Object popped from the stack
+	 * @throws EmptyStackException if the stack is empty
+	 */
+	@SuppressWarnings("unchecked")
+	public synchronized T pop() {
+		if (elementCount == 0) {
+			throw new EmptyStackException();
+		}
 
-    modCount++;
-    T obj = (T) elementData[--elementCount];
+		modCount++;
+		T obj = (T) elementData[--elementCount];
 
-    // Set topmost element to null to assist the gc in cleanup.
-    elementData[elementCount] = null;
-    return obj;
-  }
+		// Set topmost element to null to assist the gc in cleanup.
+		elementData[elementCount] = null;
+		return obj;
+	}
 
-  /**
-   * Returns the top Object on the stack without removing it.
-   *
-   * @return the top Object on the stack
-   * @throws EmptyStackException if the stack is empty
-   */
-  @SuppressWarnings("unchecked")
-  public synchronized T peek() {
-    if (elementCount == 0) {
-      throw new EmptyStackException();
-    }
+	/**
+	 * Returns the top Object on the stack without removing it.
+	 *
+	 * @return the top Object on the stack
+	 * @throws EmptyStackException if the stack is empty
+	 */
+	@SuppressWarnings("unchecked")
+	public synchronized T peek() {
+		if (elementCount == 0) {
+			throw new EmptyStackException();
+		}
 
-    return (T) elementData[elementCount - 1];
-  }
+		return (T) elementData[elementCount - 1];
+	}
 
-  /**
-   * Tests if the stack is empty.
-   *
-   * @return true if the stack contains no items, false otherwise
-   */
-  public synchronized boolean empty() {
-    return elementCount == 0;
-  }
+	/**
+	 * Tests if the stack is empty.
+	 *
+	 * @return true if the stack contains no items, false otherwise
+	 */
+	public synchronized boolean empty() {
+		return elementCount == 0;
+	}
 
-  /**
-   * Returns the position of an Object on the stack, with the top
-   * most Object being at position 1, and each Object deeper in the
-   * stack at depth + 1.
-   *
-   * @param o The object to search for
-   * @return The 1 based depth of the Object, or -1 if the Object
-   *         is not on the stack
-   */
-  public synchronized int search(Object o) {
-    int i = elementCount;
-    while (--i >= 0) {
-      if (AbstractCollection4D.equals(o, elementData[i])) {
-        return elementCount - i;
-      }
-    }
-    return -1;
-  }
+	/**
+	 * Returns the position of an Object on the stack, with the top
+	 * most Object being at position 1, and each Object deeper in the
+	 * stack at depth + 1.
+	 *
+	 * @param o The object to search for
+	 * @return The 1 based depth of the Object, or -1 if the Object
+	 *         is not on the stack
+	 */
+	public synchronized int search(Object o) {
+		int i = elementCount;
+		while (--i >= 0) {
+			if (AbstractCollection4D.equals(o, elementData[i])) {
+				return elementCount - i;
+			}
+		}
+		return -1;
+	}
 }

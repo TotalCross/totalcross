@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC069_fstore_2 extends StoreLocal {
-  public BC069_fstore_2() {
-    super(2, -1, FLOAT);
-  }
+	public BC069_fstore_2() {
+		super(2, -1, FLOAT);
+	}
 }

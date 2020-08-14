@@ -15,121 +15,121 @@ import java.nio.channels.WritableByteChannel;
 
 public class FileChannelImpl4D extends FileChannel {
 
-    private int nfd = -1;
+	private int nfd = -1;
 
-    FileChannelImpl4D(int fd) {
-        this.nfd = fd;
-    }
+	FileChannelImpl4D(int fd) {
+		this.nfd = fd;
+	}
 
-    FileChannelImpl4D() {
+	FileChannelImpl4D() {
 
-    }
+	}
 
-    native public int read() throws IOException;
+	native public int read() throws IOException;
 
-    public int available() {
-        return 0;
-    }
+	public int available() {
+		return 0;
+	}
 
-    @Override
-    public int read(ByteBuffer dst) throws IOException {
-        return 0;
-    }
+	@Override
+	public int read(ByteBuffer dst) throws IOException {
+		return 0;
+	}
 
-    native public int read(byte[] dst, int offset, int length) throws IOException;
+	native public int read(byte[] dst, int offset, int length) throws IOException;
 
-    @Override
-    public long read(ByteBuffer[] dsts, int offset, int length) throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public long read(ByteBuffer[] dsts, int offset, int length) throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    native public int write(byte[] src, int offset, int length) throws IOException;
+	native public int write(byte[] src, int offset, int length) throws IOException;
 
-    @Override
-    public int write(ByteBuffer src) throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public int write(ByteBuffer src) throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public long write(ByteBuffer[] srcs, int offset, int length) throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public long write(ByteBuffer[] srcs, int offset, int length) throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public long position() throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public long position() throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public FileChannel position(long newPosition) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public FileChannel position(long newPosition) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public long size() throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public long size() throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public FileChannel truncate(long size) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public FileChannel truncate(long size) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public void force(boolean metaData) throws IOException {
-        // TODO Auto-generated method stub
+	@Override
+	public void force(boolean metaData) throws IOException {
+		// TODO Auto-generated method stub
 
-    }
+	}
 
-    @Override
-    public long transferTo(long position, long count, WritableByteChannel target) throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public long transferTo(long position, long count, WritableByteChannel target) throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public int read(ByteBuffer dst, long position) throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public int read(ByteBuffer dst, long position) throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public int write(ByteBuffer src, long position) throws IOException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	public int write(ByteBuffer src, long position) throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
-    @Override
-    public MappedByteBuffer map(MapMode mode, long position, long size) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public MappedByteBuffer map(MapMode mode, long position, long size) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public FileLock lock(long position, long size, boolean shared) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public FileLock lock(long position, long size, boolean shared) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public FileLock tryLock(long position, long size, boolean shared) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public FileLock tryLock(long position, long size, boolean shared) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    protected native void implCloseChannel() throws IOException;
+	@Override
+	protected native void implCloseChannel() throws IOException;
 }

@@ -16,7 +16,7 @@ import totalcross.util.LangTag;
  * to the customs and conventions of the user's native country, region, or culture.
  */
 public class Locale4D {
-	
+
 	private String language;
 	private String iSO3language;
 	private String country;
@@ -24,155 +24,151 @@ public class Locale4D {
 	private String variant;
 	private String script;
 	private String extension;
-	
-	private static String [][] iSOToISO3Languages = 
-			{
-					{"aa", "aar"}, {"ab", "abk"}, {"ae", "ave"}, {"af", "afr"}, {"ak", "aka"}, 
-					{"am", "amh"}, {"an", "arg"}, {"ar", "ara"}, {"as", "asm"}, {"av", "ava"}, 
-					{"ay", "aym"}, {"az", "aze"}, {"ba", "bak"}, {"be", "bel"}, {"bg", "bul"}, 
-					{"bh", "bih"}, {"bi", "bis"}, {"bm", "bam"}, {"bn", "ben"}, {"bo", "bod"}, 
-					{"br", "bre"}, {"bs", "bos"}, {"ca", "cat"}, {"ce", "che"}, {"ch", "cha"}, 
-					{"co", "cos"}, {"cr", "cre"}, {"cs", "ces"}, {"cu", "chu"}, {"cv", "chv"}, 
-					{"cy", "cym"}, {"da", "dan"}, {"de", "deu"}, {"dv", "div"}, {"dz", "dzo"}, 
-					{"ee", "ewe"}, {"el", "ell"}, {"en", "eng"}, {"eo", "epo"}, {"es", "spa"}, 
-					{"et", "est"}, {"eu", "eus"}, {"fa", "fas"}, {"ff", "ful"}, {"fi", "fin"}, 
-					{"fj", "fij"}, {"fo", "fao"}, {"fr", "fra"}, {"fy", "fry"}, {"ga", "gle"}, 
-					{"gd", "gla"}, {"gl", "glg"}, {"gn", "grn"}, {"gu", "guj"}, {"gv", "glv"}, 
-					{"ha", "hau"}, {"he", "heb"}, {"hi", "hin"}, {"ho", "hmo"}, {"hr", "hrv"}, 
-					{"ht", "hat"}, {"hu", "hun"}, {"hy", "hye"}, {"hz", "her"}, {"ia", "ina"}, 
-					{"id", "ind"}, {"ie", "ile"}, {"ig", "ibo"}, {"ii", "iii"}, {"ik", "ipk"}, 
-					{"in", "ind"}, {"io", "ido"}, {"is", "isl"}, {"it", "ita"}, {"iu", "iku"}, 
-					{"iw", "heb"}, {"ja", "jpn"}, {"ji", "yid"}, {"jv", "jav"}, {"ka", "kat"}, 
-					{"kg", "kon"}, {"ki", "kik"}, {"kj", "kua"}, {"kk", "kaz"}, {"kl", "kal"}, 
-					{"km", "khm"}, {"kn", "kan"}, {"ko", "kor"}, {"kr", "kau"}, {"ks", "kas"}, 
-					{"ku", "kur"}, {"kv", "kom"}, {"kw", "cor"}, {"ky", "kir"}, {"la", "lat"}, 
-					{"lb", "ltz"}, {"lg", "lug"}, {"li", "lim"}, {"ln", "lin"}, {"lo", "lao"}, 
-					{"lt", "lit"}, {"lu", "lub"}, {"lv", "lav"}, {"mg", "mlg"}, {"mh", "mah"}, 
-					{"mi", "mri"}, {"mk", "mkd"}, {"ml", "mal"}, {"mn", "mon"}, {"mo", "mol"}, 
-					{"mr", "mar"}, {"ms", "msa"}, {"mt", "mlt"}, {"my", "mya"}, {"na", "nau"}, 
-					{"nb", "nob"}, {"nd", "nde"}, {"ne", "nep"}, {"ng", "ndo"}, {"nl", "nld"}, 
-					{"nn", "nno"}, {"no", "nor"}, {"nr", "nbl"}, {"nv", "nav"}, {"ny", "nya"}, 
-					{"oc", "oci"}, {"oj", "oji"}, {"om", "orm"}, {"or", "ori"}, {"os", "oss"}, 
-					{"pa", "pan"}, {"pi", "pli"}, {"pl", "pol"}, {"ps", "pus"}, {"pt", "por"}, 
-					{"qu", "que"}, {"rm", "roh"}, {"rn", "run"}, {"ro", "ron"}, {"ru", "rus"}, 
-					{"rw", "kin"}, {"sa", "san"}, {"sc", "srd"}, {"sd", "snd"}, {"se", "sme"}, 
-					{"sg", "sag"}, {"si", "sin"}, {"sk", "slk"}, {"sl", "slv"}, {"sm", "smo"}, 
-					{"sn", "sna"}, {"so", "som"}, {"sq", "sqi"}, {"sr", "srp"}, {"ss", "ssw"}, 
-					{"st", "sot"}, {"su", "sun"}, {"sv", "swe"}, {"sw", "swa"}, {"ta", "tam"}, 
-					{"te", "tel"}, {"tg", "tgk"}, {"th", "tha"}, {"ti", "tir"}, {"tk", "tuk"}, 
-					{"tl", "tgl"}, {"tn", "tsn"}, {"to", "ton"}, {"tr", "tur"}, {"ts", "tso"}, 
-					{"tt", "tat"}, {"tw", "twi"}, {"ty", "tah"}, {"ug", "uig"}, {"uk", "ukr"}, 
-					{"ur", "urd"}, {"uz", "uzb"}, {"ve", "ven"}, {"vi", "vie"}, {"vo", "vol"}, 
-					{"wa", "wln"}, {"wo", "wol"}, {"xh", "xho"}, {"yi", "yid"}, {"yo", "yor"}, 
-					{"za", "zha"}, {"zh", "zho"}, {"zu", "zul"} 
-			};
-	private static String [][] iSOToISO3Countries = 
-			{
-					{"AD", "AND"}, {"AE", "ARE"}, {"AF", "AFG"}, {"AG", "ATG"}, {"AI", "AIA"}, 
-					{"AL", "ALB"}, {"AM", "ARM"}, {"AN", "ANT"}, {"AO", "AGO"}, {"AQ", "ATA"}, 
-					{"AR", "ARG"}, {"AS", "ASM"}, {"AT", "AUT"}, {"AU", "AUS"}, {"AW", "ABW"}, 
-					{"AX", "ALA"}, {"AZ", "AZE"}, {"BA", "BIH"}, {"BB", "BRB"}, {"BD", "BGD"}, 
-					{"BE", "BEL"}, {"BF", "BFA"}, {"BG", "BGR"}, {"BH", "BHR"}, {"BI", "BDI"}, 
-					{"BJ", "BEN"}, {"BL", "BLM"}, {"BM", "BMU"}, {"BN", "BRN"}, {"BO", "BOL"}, 
-					{"BQ", "BES"}, {"BR", "BRA"}, {"BS", "BHS"}, {"BT", "BTN"}, {"BV", "BVT"}, 
-					{"BW", "BWA"}, {"BY", "BLR"}, {"BZ", "BLZ"}, {"CA", "CAN"}, {"CC", "CCK"}, 
-					{"CD", "COD"}, {"CF", "CAF"}, {"CG", "COG"}, {"CH", "CHE"}, {"CI", "CIV"}, 
-					{"CK", "COK"}, {"CL", "CHL"}, {"CM", "CMR"}, {"CN", "CHN"}, {"CO", "COL"}, 
-					{"CR", "CRI"}, {"CU", "CUB"}, {"CV", "CPV"}, {"CW", "CUW"}, {"CX", "CXR"}, 
-					{"CY", "CYP"}, {"CZ", "CZE"}, {"DE", "DEU"}, {"DJ", "DJI"}, {"DK", "DNK"}, 
-					{"DM", "DMA"}, {"DO", "DOM"}, {"DZ", "DZA"}, {"EC", "ECU"}, {"EE", "EST"}, 
-					{"EG", "EGY"}, {"EH", "ESH"}, {"ER", "ERI"}, {"ES", "ESP"}, {"ET", "ETH"}, 
-					{"FI", "FIN"}, {"FJ", "FJI"}, {"FK", "FLK"}, {"FM", "FSM"}, {"FO", "FRO"}, 
-					{"FR", "FRA"}, {"GA", "GAB"}, {"GB", "GBR"}, {"GD", "GRD"}, {"GE", "GEO"}, 
-					{"GF", "GUF"}, {"GG", "GGY"}, {"GH", "GHA"}, {"GI", "GIB"}, {"GL", "GRL"}, 
-					{"GM", "GMB"}, {"GN", "GIN"}, {"GP", "GLP"}, {"GQ", "GNQ"}, {"GR", "GRC"}, 
-					{"GS", "SGS"}, {"GT", "GTM"}, {"GU", "GUM"}, {"GW", "GNB"}, {"GY", "GUY"}, 
-					{"HK", "HKG"}, {"HM", "HMD"}, {"HN", "HND"}, {"HR", "HRV"}, {"HT", "HTI"}, 
-					{"HU", "HUN"}, {"ID", "IDN"}, {"IE", "IRL"}, {"IL", "ISR"}, {"IM", "IMN"}, 
-					{"IN", "IND"}, {"IO", "IOT"}, {"IQ", "IRQ"}, {"IR", "IRN"}, {"IS", "ISL"}, 
-					{"IT", "ITA"}, {"JE", "JEY"}, {"JM", "JAM"}, {"JO", "JOR"}, {"JP", "JPN"}, 
-					{"KE", "KEN"}, {"KG", "KGZ"}, {"KH", "KHM"}, {"KI", "KIR"}, {"KM", "COM"}, 
-					{"KN", "KNA"}, {"KP", "PRK"}, {"KR", "KOR"}, {"KW", "KWT"}, {"KY", "CYM"}, 
-					{"KZ", "KAZ"}, {"LA", "LAO"}, {"LB", "LBN"}, {"LC", "LCA"}, {"LI", "LIE"}, 
-					{"LK", "LKA"}, {"LR", "LBR"}, {"LS", "LSO"}, {"LT", "LTU"}, {"LU", "LUX"}, 
-					{"LV", "LVA"}, {"LY", "LBY"}, {"MA", "MAR"}, {"MC", "MCO"}, {"MD", "MDA"}, 
-					{"ME", "MNE"}, {"MF", "MAF"}, {"MG", "MDG"}, {"MH", "MHL"}, {"MK", "MKD"}, 
-					{"ML", "MLI"}, {"MM", "MMR"}, {"MN", "MNG"}, {"MO", "MAC"}, {"MP", "MNP"}, 
-					{"MQ", "MTQ"}, {"MR", "MRT"}, {"MS", "MSR"}, {"MT", "MLT"}, {"MU", "MUS"}, 
-					{"MV", "MDV"}, {"MW", "MWI"}, {"MX", "MEX"}, {"MY", "MYS"}, {"MZ", "MOZ"}, 
-					{"NA", "NAM"}, {"NC", "NCL"}, {"NE", "NER"}, {"NF", "NFK"}, {"NG", "NGA"}, 
-					{"NI", "NIC"}, {"NL", "NLD"}, {"NO", "NOR"}, {"NP", "NPL"}, {"NR", "NRU"}, 
-					{"NU", "NIU"}, {"NZ", "NZL"}, {"OM", "OMN"}, {"PA", "PAN"}, {"PE", "PER"}, 
-					{"PF", "PYF"}, {"PG", "PNG"}, {"PH", "PHL"}, {"PK", "PAK"}, {"PL", "POL"}, 
-					{"PM", "SPM"}, {"PN", "PCN"}, {"PR", "PRI"}, {"PS", "PSE"}, {"PT", "PRT"}, 
-					{"PW", "PLW"}, {"PY", "PRY"}, {"QA", "QAT"}, {"RE", "REU"}, {"RO", "ROU"}, 
-					{"RS", "SRB"}, {"RU", "RUS"}, {"RW", "RWA"}, {"SA", "SAU"}, {"SB", "SLB"}, 
-					{"SC", "SYC"}, {"SD", "SDN"}, {"SE", "SWE"}, {"SG", "SGP"}, {"SH", "SHN"}, 
-					{"SI", "SVN"}, {"SJ", "SJM"}, {"SK", "SVK"}, {"SL", "SLE"}, {"SM", "SMR"}, 
-					{"SN", "SEN"}, {"SO", "SOM"}, {"SR", "SUR"}, {"SS", "SSD"}, {"ST", "STP"}, 
-					{"SV", "SLV"}, {"SX", "SXM"}, {"SY", "SYR"}, {"SZ", "SWZ"}, {"TC", "TCA"}, 
-					{"TD", "TCD"}, {"TF", "ATF"}, {"TG", "TGO"}, {"TH", "THA"}, {"TJ", "TJK"}, 
-					{"TK", "TKL"}, {"TL", "TLS"}, {"TM", "TKM"}, {"TN", "TUN"}, {"TO", "TON"}, 
-					{"TR", "TUR"}, {"TT", "TTO"}, {"TV", "TUV"}, {"TW", "TWN"}, {"TZ", "TZA"}, 
-					{"UA", "UKR"}, {"UG", "UGA"}, {"UM", "UMI"}, {"US", "USA"}, {"UY", "URY"}, 
-					{"UZ", "UZB"}, {"VA", "VAT"}, {"VC", "VCT"}, {"VE", "VEN"}, {"VG", "VGB"}, 
-					{"VI", "VIR"}, {"VN", "VNM"}, {"VU", "VUT"}, {"WF", "WLF"}, {"WS", "WSM"}, 
-					{"YE", "YEM"}, {"YT", "MYT"}, {"ZA", "ZAF"}, {"ZM", "ZMB"}, {"ZW", "ZWE"}, 
-			}; 
-	
 
-	
-	private static final String [] languages = 
-		{
-				"aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
-				"ay", "az", "ba", "be", "bg",	"bh", "bi", "bm", "bn", "bo", 
-				"br", "bs", "ca", "ce", "ch",	"co", "cr", "cs", "cu", "cv", 
-				"cy", "da", "de", "dv", "dz",	"ee", "el", "en", "eo", "es", 
-				"et", "eu", "fa", "ff", "fi",	"fj", "fo", "fr", "fy", "ga", 
-				"gd", "gl", "gn", "gu", "gv",	"ha", "he", "hi", "ho", "hr", 
-				"ht", "hu", "hy", "hz", "ia",	"id", "ie", "ig", "ii", "ik", 
-				"in", "io", "is", "it", "iu",	"iw", "ja", "ji", "jv", "ka", 
-				"kg", "ki", "kj", "kk", "kl",	"km", "kn", "ko", "kr", "ks", 
-				"ku", "kv", "kw", "ky", "la",	"lb", "lg", "li", "ln", "lo", 
-				"lt", "lu", "lv", "mg", "mh",	"mi", "mk", "ml", "mn", "mo", 
-				"mr", "ms", "mt", "my", "na",	"nb", "nd", "ne", "ng", "nl", 
-				"nn", "no", "nr", "nv", "ny",	"oc", "oj", "om", "or", "os", 
-				"pa", "pi", "pl", "ps", "pt",	"qu", "rm", "rn", "ro", "ru", 
-				"rw", "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", 
-				"sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw", "ta", 
-				"te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", 
-				"tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", 
-				"wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
-		};
-	
-	private static final String [] countries =
-		{
-				"AD", "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AQ", 
-				"AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", 
-				"BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", 
-				"BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", 
-				"CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", 
-				"CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", 
-				"DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", 
-				"FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", 
-				"GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", 
-				"GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", 
-				"HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", 
-				"IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", 
-				"KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", 
-				"LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", 
-				"ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", 
-				"MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", 
-				"NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", 
-				"NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", 
-				"PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", 
-				"RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", 
-				"SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", 
-				"SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", 
-				"TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", 
-				"UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", 
-				"VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW", 
-		};
+	private static String [][] iSOToISO3Languages = {
+		{"aa", "aar"}, {"ab", "abk"}, {"ae", "ave"}, {"af", "afr"}, {"ak", "aka"},
+		{"am", "amh"}, {"an", "arg"}, {"ar", "ara"}, {"as", "asm"}, {"av", "ava"},
+		{"ay", "aym"}, {"az", "aze"}, {"ba", "bak"}, {"be", "bel"}, {"bg", "bul"},
+		{"bh", "bih"}, {"bi", "bis"}, {"bm", "bam"}, {"bn", "ben"}, {"bo", "bod"},
+		{"br", "bre"}, {"bs", "bos"}, {"ca", "cat"}, {"ce", "che"}, {"ch", "cha"},
+		{"co", "cos"}, {"cr", "cre"}, {"cs", "ces"}, {"cu", "chu"}, {"cv", "chv"},
+		{"cy", "cym"}, {"da", "dan"}, {"de", "deu"}, {"dv", "div"}, {"dz", "dzo"},
+		{"ee", "ewe"}, {"el", "ell"}, {"en", "eng"}, {"eo", "epo"}, {"es", "spa"},
+		{"et", "est"}, {"eu", "eus"}, {"fa", "fas"}, {"ff", "ful"}, {"fi", "fin"},
+		{"fj", "fij"}, {"fo", "fao"}, {"fr", "fra"}, {"fy", "fry"}, {"ga", "gle"},
+		{"gd", "gla"}, {"gl", "glg"}, {"gn", "grn"}, {"gu", "guj"}, {"gv", "glv"},
+		{"ha", "hau"}, {"he", "heb"}, {"hi", "hin"}, {"ho", "hmo"}, {"hr", "hrv"},
+		{"ht", "hat"}, {"hu", "hun"}, {"hy", "hye"}, {"hz", "her"}, {"ia", "ina"},
+		{"id", "ind"}, {"ie", "ile"}, {"ig", "ibo"}, {"ii", "iii"}, {"ik", "ipk"},
+		{"in", "ind"}, {"io", "ido"}, {"is", "isl"}, {"it", "ita"}, {"iu", "iku"},
+		{"iw", "heb"}, {"ja", "jpn"}, {"ji", "yid"}, {"jv", "jav"}, {"ka", "kat"},
+		{"kg", "kon"}, {"ki", "kik"}, {"kj", "kua"}, {"kk", "kaz"}, {"kl", "kal"},
+		{"km", "khm"}, {"kn", "kan"}, {"ko", "kor"}, {"kr", "kau"}, {"ks", "kas"},
+		{"ku", "kur"}, {"kv", "kom"}, {"kw", "cor"}, {"ky", "kir"}, {"la", "lat"},
+		{"lb", "ltz"}, {"lg", "lug"}, {"li", "lim"}, {"ln", "lin"}, {"lo", "lao"},
+		{"lt", "lit"}, {"lu", "lub"}, {"lv", "lav"}, {"mg", "mlg"}, {"mh", "mah"},
+		{"mi", "mri"}, {"mk", "mkd"}, {"ml", "mal"}, {"mn", "mon"}, {"mo", "mol"},
+		{"mr", "mar"}, {"ms", "msa"}, {"mt", "mlt"}, {"my", "mya"}, {"na", "nau"},
+		{"nb", "nob"}, {"nd", "nde"}, {"ne", "nep"}, {"ng", "ndo"}, {"nl", "nld"},
+		{"nn", "nno"}, {"no", "nor"}, {"nr", "nbl"}, {"nv", "nav"}, {"ny", "nya"},
+		{"oc", "oci"}, {"oj", "oji"}, {"om", "orm"}, {"or", "ori"}, {"os", "oss"},
+		{"pa", "pan"}, {"pi", "pli"}, {"pl", "pol"}, {"ps", "pus"}, {"pt", "por"},
+		{"qu", "que"}, {"rm", "roh"}, {"rn", "run"}, {"ro", "ron"}, {"ru", "rus"},
+		{"rw", "kin"}, {"sa", "san"}, {"sc", "srd"}, {"sd", "snd"}, {"se", "sme"},
+		{"sg", "sag"}, {"si", "sin"}, {"sk", "slk"}, {"sl", "slv"}, {"sm", "smo"},
+		{"sn", "sna"}, {"so", "som"}, {"sq", "sqi"}, {"sr", "srp"}, {"ss", "ssw"},
+		{"st", "sot"}, {"su", "sun"}, {"sv", "swe"}, {"sw", "swa"}, {"ta", "tam"},
+		{"te", "tel"}, {"tg", "tgk"}, {"th", "tha"}, {"ti", "tir"}, {"tk", "tuk"},
+		{"tl", "tgl"}, {"tn", "tsn"}, {"to", "ton"}, {"tr", "tur"}, {"ts", "tso"},
+		{"tt", "tat"}, {"tw", "twi"}, {"ty", "tah"}, {"ug", "uig"}, {"uk", "ukr"},
+		{"ur", "urd"}, {"uz", "uzb"}, {"ve", "ven"}, {"vi", "vie"}, {"vo", "vol"},
+		{"wa", "wln"}, {"wo", "wol"}, {"xh", "xho"}, {"yi", "yid"}, {"yo", "yor"},
+		{"za", "zha"}, {"zh", "zho"}, {"zu", "zul"}
+	};
+	private static String [][] iSOToISO3Countries = {
+		{"AD", "AND"}, {"AE", "ARE"}, {"AF", "AFG"}, {"AG", "ATG"}, {"AI", "AIA"},
+		{"AL", "ALB"}, {"AM", "ARM"}, {"AN", "ANT"}, {"AO", "AGO"}, {"AQ", "ATA"},
+		{"AR", "ARG"}, {"AS", "ASM"}, {"AT", "AUT"}, {"AU", "AUS"}, {"AW", "ABW"},
+		{"AX", "ALA"}, {"AZ", "AZE"}, {"BA", "BIH"}, {"BB", "BRB"}, {"BD", "BGD"},
+		{"BE", "BEL"}, {"BF", "BFA"}, {"BG", "BGR"}, {"BH", "BHR"}, {"BI", "BDI"},
+		{"BJ", "BEN"}, {"BL", "BLM"}, {"BM", "BMU"}, {"BN", "BRN"}, {"BO", "BOL"},
+		{"BQ", "BES"}, {"BR", "BRA"}, {"BS", "BHS"}, {"BT", "BTN"}, {"BV", "BVT"},
+		{"BW", "BWA"}, {"BY", "BLR"}, {"BZ", "BLZ"}, {"CA", "CAN"}, {"CC", "CCK"},
+		{"CD", "COD"}, {"CF", "CAF"}, {"CG", "COG"}, {"CH", "CHE"}, {"CI", "CIV"},
+		{"CK", "COK"}, {"CL", "CHL"}, {"CM", "CMR"}, {"CN", "CHN"}, {"CO", "COL"},
+		{"CR", "CRI"}, {"CU", "CUB"}, {"CV", "CPV"}, {"CW", "CUW"}, {"CX", "CXR"},
+		{"CY", "CYP"}, {"CZ", "CZE"}, {"DE", "DEU"}, {"DJ", "DJI"}, {"DK", "DNK"},
+		{"DM", "DMA"}, {"DO", "DOM"}, {"DZ", "DZA"}, {"EC", "ECU"}, {"EE", "EST"},
+		{"EG", "EGY"}, {"EH", "ESH"}, {"ER", "ERI"}, {"ES", "ESP"}, {"ET", "ETH"},
+		{"FI", "FIN"}, {"FJ", "FJI"}, {"FK", "FLK"}, {"FM", "FSM"}, {"FO", "FRO"},
+		{"FR", "FRA"}, {"GA", "GAB"}, {"GB", "GBR"}, {"GD", "GRD"}, {"GE", "GEO"},
+		{"GF", "GUF"}, {"GG", "GGY"}, {"GH", "GHA"}, {"GI", "GIB"}, {"GL", "GRL"},
+		{"GM", "GMB"}, {"GN", "GIN"}, {"GP", "GLP"}, {"GQ", "GNQ"}, {"GR", "GRC"},
+		{"GS", "SGS"}, {"GT", "GTM"}, {"GU", "GUM"}, {"GW", "GNB"}, {"GY", "GUY"},
+		{"HK", "HKG"}, {"HM", "HMD"}, {"HN", "HND"}, {"HR", "HRV"}, {"HT", "HTI"},
+		{"HU", "HUN"}, {"ID", "IDN"}, {"IE", "IRL"}, {"IL", "ISR"}, {"IM", "IMN"},
+		{"IN", "IND"}, {"IO", "IOT"}, {"IQ", "IRQ"}, {"IR", "IRN"}, {"IS", "ISL"},
+		{"IT", "ITA"}, {"JE", "JEY"}, {"JM", "JAM"}, {"JO", "JOR"}, {"JP", "JPN"},
+		{"KE", "KEN"}, {"KG", "KGZ"}, {"KH", "KHM"}, {"KI", "KIR"}, {"KM", "COM"},
+		{"KN", "KNA"}, {"KP", "PRK"}, {"KR", "KOR"}, {"KW", "KWT"}, {"KY", "CYM"},
+		{"KZ", "KAZ"}, {"LA", "LAO"}, {"LB", "LBN"}, {"LC", "LCA"}, {"LI", "LIE"},
+		{"LK", "LKA"}, {"LR", "LBR"}, {"LS", "LSO"}, {"LT", "LTU"}, {"LU", "LUX"},
+		{"LV", "LVA"}, {"LY", "LBY"}, {"MA", "MAR"}, {"MC", "MCO"}, {"MD", "MDA"},
+		{"ME", "MNE"}, {"MF", "MAF"}, {"MG", "MDG"}, {"MH", "MHL"}, {"MK", "MKD"},
+		{"ML", "MLI"}, {"MM", "MMR"}, {"MN", "MNG"}, {"MO", "MAC"}, {"MP", "MNP"},
+		{"MQ", "MTQ"}, {"MR", "MRT"}, {"MS", "MSR"}, {"MT", "MLT"}, {"MU", "MUS"},
+		{"MV", "MDV"}, {"MW", "MWI"}, {"MX", "MEX"}, {"MY", "MYS"}, {"MZ", "MOZ"},
+		{"NA", "NAM"}, {"NC", "NCL"}, {"NE", "NER"}, {"NF", "NFK"}, {"NG", "NGA"},
+		{"NI", "NIC"}, {"NL", "NLD"}, {"NO", "NOR"}, {"NP", "NPL"}, {"NR", "NRU"},
+		{"NU", "NIU"}, {"NZ", "NZL"}, {"OM", "OMN"}, {"PA", "PAN"}, {"PE", "PER"},
+		{"PF", "PYF"}, {"PG", "PNG"}, {"PH", "PHL"}, {"PK", "PAK"}, {"PL", "POL"},
+		{"PM", "SPM"}, {"PN", "PCN"}, {"PR", "PRI"}, {"PS", "PSE"}, {"PT", "PRT"},
+		{"PW", "PLW"}, {"PY", "PRY"}, {"QA", "QAT"}, {"RE", "REU"}, {"RO", "ROU"},
+		{"RS", "SRB"}, {"RU", "RUS"}, {"RW", "RWA"}, {"SA", "SAU"}, {"SB", "SLB"},
+		{"SC", "SYC"}, {"SD", "SDN"}, {"SE", "SWE"}, {"SG", "SGP"}, {"SH", "SHN"},
+		{"SI", "SVN"}, {"SJ", "SJM"}, {"SK", "SVK"}, {"SL", "SLE"}, {"SM", "SMR"},
+		{"SN", "SEN"}, {"SO", "SOM"}, {"SR", "SUR"}, {"SS", "SSD"}, {"ST", "STP"},
+		{"SV", "SLV"}, {"SX", "SXM"}, {"SY", "SYR"}, {"SZ", "SWZ"}, {"TC", "TCA"},
+		{"TD", "TCD"}, {"TF", "ATF"}, {"TG", "TGO"}, {"TH", "THA"}, {"TJ", "TJK"},
+		{"TK", "TKL"}, {"TL", "TLS"}, {"TM", "TKM"}, {"TN", "TUN"}, {"TO", "TON"},
+		{"TR", "TUR"}, {"TT", "TTO"}, {"TV", "TUV"}, {"TW", "TWN"}, {"TZ", "TZA"},
+		{"UA", "UKR"}, {"UG", "UGA"}, {"UM", "UMI"}, {"US", "USA"}, {"UY", "URY"},
+		{"UZ", "UZB"}, {"VA", "VAT"}, {"VC", "VCT"}, {"VE", "VEN"}, {"VG", "VGB"},
+		{"VI", "VIR"}, {"VN", "VNM"}, {"VU", "VUT"}, {"WF", "WLF"}, {"WS", "WSM"},
+		{"YE", "YEM"}, {"YT", "MYT"}, {"ZA", "ZAF"}, {"ZM", "ZMB"}, {"ZW", "ZWE"},
+	};
+
+
+
+	private static final String [] languages = {
+		"aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
+		"ay", "az", "ba", "be", "bg",	"bh", "bi", "bm", "bn", "bo",
+		"br", "bs", "ca", "ce", "ch",	"co", "cr", "cs", "cu", "cv",
+		"cy", "da", "de", "dv", "dz",	"ee", "el", "en", "eo", "es",
+		"et", "eu", "fa", "ff", "fi",	"fj", "fo", "fr", "fy", "ga",
+		"gd", "gl", "gn", "gu", "gv",	"ha", "he", "hi", "ho", "hr",
+		"ht", "hu", "hy", "hz", "ia",	"id", "ie", "ig", "ii", "ik",
+		"in", "io", "is", "it", "iu",	"iw", "ja", "ji", "jv", "ka",
+		"kg", "ki", "kj", "kk", "kl",	"km", "kn", "ko", "kr", "ks",
+		"ku", "kv", "kw", "ky", "la",	"lb", "lg", "li", "ln", "lo",
+		"lt", "lu", "lv", "mg", "mh",	"mi", "mk", "ml", "mn", "mo",
+		"mr", "ms", "mt", "my", "na",	"nb", "nd", "ne", "ng", "nl",
+		"nn", "no", "nr", "nv", "ny",	"oc", "oj", "om", "or", "os",
+		"pa", "pi", "pl", "ps", "pt",	"qu", "rm", "rn", "ro", "ru",
+		"rw", "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm",
+		"sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw", "ta",
+		"te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts",
+		"tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo",
+		"wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
+	};
+
+	private static final String [] countries = {
+		"AD", "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AQ",
+		"AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD",
+		"BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO",
+		"BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC",
+		"CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO",
+		"CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK",
+		"DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET",
+		"FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE",
+		"GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR",
+		"GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT",
+		"HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS",
+		"IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM",
+		"KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI",
+		"LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD",
+		"ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP",
+		"MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+		"NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR",
+		"NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL",
+		"PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO",
+		"RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH",
+		"SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST",
+		"SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ",
+		"TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+		"UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG",
+		"VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW",
+	};
 
 	/**
 	 * Constructs a locale from language.
@@ -213,21 +209,23 @@ public class Locale4D {
 	 * @return
 	 */
 	public static Locale4D forLanguageTag(String languageTag) {
-		String [] atts = LangTag.parse(languageTag);	
+		String [] atts = LangTag.parse(languageTag);
 		return new Locale4D.Builder()
-				.setLanguage(atts[LangTag.idxLanguage])
-				.setRegion(atts[LangTag.idxRegion])
-				.setScript(atts[LangTag.idxScript])
-				.setVariant(atts[LangTag.idxVariant])
-				.setExtension(atts[LangTag.idxExtension])
-				.build();
+			   .setLanguage(atts[LangTag.idxLanguage])
+			   .setRegion(atts[LangTag.idxRegion])
+			   .setScript(atts[LangTag.idxScript])
+			   .setVariant(atts[LangTag.idxVariant])
+			   .setExtension(atts[LangTag.idxExtension])
+			   .build();
 	}
 
 	/**
 	 * Returns a list of all 2-letter language codes defined in ISO 639. Can be used to create Locales.
 	 * @return array of ISO 639 languages
 	 */
-	public static String [] getISOLanguages() { return languages;}
+	public static String [] getISOLanguages() {
+		return languages;
+	}
 
 
 	/**
@@ -238,7 +236,9 @@ public class Locale4D {
 	 */
 	public static Locale4D getDefault() {
 		String locale = getDefaultToString().replace("_", "-");
-		if(locale != null) return forLanguageTag(locale);
+		if (locale != null) {
+			return forLanguageTag(locale);
+		}
 		return null;
 	}
 
@@ -332,11 +332,11 @@ public class Locale4D {
 	 */
 	public String toString() {
 		String result = "";
-		if(language != null || country != null) {
+		if (language != null || country != null) {
 			result += language != null ? language : "";
 			result += country != null ? "_" + country : "";
 			result += variant != null ? variant : "";
-			if(script != null || extension != null) {
+			if (script != null || extension != null) {
 				result += variant != null ? "_#" : "#";
 				result += script != null ? script : "";
 				result += extension != null ? "-" + extension : "";
@@ -353,44 +353,44 @@ public class Locale4D {
 	 * tag without losing information.
 	 */
 	public static class Builder {
-		
-		
+
+
 		Locale4D locale = new Locale4D("");
-		
-		public Builder () {}
-		
-		public Builder clear () {
+
+		public Builder() {}
+
+		public Builder clear() {
 			locale = new Locale4D("");
 			return this;
 		}
-		
-		public Builder clearExtensions () {
+
+		public Builder clearExtensions() {
 			locale.extension = "";
 			return this;
 		}
-		
-		public Builder setExtension (String extension) {
+
+		public Builder setExtension(String extension) {
 			locale.extension = extension;
 			return this;
 		}
-		
-		public Builder setLanguage (String language) {		
-			if(language.length() == 3) {
+
+		public Builder setLanguage(String language) {
+			if (language.length() == 3) {
 				locale.iSO3language = language;
 				locale.language = searchISO(language, iSOToISO3Languages, false);
 			}
-			if(language.length() == 2) {
+			if (language.length() == 2) {
 				locale.language = language;
 				locale.iSO3language = searchISO(language, iSOToISO3Languages, true);
 			}
 			return this;
 		}
-		
-		public Builder setLanguageTag (String languageTag) {
+
+		public Builder setLanguageTag(String languageTag) {
 			locale = forLanguageTag(languageTag);
 			return this;
 		}
-		
+
 		public Builder setLocale(Locale4D locale) {
 			this.locale = new Locale4D("");
 			this.locale.language = locale.language;
@@ -400,45 +400,50 @@ public class Locale4D {
 			this.locale.variant = locale.variant;
 			return this;
 		}
-		
-		public Builder setRegion (String region) {
-			if(region.length() == 3) {
+
+		public Builder setRegion(String region) {
+			if (region.length() == 3) {
 				locale.iSO3country = region;
 				locale.country = searchISO(region, iSOToISO3Countries, false);
 			}
-			if(region.length() == 2) {
+			if (region.length() == 2) {
 				locale.country = region;
 				locale.iSO3country = searchISO(region, iSOToISO3Countries, true);
 			}
 			return this;
 		}
-		
-		public Builder setScript (String script) {
+
+		public Builder setScript(String script) {
 			locale.script = script;
 			return this;
 		}
-		
-		public Builder setVariant (String variant) {
+
+		public Builder setVariant(String variant) {
 			locale.variant = variant;
 			return this;
 		}
-				
-		public Locale4D build () {return locale;}
-		
+
+		public Locale4D build() {
+			return locale;
+		}
+
 		private String searchISO(String value, String [][] v, boolean isoTOiso3) {
-			if(isoTOiso3) {
+			if (isoTOiso3) {
 				for (int i = 0; i < v.length; i++) {
-					if(v[i][0].equals(value)) return v[i][1];
+					if (v[i][0].equals(value)) {
+						return v[i][1];
+					}
+				}
+			} else {
+				for (int i = 0; i < v.length; i++) {
+					if (v[i][1].equals(value)) {
+						return v[i][0];
+					}
 				}
 			}
-			else {
-				for (int i = 0; i < v.length; i++) {
-					if(v[i][1].equals(value)) return v[i][0];
-				}
-			}
-					
+
 			return null;
 		}
 	}
-	
+
 }

@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui.event;
 
-public interface ScrollEventHandler{
-    void onScrollEvent (ScrollEvent e);
+public interface ScrollEventHandler {
+	void onScrollEvent(ScrollEvent e);
 }

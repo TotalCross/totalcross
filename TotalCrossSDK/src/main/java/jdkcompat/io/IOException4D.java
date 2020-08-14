@@ -5,21 +5,21 @@
 package jdkcompat.io;
 
 public class IOException4D extends Exception {
-  private static final long serialVersionUID = -2139950177232639948L;
+	private static final long serialVersionUID = -2139950177232639948L;
 
-  public IOException4D() {
-  }
+	public IOException4D() {
+	}
 
-  public IOException4D(final String message) {
-    super(message);
-  }
+	public IOException4D(final String message) {
+		super(message);
+	}
 
-  public IOException4D(final Throwable cause) {
-    super(cause);
-  }
+	public IOException4D(final Throwable cause) {
+		super(cause);
+	}
 
-  public IOException4D(final String message, final Throwable cause) {
-    super(message, cause);
-  }
+	public IOException4D(final String message, final Throwable cause) {
+		super(message, cause);
+	}
 
 }

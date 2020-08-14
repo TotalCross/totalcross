@@ -5,6 +5,6 @@
 package tc.tools.converter.bytecode;
 
 public class BC194_monitorenter extends Monitor {
-  public BC194_monitorenter() {
-  }
+	public BC194_monitorenter() {
+	}
 }

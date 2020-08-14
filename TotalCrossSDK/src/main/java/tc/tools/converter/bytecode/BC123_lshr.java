@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC123_lshr extends Logical {
-  public BC123_lshr() {
-    super(-1, -2, -1, LONG);
-  }
+	public BC123_lshr() {
+		super(-1, -2, -1, LONG);
+	}
 
-  @Override
-  public void exec() {
-    stack[-2].asLong >>= stack[-1].asLong & 0x1F;
-  }
+	@Override
+	public void exec() {
+		stack[-2].asLong >>= stack[-1].asLong & 0x1F;
+	}
 }

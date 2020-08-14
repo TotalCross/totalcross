@@ -8,13 +8,13 @@ package totalcross.util;
 /** Represents a date that is invalid. */
 
 public class InvalidDateException extends Exception {
-  /** Constructs an empty Exception. */
-  public InvalidDateException() {
-    super();
-  }
+	/** Constructs an empty Exception. */
+	public InvalidDateException() {
+		super();
+	}
 
-  /** Constructs an exception with the given message. */
-  public InvalidDateException(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public InvalidDateException(String msg) {
+		super(msg);
+	}
 }

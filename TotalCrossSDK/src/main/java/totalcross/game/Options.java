@@ -88,200 +88,202 @@ import totalcross.util.Properties;
  * @version 1.0
  */
 public class Options extends Properties {
-  private PDBFile cat;
-  private final static String dbName_suffix = "_OPT.";
-  private final static String dbType = ".DATA";
-  private static final String duplicatedProperty = "OPT:duplicated:";
+	private PDBFile cat;
+	private final static String dbName_suffix = "_OPT.";
+	private final static String dbType = ".DATA";
+	private static final String duplicatedProperty = "OPT:duplicated:";
 
-  protected Options(GameEngine engine) {
-    try {
-      try {
-        cat = new PDBFile(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType, PDBFile.READ_WRITE);
-      } catch (FileNotFoundException fnfe) {
-        cat = new PDBFile(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType, PDBFile.CREATE_EMPTY);
-        cat.addRecord(100);
-      }
-      newVersion = engine.gameVersion;
+	protected Options(GameEngine engine) {
+		try {
+			try {
+				cat = new PDBFile(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType,
+								  PDBFile.READ_WRITE);
+			} catch (FileNotFoundException fnfe) {
+				cat = new PDBFile(engine.gameName + dbName_suffix + engine.gameCreatorID + dbType,
+								  PDBFile.CREATE_EMPTY);
+				cat.addRecord(100);
+			}
+			newVersion = engine.gameVersion;
 
-      cat.setRecordPos(0);
-      DataStream ds = new DataStream(cat);
-      oldVersion = ds.readInt();
-      load(ds);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+			cat.setRecordPos(0);
+			DataStream ds = new DataStream(cat);
+			oldVersion = ds.readInt();
+			load(ds);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-  /**
-   * Declare a boolean option.<br>
-   * This function tries to lookup the property in the Options database.<br>
-   * If it fails, a new property with the default value specified is created.
-   *
-   * @param name
-   *           the property name.
-   * @param value
-   *           the property default value.
-   * @return a boolean property object.
-   */
-  public Boolean declareBoolean(String name, boolean value) {
-    Value v = get(name);
-    if (v != null) {
-      if (v.type == Boolean.TYPE) {
-        return (Boolean) v;
-      }
-      throw new GameEngineException(duplicatedProperty + name);
-    }
-    Boolean b = new Boolean(value);
-    put(name, b);
-    return b;
-  }
+	/**
+	 * Declare a boolean option.<br>
+	 * This function tries to lookup the property in the Options database.<br>
+	 * If it fails, a new property with the default value specified is created.
+	 *
+	 * @param name
+	 *           the property name.
+	 * @param value
+	 *           the property default value.
+	 * @return a boolean property object.
+	 */
+	public Boolean declareBoolean(String name, boolean value) {
+		Value v = get(name);
+		if (v != null) {
+			if (v.type == Boolean.TYPE) {
+				return (Boolean) v;
+			}
+			throw new GameEngineException(duplicatedProperty + name);
+		}
+		Boolean b = new Boolean(value);
+		put(name, b);
+		return b;
+	}
 
-  /**
-   * Declare a long option.<br>
-   * This function tries to lookup the property in the Options database.<br>
-   * If it fails, a new property with the default value specified is created.
-   *
-   * @param name
-   *           the property name.
-   * @param value
-   *           the property default value.
-   * @return a long property object.
-   */
-  public Long declareLong(String name, long value) {
-    Value v = get(name);
-    if (v != null) {
-      if (v.type == Long.TYPE) {
-        return (Long) v;
-      }
-      throw new GameEngineException(duplicatedProperty + name);
-    }
-    Long b = new Long(value);
-    put(name, b);
-    return b;
-  }
+	/**
+	 * Declare a long option.<br>
+	 * This function tries to lookup the property in the Options database.<br>
+	 * If it fails, a new property with the default value specified is created.
+	 *
+	 * @param name
+	 *           the property name.
+	 * @param value
+	 *           the property default value.
+	 * @return a long property object.
+	 */
+	public Long declareLong(String name, long value) {
+		Value v = get(name);
+		if (v != null) {
+			if (v.type == Long.TYPE) {
+				return (Long) v;
+			}
+			throw new GameEngineException(duplicatedProperty + name);
+		}
+		Long b = new Long(value);
+		put(name, b);
+		return b;
+	}
 
-  /**
-   * Declare an integer option.<br>
-   * This function tries to lookup the property in the Options database.<br>
-   * If it fails, a new property with the default value specified is created.
-   *
-   * @param name
-   *           the property name.
-   * @param value
-   *           the property default value.
-   * @return an integer property object.
-   */
-  public Int declareInteger(String name, int value) {
-    Value v = get(name);
-    if (v != null) {
-      if (v.type == Int.TYPE) {
-        return (Int) v;
-      }
-      throw new GameEngineException(duplicatedProperty + name);
-    }
-    Int i = new Int(value);
-    put(name, i);
-    return i;
-  }
+	/**
+	 * Declare an integer option.<br>
+	 * This function tries to lookup the property in the Options database.<br>
+	 * If it fails, a new property with the default value specified is created.
+	 *
+	 * @param name
+	 *           the property name.
+	 * @param value
+	 *           the property default value.
+	 * @return an integer property object.
+	 */
+	public Int declareInteger(String name, int value) {
+		Value v = get(name);
+		if (v != null) {
+			if (v.type == Int.TYPE) {
+				return (Int) v;
+			}
+			throw new GameEngineException(duplicatedProperty + name);
+		}
+		Int i = new Int(value);
+		put(name, i);
+		return i;
+	}
 
-  /**
-   * Declare a double option.<br>
-   * This function tries to lookup the property in the Options database.<br>
-   * If it fails, a new property with the default value specified is created.
-   *
-   * @param name
-   *           the property name.
-   * @param value
-   *           the property default value.
-   * @return a double property object.
-   */
-  public Double declareDouble(String name, double value) {
-    Value v = get(name);
-    if (v != null) {
-      if (v.type == Double.TYPE) {
-        return (Double) v;
-      }
-      throw new GameEngineException(duplicatedProperty + name);
-    }
-    Double d = new Double(value);
-    put(name, d);
-    return d;
-  }
+	/**
+	 * Declare a double option.<br>
+	 * This function tries to lookup the property in the Options database.<br>
+	 * If it fails, a new property with the default value specified is created.
+	 *
+	 * @param name
+	 *           the property name.
+	 * @param value
+	 *           the property default value.
+	 * @return a double property object.
+	 */
+	public Double declareDouble(String name, double value) {
+		Value v = get(name);
+		if (v != null) {
+			if (v.type == Double.TYPE) {
+				return (Double) v;
+			}
+			throw new GameEngineException(duplicatedProperty + name);
+		}
+		Double d = new Double(value);
+		put(name, d);
+		return d;
+	}
 
-  /**
-   * Declare a string option.<br>
-   * This function tries to lookup the property in the Options database.<br>
-   * If it fails, a new property with the default value specified is created.
-   *
-   * @param name
-   *           the property name.
-   * @param value
-   *           the property default value.
-   * @return a string property object.
-   */
-  public Str declareString(String name, String value) {
-    Value v = get(name);
-    if (v != null) {
-      if (v.type == Str.TYPE) {
-        return (Str) v;
-      }
-      throw new GameEngineException(duplicatedProperty + name);
-    }
-    Str s = new Str(value);
-    put(name, s);
-    return s;
-  }
+	/**
+	 * Declare a string option.<br>
+	 * This function tries to lookup the property in the Options database.<br>
+	 * If it fails, a new property with the default value specified is created.
+	 *
+	 * @param name
+	 *           the property name.
+	 * @param value
+	 *           the property default value.
+	 * @return a string property object.
+	 */
+	public Str declareString(String name, String value) {
+		Value v = get(name);
+		if (v != null) {
+			if (v.type == Str.TYPE) {
+				return (Str) v;
+			}
+			throw new GameEngineException(duplicatedProperty + name);
+		}
+		Str s = new Str(value);
+		put(name, s);
+		return s;
+	}
 
-  /**
-   * The options database new version number.
-   */
-  public int newVersion;
-  /**
-   * The options database old version number.
-   */
-  public int oldVersion;
+	/**
+	 * The options database new version number.
+	 */
+	public int newVersion;
+	/**
+	 * The options database old version number.
+	 */
+	public int oldVersion;
 
-  /**
-   * Get a property value given the key.
-   *
-   * @param key
-   *           name of the property
-   * @return Value that can be casted to Properties.Str, Properties.Int,...
-   *         depending on the value type, that can be retrieved with the
-   *         <code>type</code> read-only property.
-   */
-  public Properties.Value getProp(String key) {
-    return get(key);
-  }
+	/**
+	 * Get a property value given the key.
+	 *
+	 * @param key
+	 *           name of the property
+	 * @return Value that can be casted to Properties.Str, Properties.Int,...
+	 *         depending on the value type, that can be retrieved with the
+	 *         <code>type</code> read-only property.
+	 */
+	public Properties.Value getProp(String key) {
+		return get(key);
+	}
 
-  /**
-   * stores the settings database. <br>
-   *
-   * @return false if an error occurs
-   */
-  public boolean save() {
-    // use this nice object to resize the options record
-    try {
-      ResizeRecord rs = new ResizeRecord(cat, 100);
-      rs.restartRecord(0);
-      DataStream ds = new DataStream(rs);
-      ds.writeInt(newVersion);
-      save(ds);
-    } catch (totalcross.io.IOException e) {
-      return false;
-    }
+	/**
+	 * stores the settings database. <br>
+	 *
+	 * @return false if an error occurs
+	 */
+	public boolean save() {
+		// use this nice object to resize the options record
+		try {
+			ResizeRecord rs = new ResizeRecord(cat, 100);
+			rs.restartRecord(0);
+			DataStream ds = new DataStream(rs);
+			ds.writeInt(newVersion);
+			save(ds);
+		} catch (totalcross.io.IOException e) {
+			return false;
+		}
 
-    return true;
-  }
+		return true;
+	}
 
-  /**
-   * closes the settings database.
-   *
-   * @throws IOException
-   */
-  public void close() throws IOException {
-    if (save()) {
-      cat.close();
-    }
-  }
+	/**
+	 * closes the settings database.
+	 *
+	 * @throws IOException
+	 */
+	public void close() throws IOException {
+		if (save()) {
+			cat.close();
+		}
+	}
 }

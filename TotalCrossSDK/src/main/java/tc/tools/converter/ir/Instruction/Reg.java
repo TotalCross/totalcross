@@ -9,32 +9,32 @@ import tc.tools.converter.tclass.TCCode;
 import totalcross.util.Vector;
 
 public class Reg extends SingleInstruction {
-  public int reg;
+	public int reg;
 
-  public Reg(int op, int line, int r) {
-    super(op, line);
-    reg = r;
-  }
+	public Reg(int op, int line, int r) {
+		super(op, line);
+		reg = r;
+	}
 
-  public Reg(int op, int line) {
-    super(op, line);
-  }
+	public Reg(int op, int line) {
+		super(op, line);
+	}
 
-  public void set(int r) {
-    reg = r;
-  }
+	public void set(int r) {
+		reg = r;
+	}
 
-  @Override
-  public String toString() {
-    String print;
-    print = TCConstants.bcTClassNames[opcode] + " " + reg;
-    return print;
-  }
+	@Override
+	public String toString() {
+		String print;
+		print = TCConstants.bcTClassNames[opcode] + " " + reg;
+		return print;
+	}
 
-  @Override
-  public void toTCCode(Vector vcode) {
-    TCCode tc = new TCCode(opcode, line);
-    tc.reg__reg(reg);
-    vcode.addElement(tc);
-  }
+	@Override
+	public void toTCCode(Vector vcode) {
+		TCCode tc = new TCCode(opcode, line);
+		tc.reg__reg(reg);
+		vcode.addElement(tc);
+	}
 }

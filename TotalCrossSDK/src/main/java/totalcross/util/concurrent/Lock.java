@@ -11,7 +11,7 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  * Here's a sample:
  * <pre>
  * Lock lock1 = new Lock(); // usually a class' field
- * 
+ *
  * synchronized (lock1)
  * {
  *    ...
@@ -23,22 +23,22 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  */
 
 public class Lock {
-  Object mutex;
+	Object mutex;
 
-  public Lock() {
-    create();
-  }
+	public Lock() {
+		create();
+	}
 
-  @Override
-  protected void finalize() {
-    destroy();
-  }
+	@Override
+	protected void finalize() {
+		destroy();
+	}
 
-  @ReplacedByNativeOnDeploy
-  final void create() {
-  }
+	@ReplacedByNativeOnDeploy
+	final void create() {
+	}
 
-  @ReplacedByNativeOnDeploy
-  final void destroy() {
-  }
+	@ReplacedByNativeOnDeploy
+	final void destroy() {
+	}
 }

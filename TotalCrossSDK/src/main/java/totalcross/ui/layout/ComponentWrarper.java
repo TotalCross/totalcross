@@ -5,14 +5,14 @@ import totalcross.ui.Control;
 import totalcross.util.UnitsConverter;
 
 /**Helper class to force a given width and height to a control.
- * This class is used automatically by the layout containers and 
+ * This class is used automatically by the layout containers and
  * should not be used manually.
  */
 public class ComponentWrarper extends Container {
 	private Control component;
 	private int w;
 	private int h;
-	
+
 	/** Creates a component wrarper for the given component with the
 	 * specified width and height
 	 * @param component
@@ -28,10 +28,10 @@ public class ComponentWrarper extends Container {
 	@Override
 	public void initUI() {
 		super.initUI();
-		
+
 		this.add(component, LEFT, TOP, PARENTSIZE, PARENTSIZE);
 	}
-	
+
 	@Override
 	public int getPreferredWidth() {
 		return UnitsConverter.toPixels(w);

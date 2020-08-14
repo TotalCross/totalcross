@@ -5,7 +5,7 @@
 package tc.tools.converter.oper;
 
 public class OperandSymO extends OperandSym {
-  public OperandSymO(int index) {
-    super(opr_symO, index);
-  }
+	public OperandSymO(int index) {
+		super(opr_symO, index);
+	}
 }

@@ -66,18 +66,18 @@ package totalcross.lang;
  * @status updated to 1.4
  */
 public class CloneNotSupportedException4D extends Exception {
-  /**
-   * Create an exception without a message.
-   */
-  public CloneNotSupportedException4D() {
-  }
+	/**
+	 * Create an exception without a message.
+	 */
+	public CloneNotSupportedException4D() {
+	}
 
-  /**
-   * Create an exception with a message.
-   *
-   * @param s the error message
-   */
-  public CloneNotSupportedException4D(String s) {
-    super(s);
-  }
+	/**
+	 * Create an exception with a message.
+	 *
+	 * @param s the error message
+	 */
+	public CloneNotSupportedException4D(String s) {
+		super(s);
+	}
 }

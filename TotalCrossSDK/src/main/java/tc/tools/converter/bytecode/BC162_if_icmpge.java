@@ -5,16 +5,16 @@
 package tc.tools.converter.bytecode;
 
 public class BC162_if_icmpge extends ConditionalBranch {
-  public BC162_if_icmpge() {
-    super(-2, -2, -1, readInt16(pc + 1), INT);
-  }
+	public BC162_if_icmpge() {
+		super(-2, -2, -1, readInt16(pc + 1), INT);
+	}
 
-  @Override
-  public void exec() {
-    if (stack[stackPtr - 2].asInt >= stack[stackPtr - 1].asInt) {
-      pcInc = jumpIfTrue;
-    } else {
-      pcInc = jumpIfFalse;
-    }
-  }
+	@Override
+	public void exec() {
+		if (stack[stackPtr - 2].asInt >= stack[stackPtr - 1].asInt) {
+			pcInc = jumpIfTrue;
+		} else {
+			pcInc = jumpIfFalse;
+		}
+	}
 }

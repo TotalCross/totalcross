@@ -6,9 +6,9 @@
 #include <wrl/client.h>
 
 #if (_MSC_VER >= 1800)
-#include <d3d11_2.h>
+	#include <d3d11_2.h>
 #else
-#include <d3d11_1.h>
+	#include <d3d11_1.h>
 #endif
 
 #include "MainView.h"
@@ -25,10 +25,9 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 using namespace TotalCross;
 
-IFrameworkView^ MainViewFactory::CreateView()
-{
-	String ^vmPath = Windows::ApplicationModel::Package::Current->InstalledLocation->Path;
-	String ^appPath = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
+IFrameworkView^ MainViewFactory::CreateView() {
+	String^ vmPath = Windows::ApplicationModel::Package::Current->InstalledLocation->Path;
+	String^ appPath = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
 	// Essa linha daqui de baixo dever� ser apagada; ela deve ser chamada por Settings
 	//OutputDebugString(Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data());
 
@@ -43,7 +42,6 @@ IFrameworkView^ MainViewFactory::CreateView()
 	return ref new MainView(cmdLine, vmPath, appPath);
 }
 
-MainViewFactory::MainViewFactory(String^ cmdLine)
-{
+MainViewFactory::MainViewFactory(String^ cmdLine) {
 	this->cmdLine = cmdLine;
 }

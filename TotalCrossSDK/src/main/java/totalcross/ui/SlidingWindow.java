@@ -33,7 +33,7 @@ public class SlidingWindow extends Window implements PenListener, KeyListener {
 		fadeOtherWindows = false;
 		animDir = BOTTOM;
 		slackSpace = 0;
-		
+
 		this.addPenListener(this);
 		this.addKeyListener(this);
 		this.callListenersOnAllTargets = true;
@@ -41,13 +41,13 @@ public class SlidingWindow extends Window implements PenListener, KeyListener {
 
 	protected void setRect(boolean screenResized) {
 		switch (animDir) {
-		case LEFT:
-		case RIGHT:
-			setRect(animDir, TOP, SCREENSIZE, SCREENSIZE, null, screenResized);
-			break;
-		default:
-			setRect(100000, 100000, SCREENSIZE, SCREENSIZE, null, screenResized);
-			break;
+			case LEFT:
+			case RIGHT:
+				setRect(animDir, TOP, SCREENSIZE, SCREENSIZE, null, screenResized);
+				break;
+			default:
+				setRect(100000, 100000, SCREENSIZE, SCREENSIZE, null, screenResized);
+				break;
 		}
 	}
 
@@ -89,7 +89,7 @@ public class SlidingWindow extends Window implements PenListener, KeyListener {
 			delayedUiSpinner.start();
 		}
 	}
-	
+
 	@Override
 	protected void postPopup() {
 		if (delayInitUI) {
@@ -117,7 +117,7 @@ public class SlidingWindow extends Window implements PenListener, KeyListener {
 		}
 
 		screenResized(); // fix problem when the container is on portrait, then landscape, then closed,
-							// then portrait, then open
+		// then portrait, then open
 		if (animDir == CENTER) {
 			resetSetPositions();
 			setRect(CENTER, CENTER, KEEP, KEEP);
@@ -154,28 +154,29 @@ public class SlidingWindow extends Window implements PenListener, KeyListener {
 	public void penDrag(DragEvent e) {
 		double margin = 0.20;
 		if (animDir == RIGHT && e.direction == DragEvent.RIGHT && e.xTotal > 150
-				&& (e.x - e.xTotal) < width * (margin)) {
+			&& (e.x - e.xTotal) < width * (margin)) {
 			SlidingWindow.this.unpop();
 		}
-		if (animDir == BOTTOM && e.direction == DragEvent.DOWN && e.yTotal > 150 && (e.y - e.yTotal) < height * (margin)) {
+		if (animDir == BOTTOM && e.direction == DragEvent.DOWN && e.yTotal > 150
+			&& (e.y - e.yTotal) < height * (margin)) {
 			SlidingWindow.this.unpop();
 		}
 		if (animDir == LEFT && e.direction == DragEvent.LEFT && e.xTotal < -150
-				&& (e.x - e.xTotal) > width * (1 - margin)) {
+			&& (e.x - e.xTotal) > width * (1 - margin)) {
 			SlidingWindow.this.unpop();
 		}
 		if (animDir == TOP && e.direction == DragEvent.UP && e.yTotal < -150
-				&& (e.y - e.yTotal) > height * (1 - margin)) {
+			&& (e.y - e.yTotal) > height * (1 - margin)) {
 			SlidingWindow.this.unpop();
 		}
 	}
 
 	@Override
-	public void penDown(PenEvent e) { } 
+	public void penDown(PenEvent e) { }
 	@Override
-	public void penUp(PenEvent e) { } 
+	public void penUp(PenEvent e) { }
 	@Override
-	public void penDragStart(DragEvent e) { } 
+	public void penDragStart(DragEvent e) { }
 	@Override
 	public void penDragEnd(DragEvent e) { }
 

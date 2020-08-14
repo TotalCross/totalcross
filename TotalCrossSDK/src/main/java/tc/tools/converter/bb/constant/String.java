@@ -7,11 +7,11 @@ package tc.tools.converter.bb.constant;
 import tc.tools.converter.bb.JavaClass;
 
 public class String extends Reference {
-  public String(JavaClass jclass) {
-    super(jclass);
-  }
+	public String(JavaClass jclass) {
+		super(jclass);
+	}
 
-  public UTF8 getValueAsString() {
-    return (UTF8) value.info;
-  }
+	public UTF8 getValueAsString() {
+		return (UTF8) value.info;
+	}
 }

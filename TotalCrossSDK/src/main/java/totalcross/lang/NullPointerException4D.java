@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * Thrown when a null object has being used in the last operation. 
+/**
+ * Thrown when a null object has being used in the last operation.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class NullPointerException4D extends RuntimeException {
-  /** Constructs an empty Exception. */
-  public NullPointerException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public NullPointerException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public NullPointerException4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public NullPointerException4D(String msg) {
+		super(msg);
+	}
 }

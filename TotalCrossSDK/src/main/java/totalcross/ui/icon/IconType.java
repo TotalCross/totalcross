@@ -5,7 +5,7 @@ package totalcross.ui.icon;
 
 public interface IconType {
 
-  String fontName();
+	String fontName();
 
-  int codepoint();
+	int codepoint();
 }

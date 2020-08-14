@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Daniel Tauchke 
+// Copyright (C) 2001 Daniel Tauchke
 // Copyright (C) 2001-2013 SuperWaba Ltda.
 // Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
 //
@@ -65,7 +65,7 @@ import totalcross.util.Vector;
  * }
  * }
  * </pre>
- * 
+ *
  * The first item has index 0.
  */
 
@@ -107,7 +107,7 @@ public class ListBox extends Container implements Scrollable {
 	 * The gap between the icon and the text. Used in IconItem. Defaults to fmH*4/3.
 	 * If you plan to change this value, do it after calling setFont (if you call
 	 * it).
-	 * 
+	 *
 	 * @since TotalCross 1.61
 	 */
 	public int iconGap = UnitsConverter.toPixels(20 + DP);
@@ -118,26 +118,26 @@ public class ListBox extends Container implements Scrollable {
 
 	/**
 	 * Used to show an icon or two and a text. You can mix IconItem with other item types
-	 * in the ListBox. 
+	 * in the ListBox.
 	 * <br>
 	 * Tip:
 	 * The icons are automatically resized by default. If you don't want this, please set autoResizeIcon to false.
-	 * 
+	 *
 	 * <br>
 	 * Example:
-	 * 
+	 *
 	 * <pre>
 	 * lb.add("this is a simple text");
 	 * lb.add(new IconItem("this is a text with icon", iconImage));
 	 * </pre>
-	 * 
+	 *
 	 * The icon should have the same size of the font's height, which can be set
 	 * with:
-	 * 
+	 *
 	 * <pre>
 	 * iconImage = originalImage.smoothScaledFixedAspectRatio(fmH, true, -1);
 	 * </pre>
-	 * 
+	 *
 	 * @since TotalCross 1.61
 	 */
 	public static class IconItem {
@@ -189,10 +189,12 @@ public class ListBox extends Container implements Scrollable {
 				Object item = items[i];
 				if (item instanceof IconItem) {
 					IconItem iconItem = (IconItem) item;
-					if (iconItem.icon != null && biggestIconWidth < iconItem.icon.getWidth())
+					if (iconItem.icon != null && biggestIconWidth < iconItem.icon.getWidth()) {
 						biggestIconWidth = iconItem.icon.getWidth();
-					if (iconItem.iconRight != null && biggestIconWidth < iconItem.iconRight.getWidth())
+					}
+					if (iconItem.iconRight != null && biggestIconWidth < iconItem.iconRight.getWidth()) {
 						biggestIconWidth = iconItem.iconRight.getWidth();
+					}
 				}
 			}
 			getPreferredWidth();
@@ -202,13 +204,13 @@ public class ListBox extends Container implements Scrollable {
 
 	/**
 	 * An interface that makes easier to draw custom items. Example:
-	 * 
+	 *
 	 * <pre>
 	 * class ItemSeek implements ListBox.CustomDrawingItem {
 	 * 	int tpsinc;
 	 * 	boolean admin;
 	 * 	String plat, date;
-	 * 
+	 *
 	 * 	ItemSeek(String s) {
 	 * 		// 21Wi2014/12/05
 	 * 		tpsinc = s.charAt(0) - '0';
@@ -216,14 +218,14 @@ public class ListBox extends Container implements Scrollable {
 	 * 		plat = s.substring(2, 4);
 	 * 		date = s.substring(4);
 	 * 	}
-	 * 
+	 *
 	 * 	public void onItemPaint(Graphics g, int dx, int dy, int w, int h) {
 	 * 		g.drawText(data, dx, dy);
 	 * 		// and also other items
 	 * 	}
 	 * }
 	 * </pre>
-	 * 
+	 *
 	 * @since TotalCross 3.1
 	 */
 	public static interface CustomDrawingItem {
@@ -234,7 +236,7 @@ public class ListBox extends Container implements Scrollable {
 	 * When the ListBox has horizontal buttons and its height divided by the button
 	 * height is greater than this value (10), the horizontal button heights are
 	 * increased.
-	 * 
+	 *
 	 * @see #extraHorizScrollButtonHeight
 	 * @see #enableHorizontalScroll()
 	 */
@@ -242,16 +244,16 @@ public class ListBox extends Container implements Scrollable {
 	/**
 	 * IntHashtable used to specify different background colors for some items.
 	 * Example:
-	 * 
+	 *
 	 * <pre>
 	 * list.ihtBackColor = new IntHashtable(10);
 	 * ihtBackColors.put(10, 0xAABBCC); // will make line number 10 with back color 0xAABBCC.
 	 * </pre>
-	 * 
+	 *
 	 * Specify a null value if you want to use the default back color (this also
 	 * makes drawing faster). Note that its up to you to update the hashtable if an
 	 * item is inserted or removed.
-	 * 
+	 *
 	 * @since TotalCross 1.0 beta 4
 	 */
 	public IntHashtable ihtBackColors;
@@ -259,16 +261,16 @@ public class ListBox extends Container implements Scrollable {
 	/**
 	 * IntHashtable used to specify different foreground colors for some items.
 	 * Example:
-	 * 
+	 *
 	 * <pre>
 	 * list.ihtForeColor = new IntHashtable(10);
 	 * ihtForeColors.put(10, Color.RED); // will make line number 10 with fore color RED.
 	 * </pre>
-	 * 
+	 *
 	 * Specify a null value if you want to use the default fore color (this also
 	 * makes drawing faster). Note that its up to you to update the hashtable if an
 	 * item is inserted or removed.
-	 * 
+	 *
 	 * @since TotalCross 1.0 beta 4
 	 */
 	public IntHashtable ihtForeColors;
@@ -276,12 +278,13 @@ public class ListBox extends Container implements Scrollable {
 	/**
 	 * The extra height of the horizontal scroll buttons. Defaults 2 in 160x160 or a
 	 * multiple of it in other resolutions.
-	 * 
+	 *
 	 * @see #EXTRA_HEIGHT_FACTOR
 	 * @see #enableHorizontalScroll()
 	 */
-	public int extraHorizScrollButtonHeight = Settings.screenHeight * 2 / 160; // guich@560_11: now depends on the
-																				// resolution
+	public int extraHorizScrollButtonHeight = Settings.screenHeight * 2 /
+			160; // guich@560_11: now depends on the
+	// resolution
 
 	/**
 	 * The Flick object listens and performs flick animations on PenUp events when
@@ -292,7 +295,7 @@ public class ListBox extends Container implements Scrollable {
 	/**
 	 * Sets the number of visible lines, used to make PREFERRED height return the
 	 * given number of lines as the grid height.
-	 * 
+	 *
 	 * @since TotalCross 1.13
 	 */
 	public int visibleLines = -1;
@@ -300,7 +303,7 @@ public class ListBox extends Container implements Scrollable {
 	/**
 	 * If true, all ListBox will have the selection bar drawn in the full width
 	 * instead of the selected's text width
-	 * 
+	 *
 	 * @since SuperWaba 5.5
 	 */
 	public static boolean useFullWidthOnSelection; // guich@550_21
@@ -310,16 +313,16 @@ public class ListBox extends Container implements Scrollable {
 	 * In finger touch devices, sets a factor by which the font height will be
 	 * multiplied to increase the item's height. Defaults to 1.5 when
 	 * Settings.fingerTouch is true, and 1 when its false.
-	 * 
+	 *
 	 * You can change this value before the constructor and restore it after the
 	 * constructor to change the height of a single ListBox.
-	 * 
+	 *
 	 * <pre>
 	 * ListBox.itemHeightFactor = 1;
 	 * ... create listbox
 	 * ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR;
 	 * </pre>
-	 * 
+	 *
 	 * @since TotalCross 1.5
 	 */
 	public static double itemHeightFactor = uiAndroid ? DEFAULT_ITEM_HEIGHT_FACTOR : 1;
@@ -333,13 +336,13 @@ public class ListBox extends Container implements Scrollable {
 	 * <p>
 	 * Creates an empty Listbox.
 	 * </p>
-	 * 
+	 *
 	 * <b>Tips:</b>
-	 * 
+	 *
 	 * <ul>
 	 * <li>You can edit the paddings of this control by changing the "paddingLeft",
 	 * "paddingRight", "paddingTop" and "paddingBottom" attributes.</li>
-	 * 
+	 *
 	 * <li>If you're using ListBox.IconItem, you can edit the icon gap by changing
 	 * the "iconGap" attribute.</li>
 	 * </ul>
@@ -352,13 +355,13 @@ public class ListBox extends Container implements Scrollable {
 	 * <p>
 	 * Creates a Listbox with the given items.
 	 * </p>
-	 * 
+	 *
 	 * <b>Tips:</b>
-	 * 
+	 *
 	 * <ul>
 	 * <li>You can edit the paddings of this control by changing the "paddingLeft",
 	 * "paddingRight", "paddingTop" and "paddingBottom" attributes.</li>
-	 * 
+	 *
 	 * <li>If you're using ListBox.IconItem, you can edit the icon gap by changing
 	 * the "iconGap" attribute.</li>
 	 * </ul>
@@ -407,14 +410,14 @@ public class ListBox extends Container implements Scrollable {
 	public boolean canScrollContent(int direction, Object target) {
 		if (Settings.fingerTouch) {
 			switch (direction) {
-			case DragEvent.UP:
-				return sbar.getValue() > sbar.getMinimum();
-			case DragEvent.DOWN:
-				return (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
-			case DragEvent.LEFT:
-				return xOffset < 0;
-			case DragEvent.RIGHT:
-				return xOffset > xOffsetMin;
+				case DragEvent.UP:
+					return sbar.getValue() > sbar.getMinimum();
+				case DragEvent.DOWN:
+					return (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
+				case DragEvent.LEFT:
+					return xOffset < 0;
+				case DragEvent.RIGHT:
+					return xOffset > xOffsetMin;
 			}
 		}
 		return false;
@@ -490,12 +493,11 @@ public class ListBox extends Container implements Scrollable {
 	 * below the vertical scrollbar. The add, replace and remove operations will be
 	 * a bit slower because the string's width will have to be computed in order to
 	 * correctly set the max horizontal scroll.
-	 * 
+	 *
 	 * @since SuperWaba 5.6
 	 * @see #extraHorizScrollButtonHeight
 	 */
-	public void enableHorizontalScroll() // guich@560_9
-	{
+	public void enableHorizontalScroll() { // guich@560_9
 		if (itemCount > 0) {
 			int n = itemCount, m = 0, w;
 			int[] widths = new int[n];
@@ -526,8 +528,7 @@ public class ListBox extends Container implements Scrollable {
 	/** Adds an array of Objects to the Listbox */
 	public void add(Object[] moreItems) {
 		int size = moreItems.length;
-		if (itemCount == 0) // guich@310_5: directly assign the array if this listbox is empty
-		{
+		if (itemCount == 0) { // guich@310_5: directly assign the array if this listbox is empty
 			Object[] array = new Object[size];
 			Vm.arrayCopy(moreItems, 0, array, 0, size);
 			this.items = new Vector(array);
@@ -536,13 +537,12 @@ public class ListBox extends Container implements Scrollable {
 				enableHorizontalScroll(); // just recompute for all items
 			}
 		} else {
-      int n = size; //moreItems.length; // guich@450_36
+			int n = size; //moreItems.length; // guich@450_36
 			itemCount += n;
 			for (int i = 0; i < n; i++) {
 				items.addElement(moreItems[i]);
 			}
-			if (ivWidths != null) // guichich@560_9
-			{
+			if (ivWidths != null) { // guichich@560_9
 				int w, m = 0, mx = -xOffsetMin;
 				for (int i = 0; i < n; i++) {
 					ivWidths.addElement(w = fm.stringWidth(moreItems[i].toString()));
@@ -563,14 +563,13 @@ public class ListBox extends Container implements Scrollable {
 
 	/**
 	 * Adds a range of an array of Objects to the Listbox
-	 * 
+	 *
 	 * @deprecated Use {@link #add(Object[])} instead
 	 */
 	@Deprecated
 	public void add(Object[] moreItems, int startAt, int size) {
 		int realSize = moreItems.length < startAt + size ? moreItems.length - startAt : size;
-		if (itemCount == 0) // guich@310_5: directly assign the array if this listbox is empty
-		{
+		if (itemCount == 0) { // guich@310_5: directly assign the array if this listbox is empty
 			Object[] array = new Object[realSize];
 			Vm.arrayCopy(moreItems, startAt, array, 0, realSize);
 			this.items = new Vector(array);
@@ -579,13 +578,12 @@ public class ListBox extends Container implements Scrollable {
 				enableHorizontalScroll(); // just recompute for all items
 			}
 		} else {
-      int n = realSize; //moreItems.length; // guich@450_36
+			int n = realSize; //moreItems.length; // guich@450_36
 			itemCount += n;
 			for (int i = startAt; i < n; i++) {
 				items.addElement(moreItems[i]);
 			}
-			if (ivWidths != null) // guichich@560_9
-			{
+			if (ivWidths != null) { // guichich@560_9
 				int w, m = 0, mx = -xOffsetMin;
 				for (int i = 0; i < n; i++) {
 					ivWidths.addElement(w = fm.stringWidth(moreItems[i].toString()));
@@ -607,8 +605,7 @@ public class ListBox extends Container implements Scrollable {
 	/** Adds an Object to the Listbox */
 	public void add(Object item) {
 		items.addElement(item);
-		if (ivWidths != null) // guich@560_9
-		{
+		if (ivWidths != null) { // guich@560_9
 			int w = fm.stringWidth(item.toString());
 			ivWidths.addElement(w);
 			verifyItemWidth(w);
@@ -631,11 +628,10 @@ public class ListBox extends Container implements Scrollable {
 	 * ListBox' limits, and also breaking if it contains \n. Returns the number of
 	 * lines. Note that each part of the text is considered a new item. This method
 	 * is slower than the other <code>add</code> methods.
-	 * 
+	 *
 	 * @since TotalCross 1.24
 	 */
-	public int addWrapping(String text) // guich@tc124_21
-	{
+	public int addWrapping(String text) { // guich@tc124_21
 		if (fm.stringWidth(text) <= btnX && text.indexOf('\n') < 0) {
 			add(text);
 			return 1;
@@ -648,8 +644,7 @@ public class ListBox extends Container implements Scrollable {
 	/** Adds an Object to the Listbox at the given index */
 	public void insert(Object item, int index) {
 		items.insertElementAt(item, index);
-		if (ivWidths != null) // guich@560_9
-		{
+		if (ivWidths != null) { // guich@560_9
 			int w = fm.stringWidth(item.toString());
 			ivWidths.insertElementAt(w, index);
 			verifyItemWidth(w);
@@ -673,15 +668,13 @@ public class ListBox extends Container implements Scrollable {
 	 * get a null pointer exception!
 	 */
 	@Override
-	public void removeAll() // guich@210_13
-	{
+	public void removeAll() { // guich@210_13
 		items.removeAllElements();
 		sbar.setMaximum(0);
 		itemCount = 0;
 		offset = 0; // wolfgang@330_23
 		xOffset = xOffsetMin = 0;
-		if (ivWidths != null) // guich@560_9
-		{
+		if (ivWidths != null) { // guich@560_9
 			ivWidths.removeAllElements();
 			enableButtons();
 		}
@@ -694,17 +687,14 @@ public class ListBox extends Container implements Scrollable {
 	}
 
 	/** Removes the Object at the given index from the Listbox */
-	public void remove(int itemIndex) // guich@200final_12: new method
-	{
+	public void remove(int itemIndex) { // guich@200final_12: new method
 		if (0 <= itemIndex && itemIndex < itemCount) {
 			items.removeElementAt(itemIndex);
 			itemCount--;
-			if (ivWidths != null) // guich@560_9
-			{
+			if (ivWidths != null) { // guich@560_9
 				int old = ivWidths.items[itemIndex];
 				ivWidths.removeElementAt(itemIndex);
-				if (old == -xOffsetMin) // was this the max offset? recompute the remaining ones
-				{
+				if (old == -xOffsetMin) { // was this the max offset? recompute the remaining ones
 					int m = 0;
 					int[] widths = ivWidths.items;
 					int n = ivWidths.size();
@@ -808,11 +798,10 @@ public class ListBox extends Container implements Scrollable {
 	/**
 	 * Selects the given name. If the name is not found, the current selected item
 	 * is not changed.
-	 * 
+	 *
 	 * @since SuperWaba 4.01
 	 */
-	public void setSelectedItem(Object name) // guich@401_25
-	{
+	public void setSelectedItem(Object name) { // guich@401_25
 		int idx = indexOf(name);
 		if (idx != -1) {
 			setSelectedIndex(idx);
@@ -829,18 +818,18 @@ public class ListBox extends Container implements Scrollable {
 	 * pressed event.
 	 */
 	public void setSelectedIndex(int i, boolean sendPressEvent) {
-    if (0 <= i && i < itemCount && i != selectedIndex/* && height != 0*/) // guich@tc100: commented height!=0 otherwise Watch's combobox will not be set properly
-		{
+		if (0 <= i && i < itemCount
+			&& i != selectedIndex/* && height != 0*/) { // guich@tc100: commented height!=0 otherwise Watch's combobox will not be set properly
 			int vi = sbar.getVisibleItems();
 			int ma = sbar.getMaximum();
 			if (offset + vi > ma) {
-        offset = Math.max(ma - vi, 0); // guich@220_4: fixed bug when the listbox is greater than the current item count
+				offset = Math.max(ma - vi,
+								  0); // guich@220_4: fixed bug when the listbox is greater than the current item count
 			}
 
 			selectedIndex = i;
 
-			if (selectedIndex >= offset + vi) // kmeehl@tc100
-			{
+			if (selectedIndex >= offset + vi) { // kmeehl@tc100
 				offset = selectedIndex - vi + 1;
 				sbar.setValue(offset);
 			} else if (selectedIndex < offset) {
@@ -851,8 +840,7 @@ public class ListBox extends Container implements Scrollable {
 			if (sendPressEvent) {
 				postPressedEvent();
 			}
-		} else if (i == -1) // guich@200b4_191: unselect all items
-		{
+		} else if (i == -1) { // guich@200b4_191: unselect all items
 			offset = 0;
 			selectedIndex = -1;
 			if (height != 0) {
@@ -868,7 +856,7 @@ public class ListBox extends Container implements Scrollable {
 	/**
 	 * Selects the last item added to this listbox, doing a scroll if needed. Calls
 	 * repaintNow.
-	 * 
+	 *
 	 * @since SuperWaba 5.6
 	 */
 	public void selectLast() {
@@ -909,46 +897,46 @@ public class ListBox extends Container implements Scrollable {
 	 */
 	@Override
 	public int getPreferredWidth() {
-	    if (uiMaterial) {
-    		return (hasIconItemLeft || hasIconItemRight ? UnitsConverter.toPixels(112 - biggestIconWidth + DP)
-    				: UnitsConverter.toPixels(112 + DP)) + (hasIconItemLeft ? iconGap + biggestIconWidth : 0)
-    				+ (hasIconItemRight ? iconGap + biggestIconWidth : 0) + paddingLeft + paddingRight;
-	    }
-	    int extra = (simpleBorder ? 4 : 6);
-	    if (!Settings.fingerTouch && sbar.isVisible()) {
-	      extra += sbar.getPreferredWidth();
-	    }
-	    int maxWidth = 0;
-	    for (int i = itemCount - 1; i >= 0; i--) {
-	      int w = getItemWidth(i);
-	      if (w > maxWidth) {
-	        maxWidth = w;
-	      }
-	    }
+		if (uiMaterial) {
+			return (hasIconItemLeft || hasIconItemRight ? UnitsConverter.toPixels(112 - biggestIconWidth + DP)
+					: UnitsConverter.toPixels(112 + DP)) + (hasIconItemLeft ? iconGap + biggestIconWidth : 0)
+				   + (hasIconItemRight ? iconGap + biggestIconWidth : 0) + paddingLeft + paddingRight;
+		}
+		int extra = (simpleBorder ? 4 : 6);
+		if (!Settings.fingerTouch && sbar.isVisible()) {
+			extra += sbar.getPreferredWidth();
+		}
+		int maxWidth = 0;
+		for (int i = itemCount - 1; i >= 0; i--) {
+			int w = getItemWidth(i);
+			if (w > maxWidth) {
+				maxWidth = w;
+			}
+		}
 
-	    return maxWidth + extra + insets.left + insets.right;
+		return maxWidth + extra + insets.left + insets.right;
 	}
 
 	/** Returns the number of items multiplied by the font metrics height */
 	@Override
 	public int getPreferredHeight() {
-	    if (uiMaterial) {
-    		int n = visibleLines == -1 ? itemCount : visibleLines; // guich@tc113_11: use visibleLines if set
-    		int lineH = getItemHeight(0);
-    		int h = Math.max(lineH * n, sbar.getPreferredHeight());
-    		if (ivWidths != null && h < 4 * lineH) {
-    			h = 4 * lineH;
-    		}
-    		return (n == 1 ? h - 1 : h) + paddingTop + paddingBottom;
-	    }
-	    
-	    int n = visibleLines == -1 ? itemCount : visibleLines; // guich@tc113_11: use visibleLines if set
-	    int lineH = getItemHeight(0);
-	    int h = Math.max(lineH * n, sbar.getPreferredHeight()) + (simpleBorder ? 4 : 6);
-	    if (ivWidths != null && h < 4 * lineH) {
-	      h = 4 * lineH;
-	    }
-	    return (n == 1 ? h - 1 : h) + insets.top + insets.bottom;
+		if (uiMaterial) {
+			int n = visibleLines == -1 ? itemCount : visibleLines; // guich@tc113_11: use visibleLines if set
+			int lineH = getItemHeight(0);
+			int h = Math.max(lineH * n, sbar.getPreferredHeight());
+			if (ivWidths != null && h < 4 * lineH) {
+				h = 4 * lineH;
+			}
+			return (n == 1 ? h - 1 : h) + paddingTop + paddingBottom;
+		}
+
+		int n = visibleLines == -1 ? itemCount : visibleLines; // guich@tc113_11: use visibleLines if set
+		int lineH = getItemHeight(0);
+		int h = Math.max(lineH * n, sbar.getPreferredHeight()) + (simpleBorder ? 4 : 6);
+		if (ivWidths != null && h < 4 * lineH) {
+			h = 4 * lineH;
+		}
+		return (n == 1 ? h - 1 : h) + insets.top + insets.bottom;
 	}
 
 	/**
@@ -972,14 +960,14 @@ public class ListBox extends Container implements Scrollable {
 			btnX = width - 1;
 		}
 
-		if (ivWidths != null) // guich@560_9: handle horiz scroll?
-		{
+		if (ivWidths != null) { // guich@560_9: handle horiz scroll?
 			if (btnRight == null) {
 				int hh = 3 * fmH / 11;
 				super.add(btnRight = new ArrowButton(Graphics.ARROW_RIGHT, hh, foreColor));
 				super.add(btnLeft = new ArrowButton(Graphics.ARROW_LEFT, hh, foreColor));
 				btnRight.focusTraversable = btnLeft.focusTraversable = false;
-        tabOrder.removeElement(btnRight); // guich@572_6: remove them from the tabOrder, otherwise it will block the control navigation in some situations (AllTests)
+				tabOrder.removeElement(
+					btnRight); // guich@572_6: remove them from the tabOrder, otherwise it will block the control navigation in some situations (AllTests)
 				tabOrder.removeElement(btnLeft);
 				onColorsChanged(true); // guich@tc111_6
 			}
@@ -1005,13 +993,15 @@ public class ListBox extends Container implements Scrollable {
 			sbar.setFocusLess(true); // guich@570_39
 		}
 
-		if (ivWidths != null) // guich@560_9: handle horiz scroll?
-		{
+		if (ivWidths != null) { // guich@560_9: handle horiz scroll?
 			n = uiFlat ? 1 : 0; // in flat, make the buttons overlap a bit
 			// add the two horizontal scroll buttons below the scrollbar
-      btnLeft.setRect(SAME, AFTER - n, SAME, PREFERRED + extraHorizScrollButtonHeight + extraHB, null, screenChanged);
-      btnRight.setRect(SAME, AFTER - n, SAME, PREFERRED + extraHorizScrollButtonHeight + extraHB, null, screenChanged);
-			btnLeft.repositionAllowed = btnRight.repositionAllowed = false; // we'll handle the reposition ourselves
+			btnLeft.setRect(SAME, AFTER - n, SAME, PREFERRED + extraHorizScrollButtonHeight + extraHB, null,
+							screenChanged);
+			btnRight.setRect(SAME, AFTER - n, SAME, PREFERRED + extraHorizScrollButtonHeight + extraHB, null,
+							 screenChanged);
+			btnLeft.repositionAllowed = btnRight.repositionAllowed =
+											false; // we'll handle the reposition ourselves
 		}
 		if (visibleItems >= itemCount) {
 			offset = 0;
@@ -1026,12 +1016,12 @@ public class ListBox extends Container implements Scrollable {
 	protected void find(char c) {
 		int i;
 		c = Convert.toUpperCase(c); // dbeers@570_103: make sure that the letter is uppercased.
-    int foundIndex = -1; // guich@450_30: fix search when exist repeating letters (cat, chicken, cow - pressing C 3 times)
+		int foundIndex =
+			-1; // guich@450_30: fix search when exist repeating letters (cat, chicken, cow - pressing C 3 times)
 		// first search from the next item
 		for (i = selectedIndex + 1; i < itemCount; i++) {
 			String s = items.items[i].toString(); // guich@220_37
-			if (s.length() > 0 && Convert.toUpperCase(s.charAt(0)) == c) // first letter matches?
-			{
+			if (s.length() > 0 && Convert.toUpperCase(s.charAt(0)) == c) { // first letter matches?
 				foundIndex = i;
 				break;
 			}
@@ -1039,8 +1029,7 @@ public class ListBox extends Container implements Scrollable {
 		if (foundIndex == -1 && selectedIndex >= 0) {
 			for (i = 0; i < selectedIndex; i++) {
 				String s = items.items[i].toString(); // guich@220_37
-				if (s.length() > 0 && Convert.toUpperCase(s.charAt(0)) == c) // first letter matches?
-				{
+				if (s.length() > 0 && Convert.toUpperCase(s.charAt(0)) == c) { // first letter matches?
 					foundIndex = i;
 					break;
 				}
@@ -1058,99 +1047,100 @@ public class ListBox extends Container implements Scrollable {
 		PenEvent pe;
 		if (isEnabled()) {
 			switch (event.type) {
-			case ControlEvent.PRESSED:
-				if (event.target == sbar) {
-					int newOffset = sbar.getValue();
-					if (newOffset != offset) // guich@200final_3: avoid unneeded repaints
-					{
-						offset = newOffset;
-						Window.needsPaint = true;
-					}
-				} else if (event.target == btnLeft || event.target == btnRight) {
-					horizontalScroll(event.target == btnLeft);
-				}
-				break;
-			case KeyEvent.KEY_PRESS:
-				find(Convert.toUpperCase((char) ((KeyEvent) event).key));
-				break;
-			case KeyEvent.SPECIAL_KEY_PRESS:
-				KeyEvent ke = (KeyEvent) event;
-				if (Settings.keyboardFocusTraversable && ke.isActionKey()) {
-					postPressedEvent();
-				} else if (ke.isPrevKey() || ke.isNextKey()) // guich@220_19 - guich@330_45
-				{
-					if (Settings.keyboardFocusTraversable) {
-						if (ke.isUpKey()) {
-              setSelectedIndex(Settings.circularNavigation ? (selectedIndex == 0 ? itemCount - 1 : (selectedIndex - 1))
-									: Math.max(selectedIndex - 1, 0));
-						} else if (ke.isDownKey()) {
-              setSelectedIndex(Settings.circularNavigation ? (selectedIndex == itemCount - 1 ? 0 : (selectedIndex + 1))
-									: Math.min(selectedIndex + 1, itemCount - 1));
-						} else if (ke.key == SpecialKeys.LEFT) {
-							if (!horizontalScroll(true)) {
-								leftReached();
-							}
-						} else if (ke.key == SpecialKeys.RIGHT) {
-							horizontalScroll(false);
+				case ControlEvent.PRESSED:
+					if (event.target == sbar) {
+						int newOffset = sbar.getValue();
+						if (newOffset != offset) { // guich@200final_3: avoid unneeded repaints
+							offset = newOffset;
+							Window.needsPaint = true;
 						}
-					} else if (ke.key == SpecialKeys.LEFT || ke.key == SpecialKeys.RIGHT) {
-						horizontalScroll(ke.key == SpecialKeys.LEFT);
-					} else {
-						sbar._onEvent(event);
+					} else if (event.target == btnLeft || event.target == btnRight) {
+						horizontalScroll(event.target == btnLeft);
 					}
-				}
-				break;
-			case PenEvent.PEN_UP:
-				if (event.target == this && !isScrolling) // if scrolling, do not end selection
-				{
-					pe = (PenEvent) event;
-					if (Settings.fingerTouch) {
-            handleSelection(((pe.y - (simpleBorder ? 3 : 4)) / getItemHeight(0)) + offset); // guich@200b4: corrected line selection
-					}
-					// Post the event
-          int newSelection = ((pe.y - (simpleBorder ? 3 : 4)) / getItemHeight(0)) + offset; // guich@200b4_2: corrected line selection
-					if (isInsideOrNear(pe.x, pe.y) && pe.x < btnX && newSelection < itemCount) {
+					break;
+				case KeyEvent.KEY_PRESS:
+					find(Convert.toUpperCase((char)((KeyEvent) event).key));
+					break;
+				case KeyEvent.SPECIAL_KEY_PRESS:
+					KeyEvent ke = (KeyEvent) event;
+					if (Settings.keyboardFocusTraversable && ke.isActionKey()) {
 						postPressedEvent();
-					}
-					endSelection();
-				}
-				isScrolling = false;
-				break;
-			case PenEvent.PEN_DRAG:
-				DragEvent de = (DragEvent) event;
-
-				if (Settings.fingerTouch) {
-					if (isScrolling) {
-						scrollContent(-de.xDelta, -de.yDelta, true);
-						event.consumed = true;
-					} else {
-						int direction = DragEvent.getInverseDirection(de.direction);
-						event.consumed = true;
-						if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta, true)) {
-							isScrolling = scScrolled = true;
+					} else if (ke.isPrevKey() || ke.isNextKey()) { // guich@220_19 - guich@330_45
+						if (Settings.keyboardFocusTraversable) {
+							if (ke.isUpKey()) {
+								setSelectedIndex(Settings.circularNavigation ? (selectedIndex == 0 ? itemCount - 1 :
+												 (selectedIndex - 1))
+												 : Math.max(selectedIndex - 1, 0));
+							} else if (ke.isDownKey()) {
+								setSelectedIndex(Settings.circularNavigation ? (selectedIndex == itemCount - 1 ? 0 :
+												 (selectedIndex + 1))
+												 : Math.min(selectedIndex + 1, itemCount - 1));
+							} else if (ke.key == SpecialKeys.LEFT) {
+								if (!horizontalScroll(true)) {
+									leftReached();
+								}
+							} else if (ke.key == SpecialKeys.RIGHT) {
+								horizontalScroll(false);
+							}
+						} else if (ke.key == SpecialKeys.LEFT || ke.key == SpecialKeys.RIGHT) {
+							horizontalScroll(ke.key == SpecialKeys.LEFT);
+						} else {
+							sbar._onEvent(event);
 						}
 					}
-				}
-				break;
-			case KeyEvent.ACTION_KEY_PRESS: // guich@tc113_9
-				if (!(this instanceof MultiListBox) && selectedIndex >= 0) {
-					boolean old = isHighlighting;
-					postPressedEvent();
-					isHighlighting = old;
-				}
-				break;
-			case PenEvent.PEN_DOWN:
-				scScrolled = false;
-				pe = (PenEvent) event;
-				if (event.target == this && pe.x < btnX && isInsideOrNear(pe.x, pe.y)) {
-					int sel = ((pe.y - (simpleBorder ? 3 : 4)) / getItemHeight(0)) + offset;
-					if (Settings.fingerTouch) {
-						tempSelectedIndex = sel;
-					} else {
-						handleSelection(sel); // guich@200b4: corrected line selection
+					break;
+				case PenEvent.PEN_UP:
+					if (event.target == this && !isScrolling) { // if scrolling, do not end selection
+						pe = (PenEvent) event;
+						if (Settings.fingerTouch) {
+							handleSelection(((pe.y - (simpleBorder ? 3 : 4)) / getItemHeight(0)) +
+											offset); // guich@200b4: corrected line selection
+						}
+						// Post the event
+						int newSelection = ((pe.y - (simpleBorder ? 3 : 4)) / getItemHeight(0)) +
+										   offset; // guich@200b4_2: corrected line selection
+						if (isInsideOrNear(pe.x, pe.y) && pe.x < btnX && newSelection < itemCount) {
+							postPressedEvent();
+						}
+						endSelection();
 					}
-				}
-				break;
+					isScrolling = false;
+					break;
+				case PenEvent.PEN_DRAG:
+					DragEvent de = (DragEvent) event;
+
+					if (Settings.fingerTouch) {
+						if (isScrolling) {
+							scrollContent(-de.xDelta, -de.yDelta, true);
+							event.consumed = true;
+						} else {
+							int direction = DragEvent.getInverseDirection(de.direction);
+							event.consumed = true;
+							if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta, true)) {
+								isScrolling = scScrolled = true;
+							}
+						}
+					}
+					break;
+				case KeyEvent.ACTION_KEY_PRESS: // guich@tc113_9
+					if (!(this instanceof MultiListBox) && selectedIndex >= 0) {
+						boolean old = isHighlighting;
+						postPressedEvent();
+						isHighlighting = old;
+					}
+					break;
+				case PenEvent.PEN_DOWN:
+					scScrolled = false;
+					pe = (PenEvent) event;
+					if (event.target == this && pe.x < btnX && isInsideOrNear(pe.x, pe.y)) {
+						int sel = ((pe.y - (simpleBorder ? 3 : 4)) / getItemHeight(0)) + offset;
+						if (Settings.fingerTouch) {
+							tempSelectedIndex = sel;
+						} else {
+							handleSelection(sel); // guich@200b4: corrected line selection
+						}
+					}
+					break;
 			}
 		}
 	}
@@ -1163,17 +1153,16 @@ public class ListBox extends Container implements Scrollable {
 
 	protected void handleSelection(int newSelection) {
 		if (newSelection != selectedIndex && newSelection < itemCount) {
-			if (transparentBackground) // guich@tc115_18: on transparent backgrounds, we must repaint everything
-			{
+			if (transparentBackground) { // guich@tc115_18: on transparent backgrounds, we must repaint everything
 				selectedIndex = newSelection;
 				Window.needsPaint = true;
 			} else {
-        //Graphics g = getGraphics();
-        //if (selectedIndex >= 0)
+				//Graphics g = getGraphics();
+				//if (selectedIndex >= 0)
 				// drawCursor(g,selectedIndex,false);
 				selectedIndex = newSelection;
 				Window.needsPaint = true;
-        //drawCursor(g,selectedIndex,true);
+				//drawCursor(g,selectedIndex,true);
 			}
 		}
 	}
@@ -1194,7 +1183,8 @@ public class ListBox extends Container implements Scrollable {
 		fColor = getForeColor();
 		back0 = Color.brighter(getBackColor());
 		back1 = customCursorColor != -1 ? customCursorColor
-        : (back0 != Color.WHITE) ? backColor : Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor(); // guich@210_19
+				: (back0 != Color.WHITE) ? backColor : Color.getCursorColor(
+					back0);//guich@300_20: use backColor instead of: back0.getCursorColor(); // guich@210_19
 		if (fColor == back1) {
 			fColor = foreColor;
 		}
@@ -1213,85 +1203,88 @@ public class ListBox extends Container implements Scrollable {
 	@Override
 	public void onPaint(Graphics g) {
 		// Draw background and borders
-	    if (uiMaterial) {
-    		g.backColor = uiAndroid ? parent.backColor : back0;
-    		if (!transparentBackground) {
-    			if (npParts != null && npback == null) {
-    				try {
-    					npback = NinePatch.getInstance().getNormalInstance(npParts, width, height,
-    							isEnabled() ? back0 : Color.interpolate(back0, parent.backColor), false);
-    					npback.alphaMask = alphaValue;
-    				} catch (ImageException e) {
-    				}
-    			}
-    			NinePatch.tryDrawImage(g, npback, 0, 0);
-    			g.foreColor = foreColor;
-    		}
-    		g.foreColor = fColor;
-    
-    		int dx = 0; // guich@580_41: changed from 3 to 2
-    		int dy = 0;
-    		if (uiFlat) {
-    			dy--;
-    		}
-    		if (simpleBorder) {
-    			dx--;
-    			dy--;
-    		}
-    
-    		if (getDoEffect() && effect != null) {
-    			effect.paintEffect(g);
-    		}
-    
-    		setTextAreaClip(g, dx, dy); // guich@tc100b4_5
-    
-    		int greatestVisibleItemIndex = Math.min(itemCount, visibleItems + offset); // code corrected by Bjoem Knafla
-    		dx++;
-    		drawItems(g, dx, dy, greatestVisibleItemIndex);
-	    } else {
-    	    g.backColor = uiAndroid ? parent.backColor : back0;
-    	    if (!transparentBackground) {
-    	      g.fillRect(0, 0, width, height); // guich@tc115_77: fill till end because the scrollbar may not being shown
-    	    }
-    	    if (drawBorder) {
-    	      if (uiAndroid) {
-    	        if (npback == null) {
-    	          try {
-    	            npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height,
-    	                isEnabled() ? back0 : Color.interpolate(back0, parent.backColor), false);
-    	            npback.alphaMask = alphaValue;
-    	          } catch (ImageException e) {
-    	          }
-    	        }
-    	        NinePatch.tryDrawImage(g, npback, 0, 0);
-    	      }
-    	      g.foreColor = foreColor;
-    	      if (!uiAndroid) {
-    	        g.draw3dRect(0, 0, width, height, Graphics.R3D_CHECK, false, false, fourColors);
-    	      }
-    	    }
-    	    g.foreColor = fColor;
-    
-    	    int dx = 2; // guich@580_41: changed from 3 to 2
-    	    int dy = 3;
-    	    if (uiFlat) {
-    	      dy--;
-    	    }
-    	    if (simpleBorder) {
-    	      dx--;
-    	      dy--;
-    	    }
-    
-    	    if (effect != null) {
-    	      effect.paintEffect(g);
-    	    }
-    
-    	    setTextAreaClip(g, dx, dy); // guich@tc100b4_5
-    	    dx += xOffset;
-    	    int greatestVisibleItemIndex = Math.min(itemCount, visibleItems + offset); // code corrected by Bjoem Knafla
-    	    dx++;
-    	    drawItems(g, dx, dy, greatestVisibleItemIndex);
-	    }
+		if (uiMaterial) {
+			g.backColor = uiAndroid ? parent.backColor : back0;
+			if (!transparentBackground) {
+				if (npParts != null && npback == null) {
+					try {
+						npback = NinePatch.getInstance().getNormalInstance(npParts, width, height,
+								 isEnabled() ? back0 : Color.interpolate(back0, parent.backColor), false);
+						npback.alphaMask = alphaValue;
+					} catch (ImageException e) {
+					}
+				}
+				NinePatch.tryDrawImage(g, npback, 0, 0);
+				g.foreColor = foreColor;
+			}
+			g.foreColor = fColor;
+
+			int dx = 0; // guich@580_41: changed from 3 to 2
+			int dy = 0;
+			if (uiFlat) {
+				dy--;
+			}
+			if (simpleBorder) {
+				dx--;
+				dy--;
+			}
+
+			if (getDoEffect() && effect != null) {
+				effect.paintEffect(g);
+			}
+
+			setTextAreaClip(g, dx, dy); // guich@tc100b4_5
+
+			int greatestVisibleItemIndex = Math.min(itemCount,
+													visibleItems + offset); // code corrected by Bjoem Knafla
+			dx++;
+			drawItems(g, dx, dy, greatestVisibleItemIndex);
+		} else {
+			g.backColor = uiAndroid ? parent.backColor : back0;
+			if (!transparentBackground) {
+				g.fillRect(0, 0, width,
+						   height); // guich@tc115_77: fill till end because the scrollbar may not being shown
+			}
+			if (drawBorder) {
+				if (uiAndroid) {
+					if (npback == null) {
+						try {
+							npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height,
+									 isEnabled() ? back0 : Color.interpolate(back0, parent.backColor), false);
+							npback.alphaMask = alphaValue;
+						} catch (ImageException e) {
+						}
+					}
+					NinePatch.tryDrawImage(g, npback, 0, 0);
+				}
+				g.foreColor = foreColor;
+				if (!uiAndroid) {
+					g.draw3dRect(0, 0, width, height, Graphics.R3D_CHECK, false, false, fourColors);
+				}
+			}
+			g.foreColor = fColor;
+
+			int dx = 2; // guich@580_41: changed from 3 to 2
+			int dy = 3;
+			if (uiFlat) {
+				dy--;
+			}
+			if (simpleBorder) {
+				dx--;
+				dy--;
+			}
+
+			if (effect != null) {
+				effect.paintEffect(g);
+			}
+
+			setTextAreaClip(g, dx, dy); // guich@tc100b4_5
+			dx += xOffset;
+			int greatestVisibleItemIndex = Math.min(itemCount,
+													visibleItems + offset); // code corrected by Bjoem Knafla
+			dx++;
+			drawItems(g, dx, dy, greatestVisibleItemIndex);
+		}
 	}
 
 	@Override
@@ -1326,41 +1319,45 @@ public class ListBox extends Container implements Scrollable {
 	}
 
 	protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex) {
-	    if (uiMaterial) {
-    		int itemHeight = getItemHeight(0);
-    		for (int i = offset; i < greatestVisibleItemIndex; dy += itemHeight, i++) {
-    			drawItem(g, i, dx, dy); // guich@200b4: let the user extend ListBox and draw the items himself
-    		}
-    		drawSelectedItem(g, offset, greatestVisibleItemIndex);
-	    } else {
-    	    for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++)) {
-    	        drawItem(g, i, dx, dy); // guich@200b4: let the user extend ListBox and draw the items himself
-    	      }
-    	      drawSelectedItem(g, offset, greatestVisibleItemIndex);
-	    }
+		if (uiMaterial) {
+			int itemHeight = getItemHeight(0);
+			for (int i = offset; i < greatestVisibleItemIndex; dy += itemHeight, i++) {
+				drawItem(g, i, dx, dy); // guich@200b4: let the user extend ListBox and draw the items himself
+			}
+			drawSelectedItem(g, offset, greatestVisibleItemIndex);
+		} else {
+			for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++)) {
+				drawItem(g, i, dx, dy); // guich@200b4: let the user extend ListBox and draw the items himself
+			}
+			drawSelectedItem(g, offset, greatestVisibleItemIndex);
+		}
 	}
 
 	protected int getItemHeight(int i) {
 		if (uiMaterial) {
-    	     int itemHeight = preferredItemHeight;
-    	        int biggestIconWidth = autoResizeIcon ? iconSize : this.biggestIconWidth;
-    	        if (fmH >= preferredItemHeight)
-    	            itemHeight += fmH + UnitsConverter.toPixels(17 + DP);
-    	        if (biggestIconWidth > itemHeight)
-    	            itemHeight = biggestIconWidth + UnitsConverter.toPixels(17 + DP);
-    	        return itemHeight;
-	    }
-		return Settings.fingerTouch ? (int) (fmH * ihFactor) : fmH;
+			int itemHeight = preferredItemHeight;
+			int biggestIconWidth = autoResizeIcon ? iconSize : this.biggestIconWidth;
+			if (fmH >= preferredItemHeight) {
+				itemHeight += fmH + UnitsConverter.toPixels(17 + DP);
+			}
+			if (biggestIconWidth > itemHeight) {
+				itemHeight = biggestIconWidth + UnitsConverter.toPixels(17 + DP);
+			}
+			return itemHeight;
+		}
+		return Settings.fingerTouch ? (int)(fmH * ihFactor) : fmH;
 	}
 
-	protected void setTextAreaClip(Graphics g, int dx, int dy) // guich@tc100b4_5: use a common routine to prevent errors
-	{
+	protected void setTextAreaClip(Graphics g, int dx,
+								   int dy) { // guich@tc100b4_5: use a common routine to prevent errors
 		int yy = dy;
 		if (uiMaterial) {
-		    g.setClip(dx + 1, yy, width, Math.min(height - 2 - yy, getItemHeight(0) * visibleItems + 2));
+			g.setClip(dx + 1, yy, width, Math.min(height - 2 - yy, getItemHeight(0) * visibleItems + 2));
 		} else {
 			g.setClip(dx + 1, yy, btnX - dx - 2,
-                Math.min(height - (uiAndroid ? 2 : 1) - yy, getItemHeight(0) * visibleItems + (uiAndroid ? 1 : 2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
+					  Math.min(height - (uiAndroid ? 2 : 1) - yy,
+							   getItemHeight(0) * visibleItems + (uiAndroid ? 1 :
+									   2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
 		}
 	}
 
@@ -1381,120 +1378,129 @@ public class ListBox extends Container implements Scrollable {
 
 	/** You can extend ListBox and overide this method to draw the items */
 	protected void drawItem(Graphics g, int index, int dx, int dy) {
-	    if (uiMaterial) {
-    		Object obj = items.items[index];
-    		boolean isIconItem = obj instanceof IconItem;
-    		IconItem iconItem = null;
-    		int biggestIconWidth = autoResizeIcon ? iconSize : this.biggestIconWidth;
-    		int right = biggestIconWidth;
-    
-    		dx += paddingLeft;
-    		dy += paddingTop;
-    		right += paddingRight;
-    
-    		if (obj == null) {
-    			return;
-    		}
-    		if (obj instanceof CustomDrawingItem) {
-    			((CustomDrawingItem) obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
-    			return;
-    		}
-    		if (isIconItem) {
-    			try {
-    				iconItem = ((IconItem) obj);
-    				if (iconItem.icon != null) {
-    					if(autoResizeIcon) {
-    						Image newIcon = iconItem.icon.getSmoothScaledInstance(iconSize, iconSize);
-    						g.drawImage(newIcon, dx, dy + getItemHeight(index) / 2 - newIcon.getHeight() / 2);
-    					} else
-    						g.drawImage(iconItem.icon, dx, dy + getItemHeight(index) / 2 - iconItem.icon.getHeight() / 2);
-    				}
-    			} catch (ImageException e) {
-    				g.drawImage(iconItem.icon, dx, dy + getItemHeight(index) / 2 - iconItem.icon.getHeight() / 2);
-    				if(Settings.onJavaSE)
-    					e.printStackTrace();
-    			}
-    			try {
-    				if(autoResizeIcon) {
-    					Image newIcon = iconItem.iconRight.getSmoothScaledInstance(iconSize, iconSize);
-    					g.drawImage(newIcon, width - right, dy + getItemHeight(index) / 2 - newIcon.getHeight() / 2);
-    				} else
-    					g.drawImage(iconItem.iconRight, width - right, dy + getItemHeight(index) / 2 - iconItem.iconRight.getHeight() / 2);
-    			} catch (ImageException e) {
-    				g.drawImage(iconItem.iconRight, width - right, dy + getItemHeight(index) / 2 - iconItem.iconRight.getHeight() / 2);
-    				if(Settings.onJavaSE)
-    					e.printStackTrace();
-    			}
-    		}
-    
-    		int textWidth = width - paddingLeft - paddingRight;
-    
-    		if (hasIconItemLeft)
-    			textWidth -= biggestIconWidth + iconGap;
-    		if (hasIconItemRight)
-    			textWidth -= biggestIconWidth + iconGap;
-    
-    		String s = StringUtils.shortText(obj.toString(), font.fm, textWidth);
-    
-    		int f = g.foreColor;
-    		if (ihtForeColors != null) {
-    			g.foreColor = ihtForeColors.get(index, f);
-    		}
-    		if (ihtBackColors != null) {
-    			int b = g.backColor;
-    			g.backColor = ihtBackColors.get(index, b);
-    			g.fillRect(dx, dy, useFullWidthOnSelection ? btnX : fm.stringWidth(s), getItemHeight(index));
-    			g.backColor = b;
-    		}
-    
-    		if (hasIconItemLeft) {
-    			dx += biggestIconWidth + iconGap;
-    		}
-    
-    		g.drawText(s, dx, dy + (!uiAndroid ? 0 : (getItemHeight(index) - fmH) / 2), textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
-    		g.foreColor = f;
-	    } else {
-    	    Object obj = items.items[index];
-    	    if (obj == null) {
-    	      return;
-    	    }
-    	    if (obj instanceof CustomDrawingItem) {
-    	      ((CustomDrawingItem) obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
-    	      return;
-    	    }
-    	    if (obj instanceof IconItem) {
-    	      g.drawImage(((IconItem) obj).icon, dx, dy);
-    	      dx += iconGap;
-    	    }
-    	    String s = obj.toString();
-    	    // guich@tc100b4: allow change of back/fore colors
-    	    int f = g.foreColor;
-    	    if (ihtForeColors != null) {
-    	      g.foreColor = ihtForeColors.get(index, f);
-    	    }
-    	    if (ihtBackColors != null) {
-    	      int b = g.backColor;
-    	      g.backColor = ihtBackColors.get(index, b);
-    	      g.fillRect(dx, dy, useFullWidthOnSelection ? btnX : fm.stringWidth(s), getItemHeight(index));
-    	      g.backColor = b;
-    	    }
-    	    g.drawText(s, dx, dy + (!uiAndroid ? 0 : (getItemHeight(index) - fmH) / 2), textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
-    	    g.foreColor = f;
-	    }
+		if (uiMaterial) {
+			Object obj = items.items[index];
+			boolean isIconItem = obj instanceof IconItem;
+			IconItem iconItem = null;
+			int biggestIconWidth = autoResizeIcon ? iconSize : this.biggestIconWidth;
+			int right = biggestIconWidth;
+
+			dx += paddingLeft;
+			dy += paddingTop;
+			right += paddingRight;
+
+			if (obj == null) {
+				return;
+			}
+			if (obj instanceof CustomDrawingItem) {
+				((CustomDrawingItem) obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
+				return;
+			}
+			if (isIconItem) {
+				try {
+					iconItem = ((IconItem) obj);
+					if (iconItem.icon != null) {
+						if (autoResizeIcon) {
+							Image newIcon = iconItem.icon.getSmoothScaledInstance(iconSize, iconSize);
+							g.drawImage(newIcon, dx, dy + getItemHeight(index) / 2 - newIcon.getHeight() / 2);
+						} else {
+							g.drawImage(iconItem.icon, dx, dy + getItemHeight(index) / 2 - iconItem.icon.getHeight() / 2);
+						}
+					}
+				} catch (ImageException e) {
+					g.drawImage(iconItem.icon, dx, dy + getItemHeight(index) / 2 - iconItem.icon.getHeight() / 2);
+					if (Settings.onJavaSE) {
+						e.printStackTrace();
+					}
+				}
+				try {
+					if (autoResizeIcon) {
+						Image newIcon = iconItem.iconRight.getSmoothScaledInstance(iconSize, iconSize);
+						g.drawImage(newIcon, width - right, dy + getItemHeight(index) / 2 - newIcon.getHeight() / 2);
+					} else
+						g.drawImage(iconItem.iconRight, width - right,
+									dy + getItemHeight(index) / 2 - iconItem.iconRight.getHeight() / 2);
+				} catch (ImageException e) {
+					g.drawImage(iconItem.iconRight, width - right,
+								dy + getItemHeight(index) / 2 - iconItem.iconRight.getHeight() / 2);
+					if (Settings.onJavaSE) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+			int textWidth = width - paddingLeft - paddingRight;
+
+			if (hasIconItemLeft) {
+				textWidth -= biggestIconWidth + iconGap;
+			}
+			if (hasIconItemRight) {
+				textWidth -= biggestIconWidth + iconGap;
+			}
+
+			String s = StringUtils.shortText(obj.toString(), font.fm, textWidth);
+
+			int f = g.foreColor;
+			if (ihtForeColors != null) {
+				g.foreColor = ihtForeColors.get(index, f);
+			}
+			if (ihtBackColors != null) {
+				int b = g.backColor;
+				g.backColor = ihtBackColors.get(index, b);
+				g.fillRect(dx, dy, useFullWidthOnSelection ? btnX : fm.stringWidth(s), getItemHeight(index));
+				g.backColor = b;
+			}
+
+			if (hasIconItemLeft) {
+				dx += biggestIconWidth + iconGap;
+			}
+
+			g.drawText(s, dx, dy + (!uiAndroid ? 0 : (getItemHeight(index) - fmH) / 2), textShadowColor != -1,
+					   textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
+			g.foreColor = f;
+		} else {
+			Object obj = items.items[index];
+			if (obj == null) {
+				return;
+			}
+			if (obj instanceof CustomDrawingItem) {
+				((CustomDrawingItem) obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
+				return;
+			}
+			if (obj instanceof IconItem) {
+				g.drawImage(((IconItem) obj).icon, dx, dy);
+				dx += iconGap;
+			}
+			String s = obj.toString();
+			// guich@tc100b4: allow change of back/fore colors
+			int f = g.foreColor;
+			if (ihtForeColors != null) {
+				g.foreColor = ihtForeColors.get(index, f);
+			}
+			if (ihtBackColors != null) {
+				int b = g.backColor;
+				g.backColor = ihtBackColors.get(index, b);
+				g.fillRect(dx, dy, useFullWidthOnSelection ? btnX : fm.stringWidth(s), getItemHeight(index));
+				g.backColor = b;
+			}
+			g.drawText(s, dx, dy + (!uiAndroid ? 0 : (getItemHeight(index) - fmH) / 2), textShadowColor != -1,
+					   textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
+			g.foreColor = f;
+		}
 	}
 
 	/** You can extend ListBox and overide this method to draw the items */
 	protected void drawSelectedItem(Graphics g, int index, int dx, int dy, int w) {
-//	    int textWidth = width - paddingLeft - paddingRight - arrowSize - 
-//	            (this.captionIcon == null ? 0 : iconGap + this.captionIcon.getWidth());
-//	    g.drawText(StringUtils.shortText(pop.lb.getText(), font.fm, textWidth), paddingLeft + (this.captionIcon == null ? 0 : iconGap + this.captionIcon.getWidth()), 
-//	            height/2 + paddingTop - paddingBottom - fmH/2);
-	    
-	    
+		//	    int textWidth = width - paddingLeft - paddingRight - arrowSize -
+		//	            (this.captionIcon == null ? 0 : iconGap + this.captionIcon.getWidth());
+		//	    g.drawText(StringUtils.shortText(pop.lb.getText(), font.fm, textWidth), paddingLeft + (this.captionIcon == null ? 0 : iconGap + this.captionIcon.getWidth()),
+		//	            height/2 + paddingTop - paddingBottom - fmH/2);
+
+
 		g.drawText(
-		        uiMaterial ?
-		                StringUtils.shortText(getText(), font.fm, w) :
-		        getText(), dx, dy, textShadowColor != -1, textShadowColor);
+			uiMaterial ?
+			StringUtils.shortText(getText(), font.fm, w) :
+			getText(), dx, dy, textShadowColor != -1, textShadowColor);
 	}
 
 	/**
@@ -1503,10 +1509,10 @@ public class ListBox extends Container implements Scrollable {
 	 */
 	protected int getItemWidth(int index) {
 		if (uiMaterial) {
-		    return width;
+			return width;
 		}
-        Object obj = items.items[index];
-        return obj == null ? 0 : fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
+		Object obj = items.items[index];
+		return obj == null ? 0 : fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
 	}
 
 	int getIndexY(int sel) {
@@ -1524,70 +1530,71 @@ public class ListBox extends Container implements Scrollable {
 
 	/** This method is used to draw the cursor around the desired item */
 	protected void drawCursor(Graphics g, int sel, boolean on) {
-	    if (uiMaterial) {
-    		if (offset <= sel && sel < visibleItems + offset && sel < itemCount) // guich@555_10: fixed in all ui styles
-    		{
-    			g.foreColor = fColor; // guich@520_15: by using fillRect we must set to the textcolor
-    			g.backColor = on ? getCursorColor(sel) : back0;
-    
-    			int dx = 0;
-    			int dy = 0;
-    			int ddx = dx;
-    			if (uiFlat) {
-    				dy--;
-    			}
-    			if (simpleBorder) {
-    				dx--;
-    				ddx--;
-    				dy--;
-    			}
-    
-    			setTextAreaClip(g, dx, dy); // guich@tc100b4_5
-    
-    			int ih = getItemHeight(sel);
-    			dy += (sel - offset) * ih;
-    
-    			g.fillRect(dx - 1, dy + paddingTop - 1, width + 1, ih + 2); // pgr@520_4: if this is an image or an
-    																		// antialiased font, using eraseRect will make
-    																		// it ugly. - guich@552_7: added -1 to fix
-    																		// cursor not overwriting border.
-    
-    			drawItem(g, sel, dx - ddx + 1, dy); // pgr@520_4
-    			// if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof
-    			// MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before
-    			// the combobox closes. not comparing with ComboBoxDropDown results in screen
-    			// FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
-    		}
-	    } else {
-    	    if (offset <= sel && sel < visibleItems + offset && sel < itemCount) // guich@555_10: fixed in all ui styles
-    	    {
-    	      g.foreColor = fColor; // guich@520_15: by using fillRect we must set to the textcolor
-    	      g.backColor = on ? getCursorColor(sel) : back0;
-    
-    	      int dx = 3; // guich@580_41: cursor must be drawn at 3 or will overwrite the border on a combobox with PalmOS style
-    	      int dy = 3;
-    	      if (uiFlat) {
-    	        dy--;
-    	      }
-    	      if (simpleBorder) {
-    	        dx--;
-    	        dy--;
-    	      }
-    
-    	      setTextAreaClip(g, dx - 1, dy); // guich@tc100b4_5
-    
-    	      int ih = getItemHeight(sel);
-    	      dx += xOffset; // guich@552_24: added this to make scroll apply to the item
-    	      dy += (sel - offset) * ih;
-    	      int sw;
-    	      if (useFullWidthOnSelection || (sw = getItemWidth(sel)) == 0) {
-    	        sw = btnX - 4;
-    	      }
-    	      g.fillRect(dx - 1, dy - 1, sw + 2, ih + 2); // pgr@520_4: if this is an image or an antialiased font, using eraseRect will make it ugly. - guich@552_7: added -1 to fix cursor not overwriting border.
-    	      drawItem(g, sel, dx, dy); // pgr@520_4
-    	      //if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before the combobox closes. not comparing with ComboBoxDropDown results in screen FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
-    	    }
-	    }
+		if (uiMaterial) {
+			if (offset <= sel && sel < visibleItems + offset
+				&& sel < itemCount) { // guich@555_10: fixed in all ui styles
+				g.foreColor = fColor; // guich@520_15: by using fillRect we must set to the textcolor
+				g.backColor = on ? getCursorColor(sel) : back0;
+
+				int dx = 0;
+				int dy = 0;
+				int ddx = dx;
+				if (uiFlat) {
+					dy--;
+				}
+				if (simpleBorder) {
+					dx--;
+					ddx--;
+					dy--;
+				}
+
+				setTextAreaClip(g, dx, dy); // guich@tc100b4_5
+
+				int ih = getItemHeight(sel);
+				dy += (sel - offset) * ih;
+
+				g.fillRect(dx - 1, dy + paddingTop - 1, width + 1, ih + 2); // pgr@520_4: if this is an image or an
+				// antialiased font, using eraseRect will make
+				// it ugly. - guich@552_7: added -1 to fix
+				// cursor not overwriting border.
+
+				drawItem(g, sel, dx - ddx + 1, dy); // pgr@520_4
+				// if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof
+				// MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before
+				// the combobox closes. not comparing with ComboBoxDropDown results in screen
+				// FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
+			}
+		} else {
+			if (offset <= sel && sel < visibleItems + offset
+				&& sel < itemCount) { // guich@555_10: fixed in all ui styles
+				g.foreColor = fColor; // guich@520_15: by using fillRect we must set to the textcolor
+				g.backColor = on ? getCursorColor(sel) : back0;
+
+				int dx = 3; // guich@580_41: cursor must be drawn at 3 or will overwrite the border on a combobox with PalmOS style
+				int dy = 3;
+				if (uiFlat) {
+					dy--;
+				}
+				if (simpleBorder) {
+					dx--;
+					dy--;
+				}
+
+				setTextAreaClip(g, dx - 1, dy); // guich@tc100b4_5
+
+				int ih = getItemHeight(sel);
+				dx += xOffset; // guich@552_24: added this to make scroll apply to the item
+				dy += (sel - offset) * ih;
+				int sw;
+				if (useFullWidthOnSelection || (sw = getItemWidth(sel)) == 0) {
+					sw = btnX - 4;
+				}
+				g.fillRect(dx - 1, dy - 1, sw + 2,
+						   ih + 2); // pgr@520_4: if this is an image or an antialiased font, using eraseRect will make it ugly. - guich@552_7: added -1 to fix cursor not overwriting border.
+				drawItem(g, sel, dx, dy); // pgr@520_4
+				//if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before the combobox closes. not comparing with ComboBoxDropDown results in screen FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
+			}
+		}
 	}
 
 	protected boolean hasIconItemLeft() {
@@ -1617,28 +1624,26 @@ public class ListBox extends Container implements Scrollable {
 	}
 
 	/** Sets the border of the listbox to be not 3d if flag is true. */
-	public void setSimpleBorder(boolean simpleBorder) // guich@200b4_93
-	{
+	public void setSimpleBorder(boolean simpleBorder) { // guich@200b4_93
 		this.simpleBorder = simpleBorder;
 	}
 
 	/** Sorts the elements of this ListBox. The current selection is cleared. */
-	public void qsort() // guich@220_35
-	{
+	public void qsort() { // guich@220_35
 		items.qsort();
 		setSelectedIndex(-1);
 	}
 
 	/**
 	 * Sorts the elements of this ListBox. The current selection is cleared.
-	 * 
+	 *
 	 * @param caseless Pass true to make a caseless sort, if the items are Strings.
 	 */
-	public void qsort(boolean caseless) // guich@tc113_5
-	{
+	public void qsort(boolean caseless) { // guich@tc113_5
 		if (size() > 0) {
 			Convert.qsort(items.items, 0, items.size() - 1,
-          (caseless && items.items[0] instanceof String) ? Convert.SORT_STRING_NOCASE : Convert.SORT_AUTODETECT, true);
+						  (caseless && items.items[0] instanceof String) ? Convert.SORT_STRING_NOCASE :
+						  Convert.SORT_AUTODETECT, true);
 			setSelectedIndex(-1);
 		}
 	}
@@ -1670,8 +1675,7 @@ public class ListBox extends Container implements Scrollable {
 
 	/** Clears this control, selecting index clearValueInt. */
 	@Override
-	public void clear() // guich@572_19
-	{
+	public void clear() { // guich@572_19
 		setSelectedIndex(clearValueInt);
 	}
 
@@ -1683,8 +1687,8 @@ public class ListBox extends Container implements Scrollable {
 	}
 
 	@Override
-	public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // any change here must synchronize with MultiListBox'
-	{
+	public Control handleGeographicalFocusChangeKeys(KeyEvent
+			ke) { // any change here must synchronize with MultiListBox'
 		if ((ke.isPrevKey() && !ke.isUpKey()) || (ke.isNextKey() && !ke.isDownKey())) {
 			int oldXOffset = xOffset;
 			_onEvent(ke);
@@ -1704,15 +1708,14 @@ public class ListBox extends Container implements Scrollable {
 
 	/**
 	 * Selects the item that starts with the given text
-	 * 
+	 *
 	 * @param text            The text string to search for
 	 * @param caseInsensitive If true, the text and all searched strings are first
 	 *                        converted to lowercase.
 	 * @return If an item was found and selected.
 	 * @since TotalCross 1.13
 	 */
-	public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive) // guich@tc113_2
-	{
+	public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive) { // guich@tc113_2
 		if (caseInsensitive) {
 			text = text.toLowerCase();
 		}
@@ -1734,12 +1737,11 @@ public class ListBox extends Container implements Scrollable {
 	 * is disabled and the preferred height is smaller than the actual height. You
 	 * may have to call <code>reposition</code> if this method returns true. You can
 	 * call this method after all items were added.
-	 * 
+	 *
 	 * @return True if the scrollbar was hidden.
 	 * @since TotalCross 1.15
 	 */
-	public boolean hideScrollBarIfNotNeeded() // guich@tc115_77
-	{
+	public boolean hideScrollBarIfNotNeeded() { // guich@tc115_77
 		boolean showSB = ivWidths != null || getPreferredHeight() > getHeight();
 		if (sbar.isVisible() != showSB) {
 			sbar.setVisible(showSB);

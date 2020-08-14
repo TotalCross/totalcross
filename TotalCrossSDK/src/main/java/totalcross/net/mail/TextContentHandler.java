@@ -11,21 +11,21 @@ import totalcross.sys.Convert;
 
 /**
  * Implementation of DataContentHandler that handles textual (not encoded) MIME types.
- * 
+ *
  * @since TotalCross 1.13
  */
 public class TextContentHandler extends DataContentHandler {
-  @Override
-  public void writeTo(Object obj, String mimeType, Stream stream) throws IOException {
-    String text;
-    if (obj instanceof Part) {
-      Part part = (Part) obj;
-      text = (String) part.content;
-    } else {
-      text = obj.toString();
-    }
-    stream.writeBytes(Convert.CRLF_BYTES);
-    stream.writeBytes(text);
-    stream.writeBytes(Convert.CRLF_BYTES);
-  }
+	@Override
+	public void writeTo(Object obj, String mimeType, Stream stream) throws IOException {
+		String text;
+		if (obj instanceof Part) {
+			Part part = (Part) obj;
+			text = (String) part.content;
+		} else {
+			text = obj.toString();
+		}
+		stream.writeBytes(Convert.CRLF_BYTES);
+		stream.writeBytes(text);
+		stream.writeBytes(Convert.CRLF_BYTES);
+	}
 }

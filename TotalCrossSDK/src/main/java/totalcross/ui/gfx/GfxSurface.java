@@ -13,11 +13,11 @@ package totalcross.ui.gfx;
  */
 
 public abstract class GfxSurface {
-  public abstract int getX();
+	public abstract int getX();
 
-  public abstract int getY();
+	public abstract int getY();
 
-  public abstract int getWidth();
+	public abstract int getWidth();
 
-  public abstract int getHeight();
+	public abstract int getHeight();
 }

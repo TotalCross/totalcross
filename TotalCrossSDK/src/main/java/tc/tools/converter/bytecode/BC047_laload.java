@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC047_laload extends LoadArray {
-  public BC047_laload() {
-    super(0, -2, -1, -2, LONG);
-  }
+	public BC047_laload() {
+		super(0, -2, -1, -2, LONG);
+	}
 }

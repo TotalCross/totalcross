@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * Thrown when an invalid number was passed to valueOf. 
+/**
+ * Thrown when an invalid number was passed to valueOf.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class NumberFormatException4D extends IllegalArgumentException {
-  /** Constructs an empty Exception. */
-  public NumberFormatException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public NumberFormatException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public NumberFormatException4D(String message) {
-    super(message);
-  }
+	/** Constructs an exception with the given message. */
+	public NumberFormatException4D(String message) {
+		super(message);
+	}
 }

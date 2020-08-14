@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * Thrown when an illegal argument was passed to a method. 
+/**
+ * Thrown when an illegal argument was passed to a method.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class IllegalArgumentException4D extends RuntimeException {
-  /** Constructs an empty Exception. */
-  public IllegalArgumentException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public IllegalArgumentException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public IllegalArgumentException4D(String message) {
-    super(message);
-  }
+	/** Constructs an exception with the given message. */
+	public IllegalArgumentException4D(String message) {
+		super(message);
+	}
 }

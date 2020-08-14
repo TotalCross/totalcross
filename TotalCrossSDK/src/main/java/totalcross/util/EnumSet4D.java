@@ -89,416 +89,416 @@ import java.util.Set;
 // FIXME: serialization is special, uses SerializationProxy.
 // of(E e) is the 'bottom' method that creates a real EnumSet.
 public abstract class EnumSet4D<T extends Enum<T>> extends AbstractSet<T> implements Cloneable {
-  // These fields could go into the anonymous inner class in of(E),
-  // complementOf would need to be refactored then, though.
-  /**
-   * The store which maintains the bits used to represent
-   * the enumeration constants.
-   */
-  BitSet4D store;
+	// These fields could go into the anonymous inner class in of(E),
+	// complementOf would need to be refactored then, though.
+	/**
+	 * The store which maintains the bits used to represent
+	 * the enumeration constants.
+	 */
+	BitSet4D store;
 
-  /**
-   * The cardinality of the set (the current number
-   * of bits set).
-   */
-  int cardinality;
+	/**
+	 * The cardinality of the set (the current number
+	 * of bits set).
+	 */
+	int cardinality;
 
-  /**
-   * The enumeration used by this set.
-   */
-  Class<T> enumClass;
+	/**
+	 * The enumeration used by this set.
+	 */
+	Class<T> enumClass;
 
-  /**
-   * Empty package-private constructor
-   */
-  EnumSet4D() {
-  }
+	/**
+	 * Empty package-private constructor
+	 */
+	EnumSet4D() {
+	}
 
-  /**
-   * Returns a clone of the set.
-   *
-   * @return a clone of the set.
-   */
-  @Override
-  public EnumSet4D<T> clone() {
-    EnumSet4D<T> r;
+	/**
+	 * Returns a clone of the set.
+	 *
+	 * @return a clone of the set.
+	 */
+	@Override
+	public EnumSet4D<T> clone() {
+		EnumSet4D<T> r;
 
-    try {
-      r = (EnumSet4D<T>) super.clone();
-    } catch (CloneNotSupportedException cnse) {
-      /* Can't happen */
-      return null;
-    }
-    r.store = (BitSet4D) store.clone();
-    return r;
-  }
+		try {
+			r = (EnumSet4D<T>) super.clone();
+		} catch (CloneNotSupportedException cnse) {
+			/* Can't happen */
+			return null;
+		}
+		r.store = (BitSet4D) store.clone();
+		return r;
+	}
 
-  /**
-   * Returns a set for the given enumeration type where
-   * all the constants are present.
-   *
-   * @param eltType the type of enumeration to use for the set.
-   * @return an {@link EnumSet} with all the bits set.
-   * @throws NullPointerException if the element type is <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> allOf(Class<T> eltType) {
-    // create an EnumSet from the list of values of the type
-    return copyOf(Arrays.asList(eltType.getEnumConstants()));
-  }
+	/**
+	 * Returns a set for the given enumeration type where
+	 * all the constants are present.
+	 *
+	 * @param eltType the type of enumeration to use for the set.
+	 * @return an {@link EnumSet} with all the bits set.
+	 * @throws NullPointerException if the element type is <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> allOf(Class<T> eltType) {
+		// create an EnumSet from the list of values of the type
+		return copyOf(Arrays.asList(eltType.getEnumConstants()));
+	}
 
-  /**
-   * Returns a set for the given enumeration type where
-   * none of the constants are present.
-   *
-   * @param eltType the type of enumeration to use for the set.
-   * @return an {@link EnumSet} with none of the bits set.
-   * @throws NullPointerException if the element type is <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> noneOf(Class<T> eltType) {
-    return complementOf(allOf(eltType));
-  }
+	/**
+	 * Returns a set for the given enumeration type where
+	 * none of the constants are present.
+	 *
+	 * @param eltType the type of enumeration to use for the set.
+	 * @return an {@link EnumSet} with none of the bits set.
+	 * @throws NullPointerException if the element type is <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> noneOf(Class<T> eltType) {
+		return complementOf(allOf(eltType));
+	}
 
-  /**
-   * Returns a clone of the given set.
-   *
-   * @param other the set to clone.
-   * @return an {@link EnumSet} that is a clone of the given set.
-   * @throws NullPointerException if <code>other</code> is <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet<T> copyOf(EnumSet<T> other) {
-    return other.clone();
-  }
+	/**
+	 * Returns a clone of the given set.
+	 *
+	 * @param other the set to clone.
+	 * @return an {@link EnumSet} that is a clone of the given set.
+	 * @throws NullPointerException if <code>other</code> is <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet<T> copyOf(EnumSet<T> other) {
+		return other.clone();
+	}
 
-  /**
-   * Creates an {@link EnumSet} using the contents of the given collection.
-   * If the collection is also an {@link EnumSet}, this method works the
-   * same as {@link #copyOf(EnumSet)}.  Otherwise, the elements of the collection
-   * are inspected and used to populate the new set.
-   *
-   * @param other the collection to use to populate the new set.
-   * @return an {@link EnumSet} containing elements from the given collection.
-   * @throws NullPointerException if <code>other</code> is <code>null</code>.
-   * @throws IllegalArgumentException if the collection is empty.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> copyOf(Collection<T> other) {
-    if (other instanceof EnumSet) {
-      return ((EnumSet4D) other).clone();
-    }
-    if (other.isEmpty()) {
-      throw new IllegalArgumentException("Collection is empty");
-    }
-    EnumSet4D<T> r = null;
+	/**
+	 * Creates an {@link EnumSet} using the contents of the given collection.
+	 * If the collection is also an {@link EnumSet}, this method works the
+	 * same as {@link #copyOf(EnumSet)}.  Otherwise, the elements of the collection
+	 * are inspected and used to populate the new set.
+	 *
+	 * @param other the collection to use to populate the new set.
+	 * @return an {@link EnumSet} containing elements from the given collection.
+	 * @throws NullPointerException if <code>other</code> is <code>null</code>.
+	 * @throws IllegalArgumentException if the collection is empty.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> copyOf(Collection<T> other) {
+		if (other instanceof EnumSet) {
+			return ((EnumSet4D) other).clone();
+		}
+		if (other.isEmpty()) {
+			throw new IllegalArgumentException("Collection is empty");
+		}
+		EnumSet4D<T> r = null;
 
-    for (T val : other) {
-      if (r == null) {
-        r = of(val);
-      } else {
-        r.add(val);
-      }
-    }
+		for (T val : other) {
+			if (r == null) {
+				r = of(val);
+			} else {
+				r.add(val);
+			}
+		}
 
-    return r;
-  }
+		return r;
+	}
 
-  /**
-   * Returns a set which is the inverse of the supplied set.
-   * If a constant is present in the current set, it will not be
-   * present in the new set and vice versa.
-   *
-   * @param other the set to provide the complement of.
-   * @return an {@link EnumSet} which is the inverse of the current one.
-   * @throws NullPointerException if <code>other</code> is <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> complementOf(EnumSet4D<T> other) {
-    EnumSet4D<T> r = other.clone();
-    int numConstants = r.enumClass.getEnumConstants().length;
-    r.store.flip(0, numConstants);
-    r.cardinality = numConstants - other.cardinality;
-    return r;
-  }
+	/**
+	 * Returns a set which is the inverse of the supplied set.
+	 * If a constant is present in the current set, it will not be
+	 * present in the new set and vice versa.
+	 *
+	 * @param other the set to provide the complement of.
+	 * @return an {@link EnumSet} which is the inverse of the current one.
+	 * @throws NullPointerException if <code>other</code> is <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> complementOf(EnumSet4D<T> other) {
+		EnumSet4D<T> r = other.clone();
+		int numConstants = r.enumClass.getEnumConstants().length;
+		r.store.flip(0, numConstants);
+		r.cardinality = numConstants - other.cardinality;
+		return r;
+	}
 
-  /**
-   * Creates a new {@link EnumSet} populated with the given element.
-   *
-   * @param first the element to use to populate the new set.
-   * @return an {@link EnumSet} containing the element.
-   * @throws NullPointerException if <code>first</code> is <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first) {
-    EnumSet4D<T> r = new EnumSet4D<T>() {
-      @Override
-      public boolean add(T val) {
-        if (store.get(val.ordinal())) {
-          return false;
-        }
+	/**
+	 * Creates a new {@link EnumSet} populated with the given element.
+	 *
+	 * @param first the element to use to populate the new set.
+	 * @return an {@link EnumSet} containing the element.
+	 * @throws NullPointerException if <code>first</code> is <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> of(T first) {
+		EnumSet4D<T> r = new EnumSet4D<T>() {
+			@Override
+			public boolean add(T val) {
+				if (store.get(val.ordinal())) {
+					return false;
+				}
 
-        store.set(val.ordinal());
-        ++cardinality;
-        return true;
-      }
+				store.set(val.ordinal());
+				++cardinality;
+				return true;
+			}
 
-      @Override
-      public boolean addAll(Collection<? extends T> c) {
-        boolean result = false;
-        if (c instanceof EnumSet) {
-          EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass == other.enumClass) {
-            store.or(other.store);
-            int save = cardinality;
-            cardinality = store.cardinality();
-            result = save != cardinality;
-          }
-        } else {
-          for (T val : c) {
-            if (add(val)) {
-              result = true;
-            }
-          }
-        }
-        return result;
-      }
+			@Override
+			public boolean addAll(Collection<? extends T> c) {
+				boolean result = false;
+				if (c instanceof EnumSet) {
+					EnumSet4D<T> other = (EnumSet4D<T>) c;
+					if (enumClass == other.enumClass) {
+						store.or(other.store);
+						int save = cardinality;
+						cardinality = store.cardinality();
+						result = save != cardinality;
+					}
+				} else {
+					for (T val : c) {
+						if (add(val)) {
+							result = true;
+						}
+					}
+				}
+				return result;
+			}
 
-      @Override
-      public void clear() {
-        store.clear();
-        cardinality = 0;
-      }
+			@Override
+			public void clear() {
+				store.clear();
+				cardinality = 0;
+			}
 
-      @Override
-      public boolean contains(Object o) {
-        if (!(o instanceof Enum)) {
-          return false;
-        }
+			@Override
+			public boolean contains(Object o) {
+				if (!(o instanceof Enum)) {
+					return false;
+				}
 
-        Enum<T> e = (Enum<T>) o;
-        if (e.getDeclaringClass() != enumClass) {
-          return false;
-        }
+				Enum<T> e = (Enum<T>) o;
+				if (e.getDeclaringClass() != enumClass) {
+					return false;
+				}
 
-        return store.get(e.ordinal());
-      }
+				return store.get(e.ordinal());
+			}
 
-      @Override
-      public boolean containsAll(Collection<?> c) {
-        if (c instanceof EnumSet) {
-          EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass.equals(enumClass)) {
-            return store.containsAll(other.store);
-          }
+			@Override
+			public boolean containsAll(Collection<?> c) {
+				if (c instanceof EnumSet) {
+					EnumSet4D<T> other = (EnumSet4D<T>) c;
+					if (enumClass.equals(enumClass)) {
+						return store.containsAll(other.store);
+					}
 
-          return false;
-        }
-        return super.containsAll(c);
-      }
+					return false;
+				}
+				return super.containsAll(c);
+			}
 
-      @Override
-      public Iterator<T> iterator() {
-        return new Iterator<T>() {
-          int next = -1;
-          int count = 0;
+			@Override
+			public Iterator<T> iterator() {
+				return new Iterator<T>() {
+					int next = -1;
+					int count = 0;
 
-          @Override
-          public boolean hasNext() {
-            return count < cardinality;
-          }
+					@Override
+					public boolean hasNext() {
+						return count < cardinality;
+					}
 
-          @Override
-          public T next() {
-            next = store.nextSetBit(next + 1);
-            ++count;
-            return enumClass.getEnumConstants()[next];
-          }
+					@Override
+					public T next() {
+						next = store.nextSetBit(next + 1);
+						++count;
+						return enumClass.getEnumConstants()[next];
+					}
 
-          @Override
-          public void remove() {
-            if (!store.get(next)) {
-              store.clear(next);
-              --cardinality;
-            }
-          }
-        };
-      }
+					@Override
+					public void remove() {
+						if (!store.get(next)) {
+							store.clear(next);
+							--cardinality;
+						}
+					}
+				};
+			}
 
-      @Override
-      public boolean remove(Object o) {
-        if (!(o instanceof Enum)) {
-          return false;
-        }
+			@Override
+			public boolean remove(Object o) {
+				if (!(o instanceof Enum)) {
+					return false;
+				}
 
-        Enum<T> e = (Enum<T>) o;
-        if (e.getDeclaringClass() != enumClass) {
-          return false;
-        }
+				Enum<T> e = (Enum<T>) o;
+				if (e.getDeclaringClass() != enumClass) {
+					return false;
+				}
 
-        store.clear(e.ordinal());
-        --cardinality;
-        return true;
-      }
+				store.clear(e.ordinal());
+				--cardinality;
+				return true;
+			}
 
-      @Override
-      public boolean removeAll(Collection<?> c) {
-        if (c instanceof EnumSet) {
-          EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass != other.enumClass) {
-            return false;
-          }
+			@Override
+			public boolean removeAll(Collection<?> c) {
+				if (c instanceof EnumSet) {
+					EnumSet4D<T> other = (EnumSet4D<T>) c;
+					if (enumClass != other.enumClass) {
+						return false;
+					}
 
-          store.andNot(other.store);
-          int save = cardinality;
-          cardinality = store.cardinality();
-          return save != cardinality;
-        }
-        return super.removeAll(c);
-      }
+					store.andNot(other.store);
+					int save = cardinality;
+					cardinality = store.cardinality();
+					return save != cardinality;
+				}
+				return super.removeAll(c);
+			}
 
-      @Override
-      public boolean retainAll(Collection<?> c) {
-        if (c instanceof EnumSet) {
-          EnumSet4D<T> other = (EnumSet4D<T>) c;
-          if (enumClass != other.enumClass) {
-            return false;
-          }
+			@Override
+			public boolean retainAll(Collection<?> c) {
+				if (c instanceof EnumSet) {
+					EnumSet4D<T> other = (EnumSet4D<T>) c;
+					if (enumClass != other.enumClass) {
+						return false;
+					}
 
-          store.and(other.store);
-          int save = cardinality;
-          cardinality = store.cardinality();
-          return save != cardinality;
-        }
-        return super.retainAll(c);
-      }
+					store.and(other.store);
+					int save = cardinality;
+					cardinality = store.cardinality();
+					return save != cardinality;
+				}
+				return super.retainAll(c);
+			}
 
-      @Override
-      public int size() {
-        return cardinality;
-      }
-    };
+			@Override
+			public int size() {
+				return cardinality;
+			}
+		};
 
-    // initialize the class
-    r.enumClass = first.getDeclaringClass();
-    r.store = new BitSet4D(r.enumClass.getEnumConstants().length);
+		// initialize the class
+		r.enumClass = first.getDeclaringClass();
+		r.store = new BitSet4D(r.enumClass.getEnumConstants().length);
 
-    r.add(first);
-    return r;
-  }
+		r.add(first);
+		return r;
+	}
 
-  /**
-   * Creates a new {@link EnumSet} populated with the given two elements.
-   *
-   * @param first the first element to use to populate the new set.
-   * @param second the second element to use.
-   * @return an {@link EnumSet} containing the elements.
-   * @throws NullPointerException if any of the parameters are <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second) {
-    EnumSet4D<T> r = of(first);
-    r.add(second);
-    return r;
-  }
+	/**
+	 * Creates a new {@link EnumSet} populated with the given two elements.
+	 *
+	 * @param first the first element to use to populate the new set.
+	 * @param second the second element to use.
+	 * @return an {@link EnumSet} containing the elements.
+	 * @throws NullPointerException if any of the parameters are <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second) {
+		EnumSet4D<T> r = of(first);
+		r.add(second);
+		return r;
+	}
 
-  /**
-   * Creates a new {@link EnumSet} populated with the given three elements.
-   *
-   * @param first the first element to use to populate the new set.
-   * @param second the second element to use.
-   * @param third the third element to use.
-   * @return an {@link EnumSet} containing the elements.
-   * @throws NullPointerException if any of the parameters are <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third) {
-    EnumSet4D<T> r = of(first, second);
-    r.add(third);
-    return r;
-  }
+	/**
+	 * Creates a new {@link EnumSet} populated with the given three elements.
+	 *
+	 * @param first the first element to use to populate the new set.
+	 * @param second the second element to use.
+	 * @param third the third element to use.
+	 * @return an {@link EnumSet} containing the elements.
+	 * @throws NullPointerException if any of the parameters are <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third) {
+		EnumSet4D<T> r = of(first, second);
+		r.add(third);
+		return r;
+	}
 
-  /**
-   * Creates a new {@link EnumSet} populated with the given four elements.
-   *
-   * @param first the first element to use to populate the new set.
-   * @param second the second element to use.
-   * @param third the third element to use.
-   * @param fourth the fourth element to use.
-   * @return an {@link EnumSet} containing the elements.
-   * @throws NullPointerException if any of the parameters are <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third, T fourth) {
-    EnumSet4D<T> r = of(first, second, third);
-    r.add(fourth);
-    return r;
-  }
+	/**
+	 * Creates a new {@link EnumSet} populated with the given four elements.
+	 *
+	 * @param first the first element to use to populate the new set.
+	 * @param second the second element to use.
+	 * @param third the third element to use.
+	 * @param fourth the fourth element to use.
+	 * @return an {@link EnumSet} containing the elements.
+	 * @throws NullPointerException if any of the parameters are <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third, T fourth) {
+		EnumSet4D<T> r = of(first, second, third);
+		r.add(fourth);
+		return r;
+	}
 
-  /**
-   * Creates a new {@link EnumSet} populated with the given five elements.
-   *
-   * @param first the first element to use to populate the new set.
-   * @param second the second element to use.
-   * @param third the third element to use.
-   * @param fourth the fourth element to use.
-   * @param fifth the fifth element to use.
-   * @return an {@link EnumSet} containing the elements.
-   * @throws NullPointerException if any of the parameters are <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third, T fourth, T fifth) {
-    EnumSet4D<T> r = of(first, second, third, fourth);
-    r.add(fifth);
-    return r;
-  }
+	/**
+	 * Creates a new {@link EnumSet} populated with the given five elements.
+	 *
+	 * @param first the first element to use to populate the new set.
+	 * @param second the second element to use.
+	 * @param third the third element to use.
+	 * @param fourth the fourth element to use.
+	 * @param fifth the fifth element to use.
+	 * @return an {@link EnumSet} containing the elements.
+	 * @throws NullPointerException if any of the parameters are <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> of(T first, T second, T third, T fourth, T fifth) {
+		EnumSet4D<T> r = of(first, second, third, fourth);
+		r.add(fifth);
+		return r;
+	}
 
-  /**
-   * Creates a new {@link EnumSet} populated with the given elements.
-   *
-   * @param first the first element to use to populate the new set.
-   * @param rest the other elements to use.
-   * @return an {@link EnumSet} containing the elements.
-   * @throws NullPointerException if any of the parameters are <code>null</code>.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> of(T first, T... rest) {
-    EnumSet4D<T> r = noneOf(first.getDeclaringClass());
-    r.add(first);
-    for (T val : rest) {
-      r.add(val);
-    }
-    return r;
-  }
+	/**
+	 * Creates a new {@link EnumSet} populated with the given elements.
+	 *
+	 * @param first the first element to use to populate the new set.
+	 * @param rest the other elements to use.
+	 * @return an {@link EnumSet} containing the elements.
+	 * @throws NullPointerException if any of the parameters are <code>null</code>.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> of(T first, T... rest) {
+		EnumSet4D<T> r = noneOf(first.getDeclaringClass());
+		r.add(first);
+		for (T val : rest) {
+			r.add(val);
+		}
+		return r;
+	}
 
-  /**
-   * Creates a new {@link EnumSet} using the enumeration constants
-   * starting from {@code from} and ending at {@code to} inclusive.
-   * The two may be the same, but they must be in the correct order.
-   * So giving the first constant twice would give a set with just that
-   * constant set, while supplying the first and second constant will give
-   * a set with those two elements.  However, specifying the second as
-   * the {@code from} element followed by an earlier element as the
-   * {@code to} element will result in an error.
-   *
-   * @param from the element to start from.
-   * @param to the element to end at (may be the same as {@code from}.
-   * @return an {@link EnumSet} containing the specified range of elements.
-   * @throws NullPointerException if any of the parameters are <code>null</code>.
-   * @throws IllegalArgumentException if {@code first.compareTo(last) > 0}.
-   */
-  public static <T extends Enum<T>> EnumSet4D<T> range(T from, T to) {
-    if (from.compareTo(to) > 0) {
-      throw new IllegalArgumentException();
-    }
-    Class<T> type = from.getDeclaringClass();
-    EnumSet4D<T> r = noneOf(type);
+	/**
+	 * Creates a new {@link EnumSet} using the enumeration constants
+	 * starting from {@code from} and ending at {@code to} inclusive.
+	 * The two may be the same, but they must be in the correct order.
+	 * So giving the first constant twice would give a set with just that
+	 * constant set, while supplying the first and second constant will give
+	 * a set with those two elements.  However, specifying the second as
+	 * the {@code from} element followed by an earlier element as the
+	 * {@code to} element will result in an error.
+	 *
+	 * @param from the element to start from.
+	 * @param to the element to end at (may be the same as {@code from}.
+	 * @return an {@link EnumSet} containing the specified range of elements.
+	 * @throws NullPointerException if any of the parameters are <code>null</code>.
+	 * @throws IllegalArgumentException if {@code first.compareTo(last) > 0}.
+	 */
+	public static <T extends Enum<T>> EnumSet4D<T> range(T from, T to) {
+		if (from.compareTo(to) > 0) {
+			throw new IllegalArgumentException();
+		}
+		Class<T> type = from.getDeclaringClass();
+		EnumSet4D<T> r = noneOf(type);
 
-    T[] values = type.getEnumConstants();
-    // skip over values until start of range is found
-    int i = 0;
-    while (from != values[i]) {
-      i++;
-    }
+		T[] values = type.getEnumConstants();
+		// skip over values until start of range is found
+		int i = 0;
+		while (from != values[i]) {
+			i++;
+		}
 
-    // add values until end of range is found
-    while (to != values[i]) {
-      r.add(values[i]);
-      i++;
-    }
+		// add values until end of range is found
+		while (to != values[i]) {
+			r.add(values[i]);
+			i++;
+		}
 
-    // add end of range
-    r.add(to);
+		// add end of range
+		r.add(to);
 
-    return r;
-  }
+		return r;
+	}
 }

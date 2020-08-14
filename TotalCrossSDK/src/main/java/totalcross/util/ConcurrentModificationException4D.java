@@ -72,18 +72,18 @@ import java.util.TreeMap;
  * @status updated to 1.4
  */
 public class ConcurrentModificationException4D extends RuntimeException {
-  /**
-   * Constructs a ConcurrentModificationException with no detail message.
-   */
-  public ConcurrentModificationException4D() {
-  }
+	/**
+	 * Constructs a ConcurrentModificationException with no detail message.
+	 */
+	public ConcurrentModificationException4D() {
+	}
 
-  /**
-   * Constructs a ConcurrentModificationException with a detail message.
-   *
-   * @param detail the detail message for the exception
-   */
-  public ConcurrentModificationException4D(String detail) {
-    super(detail);
-  }
+	/**
+	 * Constructs a ConcurrentModificationException with a detail message.
+	 *
+	 * @param detail the detail message for the exception
+	 */
+	public ConcurrentModificationException4D(String detail) {
+		super(detail);
+	}
 }

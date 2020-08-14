@@ -28,10 +28,10 @@ package totalcross.xml.rpc;
  * @author Original by IOP GmbH (<a href="http://www.iop.de">www.iop.de</a>)
  */
 public class XmlRpcException extends Exception {
-  public XmlRpcException() {
-  }
+	public XmlRpcException() {
+	}
 
-  public XmlRpcException(String msg) {
-    super(msg);
-  }
+	public XmlRpcException(String msg) {
+		super(msg);
+	}
 }

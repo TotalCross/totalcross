@@ -2,7 +2,7 @@ package totalcross.ui;
 
 public interface HasValue<T> {
 
-  T getValue();
+	T getValue();
 
-  void setValue(T value);
+	void setValue(T value);
 }

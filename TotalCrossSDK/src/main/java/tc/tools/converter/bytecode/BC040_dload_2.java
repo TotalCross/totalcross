@@ -5,8 +5,8 @@
 package tc.tools.converter.bytecode;
 
 public class BC040_dload_2 extends LoadLocal {
-  public BC040_dload_2() {
-    super(2, DOUBLE);
-    stackInc = 2;
-  }
+	public BC040_dload_2() {
+		super(2, DOUBLE);
+		stackInc = 2;
+	}
 }

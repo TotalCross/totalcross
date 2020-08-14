@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC085_castore extends StoreArray {
-  public BC085_castore() {
-    super(-3, 0, 1, 2, CHAR);
-  }
+	public BC085_castore() {
+		super(-3, 0, 1, 2, CHAR);
+	}
 }
