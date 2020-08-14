@@ -12,9 +12,11 @@ public class Double4D extends Number4D implements Comparable<Double4D> {
 	public static final double POSITIVE_INFINITY = 1.0 / 0.0;
 	public static final double NEGATIVE_INFINITY = -1.0 / 0.0;
 	public static final double NaN = 0.0d / 0.0;
-	public static final double MAX_VALUE = 0x1.fffffffffffffP + 1023; // 1.7976931348623157e+308
-	public static final double MIN_NORMAL = 0x1.0p - 1022; // 2.2250738585072014E-308
-	public static final double MIN_VALUE = 0x0.0000000000001P - 1022; // 4.9e-324
+	// *INDENT-OFF*
+	public static final double MAX_VALUE = 0x1.fffffffffffffP+1023; // 1.7976931348623157e+308
+	public static final double MIN_NORMAL = 0x1.0p-1022; // 2.2250738585072014E-308
+	public static final double MIN_VALUE = 0x0.0000000000001P-1022; // 4.9e-324
+	// *INDENT-ON*
 	public static final int MAX_EXPONENT = 1023;
 	public static final int MIN_EXPONENT = -1022;
 	public static final int SIZE = 64;
