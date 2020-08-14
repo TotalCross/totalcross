@@ -17,4 +17,4 @@ fi
 sourcedir=$(dirname $0)/..
 
 cd $sourcedir
-astyle --project=.astylerc --recursive '*.java' '*.c??' '*.h??' '*.c' '*.h'
+astyle --project=.astylerc --recursive '*.java' '*.cpp' '*.c' '*.h' '*.m'
