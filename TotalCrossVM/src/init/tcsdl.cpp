@@ -84,6 +84,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
   // Create a 2D rendering context for a window
   if(IS_NULL(renderer = SDL_CreateRenderer(window, -1, NO_FLAGS))) {
     printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
+    printf("\nHINT: try to export SDL_RENDER_DRIVER environment variable with an available render driver!\n");
     return false;
   }
 
