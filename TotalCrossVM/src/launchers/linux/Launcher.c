@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #if HAVE_CONFIG_H
-#include "config.h"
+	#include "config.h"
 #endif
 
 #include <dlfcn.h>
@@ -12,85 +12,83 @@
 #include <stdio.h>
 #include "xtypes.h"
 
-char *args = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
+char* args =
+	"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 
 typedef int (*ExecuteProgramProc)(char* args);
 
-typedef void *Handle;
+typedef void* Handle;
 
-static Handle tryOpen(const char *prefix, const char* libname)
-{
-   char path[MAX_PATHNAME];
+static Handle tryOpen(const char* prefix, const char* libname) {
+	char path[MAX_PATHNAME];
 #if __APPLE__
-   snprintf(path, MAX_PATHNAME, "%s/%s.dylib", prefix, libname);
+	snprintf(path, MAX_PATHNAME, "%s/%s.dylib", prefix, libname);
 #else
-   snprintf(path, MAX_PATHNAME, "%s/%s.so", prefix, libname);
+	snprintf(path, MAX_PATHNAME, "%s/%s.so", prefix, libname);
 #endif
-   return dlopen(path, RTLD_LAZY);
+	return dlopen(path, RTLD_LAZY);
 }
 
-static int executeProgram(char* cmdline)
-{
-   int ret = 0;
-   ExecuteProgramProc fExecuteProgram = NULL;
-   Handle tcvm;
-   tcvm = tryOpen(
+static int executeProgram(char* cmdline) {
+	int ret = 0;
+	ExecuteProgramProc fExecuteProgram = NULL;
+	Handle tcvm;
+	tcvm = tryOpen(
 #ifdef CURRENT_DEBUG_PATH
-               CURRENT_DEBUG_PATH
+			   CURRENT_DEBUG_PATH
 #else
-               "."
+			   "."
 #endif
-               , "libtcvm");                        // load in current folder - otherwise, we'll not be able to debug
-   
-   if (!tcvm) {
-      printf("%s\n", dlerror());
-      tcvm = tryOpen("..", "libtcvm");                  // load in parent folder
-   }
-   if (!tcvm) {
-      printf("%s\n", dlerror());
-      tcvm = tryOpen("/usr/lib/totalcross", "libtcvm"); // load in most common absolute path
-   }
-   if (!tcvm) {
-      printf("%s\n", dlerror());
-      return 10000;
-   }
-   fExecuteProgram = (ExecuteProgramProc)dlsym(tcvm, TEXT("executeProgram"));
-   if (!fExecuteProgram)
-      return 10001;
+			   , "libtcvm");                        // load in current folder - otherwise, we'll not be able to debug
 
-   ret = fExecuteProgram(cmdline); // call the function now
+	if (!tcvm) {
+		printf("%s\n", dlerror());
+		tcvm = tryOpen("..", "libtcvm");                  // load in parent folder
+	}
+	if (!tcvm) {
+		printf("%s\n", dlerror());
+		tcvm = tryOpen("/usr/lib/totalcross", "libtcvm"); // load in most common absolute path
+	}
+	if (!tcvm) {
+		printf("%s\n", dlerror());
+		return 10000;
+	}
+	fExecuteProgram = (ExecuteProgramProc)dlsym(tcvm, TEXT("executeProgram"));
+	if (!fExecuteProgram) {
+		return 10001;
+	}
 
-   dlclose(tcvm); // free the library
-   return ret;
+	ret = fExecuteProgram(cmdline); // call the function now
+
+	dlclose(tcvm); // free the library
+	return ret;
 }
 
-int main(int argc, const char *argv[])
-{
-   char cmdline[512];
-   xmemzero(cmdline,sizeof(cmdline));
-   int argvIndex = 0;
-   if (argv)
-   {
-      if (argc > 1 && 
-         xstrlen(argv[0]) >= 8 &&
-         memcmp(argv[0] + xstrlen(argv[0]) - 8, "Launcher", 8) == 0) {
-         argvIndex = 1;
-      }
-      xstrcpy(cmdline, argv[argvIndex++]);
-      xstrcat(cmdline, ".tcz");
-   }
-   if (argc > argvIndex || args[0] != '1') // if there's a commandline passed by the system or one passed by the user
-   {
-      xstrcat(cmdline, " /cmd ");
-      if (args[0] != '1')
-         xstrcat(cmdline, args);
-      const char **p = argv + argvIndex;
-      int n = argc;
-      while (n-- > argvIndex)
-      {
-         xstrcat(cmdline, " ");
-         xstrcat(cmdline, *p++);
-      }
-   }
-   return executeProgram(cmdline); // in tcvm\startup.c
+int main(int argc, const char* argv[]) {
+	char cmdline[512];
+	xmemzero(cmdline, sizeof(cmdline));
+	int argvIndex = 0;
+	if (argv) {
+		if (argc > 1 &&
+			xstrlen(argv[0]) >= 8 &&
+			memcmp(argv[0] + xstrlen(argv[0]) - 8, "Launcher", 8) == 0) {
+			argvIndex = 1;
+		}
+		xstrcpy(cmdline, argv[argvIndex++]);
+		xstrcat(cmdline, ".tcz");
+	}
+	if (argc > argvIndex
+		|| args[0] != '1') { // if there's a commandline passed by the system or one passed by the user
+		xstrcat(cmdline, " /cmd ");
+		if (args[0] != '1') {
+			xstrcat(cmdline, args);
+		}
+		const char** p = argv + argvIndex;
+		int n = argc;
+		while (n-- > argvIndex) {
+			xstrcat(cmdline, " ");
+			xstrcat(cmdline, *p++);
+		}
+	}
+	return executeProgram(cmdline); // in tcvm\startup.c
 }

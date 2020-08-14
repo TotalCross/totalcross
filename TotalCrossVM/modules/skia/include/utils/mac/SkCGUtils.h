@@ -16,11 +16,11 @@
 #if defined(SK_BUILD_FOR_MAC) || defined(SK_BUILD_FOR_IOS)
 
 #ifdef SK_BUILD_FOR_MAC
-#include <ApplicationServices/ApplicationServices.h>
+	#include <ApplicationServices/ApplicationServices.h>
 #endif
 
 #ifdef SK_BUILD_FOR_IOS
-#include <CoreGraphics/CoreGraphics.h>
+	#include <CoreGraphics/CoreGraphics.h>
 #endif
 
 class SkBitmap;
@@ -46,9 +46,9 @@ SK_API sk_sp<SkImage> SkMakeImageFromCGImage(CGImageRef);
  *  return false (e.g. ImageInfo incompatible with src).
  */
 SK_API bool SkCopyPixelsFromCGImage(const SkImageInfo& info, size_t rowBytes, void* dstPixels,
-                                    CGImageRef src);
+									CGImageRef src);
 static inline bool SkCopyPixelsFromCGImage(const SkPixmap& dst, CGImageRef src) {
-    return SkCopyPixelsFromCGImage(dst.info(), dst.rowBytes(), dst.writable_addr(), src);
+	return SkCopyPixelsFromCGImage(dst.info(), dst.rowBytes(), dst.writable_addr(), src);
 }
 
 /**
@@ -56,14 +56,14 @@ static inline bool SkCopyPixelsFromCGImage(const SkPixmap& dst, CGImageRef src) 
  *  If space is NULL, then CGColorSpaceCreateDeviceRGB() is used.
  */
 SK_API CGImageRef SkCreateCGImageRefWithColorspace(const SkBitmap& bm,
-                                                   CGColorSpaceRef space);
+		CGColorSpaceRef space);
 
 /**
  *  Create an imageref from the specified bitmap using the colorspace returned
  *  by CGColorSpaceCreateDeviceRGB()
  */
 static inline CGImageRef SkCreateCGImageRef(const SkBitmap& bm) {
-    return SkCreateCGImageRefWithColorspace(bm, NULL);
+	return SkCreateCGImageRefWithColorspace(bm, NULL);
 }
 
 /**

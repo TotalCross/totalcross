@@ -20,11 +20,11 @@ struct SkRect;
   *  The logical operations that can be performed when combining two paths.
   */
 enum SkPathOp {
-    kDifference_SkPathOp,         //!< subtract the op path from the first path
-    kIntersect_SkPathOp,          //!< intersect the two paths
-    kUnion_SkPathOp,              //!< union (inclusive-or) the two paths
-    kXOR_SkPathOp,                //!< exclusive-or the two paths
-    kReverseDifference_SkPathOp,  //!< subtract the first path from the op path
+	kDifference_SkPathOp,         //!< subtract the op path from the first path
+	kIntersect_SkPathOp,          //!< intersect the two paths
+	kUnion_SkPathOp,              //!< union (inclusive-or) the two paths
+	kXOR_SkPathOp,                //!< exclusive-or the two paths
+	kReverseDifference_SkPathOp,  //!< subtract the first path from the op path
 };
 
 /** Set this path to the result of applying the Op to this path and the
@@ -85,29 +85,29 @@ bool SK_API AsWinding(const SkPath& path, SkPath* result);
   */
 class SK_API SkOpBuilder {
 public:
-    /** Add one or more paths and their operand. The builder is empty before the first
-        path is added, so the result of a single add is (emptyPath OP path).
+	/** Add one or more paths and their operand. The builder is empty before the first
+	    path is added, so the result of a single add is (emptyPath OP path).
 
-        @param path The second operand.
-        @param _operator The operator to apply to the existing and supplied paths.
-     */
-    void add(const SkPath& path, SkPathOp _operator);
+	    @param path The second operand.
+	    @param _operator The operator to apply to the existing and supplied paths.
+	 */
+	void add(const SkPath& path, SkPathOp _operator);
 
-    /** Computes the sum of all paths and operands, and resets the builder to its
-        initial state.
+	/** Computes the sum of all paths and operands, and resets the builder to its
+	    initial state.
 
-        @param result The product of the operands.
-        @return True if the operation succeeded.
-      */
-    bool resolve(SkPath* result);
+	    @param result The product of the operands.
+	    @return True if the operation succeeded.
+	  */
+	bool resolve(SkPath* result);
 
 private:
-    SkTArray<SkPath> fPathRefs;
-    SkTDArray<SkPathOp> fOps;
+	SkTArray<SkPath> fPathRefs;
+	SkTDArray<SkPathOp> fOps;
 
-    static bool FixWinding(SkPath* path);
-    static void ReversePath(SkPath* path);
-    void reset();
+	static bool FixWinding(SkPath* path);
+	static void ReversePath(SkPath* path);
+	void reset();
 };
 
 #endif

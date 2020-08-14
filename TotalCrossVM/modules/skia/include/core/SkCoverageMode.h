@@ -18,13 +18,13 @@
  *  See SkMaskFilter for ways to use these when combining two different masks.
  */
 enum class SkCoverageMode {
-    kUnion,             // A ∪ B    A+B-A*B
-    kIntersect,         // A ∩ B    A*B
-    kDifference,        // A - B    A*(1-B)
-    kReverseDifference, // B - A    B*(1-A)
-    kXor,               // A ⊕ B    A+B-2*A*B
+	kUnion,             // A ∪ B    A+B-A*B
+	kIntersect,         // A ∩ B    A*B
+	kDifference,        // A - B    A*(1-B)
+	kReverseDifference, // B - A    B*(1-A)
+	kXor,               // A ⊕ B    A+B-2*A*B
 
-    kLast = kXor,
+	kLast = kXor,
 };
 
 #endif

@@ -33,14 +33,14 @@
  * see tools/sk_tool_utils.h.
  */
 SK_API bool SkEncodeImage(SkWStream* dst, const SkPixmap& src,
-                          SkEncodedImageFormat format, int quality);
+						  SkEncodedImageFormat format, int quality);
 
 /**
  * The following helper function wraps SkEncodeImage().
  */
 inline bool SkEncodeImage(SkWStream* dst, const SkBitmap& src, SkEncodedImageFormat f, int q) {
-    SkPixmap pixmap;
-    return src.peekPixels(&pixmap) && SkEncodeImage(dst, pixmap, f, q);
+	SkPixmap pixmap;
+	return src.peekPixels(&pixmap) && SkEncodeImage(dst, pixmap, f, q);
 }
 
 /**

@@ -21,54 +21,54 @@
 class SK_API SkEventTracer {
 public:
 
-    typedef uint64_t Handle;
+	typedef uint64_t Handle;
 
-    /**
-     * If this is the first call to SetInstance or GetInstance then the passed instance is
-     * installed and true is returned. Otherwise, false is returned. In either case ownership of the
-     * tracer is transferred and it will be deleted when no longer needed.
-     */
-    static bool SetInstance(SkEventTracer*);
+	/**
+	 * If this is the first call to SetInstance or GetInstance then the passed instance is
+	 * installed and true is returned. Otherwise, false is returned. In either case ownership of the
+	 * tracer is transferred and it will be deleted when no longer needed.
+	 */
+	static bool SetInstance(SkEventTracer*);
 
-    /**
-     * Gets the event tracer. If this is the first call to SetInstance or GetIntance then a default
-     * event tracer is installed and returned.
-     */
-    static SkEventTracer* GetInstance();
+	/**
+	 * Gets the event tracer. If this is the first call to SetInstance or GetIntance then a default
+	 * event tracer is installed and returned.
+	 */
+	static SkEventTracer* GetInstance();
 
-    virtual ~SkEventTracer() { }
+	virtual ~SkEventTracer() { }
 
-    // The pointer returned from GetCategoryGroupEnabled() points to a
-    // value with zero or more of the following bits. Used in this class only.
-    // The TRACE_EVENT macros should only use the value as a bool.
-    // These values must be in sync with macro values in trace_event.h in chromium.
-    enum CategoryGroupEnabledFlags {
-        // Category group enabled for the recording mode.
-        kEnabledForRecording_CategoryGroupEnabledFlags = 1 << 0,
-        // Category group enabled for the monitoring mode.
-        kEnabledForMonitoring_CategoryGroupEnabledFlags = 1 << 1,
-        // Category group enabled by SetEventCallbackEnabled().
-        kEnabledForEventCallback_CategoryGroupEnabledFlags = 1 << 2,
-    };
+	// The pointer returned from GetCategoryGroupEnabled() points to a
+	// value with zero or more of the following bits. Used in this class only.
+	// The TRACE_EVENT macros should only use the value as a bool.
+	// These values must be in sync with macro values in trace_event.h in chromium.
+	enum CategoryGroupEnabledFlags {
+		// Category group enabled for the recording mode.
+		kEnabledForRecording_CategoryGroupEnabledFlags = 1 << 0,
+		// Category group enabled for the monitoring mode.
+		kEnabledForMonitoring_CategoryGroupEnabledFlags = 1 << 1,
+		// Category group enabled by SetEventCallbackEnabled().
+		kEnabledForEventCallback_CategoryGroupEnabledFlags = 1 << 2,
+	};
 
-    virtual const uint8_t* getCategoryGroupEnabled(const char* name) = 0;
-    virtual const char* getCategoryGroupName(const uint8_t* categoryEnabledFlag) = 0;
+	virtual const uint8_t* getCategoryGroupEnabled(const char* name) = 0;
+	virtual const char* getCategoryGroupName(const uint8_t* categoryEnabledFlag) = 0;
 
-    virtual SkEventTracer::Handle
-        addTraceEvent(char phase,
-                      const uint8_t* categoryEnabledFlag,
-                      const char* name,
-                      uint64_t id,
-                      int32_t numArgs,
-                      const char** argNames,
-                      const uint8_t* argTypes,
-                      const uint64_t* argValues,
-                      uint8_t flags) = 0;
+	virtual SkEventTracer::Handle
+	addTraceEvent(char phase,
+				  const uint8_t* categoryEnabledFlag,
+				  const char* name,
+				  uint64_t id,
+				  int32_t numArgs,
+				  const char** argNames,
+				  const uint8_t* argTypes,
+				  const uint64_t* argValues,
+				  uint8_t flags) = 0;
 
-    virtual void
-        updateTraceEventDuration(const uint8_t* categoryEnabledFlag,
-                                 const char* name,
-                                 SkEventTracer::Handle handle) = 0;
+	virtual void
+	updateTraceEventDuration(const uint8_t* categoryEnabledFlag,
+							 const char* name,
+							 SkEventTracer::Handle handle) = 0;
 };
 
 #endif // SkEventTracer_DEFINED

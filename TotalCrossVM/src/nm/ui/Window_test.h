@@ -5,13 +5,13 @@
 
 
 
-TESTCASE(tuW_pumpEvents) // totalcross/ui/Window native public static void pumpEvents();
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(tuW_pumpEvents) { // totalcross/ui/Window native public static void pumpEvents();
+	TEST_SKIP;
+finish:
+	;
 }
-TESTCASE(tuW_setSIP_icb) // totalcross/ui/Window native public void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
-{
-   TEST_SKIP;
-   finish: ;
+TESTCASE(tuW_setSIP_icb) { // totalcross/ui/Window native public void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
+	TEST_SKIP;
+finish:
+	;
 }

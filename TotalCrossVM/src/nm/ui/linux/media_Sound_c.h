@@ -4,18 +4,14 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 
-static void soundPlay(CharP filename)
-{
+static void soundPlay(CharP filename) {
 }
 
-static void soundSetEnabled(bool b)
-{
+static void soundSetEnabled(bool b) {
 }
 
-static void soundBeep(void)
-{
+static void soundBeep(void) {
 }
 
-bool soundTone(int32 freq, uint16 duration)
-{
+bool soundTone(int32 freq, uint16 duration) {
 }

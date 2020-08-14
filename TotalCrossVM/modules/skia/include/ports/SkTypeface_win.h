@@ -46,10 +46,10 @@ struct IDWriteFontFallback;
 
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_GDI();
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory = NULL,
-                                                  IDWriteFontCollection* collection = NULL);
+		IDWriteFontCollection* collection = NULL);
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory,
-                                                  IDWriteFontCollection* collection,
-                                                  IDWriteFontFallback* fallback);
+		IDWriteFontCollection* collection,
+		IDWriteFontFallback* fallback);
 
 /**
  *  Creates an SkFontMgr which renders using DirectWrite and obtains its data

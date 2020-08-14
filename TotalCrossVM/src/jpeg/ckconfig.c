@@ -34,12 +34,12 @@
 
 #define HAVE_STDDEF_H		/* replace 'define' by 'undef' if error here */
 #ifdef HAVE_STDDEF_H		/* next line will be skipped if you undef... */
-#include <stddef.h>
+	#include <stddef.h>
 #endif
 
 #define HAVE_STDLIB_H		/* same thing for stdlib.h */
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+	#include <stdlib.h>
 #endif
 
 #include <stdio.h>		/* If you ain't got this, you ain't got C. */
@@ -53,9 +53,9 @@
 #undef NEED_BSD_STRINGS
 
 #ifdef NEED_BSD_STRINGS
-#include <strings.h>
+	#include <strings.h>
 #else
-#include <string.h>
+	#include <string.h>
 #endif
 
 /* On some systems (especially older Unix machines), type size_t is
@@ -65,7 +65,7 @@
 
 #undef NEED_SYS_TYPES_H		/* start by assuming we don't need it */
 #ifdef NEED_SYS_TYPES_H
-#include <sys/types.h>
+	#include <sys/types.h>
 #endif
 
 
@@ -84,7 +84,7 @@
 #undef NEED_SPECIAL_INCLUDE	/* assume we DON'T need it, for starters */
 
 #ifdef NEED_SPECIAL_INCLUDE
-#include <someincludefile.h>
+	#include <someincludefile.h>
 #endif
 
 typedef size_t my_size_t;	/* The payoff: do we have size_t now? */
@@ -100,22 +100,20 @@ typedef size_t my_size_t;	/* The payoff: do we have size_t now? */
 #define HAVE_PROTOTYPES
 
 #ifdef HAVE_PROTOTYPES
-int testfunction (int arg1, int * arg2); /* check prototypes */
+int testfunction(int arg1, int* arg2);   /* check prototypes */
 
 struct methods_struct {		/* check method-pointer declarations */
-  int (*error_exit) (char *msgtext);
-  int (*trace_message) (char *msgtext);
-  int (*another_method) (void);
+	int (*error_exit)(char* msgtext);
+	int (*trace_message)(char* msgtext);
+	int (*another_method)(void);
 };
 
-int testfunction (int arg1, int * arg2) /* check definitions */
-{
-  return arg2[arg1];
+int testfunction(int arg1, int* arg2) { /* check definitions */
+	return arg2[arg1];
 }
 
-int test2function (void)	/* check void arg list */
-{
-  return 0;
+int test2function(void) {	/* check void arg list */
+	return 0;
 }
 #endif
 
@@ -128,7 +126,7 @@ int test2function (void)	/* check void arg list */
 #define HAVE_UNSIGNED_CHAR
 
 #ifdef HAVE_UNSIGNED_CHAR
-unsigned char un_char;
+	unsigned char un_char;
 #endif
 
 
@@ -140,7 +138,7 @@ unsigned char un_char;
 #define HAVE_UNSIGNED_SHORT
 
 #ifdef HAVE_UNSIGNED_SHORT
-unsigned short un_short;
+	unsigned short un_short;
 #endif
 
 
@@ -152,24 +150,24 @@ unsigned short un_short;
 
 #ifdef HAVE_VOID
 /* Caution: a C++ compiler will insist on complete prototypes */
-typedef void * void_ptr;	/* check void * */
+typedef void* void_ptr;	/* check void * */
 #ifdef HAVE_PROTOTYPES		/* check ptr to function returning void */
-typedef void (*void_func) (int a, int b);
+	typedef void (*void_func)(int a, int b);
 #else
-typedef void (*void_func) ();
+	typedef void (*void_func)();
 #endif
 
 #ifdef HAVE_PROTOTYPES		/* check void function result */
-void test3function (void_ptr arg1, void_func arg2)
+	void test3function(void_ptr arg1, void_func arg2)
 #else
-void test3function (arg1, arg2)
-     void_ptr arg1;
-     void_func arg2;
+	void test3function(arg1, arg2)
+	void_ptr arg1;
+	void_func arg2;
 #endif
 {
-  char * locptr = (char *) arg1; /* check casting to and from void * */
-  arg1 = (void *) locptr;
-  (*arg2) (1, 2);		/* check call of fcn returning void */
+	char* locptr = (char*) arg1;   /* check casting to and from void * */
+	arg1 = (void*) locptr;
+	(*arg2)(1, 2);		/* check call of fcn returning void */
 }
 #endif
 
@@ -184,13 +182,13 @@ void test3function (arg1, arg2)
 static const int carray[3] = {1, 2, 3};
 
 #ifdef HAVE_PROTOTYPES
-int test4function (const int arg1)
+	int test4function(const int arg1)
 #else
-int test4function (arg1)
-     const int arg1;
+	int test4function(arg1)
+	const int arg1;
 #endif
 {
-  return carray[arg1];
+	return carray[arg1];
 }
 #endif
 
@@ -202,7 +200,7 @@ int test4function (arg1)
 #undef INCOMPLETE_TYPES_BROKEN
 
 #ifndef INCOMPLETE_TYPES_BROKEN
-typedef struct undefined_structure * undef_struct_ptr;
+	typedef struct undefined_structure* undef_struct_ptr;
 #endif
 
 
@@ -214,14 +212,12 @@ typedef struct undefined_structure * undef_struct_ptr;
 
 #ifndef NEED_SHORT_EXTERNAL_NAMES
 
-int possibly_duplicate_function ()
-{
-  return 0;
+int possibly_duplicate_function() {
+	return 0;
 }
 
-int possibly_dupli_function ()
-{
-  return 1;
+int possibly_dupli_function() {
+	return 1;
 }
 
 #endif
@@ -240,163 +236,164 @@ int possibly_dupli_function ()
 
 
 #ifdef HAVE_PROTOTYPES
-int is_char_signed (int arg)
+	int is_char_signed(int arg)
 #else
-int is_char_signed (arg)
-     int arg;
+	int is_char_signed(arg)
+	int arg;
 #endif
 {
-  if (arg == 189) {		/* expected result for unsigned char */
-    return 0;			/* type char is unsigned */
-  }
-  else if (arg != -67) {	/* expected result for signed char */
-    printf("Hmm, it seems 'char' is not eight bits wide on your machine.\n");
-    printf("I fear the JPEG software will not work at all.\n\n");
-  }
-  return 1;			/* assume char is signed otherwise */
+	if (arg == 189) {		/* expected result for unsigned char */
+		return 0;			/* type char is unsigned */
+	} else if (arg != -67) {	/* expected result for signed char */
+		printf("Hmm, it seems 'char' is not eight bits wide on your machine.\n");
+		printf("I fear the JPEG software will not work at all.\n\n");
+	}
+	return 1;			/* assume char is signed otherwise */
 }
 
 
 #ifdef HAVE_PROTOTYPES
-int is_shifting_signed (long arg)
+	int is_shifting_signed(long arg)
 #else
-int is_shifting_signed (arg)
-     long arg;
+	int is_shifting_signed(arg)
+	long arg;
 #endif
 /* See whether right-shift on a long is signed or not. */
 {
-  long res = arg >> 4;
+	long res = arg >> 4;
 
-  if (res == -0x7F7E80CL) {	/* expected result for signed shift */
-    return 1;			/* right shift is signed */
-  }
-  /* see if unsigned-shift hack will fix it. */
-  /* we can't just test exact value since it depends on width of long... */
-  res |= (~0L) << (32-4);
-  if (res == -0x7F7E80CL) {	/* expected result now? */
-    return 0;			/* right shift is unsigned */
-  }
-  printf("Right shift isn't acting as I expect it to.\n");
-  printf("I fear the JPEG software will not work at all.\n\n");
-  return 0;			/* try it with unsigned anyway */
+	if (res == -0x7F7E80CL) {	/* expected result for signed shift */
+		return 1;			/* right shift is signed */
+	}
+	/* see if unsigned-shift hack will fix it. */
+	/* we can't just test exact value since it depends on width of long... */
+	res |= (~0L) << (32 - 4);
+	if (res == -0x7F7E80CL) {	/* expected result now? */
+		return 0;			/* right shift is unsigned */
+	}
+	printf("Right shift isn't acting as I expect it to.\n");
+	printf("I fear the JPEG software will not work at all.\n\n");
+	return 0;			/* try it with unsigned anyway */
 }
 
 
 #ifdef HAVE_PROTOTYPES
-int main (int argc, char ** argv)
+	int main(int argc, char** argv)
 #else
-int main (argc, argv)
-     int argc;
-     char ** argv;
+	int main(argc, argv)
+	int argc;
+	char** argv;
 #endif
 {
-  char signed_char_check = (char) (-67);
-  FILE *outfile;
+	char signed_char_check = (char)(-67);
+	FILE* outfile;
 
-  /* Attempt to write jconfig.h */
-  if ((outfile = fopen("jconfig.h", "w")) == NULL) {
-    printf("Failed to write jconfig.h\n");
-    return 1;
-  }
+	/* Attempt to write jconfig.h */
+	if ((outfile = fopen("jconfig.h", "w")) == NULL) {
+		printf("Failed to write jconfig.h\n");
+		return 1;
+	}
 
-  /* Write out all the info */
-  fprintf(outfile, "/* jconfig.h --- generated by ckconfig.c */\n");
-  fprintf(outfile, "/* see jconfig.txt for explanations */\n\n");
+	/* Write out all the info */
+	fprintf(outfile, "/* jconfig.h --- generated by ckconfig.c */\n");
+	fprintf(outfile, "/* see jconfig.txt for explanations */\n\n");
 #ifdef HAVE_PROTOTYPES
-  fprintf(outfile, "#define HAVE_PROTOTYPES\n");
+	fprintf(outfile, "#define HAVE_PROTOTYPES\n");
 #else
-  fprintf(outfile, "#undef HAVE_PROTOTYPES\n");
+	fprintf(outfile, "#undef HAVE_PROTOTYPES\n");
 #endif
 #ifdef HAVE_UNSIGNED_CHAR
-  fprintf(outfile, "#define HAVE_UNSIGNED_CHAR\n");
+	fprintf(outfile, "#define HAVE_UNSIGNED_CHAR\n");
 #else
-  fprintf(outfile, "#undef HAVE_UNSIGNED_CHAR\n");
+	fprintf(outfile, "#undef HAVE_UNSIGNED_CHAR\n");
 #endif
 #ifdef HAVE_UNSIGNED_SHORT
-  fprintf(outfile, "#define HAVE_UNSIGNED_SHORT\n");
+	fprintf(outfile, "#define HAVE_UNSIGNED_SHORT\n");
 #else
-  fprintf(outfile, "#undef HAVE_UNSIGNED_SHORT\n");
+	fprintf(outfile, "#undef HAVE_UNSIGNED_SHORT\n");
 #endif
 #ifdef HAVE_VOID
-  fprintf(outfile, "/* #define void char */\n");
+	fprintf(outfile, "/* #define void char */\n");
 #else
-  fprintf(outfile, "#define void char\n");
+	fprintf(outfile, "#define void char\n");
 #endif
 #ifdef HAVE_CONST
-  fprintf(outfile, "/* #define const */\n");
+	fprintf(outfile, "/* #define const */\n");
 #else
-  fprintf(outfile, "#define const\n");
+	fprintf(outfile, "#define const\n");
 #endif
-  if (is_char_signed((int) signed_char_check))
-    fprintf(outfile, "#undef CHAR_IS_UNSIGNED\n");
-  else
-    fprintf(outfile, "#define CHAR_IS_UNSIGNED\n");
+	if (is_char_signed((int) signed_char_check)) {
+		fprintf(outfile, "#undef CHAR_IS_UNSIGNED\n");
+	} else {
+		fprintf(outfile, "#define CHAR_IS_UNSIGNED\n");
+	}
 #ifdef HAVE_STDDEF_H
-  fprintf(outfile, "#define HAVE_STDDEF_H\n");
+	fprintf(outfile, "#define HAVE_STDDEF_H\n");
 #else
-  fprintf(outfile, "#undef HAVE_STDDEF_H\n");
+	fprintf(outfile, "#undef HAVE_STDDEF_H\n");
 #endif
 #ifdef HAVE_STDLIB_H
-  fprintf(outfile, "#define HAVE_STDLIB_H\n");
+	fprintf(outfile, "#define HAVE_STDLIB_H\n");
 #else
-  fprintf(outfile, "#undef HAVE_STDLIB_H\n");
+	fprintf(outfile, "#undef HAVE_STDLIB_H\n");
 #endif
 #ifdef NEED_BSD_STRINGS
-  fprintf(outfile, "#define NEED_BSD_STRINGS\n");
+	fprintf(outfile, "#define NEED_BSD_STRINGS\n");
 #else
-  fprintf(outfile, "#undef NEED_BSD_STRINGS\n");
+	fprintf(outfile, "#undef NEED_BSD_STRINGS\n");
 #endif
 #ifdef NEED_SYS_TYPES_H
-  fprintf(outfile, "#define NEED_SYS_TYPES_H\n");
+	fprintf(outfile, "#define NEED_SYS_TYPES_H\n");
 #else
-  fprintf(outfile, "#undef NEED_SYS_TYPES_H\n");
+	fprintf(outfile, "#undef NEED_SYS_TYPES_H\n");
 #endif
-  fprintf(outfile, "#undef NEED_FAR_POINTERS\n");
+	fprintf(outfile, "#undef NEED_FAR_POINTERS\n");
 #ifdef NEED_SHORT_EXTERNAL_NAMES
-  fprintf(outfile, "#define NEED_SHORT_EXTERNAL_NAMES\n");
+	fprintf(outfile, "#define NEED_SHORT_EXTERNAL_NAMES\n");
 #else
-  fprintf(outfile, "#undef NEED_SHORT_EXTERNAL_NAMES\n");
+	fprintf(outfile, "#undef NEED_SHORT_EXTERNAL_NAMES\n");
 #endif
 #ifdef INCOMPLETE_TYPES_BROKEN
-  fprintf(outfile, "#define INCOMPLETE_TYPES_BROKEN\n");
+	fprintf(outfile, "#define INCOMPLETE_TYPES_BROKEN\n");
 #else
-  fprintf(outfile, "#undef INCOMPLETE_TYPES_BROKEN\n");
+	fprintf(outfile, "#undef INCOMPLETE_TYPES_BROKEN\n");
 #endif
-  fprintf(outfile, "\n#ifdef JPEG_INTERNALS\n\n");
-  if (is_shifting_signed(-0x7F7E80B1L))
-    fprintf(outfile, "#undef RIGHT_SHIFT_IS_UNSIGNED\n");
-  else
-    fprintf(outfile, "#define RIGHT_SHIFT_IS_UNSIGNED\n");
-  fprintf(outfile, "\n#endif /* JPEG_INTERNALS */\n");
-  fprintf(outfile, "\n#ifdef JPEG_CJPEG_DJPEG\n\n");
-  fprintf(outfile, "#define BMP_SUPPORTED		/* BMP image file format */\n");
-  fprintf(outfile, "#define GIF_SUPPORTED		/* GIF image file format */\n");
-  fprintf(outfile, "#define PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */\n");
-  fprintf(outfile, "#undef RLE_SUPPORTED		/* Utah RLE image file format */\n");
-  fprintf(outfile, "#define TARGA_SUPPORTED		/* Targa image file format */\n\n");
-  fprintf(outfile, "#undef TWO_FILE_COMMANDLINE	/* You may need this on non-Unix systems */\n");
-  fprintf(outfile, "#undef NEED_SIGNAL_CATCHER	/* Define this if you use jmemname.c */\n");
-  fprintf(outfile, "#undef DONT_USE_B_MODE\n");
-  fprintf(outfile, "/* #define PROGRESS_REPORT */	/* optional */\n");
-  fprintf(outfile, "\n#endif /* JPEG_CJPEG_DJPEG */\n");
+	fprintf(outfile, "\n#ifdef JPEG_INTERNALS\n\n");
+	if (is_shifting_signed(-0x7F7E80B1L)) {
+		fprintf(outfile, "#undef RIGHT_SHIFT_IS_UNSIGNED\n");
+	} else {
+		fprintf(outfile, "#define RIGHT_SHIFT_IS_UNSIGNED\n");
+	}
+	fprintf(outfile, "\n#endif /* JPEG_INTERNALS */\n");
+	fprintf(outfile, "\n#ifdef JPEG_CJPEG_DJPEG\n\n");
+	fprintf(outfile, "#define BMP_SUPPORTED		/* BMP image file format */\n");
+	fprintf(outfile, "#define GIF_SUPPORTED		/* GIF image file format */\n");
+	fprintf(outfile, "#define PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */\n");
+	fprintf(outfile, "#undef RLE_SUPPORTED		/* Utah RLE image file format */\n");
+	fprintf(outfile, "#define TARGA_SUPPORTED		/* Targa image file format */\n\n");
+	fprintf(outfile, "#undef TWO_FILE_COMMANDLINE	/* You may need this on non-Unix systems */\n");
+	fprintf(outfile, "#undef NEED_SIGNAL_CATCHER	/* Define this if you use jmemname.c */\n");
+	fprintf(outfile, "#undef DONT_USE_B_MODE\n");
+	fprintf(outfile, "/* #define PROGRESS_REPORT */	/* optional */\n");
+	fprintf(outfile, "\n#endif /* JPEG_CJPEG_DJPEG */\n");
 
-  /* Close the jconfig.h file */
-  fclose(outfile);
+	/* Close the jconfig.h file */
+	fclose(outfile);
 
-  /* User report */
-  printf("Configuration check for Independent JPEG Group's software done.\n");
-  printf("\nI have written the jconfig.h file for you.\n\n");
+	/* User report */
+	printf("Configuration check for Independent JPEG Group's software done.\n");
+	printf("\nI have written the jconfig.h file for you.\n\n");
 #ifdef HAVE_PROTOTYPES
-  printf("You should use makefile.ansi as the starting point for your Makefile.\n");
+	printf("You should use makefile.ansi as the starting point for your Makefile.\n");
 #else
-  printf("You should use makefile.unix as the starting point for your Makefile.\n");
+	printf("You should use makefile.unix as the starting point for your Makefile.\n");
 #endif
 
 #ifdef NEED_SPECIAL_INCLUDE
-  printf("\nYou'll need to change jconfig.h to include the system include file\n");
-  printf("that you found type size_t in, or add a direct definition of type\n");
-  printf("size_t if that's what you used.  Just add it to the end.\n");
+	printf("\nYou'll need to change jconfig.h to include the system include file\n");
+	printf("that you found type size_t in, or add a direct definition of type\n");
+	printf("size_t if that's what you used.  Just add it to the end.\n");
 #endif
 
-  return 0;
+	return 0;
 }

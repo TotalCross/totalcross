@@ -557,7 +557,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 	}
 
 	/** Compute the index of the first character of each line */
-	private void calculateFirst() { // guich@320_28: completely redesigned - guich@581_6: highly optimized
+	private void
+	calculateFirst() { // guich@320_28: completely redesigned - guich@581_6: highly optimized
 		StringBuffer chars = this.chars; // cache
 		int i = 0, originalLineCount = numberTextLines;
 		first.removeAllElements();
@@ -1529,7 +1530,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 	}
 
 	@Override
-	public void requestFocus() { // guich@tc115_6: user requested focus directly, so enable editMode by default
+	public void
+	requestFocus() { // guich@tc115_6: user requested focus directly, so enable editMode by default
 		editModeValue = true;
 		super.requestFocus();
 		editModeValue = false;

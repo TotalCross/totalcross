@@ -25,72 +25,74 @@ struct SkRect;
  */
 class SK_API SkDrawable : public SkFlattenable {
 public:
-    SkDrawable();
+	SkDrawable();
 
-    /**
-     *  Draws into the specified content. The drawing sequence will be balanced upon return
-     *  (i.e. the saveLevel() on the canvas will match what it was when draw() was called,
-     *  and the current matrix and clip settings will not be changed.
-     */
-    void draw(SkCanvas*, const SkMatrix* = nullptr);
-    void draw(SkCanvas*, SkScalar x, SkScalar y);
+	/**
+	 *  Draws into the specified content. The drawing sequence will be balanced upon return
+	 *  (i.e. the saveLevel() on the canvas will match what it was when draw() was called,
+	 *  and the current matrix and clip settings will not be changed.
+	 */
+	void draw(SkCanvas*, const SkMatrix* = nullptr);
+	void draw(SkCanvas*, SkScalar x, SkScalar y);
 
-    SkPicture* newPictureSnapshot();
+	SkPicture* newPictureSnapshot();
 
-    /**
-     *  Return a unique value for this instance. If two calls to this return the same value,
-     *  it is presumed that calling the draw() method will render the same thing as well.
-     *
-     *  Subclasses that change their state should call notifyDrawingChanged() to ensure that
-     *  a new value will be returned the next time it is called.
-     */
-    uint32_t getGenerationID();
+	/**
+	 *  Return a unique value for this instance. If two calls to this return the same value,
+	 *  it is presumed that calling the draw() method will render the same thing as well.
+	 *
+	 *  Subclasses that change their state should call notifyDrawingChanged() to ensure that
+	 *  a new value will be returned the next time it is called.
+	 */
+	uint32_t getGenerationID();
 
-    /**
-     *  Return the (conservative) bounds of what the drawable will draw. If the drawable can
-     *  change what it draws (e.g. animation or in response to some external change), then this
-     *  must return a bounds that is always valid for all possible states.
-     */
-    SkRect getBounds();
+	/**
+	 *  Return the (conservative) bounds of what the drawable will draw. If the drawable can
+	 *  change what it draws (e.g. animation or in response to some external change), then this
+	 *  must return a bounds that is always valid for all possible states.
+	 */
+	SkRect getBounds();
 
-    /**
-     *  Calling this invalidates the previous generation ID, and causes a new one to be computed
-     *  the next time getGenerationID() is called. Typically this is called by the object itself,
-     *  in response to its internal state changing.
-     */
-    void notifyDrawingChanged();
+	/**
+	 *  Calling this invalidates the previous generation ID, and causes a new one to be computed
+	 *  the next time getGenerationID() is called. Typically this is called by the object itself,
+	 *  in response to its internal state changing.
+	 */
+	void notifyDrawingChanged();
 
-    static SkFlattenable::Type GetFlattenableType() {
-        return kSkDrawable_Type;
-    }
+	static SkFlattenable::Type GetFlattenableType() {
+		return kSkDrawable_Type;
+	}
 
-    SkFlattenable::Type getFlattenableType() const override {
-        return kSkDrawable_Type;
-    }
+	SkFlattenable::Type getFlattenableType() const override {
+		return kSkDrawable_Type;
+	}
 
-    static sk_sp<SkDrawable> Deserialize(const void* data, size_t size,
-                                          const SkDeserialProcs* procs = nullptr) {
-        return sk_sp<SkDrawable>(static_cast<SkDrawable*>(
-                                  SkFlattenable::Deserialize(
-                                  kSkDrawable_Type, data, size, procs).release()));
-    }
+	static sk_sp<SkDrawable> Deserialize(const void* data, size_t size,
+										 const SkDeserialProcs* procs = nullptr) {
+		return sk_sp<SkDrawable>(static_cast<SkDrawable*>(
+									 SkFlattenable::Deserialize(
+										 kSkDrawable_Type, data, size, procs).release()));
+	}
 
-    Factory getFactory() const override { return nullptr; }
+	Factory getFactory() const override {
+		return nullptr;
+	}
 
 protected:
-    virtual SkRect onGetBounds() = 0;
-    virtual void onDraw(SkCanvas*) = 0;
+	virtual SkRect onGetBounds() = 0;
+	virtual void onDraw(SkCanvas*) = 0;
 
-    /**
-     *  Default implementation calls onDraw() with a canvas that records into a picture. Subclasses
-     *  may override if they have a more efficient way to return a picture for the current state
-     *  of their drawable. Note: this picture must draw the same as what would be drawn from
-     *  onDraw().
-     */
-    virtual SkPicture* onNewPictureSnapshot();
+	/**
+	 *  Default implementation calls onDraw() with a canvas that records into a picture. Subclasses
+	 *  may override if they have a more efficient way to return a picture for the current state
+	 *  of their drawable. Note: this picture must draw the same as what would be drawn from
+	 *  onDraw().
+	 */
+	virtual SkPicture* onNewPictureSnapshot();
 
 private:
-    int32_t fGenerationID;
+	int32_t fGenerationID;
 };
 
 #endif

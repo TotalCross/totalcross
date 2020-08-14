@@ -19,19 +19,19 @@
  * a NULL return.
  */
 enum class GrClipEdgeType {
-    kFillBW,
-    kFillAA,
-    kInverseFillBW,
-    kInverseFillAA,
-    kHairlineAA,
+	kFillBW,
+	kFillAA,
+	kInverseFillBW,
+	kInverseFillAA,
+	kHairlineAA,
 
-    kLast = kHairlineAA
+	kLast = kHairlineAA
 };
 
 enum class PMConversion {
-    kToPremul        = 0,
-    kToUnpremul      = 1,
-    kPMConversionCnt = 2
+	kToPremul        = 0,
+	kToUnpremul      = 1,
+	kPMConversionCnt = 2
 };
 
 #endif

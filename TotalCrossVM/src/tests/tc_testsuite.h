@@ -205,25 +205,25 @@ To enable the memory test, define ENABLE_MEMORY_TEST at your project settings.
 void startTestSuite(Context currentContext);
 // This function presents the test results at the proper place; if the array testResults isn't NULL, then print which tests have failed by their number
 
-void showTestResults(int *testResults);
+void showTestResults(int* testResults);
 
 // Memory tests
 #ifdef ENABLE_MEMORY_TEST
 #define MEMORY_TEST_START                                                           \
-          do                                                                        \
-          {                                                                         \
-             int32 xtonull;                                                         \
-             TCObject lastException = null;                                         \
-             for (xtonull = 1; TCAPI_FUNC(getCountToReturnNull)() == 0; xtonull++)  \
-             {                                                                      \
-                TCAPI_FUNC(setCountToReturnNull)(xtonull);
+	do                                                                        \
+	{                                                                         \
+		int32 xtonull;                                                         \
+		TCObject lastException = null;                                         \
+		for (xtonull = 1; TCAPI_FUNC(getCountToReturnNull)() == 0; xtonull++)  \
+		{                                                                      \
+			TCAPI_FUNC(setCountToReturnNull)(xtonull);
 #define MEMORY_TEST_END                                                             \
-                lastException = p->currentContext->thrownException;                 \
-                p->currentContext->thrownException = null;                          \
-             }                                                                      \
-             TCAPI_FUNC(setCountToReturnNull)(0);                                   \
-             p->currentContext->thrownException = lastException;                    \
-          } while (0);
+	lastException = p->currentContext->thrownException;                 \
+	p->currentContext->thrownException = null;                          \
+	}                                                                      \
+	TCAPI_FUNC(setCountToReturnNull)(0);                                   \
+	p->currentContext->thrownException = lastException;                    \
+	} while (0);
 #else
 #define MEMORY_TEST_START
 #define MEMORY_TEST_END
@@ -238,110 +238,109 @@ void showTestResults(int *testResults);
 struct TestSuite;
 
 #define DECLARE_ASSERT_FUNC1(name, type1) \
-   typedef bool (*assert##name##Func) (struct TestSuite *tc, type1 v1,                     const char *file, int line); \
-   bool           assert##name        (struct TestSuite *tc, type1 v1,                     const char *file, int line);
+	typedef bool (*assert##name##Func) (struct TestSuite *tc, type1 v1,                     const char *file, int line); \
+	bool           assert##name        (struct TestSuite *tc, type1 v1,                     const char *file, int line);
 
 #define DECLARE_ASSERT_FUNC2(name, type1, type2) \
-   typedef bool (*assert##name##Func) (struct TestSuite *tc, type1 v1, type2 v2,           const char *file, int line); \
-   bool           assert##name        (struct TestSuite *tc, type1 v1, type2 v2,           const char *file, int line);
+	typedef bool (*assert##name##Func) (struct TestSuite *tc, type1 v1, type2 v2,           const char *file, int line); \
+	bool           assert##name        (struct TestSuite *tc, type1 v1, type2 v2,           const char *file, int line);
 
 #define DECLARE_ASSERT_FUNC3(name, type1, type2, type3)  \
-   typedef bool (*assert##name##Func) (struct TestSuite *tc, type1 v1, type2 v2, type3 v3, const char *file, int line); \
-   bool           assert##name        (struct TestSuite *tc, type1 v1, type2 v2, type3 v3, const char *file, int line);
+	typedef bool (*assert##name##Func) (struct TestSuite *tc, type1 v1, type2 v2, type3 v3, const char *file, int line); \
+	bool           assert##name        (struct TestSuite *tc, type1 v1, type2 v2, type3 v3, const char *file, int line);
 
-DECLARE_ASSERT_FUNC1(EqualsNull    , VoidP )
-DECLARE_ASSERT_FUNC1(EqualsNotNull , VoidP )
-DECLARE_ASSERT_FUNC1(EqualsTrue    , int32 )
-DECLARE_ASSERT_FUNC1(EqualsFalse   , int32 )
-DECLARE_ASSERT_FUNC2(EqualsI8      , int8    , int8  )
-DECLARE_ASSERT_FUNC2(EqualsI16     , int16   , int16 )
-DECLARE_ASSERT_FUNC2(EqualsI32     , int32   , int32 )
-DECLARE_ASSERT_FUNC2(EqualsI64     , int64   , int64 )
-DECLARE_ASSERT_FUNC2(EqualsU8      , uint8   , uint8 )
-DECLARE_ASSERT_FUNC2(EqualsU16     , uint16  , uint16)
-DECLARE_ASSERT_FUNC2(EqualsU32     , uint32  , uint32)
-DECLARE_ASSERT_FUNC2(EqualsDbl     , double  , double)
-DECLARE_ASSERT_FUNC2(EqualsSz      , CharP   , CharP )
-DECLARE_ASSERT_FUNC2(EqualsObj     , TCObject, TCObject)
-DECLARE_ASSERT_FUNC2(EqualsPtr     , VoidP   , VoidP )
-DECLARE_ASSERT_FUNC3(EqualsBlock   , VoidP   , VoidP  , int32 )
-DECLARE_ASSERT_FUNC3(EqualsFilled  , VoidP   , uint32 , uint8 )
-DECLARE_ASSERT_FUNC3(BetweenI8     , int8    , int8   , int8  )
-DECLARE_ASSERT_FUNC3(BetweenI16    , int16   , int16  , int16 )
-DECLARE_ASSERT_FUNC3(BetweenI32    , int32   , int32  , int32 )
-DECLARE_ASSERT_FUNC3(BetweenI64    , int64   , int64  , int64 )
-DECLARE_ASSERT_FUNC3(BetweenU8     , uint8   , uint8  , uint8 )
-DECLARE_ASSERT_FUNC3(BetweenU16    , uint16  , uint16 , uint16)
-DECLARE_ASSERT_FUNC3(BetweenU32    , uint32  , uint32 , uint32)
-DECLARE_ASSERT_FUNC3(BetweenDbl    , double  , double , double)
+DECLARE_ASSERT_FUNC1(EqualsNull, VoidP)
+DECLARE_ASSERT_FUNC1(EqualsNotNull, VoidP)
+DECLARE_ASSERT_FUNC1(EqualsTrue, int32)
+DECLARE_ASSERT_FUNC1(EqualsFalse, int32)
+DECLARE_ASSERT_FUNC2(EqualsI8, int8, int8)
+DECLARE_ASSERT_FUNC2(EqualsI16, int16, int16)
+DECLARE_ASSERT_FUNC2(EqualsI32, int32, int32)
+DECLARE_ASSERT_FUNC2(EqualsI64, int64, int64)
+DECLARE_ASSERT_FUNC2(EqualsU8, uint8, uint8)
+DECLARE_ASSERT_FUNC2(EqualsU16, uint16, uint16)
+DECLARE_ASSERT_FUNC2(EqualsU32, uint32, uint32)
+DECLARE_ASSERT_FUNC2(EqualsDbl, double, double)
+DECLARE_ASSERT_FUNC2(EqualsSz, CharP, CharP)
+DECLARE_ASSERT_FUNC2(EqualsObj, TCObject, TCObject)
+DECLARE_ASSERT_FUNC2(EqualsPtr, VoidP, VoidP)
+DECLARE_ASSERT_FUNC3(EqualsBlock, VoidP, VoidP, int32)
+DECLARE_ASSERT_FUNC3(EqualsFilled, VoidP, uint32, uint8)
+DECLARE_ASSERT_FUNC3(BetweenI8, int8, int8, int8)
+DECLARE_ASSERT_FUNC3(BetweenI16, int16, int16, int16)
+DECLARE_ASSERT_FUNC3(BetweenI32, int32, int32, int32)
+DECLARE_ASSERT_FUNC3(BetweenI64, int64, int64, int64)
+DECLARE_ASSERT_FUNC3(BetweenU8, uint8, uint8, uint8)
+DECLARE_ASSERT_FUNC3(BetweenU16, uint16, uint16, uint16)
+DECLARE_ASSERT_FUNC3(BetweenU32, uint32, uint32, uint32)
+DECLARE_ASSERT_FUNC3(BetweenDbl, double, double, double)
 
-DECLARE_ASSERT_FUNC2(AboveI8       , int8    , int8   )
-DECLARE_ASSERT_FUNC2(AboveI16      , int16   , int16  )
-DECLARE_ASSERT_FUNC2(AboveI32      , int32   , int32  )
-DECLARE_ASSERT_FUNC2(AboveI64      , int64   , int64  )
-DECLARE_ASSERT_FUNC2(AboveU8       , uint8   , uint8  )
-DECLARE_ASSERT_FUNC2(AboveU16      , uint16  , uint16 )
-DECLARE_ASSERT_FUNC2(AboveU32      , uint32  , uint32 )
-DECLARE_ASSERT_FUNC2(AboveDbl      , double  , double )
+DECLARE_ASSERT_FUNC2(AboveI8, int8, int8)
+DECLARE_ASSERT_FUNC2(AboveI16, int16, int16)
+DECLARE_ASSERT_FUNC2(AboveI32, int32, int32)
+DECLARE_ASSERT_FUNC2(AboveI64, int64, int64)
+DECLARE_ASSERT_FUNC2(AboveU8, uint8, uint8)
+DECLARE_ASSERT_FUNC2(AboveU16, uint16, uint16)
+DECLARE_ASSERT_FUNC2(AboveU32, uint32, uint32)
+DECLARE_ASSERT_FUNC2(AboveDbl, double, double)
 
-typedef bool (*failFunc)   (struct TestSuite *tc, char *,    ...);
-bool           fail        (struct TestSuite *tc, char *msg, ...);
-typedef void (*outputFunc) (struct TestSuite *tc, char *,    ...);
-void           output      (struct TestSuite *tc, char *msg, ...);
+typedef bool (*failFunc)(struct TestSuite* tc, char*,    ...);
+bool           fail(struct TestSuite* tc, char* msg, ...);
+typedef void (*outputFunc)(struct TestSuite* tc, char*,    ...);
+void           output(struct TestSuite* tc, char* msg, ...);
 
-struct TestSuite
-{
-   double doubleError; // 1e-8;
-   int32 failed;
-   int32 total;
-   int32 skipped;
-   int32 cannotRun;
-   bool abort;
+struct TestSuite {
+	double doubleError; // 1e-8;
+	int32 failed;
+	int32 total;
+	int32 skipped;
+	int32 cannotRun;
+	bool abort;
 
-   assertEqualsI8Func      assertEqualsI8;
-   assertEqualsI16Func     assertEqualsI16;
-   assertEqualsI32Func     assertEqualsI32;
-   assertEqualsI64Func     assertEqualsI64;
-   assertEqualsU8Func      assertEqualsU8;
-   assertEqualsU16Func     assertEqualsU16;
-   assertEqualsU32Func     assertEqualsU32;
-   assertEqualsDblFunc     assertEqualsDbl;
-   assertEqualsSzFunc      assertEqualsSz;
-   assertEqualsObjFunc     assertEqualsObj;
-   assertEqualsPtrFunc     assertEqualsPtr;
-   assertEqualsBlockFunc   assertEqualsBlock;
-   assertEqualsFilledFunc  assertEqualsFilled;
-   assertEqualsNullFunc    assertEqualsNull;
-   assertEqualsNotNullFunc assertEqualsNotNull;
-   assertEqualsTrueFunc    assertEqualsTrue;
-   assertEqualsFalseFunc   assertEqualsFalse;
+	assertEqualsI8Func      assertEqualsI8;
+	assertEqualsI16Func     assertEqualsI16;
+	assertEqualsI32Func     assertEqualsI32;
+	assertEqualsI64Func     assertEqualsI64;
+	assertEqualsU8Func      assertEqualsU8;
+	assertEqualsU16Func     assertEqualsU16;
+	assertEqualsU32Func     assertEqualsU32;
+	assertEqualsDblFunc     assertEqualsDbl;
+	assertEqualsSzFunc      assertEqualsSz;
+	assertEqualsObjFunc     assertEqualsObj;
+	assertEqualsPtrFunc     assertEqualsPtr;
+	assertEqualsBlockFunc   assertEqualsBlock;
+	assertEqualsFilledFunc  assertEqualsFilled;
+	assertEqualsNullFunc    assertEqualsNull;
+	assertEqualsNotNullFunc assertEqualsNotNull;
+	assertEqualsTrueFunc    assertEqualsTrue;
+	assertEqualsFalseFunc   assertEqualsFalse;
 
-   assertBetweenI8Func     assertBetweenI8;
-   assertBetweenI16Func    assertBetweenI16;
-   assertBetweenI32Func    assertBetweenI32;
-   assertBetweenI64Func    assertBetweenI64;
-   assertBetweenU8Func     assertBetweenU8;
-   assertBetweenU16Func    assertBetweenU16;
-   assertBetweenU32Func    assertBetweenU32;
-   assertBetweenDblFunc    assertBetweenDbl;
+	assertBetweenI8Func     assertBetweenI8;
+	assertBetweenI16Func    assertBetweenI16;
+	assertBetweenI32Func    assertBetweenI32;
+	assertBetweenI64Func    assertBetweenI64;
+	assertBetweenU8Func     assertBetweenU8;
+	assertBetweenU16Func    assertBetweenU16;
+	assertBetweenU32Func    assertBetweenU32;
+	assertBetweenDblFunc    assertBetweenDbl;
 
-   assertAboveI8Func       assertAboveI8;
-   assertAboveI16Func      assertAboveI16;
-   assertAboveI32Func      assertAboveI32;
-   assertAboveI64Func      assertAboveI64;
-   assertAboveU8Func       assertAboveU8;
-   assertAboveU16Func      assertAboveU16;
-   assertAboveU32Func      assertAboveU32;
-   assertAboveDblFunc      assertAboveDbl;
+	assertAboveI8Func       assertAboveI8;
+	assertAboveI16Func      assertAboveI16;
+	assertAboveI32Func      assertAboveI32;
+	assertAboveI64Func      assertAboveI64;
+	assertAboveU8Func       assertAboveU8;
+	assertAboveU16Func      assertAboveU16;
+	assertAboveU32Func      assertAboveU32;
+	assertAboveDblFunc      assertAboveDbl;
 
-   failFunc                fail;
-   outputFunc              output;
+	failFunc                fail;
+	outputFunc              output;
 };
 
 // the function signature of all Test cases
-typedef void (*testFunc)(struct TestSuite *tc, Context currentContext);
+typedef void (*testFunc)(struct TestSuite* tc, Context currentContext);
 
 // this function is called by the startTestSuite in order to assign the functions and setup the variables of the SWTestSuite structure.
-struct TestSuite *createTestSuite();
+struct TestSuite* createTestSuite();
 
 #endif

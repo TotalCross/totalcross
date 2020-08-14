@@ -53,10 +53,10 @@ extern "C" {
 #define RIL_ERRORCLASS_GPRS                         0x0E  // @constdefine GPRS related failures
 
 #define MAKE_RILERROR(errclass,code) \
-    ((unsigned long) (errclass) << 8) | ((unsigned long)(code))
+	((unsigned long) (errclass) << 8) | ((unsigned long)(code))
 
 #define RILERRORCLASS(rilerror) \
-    ((unsigned long) (((rilerror) >> 8) & 0xff))
+	((unsigned long) (((rilerror) >> 8) & 0xff))
 
 // -----------------------------------------------------------------------------
 //
@@ -304,7 +304,7 @@ extern "C" {
 //
 // -----------------------------------------------------------------------------
 #define RIL_NOTIFY_PHONEBOOKENTRYSTORED             (0x00000001 | RIL_NCLASS_PHONEBOOK)  // @constdefine A phonebook entry has been added to storage; lpData points to the storage
-                                                                                         // index assigned to the new entry (ifdwIndex is RIL_PBINDEX_FIRSTAVAILABLE, the new entry was stored in the first available location)
+// index assigned to the new entry (ifdwIndex is RIL_PBINDEX_FIRSTAVAILABLE, the new entry was stored in the first available location)
 #define RIL_NOTIFY_PHONEBOOKENTRYDELETED            (0x00000002 | RIL_NCLASS_PHONEBOOK)  // @constdefine A phonebook entry has been deleted from storage; lpData points to the storage index occupied by the deleted entry
 #define RIL_NOTIFY_PHONEBOOKSTORAGECHANGED          (0x00000003 | RIL_NCLASS_PHONEBOOK)  // @constdefine Phonebook storage location has been changed; lpData points to RIL_PBLOC_* constant
 
@@ -319,9 +319,9 @@ extern "C" {
 // -----------------------------------------------------------------------------
 #define RIL_NOTIFY_SIMTOOLKITCMD                    (0x00000001 | RIL_NCLASS_SIMTOOLKIT)  // @constdefine A SIM Toolkit command was not handled by the radio; lpData points to array of bytes containing the command
 #define RIL_NOTIFY_SIMTOOLKITCALLSETUP              (0x00000002 | RIL_NCLASS_SIMTOOLKIT)  // @constdefine SIM Toolkit is trying to set up a call and call conditions were successfully checked by the radio;
-                                                                                          // lpData points to a DWORD containing the redial timeout for the call (in milliseconds)
+// lpData points to a DWORD containing the redial timeout for the call (in milliseconds)
 #define RIL_NOTIFY_SIMTOOLKITEVENT                  (0x00000003 | RIL_NCLASS_SIMTOOLKIT)  // @constdefine A SIM Toolkit command was handled by the radio or the radio sent a SIm Toolkit command response to the SIM;
-                                                                                          // lpData points to array of bytes containing the command or response sent
+// lpData points to array of bytes containing the command or response sent
 #define RIL_NOTIFY_SIMTOOLKITSESSIONEND             (0x00000004 | RIL_NCLASS_SIMTOOLKIT)  // @constdefine A SIM Toolkit command session is ending
 
 // -----------------------------------------------------------------------------
@@ -351,17 +351,17 @@ extern "C" {
 #define RIL_NOTIFY_SIMNOTACCESSIBLE                 (0x00000001 | RIL_NCLASS_MISC)  // @constdefine SIM card has been removed or has failed to respond; lpData is NULL
 #define RIL_NOTIFY_DTMFSIGNAL                       (0x00000002 | RIL_NCLASS_MISC)  // @constdefine A DTMF signal has been detected; lpData points to char
 #define RIL_NOTIFY_GPRSCLASS_NETWORKCHANGED         (0x00000003 | RIL_NCLASS_MISC)  // @constdefine Network has indicated a change in GPRS class
-	                                                                                    // lpData points to a DWORD containing the new RIL_GPRSCLASS_* value
+// lpData points to a DWORD containing the new RIL_GPRSCLASS_* value
 #define RIL_NOTIFY_GPRSCLASS_RADIOCHANGED           (0x00000004 | RIL_NCLASS_MISC)  // @constdefine The radio has indicated a change in GPRS class
-	                                                                                    // lpData points to a DWORD containing the new RIL_GPRSCLASS_* value
+// lpData points to a DWORD containing the new RIL_GPRSCLASS_* value
 #define RIL_NOTIFY_SIGNALQUALITY                    (0x00000005 | RIL_NCLASS_MISC)  // @constdefine Signal Quality Notification
-	                                                                                    // lpData points to a RILSIGNALQUALITY structure
+// lpData points to a RILSIGNALQUALITY structure
 #define RIL_NOTIFY_MAINTREQUIRED                    (0x00000006 | RIL_NCLASS_MISC)  // @constdefine BS notification that MS requires servicing; lpdata is NULL
 #define RIL_NOTIFY_PRIVACYCHANGED                   (0x00000007 | RIL_NCLASS_MISC)  // @constdefine Call Privacy Status; lpData points to DWORD of value RIL_CALLPRIVACY_*
 #define RIL_NOTIFY_SIM_DATACHANGE                   (0x00000008 | RIL_NCLASS_MISC)  // @constdefine data change notification; lpData points to DWORD of value RIL_SIMDATACHANGE_*
 #define RIL_NOTIFY_ATLOGGING                        (0x00000009 | RIL_NCLASS_MISC)  // @constdefine at command log data present
 #define RIL_NOTIFY_SIMSTATUSCHANGED                 (0x00000010 | RIL_NCLASS_MISC)  // @constdefine SIM card state has changed. Carries a DWORD (RIL_SIMSTATUSCHANGED_*) with the current state.
-                                                                                        // Notification is sent only when encountering error conditions from the radio.
+// Notification is sent only when encountering error conditions from the radio.
 
 // -----------------------------------------------------------------------------
 //
@@ -386,11 +386,11 @@ extern "C" {
 //
 // -----------------------------------------------------------------------------
 #define RIL_NOTIFY_NDIS_IPCONFIG                    (0x00000001 | RIL_NCLASS_NDIS) // @constdefine IP configuration received and is ready for use.
-                                                                                   // lpData points to a RILNDISIPCONFIG structure.
+// lpData points to a RILNDISIPCONFIG structure.
 #define RIL_NOTIFY_NDIS_PACKETRECEIVED              (0x00000002 | RIL_NCLASS_NDIS) // @constdefine IP packet available.
-                                                                                   // lpData points to a RILNDISPACKET structure.
+// lpData points to a RILNDISPACKET structure.
 #define RIL_NOTIFY_NDIS_XFERSTATUSCHANGED           (0x00000003 | RIL_NCLASS_NDIS) // @constdefine packet flow control change occurred.
-                                                                                   // lpData ponts to DWORD of [ RIL_NDIS_XON |RIL_NDIS_XOFF ]
+// lpData ponts to DWORD of [ RIL_NDIS_XON |RIL_NDIS_XOFF ]
 //
 // Macro to extract notification class from notification code
 //
@@ -911,59 +911,59 @@ OSt=RIL_MSGTYPE_OUT_IS637STATUS
 #define RIL_PARAM_M_MSGSTATUSTYPE                   (0x10000000) // @paramdefine CDMA=[ISt]
 
 #define RIL_PARAM_M_ALL_IN_DELIVER                  (RIL_PARAM_M_TYPE | RIL_PARAM_M_FLAGS | RIL_PARAM_M_ORIGADDRESS | \
-                                                     RIL_PARAM_M_PROTOCOLID | RIL_PARAM_M_DATACODING | \
-                                                     RIL_PARAM_M_SCRECEIVETIME | RIL_PARAM_M_HDRLENGTH | RIL_PARAM_M_MSGLENGTH | \
-                                                     RIL_PARAM_M_HDR | RIL_PARAM_M_MSG)                                  // @paramdefine
+		RIL_PARAM_M_PROTOCOLID | RIL_PARAM_M_DATACODING | \
+		RIL_PARAM_M_SCRECEIVETIME | RIL_PARAM_M_HDRLENGTH | RIL_PARAM_M_MSGLENGTH | \
+		RIL_PARAM_M_HDR | RIL_PARAM_M_MSG)                                  // @paramdefine
 
 #define RIL_PARAM_M_ALL_IN_STATUS                   (RIL_PARAM_M_TYPE | RIL_PARAM_M_FLAGS | RIL_PARAM_M_TGTMSGREFERENCE | \
-                                                     RIL_PARAM_M_TGTRECIPADDRESS | RIL_PARAM_M_TGTSCRECEIVETIME | \
-                                                     RIL_PARAM_M_TGTDISCHARGETIME | RIL_PARAM_M_TGTDLVSTATUS | \
-                                                     RIL_PARAM_M_PROTOCOLID | RIL_PARAM_M_DATACODING | RIL_PARAM_M_HDRLENGTH | \
-                                                     RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_HDR | RIL_PARAM_M_MSG)          // @paramdefine
+		RIL_PARAM_M_TGTRECIPADDRESS | RIL_PARAM_M_TGTSCRECEIVETIME | \
+		RIL_PARAM_M_TGTDISCHARGETIME | RIL_PARAM_M_TGTDLVSTATUS | \
+		RIL_PARAM_M_PROTOCOLID | RIL_PARAM_M_DATACODING | RIL_PARAM_M_HDRLENGTH | \
+		RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_HDR | RIL_PARAM_M_MSG)          // @paramdefine
 
 #define RIL_PARAM_M_ALL_OUT_SUBMIT                  (RIL_PARAM_M_TYPE | RIL_PARAM_M_FLAGS | RIL_PARAM_M_DESTADDRESS | \
-                                                     RIL_PARAM_M_PROTOCOLID | RIL_PARAM_M_DATACODING | RIL_PARAM_M_VPFORMAT | \
-                                                     RIL_PARAM_M_VP | RIL_PARAM_M_HDRLENGTH | RIL_PARAM_M_MSGLENGTH | \
-                                                     RIL_PARAM_M_HDR | RIL_PARAM_M_MSG)                                  // @paramdefine
+		RIL_PARAM_M_PROTOCOLID | RIL_PARAM_M_DATACODING | RIL_PARAM_M_VPFORMAT | \
+		RIL_PARAM_M_VP | RIL_PARAM_M_HDRLENGTH | RIL_PARAM_M_MSGLENGTH | \
+		RIL_PARAM_M_HDR | RIL_PARAM_M_MSG)                                  // @paramdefine
 
 #define RIL_PARAM_M_ALL_OUT_COMMAND                 (RIL_PARAM_M_TYPE | RIL_PARAM_M_FLAGS | RIL_PARAM_M_PROTOCOLID | \
-                                                     RIL_PARAM_M_COMMANDTYPE | RIL_PARAM_M_TGTMSGREFERENCE | \
-                                                     RIL_PARAM_M_DESTADDRESS | RIL_PARAM_M_CMDLENGTH | RIL_PARAM_M_CMD)  // @paramdefine
+		RIL_PARAM_M_COMMANDTYPE | RIL_PARAM_M_TGTMSGREFERENCE | \
+		RIL_PARAM_M_DESTADDRESS | RIL_PARAM_M_CMDLENGTH | RIL_PARAM_M_CMD)  // @paramdefine
 
 #define RIL_PARAM_M_ALL_BC_GENERAL                  (RIL_PARAM_M_TYPE | RIL_PARAM_M_GEOSCOPE | RIL_PARAM_M_MSGCODE | \
-                                                     RIL_PARAM_M_UPDATENUMBER | RIL_PARAM_M_ID | RIL_PARAM_M_DATACODING | \
-                                                     RIL_PARAM_M_TOTALPAGES | RIL_PARAM_M_PAGENUMBER | RIL_PARAM_M_MSGLENGTH | \
-                                                     RIL_PARAM_M_MSG)                                                    // @paramdefine
+		RIL_PARAM_M_UPDATENUMBER | RIL_PARAM_M_ID | RIL_PARAM_M_DATACODING | \
+		RIL_PARAM_M_TOTALPAGES | RIL_PARAM_M_PAGENUMBER | RIL_PARAM_M_MSGLENGTH | \
+		RIL_PARAM_M_MSG)                                                    // @paramdefine
 
 #define RIL_PARAM_M_ALL_OUT_RAW                     (RIL_PARAM_M_TYPE | RIL_PARAM_M_FLAGS | \
-                                                     RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG)                            // @paramdefine
+		RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG)                            // @paramdefine
 
 #define RIL_PARAM_M_ALL_IN_IS637DELIVER             (RIL_PARAM_M_TYPE | RIL_PARAM_M_MSGID | RIL_PARAM_M_TELESERVICE | \
-                                                     RIL_PARAM_M_DISPLAYMODE | RIL_PARAM_M_USERACK | RIL_PARAM_M_ORIGADDRESS | \
-                                                     RIL_PARAM_M_ORIGSUBADDRESS | RIL_PARAM_M_SCRECEIVETIME | RIL_PARAM_M_PRIORITY | \
-                                                     RIL_PARAM_M_PRIVACY | RIL_PARAM_M_CALLBACKNUM | RIL_PARAM_M_NUMMSGS | \
-                                                     RIL_PARAM_M_VALIDITYPERIODABS | RIL_PARAM_M_LANG | RIL_PARAM_M_ENCODING | \
-                                                     RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG)                           // @paramdefine
+		RIL_PARAM_M_DISPLAYMODE | RIL_PARAM_M_USERACK | RIL_PARAM_M_ORIGADDRESS | \
+		RIL_PARAM_M_ORIGSUBADDRESS | RIL_PARAM_M_SCRECEIVETIME | RIL_PARAM_M_PRIORITY | \
+		RIL_PARAM_M_PRIVACY | RIL_PARAM_M_CALLBACKNUM | RIL_PARAM_M_NUMMSGS | \
+		RIL_PARAM_M_VALIDITYPERIODABS | RIL_PARAM_M_LANG | RIL_PARAM_M_ENCODING | \
+		RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG)                           // @paramdefine
 
 #define RIL_PARAM_M_ALL_OUT_IS637SUBMIT             (RIL_PARAM_M_TYPE | RIL_PARAM_M_MSGID | RIL_PARAM_M_TELESERVICE | \
-                                                     RIL_PARAM_M_DISPLAYMODE | RIL_PARAM_M_DESTADDRESS | RIL_PARAM_M_DESTSUBADDRESS | \
-                                                     RIL_PARAM_M_DIGIT | RIL_PARAM_M_BEARERREPLYACK | RIL_PARAM_M_PRIORITY | \
-                                                     RIL_PARAM_M_PRIVACY | RIL_PARAM_M_CALLBACKNUM | RIL_PARAM_M_USERACK | \
-                                                     RIL_PARAM_M_DELIVERYACK | RIL_PARAM_M_VALIDITYPERIODABS | \
-                                                     RIL_PARAM_M_VALIDITYPERIODREL | RIL_PARAM_M_DEFERREDDELTIMEABS | \
-                                                     RIL_PARAM_M_DEFERREDDELTIMEREL | RIL_PARAM_M_LANG | RIL_PARAM_M_ENCODING | \
-                                                     RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG)                           // @paramdefine
+		RIL_PARAM_M_DISPLAYMODE | RIL_PARAM_M_DESTADDRESS | RIL_PARAM_M_DESTSUBADDRESS | \
+		RIL_PARAM_M_DIGIT | RIL_PARAM_M_BEARERREPLYACK | RIL_PARAM_M_PRIORITY | \
+		RIL_PARAM_M_PRIVACY | RIL_PARAM_M_CALLBACKNUM | RIL_PARAM_M_USERACK | \
+		RIL_PARAM_M_DELIVERYACK | RIL_PARAM_M_VALIDITYPERIODABS | \
+		RIL_PARAM_M_VALIDITYPERIODREL | RIL_PARAM_M_DEFERREDDELTIMEABS | \
+		RIL_PARAM_M_DEFERREDDELTIMEREL | RIL_PARAM_M_LANG | RIL_PARAM_M_ENCODING | \
+		RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG)                           // @paramdefine
 
 #define RIL_PARAM_M_ALL_IN_IS637STATUS              (RIL_PARAM_M_TYPE | RIL_PARAM_M_MSGID | RIL_PARAM_M_ORIGADDRESS | \
-                                                     RIL_PARAM_M_ORIGSUBADDRESS | RIL_PARAM_M_SCRECEIVETIME | RIL_PARAM_M_CAUSECODE | \
-                                                     RIL_PARAM_M_REPLYSEQNUMBER | RIL_PARAM_M_LANG | RIL_PARAM_M_ENCODING | \
-                                                     RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG | RIL_PARAM_M_USERRESPONSECODE | \
-                                                     RIL_PARAM_M_MSGSTATUSTYPE)                                         // @paramdefine
+		RIL_PARAM_M_ORIGSUBADDRESS | RIL_PARAM_M_SCRECEIVETIME | RIL_PARAM_M_CAUSECODE | \
+		RIL_PARAM_M_REPLYSEQNUMBER | RIL_PARAM_M_LANG | RIL_PARAM_M_ENCODING | \
+		RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG | RIL_PARAM_M_USERRESPONSECODE | \
+		RIL_PARAM_M_MSGSTATUSTYPE)                                         // @paramdefine
 
 #define RIL_PARAM_M_ALL_OUT_IS637STATUS             (RIL_PARAM_M_TYPE | RIL_PARAM_M_MSGID |  RIL_PARAM_M_DESTADDRESS | \
-                                                     RIL_PARAM_M_DESTSUBADDRESS | RIL_PARAM_M_REPLYSEQNUMBER | RIL_PARAM_M_LANG | \
-                                                     RIL_PARAM_M_ENCODING | RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG | \
-                                                     RIL_PARAM_M_USERRESPONSECODE | RIL_PARAM_M_DIGIT)                  // @paramdefine
+		RIL_PARAM_M_DESTSUBADDRESS | RIL_PARAM_M_REPLYSEQNUMBER | RIL_PARAM_M_LANG | \
+		RIL_PARAM_M_ENCODING | RIL_PARAM_M_MSGLENGTH | RIL_PARAM_M_MSG | \
+		RIL_PARAM_M_USERRESPONSECODE | RIL_PARAM_M_DIGIT)                  // @paramdefine
 
 // -----------------------------------------------------------------------------
 //
@@ -1772,7 +1772,7 @@ OSt=RIL_MSGTYPE_OUT_IS637STATUS
 #define RIL_OPSELMODE_AUTOMATIC                     (0x00000001)      // @constdefine Automatic operator selection
 #define RIL_OPSELMODE_MANUAL                        (0x00000002)      // @constdefine Manual operator selection
 #define RIL_OPSELMODE_MANUALAUTOMATIC               (0x00000003)      // @constdefine Manual/automatic operator selection
-                                                                      // (if manual selection fails, automatic selection mode is entered)
+// (if manual selection fails, automatic selection mode is entered)
 
 // -----------------------------------------------------------------------------
 //
@@ -1784,7 +1784,7 @@ OSt=RIL_MSGTYPE_OUT_IS637STATUS
 //
 // -----------------------------------------------------------------------------
 #define RIL_PREFOPINDEX_FIRSTAVAILABLE              (0xffffffff)      // @constdefine Used to specify that a preferred operator is
-                                                                      // to be stored at the first available index
+// to be stored at the first available index
 
 // -----------------------------------------------------------------------------
 //
@@ -2140,8 +2140,8 @@ OSt=RIL_MSGTYPE_OUT_IS637STATUS
 #define RIL_HSCSDAIURATE_43200                      (0x00000006)      // @constdefine 43200 bits per second
 #define RIL_HSCSDAIURATE_57600                      (0x00000007)      // @constdefine 57600 bits per second
 #define RIL_HSCSDAIURATE_DEFAULT                    (0xffffffff)      // @constdefine A special value that indicates the radio stack
-                                                                      //    should calculate the appropriate number of
-                                                                      //    receive timeslots based on other paramaters
+//    should calculate the appropriate number of
+//    receive timeslots based on other paramaters
 
 // -----------------------------------------------------------------------------
 //
@@ -2153,9 +2153,9 @@ OSt=RIL_MSGTYPE_OUT_IS637STATUS
 //
 // -----------------------------------------------------------------------------
 #define RIL_HSCSDTIMESLOTS_DEFAULT                  (0x00000000)      // @constdefine Indicates that the radio stack should
-                                                                      // calculate apropriate number of timeslots
+// calculate apropriate number of timeslots
 #define RIL_HSCSDTIMESLOTSLIMIT_NONE                (0x00000000)      // @constdefine Indicates that number of receive numeslots will not
-                                                                      //    be altered during the next non-transparent HSCSD call
+//    be altered during the next non-transparent HSCSD call
 
 // -----------------------------------------------------------------------------
 //
@@ -2498,7 +2498,7 @@ OSt=RIL_MSGTYPE_OUT_IS637STATUS
 #define RIL_MSGFLAG_MORETOSEND                      (0x00000001)      // @constdefine More messages to send (valid for <def RIL_MSGTYPE_IN_DELIVER> and <def RIL_MSGTYPE_IN_STATUS>)
 #define RIL_MSGFLAG_REPLYPATH                       (0x00000002)      // @constdefine Message contains a reply path  (valid for <def RIL_MSGTYPE_IN_DELIVER> and <def RIL_MSGTYPE_OUT_SUBMIT>)
 #define RIL_MSGFLAG_HEADER                          (0x00000004)      // @constdefine TBD (valid for <def RIL_MSGTYPE_IN_DELIVER>, <def RIL_MSGTYPE_OUT_SUBMIT>,
-                                                                      //    <def RIL_MSGTYPE_IN_STATUS>, and <def RIL_MSGTYPE_OUT_COMMAND>)
+//    <def RIL_MSGTYPE_IN_STATUS>, and <def RIL_MSGTYPE_OUT_COMMAND>)
 #define RIL_MSGFLAG_REJECTDUPS                      (0x00000008)      // @constdefine TBD (valid for <def RIL_MSGTYPE_OUT_SUBMIT> only)
 #define RIL_MSGFLAG_STATUSREPORTRETURNED            (0x00000010)      // @constdefine (valid for <def RIL_MSGTYPE_IN_DELIVER> only)
 #define RIL_MSGFLAG_STATUSREPORTREQUESTED           (0x00000020)      // @constdefine (valid for <def RIL_MSGTYPE_OUT_SUBMIT> and <def RIL_MSGTYPE_OUT_COMMAND>)
@@ -3702,11 +3702,11 @@ OSt=RIL_MSGTYPE_OUT_IS637STATUS
 //
 // -----------------------------------------------------------------------------
 typedef struct riladdress_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwType;                           // @field type of number
-    DWORD dwNumPlan;                        // @field numbering plan
-    WCHAR wszAddress[MAXLENGTH_ADDRESS];    // @field address (min 3, max 43)
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwType;                           // @field type of number
+	DWORD dwNumPlan;                        // @field numbering plan
+	WCHAR wszAddress[MAXLENGTH_ADDRESS];    // @field address (min 3, max 43)
 } RILADDRESS, *LPRILADDRESS;
 
 // -----------------------------------------------------------------------------
@@ -3719,10 +3719,10 @@ typedef struct riladdress_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilsubaddress_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwType;                           // @field type of subaddress
-    WCHAR wszSubAddress[MAXLENGTH_SUBADDR]; // @field subaddress (min 2, max 23)
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwType;                           // @field type of subaddress
+	WCHAR wszSubAddress[MAXLENGTH_SUBADDR]; // @field subaddress (min 2, max 23)
 } RILSUBADDRESS, *LPRILSUBADDRESS;
 
 // -----------------------------------------------------------------------------
@@ -3735,10 +3735,10 @@ typedef struct rilsubaddress_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilserialportstats_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwReadBitsPerSecond;              // @field bit rate for reading data
-    DWORD dwWrittenBitsPerSecond;           // @field bit rate for writing data
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwReadBitsPerSecond;              // @field bit rate for reading data
+	DWORD dwWrittenBitsPerSecond;           // @field bit rate for writing data
 } RILSERIALPORTSTATS, *LPRILSERIALPORTSTATS;
 
 // -----------------------------------------------------------------------------
@@ -3751,14 +3751,14 @@ typedef struct rilserialportstats_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilsubscriberinfo_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    RILADDRESS raAddress;                   // @field the assigned address
-    WCHAR wszDescription[MAXLENGTH_DESCRIPTION]; // @field text relating to this subscriber
-    DWORD dwSpeed;                          // @field data rate related to this number
-    DWORD dwService;                        // @field the service related to this number
-    DWORD dwITC;                            // @field information transfer capability
-    DWORD dwAddressId;                      // @field the address ID of this number
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	RILADDRESS raAddress;                   // @field the assigned address
+	WCHAR wszDescription[MAXLENGTH_DESCRIPTION]; // @field text relating to this subscriber
+	DWORD dwSpeed;                          // @field data rate related to this number
+	DWORD dwService;                        // @field the service related to this number
+	DWORD dwITC;                            // @field information transfer capability
+	DWORD dwAddressId;                      // @field the address ID of this number
 } RILSUBSCRIBERINFO, *LPRILSUBSCRIBERINFO;
 
 // -----------------------------------------------------------------------------
@@ -3771,12 +3771,12 @@ typedef struct rilsubscriberinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct riloperatornames_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    char szLongName[MAXLENGTH_OPERATOR_LONG];   // @field long representation (max 16 characters)
-    char szShortName[MAXLENGTH_OPERATOR_SHORT]; // @field short representation (max 8 characters)
-    char szNumName[MAXLENGTH_OPERATOR_NUMERIC]; // @field numeric representation (3 digit country code & 2 digit network code)
-    char szCountryCode[MAXLENGTH_OPERATOR_COUNTRY_CODE]; // @field 2 character ISO 3166 country repesentation of the MCC
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	char szLongName[MAXLENGTH_OPERATOR_LONG];   // @field long representation (max 16 characters)
+	char szShortName[MAXLENGTH_OPERATOR_SHORT]; // @field short representation (max 8 characters)
+	char szNumName[MAXLENGTH_OPERATOR_NUMERIC]; // @field numeric representation (3 digit country code & 2 digit network code)
+	char szCountryCode[MAXLENGTH_OPERATOR_COUNTRY_CODE]; // @field 2 character ISO 3166 country repesentation of the MCC
 } RILOPERATORNAMES, *LPRILOPERATORNAMES;
 
 // -----------------------------------------------------------------------------
@@ -3789,11 +3789,11 @@ typedef struct riloperatornames_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct riloperatorinfo_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwIndex;                          // @field index, if applicable
-    DWORD dwStatus;                         // @field registration status, if applicable
-    RILOPERATORNAMES ronNames;              // @field representations of an operator
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwIndex;                          // @field index, if applicable
+	DWORD dwStatus;                         // @field registration status, if applicable
+	RILOPERATORNAMES ronNames;              // @field representations of an operator
 } RILOPERATORINFO, *LPRILOPERATORINFO;
 
 // -----------------------------------------------------------------------------
@@ -3806,10 +3806,10 @@ typedef struct riloperatorinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcalleridsettings_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwStatus;                         // @field activation status
-    DWORD dwProvisioning;                   // @field network provisioning status
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwStatus;                         // @field activation status
+	DWORD dwProvisioning;                   // @field network provisioning status
 } RILCALLERIDSETTINGS, *LPRILCALLERIDSETTINGS;
 
 // -----------------------------------------------------------------------------
@@ -3822,10 +3822,10 @@ typedef struct rilcalleridsettings_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilhideidsettings_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwStatus;                         // @field activation status
-    DWORD dwProvisioning;                   // @field network provisioning status
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwStatus;                         // @field activation status
+	DWORD dwProvisioning;                   // @field network provisioning status
 } RILHIDEIDSETTINGS, *LPRILHIDEIDSETTINGS;
 
 // -----------------------------------------------------------------------------
@@ -3838,10 +3838,10 @@ typedef struct rilhideidsettings_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rildialedidsettings_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwStatus;                         // @field activation status
-    DWORD dwProvisioning;                   // @field network provisioning status
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwStatus;                         // @field activation status
+	DWORD dwProvisioning;                   // @field network provisioning status
 } RILDIALEDIDSETTINGS, *LPRILDIALEDIDSETTINGS;
 
 // -----------------------------------------------------------------------------
@@ -3854,10 +3854,10 @@ typedef struct rildialedidsettings_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilhideconnectedidsettings_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwStatus;                         // @field activation status
-    DWORD dwProvisioning;                   // @field network provisioning status
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwStatus;                         // @field activation status
+	DWORD dwProvisioning;                   // @field network provisioning status
 } RILHIDECONNECTEDIDSETTINGS, *LPRILHIDECONNECTEDIDSETTINGS;
 
 // -----------------------------------------------------------------------------
@@ -3870,11 +3870,11 @@ typedef struct rilhideconnectedidsettings_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilclosedgroupsettings_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwStatus;                         // @field activation status
-    DWORD dwIndex;                          // @field CUG index
-    DWORD dwInfo;                           // @field additional CUG flags
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwStatus;                         // @field activation status
+	DWORD dwIndex;                          // @field CUG index
+	DWORD dwInfo;                           // @field additional CUG flags
 } RILCLOSEDGROUPSETTINGS, *LPRILCLOSEDGROUPSETTINGS;
 
 // -----------------------------------------------------------------------------
@@ -3887,13 +3887,13 @@ typedef struct rilclosedgroupsettings_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcallforwardingsettings_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwStatus;                         // @field activation status
-    DWORD dwInfoClasses;                    // @field indicates which classes of calls to forward
-    RILADDRESS raAddress;                   // @field forwarding address
-    RILSUBADDRESS rsaSubAddress;            // @field forwarding subaddress
-    DWORD dwDelayTime;                      // @field seconds to wait in <def RIL_FWDREASON_NOREPLY> case
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwStatus;                         // @field activation status
+	DWORD dwInfoClasses;                    // @field indicates which classes of calls to forward
+	RILADDRESS raAddress;                   // @field forwarding address
+	RILSUBADDRESS rsaSubAddress;            // @field forwarding subaddress
+	DWORD dwDelayTime;                      // @field seconds to wait in <def RIL_FWDREASON_NOREPLY> case
 } RILCALLFORWARDINGSETTINGS, *LPRILCALLFORWARDINGSETTINGS;
 
 // -----------------------------------------------------------------------------
@@ -3906,16 +3906,16 @@ typedef struct rilcallforwardingsettings_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcallinfo_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwID;                             // @field identifies each call
-    DWORD dwDirection;                      // @field incoming or outgoing
-    DWORD dwStatus;                         // @field properties of the call
-    DWORD dwType;                           // @field voice or data or fax
-    DWORD dwMultiparty;                     // @field conference call status
-    RILADDRESS raAddress;                   // @field call address
-    WCHAR wszDescription[MAXLENGTH_DESCRIPTION];    // @field any associated text
-    DWORD dwDisconnectCode;		// if dwStatus is disconnected - this contains the reason
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwID;                             // @field identifies each call
+	DWORD dwDirection;                      // @field incoming or outgoing
+	DWORD dwStatus;                         // @field properties of the call
+	DWORD dwType;                           // @field voice or data or fax
+	DWORD dwMultiparty;                     // @field conference call status
+	RILADDRESS raAddress;                   // @field call address
+	WCHAR wszDescription[MAXLENGTH_DESCRIPTION];    // @field any associated text
+	DWORD dwDisconnectCode;		// if dwStatus is disconnected - this contains the reason
 } RILCALLINFO, *LPRILCALLINFO;
 
 // -----------------------------------------------------------------------------
@@ -3936,10 +3936,10 @@ typedef struct rilcallinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilgaininfo_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwTxGain;                         // @field transmit gain level
-    DWORD dwRxGain;                         // @field receive gain level
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwTxGain;                         // @field transmit gain level
+	DWORD dwRxGain;                         // @field receive gain level
 } RILGAININFO, *LPRILGAININFO;
 
 // -----------------------------------------------------------------------------
@@ -3952,10 +3952,10 @@ typedef struct rilgaininfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilaudiodeviceinfo_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwTxDevice;                       // @field transmit device
-    DWORD dwRxDevice;                       // @field receive device
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwTxDevice;                       // @field transmit device
+	DWORD dwRxDevice;                       // @field receive device
 } RILAUDIODEVICEINFO, *LPRILAUDIODEVICEINFO;
 
 // -----------------------------------------------------------------------------
@@ -3968,15 +3968,15 @@ typedef struct rilaudiodeviceinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilhscsdinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwTranspRxTimeslots;          // @field number of receive timeslots for transparent HSCSD calls
-    DWORD dwTranspChannelCodings;       // @field accepted channel codings for transparent HSCSD calls
-    DWORD dwNonTranspRxTimeslots;       // @field number of receive timeslots for non-transparent HSCSD calls
-    DWORD dwNonTranspChannelCodings;    // @field accepted channel codings for non-transparent HSCSD calls
-    DWORD dwAirInterfaceUserRate;       // @field air interface user rate for non-transparent HSCSD calls
-    DWORD dwRxTimeslotsLimit;           // @field maximum number of receive timeslots to be used during the next non-transparent HSCSD call
-    BOOL fAutoSvcLevelUpgrading;        // @field TRUE if automatic user-initiated service level upgrading for non-transparent HSCSD calls is enabled, FALSE otherwise
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwTranspRxTimeslots;          // @field number of receive timeslots for transparent HSCSD calls
+	DWORD dwTranspChannelCodings;       // @field accepted channel codings for transparent HSCSD calls
+	DWORD dwNonTranspRxTimeslots;       // @field number of receive timeslots for non-transparent HSCSD calls
+	DWORD dwNonTranspChannelCodings;    // @field accepted channel codings for non-transparent HSCSD calls
+	DWORD dwAirInterfaceUserRate;       // @field air interface user rate for non-transparent HSCSD calls
+	DWORD dwRxTimeslotsLimit;           // @field maximum number of receive timeslots to be used during the next non-transparent HSCSD call
+	BOOL fAutoSvcLevelUpgrading;        // @field TRUE if automatic user-initiated service level upgrading for non-transparent HSCSD calls is enabled, FALSE otherwise
 } RILHSCSDINFO, *LPRILHSCSDINFO;
 
 // -----------------------------------------------------------------------------
@@ -3989,12 +3989,12 @@ typedef struct rilhscsdinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcallhscsdinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwRxTimeslots;                // @field number of receive timeslots currently in use
-    DWORD dwTxTimeslots;                // @field number of transmit timeslots currently in use
-    DWORD dwAirInterfaceUserRate;       // @field air interface user rate currently in use
-    DWORD dwChannelCoding;              // @field current channel coding
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwRxTimeslots;                // @field number of receive timeslots currently in use
+	DWORD dwTxTimeslots;                // @field number of transmit timeslots currently in use
+	DWORD dwAirInterfaceUserRate;       // @field air interface user rate currently in use
+	DWORD dwChannelCoding;              // @field current channel coding
 } RILCALLHSCSDINFO, *LPRILCALLHSCSDINFO;
 
 // -----------------------------------------------------------------------------
@@ -4007,12 +4007,12 @@ typedef struct rilcallhscsdinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rildatacompinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwDirection;                  // @field compression in transmit and/or receive direcitons
-    DWORD dwNegotiation;                // @field compression is required or optional
-    DWORD dwMaxDictEntries;             // @field maximum number of dictionary entries
-    DWORD dwMaxStringLength;            // @field maximum string length
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwDirection;                  // @field compression in transmit and/or receive direcitons
+	DWORD dwNegotiation;                // @field compression is required or optional
+	DWORD dwMaxDictEntries;             // @field maximum number of dictionary entries
+	DWORD dwMaxStringLength;            // @field maximum string length
 } RILDATACOMPINFO, *LPRILDATACOMPINFO;
 
 // -----------------------------------------------------------------------------
@@ -4025,11 +4025,11 @@ typedef struct rildatacompinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilerrorcorrectioninfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwOriginalRequest;            // @field TBD
-    DWORD dwOriginalFallback;           // @field TBD
-    DWORD dwAnswererFallback;           // @field TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwOriginalRequest;            // @field TBD
+	DWORD dwOriginalFallback;           // @field TBD
+	DWORD dwAnswererFallback;           // @field TBD
 } RILERRORCORRECTIONINFO, *LPRILERRORCORRECTIONINFO;
 
 // -----------------------------------------------------------------------------
@@ -4045,11 +4045,11 @@ typedef struct rilerrorcorrectioninfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilbearersvcinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwSpeed;                      // @field offered data speed (protocol dependant)
-    DWORD dwServiceName;                // @field type of data service
-    DWORD dwConnectionElement;          // @field indicates transparent or non-transparent connection
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwSpeed;                      // @field offered data speed (protocol dependant)
+	DWORD dwServiceName;                // @field type of data service
+	DWORD dwConnectionElement;          // @field indicates transparent or non-transparent connection
 } RILBEARERSVCINFO, *LPRILBEARERSVCINFO;
 
 // -----------------------------------------------------------------------------
@@ -4063,14 +4063,14 @@ typedef struct rilbearersvcinfo_tag {
 // -----------------------------------------------------------------------------
 //
 typedef struct rilrlpinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwIWS;                        // @field IWF-to-MS window size
-    DWORD dwMWS;                        // @field MS-to-IWF window size
-    DWORD dwAckTimer;                   // @field acknowledgement timer in 10s of milliseconds (T1)
-    DWORD dwRetransmissionAttempts;     // @field number of retransmission attempts (N2)
-    DWORD dwVersion;                    // @field RLP version number
-    DWORD dwResequencingPeriod;         // @field resequencing period (T4)
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwIWS;                        // @field IWF-to-MS window size
+	DWORD dwMWS;                        // @field MS-to-IWF window size
+	DWORD dwAckTimer;                   // @field acknowledgement timer in 10s of milliseconds (T1)
+	DWORD dwRetransmissionAttempts;     // @field number of retransmission attempts (N2)
+	DWORD dwVersion;                    // @field RLP version number
+	DWORD dwResequencingPeriod;         // @field resequencing period (T4)
 } RILRLPINFO, *LPRILRLPINFO;
 
 // -----------------------------------------------------------------------------
@@ -4083,19 +4083,19 @@ typedef struct rilrlpinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilmsgserviceinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwService;                    // @field supported service types
-    DWORD dwMsgClasses;                 // @field supported message classes
-    DWORD dwReadLocation;               // @field currect read location
-    DWORD dwReadUsed;                   // @field number of fields used
-    DWORD dwReadTotal;                  // @field total number of fields
-    DWORD dwWriteLocation;              // @field currect read location
-    DWORD dwWriteUsed;                  // @field number of fields used
-    DWORD dwWriteTotal;                 // @field total number of fields
-    DWORD dwStoreLocation;              // @field currect read location
-    DWORD dwStoreUsed;                  // @field number of fields used
-    DWORD dwStoreTotal;                 // @field total number of fields
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwService;                    // @field supported service types
+	DWORD dwMsgClasses;                 // @field supported message classes
+	DWORD dwReadLocation;               // @field currect read location
+	DWORD dwReadUsed;                   // @field number of fields used
+	DWORD dwReadTotal;                  // @field total number of fields
+	DWORD dwWriteLocation;              // @field currect read location
+	DWORD dwWriteUsed;                  // @field number of fields used
+	DWORD dwWriteTotal;                 // @field total number of fields
+	DWORD dwStoreLocation;              // @field currect read location
+	DWORD dwStoreUsed;                  // @field number of fields used
+	DWORD dwStoreTotal;                 // @field total number of fields
 } RILMSGSERVICEINFO, *LPRILMSGSERVICEINFO;
 
 // -----------------------------------------------------------------------------
@@ -4108,14 +4108,14 @@ typedef struct rilmsgserviceinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilmsgdcs_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwType;                       // @field DCS type
-    DWORD dwFlags;                      // @field DCS flags
-    DWORD dwMsgClass;                   // @field message class (Only for RIL_DCSTYPE_GENERAL and RIL_DCSTYPE_MSGCLASS)
-    DWORD dwAlphabet;                   // @field DCS alphabet
-    DWORD dwIndication;                 // @field indication (Only for RIL_DCSTYPE_MSGWAIT)
-    DWORD dwLanguage;                   // @field indication (Only for RIL_DCSTYPE_LANGUAGE)
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwType;                       // @field DCS type
+	DWORD dwFlags;                      // @field DCS flags
+	DWORD dwMsgClass;                   // @field message class (Only for RIL_DCSTYPE_GENERAL and RIL_DCSTYPE_MSGCLASS)
+	DWORD dwAlphabet;                   // @field DCS alphabet
+	DWORD dwIndication;                 // @field indication (Only for RIL_DCSTYPE_MSGWAIT)
+	DWORD dwLanguage;                   // @field indication (Only for RIL_DCSTYPE_LANGUAGE)
 } RILMSGDCS, *LPRILMSGDCS;
 
 // -----------------------------------------------------------------------------
@@ -4127,9 +4127,9 @@ typedef struct rilmsgdcs_tag {
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilrange_tag{
-    DWORD dwMinValue;                   // @field minimum value
-    DWORD dwMaxValue;                   // @field maximum value
+typedef struct rilrange_tag {
+	DWORD dwMinValue;                   // @field minimum value
+	DWORD dwMaxValue;                   // @field maximum value
 } RILRANGE, *LPRILRANGE;
 
 // -----------------------------------------------------------------------------
@@ -4142,9 +4142,9 @@ typedef struct rilrange_tag{
 //
 // -----------------------------------------------------------------------------
 typedef struct rilmsgconfig_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    RILADDRESS raSvcCtrAddress;         // @field service center address
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	RILADDRESS raSvcCtrAddress;         // @field service center address
 } RILMSGCONFIG, *LPRILMSGCONFIG;
 
 // -----------------------------------------------------------------------------
@@ -4158,11 +4158,11 @@ typedef struct rilmsgconfig_tag {
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
 typedef struct rilcbmsgconfig_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwBroadcastMsgLangs;          // @field broadcast message languages
-    BOOL fAccept;                       // @field TRUE if broadcast message ranges are accepted (vs. rejected)
-    RILRANGE rgrrBroadcastMsgIDs[];     // @field an array of RILRANGE IDs to set, a same min/max value specifies a single ID
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwBroadcastMsgLangs;          // @field broadcast message languages
+	BOOL fAccept;                       // @field TRUE if broadcast message ranges are accepted (vs. rejected)
+	RILRANGE rgrrBroadcastMsgIDs[];     // @field an array of RILRANGE IDs to set, a same min/max value specifies a single ID
 } RILCBMSGCONFIG, *LPRILCBMSGCONFIG;
 #pragma warning(default : 4200)
 
@@ -4176,169 +4176,178 @@ typedef struct rilcbmsgconfig_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilmessage_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    RILADDRESS raSvcCtrAddress;         // @field service center address
-    DWORD dwType;                       // @field type of message
-    DWORD dwFlags;                      // @field message flags
-    union {                             // @field UNION MEMBER
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	RILADDRESS raSvcCtrAddress;         // @field service center address
+	DWORD dwType;                       // @field type of message
+	DWORD dwFlags;                      // @field message flags
+	union {                             // @field UNION MEMBER
 
-        struct {                        // @field RIL_MSGTYPE_IN_DELIVER
-            RILADDRESS raOrigAddress;   // @field originating address
-            DWORD dwProtocolID;         // @field message protocol
-            RILMSGDCS rmdDataCoding;    // @field data coding scheme
-            SYSTEMTIME stSCReceiveTime; // @field receive time (UTC)
-            DWORD cbHdrLength;          // @field length of header in bytes
-            DWORD cchMsgLength;         // @field length of body in bytes
-            BYTE rgbHdr[MAXLENGTH_HDR]; // @field header buffer
-            BYTE rgbMsg[MAXLENGTH_MSG]; // @field body buffer
-        } msgInDeliver;                 // @field End RIL_MSGTYPE_IN_DELIVER
+		struct {                        // @field RIL_MSGTYPE_IN_DELIVER
+			RILADDRESS raOrigAddress;   // @field originating address
+			DWORD dwProtocolID;         // @field message protocol
+			RILMSGDCS rmdDataCoding;    // @field data coding scheme
+			SYSTEMTIME stSCReceiveTime; // @field receive time (UTC)
+			DWORD cbHdrLength;          // @field length of header in bytes
+			DWORD cchMsgLength;         // @field length of body in bytes
+			BYTE rgbHdr[MAXLENGTH_HDR]; // @field header buffer
+			BYTE rgbMsg[MAXLENGTH_MSG]; // @field body buffer
+		} msgInDeliver;                 // @field End RIL_MSGTYPE_IN_DELIVER
 
-        struct {                        // @field RIL_MSGTYPE_IN_STATUS
-            DWORD dwTgtMsgReference;    // @field target message reference
-            RILADDRESS raTgtRecipAddress; // @field receipient address
-            SYSTEMTIME stTgtSCReceiveTime; // @field receipient receive time (UTC)
-            SYSTEMTIME stTgtDischargeTime; // @field receipient dischage time (UTC)
-            DWORD dwTgtDlvStatus;       // @field delivery status
-            DWORD dwProtocolID;         // @field message protocol
-            RILMSGDCS rmdDataCoding;    // @field data coding scheme
-            DWORD cbHdrLength;          // @field length of header in bytes
-            DWORD cchMsgLength;         // @field length of body in bytes
-            BYTE rgbHdr[MAXLENGTH_HDR]; // @field header buffer
-            BYTE rgbMsg[MAXLENGTH_MSG]; // @field body buffer
-        } msgInStatus;                  // @field End RIL_MSGTYPE_IN_STATUS
+		struct {                        // @field RIL_MSGTYPE_IN_STATUS
+			DWORD dwTgtMsgReference;    // @field target message reference
+			RILADDRESS raTgtRecipAddress; // @field receipient address
+			SYSTEMTIME stTgtSCReceiveTime; // @field receipient receive time (UTC)
+			SYSTEMTIME stTgtDischargeTime; // @field receipient dischage time (UTC)
+			DWORD dwTgtDlvStatus;       // @field delivery status
+			DWORD dwProtocolID;         // @field message protocol
+			RILMSGDCS rmdDataCoding;    // @field data coding scheme
+			DWORD cbHdrLength;          // @field length of header in bytes
+			DWORD cchMsgLength;         // @field length of body in bytes
+			BYTE rgbHdr[MAXLENGTH_HDR]; // @field header buffer
+			BYTE rgbMsg[MAXLENGTH_MSG]; // @field body buffer
+		} msgInStatus;                  // @field End RIL_MSGTYPE_IN_STATUS
 
-        struct {                        // @field RIL_MSGTYPE_OUT_SUBMIT
-            RILADDRESS raDestAddress;   // @field destination address
-            DWORD dwProtocolID;         // @field message protocol
-            RILMSGDCS rmdDataCoding;    // @field data coding scheme
-            DWORD dwVPFormat;           // @field TBD
-            SYSTEMTIME stVP;            // @field relative validity period (values are expressed relative to the current time)
-            DWORD cbHdrLength;          // @field length of header in bytes
-            DWORD cchMsgLength;         // @field length of body in bytes
-            BYTE rgbHdr[MAXLENGTH_HDR]; // @field header buffer
-            BYTE rgbMsg[MAXLENGTH_MSG]; // @field body buffer
-        } msgOutSubmit;                 // @field End RIL_MSGTYPE_OUT_SUBMIT
+		struct {                        // @field RIL_MSGTYPE_OUT_SUBMIT
+			RILADDRESS raDestAddress;   // @field destination address
+			DWORD dwProtocolID;         // @field message protocol
+			RILMSGDCS rmdDataCoding;    // @field data coding scheme
+			DWORD dwVPFormat;           // @field TBD
+			SYSTEMTIME
+			stVP;            // @field relative validity period (values are expressed relative to the current time)
+			DWORD cbHdrLength;          // @field length of header in bytes
+			DWORD cchMsgLength;         // @field length of body in bytes
+			BYTE rgbHdr[MAXLENGTH_HDR]; // @field header buffer
+			BYTE rgbMsg[MAXLENGTH_MSG]; // @field body buffer
+		} msgOutSubmit;                 // @field End RIL_MSGTYPE_OUT_SUBMIT
 
-        struct {                        // @field RIL_MSGTYPE_OUT_COMMAND
-            DWORD dwProtocolID;         // @field message protocol
-            DWORD dwCommandType;        // @field command type
-            DWORD dwTgtMsgReference;    // @field target message reference
-            RILADDRESS raDestAddress;   // @field destination address
-            DWORD cbCmdLength;          // @field length of command in bytes
-            BYTE rgbCmd[MAXLENGTH_CMD]; // @field command buffer
-        } msgOutCommand;                // @field End RIL_MSGTYPE_OUT_COMMAND
+		struct {                        // @field RIL_MSGTYPE_OUT_COMMAND
+			DWORD dwProtocolID;         // @field message protocol
+			DWORD dwCommandType;        // @field command type
+			DWORD dwTgtMsgReference;    // @field target message reference
+			RILADDRESS raDestAddress;   // @field destination address
+			DWORD cbCmdLength;          // @field length of command in bytes
+			BYTE rgbCmd[MAXLENGTH_CMD]; // @field command buffer
+		} msgOutCommand;                // @field End RIL_MSGTYPE_OUT_COMMAND
 
-        struct {                        // @field RIL_MSGTYPE_BC_GENERAL
-            DWORD dwGeoScope;           // @field message protocol
-            DWORD dwMsgCode;            // @field message code
-            DWORD dwUpdateNumber;       // @field update number
-            DWORD dwID;                 // @field identity
-            RILMSGDCS rmdDataCoding;    // @field data coding scheme
-            DWORD dwTotalPages;         // @field total number of pages
-            DWORD dwPageNumber;         // @field current page number
-            DWORD cchMsgLength;         // @field length of message in bytes
-            BYTE rgbMsg[MAXLENGTH_MSG]; // @field message buffer
-        } msgBcGeneral;                 // @field End RIL_MSGTYPE_BC_GENERAL
+		struct {                        // @field RIL_MSGTYPE_BC_GENERAL
+			DWORD dwGeoScope;           // @field message protocol
+			DWORD dwMsgCode;            // @field message code
+			DWORD dwUpdateNumber;       // @field update number
+			DWORD dwID;                 // @field identity
+			RILMSGDCS rmdDataCoding;    // @field data coding scheme
+			DWORD dwTotalPages;         // @field total number of pages
+			DWORD dwPageNumber;         // @field current page number
+			DWORD cchMsgLength;         // @field length of message in bytes
+			BYTE rgbMsg[MAXLENGTH_MSG]; // @field message buffer
+		} msgBcGeneral;                 // @field End RIL_MSGTYPE_BC_GENERAL
 
-        struct {                        // @field RIL_MSGTYPE_OUT_RAW
-            DWORD cchMsgLength;         // @field length of body in bytes
-            BYTE rgbMsg[MAXLENGTH_MSG]; // @field message buffer
-        } msgOutRaw;                    // @field End RIL_MSGTYPE_OUT_RAW
+		struct {                        // @field RIL_MSGTYPE_OUT_RAW
+			DWORD cchMsgLength;         // @field length of body in bytes
+			BYTE rgbMsg[MAXLENGTH_MSG]; // @field message buffer
+		} msgOutRaw;                    // @field End RIL_MSGTYPE_OUT_RAW
 
-        struct {                                // @field RIL_MSGTYPE_IN_IS637DELIVER
-            RILADDRESS      raOrigAddress;      // @field originating address
-            RILSUBADDRESS   rsaOrigSubaddr;     // @field
-            //There is no digit-mode in incoming message because the driver can convert both of them to ASCII
+		struct {                                // @field RIL_MSGTYPE_IN_IS637DELIVER
+			RILADDRESS      raOrigAddress;      // @field originating address
+			RILSUBADDRESS   rsaOrigSubaddr;     // @field
+			//There is no digit-mode in incoming message because the driver can convert both of them to ASCII
 
-            SYSTEMTIME      stSCReceiveTime;    // @field (SMSC Timestamp) receive time (UTC)
+			SYSTEMTIME      stSCReceiveTime;    // @field (SMSC Timestamp) receive time (UTC)
 
-            SYSTEMTIME  stValidityPeriodAbs;    // @field UTC time
-            SYSTEMTIME  stValidityPeriodRel;    // @field Relative time
-            SYSTEMTIME  stDeferredDelTimeAbs;   // @field UTC time
-            SYSTEMTIME  stDeferredDelTimeRel;   // @field Relative time
+			SYSTEMTIME  stValidityPeriodAbs;    // @field UTC time
+			SYSTEMTIME  stValidityPeriodRel;    // @field Relative time
+			SYSTEMTIME  stDeferredDelTimeAbs;   // @field UTC time
+			SYSTEMTIME  stDeferredDelTimeRel;   // @field Relative time
 
-            DWORD       dwNumMsgs;              // @field Used for Voicemail only.  Indicates the number of Messages on Vmail
-            RILADDRESS  raCallBackNumber;       // @field (Only paging and Text -s) user can give a callback number in certain messages
-            DWORD       dwMsgPriority;          // @field RIL_MSGPRIORITY_ constant
-            DWORD       dwMsgPrivacy;           // @field RIL_MSGPRIVACYCLASS_ constant
+			DWORD
+			dwNumMsgs;              // @field Used for Voicemail only.  Indicates the number of Messages on Vmail
+			RILADDRESS
+			raCallBackNumber;       // @field (Only paging and Text -s) user can give a callback number in certain messages
+			DWORD       dwMsgPriority;          // @field RIL_MSGPRIORITY_ constant
+			DWORD       dwMsgPrivacy;           // @field RIL_MSGPRIVACYCLASS_ constant
 
-            BOOL    bUserAckRequest;            // @field 0 = Not Requested; 1 = Requested ; This is an ack from the end user
-            DWORD   dwMsgDisplayMode;           // @field RIL_MSGDISPLAYMODE_ constant
+			BOOL    bUserAckRequest;            // @field 0 = Not Requested; 1 = Requested ; This is an ack from the end user
+			DWORD   dwMsgDisplayMode;           // @field RIL_MSGDISPLAYMODE_ constant
 
-            DWORD   dwTeleservice;              // @field RIL_MSGTELESERVICE_* Constant[Mandatory]
+			DWORD   dwTeleservice;              // @field RIL_MSGTELESERVICE_* Constant[Mandatory]
 
-            DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
-            DWORD   dwMsgLang;                  // @field Under Investigation
-            DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
-            DWORD   cchMsgLength;               // @field length of body in bytes
-            BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
-        } msgIS637InDeliver;                    // @field End RIL_MSGTYPE_IN_IS637DELIVER
+			DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
+			DWORD   dwMsgLang;                  // @field Under Investigation
+			DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
+			DWORD   cchMsgLength;               // @field length of body in bytes
+			BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
+		} msgIS637InDeliver;                    // @field End RIL_MSGTYPE_IN_IS637DELIVER
 
-        struct {                                // @field RIL_MSGTYPE_OUT_IS637SUBMIT
-            RILADDRESS      raDestAddress;      // @field destination address
-            RILSUBADDRESS   rsaDestSubaddr;     // @field destination subaddress
-            BOOL            bDigit;             // @field specifies if the address in RILADDRESS is 4bit mode (=0) or in 8 bit mode (=1) (should be set to 1 by default)
+		struct {                                // @field RIL_MSGTYPE_OUT_IS637SUBMIT
+			RILADDRESS      raDestAddress;      // @field destination address
+			RILSUBADDRESS   rsaDestSubaddr;     // @field destination subaddress
+			BOOL
+			bDigit;             // @field specifies if the address in RILADDRESS is 4bit mode (=0) or in 8 bit mode (=1) (should be set to 1 by default)
 
-            SYSTEMTIME  stValidityPeriodAbs;    // @field UTC time
-            SYSTEMTIME  stValidityPeriodRel;    // @field Relative time
-            SYSTEMTIME  stDeferredDelTimeAbs;   // @field UTC time
-            SYSTEMTIME  stDeferredDelTimeRel;   // @field Relative time
+			SYSTEMTIME  stValidityPeriodAbs;    // @field UTC time
+			SYSTEMTIME  stValidityPeriodRel;    // @field Relative time
+			SYSTEMTIME  stDeferredDelTimeAbs;   // @field UTC time
+			SYSTEMTIME  stDeferredDelTimeRel;   // @field Relative time
 
-            BOOL    bDeliveryAckRequest;        // @field 0 = Not Requested; 1 = Requested ; This is an delivery ack (no user confirmation)
-            BOOL    bUserAckRequest;            // @field 0 = Not Requested; 1 = Requested ; This is an ack from the end user
-            BOOL    bBearerReplyRequest;        // @field specifies the bearer reply field is set (technically this can be set, but it should not be) ; Boolean (0=not set, 1=set)
-            DWORD   dwReplySeqNumber;           // @field the Seuqence number of the message bing replied to; (typically the MSGID)
-            DWORD   dwMsgDisplayMode;           // @field RIL_MSGDISPLAYMODE_* constant
+			BOOL    bDeliveryAckRequest;        // @field 0 = Not Requested; 1 = Requested ; This is an delivery ack (no user confirmation)
+			BOOL    bUserAckRequest;            // @field 0 = Not Requested; 1 = Requested ; This is an ack from the end user
+			BOOL    bBearerReplyRequest;        // @field specifies the bearer reply field is set (technically this can be set, but it should not be) ; Boolean (0=not set, 1=set)
+			DWORD   dwReplySeqNumber;           // @field the Seuqence number of the message bing replied to; (typically the MSGID)
+			DWORD   dwMsgDisplayMode;           // @field RIL_MSGDISPLAYMODE_* constant
 
-            RILADDRESS  raCallBackNumber;       // @field (Only paging and Text -s) user can give a callback number in certain messages
+			RILADDRESS
+			raCallBackNumber;       // @field (Only paging and Text -s) user can give a callback number in certain messages
 
-            DWORD       dwMsgPriority;          // @field RIL_MSGPRIORITY_ constant
-            DWORD       dwMsgPrivacy;           // @field RIL_MSGPRIVACYCLASS_ constant
+			DWORD       dwMsgPriority;          // @field RIL_MSGPRIORITY_ constant
+			DWORD       dwMsgPrivacy;           // @field RIL_MSGPRIVACYCLASS_ constant
 
-            DWORD   dwTeleservice;              // @field RIL_MSGTELESERVICE_* Constant[Mandatory]
+			DWORD   dwTeleservice;              // @field RIL_MSGTELESERVICE_* Constant[Mandatory]
 
-            DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
-            DWORD   dwMsgLang;                  // @field Under Investigation
-            DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
-            DWORD   cchMsgLength;               // @field length of body in bytes
-            BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
-        } msgIS637OutSubmit;                    // @field End RIL_MSGTYPE_OUT_IS637SUBMIT
+			DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
+			DWORD   dwMsgLang;                  // @field Under Investigation
+			DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
+			DWORD   cchMsgLength;               // @field length of body in bytes
+			BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
+		} msgIS637OutSubmit;                    // @field End RIL_MSGTYPE_OUT_IS637SUBMIT
 
-        struct {                                // @field RIL_MSGTYPE_IN_IS637STATUS
-            RILADDRESS      raOrigAddress;      // @field originating address
-            RILSUBADDRESS   rsaOrigSubaddr;     // @field
-            // There is no digit-mode in incoming message because the driver can convert both of them to ASCII
+		struct {                                // @field RIL_MSGTYPE_IN_IS637STATUS
+			RILADDRESS      raOrigAddress;      // @field originating address
+			RILSUBADDRESS   rsaOrigSubaddr;     // @field
+			// There is no digit-mode in incoming message because the driver can convert both of them to ASCII
 
-            SYSTEMTIME      stSCReceiveTime;    // @field (SMSC Timestamp) receive time (UTC)
-            DWORD           dwCauseCode;        // @field Cause_Codes Under Investigation, most likely these will be implemented as RIL errors
-            DWORD           dwReplySeqNumber;   // @field The Sequence number of the message bing replied to; (typically the MSGID)
-            DWORD           dwUserResponseCode; // @field User Response Code (Carrier Specific Element when responding giving a User Ack)
-            DWORD           dwMsgStatusType;    // @field type of status message RIL_MSGSTATUSTYPE_* constant
+			SYSTEMTIME      stSCReceiveTime;    // @field (SMSC Timestamp) receive time (UTC)
+			DWORD
+			dwCauseCode;        // @field Cause_Codes Under Investigation, most likely these will be implemented as RIL errors
+			DWORD
+			dwReplySeqNumber;   // @field The Sequence number of the message bing replied to; (typically the MSGID)
+			DWORD
+			dwUserResponseCode; // @field User Response Code (Carrier Specific Element when responding giving a User Ack)
+			DWORD           dwMsgStatusType;    // @field type of status message RIL_MSGSTATUSTYPE_* constant
 
-            DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
-            DWORD   dwMsgLang;                  // @field Under Investigation
-            DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
-            DWORD   cchMsgLength;               // @field length of body in bytes
-            BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
-        } msgIS637InStatus;                     // @field End RIL_MSGTYPE_IN_IS637STATUS
+			DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
+			DWORD   dwMsgLang;                  // @field Under Investigation
+			DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
+			DWORD   cchMsgLength;               // @field length of body in bytes
+			BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
+		} msgIS637InStatus;                     // @field End RIL_MSGTYPE_IN_IS637STATUS
 
-        struct {                                // @field RIL_MSGTYPE_OUT_IS637STATUS
-            RILADDRESS      raDestAddress;      // @field destination address
-            RILSUBADDRESS   rsaDestSubaddr;     // @field destination subaddress
-            BOOL            bDigit;             // @field specifies if the address in RILADDRESS is 4bit mode (=0) or in 8 bit mode (=1) (should be set to 1 by default)
+		struct {                                // @field RIL_MSGTYPE_OUT_IS637STATUS
+			RILADDRESS      raDestAddress;      // @field destination address
+			RILSUBADDRESS   rsaDestSubaddr;     // @field destination subaddress
+			BOOL
+			bDigit;             // @field specifies if the address in RILADDRESS is 4bit mode (=0) or in 8 bit mode (=1) (should be set to 1 by default)
 
-            DWORD   dwReplySeqNumber;           // @field The Sequence number of the message bing replied to; (typically the MSGID)
-            DWORD   dwUserResponseCode;         // @field User Response Code (Carrier Specific Element when responding giving a User Ack)
+			DWORD   dwReplySeqNumber;           // @field The Sequence number of the message bing replied to; (typically the MSGID)
+			DWORD   dwUserResponseCode;         // @field User Response Code (Carrier Specific Element when responding giving a User Ack)
 
-            DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
-            DWORD   dwMsgLang;                  // @field Under Investigation
-            DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
-            DWORD   cchMsgLength;               // @field length of body in bytes
-            BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
-        } msgIS637OutStatus;                    // @field End RIL_MSGTYPE_OUT_IS637STATUS
+			DWORD   dwMsgID;                    // @field [Mandatory] Message ID.  (0-65535) (In the WAP architecture each part of a multipart message share the same MsgID)
+			DWORD   dwMsgLang;                  // @field Under Investigation
+			DWORD   dwMsgEncoding;              // @field RIL_MSGCODING_* constant [5 bits] under Investigation
+			DWORD   cchMsgLength;               // @field length of body in bytes
+			BYTE    rgbMsg[MAXLENGTH_MSG];      // @field body buffer
+		} msgIS637OutStatus;                    // @field End RIL_MSGTYPE_OUT_IS637STATUS
 
-    };
+	};
 
 } RILMESSAGE, *LPRILMESSAGE;
 
@@ -4353,10 +4362,10 @@ typedef struct rilmessage_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilmessage_in_sim_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;
-    DWORD dwLocation;                   // @field storage area (one of RIL_MSGLOC_xxxx)
-    DWORD dwIndex;                      // @field storage index occupied by the message
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;
+	DWORD dwLocation;                   // @field storage area (one of RIL_MSGLOC_xxxx)
+	DWORD dwIndex;                      // @field storage index occupied by the message
 } RILMESSAGE_IN_SIM, *LPRILMESSAGE_IN_SIM;
 
 
@@ -4370,11 +4379,11 @@ typedef struct rilmessage_in_sim_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilmessageinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwIndex;                      // @field storage index occupied by the message
-    DWORD dwStatus;                     // @field message status
-    RILMESSAGE rmMessage;               // @field the message itself
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwIndex;                      // @field storage index occupied by the message
+	DWORD dwStatus;                     // @field message status
+	RILMESSAGE rmMessage;               // @field the message itself
 } RILMESSAGEINFO, *LPRILMESSAGEINFO;
 
 // -----------------------------------------------------------------------------
@@ -4387,12 +4396,12 @@ typedef struct rilmessageinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilequipmentinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    char szManufacturer[MAXLENGTH_EQUIPINFO]; // @field manufacturer of the radio hardware
-    char szModel[MAXLENGTH_EQUIPINFO];  // @field model of the radio hardware
-    char szRevision[MAXLENGTH_EQUIPINFO]; // @field software version of the radio stack
-    char szSerialNumber[MAXLENGTH_EQUIPINFO]; // @field equipment identity (IMEI)
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	char szManufacturer[MAXLENGTH_EQUIPINFO]; // @field manufacturer of the radio hardware
+	char szModel[MAXLENGTH_EQUIPINFO];  // @field model of the radio hardware
+	char szRevision[MAXLENGTH_EQUIPINFO]; // @field software version of the radio stack
+	char szSerialNumber[MAXLENGTH_EQUIPINFO]; // @field equipment identity (IMEI)
 } RILEQUIPMENTINFO, *LPRILEQUIPMENTINFO;
 
 // -----------------------------------------------------------------------------
@@ -4405,11 +4414,11 @@ typedef struct rilequipmentinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilequipmentstate_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwRadioSupport;               // @field RIL_RADIOSUPPORT_* Parameter
-    DWORD dwEqState;                    // @field RIL_EQSTATE_* Parameter
-    DWORD dwReadyState;                 // @field RIL_READYSTATE_* Parameter
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwRadioSupport;               // @field RIL_RADIOSUPPORT_* Parameter
+	DWORD dwEqState;                    // @field RIL_EQSTATE_* Parameter
+	DWORD dwReadyState;                 // @field RIL_READYSTATE_* Parameter
 } RILEQUIPMENTSTATE, *LPRILEQUIPMENTSTATE;
 
 // -----------------------------------------------------------------------------
@@ -4422,11 +4431,11 @@ typedef struct rilequipmentstate_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilphonebookinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwStoreLocation;              // @field location of phonebook memory
-    DWORD dwUsed;                       // @field number of locations used
-    DWORD dwTotal;                      // @field total number of phonebook locations
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwStoreLocation;              // @field location of phonebook memory
+	DWORD dwUsed;                       // @field number of locations used
+	DWORD dwTotal;                      // @field total number of phonebook locations
 } RILPHONEBOOKINFO, *LPRILPHONEBOOKINFO;
 
 // -----------------------------------------------------------------------------
@@ -4439,11 +4448,11 @@ typedef struct rilphonebookinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilphonebookentry_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwIndex;                      // @field index of the entry
-    RILADDRESS raAddress;               // @field the stored address
-    WCHAR wszText[MAXLENGTH_PHONEBOOKTEXT]; // @field assciated text
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwIndex;                      // @field index of the entry
+	RILADDRESS raAddress;               // @field the stored address
+	WCHAR wszText[MAXLENGTH_PHONEBOOKTEXT]; // @field assciated text
 } RILPHONEBOOKENTRY, *LPRILPHONEBOOKENTRY;
 
 // -----------------------------------------------------------------------------
@@ -4455,13 +4464,12 @@ typedef struct rilphonebookentry_tag {
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilatrinfo_tag
-{
-    DWORD cbSize;
-    DWORD dwParams;
-    DWORD dwPhase;
-    DWORD cbATRSize;
-    BYTE rgbATR[MAXLENGTH_ATR];
+typedef struct rilatrinfo_tag {
+	DWORD cbSize;
+	DWORD dwParams;
+	DWORD dwPhase;
+	DWORD cbATRSize;
+	BYTE rgbATR[MAXLENGTH_ATR];
 } RILATRINFO, *LPRILATRINFO;
 
 // -----------------------------------------------------------------------------
@@ -4474,19 +4482,19 @@ typedef struct rilatrinfo_tag
 //
 // -----------------------------------------------------------------------------
 typedef struct rilsimtoolkiteventcaps_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwMTCall;                     // @constdefine TBD
-    DWORD dwCallConnected;              // @constdefine TBD
-    DWORD dwCallDisconnected;           // @constdefine TBD
-    DWORD dwLocationStatus;             // @constdefine TBD
-    DWORD dwUserActivity;               // @constdefine TBD
-    DWORD dwIdleScreen;                 // @constdefine TBD
-    DWORD dwLanguageSelection;          // @constdefine TBD
-    DWORD dwBrowserTermination;         // @constdefine TBD
-    DWORD dwDataAvailable;              // @constdefine TBD
-    DWORD dwChannelStatus;              // @constdefine TBD
-    DWORD dwDisplayChange;              // @constdefine TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwMTCall;                     // @constdefine TBD
+	DWORD dwCallConnected;              // @constdefine TBD
+	DWORD dwCallDisconnected;           // @constdefine TBD
+	DWORD dwLocationStatus;             // @constdefine TBD
+	DWORD dwUserActivity;               // @constdefine TBD
+	DWORD dwIdleScreen;                 // @constdefine TBD
+	DWORD dwLanguageSelection;          // @constdefine TBD
+	DWORD dwBrowserTermination;         // @constdefine TBD
+	DWORD dwDataAvailable;              // @constdefine TBD
+	DWORD dwChannelStatus;              // @constdefine TBD
+	DWORD dwDisplayChange;              // @constdefine TBD
 } RILSIMTOOLKITEVENTCAPS, *LPRILSIMTOOLKITEVENTCAPS;
 
 // -----------------------------------------------------------------------------
@@ -4499,35 +4507,35 @@ typedef struct rilsimtoolkiteventcaps_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilsimtoolkitnotifycaps_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwRefresh;                    // @constdefine TBD
-    DWORD dwMoreTime;                   // @constdefine TBD
-    DWORD dwPollInterval;               // @constdefine TBD
-    DWORD dwPollingOff;                 // @constdefine TBD
-    DWORD dwSetUpCall;                  // @constdefine TBD
-    DWORD dwSendSS;                     // @constdefine TBD
-    DWORD dwSendUSSD;                   // @constdefine TBD
-    DWORD dwSendSMS;                    // @constdefine TBD
-    DWORD dwPlayTone;                   // @constdefine TBD
-    DWORD dwDisplayText;                // @constdefine TBD
-    DWORD dwGetInkey;                   // @constdefine TBD
-    DWORD dwGetInput;                   // @constdefine TBD
-    DWORD dwSelectItem;                 // @constdefine TBD
-    DWORD dwSetupMenu;                  // @constdefine TBD
-    DWORD dwSetupIdleModeText;          // @constdefine TBD
-    DWORD dwLocalInfo;                  // @constdefine TBD
-    DWORD dwNotifyFlags;                // @combination of RIL_CAPS_NOTIFY_* flags
-    DWORD dwSetupEventList;             // @constdefine TBD
-    DWORD dwSendDTMF;                   // @constdefine TBD
-    DWORD dwLaunchBrowser;              // @constdefine TBD
-    DWORD dwOpenChannel;                // @constdefine TBD
-    DWORD dwCloseChannel;               // @constdefine TBD
-    DWORD dwReceiveData;                // @constdefine TBD
-    DWORD dwSendData;                   // @constdefine TBD
-    DWORD dwTimerManagement;            // @constdefine TBD
-    DWORD dwRunAtCmd;                   // @constdefine TBD
-    RILSIMTOOLKITEVENTCAPS rstecEvents; // @constdefine TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwRefresh;                    // @constdefine TBD
+	DWORD dwMoreTime;                   // @constdefine TBD
+	DWORD dwPollInterval;               // @constdefine TBD
+	DWORD dwPollingOff;                 // @constdefine TBD
+	DWORD dwSetUpCall;                  // @constdefine TBD
+	DWORD dwSendSS;                     // @constdefine TBD
+	DWORD dwSendUSSD;                   // @constdefine TBD
+	DWORD dwSendSMS;                    // @constdefine TBD
+	DWORD dwPlayTone;                   // @constdefine TBD
+	DWORD dwDisplayText;                // @constdefine TBD
+	DWORD dwGetInkey;                   // @constdefine TBD
+	DWORD dwGetInput;                   // @constdefine TBD
+	DWORD dwSelectItem;                 // @constdefine TBD
+	DWORD dwSetupMenu;                  // @constdefine TBD
+	DWORD dwSetupIdleModeText;          // @constdefine TBD
+	DWORD dwLocalInfo;                  // @constdefine TBD
+	DWORD dwNotifyFlags;                // @combination of RIL_CAPS_NOTIFY_* flags
+	DWORD dwSetupEventList;             // @constdefine TBD
+	DWORD dwSendDTMF;                   // @constdefine TBD
+	DWORD dwLaunchBrowser;              // @constdefine TBD
+	DWORD dwOpenChannel;                // @constdefine TBD
+	DWORD dwCloseChannel;               // @constdefine TBD
+	DWORD dwReceiveData;                // @constdefine TBD
+	DWORD dwSendData;                   // @constdefine TBD
+	DWORD dwTimerManagement;            // @constdefine TBD
+	DWORD dwRunAtCmd;                   // @constdefine TBD
+	RILSIMTOOLKITEVENTCAPS rstecEvents; // @constdefine TBD
 } RILSIMTOOLKITNOTIFYCAPS, *LPRILSIMTOOLKITNOTIFYCAPS;
 
 // -----------------------------------------------------------------------------
@@ -4540,17 +4548,16 @@ typedef struct rilsimtoolkitnotifycaps_tag {
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilsimtoolkitcmd_tag
-{
-    DWORD cbSize;
-    DWORD dwParams;
-    DWORD dwId;
-    DWORD dwTag;
-    DWORD dwType;
-    DWORD dwQualifier;
-    DWORD dwError;
-    DWORD dwDetailsOffset;
-    DWORD dwDetailsSize;
+typedef struct rilsimtoolkitcmd_tag {
+	DWORD cbSize;
+	DWORD dwParams;
+	DWORD dwId;
+	DWORD dwTag;
+	DWORD dwType;
+	DWORD dwQualifier;
+	DWORD dwError;
+	DWORD dwDetailsOffset;
+	DWORD dwDetailsSize;
 } RILSIMTOOLKITCMD;
 
 // -----------------------------------------------------------------------------
@@ -4563,16 +4570,15 @@ typedef struct rilsimtoolkitcmd_tag
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilsimtoolkitrsp_tag
-{
-    DWORD cbSize;
-    DWORD dwParams;
-    DWORD dwId;
-    DWORD dwTag;
-    DWORD dwType;
-    DWORD dwQualifier;
-    DWORD dwResponse;
-    DWORD dwAdditionalInfo;
+typedef struct rilsimtoolkitrsp_tag {
+	DWORD cbSize;
+	DWORD dwParams;
+	DWORD dwId;
+	DWORD dwTag;
+	DWORD dwType;
+	DWORD dwQualifier;
+	DWORD dwResponse;
+	DWORD dwAdditionalInfo;
 } RILSIMTOOLKITRSP;
 
 // -----------------------------------------------------------------------------
@@ -4586,12 +4592,12 @@ typedef struct rilsimtoolkitrsp_tag
 //
 // -----------------------------------------------------------------------------
 typedef struct rilsimcmdparameters_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwFileID;                     // @field SIM file ID
-    DWORD dwParameter1;                 // @field parameter specific to SIM command
-    DWORD dwParameter2;                 // @field parameter specific to SIM command
-    DWORD dwParameter3;                 // @field parameter specific to SIM command
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwFileID;                     // @field SIM file ID
+	DWORD dwParameter1;                 // @field parameter specific to SIM command
+	DWORD dwParameter2;                 // @field parameter specific to SIM command
+	DWORD dwParameter3;                 // @field parameter specific to SIM command
 } RILSIMCMDPARAMETERS, *LPRILSIMCMDPARAMETERS;
 
 // -----------------------------------------------------------------------------
@@ -4605,11 +4611,11 @@ typedef struct rilsimcmdparameters_tag {
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
 typedef struct rilsimresponse_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwStatusWord1;                // @field return parameter specific to SIM command
-    DWORD dwStatusWord2;                // @field return parameter specific to SIM command
-    BYTE pbResponse[];                  // @field additional bytes of response data
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwStatusWord1;                // @field return parameter specific to SIM command
+	DWORD dwStatusWord2;                // @field return parameter specific to SIM command
+	BYTE pbResponse[];                  // @field additional bytes of response data
 } RILSIMRESPONSE, *LPRILSIMRESPONSE;
 #pragma warning(default : 4200)
 
@@ -4623,11 +4629,11 @@ typedef struct rilsimresponse_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilsimrecordstatus_tag {
-    DWORD cbSize;                           // @field Size of the structure in bytes
-    DWORD dwParams;                         // @field Indicates valid parameter values
-    DWORD dwRecordType;                     // @field RIL_SIMRECORDTYPE_* Constant
-    DWORD dwItemCount;                      // @field Number of items in the record
-    DWORD dwSize;                           // @field Size in bytes of each item
+	DWORD cbSize;                           // @field Size of the structure in bytes
+	DWORD dwParams;                         // @field Indicates valid parameter values
+	DWORD dwRecordType;                     // @field RIL_SIMRECORDTYPE_* Constant
+	DWORD dwItemCount;                      // @field Number of items in the record
+	DWORD dwSize;                           // @field Size in bytes of each item
 } RILSIMRECORDSTATUS, *LPRILSIMRECORDSTATUS;
 
 // -----------------------------------------------------------------------------
@@ -4640,13 +4646,13 @@ typedef struct rilsimrecordstatus_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcostinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwCCM;                        // @field current call meter
-    DWORD dwACM;                        // @field accumulated call meter
-    DWORD dwMaxACM;                     // @field maximum accumulated call meter
-    DWORD dwCostPerUnit;                // @field cost per unit, in 16.16 fixed point
-    WCHAR wszCurrency[MAXLENGTH_CURRENCY]; // @field current currency
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwCCM;                        // @field current call meter
+	DWORD dwACM;                        // @field accumulated call meter
+	DWORD dwMaxACM;                     // @field maximum accumulated call meter
+	DWORD dwCostPerUnit;                // @field cost per unit, in 16.16 fixed point
+	WCHAR wszCurrency[MAXLENGTH_CURRENCY]; // @field current currency
 } RILCOSTINFO, *LPRILCOSTINFO;
 
 // -----------------------------------------------------------------------------
@@ -4659,14 +4665,14 @@ typedef struct rilcostinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilsignalquality_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    int nSignalStrength;                // @field TBD
-    int nMinSignalStrength;             // @field TBD
-    int nMaxSignalStrength;             // @field TBD
-    DWORD dwBitErrorRate;               // @field bit error rate in 1/100 of a percent
-    int nLowSignalStrength;             // @field TBD
-    int nHighSignalStrength;            // @field TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	int nSignalStrength;                // @field TBD
+	int nMinSignalStrength;             // @field TBD
+	int nMaxSignalStrength;             // @field TBD
+	DWORD dwBitErrorRate;               // @field bit error rate in 1/100 of a percent
+	int nLowSignalStrength;             // @field TBD
+	int nHighSignalStrength;            // @field TBD
 } RILSIGNALQUALITY, *LPRILSIGNALQUALITY;
 
 // -----------------------------------------------------------------------------
@@ -4679,27 +4685,27 @@ typedef struct rilsignalquality_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcelltowerinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwMobileCountryCode;          // @field TBD
-    DWORD dwMobileNetworkCode;          // @field TBD
-    DWORD dwLocationAreaCode;           // @field TBD
-    DWORD dwCellID;                     // @field TBD
-    DWORD dwBaseStationID;              // @field TBD
-    DWORD dwBroadcastControlChannel;    // @field TBD
-    DWORD dwRxLevel;                    // @field Value from 0-63 (see GSM 05.08, 8.1.4)
-    DWORD dwRxLevelFull;                // @field Value from 0-63 (see GSM 05.08, 8.1.4)
-    DWORD dwRxLevelSub;                 // @field Value from 0-63 (see GSM 05.08, 8.1.4)
-    DWORD dwRxQuality;                  // @field Value from 0-7  (see GSM 05.08, 8.2.4)
-    DWORD dwRxQualityFull;              // @field Value from 0-7  (see GSM 05.08, 8.2.4)
-    DWORD dwRxQualitySub;               // @field Value from 0-7  (see GSM 05.08, 8.2.4)
-    DWORD dwIdleTimeSlot;               // @field TBD
-    DWORD dwTimingAdvance;              // @field TBD
-    DWORD dwGPRSCellID;                 // @field TBD
-    DWORD dwGPRSBaseStationID;          // @field TBD
-    DWORD dwNumBCCH;                    // @field TBD
-    BYTE rgbBCCH[MAXLENGTH_BCCH];       // @field TBD
-    BYTE rgbNMR[MAXLENGTH_NMR];         // @field TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwMobileCountryCode;          // @field TBD
+	DWORD dwMobileNetworkCode;          // @field TBD
+	DWORD dwLocationAreaCode;           // @field TBD
+	DWORD dwCellID;                     // @field TBD
+	DWORD dwBaseStationID;              // @field TBD
+	DWORD dwBroadcastControlChannel;    // @field TBD
+	DWORD dwRxLevel;                    // @field Value from 0-63 (see GSM 05.08, 8.1.4)
+	DWORD dwRxLevelFull;                // @field Value from 0-63 (see GSM 05.08, 8.1.4)
+	DWORD dwRxLevelSub;                 // @field Value from 0-63 (see GSM 05.08, 8.1.4)
+	DWORD dwRxQuality;                  // @field Value from 0-7  (see GSM 05.08, 8.2.4)
+	DWORD dwRxQualityFull;              // @field Value from 0-7  (see GSM 05.08, 8.2.4)
+	DWORD dwRxQualitySub;               // @field Value from 0-7  (see GSM 05.08, 8.2.4)
+	DWORD dwIdleTimeSlot;               // @field TBD
+	DWORD dwTimingAdvance;              // @field TBD
+	DWORD dwGPRSCellID;                 // @field TBD
+	DWORD dwGPRSBaseStationID;          // @field TBD
+	DWORD dwNumBCCH;                    // @field TBD
+	BYTE rgbBCCH[MAXLENGTH_BCCH];       // @field TBD
+	BYTE rgbNMR[MAXLENGTH_NMR];         // @field TBD
 } RILCELLTOWERINFO, *LPRILCELLTOWERINFO;
 
 // -----------------------------------------------------------------------------
@@ -4712,12 +4718,12 @@ typedef struct rilcelltowerinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilremotepartyinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    RILADDRESS raAddress;               // @field address of caller
-    RILSUBADDRESS rsaSubAddress;        // @field subaddress of caller
-    WCHAR wszDescription[MAXLENGTH_DESCRIPTION]; // @field text associated with caller
-    DWORD dwValidity;                   // @field indicates validity of caller info
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	RILADDRESS raAddress;               // @field address of caller
+	RILSUBADDRESS rsaSubAddress;        // @field subaddress of caller
+	WCHAR wszDescription[MAXLENGTH_DESCRIPTION]; // @field text associated with caller
+	DWORD dwValidity;                   // @field indicates validity of caller info
 } RILREMOTEPARTYINFO, *LPRILREMOTEPARTYINFO;
 
 // -----------------------------------------------------------------------------
@@ -4730,11 +4736,11 @@ typedef struct rilremotepartyinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcallwaitinginfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwCallType;                   // @field type of call
-    DWORD dwAddressId;                  // @field indicates address ID on which the incoming call arrived (if available)
-    RILREMOTEPARTYINFO rrpiCallerInfo;  // @field caller information
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwCallType;                   // @field type of call
+	DWORD dwAddressId;                  // @field indicates address ID on which the incoming call arrived (if available)
+	RILREMOTEPARTYINFO rrpiCallerInfo;  // @field caller information
 } RILCALLWAITINGINFO, *LPRILCALLWAITINGINFO;
 
 // -----------------------------------------------------------------------------
@@ -4747,10 +4753,10 @@ typedef struct rilcallwaitinginfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilintermediatessinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwNotificationCode;           // @field indicates type of notification
-    DWORD dwCallUserGroupIndex;         // @field indicates the CUG Index
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwNotificationCode;           // @field indicates type of notification
+	DWORD dwCallUserGroupIndex;         // @field indicates the CUG Index
 } RILINTERMEDIATESSINFO, *LPRILINTERMEDIATESSINFO;
 
 // -----------------------------------------------------------------------------
@@ -4763,12 +4769,12 @@ typedef struct rilintermediatessinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilunsolicitedssinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwNotificationCode;           // @field indicates type of notification
-    DWORD dwCallUserGroupIndex;         // @field indicates the CUG Index
-    RILADDRESS raAddress;               // @field call address
-    RILSUBADDRESS rsaSubAddress;        // @field subaddress
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwNotificationCode;           // @field indicates type of notification
+	DWORD dwCallUserGroupIndex;         // @field indicates the CUG Index
+	RILADDRESS raAddress;               // @field call address
+	RILSUBADDRESS rsaSubAddress;        // @field subaddress
 } RILUNSOLICITEDSSINFO, *LPRILUNSOLICITEDSSINFO;
 
 // -----------------------------------------------------------------------------
@@ -4781,10 +4787,10 @@ typedef struct rilunsolicitedssinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilserviceinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    BOOL fSynchronous;                  // @field TRUE if connection service is synchronous, FALSE if asynchronous
-    BOOL fTransparent;                  // @field TRUE if connection service is transparent, FALSE if non-transparent
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	BOOL fSynchronous;                  // @field TRUE if connection service is synchronous, FALSE if asynchronous
+	BOOL fTransparent;                  // @field TRUE if connection service is transparent, FALSE if non-transparent
 } RILSERVICEINFO, *LPRILSERVICEINFO;
 
 // -----------------------------------------------------------------------------
@@ -4797,11 +4803,12 @@ typedef struct rilserviceinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilringinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwCallType;                   // @field type of the offered call (<def RIL_CALLTYPE_> constant)
-    DWORD dwAddressId;                  // @field indicates address ID on which the incoming call arrived (if available)
-    RILSERVICEINFO rsiServiceInfo;      // @field data connection service information (set only for <def RIL_CALLTYPE_DATA>)
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwCallType;                   // @field type of the offered call (<def RIL_CALLTYPE_> constant)
+	DWORD dwAddressId;                  // @field indicates address ID on which the incoming call arrived (if available)
+	RILSERVICEINFO
+	rsiServiceInfo;      // @field data connection service information (set only for <def RIL_CALLTYPE_DATA>)
 } RILRINGINFO, *LPRILRINGINFO;
 
 // -----------------------------------------------------------------------------
@@ -4814,10 +4821,10 @@ typedef struct rilringinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rildialinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    HRESULT hrCmdId;                    // @field handle of call being dialed
-    DWORD dwCallId;                     // @field id of call being dialed
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	HRESULT hrCmdId;                    // @field handle of call being dialed
+	DWORD dwCallId;                     // @field id of call being dialed
 } RILDIALINFO, *LPRILDIALINFO;
 
 // -----------------------------------------------------------------------------
@@ -4830,10 +4837,10 @@ typedef struct rildialinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilconnectinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwCallType;                   // @field type of the established connection (<def RIL_CALLTYPE_> constant)
-    DWORD dwBaudRate;                   // @field Baud rate of the established connection (set only for <def RIL_CALLTYPE_DATA>)
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwCallType;                   // @field type of the established connection (<def RIL_CALLTYPE_> constant)
+	DWORD dwBaudRate;                   // @field Baud rate of the established connection (set only for <def RIL_CALLTYPE_DATA>)
 } RILCONNECTINFO, *LPRILCONNECTINFO;
 
 // -----------------------------------------------------------------------------
@@ -4846,11 +4853,11 @@ typedef struct rilconnectinfo_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilmsgstorageinfo_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwReadLocation;               // @field current read location
-    DWORD dwWriteLocation;              // @field current write location
-    DWORD dwStoreLocation;              // @field current store location
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwReadLocation;               // @field current read location
+	DWORD dwWriteLocation;              // @field current write location
+	DWORD dwStoreLocation;              // @field current store location
 } RILMSGSTORAGEINFO, *LPRILMSGSTORAGEINFO;
 
 // -----------------------------------------------------------------------------
@@ -4864,10 +4871,10 @@ typedef struct rilmsgstorageinfo_tag {
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
 typedef struct rilsupservicedata_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwStatus;                     // @field additional status for message
-    BYTE pbData[];                      // @field message itself
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwStatus;                     // @field additional status for message
+	BYTE pbData[];                      // @field message itself
 } RILSUPSERVICEDATA, *LPRILSUPSERVICEDATA;
 #pragma warning(default : 4200)
 
@@ -4881,10 +4888,10 @@ typedef struct rilsupservicedata_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapsdial_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwCallTypes;                  // @field type of call being placed
-    DWORD dwOptions;                    // @field dialing options
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwCallTypes;                  // @field type of call being placed
+	DWORD dwOptions;                    // @field dialing options
 } RILCAPSDIAL, *LPRILCAPSDIAL;
 
 // -----------------------------------------------------------------------------
@@ -4897,12 +4904,12 @@ typedef struct rilcapsdial_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapsbearersvc_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwSpeeds1;                    // @field TBD
-    DWORD dwSpeeds2;                    // @field TBD
-    DWORD dwServiceNames;               // @field TBD
-    DWORD dwConnectionElements;         // @field TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwSpeeds1;                    // @field TBD
+	DWORD dwSpeeds2;                    // @field TBD
+	DWORD dwServiceNames;               // @field TBD
+	DWORD dwConnectionElements;         // @field TBD
 } RILCAPSBEARERSVC, *LPRILCAPSBEARERSVC;
 
 // -----------------------------------------------------------------------------
@@ -4915,14 +4922,14 @@ typedef struct rilcapsbearersvc_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapsrlp_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwVersion;                    // @field TBD
-    RILRANGE rrIWSRange;                // @field TBD
-    RILRANGE rrMWSRange;                // @field TBD
-    RILRANGE rrAckTimerRange;           // @field TBD
-    RILRANGE rrRetransmissionAttsRange; // @field TBD
-    RILRANGE rrReseqPeriodRange;        // @field TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwVersion;                    // @field TBD
+	RILRANGE rrIWSRange;                // @field TBD
+	RILRANGE rrMWSRange;                // @field TBD
+	RILRANGE rrAckTimerRange;           // @field TBD
+	RILRANGE rrRetransmissionAttsRange; // @field TBD
+	RILRANGE rrReseqPeriodRange;        // @field TBD
 } RILCAPSRLP, *LPRILCAPSRLP;
 
 // -----------------------------------------------------------------------------
@@ -4935,11 +4942,11 @@ typedef struct rilcapsrlp_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapsmsgmemorylocations_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwReadLocations;              // @field supported read locations
-    DWORD dwWriteLocations;             // @field supported write locations
-    DWORD dwStoreLocations;             // @field supported store locations
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwReadLocations;              // @field supported read locations
+	DWORD dwWriteLocations;             // @field supported write locations
+	DWORD dwStoreLocations;             // @field supported store locations
 } RILCAPSMSGMEMORYLOCATIONS, *LPRILCAPSMSGMEMORYLOCATIONS;
 
 // -----------------------------------------------------------------------------
@@ -4952,10 +4959,10 @@ typedef struct rilcapsmsgmemorylocations_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapslockingpwdlength_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwFacility;                   // @field the locking facility
-    DWORD dwPasswordLength;             // @field maximum password length
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwFacility;                   // @field the locking facility
+	DWORD dwPasswordLength;             // @field maximum password length
 } RILCAPSLOCKINGPWDLENGTH, *LPRILCAPSLOCKINGPWDLENGTH;
 
 // -----------------------------------------------------------------------------
@@ -4968,10 +4975,10 @@ typedef struct rilcapslockingpwdlength_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapsbarringpwdlength_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwType;                       // @field type of call barring
-    DWORD dwPasswordLength;             // @field maximum password length
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwType;                       // @field type of call barring
+	DWORD dwPasswordLength;             // @field maximum password length
 } RILCAPSBARRINGPWDLENGTH, *LPRILCAPSBARRINGPWDLENGTH;
 
 // -----------------------------------------------------------------------------
@@ -4984,12 +4991,12 @@ typedef struct rilcapsbarringpwdlength_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapsdatacompression_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwDirection;                  // @field indicates supported direction values
-    DWORD dwNegotiation;                // @field indicates supported negotiation values
-    RILRANGE rrMaxDict;                 // @field range of supported max_dict values
-    RILRANGE rrMaxString;               // @field range of supported max_string values
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwDirection;                  // @field indicates supported direction values
+	DWORD dwNegotiation;                // @field indicates supported negotiation values
+	RILRANGE rrMaxDict;                 // @field range of supported max_dict values
+	RILRANGE rrMaxString;               // @field range of supported max_string values
 } RILCAPSDATACOMPRESSION, *LPRILCAPSDATACOMPRESSION;
 
 // -----------------------------------------------------------------------------
@@ -5002,11 +5009,11 @@ typedef struct rilcapsdatacompression_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapserrorcorrection_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwOriginalRequest;            // @field indicates supported originator request values
-    DWORD dwOriginalFallback;           // @field indicates supported originator fallback values
-    DWORD dwAnswererFallback;           // @field indicates supported answerer fallback values
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwOriginalRequest;            // @field indicates supported originator request values
+	DWORD dwOriginalFallback;           // @field indicates supported originator fallback values
+	DWORD dwAnswererFallback;           // @field indicates supported answerer fallback values
 } RILCAPSERRORCORRECTION, *LPRILCAPSERRORCORRECTION;
 
 // -----------------------------------------------------------------------------
@@ -5019,15 +5026,15 @@ typedef struct rilcapserrorcorrection_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapshscsd_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwMultislotClass;             // @field multislot class supported
-    DWORD dwMaxRxTimeslots;             // @field maximum number of receive timeslots
-    DWORD dwMaxTxTimeslots;             // @field maximum number of transmit timeslots
-    DWORD dwMaxTotalTimeslots;          // @field maximum number of total timeslots
-    DWORD dwChannelCodings;             // @field supported channel codings
-    DWORD dwAirInterfaceUserRates;      // @field supported air interfacerates
-    RILRANGE rrTopRxTimeslotRange;      // @field TBD
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwMultislotClass;             // @field multislot class supported
+	DWORD dwMaxRxTimeslots;             // @field maximum number of receive timeslots
+	DWORD dwMaxTxTimeslots;             // @field maximum number of transmit timeslots
+	DWORD dwMaxTotalTimeslots;          // @field maximum number of total timeslots
+	DWORD dwChannelCodings;             // @field supported channel codings
+	DWORD dwAirInterfaceUserRates;      // @field supported air interfacerates
+	RILRANGE rrTopRxTimeslotRange;      // @field TBD
 } RILCAPSHSCSD, *LPRILCAPSHSCSD;
 
 // -----------------------------------------------------------------------------
@@ -5040,10 +5047,10 @@ typedef struct rilcapshscsd_tag {
 //
 // -----------------------------------------------------------------------------
 typedef struct rilcapspbentrylength_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwMaxAddressLength;           // @field maximum length of the phone number portion
-    DWORD dwMaxTextLength;              // @field maximum length in characters of the text portion
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwMaxAddressLength;           // @field maximum length of the phone number portion
+	DWORD dwMaxTextLength;              // @field maximum length in characters of the text portion
 } RILCAPSPBENTRYLENGTH, *LPRILCAPSPBENTRYLENGTH;
 
 // -----------------------------------------------------------------------------
@@ -5057,14 +5064,14 @@ typedef struct rilcapspbentrylength_tag {
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
 typedef struct rilgprscontextcaps_tag {
-    DWORD cbSize;                       // @field structure size in bytes (padded to DWORD)
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwProtocolType;               // @field a RIL_GPRSPROTOCOL_* constant
-    RILRANGE ContextIDRange;                 // @field min/max context ids
-    DWORD dwDataCompression;            // @field valid data compression values
-    DWORD dwHeaderCompression;          // @field valid header compression values
-    DWORD dwParameterLength;           // @field length of parameters list in bytes
-    char  szParameters[];               // @field valid string parameters of this prococol type, delimited by \0, with final param terminated by \0\0
+	DWORD cbSize;                       // @field structure size in bytes (padded to DWORD)
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwProtocolType;               // @field a RIL_GPRSPROTOCOL_* constant
+	RILRANGE ContextIDRange;                 // @field min/max context ids
+	DWORD dwDataCompression;            // @field valid data compression values
+	DWORD dwHeaderCompression;          // @field valid header compression values
+	DWORD dwParameterLength;           // @field length of parameters list in bytes
+	char  szParameters[];               // @field valid string parameters of this prococol type, delimited by \0, with final param terminated by \0\0
 } RILGPRSCONTEXTCAPS, *LPRILGPRSCONTEXTCAPS;
 #pragma warning(default : 4200)
 
@@ -5080,18 +5087,18 @@ typedef struct rilgprscontextcaps_tag {
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
 typedef struct rilgprscontext_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwContextID;                  // @field the context number
-    DWORD dwProtocolType;               // @field a RIL_GPRSPROTOCOL_*constant
-    WCHAR wszAccessPointName[MAXLENGTH_GPRSACCESSPOINTNAME];
-                                        // @field a logical name to select the gateway gprs
-                                        //        (which defines the external packet data network to use)
-    WCHAR wszAddress[MAXLENGTH_GPRSADDRESS]; // @field the packet address to use (if null, request dynamic)
-    DWORD dwDataCompression;             // @field a RIL_GPRSDATACOMP_*
-    DWORD dwHeaderCompression;           // @field a RIL_GPRSHEADERCOMP_*
-    DWORD dwParameterLength;            // @field length of parameters list
-    char szParameters[];              // @field parameters specific to the prococol type
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwContextID;                  // @field the context number
+	DWORD dwProtocolType;               // @field a RIL_GPRSPROTOCOL_*constant
+	WCHAR wszAccessPointName[MAXLENGTH_GPRSACCESSPOINTNAME];
+	// @field a logical name to select the gateway gprs
+	//        (which defines the external packet data network to use)
+	WCHAR wszAddress[MAXLENGTH_GPRSADDRESS]; // @field the packet address to use (if null, request dynamic)
+	DWORD dwDataCompression;             // @field a RIL_GPRSDATACOMP_*
+	DWORD dwHeaderCompression;           // @field a RIL_GPRSHEADERCOMP_*
+	DWORD dwParameterLength;            // @field length of parameters list
+	char szParameters[];              // @field parameters specific to the prococol type
 } RILGPRSCONTEXT, *LPRILGPRSCONTEXT;
 #pragma warning(default : 4200)
 
@@ -5106,14 +5113,14 @@ typedef struct rilgprscontext_tag {
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
 typedef struct rilgprsqosprofilecaps_tag {
-    DWORD cbSize;                       // @field structure size in bytes (padded to DWORD)
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwProtocolType;               // @field a RIL_GPRSPROTOCOL_* constant
-    DWORD dwPrecedenceClass;            // @field valid RIL_GPRSPRECEDENCECLASS_* constants
-    DWORD dwDelayClass;                 // @field valid RIL_GPRSDELAYCLASS_* constants
-    DWORD dwReliabilityClass;           // @field valid RIL_GPRSRELIABILITYCLASS_* constants
-    DWORD dwPeakThruClass;              // @field valid RIL_GPRSPEAKTHRUCLASS_* constants
-    DWORD dwMeanThruClass;              // @field valid RIL_GPRSMEANTHRUCLASS_* constants
+	DWORD cbSize;                       // @field structure size in bytes (padded to DWORD)
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwProtocolType;               // @field a RIL_GPRSPROTOCOL_* constant
+	DWORD dwPrecedenceClass;            // @field valid RIL_GPRSPRECEDENCECLASS_* constants
+	DWORD dwDelayClass;                 // @field valid RIL_GPRSDELAYCLASS_* constants
+	DWORD dwReliabilityClass;           // @field valid RIL_GPRSRELIABILITYCLASS_* constants
+	DWORD dwPeakThruClass;              // @field valid RIL_GPRSPEAKTHRUCLASS_* constants
+	DWORD dwMeanThruClass;              // @field valid RIL_GPRSMEANTHRUCLASS_* constants
 } RILGPRSQOSPROFILECAPS, *LPRILGPRSQOSPROFILECAPS;
 #pragma warning(default : 4200)
 
@@ -5127,12 +5134,11 @@ typedef struct rilgprsqosprofilecaps_tag {
 //
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
-typedef struct rilgprspacketsupportcaps_tag
-{
-    DWORD   cbSize;                     // @field structure size in bytes
-    DWORD   dwParams;                   // @field indicates valid parameters
-    BOOL    fPacket;                    // @parm TRUE: supports packet IO, FALSE: supports PPP/RAS connection only
-    DWORD   dwActiveContexts;           // @parm number of simultaneous open connections
+typedef struct rilgprspacketsupportcaps_tag {
+	DWORD   cbSize;                     // @field structure size in bytes
+	DWORD   dwParams;                   // @field indicates valid parameters
+	BOOL    fPacket;                    // @parm TRUE: supports packet IO, FALSE: supports PPP/RAS connection only
+	DWORD   dwActiveContexts;           // @parm number of simultaneous open connections
 } RILGPRSPACKETSUPPORTCAPS, *LPRILGPRSPACKETSUPPORTCAPS;
 #pragma warning(default : 4200)
 
@@ -5146,14 +5152,14 @@ typedef struct rilgprspacketsupportcaps_tag
 //
 // -----------------------------------------------------------------------------
 typedef struct rilgprsqosprofile_tag {
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwParams;                     // @field indicates valid parameters
-    DWORD dwContextID;                  // @field the context number
-    DWORD dwPrecedenceClass;            // @field a RIL_GPRSPRECEDENCECLASS_* constant
-    DWORD dwDelayClass;                 // @field a RIL_GPRSDELAYCLASS_* constant
-    DWORD dwReliabilityClass;           // @field a RIL_GPRSRELIABILITYCLASS_* constant
-    DWORD dwPeakThruClass;              // @field a RIL_GPRSPEAKTHRUCLASS_* constant
-    DWORD dwMeanThruClass;              // @field a RIL_GPRSMEANTHRUCLASS_* constant
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwParams;                     // @field indicates valid parameters
+	DWORD dwContextID;                  // @field the context number
+	DWORD dwPrecedenceClass;            // @field a RIL_GPRSPRECEDENCECLASS_* constant
+	DWORD dwDelayClass;                 // @field a RIL_GPRSDELAYCLASS_* constant
+	DWORD dwReliabilityClass;           // @field a RIL_GPRSRELIABILITYCLASS_* constant
+	DWORD dwPeakThruClass;              // @field a RIL_GPRSPEAKTHRUCLASS_* constant
+	DWORD dwMeanThruClass;              // @field a RIL_GPRSMEANTHRUCLASS_* constant
 } RILGPRSQOSPROFILE, *LPRILGPRSQOSPROFILE;
 
 // -----------------------------------------------------------------------------
@@ -5166,13 +5172,12 @@ typedef struct rilgprsqosprofile_tag {
 //
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
-typedef struct rilgprsanswer_tag
-{
-    DWORD cbSize;                       // @field structure size in bytes
-    BOOL fAnswer;                       // @parm TRUE: accept, FALSE: reject
-    DWORD dwL2Protocol;                 // @parm an optional RILL2PROTOCOL_* constant
-    DWORD dwNumContexts;                // @parm number of contexts which follow
-    DWORD dwContextID[];               // @parm identifies the context(s) to enter data state
+typedef struct rilgprsanswer_tag {
+	DWORD cbSize;                       // @field structure size in bytes
+	BOOL fAnswer;                       // @parm TRUE: accept, FALSE: reject
+	DWORD dwL2Protocol;                 // @parm an optional RILL2PROTOCOL_* constant
+	DWORD dwNumContexts;                // @parm number of contexts which follow
+	DWORD dwContextID[];               // @parm identifies the context(s) to enter data state
 } RILGPRSANSWER, *LPRILGPRSANSWER;
 #pragma warning(default : 4200)
 
@@ -5186,12 +5191,11 @@ typedef struct rilgprsanswer_tag
 //
 // -----------------------------------------------------------------------------
 #pragma warning(disable : 4200) // Disable "C4200: nonstandard extension used : zero-sized array in struct/union"
-typedef struct rilentergprsdatamode_tag
-{
-    DWORD cbSize;                       // @field structure size in bytes
-    DWORD dwL2Protocol;                 // @parm an optional RILL2PROTOCOL_* constant
-    DWORD dwNumContexts;                // @parm number of contexts which follow
-    DWORD dwContextID[];               // @parm identifies the context(s) to enter data state
+typedef struct rilentergprsdatamode_tag {
+	DWORD cbSize;                       // @field structure size in bytes
+	DWORD dwL2Protocol;                 // @parm an optional RILL2PROTOCOL_* constant
+	DWORD dwNumContexts;                // @parm number of contexts which follow
+	DWORD dwContextID[];               // @parm identifies the context(s) to enter data state
 } RILENTERGPRSDATAMODE, *LPRILENTERGPRSDATAMODE;
 #pragma warning(default : 4200)
 
@@ -5204,11 +5208,10 @@ typedef struct rilentergprsdatamode_tag
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilgprscontextactivated_tag
-{
-    DWORD cbSize;           // @field structure size in bytes
-    DWORD dwContextID;      // @field the context number
-    BOOL fActivated;        // @field whether the context is activated
+typedef struct rilgprscontextactivated_tag {
+	DWORD cbSize;           // @field structure size in bytes
+	DWORD dwContextID;      // @field the context number
+	BOOL fActivated;        // @field whether the context is activated
 } RILGPRSCONTEXTACTIVATED, *LPRILGPRSCONTEXTACTIVATED;
 
 
@@ -5222,11 +5225,10 @@ typedef struct rilgprscontextactivated_tag
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rillogatinfo_tag
-{
-    DWORD cbSize;                // @field structure size in bytes
-    DWORD cbLength;              // @field command buffer length
-    BYTE szRsp[MAXLENGTH_CMD];   // @field command buffer
+typedef struct rillogatinfo_tag {
+	DWORD cbSize;                // @field structure size in bytes
+	DWORD cbLength;              // @field command buffer length
+	BYTE szRsp[MAXLENGTH_CMD];   // @field command buffer
 } RILLOGATINFO, *LPRILLOGATINFO;
 
 // -----------------------------------------------------------------------------
@@ -5241,13 +5243,11 @@ typedef struct rillogatinfo_tag
 #define IPV6_ADDRESS_LENGTH             16
 #define IPV6_ADDRESS_LENGTH_IN_UCHAR    IPV6_ADDRESS_LENGTH
 #define IPV6_ADDRESS_LENGTH_IN_USHORT   (IPV6_ADDRESS_LENGTH/2)
-typedef struct rilndisipv6addr_tag
-{
-    union
-    {
-        UCHAR  Byte[IPV6_ADDRESS_LENGTH_IN_UCHAR];
-        USHORT Word[IPV6_ADDRESS_LENGTH_IN_USHORT];
-    };
+typedef struct rilndisipv6addr_tag {
+	union {
+		UCHAR  Byte[IPV6_ADDRESS_LENGTH_IN_UCHAR];
+		USHORT Word[IPV6_ADDRESS_LENGTH_IN_USHORT];
+	};
 } RILNDISIPV6ADDR, *LPRILNDISIPV6ADDR;
 
 // -----------------------------------------------------------------------------
@@ -5259,34 +5259,30 @@ typedef struct rilndisipv6addr_tag
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilndisipconfig_tag
-{
-    DWORD  cbSize;                    // @field structure size in bytes
-    DWORD  dwContextId;
-    DWORD  dwProtocol;                // @field discriminator for the union field; defined by RIL_PARAM_NDISIPCONFIG_PROTOCOL_*
-    union
-    {
-        struct
-        {
-            DWORD  dwFlags;           // @field bitfield of valid in_addr parameters defined by RIL_PARAM_NDISIPCONFIG_xxx
-            DWORD  inIPAddress;
-            DWORD  inPrimaryDNS;
-            DWORD  inSecondaryDNS;
-            DWORD  inDefaultGateway;
-            DWORD  inSubnetMask;
-        } ipv4;
-        struct
-        {
-            DWORD  dwFlags;           // @field bitfield of valid in_addr parameters defined by RIL_PARAM_NDISIPCONFIG_IPV6_xxx
-            RILNDISIPV6ADDR  inIPAddress;
-            RILNDISIPV6ADDR  inPrimaryDNS;
-            RILNDISIPV6ADDR  inSecondaryDNS;
-            RILNDISIPV6ADDR  inDefaultGateway;
-            RILNDISIPV6ADDR  inSubnetMask;
-            DWORD  dwFlowInfo;
-            DWORD  dwScopeId;
-        } ipv6;
-    };
+typedef struct rilndisipconfig_tag {
+	DWORD  cbSize;                    // @field structure size in bytes
+	DWORD  dwContextId;
+	DWORD  dwProtocol;                // @field discriminator for the union field; defined by RIL_PARAM_NDISIPCONFIG_PROTOCOL_*
+	union {
+		struct {
+			DWORD  dwFlags;           // @field bitfield of valid in_addr parameters defined by RIL_PARAM_NDISIPCONFIG_xxx
+			DWORD  inIPAddress;
+			DWORD  inPrimaryDNS;
+			DWORD  inSecondaryDNS;
+			DWORD  inDefaultGateway;
+			DWORD  inSubnetMask;
+		} ipv4;
+		struct {
+			DWORD  dwFlags;           // @field bitfield of valid in_addr parameters defined by RIL_PARAM_NDISIPCONFIG_IPV6_xxx
+			RILNDISIPV6ADDR  inIPAddress;
+			RILNDISIPV6ADDR  inPrimaryDNS;
+			RILNDISIPV6ADDR  inSecondaryDNS;
+			RILNDISIPV6ADDR  inDefaultGateway;
+			RILNDISIPV6ADDR  inSubnetMask;
+			DWORD  dwFlowInfo;
+			DWORD  dwScopeId;
+		} ipv6;
+	};
 } RILNDISIPCONFIG, *LPRILNDISIPCONFIG;
 
 // -----------------------------------------------------------------------------
@@ -5298,10 +5294,9 @@ typedef struct rilndisipconfig_tag
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilndisbuffer_tag
-{
-    BYTE *pbyBytes;                            // @field Pointer to the buffer
-    DWORD cByteCount;                            // @field Number of bytes pointed to by pbyBytes.
+typedef struct rilndisbuffer_tag {
+	BYTE* pbyBytes;                            // @field Pointer to the buffer
+	DWORD cByteCount;                            // @field Number of bytes pointed to by pbyBytes.
 } RILNDISBUFFER, *LPRILNDISBUFFER;
 
 // -----------------------------------------------------------------------------
@@ -5313,12 +5308,11 @@ typedef struct rilndisbuffer_tag
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilndispacket_tag
-{
-    DWORD dwContextId;
-    DWORD dwSize;
-    DWORD cBufferCount;
-    RILNDISBUFFER NDISBuffer[1];
+typedef struct rilndispacket_tag {
+	DWORD dwContextId;
+	DWORD dwSize;
+	DWORD cBufferCount;
+	RILNDISBUFFER NDISBuffer[1];
 } RILNDISPACKET, *LPRILNDISPACKET;
 
 // -----------------------------------------------------------------------------
@@ -5330,16 +5324,15 @@ typedef struct rilndispacket_tag
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct rilndisgprscontext_tag
-{
-    DWORD         cbSize;             // @field structure size in bytes
-    DWORD         dwParams;           // @field indicates valid parameters
-    DWORD         dwContextID;        // @field identifies the context
-    BOOL          fContextActivation; // @field TRUE: activated, FALSE: deactivated
-    DWORD         userNameLength;     // @field login name
-    const TCHAR  *username_p;         // @field name size
-    DWORD         passwordLength;     // @field login password
-    const TCHAR  *password_p;         // @field  password length
+typedef struct rilndisgprscontext_tag {
+	DWORD         cbSize;             // @field structure size in bytes
+	DWORD         dwParams;           // @field indicates valid parameters
+	DWORD         dwContextID;        // @field identifies the context
+	BOOL          fContextActivation; // @field TRUE: activated, FALSE: deactivated
+	DWORD         userNameLength;     // @field login name
+	const TCHAR*  username_p;         // @field name size
+	DWORD         passwordLength;     // @field login password
+	const TCHAR*  password_p;         // @field  password length
 } RILNDISGPRSCONTEXT, *LPRILNDISGPRSCONTEXT;
 
 typedef  RILNDISGPRSCONTEXT  RILNDISSETGPRSCONTEXTACTIVATED;
@@ -5361,12 +5354,12 @@ typedef HANDLE HRIL, *LPHRIL;
 //       RIL function call
 //
 // -----------------------------------------------------------------------------
-typedef void (CALLBACK *RILRESULTCALLBACK)(
-    DWORD       dwCode,     // @parm result code
-    HRESULT     hrCmdID,    // @parm ID returned by the command that originated this response
-    const void* lpData,     // @parm data associated with the notification
-    DWORD       cbData,     // @parm size of the strcuture pointed to lpData
-    DWORD       dwParam     // @parm parameter passed to <f RIL_Initialize>
+typedef void (CALLBACK* RILRESULTCALLBACK)(
+	DWORD       dwCode,     // @parm result code
+	HRESULT     hrCmdID,    // @parm ID returned by the command that originated this response
+	const void* lpData,     // @parm data associated with the notification
+	DWORD       cbData,     // @parm size of the strcuture pointed to lpData
+	DWORD       dwParam     // @parm parameter passed to <f RIL_Initialize>
 );
 
 
@@ -5379,11 +5372,11 @@ typedef void (CALLBACK *RILRESULTCALLBACK)(
 // @comm This function is called when the radio sends an unsolicited notifiation
 //
 // -----------------------------------------------------------------------------
-typedef void (CALLBACK *RILNOTIFYCALLBACK)(
-    DWORD dwCode,           // @parm notification code
-    const void* lpData,     // @parm data associated with the notification
-    DWORD cbData,           // @parm size of the strcuture pointed to lpData
-    DWORD dwParam           // @parm parameter passed to <f RIL_Initialize>
+typedef void (CALLBACK* RILNOTIFYCALLBACK)(
+	DWORD dwCode,           // @parm notification code
+	const void* lpData,     // @parm data associated with the notification
+	DWORD cbData,           // @parm size of the strcuture pointed to lpData
+	DWORD dwParam           // @parm parameter passed to <f RIL_Initialize>
 );
 
 //
@@ -5403,15 +5396,15 @@ typedef void (CALLBACK *RILNOTIFYCALLBACK)(
 //
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-typedef HRESULT (*RIL_InitializeProc)
+typedef HRESULT(*RIL_InitializeProc)
 //HRESULT RIL_Initialize
 (
-    DWORD dwIndex,                      // @parm index of the RIL port to use (e.g., 1 for RIL1:)
-    RILRESULTCALLBACK pfnResult,        // @parm function result callback
-    RILNOTIFYCALLBACK pfnNotify,        // @parm notification callback
-    DWORD dwNotificationClasses,        // @parm classes of notifications to be enabled for this client
-    DWORD dwParam,                      // @parm custom parameter passed to result and notififcation callbacks
-    HRIL* lphRil                        // @parm returned handle to RIL instance
+	DWORD dwIndex,                      // @parm index of the RIL port to use (e.g., 1 for RIL1:)
+	RILRESULTCALLBACK pfnResult,        // @parm function result callback
+	RILNOTIFYCALLBACK pfnNotify,        // @parm notification callback
+	DWORD dwNotificationClasses,        // @parm classes of notifications to be enabled for this client
+	DWORD dwParam,                      // @parm custom parameter passed to result and notififcation callbacks
+	HRIL* lphRil                        // @parm returned handle to RIL instance
 );
 
 
@@ -5425,12 +5418,12 @@ typedef HRESULT (*RIL_InitializeProc)
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_InitializeEmergency(
-    DWORD dwIndex,                      // @parm index of the RIL port to use (e.g., 1 for RIL1:)
-    RILRESULTCALLBACK pfnResult,        // @parm function result callback
-    RILNOTIFYCALLBACK pfnNotify,        // @parm notification callback
-    DWORD dwNotificationClasses,        // @parm classes of notifications to be enabled for this client
-    DWORD dwParam,                      // @parm custom parameter passed to result and notififcation callbacks
-    HRIL* lphRil                        // @parm returned handle to RIL instance
+	DWORD dwIndex,                      // @parm index of the RIL port to use (e.g., 1 for RIL1:)
+	RILRESULTCALLBACK pfnResult,        // @parm function result callback
+	RILNOTIFYCALLBACK pfnNotify,        // @parm notification callback
+	DWORD dwNotificationClasses,        // @parm classes of notifications to be enabled for this client
+	DWORD dwParam,                      // @parm custom parameter passed to result and notififcation callbacks
+	HRIL* lphRil                        // @parm returned handle to RIL instance
 );
 
 // -----------------------------------------------------------------------------
@@ -5442,10 +5435,10 @@ HRESULT RIL_InitializeEmergency(
 // @comm Synchronous
 //
 // -----------------------------------------------------------------------------
-typedef HRESULT (*RIL_DeinitializeProc)
+typedef HRESULT(*RIL_DeinitializeProc)
 //HRESULT RIL_Deinitialize
 (
-    HRIL hRil                           // @parm handle to an RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to an RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5459,8 +5452,8 @@ typedef HRESULT (*RIL_DeinitializeProc)
 // -----------------------------------------------------------------------------
 
 HRESULT RIL_EnableNotifications(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwNotificationClasses         // @parm classes of notifications to enable
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwNotificationClasses         // @parm classes of notifications to enable
 );
 
 // -----------------------------------------------------------------------------
@@ -5473,8 +5466,8 @@ HRESULT RIL_EnableNotifications(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_DisableNotifications(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwNotificationClasses         // @parm classes of notifications to disable
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwNotificationClasses         // @parm classes of notifications to disable
 );
 
 // -----------------------------------------------------------------------------
@@ -5487,8 +5480,8 @@ HRESULT RIL_DisableNotifications(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_RegisterATCommandLogging(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    BOOL fEnable         // @parm flag to turn feature on or off.
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	BOOL fEnable         // @parm flag to turn feature on or off.
 );
 
 // -----------------------------------------------------------------------------
@@ -5506,8 +5499,8 @@ HRESULT RIL_RegisterATCommandLogging(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ATCommandLogFile(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    LPTSTR pszFilename                  // @parm String containing the filename for the log.
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	LPTSTR pszFilename                  // @parm String containing the filename for the log.
 );
 
 // -----------------------------------------------------------------------------
@@ -5520,8 +5513,8 @@ HRESULT RIL_ATCommandLogFile(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetSerialPortHandle(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    HANDLE* lphSerial                   // @parm pointer to the serial port handle
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HANDLE* lphSerial                   // @parm pointer to the serial port handle
 );
 
 // -----------------------------------------------------------------------------
@@ -5534,9 +5527,9 @@ HRESULT RIL_GetSerialPortHandle(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetSerialPortHandleFromContextID(
-    HRIL hRil,                         // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwContextID,                 // @parm PDP context identifier.
-    HANDLE *lphSerial                  // @parm pointer to the serial port handle
+	HRIL hRil,                         // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwContextID,                 // @parm PDP context identifier.
+	HANDLE* lphSerial                  // @parm pointer to the serial port handle
 );
 // -----------------------------------------------------------------------------
 //
@@ -5548,8 +5541,8 @@ HRESULT RIL_GetSerialPortHandleFromContextID(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetSerialPortStatistics(
-    HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
-    RILSERIALPORTSTATS* lpSerialPortStats   // @parm pointer to the statistics structure
+	HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
+	RILSERIALPORTSTATS* lpSerialPortStats   // @parm pointer to the statistics structure
 );
 
 // -----------------------------------------------------------------------------
@@ -5562,8 +5555,8 @@ HRESULT RIL_GetSerialPortStatistics(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetDriverVersion(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD *pdwVersion                   // @parm pointer to version.  HIWORD is major version, LOWORD is minor version
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD* pdwVersion                   // @parm pointer to version.  HIWORD is major version, LOWORD is minor version
 );
 
 // -----------------------------------------------------------------------------
@@ -5576,7 +5569,7 @@ HRESULT RIL_GetDriverVersion(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetSubscriberNumbers(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5589,7 +5582,7 @@ HRESULT RIL_GetSubscriberNumbers(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetOperatorList(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5603,7 +5596,7 @@ HRESULT RIL_GetOperatorList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetAllOperatorsList(
-    HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5616,8 +5609,8 @@ HRESULT RIL_GetAllOperatorsList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetPreferredOperatorList(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwFormat                      // @parm format to use for the operator names in the list
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwFormat                      // @parm format to use for the operator names in the list
 );
 
 // -----------------------------------------------------------------------------
@@ -5630,9 +5623,9 @@ HRESULT RIL_GetPreferredOperatorList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_AddPreferredOperator(
-    HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwIndex,                          // @parm storage index to use for the added operator
-    const RILOPERATORNAMES* lpOperatorNames // @parm operator name
+	HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwIndex,                          // @parm storage index to use for the added operator
+	const RILOPERATORNAMES* lpOperatorNames // @parm operator name
 );
 
 // -----------------------------------------------------------------------------
@@ -5645,8 +5638,8 @@ HRESULT RIL_AddPreferredOperator(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_RemovePreferredOperator(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwIndex                       // @parm storage index of the preferred operator to remove
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwIndex                       // @parm storage index of the preferred operator to remove
 );
 
 // -----------------------------------------------------------------------------
@@ -5659,8 +5652,8 @@ HRESULT RIL_RemovePreferredOperator(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCurrentOperator(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize()>
-    DWORD dwFormat                      // @parm format of the operator name to return (<def RIL_OPFORMAT_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize()>
+	DWORD dwFormat                      // @parm format of the operator name to return (<def RIL_OPFORMAT_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5673,9 +5666,10 @@ HRESULT RIL_GetCurrentOperator(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_RegisterOnNetwork(
-    HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwMode,                           // @parm operator selection mode (<def RIL_OPSELMODE_> constant)
-    const RILOPERATORNAMES* lpOperatorNames // @parm operator to be selected (can be <def NULL> if <p dwMode> is <def RIL_OPSELMODE_AUTOMATIC>)
+	HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwMode,                           // @parm operator selection mode (<def RIL_OPSELMODE_> constant)
+	const RILOPERATORNAMES*
+	lpOperatorNames // @parm operator to be selected (can be <def NULL> if <p dwMode> is <def RIL_OPSELMODE_AUTOMATIC>)
 );
 
 // -----------------------------------------------------------------------------
@@ -5688,7 +5682,7 @@ HRESULT RIL_RegisterOnNetwork(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_UnregisterFromNetwork(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5700,10 +5694,10 @@ HRESULT RIL_UnregisterFromNetwork(
 // @comm Asynchronous.  <p lpData> points to a <def RIL_REGSTAT_> constant.
 //
 // -----------------------------------------------------------------------------
-typedef HRESULT (*RIL_GetRegistrationStatusProc)
+typedef HRESULT(*RIL_GetRegistrationStatusProc)
 //HRESULT RIL_GetRegistrationStatus
 (
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5716,7 +5710,7 @@ typedef HRESULT (*RIL_GetRegistrationStatusProc)
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCallerIdSettings(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 
@@ -5730,8 +5724,8 @@ HRESULT RIL_GetCallerIdSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetCallerIdStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
 );
 
 
@@ -5745,7 +5739,7 @@ HRESULT RIL_SetCallerIdStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetHideIdSettings(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5758,8 +5752,8 @@ HRESULT RIL_GetHideIdSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetHideIdStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5772,7 +5766,7 @@ HRESULT RIL_SetHideIdStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetDialedIdSettings(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5785,8 +5779,8 @@ HRESULT RIL_GetDialedIdSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetDialedIdStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5799,7 +5793,7 @@ HRESULT RIL_SetDialedIdStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetHideConnectedIdSettings(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5812,8 +5806,8 @@ HRESULT RIL_GetHideConnectedIdSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetHideConnectedIdStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5828,8 +5822,8 @@ HRESULT RIL_SetHideConnectedIdStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCCBSStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwCCBSIndex                   // @parm indicates which entry to query
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwCCBSIndex                   // @parm indicates which entry to query
 );
 
 // -----------------------------------------------------------------------------
@@ -5844,8 +5838,8 @@ HRESULT RIL_GetCCBSStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ClearCCBSRegistration(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwCCBSIndex                   // @parm indicates which entry to clear, may be <def RIL_CCBS_ALL>
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwCCBSIndex                   // @parm indicates which entry to clear, may be <def RIL_CCBS_ALL>
 );
 
 // -----------------------------------------------------------------------------
@@ -5858,7 +5852,7 @@ HRESULT RIL_ClearCCBSRegistration(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetClosedGroupSettings(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -5871,8 +5865,8 @@ HRESULT RIL_GetClosedGroupSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetClosedGroupSettings(
-    HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILCLOSEDGROUPSETTINGS* lpSettings    // @parm settings to be set
+	HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILCLOSEDGROUPSETTINGS* lpSettings    // @parm settings to be set
 );
 
 // -----------------------------------------------------------------------------
@@ -5885,9 +5879,9 @@ HRESULT RIL_SetClosedGroupSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCallForwardingSettings(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwReason,                     // @parm forwarding reason to retrieve the settings for (<def RIL_FWDREASON_> constant)
-    DWORD dwInfoClass                   // @parm information class to retrieve barring status for (<def RIL_INFOCLASS_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwReason,                     // @parm forwarding reason to retrieve the settings for (<def RIL_FWDREASON_> constant)
+	DWORD dwInfoClass                   // @parm information class to retrieve barring status for (<def RIL_INFOCLASS_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5900,9 +5894,9 @@ HRESULT RIL_GetCallForwardingSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_AddCallForwarding(
-    HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwReason,                             // @parm forwarding reason to add Call Forwarding for (<def RIL_FWDREASON_> constant)
-    const RILCALLFORWARDINGSETTINGS* lpSettings // @parm settings for the new Call Forwarding rule
+	HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwReason,                             // @parm forwarding reason to add Call Forwarding for (<def RIL_FWDREASON_> constant)
+	const RILCALLFORWARDINGSETTINGS* lpSettings // @parm settings for the new Call Forwarding rule
 );
 
 // -----------------------------------------------------------------------------
@@ -5915,10 +5909,10 @@ HRESULT RIL_AddCallForwarding(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_RemoveCallForwarding(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwReason,                     // @parm forwarding reason to remove Call Forwarding for (<def RIL_FWDREASON_> constant)
-    DWORD dwInfoClasses                 // @parm information classes to remove Call Forwarding for (combination of
-                                        //     <def RIL_INFOCLASS_> constants)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwReason,                     // @parm forwarding reason to remove Call Forwarding for (<def RIL_FWDREASON_> constant)
+	DWORD dwInfoClasses                 // @parm information classes to remove Call Forwarding for (combination of
+	//     <def RIL_INFOCLASS_> constants)
 );
 
 // -----------------------------------------------------------------------------
@@ -5931,11 +5925,11 @@ HRESULT RIL_RemoveCallForwarding(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetCallForwardingStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwReason,                     // @parm forwarding reason to enable/disable Call Forwarding for (<def RIL_FWDREASON_> constant)
-    DWORD dwInfoClasses,                // @parm information classes to enable/disable Call Forwarding for (combination of
-                                        //     <def RIL_INFOCLASS_> constants)
-    DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwReason,                     // @parm forwarding reason to enable/disable Call Forwarding for (<def RIL_FWDREASON_> constant)
+	DWORD dwInfoClasses,                // @parm information classes to enable/disable Call Forwarding for (combination of
+	//     <def RIL_INFOCLASS_> constants)
+	DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5949,8 +5943,8 @@ HRESULT RIL_SetCallForwardingStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCallWaitingSettings(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwInfoClass                   // @parm information class to retrieve barring status for (<def RIL_INFOCLASS_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwInfoClass                   // @parm information class to retrieve barring status for (<def RIL_INFOCLASS_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5963,9 +5957,9 @@ HRESULT RIL_GetCallWaitingSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetCallWaitingStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwInfoClasses,                // @parm information classes to enable/disable Call Waiting for
-    DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwInfoClasses,                // @parm information classes to enable/disable Call Waiting for
+	DWORD dwStatus                      // @parm status to be set (<def RIL_SVCSTAT_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -5978,9 +5972,9 @@ HRESULT RIL_SetCallWaitingStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendSupServiceData(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const BYTE* lpbData,                // @parm data to be sent
-    DWORD dwSize                        // @parm size of the data pointed to by <p lpbData> in bytes
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const BYTE* lpbData,                // @parm data to be sent
+	DWORD dwSize                        // @parm size of the data pointed to by <p lpbData> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -5993,7 +5987,7 @@ HRESULT RIL_SendSupServiceData(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_CancelSupServiceDataSession(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6006,7 +6000,7 @@ HRESULT RIL_CancelSupServiceDataSession(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCurrentAddressId(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6019,8 +6013,8 @@ HRESULT RIL_GetCurrentAddressId(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetCurrentAddressId(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwAddressId                   // @parm identifies the new addressID to use
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwAddressId                   // @parm identifies the new addressID to use
 );
 
 // -----------------------------------------------------------------------------
@@ -6033,10 +6027,10 @@ HRESULT RIL_SetCurrentAddressId(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_Dial(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    LPCSTR lpszAddress,                 // @parm address to dial (no longer than <def MAXLENGTH_ADDRESS> chars)
-    DWORD dwType,                       // @parm type of the call to establish (<def RIL_CALLTYPE_> constant)
-    DWORD dwOptions                     // @parm dialing options (any combination of <def RIL_DIALOPT_> constants)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	LPCSTR lpszAddress,                 // @parm address to dial (no longer than <def MAXLENGTH_ADDRESS> chars)
+	DWORD dwType,                       // @parm type of the call to establish (<def RIL_CALLTYPE_> constant)
+	DWORD dwOptions                     // @parm dialing options (any combination of <def RIL_DIALOPT_> constants)
 );
 
 // -----------------------------------------------------------------------------
@@ -6049,7 +6043,7 @@ HRESULT RIL_Dial(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_Answer(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6062,7 +6056,7 @@ HRESULT RIL_Answer(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_Hangup(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6076,10 +6070,10 @@ HRESULT RIL_Hangup(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendDTMF(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    LPCSTR lpszChars,                   // @parm alphanumeric string representing DTMF tones to be sent (0-9, A-D, *, #)
-    DWORD dwDuration                    // @parm new DTMF tone duration in milliseconds (<def RIL_DTMFDURATION_DEFAULT>
-                                        // corresponds to the manufacturer's default value)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	LPCSTR lpszChars,                   // @parm alphanumeric string representing DTMF tones to be sent (0-9, A-D, *, #)
+	DWORD dwDuration                    // @parm new DTMF tone duration in milliseconds (<def RIL_DTMFDURATION_DEFAULT>
+	// corresponds to the manufacturer's default value)
 );
 
 // -----------------------------------------------------------------------------
@@ -6092,8 +6086,8 @@ HRESULT RIL_SendDTMF(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetDTMFMonitoring(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    BOOL fEnable                        // @parm TRUE to initiate DTMF monitoring; FALSE to cancel
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	BOOL fEnable                        // @parm TRUE to initiate DTMF monitoring; FALSE to cancel
 );
 
 // -----------------------------------------------------------------------------
@@ -6108,7 +6102,7 @@ HRESULT RIL_SetDTMFMonitoring(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCallList(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6121,10 +6115,10 @@ HRESULT RIL_GetCallList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ManageCalls(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwCommand,                    // @parm call modification command to be performed (<def RIL_CALLCMD_> constant)
-    DWORD dwID                          // @parm ID of the call to be modified (only for <def RIL_CALLCMD_RELEASECALL>
-                                        //       and <def RIL_CALLCMD_HOLDALLBUTONE>)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwCommand,                    // @parm call modification command to be performed (<def RIL_CALLCMD_> constant)
+	DWORD dwID                          // @parm ID of the call to be modified (only for <def RIL_CALLCMD_RELEASECALL>
+	//       and <def RIL_CALLCMD_HOLDALLBUTONE>)
 );
 
 // -----------------------------------------------------------------------------
@@ -6137,9 +6131,9 @@ HRESULT RIL_ManageCalls(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_TransferCall(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILADDRESS* lpAddress,        // @parm address to transfer the call to
-    const RILSUBADDRESS* lpSubAddress   // @parm sub-address to transfer the call to (can be <def NULL>)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILADDRESS* lpAddress,        // @parm address to transfer the call to
+	const RILSUBADDRESS* lpSubAddress   // @parm sub-address to transfer the call to (can be <def NULL>)
 );
 
 // -----------------------------------------------------------------------------
@@ -6152,7 +6146,7 @@ HRESULT RIL_TransferCall(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetLineStatus(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6165,7 +6159,7 @@ HRESULT RIL_GetLineStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetAudioGain(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6178,8 +6172,8 @@ HRESULT RIL_GetAudioGain(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetAudioGain(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILGAININFO* lpGainInfo       // @parm audio gain information to be sent
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILGAININFO* lpGainInfo       // @parm audio gain information to be sent
 );
 
 // -----------------------------------------------------------------------------
@@ -6192,7 +6186,7 @@ HRESULT RIL_SetAudioGain(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetAudioDevices(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6205,8 +6199,8 @@ HRESULT RIL_GetAudioDevices(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetAudioDevices(
-    HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILAUDIODEVICEINFO* lpAudioDeviceInfo // @parm audio devices to set
+	HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILAUDIODEVICEINFO* lpAudioDeviceInfo // @parm audio devices to set
 );
 
 // -----------------------------------------------------------------------------
@@ -6219,7 +6213,7 @@ HRESULT RIL_SetAudioDevices(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetAudioMuting(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6232,8 +6226,8 @@ HRESULT RIL_GetAudioMuting(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetAudioMuting(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    BOOL fEnable                        // @parm TRUE if input audio device is to be muted; FALSE otherwise
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	BOOL fEnable                        // @parm TRUE if input audio device is to be muted; FALSE otherwise
 );
 
 // -----------------------------------------------------------------------------
@@ -6246,7 +6240,7 @@ HRESULT RIL_SetAudioMuting(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetHSCSDOptions(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6259,8 +6253,8 @@ HRESULT RIL_GetHSCSDOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetHSCSDOptions(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILHSCSDINFO* lpHscsdInfo     // @parm High Speeed Circuit Switched Data options to set
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILHSCSDINFO* lpHscsdInfo     // @parm High Speeed Circuit Switched Data options to set
 );
 
 // -----------------------------------------------------------------------------
@@ -6273,7 +6267,7 @@ HRESULT RIL_SetHSCSDOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetHSCSDCallSettings(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6286,7 +6280,7 @@ HRESULT RIL_GetHSCSDCallSettings(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetDataCompression(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6299,8 +6293,8 @@ HRESULT RIL_GetDataCompression(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetDataCompression(
-    HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILDATACOMPINFO* lpDataCompInfo   // @parm data compression options to set
+	HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILDATACOMPINFO* lpDataCompInfo   // @parm data compression options to set
 );
 
 // -----------------------------------------------------------------------------
@@ -6313,7 +6307,7 @@ HRESULT RIL_SetDataCompression(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetErrorCorrection(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6326,8 +6320,8 @@ HRESULT RIL_GetErrorCorrection(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetErrorCorrection(
-    HRIL hRil,                                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILERRORCORRECTIONINFO* lpErrorCorrectionInfo // @parm error correction options to set
+	HRIL hRil,                                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILERRORCORRECTIONINFO* lpErrorCorrectionInfo // @parm error correction options to set
 );
 
 // -----------------------------------------------------------------------------
@@ -6340,7 +6334,7 @@ HRESULT RIL_SetErrorCorrection(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetBearerServiceOptions(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6353,8 +6347,8 @@ HRESULT RIL_GetBearerServiceOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetBearerServiceOptions(
-    HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILBEARERSVCINFO* lpBearerServiceInfo // @parm data bearer service options to set
+	HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILBEARERSVCINFO* lpBearerServiceInfo // @parm data bearer service options to set
 );
 
 // -----------------------------------------------------------------------------
@@ -6367,7 +6361,7 @@ HRESULT RIL_SetBearerServiceOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetRLPOptions(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6380,8 +6374,8 @@ HRESULT RIL_GetRLPOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetRLPOptions(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILRLPINFO* lpRlpInfo         // @parm Radio Link Protocol options to set
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILRLPINFO* lpRlpInfo         // @parm Radio Link Protocol options to set
 );
 
 // -----------------------------------------------------------------------------
@@ -6394,7 +6388,7 @@ HRESULT RIL_SetRLPOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetMsgServiceOptions(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6407,8 +6401,8 @@ HRESULT RIL_GetMsgServiceOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetMsgServiceOptions(
-    HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILMSGSERVICEINFO* lpMsgServiceInfo   // @parm messaging service options to be set
+	HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILMSGSERVICEINFO* lpMsgServiceInfo   // @parm messaging service options to be set
 );
 
 // -----------------------------------------------------------------------------
@@ -6421,7 +6415,7 @@ HRESULT RIL_SetMsgServiceOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetMsgConfig(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6434,8 +6428,8 @@ HRESULT RIL_GetMsgConfig(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetMsgConfig(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILMSGCONFIG* lpMsgConfigInfo // @parm messaging configuration to be set
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILMSGCONFIG* lpMsgConfigInfo // @parm messaging configuration to be set
 );
 
 // -----------------------------------------------------------------------------
@@ -6448,7 +6442,7 @@ HRESULT RIL_SetMsgConfig(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCellBroadcastMsgConfig(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6461,8 +6455,8 @@ HRESULT RIL_GetCellBroadcastMsgConfig(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetCellBroadcastMsgConfig(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILCBMSGCONFIG* lpCbMsgConfigInfo // @parm messaging configuration to be set
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILCBMSGCONFIG* lpCbMsgConfigInfo // @parm messaging configuration to be set
 );
 
 // -----------------------------------------------------------------------------
@@ -6475,8 +6469,8 @@ HRESULT RIL_SetCellBroadcastMsgConfig(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ReadMsg(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwIndex                       // @parm index of the message to be read
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwIndex                       // @parm index of the message to be read
 );
 
 // -----------------------------------------------------------------------------
@@ -6489,8 +6483,8 @@ HRESULT RIL_ReadMsg(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_DeleteMsg(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwIndex                       // @parm index of the message to be deleted
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwIndex                       // @parm index of the message to be deleted
 );
 
 // -----------------------------------------------------------------------------
@@ -6503,9 +6497,10 @@ HRESULT RIL_DeleteMsg(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_WriteMsg(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILMESSAGE* lpMessage,        // @parm message to be written (of type <def RIL_MSGTYPE_IN_DELIVER> or <def RIL_MSGTYPE_OUT_SUBMIT>)
-    DWORD dwStatus                      // @parm status to assigned to the written message (<def RIL_MSGSTATUS_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILMESSAGE*
+	lpMessage,        // @parm message to be written (of type <def RIL_MSGTYPE_IN_DELIVER> or <def RIL_MSGTYPE_OUT_SUBMIT>)
+	DWORD dwStatus                      // @parm status to assigned to the written message (<def RIL_MSGSTATUS_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -6519,9 +6514,9 @@ HRESULT RIL_WriteMsg(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendMsg(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILMESSAGE* lpMessage,        // @parm message to be sent
-    DWORD dwOptions                     // @parm options (any combination of <def RIL_SENDOPT_> constants)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILMESSAGE* lpMessage,        // @parm message to be sent
+	DWORD dwOptions                     // @parm options (any combination of <def RIL_SENDOPT_> constants)
 );
 
 // -----------------------------------------------------------------------------
@@ -6535,9 +6530,9 @@ HRESULT RIL_SendMsg(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendStoredMsg(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwIndex,                      // @parm index of the message to be sent
-    DWORD dwOptions                     // @parm options (any combination of <def RIL_SENDOPT_> constants)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwIndex,                      // @parm index of the message to be sent
+	DWORD dwOptions                     // @parm options (any combination of <def RIL_SENDOPT_> constants)
 );
 
 // -----------------------------------------------------------------------------
@@ -6552,8 +6547,8 @@ HRESULT RIL_SendStoredMsg(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendMsgAcknowledgement(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    BOOL fSuccess                       // @parm TRUE if success acknowledgment is to be sent; FALSE otherwise
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	BOOL fSuccess                       // @parm TRUE if success acknowledgment is to be sent; FALSE otherwise
 );
 
 // -----------------------------------------------------------------------------
@@ -6566,7 +6561,7 @@ HRESULT RIL_SendMsgAcknowledgement(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetUserIdentity(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6579,7 +6574,7 @@ HRESULT RIL_GetUserIdentity(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetPhoneLockedState(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6592,11 +6587,11 @@ HRESULT RIL_GetPhoneLockedState(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_UnlockPhone(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    LPCSTR lpszPassword,                // @parm password to unlock the phone (no longer than <def MAXLENGTH_PASSWORD> chars)
-    LPCSTR lpszNewPassword              // @parm new password (can be <def NULL>, unless the current locked state is
-                                        //     one of the <def RIL_LOCKEDSTATE_*_PUK> constants; no longer than
-                                        //     <def MAXLENGTH_PASSWORD> chars)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	LPCSTR lpszPassword,                // @parm password to unlock the phone (no longer than <def MAXLENGTH_PASSWORD> chars)
+	LPCSTR lpszNewPassword              // @parm new password (can be <def NULL>, unless the current locked state is
+	//     one of the <def RIL_LOCKEDSTATE_*_PUK> constants; no longer than
+	//     <def MAXLENGTH_PASSWORD> chars)
 );
 
 // -----------------------------------------------------------------------------
@@ -6609,10 +6604,10 @@ HRESULT RIL_UnlockPhone(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetLockingStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwFacility,                   // @parm facility to retrieve locking status for (<def RIL_LOCKFACILITY_> constant)
-    LPCSTR lpszPassword                 // @parm password to retrieve locking status (can be <def NULL> if password isn't required;
-                                        //     no longer than MAXLENGTH_PASSWORD chars)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwFacility,                   // @parm facility to retrieve locking status for (<def RIL_LOCKFACILITY_> constant)
+	LPCSTR lpszPassword                 // @parm password to retrieve locking status (can be <def NULL> if password isn't required;
+	//     no longer than MAXLENGTH_PASSWORD chars)
 );
 
 // -----------------------------------------------------------------------------
@@ -6625,11 +6620,11 @@ HRESULT RIL_GetLockingStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetLockingStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwFacility,                   // @parm facility to enable/disable locking for (<def RIL_LOCKFACILITY_> constant)
-    LPCSTR lpszPassword,                // @parm password to enable/disable locking (can be <def NULL> if password isn't required;
-                                        //     no longer than <def MAXLENGTH_PASSWORD> chars)
-    DWORD dwStatus                      // @parm status to be set (<def RIL_LOCKINGSTATUS_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwFacility,                   // @parm facility to enable/disable locking for (<def RIL_LOCKFACILITY_> constant)
+	LPCSTR lpszPassword,                // @parm password to enable/disable locking (can be <def NULL> if password isn't required;
+	//     no longer than <def MAXLENGTH_PASSWORD> chars)
+	DWORD dwStatus                      // @parm status to be set (<def RIL_LOCKINGSTATUS_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -6642,11 +6637,11 @@ HRESULT RIL_SetLockingStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ChangeLockingPassword(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwFacility,                   // @parm facility to change locking password for (<def RIL_LOCKFACILITY_> constant)
-    DWORD dwOldPasswordType,            // @parm the type of OLD password (PIN or PUK) RIL_PASSWORDTYPE_* constant
-    LPCSTR lpszOldPassword,             // @parm current locking password (no longer than <def MAXLENGTH_PASSWORD> chars)
-    LPCSTR lpszNewPassword              // @parm new locking password (no longer than <def MAXLENGTH_PASSWOR> chars)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwFacility,                   // @parm facility to change locking password for (<def RIL_LOCKFACILITY_> constant)
+	DWORD dwOldPasswordType,            // @parm the type of OLD password (PIN or PUK) RIL_PASSWORDTYPE_* constant
+	LPCSTR lpszOldPassword,             // @parm current locking password (no longer than <def MAXLENGTH_PASSWORD> chars)
+	LPCSTR lpszNewPassword              // @parm new locking password (no longer than <def MAXLENGTH_PASSWOR> chars)
 );
 
 // -----------------------------------------------------------------------------
@@ -6659,11 +6654,11 @@ HRESULT RIL_ChangeLockingPassword(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCallBarringStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwType,                       // @parm type of call barring to retrieve status for (<def RIL_BARRTYPE_> constant)
-    DWORD dwInfoClass,                  // @parm information class to retrieve barring status for (<def RIL_INFOCLASS_> constant)
-    LPCSTR lpszPassword                 // @parm password to retrieve barring status (can be <def NULL> if password isn't required;
-                                        //     no longer than <def MAXLENGTH_PASSWORD> chars)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwType,                       // @parm type of call barring to retrieve status for (<def RIL_BARRTYPE_> constant)
+	DWORD dwInfoClass,                  // @parm information class to retrieve barring status for (<def RIL_INFOCLASS_> constant)
+	LPCSTR lpszPassword                 // @parm password to retrieve barring status (can be <def NULL> if password isn't required;
+	//     no longer than <def MAXLENGTH_PASSWORD> chars)
 );
 
 // -----------------------------------------------------------------------------
@@ -6676,12 +6671,12 @@ HRESULT RIL_GetCallBarringStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetCallBarringStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwType,                       // @parm type of call barring to enable/disable (<def RIL_BARRTYPE_> constant)
-    DWORD dwInfoClass,                  // @parm information class to enable/disable call barring for (<def RIL_INFOCLASS_> constant)
-    LPCSTR lpszPassword,                // @parm password to enable/disable call barring (can be <def NULL> if password isn't required;
-                                        //     no longer than <def MAXLENGTH_PASSWORD> chars)
-    DWORD dwStatus                      // @parm status to be set (<def RIL_BARRINGSTATUS_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwType,                       // @parm type of call barring to enable/disable (<def RIL_BARRTYPE_> constant)
+	DWORD dwInfoClass,                  // @parm information class to enable/disable call barring for (<def RIL_INFOCLASS_> constant)
+	LPCSTR lpszPassword,                // @parm password to enable/disable call barring (can be <def NULL> if password isn't required;
+	//     no longer than <def MAXLENGTH_PASSWORD> chars)
+	DWORD dwStatus                      // @parm status to be set (<def RIL_BARRINGSTATUS_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -6694,10 +6689,10 @@ HRESULT RIL_SetCallBarringStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ChangeCallBarringPassword(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwType,                       // @parm type of call barring to retrieve status for (<def RIL_BARRTYPE_> constant)
-    LPCSTR lpwszOldPassword,            // @parm current password (no longer than <def MAXLENGTH_PASSWORD> chars)
-    LPCSTR lpwszNewPassword             // @parm new password (no longer than <def MAXLENGTH_PASSWORD> chars)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwType,                       // @parm type of call barring to retrieve status for (<def RIL_BARRTYPE_> constant)
+	LPCSTR lpwszOldPassword,            // @parm current password (no longer than <def MAXLENGTH_PASSWORD> chars)
+	LPCSTR lpwszNewPassword             // @parm new password (no longer than <def MAXLENGTH_PASSWORD> chars)
 );
 
 // -----------------------------------------------------------------------------
@@ -6710,7 +6705,7 @@ HRESULT RIL_ChangeCallBarringPassword(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetEquipmentInfo(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6723,7 +6718,7 @@ HRESULT RIL_GetEquipmentInfo(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetEquipmentState(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6736,8 +6731,8 @@ HRESULT RIL_GetEquipmentState(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetEquipmentState(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwEquipmentState              // @parm equipment state to set (<def RIL_EQSTATE_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwEquipmentState              // @parm equipment state to set (<def RIL_EQSTATE_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -6750,8 +6745,8 @@ HRESULT RIL_SetEquipmentState(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetRadioPresence(
-    HRIL hRIL,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD* dwRadioPresence              // @parm pointer to a DWORD (ouput param contains values from RIL_RADIOPRESENCE_*)
+	HRIL hRIL,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD* dwRadioPresence              // @parm pointer to a DWORD (ouput param contains values from RIL_RADIOPRESENCE_*)
 );
 
 // -----------------------------------------------------------------------------
@@ -6764,7 +6759,7 @@ HRESULT RIL_GetRadioPresence(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetPhonebookOptions(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6777,8 +6772,8 @@ HRESULT RIL_GetPhonebookOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetPhonebookOptions(
-    HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILPHONEBOOKINFO* lpPhonebookInfo // @parm phonebook options to set
+	HRIL hRil,                              // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILPHONEBOOKINFO* lpPhonebookInfo // @parm phonebook options to set
 );
 
 // -----------------------------------------------------------------------------
@@ -6791,9 +6786,9 @@ HRESULT RIL_SetPhonebookOptions(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ReadPhonebookEntries(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwStartIndex,                 // @parm starting index of the range
-    DWORD dwEndIndex                    // @parm ending index of the range
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwStartIndex,                 // @parm starting index of the range
+	DWORD dwEndIndex                    // @parm ending index of the range
 );
 
 // -----------------------------------------------------------------------------
@@ -6806,8 +6801,8 @@ HRESULT RIL_ReadPhonebookEntries(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_WritePhonebookEntry(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILPHONEBOOKENTRY* lpEntry    // @parm phonebook entry to write out
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILPHONEBOOKENTRY* lpEntry    // @parm phonebook entry to write out
 );
 
 // -----------------------------------------------------------------------------
@@ -6820,8 +6815,8 @@ HRESULT RIL_WritePhonebookEntry(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_DeletePhonebookEntry(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwIndex                       // @parm index of the entry to delete
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwIndex                       // @parm index of the entry to delete
 );
 
 // -----------------------------------------------------------------------------
@@ -6834,9 +6829,9 @@ HRESULT RIL_DeletePhonebookEntry(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendSimCmd(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const BYTE* lpbCommand,             // @parm command to be sent to the SIM
-    DWORD dwSize                        // @parm size of the data pointed to by <p lpbCommand> in bytes
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const BYTE* lpbCommand,             // @parm command to be sent to the SIM
+	DWORD dwSize                        // @parm size of the data pointed to by <p lpbCommand> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -6851,7 +6846,7 @@ HRESULT RIL_SendSimCmd(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetATR(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 
@@ -6865,11 +6860,13 @@ HRESULT RIL_GetATR(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendRestrictedSimCmd(
-    HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwCommand,                            // @parm restricted command to be sent to the SIM (<def RIL_SIMCMD_> constant)
-    const RILSIMCMDPARAMETERS* lpParameters,    // @parm Parameters for the command to be sent (can be <def NULL> if parameters aren't required)
-    const BYTE* lpbData,                        // @parm Data to be written to the SIM (can be <def NULL> if data isn't required)
-    DWORD dwSize                                // @parm Size of the data pointed to by <p lpbData> in bytes
+	HRIL hRil,                                  // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwCommand,                            // @parm restricted command to be sent to the SIM (<def RIL_SIMCMD_> constant)
+	const RILSIMCMDPARAMETERS*
+	lpParameters,    // @parm Parameters for the command to be sent (can be <def NULL> if parameters aren't required)
+	const BYTE*
+	lpbData,                        // @parm Data to be written to the SIM (can be <def NULL> if data isn't required)
+	DWORD dwSize                                // @parm Size of the data pointed to by <p lpbData> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -6882,8 +6879,8 @@ HRESULT RIL_SendRestrictedSimCmd(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetSimRecordStatus(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwFileID                      // @parm address of the file to read
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwFileID                      // @parm address of the file to read
 );
 
 // -----------------------------------------------------------------------------
@@ -6896,7 +6893,7 @@ HRESULT RIL_GetSimRecordStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetSimToolkitProfile(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6909,9 +6906,9 @@ HRESULT RIL_GetSimToolkitProfile(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetSimToolkitProfile(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const BYTE* lpbProfile,             // @parm SIM Toolkit profile to be set
-    DWORD dwSize                        // @parm size of the data pointed to by <p lpbProfile> in bytes
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const BYTE* lpbProfile,             // @parm SIM Toolkit profile to be set
+	DWORD dwSize                        // @parm size of the data pointed to by <p lpbProfile> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -6925,9 +6922,9 @@ HRESULT RIL_SetSimToolkitProfile(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendSimToolkitEnvelopeCmd(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const BYTE* lpbCommand,             // @parm SIM Toolkit envelope command to be sent
-    DWORD dwSize                        // @parm size of the data pointed to by <p lpbCommand> in bytes
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const BYTE* lpbCommand,             // @parm SIM Toolkit envelope command to be sent
+	DWORD dwSize                        // @parm size of the data pointed to by <p lpbCommand> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -6941,7 +6938,7 @@ HRESULT RIL_SendSimToolkitEnvelopeCmd(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_FetchSimToolkitCmd(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -6954,10 +6951,11 @@ HRESULT RIL_FetchSimToolkitCmd(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendSimToolkitCmdResponse(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILSIMTOOLKITRSP* pRsp,       // @parm Command Response to be sent.
-    const LPBYTE pDetails,              // @parm Detailed command response to be sent (can be <def NULL> if details aren't required)
-    DWORD dwDetailSize                  // @parm size of the details pointed to by <p pDetails> in bytes
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILSIMTOOLKITRSP* pRsp,       // @parm Command Response to be sent.
+	const LPBYTE
+	pDetails,              // @parm Detailed command response to be sent (can be <def NULL> if details aren't required)
+	DWORD dwDetailSize                  // @parm size of the details pointed to by <p pDetails> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -6970,8 +6968,8 @@ HRESULT RIL_SendSimToolkitCmdResponse(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_TerminateSimToolkitSession(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwCause                       // @parm cause for session termination (<def RIL_SIMTKITTERMCAUSE_> constant)
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwCause                       // @parm cause for session termination (<def RIL_SIMTKITTERMCAUSE_> constant)
 );
 
 // -----------------------------------------------------------------------------
@@ -6984,10 +6982,11 @@ HRESULT RIL_TerminateSimToolkitSession(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendSimToolkitEventDownload(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const DWORD dwEvent,                // @parm Event to be sent.
-    const LPBYTE pData,                 // @parm Detailed event info to be sent (can be <def NULL> if details aren't required)
-    DWORD dwDataSize                    // @parm size of the details pointed to by <p pDetails> in bytes
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const DWORD dwEvent,                // @parm Event to be sent.
+	const LPBYTE
+	pData,                 // @parm Detailed event info to be sent (can be <def NULL> if details aren't required)
+	DWORD dwDataSize                    // @parm size of the details pointed to by <p pDetails> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -7001,7 +7000,7 @@ HRESULT RIL_SendSimToolkitEventDownload(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCostInfo(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7015,9 +7014,9 @@ HRESULT RIL_GetCostInfo(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetCostInfo(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILCOSTINFO* lpCostInfo,      // @parm advice-of-charge settings to set
-    LPCSTR lpszPassword                 // @parm password requred to set advice-of-charge settings
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILCOSTINFO* lpCostInfo,      // @parm advice-of-charge settings to set
+	LPCSTR lpszPassword                 // @parm password requred to set advice-of-charge settings
 );
 
 // -----------------------------------------------------------------------------
@@ -7029,10 +7028,10 @@ HRESULT RIL_SetCostInfo(
 // @comm Asynchronous.  <p lpData> points to a <t RILSIGNALQUALITY> structure.
 //
 // -----------------------------------------------------------------------------
-typedef HRESULT (*RIL_GetSignalQualityProc)
+typedef HRESULT(*RIL_GetSignalQualityProc)
 //HRESULT RIL_GetSignalQuality
 (
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7044,10 +7043,10 @@ typedef HRESULT (*RIL_GetSignalQualityProc)
 // @comm Asynchronous.  <p lpData> points to a <t RILCELLTOWERINFO> structure.
 //
 // -----------------------------------------------------------------------------
-typedef HRESULT (*RIL_GetCellTowerInfoProc)
+typedef HRESULT(*RIL_GetCellTowerInfoProc)
 //HRESULT RIL_GetCellTowerInfo
 (
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7060,9 +7059,9 @@ typedef HRESULT (*RIL_GetCellTowerInfoProc)
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_DevSpecific(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const BYTE* lpbParams,              // @parm parameters for the operation to be performed
-    DWORD dwSize                        // @parm size of the data pointed to by <p lpParams> in bytes
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const BYTE* lpbParams,              // @parm parameters for the operation to be performed
+	DWORD dwSize                        // @parm size of the data pointed to by <p lpParams> in bytes
 );
 
 // -----------------------------------------------------------------------------
@@ -7099,8 +7098,8 @@ HRESULT RIL_DevSpecific(
 //                     <def *_GPRSPACKETSUPPORT>      points to an <t RILGPRSPACKETSUPPORT> structure<nl>
 
 HRESULT RIL_GetDevCaps(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwCapsType                    // @parm type of caps class to retrieve
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwCapsType                    // @parm type of caps class to retrieve
 );
 
 // -----------------------------------------------------------------------------
@@ -7114,7 +7113,7 @@ HRESULT RIL_GetDevCaps(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetSystemTime(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7127,7 +7126,7 @@ HRESULT RIL_GetSystemTime(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetGPRSContextList(
-    HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7140,8 +7139,8 @@ HRESULT RIL_GetGPRSContextList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetGPRSContext(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILGPRSCONTEXT* lpGprsContext // @parm points to a <t RILGPRSCONTEXT> structure
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILGPRSCONTEXT* lpGprsContext // @parm points to a <t RILGPRSCONTEXT> structure
 );
 
 // -----------------------------------------------------------------------------
@@ -7154,8 +7153,8 @@ HRESULT RIL_SetGPRSContext(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_DeleteGPRSContext(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwContextID                   // @parm identifies which context to delete
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwContextID                   // @parm identifies which context to delete
 );
 
 // -----------------------------------------------------------------------------
@@ -7168,7 +7167,7 @@ HRESULT RIL_DeleteGPRSContext(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetRequestedQualityOfServiceList(
-    HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7181,8 +7180,8 @@ HRESULT RIL_GetRequestedQualityOfServiceList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetRequestedQualityOfService(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILGPRSQOSPROFILE* lpGprsQosProfile // @parm points to a <t RILGPRSQOSPROFILE> structure
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILGPRSQOSPROFILE* lpGprsQosProfile // @parm points to a <t RILGPRSQOSPROFILE> structure
 );
 
 // -----------------------------------------------------------------------------
@@ -7195,8 +7194,8 @@ HRESULT RIL_SetRequestedQualityOfService(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_DeleteRequestedQualityOfService(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwContextID                   // @parm identifies which profile to delete
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwContextID                   // @parm identifies which profile to delete
 );
 
 // -----------------------------------------------------------------------------
@@ -7209,7 +7208,7 @@ HRESULT RIL_DeleteRequestedQualityOfService(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetMinimumQualityOfServiceList(
-    HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7222,8 +7221,8 @@ HRESULT RIL_GetMinimumQualityOfServiceList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetMinimumQualityOfService(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILGPRSQOSPROFILE* lpGprsQosProfile // @parm points to a <t RILGPRSQOSPROFILE> structure
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILGPRSQOSPROFILE* lpGprsQosProfile // @parm points to a <t RILGPRSQOSPROFILE> structure
 );
 
 // -----------------------------------------------------------------------------
@@ -7236,8 +7235,8 @@ HRESULT RIL_SetMinimumQualityOfService(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_DeleteMinimumQualityOfService(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwContextID                   // @parm identifies which profile to delete
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwContextID                   // @parm identifies which profile to delete
 );
 
 // -----------------------------------------------------------------------------
@@ -7250,8 +7249,8 @@ HRESULT RIL_DeleteMinimumQualityOfService(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetGPRSAttached(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    BOOL fAttached                      // @parm TRUE: attached, FALSE: detached
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	BOOL fAttached                      // @parm TRUE: attached, FALSE: detached
 );
 
 // -----------------------------------------------------------------------------
@@ -7264,7 +7263,7 @@ HRESULT RIL_SetGPRSAttached(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetGPRSAttached(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7277,9 +7276,9 @@ HRESULT RIL_GetGPRSAttached(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetGPRSContextActivated(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwContextID,                  // @parm identifies the context
-    BOOL fContextActivation             // @parm TRUE: activated, FALSE: deactivated
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwContextID,                  // @parm identifies the context
+	BOOL fContextActivation             // @parm TRUE: activated, FALSE: deactivated
 );
 
 // -----------------------------------------------------------------------------
@@ -7292,7 +7291,7 @@ HRESULT RIL_SetGPRSContextActivated(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetGPRSContextActivatedList(
-    HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                          // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7305,8 +7304,9 @@ HRESULT RIL_GetGPRSContextActivatedList(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_EnterGPRSDataMode(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILENTERGPRSDATAMODE* lpEnterGprsDataMode // @parm points to a <t RILENTERGPRSDATAMODE> structure
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILENTERGPRSDATAMODE*
+	lpEnterGprsDataMode // @parm points to a <t RILENTERGPRSDATAMODE> structure
 );
 
 // -----------------------------------------------------------------------------
@@ -7319,8 +7319,8 @@ HRESULT RIL_EnterGPRSDataMode(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetGPRSAddress(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwContextID                   // @parm identifies the context
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwContextID                   // @parm identifies the context
 );
 
 // -----------------------------------------------------------------------------
@@ -7333,8 +7333,8 @@ HRESULT RIL_GetGPRSAddress(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GPRSAnswer(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILGPRSANSWER* lpGprsAnswer   // @parm points to a <t RILGPRSANSWER> structure
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILGPRSANSWER* lpGprsAnswer   // @parm points to a <t RILGPRSANSWER> structure
 );
 
 // -----------------------------------------------------------------------------
@@ -7347,7 +7347,7 @@ HRESULT RIL_GPRSAnswer(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetGPRSRegistrationStatus(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 
@@ -7361,7 +7361,7 @@ HRESULT RIL_GetGPRSRegistrationStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetGPRSClass(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7374,8 +7374,8 @@ HRESULT RIL_GetGPRSClass(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetGPRSClass(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwClass                       // @parm a RIL_GPRSCLASS_* constant
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwClass                       // @parm a RIL_GPRSCLASS_* constant
 );
 
 // -----------------------------------------------------------------------------
@@ -7388,7 +7388,7 @@ HRESULT RIL_SetGPRSClass(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetMOSMSService(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7401,8 +7401,8 @@ HRESULT RIL_GetMOSMSService(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetMOSMSService(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwMoSmsService                // @parm a RIL_MOSMSSERVICE_* constant
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwMoSmsService                // @parm a RIL_MOSMSSERVICE_* constant
 );
 
 // -----------------------------------------------------------------------------
@@ -7429,11 +7429,11 @@ HRESULT RIL_SetMOSMSService(
 //
 // -----------------------------------------------------------------------------
 typedef struct rilbytecounter_tag {
-    DWORD cbSize;                           // @field structure size in bytes
-    DWORD dwParams;                         // @field indicates valid parameters
-    DWORD dwRxByte;                         // @field Number of received bytes
-    DWORD dwTxByte;                         // @field Number of transmitted bytes
-    DWORD dwTotalByte;                      // @field Total Number of bytes transferred (This comes from the radio, not RxByte+TxByte)
+	DWORD cbSize;                           // @field structure size in bytes
+	DWORD dwParams;                         // @field indicates valid parameters
+	DWORD dwRxByte;                         // @field Number of received bytes
+	DWORD dwTxByte;                         // @field Number of transmitted bytes
+	DWORD dwTotalByte;                      // @field Total Number of bytes transferred (This comes from the radio, not RxByte+TxByte)
 } RILBYTECOUNTER, *LPRILBYTECOUNTER;
 
 // -----------------------------------------------------------------------------
@@ -7446,7 +7446,7 @@ typedef struct rilbytecounter_tag {
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetPacketByteCount(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7459,7 +7459,7 @@ HRESULT RIL_GetPacketByteCount(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_ResetPacketByteCount(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7493,7 +7493,7 @@ HRESULT RIL_ResetPacketByteCount(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCurrentSystemType(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7506,8 +7506,8 @@ HRESULT RIL_GetCurrentSystemType(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SendFlash(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    LPRILADDRESS lpraRilAddress         // @parm flash address
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	LPRILADDRESS lpraRilAddress         // @parm flash address
 );
 
 // -----------------------------------------------------------------------------
@@ -7533,7 +7533,7 @@ HRESULT RIL_SendFlash(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetRoamingMode(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7546,8 +7546,8 @@ HRESULT RIL_GetRoamingMode(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetRoamingMode(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwRoamingMode                 // @parm RIL_ROAMMODE_* constant
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwRoamingMode                 // @parm RIL_ROAMMODE_* constant
 );
 
 // -----------------------------------------------------------------------------
@@ -7572,7 +7572,7 @@ HRESULT RIL_SetRoamingMode(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetPreferredPrivacyMode(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7585,8 +7585,8 @@ HRESULT RIL_GetPreferredPrivacyMode(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_SetPreferredPrivacyMode(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    DWORD dwPreferredPrivacyMode        // @parm user's preferred privacy setting, uses RIL_CALLPRIVACY_* constant
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	DWORD dwPreferredPrivacyMode        // @parm user's preferred privacy setting, uses RIL_CALLPRIVACY_* constant
 );
 
 // -----------------------------------------------------------------------------
@@ -7599,7 +7599,7 @@ HRESULT RIL_SetPreferredPrivacyMode(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCurrentPrivacyStatus(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7614,8 +7614,8 @@ HRESULT RIL_GetCurrentPrivacyStatus(
 // -----------------------------------------------------------------------------
 
 HRESULT RIL_SendAKey(
-    HRIL hRil, // @parm handle to RIL instance returned by <f RIL_Initialize>
-    LPCSTR lpszChars // @parm numeric string representing akey digits (0-9, *, #)
+	HRIL hRil, // @parm handle to RIL instance returned by <f RIL_Initialize>
+	LPCSTR lpszChars // @parm numeric string representing akey digits (0-9, *, #)
 );
 
 // -----------------------------------------------------------------------------
@@ -7640,7 +7640,7 @@ HRESULT RIL_SendAKey(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCurrentLocationStatus(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7666,7 +7666,7 @@ HRESULT RIL_GetCurrentLocationStatus(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_GetCurrentRoamingStatus(
-    HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
+	HRIL hRil                           // @parm handle to RIL instance returned by <f RIL_Initialize>
 );
 
 // -----------------------------------------------------------------------------
@@ -7697,8 +7697,8 @@ HRESULT RIL_GetCurrentRoamingStatus(
 // -----------------------------------------------------------------------------
 
 HRESULT RIL_NDIS_SendPacket(
-    HRIL hRil, // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const LPRILNDISPACKET lpPacketToSend // @parm numeric string representing akey digits (0-9, *, #)
+	HRIL hRil, // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const LPRILNDISPACKET lpPacketToSend // @parm numeric string representing akey digits (0-9, *, #)
 );
 
 
@@ -7713,8 +7713,8 @@ HRESULT RIL_NDIS_SendPacket(
 // -----------------------------------------------------------------------------
 
 HRESULT RIL_NDIS_ReceivePacketDone(
-    HRIL hRil, // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const LPRILNDISPACKET lpPacketReceived // @parm
+	HRIL hRil, // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const LPRILNDISPACKET lpPacketReceived // @parm
 );
 
 // ---------------------------------------------------------------------------
@@ -7727,8 +7727,8 @@ HRESULT RIL_NDIS_ReceivePacketDone(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_NDIS_SetGPRSContextActivated(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    const RILNDISGPRSCONTEXT *lpNdisSetGprsContextActivated // @parm
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	const RILNDISGPRSCONTEXT* lpNdisSetGprsContextActivated // @parm
 );
 
 
@@ -7742,8 +7742,8 @@ HRESULT RIL_NDIS_SetGPRSContextActivated(
 //
 // -----------------------------------------------------------------------------
 HRESULT RIL_LogEventToRadio(
-    HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
-    LPCSTR lpszChars	 // @parm
+	HRIL hRil,                          // @parm handle to RIL instance returned by <f RIL_Initialize>
+	LPCSTR lpszChars	 // @parm
 );
 
 

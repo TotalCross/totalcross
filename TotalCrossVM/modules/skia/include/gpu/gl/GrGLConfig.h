@@ -17,15 +17,15 @@
  * Optional GL config file.
  */
 #ifdef GR_GL_CUSTOM_SETUP_HEADER
-    #include GR_GL_CUSTOM_SETUP_HEADER
+	#include GR_GL_CUSTOM_SETUP_HEADER
 #endif
 
 #if !defined(GR_GL_FUNCTION_TYPE)
-    #if defined(SK_BUILD_FOR_WIN)
-        #define GR_GL_FUNCTION_TYPE __stdcall
-    #else
-        #define GR_GL_FUNCTION_TYPE
-    #endif
+	#if defined(SK_BUILD_FOR_WIN)
+		#define GR_GL_FUNCTION_TYPE __stdcall
+	#else
+		#define GR_GL_FUNCTION_TYPE
+	#endif
 #endif
 
 /**
@@ -83,47 +83,47 @@
  */
 
 #if !defined(GR_GL_LOG_CALLS)
-    #ifdef SK_DEBUG
-        #define GR_GL_LOG_CALLS 1
-    #else
-        #define GR_GL_LOG_CALLS 0
-    #endif
+	#ifdef SK_DEBUG
+		#define GR_GL_LOG_CALLS 1
+	#else
+		#define GR_GL_LOG_CALLS 0
+	#endif
 #endif
 
 #if !defined(GR_GL_LOG_CALLS_START)
-    #define GR_GL_LOG_CALLS_START                       0
+	#define GR_GL_LOG_CALLS_START                       0
 #endif
 
 #if !defined(GR_GL_CHECK_ERROR)
-    #ifdef SK_DEBUG
-        #define GR_GL_CHECK_ERROR 1
-    #else
-        #define GR_GL_CHECK_ERROR 0
-    #endif
+	#ifdef SK_DEBUG
+		#define GR_GL_CHECK_ERROR 1
+	#else
+		#define GR_GL_CHECK_ERROR 0
+	#endif
 #endif
 
 #if !defined(GR_GL_CHECK_ERROR_START)
-    #define GR_GL_CHECK_ERROR_START                     1
+	#define GR_GL_CHECK_ERROR_START                     1
 #endif
 
 #if !defined(GR_GL_USE_BUFFER_DATA_NULL_HINT)
-    #define GR_GL_USE_BUFFER_DATA_NULL_HINT             1
+	#define GR_GL_USE_BUFFER_DATA_NULL_HINT             1
 #endif
 
 #if !defined(GR_GL_CHECK_ALLOC_WITH_GET_ERROR)
-    #define GR_GL_CHECK_ALLOC_WITH_GET_ERROR            1
+	#define GR_GL_CHECK_ALLOC_WITH_GET_ERROR            1
 #endif
 
 #if !defined(GR_GL_CHECK_FBO_STATUS_ONCE_PER_FORMAT)
-    #define GR_GL_CHECK_FBO_STATUS_ONCE_PER_FORMAT      0
+	#define GR_GL_CHECK_FBO_STATUS_ONCE_PER_FORMAT      0
 #endif
 
 #if !defined(GR_GL_MUST_USE_VBO)
-    #define GR_GL_MUST_USE_VBO                          0
+	#define GR_GL_MUST_USE_VBO                          0
 #endif
 
 #if !defined(GR_GL_USE_NEW_SHADER_SOURCE_SIGNATURE)
-    #define GR_GL_USE_NEW_SHADER_SOURCE_SIGNATURE       0
+	#define GR_GL_USE_NEW_SHADER_SOURCE_SIGNATURE       0
 #endif
 
 #endif

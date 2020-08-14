@@ -19,103 +19,123 @@ class GrTexture;
 
 class SK_API GrSurface : public GrGpuResource {
 public:
-    /**
-     * Retrieves the width of the surface.
-     */
-    int width() const { return fWidth; }
+	/**
+	 * Retrieves the width of the surface.
+	 */
+	int width() const {
+		return fWidth;
+	}
 
-    /**
-     * Retrieves the height of the surface.
-     */
-    int height() const { return fHeight; }
+	/**
+	 * Retrieves the height of the surface.
+	 */
+	int height() const {
+		return fHeight;
+	}
 
-    /**
-     * Helper that gets the width and height of the surface as a bounding rectangle.
-     */
-    SkRect getBoundsRect() const { return SkRect::MakeIWH(this->width(), this->height()); }
+	/**
+	 * Helper that gets the width and height of the surface as a bounding rectangle.
+	 */
+	SkRect getBoundsRect() const {
+		return SkRect::MakeIWH(this->width(), this->height());
+	}
 
-    /**
-     * Retrieves the pixel config specified when the surface was created.
-     * For render targets this can be kUnknown_GrPixelConfig
-     * if client asked us to render to a target that has a pixel
-     * config that isn't equivalent with one of our configs.
-     */
-    GrPixelConfig config() const { return fConfig; }
+	/**
+	 * Retrieves the pixel config specified when the surface was created.
+	 * For render targets this can be kUnknown_GrPixelConfig
+	 * if client asked us to render to a target that has a pixel
+	 * config that isn't equivalent with one of our configs.
+	 */
+	GrPixelConfig config() const {
+		return fConfig;
+	}
 
-    /**
-     * @return the texture associated with the surface, may be null.
-     */
-    virtual GrTexture* asTexture() { return nullptr; }
-    virtual const GrTexture* asTexture() const { return nullptr; }
+	/**
+	 * @return the texture associated with the surface, may be null.
+	 */
+	virtual GrTexture* asTexture() {
+		return nullptr;
+	}
+	virtual const GrTexture* asTexture() const {
+		return nullptr;
+	}
 
-    /**
-     * @return the render target underlying this surface, may be null.
-     */
-    virtual GrRenderTarget* asRenderTarget() { return nullptr; }
-    virtual const GrRenderTarget* asRenderTarget() const { return nullptr; }
+	/**
+	 * @return the render target underlying this surface, may be null.
+	 */
+	virtual GrRenderTarget* asRenderTarget() {
+		return nullptr;
+	}
+	virtual const GrRenderTarget* asRenderTarget() const {
+		return nullptr;
+	}
 
-    /** Access methods that are only to be used within Skia code. */
-    inline GrSurfacePriv surfacePriv();
-    inline const GrSurfacePriv surfacePriv() const;
+	/** Access methods that are only to be used within Skia code. */
+	inline GrSurfacePriv surfacePriv();
+	inline const GrSurfacePriv surfacePriv() const;
 
-    static size_t WorstCaseSize(const GrSurfaceDesc& desc, bool useNextPow2 = false);
-    static size_t ComputeSize(GrPixelConfig config, int width, int height, int colorSamplesPerPixel,
-                              GrMipMapped, bool useNextPow2 = false);
+	static size_t WorstCaseSize(const GrSurfaceDesc& desc, bool useNextPow2 = false);
+	static size_t ComputeSize(GrPixelConfig config, int width, int height, int colorSamplesPerPixel,
+							  GrMipMapped, bool useNextPow2 = false);
 
 protected:
-    void setHasMixedSamples() {
-        SkASSERT(this->asRenderTarget());
-        fSurfaceFlags |= GrInternalSurfaceFlags::kMixedSampled;
-    }
-    bool hasMixedSamples() const { return fSurfaceFlags & GrInternalSurfaceFlags::kMixedSampled; }
+	void setHasMixedSamples() {
+		SkASSERT(this->asRenderTarget());
+		fSurfaceFlags |= GrInternalSurfaceFlags::kMixedSampled;
+	}
+	bool hasMixedSamples() const {
+		return fSurfaceFlags & GrInternalSurfaceFlags::kMixedSampled;
+	}
 
-    void setSupportsWindowRects() {
-        SkASSERT(this->asRenderTarget());
-        fSurfaceFlags |= GrInternalSurfaceFlags::kWindowRectsSupport;
-    }
-    bool supportsWindowRects() const {
-        return fSurfaceFlags & GrInternalSurfaceFlags::kWindowRectsSupport;
-    }
+	void setSupportsWindowRects() {
+		SkASSERT(this->asRenderTarget());
+		fSurfaceFlags |= GrInternalSurfaceFlags::kWindowRectsSupport;
+	}
+	bool supportsWindowRects() const {
+		return fSurfaceFlags & GrInternalSurfaceFlags::kWindowRectsSupport;
+	}
 
-    void setGLRTFBOIDIs0() {
-        SkASSERT(this->asRenderTarget());
-        fSurfaceFlags |= GrInternalSurfaceFlags::kGLRTFBOIDIs0;
-    }
-    bool glRTFBOIDis0() const {
-        return fSurfaceFlags & GrInternalSurfaceFlags::kGLRTFBOIDIs0;
-    }
+	void setGLRTFBOIDIs0() {
+		SkASSERT(this->asRenderTarget());
+		fSurfaceFlags |= GrInternalSurfaceFlags::kGLRTFBOIDIs0;
+	}
+	bool glRTFBOIDis0() const {
+		return fSurfaceFlags & GrInternalSurfaceFlags::kGLRTFBOIDIs0;
+	}
 
-    // Methods made available via GrSurfacePriv
-    bool hasPendingRead() const;
-    bool hasPendingWrite() const;
-    bool hasPendingIO() const;
+	// Methods made available via GrSurfacePriv
+	bool hasPendingRead() const;
+	bool hasPendingWrite() const;
+	bool hasPendingIO() const;
 
-    // Provides access to methods that should be public within Skia code.
-    friend class GrSurfacePriv;
+	// Provides access to methods that should be public within Skia code.
+	friend class GrSurfacePriv;
 
-    GrSurface(GrGpu* gpu, const GrSurfaceDesc& desc)
-            : INHERITED(gpu)
-            , fConfig(desc.fConfig)
-            , fWidth(desc.fWidth)
-            , fHeight(desc.fHeight)
-            , fSurfaceFlags(GrInternalSurfaceFlags::kNone) {
-    }
+	GrSurface(GrGpu* gpu, const GrSurfaceDesc& desc)
+		: INHERITED(gpu)
+		, fConfig(desc.fConfig)
+		, fWidth(desc.fWidth)
+		, fHeight(desc.fHeight)
+		, fSurfaceFlags(GrInternalSurfaceFlags::kNone) {
+	}
 
-    ~GrSurface() override {}
+	~GrSurface() override {}
 
 
-    void onRelease() override;
-    void onAbandon() override;
+	void onRelease() override;
+	void onAbandon() override;
 
 private:
-    const char* getResourceType() const override { return "Surface"; }
+	const char* getResourceType() const override {
+		return "Surface";
+	}
 
-    GrPixelConfig          fConfig;
-    int                    fWidth;
-    int                    fHeight;
-    GrInternalSurfaceFlags fSurfaceFlags;
+	GrPixelConfig          fConfig;
+	int                    fWidth;
+	int                    fHeight;
+	GrInternalSurfaceFlags fSurfaceFlags;
 
-    typedef GrGpuResource INHERITED;
+	typedef GrGpuResource INHERITED;
 };
 
 #endif

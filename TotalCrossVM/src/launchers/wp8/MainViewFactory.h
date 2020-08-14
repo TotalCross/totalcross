@@ -1,9 +1,7 @@
 ﻿#ifdef __cplusplus
 
-namespace TotalCross
-{
-	ref class MainViewFactory sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
-	{
+namespace TotalCross {
+	ref class MainViewFactory sealed : Windows::ApplicationModel::Core::IFrameworkViewSource {
 	public:
 		MainViewFactory(Platform::String^ cmdLine);
 

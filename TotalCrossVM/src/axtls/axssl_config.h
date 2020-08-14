@@ -5,15 +5,15 @@
 #define HAVE_DOT_CONFIG 1
 
 #if defined(linux) || defined(ANDROID)
-#define CONFIG_PLATFORM_LINUX 1
+	#define CONFIG_PLATFORM_LINUX 1
 #elif defined(_WIN32_WCE)
-#define CONFIG_PLATFORM_WINCE 1
+	#define CONFIG_PLATFORM_WINCE 1
 #elif defined(WIN32)
-#define CONFIG_PLATFORM_WIN32 1
+	#define CONFIG_PLATFORM_WIN32 1
 #elif defined(PALMOS)
-#define CONFIG_PLATFORM_PALMOS 1
+	#define CONFIG_PLATFORM_PALMOS 1
 #else
-#error "not supported platform"
+	#error "not supported platform"
 #endif
 
 /*

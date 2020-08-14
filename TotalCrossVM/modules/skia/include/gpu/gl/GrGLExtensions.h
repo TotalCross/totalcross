@@ -25,54 +25,58 @@ class SkJSONWriter;
  */
 class SK_API GrGLExtensions {
 public:
-    GrGLExtensions() {}
+	GrGLExtensions() {}
 
-    GrGLExtensions(const GrGLExtensions&);
+	GrGLExtensions(const GrGLExtensions&);
 
-    GrGLExtensions& operator=(const GrGLExtensions&);
+	GrGLExtensions& operator=(const GrGLExtensions&);
 
-    void swap(GrGLExtensions* that) {
-        using std::swap;
-        swap(fStrings, that->fStrings);
-        swap(fInitialized, that->fInitialized);
-    }
+	void swap(GrGLExtensions* that) {
+		using std::swap;
+		swap(fStrings, that->fStrings);
+		swap(fInitialized, that->fInitialized);
+	}
 
-    /**
-     * We sometimes need to use this class without having yet created a GrGLInterface. This version
-     * of init expects that getString is always non-NULL while getIntegerv and getStringi are non-
-     * NULL if on desktop GL with version 3.0 or higher. Otherwise it will fail.
-     */
-    bool init(GrGLStandard standard,
-              GrGLFunction<GrGLGetStringFn> getString,
-              GrGLFunction<GrGLGetStringiFn> getStringi,
-              GrGLFunction<GrGLGetIntegervFn> getIntegerv,
-              GrGLFunction<GrEGLQueryStringFn> queryString = nullptr,
-              GrEGLDisplay eglDisplay = nullptr);
+	/**
+	 * We sometimes need to use this class without having yet created a GrGLInterface. This version
+	 * of init expects that getString is always non-NULL while getIntegerv and getStringi are non-
+	 * NULL if on desktop GL with version 3.0 or higher. Otherwise it will fail.
+	 */
+	bool init(GrGLStandard standard,
+			  GrGLFunction<GrGLGetStringFn> getString,
+			  GrGLFunction<GrGLGetStringiFn> getStringi,
+			  GrGLFunction<GrGLGetIntegervFn> getIntegerv,
+			  GrGLFunction<GrEGLQueryStringFn> queryString = nullptr,
+			  GrEGLDisplay eglDisplay = nullptr);
 
-    bool isInitialized() const { return fInitialized; }
+	bool isInitialized() const {
+		return fInitialized;
+	}
 
-    /**
-     * Queries whether an extension is present. This will fail if init() has not been called.
-     */
-    bool has(const char[]) const;
+	/**
+	 * Queries whether an extension is present. This will fail if init() has not been called.
+	 */
+	bool has(const char[]) const;
 
-    /**
-     * Removes an extension if present. Returns true if the extension was present before the call.
-     */
-    bool remove(const char[]);
+	/**
+	 * Removes an extension if present. Returns true if the extension was present before the call.
+	 */
+	bool remove(const char[]);
 
-    /**
-     * Adds an extension to list
-     */
-    void add(const char[]);
+	/**
+	 * Adds an extension to list
+	 */
+	void add(const char[]);
 
-    void reset() { fStrings.reset(); }
+	void reset() {
+		fStrings.reset();
+	}
 
-    void dumpJSON(SkJSONWriter*) const;
+	void dumpJSON(SkJSONWriter*) const;
 
 private:
-    bool fInitialized = false;
-    SkTArray<SkString> fStrings;
+	bool fInitialized = false;
+	SkTArray<SkString> fStrings;
 };
 
 #endif

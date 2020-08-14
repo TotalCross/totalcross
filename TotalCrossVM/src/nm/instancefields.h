@@ -183,9 +183,9 @@
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
 #define Graphics_isImageSurface(g)  (Surface_isImage(Graphics_surface(g)))
 #ifdef __gl2_h_
-#define Graphics_useOpenGL(g)             (!Graphics_isImageSurface(g))
+	#define Graphics_useOpenGL(g)             (!Graphics_isImageSurface(g))
 #else
-#define Graphics_useOpenGL(g)             (false)
+	#define Graphics_useOpenGL(g)             (false)
 #endif
 
 // totalcross.io.ByteArrayStream
@@ -272,7 +272,7 @@
 #define GPS_lastFix(o)                    *getInstanceFieldObject(o, "lastFix", "totalcross.io.device.gps.GPS")
 #define GPS_pdop(o)                       *getInstanceFieldDouble(o, "pdop", "totalcross.io.device.gps.GPS")
 #define GPS_lowSignalReason(o)            *getInstanceFieldObject(o, "lowSignalReason", "totalcross.io.device.gps.GPS")
-#define GPS_messageReceived(o)            *getInstanceFieldObject(o, "messageReceived", "totalcross.io.device.gps.GPS") 
+#define GPS_messageReceived(o)            *getInstanceFieldObject(o, "messageReceived", "totalcross.io.device.gps.GPS")
 #define GPS_precision(o)                  *getInstanceFieldInt(o, "precision", "totalcross.io.device.gps.GPS")
 
 // totalcross.net.Socket

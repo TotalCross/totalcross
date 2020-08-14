@@ -142,37 +142,33 @@
 
 #pragma pack(1)
 
-typedef struct
-{
+typedef struct {
 	HWND     hWnd;
 	TCHAR    szFilePath[MAX_PATH];
-  TCHAR    szPassword[MAX_PWD+1];
-}sBCR_FW, *psBCR_FW;
+	TCHAR    szPassword[MAX_PWD + 1];
+} sBCR_FW, *psBCR_FW;
 
-typedef struct
-{
-	TCHAR   szOldPassword[MAX_PWD+1];
-	TCHAR   szNewPassword[MAX_PWD+1];
-}sBCR_Set_PW, *psBCR_Set_PW;
+typedef struct {
+	TCHAR   szOldPassword[MAX_PWD + 1];
+	TCHAR   szNewPassword[MAX_PWD + 1];
+} sBCR_Set_PW, *psBCR_Set_PW;
 
-typedef struct
-{
+typedef struct {
 	DWORD		dwSize;										//the size of this struct
 	DWORD 	dwMask;										// indicate the valid field
 	char    szModuleVersion[20];			// BCR Module Version String
-    TCHAR   szGoodSoundFile[MAX_PATH];// Sound file path for Good Read
-    DWORD   dwBCType;         				// Bar Code Type;
-    DWORD   dwTriggerKey;     				// Trigger Key
-    DWORD   dwReadMode;        				//
-    DWORD   dwModuleEnable;   				// Module Enable; MOD_DISABLE, MOD_ENABLE
-    DWORD   dwGoodSound;      				// Enable Good Read Sound; GS_ENABLE, GS_DISABLE
-    DWORD   dwKeyboardHook;
-    BYTE    cBcrModuleType;
-    DWORD   dwBarCodeTypeSupport;
-}sBCR_Status, *psBCR_Status;
+	TCHAR   szGoodSoundFile[MAX_PATH];// Sound file path for Good Read
+	DWORD   dwBCType;         				// Bar Code Type;
+	DWORD   dwTriggerKey;     				// Trigger Key
+	DWORD   dwReadMode;        				//
+	DWORD   dwModuleEnable;   				// Module Enable; MOD_DISABLE, MOD_ENABLE
+	DWORD   dwGoodSound;      				// Enable Good Read Sound; GS_ENABLE, GS_DISABLE
+	DWORD   dwKeyboardHook;
+	BYTE    cBcrModuleType;
+	DWORD   dwBarCodeTypeSupport;
+} sBCR_Status, *psBCR_Status;
 
-typedef struct
-{
+typedef struct {
 	DWORD   dwSize;                     /* size of this structure */
 	DWORD   dwMask;                     /* Mask field, bit0 : OptionFile, bit1 : Optionstring */
 	TCHAR   szOPFile[MAX_PATH];         /* Option file */
@@ -195,27 +191,27 @@ typedef struct
 
 
 #define BCR_IOCTL_TRIGGER \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2048, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2048, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_SETOPTIONS \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2049, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2049, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_UPDATE_FIRMWARE \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2052, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2052, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_GET_STATUS \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2053, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2053, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_GET_EVENTNAME \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2054, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2054, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_UPDATE_SETTING \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2055, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2055, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_SETPWD \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2056, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2056, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_CANCEL_UPDATE \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2057, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2057, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_CUSTOM_SETOPTIONS \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2061, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2061, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_SET_DEFAULT \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2062, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2062, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 #define BCR_IOCTL_CUSTOM_GETOPTIONS \
-                     CTL_CODE(FILE_DEVICE_BARCODE,  2063, METHOD_BUFFERED,  FILE_ANY_ACCESS)
+	CTL_CODE(FILE_DEVICE_BARCODE,  2063, METHOD_BUFFERED,  FILE_ANY_ACCESS)
 
 
 // Create a event to inform the user's application when the BCR Service resume

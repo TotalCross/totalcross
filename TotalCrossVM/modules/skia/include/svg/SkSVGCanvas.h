@@ -15,21 +15,21 @@ class SkXMLWriter;
 
 class SK_API SkSVGCanvas {
 public:
-    /**
-     *  Returns a new canvas that will generate SVG commands from its draw calls, and send
-     *  them to the provided xmlwriter. Ownership of the xmlwriter is not transfered to the canvas,
-     *  but it must stay valid during the lifetime of the returned canvas.
-     *
-     *  The canvas may buffer some drawing calls, so the output is not guaranteed to be valid
-     *  or complete until the canvas instance is deleted.
-     *
-     *  The 'bounds' parameter defines an initial SVG viewport (viewBox attribute on the root
-     *  SVG element).
-     */
-    static std::unique_ptr<SkCanvas> Make(const SkRect& bounds, SkWStream*);
+	/**
+	 *  Returns a new canvas that will generate SVG commands from its draw calls, and send
+	 *  them to the provided xmlwriter. Ownership of the xmlwriter is not transfered to the canvas,
+	 *  but it must stay valid during the lifetime of the returned canvas.
+	 *
+	 *  The canvas may buffer some drawing calls, so the output is not guaranteed to be valid
+	 *  or complete until the canvas instance is deleted.
+	 *
+	 *  The 'bounds' parameter defines an initial SVG viewport (viewBox attribute on the root
+	 *  SVG element).
+	 */
+	static std::unique_ptr<SkCanvas> Make(const SkRect& bounds, SkWStream*);
 
-    // Internal only.
-    static std::unique_ptr<SkCanvas> Make(const SkRect& bounds, SkXMLWriter*);
+	// Internal only.
+	static std::unique_ptr<SkCanvas> Make(const SkRect& bounds, SkXMLWriter*);
 };
 
 #endif

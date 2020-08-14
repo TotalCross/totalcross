@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 /**
- * Declares functions to manipulate a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and 
+ * Declares functions to manipulate a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and
  * speed, targeting the creation of indices, where the table's record is far greater than the index record.
  */
 
@@ -23,7 +23,7 @@ Node* createNode(Index* index);
 
 /**
  * Loads a node.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param node The node being loaded.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
@@ -73,7 +73,7 @@ void nodeSet(Node* node, Key* key, int32 left, int32 right);
  * @param isInsert Indicates that the function is called by <code>indexInsert()</code>
  * @return The position of the key.
  */
-int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert); 
+int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert);
 
 /**
  * Inserts element item, with left and right children at the right position in this node.
@@ -86,7 +86,8 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert);
  * @param insPos The position where to insert the key.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool nodeInsert(Context context, Node* node, Key* key, int32 leftChild, int32 rightChild, int32 insPos);
+bool nodeInsert(Context context, Node* node, Key* key, int32 leftChild, int32 rightChild,
+				int32 insPos);
 
 /**
  * Sets the flag that indicates if the not should have its write process delayed or not.

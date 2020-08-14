@@ -881,8 +881,8 @@ int cat=CharacterType.getType((char)i);
 data[cat][BLOCK_SIZE]++;
 int b=(i>>8)&0xff;
 if(data[cat][b]==0){
- data[cat][b]=1;
- data[cat][BLOCK_SIZE+1]++;
+data[cat][b]=1;
+data[cat][BLOCK_SIZE+1]++;
 }
 }
 for(int i=0;i<CATEGORY_COUNT;i++){

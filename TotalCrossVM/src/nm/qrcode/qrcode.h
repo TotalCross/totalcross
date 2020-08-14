@@ -36,11 +36,11 @@
 #include "xtypes.h"
 
 #ifndef __cplusplus
-#ifndef _STDBOOL_H
-typedef unsigned char bool;
-static const bool false = 0;
-static const bool true = 1;
-#endif
+	#ifndef _STDBOOL_H
+		typedef unsigned char bool;
+		static const bool false = 0;
+		static const bool true = 1;
+	#endif
 #endif
 
 #include <stdint.h>
@@ -62,32 +62,34 @@ static const bool true = 1;
 // If set to non-zero, this library can ONLY produce QR codes at that version
 // This saves a lot of dynamic memory, as the codeword tables are skipped
 #ifndef LOCK_VERSION
-#define LOCK_VERSION       0
+	#define LOCK_VERSION       0
 #endif
 
 
 typedef struct QRCode {
-    uint8_t version;
-    uint8_t size;
-    uint8_t ecc;
-    uint8_t mode;
-    uint8_t mask;
-    uint8_t *modules;
+	uint8_t version;
+	uint8_t size;
+	uint8_t ecc;
+	uint8_t mode;
+	uint8_t mask;
+	uint8_t* modules;
 } QRCode;
 
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif  /* __cplusplus */
 
 
 
 uint16_t qrcode_getBufferSize(uint8_t version);
 
-int8_t qrcode_initText(QRCode *qrcode, uint8_t *modules, uint8_t version, uint8_t ecc, const char *data);
-int8_t qrcode_initBytes(QRCode *qrcode, uint8_t *modules, uint8_t version, uint8_t ecc, uint8_t *data, uint16_t length);
+int8_t qrcode_initText(QRCode* qrcode, uint8_t* modules, uint8_t version, uint8_t ecc,
+					   const char* data);
+int8_t qrcode_initBytes(QRCode* qrcode, uint8_t* modules, uint8_t version, uint8_t ecc,
+						uint8_t* data, uint16_t length);
 
-bool qrcode_getModule(QRCode *qrcode, uint8_t x, uint8_t y);
+bool qrcode_getModule(QRCode* qrcode, uint8_t x, uint8_t y);
 
 
 

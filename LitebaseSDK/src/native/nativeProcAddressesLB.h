@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #if defined (darwin) || defined (ANDROID)
-void fillNativeProcAddressesLB();
+	void fillNativeProcAddressesLB();
 #else
-#define fillNativeProcAddressesLB()
+	#define fillNativeProcAddressesLB()
 #endif

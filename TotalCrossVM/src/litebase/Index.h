@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 /**
  * Declares functions to deal a B-Tree header.
  */
@@ -33,16 +33,17 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @param colSizes The column sizes.
  * @param name The name of the index table.
  * @param numberColumns The number of columns of the index.
- * @param exist Indicates that the index files already exist. 
+ * @param exist Indicates that the index files already exist.
  * @param heap A heap to allocate the index structure.
  * @return The index created or <code>null</code> if an error occurs.
  * @throws DriverException If is not possible to create the index files.
  */
-Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool exist, Heap heap);
+Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name,
+				   int32 numberColumns, bool exist, Heap heap);
 
 /**
  * Creates an index.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param table The table name whose index is to be created.
  * @param columnHashes The hashes of the index columns.
@@ -53,7 +54,8 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
  * @throws DriverException If a column for the index does not exist or is of type blob.
  * @throws SQLParseException If a column for the index is of type blob.
  */
-bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool isPKCreation, int32 indexCount, uint8* composedPKCols);
+bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool isPKCreation,
+					   int32 indexCount, uint8* composedPKCols);
 
 /**
  * Removes a value from the index.
@@ -98,7 +100,8 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits);
  * @param stop Indicates when the climb process can be finished.
  * @return If it has to stop the climbing process or not, or <code>false</code> if an error occured.
  */
-bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits* markBits, bool* stop);
+bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits* markBits,
+							  bool* stop);
 
 /**
  * Starts from the root to find the left key, then climbs from it until the end.
@@ -108,12 +111,12 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits
  * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory. 
+ * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
 bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits);
 
 /**
- * Splits the overflown node of this B-Tree. The stack ancestors contains all ancestors of the node, together with the known insertion position in 
+ * Splits the overflown node of this B-Tree. The stack ancestors contains all ancestors of the node, together with the known insertion position in
  * each of these ancestors.
  *
  * @param context The thread context where the function is being executed.
@@ -123,18 +126,18 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits);
  */
 bool indexSplitNode(Context context, Node* curr, int32 count);
 
- /**
- * Removes the index files.
- * 
- * @param context The thread context where the function is being executed.
- * @param index The index to be removed.
- * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
- */
+/**
+* Removes the index files.
+*
+* @param context The thread context where the function is being executed.
+* @param index The index to be removed.
+* @return <code>false</code> if an error occured; <code>true</code>, otherwise.
+*/
 bool indexRemove(Context context, Index* index);
 
 /**
  * Closes the index files.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param index The index to be removed.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
@@ -151,9 +154,9 @@ bool indexClose(Context context, Index* index);
  */
 bool indexDeleteAllRows(Context context, Index* index);
 
-/** 
- * Delays the write to disk, caching them at memory. 
- * 
+/**
+ * Delays the write to disk, caching them at memory.
+ *
  * @param context The thread context where the function is being executed.
  * @param index The index.
  * @param delayed Indicates if the writing process is to be done later or not.
@@ -189,7 +192,7 @@ bool indexRename(Context context, Index* index, CharP newName);
  * @param context The thread context where the function is being executed.
  * @param index The index where to find the minimum value.
  * @param sqlValue The minimum value inside the given range to be returned.
- * @param bitMap The table bitmap which indicates which rows will be in the result set. 
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap);
@@ -209,7 +212,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  * Loads a string from the table if needed.
  *
  * @param context The thread context where the function is being executed.
- * @param index The index where to find the minimum value. 
+ * @param index The index where to find the minimum value.
  * @param sqlValue The record structure which will hold (holds) the string.
  * @return <code>false</false> if an error occurs; <code>true</code>, otherwise or no record was found.
  */
@@ -217,17 +220,17 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue);
 
 /**
  * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param index The index where a node is going to be fetched.
- * @return The loaded node, a new cache node with the requested node loaded, a first level node, or <code>null</code> if it is not 
+ * @return The loaded node, a new cache node with the requested node loaded, a first level node, or <code>null</code> if it is not
  * already loaded and its cache is full.
  */
 Node* getLoadedNode(Context context, Index* index, int32 idx);
 
 /**
  * Sorts the records of a table into a temporary table using an index in the ascending order.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param index The index being used to sort the query results.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
@@ -237,11 +240,12 @@ Node* getLoadedNode(Context context, Index* index, int32 idx);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap);
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable,
+					SQLValue** record, int16* columnIndexes, Heap heap);
 
 /**
  * Sorts the records of a table into a temporary table using an index in the descending order.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param index The index being used to sort the query results.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
@@ -251,11 +255,12 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap); 
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable,
+					 SQLValue** record, int16* columnIndexes, Heap heap);
 
 /**
- * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
- * 
+ * Writes all the records with a specific key in the temporary table that satisfy the query where clause.
+ *
  * @param context The thread context where the function is being executed.
  * @param index The index being used to sort the query results.
  * @param valRec The record index.
@@ -265,17 +270,18 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * @param columnIndexes Has the indices of the tables for each resulting column.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes);
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable,
+			  SQLValue** record, int16* columnIndexes);
 
 #ifdef ENABLE_TEST_SUITE
 
-/**
- * Tests if <code>createComposedIndex()</code> works properly.
- * 
- * @param testSuite The test structure.
- * @param currentContext The thread context where the test is being executed.
- */
-void test_createComposedIndex(TestSuite* testSuite, Context currentContext);
+	/**
+	* Tests if <code>createComposedIndex()</code> works properly.
+	*
+	* @param testSuite The test structure.
+	* @param currentContext The thread context where the test is being executed.
+	*/
+	void test_createComposedIndex(TestSuite* testSuite, Context currentContext);
 
 #endif
 

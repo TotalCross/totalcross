@@ -18,67 +18,71 @@ class SkPathMeasure;
 class SK_API Sk1DPathEffect : public SkPathEffect {
 public:
 protected:
-    bool onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*, const SkRect*) const override;
+	bool onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*, const SkRect*) const override;
 
-    /** Called at the start of each contour, returns the initial offset
-        into that contour.
-    */
-    virtual SkScalar begin(SkScalar contourLength) const = 0;
-    /** Called with the current distance along the path, with the current matrix
-        for the point/tangent at the specified distance.
-        Return the distance to travel for the next call. If return <= 0, then that
-        contour is done.
-    */
-    virtual SkScalar next(SkPath* dst, SkScalar dist, SkPathMeasure&) const = 0;
+	/** Called at the start of each contour, returns the initial offset
+	    into that contour.
+	*/
+	virtual SkScalar begin(SkScalar contourLength) const = 0;
+	/** Called with the current distance along the path, with the current matrix
+	    for the point/tangent at the specified distance.
+	    Return the distance to travel for the next call. If return <= 0, then that
+	    contour is done.
+	*/
+	virtual SkScalar next(SkPath* dst, SkScalar dist, SkPathMeasure&) const = 0;
 
 #ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
-    bool exposedInAndroidJavaAPI() const override { return true; }
+	bool exposedInAndroidJavaAPI() const override {
+		return true;
+	}
 #endif
 
 private:
-    typedef SkPathEffect INHERITED;
+	typedef SkPathEffect INHERITED;
 };
 
 class SK_API SkPath1DPathEffect : public Sk1DPathEffect {
 public:
-    enum Style {
-        kTranslate_Style,   // translate the shape to each position
-        kRotate_Style,      // rotate the shape about its center
-        kMorph_Style,       // transform each point, and turn lines into curves
+	enum Style {
+		kTranslate_Style,   // translate the shape to each position
+		kRotate_Style,      // rotate the shape about its center
+		kMorph_Style,       // transform each point, and turn lines into curves
 
-        kLastEnum_Style = kMorph_Style,
-    };
+		kLastEnum_Style = kMorph_Style,
+	};
 
-    /** Dash by replicating the specified path.
-        @param path The path to replicate (dash)
-        @param advance The space between instances of path
-        @param phase distance (mod advance) along path for its initial position
-        @param style how to transform path at each point (based on the current
-                     position and tangent)
-    */
-    static sk_sp<SkPathEffect> Make(const SkPath& path, SkScalar advance, SkScalar phase, Style);
+	/** Dash by replicating the specified path.
+	    @param path The path to replicate (dash)
+	    @param advance The space between instances of path
+	    @param phase distance (mod advance) along path for its initial position
+	    @param style how to transform path at each point (based on the current
+	                 position and tangent)
+	*/
+	static sk_sp<SkPathEffect> Make(const SkPath& path, SkScalar advance, SkScalar phase, Style);
 
-    Factory getFactory() const override { return CreateProc; }
+	Factory getFactory() const override {
+		return CreateProc;
+	}
 
 protected:
-    SkPath1DPathEffect(const SkPath& path, SkScalar advance, SkScalar phase, Style);
-    void flatten(SkWriteBuffer&) const override;
-    bool onFilterPath(SkPath*, const SkPath&, SkStrokeRec*, const SkRect*) const override;
+	SkPath1DPathEffect(const SkPath& path, SkScalar advance, SkScalar phase, Style);
+	void flatten(SkWriteBuffer&) const override;
+	bool onFilterPath(SkPath*, const SkPath&, SkStrokeRec*, const SkRect*) const override;
 
-    // overrides from Sk1DPathEffect
-    SkScalar begin(SkScalar contourLength) const override;
-    SkScalar next(SkPath*, SkScalar, SkPathMeasure&) const override;
+	// overrides from Sk1DPathEffect
+	SkScalar begin(SkScalar contourLength) const override;
+	SkScalar next(SkPath*, SkScalar, SkPathMeasure&) const override;
 
 private:
-    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-    friend class SkFlattenable::PrivateInitializer;
+	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+	friend class SkFlattenable::PrivateInitializer;
 
-    SkPath      fPath;          // copied from constructor
-    SkScalar    fAdvance;       // copied from constructor
-    SkScalar    fInitialOffset; // computed from phase
-    Style       fStyle;         // copied from constructor
+	SkPath      fPath;          // copied from constructor
+	SkScalar    fAdvance;       // copied from constructor
+	SkScalar    fInitialOffset; // computed from phase
+	Style       fStyle;         // copied from constructor
 
-    typedef Sk1DPathEffect INHERITED;
+	typedef Sk1DPathEffect INHERITED;
 };
 
 #endif

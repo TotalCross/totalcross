@@ -6,21 +6,24 @@
 #ifndef UTILS_H
 #define UTILS_H
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
-TC_API void getDateTime(int32* year, int32* month, int32* day, int32* hour, int32* minute, int32* second, int32* millis);
-typedef void (*getDateTimeFunc)(int32* year, int32* month, int32* day, int32* hour, int32* minute, int32* second, int32* millis);
+TC_API void getDateTime(int32* year, int32* month, int32* day, int32* hour, int32* minute,
+						int32* second, int32* millis);
+typedef void (*getDateTimeFunc)(int32* year, int32* month, int32* day, int32* hour, int32* minute,
+								int32* second, int32* millis);
 
 double dmod(double c1, double c2);
 int32 toBaseAsDecimal(int32 num, int32 baseFrom, int32 baseTo); // converts a number to octal
 
 TC_API int32 hashCode(CharP s);
-typedef int32 (*hashCodeFunc)(CharP s);
+typedef int32(*hashCodeFunc)(CharP s);
 int32 hashCodeSlash2Dot(CharP s);
 
-TC_API int32 hashCodeFmt(CharP fmt, ...); // Computes the hashcode of the given variable number of types. Allowed types passed in fmt: s (CharP) S (JCharP) x (pointer) i (int32) l (int64), v (CharP converting to lowercase). Ex: int32 hash = hashCodeFmt("sii", "Barbara", 30, anInt32variable);
-typedef int32 (*hashCodeFmtFunc)(CharP fmt, ...);
+TC_API int32 hashCodeFmt(CharP fmt,
+						 ...); // Computes the hashcode of the given variable number of types. Allowed types passed in fmt: s (CharP) S (JCharP) x (pointer) i (int32) l (int64), v (CharP converting to lowercase). Ex: int32 hash = hashCodeFmt("sii", "Barbara", 30, anInt32variable);
+typedef int32(*hashCodeFmtFunc)(CharP fmt, ...);
 
 TC_API void int2hex(int32 b, int32 places, CharP outBuf);
 typedef void (*int2hexFunc)(int32 b, int32 places, CharP outBuf);
@@ -55,25 +58,26 @@ FILE* findFile(CharP name, CharP pathOut);
 /// <b>Important: count and list must be initialized to 0 before this function is called!</b>
 /// options can be a combination of LF_RECURSIVE
 TC_API Err listFiles(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options);
-typedef Err (*listFilesFunc)(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options);
+typedef Err(*listFilesFunc)(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h,
+							int32 options);
 
 /// Convert a CharP to a primitive type. 'err': if not null, returns true if an error occurs (must be set to false before calling)
-TC_API int32 str2int(CharP str, bool *err);
-typedef int32 (*str2intFunc)(CharP str, bool *err);
+TC_API int32 str2int(CharP str, bool* err);
+typedef int32(*str2intFunc)(CharP str, bool* err);
 /// Convert a CharP to a primitive type. 'err': if not null, returns true if an error occurs (must be set to false before calling)
-TC_API double str2double(CharP str, bool *err);
-typedef double (*str2doubleFunc)(CharP str, bool *err);
+TC_API double str2double(CharP str, bool* err);
+typedef double (*str2doubleFunc)(CharP str, bool* err);
 /// Convert a CharP to a primitive type. 'err': if not null, returns true if an error occurs (must be set to false before calling)
-TC_API int64 str2long(CharP str, bool *err);
-typedef int64 (*str2longFunc)(CharP str, bool *err);
+TC_API int64 str2long(CharP str, bool* err);
+typedef int64(*str2longFunc)(CharP str, bool* err);
 
 /// Convert an int32 to a CRID
 TC_API CharP int2CRID(int32 i, CharP crid);
-typedef CharP (*int2CRIDFunc)(int32 i, CharP crid);
+typedef CharP(*int2CRIDFunc)(int32 i, CharP crid);
 
 /// duplicates a string allocating from a Heap
 TC_API CharP hstrdup(CharP s, Heap h);
-typedef CharP (*hstrdupFunc)(CharP s, Heap h);
+typedef CharP(*hstrdupFunc)(CharP s, Heap h);
 
 /// Replaces the 'from' char to the 'to' char in the buffer.
 void replaceChar(CharP s, char from, char to);
@@ -88,7 +92,7 @@ void replaceChar(CharP s, char from, char to);
 // goes backwards
 typedef char IntBuf[12];
 TC_API CharP int2str(int32 i, IntBuf buf);
-typedef CharP (*int2strFunc)(int32 i, IntBuf buf);
+typedef CharP(*int2strFunc)(int32 i, IntBuf buf);
 /**
  * Length of the longest printable double:
  * int max_digits = 3 + DBL_MANT_DIG - DBL_MIN_EXP
@@ -96,15 +100,15 @@ typedef CharP (*int2strFunc)(int32 i, IntBuf buf);
  * DBL_MANT_DIG = 53
  * DBL_MIN_EXP = -1023
  * max_digits = 3 + 53 - (-1023) = 1079
- * 
+ *
  * We should set DoubleBuf to 1079 to support ANY double value.
  */
 typedef char DoubleBuf[1080];
 TC_API CharP double2str(double val, int32 places, DoubleBuf buf);
-typedef CharP (*double2strFunc)(double val, int32 places, DoubleBuf buf);
+typedef CharP(*double2strFunc)(double val, int32 places, DoubleBuf buf);
 typedef char LongBuf[24];
 TC_API CharP long2str(int64 i, LongBuf buf);
-typedef CharP (*long2strFunc)(int64 i, LongBuf buf);
+typedef CharP(*long2strFunc)(int64 i, LongBuf buf);
 
 /// Pauses the program for the given number of milliseconds
 #ifndef WIN32
@@ -113,10 +117,10 @@ typedef void (*SleepFunc)(uint32 ms);
 #endif
 /// Returns the amount of free memory. Maximum is 2GB. If maxblock is true, it return the biggest contiguous block size available
 TC_API int32 getFreeMemory(bool maxblock);
-typedef int32 (*getFreeMemoryFunc)(bool maxblock);
+typedef int32(*getFreeMemoryFunc)(bool maxblock);
 /// Returns a time stamp
 TC_API int32 getTimeStamp();
-typedef int32 (*getTimeStampFunc)();
+typedef int32(*getTimeStampFunc)();
 /// Normalizes the path, replacing backslahes with slashes.
 TC_API void normalizePath(TCHARP path);
 typedef void (*normalizePathFunc)(TCHARP path);
@@ -128,11 +132,11 @@ typedef void (*normalizePathFunc)(TCHARP path);
 // In all other platforms, no buffer is used and the function just returns "from",
 // since no convertion is needed (TCHAR = char)
 TC_API TCHARP CharP2TCHARP(CharP from);
-typedef TCHARP (*CharP2TCHARPFunc)(CharP from);
+typedef TCHARP(*CharP2TCHARPFunc)(CharP from);
 TC_API TCHARP CharP2TCHARPBuf(CharP from, TCHARP to);
-typedef TCHARP (*CharP2TCHARPBufFunc)(CharP from, TCHARP to);
+typedef TCHARP(*CharP2TCHARPBufFunc)(CharP from, TCHARP to);
 TC_API CharP TCHARP2CharPBuf(TCHARP from, CharP to);
-typedef CharP (*TCHARP2CharPBufFunc)(TCHARP js, CharP buffer);
+typedef CharP(*TCHARP2CharPBufFunc)(TCHARP js, CharP buffer);
 
 /// Handy functions to convert a Java String into a char* and TCHAR*
 #define String2CharP(strObj) JCharP2CharP(String_charsStart(strObj), String_charsLen(strObj))
@@ -141,13 +145,13 @@ typedef CharP (*TCHARP2CharPBufFunc)(TCHARP js, CharP buffer);
 #define String2TCHARPBuf(strObj, buf) JCharP2TCHARPBuf(String_charsStart(strObj), String_charsLen(strObj), buf)
 
 #ifdef WINCE
-   #define strcpyTCHAR lstrcpy
-   #define strcatTCHAR lstrcat
-   #define strlenTCHAR lstrlen
+#define strcpyTCHAR lstrcpy
+#define strcatTCHAR lstrcat
+#define strlenTCHAR lstrlen
 #else
-   #define strcpyTCHAR xstrcpy
-   #define strcatTCHAR xstrcat
-   #define strlenTCHAR xstrlen
+#define strcpyTCHAR xstrcpy
+#define strcatTCHAR xstrcat
+#define strlenTCHAR xstrlen
 #endif
 
 #ifdef ANDROID
@@ -156,7 +160,7 @@ void jstring2CharPEnv(jstring src, char* dest, JNIEnv* env);
 #endif
 
 #ifdef __cplusplus
- } // __cplusplus
+} // __cplusplus
 #endif
 
 #endif

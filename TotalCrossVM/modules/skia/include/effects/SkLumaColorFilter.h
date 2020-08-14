@@ -25,30 +25,32 @@ class SkRasterPipeline;
  *
  */
 
- #include "SkFlattenable.h"
+#include "SkFlattenable.h"
 
 class SK_API SkLumaColorFilter : public SkColorFilter {
 public:
-    static sk_sp<SkColorFilter> Make();
+	static sk_sp<SkColorFilter> Make();
 
 #if SK_SUPPORT_GPU
-    std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(
-            GrContext*, const GrColorSpaceInfo&) const override;
+	std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(
+		GrContext*, const GrColorSpaceInfo&) const override;
 #endif
 
-    Factory getFactory() const override { return CreateProc; }
+	Factory getFactory() const override {
+		return CreateProc;
+	}
 
 protected:
-    void flatten(SkWriteBuffer&) const override;
+	void flatten(SkWriteBuffer&) const override;
 
 private:
-    SkLumaColorFilter();
-    void onAppendStages(SkRasterPipeline*, SkColorSpace*, SkArenaAlloc*,
-                        bool shaderIsOpaque) const override;
-    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-    friend class SkFlattenable::PrivateInitializer;
+	SkLumaColorFilter();
+	void onAppendStages(SkRasterPipeline*, SkColorSpace*, SkArenaAlloc*,
+						bool shaderIsOpaque) const override;
+	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+	friend class SkFlattenable::PrivateInitializer;
 
-    typedef SkColorFilter INHERITED;
+	typedef SkColorFilter INHERITED;
 };
 
 #endif

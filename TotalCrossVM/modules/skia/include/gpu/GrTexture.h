@@ -21,66 +21,70 @@ class GrTexturePriv;
 
 class GrTexture : virtual public GrSurface {
 public:
-    GrTexture* asTexture() override { return this; }
-    const GrTexture* asTexture() const override { return this; }
+	GrTexture* asTexture() override {
+		return this;
+	}
+	const GrTexture* asTexture() const override {
+		return this;
+	}
 
-    virtual GrBackendTexture getBackendTexture() const = 0;
+	virtual GrBackendTexture getBackendTexture() const = 0;
 
-    /**
-     * This function indicates that the texture parameters (wrap mode, filtering, ...) have been
-     * changed externally to Skia.
-     */
-    virtual void textureParamsModified() = 0;
+	/**
+	 * This function indicates that the texture parameters (wrap mode, filtering, ...) have been
+	 * changed externally to Skia.
+	 */
+	virtual void textureParamsModified() = 0;
 
-    /**
-     * This function steals the backend texture from a uniquely owned GrTexture with no pending
-     * IO, passing it out to the caller. The GrTexture is deleted in the process.
-     *
-     * Note that if the GrTexture is not uniquely owned (no other refs), or has pending IO, this
-     * function will fail.
-     */
-    static bool StealBackendTexture(sk_sp<GrTexture>&&,
-                                    GrBackendTexture*,
-                                    SkImage::BackendTextureReleaseProc*);
+	/**
+	 * This function steals the backend texture from a uniquely owned GrTexture with no pending
+	 * IO, passing it out to the caller. The GrTexture is deleted in the process.
+	 *
+	 * Note that if the GrTexture is not uniquely owned (no other refs), or has pending IO, this
+	 * function will fail.
+	 */
+	static bool StealBackendTexture(sk_sp<GrTexture>&&,
+									GrBackendTexture*,
+									SkImage::BackendTextureReleaseProc*);
 
 #ifdef SK_DEBUG
-    void validate() const {
-        this->INHERITED::validate();
-    }
+	void validate() const {
+		this->INHERITED::validate();
+	}
 #endif
 
-    virtual void setRelease(sk_sp<GrReleaseProcHelper> releaseHelper) = 0;
+	virtual void setRelease(sk_sp<GrReleaseProcHelper> releaseHelper) = 0;
 
-    // These match the definitions in SkImage, from whence they came.
-    // TODO: Either move Chrome over to new api or remove their need to call this on GrTexture
-    typedef void* ReleaseCtx;
-    typedef void (*ReleaseProc)(ReleaseCtx);
-    void setRelease(ReleaseProc proc, ReleaseCtx ctx) {
-        sk_sp<GrReleaseProcHelper> helper(new GrReleaseProcHelper(proc, ctx));
-        this->setRelease(std::move(helper));
-    }
+	// These match the definitions in SkImage, from whence they came.
+	// TODO: Either move Chrome over to new api or remove their need to call this on GrTexture
+	typedef void* ReleaseCtx;
+	typedef void (*ReleaseProc)(ReleaseCtx);
+	void setRelease(ReleaseProc proc, ReleaseCtx ctx) {
+		sk_sp<GrReleaseProcHelper> helper(new GrReleaseProcHelper(proc, ctx));
+		this->setRelease(std::move(helper));
+	}
 
-    /** Access methods that are only to be used within Skia code. */
-    inline GrTexturePriv texturePriv();
-    inline const GrTexturePriv texturePriv() const;
+	/** Access methods that are only to be used within Skia code. */
+	inline GrTexturePriv texturePriv();
+	inline const GrTexturePriv texturePriv() const;
 
 protected:
-    GrTexture(GrGpu*, const GrSurfaceDesc&, GrTextureType, GrMipMapsStatus);
+	GrTexture(GrGpu*, const GrSurfaceDesc&, GrTextureType, GrMipMapsStatus);
 
-    virtual bool onStealBackendTexture(GrBackendTexture*, SkImage::BackendTextureReleaseProc*) = 0;
+	virtual bool onStealBackendTexture(GrBackendTexture*, SkImage::BackendTextureReleaseProc*) = 0;
 
 private:
-    void computeScratchKey(GrScratchKey*) const override;
-    size_t onGpuMemorySize() const override;
-    void markMipMapsDirty();
-    void markMipMapsClean();
+	void computeScratchKey(GrScratchKey*) const override;
+	size_t onGpuMemorySize() const override;
+	void markMipMapsDirty();
+	void markMipMapsClean();
 
-    GrTextureType                 fTextureType;
-    GrMipMapsStatus               fMipMapsStatus;
-    int                           fMaxMipMapLevel;
-    friend class GrTexturePriv;
+	GrTextureType                 fTextureType;
+	GrMipMapsStatus               fMipMapsStatus;
+	int                           fMaxMipMapLevel;
+	friend class GrTexturePriv;
 
-    typedef GrSurface INHERITED;
+	typedef GrSurface INHERITED;
 };
 
 #endif

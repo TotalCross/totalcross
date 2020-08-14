@@ -28,10 +28,10 @@
 #define JCONFIG_INCLUDED   /* so that jpeglib.h doesn't do it again */
 
 #ifdef WINCE
- #undef FILE
- #define FILE FORGET_IT_BILL
- #include <stdlib.h>
- #undef FILE
+	#undef FILE
+	#define FILE FORGET_IT_BILL
+	#include <stdlib.h>
+	#undef FILE
 #endif
 
 #include <string.h>
@@ -42,41 +42,38 @@
 /// start of changes by guich
 
 // if a warning is given in the line below, you must add WINCE to the C/C++ Preprocessor definitions
-struct TJPEGFILE
-{
-   TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
-   // for fetching data
+struct TJPEGFILE {
+	TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
+	// for fetching data
 
-   union
-   {
-      TCObject inputStreamObj;
-      TCObject outputStreamObj;
-   };
-   union
-   {
-      Method readBytesMethod;
-      Method writeBytesMethod;
-   };
+	union {
+		TCObject inputStreamObj;
+		TCObject outputStreamObj;
+	};
+	union {
+		Method readBytesMethod;
+		Method writeBytesMethod;
+	};
 
-   TCObject bufObj;
-   TValue params[4];
-   // the first 4 bytes
-   char *first4;
-   Context currentContext;
+	TCObject bufObj;
+	TValue params[4];
+	// the first 4 bytes
+	char* first4;
+	Context currentContext;
 };
 
 typedef struct TJPEGFILE JPEGFILE;
 
-extern int jpegRead (void * buf, int size, JPEGFILE * in);
+extern int jpegRead(void* buf, int size, JPEGFILE* in);
 
-extern int jpegWrite(void *buff, int count, JPEGFILE *in);
+extern int jpegWrite(void* buff, int count, JPEGFILE* in);
 
 /// end of changes by guich
 //////////////////////////////////////
 
 #ifdef WIN32
-#define HAVE_BOOLEAN
-typedef unsigned char boolean;
+	#define HAVE_BOOLEAN
+	typedef unsigned char boolean;
 #endif
 /*
  * In ANSI C, and indeed any rational implementation, size_t is also the

@@ -2410,7 +2410,8 @@ public class LitebaseConnection {
 	 * @return -1.
 	 * @deprecated Not used anymore.
 	*/
-	public int getSlot() { // juliana@223_1: added a method to get the current slot being used. Returns -1 except on palm.
+	public int
+	getSlot() { // juliana@223_1: added a method to get the current slot being used. Returns -1 except on palm.
 		return -1;
 	}
 

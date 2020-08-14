@@ -2,11 +2,11 @@
 #define __BBAPPAPI_H__BLUEBIRDSOFT
 
 #ifndef BBAPI
-#ifdef BBPDA_EXPORTS
-#define BBAPI __declspec(dllexport)
-#else
-#define BBAPI __declspec(dllimport)
-#endif
+	#ifdef BBPDA_EXPORTS
+		#define BBAPI __declspec(dllexport)
+	#else
+		#define BBAPI __declspec(dllimport)
+	#endif
 #endif
 
 #include "bberror.h"
@@ -30,19 +30,22 @@ extern "C" {
 #define CARDREADER_VOLUME_EVENT					TEXT("CardReaderVolume")
 
 typedef LPVOID HBBCARDREADER;
-typedef void (WINAPI*CardReaderCallbackFunc)(DWORD dwArg, LPCTSTR data);
+typedef void (WINAPI* CardReaderCallbackFunc)(DWORD dwArg, LPCTSTR data);
 
 BBAPI HBBCARDREADER WINAPI BBCardReaderOpen(DWORD dwReserved);
-BBAPI DWORD WINAPI BBCardReaderReadData(HBBCARDREADER hCardReader, int track, LPBYTE buffer, int nBufferSize);
+BBAPI DWORD WINAPI BBCardReaderReadData(HBBCARDREADER hCardReader, int track, LPBYTE buffer,
+										int nBufferSize);
 BBAPI DWORD WINAPI BBCardReaderReadString(HBBCARDREADER hCardReader, int track, LPTSTR buf);
-BBAPI DWORD WINAPI BBCardReaderStartAsyncReadData(HBBCARDREADER hCardReader, CardReaderCallbackFunc pfCallback, DWORD dwCallbackArg);
+BBAPI DWORD WINAPI BBCardReaderStartAsyncReadData(HBBCARDREADER hCardReader,
+		CardReaderCallbackFunc pfCallback, DWORD dwCallbackArg);
 BBAPI DWORD WINAPI BBCardReaderStopAsyncReadData(HBBCARDREADER hCardReader);
-BBAPI DWORD WINAPI BBCardReaderReadCardData(HBBCARDREADER hCardReader, int track, LPTSTR buffer, DWORD * pBufferSize);
-BBAPI DWORD WINAPI BBCardReaderGetReadTrack(HBBCARDREADER hCardReader, DWORD *dwReadTrack);
+BBAPI DWORD WINAPI BBCardReaderReadCardData(HBBCARDREADER hCardReader, int track, LPTSTR buffer,
+		DWORD* pBufferSize);
+BBAPI DWORD WINAPI BBCardReaderGetReadTrack(HBBCARDREADER hCardReader, DWORD* dwReadTrack);
 BBAPI DWORD WINAPI BBCardReaderClose(HBBCARDREADER hCardReader);
-BBAPI DWORD WINAPI BBCardReaderSetVolume( DWORD Volume);
-BBAPI DWORD WINAPI BBCardReaderGetVolume( DWORD *Volume);
-BBAPI DWORD WINAPI BBCardReaderEnableTrackSound( HBBCARDREADER hCardReader, int track, BOOL bOn );
+BBAPI DWORD WINAPI BBCardReaderSetVolume(DWORD Volume);
+BBAPI DWORD WINAPI BBCardReaderGetVolume(DWORD* Volume);
+BBAPI DWORD WINAPI BBCardReaderEnableTrackSound(HBBCARDREADER hCardReader, int track, BOOL bOn);
 /*
  * Printer
  */
@@ -115,8 +118,7 @@ BBAPI DWORD WINAPI BBCardReaderEnableTrackSound( HBBCARDREADER hCardReader, int 
 #define BB_PRINT_FONTSET_SYMBOL             2
 #define BB_PRINT_FONTSET_THAI               3
 
-enum
-{
+enum {
 	BB_PRINT_ERROR_NONE			= 0,
 	BB_PRINT_ERROR_NOPAPER		= 1,
 	BB_PRINT_ERROR_NOBLACKMARK	= 2,
@@ -139,23 +141,22 @@ enum
 	BB_PRINT_ERROR_GETLINESPACING        = 17
 };
 
-typedef struct _FONTINFO
-{
+typedef struct _FONTINFO {
 	LONG      lfHeight;
-    LONG      lfWidth;
-    LONG      lfEscapement;
-    LONG      lfOrientation;
-    LONG      lfWeight;
-    BYTE      lfItalic;
-    BYTE      lfUnderline;
-    BYTE      lfStrikeOut;
-    BYTE      lfCharSet;
-    BYTE      lfOutPrecision;
-    BYTE      lfClipPrecision;
-    BYTE      lfQuality;
-    BYTE      lfPitchAndFamily;
-    WCHAR     lfFaceName[LF_FACESIZE];
-}FONTINFO, *LPFONTINFO;
+	LONG      lfWidth;
+	LONG      lfEscapement;
+	LONG      lfOrientation;
+	LONG      lfWeight;
+	BYTE      lfItalic;
+	BYTE      lfUnderline;
+	BYTE      lfStrikeOut;
+	BYTE      lfCharSet;
+	BYTE      lfOutPrecision;
+	BYTE      lfClipPrecision;
+	BYTE      lfQuality;
+	BYTE      lfPitchAndFamily;
+	WCHAR     lfFaceName[LF_FACESIZE];
+} FONTINFO, *LPFONTINFO;
 
 typedef LPVOID HBBPRINTER;
 
@@ -163,13 +164,13 @@ BBAPI HBBPRINTER WINAPI BBPrinterOpen(DWORD dwReserved);
 BBAPI DWORD WINAPI BBPrinterInit(HBBPRINTER hPrinter);
 
 BBAPI DWORD WINAPI BBPrinterSetDensity(HBBPRINTER hPrinter, UCHAR ucDensity);
-BBAPI DWORD WINAPI BBPrinterGetDensity(HBBPRINTER hPrinter, UCHAR *pucDensity);
+BBAPI DWORD WINAPI BBPrinterGetDensity(HBBPRINTER hPrinter, UCHAR* pucDensity);
 BBAPI DWORD WINAPI BBPrinterSetLineSpacing(HBBPRINTER hPrinter, UCHAR ucLineSpacing);
-BBAPI DWORD WINAPI BBPrinterGetLineSpacing(HBBPRINTER hPrinter, UCHAR *pucLineSpacing);
+BBAPI DWORD WINAPI BBPrinterGetLineSpacing(HBBPRINTER hPrinter, UCHAR* pucLineSpacing);
 
 BBAPI DWORD WINAPI BBPrinterPrint(HBBPRINTER hPrinter, LPCTSTR lpcszData, DWORD dwOptions);
 BBAPI DWORD WINAPI BBPrinterPrintBarcode(HBBPRINTER hPrinter, LPCTSTR lpcszData, UCHAR ucHeight,
-			UCHAR ucWidth, UCHAR ucBarcodeSystem, UCHAR ucAlign);
+		UCHAR ucWidth, UCHAR ucBarcodeSystem, UCHAR ucAlign);
 
 BBAPI DWORD WINAPI BBPrinterPrintBitmap(HBBPRINTER hPrinter, LPCTSTR lpcszFilename, DWORD dwMode);
 BBAPI DWORD WINAPI BBPrinterFeedUntilMark(HBBPRINTER hPrinter);
@@ -179,19 +180,22 @@ BBAPI DWORD WINAPI BBPrinterClose(HBBPRINTER hPrinter);
 /*
     1200WL/1250 에서 추가된 함수
 */
-BBAPI DWORD WINAPI BBPrinterRegisterFontType( HBBPRINTER hPrinter, UCHAR ucFontSubCode );
-BBAPI DWORD WINAPI BBPrinterRegisterFontFromSet( HBBPRINTER hPrinter, UCHAR ucCodeOfSet, UCHAR ucFontSubCode );
+BBAPI DWORD WINAPI BBPrinterRegisterFontType(HBBPRINTER hPrinter, UCHAR ucFontSubCode);
+BBAPI DWORD WINAPI BBPrinterRegisterFontFromSet(HBBPRINTER hPrinter, UCHAR ucCodeOfSet,
+		UCHAR ucFontSubCode);
 
 /*
-	DC를 이용한 프린터 출력	
+	DC를 이용한 프린터 출력
 */
 
-BBAPI DWORD WINAPI BBPrinterCreateDC ( HBBPRINTER hPrinter , UINT nWidth, UINT nHeight );
-BBAPI DWORD WINAPI BBPrinterDeleteDC ( HBBPRINTER hPrinter );
-BBAPI DWORD WINAPI BBPrinterPrintDC  ( HBBPRINTER hPrinter );
-BBAPI DWORD WINAPI BBPrinterSetFont  ( HBBPRINTER hPrinter, LPFONTINFO lpFontInfo );	
-BBAPI DWORD WINAPI BBPrinterDrawText ( HBBPRINTER hPrinter, LPCTSTR lpText, int nCount, int nLeft, int nTop, int nRight, int nBottom, UINT uFormat );
-BBAPI DWORD WINAPI BBPrinterBitBlt   ( HBBPRINTER hPrinter, LPCTSTR lpFilePath, int nXDest, int nYDest, int nWidth, int nHeight, int xSrc, int ySrc, DWORD dwRop );
+BBAPI DWORD WINAPI BBPrinterCreateDC(HBBPRINTER hPrinter, UINT nWidth, UINT nHeight);
+BBAPI DWORD WINAPI BBPrinterDeleteDC(HBBPRINTER hPrinter);
+BBAPI DWORD WINAPI BBPrinterPrintDC(HBBPRINTER hPrinter);
+BBAPI DWORD WINAPI BBPrinterSetFont(HBBPRINTER hPrinter, LPFONTINFO lpFontInfo);
+BBAPI DWORD WINAPI BBPrinterDrawText(HBBPRINTER hPrinter, LPCTSTR lpText, int nCount, int nLeft,
+									 int nTop, int nRight, int nBottom, UINT uFormat);
+BBAPI DWORD WINAPI BBPrinterBitBlt(HBBPRINTER hPrinter, LPCTSTR lpFilePath, int nXDest, int nYDest,
+								   int nWidth, int nHeight, int xSrc, int ySrc, DWORD dwRop);
 
 
 /*
@@ -202,13 +206,11 @@ BBAPI DWORD WINAPI BBPrinterBitBlt   ( HBBPRINTER hPrinter, LPCTSTR lpFilePath, 
 #define WM_SCANTRIGGER      ( WM_USER + 702 )
 #define WM_REPORT_TO_APP	( WM_USER + 703 )
 
-enum
-{
+enum {
 	BB_BARCODE_RPT_USER_MSG,
 };
 
-enum
-{
+enum {
 	BB_BARCODE_UM_BATTERY_LOW,
 };
 
@@ -371,27 +373,37 @@ BBAPI DWORD WINAPI BBBarcodeClose(HBBBARCODE hBarcode);
 
 BBAPI DWORD WINAPI BBBarcodeStartDecode(HBBBARCODE hBarcode);
 BBAPI DWORD WINAPI BBBarcodeStopDecode(HBBBARCODE hBarcode);
-BBAPI DWORD WINAPI BBBarcodeGetDecodeData(HBBBARCODE hBarcode, LPTSTR lpcszBuf, int Bufsize, int* ReadSize );
-BBAPI DWORD WINAPI BBBarcodeGetDecodeDataNType(HBBBARCODE hBarcode, LPTSTR lpcszBuf, BYTE* pType, int Bufsize, int* ReadSize);
-BBAPI DWORD WINAPI BBBarcodeGetDecodeDataRaw(HBBBARCODE hBarcode, BYTE *pBuf, int Bufsize, int* ReadSize );
-BBAPI DWORD WINAPI BBBarcodeGetDecodeDataNTypeRaw(HBBBARCODE hBarcode, BYTE *pBuf, BYTE* pType, int Bufsize, int* ReadSize);
-BBAPI DWORD WINAPI BBBarcodeSetClientHandle(HBBBARCODE hBarcode, HWND hwnd );
+BBAPI DWORD WINAPI BBBarcodeGetDecodeData(HBBBARCODE hBarcode, LPTSTR lpcszBuf, int Bufsize,
+		int* ReadSize);
+BBAPI DWORD WINAPI BBBarcodeGetDecodeDataNType(HBBBARCODE hBarcode, LPTSTR lpcszBuf, BYTE* pType,
+		int Bufsize, int* ReadSize);
+BBAPI DWORD WINAPI BBBarcodeGetDecodeDataRaw(HBBBARCODE hBarcode, BYTE* pBuf, int Bufsize,
+		int* ReadSize);
+BBAPI DWORD WINAPI BBBarcodeGetDecodeDataNTypeRaw(HBBBARCODE hBarcode, BYTE* pBuf, BYTE* pType,
+		int Bufsize, int* ReadSize);
+BBAPI DWORD WINAPI BBBarcodeSetClientHandle(HBBBARCODE hBarcode, HWND hwnd);
 BBAPI DWORD WINAPI BBBarcodeReleaseClientHandle(HBBBARCODE hBarcode);
 
 BBAPI DWORD WINAPI BBBarcodeSymbologyAllEnable(HBBBARCODE hBarcode);
 BBAPI DWORD WINAPI BBBarcodeSymbologyAllDisable(HBBBARCODE hBarcode);
-BBAPI DWORD WINAPI BBBarcodeGetParameterEx(HBBBARCODE hBarcode, BYTE paramCode, BYTE extraParamCode, BYTE& paramValue);
-BBAPI DWORD WINAPI BBBarcodeSetParameterEx(HBBBARCODE hBarcode, BYTE paramCode, BYTE extraParamCode, BYTE paramValue, BOOL bPermanent);
+BBAPI DWORD WINAPI BBBarcodeGetParameterEx(HBBBARCODE hBarcode, BYTE paramCode, BYTE extraParamCode,
+		BYTE& paramValue);
+BBAPI DWORD WINAPI BBBarcodeSetParameterEx(HBBBARCODE hBarcode, BYTE paramCode, BYTE extraParamCode,
+		BYTE paramValue, BOOL bPermanent);
 BBAPI DWORD WINAPI BBBarcodeSetDefault(HBBBARCODE hBarcode);
 BBAPI DWORD WINAPI BBBarcodeScanEnable(HBBBARCODE hBarcode, BOOL bEnable);
 BBAPI DWORD WINAPI BBBarcodeSetLED(HBBBARCODE hBarcode, BOOL bOn);
 BBAPI DWORD WINAPI BBBarcodeSetBeep(HBBBARCODE hBarcode, int Duration, BOOL bHigh, int nNumOfBeep);
 BBAPI DWORD WINAPI BBBarcodeSetPowerMode(HBBBARCODE hBarcode, BOOL bContinuousPower);
 BBAPI DWORD WINAPI BBBarcodeSetAim(HBBBARCODE hBarcode, BOOL bOn);
-BBAPI DWORD WINAPI BBBarcodeGetMultipleParameter(HBBBARCODE hBarcode, BYTE* paramCodes, int RequestSize, BYTE* paramCodeNValue, int BufSize, int* ReadSize);
-BBAPI DWORD WINAPI BBBarcodeSetMultipleParameter(HBBBARCODE hBarcode, BYTE* paramCodeNValue, int Size, BOOL bPermanent);
-BBAPI DWORD WINAPI BBBarcodeGetParameterFromBytes(HBBBARCODE hBarcode, BYTE paramCodes, BYTE& paramValue, BYTE* paramCodeNValue, int BufSize);
-BBAPI DWORD WINAPI BBBarcodeSetParameterToBytes(HBBBARCODE hBarcode, BYTE paramCodes, BYTE paramValue, BYTE* paramCodeNValue, int BufSize);
+BBAPI DWORD WINAPI BBBarcodeGetMultipleParameter(HBBBARCODE hBarcode, BYTE* paramCodes,
+		int RequestSize, BYTE* paramCodeNValue, int BufSize, int* ReadSize);
+BBAPI DWORD WINAPI BBBarcodeSetMultipleParameter(HBBBARCODE hBarcode, BYTE* paramCodeNValue,
+		int Size, BOOL bPermanent);
+BBAPI DWORD WINAPI BBBarcodeGetParameterFromBytes(HBBBARCODE hBarcode, BYTE paramCodes,
+		BYTE& paramValue, BYTE* paramCodeNValue, int BufSize);
+BBAPI DWORD WINAPI BBBarcodeSetParameterToBytes(HBBBARCODE hBarcode, BYTE paramCodes,
+		BYTE paramValue, BYTE* paramCodeNValue, int BufSize);
 BBAPI DWORD WINAPI BBBarcodeSetTrigger(HBBBARCODE hBarcode, BOOL bOn);
 
 // code by coffriend - 2003.11.17
@@ -404,52 +416,58 @@ BBAPI DWORD WINAPI BBBarcodeSetSuffix(HBBBARCODE hBarcode, LPTSTR szSuffix);
 BBAPI DWORD WINAPI BBBarcodeSetVirtualWedge(HBBBARCODE hBarcode, BOOL bOn);
 BBAPI DWORD WINAPI BBBarcodeSetOutputMode(HBBBARCODE hBarcode, BOOL bClipboard);
 BBAPI DWORD WINAPI BBBarcodeSetDecodeMode(HBBBARCODE hBarcode, BYTE bMode);
-BBAPI DWORD WINAPI BBBarcodeGetDecodeMode(HBBBARCODE hBarcode, BYTE &bMode);
+BBAPI DWORD WINAPI BBBarcodeGetDecodeMode(HBBBARCODE hBarcode, BYTE& bMode);
 BBAPI DWORD WINAPI BBBarcodeSetTimeoutBetweenSameSymbol(HBBBARCODE hBarcode, DWORD dwMillisecond);
-BBAPI DWORD WINAPI BBBarcodeSetDecodeOnTime(HBBBARCODE hBarcode,DWORD dwDeciSecond);
+BBAPI DWORD WINAPI BBBarcodeSetDecodeOnTime(HBBBARCODE hBarcode, DWORD dwDeciSecond);
 BBAPI DWORD WINAPI BBBarcodeSetPushingTriggerMode(HBBBARCODE hBarcode, BYTE bPushingTriggerMode);
 BBAPI DWORD WINAPI BBBarcodeSetVolume(int nVolume);
 
 //ImagerBarcode only
 typedef enum {
-    SCAN_ILLUM_AIMER_OFF = 0,   // Neither aimers or illumination
-    SCAN_ILLUM_ONLY_ON,         // Illumination only
-    SCAN_AIMER_ONLY_ON,         // Aimers only
-    SCAN_ILLUM_AIMER_ON         // Both aimers and illumination.
+	SCAN_ILLUM_AIMER_OFF = 0,   // Neither aimers or illumination
+	SCAN_ILLUM_ONLY_ON,         // Illumination only
+	SCAN_AIMER_ONLY_ON,         // Aimers only
+	SCAN_ILLUM_AIMER_ON         // Both aimers and illumination.
 } ScanIlluminat_t;
 
 typedef enum {
-    DECODE_MODE_STANDARD=1,
-    DECODE_MODE_ADVANCED_LINEAR,
-    DECODE_MODE_QUICK_OMNI=4
+	DECODE_MODE_STANDARD = 1,
+	DECODE_MODE_ADVANCED_LINEAR,
+	DECODE_MODE_QUICK_OMNI = 4
 } ImagerDecodeMode_t;
 
 typedef struct {
-    int Exposure;
-    int MaxExposure;
-    int Gain;
-    int MaxGain;
-    int TargetWhite;            // Acceptable target white value falls within the
-    int TargetWhiteWindow;      // range TargetWhite +/- TargetWhiteWindow
-    int ImageMustConform;       // Image must conform to defined exposure parameters
-    int NumUpdates;             // Max number of attempts to achieve target white value
-    int FrameRate;
-    int SpecExclusion;
-    int SpecSaturation;
-    int SpecLimit;
-    int FixedExposure;          // Exposure setting for fixed exposure mode
-    int FixedGain;              // Gain setting for fixed exposure mode
-    int FixedFrameRate;         // Frame rate for fixed exposure mode
+	int Exposure;
+	int MaxExposure;
+	int Gain;
+	int MaxGain;
+	int TargetWhite;            // Acceptable target white value falls within the
+	int TargetWhiteWindow;      // range TargetWhite +/- TargetWhiteWindow
+	int ImageMustConform;       // Image must conform to defined exposure parameters
+	int NumUpdates;             // Max number of attempts to achieve target white value
+	int FrameRate;
+	int SpecExclusion;
+	int SpecSaturation;
+	int SpecLimit;
+	int FixedExposure;          // Exposure setting for fixed exposure mode
+	int FixedGain;              // Gain setting for fixed exposure mode
+	int FixedFrameRate;         // Frame rate for fixed exposure mode
 } ExposureSettings_t;
 
-BBAPI DWORD WINAPI BBBarcodeImagerGetImagerInfo(HBBBARCODE hBarcode, PWORD pnCols, PWORD pnRows, PWORD pnBits);
-BBAPI DWORD WINAPI BBBarcodeImagerStreamInit(HBBBARCODE hBarcode, WORD nSkip, RECT * imgRect, BOOL bFlip);
-BBAPI DWORD WINAPI BBBarcodeImagerStreamStart(HBBBARCODE hBarcode, RECT *previewRect);
+BBAPI DWORD WINAPI BBBarcodeImagerGetImagerInfo(HBBBARCODE hBarcode, PWORD pnCols, PWORD pnRows,
+		PWORD pnBits);
+BBAPI DWORD WINAPI BBBarcodeImagerStreamInit(HBBBARCODE hBarcode, WORD nSkip, RECT* imgRect,
+		BOOL bFlip);
+BBAPI DWORD WINAPI BBBarcodeImagerStreamStart(HBBBARCODE hBarcode, RECT* previewRect);
 BBAPI DWORD WINAPI BBBarcodeImagerStreamStop(HBBBARCODE hBarcode);
-BBAPI DWORD WINAPI BBBarcodeImagerStreamCapture(HBBBARCODE hBarcode, TCHAR *filename, unsigned int nFileWidth, unsigned int nFileHeight, BOOL bAutoSave=FALSE);
-BBAPI DWORD WINAPI BBBarcodeImagerSetExposureSettings(HBBBARCODE hBarcode, ExposureSettings_t *pExpsoureSettings);
-BBAPI DWORD WINAPI BBBarcodeImagerGetExposureSettings(HBBBARCODE hBarcode, ExposureSettings_t *pExpsoureSettings);
-BBAPI DWORD WINAPI BBBarcodeImagerSetScanningLightMode(HBBBARCODE hBarcode, ScanIlluminat_t LightMode);
+BBAPI DWORD WINAPI BBBarcodeImagerStreamCapture(HBBBARCODE hBarcode, TCHAR* filename,
+		unsigned int nFileWidth, unsigned int nFileHeight, BOOL bAutoSave = FALSE);
+BBAPI DWORD WINAPI BBBarcodeImagerSetExposureSettings(HBBBARCODE hBarcode,
+		ExposureSettings_t* pExpsoureSettings);
+BBAPI DWORD WINAPI BBBarcodeImagerGetExposureSettings(HBBBARCODE hBarcode,
+		ExposureSettings_t* pExpsoureSettings);
+BBAPI DWORD WINAPI BBBarcodeImagerSetScanningLightMode(HBBBARCODE hBarcode,
+		ScanIlluminat_t LightMode);
 BBAPI DWORD WINAPI BBBarcodeImagerLeaveLightsOn(HBBBARCODE hBarcode, BOOL bLeaveLightOn);
 BBAPI DWORD WINAPI BBBarcodeImagerSetDecodeMode(HBBBARCODE hBarcode, ImagerDecodeMode_t DecodeMode);
 
@@ -467,8 +485,7 @@ typedef const char* PCCHAR;
 
 
 // xml 파일 설정을 위한 구조체
-typedef struct
-{
+typedef struct {
 	DWORD ItemIndex;
 	const char* item_name;
 	const char* group_name;
@@ -477,26 +494,24 @@ typedef struct
 	DWORD type;
 	BOOL IsValueDword;
 	BOOL IsValueWChar;
-	union
-	{
+	union {
 		DWORD value_dword; //- PARAM_NUMERIC, PARAM_SLIDER, PARAM_CHAR
 		TCHAR value_wcharbuffer[MAX_TEXT_BUFFER]; //PARAM_TEXT, PARAM_PATH, PARAM_READONLY
 	};
 
-}SettingInfo;
+} SettingInfo;
 
-enum ItemIndex
-{
+enum ItemIndex {
 	VWEDGETABINDEX = 0,
 	SYMBOLOGYTABINDEX,
 	SCANNERTABINDEX,
 	DATAOPTIONTABINDEX,
 	IMGCAPTABINDEX,
-    REVISIONTABINDEX
+	REVISIONTABINDEX
 };
 
 enum ParamType {
-    PARAM_NUMERIC = 0,   //numeric value(숫자값) 선택
+	PARAM_NUMERIC = 0,   //numeric value(숫자값) 선택
 	PARAM_OPTION,        //option(여러개중 하나를 선택)
 	PARAM_ENABLE,        //enable/disable 중 하나 선택
 	PARAM_CHAR,          //character값
@@ -505,7 +520,7 @@ enum ParamType {
 	PARAM_SLIDER,		 // Slider - add csyou
 	PARAM_NUMERIC_TIME,	 // continues time(between same symbol)
 	PARAM_NULL,           //not a parameter type
-    PARAM_READONLY
+	PARAM_READONLY
 };
 enum RevisonType {
 	BB_BARCODE_REVISION_API = 0,
@@ -513,65 +528,87 @@ enum RevisonType {
 	BB_BARCODE_REVISION_DRIVER
 };
 
-enum SoundMode{
-    BB_BARCODE_SOUND_WAVE = 0,
-    BB_BARCODE_SOUND_VIBRATE,
-    BB_BARCODE_SOUND_WAVE_VIBRATE,
-    BB_BARCODE_SOUND_EXTERNAL,
-    BB_BARCODE_SOUND_ERROR
+enum SoundMode {
+	BB_BARCODE_SOUND_WAVE = 0,
+	BB_BARCODE_SOUND_VIBRATE,
+	BB_BARCODE_SOUND_WAVE_VIBRATE,
+	BB_BARCODE_SOUND_EXTERNAL,
+	BB_BARCODE_SOUND_ERROR
 };
 
 // xml 파일 설정 정보 end
 
 // xml 파일에서 정보를 얻어오는 API
-BBAPI PCCHAR WINAPI BBBarcodeGetNextItemName(HBBBARCODE hBarcode, const char* item_name,BOOL* is_ignore_item);
-BBAPI BOOL WINAPI BBBarcodeGetItemString(HBBBARCODE hBarcode, const char* item_name, TCHAR* pbuffer, unsigned int buffer_length);
-BBAPI BOOL WINAPI BBBarcodeGetItemNumber(HBBBARCODE hBarcode, const char* item_name, unsigned int* item_number);
+BBAPI PCCHAR WINAPI BBBarcodeGetNextItemName(HBBBARCODE hBarcode, const char* item_name,
+		BOOL* is_ignore_item);
+BBAPI BOOL WINAPI BBBarcodeGetItemString(HBBBARCODE hBarcode, const char* item_name, TCHAR* pbuffer,
+		unsigned int buffer_length);
+BBAPI BOOL WINAPI BBBarcodeGetItemNumber(HBBBARCODE hBarcode, const char* item_name,
+		unsigned int* item_number);
 
-BBAPI PCCHAR WINAPI BBBarcodeGetNextGroupName(HBBBARCODE hBarcode, const char* item_name, const char* group_name, BOOL* is_ignore_group);
-BBAPI BOOL WINAPI BBBarcodeGetGroupString(HBBBARCODE hBarcode, const char* item_name, const char* group_name, TCHAR* pbuffer, unsigned int buffer_length);
+BBAPI PCCHAR WINAPI BBBarcodeGetNextGroupName(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, BOOL* is_ignore_group);
+BBAPI BOOL WINAPI BBBarcodeGetGroupString(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, TCHAR* pbuffer, unsigned int buffer_length);
 
-BBAPI PCCHAR WINAPI BBBarcodeGetNextParameterName(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name, BOOL* is_ignore_parameter);
-BBAPI BOOL WINAPI BBBarcodeGetParameterString(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name, TCHAR* pbuffer, unsigned int buffer_length);
-BBAPI BOOL WINAPI BBBarcodeGetParameterState(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name, TCHAR* pbuffer, unsigned int buffer_length);
-BBAPI BOOL WINAPI BBBarcodeGetParameterType(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name, unsigned int* type );
+BBAPI PCCHAR WINAPI BBBarcodeGetNextParameterName(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name, BOOL* is_ignore_parameter);
+BBAPI BOOL WINAPI BBBarcodeGetParameterString(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name, TCHAR* pbuffer, unsigned int buffer_length);
+BBAPI BOOL WINAPI BBBarcodeGetParameterState(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name, TCHAR* pbuffer, unsigned int buffer_length);
+BBAPI BOOL WINAPI BBBarcodeGetParameterType(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name, unsigned int* type);
 
-BBAPI PCCHAR WINAPI BBBarcodeGetParameterNextOptionName(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name, const char* option_name);
-BBAPI BOOL WINAPI BBBarcodeGetParameterOptionString(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name, const char* option_name, TCHAR* pbuffer, unsigned int buffer_length);
+BBAPI PCCHAR WINAPI BBBarcodeGetParameterNextOptionName(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name, const char* option_name);
+BBAPI BOOL WINAPI BBBarcodeGetParameterOptionString(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name, const char* option_name, TCHAR* pbuffer,
+		unsigned int buffer_length);
 BBAPI BOOL WINAPI BBBarcodeSetParameterValue(HBBBARCODE hBarcode, SettingInfo* settinginfo);
 BBAPI BOOL WINAPI BBBarcodeXmlFileSave(HBBBARCODE hBarcode);
 BBAPI BOOL WINAPI BBBarcodeInitSetting(HBBBARCODE hBarcode);
 
 BBAPI BOOL WINAPI BBBarcodeGetCanWaveUse(HBBBARCODE hBarcode);
 BBAPI BOOL WINAPI BBBarcodeGetVolume(HBBBARCODE hBarcode, DWORD* volume);
-BBAPI BOOL WINAPI BBBarcodeGetWaveFilePath(HBBBARCODE hBarcode, TCHAR* file_path, unsigned int file_path_length);
+BBAPI BOOL WINAPI BBBarcodeGetWaveFilePath(HBBBARCODE hBarcode, TCHAR* file_path,
+		unsigned int file_path_length);
 BBAPI BOOL WINAPI BBBarcodeGetVirtualWedge(HBBBARCODE hBarcode);
 BBAPI BOOL WINAPI BBBarcodeGetTriggerState(HBBBARCODE hBarcode);
-BBAPI PCCHAR WINAPI BBBarcodeGetParameterStateChar(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name);
-BBAPI DWORD WINAPI BBBarcodeGetParameterStateDword(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name, DWORD* dwvalue);
-BBAPI PCCHAR WINAPI BBBarcodeGetParameterStateName(HBBBARCODE hBarcode, const char* item_name, const char* group_name, const char* parameter_name);
+BBAPI PCCHAR WINAPI BBBarcodeGetParameterStateChar(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name);
+BBAPI DWORD WINAPI BBBarcodeGetParameterStateDword(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name, DWORD* dwvalue);
+BBAPI PCCHAR WINAPI BBBarcodeGetParameterStateName(HBBBARCODE hBarcode, const char* item_name,
+		const char* group_name, const char* parameter_name);
 BBAPI BOOL WINAPI BBBarcodeReadDefaultFile(HBBBARCODE hBarcode);
 BBAPI BOOL WINAPI BBBarcodeCloseDefaultFile(HBBBARCODE hBarcode);
-BBAPI DWORD WINAPI BBBarcodeGetRevision(HBBBARCODE hBarcode, BYTE bRevisionType, TCHAR *wcRevision);
+BBAPI DWORD WINAPI BBBarcodeGetRevision(HBBBARCODE hBarcode, BYTE bRevisionType, TCHAR* wcRevision);
 BBAPI BOOL WINAPI BBBarcodeSetSoundMode(HBBBARCODE hBarcode, SoundMode nSoundMode);
-BBAPI BOOL WINAPI BBBarcodeGetSoundMode(HBBBARCODE hBarcode, SoundMode &nSoundMode);
+BBAPI BOOL WINAPI BBBarcodeGetSoundMode(HBBBARCODE hBarcode, SoundMode& nSoundMode);
 BBAPI BOOL WINAPI BBBarcodeSetVibrateTimeout(HBBBARCODE hBarcode, DWORD dwVibrateTimeout);
-BBAPI BOOL WINAPI BBBarcodeGetVibrateTimeout(HBBBARCODE hBarcode, DWORD &dwVibrateTimeout);
+BBAPI BOOL WINAPI BBBarcodeGetVibrateTimeout(HBBBARCODE hBarcode, DWORD& dwVibrateTimeout);
 
 //*******************************************************************************
 //예전 BARCODE API
 BBAPI DWORD WINAPI BBBarcodeSetMode(HBBBARCODE hBarcode, BOOL bTrigger);
 BBAPI BOOL WINAPI BBBarcodeGetContinuousMode(HBBBARCODE hBarcode);
 BBAPI BOOL WINAPI BBBarcodeSetTriggerMode(HBBBARCODE hBarcode, BOOL IsContinuousMode);
-BBAPI DWORD WINAPI BBBarcodeImageGetImagerInfo(HBBBARCODE hBarcode, PWORD pnCols, PWORD pnRows, PWORD pnBits);
-BBAPI DWORD WINAPI BBBarcodeImageStreamInit(HBBBARCODE hBarcode, WORD nSkip, RECT * imgRect, BOOL bFlip);
-BBAPI DWORD WINAPI BBBarcodeImageStreamStart(HBBBARCODE hBarcode, RECT *previewRect);
+BBAPI DWORD WINAPI BBBarcodeImageGetImagerInfo(HBBBARCODE hBarcode, PWORD pnCols, PWORD pnRows,
+		PWORD pnBits);
+BBAPI DWORD WINAPI BBBarcodeImageStreamInit(HBBBARCODE hBarcode, WORD nSkip, RECT* imgRect,
+		BOOL bFlip);
+BBAPI DWORD WINAPI BBBarcodeImageStreamStart(HBBBARCODE hBarcode, RECT* previewRect);
 BBAPI DWORD WINAPI BBBarcodeImageStreamStop(HBBBARCODE hBarcode);
-BBAPI DWORD WINAPI BBBarcodeImageStreamCapture(HBBBARCODE hBarcode, TCHAR *filename, int nFileWidth, int nFileHeight);
-BBAPI DWORD WINAPI BBBarcodeImageSetExposureSettings(HBBBARCODE hBarcode, ExposureSettings_t *pExpsoureSettings);
-BBAPI DWORD WINAPI BBBarcodeImageGetExposureSettings(HBBBARCODE hBarcode, ExposureSettings_t *pExpsoureSettings);
+BBAPI DWORD WINAPI BBBarcodeImageStreamCapture(HBBBARCODE hBarcode, TCHAR* filename, int nFileWidth,
+		int nFileHeight);
+BBAPI DWORD WINAPI BBBarcodeImageSetExposureSettings(HBBBARCODE hBarcode,
+		ExposureSettings_t* pExpsoureSettings);
+BBAPI DWORD WINAPI BBBarcodeImageGetExposureSettings(HBBBARCODE hBarcode,
+		ExposureSettings_t* pExpsoureSettings);
 BBAPI DWORD WINAPI BBBarcodeGetParameter(HBBBARCODE hBarcode, BYTE paramCode, BYTE& paramValue);
-BBAPI DWORD WINAPI BBBarcodeSetParameter(HBBBARCODE hBarcode, BYTE paramCode, BYTE paramValue, BOOL bPermanent);
+BBAPI DWORD WINAPI BBBarcodeSetParameter(HBBBARCODE hBarcode, BYTE paramCode, BYTE paramValue,
+		BOOL bPermanent);
 BBAPI BOOL WINAPI BBBarcodeGetWaveUse(HBBBARCODE hBarcode);
 //********************************************************************************
 
@@ -630,8 +667,7 @@ typedef LPVOID HBBNEOPRINTER;
 #define BB_CAMERA_CODE_ERR_INVALID_HANDLE      	2
 #define BB_CAMERA_CODE_ERR_INVALID_PARAMETER   	3
 
-typedef enum
-{
+typedef enum {
 	wb_auto = 0,
 	wb_cloudy,
 	wb_daylight,
@@ -641,8 +677,7 @@ typedef enum
 
 } white_balance_mode;
 
-typedef enum
-{
+typedef enum {
 	effect_none = 0,
 	effect_negative,
 	effect_embossing,
@@ -661,8 +696,7 @@ typedef enum
 	effect_violet,
 } effect_mode;
 
-typedef enum
-{
+typedef enum {
 	flip_x = 1,
 	flip_y,
 	flip_x_y,
@@ -671,28 +705,24 @@ typedef enum
 
 } flip_mode;
 
-typedef enum
-{
+typedef enum {
 	rate_auto = 1,
 	rate_day_manual,
 	rate_night_manual
 } frame_rate_mode;
 
-typedef enum
-{
+typedef enum {
 	auto_save = 0,
 	manual_save
 } save_mode;
 
-typedef enum
-{
+typedef enum {
 	file_type_jpg = 0,
 	file_type_bmp
 } save_image_type;
 
-typedef enum
-{
-	rotate_default=0,
+typedef enum {
+	rotate_default = 0,
 	rotate_0,
 	rotate_90,
 	rotate_180,
@@ -700,8 +730,7 @@ typedef enum
 
 } rotation_degree;
 
-typedef enum
-{
+typedef enum {
 	pixel_format_ycbcr = 0,
 	pixel_format_rgb_565,		// output data 가 bmp 이다.
 	pixel_format_rgb_565_raw	// output data 가 16bit rgb 데이터 이다.
@@ -709,8 +738,7 @@ typedef enum
 } pixel_format_select;
 
 
-typedef struct _tagBBCameraParameter
-{
+typedef struct _tagBBCameraParameter {
 	unsigned int preview_width;
 	unsigned int preview_height;
 	unsigned int preview_x;
@@ -745,8 +773,7 @@ typedef struct _tagBBCameraParameter
 
 } BBCameraParameter;
 
-typedef struct _tagBBCameraInfo
-{
+typedef struct _tagBBCameraInfo {
 	unsigned int preview_max_width;
 	unsigned int preview_max_height;
 	unsigned int preview_min_width;
@@ -793,7 +820,7 @@ BBAPI DWORD WINAPI BBCameraDumpRegister(HBBCAMERA);
 
 BBAPI DWORD WINAPI BBCameraSetStrobe(HBBCAMERA, BOOL);
 BBAPI DWORD WINAPI BBCameraSetAEMode(HBBCAMERA, BOOL);
-BBAPI DWORD WINAPI BBCameraSetExposureTime( HBBCAMERA, DWORD );
+BBAPI DWORD WINAPI BBCameraSetExposureTime(HBBCAMERA, DWORD);
 
 
 /*
@@ -815,7 +842,7 @@ BBAPI DWORD WINAPI BBCameraSetExposureTime( HBBCAMERA, DWORD );
 
 
 typedef unsigned char BBICCardStatus;
-typedef unsigned char *APDU;
+typedef unsigned char* APDU;
 
 
 
@@ -827,7 +854,8 @@ BBAPI DWORD WINAPI BBICCardClose(HBBICCARD);
 
 BBAPI DWORD WINAPI BBICCardPowerUp(HBBICCARD);
 BBAPI DWORD WINAPI BBICCardGetCardStatus(HBBICCARD, BBICCardStatus*);
-BBAPI DWORD WINAPI BBICCardExchangAPDU(HBBICCARD hICCard, APDU apduSend, DWORD dwSizeOfAPDU, APDU apduReceived, DWORD *dwReturnSize );
+BBAPI DWORD WINAPI BBICCardExchangAPDU(HBBICCARD hICCard, APDU apduSend, DWORD dwSizeOfAPDU,
+									   APDU apduReceived, DWORD* dwReturnSize);
 
 /* ------------------------------------------------------------------------- */
 
@@ -973,22 +1001,25 @@ typedef unsigned char BBSAMResponse;
 typedef unsigned char BBSAMData;
 
 //Set Selection Command
-BBAPI DWORD WINAPI BBSAMSetCurrent(HBBICCARD hICCard, DWORD dwSlotNum );
+BBAPI DWORD WINAPI BBSAMSetCurrent(HBBICCARD hICCard, DWORD dwSlotNum);
 
 //SAM Initialization Command
-BBAPI DWORD WINAPI BBSAMPowerUpSAM( HBBICCARD hICCard, DWORD dwCFG, BBSAMATR *SAM_ATR );
-BBAPI DWORD WINAPI BBSAMPowerDownSAM( HBBICCARD hICCard );
-BBAPI DWORD WINAPI BBSAMStatus( HBBICCARD hICCard, BBCNF *Status);
-BBAPI DWORD WINAPI BBSAMCommParam( HBBICCARD hICCard, BBPRT *PRT, BBCNF *Status );
+BBAPI DWORD WINAPI BBSAMPowerUpSAM(HBBICCARD hICCard, DWORD dwCFG, BBSAMATR* SAM_ATR);
+BBAPI DWORD WINAPI BBSAMPowerDownSAM(HBBICCARD hICCard);
+BBAPI DWORD WINAPI BBSAMStatus(HBBICCARD hICCard, BBCNF* Status);
+BBAPI DWORD WINAPI BBSAMCommParam(HBBICCARD hICCard, BBPRT* PRT, BBCNF* Status);
 
 //BBAPI DWORD WINAPI BBSAMExchangePPSSAM( HBBICCARD hICCard, BBCFG *CFG, BBPPS *PPS, BBPCK *PCK, BBPPS_Response *Response);
-BBAPI DWORD WINAPI BBSAMExchangePPSSAM( HBBICCARD hICCard, BBCFG *CFG, BBPPS *PPS, BBPPS_Response *Response);
-BBAPI DWORD WINAPI BBSAMExchangeIFSDSAM( HBBICCARD hICCard, BBDummyByte *Dummy, BBIFSD *IFSD);
+BBAPI DWORD WINAPI BBSAMExchangePPSSAM(HBBICCARD hICCard, BBCFG* CFG, BBPPS* PPS,
+									   BBPPS_Response* Response);
+BBAPI DWORD WINAPI BBSAMExchangeIFSDSAM(HBBICCARD hICCard, BBDummyByte* Dummy, BBIFSD* IFSD);
 //BBAPI DWORD WINAPI BBSAMExchangeIFSDSAM( HBBICCARD hICCard, BBIFSD *IFSD);
 
 //SAM Communication Command
-BBAPI DWORD WINAPI BBSAMISOOutputSAM( HBBICCARD hICCard, BBISOHeader *Header, BBSAMResponse *Response);
-BBAPI DWORD WINAPI BBSAMISOInputSAM( HBBICCARD hICCard, BBISOHeader *Header, BBSAMResponse *Response, BBSAMData *Data, DWORD dwDataLen);
+BBAPI DWORD WINAPI BBSAMISOOutputSAM(HBBICCARD hICCard, BBISOHeader* Header,
+									 BBSAMResponse* Response);
+BBAPI DWORD WINAPI BBSAMISOInputSAM(HBBICCARD hICCard, BBISOHeader* Header, BBSAMResponse* Response,
+									BBSAMData* Data, DWORD dwDataLen);
 
 
 //ISO14443 A
@@ -1004,85 +1035,76 @@ typedef enum
 #define BB_RFREADER_TG_GEMCOMBI_MPCOS_PRO_EASY32000     0x02
 #define BB_RFREADER_TG_GEMEASY8000                      0x04
 
-typedef enum
-{
-	BB_RFREADER_COLLISION = 1<<8,
-	BB_RFREADER_COLLISION_CL_1 = (1<<8) | 0x01,
-	BB_RFREADER_COLLISION_CL_2 = (1<<8) | 0x02,
-	BB_RFREADER_COLLISION_CL_3 = (1<<8) | 0x03,
-	BB_RFREADER_CL_1=0x01,
+typedef enum {
+	BB_RFREADER_COLLISION = 1 << 8,
+	BB_RFREADER_COLLISION_CL_1 = (1 << 8) | 0x01,
+	BB_RFREADER_COLLISION_CL_2 = (1 << 8) | 0x02,
+	BB_RFREADER_COLLISION_CL_3 = (1 << 8) | 0x03,
+	BB_RFREADER_CL_1 = 0x01,
 	BB_RFREADER_CL_2,
 	BB_RFREADER_CL_3
-}BBRFReader_CascadeLevel;
+} BBRFReader_CascadeLevel;
 
 
-typedef enum
-{
-	BB_RFREADER_NOT_COLLISION_DETECT=0, // Success
-	BB_RFREADER_COLLISION_DETECT=0xEA   // Collision Detect
-}BBRFReader_Collision;
+typedef enum {
+	BB_RFREADER_NOT_COLLISION_DETECT = 0, // Success
+	BB_RFREADER_COLLISION_DETECT = 0xEA // Collision Detect
+} BBRFReader_Collision;
 
 
-typedef enum
-{
-	BB_RFREADER_SN_NOT_COMPLETE=0x88,   // Serial number is not complete
-}BBRFReader_Anticollison;
+typedef enum {
+	BB_RFREADER_SN_NOT_COMPLETE = 0x88, // Serial number is not complete
+} BBRFReader_Anticollison;
 
 
-typedef enum
-{
-	BB_RFREADER_SAK_GEMEASY8000_0x08=0x08,
-	BB_RFREADER_SAK_GEMEASY8000_0x88=0x88,
-	BB_RFREADER_SAK_GEM_MPCOS=0x98,
-	BB_RFREADER_SAK_GEM_EASY320000=0x18,
-	BB_RFREADER_NOT_SN=0x04,						//Serial number is not detect
+typedef enum {
+	BB_RFREADER_SAK_GEMEASY8000_0x08 = 0x08,
+	BB_RFREADER_SAK_GEMEASY8000_0x88 = 0x88,
+	BB_RFREADER_SAK_GEM_MPCOS = 0x98,
+	BB_RFREADER_SAK_GEM_EASY320000 = 0x18,
+	BB_RFREADER_NOT_SN = 0x04,						//Serial number is not detect
 	BB_RFREADER_ISO14443_4_COMPLIANT = 0x10,		//ISO 14443-4 Compliant
 	BB_RFREADER_ISO14443_4_NOT_COMPLIANT = 0x00	//Not ISO 14443-4 compliant
-}BBRFReader_SAK;
+} BBRFReader_SAK;
 
 
 //RF
-enum BBRFReader_Type
-{
-	BB_RFREADER_TYPE_A=0x00,
-	BB_RFREADER_TYPE_B=0x01,
-	BB_RFREADER_TYPE_15693=0x02
+enum BBRFReader_Type {
+	BB_RFREADER_TYPE_A = 0x00,
+	BB_RFREADER_TYPE_B = 0x01,
+	BB_RFREADER_TYPE_15693 = 0x02
 };
 
 
-enum BBRFReader_RFBaudRateTypeA
-{
-	BB_RFREADER_RF_BDRA_106=0x00,
-	BB_RFREADER_RF_BDRA_212=0x90 | 0x01, //(Bit2=1 & Bit5=1)
-	BB_RFREADER_RF_BDRA_424=0xA0 | 0x02, //(Bit3=1 & Bit6=1)
-	BB_RFREADER_RF_BDRA_848=0xC0 | 0x04, //(Bit4=1 & Bit7=1)
+enum BBRFReader_RFBaudRateTypeA {
+	BB_RFREADER_RF_BDRA_106 = 0x00,
+	BB_RFREADER_RF_BDRA_212 = 0x90 | 0x01, //(Bit2=1 & Bit5=1)
+	BB_RFREADER_RF_BDRA_424 = 0xA0 | 0x02, //(Bit3=1 & Bit6=1)
+	BB_RFREADER_RF_BDRA_848 = 0xC0 | 0x04, //(Bit4=1 & Bit7=1)
 };
 
 
-enum BBRFReader_RFBaudRateTypeB
-{
-	BB_RFREADER_RF_BDRB_106=0x00,
-	BB_RFREADER_RF_BDRB_212=0x90 | 0x01, //(Bit2=1 & Bit5=1)
-	BB_RFREADER_RF_BDRB_424=0xA0 | 0x02, //(Bit3=1 & Bit6=1)
-	BB_RFREADER_RF_BDRB_848=0xC0 | 0x04  //(Bit4=1 & Bit7=1)
+enum BBRFReader_RFBaudRateTypeB {
+	BB_RFREADER_RF_BDRB_106 = 0x00,
+	BB_RFREADER_RF_BDRB_212 = 0x90 | 0x01, //(Bit2=1 & Bit5=1)
+	BB_RFREADER_RF_BDRB_424 = 0xA0 | 0x02, //(Bit3=1 & Bit6=1)
+	BB_RFREADER_RF_BDRB_848 = 0xC0 | 0x04 //(Bit4=1 & Bit7=1)
 
 };
 
 
 //MIFARE
-typedef enum
-{
-	BB_RFREADER_SCT_GEMEASY8000=0x00,
-	BB_RFREADER_SCT_GEMCOMBI_MPCOS_PRO=0x02,
-	BB_RFREADER_SCT_GEMEASY320000=0x03,
-}BBRFReader_SCT;
+typedef enum {
+	BB_RFREADER_SCT_GEMEASY8000 = 0x00,
+	BB_RFREADER_SCT_GEMCOMBI_MPCOS_PRO = 0x02,
+	BB_RFREADER_SCT_GEMEASY320000 = 0x03,
+} BBRFReader_SCT;
 
 
-enum
-{
-	BB_RFREADER_ABL_GEMEASY8000=0x3F,
-	BB_RFREADER_ABL_GEMCOMBI_MPCOS_PRO=0xFF,
-	BB_RFREADER_ABL_GEMEASY320000=0xFF
+enum {
+	BB_RFREADER_ABL_GEMEASY8000 = 0x3F,
+	BB_RFREADER_ABL_GEMCOMBI_MPCOS_PRO = 0xFF,
+	BB_RFREADER_ABL_GEMEASY320000 = 0xFF
 };
 
 typedef unsigned char BBRFReader_SW1;
@@ -1097,45 +1119,40 @@ typedef unsigned char BBRFReader_TimeOut;
 
 
 
-typedef struct _tagSW
-{
+typedef struct _tagSW {
 	BBRFReader_SW1 		SW1;
 	BBRFReader_SW2		SW2;
-}BBRFReader_SW;
+} BBRFReader_SW;
 
 
 
-typedef struct _tagMifare
-{
+typedef struct _tagMifare {
 	BBRFReader_SCT 				SmartCard_Type;
 	BBRFReader_ASC 				Authenticate_StateBit;
 	BBRFReader_ABL				AddressBlock;				//사용자 입력
 	BBRFReader_LE				LE;							//Combine Command 추가
 	BBRFReader_LC				LC;							//Combine Command 추가
-}BBRFReader_Mifare;
+} BBRFReader_Mifare;
 
 
 //ISO14443_B
-typedef enum
-{
-	BB_RFREADER_SLOT_1=0x01,
-	BB_RFREADER_SLOT_2=0x02,
-	BB_RFREADER_SLOT_4=0x04,
-	BB_RFREADER_SLOT_8=0x08,
-	BB_RFREADER_SLOT_16=0x10,
+typedef enum {
+	BB_RFREADER_SLOT_1 = 0x01,
+	BB_RFREADER_SLOT_2 = 0x02,
+	BB_RFREADER_SLOT_4 = 0x04,
+	BB_RFREADER_SLOT_8 = 0x08,
+	BB_RFREADER_SLOT_16 = 0x10,
 	BB_RFREADER_OTHER_SLOT
-}BBRFReader_NBSLOT;
+} BBRFReader_NBSLOT;
 
 
 
-typedef enum
-{
-	BB_RFREADER_CONSTANT=0x50
-}BBRFReader_ATQBConstant;
+typedef enum {
+	BB_RFREADER_CONSTANT = 0x50
+} BBRFReader_ATQBConstant;
 
 
-typedef struct _tagATQB
-{
+typedef struct _tagATQB {
 	BBRFReader_ATQBConstant 	Constant;
 	BBRFReader_PUPI				PICC[4];
 	BBRFReader_APPDATA			AppData[4];
@@ -1145,57 +1162,51 @@ typedef struct _tagATQB
 
 
 //Slot Maker Bitrate
-typedef enum
-{
-	READER_TO_CARD_106=0x00,
-	READER_TO_CARD_212=0x01,
-	READER_TO_CARD_424=0x02,
-	READER_TO_CARD_848=0x03,
+typedef enum {
+	READER_TO_CARD_106 = 0x00,
+	READER_TO_CARD_212 = 0x01,
+	READER_TO_CARD_424 = 0x02,
+	READER_TO_CARD_848 = 0x03,
 
-	CARD_TO_READER_106=0x00,
-	CARD_TO_READER_212=0x04,
-	CARD_TO_READER_424=0x08,
-	CARD_TO_READER_848=0x0C
-}BitRate;
+	CARD_TO_READER_106 = 0x00,
+	CARD_TO_READER_212 = 0x04,
+	CARD_TO_READER_424 = 0x08,
+	CARD_TO_READER_848 = 0x0C
+} BitRate;
 
 
-typedef struct _tagBitRate
-{
+typedef struct _tagBitRate {
 	BitRate 	ReaderToCard;
 	BitRate 	CardToReader;
-}BBRFReader_BitRate;
+} BBRFReader_BitRate;
 
 
-typedef enum    //리턴된 값과 AND를 취하여 MBLI와 CID를 얻을수 있다..
-{
-	BB_RFREADER_NOT_SUPPORT=0x00,
-	BB_RFREADER_MBLI=0xF0,
-	BB_RFREADER_CID=0x0F
-}BBRFReader_Attrib;
+typedef enum {  //리턴된 값과 AND를 취하여 MBLI와 CID를 얻을수 있다..
+	BB_RFREADER_NOT_SUPPORT = 0x00,
+	BB_RFREADER_MBLI = 0xF0,
+	BB_RFREADER_CID = 0x0F
+} BBRFReader_Attrib;
 
 
 //ISO15693=================================================================================
-typedef enum
-{
-    BB_RFREADER_ISO15693_STANDARDMODE=0x00,
-    BB_RFREADER_ISO15693_FASTMODE=0x01
-}BBRFReader_ISO15693_DataCordingMode;
+typedef enum {
+	BB_RFREADER_ISO15693_STANDARDMODE = 0x00,
+	BB_RFREADER_ISO15693_FASTMODE = 0x01
+} BBRFReader_ISO15693_DataCordingMode;
 
 
 
-typedef enum
-{
-    BB_RFREADER_ISO15693_INVENTORY_16_SLOT = 0x00,
-    BB_RFREADER_ISO15693_INVENTORY_1_SLOT = 0x01
-}BBRFReader_ISO15693_SLOT;
+typedef enum {
+	BB_RFREADER_ISO15693_INVENTORY_16_SLOT = 0x00,
+	BB_RFREADER_ISO15693_INVENTORY_1_SLOT = 0x01
+} BBRFReader_ISO15693_SLOT;
 
 
 
-typedef enum
-{
-    BB_RFREADER_ISO15693_INVENTORY_AFIF_NOTVAL = 0x00,
-    BB_RFREADER_ISO15693_INVENTORY_AFIF_VAL = 0x01,
-}BBRFReader_ISO15693_AFIF;
+typedef enum {
+	BB_RFREADER_ISO15693_INVENTORY_AFIF_NOTVAL = 0x00,
+	BB_RFREADER_ISO15693_INVENTORY_AFIF_VAL = 0x01,
+} BBRFReader_ISO15693_AFIF;
 
 typedef unsigned char BBRFReader_ISO15693_AFIV;
 typedef unsigned char BBRFReader_ISO15693_MSKL;
@@ -1206,45 +1217,41 @@ typedef unsigned char BBRFReader_ISO15693_DSFID;
 typedef unsigned char BBRFReader_ISO15693_UID;
 typedef unsigned char BBRFReadeR_ISO15693_InventoryStatus;
 
-typedef struct _tagISO15693_InventoryRequest
-{
-    BBRFReader_ISO15693_SLOT         SlotSel;
-    BBRFReader_ISO15693_AFIF         AFIDValChk;
-    BBRFReader_ISO15693_AFIV         AFIVVal;
-    BBRFReader_ISO15693_MSKL         MaskLen;
-    BBRFReader_ISO15693_MSKV         *MaskVal;
-    BBRFReader_ISO15693_COLLPOS      CollPos;
-    BBRFReader_ISO15693_FLAG         Flag;
-    BBRFReader_ISO15693_DSFID        DSFID;
-    BBRFReader_ISO15693_UID          UID[8];
-    BBRFReadeR_ISO15693_InventoryStatus InventoryStatus;
-    DWORD                            ValidField;
-}BBRFReader_ISO15693_InventoryRequest;
+typedef struct _tagISO15693_InventoryRequest {
+	BBRFReader_ISO15693_SLOT         SlotSel;
+	BBRFReader_ISO15693_AFIF         AFIDValChk;
+	BBRFReader_ISO15693_AFIV         AFIVVal;
+	BBRFReader_ISO15693_MSKL         MaskLen;
+	BBRFReader_ISO15693_MSKV*         MaskVal;
+	BBRFReader_ISO15693_COLLPOS      CollPos;
+	BBRFReader_ISO15693_FLAG         Flag;
+	BBRFReader_ISO15693_DSFID        DSFID;
+	BBRFReader_ISO15693_UID          UID[8];
+	BBRFReadeR_ISO15693_InventoryStatus InventoryStatus;
+	DWORD                            ValidField;
+} BBRFReader_ISO15693_InventoryRequest;
 
 
 
 //Optional Command
 
-typedef enum
-{
-    BB_RFREADER_ISO15693_ADDRESS    = 0x00,
-    BB_RFREADER_ISO15693_NONADDRESS = 0x01,
-    BB_RFREADER_ISO15693_SELECT     = 0x02
+typedef enum {
+	BB_RFREADER_ISO15693_ADDRESS    = 0x00,
+	BB_RFREADER_ISO15693_NONADDRESS = 0x01,
+	BB_RFREADER_ISO15693_SELECT     = 0x02
 
-}BBRFReader_ISO15693_MODE;
+} BBRFReader_ISO15693_MODE;
 
-typedef enum
-{
-    BB_RFREADER_ISO15693_NOTSECURE  = 0x00,
-    BB_RFREADER_ISO15693_SECURE     = 0x01
-}BBRFReader_ISO15693_SECURE;
+typedef enum {
+	BB_RFREADER_ISO15693_NOTSECURE  = 0x00,
+	BB_RFREADER_ISO15693_SECURE     = 0x01
+} BBRFReader_ISO15693_SECURE;
 
 
-typedef enum
-{
-    BB_RFREADER_ISO15693_ASYNCRONOUS    = 0x00,
-    BB_RFREADER_ISO15693_POLLED         = 0x01
-}BBRFReader_ISO15693_Reply;
+typedef enum {
+	BB_RFREADER_ISO15693_ASYNCRONOUS    = 0x00,
+	BB_RFREADER_ISO15693_POLLED         = 0x01
+} BBRFReader_ISO15693_Reply;
 
 
 
@@ -1257,25 +1264,24 @@ typedef unsigned char BBRFReader_ISO15693_ValidField;
 typedef unsigned char BBRFReader_ISO15693_INFOF;
 typedef unsigned char BBRFReader_ISO15693_OTHER;
 
-typedef struct _tagISO15693_OptionCommand
-{
-    BBRFReader_ISO15693_MODE        Mode;
-    BBRFReader_ISO15693_SECURE      Secure;
-    BBRFReader_ISO15693_BlockNum    BlockNumber;
-    BBRFReader_ISO15693_BlockCount  BlockCount;
-    BBRFReader_ISO15693_UID         *UID;
-    BBRFReader_ISO15693_Reply       Reply;
-    BBRFReader_ISO15693_FLAG        Flag;
-    BBRFReader_ISO15693_RespSEC     *RespSecure;
-    BBRFReader_ISO15693_RespSEC     RespSecureLen;
-    BBRFReader_ISO15693_Data        *Data;
-    BBRFReader_ISO15693_ERROR       Error;
-    BBRFReader_ISO15693_DSFID       DSFID;
-    BBRFReader_ISO15693_AFIV        AFIVVal;
-    BBRFReader_ISO15693_INFOF       InfoFlag;
-    BBRFReader_ISO15693_OTHER       *Other;
-    DWORD                           ValidField;
-}BBRFReader_ISO15693_OptionCommand;
+typedef struct _tagISO15693_OptionCommand {
+	BBRFReader_ISO15693_MODE        Mode;
+	BBRFReader_ISO15693_SECURE      Secure;
+	BBRFReader_ISO15693_BlockNum    BlockNumber;
+	BBRFReader_ISO15693_BlockCount  BlockCount;
+	BBRFReader_ISO15693_UID*         UID;
+	BBRFReader_ISO15693_Reply       Reply;
+	BBRFReader_ISO15693_FLAG        Flag;
+	BBRFReader_ISO15693_RespSEC*     RespSecure;
+	BBRFReader_ISO15693_RespSEC     RespSecureLen;
+	BBRFReader_ISO15693_Data*        Data;
+	BBRFReader_ISO15693_ERROR       Error;
+	BBRFReader_ISO15693_DSFID       DSFID;
+	BBRFReader_ISO15693_AFIV        AFIVVal;
+	BBRFReader_ISO15693_INFOF       InfoFlag;
+	BBRFReader_ISO15693_OTHER*       Other;
+	DWORD                           ValidField;
+} BBRFReader_ISO15693_OptionCommand;
 
 #define     FLAG_NOT_ALL       0
 #define     FLAG_AFIV_SET      1        // 0 : Not Setting  1 : Setting
@@ -1289,13 +1295,17 @@ BBAPI HBBICCARD WINAPI BBRFReaderOpen();
 BBAPI DWORD WINAPI BBRFReaderClose(HBBICCARD);
 
 //ISO14443_A
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestALL_A( HBBRFREADER , BBRFReader_ATQA * );
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestA( HBBRFREADER , BBRFReader_ATQA *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_Anticollision( HBBRFREADER , BBRFReader_CascadeLevel, BBRFReader_SerialNumber *, BBRFReader_Collision * );
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_Select( HBBRFREADER hRFReader, BBRFReader_CascadeLevel, BBRFReader_SerialNumber *, BBRFReader_SAK *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_Halt( HBBRFREADER );
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestForAnswerToSelect( HBBRFREADER, BBRFReader_CID, BBRFReader_ATS *, DWORD *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_ProtocolParameterSelection( HBBRFREADER, BBRFReader_CID, BBRFReader_BitRate);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestALL_A(HBBRFREADER, BBRFReader_ATQA*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestA(HBBRFREADER, BBRFReader_ATQA*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_Anticollision(HBBRFREADER, BBRFReader_CascadeLevel,
+		BBRFReader_SerialNumber*, BBRFReader_Collision*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_Select(HBBRFREADER hRFReader, BBRFReader_CascadeLevel,
+		BBRFReader_SerialNumber*, BBRFReader_SAK*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_Halt(HBBRFREADER);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestForAnswerToSelect(HBBRFREADER, BBRFReader_CID,
+		BBRFReader_ATS*, DWORD*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_ProtocolParameterSelection(HBBRFREADER, BBRFReader_CID,
+		BBRFReader_BitRate);
 
 
 
@@ -1304,103 +1314,142 @@ BBAPI DWORD WINAPI BBRFReaderRF_On(HBBRFREADER);
 BBAPI DWORD WINAPI BBRFReaderRF_Off(HBBRFREADER);
 BBAPI DWORD WINAPI BBRFReaderRF_Reset(HBBRFREADER);
 //BBAPI DWORD WINAPI BBRFReaderChangeModeType(HBBRFREADER, BBRFReader_Type);
-BBAPI DWORD WINAPI BBRFReaderReadModeType(HBBRFREADER, BBRFReader_Type *);
-BBAPI DWORD WINAPI BBRFReaderGetReaderParam(HBBRFREADER, BBRFReader_RFBaudRateTypeA *, BBRFReader_RFBaudRateTypeB *);
+BBAPI DWORD WINAPI BBRFReaderReadModeType(HBBRFREADER, BBRFReader_Type*);
+BBAPI DWORD WINAPI BBRFReaderGetReaderParam(HBBRFREADER, BBRFReader_RFBaudRateTypeA*,
+		BBRFReader_RFBaudRateTypeB*);
 
 
 //MIFARE
 
-BBAPI DWORD WINAPI BBRFReaderMifare_Authenticate ( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_SW *);
-BBAPI DWORD WINAPI BBRFReaderMifare_Read( HBBRFREADER hRFReader, BBRFReader_Mifare *, BBRFReader_MifareData *, BBRFReader_SW *);
-BBAPI DWORD WINAPI BBRFReaderMifare_Write( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_MifareData *, BBRFReader_SW *);
-BBAPI DWORD WINAPI BBRFReaderMifare_Subtract_Value( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_MifareMemVal *, BBRFReader_SW *);
-BBAPI DWORD WINAPI BBRFReaderMifare_Add_Value( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_MifareMemVal *, BBRFReader_SW *);
-BBAPI DWORD WINAPI BBRFReaderMifare_Restore( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_SW *);
-BBAPI DWORD WINAPI BBRFReaderMifare_Transfer( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_SW *);
+BBAPI DWORD WINAPI BBRFReaderMifare_Authenticate(HBBRFREADER, BBRFReader_Mifare*, BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifare_Read(HBBRFREADER hRFReader, BBRFReader_Mifare*,
+		BBRFReader_MifareData*, BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifare_Write(HBBRFREADER, BBRFReader_Mifare*, BBRFReader_MifareData*,
+		BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifare_Subtract_Value(HBBRFREADER, BBRFReader_Mifare*,
+		BBRFReader_MifareMemVal*, BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifare_Add_Value(HBBRFREADER, BBRFReader_Mifare*,
+		BBRFReader_MifareMemVal*, BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifare_Restore(HBBRFREADER, BBRFReader_Mifare*, BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifare_Transfer(HBBRFREADER, BBRFReader_Mifare*, BBRFReader_SW*);
 
 //MIFARE Combine
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_Read( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_Write( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_CreateValBlock( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_ReadValue( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_SubtrackValue( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_AddValue( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_CopyValue( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_DefAccessCondition( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
-BBAPI DWORD WINAPI BBRFReaderMifareCombine_LoadKey( HBBRFREADER hRFReader, BBRFReader_Mifare *Mifare_Authenticate, BBRFReader_MifareData *pData, BBRFReader_SW *Status_SW );
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_Read(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_Write(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_CreateValBlock(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_ReadValue(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_SubtrackValue(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_AddValue(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_CopyValue(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_DefAccessCondition(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
+BBAPI DWORD WINAPI BBRFReaderMifareCombine_LoadKey(HBBRFREADER hRFReader,
+		BBRFReader_Mifare* Mifare_Authenticate, BBRFReader_MifareData* pData, BBRFReader_SW* Status_SW);
 
 
 //MIFARE Purse
 
-BBAPI DWORD WINAPI BBRFReaderMifarePurse_Create( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_PurseVal *,BBRFReader_SW * );
-BBAPI DWORD WINAPI BBRFReaderMifarePurse_Read( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_PurseVal *, BBRFReader_SW * );
-BBAPI DWORD WINAPI BBRFReaderMifarePurse_Debit( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_PurseVal *, BBRFReader_SW * );
-BBAPI DWORD WINAPI BBRFReaderMifarePurse_Credit( HBBRFREADER, BBRFReader_Mifare *, BBRFReader_PurseVal *, BBRFReader_SW *);
+BBAPI DWORD WINAPI BBRFReaderMifarePurse_Create(HBBRFREADER, BBRFReader_Mifare*,
+		BBRFReader_PurseVal*, BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifarePurse_Read(HBBRFREADER, BBRFReader_Mifare*, BBRFReader_PurseVal*,
+		BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifarePurse_Debit(HBBRFREADER, BBRFReader_Mifare*,
+		BBRFReader_PurseVal*, BBRFReader_SW*);
+BBAPI DWORD WINAPI BBRFReaderMifarePurse_Credit(HBBRFREADER, BBRFReader_Mifare*,
+		BBRFReader_PurseVal*, BBRFReader_SW*);
 
 
 //ISO14443_B
-BBAPI DWORD WINAPI BBRFReaderISO14443_B_Request_B( HBBRFREADER, BBRFReader_AFI, BBRFReader_NBSLOT, BBRFReader_ATQBResponse *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_B_RequestALL_B( HBBRFREADER, BBRFReader_AFI, BBRFReader_NBSLOT, BBRFReader_ATQBResponse *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_B_SlotMarker( HBBRFREADER , BBRFReader_SLOTNB, BBRFReader_ATQBResponse *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_B_Attrib( HBBRFREADER, BBRFReader_PUPI *, BBRFReader_Protocol_Info *, BBRFReader_CID , BBRFReader_BitRate, BBRFReader_AttribResponse *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_B_Halt_B( HBBRFREADER, BBRFReader_PUPI *);
+BBAPI DWORD WINAPI BBRFReaderISO14443_B_Request_B(HBBRFREADER, BBRFReader_AFI, BBRFReader_NBSLOT,
+		BBRFReader_ATQBResponse*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_B_RequestALL_B(HBBRFREADER, BBRFReader_AFI, BBRFReader_NBSLOT,
+		BBRFReader_ATQBResponse*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_B_SlotMarker(HBBRFREADER, BBRFReader_SLOTNB,
+		BBRFReader_ATQBResponse*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_B_Attrib(HBBRFREADER, BBRFReader_PUPI*,
+		BBRFReader_Protocol_Info*, BBRFReader_CID, BBRFReader_BitRate, BBRFReader_AttribResponse*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_B_Halt_B(HBBRFREADER, BBRFReader_PUPI*);
 
 
 //ISO1443 A&B
-BBAPI DWORD WINAPI BBRFReaderISO14443_AB_DeSelect( HBBRFREADER hRFReader, BBRFReader_CID );
-BBAPI DWORD WINAPI BBRFReaderISO14443_AB_Exchange( HBBRFREADER hRFReader, BBRFReader_CID, BBRFReader_NAD, BBRFReader_CardCmd *, DWORD dwCardCmdLen , BBRFReader_CardResp *, DWORD *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_AB_Poll( HBBRFREADER hRFReader, BBRFReader_CID );
-BBAPI DWORD WINAPI BBRFReaderISO14443_AB_GetMode_15_Status( HBBRFREADER hRFReader, BBRFReader_CardResp * );
+BBAPI DWORD WINAPI BBRFReaderISO14443_AB_DeSelect(HBBRFREADER hRFReader, BBRFReader_CID);
+BBAPI DWORD WINAPI BBRFReaderISO14443_AB_Exchange(HBBRFREADER hRFReader, BBRFReader_CID,
+		BBRFReader_NAD, BBRFReader_CardCmd*, DWORD dwCardCmdLen, BBRFReader_CardResp*, DWORD*);
+BBAPI DWORD WINAPI BBRFReaderISO14443_AB_Poll(HBBRFREADER hRFReader, BBRFReader_CID);
+BBAPI DWORD WINAPI BBRFReaderISO14443_AB_GetMode_15_Status(HBBRFREADER hRFReader,
+		BBRFReader_CardResp*);
 
 
 //Transparent Communication Command
-BBAPI DWORD WINAPI BBReadControllerReg( HBBRFREADER, BBRFReader_RegAddr *, BBRFReader_RegData * );
-BBAPI DWORD WINAPI BBWriteControllerReg( HBBRFREADER, BBRFReader_RegAddr *, BBRFReader_RegData * );
-BBAPI DWORD WINAPI BBTransExchange( HBBRFREADER, BBRFReader_CardCommand *, DWORD, BBRFReader_CardData *, DWORD * );
-BBAPI DWORD WINAPI BBControllerTimeOut( HBBRFREADER, BBRFReader_TimeOut * );
+BBAPI DWORD WINAPI BBReadControllerReg(HBBRFREADER, BBRFReader_RegAddr*, BBRFReader_RegData*);
+BBAPI DWORD WINAPI BBWriteControllerReg(HBBRFREADER, BBRFReader_RegAddr*, BBRFReader_RegData*);
+BBAPI DWORD WINAPI BBTransExchange(HBBRFREADER, BBRFReader_CardCommand*, DWORD,
+								   BBRFReader_CardData*, DWORD*);
+BBAPI DWORD WINAPI BBControllerTimeOut(HBBRFREADER, BBRFReader_TimeOut*);
 
 
 //ISO15693
-BBAPI DWORD WINAPI BBRFReaderISO15693_ChangeDataCordingMode( HBBRFREADER hRFReader, BBRFReader_ISO15693_DataCordingMode dwMode );
-BBAPI DWORD WINAPI BBRFReaderISO15693_InventoryRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_InventoryRequest *InventoryRequest );
-BBAPI DWORD WINAPI BBRFReaderISO15693_StayQuietRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_InventoryRequest *InventoryRequest );
-BBAPI DWORD WINAPI BBRFReaderISO15693_ReadSingleBlockRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *ReadCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_WriteSingleBlockRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *WriteCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_LockBlockRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *LockCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_ReadMultipleBlockRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *ReadCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_WriteMultipleBlockRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *WriteCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_SelectRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *SelectCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_ResetToReadyRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *ResetReadyCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_WriteAFIRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *WriteAFICommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_LockAFIRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *LockAFICommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_WriteDSFIDRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *WriteDSFIDCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_LockDSFIDRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *LockDSFIDCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_GetSysInfoRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *GetSysInfoCommand );
-BBAPI DWORD WINAPI BBRFReaderISO15693_MultiBlockSecurityRequest( HBBRFREADER hRFReader, BBRFReader_ISO15693_OptionCommand *MultiBlockSecurity );
+BBAPI DWORD WINAPI BBRFReaderISO15693_ChangeDataCordingMode(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_DataCordingMode dwMode);
+BBAPI DWORD WINAPI BBRFReaderISO15693_InventoryRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_InventoryRequest* InventoryRequest);
+BBAPI DWORD WINAPI BBRFReaderISO15693_StayQuietRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_InventoryRequest* InventoryRequest);
+BBAPI DWORD WINAPI BBRFReaderISO15693_ReadSingleBlockRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* ReadCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_WriteSingleBlockRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* WriteCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_LockBlockRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* LockCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_ReadMultipleBlockRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* ReadCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_WriteMultipleBlockRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* WriteCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_SelectRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* SelectCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_ResetToReadyRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* ResetReadyCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_WriteAFIRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* WriteAFICommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_LockAFIRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* LockAFICommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_WriteDSFIDRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* WriteDSFIDCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_LockDSFIDRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* LockDSFIDCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_GetSysInfoRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* GetSysInfoCommand);
+BBAPI DWORD WINAPI BBRFReaderISO15693_MultiBlockSecurityRequest(HBBRFREADER hRFReader,
+		BBRFReader_ISO15693_OptionCommand* MultiBlockSecurity);
 
 //UserInput
-BBAPI DWORD WINAPI BBUserInput( HBBICCARD hRFReader, unsigned char *strCmd, DWORD CmdLen, unsigned char *strResp, DWORD *RespLen );
+BBAPI DWORD WINAPI BBUserInput(HBBICCARD hRFReader, unsigned char* strCmd, DWORD CmdLen,
+							   unsigned char* strResp, DWORD* RespLen);
 
 
 //NEW API
-typedef struct _CommSettings
-{
+typedef struct _CommSettings {
 	DWORD			baudrate;
 	char 			protocol;
-}CommSettings;
+} CommSettings;
 
 
-typedef struct _ReaderSettings
-{
-//	CommSettings	commSettings;
+typedef struct _ReaderSettings {
+	//	CommSettings	commSettings;
 	DWORD			baudrate;
 	char 			protocol;
 	unsigned char 			stationID;
-}ReaderSettings;
+} ReaderSettings;
 
 
-enum
-{
+enum {
 	rcGetVersion			= 101,
 	rcResetReader			= 102,
 	rcResetField			= 103,
@@ -1455,15 +1504,15 @@ enum
 	rcWriteDSFID			= 414,
 	rcLockDSFID				= 415,
 	rcGetMultiSecStatus		= 416,
-	rcCtxReqt				= 501, 
-	rcCtxIdentify			= 502, 
-	rcCtxSelect				= 503, 
-	rcCtxSelectAll			= 504, 
-	rcCtxRead				= 505, 
-	rcCtxWrite				= 506, 
-	rcCtxUpdate				= 507, 
-	rcCtxDesActive			= 508, 
-	rcCtxMultiRead			= 509, 
+	rcCtxReqt				= 501,
+	rcCtxIdentify			= 502,
+	rcCtxSelect				= 503,
+	rcCtxSelectAll			= 504,
+	rcCtxRead				= 505,
+	rcCtxWrite				= 506,
+	rcCtxUpdate				= 507,
+	rcCtxDesActive			= 508,
+	rcCtxMultiRead			= 509,
 
 	rcGetSAMTimeout			= 601,
 	rcSetSAMTimeout			= 602,
@@ -1490,8 +1539,7 @@ enum
 };
 
 
-enum DESFireCmd
-{
+enum DESFireCmd {
 	cSAMOnOff				= 0x00,
 	cAuthenticate   		= 0x01,
 	cChangeKeySettings   	= 0x02,
@@ -1546,8 +1594,7 @@ enum DESFireCmd
 	cSetLogicalChannel  	= 0x42
 };
 
-enum CalypsoCmd
-{
+enum CalypsoCmd {
 	// SAM
 	cChangeSpeed					= 0x01,
 	cCheckSignedData				= 0x02,
@@ -1616,73 +1663,83 @@ enum CalypsoCmd
 	cReadRecordStamped				= 0x5D,
 	cAbortSecureSession				= 0x5E
 };
-BBAPI char 	WINAPI BBRFReader_OpenComm( const char *commDevice, char autoDetect, const CommSettings* commSettings );
+BBAPI char 	WINAPI BBRFReader_OpenComm(const char* commDevice, char autoDetect,
+									   const CommSettings* commSettings);
 BBAPI void  WINAPI BBRFReader_CloseComm();
-BBAPI DWORD	WINAPI BBRFReader_OpenReader( unsigned char id, short knownReader );
+BBAPI DWORD	WINAPI BBRFReader_OpenReader(unsigned char id, short knownReader);
 BBAPI DWORD	WINAPI BBRFReader_CloseReader();
 BBAPI DWORD	WINAPI BBRFReader_ResetReader();
-BBAPI DWORD	WINAPI BBRFReader_ReadRegister( BYTE *byRegAddr );
-BBAPI DWORD	WINAPI BBRFReader_WriteRegister( BYTE *byRegAddr, BYTE *byRegData );
+BBAPI DWORD	WINAPI BBRFReader_ReadRegister(BYTE* byRegAddr);
+BBAPI DWORD	WINAPI BBRFReader_WriteRegister(BYTE* byRegAddr, BYTE* byRegData);
 BBAPI void WINAPI BBRFReader_EmptyCommRcvBuffer();
 BBAPI char WINAPI BBRFReader_GetResumeState();
-BBAPI void WINAPI BBRFReader_SetCommBaudrate( DWORD dwBaudrate );
+BBAPI void WINAPI BBRFReader_SetCommBaudrate(DWORD dwBaudrate);
 BBAPI DWORD WINAPI BBRFReader_GetCommBaudrate();
 BBAPI char WINAPI BBRFReader_GetCommProtocol();
-BBAPI void WINAPI BBRFReader_SetCommProtocol( char protocol );
-BBAPI void WINAPI BBRFReader_SetCommTimeout( DWORD timeout );
+BBAPI void WINAPI BBRFReader_SetCommProtocol(char protocol);
+BBAPI void WINAPI BBRFReader_SetCommTimeout(DWORD timeout);
 BBAPI DWORD WINAPI BBRFReader_GetCommTimeout();
 
 BBAPI ReaderSettings WINAPI BBRFReader_GetReaderConfig();
-BBAPI void WINAPI BBRFReader_GetReaderConfigA(ReaderSettings *pSettings);
-BBAPI void WINAPI BBRFReader_SetReaderConfig( ReaderSettings *readerset);
-BBAPI unsigned char* WINAPI BBRFReader_GetReaderType( unsigned char *deviceVersion );
+BBAPI void WINAPI BBRFReader_GetReaderConfigA(ReaderSettings* pSettings);
+BBAPI void WINAPI BBRFReader_SetReaderConfig(ReaderSettings* readerset);
+BBAPI unsigned char* WINAPI BBRFReader_GetReaderType(unsigned char* deviceVersion);
 BBAPI char WINAPI BBRFReader_GetBinProtocol();
 BBAPI char WINAPI BBRFReader_GetDebugOutputState();
-BBAPI void WINAPI BBRFReader_SetDebugOutputState( char active );
-BBAPI char*	WINAPI BBRFReader_GetDebugOutput( char *buffer );
-BBAPI DWORD	WINAPI BBRFReader_SendCommand( char *readerCmd, unsigned char *data );
-BBAPI DWORD WINAPI BBRFReader_SendCommandGetData( char *readerCmd, unsigned char *data, unsigned char *resultBuf );
-BBAPI DWORD WINAPI BBRFReader_SendCommandGetDataTimeout( char *readerCmd, unsigned char* data, unsigned char* resultBuf, long timeout);
+BBAPI void WINAPI BBRFReader_SetDebugOutputState(char active);
+BBAPI char*	WINAPI BBRFReader_GetDebugOutput(char* buffer);
+BBAPI DWORD	WINAPI BBRFReader_SendCommand(char* readerCmd, unsigned char* data);
+BBAPI DWORD WINAPI BBRFReader_SendCommandGetData(char* readerCmd, unsigned char* data,
+		unsigned char* resultBuf);
+BBAPI DWORD WINAPI BBRFReader_SendCommandGetDataTimeout(char* readerCmd, unsigned char* data,
+		unsigned char* resultBuf, long timeout);
 
-BBAPI DWORD	WINAPI BBRFReader_GetData( unsigned char* resultBuf );
-BBAPI DWORD	WINAPI BBRFReader_GetDataTimeout( unsigned char *buffer, DWORD timeout );
+BBAPI DWORD	WINAPI BBRFReader_GetData(unsigned char* resultBuf);
+BBAPI DWORD	WINAPI BBRFReader_GetDataTimeout(unsigned char* buffer, DWORD timeout);
 
 //BBAPI DWORD	WINAPI BBRFReader_DESFire( DESFireCmd command, const unsigned char *data, unsigned char *resultBuf );
-BBAPI DWORD	WINAPI BBRFReader_DESFire( char command, const unsigned char *data, unsigned char *resultBuf );
-BBAPI DWORD	WINAPI BBRFReader_Calypso( byte command, const unsigned char *data, unsigned char *resultBuf );
+BBAPI DWORD	WINAPI BBRFReader_DESFire(char command, const unsigned char* data,
+									  unsigned char* resultBuf);
+BBAPI DWORD	WINAPI BBRFReader_Calypso(byte command, const unsigned char* data,
+									  unsigned char* resultBuf);
 
 BBAPI char	WINAPI BBRFReader_GetDESFireSAMTimeout();
-BBAPI void	WINAPI BBRFReader_SetDESFireSAMTimeout( char cTimeout );
-BBAPI char* WINAPI BBRFReader_DESEncrypt( char cOptions, char* pbyKey, char* pbyData, long lLength, char* pbyBuffer );
-BBAPI char* WINAPI BBRFReader_DESDecrypt( char cOptions, char* pbyKey, char* pbyData, long lLength, char* pbyBuffer );
+BBAPI void	WINAPI BBRFReader_SetDESFireSAMTimeout(char cTimeout);
+BBAPI char* WINAPI BBRFReader_DESEncrypt(char cOptions, char* pbyKey, char* pbyData, long lLength,
+		char* pbyBuffer);
+BBAPI char* WINAPI BBRFReader_DESDecrypt(char cOptions, char* pbyKey, char* pbyData, long lLength,
+		char* pbyBuffer);
 BBAPI BOOL WINAPI BBRFReader_OpenICComm();
 BBAPI BOOL WINAPI BBRFReader_CloseICComm();
-BBAPI BOOL WINAPI BBRFReader_ICPowerDown( BOOL bIsSAM, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_ICPowerOn( BOOL bIsSAM, BYTE *pbyInputParam, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_ICChangePPS( BOOL bIsSAM, BYTE *pbyInputParam, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_ICChangebaudrate( DWORD dwBaudRate, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_SAMSlotIOMode( BOOL bIsSAM, BYTE byMode, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_SAMDefType( BYTE bySAMSelectType, BYTE bySlotSAM, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_ICDefType( BYTE bySAMSelectType, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_SendSAMCommand( BOOL bIsSAM, BYTE *pbyInputData );
-BBAPI BOOL WINAPI BBRFReader_GetSAMData( BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_GetSAMDataTimeout( unsigned char *pbyResultBuf, DWORD timeout );
-BBAPI BOOL WINAPI BBRFReader_GetICStatus( BOOL bIsSAM, BYTE *pbyResultBuf );
-BBAPI BOOL WINAPI BBRFReader_GetICVersion( char *pGetVersion, BYTE *pLengthOfData );
-BBAPI void WINAPI BBRFReader_GetEMVVersion( char *pcGetVersion );
+BBAPI BOOL WINAPI BBRFReader_ICPowerDown(BOOL bIsSAM, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_ICPowerOn(BOOL bIsSAM, BYTE* pbyInputParam, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_ICChangePPS(BOOL bIsSAM, BYTE* pbyInputParam, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_ICChangebaudrate(DWORD dwBaudRate, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_SAMSlotIOMode(BOOL bIsSAM, BYTE byMode, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_SAMDefType(BYTE bySAMSelectType, BYTE bySlotSAM, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_ICDefType(BYTE bySAMSelectType, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_SendSAMCommand(BOOL bIsSAM, BYTE* pbyInputData);
+BBAPI BOOL WINAPI BBRFReader_GetSAMData(BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_GetSAMDataTimeout(unsigned char* pbyResultBuf, DWORD timeout);
+BBAPI BOOL WINAPI BBRFReader_GetICStatus(BOOL bIsSAM, BYTE* pbyResultBuf);
+BBAPI BOOL WINAPI BBRFReader_GetICVersion(char* pGetVersion, BYTE* pLengthOfData);
+BBAPI void WINAPI BBRFReader_GetEMVVersion(char* pcGetVersion);
 
 
 //KeyMapping을 위한 API.
 BBAPI BOOL WINAPI BBKeyMapping_Init();
 BBAPI WORD WINAPI BBKeyMapping_GetKeyCount();
-BBAPI BOOL WINAPI BBKeyMapping_GetKeyData(const int nIndex,WORD *wKey,WORD *wType,TCHAR *strName,unsigned int buffer_length);
-BBAPI BOOL WINAPI BBKeyMapping_GetAllKeyData(WORD *wKey,WORD *wType,TCHAR **strName,unsigned int buffer_length);
-BBAPI BOOL WINAPI BBKeyMapping_SetKeyData(const int nIndex,const WORD wKey,const WORD wType);
-BBAPI BOOL WINAPI BBKeyMapping_SetAllKeyData(const WORD *wKey,const WORD *wType);
+BBAPI BOOL WINAPI BBKeyMapping_GetKeyData(const int nIndex, WORD* wKey, WORD* wType, TCHAR* strName,
+		unsigned int buffer_length);
+BBAPI BOOL WINAPI BBKeyMapping_GetAllKeyData(WORD* wKey, WORD* wType, TCHAR** strName,
+		unsigned int buffer_length);
+BBAPI BOOL WINAPI BBKeyMapping_SetKeyData(const int nIndex, const WORD wKey, const WORD wType);
+BBAPI BOOL WINAPI BBKeyMapping_SetAllKeyData(const WORD* wKey, const WORD* wType);
 BBAPI BOOL WINAPI BBKeyMapping_XMLFileSave();
 BBAPI BOOL WINAPI BBKeyMapping_Close();
 BBAPI BOOL WINAPI BBKeyMapping_XMLCreateHead(const int nCount);
-BBAPI BOOL WINAPI BBKeyMapping_XMLCreateData(const WORD wCode,const UINT nType,const int nKeyname);
+BBAPI BOOL WINAPI BBKeyMapping_XMLCreateData(const WORD wCode, const UINT nType,
+		const int nKeyname);
 BBAPI BOOL WINAPI BBKeyMapping_XMLCreateTail();
 BBAPI BOOL WINAPI BBKeyMapping_SetDefaultKey();
 

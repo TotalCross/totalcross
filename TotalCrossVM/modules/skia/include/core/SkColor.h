@@ -53,8 +53,8 @@ typedef uint32_t SkColor;
     @return   color and alpha, unpremultiplied
 */
 static constexpr inline SkColor SkColorSetARGB(U8CPU a, U8CPU r, U8CPU g, U8CPU b) {
-    return SkASSERT(a <= 255 && r <= 255 && g <= 255 && b <= 255),
-           (a << 24) | (r << 16) | (g << 8) | (b << 0);
+	return SkASSERT(a <= 255 && r <= 255 && g <= 255 && b <= 255),
+		   (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
 /** Returns color value from 8-bit component values, with alpha set
@@ -86,7 +86,7 @@ static constexpr inline SkColor SkColorSetARGB(U8CPU a, U8CPU r, U8CPU g, U8CPU 
     @return   color with transparency
 */
 static constexpr inline SkColor SkColorSetA(SkColor c, U8CPU a) {
-    return (c & 0x00FFFFFF) | (a << 24);
+	return (c & 0x00FFFFFF) | (a << 24);
 }
 
 /** Represents fully transparent SkAlpha value. SkAlpha ranges from zero,
@@ -173,7 +173,7 @@ SK_API void SkRGBToHSV(U8CPU red, U8CPU green, U8CPU blue, SkScalar hsv[3]);
     @param hsv    three element array which holds the resulting HSV components
 */
 static inline void SkColorToHSV(SkColor color, SkScalar hsv[3]) {
-    SkRGBToHSV(SkColorGetR(color), SkColorGetG(color), SkColorGetB(color), hsv);
+	SkRGBToHSV(SkColorGetR(color), SkColorGetG(color), SkColorGetB(color), hsv);
 }
 
 /** Converts HSV components to an ARGB color. Alpha is passed through unchanged.
@@ -200,7 +200,7 @@ SK_API SkColor SkHSVToColor(U8CPU alpha, const SkScalar hsv[3]);
     @return     RGB equivalent to HSV
 */
 static inline SkColor SkHSVToColor(const SkScalar hsv[3]) {
-    return SkHSVToColor(0xFF, hsv);
+	return SkHSVToColor(0xFF, hsv);
 }
 
 /** 32-bit ARGB color value, premultiplied. The byte order for this value is
@@ -230,67 +230,73 @@ SK_API SkPMColor SkPreMultiplyColor(SkColor c);
 
 template <SkAlphaType kAT>
 struct SkRGBA4f {
-    float fR;
-    float fG;
-    float fB;
-    float fA;
+	float fR;
+	float fG;
+	float fB;
+	float fA;
 
-    bool operator==(const SkRGBA4f& other) const {
-        return fA == other.fA && fR == other.fR && fG == other.fG && fB == other.fB;
-    }
-    bool operator!=(const SkRGBA4f& other) const {
-        return !(*this == other);
-    }
+	bool operator==(const SkRGBA4f& other) const {
+		return fA == other.fA && fR == other.fR && fG == other.fG && fB == other.fB;
+	}
+	bool operator!=(const SkRGBA4f& other) const {
+		return !(*this == other);
+	}
 
-    SkRGBA4f operator*(float scale) const {
-        return { fR * scale, fG * scale, fB * scale, fA * scale };
-    }
+	SkRGBA4f operator*(float scale) const {
+		return { fR * scale, fG * scale, fB * scale, fA * scale };
+	}
 
-    SkRGBA4f operator*(const SkRGBA4f& scale) const {
-        return { fR * scale.fR, fG * scale.fG, fB * scale.fB, fA * scale.fA };
-    }
+	SkRGBA4f operator*(const SkRGBA4f& scale) const {
+		return { fR * scale.fR, fG * scale.fG, fB * scale.fB, fA * scale.fA };
+	}
 
-    const float* vec() const { return &fR; }
-          float* vec()       { return &fR; }
+	const float* vec() const {
+		return &fR;
+	}
+	float* vec()       {
+		return &fR;
+	}
 
-    float operator[](int index) const {
-        SkASSERT(index >= 0 && index < 4);
-        return this->vec()[index];
-    }
+	float operator[](int index) const {
+		SkASSERT(index >= 0 && index < 4);
+		return this->vec()[index];
+	}
 
-    float& operator[](int index) {
-        SkASSERT(index >= 0 && index < 4);
-        return this->vec()[index];
-    }
+	float& operator[](int index) {
+		SkASSERT(index >= 0 && index < 4);
+		return this->vec()[index];
+	}
 
-    bool isOpaque() const {
-        SkASSERT(fA <= 1.0f && fA >= 0.0f);
-        return fA == 1.0f;
-    }
+	bool isOpaque() const {
+		SkASSERT(fA <= 1.0f && fA >= 0.0f);
+		return fA == 1.0f;
+	}
 
-    static SkRGBA4f Pin(float r, float g, float b, float a);  // impl. depends on kAT
-    SkRGBA4f pin() const { return Pin(fR, fG, fB, fA); }
+	static SkRGBA4f Pin(float r, float g, float b, float a);  // impl. depends on kAT
+	SkRGBA4f pin() const {
+		return Pin(fR, fG, fB, fA);
+	}
 
-    static SkRGBA4f FromColor(SkColor);  // impl. depends on kAT
-    SkColor toSkColor() const;  // impl. depends on kAT
+	static SkRGBA4f FromColor(SkColor);  // impl. depends on kAT
+	SkColor toSkColor() const;  // impl. depends on kAT
 
-    static SkRGBA4f FromPMColor(SkPMColor);  // impl. depends on kAT
+	static SkRGBA4f FromPMColor(SkPMColor);  // impl. depends on kAT
 
-    SkRGBA4f<kPremul_SkAlphaType> premul() const {
-        static_assert(kAT == kUnpremul_SkAlphaType, "");
-        return { fR * fA, fG * fA, fB * fA, fA };
-    }
+	SkRGBA4f<kPremul_SkAlphaType> premul() const {
+		static_assert(kAT == kUnpremul_SkAlphaType, "");
+		return { fR * fA, fG * fA, fB * fA, fA };
+	}
 
-    SkRGBA4f<kUnpremul_SkAlphaType> unpremul() const {
-        static_assert(kAT == kPremul_SkAlphaType, "");
+	SkRGBA4f<kUnpremul_SkAlphaType> unpremul() const {
+		static_assert(kAT == kPremul_SkAlphaType, "");
 
-        if (fA == 0.0f) {
-            return { 0, 0, 0, 0 };
-        } else {
-            float invAlpha = 1 / fA;
-            return { fR * invAlpha, fG * invAlpha, fB * invAlpha, fA };
-        }
-    }
+		if (fA == 0.0f) {
+			return { 0, 0, 0, 0 };
+		} else {
+			float invAlpha = 1 / fA;
+			return { fR * invAlpha, fG * invAlpha, fB * invAlpha, fA };
+		}
+	}
 };
 
 using SkColor4f = SkRGBA4f<kUnpremul_SkAlphaType>;

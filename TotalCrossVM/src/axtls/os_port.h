@@ -3,16 +3,16 @@
  *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -64,22 +64,21 @@ extern "C" {
 #undef WIN32
 #define WIN32
 
-struct tm
-{
-  int   tm_sec;
-  int   tm_min;
-  int   tm_hour;
-  int   tm_mday;
-  int   tm_mon;
-  int   tm_year;
-  int   tm_wday;
-  int   tm_yday;
-  int   tm_isdst;
-  int   tm_gmtoff;
+struct tm {
+	int   tm_sec;
+	int   tm_min;
+	int   tm_hour;
+	int   tm_mday;
+	int   tm_mon;
+	int   tm_year;
+	int   tm_wday;
+	int   tm_yday;
+	int   tm_isdst;
+	int   tm_gmtoff;
 };
 
-time_t time( time_t *timer );
-time_t mktime (struct tm *tp);
+time_t time(time_t* timer);
+time_t mktime(struct tm* tp);
 int _isatty(int fd);
 
 #endif
@@ -117,14 +116,14 @@ typedef int int32_t;
 #endif
 #endif
 
-#if !defined(linux) && !defined(ANDROID) && !defined(__SYMBIAN32__) 
- #if defined WIN32
-  typedef __int64 int64_t;
-  typedef unsigned __int64 uint64_t;
- #else
-  typedef long long int64_t;
-  typedef unsigned long long uint64_t;
- #endif
+#if !defined(linux) && !defined(ANDROID) && !defined(__SYMBIAN32__)
+#if defined WIN32
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#else
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+#endif
 #endif
 
 #ifdef WIN32
@@ -195,10 +194,10 @@ typedef int int32_t;
 
 typedef int socklen_t;
 
-EXP_FUNC void STDCALL gettimeofday(struct timeval* t,void* timezone);
+EXP_FUNC void STDCALL gettimeofday(struct timeval* t, void* timezone);
 #ifndef __clang__
-EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2);
-EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
+EXP_FUNC int STDCALL strcasecmp(const char* s1, const char* s2);
+EXP_FUNC int STDCALL getdomainname(char* buf, int buf_size);
 #endif
 /*
 #elif defined(__WINDOWS__)
@@ -209,7 +208,7 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
 #	if BYTE_ORDER == LITTLE_ENDIAN
 #		define be64toh(x) ntohll(x)
 #	elif BYTE_ORDER == BIG_ENDIAN
-		/* that would be xbox 360 */
+/* that would be xbox 360 */
 #		define be64toh(x) (x)
 #	else
 #		error byte order not supported
@@ -243,58 +242,57 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
 #define TTY_FLUSH()
 
 #ifndef be64toh
- #ifdef __APPLE__
-  #define be64toh(x) ntohll(x)
- #else
-  #define be64toh(x) __be64_to_cpu(x)
- #endif
+#ifdef __APPLE__
+#define be64toh(x) ntohll(x)
+#else
+#define be64toh(x) __be64_to_cpu(x)
+#endif
 #endif
 
 #endif  /* Not Win32 */
 
 //flsobral@tc115: Removed ifdef for PalmOS, it's the same code for all platforms from now on. (seems to fix the problem with corrupted VMs)
 #if defined (TOTALCROSS_INTEGRATION) //flsobral@tc114_36: we'll use tcvm functions instead.
- #undef free
- #undef malloc
- #undef calloc
- #undef realloc
+#undef free
+#undef malloc
+#undef calloc
+#undef realloc
 
- #define free(A)         xfree(A)
- #define malloc(A)       xmalloc(A)
- #define calloc(A,B)     xcalloc(A,B)
- #define realloc(A, B)   xrealloc(A, B)
+#define free(A)         xfree(A)
+#define malloc(A)       xmalloc(A)
+#define calloc(A,B)     xcalloc(A,B)
+#define realloc(A, B)   xrealloc(A, B)
 
 #else // previous code
 
 /* some functions to mutate the way these work */
- #define malloc(A)       ax_malloc(A)
- #ifndef realloc
-  #define realloc(A,B)    ax_realloc(A,B)
- #endif
- #define calloc(A,B)     ax_calloc(A,B)
+#define malloc(A)       ax_malloc(A)
+#ifndef realloc
+#define realloc(A,B)    ax_realloc(A,B)
+#endif
+#define calloc(A,B)     ax_calloc(A,B)
 
- EXP_FUNC void * STDCALL ax_malloc(size_t s);
- EXP_FUNC void * STDCALL ax_realloc(void *y, size_t s);
- EXP_FUNC void * STDCALL ax_calloc(size_t n, size_t s);
+EXP_FUNC void* STDCALL ax_malloc(size_t s);
+EXP_FUNC void* STDCALL ax_realloc(void* y, size_t s);
+EXP_FUNC void* STDCALL ax_calloc(size_t n, size_t s);
 #endif
 
 // private time type - fdie@20090325 support certificate expiration dates beyond 2050
-typedef struct
-{
-   uint32_t high; // approx number of hours since year 0 (non decreasing function useful for date comparison)
-   uint32_t low;  // number of microsecs in the current hour
+typedef struct {
+	uint32_t high; // approx number of hours since year 0 (non decreasing function useful for date comparison)
+	uint32_t low;  // number of microsecs in the current hour
 } time_h;
 
 #define mk_time_h(pth, year, month, day, hour, min, sec, usec) \
-{ \
-   (pth)->high = (((year)*12+(month))*31+(day))*24+(hour); \
-   (pth)->low  = ((min)*60+(sec))*1000000+(usec); \
-}
+	{ \
+		(pth)->high = (((year)*12+(month))*31+(day))*24+(hour); \
+		(pth)->low  = ((min)*60+(sec))*1000000+(usec); \
+	}
 #define isBefore(t1, t2) ((t1)->high < (t2)->high || ((t1)->high == (t2)->high && (t1)->low < (t2)->low))
 #define TIME_H_STR_MAXLEN 19 // 2008/10/25 19:27:36
 
-EXP_FUNC const char *asc_time_h(const time_h *t, char *buffer);
-EXP_FUNC time_h *getNowUTC(time_h *t);
+EXP_FUNC const char* asc_time_h(const time_h* t, char* buffer);
+EXP_FUNC time_h* getNowUTC(time_h* t);
 
 #if !defined _INC_TIME_INL
 #define ASC_BUFF_SIZE	26  // Ascii buffer size is 26 bytes, (24 chars and CR+LF)
@@ -304,15 +302,15 @@ char* ctime(const time_t* timer);
 
 //typedef int FILE;
 #if !defined(TOTALCROSS_INTEGRATION)
-EXP_FUNC FILE * STDCALL ax_fopen(const char *name, const char *type);
-EXP_FUNC int STDCALL ax_open(const char *pathname, int flags);
+EXP_FUNC FILE* STDCALL ax_fopen(const char* name, const char* type);
+EXP_FUNC int STDCALL ax_open(const char* pathname, int flags);
 #endif
 
 #if !defined(TOTALCROSS_INTEGRATION)
 #ifdef CONFIG_PLATFORM_LINUX
-void exit_now(const char *format, ...) __attribute((noreturn));
+void exit_now(const char* format, ...) __attribute((noreturn));
 #else
-void exit_now(const char *format, ...);
+void exit_now(const char* format, ...);
 #endif
 #endif
 
@@ -321,8 +319,8 @@ void exit_now(const char *format, ...);
 #undef SOCKET_WRITE
 #undef SOCKET_CLOSE
 
-extern int tcSocketReadWrite(int fd, char *buf, int count, int isRead);
-extern int debug(const char *s, ...);
+extern int tcSocketReadWrite(int fd, char* buf, int count, int isRead);
+extern int debug(const char* s, ...);
 
 #define printf debug
 

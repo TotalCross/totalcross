@@ -17,8 +17,8 @@
 extern "C" {
 #endif
 
-bool iphone_privateIsEventAvailable       ();
-void iphone_privatePumpEvent              ();
+bool iphone_privateIsEventAvailable();
+void iphone_privatePumpEvent();
 bool iphone_privateInitEvent();
 void iphone_privateDestroyEvent();
 

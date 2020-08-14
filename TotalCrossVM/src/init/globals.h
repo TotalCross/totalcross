@@ -21,23 +21,23 @@ extern CharP throwableAsCharP[(int32)ThrowableCount];
 
 // event_c.h
 extern int32 lastPenX, lastPenY, actionStart;
-extern int32 lastW,lastH;
-extern int32 ascrHRes,ascrVRes;
+extern int32 lastW, lastH;
+extern int32 ascrHRes, ascrVRes;
 #if defined(WIN32)
 extern uint8 keyIsDown[256];
 extern bool dontPostOnChar;
 extern HANDLE hModuleTCVM;
 #elif defined(ANDROID)
-extern jmethodID jeventIsAvailable,jpumpEvents;
+extern jmethodID jeventIsAvailable, jpumpEvents;
 extern bool appPaused;
 #endif
 #if defined(ANDROID) || defined(darwin) || defined(WP8)
-extern int32 deviceFontHeight,iosScale;
+extern int32 deviceFontHeight, iosScale;
 #endif
 
 // GoogleMaps.c
 #ifdef ANDROID
-extern jmethodID jshowGoogleMaps,jshowRoute;
+extern jmethodID jshowGoogleMaps, jshowRoute;
 #endif
 
 // startup.c
@@ -51,16 +51,17 @@ extern bool isMainWindow;   // extends MainWindow ?
 #if defined(ANDROID)
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
-extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A,jSmsManager4A,jNotificationManager4A,jFirebaseInstanceId,jTcFirebaseUtils,jCieloPrinterManager4A;
-extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
-extern jfieldID jsipVisible,jappTitleH;
+extern jclass applicationClass, jRadioDevice4A, jBluetooth4A, jConnectionManager4A, jSmsManager4A,
+	   jNotificationManager4A, jFirebaseInstanceId, jTcFirebaseUtils, jCieloPrinterManager4A;
+extern jfieldID jshowingAlert, jhardwareKeyboardIsVisible;
+extern jfieldID jsipVisible, jappTitleH;
 extern jmethodID jgetHeight;
 #elif defined WIN32 || defined linux
 extern TCHAR exeName[MAX_PATHNAME];
 #endif
 
 // graphicsprimitives.c
-extern uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
+extern uint8* lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 extern int32* controlEnableUpdateScreenPtr;
 extern TScreenSurface screen;
 extern TCClass uiColorsClass;
@@ -80,7 +81,7 @@ extern bool showMemoryMessagesAtExit;
 // PalmFont_c.h
 extern int32 maxFontSize, minFontSize, normalFontSize;
 extern FontFile defaultFont;
-extern int32 *tabSizeField;
+extern int32* tabSizeField;
 extern Hashtable htUF;
 extern VoidPs* openFonts;
 extern Heap fontsHeap;
@@ -88,7 +89,8 @@ extern Heap fontsHeap;
 // win/gfx_Graphics_c.h
 #ifdef WIN32
 extern HWND mainHWnd;
-extern bool bSipUp; //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
+extern bool
+bSipUp; //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
 #endif
 
 // Settings.c
@@ -103,13 +105,13 @@ extern TVirtualKeyboardSettings vkSettings;
 extern jmethodID jsetElapsed;
 #endif
 
-// objectmemorymanager.c    
-extern bool runningGC,runningFinalizer,disableGC,callGConMainThread;
+// objectmemorymanager.c
+extern bool runningGC, runningFinalizer, disableGC, callGConMainThread;
 extern TCObjectArray freeList; // the array with lists of free objects
 extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
 extern TCObjectArray lockList; // locked objects list
 extern uint32 markedAsUsed; // starts as 1
-extern uint32 objCreated,skippedGC,objLocked; // a few counters
+extern uint32 objCreated, skippedGC, objLocked; // a few counters
 extern int32 lastGC, markedImages;
 extern Heap ommHeap;
 extern Heap chunksHeap;
@@ -118,16 +120,17 @@ extern Stack objStack;
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
 extern bool canTraverse;
 extern TCObjectArray freeList2; // the array with lists of free objects
-extern TCObjectArray usedList2; // the array with lists of used objects (allocated after the last GC)
+extern TCObjectArray
+usedList2; // the array with lists of used objects (allocated after the last GC)
 extern TCObjectArray lockList2; // locked objects list
 extern uint32 markedAsUsed2; // starts as 1
-extern uint32 gcCount2,objCreated2,skippedGC2,objLocked2; // the current gc count
-extern Heap ommHeap2,chunksHeap2;
+extern uint32 gcCount2, objCreated2, skippedGC2, objLocked2; // the current gc count
+extern Heap ommHeap2, chunksHeap2;
 extern Stack objStack2;
 #endif
 
 // context.c
-extern Context mainContext,gcContext,lifeContext;
+extern Context mainContext, gcContext, lifeContext;
 #define MAX_CONTEXTS 100
 extern Context contexts[MAX_CONTEXTS];
 
@@ -141,13 +144,14 @@ extern Hashtable htMutexes;
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
 #if !defined(WIN32)
-extern void *deviceCtx; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
+extern void*
+deviceCtx; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
 #endif
 
 // utils.c
 extern int32 firstTS;
 #ifdef ANDROID
-extern jmethodID jlistTCZs,jgetFreeMemory;
+extern jmethodID jlistTCZs, jgetFreeMemory;
 #endif
 
 // file.c
@@ -157,7 +161,7 @@ extern jmethodID jgetSDCardPath;
 
 // vm.c
 #ifdef ANDROID
-extern jmethodID jvmFuncI,jvmExec;
+extern jmethodID jvmFuncI, jvmExec;
 #endif
 
 // debug.c
@@ -189,19 +193,20 @@ extern Method _onTimerTick, _postEvent;
 extern Int32Array interceptedSpecialKeys;
 
 // Vm_c.h
-extern int32 oldAutoOffValue; // if not 0, the device is in NEVER-SLEEP mode, and the old value will be restored when the vm quits
+extern int32
+oldAutoOffValue; // if not 0, the device is in NEVER-SLEEP mode, and the old value will be restored when the vm quits
 #ifdef ANDROID
 extern jmethodID jclipboard;
 #endif
 
 // Convert.c
-extern TCObject *charConverterPtr;
+extern TCObject* charConverterPtr;
 extern TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
 
 // media_Sound.c
 extern TSoundSettings soundSettings;
 #ifdef ANDROID
-extern jmethodID jtone,jsoundEnable,jsoundPlay, jsoundToText, jsoundFromText;
+extern jmethodID jtone, jsoundEnable, jsoundPlay, jsoundToText, jsoundFromText;
 #endif
 
 // money
@@ -230,10 +235,10 @@ extern Hashtable htSSLSocket;
 extern Heap heapSSLSocket;
 
 #ifdef ANDROID
-extern jmethodID jshowCamera,jgetNativeResolutions, jgetDefaultToString, jzxing;
+extern jmethodID jshowCamera, jgetNativeResolutions, jgetDefaultToString, jzxing;
 
 // android/GPS_c.h
-extern jmethodID jgpsFunc,jcellinfoUpdate;
+extern jmethodID jgpsFunc, jcellinfoUpdate;
 
 // android/Dial_c.h
 extern jmethodID jdial;
@@ -243,7 +248,8 @@ extern jmethodID jdial;
 extern int32 threadCount;
 
 // class.c
-extern TCObject *voidTYPE,*booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
+extern TCObject* voidTYPE, *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE,
+	   *doubleTYPE, *charTYPE;
 
 // object.c
 extern TCClass cloneable;
@@ -270,30 +276,30 @@ typedef HWND (*getMainWindowHandleFunc)();
 #endif
 
 TC_API UInt32 getApplicationId();
-typedef UInt32 (*getApplicationIdFunc)();
+typedef UInt32(*getApplicationIdFunc)();
 TC_API CharP getApplicationIdStr();
-typedef CharP (*getApplicationIdStrFunc)();
+typedef CharP(*getApplicationIdStrFunc)();
 TC_API TCObject getMainClass();
-typedef TCObject (*getMainClassFunc)();
+typedef TCObject(*getMainClassFunc)();
 TC_API CharP getVMPath();
-typedef CharP (*getVMPathFunc)();
+typedef CharP(*getVMPathFunc)();
 TC_API CharP getAppPath();
-typedef CharP (*getAppPathFunc)();
+typedef CharP(*getAppPathFunc)();
 TC_API CharP getUserName();
-typedef CharP (*getUserNameFunc)();
+typedef CharP(*getUserNameFunc)();
 
 #ifdef WINCE
 extern HINSTANCE coreDll, cellcoreDll;
 #endif
 
 #if defined (WIN32)
- extern bool initWinsock();
- extern void closeWinsock();
+extern bool initWinsock();
+extern void closeWinsock();
 #endif
 
 #if defined (WINCE)
- extern bool initAygshell();
- extern void closeAygshell();
+extern bool initAygshell();
+extern void closeAygshell();
 #endif
 
 #if defined (HEADLESS)

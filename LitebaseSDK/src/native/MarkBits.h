@@ -5,7 +5,7 @@
 
 // juliana@noidr_1: removed .idr files from all indices and changed its format.
 /**
- * These functions generate the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. They should 
+ * These functions generate the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. They should
  * only be used if the result set has a WHERE clause.
  */
 
@@ -18,7 +18,7 @@
  * Resets the object and the bitmap.
  *
  * @param markBits The mark bits to be reseted.
- * @param bits A new bitmap for the mark bits. 
+ * @param bits A new bitmap for the mark bits.
  */
 void markBitsReset(MarkBits* markBits, IntVector* bits);
 
@@ -42,21 +42,21 @@ void onValue(int32 record, MarkBits* markBits);
 
 #ifdef ENABLE_TEST_SUITE
 
-/**
- * Tests the correctnes of <code>markBitsOnValue()</code>.
- * 
- * @param testSuite The test structure.
- * @param currentContext The thread context where the test is being executed.
- */
-void test_markBitsOnValue(TestSuite* testSuite, Context currentContext);
+	/**
+	* Tests the correctnes of <code>markBitsOnValue()</code>.
+	*
+	* @param testSuite The test structure.
+	* @param currentContext The thread context where the test is being executed.
+	*/
+	void test_markBitsOnValue(TestSuite* testSuite, Context currentContext);
 
-/**
- * Tests the correctnes of <code>markBitsReset()</code>.
- * 
- * @param testSuite The test structure.
- * @param currentContext The thread context where the test is being executed.
- */
-void test_markBitsReset(TestSuite* testSuite, Context currentContext);
+	/**
+	* Tests the correctnes of <code>markBitsReset()</code>.
+	*
+	* @param testSuite The test structure.
+	* @param currentContext The thread context where the test is being executed.
+	*/
+	void test_markBitsReset(TestSuite* testSuite, Context currentContext);
 
 #endif
 

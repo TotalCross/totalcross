@@ -50,7 +50,8 @@ typedef int64* (*getInstanceFieldLongFunc)(TCObject instance, CharP fieldName, C
     the field is declared, or null if from current class. It may be necessary to pass it if there's
     more than one field with the same name in the class hierarchy. */
 TC_API TCObject* getInstanceFieldObject(TCObject instance, CharP fieldName, CharP className);
-typedef TCObject* (*getInstanceFieldObjectFunc)(TCObject instance, CharP fieldName, CharP className);
+typedef TCObject* (*getInstanceFieldObjectFunc)(TCObject instance, CharP fieldName,
+		CharP className);
 
 /// Returns the field and the class name of an instance field
 void getIField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* className);

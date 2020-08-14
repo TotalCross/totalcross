@@ -12,27 +12,26 @@
 #define SETPIXEL565(r,g,b) ((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3))) // bits RRRRRGGGGGGBBBBB
 
 #ifdef HEADLESS
-#if __APPLE__
-#include "SDL.h"
+	#if __APPLE__
+		#include "SDL.h"
+	#else
+		#include "SDL2/SDL.h"
+	#endif
 #else
-#include "SDL2/SDL.h"
-#endif
-#else
-#include <directfb.h>
+	#include <directfb.h>
 #endif
 
-typedef struct TScreenSurfaceEx
-{
+typedef struct TScreenSurfaceEx {
 #ifdef HEADLESS
-   SDL_Window *window;
-   SDL_Renderer *renderer;
-   SDL_Texture *texture;
+	SDL_Window* window;
+	SDL_Renderer* renderer;
+	SDL_Texture* texture;
 #else
-   IDirectFB *dfb;
-   IDirectFBSurface *primary;
-   IDirectFBDisplayLayer *layer;
-   IDirectFBEventBuffer *events;
+	IDirectFB* dfb;
+	IDirectFBSurface* primary;
+	IDirectFBDisplayLayer* layer;
+	IDirectFBEventBuffer* events;
 #endif
-} *ScreenSurfaceEx, TScreenSurfaceEx;
+}* ScreenSurfaceEx, TScreenSurfaceEx;
 
 #endif

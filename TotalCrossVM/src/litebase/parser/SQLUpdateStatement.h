@@ -19,13 +19,14 @@
  * @param driver The connection with Litebase.
  * @param parser The result of the parsing process.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLUpdateStatement</code> structure or <code>null</code> if an error occurs. 
+ * @return A pointer to a <code>SQLUpdateStatement</code> structure or <code>null</code> if an error occurs.
  * @throws SQLParseException If there is a field named "rowid".
- * @throws OutOfMemoryError If a heap memory allocation fails. 
+ * @throws OutOfMemoryError If a heap memory allocation fails.
  */
-SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, LitebaseParser* parse, bool isPrepared);
+SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, LitebaseParser* parse,
+		bool isPrepared);
 
-/* 
+/*
  * Sets the value of a numeric parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -36,9 +37,10 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, Lit
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @thows DriverException If the parameter type is incompatible with the column type.
  */
-bool setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 type);
+bool setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index,
+							 VoidP value, int32 type);
 
-/* 
+/*
  * Sets the value of a string or blob parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -51,11 +53,12 @@ bool setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
  * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
  * @thows DriverException If the parameter type is incompatible with the column type.
  */
-bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 length, bool isStr);
+bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index,
+							 VoidP value, int32 length, bool isStr);
 
 // juliana@223_3: PreparedStatement.setNull() now works for blobs.
 /**
- * Sets null in a given field. 
+ * Sets null in a given field.
  *
  * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL update statement.
@@ -105,7 +108,7 @@ bool allParamValuesDefinedUpd(SQLUpdateStatement* updateStmt);
  * @param updateStmt A SQL update statement.
  * @return The number of rows that were updated, or -1 if an error occurs.
  * @throws OutOfMemoryError If a memory allocation fails.
- * @throws DriverException If the table is not set. 
+ * @throws DriverException If the table is not set.
  */
 int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt);
 
@@ -115,7 +118,7 @@ int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt);
  * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL update statement.
  * @return <code>true</code>, if the statement was bound successfully; <code>false</code> otherwise.
- @throws <code>SQLParseException</code> if the number of fields is greater than 254. 
+ @throws <code>SQLParseException</code> if the number of fields is greater than 254.
  */
 bool litebaseBindUpdateStatement(Context context, SQLUpdateStatement* updateStmt);
 
