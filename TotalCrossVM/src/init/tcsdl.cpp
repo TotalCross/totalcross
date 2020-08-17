@@ -28,9 +28,6 @@ static SDL_Texture* texture;
  */
 bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
-	int width = (getenv("TC_WIDTH")  == NULL) ? 640 : std::stoi(getenv("TC_WIDTH"));
-	int height = (getenv("TC_HEIGHT") == NULL) ? 400 : std::stoi(getenv("TC_HEIGHT"));
-
 	std::cout << "Testing video drivers..." << '\n';
 	std::vector< bool > drivers(SDL_GetNumVideoDrivers());
 
@@ -59,6 +56,9 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	}
 	std::cout << "SDL_VIDEODRIVER selected : " << SDL_GetCurrentVideoDriver() << '\n';
 
+	int width = (getenv("TC_WIDTH")  == NULL) ? 640 : std::stoi(getenv("TC_WIDTH"));
+	int height = (getenv("TC_HEIGHT") == NULL) ? 400 : std::stoi(getenv("TC_HEIGHT"));
+	
 	// Create the window
 	SDL_Window* window;
 	if (IS_NULL(window = SDL_CreateWindow(
