@@ -3,8 +3,62 @@ FROM arm32v7/ubuntu:xenial
 
 MAINTAINER Italo Yeltsin "br.yeltsin@gmail.com"
 
-RUN apt-get update
-RUN apt-get install -y cmake ninja-build libsdl2-dev libfontconfig1-dev
+# TotalCross
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        cmake \
+        ninja-build \
+        build-essential \
+        libfontconfig1-dev \
+# SDL2 
+        libtool \
+        libasound2-dev \
+        libpulse-dev \
+        libaudio-dev \
+        libx11-dev \
+        libxext-dev \
+        libxrandr-dev \
+        libxcursor-dev \
+        libxi-dev \
+        libxinerama-dev \
+        libxxf86vm-dev \
+        libxss-dev \
+        libgl1-mesa-dev \
+        libesd0-dev \
+        libdbus-1-dev \
+        libudev-dev \
+        libgles2-mesa-dev \
+        libegl1-mesa-dev \
+        libibus-1.0-dev \
+        fcitx-libs-dev \
+        libsamplerate0-dev \
+        libsndio-dev \
+# Wayland
+        libwayland-dev \
+        libxkbcommon-dev \
+        wayland-protocols \
+        git \
+        ca-certificates; \
+    apt-get install -y libgles1-mesa-dev || apt-get -f install; \
+    apt-get clean
+
+RUN git clone https://github.com/SDL-mirror/SDL.git \
+        --branch=release-2.0.10 \
+        --single-branch \
+        --depth=1 \
+    && cd SDL \
+    && mkdir build; cd build \
+    && CFLAGS="-O3 -fPIC" \
+    cmake ../ -G Ninja \
+        -DSDL_SHARED=0 \
+        -DSDL_AUDIO=0 \
+        -DVIDEO_VIVANTE=ON \
+        -DVIDEO_WAYLAND=ON \ 
+        -DWAYLAND_SHARED=ON; \
+    ninja install
+
+# clean up
+RUN rm -r /SDL  
 
 ENV BUILD_FOLDER /build
 

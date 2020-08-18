@@ -28,9 +28,6 @@ static SDL_Texture* texture;
  */
 bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
-	int width = (getenv("TC_WIDTH")  == NULL) ? 640 : std::stoi(getenv("TC_WIDTH"));
-	int height = (getenv("TC_HEIGHT") == NULL) ? 400 : std::stoi(getenv("TC_HEIGHT"));
-
 	std::cout << "Testing video drivers..." << '\n';
 	std::vector< bool > drivers(SDL_GetNumVideoDrivers());
 
@@ -56,10 +53,34 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
 	// Only init video (without audio)
 	if (NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
-		printf("SDL_Init failed: %s\n", SDL_GetError());
+		std::cerr << "SDL_Init(): " << SDL_GetError() << '\n';
 		return false;
 	}
 	std::cout << "SDL_VIDEODRIVER selected : " << SDL_GetCurrentVideoDriver() << '\n';
+
+	SDL_DisplayMode DM;
+	// Get current display mode of all displays.
+  	for(int i = 0; i < SDL_GetNumVideoDisplays(); ++i){
+		int should_be_zero = SDL_GetCurrentDisplayMode(i, &DM);
+
+		if(should_be_zero != 0) {
+			std::cerr << "SDL_GetCurrentDisplayMode() failed for video display #" << i << ": " << SDL_GetError() << '\n';
+		} else {
+			std::cout << "SDL_DisplayMode #" << i << ": current display mode is " << DM.w << "x" << DM.h << "x" << DM.refresh_rate << '\n';
+		}
+	}
+
+	int width = (getenv("TC_WIDTH")  == NULL) ? DM.w : std::stoi(getenv("TC_WIDTH"));
+	int height = (getenv("TC_HEIGHT") == NULL) ? DM.h : std::stoi(getenv("TC_HEIGHT"));
+
+	uint32 flags; 
+	if(getenv("TC_FULLSCREEN") == NULL) {
+		flags = SDL_WINDOW_FULLSCREEN;
+	} else {
+		flags = SDL_WINDOW_SHOWN;
+		width -= width*0.09;
+		height -= height*0.09;
+	}
 
 	// Create the window
 	SDL_Window* window;
@@ -69,9 +90,9 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 							 SDL_WINDOWPOS_UNDEFINED,
 							 width,
 							 height,
-							 (getenv("TC_FULLSCREEN") == NULL) ? SDL_WINDOW_SHOWN : SDL_WINDOW_FULLSCREEN
+							 (getenv("TC_FULLSCREEN") == NULL) ?  SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN
 						 ))) {
-		printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
+		std::cerr << "SDL_CreateWindow(): " << SDL_GetError() << '\n';
 		return false;
 	}
 
@@ -85,15 +106,15 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
 	// Create a 2D rendering context for a window
 	if (IS_NULL(renderer = SDL_CreateRenderer(window, -1, NO_FLAGS))) {
-		printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
-		printf("\nHINT: try to export SDL_RENDER_DRIVER environment variable with an available render driver!\n");
+		std::cerr << "SDL_CreateRenderer(): " << SDL_GetError() << '\n';
+		std::cout << '\n' << "HINT: try to export SDL_RENDER_DRIVER environment variable with an available render driver!" << '\n';
 		return false;
 	}
 
 	// Get renderer driver information
 	SDL_RendererInfo rendererInfo;
 	if (NOT_SUCCESS(SDL_GetRendererInfo(renderer, &rendererInfo))) {
-		printf("SDL_GetRendererInfo failed: %s\n", SDL_GetError());
+		std::cerr << "SDL_GetRendererInfo(): " << SDL_GetError() << '\n';
 		return 0;
 	}
 	std::cout << "SDL_RENDER_DRIVER selected : " << rendererInfo.name << '\n';
@@ -101,7 +122,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	// Get window pixel format
 	Uint32 windowPixelFormat;
 	if (SDL_PIXELFORMAT_UNKNOWN == (windowPixelFormat = SDL_GetWindowPixelFormat(window))) {
-		printf("SDL_GetWindowPixelFormat failed: %s\n", SDL_GetError());
+		std::cerr << "SDL_GetWindowPixelFormat(): " << SDL_GetError() << '\n';
 		return false;
 	}
 
@@ -112,13 +133,13 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 							  SDL_TEXTUREACCESS_STREAMING,
 							  width,
 							  height))) {
-		printf("SDL_CreateTexture failed: %s\n", SDL_GetError());
+		std::cerr << "SDL_CreateTexturet(): " << SDL_GetError() << '\n';
 		return false;
 	}
 	// Get pixel format struct
 	SDL_PixelFormat* pixelformat;
 	if (IS_NULL(pixelformat = SDL_AllocFormat(windowPixelFormat))) {
-		printf("SDL_AllocFormat failed: %s\n", SDL_GetError());
+		std::cerr << "SDL_AllocFormat(): " << SDL_GetError() << '\n';
 		return false;
 	}
 
@@ -134,13 +155,13 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	screen->pixelformat = windowPixelFormat;
 	// Adjusts screen's pixel surface
 	if (IS_NULL(screen->pixels = (uint8*) malloc(screen->pitch * screen->screenH))) {
-		printf("Failed to alloc %d bytes for pixel surface\n", (screen->pitch * screen->screenH));
+		std::cerr << "Failed to alloc " << (screen->pitch * screen->screenH) << " bytes for pixel surface" << '\n';
 		return false;
 	}
 
 	if (IS_NULL(screen->extension = (ScreenSurfaceEx) malloc(sizeof(TScreenSurfaceEx)))) {
 		free(screen->pixels);
-		printf("Failed to alloc TScreenSurfaceEx of %l bytes\n", sizeof(TScreenSurfaceEx));
+		std::cerr << "Failed to alloc TScreenSurfaceEx of " << sizeof(TScreenSurfaceEx) << " bytes" << '\n';
 		return false;
 	}
 	SCREEN_EX(screen)->window = window;
