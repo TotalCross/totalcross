@@ -56,9 +56,30 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	}
 	std::cout << "SDL_VIDEODRIVER selected : " << SDL_GetCurrentVideoDriver() << '\n';
 
-	int width = (getenv("TC_WIDTH")  == NULL) ? 640 : std::stoi(getenv("TC_WIDTH"));
-	int height = (getenv("TC_HEIGHT") == NULL) ? 400 : std::stoi(getenv("TC_HEIGHT"));
-	
+	SDL_DisplayMode DM;
+	// Get current display mode of all displays.
+  	for(int i = 0; i < SDL_GetNumVideoDisplays(); ++i){
+		int should_be_zero = SDL_GetCurrentDisplayMode(i, &DM);
+
+		if(should_be_zero != 0) {
+			std::cerr << "SDL_GetCurrentDisplayMode() failed for video display #" << i << ": " << SDL_GetError() << '\n';
+		} else {
+			std::cout << "SDL_DisplayMode #" << i << ": current display mode is " << DM.w << "x" << DM.h << "x" << DM.refresh_rate << '\n';
+		}
+	}
+
+	int width = (getenv("TC_WIDTH")  == NULL) ? DM.w : std::stoi(getenv("TC_WIDTH"));
+	int height = (getenv("TC_HEIGHT") == NULL) ? DM.h : std::stoi(getenv("TC_HEIGHT"));
+
+	uint32 flags; 
+	if(getenv("TC_FULLSCREEN") == NULL) {
+		flags = SDL_WINDOW_FULLSCREEN;
+	} else {
+		flags = SDL_WINDOW_SHOWN;
+		width -= width*0.09;
+		height -= height*0.09;
+	}
+
 	// Create the window
 	SDL_Window* window;
 	if (IS_NULL(window = SDL_CreateWindow(
