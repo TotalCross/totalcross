@@ -7,38 +7,39 @@
 package totalcross.ui.event;
 
 /**
- * TimerEvent represents a control's timer. Timers are created and destroyed using
- * the addTimer() and removeTimer() methods present in the Control class.
+ * TimerEvent represents a control's timer. Timers are created and destroyed
+ * using the addTimer() and removeTimer() methods present in the Control class.
  */
 
-public class TimerEvent extends Event<TimerListener> {
-	/** The event type for a triggered timer */
-	public static final int TRIGGERED = EventType.TRIGGERED;
-	/** The timer interval in milliseconds. */
-	public int millis;
-	/** The timestamp of the last tick. */
-	public int lastTick;
-	/** The next timer in the linked list. */
-	public TimerEvent next;
-	/** a flag set when the timer event is being posted. With it, you can test from various timers to the same target control when one of them is dispatched. */
-	public boolean triggered; // guich@220_39
+public class TimerEvent extends Event<TimerListener>
+{
+  /** The event type for a triggered timer */
+  public static final int TRIGGERED = EventType.TRIGGERED;
+  /** The timer interval in milliseconds. */
+  public int millis;
+  /** The timestamp of the last tick. */
+  public int lastTick;
+  /** The next timer in the linked list. */
+  public TimerEvent next;
+  /**
+   * a flag set when the timer event is being posted. With it, you can test
+   * from various timers to the same target control when one of them is
+   * dispatched.
+   */
+  public boolean triggered; // guich@220_39
 
-	/** Constructs a new TimerEvent, setting the type to TRIGGERED. */
-	public TimerEvent() {
-		type = TRIGGERED;
-	}
+  /** Constructs a new TimerEvent, setting the type to TRIGGERED. */
+  public TimerEvent() { type = TRIGGERED; }
 
-	@Override
-	public String toString() {
-		return "TRIGGERED millis: " + millis + " " + super.toString();
-	}
+  @Override public String toString()
+  {
+    return "TRIGGERED millis: " + millis + " " + super.toString();
+  }
 
-	public void postpone() {
-		lastTick = totalcross.sys.Vm.getTimeStamp();
-	}
+  public void postpone() { lastTick = totalcross.sys.Vm.getTimeStamp(); }
 
-	@Override
-	public void dispatch(TimerListener listener) {
-		listener.timerTriggered(this);
-	}
+  @Override public void dispatch(TimerListener listener)
+  {
+    listener.timerTriggered(this);
+  }
 }

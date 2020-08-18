@@ -12,44 +12,46 @@
 #include "SkImage.h"
 #include "SkImageFilter.h"
 
-class SK_API SkImageSource : public SkImageFilter {
+class SK_API SkImageSource : public SkImageFilter
+{
 public:
-	static sk_sp<SkImageFilter> Make(sk_sp<SkImage> image);
-	static sk_sp<SkImageFilter> Make(sk_sp<SkImage> image,
-									 const SkRect& srcRect,
-									 const SkRect& dstRect,
-									 SkFilterQuality filterQuality);
+  static sk_sp<SkImageFilter> Make(sk_sp<SkImage> image);
+  static sk_sp<SkImageFilter> Make(sk_sp<SkImage> image,
+                                   const SkRect& srcRect,
+                                   const SkRect& dstRect,
+                                   SkFilterQuality filterQuality);
 
-	SkRect computeFastBounds(const SkRect& src) const override;
+  SkRect computeFastBounds(const SkRect& src) const override;
 
-	Factory getFactory() const override {
-		return CreateProc;
-	}
+  Factory getFactory() const override { return CreateProc; }
 
 protected:
-	void flatten(SkWriteBuffer&) const override;
+  void flatten(SkWriteBuffer&) const override;
 
-	sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
-										SkIPoint* offset) const override;
-	sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+  sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source,
+                                      const Context&,
+                                      SkIPoint* offset) const override;
+  sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
 
-	SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix& ctm,
-							   MapDirection, const SkIRect* inputRect) const override;
+  SkIRect onFilterNodeBounds(const SkIRect&,
+                             const SkMatrix& ctm,
+                             MapDirection,
+                             const SkIRect* inputRect) const override;
 
 private:
-	explicit SkImageSource(sk_sp<SkImage>);
-	SkImageSource(sk_sp<SkImage>,
-				  const SkRect& srcRect,
-				  const SkRect& dstRect,
-				  SkFilterQuality);
-	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-	friend class SkFlattenable::PrivateInitializer;
+  explicit SkImageSource(sk_sp<SkImage>);
+  SkImageSource(sk_sp<SkImage>,
+                const SkRect& srcRect,
+                const SkRect& dstRect,
+                SkFilterQuality);
+  static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+  friend class SkFlattenable::PrivateInitializer;
 
-	sk_sp<SkImage>   fImage;
-	SkRect           fSrcRect, fDstRect;
-	SkFilterQuality  fFilterQuality;
+  sk_sp<SkImage> fImage;
+  SkRect fSrcRect, fDstRect;
+  SkFilterQuality fFilterQuality;
 
-	typedef SkImageFilter INHERITED;
+  typedef SkImageFilter INHERITED;
 };
 
 #endif

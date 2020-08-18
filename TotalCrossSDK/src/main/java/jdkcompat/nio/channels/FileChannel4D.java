@@ -7,6 +7,5 @@ package jdkcompat.nio.channels;
 
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 
-public abstract class FileChannel4D extends AbstractInterruptibleChannel {
-
-}
+public abstract class FileChannel4D extends AbstractInterruptibleChannel
+{}

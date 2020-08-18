@@ -8,24 +8,25 @@ package litebase;
 /**
  * Hash table for Litebase SQL reserved words collision list.
  */
-class Entry {
-	/**
-	 * The hash code of the reserved word string.
-	 */
-	int hash;
+class Entry
+{
+  /**
+   * The hash code of the reserved word string.
+   */
+  int hash;
 
-	/**
-	 * The token code of the SQL reserved word.
-	 */
-	int value;
+  /**
+   * The token code of the SQL reserved word.
+   */
+  int value;
 
-	/**
-	 * The reserved word string.
-	 */
-	String key;
+  /**
+   * The reserved word string.
+   */
+  String key;
 
-	/**
-	 * The next entry of the collision list.
-	 */
-	Entry next;
+  /**
+   * The next entry of the collision list.
+   */
+  Entry next;
 }

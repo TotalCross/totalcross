@@ -5,18 +5,21 @@
 
 package samples.apps.salesplus.ui.report.summary;
 
-import samples.apps.salesplus.ui.*;
 import samples.apps.salesplus.*;
+import samples.apps.salesplus.ui.*;
 
 /**
  * The report summary menu.
  */
-public class SummaryMenu extends BaseMenu {
-	/**
-	 * The constructor.
-	 */
-	public SummaryMenu() {
-		super(new String[] {"Day", "Month"}, new int[] {SalesPlus.DAY, SalesPlus.MONTH}, false);
-	}
-
+public class SummaryMenu extends BaseMenu
+{
+  /**
+   * The constructor.
+   */
+  public SummaryMenu()
+  {
+    super(new String[] { "Day", "Month" },
+          new int[] { SalesPlus.DAY, SalesPlus.MONTH },
+          false);
+  }
 }

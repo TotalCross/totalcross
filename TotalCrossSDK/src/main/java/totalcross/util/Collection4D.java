@@ -95,207 +95,204 @@ import java.util.TreeSet;
  * @status updated to 1.4
  */
 public interface Collection4D<E> extends Iterable<E> {
-	/**
-	 * Add an element to this collection.
-	 *
-	 * @param o the object to add.
-	 * @return true if the collection was modified as a result of this action.
-	 * @throws UnsupportedOperationException if this collection does not
-	 *   support the add operation.
-	 * @throws ClassCastException if o cannot be added to this collection due
-	 *   to its type.
-	 * @throws NullPointerException if o is null and this collection doesn't
-	 *   support the addition of null values.
-	 * @throws IllegalArgumentException if o cannot be added to this
-	 *   collection for some other reason.
-	 */
-	boolean add(E o);
+  /**
+   * Add an element to this collection.
+   *
+   * @param o the object to add.
+   * @return true if the collection was modified as a result of this action.
+   * @throws UnsupportedOperationException if this collection does not
+   *   support the add operation.
+   * @throws ClassCastException if o cannot be added to this collection due
+   *   to its type.
+   * @throws NullPointerException if o is null and this collection doesn't
+   *   support the addition of null values.
+   * @throws IllegalArgumentException if o cannot be added to this
+   *   collection for some other reason.
+   */
+  boolean add(E o);
 
-	/**
-	 * Add the contents of a given collection to this collection.
-	 *
-	 * @param c the collection to add.
-	 * @return true if the collection was modified as a result of this action.
-	 * @throws UnsupportedOperationException if this collection does not
-	 *   support the addAll operation.
-	 * @throws ClassCastException if some element of c cannot be added to this
-	 *   collection due to its type.
-	 * @throws NullPointerException if some element of c is null and this
-	 *   collection does not support the addition of null values.
-	 * @throws NullPointerException if c itself is null.
-	 * @throws IllegalArgumentException if some element of c cannot be added
-	 *   to this collection for some other reason.
-	 */
-	boolean addAll(Collection4D<? extends E> c);
+  /**
+   * Add the contents of a given collection to this collection.
+   *
+   * @param c the collection to add.
+   * @return true if the collection was modified as a result of this action.
+   * @throws UnsupportedOperationException if this collection does not
+   *   support the addAll operation.
+   * @throws ClassCastException if some element of c cannot be added to this
+   *   collection due to its type.
+   * @throws NullPointerException if some element of c is null and this
+   *   collection does not support the addition of null values.
+   * @throws NullPointerException if c itself is null.
+   * @throws IllegalArgumentException if some element of c cannot be added
+   *   to this collection for some other reason.
+   */
+  boolean addAll(Collection4D<? extends E> c);
 
-	/**
-	 * Clear the collection, such that a subsequent call to isEmpty() would
-	 * return true.
-	 *
-	 * @throws UnsupportedOperationException if this collection does not
-	 *   support the clear operation.
-	 */
-	void clear();
+  /**
+   * Clear the collection, such that a subsequent call to isEmpty() would
+   * return true.
+   *
+   * @throws UnsupportedOperationException if this collection does not
+   *   support the clear operation.
+   */
+  void clear();
 
-	/**
-	 * Test whether this collection contains a given object as one of its
-	 * elements.
-	 *
-	 * @param o the element to look for.
-	 * @return true if this collection contains at least one element e such that
-	 *   <code>o == null ? e == null : o.equals(e)</code>.
-	 * @throws ClassCastException if the type of o is not a valid type for this
-	 *   collection.
-	 * @throws NullPointerException if o is null and this collection doesn't
-	 *   support null values.
-	 */
-	boolean contains(Object o);
+  /**
+   * Test whether this collection contains a given object as one of its
+   * elements.
+   *
+   * @param o the element to look for.
+   * @return true if this collection contains at least one element e such that
+   *   <code>o == null ? e == null : o.equals(e)</code>.
+   * @throws ClassCastException if the type of o is not a valid type for this
+   *   collection.
+   * @throws NullPointerException if o is null and this collection doesn't
+   *   support null values.
+   */
+  boolean contains(Object o);
 
-	/**
-	 * Test whether this collection contains every element in a given collection.
-	 *
-	 * @param c the collection to test for.
-	 * @return true if for every element o in c, contains(o) would return true.
-	 * @throws ClassCastException if the type of any element in c is not a valid
-	 *   type for this collection.
-	 * @throws NullPointerException if some element of c is null and this
-	 *   collection does not support null values.
-	 * @throws NullPointerException if c itself is null.
-	 */
-	boolean containsAll(Collection4D<?> c);
+  /**
+   * Test whether this collection contains every element in a given collection.
+   *
+   * @param c the collection to test for.
+   * @return true if for every element o in c, contains(o) would return true.
+   * @throws ClassCastException if the type of any element in c is not a valid
+   *   type for this collection.
+   * @throws NullPointerException if some element of c is null and this
+   *   collection does not support null values.
+   * @throws NullPointerException if c itself is null.
+   */
+  boolean containsAll(Collection4D<?> c);
 
-	/**
-	 * Test whether this collection is equal to some object. The Collection
-	 * interface does not explicitly require any behaviour from this method, and
-	 * it may be left to the default implementation provided by Object. The Set
-	 * and List interfaces do, however, require specific behaviour from this
-	 * method.
-	 * <p>
-	 * If an implementation of Collection, which is not also an implementation of
-	 * Set or List, should choose to implement this method, it should take care
-	 * to obey the contract of the equals method of Object. In particular, care
-	 * should be taken to return false when o is a Set or a List, in order to
-	 * preserve the symmetry of the relation.
-	 *
-	 * @param o the object to compare to this collection.
-	 * @return true if the o is equal to this collection.
-	 */
-	@Override
-	boolean equals(Object o);
+  /**
+   * Test whether this collection is equal to some object. The Collection
+   * interface does not explicitly require any behaviour from this method, and
+   * it may be left to the default implementation provided by Object. The Set
+   * and List interfaces do, however, require specific behaviour from this
+   * method.
+   * <p>
+   * If an implementation of Collection, which is not also an implementation of
+   * Set or List, should choose to implement this method, it should take care
+   * to obey the contract of the equals method of Object. In particular, care
+   * should be taken to return false when o is a Set or a List, in order to
+   * preserve the symmetry of the relation.
+   *
+   * @param o the object to compare to this collection.
+   * @return true if the o is equal to this collection.
+   */
+  @Override boolean equals(Object o);
 
-	/**
-	 * Obtain a hash code for this collection. The Collection interface does not
-	 * explicitly require any behaviour from this method, and it may be left to
-	 * the default implementation provided by Object. The Set and List interfaces
-	 * do, however, require specific behaviour from this method.
-	 * <p>
-	 * If an implementation of Collection, which is not also an implementation of
-	 * Set or List, should choose to implement this method, it should take care
-	 * to obey the contract of the hashCode method of Object. Note that this
-	 * method renders it impossible to correctly implement both Set and List, as
-	 * the required implementations are mutually exclusive.
-	 *
-	 * @return a hash code for this collection.
-	 */
-	@Override
-	int hashCode();
+  /**
+   * Obtain a hash code for this collection. The Collection interface does not
+   * explicitly require any behaviour from this method, and it may be left to
+   * the default implementation provided by Object. The Set and List interfaces
+   * do, however, require specific behaviour from this method.
+   * <p>
+   * If an implementation of Collection, which is not also an implementation of
+   * Set or List, should choose to implement this method, it should take care
+   * to obey the contract of the hashCode method of Object. Note that this
+   * method renders it impossible to correctly implement both Set and List, as
+   * the required implementations are mutually exclusive.
+   *
+   * @return a hash code for this collection.
+   */
+  @Override int hashCode();
 
-	/**
-	 * Test whether this collection is empty, that is, if size() == 0.
-	 *
-	 * @return true if this collection contains no elements.
-	 */
-	boolean isEmpty();
+  /**
+   * Test whether this collection is empty, that is, if size() == 0.
+   *
+   * @return true if this collection contains no elements.
+   */
+  boolean isEmpty();
 
-	/**
-	 * Obtain an Iterator over this collection.
-	 *
-	 * @return an Iterator over the elements of this collection, in any order.
-	 */
-	@Override
-	Iterator<E> iterator();
+  /**
+   * Obtain an Iterator over this collection.
+   *
+   * @return an Iterator over the elements of this collection, in any order.
+   */
+  @Override Iterator<E> iterator();
 
-	/**
-	 * Remove a single occurrence of an object from this collection. That is,
-	 * remove an element e, if one exists, such that <code>o == null ? e == null
-	 *   : o.equals(e)</code>.
-	 *
-	 * @param o the object to remove.
-	 * @return true if the collection changed as a result of this call, that is,
-	 *   if the collection contained at least one occurrence of o.
-	 * @throws UnsupportedOperationException if this collection does not
-	 *   support the remove operation.
-	 * @throws ClassCastException if the type of o is not a valid type
-	 *   for this collection.
-	 * @throws NullPointerException if o is null and the collection doesn't
-	 *   support null values.
-	 */
-	boolean remove(Object o);
+  /**
+   * Remove a single occurrence of an object from this collection. That is,
+   * remove an element e, if one exists, such that <code>o == null ? e == null
+   *   : o.equals(e)</code>.
+   *
+   * @param o the object to remove.
+   * @return true if the collection changed as a result of this call, that is,
+   *   if the collection contained at least one occurrence of o.
+   * @throws UnsupportedOperationException if this collection does not
+   *   support the remove operation.
+   * @throws ClassCastException if the type of o is not a valid type
+   *   for this collection.
+   * @throws NullPointerException if o is null and the collection doesn't
+   *   support null values.
+   */
+  boolean remove(Object o);
 
-	/**
-	 * Remove all elements of a given collection from this collection. That is,
-	 * remove every element e such that c.contains(e).
-	 *
-	 * @param c The collection of objects to be removed.
-	 * @return true if this collection was modified as a result of this call.
-	 * @throws UnsupportedOperationException if this collection does not
-	 *   support the removeAll operation.
-	 * @throws ClassCastException if the type of any element in c is not a valid
-	 *   type for this collection.
-	 * @throws NullPointerException if some element of c is null and this
-	 *   collection does not support removing null values.
-	 * @throws NullPointerException if c itself is null.
-	 */
-	boolean removeAll(Collection4D<?> c);
+  /**
+   * Remove all elements of a given collection from this collection. That is,
+   * remove every element e such that c.contains(e).
+   *
+   * @param c The collection of objects to be removed.
+   * @return true if this collection was modified as a result of this call.
+   * @throws UnsupportedOperationException if this collection does not
+   *   support the removeAll operation.
+   * @throws ClassCastException if the type of any element in c is not a valid
+   *   type for this collection.
+   * @throws NullPointerException if some element of c is null and this
+   *   collection does not support removing null values.
+   * @throws NullPointerException if c itself is null.
+   */
+  boolean removeAll(Collection4D<?> c);
 
-	/**
-	 * Remove all elements of this collection that are not contained in a given
-	 * collection. That is, remove every element e such that !c.contains(e).
-	 *
-	 * @param c The collection of objects to be retained.
-	 * @return true if this collection was modified as a result of this call.
-	 * @throws UnsupportedOperationException if this collection does not
-	 *   support the retainAll operation.
-	 * @throws ClassCastException if the type of any element in c is not a valid
-	 *   type for this collection.
-	 * @throws NullPointerException if some element of c is null and this
-	 *   collection does not support retaining null values.
-	 * @throws NullPointerException if c itself is null.
-	 */
-	boolean retainAll(Collection4D<?> c);
+  /**
+   * Remove all elements of this collection that are not contained in a given
+   * collection. That is, remove every element e such that !c.contains(e).
+   *
+   * @param c The collection of objects to be retained.
+   * @return true if this collection was modified as a result of this call.
+   * @throws UnsupportedOperationException if this collection does not
+   *   support the retainAll operation.
+   * @throws ClassCastException if the type of any element in c is not a valid
+   *   type for this collection.
+   * @throws NullPointerException if some element of c is null and this
+   *   collection does not support retaining null values.
+   * @throws NullPointerException if c itself is null.
+   */
+  boolean retainAll(Collection4D<?> c);
 
-	/**
-	 * Get the number of elements in this collection.
-	 *
-	 * @return the number of elements in the collection.
-	 */
-	int size();
+  /**
+   * Get the number of elements in this collection.
+   *
+   * @return the number of elements in the collection.
+   */
+  int size();
 
-	/**
-	 * Copy the current contents of this collection into an array.
-	 *
-	 * @return an array of type Object[] and length equal to the size of this
-	 *   collection, containing the elements currently in this collection, in
-	 *   any order.
-	 */
-	Object[] toArray();
+  /**
+   * Copy the current contents of this collection into an array.
+   *
+   * @return an array of type Object[] and length equal to the size of this
+   *   collection, containing the elements currently in this collection, in
+   *   any order.
+   */
+  Object[] toArray();
 
-	/**
-	 * Copy the current contents of this collection into an array. If the array
-	 * passed as an argument has length less than the size of this collection, an
-	 * array of the same run-time type as a, and length equal to the size of this
-	 * collection, is allocated using Reflection. Otherwise, a itself is used.
-	 * The elements of this collection are copied into it, and if there is space
-	 * in the array, the following element is set to null. The resultant array is
-	 * returned.
-	 * Note: The fact that the following element is set to null is only useful
-	 * if it is known that this collection does not contain any null elements.
-	 *
-	 * @param a the array to copy this collection into.
-	 * @return an array containing the elements currently in this collection, in
-	 *   any order.
-	 * @throws ArrayStoreException if the type of any element of the
-	 *   collection is not a subtype of the element type of a.
-	 */
-	<T> T[] toArray(T[] a);
+  /**
+   * Copy the current contents of this collection into an array. If the array
+   * passed as an argument has length less than the size of this collection, an
+   * array of the same run-time type as a, and length equal to the size of this
+   * collection, is allocated using Reflection. Otherwise, a itself is used.
+   * The elements of this collection are copied into it, and if there is space
+   * in the array, the following element is set to null. The resultant array is
+   * returned.
+   * Note: The fact that the following element is set to null is only useful
+   * if it is known that this collection does not contain any null elements.
+   *
+   * @param a the array to copy this collection into.
+   * @return an array containing the elements currently in this collection, in
+   *   any order.
+   * @throws ArrayStoreException if the type of any element of the
+   *   collection is not a subtype of the element type of a.
+   */
+  <T> T[] toArray(T[] a);
 }

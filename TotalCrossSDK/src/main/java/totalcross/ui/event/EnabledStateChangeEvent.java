@@ -6,18 +6,20 @@
 
 package totalcross.ui.event;
 
-public class EnabledStateChangeEvent extends ControlEvent {
+public class EnabledStateChangeEvent extends ControlEvent
+{
 
-	public static final int ENABLED_STATE_CHANGE = EventType.ENABLED_STATE_CHANGE;
+  public static final int ENABLED_STATE_CHANGE = EventType.ENABLED_STATE_CHANGE;
 
-	/** Constructs an empty EnabledStateChangeEvent. */
-	public EnabledStateChangeEvent() {
-		super();
-		type = ENABLED_STATE_CHANGE;
-	}
+  /** Constructs an empty EnabledStateChangeEvent. */
+  public EnabledStateChangeEvent()
+  {
+    super();
+    type = ENABLED_STATE_CHANGE;
+  }
 
-	@Override
-	public String toString() {
-		return "ENABLED_STATE_CHANGE " + super.toString();
-	}
+  @Override public String toString()
+  {
+    return "ENABLED_STATE_CHANGE " + super.toString();
+  }
 }

@@ -23,26 +23,26 @@ import java.io.IOException;
  * Thrown when a program asks for a particular character converter that is
  * unavailable.
  */
-public class UnsupportedEncodingException4D extends IOException {
+public class UnsupportedEncodingException4D extends IOException
+{
 
-	private static final long serialVersionUID = -4274276298326136670L;
+  private static final long serialVersionUID = -4274276298326136670L;
 
-	/**
-	 * Constructs a new {@code UnsupportedEncodingException} with its stack
-	 * trace filled in.
-	 */
-	public UnsupportedEncodingException4D() {
-		super();
-	}
+  /**
+   * Constructs a new {@code UnsupportedEncodingException} with its stack
+   * trace filled in.
+   */
+  public UnsupportedEncodingException4D() { super(); }
 
-	/**
-	 * Constructs a new {@code UnsupportedEncodingException} with its stack
-	 * trace and detail message filled in.
-	 *
-	 * @param detailMessage
-	 *            the detail message for this exception.
-	 */
-	public UnsupportedEncodingException4D(String detailMessage) {
-		super(detailMessage);
-	}
+  /**
+   * Constructs a new {@code UnsupportedEncodingException} with its stack
+   * trace and detail message filled in.
+   *
+   * @param detailMessage
+   *            the detail message for this exception.
+   */
+  public UnsupportedEncodingException4D(String detailMessage)
+  {
+    super(detailMessage);
+  }
 }

@@ -15,7 +15,8 @@
 /**
  * Initializes the error message arrays.
  */
-void initLitebaseMessage(void);
+void
+initLitebaseMessage(void);
 
 /**
  * Gets the correct error message.
@@ -23,25 +24,29 @@ void initLitebaseMessage(void);
  * @param messageNumber The error message code.
  * @return The string with the desired error message.
  */
-CharP getMessage(int32 messageNumber);
+CharP
+getMessage(int32 messageNumber);
 
 #ifdef ENABLE_TEST_SUITE
 
-	/**
-	* Tests that <code>getMessage()</code> returns the correct error message.
-	*
-	* @param testSuite The test structure.
-	* @param currentContext The thread context where the test is being executed.
-	*/
-	void test_getMessage(TestSuite* testSuite, Context currentContext);
+/**
+ * Tests that <code>getMessage()</code> returns the correct error message.
+ *
+ * @param testSuite The test structure.
+ * @param currentContext The thread context where the test is being executed.
+ */
+void
+test_getMessage(TestSuite* testSuite, Context currentContext);
 
-	/**
-	* Tests that <code>initLitebaseMessage()</code> correctly initializes the error messages.
-	*
-	* @param testSuite The test structure.
-	* @param currentContext The thread context where the test is being executed.
-	*/
-	void test_initLitebaseMessage(TestSuite* testSuite, Context currentContext);
+/**
+ * Tests that <code>initLitebaseMessage()</code> correctly initializes the error
+ * messages.
+ *
+ * @param testSuite The test structure.
+ * @param currentContext The thread context where the test is being executed.
+ */
+void
+test_initLitebaseMessage(TestSuite* testSuite, Context currentContext);
 
 #endif
 

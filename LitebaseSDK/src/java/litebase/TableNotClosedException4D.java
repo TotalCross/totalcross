@@ -5,11 +5,12 @@
 
 package litebase;
 
-// juliana@220_2: added TableNotClosedException which will be raised whenever a table is not closed properly.
+// juliana@220_2: added TableNotClosedException which will be raised whenever a
+// table is not closed properly.
 /**
  * This exception may be thrown if a table was not closed properly.
  *
  * @see LitebaseConnection#recoverTable(String)
  */
-public class TableNotClosedException4D extends RuntimeException {
-}
+public class TableNotClosedException4D extends RuntimeException
+{}

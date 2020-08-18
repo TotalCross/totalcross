@@ -10,23 +10,27 @@ import android.os.*;
 import android.util.*;
 import totalcross.AndroidUtils;
 
-public class Loader extends Activity {
-	public Handler achandler;
+public class Loader extends Activity
+{
+  public Handler achandler;
 
-	/** Called when the activity is first created. */
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		try {
-			AndroidUtils.initialize(this);
-			AndroidUtils.checkInstall(getApplicationContext());
-			setResult(RESULT_OK);
-			finish();
-		} catch (Exception e) {
-			String stack = Log.getStackTraceString(e);
-			AndroidUtils.debug(stack);
-			AndroidUtils.error("An exception was issued when launching Litebase. Please inform this stack trace to your software's vendor:\n\n"
-							   + stack, true);
-			setResult(RESULT_CANCELED);
-		}
-	}
+  /** Called when the activity is first created. */
+  public void onCreate(Bundle savedInstanceState)
+  {
+    super.onCreate(savedInstanceState);
+    try {
+      AndroidUtils.initialize(this);
+      AndroidUtils.checkInstall(getApplicationContext());
+      setResult(RESULT_OK);
+      finish();
+    } catch (Exception e) {
+      String stack = Log.getStackTraceString(e);
+      AndroidUtils.debug(stack);
+      AndroidUtils.error(
+        "An exception was issued when launching Litebase. Please inform this stack trace to your software's vendor:\n\n" +
+          stack,
+        true);
+      setResult(RESULT_CANCELED);
+    }
+  }
 }

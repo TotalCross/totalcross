@@ -92,61 +92,58 @@ import java.util.TreeSet;
  * @since 1.4
  * @status updated to 1.4
  */
-public class LinkedHashSet4D<T> extends HashSet4D<T> implements Set<T>, Cloneable {
-	/**
-	 * Construct a new, empty HashSet whose backing HashMap has the default
-	 * capacity (11) and loadFactor (0.75).
-	 */
-	public LinkedHashSet4D() {
-		super();
-	}
+public class LinkedHashSet4D<T>
+  extends HashSet4D<T> implements Set<T>, Cloneable
+{
+  /**
+   * Construct a new, empty HashSet whose backing HashMap has the default
+   * capacity (11) and loadFactor (0.75).
+   */
+  public LinkedHashSet4D() { super(); }
 
-	/**
-	 * Construct a new, empty HashSet whose backing HashMap has the supplied
-	 * capacity and the default load factor (0.75).
-	 *
-	 * @param initialCapacity the initial capacity of the backing HashMap
-	 * @throws IllegalArgumentException if the capacity is negative
-	 */
-	public LinkedHashSet4D(int initialCapacity) {
-		super(initialCapacity);
-	}
+  /**
+   * Construct a new, empty HashSet whose backing HashMap has the supplied
+   * capacity and the default load factor (0.75).
+   *
+   * @param initialCapacity the initial capacity of the backing HashMap
+   * @throws IllegalArgumentException if the capacity is negative
+   */
+  public LinkedHashSet4D(int initialCapacity) { super(initialCapacity); }
 
-	/**
-	 * Construct a new, empty HashSet whose backing HashMap has the supplied
-	 * capacity and load factor.
-	 *
-	 * @param initialCapacity the initial capacity of the backing HashMap
-	 * @param loadFactor the load factor of the backing HashMap
-	 * @throws IllegalArgumentException if either argument is negative, or
-	 *         if loadFactor is POSITIVE_INFINITY or NaN
-	 */
-	public LinkedHashSet4D(int initialCapacity, double loadFactor) {
-		super(initialCapacity, loadFactor);
-	}
+  /**
+   * Construct a new, empty HashSet whose backing HashMap has the supplied
+   * capacity and load factor.
+   *
+   * @param initialCapacity the initial capacity of the backing HashMap
+   * @param loadFactor the load factor of the backing HashMap
+   * @throws IllegalArgumentException if either argument is negative, or
+   *         if loadFactor is POSITIVE_INFINITY or NaN
+   */
+  public LinkedHashSet4D(int initialCapacity, double loadFactor)
+  {
+    super(initialCapacity, loadFactor);
+  }
 
-	/**
-	 * Construct a new HashSet with the same elements as are in the supplied
-	 * collection (eliminating any duplicates, of course). The backing storage
-	 * has twice the size of the collection, or the default size of 11,
-	 * whichever is greater; and the default load factor (0.75).
-	 *
-	 * @param c a collection of initial set elements
-	 * @throws NullPointerException if c is null
-	 */
-	public LinkedHashSet4D(Collection<? extends T> c) {
-		super(c);
-	}
+  /**
+   * Construct a new HashSet with the same elements as are in the supplied
+   * collection (eliminating any duplicates, of course). The backing storage
+   * has twice the size of the collection, or the default size of 11,
+   * whichever is greater; and the default load factor (0.75).
+   *
+   * @param c a collection of initial set elements
+   * @throws NullPointerException if c is null
+   */
+  public LinkedHashSet4D(Collection<? extends T> c) { super(c); }
 
-	/**
-	 * Helper method which initializes the backing Map.
-	 *
-	 * @param capacity the initial capacity
-	 * @param load the initial load factor
-	 * @return the backing HashMap
-	 */
-	@Override
-	HashMap4D<T, String> init(int capacity, double load) {
-		return new LinkedHashMap4D<T, String>(capacity, load);
-	}
+  /**
+   * Helper method which initializes the backing Map.
+   *
+   * @param capacity the initial capacity
+   * @param load the initial load factor
+   * @return the backing HashMap
+   */
+  @Override HashMap4D<T, String> init(int capacity, double load)
+  {
+    return new LinkedHashMap4D<T, String>(capacity, load);
+  }
 }

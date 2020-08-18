@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC065_lstore_2 extends StoreLocal {
-	public BC065_lstore_2() {
-		super(2, -2, LONG);
-	}
+public class BC065_lstore_2 extends StoreLocal
+{
+  public BC065_lstore_2() { super(2, -2, LONG); }
 }

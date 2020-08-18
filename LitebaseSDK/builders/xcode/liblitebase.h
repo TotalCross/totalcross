@@ -7,6 +7,6 @@
 
 @interface Litebase : NSObject
 
-+ (void) fillNativeProcAddressesLB;
++ (void)fillNativeProcAddressesLB;
 
 @end

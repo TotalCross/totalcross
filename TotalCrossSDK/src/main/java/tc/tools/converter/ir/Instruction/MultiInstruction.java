@@ -6,14 +6,11 @@ package tc.tools.converter.ir.Instruction;
 
 import totalcross.util.Vector;
 
-public class MultiInstruction extends SingleInstruction {
-	public Parameter[] params;
+public class MultiInstruction extends SingleInstruction
+{
+  public Parameter[] params;
 
-	public MultiInstruction(int op, int line) {
-		super(op, line);
-	}
+  public MultiInstruction(int op, int line) { super(op, line); }
 
-	@Override
-	public void toTCCode(Vector vcode) {
-	}
+  @Override public void toTCCode(Vector vcode) {}
 }

@@ -3,26 +3,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #ifndef GFX_GRAPHICS_H
 #define GFX_GRAPHICS_H
 
-#define privateIsEventAvailable     iphone_privateIsEventAvailable
-#define privatePumpEvent            iphone_privatePumpEvent
-#define privateInitEvent            iphone_privateInitEvent
-#define privateDestroyEvent         iphone_privateDestroyEvent
+#define privateIsEventAvailable iphone_privateIsEventAvailable
+#define privatePumpEvent iphone_privatePumpEvent
+#define privateInitEvent iphone_privateInitEvent
+#define privateDestroyEvent iphone_privateDestroyEvent
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-bool iphone_privateIsEventAvailable();
-void iphone_privatePumpEvent();
-bool iphone_privateInitEvent();
-void iphone_privateDestroyEvent();
+  bool iphone_privateIsEventAvailable();
+  void iphone_privatePumpEvent();
+  bool iphone_privateInitEvent();
+  void iphone_privateDestroyEvent();
 
-void notifyStopVM();
+  void notifyStopVM();
 
 #ifdef __cplusplus
 };

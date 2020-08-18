@@ -9,27 +9,23 @@ import tc.tools.converter.bb.JavaConstant;
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class SourceFile implements AttributeInfo {
-	private JavaClass jclass;
+public class SourceFile implements AttributeInfo
+{
+  private JavaClass jclass;
 
-	public JavaConstant sourceFile;
+  public JavaConstant sourceFile;
 
-	public SourceFile(JavaClass jclass) {
-		this.jclass = jclass;
-	}
+  public SourceFile(JavaClass jclass) { this.jclass = jclass; }
 
-	@Override
-	public int length() {
-		return 2;
-	}
+  @Override public int length() { return 2; }
 
-	@Override
-	public void load(DataStream ds) throws IOException {
-		sourceFile = jclass.getConstant(ds.readUnsignedShort(), this);
-	}
+  @Override public void load(DataStream ds) throws IOException
+  {
+    sourceFile = jclass.getConstant(ds.readUnsignedShort(), this);
+  }
 
-	@Override
-	public void save(DataStream ds) throws IOException {
-		ds.writeShort(jclass.getConstantIndex(sourceFile, this));
-	}
+  @Override public void save(DataStream ds) throws IOException
+  {
+    ds.writeShort(jclass.getConstantIndex(sourceFile, this));
+  }
 }

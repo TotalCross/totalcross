@@ -4,14 +4,13 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC017_sipush extends LoadLocal {
-	public BC017_sipush() {
-		super(readInt16(pc + 1), INT);
-		pcInc = 3;
-	}
+public class BC017_sipush extends LoadLocal
+{
+  public BC017_sipush()
+  {
+    super(readInt16(pc + 1), INT);
+    pcInc = 3;
+  }
 
-	@Override
-	public void exec() {
-		stack[stackPtr].asInt = localIdx;
-	}
+  @Override public void exec() { stack[stackPtr].asInt = localIdx; }
 }

@@ -7,13 +7,17 @@
 
 @interface tcvm : NSObject
 
-+ (NSInteger) startVM: (Context*)context appName: (char*)appName;
++ (NSInteger)startVM:(Context*)context appName:(char*)appName;
 
-+ (NSInteger) startProgram: (Context)context;
++ (NSInteger)startProgram:(Context)context;
 
-+ (void) privateOnMessageReceived: (NSString*)messageId messageType: (NSString*)messageType keys:
-			(NSArray*)keys values: (NSArray*)values collapsedKey: (NSString*)collapsedKey ttl: (int)ttl;
++ (void)privateOnMessageReceived:(NSString*)messageId
+                     messageType:(NSString*)messageType
+                            keys:(NSArray*)keys
+                          values:(NSArray*)values
+                    collapsedKey:(NSString*)collapsedKey
+                             ttl:(int)ttl;
 
-+ (void) privateOnTokenRefresh;
++ (void)privateOnTokenRefresh;
 
 @end

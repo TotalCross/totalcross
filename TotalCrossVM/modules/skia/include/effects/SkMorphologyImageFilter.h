@@ -14,100 +14,110 @@
 #include "SkSize.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-class SK_API SkMorphologyImageFilter : public SkImageFilter {
+class SK_API SkMorphologyImageFilter : public SkImageFilter
+{
 public:
-	SkRect computeFastBounds(const SkRect& src) const override;
-	SkIRect onFilterNodeBounds(const SkIRect& src, const SkMatrix& ctm,
-							   MapDirection, const SkIRect* inputRect) const override;
+  SkRect computeFastBounds(const SkRect& src) const override;
+  SkIRect onFilterNodeBounds(const SkIRect& src,
+                             const SkMatrix& ctm,
+                             MapDirection,
+                             const SkIRect* inputRect) const override;
 
-	/**
-	 * All morphology procs have the same signature: src is the source buffer, dst the
-	 * destination buffer, radius is the morphology radius, width and height are the bounds
-	 * of the destination buffer (in pixels), and srcStride and dstStride are the
-	 * number of pixels per row in each buffer. All buffers are 8888.
-	 */
+  /**
+   * All morphology procs have the same signature: src is the source buffer, dst
+   * the destination buffer, radius is the morphology radius, width and height
+   * are the bounds of the destination buffer (in pixels), and srcStride and
+   * dstStride are the number of pixels per row in each buffer. All buffers are
+   * 8888.
+   */
 
-	typedef void (*Proc)(const SkPMColor* src, SkPMColor* dst, int radius,
-						 int width, int height, int srcStride, int dstStride);
+  typedef void (*Proc)(const SkPMColor* src,
+                       SkPMColor* dst,
+                       int radius,
+                       int width,
+                       int height,
+                       int srcStride,
+                       int dstStride);
 
 protected:
-	enum Op {
-		kErode_Op,
-		kDilate_Op,
-	};
+  enum Op
+  {
+    kErode_Op,
+    kDilate_Op,
+  };
 
-	virtual Op op() const = 0;
+  virtual Op op() const = 0;
 
-	SkMorphologyImageFilter(int radiusX, int radiusY,
-							sk_sp<SkImageFilter> input,
-							const CropRect* cropRect);
-	sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source,
-										const Context&,
-										SkIPoint* offset) const override;
-	sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
-	void flatten(SkWriteBuffer&) const override;
+  SkMorphologyImageFilter(int radiusX,
+                          int radiusY,
+                          sk_sp<SkImageFilter> input,
+                          const CropRect* cropRect);
+  sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source,
+                                      const Context&,
+                                      SkIPoint* offset) const override;
+  sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+  void flatten(SkWriteBuffer&) const override;
 
-	SkISize radius() const {
-		return fRadius;
-	}
+  SkISize radius() const { return fRadius; }
 
 private:
-	SkISize  fRadius;
+  SkISize fRadius;
 
-	typedef SkImageFilter INHERITED;
+  typedef SkImageFilter INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-class SK_API SkDilateImageFilter : public SkMorphologyImageFilter {
+class SK_API SkDilateImageFilter : public SkMorphologyImageFilter
+{
 public:
-	static sk_sp<SkImageFilter> Make(int radiusX, int radiusY,
-									 sk_sp<SkImageFilter> input,
-									 const CropRect* cropRect = nullptr);
+  static sk_sp<SkImageFilter> Make(int radiusX,
+                                   int radiusY,
+                                   sk_sp<SkImageFilter> input,
+                                   const CropRect* cropRect = nullptr);
 
-	Factory getFactory() const override {
-		return CreateProc;
-	}
+  Factory getFactory() const override { return CreateProc; }
 
 protected:
-	Op op() const override {
-		return kDilate_Op;
-	}
+  Op op() const override { return kDilate_Op; }
 
 private:
-	SkDilateImageFilter(int radiusX, int radiusY,
-						sk_sp<SkImageFilter> input,
-						const CropRect* cropRect)
-		: INHERITED(radiusX, radiusY, input, cropRect) {}
-	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-	friend class SkFlattenable::PrivateInitializer;
+  SkDilateImageFilter(int radiusX,
+                      int radiusY,
+                      sk_sp<SkImageFilter> input,
+                      const CropRect* cropRect)
+    : INHERITED(radiusX, radiusY, input, cropRect)
+  {}
+  static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+  friend class SkFlattenable::PrivateInitializer;
 
-	typedef SkMorphologyImageFilter INHERITED;
+  typedef SkMorphologyImageFilter INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-class SK_API SkErodeImageFilter : public SkMorphologyImageFilter {
+class SK_API SkErodeImageFilter : public SkMorphologyImageFilter
+{
 public:
-	static sk_sp<SkImageFilter> Make(int radiusX, int radiusY,
-									 sk_sp<SkImageFilter> input,
-									 const CropRect* cropRect = nullptr);
+  static sk_sp<SkImageFilter> Make(int radiusX,
+                                   int radiusY,
+                                   sk_sp<SkImageFilter> input,
+                                   const CropRect* cropRect = nullptr);
 
-	Factory getFactory() const override {
-		return CreateProc;
-	}
+  Factory getFactory() const override { return CreateProc; }
 
 protected:
-	Op op() const override {
-		return kErode_Op;
-	}
+  Op op() const override { return kErode_Op; }
 
 private:
-	SkErodeImageFilter(int radiusX, int radiusY,
-					   sk_sp<SkImageFilter> input, const CropRect* cropRect)
-		: INHERITED(radiusX, radiusY, input, cropRect) {}
-	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-	friend class SkFlattenable::PrivateInitializer;
+  SkErodeImageFilter(int radiusX,
+                     int radiusY,
+                     sk_sp<SkImageFilter> input,
+                     const CropRect* cropRect)
+    : INHERITED(radiusX, radiusY, input, cropRect)
+  {}
+  static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+  friend class SkFlattenable::PrivateInitializer;
 
-	typedef SkMorphologyImageFilter INHERITED;
+  typedef SkMorphologyImageFilter INHERITED;
 };
 
 #endif

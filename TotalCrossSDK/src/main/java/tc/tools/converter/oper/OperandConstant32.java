@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.oper;
 
-public class OperandConstant32 extends OperandConstant {
-	public OperandConstant32(int value, int type) {
-		super(value, type);
-	}
+public class OperandConstant32 extends OperandConstant
+{
+  public OperandConstant32(int value, int type) { super(value, type); }
 }

@@ -6,18 +6,13 @@ package tc.tools.converter.ir.Instruction;
 
 import totalcross.util.Vector;
 
-public class Parameter {
-	int line;
+public class Parameter
+{
+  int line;
 
-	public Parameter(int line) {
-		this.line = line;
-	}
+  public Parameter(int line) { this.line = line; }
 
-	@Override
-	public String toString() {
-		return " ";
-	}
+  @Override public String toString() { return " "; }
 
-	public void toTCCode(Vector vcode) {
-	}
+  public void toTCCode(Vector vcode) {}
 }

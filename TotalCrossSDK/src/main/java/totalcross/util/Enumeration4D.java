@@ -64,20 +64,20 @@ import java.util.NoSuchElementException;
  * @status updated to 1.4
  */
 public interface Enumeration4D<E> {
-	/**
-	 * Tests whether there are elements remaining in the enumeration.
-	 *
-	 * @return true if there is at least one more element in the enumeration,
-	 *         that is, if the next call to nextElement will not throw a
-	 *         NoSuchElementException.
-	 */
-	boolean hasMoreElements();
+  /**
+   * Tests whether there are elements remaining in the enumeration.
+   *
+   * @return true if there is at least one more element in the enumeration,
+   *         that is, if the next call to nextElement will not throw a
+   *         NoSuchElementException.
+   */
+  boolean hasMoreElements();
 
-	/**
-	 * Obtain the next element in the enumeration.
-	 *
-	 * @return the next element in the enumeration
-	 * @throws NoSuchElementException if there are no more elements
-	 */
-	E nextElement();
+  /**
+   * Obtain the next element in the enumeration.
+   *
+   * @return the next element in the enumeration
+   * @throws NoSuchElementException if there are no more elements
+   */
+  E nextElement();
 }

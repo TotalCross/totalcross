@@ -4,9 +4,11 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC030_lload_0 extends LoadLocal {
-	public BC030_lload_0() {
-		super(0, LONG);
-		stackInc = 2;
-	}
+public class BC030_lload_0 extends LoadLocal
+{
+  public BC030_lload_0()
+  {
+    super(0, LONG);
+    stackInc = 2;
+  }
 }

@@ -5,12 +5,11 @@
 package jdkcompat.lang;
 
 public interface CharSequence4D {
-	int length();
+  int length();
 
-	char charAt(int index);
+  char charAt(int index);
 
-	CharSequence subSequence(int start, int end);
+  CharSequence subSequence(int start, int end);
 
-	@Override
-	public String toString();
+  @Override public String toString();
 }

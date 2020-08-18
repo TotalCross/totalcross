@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC048_faload extends LoadArray {
-	public BC048_faload() {
-		super(-1, -1, 0, -1, FLOAT);
-	}
+public class BC048_faload extends LoadArray
+{
+  public BC048_faload() { super(-1, -1, 0, -1, FLOAT); }
 }

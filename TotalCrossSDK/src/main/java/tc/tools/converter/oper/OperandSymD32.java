@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.oper;
 
-public class OperandSymD32 extends OperandSymD {
-	public OperandSymD32(int index) {
-		super(index);
-	}
+public class OperandSymD32 extends OperandSymD
+{
+  public OperandSymD32(int index) { super(index); }
 }

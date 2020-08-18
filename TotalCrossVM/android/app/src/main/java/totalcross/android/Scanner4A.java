@@ -10,41 +10,44 @@ import totalcross.android.scanners.*;
 /**
  * Scanner class for Android.
  */
-public class Scanner4A {
-	public static IScanner scanner;
+public class Scanner4A
+{
+  public static IScanner scanner;
 
-	static boolean scannerActivate() {
-		// Motorola/Symbol devices
-		try {
-			if (Class.forName("com.symbol.emdk.EMDKManager") != null) {
-			}
-		} catch (ClassNotFoundException e) {
-		}
+  static boolean scannerActivate()
+  {
+    // Motorola/Symbol devices
+    try {
+      if (Class.forName("com.symbol.emdk.EMDKManager") != null) {
+      }
+    } catch (ClassNotFoundException e) {
+    }
 
-		if (scanner == null) {
-			String id = Settings4A.deviceId.toLowerCase();
-			if (id.contains("honeywell")) {
-			} else if (id.equalsIgnoreCase("intermec") || id.contains("foxconn")) {
-			}
-		}
-		return scanner != null ? scanner.scannerActivate() : false;
-	}
+    if (scanner == null) {
+      String id = Settings4A.deviceId.toLowerCase();
+      if (id.contains("honeywell")) {
+      } else if (id.equalsIgnoreCase("intermec") || id.contains("foxconn")) {
+      }
+    }
+    return scanner != null ? scanner.scannerActivate() : false;
+  }
 
-	static boolean setBarcodeParam(int barcodeType, boolean enable) {
-		return scanner != null && scanner.setBarcodeParam(barcodeType, enable);
-	}
+  static boolean setBarcodeParam(int barcodeType, boolean enable)
+  {
+    return scanner != null && scanner.setBarcodeParam(barcodeType, enable);
+  }
 
-	static void setParam(String what, String value) {
-		if (scanner != null) {
-			scanner.setParam(what, value);
-		}
-	}
+  static void setParam(String what, String value)
+  {
+    if (scanner != null) {
+      scanner.setParam(what, value);
+    }
+  }
 
-	static String getData() {
-		return scanner == null ? null : scanner.getData();
-	}
+  static String getData() { return scanner == null ? null : scanner.getData(); }
 
-	static boolean deactivate() {
-		return scanner != null && scanner.deactivate();
-	}
+  static boolean deactivate()
+  {
+    return scanner != null && scanner.deactivate();
+  }
 }

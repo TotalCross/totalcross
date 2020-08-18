@@ -46,24 +46,22 @@ package jdkcompat.lang;
  * @author Tom Tromey (tromey@cygnus.com)
  * @status updated to 1.4
  */
-public abstract class VirtualMachineError4D extends Error {
-	/**
-	 * Compatible with JDK 1.0+.
-	 */
-	private static final long serialVersionUID = 4161983926571568670L;
+public abstract class VirtualMachineError4D extends Error
+{
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 4161983926571568670L;
 
-	/**
-	 * Create an error without a message.
-	 */
-	public VirtualMachineError4D() {
-	}
+  /**
+   * Create an error without a message.
+   */
+  public VirtualMachineError4D() {}
 
-	/**
-	 * Create an error with a message.
-	 *
-	 * @param s the message
-	 */
-	public VirtualMachineError4D(String s) {
-		super(s);
-	}
+  /**
+   * Create an error with a message.
+   *
+   * @param s the message
+   */
+  public VirtualMachineError4D(String s) { super(s); }
 }

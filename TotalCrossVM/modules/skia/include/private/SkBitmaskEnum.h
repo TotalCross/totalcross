@@ -10,25 +10,39 @@
 #include "SkTLogic.h"
 
 namespace skstd {
-	template <typename T> struct is_bitmask_enum : std::false_type {};
+template<typename T>
+struct is_bitmask_enum : std::false_type
+{};
+} // namespace skstd
+
+template<typename E>
+SK_WHEN(skstd::is_bitmask_enum<E>::value, E)
+operator|(E l, E r)
+{
+  using U = skstd::underlying_type_t<E>;
+  return static_cast<E>(static_cast<U>(l) | static_cast<U>(r));
 }
 
-template <typename E> SK_WHEN(skstd::is_bitmask_enum<E>::value, E) operator|(E l, E r) {
-	using U = skstd::underlying_type_t<E>;
-	return static_cast<E>(static_cast<U>(l) | static_cast<U>(r));
+template<typename E>
+SK_WHEN(skstd::is_bitmask_enum<E>::value, E&)
+operator|=(E& l, E r)
+{
+  return l = l | r;
 }
 
-template <typename E> SK_WHEN(skstd::is_bitmask_enum<E>::value, E&) operator|=(E& l, E r) {
-	return l = l | r;
+template<typename E>
+SK_WHEN(skstd::is_bitmask_enum<E>::value, E)
+operator&(E l, E r)
+{
+  using U = skstd::underlying_type_t<E>;
+  return static_cast<E>(static_cast<U>(l) & static_cast<U>(r));
 }
 
-template <typename E> SK_WHEN(skstd::is_bitmask_enum<E>::value, E) operator&(E l, E r) {
-	using U = skstd::underlying_type_t<E>;
-	return static_cast<E>(static_cast<U>(l) & static_cast<U>(r));
+template<typename E>
+SK_WHEN(skstd::is_bitmask_enum<E>::value, E&)
+operator&=(E& l, E r)
+{
+  return l = l & r;
 }
 
-template <typename E> SK_WHEN(skstd::is_bitmask_enum<E>::value, E&) operator&=(E& l, E r) {
-	return l = l & r;
-}
-
-#endif  // SkEnumOperators_DEFINED
+#endif // SkEnumOperators_DEFINED

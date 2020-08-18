@@ -6,7 +6,6 @@
  * found in the LICENSE file.
  */
 
-
 #ifndef SkParsePath_DEFINED
 #define SkParsePath_DEFINED
 
@@ -14,10 +13,11 @@
 
 class SkString;
 
-class SkParsePath {
+class SkParsePath
+{
 public:
-	static bool FromSVGString(const char str[], SkPath*);
-	static void ToSVGString(const SkPath&, SkString*);
+  static bool FromSVGString(const char str[], SkPath*);
+  static void ToSVGString(const SkPath&, SkString*);
 };
 
 #endif

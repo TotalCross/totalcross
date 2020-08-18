@@ -63,19 +63,17 @@ import java.util.Enumeration;
  * @since 1.0
  * @status updated to 1.4
  */
-public class NoSuchElementException4D extends RuntimeException {
-	/**
-	 * Constructs a NoSuchElementException with no detail message.
-	 */
-	public NoSuchElementException4D() {
-	}
+public class NoSuchElementException4D extends RuntimeException
+{
+  /**
+   * Constructs a NoSuchElementException with no detail message.
+   */
+  public NoSuchElementException4D() {}
 
-	/**
-	 * Constructs a NoSuchElementException with a detail message.
-	 *
-	 * @param detail the detail message for the exception
-	 */
-	public NoSuchElementException4D(String detail) {
-		super(detail);
-	}
+  /**
+   * Constructs a NoSuchElementException with a detail message.
+   *
+   * @param detail the detail message for the exception
+   */
+  public NoSuchElementException4D(String detail) { super(detail); }
 }

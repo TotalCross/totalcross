@@ -3,15 +3,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#import "tcvm.h"
-#import "NativeMethods.h"
 #import "liblitebase.h"
+#import "NativeMethods.h"
 #import "nativeProcAddressesLB.h"
+#import "tcvm.h"
 
 @implementation Litebase
 
-+ (void) fillNativeProcAddressesLB {
-	fillNativeProcAddressesLB();
++ (void)fillNativeProcAddressesLB
+{
+  fillNativeProcAddressesLB();
 }
 
 @end

@@ -12,20 +12,23 @@
 class SkBBoxHierarchy;
 struct SkRect;
 
-class SK_API SkBBHFactory {
+class SK_API SkBBHFactory
+{
 public:
-	/**
-	 *  Allocate a new SkBBoxHierarchy. Return NULL on failure.
-	 */
-	virtual SkBBoxHierarchy* operator()(const SkRect& bounds) const = 0;
-	virtual ~SkBBHFactory() {}
+  /**
+   *  Allocate a new SkBBoxHierarchy. Return NULL on failure.
+   */
+  virtual SkBBoxHierarchy* operator()(const SkRect& bounds) const = 0;
+  virtual ~SkBBHFactory() {}
 };
 
-class SK_API SkRTreeFactory : public SkBBHFactory {
+class SK_API SkRTreeFactory : public SkBBHFactory
+{
 public:
-	SkBBoxHierarchy* operator()(const SkRect& bounds) const override;
+  SkBBoxHierarchy* operator()(const SkRect& bounds) const override;
+
 private:
-	typedef SkBBHFactory INHERITED;
+  typedef SkBBHFactory INHERITED;
 };
 
 #endif

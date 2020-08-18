@@ -10,37 +10,41 @@ import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Graphics;
 
-/** This is a special TestCase, used to compare two images. One image is
+/**
+ * This is a special TestCase, used to compare two images. One image is
  * created in a recording mode at desktop and the other image is the first
  * one running at device.
  */
 
-public class ImageComparisionTest extends TestCase {
-	// set to true to record the compressed strings
-	protected boolean recording;
-	// set to true to debug, sending all output to the screen.
-	protected boolean debuggingOnScreen;
+public class ImageComparisionTest extends TestCase
+{
+  // set to true to record the compressed strings
+  protected boolean recording;
+  // set to true to debug, sending all output to the screen.
+  protected boolean debuggingOnScreen;
 
-	protected Graphics maing;
-	protected ImageTester it;
+  protected Graphics maing;
+  protected ImageTester it;
 
-	@Override
-	public void testRun() {
-		maing = MainWindow.getMainWindow().getGraphics();
-	}
+  @Override public void testRun()
+  {
+    maing = MainWindow.getMainWindow().getGraphics();
+  }
 
-	protected void assertOK(String in256, String in65536, String title) {
-		if (debuggingOnScreen) {
-			;
-		} else if (recording) {
-			maing.drawImage(it, 0, 0);
-			if (!Settings.onJavaSE) {
-				Vm.sleep(10000);
-			}
-			Vm.debug("private String " + title + "_" + Settings.screenBPP + " = \"" + it.toString() + "\";");
-		} else {
-			it.title = title;
-			assertEquals(it, Settings.screenBPP == 8 ? in256 : in65536);
-		}
-	}
+  protected void assertOK(String in256, String in65536, String title)
+  {
+    if (debuggingOnScreen) {
+      ;
+    } else if (recording) {
+      maing.drawImage(it, 0, 0);
+      if (!Settings.onJavaSE) {
+        Vm.sleep(10000);
+      }
+      Vm.debug("private String " + title + "_" + Settings.screenBPP + " = \"" +
+               it.toString() + "\";");
+    } else {
+      it.title = title;
+      assertEquals(it, Settings.screenBPP == 8 ? in256 : in65536);
+    }
+  }
 }

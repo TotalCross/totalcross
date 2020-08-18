@@ -3,11 +3,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
-#include "tcvm.h"
 #include "compilation.date"
+#include "tcvm.h"
 
-int32 getCompilationDate() {
-	return COMPILATION_MASK ^ COMPILATION_DATE;
+int32
+getCompilationDate()
+{
+  return COMPILATION_MASK ^ COMPILATION_DATE;
 }

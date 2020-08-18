@@ -1,5 +1,6 @@
 /* Comparable.java -- Interface for comparaing objects to obtain an ordering
-   Copyright (C) 1998, 1999, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2004, 2005 Free Software Foundation,
+Inc.
 
 This file is part of GNU Classpath.
 
@@ -68,29 +69,29 @@ package totalcross.lang;
  * @status updated to 1.5
  */
 public interface Comparable4D<T> {
-	/**
-	 * Compares this object with another, and returns a numerical result based
-	 * on the comparison.  If the result is negative, this object sorts less
-	 * than the other; if 0, the two are equal, and if positive, this object
-	 * sorts greater than the other.  To translate this into boolean, simply
-	 * perform <code>o1.compareTo(o2) <em>&lt;op&gt;</em> 0</code>, where op
-	 * is one of &lt;, &lt;=, =, !=, &gt;, or &gt;=.
-	 *
-	 * <p>You must make sure that the comparison is mutual, ie.
-	 * <code>sgn(x.compareTo(y)) == -sgn(y.compareTo(x))</code> (where sgn() is
-	 * defined as -1, 0, or 1 based on the sign).  This includes throwing an
-	 * exception in either direction if the two are not comparable; hence,
-	 * <code>compareTo(null)</code> should always throw an Exception.
-	 *
-	 * <p>You should also ensure transitivity, in two forms:
-	 * <code>x.compareTo(y) &gt; 0 && y.compareTo(z) &gt; 0</code> implies
-	 * <code>x.compareTo(z) &gt; 0</code>; and <code>x.compareTo(y) == 0</code>
-	 * implies <code>x.compareTo(z) == y.compareTo(z)</code>.
-	 *
-	 * @param o the object to be compared
-	 * @return an integer describing the comparison
-	 * @throws NullPointerException if o is null
-	 * @throws ClassCastException if o cannot be compared
-	 */
-	int compareTo(T o);
+  /**
+   * Compares this object with another, and returns a numerical result based
+   * on the comparison.  If the result is negative, this object sorts less
+   * than the other; if 0, the two are equal, and if positive, this object
+   * sorts greater than the other.  To translate this into boolean, simply
+   * perform <code>o1.compareTo(o2) <em>&lt;op&gt;</em> 0</code>, where op
+   * is one of &lt;, &lt;=, =, !=, &gt;, or &gt;=.
+   *
+   * <p>You must make sure that the comparison is mutual, ie.
+   * <code>sgn(x.compareTo(y)) == -sgn(y.compareTo(x))</code> (where sgn() is
+   * defined as -1, 0, or 1 based on the sign).  This includes throwing an
+   * exception in either direction if the two are not comparable; hence,
+   * <code>compareTo(null)</code> should always throw an Exception.
+   *
+   * <p>You should also ensure transitivity, in two forms:
+   * <code>x.compareTo(y) &gt; 0 && y.compareTo(z) &gt; 0</code> implies
+   * <code>x.compareTo(z) &gt; 0</code>; and <code>x.compareTo(y) == 0</code>
+   * implies <code>x.compareTo(z) == y.compareTo(z)</code>.
+   *
+   * @param o the object to be compared
+   * @return an integer describing the comparison
+   * @throws NullPointerException if o is null
+   * @throws ClassCastException if o cannot be compared
+   */
+  int compareTo(T o);
 }

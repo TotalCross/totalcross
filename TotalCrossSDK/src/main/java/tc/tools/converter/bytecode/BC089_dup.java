@@ -4,13 +4,12 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC089_dup extends StackManipulation {
-	public BC089_dup() {
-		super(1, false);
-	}
+public class BC089_dup extends StackManipulation
+{
+  public BC089_dup() { super(1, false); }
 
-	@Override
-	public void exec() {
-		stack[stackPtr].copyFrom(stack[stackPtr - 1]);
-	}
+  @Override public void exec()
+  {
+    stack[stackPtr].copyFrom(stack[stackPtr - 1]);
+  }
 }

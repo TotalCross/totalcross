@@ -6,40 +6,35 @@
 package totalcross.net.mail;
 
 /**
- * Thrown when a write operation fails when sending a Message, or when an unexpected code is received from the remote
- * host.
+ * Thrown when a write operation fails when sending a Message, or when an
+ * unexpected code is received from the remote host.
  *
  * @since TotalCross 1.13
  */
-public class MessagingException extends Exception {
-	private Throwable cause;
+public class MessagingException extends Exception
+{
+  private Throwable cause;
 
-	/** Constructs an empty Exception. */
-	public MessagingException() {
-		super();
-	}
+  /** Constructs an empty Exception. */
+  public MessagingException() { super(); }
 
-	/** Constructs an exception with the given message. */
-	public MessagingException(String msg) {
-		super(msg);
-	}
+  /** Constructs an exception with the given message. */
+  public MessagingException(String msg) { super(msg); }
 
-	public MessagingException(Throwable cause) {
-		super(cause == null ? null : cause.getMessage());
-		this.cause = cause;
-	}
+  public MessagingException(Throwable cause)
+  {
+    super(cause == null ? null : cause.getMessage());
+    this.cause = cause;
+  }
 
-	@Override
-	public void printStackTrace() {
-		if (cause != null) {
-			cause.printStackTrace();
-		} else {
-			super.printStackTrace();
-		}
-	}
+  @Override public void printStackTrace()
+  {
+    if (cause != null) {
+      cause.printStackTrace();
+    } else {
+      super.printStackTrace();
+    }
+  }
 
-	@Override
-	public Throwable getCause() {
-		return cause;
-	}
+  @Override public Throwable getCause() { return cause; }
 }

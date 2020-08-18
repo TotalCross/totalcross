@@ -3,13 +3,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #ifndef DEMO_H
 #define DEMO_H
 
-/// Gets the virtual machine compilation date in format YYYYMMDD, xored by 12341234 (defined below)
-int32 getCompilationDate();
+/// Gets the virtual machine compilation date in format YYYYMMDD, xored by
+/// 12341234 (defined below)
+int32
+getCompilationDate();
 #define COMPILATION_MASK 12341234
 
 #endif

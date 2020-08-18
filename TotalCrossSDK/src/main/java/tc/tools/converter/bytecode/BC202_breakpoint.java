@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC202_breakpoint extends ByteCode {
-	public BC202_breakpoint() {
-	}
+public class BC202_breakpoint extends ByteCode
+{
+  public BC202_breakpoint() {}
 }

@@ -5,9 +5,9 @@
 package totalcross.cielo.sdk.order;
 
 public interface PrinterListener {
-	public void onPrintSuccess(int printedLines);
+  public void onPrintSuccess(int printedLines);
 
-	public void onError(Throwable e);
+  public void onError(Throwable e);
 
-	public void onWithoutPaper();
+  public void onWithoutPaper();
 }

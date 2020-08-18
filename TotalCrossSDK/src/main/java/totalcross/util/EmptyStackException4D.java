@@ -52,10 +52,10 @@ package totalcross.util;
  * @since 1.0
  * @status updated to 1.4
  */
-public class EmptyStackException4D extends RuntimeException {
-	/**
-	 * Constructs an EmptyStackException with no detail message.
-	 */
-	public EmptyStackException4D() {
-	}
+public class EmptyStackException4D extends RuntimeException
+{
+  /**
+   * Constructs an EmptyStackException with no detail message.
+   */
+  public EmptyStackException4D() {}
 }

@@ -20,7 +20,8 @@
  * @param  src     source pixels.
  * @param  format  image format, not all formats are supported.
  * @param  quality range from 0-100, this is supported by jpeg and webp.
- *                 higher values correspond to improved visual quality, but less compression.
+ *                 higher values correspond to improved visual quality, but less
+ * compression.
  *
  * @return false iff input is bad or format is unsupported.
  *
@@ -32,15 +33,23 @@
  * For examples of encoding an image to a file or to a block of memory,
  * see tools/sk_tool_utils.h.
  */
-SK_API bool SkEncodeImage(SkWStream* dst, const SkPixmap& src,
-						  SkEncodedImageFormat format, int quality);
+SK_API bool
+SkEncodeImage(SkWStream* dst,
+              const SkPixmap& src,
+              SkEncodedImageFormat format,
+              int quality);
 
 /**
  * The following helper function wraps SkEncodeImage().
  */
-inline bool SkEncodeImage(SkWStream* dst, const SkBitmap& src, SkEncodedImageFormat f, int q) {
-	SkPixmap pixmap;
-	return src.peekPixels(&pixmap) && SkEncodeImage(dst, pixmap, f, q);
+inline bool
+SkEncodeImage(SkWStream* dst,
+              const SkBitmap& src,
+              SkEncodedImageFormat f,
+              int q)
+{
+  SkPixmap pixmap;
+  return src.peekPixels(&pixmap) && SkEncodeImage(dst, pixmap, f, q);
 }
 
 /**
@@ -49,7 +58,8 @@ inline bool SkEncodeImage(SkWStream* dst, const SkBitmap& src, SkEncodedImageFor
  * @param  src     source pixels.
  * @param  format  image format, not all formats are supported.
  * @param  quality range from 0-100, this is supported by jpeg and webp.
- *                 higher values correspond to improved visual quality, but less compression.
+ *                 higher values correspond to improved visual quality, but less
+ * compression.
  *
  * @return encoded data or nullptr if input is bad or format is unsupported.
  *
@@ -58,11 +68,14 @@ inline bool SkEncodeImage(SkWStream* dst, const SkBitmap& src, SkEncodedImageFor
  *
  * Note that webp encodes will use webp lossy compression.
  */
-SK_API sk_sp<SkData> SkEncodePixmap(const SkPixmap& src, SkEncodedImageFormat format, int quality);
+SK_API sk_sp<SkData>
+SkEncodePixmap(const SkPixmap& src, SkEncodedImageFormat format, int quality);
 
 /**
- *  Helper that extracts the pixmap from the bitmap, and then calls SkEncodePixmap()
+ *  Helper that extracts the pixmap from the bitmap, and then calls
+ * SkEncodePixmap()
  */
-SK_API sk_sp<SkData> SkEncodeBitmap(const SkBitmap& src, SkEncodedImageFormat format, int quality);
+SK_API sk_sp<SkData>
+SkEncodeBitmap(const SkBitmap& src, SkEncodedImageFormat format, int quality);
 
-#endif  // SkImageEncoder_DEFINED
+#endif // SkImageEncoder_DEFINED

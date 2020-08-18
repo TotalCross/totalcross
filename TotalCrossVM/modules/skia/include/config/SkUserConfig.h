@@ -6,15 +6,14 @@
  * found in the LICENSE file.
  */
 
-
 #ifndef SkUserConfig_DEFINED
 #define SkUserConfig_DEFINED
 
 /*  SkTypes.h, the root of the public header files, does the following trick:
 
+    #include "SkPostConfig.h"
     #include "SkPreConfig.h"
     #include "SkUserConfig.h"
-    #include "SkPostConfig.h"
 
     SkPreConfig.h runs first, and it is responsible for initializing certain
     skia defines.
@@ -73,7 +72,6 @@
 //#define SK_UINT8_BITFIELD_BENDIAN
 //#define SK_UINT8_BITFIELD_LENDIAN
 
-
 /*  To write debug messages to a console, skia will call SkDebugf(...) following
     printf conventions (e.g. const char* format, ...). If you want to redirect
     this to something other than printf, define yours here
@@ -103,12 +101,11 @@
 /*  Change the ordering to work in X windows.
  */
 #ifdef SK_SAMPLES_FOR_X
-	#define SK_R32_SHIFT    16
-	#define SK_G32_SHIFT    8
-	#define SK_B32_SHIFT    0
-	#define SK_A32_SHIFT    24
+#define SK_R32_SHIFT 16
+#define SK_G32_SHIFT 8
+#define SK_B32_SHIFT 0
+#define SK_A32_SHIFT 24
 #endif
-
 
 /* Determines whether to build code that supports the GPU backend. Some classes
    that are not GPU-specific, such as SkShader subclasses, have optional code

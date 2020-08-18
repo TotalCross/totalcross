@@ -4,8 +4,7 @@
 
 package totalcross.firebase;
 
-public class FirebaseMessagingService {
-	public void onMessageReceived(RemoteMessage remoteMessage) {
-
-	}
+public class FirebaseMessagingService
+{
+  public void onMessageReceived(RemoteMessage remoteMessage) {}
 }

@@ -19,38 +19,43 @@
  *  5 (or larger) -> fColors[5]
  *
  */
-class SK_API SkOverdrawColorFilter : public SkColorFilter {
+class SK_API SkOverdrawColorFilter : public SkColorFilter
+{
 public:
-	static constexpr int kNumColors = 6;
+  static constexpr int kNumColors = 6;
 
-	static sk_sp<SkOverdrawColorFilter> Make(const SkPMColor colors[kNumColors]) {
-		return sk_sp<SkOverdrawColorFilter>(new SkOverdrawColorFilter(colors));
-	}
+  static sk_sp<SkOverdrawColorFilter> Make(const SkPMColor colors[kNumColors])
+  {
+    return sk_sp<SkOverdrawColorFilter>(new SkOverdrawColorFilter(colors));
+  }
 
 #if SK_SUPPORT_GPU
-	std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(
-		GrContext*, const GrColorSpaceInfo&) const override;
+  std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(
+    GrContext*,
+    const GrColorSpaceInfo&) const override;
 #endif
 
-	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer& buffer);
-	Factory getFactory() const override {
-		return CreateProc;
-	}
-	static void InitializeFlattenables();
+  static sk_sp<SkFlattenable> CreateProc(SkReadBuffer& buffer);
+  Factory getFactory() const override { return CreateProc; }
+  static void InitializeFlattenables();
 
 protected:
-	void flatten(SkWriteBuffer& buffer) const override;
+  void flatten(SkWriteBuffer& buffer) const override;
 
 private:
-	SkOverdrawColorFilter(const SkPMColor colors[kNumColors]) {
-		memcpy(fColors, colors, kNumColors * sizeof(SkPMColor));
-	}
+  SkOverdrawColorFilter(const SkPMColor colors[kNumColors])
+  {
+    memcpy(fColors, colors, kNumColors * sizeof(SkPMColor));
+  }
 
-	void onAppendStages(SkRasterPipeline*, SkColorSpace*, SkArenaAlloc*, bool) const override;
+  void onAppendStages(SkRasterPipeline*,
+                      SkColorSpace*,
+                      SkArenaAlloc*,
+                      bool) const override;
 
-	SkPMColor fColors[kNumColors];
+  SkPMColor fColors[kNumColors];
 
-	typedef SkColorFilter INHERITED;
+  typedef SkColorFilter INHERITED;
 };
 
 #endif // SkOverdrawColorFilter_DEFINED

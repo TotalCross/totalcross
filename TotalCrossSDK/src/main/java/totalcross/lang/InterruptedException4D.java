@@ -5,12 +5,9 @@
 
 package totalcross.lang;
 
-public class InterruptedException4D extends Exception {
-	public InterruptedException4D() {
-		super();
-	}
+public class InterruptedException4D extends Exception
+{
+  public InterruptedException4D() { super(); }
 
-	public InterruptedException4D(String s) {
-		super(s);
-	}
+  public InterruptedException4D(String s) { super(s); }
 }

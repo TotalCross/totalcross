@@ -23,37 +23,37 @@ import totalcross.sys.Vm;
  *
  * @since TotalCross 4.2
  */
-public class CallsCounter {
-	private static final long ONE_SECOND = 1000;
-	private String identifier;
-	private long start = -1;
-	private int calls = 0;
+public class CallsCounter
+{
+  private static final long ONE_SECOND = 1000;
+  private String identifier;
+  private long start = -1;
+  private int calls = 0;
 
-	/**
-	 * Creates a new CallsCounter object with the given identifier.
-	 * @param identifier text attached to the regular calls/s reports
-	 */
-	public CallsCounter(String identifier) {
-		this.identifier = identifier;
-	}
+  /**
+   * Creates a new CallsCounter object with the given identifier.
+   * @param identifier text attached to the regular calls/s reports
+   */
+  public CallsCounter(String identifier) { this.identifier = identifier; }
 
-	public void Update() {
-		if (start < 0) {
-			start = Vm.getTimeStamp();
-			calls = 1;
-		} else {
-			calls++;
-			if (Vm.getTimeStamp() - start > ONE_SECOND) {
-				if (calls <= 2) {
-					Vm.debug(identifier + ": < 1 calls/s");
-					start = -1;
-					calls = 0;
-				} else {
-					Vm.debug(identifier + ": " + calls + " calls/s");
-					start = -1;
-					calls = 0;
-				}
-			}
-		}
-	}
+  public void Update()
+  {
+    if (start < 0) {
+      start = Vm.getTimeStamp();
+      calls = 1;
+    } else {
+      calls++;
+      if (Vm.getTimeStamp() - start > ONE_SECOND) {
+        if (calls <= 2) {
+          Vm.debug(identifier + ": < 1 calls/s");
+          start = -1;
+          calls = 0;
+        } else {
+          Vm.debug(identifier + ": " + calls + " calls/s");
+          start = -1;
+          calls = 0;
+        }
+      }
+    }
+  }
 }

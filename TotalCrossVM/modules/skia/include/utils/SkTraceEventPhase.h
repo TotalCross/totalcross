@@ -16,4 +16,4 @@
 #define TRACE_EVENT_PHASE_SNAPSHOT_OBJECT ('O')
 #define TRACE_EVENT_PHASE_DELETE_OBJECT ('D')
 
-#endif  // SkTraceEventPhase_DEFINED
+#endif // SkTraceEventPhase_DEFINED

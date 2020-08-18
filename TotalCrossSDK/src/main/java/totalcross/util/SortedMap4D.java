@@ -80,100 +80,100 @@ import java.util.TreeMap;
  * @status updated to 1.4
  */
 public interface SortedMap4D<K, V> extends Map<K, V> {
-	/**
-	 * Returns the comparator used in sorting this map, or null if it is
-	 * the keys' natural ordering.
-	 *
-	 * @return the sorting comparator
-	 */
-	Comparator<? super K> comparator();
+  /**
+   * Returns the comparator used in sorting this map, or null if it is
+   * the keys' natural ordering.
+   *
+   * @return the sorting comparator
+   */
+  Comparator<? super K> comparator();
 
-	/**
-	 * Returns the first (lowest sorted) key in the map.
-	 *
-	 * @return the first key
-	 * @throws NoSuchElementException if this map is empty.
-	 */
-	K firstKey();
+  /**
+   * Returns the first (lowest sorted) key in the map.
+   *
+   * @return the first key
+   * @throws NoSuchElementException if this map is empty.
+   */
+  K firstKey();
 
-	/**
-	 * Returns a view of the portion of the map strictly less than toKey. The
-	 * view is backed by this map, so changes in one show up in the other.
-	 * The submap supports all optional operations of the original.
-	 * <p>
-	 *
-	 * The returned map throws an IllegalArgumentException any time a key is
-	 * used which is out of the range of toKey. Note that the endpoint, toKey,
-	 * is not included; if you want this value to be included, pass its successor
-	 * object in to toKey.  For example, for Integers, you could request
-	 * <code>headMap(new Integer(limit.intValue() + 1))</code>.
-	 *
-	 * @param toKey the exclusive upper range of the submap
-	 * @return the submap
-	 * @throws ClassCastException if toKey is not comparable to the map contents
-	 * @throws IllegalArgumentException if this is a subMap, and toKey is out
-	 *         of range
-	 * @throws NullPointerException if toKey is null but the map does not allow
-	 *         null keys
-	 */
-	SortedMap<K, V> headMap(K toKey);
+  /**
+   * Returns a view of the portion of the map strictly less than toKey. The
+   * view is backed by this map, so changes in one show up in the other.
+   * The submap supports all optional operations of the original.
+   * <p>
+   *
+   * The returned map throws an IllegalArgumentException any time a key is
+   * used which is out of the range of toKey. Note that the endpoint, toKey,
+   * is not included; if you want this value to be included, pass its successor
+   * object in to toKey.  For example, for Integers, you could request
+   * <code>headMap(new Integer(limit.intValue() + 1))</code>.
+   *
+   * @param toKey the exclusive upper range of the submap
+   * @return the submap
+   * @throws ClassCastException if toKey is not comparable to the map contents
+   * @throws IllegalArgumentException if this is a subMap, and toKey is out
+   *         of range
+   * @throws NullPointerException if toKey is null but the map does not allow
+   *         null keys
+   */
+  SortedMap<K, V> headMap(K toKey);
 
-	/**
-	 * Returns the last (highest sorted) key in the map.
-	 *
-	 * @return the last key
-	 * @throws NoSuchElementException if this map is empty.
-	 */
-	K lastKey();
+  /**
+   * Returns the last (highest sorted) key in the map.
+   *
+   * @return the last key
+   * @throws NoSuchElementException if this map is empty.
+   */
+  K lastKey();
 
-	/**
-	 * Returns a view of the portion of the map greater than or equal to
-	 * fromKey, and strictly less than toKey. The view is backed by this map,
-	 * so changes in one show up in the other. The submap supports all
-	 * optional operations of the original.
-	 * <p>
-	 *
-	 * The returned map throws an IllegalArgumentException any time a key is
-	 * used which is out of the range of fromKey and toKey. Note that the
-	 * lower endpoint is included, but the upper is not; if you want to
-	 * change the inclusion or exclusion of an endpoint, pass its successor
-	 * object in instead.  For example, for Integers, you could request
-	 * <code>subMap(new Integer(lowlimit.intValue() + 1),
-	 * new Integer(highlimit.intValue() + 1))</code> to reverse
-	 * the inclusiveness of both endpoints.
-	 *
-	 * @param fromKey the inclusive lower range of the submap
-	 * @param toKey the exclusive upper range of the submap
-	 * @return the submap
-	 * @throws ClassCastException if fromKey or toKey is not comparable to
-	 *         the map contents
-	 * @throws IllegalArgumentException if this is a subMap, and fromKey or
-	 *         toKey is out of range
-	 * @throws NullPointerException if fromKey or toKey is null but the map
-	 *         does not allow null keys
-	 */
-	SortedMap<K, V> subMap(K fromKey, K toKey);
+  /**
+   * Returns a view of the portion of the map greater than or equal to
+   * fromKey, and strictly less than toKey. The view is backed by this map,
+   * so changes in one show up in the other. The submap supports all
+   * optional operations of the original.
+   * <p>
+   *
+   * The returned map throws an IllegalArgumentException any time a key is
+   * used which is out of the range of fromKey and toKey. Note that the
+   * lower endpoint is included, but the upper is not; if you want to
+   * change the inclusion or exclusion of an endpoint, pass its successor
+   * object in instead.  For example, for Integers, you could request
+   * <code>subMap(new Integer(lowlimit.intValue() + 1),
+   * new Integer(highlimit.intValue() + 1))</code> to reverse
+   * the inclusiveness of both endpoints.
+   *
+   * @param fromKey the inclusive lower range of the submap
+   * @param toKey the exclusive upper range of the submap
+   * @return the submap
+   * @throws ClassCastException if fromKey or toKey is not comparable to
+   *         the map contents
+   * @throws IllegalArgumentException if this is a subMap, and fromKey or
+   *         toKey is out of range
+   * @throws NullPointerException if fromKey or toKey is null but the map
+   *         does not allow null keys
+   */
+  SortedMap<K, V> subMap(K fromKey, K toKey);
 
-	/**
-	 * Returns a view of the portion of the map greater than or equal to
-	 * fromKey. The view is backed by this map, so changes in one show up
-	 * in the other. The submap supports all optional operations of the original.
-	 * <p>
-	 *
-	 * The returned map throws an IllegalArgumentException any time a key is
-	 * used which is out of the range of fromKey. Note that the endpoint, fromKey, is
-	 * included; if you do not want this value to be included, pass its successor object in
-	 * to fromKey.  For example, for Integers, you could request
-	 * <code>tailMap(new Integer(limit.intValue() + 1))</code>.
-	 *
-	 * @param fromKey the inclusive lower range of the submap
-	 * @return the submap
-	 * @throws ClassCastException if fromKey is not comparable to the map
-	 *         contents
-	 * @throws IllegalArgumentException if this is a subMap, and fromKey is out
-	 *         of range
-	 * @throws NullPointerException if fromKey is null but the map does not allow
-	 *         null keys
-	 */
-	SortedMap<K, V> tailMap(K fromKey);
+  /**
+   * Returns a view of the portion of the map greater than or equal to
+   * fromKey. The view is backed by this map, so changes in one show up
+   * in the other. The submap supports all optional operations of the original.
+   * <p>
+   *
+   * The returned map throws an IllegalArgumentException any time a key is
+   * used which is out of the range of fromKey. Note that the endpoint, fromKey,
+   * is included; if you do not want this value to be included, pass its
+   * successor object in to fromKey.  For example, for Integers, you could
+   * request <code>tailMap(new Integer(limit.intValue() + 1))</code>.
+   *
+   * @param fromKey the inclusive lower range of the submap
+   * @return the submap
+   * @throws ClassCastException if fromKey is not comparable to the map
+   *         contents
+   * @throws IllegalArgumentException if this is a subMap, and fromKey is out
+   *         of range
+   * @throws NullPointerException if fromKey is null but the map does not allow
+   *         null keys
+   */
+  SortedMap<K, V> tailMap(K fromKey);
 }

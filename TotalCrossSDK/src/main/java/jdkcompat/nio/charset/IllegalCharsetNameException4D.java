@@ -21,36 +21,36 @@ package jdkcompat.nio.charset;
  * An {@code IllegalCharsetNameException} is thrown when an illegal charset name
  * is encountered.
  */
-public class IllegalCharsetNameException4D extends IllegalArgumentException {
+public class IllegalCharsetNameException4D extends IllegalArgumentException
+{
 
-	/*
-	 * This constant is used during deserialization to check the version
-	 * which created the serialized object.
-	 */
-	private static final long serialVersionUID = 1457525358470002989L;
+  /*
+   * This constant is used during deserialization to check the version
+   * which created the serialized object.
+   */
+  private static final long serialVersionUID = 1457525358470002989L;
 
-	// The illegal charset name
-	private String charsetName;
+  // The illegal charset name
+  private String charsetName;
 
-	/**
-	 * Constructs a new {@code IllegalCharsetNameException} with the supplied
-	 * charset name.
-	 *
-	 * @param charset
-	 *            the encountered illegal charset name.
-	 */
-	public IllegalCharsetNameException4D(String charset) {
-		// niochar.0F=The illegal charset name is "{0}".
-		super("The illegal charset name is " + charset); //$NON-NLS-1$
-		this.charsetName = charset;
-	}
+  /**
+   * Constructs a new {@code IllegalCharsetNameException} with the supplied
+   * charset name.
+   *
+   * @param charset
+   *            the encountered illegal charset name.
+   */
+  public IllegalCharsetNameException4D(String charset)
+  {
+    // niochar.0F=The illegal charset name is "{0}".
+    super("The illegal charset name is " + charset); //$NON-NLS-1$
+    this.charsetName = charset;
+  }
 
-	/**
-	 * Gets the encountered illegal charset name.
-	 *
-	 * @return the encountered illegal charset name.
-	 */
-	public String getCharsetName() {
-		return this.charsetName;
-	}
+  /**
+   * Gets the encountered illegal charset name.
+   *
+   * @return the encountered illegal charset name.
+   */
+  public String getCharsetName() { return this.charsetName; }
 }

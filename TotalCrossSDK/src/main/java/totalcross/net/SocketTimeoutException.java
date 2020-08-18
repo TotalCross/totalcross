@@ -9,9 +9,8 @@ import totalcross.io.IOException;
 
 /** Thrown when a socket times out in a connect, read or write operation. */
 
-public class SocketTimeoutException extends IOException {
-	/** Constructs an exception with the given message. */
-	public SocketTimeoutException(String msg) {
-		super(msg);
-	}
+public class SocketTimeoutException extends IOException
+{
+  /** Constructs an exception with the given message. */
+  public SocketTimeoutException(String msg) { super(msg); }
 }

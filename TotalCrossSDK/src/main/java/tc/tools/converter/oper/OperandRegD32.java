@@ -4,12 +4,9 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.oper;
 
-public class OperandRegD32 extends OperandRegD {
-	public OperandRegD32() {
-		super();
-	}
+public class OperandRegD32 extends OperandRegD
+{
+  public OperandRegD32() { super(); }
 
-	public OperandRegD32(int framePosition) {
-		super(framePosition);
-	}
+  public OperandRegD32(int framePosition) { super(framePosition); }
 }

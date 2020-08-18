@@ -7,38 +7,31 @@ package totalcross.util.concurrent;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
-/** Class used with the <code>synchronize</code> keyword, representing a lock to avoid concurrent access.
- * Here's a sample:
- * <pre>
- * Lock lock1 = new Lock(); // usually a class' field
+/**
+ * Class used with the <code>synchronize</code> keyword, representing a lock to
+ * avoid concurrent access. Here's a sample: <pre> Lock lock1 = new Lock(); //
+ * usually a class' field
  *
  * synchronized (lock1)
  * {
  *    ...
  * }
  * </pre>
- * Only a Lock object can be used with <code>synchronize</code>. Using <code>this</code> will abort the tc.Deploy and
- * using other objects will cause a RuntimeException during code execution under the TCVM.
+ * Only a Lock object can be used with <code>synchronize</code>. Using
+ * <code>this</code> will abort the tc.Deploy and using other objects will cause
+ * a RuntimeException during code execution under the TCVM.
  * @since TotalCross 1.2
  */
 
-public class Lock {
-	Object mutex;
+public class Lock
+{
+  Object mutex;
 
-	public Lock() {
-		create();
-	}
+  public Lock() { create(); }
 
-	@Override
-	protected void finalize() {
-		destroy();
-	}
+  @Override protected void finalize() { destroy(); }
 
-	@ReplacedByNativeOnDeploy
-	final void create() {
-	}
+  @ReplacedByNativeOnDeploy final void create() {}
 
-	@ReplacedByNativeOnDeploy
-	final void destroy() {
-	}
+  @ReplacedByNativeOnDeploy final void destroy() {}
 }

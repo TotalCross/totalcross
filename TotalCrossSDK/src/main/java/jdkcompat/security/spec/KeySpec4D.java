@@ -21,5 +21,4 @@ package jdkcompat.security.spec;
  * The marker interface for key specifications. The purpose is
  * to group key specifications for cryptographic keys.
  */
-public interface KeySpec4D {
-}
+public interface KeySpec4D {}

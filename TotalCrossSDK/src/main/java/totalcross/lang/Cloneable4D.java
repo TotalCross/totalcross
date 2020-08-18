@@ -72,5 +72,5 @@ package totalcross.lang;
  * @status updated to 1.4
  */
 public interface Cloneable4D {
-	// Tagging interface only.
+  // Tagging interface only.
 }

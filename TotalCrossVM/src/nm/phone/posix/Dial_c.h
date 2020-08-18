@@ -3,23 +3,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-#if defined (darwin)
+#if defined(darwin)
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-int iphone_dialNumber(char* number);
+  int iphone_dialNumber(char* number);
 
 #ifdef __cplusplus
 };
 #endif
 #endif // darwin
 
-
-static void dialNumber(CharP number) {
+static void
+dialNumber(CharP number)
+{
 #ifdef darwin
-	iphone_dialNumber(number);
+  iphone_dialNumber(number);
 #endif
 }
 

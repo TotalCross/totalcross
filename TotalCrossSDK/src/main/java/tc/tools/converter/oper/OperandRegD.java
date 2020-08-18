@@ -4,16 +4,14 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.oper;
 
-public abstract class OperandRegD extends OperandReg {
-	public OperandRegD() {
-		super(opr_regD);
-	}
+public abstract class OperandRegD extends OperandReg
+{
+  public OperandRegD() { super(opr_regD); }
 
-	public OperandRegD(int framePosition) {
-		super(opr_regD, framePosition);
-	}
+  public OperandRegD(int framePosition) { super(opr_regD, framePosition); }
 
-	public OperandRegD(String wordIndex, int index) {
-		super(opr_regD, wordIndex, index);
-	}
+  public OperandRegD(String wordIndex, int index)
+  {
+    super(opr_regD, wordIndex, index);
+  }
 }

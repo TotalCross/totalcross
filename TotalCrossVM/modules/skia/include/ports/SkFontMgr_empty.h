@@ -16,6 +16,7 @@ class SkFontMgr;
 /** Create a custom font manager that contains no built-in fonts.
  *  This font manager uses FreeType for rendering.
  */
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_Custom_Empty();
+SK_API sk_sp<SkFontMgr>
+SkFontMgr_New_Custom_Empty();
 
 #endif // SkFontMgr_empty_DEFINED

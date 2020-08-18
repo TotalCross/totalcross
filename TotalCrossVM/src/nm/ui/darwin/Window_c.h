@@ -3,19 +3,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret);
-bool windowGetSIP();
+  void windowSetSIP(Context currentContext,
+                    int32 sipOption,
+                    TCObject control,
+                    bool secret);
+  bool windowGetSIP();
 
-/*static void windowSetDeviceTitle(TCObject titleObj)
-{
-   UNUSED(titleObj)
-}*/
+  /*static void windowSetDeviceTitle(TCObject titleObj)
+  {
+     UNUSED(titleObj)
+  }*/
 
 #ifdef __cplusplus
 }

@@ -13,51 +13,65 @@
 #include "vk/GrVkTypes.h"
 
 /**
- * Helper class that eats in an array of extensions strings for instance and device and allows for
- * quicker querying if an extension is present.
+ * Helper class that eats in an array of extensions strings for instance and
+ * device and allows for quicker querying if an extension is present.
  */
-class SK_API GrVkExtensions {
+class SK_API GrVkExtensions
+{
 public:
-	GrVkExtensions() {}
+  GrVkExtensions() {}
 
-	void init(GrVkGetProc, VkInstance, VkPhysicalDevice,
-			  uint32_t instanceExtensionCount, const char* const* instanceExtensions,
-			  uint32_t deviceExtensionCount, const char* const* deviceExtensions);
+  void init(GrVkGetProc,
+            VkInstance,
+            VkPhysicalDevice,
+            uint32_t instanceExtensionCount,
+            const char* const* instanceExtensions,
+            uint32_t deviceExtensionCount,
+            const char* const* deviceExtensions);
 
-	bool hasExtension(const char[], uint32_t minVersion) const;
+  bool hasExtension(const char[], uint32_t minVersion) const;
 
-	struct Info {
-		Info() {}
-		Info(const char* name) : fName(name), fSpecVersion(0) {}
+  struct Info
+  {
+    Info() {}
+    Info(const char* name)
+      : fName(name)
+      , fSpecVersion(0)
+    {}
 
-		SkString fName;
-		uint32_t fSpecVersion;
+    SkString fName;
+    uint32_t fSpecVersion;
 
-		struct Less {
-			bool operator()(const Info& a, const SkString& b) {
-				return strcmp(a.fName.c_str(), b.c_str()) < 0;
-			}
-			bool operator()(const SkString& a, const GrVkExtensions::Info& b) {
-				return strcmp(a.c_str(), b.fName.c_str()) < 0;
-			}
-		};
-	};
+    struct Less
+    {
+      bool operator()(const Info& a, const SkString& b)
+      {
+        return strcmp(a.fName.c_str(), b.c_str()) < 0;
+      }
+      bool operator()(const SkString& a, const GrVkExtensions::Info& b)
+      {
+        return strcmp(a.c_str(), b.fName.c_str()) < 0;
+      }
+    };
+  };
 
 #ifdef SK_DEBUG
-	void dump() const {
-		SkDebugf("**Vulkan Extensions**\n");
-		for (int i = 0; i < fExtensions.count(); ++i) {
-			SkDebugf("%s. Version: %d\n",
-					 fExtensions[i].fName.c_str(), fExtensions[i].fSpecVersion);
-		}
-		SkDebugf("**End Vulkan Extensions**\n");
-	}
+  void dump() const
+  {
+    SkDebugf("**Vulkan Extensions**\n");
+    for (int i = 0; i < fExtensions.count(); ++i) {
+      SkDebugf("%s. Version: %d\n",
+               fExtensions[i].fName.c_str(),
+               fExtensions[i].fSpecVersion);
+    }
+    SkDebugf("**End Vulkan Extensions**\n");
+  }
 #endif
 
 private:
-	void getSpecVersions(GrVkGetProc getProc, VkInstance, VkPhysicalDevice);
+  void getSpecVersions(GrVkGetProc getProc, VkInstance, VkPhysicalDevice);
 
-	SkTArray<Info>  fExtensions;
+  SkTArray<Info> fExtensions;
 };
 
 #endif

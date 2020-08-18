@@ -11,32 +11,34 @@
 #ifndef sk_types_DEFINED
 #define sk_types_DEFINED
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
-	#define SK_C_PLUS_PLUS_BEGIN_GUARD    extern "C" {
-	#define SK_C_PLUS_PLUS_END_GUARD      }
+#define SK_C_PLUS_PLUS_BEGIN_GUARD                                             \
+  extern "C"                                                                   \
+  {
+#define SK_C_PLUS_PLUS_END_GUARD }
 #else
-	#include <stdbool.h>
-	#define SK_C_PLUS_PLUS_BEGIN_GUARD
-	#define SK_C_PLUS_PLUS_END_GUARD
+#include <stdbool.h>
+#define SK_C_PLUS_PLUS_BEGIN_GUARD
+#define SK_C_PLUS_PLUS_END_GUARD
 #endif
 
 #if !defined(SK_API)
-	#if defined(SKIA_DLL)
-		#if defined(_MSC_VER)
-			#if SKIA_IMPLEMENTATION
-				#define SK_API __declspec(dllexport)
-			#else
-				#define SK_API __declspec(dllimport)
-			#endif
-		#else
-			#define SK_API __attribute__((visibility("default")))
-		#endif
-	#else
-		#define SK_API
-	#endif
+#if defined(SKIA_DLL)
+#if defined(_MSC_VER)
+#if SKIA_IMPLEMENTATION
+#define SK_API __declspec(dllexport)
+#else
+#define SK_API __declspec(dllimport)
+#endif
+#else
+#define SK_API __attribute__((visibility("default")))
+#endif
+#else
+#define SK_API
+#endif
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -46,46 +48,53 @@ SK_C_PLUS_PLUS_BEGIN_GUARD
 typedef uint32_t sk_color_t;
 
 /* This macro assumes all arguments are >=0 and <=255. */
-#define sk_color_set_argb(a, r, g, b)   (((a) << 24) | ((r) << 16) | ((g) << 8) | (b))
-#define sk_color_get_a(c)               (((c) >> 24) & 0xFF)
-#define sk_color_get_r(c)               (((c) >> 16) & 0xFF)
-#define sk_color_get_g(c)               (((c) >>  8) & 0xFF)
-#define sk_color_get_b(c)               (((c) >>  0) & 0xFF)
+#define sk_color_set_argb(a, r, g, b)                                          \
+  (((a) << 24) | ((r) << 16) | ((g) << 8) | (b))
+#define sk_color_get_a(c) (((c) >> 24) & 0xFF)
+#define sk_color_get_r(c) (((c) >> 16) & 0xFF)
+#define sk_color_get_g(c) (((c) >> 8) & 0xFF)
+#define sk_color_get_b(c) (((c) >> 0) & 0xFF)
 
-typedef enum {
-	INTERSECT_SK_CLIPTYPE,
-	DIFFERENCE_SK_CLIPTYPE,
+typedef enum
+{
+  INTERSECT_SK_CLIPTYPE,
+  DIFFERENCE_SK_CLIPTYPE,
 } sk_cliptype_t;
 
-typedef enum {
-	UNKNOWN_SK_PIXELGEOMETRY,
-	RGB_H_SK_PIXELGEOMETRY,
-	BGR_H_SK_PIXELGEOMETRY,
-	RGB_V_SK_PIXELGEOMETRY,
-	BGR_V_SK_PIXELGEOMETRY,
+typedef enum
+{
+  UNKNOWN_SK_PIXELGEOMETRY,
+  RGB_H_SK_PIXELGEOMETRY,
+  BGR_H_SK_PIXELGEOMETRY,
+  RGB_V_SK_PIXELGEOMETRY,
+  BGR_V_SK_PIXELGEOMETRY,
 } sk_pixelgeometry_t;
 
-typedef struct {
-	sk_pixelgeometry_t pixelGeometry;
+typedef struct
+{
+  sk_pixelgeometry_t pixelGeometry;
 } sk_surfaceprops_t;
 
-typedef struct {
-	float   x;
-	float   y;
+typedef struct
+{
+  float x;
+  float y;
 } sk_point_t;
 
-typedef struct {
-	int32_t left;
-	int32_t top;
-	int32_t right;
-	int32_t bottom;
+typedef struct
+{
+  int32_t left;
+  int32_t top;
+  int32_t right;
+  int32_t bottom;
 } sk_irect_t;
 
-typedef struct {
-	float   left;
-	float   top;
-	float   right;
-	float   bottom;
+typedef struct
+{
+  float left;
+  float top;
+  float right;
+  float bottom;
 } sk_rect_t;
 
 /**
@@ -141,8 +150,9 @@ typedef struct {
             *dst = result;
         }
 */
-typedef struct {
-	float   mat[9];
+typedef struct
+{
+  float mat[9];
 } sk_matrix_t;
 
 /**
@@ -217,36 +227,37 @@ typedef struct sk_shader_t sk_shader_t;
 */
 typedef struct sk_surface_t sk_surface_t;
 
-typedef enum {
-	CLEAR_SK_XFERMODE_MODE,
-	SRC_SK_XFERMODE_MODE,
-	DST_SK_XFERMODE_MODE,
-	SRCOVER_SK_XFERMODE_MODE,
-	DSTOVER_SK_XFERMODE_MODE,
-	SRCIN_SK_XFERMODE_MODE,
-	DSTIN_SK_XFERMODE_MODE,
-	SRCOUT_SK_XFERMODE_MODE,
-	DSTOUT_SK_XFERMODE_MODE,
-	SRCATOP_SK_XFERMODE_MODE,
-	DSTATOP_SK_XFERMODE_MODE,
-	XOR_SK_XFERMODE_MODE,
-	PLUS_SK_XFERMODE_MODE,
-	MODULATE_SK_XFERMODE_MODE,
-	SCREEN_SK_XFERMODE_MODE,
-	OVERLAY_SK_XFERMODE_MODE,
-	DARKEN_SK_XFERMODE_MODE,
-	LIGHTEN_SK_XFERMODE_MODE,
-	COLORDODGE_SK_XFERMODE_MODE,
-	COLORBURN_SK_XFERMODE_MODE,
-	HARDLIGHT_SK_XFERMODE_MODE,
-	SOFTLIGHT_SK_XFERMODE_MODE,
-	DIFFERENCE_SK_XFERMODE_MODE,
-	EXCLUSION_SK_XFERMODE_MODE,
-	MULTIPLY_SK_XFERMODE_MODE,
-	HUE_SK_XFERMODE_MODE,
-	SATURATION_SK_XFERMODE_MODE,
-	COLOR_SK_XFERMODE_MODE,
-	LUMINOSITY_SK_XFERMODE_MODE,
+typedef enum
+{
+  CLEAR_SK_XFERMODE_MODE,
+  SRC_SK_XFERMODE_MODE,
+  DST_SK_XFERMODE_MODE,
+  SRCOVER_SK_XFERMODE_MODE,
+  DSTOVER_SK_XFERMODE_MODE,
+  SRCIN_SK_XFERMODE_MODE,
+  DSTIN_SK_XFERMODE_MODE,
+  SRCOUT_SK_XFERMODE_MODE,
+  DSTOUT_SK_XFERMODE_MODE,
+  SRCATOP_SK_XFERMODE_MODE,
+  DSTATOP_SK_XFERMODE_MODE,
+  XOR_SK_XFERMODE_MODE,
+  PLUS_SK_XFERMODE_MODE,
+  MODULATE_SK_XFERMODE_MODE,
+  SCREEN_SK_XFERMODE_MODE,
+  OVERLAY_SK_XFERMODE_MODE,
+  DARKEN_SK_XFERMODE_MODE,
+  LIGHTEN_SK_XFERMODE_MODE,
+  COLORDODGE_SK_XFERMODE_MODE,
+  COLORBURN_SK_XFERMODE_MODE,
+  HARDLIGHT_SK_XFERMODE_MODE,
+  SOFTLIGHT_SK_XFERMODE_MODE,
+  DIFFERENCE_SK_XFERMODE_MODE,
+  EXCLUSION_SK_XFERMODE_MODE,
+  MULTIPLY_SK_XFERMODE_MODE,
+  HUE_SK_XFERMODE_MODE,
+  SATURATION_SK_XFERMODE_MODE,
+  COLOR_SK_XFERMODE_MODE,
+  LUMINOSITY_SK_XFERMODE_MODE,
 } sk_xfermode_mode_t;
 
 //////////////////////////////////////////////////////////////////////////////////////////

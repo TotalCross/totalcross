@@ -7,16 +7,17 @@
 //#include "MainViewFactory.h"
 
 using namespace Windows::ApplicationModel::Core;
-//using namespace TotalCross;
+// using namespace TotalCross;
 
-[Platform::MTAThread]
-int main(Platform::Array<Platform::String^>^ argsArray) {
-	//CoreApplication::Run(ref new MainViewFactory(argsArray[0]));
+[Platform::MTAThread] int main(Platform::Array<Platform::String ^> ^
+                               argsArray) {
+  // CoreApplication::Run(ref new MainViewFactory(argsArray[0]));
 
-	//CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  // CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
-	auto x = LoadPackagedLibrary(TEXT("PhoneClassLibrary1.dll"), 0);
+  auto x = LoadPackagedLibrary(TEXT("PhoneClassLibrary1.dll"), 0);
 
-	PhoneXamlDirect3DApp1Comp::WindowsPhoneRuntimeComponent::executeProgramWrapper(argsArray[0]);
-	return 0;
+  PhoneXamlDirect3DApp1Comp::WindowsPhoneRuntimeComponent::
+    executeProgramWrapper(argsArray[0]);
+  return 0;
 }

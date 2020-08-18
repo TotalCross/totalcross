@@ -58,78 +58,78 @@ import java.util.Enumeration;
  * @since 1.0
  * @status updated to 1.4
  */
-public abstract class Dictionary4D<K, V> {
-	// WARNING: Dictionary is a CORE class in the bootstrap cycle. See the
-	// comments in vm/reference/java/lang/Runtime for implications of this fact.
+public abstract class Dictionary4D<K, V>
+{
+  // WARNING: Dictionary is a CORE class in the bootstrap cycle. See the
+  // comments in vm/reference/java/lang/Runtime for implications of this fact.
 
-	/**
-	 * Sole constructor (often called implicitly).
-	 */
-	public Dictionary4D() {
-	}
+  /**
+   * Sole constructor (often called implicitly).
+   */
+  public Dictionary4D() {}
 
-	/**
-	 * Returns an Enumeration of the values in this Dictionary.
-	 *
-	 * @return an Enumeration of the values
-	 * @see #keys()
-	 */
-	public abstract Enumeration<V> elements();
+  /**
+   * Returns an Enumeration of the values in this Dictionary.
+   *
+   * @return an Enumeration of the values
+   * @see #keys()
+   */
+  public abstract Enumeration<V> elements();
 
-	/**
-	 * Returns the value associated with the supplied key, or null
-	 * if no such value exists. Since Dictionaries are not allowed null keys
-	 * or elements, a null result always means the key is not present.
-	 *
-	 * @param key the key to use to fetch the value
-	 * @return the mapped value
-	 * @throws NullPointerException if key is null
-	 * @see #put(Object, Object)
-	 */
-	public abstract V get(Object key);
+  /**
+   * Returns the value associated with the supplied key, or null
+   * if no such value exists. Since Dictionaries are not allowed null keys
+   * or elements, a null result always means the key is not present.
+   *
+   * @param key the key to use to fetch the value
+   * @return the mapped value
+   * @throws NullPointerException if key is null
+   * @see #put(Object, Object)
+   */
+  public abstract V get(Object key);
 
-	/**
-	 * Returns true when there are no elements in this Dictionary.
-	 *
-	 * @return <code>size() == 0</code>
-	 */
-	public abstract boolean isEmpty();
+  /**
+   * Returns true when there are no elements in this Dictionary.
+   *
+   * @return <code>size() == 0</code>
+   */
+  public abstract boolean isEmpty();
 
-	/**
-	 * Returns an Enumeration of the keys in this Dictionary
-	 *
-	 * @return an Enumeration of the keys
-	 * @see #elements()
-	 */
-	public abstract Enumeration<K> keys();
+  /**
+   * Returns an Enumeration of the keys in this Dictionary
+   *
+   * @return an Enumeration of the keys
+   * @see #elements()
+   */
+  public abstract Enumeration<K> keys();
 
-	/**
-	 * Inserts a new value into this Dictionary, located by the
-	 * supplied key. Dictionary does not support null keys or values, so
-	 * a null return can safely be interpreted as adding a new key.
-	 *
-	 * @param key the key which locates the value
-	 * @param value the value to put into the Dictionary
-	 * @return the previous value of the key, or null if there was none
-	 * @throws NullPointerException if key or value is null
-	 * @see #get(Object)
-	 */
-	public abstract V put(K key, V value);
+  /**
+   * Inserts a new value into this Dictionary, located by the
+   * supplied key. Dictionary does not support null keys or values, so
+   * a null return can safely be interpreted as adding a new key.
+   *
+   * @param key the key which locates the value
+   * @param value the value to put into the Dictionary
+   * @return the previous value of the key, or null if there was none
+   * @throws NullPointerException if key or value is null
+   * @see #get(Object)
+   */
+  public abstract V put(K key, V value);
 
-	/**
-	 * Removes from the Dictionary the value located by the given key. A null
-	 * return safely means that the key was not mapped in the Dictionary.
-	 *
-	 * @param key the key used to locate the value to be removed
-	 * @return the value associated with the removed key
-	 * @throws NullPointerException if key is null
-	 */
-	public abstract V remove(Object key);
+  /**
+   * Removes from the Dictionary the value located by the given key. A null
+   * return safely means that the key was not mapped in the Dictionary.
+   *
+   * @param key the key used to locate the value to be removed
+   * @return the value associated with the removed key
+   * @throws NullPointerException if key is null
+   */
+  public abstract V remove(Object key);
 
-	/**
-	 * Returns the number of values currently in this Dictionary.
-	 *
-	 * @return the number of keys in the Dictionary
-	 */
-	public abstract int size();
+  /**
+   * Returns the number of values currently in this Dictionary.
+   *
+   * @return the number of keys in the Dictionary
+   */
+  public abstract int size();
 } // class Dictionary

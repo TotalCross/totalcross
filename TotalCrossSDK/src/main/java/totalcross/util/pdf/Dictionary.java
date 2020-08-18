@@ -7,12 +7,13 @@
 
 package totalcross.util.pdf;
 
-public class Dictionary extends EnclosedContent {
+public class Dictionary extends EnclosedContent
+{
 
-	public Dictionary() {
-		super();
-		setBeginKeyword("<<", false, true);
-		setEndKeyword(">>", false, true);
-	}
-
+  public Dictionary()
+  {
+    super();
+    setBeginKeyword("<<", false, true);
+    setEndKeyword(">>", false, true);
+  }
 }

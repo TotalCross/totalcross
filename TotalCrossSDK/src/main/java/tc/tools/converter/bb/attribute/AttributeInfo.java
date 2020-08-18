@@ -6,6 +6,4 @@ package tc.tools.converter.bb.attribute;
 
 import tc.tools.converter.bb.JavaClassStructure;
 
-public interface AttributeInfo extends JavaClassStructure {
-
-}
+public interface AttributeInfo extends JavaClassStructure {}

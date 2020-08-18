@@ -4,13 +4,12 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC141_f2d extends Conversion { // this conversion should be ignored
-	public BC141_f2d() {
-		super(-1, -1, FLOAT, DOUBLE);
-	}
+public class BC141_f2d extends Conversion
+{ // this conversion should be ignored
+  public BC141_f2d() { super(-1, -1, FLOAT, DOUBLE); }
 
-	@Override
-	public void exec() {
-		//stack[stackPtr-1].asDouble = stack[stackPtr-1].asDouble;
-	}
+  @Override public void exec()
+  {
+    // stack[stackPtr-1].asDouble = stack[stackPtr-1].asDouble;
+  }
 }

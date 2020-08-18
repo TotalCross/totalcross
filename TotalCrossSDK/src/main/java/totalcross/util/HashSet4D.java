@@ -80,162 +80,150 @@ import java.util.TreeSet;
  * @since 1.2
  * @status updated to 1.4
  */
-public class HashSet4D<T> extends AbstractSet<T> implements Set<T>, Cloneable {
-	/**
-	 * The HashMap which backs this Set.
-	 */
-	private transient HashMap4D<T, String> map;
+public class HashSet4D<T> extends AbstractSet<T> implements Set<T>, Cloneable
+{
+  /**
+   * The HashMap which backs this Set.
+   */
+  private transient HashMap4D<T, String> map;
 
-	/**
-	 * Construct a new, empty HashSet whose backing HashMap has the default
-	 * capacity (11) and loadFacor (0.75).
-	 */
-	public HashSet4D() {
-		this(HashMap4D.DEFAULT_CAPACITY, HashMap4D.DEFAULT_LOAD_FACTOR);
-	}
+  /**
+   * Construct a new, empty HashSet whose backing HashMap has the default
+   * capacity (11) and loadFacor (0.75).
+   */
+  public HashSet4D()
+  {
+    this(HashMap4D.DEFAULT_CAPACITY, HashMap4D.DEFAULT_LOAD_FACTOR);
+  }
 
-	/**
-	 * Construct a new, empty HashSet whose backing HashMap has the supplied
-	 * capacity and the default load factor (0.75).
-	 *
-	 * @param initialCapacity the initial capacity of the backing HashMap
-	 * @throws IllegalArgumentException if the capacity is negative
-	 */
-	public HashSet4D(int initialCapacity) {
-		this(initialCapacity, HashMap4D.DEFAULT_LOAD_FACTOR);
-	}
+  /**
+   * Construct a new, empty HashSet whose backing HashMap has the supplied
+   * capacity and the default load factor (0.75).
+   *
+   * @param initialCapacity the initial capacity of the backing HashMap
+   * @throws IllegalArgumentException if the capacity is negative
+   */
+  public HashSet4D(int initialCapacity)
+  {
+    this(initialCapacity, HashMap4D.DEFAULT_LOAD_FACTOR);
+  }
 
-	/**
-	 * Construct a new, empty HashSet whose backing HashMap has the supplied
-	 * capacity and load factor.
-	 *
-	 * @param initialCapacity the initial capacity of the backing HashMap
-	 * @param loadFactor the load factor of the backing HashMap
-	 * @throws IllegalArgumentException if either argument is negative, or
-	 *         if loadFactor is POSITIVE_INFINITY or NaN
-	 */
-	public HashSet4D(int initialCapacity, double loadFactor) {
-		map = init(initialCapacity, loadFactor);
-	}
+  /**
+   * Construct a new, empty HashSet whose backing HashMap has the supplied
+   * capacity and load factor.
+   *
+   * @param initialCapacity the initial capacity of the backing HashMap
+   * @param loadFactor the load factor of the backing HashMap
+   * @throws IllegalArgumentException if either argument is negative, or
+   *         if loadFactor is POSITIVE_INFINITY or NaN
+   */
+  public HashSet4D(int initialCapacity, double loadFactor)
+  {
+    map = init(initialCapacity, loadFactor);
+  }
 
-	/**
-	 * Construct a new HashSet with the same elements as are in the supplied
-	 * collection (eliminating any duplicates, of course). The backing storage
-	 * has twice the size of the collection, or the default size of 11,
-	 * whichever is greater; and the default load factor (0.75).
-	 *
-	 * @param c a collection of initial set elements
-	 * @throws NullPointerException if c is null
-	 */
-	public HashSet4D(Collection<? extends T> c) {
-		this(Math.max(2 * c.size(), HashMap4D.DEFAULT_CAPACITY));
-		addAll(c);
-	}
+  /**
+   * Construct a new HashSet with the same elements as are in the supplied
+   * collection (eliminating any duplicates, of course). The backing storage
+   * has twice the size of the collection, or the default size of 11,
+   * whichever is greater; and the default load factor (0.75).
+   *
+   * @param c a collection of initial set elements
+   * @throws NullPointerException if c is null
+   */
+  public HashSet4D(Collection<? extends T> c)
+  {
+    this(Math.max(2 * c.size(), HashMap4D.DEFAULT_CAPACITY));
+    addAll(c);
+  }
 
-	/**
-	 * Adds the given Object to the set if it is not already in the Set.
-	 * This set permits a null element.
-	 *
-	 * @param o the Object to add to this Set
-	 * @return true if the set did not already contain o
-	 */
-	@Override
-	public boolean add(T o) {
-		return map.put(o, "") == null;
-	}
+  /**
+   * Adds the given Object to the set if it is not already in the Set.
+   * This set permits a null element.
+   *
+   * @param o the Object to add to this Set
+   * @return true if the set did not already contain o
+   */
+  @Override public boolean add(T o) { return map.put(o, "") == null; }
 
-	/**
-	 * Empties this Set of all elements; this takes constant time.
-	 */
-	@Override
-	public void clear() {
-		map.clear();
-	}
+  /**
+   * Empties this Set of all elements; this takes constant time.
+   */
+  @Override public void clear() { map.clear(); }
 
-	/**
-	 * Returns a shallow copy of this Set. The Set itself is cloned; its
-	 * elements are not.
-	 *
-	 * @return a shallow clone of the set
-	 */
-	@Override
-	public Object clone() {
-		HashSet4D<T> copy = null;
-		try {
-			copy = (HashSet4D<T>) super.clone();
-		} catch (CloneNotSupportedException x) {
-			// Impossible to get here.
-		}
-		copy.map = (HashMap4D<T, String>) map.clone();
-		return copy;
-	}
+  /**
+   * Returns a shallow copy of this Set. The Set itself is cloned; its
+   * elements are not.
+   *
+   * @return a shallow clone of the set
+   */
+  @Override public Object clone()
+  {
+    HashSet4D<T> copy = null;
+    try {
+      copy = (HashSet4D<T>)super.clone();
+    } catch (CloneNotSupportedException x) {
+      // Impossible to get here.
+    }
+    copy.map = (HashMap4D<T, String>)map.clone();
+    return copy;
+  }
 
-	/**
-	 * Returns true if the supplied element is in this Set.
-	 *
-	 * @param o the Object to look for
-	 * @return true if it is in the set
-	 */
-	@Override
-	public boolean contains(Object o) {
-		return map.containsKey(o);
-	}
+  /**
+   * Returns true if the supplied element is in this Set.
+   *
+   * @param o the Object to look for
+   * @return true if it is in the set
+   */
+  @Override public boolean contains(Object o) { return map.containsKey(o); }
 
-	/**
-	 * Returns true if this set has no elements in it.
-	 *
-	 * @return <code>size() == 0</code>.
-	 */
-	@Override
-	public boolean isEmpty() {
-		return map.size == 0;
-	}
+  /**
+   * Returns true if this set has no elements in it.
+   *
+   * @return <code>size() == 0</code>.
+   */
+  @Override public boolean isEmpty() { return map.size == 0; }
 
-	/**
-	 * Returns an Iterator over the elements of this Set, which visits the
-	 * elements in no particular order.  For this class, the Iterator allows
-	 * removal of elements. The iterator is fail-fast, and will throw a
-	 * ConcurrentModificationException if the set is modified externally.
-	 *
-	 * @return a set iterator
-	 * @see ConcurrentModificationException
-	 */
-	@Override
-	public Iterator<T> iterator() {
-		// Avoid creating intermediate keySet() object by using non-public API.
-		return map.iterator(AbstractMap4D.KEYS);
-	}
+  /**
+   * Returns an Iterator over the elements of this Set, which visits the
+   * elements in no particular order.  For this class, the Iterator allows
+   * removal of elements. The iterator is fail-fast, and will throw a
+   * ConcurrentModificationException if the set is modified externally.
+   *
+   * @return a set iterator
+   * @see ConcurrentModificationException
+   */
+  @Override public Iterator<T> iterator()
+  {
+    // Avoid creating intermediate keySet() object by using non-public API.
+    return map.iterator(AbstractMap4D.KEYS);
+  }
 
-	/**
-	 * Removes the supplied Object from this Set if it is in the Set.
-	 *
-	 * @param o the object to remove
-	 * @return true if an element was removed
-	 */
-	@Override
-	public boolean remove(Object o) {
-		return (map.remove(o) != null);
-	}
+  /**
+   * Removes the supplied Object from this Set if it is in the Set.
+   *
+   * @param o the object to remove
+   * @return true if an element was removed
+   */
+  @Override public boolean remove(Object o) { return (map.remove(o) != null); }
 
-	/**
-	 * Returns the number of elements in this Set (its cardinality).
-	 *
-	 * @return the size of the set
-	 */
-	@Override
-	public int size() {
-		return map.size;
-	}
+  /**
+   * Returns the number of elements in this Set (its cardinality).
+   *
+   * @return the size of the set
+   */
+  @Override public int size() { return map.size; }
 
-	/**
-	 * Helper method which initializes the backing Map. Overridden by
-	 * LinkedHashSet for correct semantics.
-	 *
-	 * @param capacity the initial capacity
-	 * @param load the initial load factor
-	 * @return the backing HashMap
-	 */
-	HashMap4D init(int capacity, double load) {
-		return new HashMap4D(capacity, load);
-	}
+  /**
+   * Helper method which initializes the backing Map. Overridden by
+   * LinkedHashSet for correct semantics.
+   *
+   * @param capacity the initial capacity
+   * @param load the initial load factor
+   * @return the backing HashMap
+   */
+  HashMap4D init(int capacity, double load)
+  {
+    return new HashMap4D(capacity, load);
+  }
 }

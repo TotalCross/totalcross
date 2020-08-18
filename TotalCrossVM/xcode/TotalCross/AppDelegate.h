@@ -10,12 +10,12 @@ typedef void* dlHandle;
 
 @class ViewController;
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate> {
-	int startupRC;
-	dlHandle tcvm;
-	Context context;
+@interface AppDelegate : UIResponder<UIApplicationDelegate> {
+  int startupRC;
+  dlHandle tcvm;
+  Context context;
 }
-- (void) initApp;
-- (void) mainLoop: (id)param;
+- (void)initApp;
+- (void)mainLoop:(id)param;
 
 @end

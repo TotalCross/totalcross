@@ -4,8 +4,10 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 /**
- * Declares functions to manipulate a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and
- * speed, targeting the creation of indices, where the table's record is far greater than the index record.
+ * Declares functions to manipulate a B-Tree. It is used to store the table
+ * indices. It has some improvements for both memory usage, disk space, and
+ * speed, targeting the creation of indices, where the table's record is far
+ * greater than the index record.
  */
 
 #ifndef LITEBASE_NODE_H
@@ -19,7 +21,8 @@
  * @param index The index of the node to be created.
  * @return The node created.
  */
-Node* createNode(Index* index);
+Node*
+createNode(Index* index);
 
 /**
  * Loads a node.
@@ -28,17 +31,20 @@ Node* createNode(Index* index);
  * @param node The node being loaded.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool nodeLoad(Context context, Node* node);
+bool
+nodeLoad(Context context, Node* node);
 
 /**
  * Saves a dirty key.
  *
  * @param context The thread context where the function is being executed.
  * @param node The node being saved.
- * @param currPos The current position in the file where the key should be saved.
+ * @param currPos The current position in the file where the key should be
+ * saved.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool nodeSaveDirtyKey(Context context, Node* node, int32 currPos);
+bool
+nodeSaveDirtyKey(Context context, Node* node, int32 currPos);
 
 /**
  * Saves a node.
@@ -52,31 +58,38 @@ bool nodeSaveDirtyKey(Context context, Node* node, int32 currPos);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index gets too large.
  */
-int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right);
+int32
+nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right);
 
 /**
- * Constructs a B-Tree node with at most k keys, initially with one element, item, and two children: left and right.
+ * Constructs a B-Tree node with at most k keys, initially with one element,
+ * item, and two children: left and right.
  *
  * @param node The node being saved.
  * @param key The key to be saved.
  * @param left The left child.
  * @param right The right child.
  */
-void nodeSet(Node* node, Key* key, int32 left, int32 right);
+void
+nodeSet(Node* node, Key* key, int32 left, int32 right);
 
 /**
- * Returns the index of the leftmost element of this node that is not less than item, using a binary search.
+ * Returns the index of the leftmost element of this node that is not less than
+ * item, using a binary search.
  *
  * @param context The thread context where the function is being executed.
  * @param node The node being searched.
  * @param key The key to be found.
- * @param isInsert Indicates that the function is called by <code>indexInsert()</code>
+ * @param isInsert Indicates that the function is called by
+ * <code>indexInsert()</code>
  * @return The position of the key.
  */
-int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert);
+int32
+nodeFindIn(Context context, Node* node, Key* key, bool isInsert);
 
 /**
- * Inserts element item, with left and right children at the right position in this node.
+ * Inserts element item, with left and right children at the right position in
+ * this node.
  *
  * @param context The thread context where the function is being executed.
  * @param node The node where a key will be inserted.
@@ -86,17 +99,24 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert);
  * @param insPos The position where to insert the key.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool nodeInsert(Context context, Node* node, Key* key, int32 leftChild, int32 rightChild,
-				int32 insPos);
+bool
+nodeInsert(Context context,
+           Node* node,
+           Key* key,
+           int32 leftChild,
+           int32 rightChild,
+           int32 insPos);
 
 /**
- * Sets the flag that indicates if the not should have its write process delayed or not.
+ * Sets the flag that indicates if the not should have its write process delayed
+ * or not.
  *
  * @param context The thread context where the function is being executed.
  * @param node The node whose flag will be updated.
  * @param delayed The new value of the flag.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool nodeSetWriteDelayed(Context context, Node* node, bool delayed);
+bool
+nodeSetWriteDelayed(Context context, Node* node, bool delayed);
 
 #endif

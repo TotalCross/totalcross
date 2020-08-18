@@ -21,32 +21,34 @@ import totalcross.ui.MainWindow;
  * }
  * </pre>
  */
-public class TotalCrossApplication {
+public class TotalCrossApplication
+{
 
-	private TotalCrossApplication() {
-	}
+  private TotalCrossApplication() {}
 
-	/**
-	 * Runs a TotalCross application on Java using the totalcross.Launcher, it
-	 * receives classes that extends {@link totalcross.ui.MainWindow} and the
-	 * {@link totalcross.Launcher} arguments.
-	 *
-	 * @param clazz
-	 *          the class that extends MainWindow
-	 * @param args
-	 *          Launcher arguments
-	 * @see totalcross.ui.MainWindow
-	 * @see totalcross.Launcher
-	 */
-	public static void run(Class<? extends MainWindow> clazz, String... args) {
-		if (clazz == null || (args.length > 0 && args[0].equals("/help"))) {
-			clazz = Help.class;
-			args = new String[] { "/scr", "android", "/fontsize", "20", "/fingertouch" };
-		}
-		Launcher.isApplication = true;
+  /**
+   * Runs a TotalCross application on Java using the totalcross.Launcher, it
+   * receives classes that extends {@link totalcross.ui.MainWindow} and the
+   * {@link totalcross.Launcher} arguments.
+   *
+   * @param clazz
+   *          the class that extends MainWindow
+   * @param args
+   *          Launcher arguments
+   * @see totalcross.ui.MainWindow
+   * @see totalcross.Launcher
+   */
+  public static void run(Class<? extends MainWindow> clazz, String... args)
+  {
+    if (clazz == null || (args.length > 0 && args[0].equals("/help"))) {
+      clazz = Help.class;
+      args =
+        new String[] { "/scr", "android", "/fontsize", "20", "/fingertouch" };
+    }
+    Launcher.isApplication = true;
 
-		Launcher app = new Launcher();
-		app.parseArguments(clazz.getCanonicalName(), args);
-		app.init();
-	}
+    Launcher app = new Launcher();
+    app.parseArguments(clazz.getCanonicalName(), args);
+    app.init();
+  }
 }

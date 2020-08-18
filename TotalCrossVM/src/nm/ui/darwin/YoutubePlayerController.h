@@ -5,10 +5,11 @@
 
 #ifndef YoutubePlayerController_h
 #define YoutubePlayerController_h
-@interface YoutubeController : UIViewController<YTPlayerViewDelegate, UIWebViewDelegate> {
-	YTPlayerView* playerView;
+@interface YoutubeController
+  : UIViewController<YTPlayerViewDelegate, UIWebViewDelegate> {
+  YTPlayerView* playerView;
 }
-- (instancetype) init;
+- (instancetype)init;
 
 @end
 

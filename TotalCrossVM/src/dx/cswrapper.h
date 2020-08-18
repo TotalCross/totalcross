@@ -4,79 +4,81 @@
 #pragma once
 
 namespace PhoneDirect3DXamlAppComponent {
-	public interface class CSwrapper {
-		public:
-			Platform::String^ getAppName();
+public
+interface class CSwrapper
+{
+public:
+  Platform::String ^ getAppName();
 
-			// Vm
-			void privateAlertCS(Platform::String^ alertMsg, bool eventsInitialized);
-			bool isAlertVisible();
-			void vmSetAutoOffCS(bool enable);
+  // Vm
+  void privateAlertCS(Platform::String ^ alertMsg, bool eventsInitialized);
+  bool isAlertVisible();
+  void vmSetAutoOffCS(bool enable);
 
-			// Dial
-			void dialNumberCS(Platform::String^ number);
+  // Dial
+  void dialNumberCS(Platform::String ^ number);
 
-			// SMS
-			void smsSendCS(Platform::String^ message, Platform::String^ destination);
+  // SMS
+  void smsSendCS(Platform::String ^ message, Platform::String ^ destination);
 
-			// RadioDevice
-			int getTurnedState();
-			void rdGetStateCS(int type);
+  // RadioDevice
+  int getTurnedState();
+  void rdGetStateCS(int type);
 
-			// GPS
-			bool nativeStartGPSCS();
-			int nativeUpdateLocationCS();
-			void nativeStopGPSCS();
-			double getLatitude();
-			double getLongitude();
-			double getDirection();
-			double getVelocity();
-			int getYear();
-			int getMonth();
-			int getDay();
-			int getHour();
-			int getMinute();
-			int getSecond();
-			int getMilliSecond();
-			Platform::String^ getMessageReceived();
-			double getPdop();
-			Platform::String^ getLowSignalReason();
+  // GPS
+  bool nativeStartGPSCS();
+  int nativeUpdateLocationCS();
+  void nativeStopGPSCS();
+  double getLatitude();
+  double getLongitude();
+  double getDirection();
+  double getVelocity();
+  int getYear();
+  int getMonth();
+  int getDay();
+  int getHour();
+  int getMinute();
+  int getSecond();
+  int getMilliSecond();
+  Platform::String ^ getMessageReceived();
+  double getPdop();
+  Platform::String ^ getLowSignalReason();
 
-			// File
-			bool fileIsCardInsertedCS();
+  // File
+  bool fileIsCardInsertedCS();
 
-			// UI
-			double getFontHeightCS();
-			void privateWindowSetSIP(bool visible);
-			int getSipHeight();
-			int getScreenSize();
-			void setSip(bool visible);
+  // UI
+  double getFontHeightCS();
+  void privateWindowSetSIP(bool visible);
+  int getSipHeight();
+  int getScreenSize();
+  void setSip(bool visible);
 
-			// Camera
-			void cameraClick();
-			int cameraStatus();
-			Platform::String^ cameraFilename();
+  // Camera
+  void cameraClick();
+  int cameraStatus();
+  Platform::String ^ cameraFilename();
 
-			// Media
-			void nativeSoundPlayCS(Platform::String^ filename);
+  // Media
+  void nativeSoundPlayCS(Platform::String ^ filename);
 
-			// Others
-			void appExit();
-			void appSetFullScreen();
+  // Others
+  void appExit();
+  void appSetFullScreen();
 
-			// Settings
-			long long getFreeMemory();
-			long long getUsedMemory();
-			Platform::String^ getDeviceId();
-			bool isVirtualKeyboard();
-			double getDpiX();
-			double getDpiY();
-			Platform::String^ getSerialNumber();
-			int getOSVersion();
+  // Settings
+  long long getFreeMemory();
+  long long getUsedMemory();
+  Platform::String ^ getDeviceId();
+  bool isVirtualKeyboard();
+  double getDpiX();
+  double getDpiY();
+  Platform::String ^ getSerialNumber();
+  int getOSVersion();
 
-			// Map
-			bool showMap(Platform::String^ origin, Platform::String^ destination);
-		};
-}
+  // Map
+  bool showMap(Platform::String ^ origin, Platform::String ^ destination);
+};
+} // namespace PhoneDirect3DXamlAppComponent
 
 #endif

@@ -5,32 +5,29 @@
 package totalcross.telephony;
 
 /** A Short Message Service message. */
-public class SmsMessage {
+public class SmsMessage
+{
 
-	String displayOriginatingAddress;
-	String displayMessageBody;
-	byte[] userData;
+  String displayOriginatingAddress;
+  String displayMessageBody;
+  byte[] userData;
 
-	private SmsMessage() {
-	}
+  private SmsMessage() {}
 
-	/**
-	 * Returns the originating address, or email from address if this message was from an email
-	 * gateway. Returns null if originating address unavailable.
-	 */
-	public String getDisplayOriginatingAddress() {
-		return displayOriginatingAddress;
-	}
+  /**
+   * Returns the originating address, or email from address if this message was
+   * from an email gateway. Returns null if originating address unavailable.
+   */
+  public String getDisplayOriginatingAddress()
+  {
+    return displayOriginatingAddress;
+  }
 
-	/**
-	 * Returns the message body, or email message body if this message was from an email gateway.
-	 * Returns null if message body unavailable.
-	 */
-	public String getDisplayMessageBody() {
-		return displayMessageBody;
-	}
+  /**
+   * Returns the message body, or email message body if this message was from an
+   * email gateway. Returns null if message body unavailable.
+   */
+  public String getDisplayMessageBody() { return displayMessageBody; }
 
-	public byte[] getUserData() {
-		return userData;
-	}
+  public byte[] getUserData() { return userData; }
 }

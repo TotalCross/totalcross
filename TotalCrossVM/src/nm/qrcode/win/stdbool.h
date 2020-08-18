@@ -24,7 +24,7 @@
  * Borland C++ 5.5.1 does not define _Bool.
  */
 #ifdef __BORLANDC__
-	typedef int _Bool;
+typedef int _Bool;
 #endif
 
 /**
@@ -33,17 +33,17 @@
  * define _Bool.
  */
 #if defined(_MSC_VER) && _MSC_VER <= 1500
-	typedef int _Bool;
+typedef int _Bool;
 #endif
 
 /**
  * Define the Boolean macros only if they are not already defined.
  */
 #ifndef __bool_true_false_are_defined
-	#define bool _Bool
-	#define false 0
-	#define true 1
-	#define __bool_true_false_are_defined 1
+#define bool _Bool
+#define false 0
+#define true 1
+#define __bool_true_false_are_defined 1
 #endif
 
 #endif /*STDBOOL_H_*/

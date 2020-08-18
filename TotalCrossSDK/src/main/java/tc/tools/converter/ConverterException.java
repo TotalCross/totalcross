@@ -4,11 +4,9 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter;
 
-public class ConverterException extends RuntimeException {
-	public ConverterException() {
-	}
+public class ConverterException extends RuntimeException
+{
+  public ConverterException() {}
 
-	public ConverterException(String msg) {
-		super(msg);
-	}
+  public ConverterException(String msg) { super(msg); }
 }

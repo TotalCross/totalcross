@@ -42,62 +42,62 @@ import java.sql.SQLException;
  * @since 1.4
  */
 public interface ParameterMetaData {
-	int parameterNoNulls = 0;
+  int parameterNoNulls = 0;
 
-	int parameterNullable = 1;
+  int parameterNullable = 1;
 
-	int parameterNullableUnknown = 2;
+  int parameterNullableUnknown = 2;
 
-	int parameterModeUnknown = 0;
+  int parameterModeUnknown = 0;
 
-	int parameterModeIn = 1;
+  int parameterModeIn = 1;
 
-	int parameterModeInOut = 2;
+  int parameterModeInOut = 2;
 
-	int parameterModeOut = 4;
+  int parameterModeOut = 4;
 
-	/**
-	 * @since 1.4
-	 */
-	int getParameterCount() throws SQLException;
+  /**
+   * @since 1.4
+   */
+  int getParameterCount() throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	int isNullable(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  int isNullable(int param) throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	boolean isSigned(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  boolean isSigned(int param) throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	int getPrecision(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  int getPrecision(int param) throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	int getScale(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  int getScale(int param) throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	int getParameterType(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  int getParameterType(int param) throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	String getParameterTypeName(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  String getParameterTypeName(int param) throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	String getParameterClassName(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  String getParameterClassName(int param) throws SQLException;
 
-	/**
-	 * @since 1.4
-	 */
-	int getParameterMode(int param) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  int getParameterMode(int param) throws SQLException;
 }

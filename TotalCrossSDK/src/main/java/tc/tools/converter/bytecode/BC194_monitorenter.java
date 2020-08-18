@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC194_monitorenter extends Monitor {
-	public BC194_monitorenter() {
-	}
+public class BC194_monitorenter extends Monitor
+{
+  public BC194_monitorenter() {}
 }

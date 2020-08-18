@@ -7,36 +7,35 @@ package totalcross.crypto.cipher;
 /**
  * This class implements the RSA cryptographic cipher public key.
  */
-public class RSAPublicKey extends Key {
-	private byte[] e;
-	private byte[] n;
+public class RSAPublicKey extends Key
+{
+  private byte[] e;
+  private byte[] n;
 
-	/**
-	 * Creates a new RSAPublicKey object, given the public exponent and the modulus.
-	 *
-	 * @param e A byte array containing the public exponent.
-	 * @param n A byte array containing the modulus.
-	 */
-	public RSAPublicKey(byte[] e, byte[] n) {
-		this.e = e;
-		this.n = n;
-	}
+  /**
+   * Creates a new RSAPublicKey object, given the public exponent and the
+   * modulus.
+   *
+   * @param e A byte array containing the public exponent.
+   * @param n A byte array containing the modulus.
+   */
+  public RSAPublicKey(byte[] e, byte[] n)
+  {
+    this.e = e;
+    this.n = n;
+  }
 
-	/**
-	 * Returns a copy of the byte array containing the modulus.
-	 *
-	 * @return A copy of the byte array containing the modulus.
-	 */
-	public byte[] getModulus() {
-		return n;
-	}
+  /**
+   * Returns a copy of the byte array containing the modulus.
+   *
+   * @return A copy of the byte array containing the modulus.
+   */
+  public byte[] getModulus() { return n; }
 
-	/**
-	 * Returns a copy of the byte array containing the public exponent.
-	 *
-	 * @return A copy of the byte array containing the public exponent.
-	 */
-	public byte[] getPublicExponent() {
-		return e;
-	}
+  /**
+   * Returns a copy of the byte array containing the public exponent.
+   *
+   * @return A copy of the byte array containing the public exponent.
+   */
+  public byte[] getPublicExponent() { return e; }
 }

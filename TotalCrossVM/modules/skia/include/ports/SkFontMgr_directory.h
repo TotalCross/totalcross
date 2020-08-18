@@ -16,6 +16,7 @@ class SkFontMgr;
 /** Create a custom font manager which scans a given directory for font files.
  *  This font manager uses FreeType for rendering.
  */
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_Custom_Directory(const char* dir);
+SK_API sk_sp<SkFontMgr>
+SkFontMgr_New_Custom_Directory(const char* dir);
 
 #endif // SkFontMgr_directory_DEFINED

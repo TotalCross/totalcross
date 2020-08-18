@@ -5,28 +5,21 @@
 
 package totalcross.io;
 
-/** Base class of all input/output exceptions.
+/**
+ * Base class of all input/output exceptions.
  */
 
-public class IOException extends java.io.IOException {
-	private static final long serialVersionUID = 166767434534267900L;
+public class IOException extends java.io.IOException
+{
+  private static final long serialVersionUID = 166767434534267900L;
 
-	/** Constructs an empty Exception. */
-	public IOException() {
-		super();
-	}
+  /** Constructs an empty Exception. */
+  public IOException() { super(); }
 
-	/** Constructs an exception with the given message. */
-	public IOException(String msg) {
-		super(msg);
-	}
+  /** Constructs an exception with the given message. */
+  public IOException(String msg) { super(msg); }
 
-	public IOException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public IOException(String message, Throwable cause) { super(message, cause); }
 
-	public IOException(Throwable cause) {
-		super(cause);
-	}
-
+  public IOException(Throwable cause) { super(cause); }
 }

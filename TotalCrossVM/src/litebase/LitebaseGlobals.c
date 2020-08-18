@@ -10,38 +10,106 @@
 #include "LitebaseGlobals.h"
 
 // Globas for driver creation.
-Hashtable htCreatedDrivers = { 0 }; // The hash table for the created connections with Litebase.
+Hashtable htCreatedDrivers = {
+  0
+}; // The hash table for the created connections with Litebase.
 
-// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
-// The list of table files currently opened.
+// juliana@closeFiles_1: removed possible problem of the IOException with the
+// message "Too many open files". The list of table files currently opened.
 #if defined(POSIX) || defined(ANDROID)
-	XFilesList filesList;
+XFilesList filesList;
 #endif
 
 // Globals for the parser.
-Hashtable reserved = { 0 };                 // Table containing the reserved words.
-MemoryUsageHT memoryUsage = { 0 };          // Indicates how much memory a select sql command uses in its temporary .db.
-uint8 is[256] = { 0 };                      // An array to help the selection of the kind of the token.
-int8 function_x_datatype[10][7] = { // Matrix of data types which applies to the SQL functions.
-	{FUNCTION_DT_UPPER, FUNCTION_DT_LOWER, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_ABS, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_UPPER, FUNCTION_DT_LOWER, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_YEAR, FUNCTION_DT_MONTH, FUNCTION_DT_DAY,  FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },
-	{FUNCTION_DT_YEAR, FUNCTION_DT_MONTH, FUNCTION_DT_DAY,  FUNCTION_DT_HOUR, FUNCTION_DT_MINUTE, FUNCTION_DT_SECOND, FUNCTION_DT_MILLIS}
+Hashtable reserved = { 0 };        // Table containing the reserved words.
+MemoryUsageHT memoryUsage = { 0 }; // Indicates how much memory a select sql
+                                   // command uses in its temporary .db.
+uint8 is[256] = {
+  0
+}; // An array to help the selection of the kind of the token.
+int8 function_x_datatype[10][7] = { // Matrix of data types which applies to the
+                                    // SQL functions.
+  { FUNCTION_DT_UPPER,
+    FUNCTION_DT_LOWER,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_ABS,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_ABS,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_ABS,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_ABS,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_ABS,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_UPPER,
+    FUNCTION_DT_LOWER,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_YEAR,
+    FUNCTION_DT_MONTH,
+    FUNCTION_DT_DAY,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE,
+    FUNCTION_DT_NONE },
+  { FUNCTION_DT_YEAR,
+    FUNCTION_DT_MONTH,
+    FUNCTION_DT_DAY,
+    FUNCTION_DT_HOUR,
+    FUNCTION_DT_MINUTE,
+    FUNCTION_DT_SECOND,
+    FUNCTION_DT_MILLIS }
 };
 
 // An array with the names of the SQL data functions.
-CharP names[10] = {"year", "month", "day", "hour", "minute", "second", "millis", "abs", "upper", "lower"};
+CharP names[10] = { "year",   "month",  "day", "hour",  "minute",
+                    "second", "millis", "abs", "upper", "lower" };
 
 // Used to count bits in an index bitmap.
-uint8 bitsInNibble[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+uint8 bitsInNibble[16] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 
-JChar questionMark[2] = {(JChar)'?', (JChar)'\0'}; // A jchar string representing "?".
+JChar questionMark[2] = { (JChar)'?',
+                          (JChar)'\0' }; // A jchar string representing "?".
 
 // juliana@253_9: improved Litebase parser.
 
@@ -49,31 +117,41 @@ JChar questionMark[2] = {(JChar)'?', (JChar)'\0'}; // A jchar string representin
 TCClass litebaseConnectionClass = { 0 }; // LitebaseConnection
 TCClass loggerClass = { 0 };             // Logger
 
-// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
-// Mutexes used.
+// juliana@closeFiles_1: removed possible problem of the IOException with the
+// message "Too many open files". Mutexes used.
 DECLARE_MUTEX(parser); // Mutex for the parser.
 DECLARE_MUTEX(log);    // Mutex for logging.
 DECLARE_MUTEX(files);  // Mutex for the Litebase files list.
 
 // rnovais@568_10 @570_1 juliana@226_5
 // Aggregate functions table.
-int8 aggregateFunctionsTypes[FUNCTION_AGG_SUM + 1] = {INT_TYPE, UNDEFINED_TYPE, UNDEFINED_TYPE, DOUBLE_TYPE, DOUBLE_TYPE};
+int8 aggregateFunctionsTypes[FUNCTION_AGG_SUM + 1] = { INT_TYPE,
+                                                       UNDEFINED_TYPE,
+                                                       UNDEFINED_TYPE,
+                                                       DOUBLE_TYPE,
+                                                       DOUBLE_TYPE };
 
 // Data Type functions table.
-int8 dataTypeFunctionsTypes[FUNCTION_DT_LOWER + 1] = {SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE, SHORT_TYPE,
-													  UNDEFINED_TYPE, CHARS_TYPE, CHARS_TYPE
-													 };
+int8 dataTypeFunctionsTypes[FUNCTION_DT_LOWER + 1] = {
+  SHORT_TYPE, SHORT_TYPE, SHORT_TYPE,     SHORT_TYPE, SHORT_TYPE,
+  SHORT_TYPE, SHORT_TYPE, UNDEFINED_TYPE, CHARS_TYPE, CHARS_TYPE
+};
 // Number of days in a month.
-uint8 monthDays[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+uint8 monthDays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 // Each type size in the .db file.
-uint8 typeSizes[11] = {4, 2, 4, 8, 4, 8, 4, -1, 4, 8, 4}; // rnovais@567_2: added more sizes.
+uint8 typeSizes[11] = {
+  4, 2, 4, 8, 4, 8, 4, -1, 4, 8, 4
+}; // rnovais@567_2: added more sizes.
 
 CharP errorMsgs_en[TOTAL_ERRORS] = { 0 }; // English error messages.
 CharP errorMsgs_pt[TOTAL_ERRORS] = { 0 }; // Portuguese error messages.
 
-// juliana@220_4: added a crc32 code for every record. Please update your tables.
-int32 crcTable[CRC32_SIZE] = { 0 }; // The crc32 table used to calculate a crc32 for a record.
+// juliana@220_4: added a crc32 code for every record. Please update your
+// tables.
+int32 crcTable[CRC32_SIZE] = {
+  0
+}; // The crc32 table used to calculate a crc32 for a record.
 
 // TotalCross functions used by Litebase.
 CharP2JCharPFunc TC_CharP2JCharP = { 0 };
@@ -92,7 +170,7 @@ JCharToLowerFunc TC_JCharToLower = { 0 };
 JCharToUpperFunc TC_JCharToUpper = { 0 };
 TCHARP2CharPBufFunc TC_TCHARP2CharPBuf = { 0 };
 alertFunc TC_alert = { 0 };
-appendCharPFunc TC_appendCharP = { 0 }; // juliana@230_30
+appendCharPFunc TC_appendCharP = { 0 };   // juliana@230_30
 appendJCharPFunc TC_appendJCharP = { 0 }; // juliana@230_30
 areClassesCompatibleFunc TC_areClassesCompatible = { 0 };
 createArrayObjectFunc TC_createArrayObject = { 0 };

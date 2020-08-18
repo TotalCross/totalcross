@@ -4,9 +4,11 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.oper;
 
-public class OperandConstant64 extends OperandConstant {
-	public OperandConstant64(long value, int type) {
-		super(value, type);
-		this.nWords = 2;
-	}
+public class OperandConstant64 extends OperandConstant
+{
+  public OperandConstant64(long value, int type)
+  {
+    super(value, type);
+    this.nWords = 2;
+  }
 }

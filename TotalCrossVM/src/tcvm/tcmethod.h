@@ -12,12 +12,21 @@
 /// If the method is not static, you must not pass the first "this" parameter.
 /// In other words, the parameters are the ones as shown in the Java code.
 /// The methodName is the method name or CONSTRUCTOR_NAME (for a constructor)
-/// The parameter arguments are: J_INT, J_DOUBLE, J_LONG, J_BYTE, J_SHORT, J_CHAR, J_BOOLEAN,
-/// CHAR_ARRAY, BYTE_ARRAY, SHORT_ARRAY, INT_ARRAY, LONG_ARRAY, DOUBLE_ARRAY, BOOLEAN_ARRAY, FLOAT_ARRAY
-/// For other objects, pass the full class name, like "java.lang.String" or "totalcross.ui.MainWindow".
+/// The parameter arguments are: J_INT, J_DOUBLE, J_LONG, J_BYTE, J_SHORT,
+/// J_CHAR, J_BOOLEAN, CHAR_ARRAY, BYTE_ARRAY, SHORT_ARRAY, INT_ARRAY,
+/// LONG_ARRAY, DOUBLE_ARRAY, BOOLEAN_ARRAY, FLOAT_ARRAY For other objects, pass
+/// the full class name, like "java.lang.String" or "totalcross.ui.MainWindow".
 
-TC_API Method getMethod(TCClass c, bool searchSuperclasses, CharP methodName, int32 nparams, ...);
-typedef Method(*getMethodFunc)(TCClass c, bool searchSuperclasses, CharP methodName, int32 nparams,
-							   ...);
+TC_API Method
+getMethod(TCClass c,
+          bool searchSuperclasses,
+          CharP methodName,
+          int32 nparams,
+          ...);
+typedef Method (*getMethodFunc)(TCClass c,
+                                bool searchSuperclasses,
+                                CharP methodName,
+                                int32 nparams,
+                                ...);
 
 #endif

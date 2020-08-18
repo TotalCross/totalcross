@@ -24,7 +24,8 @@ class SkCanvas;
  *
  *  The caller is responsible for managing its ownership of the SkData.
  */
-SK_API void SkAnnotateRectWithURL(SkCanvas*, const SkRect&, SkData*);
+SK_API void
+SkAnnotateRectWithURL(SkCanvas*, const SkRect&, SkData*);
 
 /**
  *  Annotate the canvas by associating a name with the specified point.
@@ -34,7 +35,8 @@ SK_API void SkAnnotateRectWithURL(SkCanvas*, const SkRect&, SkData*);
  *
  *  The caller is responsible for managing its ownership of the SkData.
  */
-SK_API void SkAnnotateNamedDestination(SkCanvas*, const SkPoint&, SkData*);
+SK_API void
+SkAnnotateNamedDestination(SkCanvas*, const SkPoint&, SkData*);
 
 /**
  *  Annotate the canvas by making the specified rectangle link to a named
@@ -45,6 +47,7 @@ SK_API void SkAnnotateNamedDestination(SkCanvas*, const SkPoint&, SkData*);
  *
  *  The caller is responsible for managing its ownership of the SkData.
  */
-SK_API void SkAnnotateLinkToDestination(SkCanvas*, const SkRect&, SkData*);
+SK_API void
+SkAnnotateLinkToDestination(SkCanvas*, const SkRect&, SkData*);
 
 #endif

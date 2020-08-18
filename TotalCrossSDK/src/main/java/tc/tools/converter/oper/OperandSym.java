@@ -4,16 +4,15 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.oper;
 
-public class OperandSym extends Operand {
-	public int index;
+public class OperandSym extends Operand
+{
+  public int index;
 
-	public OperandSym(int kind, int index) {
-		super(kind);
-		this.index = index;
-	}
+  public OperandSym(int kind, int index)
+  {
+    super(kind);
+    this.index = index;
+  }
 
-	@Override
-	public boolean isSym() {
-		return true;
-	}
+  @Override public boolean isSym() { return true; }
 }

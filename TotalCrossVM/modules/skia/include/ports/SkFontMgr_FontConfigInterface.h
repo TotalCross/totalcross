@@ -8,13 +8,14 @@
 #ifndef SkFontMgr_FontConfigInterface_DEFINED
 #define SkFontMgr_FontConfigInterface_DEFINED
 
-#include "SkTypes.h"
 #include "SkRefCnt.h"
+#include "SkTypes.h"
 
 class SkFontMgr;
 class SkFontConfigInterface;
 
 /** Creates a SkFontMgr which wraps a SkFontConfigInterface. */
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_FCI(sk_sp<SkFontConfigInterface> fci);
+SK_API sk_sp<SkFontMgr>
+SkFontMgr_New_FCI(sk_sp<SkFontConfigInterface> fci);
 
 #endif // #ifndef SkFontMgr_FontConfigInterface_DEFINED

@@ -6,10 +6,17 @@
 #ifndef STRINGBUFFER_H
 #define STRINGBUFFER_H
 
-TC_API TCObject appendJCharP(Context currentContext, TCObject obj, JCharP srcPtr, int32 len);
-typedef TCObject(*appendJCharPFunc)(Context currentContext, TCObject obj, JCharP srcPtr, int32 len);
+TC_API TCObject
+appendJCharP(Context currentContext, TCObject obj, JCharP srcPtr, int32 len);
+typedef TCObject (*appendJCharPFunc)(Context currentContext,
+                                     TCObject obj,
+                                     JCharP srcPtr,
+                                     int32 len);
 
-TC_API TCObject appendCharP(Context currentContext, TCObject obj, CharP srcPtr);
-typedef TCObject(*appendCharPFunc)(Context currentContext, TCObject obj, CharP srcPtr);
+TC_API TCObject
+appendCharP(Context currentContext, TCObject obj, CharP srcPtr);
+typedef TCObject (*appendCharPFunc)(Context currentContext,
+                                    TCObject obj,
+                                    CharP srcPtr);
 
 #endif

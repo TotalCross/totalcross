@@ -9,49 +9,51 @@ import totalcross.io.IOException;
 import totalcross.io.RandomAccessStream;
 import totalcross.io.Stream;
 
-public abstract class ZipStream4D extends CompressedStream4D {
-	Object nativeZip;
-	ZipEntry lastEntry;
+public abstract class ZipStream4D extends CompressedStream4D
+{
+  Object nativeZip;
+  ZipEntry lastEntry;
 
-	int defaultMethod = DEFLATED;
+  int defaultMethod = DEFLATED;
 
-	public final static int STORED = 0;
-	public final static int DEFLATED = 8;
+  public final static int STORED = 0;
+  public final static int DEFLATED = 8;
 
-	public ZipStream4D(RandomAccessStream stream, int mode) {
-		super(stream, mode, ZIP_COMPRESSION);
-	}
+  public ZipStream4D(RandomAccessStream stream, int mode)
+  {
+    super(stream, mode, ZIP_COMPRESSION);
+  }
 
-	@Override
-	native protected Object createInflate(Stream stream);
+  @Override native protected Object createInflate(Stream stream);
 
-	@Override
-	native protected Object createDeflate(Stream stream, int compressionType);
+  @Override
+  native protected Object createDeflate(Stream stream, int compressionType);
 
-	native public int available() throws IOException;
+  native public int available() throws IOException;
 
-	native public ZipEntry getNextEntry() throws IOException;
+  native public ZipEntry getNextEntry() throws IOException;
 
-	native public void putNextEntry(ZipEntry entry) throws IOException;
+  native public void putNextEntry(ZipEntry entry) throws IOException;
 
-	native public void closeEntry() throws IOException;
+  native public void closeEntry() throws IOException;
 
-	@Override
-	native public int readBytes(byte[] buf, int start, int count) throws IOException;
+  @Override
+  native public int readBytes(byte[] buf, int start, int count)
+    throws IOException;
 
-	@Override
-	native public int writeBytes(byte[] buf, int start, int count) throws IOException;
+  @Override
+  native public int writeBytes(byte[] buf, int start, int count)
+    throws IOException;
 
-	@Override
-	native public void close() throws IOException;
+  @Override native public void close() throws IOException;
 
-	@Override
-	protected void finalize() {
-		try {
-			if (mode != 0) {
-				this.close();
-			}
-		} catch (Throwable t) {
-		}
-	}
+  @Override protected void finalize()
+  {
+    try {
+      if (mode != 0) {
+        this.close();
+      }
+    } catch (Throwable t) {
+    }
+  }
 }

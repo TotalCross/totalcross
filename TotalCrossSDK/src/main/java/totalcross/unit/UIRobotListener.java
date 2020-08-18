@@ -7,13 +7,17 @@ package totalcross.unit;
 
 import totalcross.ui.event.EventHandler;
 
-/** Interface used to listen to UIRobot events.
+/**
+ * Interface used to listen to UIRobot events.
  */
 
 public interface UIRobotListener extends EventHandler {
-	/** The UIRobot has succeed. */
-	public void robotSucceed(UIRobotEvent e);
+  /** The UIRobot has succeed. */
+  public void robotSucceed(UIRobotEvent e);
 
-	/** The UIRobot has failed. Check the failureReason field for more information. */
-	public void robotFailed(UIRobotEvent e);
+  /**
+   * The UIRobot has failed. Check the failureReason field for more
+   * information.
+   */
+  public void robotFailed(UIRobotEvent e);
 }

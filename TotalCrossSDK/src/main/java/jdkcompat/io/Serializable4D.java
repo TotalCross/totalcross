@@ -32,6 +32,5 @@ package jdkcompat.io;
  * {@code private void readObject(java.io.ObjectInputStream in) throws
  * IOException, ClassNotFoundException}
  */
-public interface Serializable4D {
-	/* empty */
+public interface Serializable4D { /* empty */
 }

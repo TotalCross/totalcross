@@ -22,87 +22,85 @@ import totalcross.sys.Convert;
 // USA
 
 /**
- * Correctly formats Strings in XML syntax. Currently only supports ISO-8859-1 encoding of XML.
+ * Correctly formats Strings in XML syntax. Currently only supports ISO-8859-1
+ * encoding of XML.
  *
  * @version March 2006
  * @author Added to SuperWaba by Guich
- * @author Maintained by Nimkathana (<a href="http://www.nimkathana.com">www.nimkathana.com</a>)
+ * @author Maintained by Nimkathana (<a
+ * href="http://www.nimkathana.com">www.nimkathana.com</a>)
  * @author Original by IOP GmbH (<a href="http://www.iop.de">www.iop.de</a>)
  */
-public class XmlWriter {
-	private StringBuffer buf = new StringBuffer(4000);
-	private String header = "<?xml version=\"1.0\"?>";
+public class XmlWriter
+{
+  private StringBuffer buf = new StringBuffer(4000);
+  private String header = "<?xml version=\"1.0\"?>";
 
-	/**
-	 */
-	public XmlWriter() {
-		buf.append(header);
-	}
+  /**
+   */
+  public XmlWriter() { buf.append(header); }
 
-	/** Resets this XmlWriter so it can be used again */
-	public void reset() {
-		buf.setLength(header.length()); // keep only the header
-	}
+  /** Resets this XmlWriter so it can be used again */
+  public void reset()
+  {
+    buf.setLength(header.length()); // keep only the header
+  }
 
-	/**
-	 * Write the given text.
-	 */
-	public void write(String text) {
-		buf.append(text);
-	}
+  /**
+   * Write the given text.
+   */
+  public void write(String text) { buf.append(text); }
 
-	/**
-	 * Gets this writer's contents as string (already appends a \n).
-	 * Consider using getBytes() instead of this one.
-	 *
-	 * @see #getBytes()
-	 * @return All that was written to the internal buffer
-	 */
-	@Override
-	public String toString() {
-		return buf.append('\n').toString();
-	}
+  /**
+   * Gets this writer's contents as string (already appends a \n).
+   * Consider using getBytes() instead of this one.
+   *
+   * @see #getBytes()
+   * @return All that was written to the internal buffer
+   */
+  @Override public String toString() { return buf.append('\n').toString(); }
 
-	/**
-	 * Gets this writer's contents as a byte array (already appends a \n)
-	 *
-	 * @return All that was written to the internal buffer
-	 * @since TotalCross 1.23
-	 */
-	public byte[] getBytes() {
-		return Convert.getBytes(buf.append('\n'));
-	}
+  /**
+   * Gets this writer's contents as a byte array (already appends a \n)
+   *
+   * @return All that was written to the internal buffer
+   * @since TotalCross 1.23
+   */
+  public byte[] getBytes() { return Convert.getBytes(buf.append('\n')); }
 
-	/**
-	 * Formats an opening XML tag
-	 *
-	 * @param elem
-	 *           The element of the opening tag
-	 */
-	public void startElement(String elem) {
-		buf.append('<').append(elem).append('>');
-	}
+  /**
+   * Formats an opening XML tag
+   *
+   * @param elem
+   *           The element of the opening tag
+   */
+  public void startElement(String elem)
+  {
+    buf.append('<').append(elem).append('>');
+  }
 
-	/**
-	 * Formats a closing XML tag
-	 *
-	 * @param elem
-	 *           The element of the closing tag
-	 */
-	public void endElement(String elem) {
-		buf.append("</").append(elem).append('>');
-	}
+  /**
+   * Formats a closing XML tag
+   *
+   * @param elem
+   *           The element of the closing tag
+   */
+  public void endElement(String elem)
+  {
+    buf.append("</").append(elem).append('>');
+  }
 
-	/**
-	 * Formats cdata for XML
-	 *
-	 * @param text
-	 *           The character data to be formatted
-	 */
-	public void chardata(String text) {
-		text = Convert.replace(text, "&", "&amp;"); // this must go first!
-		text = Convert.replace(text, "<", "&lt;");
-		text = Convert.replace(text, ">", "&gt;");
-		buf.append(text);
-	}
+  /**
+   * Formats cdata for XML
+   *
+   * @param text
+   *           The character data to be formatted
+   */
+  public void chardata(String text)
+  {
+    text = Convert.replace(text, "&", "&amp;"); // this must go first!
+    text = Convert.replace(text, "<", "&lt;");
+    text = Convert.replace(text, ">", "&gt;");
+    buf.append(text);
+  }
 }

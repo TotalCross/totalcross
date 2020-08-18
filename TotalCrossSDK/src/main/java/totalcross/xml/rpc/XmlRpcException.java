@@ -24,14 +24,13 @@ package totalcross.xml.rpc;
  *
  * @version March 2006
  * @author Added to SuperWaba by Guich
- * @author Maintained by Nimkathana (<a href="http://www.nimkathana.com">www.nimkathana.com</a>)
+ * @author Maintained by Nimkathana (<a
+ * href="http://www.nimkathana.com">www.nimkathana.com</a>)
  * @author Original by IOP GmbH (<a href="http://www.iop.de">www.iop.de</a>)
  */
-public class XmlRpcException extends Exception {
-	public XmlRpcException() {
-	}
+public class XmlRpcException extends Exception
+{
+  public XmlRpcException() {}
 
-	public XmlRpcException(String msg) {
-		super(msg);
-	}
+  public XmlRpcException(String msg) { super(msg); }
 }

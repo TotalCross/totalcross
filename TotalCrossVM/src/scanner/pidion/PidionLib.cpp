@@ -3,40 +3,47 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#include <tcvm.h>
 #include "..\barcode.h"
+#include <tcvm.h>
 
-bool CameraLibOpen(OpenParams params);
-bool PrinterLibOpen(OpenParams params);
-void CameraLibClose();
-void PrinterLibClose();
+bool
+CameraLibOpen(OpenParams params);
+bool
+PrinterLibOpen(OpenParams params);
+void
+CameraLibClose();
+void
+PrinterLibClose();
 
 HMODULE apidll;
 Context currentContext;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-SCAN_API int32 LibOpen(OpenParams params) {
-	currentContext = params->currentContext;
-	// load the dll
-	if ((apidll = LoadLibrary(TEXT("bbappapi.dll"))) == null) {
-		return false;
-	}
-	bool b1 = CameraLibOpen(params);
-	bool b2 = PrinterLibOpen(params);
-	return b1 && b2;
-}
+  SCAN_API int32 LibOpen(OpenParams params)
+  {
+    currentContext = params->currentContext;
+    // load the dll
+    if ((apidll = LoadLibrary(TEXT("bbappapi.dll"))) == null) {
+      return false;
+    }
+    bool b1 = CameraLibOpen(params);
+    bool b2 = PrinterLibOpen(params);
+    return b1 && b2;
+  }
 
-SCAN_API void LibClose() {
-	CameraLibClose();
-	PrinterLibClose();
-	// free the dll
-	if (apidll != null) {
-		FreeLibrary(apidll);
-		apidll = null;
-	}
-}
+  SCAN_API void LibClose()
+  {
+    CameraLibClose();
+    PrinterLibClose();
+    // free the dll
+    if (apidll != null) {
+      FreeLibrary(apidll);
+      apidll = null;
+    }
+  }
 #ifdef __cplusplus
 }
 #endif

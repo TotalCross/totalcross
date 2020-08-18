@@ -5,42 +5,42 @@
  * found in the LICENSE file.
  */
 
-
 #ifndef SkMagnifierImageFilter_DEFINED
 #define SkMagnifierImageFilter_DEFINED
 
-#include "SkRect.h"
 #include "SkImageFilter.h"
+#include "SkRect.h"
 
-class SK_API SkMagnifierImageFilter : public SkImageFilter {
+class SK_API SkMagnifierImageFilter : public SkImageFilter
+{
 public:
-	static sk_sp<SkImageFilter> Make(const SkRect& srcRect, SkScalar inset,
-									 sk_sp<SkImageFilter> input,
-									 const CropRect* cropRect = nullptr);
+  static sk_sp<SkImageFilter> Make(const SkRect& srcRect,
+                                   SkScalar inset,
+                                   sk_sp<SkImageFilter> input,
+                                   const CropRect* cropRect = nullptr);
 
-	Factory getFactory() const override {
-		return CreateProc;
-	}
+  Factory getFactory() const override { return CreateProc; }
 
 protected:
-	SkMagnifierImageFilter(const SkRect& srcRect,
-						   SkScalar inset,
-						   sk_sp<SkImageFilter> input,
-						   const CropRect* cropRect);
-	void flatten(SkWriteBuffer&) const override;
+  SkMagnifierImageFilter(const SkRect& srcRect,
+                         SkScalar inset,
+                         sk_sp<SkImageFilter> input,
+                         const CropRect* cropRect);
+  void flatten(SkWriteBuffer&) const override;
 
-	sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
-										SkIPoint* offset) const override;
-	sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+  sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source,
+                                      const Context&,
+                                      SkIPoint* offset) const override;
+  sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
 
 private:
-	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-	friend class SkFlattenable::PrivateInitializer;
+  static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+  friend class SkFlattenable::PrivateInitializer;
 
-	SkRect   fSrcRect;
-	SkScalar fInset;
+  SkRect fSrcRect;
+  SkScalar fInset;
 
-	typedef SkImageFilter INHERITED;
+  typedef SkImageFilter INHERITED;
 };
 
 #endif

@@ -6,15 +6,17 @@ package tc.tools.converter.bytecode;
 
 import tc.tools.converter.TCValue;
 
-public class Return extends ByteCode {
-	public int returnValueCount;
-	public int answer;
-	public TCValue returnValue = new TCValue();
+public class Return extends ByteCode
+{
+  public int returnValueCount;
+  public int answer;
+  public TCValue returnValue = new TCValue();
 
-	public Return(int returnValueCount, int answer, int type) {
-		this.returnValueCount = returnValueCount;
-		this.targetType = type;
-		this.answer = answer;
-		stackInc = 0;
-	}
+  public Return(int returnValueCount, int answer, int type)
+  {
+    this.returnValueCount = returnValueCount;
+    this.targetType = type;
+    this.answer = answer;
+    stackInc = 0;
+  }
 }

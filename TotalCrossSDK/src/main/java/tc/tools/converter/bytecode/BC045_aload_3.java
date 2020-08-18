@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC045_aload_3 extends LoadLocal {
-	public BC045_aload_3() {
-		super(3, OBJECT);
-	}
+public class BC045_aload_3 extends LoadLocal
+{
+  public BC045_aload_3() { super(3, OBJECT); }
 }

@@ -6,28 +6,28 @@
 package totalcross.lang;
 
 /**
- * Thrown when no more memory exists to continue the execution of the last requested operation.
- * You should exit the program immediately.
- * <br><br>
- * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
- * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
- * all references to java.lang are replaced by totalcross.lang automatically. Given this,
- * you must use only the classes and methods that exists BOTH in java.lang and totalcross.lang.
- * For example, you can't use java.lang.ClassLoader because there are no totalcross.lang.ClassLoader.
- * Another example, you can't use java.lang.String.indexOfIgnoreCase because there are no
- * totalcross.lang.String.indexOfIgnoreCase method. Trying to use a class or method from the java.lang package
- * that has no correspondence with totalcross.lang will make the tc.Deploy program to abort, informing
- * where the problem occured. A good idea is to always refer to this javadoc to know what is and what isn't
- * available.
+ * Thrown when no more memory exists to continue the execution of the last
+ * requested operation. You should exit the program immediately. <br><br>
+ * IMPORTANT: the totalcross.lang package is the java.lang that will be used in
+ * the device. You CANNOT use nor import totalcross.lang package in desktop.
+ * When tc.Deploy is called, all references to java.lang are replaced by
+ * totalcross.lang automatically. Given this, you must use only the classes and
+ * methods that exists BOTH in java.lang and totalcross.lang. For example, you
+ * can't use java.lang.ClassLoader because there are no
+ * totalcross.lang.ClassLoader. Another example, you can't use
+ * java.lang.String.indexOfIgnoreCase because there are no
+ * totalcross.lang.String.indexOfIgnoreCase method. Trying to use a class or
+ * method from the java.lang package that has no correspondence with
+ * totalcross.lang will make the tc.Deploy program to abort, informing where the
+ * problem occured. A good idea is to always refer to this javadoc to know what
+ * is and what isn't available.
  */
 
-public class OutOfMemoryError4D extends Error {
-	/** Constructs an empty Exception. */
-	public OutOfMemoryError4D() {
-	}
+public class OutOfMemoryError4D extends Error
+{
+  /** Constructs an empty Exception. */
+  public OutOfMemoryError4D() {}
 
-	/** Constructs an exception with the given message. */
-	public OutOfMemoryError4D(String msg) {
-		super(msg);
-	}
+  /** Constructs an exception with the given message. */
+  public OutOfMemoryError4D(String msg) { super(msg); }
 }

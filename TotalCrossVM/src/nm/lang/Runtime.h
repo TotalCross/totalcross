@@ -10,6 +10,7 @@
 #define FILE_STREAM_INPUT 0
 #define FILE_STREAM_OUTPUT 1
 
-TCObject createFileStream(Context context, const int streamType, int fd);
+TCObject
+createFileStream(Context context, const int streamType, int fd);
 
 #endif

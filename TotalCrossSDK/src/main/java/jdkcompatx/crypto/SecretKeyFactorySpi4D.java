@@ -16,68 +16,67 @@
  */
 
 /**
-* @author Vera Y. Petrashkova
-*/
+ * @author Vera Y. Petrashkova
+ */
 
 package jdkcompatx.crypto;
 
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-
 import javax.crypto.SecretKey;
 
 /**
  * The <i>Service Provider Interface</i> (<b>SPI</b>) definition for the {@code
  * SecretKeyFactory} class.
  */
-public abstract class SecretKeyFactorySpi4D {
+public abstract class SecretKeyFactorySpi4D
+{
 
-	/**
-	 * Creates a new {@code SecretKeyFactorySpi} instance.
-	 */
-	public SecretKeyFactorySpi4D() {
-	}
+  /**
+   * Creates a new {@code SecretKeyFactorySpi} instance.
+   */
+  public SecretKeyFactorySpi4D() {}
 
-	/**
-	 * Generate a secret key from the specified key specification.
-	 *
-	 * @param keySpec
-	 *            the key specification.
-	 * @return a secret key.
-	 * @throws InvalidKeySpecException
-	 *             if the specified key specification cannot be used to generate
-	 *             a secret key.
-	 */
-	protected abstract SecretKey engineGenerateSecret(KeySpec keySpec)
-	throws InvalidKeySpecException;
+  /**
+   * Generate a secret key from the specified key specification.
+   *
+   * @param keySpec
+   *            the key specification.
+   * @return a secret key.
+   * @throws InvalidKeySpecException
+   *             if the specified key specification cannot be used to generate
+   *             a secret key.
+   */
+  protected abstract SecretKey engineGenerateSecret(KeySpec keySpec)
+    throws InvalidKeySpecException;
 
-	/**
-	 * Returns the key specification of the specified secret key.
-	 *
-	 * @param key
-	 *            the secret key to get the specification from.
-	 * @param keySpec
-	 *            the target key specification class.
-	 * @return an instance of the specified key specification class.
-	 * @throws InvalidKeySpecException
-	 *             if the specified secret key cannot be transformed into the
-	 *             requested key specification.
-	 */
-	protected abstract KeySpec engineGetKeySpec(SecretKey key, Class<?> keySpec)
-	throws InvalidKeySpecException;
+  /**
+   * Returns the key specification of the specified secret key.
+   *
+   * @param key
+   *            the secret key to get the specification from.
+   * @param keySpec
+   *            the target key specification class.
+   * @return an instance of the specified key specification class.
+   * @throws InvalidKeySpecException
+   *             if the specified secret key cannot be transformed into the
+   *             requested key specification.
+   */
+  protected abstract KeySpec engineGetKeySpec(SecretKey key, Class<?> keySpec)
+    throws InvalidKeySpecException;
 
-	/**
-	 * Translates the specified secret key into an instance of the corresponding
-	 * key from the provider of this key factory.
-	 *
-	 * @param key
-	 *            the secret key to translate.
-	 * @return the corresponding translated key.
-	 * @throws InvalidKeyException
-	 *             if the specified key cannot be translated using this key
-	 *             factory.
-	 */
-	protected abstract SecretKey engineTranslateKey(SecretKey key)
-	throws InvalidKeyException;
+  /**
+   * Translates the specified secret key into an instance of the corresponding
+   * key from the provider of this key factory.
+   *
+   * @param key
+   *            the secret key to translate.
+   * @return the corresponding translated key.
+   * @throws InvalidKeyException
+   *             if the specified key cannot be translated using this key
+   *             factory.
+   */
+  protected abstract SecretKey engineTranslateKey(SecretKey key)
+    throws InvalidKeyException;
 }

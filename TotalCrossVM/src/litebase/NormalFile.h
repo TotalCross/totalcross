@@ -21,13 +21,21 @@
  * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the file will be created.
  * @param xFile A pointer to the normal file structure.
- * @param cacheSize The cache size to be used. -1 should be passed if the default value is to be used.
+ * @param cacheSize The cache size to be used. -1 should be passed if the
+ * default value is to be used.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the file cannot be open.
- * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
+ * @throws OutOfMemoryError If there is not enough memory to create the normal
+ * file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, TCHARP sourcePath,
-				  XFile* xFile, int32 cacheSize);
+bool
+nfCreateFile(Context context,
+             CharP name,
+             bool isCreation,
+             bool useCrypto,
+             TCHARP sourcePath,
+             XFile* xFile,
+             int32 cacheSize);
 
 /**
  * Reads file bytes.
@@ -38,7 +46,8 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
  * @param count The number of bytes to read.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
+bool
+nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
 
 /**
  * Write bytes in a file.
@@ -49,7 +58,8 @@ bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
  * @param count The number of bytes to write.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
+bool
+nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
 
 /**
  * Enlarges the file. This function MUST be called to grow the file.
@@ -60,7 +70,8 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to grow the file.
  */
-bool nfGrowTo(Context context, XFile* xFile, uint32 newSize);
+bool
+nfGrowTo(Context context, XFile* xFile, uint32 newSize);
 
 /**
  * Sets the current file position.
@@ -68,7 +79,8 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize);
  * @param xFile A pointer to the normal file structure.
  * @param newPos The new file position.
  */
-void nfSetPos(XFile* xFile, int32 newPos);
+void
+nfSetPos(XFile* xFile, int32 newPos);
 
 /**
  * Renames a file
@@ -80,7 +92,8 @@ void nfSetPos(XFile* xFile, int32 newPos);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to rename the file.
  */
-bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath);
+bool
+nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath);
 
 /**
  * Closes a file.
@@ -90,7 +103,8 @@ bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to close the file.
  */
-bool nfClose(Context context, XFile* xFile);
+bool
+nfClose(Context context, XFile* xFile);
 
 /**
  * Removes a file.
@@ -101,7 +115,8 @@ bool nfClose(Context context, XFile* xFile);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to remove the file.
  */
-bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath);
+bool
+nfRemove(Context context, XFile* xFile, TCHARP sourcePath);
 
 /**
  * The cache must be refreshed if what is desired is not inside it.
@@ -111,9 +126,11 @@ bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath);
  * @param count The number of bytes that must be read.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to read from the file.
- * @throws OutOfMemoryError If there is not enough memory to enlarge the normal file cache.
+ * @throws OutOfMemoryError If there is not enough memory to enlarge the normal
+ * file cache.
  */
-bool refreshCache(Context context, XFile* xFile, int32 count);
+bool
+refreshCache(Context context, XFile* xFile, int32 count);
 
 /**
  * Flushs the cache into the disk.
@@ -123,7 +140,8 @@ bool refreshCache(Context context, XFile* xFile, int32 count);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to write to the file.
  */
-bool flushCache(Context context, XFile* xFile);
+bool
+flushCache(Context context, XFile* xFile);
 
 /**
  * Prepares an error message when an error occurs when dealing with files.
@@ -133,35 +151,40 @@ bool flushCache(Context context, XFile* xFile);
  * @param fileName The file where the error ocurred.
  * @throws DriverException An exception with the error message.
  */
-void fileError(Context context, int32 errorCode, CharP fileName);
+void
+fileError(Context context, int32 errorCode, CharP fileName);
 
-// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// juliana@closeFiles_1: removed possible problem of the IOException with the
+// message "Too many open files".
 #if defined(POSIX) || defined(ANDROID)
-	/**
-	* Opens a disk file to store tables and put it in the files list.
-	*
-	* @param context The thread context where the function is being executed.
-	* @param xFile A pointer to the normal file structure.
-	* @param mode Indicates if the file must be created or just opened.
-	* @return The error code if an error occurred or zero if the function succeeds.
-	*/
-	int32 openFile(Context context, XFile* xFile, int32 mode);
+/**
+ * Opens a disk file to store tables and put it in the files list.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @param mode Indicates if the file must be created or just opened.
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32
+openFile(Context context, XFile* xFile, int32 mode);
 
-	/**
-	* Reopens a file if needed.
-	*
-	* @param context The thread context where the function is being executed.
-	* @param xFile A pointer to the normal file structure.
-	* @return The error code if an error occurred or zero if the function succeeds.
-	*/
-	int32 reopenFileIfNeeded(Context context, XFile* xFile);
+/**
+ * Reopens a file if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32
+reopenFileIfNeeded(Context context, XFile* xFile);
 
-	/**
-	* Removes a file from the file list.
-	*
-	* @param xFile A pointer to the normal file structure.
-	*/
-	void removeFileFromList(XFile* xFile);
+/**
+ * Removes a file from the file list.
+ *
+ * @param xFile A pointer to the normal file structure.
+ */
+void
+removeFileFromList(XFile* xFile);
 #endif
 
 #endif

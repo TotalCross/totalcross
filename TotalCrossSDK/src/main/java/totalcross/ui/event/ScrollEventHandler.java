@@ -4,5 +4,5 @@
 package totalcross.ui.event;
 
 public interface ScrollEventHandler {
-	void onScrollEvent(ScrollEvent e);
+  void onScrollEvent(ScrollEvent e);
 }

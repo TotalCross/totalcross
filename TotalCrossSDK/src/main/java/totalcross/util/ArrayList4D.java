@@ -1,6 +1,7 @@
 /* ArrayList.java -- JDK1.2's answer to Vector; this is an array-backed
    implementation of the List interface
-   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005  Free Software Foundation,
+Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +49,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.RandomAccess;
-
 import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 
@@ -88,486 +88,487 @@ import totalcross.sys.Vm;
  * @see AbstractList
  * @status updated to 1.4
  */
-public class ArrayList4D<E> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable {
-	/**
-	 * The default capacity for new ArrayLists.
-	 */
-	private static final int DEFAULT_CAPACITY = 10;
+public class ArrayList4D<E>
+  extends AbstractList<E> implements List<E>, RandomAccess, Cloneable
+{
+  /**
+   * The default capacity for new ArrayLists.
+   */
+  private static final int DEFAULT_CAPACITY = 10;
 
-	/**
-	 * The number of elements in this list.
-	 * @serial the list size
-	 */
-	private int size;
+  /**
+   * The number of elements in this list.
+   * @serial the list size
+   */
+  private int size;
 
-	/**
-	 * Where the data is stored.
-	 */
-	private transient E[] data;
+  /**
+   * Where the data is stored.
+   */
+  private transient E[] data;
 
-	/**
-	 * Construct a new ArrayList with the supplied initial capacity.
-	 *
-	 * @param capacity initial capacity of this ArrayList
-	 * @throws IllegalArgumentException if capacity is negative
-	 */
-	public ArrayList4D(int capacity) {
-		// Must explicitly check, to get correct exception.
-		if (capacity < 0) {
-			throw new IllegalArgumentException();
-		}
-		data = (E[]) new Object[capacity];
-	}
+  /**
+   * Construct a new ArrayList with the supplied initial capacity.
+   *
+   * @param capacity initial capacity of this ArrayList
+   * @throws IllegalArgumentException if capacity is negative
+   */
+  public ArrayList4D(int capacity)
+  {
+    // Must explicitly check, to get correct exception.
+    if (capacity < 0) {
+      throw new IllegalArgumentException();
+    }
+    data = (E[]) new Object[capacity];
+  }
 
-	/**
-	 * Construct a new ArrayList with the default capacity (16).
-	 */
-	public ArrayList4D() {
-		this(DEFAULT_CAPACITY);
-	}
+  /**
+   * Construct a new ArrayList with the default capacity (16).
+   */
+  public ArrayList4D() { this(DEFAULT_CAPACITY); }
 
-	/**
-	 * Construct a new ArrayList, and initialize it with the elements
-	 * in the supplied Collection. The initial capacity is 110% of the
-	 * Collection's size.
-	 *
-	 * @param c the collection whose elements will initialize this list
-	 * @throws NullPointerException if c is null
-	 */
-	public ArrayList4D(Collection<? extends E> c) {
-		this((int)(c.size() * 1.1f));
-		addAll(c);
-	}
+  /**
+   * Construct a new ArrayList, and initialize it with the elements
+   * in the supplied Collection. The initial capacity is 110% of the
+   * Collection's size.
+   *
+   * @param c the collection whose elements will initialize this list
+   * @throws NullPointerException if c is null
+   */
+  public ArrayList4D(Collection<? extends E> c)
+  {
+    this((int)(c.size() * 1.1f));
+    addAll(c);
+  }
 
-	/**
-	 * Trims the capacity of this List to be equal to its size;
-	 * a memory saver.
-	 */
-	public void trimToSize() {
-		// Not a structural change from the perspective of iterators on this list,
-		// so don't update modCount.
-		if (size != data.length) {
-			E[] newData = (E[]) new Object[size];
-			Vm.arrayCopy(data, 0, newData, 0, size);
-			data = newData;
-		}
-	}
+  /**
+   * Trims the capacity of this List to be equal to its size;
+   * a memory saver.
+   */
+  public void trimToSize()
+  {
+    // Not a structural change from the perspective of iterators on this list,
+    // so don't update modCount.
+    if (size != data.length) {
+      E[] newData = (E[]) new Object[size];
+      Vm.arrayCopy(data, 0, newData, 0, size);
+      data = newData;
+    }
+  }
 
-	/**
-	 * Guarantees that this list will have at least enough capacity to
-	 * hold minCapacity elements. This implementation will grow the list to
-	 * max(current * 2, minCapacity) if (minCapacity &gt; current). The JCL says
-	 * explictly that "this method increases its capacity to minCap", while
-	 * the JDK 1.3 online docs specify that the list will grow to at least the
-	 * size specified.
-	 *
-	 * @param minCapacity the minimum guaranteed capacity
-	 */
-	public void ensureCapacity(int minCapacity) {
-		int current = data.length;
+  /**
+   * Guarantees that this list will have at least enough capacity to
+   * hold minCapacity elements. This implementation will grow the list to
+   * max(current * 2, minCapacity) if (minCapacity &gt; current). The JCL says
+   * explictly that "this method increases its capacity to minCap", while
+   * the JDK 1.3 online docs specify that the list will grow to at least the
+   * size specified.
+   *
+   * @param minCapacity the minimum guaranteed capacity
+   */
+  public void ensureCapacity(int minCapacity)
+  {
+    int current = data.length;
 
-		if (minCapacity > current) {
-			E[] newData = (E[]) new Object[Math.max(current * 2, minCapacity)];
-			Vm.arrayCopy(data, 0, newData, 0, size);
-			data = newData;
-		}
-	}
+    if (minCapacity > current) {
+      E[] newData = (E[]) new Object[Math.max(current * 2, minCapacity)];
+      Vm.arrayCopy(data, 0, newData, 0, size);
+      data = newData;
+    }
+  }
 
-	/**
-	 * Returns the number of elements in this list.
-	 *
-	 * @return the list size
-	 */
-	@Override
-	public int size() {
-		return size;
-	}
+  /**
+   * Returns the number of elements in this list.
+   *
+   * @return the list size
+   */
+  @Override public int size() { return size; }
 
-	/**
-	 * Checks if the list is empty.
-	 *
-	 * @return true if there are no elements
-	 */
-	@Override
-	public boolean isEmpty() {
-		return size == 0;
-	}
+  /**
+   * Checks if the list is empty.
+   *
+   * @return true if there are no elements
+   */
+  @Override public boolean isEmpty() { return size == 0; }
 
-	/**
-	 * Returns true iff element is in this ArrayList.
-	 *
-	 * @param e the element whose inclusion in the List is being tested
-	 * @return true if the list contains e
-	 */
-	@Override
-	public boolean contains(Object e) {
-		return indexOf(e) != -1;
-	}
+  /**
+   * Returns true iff element is in this ArrayList.
+   *
+   * @param e the element whose inclusion in the List is being tested
+   * @return true if the list contains e
+   */
+  @Override public boolean contains(Object e) { return indexOf(e) != -1; }
 
-	/**
-	 * Returns the lowest index at which element appears in this List, or
-	 * -1 if it does not appear.
-	 *
-	 * @param e the element whose inclusion in the List is being tested
-	 * @return the index where e was found
-	 */
-	@Override
-	public int indexOf(Object e) {
-		for (int i = 0; i < size; i++) {
-			if (AbstractCollection4D.equals(e, data[i])) {
-				return i;
-			}
-		}
-		return -1;
-	}
+  /**
+   * Returns the lowest index at which element appears in this List, or
+   * -1 if it does not appear.
+   *
+   * @param e the element whose inclusion in the List is being tested
+   * @return the index where e was found
+   */
+  @Override public int indexOf(Object e)
+  {
+    for (int i = 0; i < size; i++) {
+      if (AbstractCollection4D.equals(e, data[i])) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
-	/**
-	 * Returns the highest index at which element appears in this List, or
-	 * -1 if it does not appear.
-	 *
-	 * @param e the element whose inclusion in the List is being tested
-	 * @return the index where e was found
-	 */
-	@Override
-	public int lastIndexOf(Object e) {
-		for (int i = size - 1; i >= 0; i--) {
-			if (AbstractCollection4D.equals(e, data[i])) {
-				return i;
-			}
-		}
-		return -1;
-	}
+  /**
+   * Returns the highest index at which element appears in this List, or
+   * -1 if it does not appear.
+   *
+   * @param e the element whose inclusion in the List is being tested
+   * @return the index where e was found
+   */
+  @Override public int lastIndexOf(Object e)
+  {
+    for (int i = size - 1; i >= 0; i--) {
+      if (AbstractCollection4D.equals(e, data[i])) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
-	/**
-	 * Creates a shallow copy of this ArrayList (elements are not cloned).
-	 *
-	 * @return the cloned object
-	 */
-	@Override
-	public Object clone() {
-		ArrayList4D<E> clone = null;
-		try {
-			clone = (ArrayList4D<E>) super.clone();
-			clone.data = (E[]) new Object[data.length];
-			Vm.arrayCopy(data, 0, clone.data, 0, data.length);
-		} catch (CloneNotSupportedException e) {
-		}
-		return clone;
-	}
+  /**
+   * Creates a shallow copy of this ArrayList (elements are not cloned).
+   *
+   * @return the cloned object
+   */
+  @Override public Object clone()
+  {
+    ArrayList4D<E> clone = null;
+    try {
+      clone = (ArrayList4D<E>)super.clone();
+      clone.data = (E[]) new Object[data.length];
+      Vm.arrayCopy(data, 0, clone.data, 0, data.length);
+    } catch (CloneNotSupportedException e) {
+    }
+    return clone;
+  }
 
-	/**
-	 * Returns an Object array containing all of the elements in this ArrayList.
-	 * The array is independent of this list.
-	 *
-	 * @return an array representation of this list
-	 */
-	@Override
-	public Object[] toArray() {
-		E[] array = (E[]) new Object[size];
-		Vm.arrayCopy(data, 0, array, 0, size);
-		return array;
-	}
+  /**
+   * Returns an Object array containing all of the elements in this ArrayList.
+   * The array is independent of this list.
+   *
+   * @return an array representation of this list
+   */
+  @Override public Object[] toArray()
+  {
+    E[] array = (E[]) new Object[size];
+    Vm.arrayCopy(data, 0, array, 0, size);
+    return array;
+  }
 
-	/**
-	 * Returns an Array whose component type is the runtime component type of
-	 * the passed-in Array.  The returned Array is populated with all of the
-	 * elements in this ArrayList.  If the passed-in Array is not large enough
-	 * to store all of the elements in this List, a new Array will be created
-	 * and returned; if the passed-in Array is <i>larger</i> than the size
-	 * of this List, then size() index will be set to null.
-	 *
-	 * @param a the passed-in Array
-	 * @return an array representation of this list
-	 * @throws ArrayStoreException if the runtime type of a does not allow
-	 *         an element in this list
-	 * @throws NullPointerException if a is null
-	 */
-	@Override
-	public <T> T[] toArray(T[] a) {
-		if (a.length < size) {
-			a = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
-		} else if (a.length > size) {
-			a[size] = null;
-		}
-		Vm.arrayCopy(data, 0, a, 0, size);
-		return a;
-	}
+  /**
+   * Returns an Array whose component type is the runtime component type of
+   * the passed-in Array.  The returned Array is populated with all of the
+   * elements in this ArrayList.  If the passed-in Array is not large enough
+   * to store all of the elements in this List, a new Array will be created
+   * and returned; if the passed-in Array is <i>larger</i> than the size
+   * of this List, then size() index will be set to null.
+   *
+   * @param a the passed-in Array
+   * @return an array representation of this list
+   * @throws ArrayStoreException if the runtime type of a does not allow
+   *         an element in this list
+   * @throws NullPointerException if a is null
+   */
+  @Override public <T> T[] toArray(T[] a)
+  {
+    if (a.length < size) {
+      a = (T[])Array.newInstance(a.getClass().getComponentType(), size);
+    } else if (a.length > size) {
+      a[size] = null;
+    }
+    Vm.arrayCopy(data, 0, a, 0, size);
+    return a;
+  }
 
-	/**
-	 * Retrieves the element at the user-supplied index.
-	 *
-	 * @param index the index of the element we are fetching
-	 * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
-	 */
-	@Override
-	public E get(int index) {
-		checkBoundExclusive(index);
-		return data[index];
-	}
+  /**
+   * Retrieves the element at the user-supplied index.
+   *
+   * @param index the index of the element we are fetching
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
+   */
+  @Override public E get(int index)
+  {
+    checkBoundExclusive(index);
+    return data[index];
+  }
 
-	/**
-	 * Sets the element at the specified index.  The new element, e,
-	 * can be an object of any type or null.
-	 *
-	 * @param index the index at which the element is being set
-	 * @param e the element to be set
-	 * @return the element previously at the specified index
-	 * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= 0
-	 */
-	@Override
-	public E set(int index, E e) {
-		checkBoundExclusive(index);
-		E result = data[index];
-		data[index] = e;
-		return result;
-	}
+  /**
+   * Sets the element at the specified index.  The new element, e,
+   * can be an object of any type or null.
+   *
+   * @param index the index at which the element is being set
+   * @param e the element to be set
+   * @return the element previously at the specified index
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= 0
+   */
+  @Override public E set(int index, E e)
+  {
+    checkBoundExclusive(index);
+    E result = data[index];
+    data[index] = e;
+    return result;
+  }
 
-	/**
-	 * Appends the supplied element to the end of this list.
-	 * The element, e, can be an object of any type or null.
-	 *
-	 * @param e the element to be appended to this list
-	 * @return true, the add will always succeed
-	 */
-	@Override
-	public boolean add(E e) {
-		modCount++;
-		if (size == data.length) {
-			ensureCapacity(size + 1);
-		}
-		data[size++] = e;
-		return true;
-	}
+  /**
+   * Appends the supplied element to the end of this list.
+   * The element, e, can be an object of any type or null.
+   *
+   * @param e the element to be appended to this list
+   * @return true, the add will always succeed
+   */
+  @Override public boolean add(E e)
+  {
+    modCount++;
+    if (size == data.length) {
+      ensureCapacity(size + 1);
+    }
+    data[size++] = e;
+    return true;
+  }
 
-	/**
-	 * Adds the supplied element at the specified index, shifting all
-	 * elements currently at that index or higher one to the right.
-	 * The element, e, can be an object of any type or null.
-	 *
-	 * @param index the index at which the element is being added
-	 * @param e the item being added
-	 * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
-	 */
-	@Override
-	public void add(int index, E e) {
-		checkBoundInclusive(index);
-		modCount++;
-		if (size == data.length) {
-			ensureCapacity(size + 1);
-		}
-		if (index != size) {
-			Vm.arrayCopy(data, index, data, index + 1, size - index);
-		}
-		data[index] = e;
-		size++;
-	}
+  /**
+   * Adds the supplied element at the specified index, shifting all
+   * elements currently at that index or higher one to the right.
+   * The element, e, can be an object of any type or null.
+   *
+   * @param index the index at which the element is being added
+   * @param e the item being added
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
+   */
+  @Override public void add(int index, E e)
+  {
+    checkBoundInclusive(index);
+    modCount++;
+    if (size == data.length) {
+      ensureCapacity(size + 1);
+    }
+    if (index != size) {
+      Vm.arrayCopy(data, index, data, index + 1, size - index);
+    }
+    data[index] = e;
+    size++;
+  }
 
-	/**
-	 * Removes the element at the user-supplied index.
-	 *
-	 * @param index the index of the element to be removed
-	 * @return the removed Object
-	 * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
-	 */
-	@Override
-	public E remove(int index) {
-		checkBoundExclusive(index);
-		E r = data[index];
-		modCount++;
-		if (index != --size) {
-			Vm.arrayCopy(data, index + 1, data, index, size - index);
-		}
-		// Aid for garbage collection by releasing this pointer.
-		data[size] = null;
-		return r;
-	}
+  /**
+   * Removes the element at the user-supplied index.
+   *
+   * @param index the index of the element to be removed
+   * @return the removed Object
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
+   */
+  @Override public E remove(int index)
+  {
+    checkBoundExclusive(index);
+    E r = data[index];
+    modCount++;
+    if (index != --size) {
+      Vm.arrayCopy(data, index + 1, data, index, size - index);
+    }
+    // Aid for garbage collection by releasing this pointer.
+    data[size] = null;
+    return r;
+  }
 
-	/**
-	 * Removes all elements from this List
-	 */
-	@Override
-	public void clear() {
-		if (size > 0) {
-			modCount++;
-			// Allow for garbage collection.
-			Convert.fill(data, 0, size, null);
-			size = 0;
-		}
-	}
+  /**
+   * Removes all elements from this List
+   */
+  @Override public void clear()
+  {
+    if (size > 0) {
+      modCount++;
+      // Allow for garbage collection.
+      Convert.fill(data, 0, size, null);
+      size = 0;
+    }
+  }
 
-	/**
-	 * Add each element in the supplied Collection to this List. It is undefined
-	 * what happens if you modify the list while this is taking place; for
-	 * example, if the collection contains this list.  c can contain objects
-	 * of any type, as well as null values.
-	 *
-	 * @param c a Collection containing elements to be added to this List
-	 * @return true if the list was modified, in other words c is not empty
-	 * @throws NullPointerException if c is null
-	 */
-	@Override
-	public boolean addAll(Collection<? extends E> c) {
-		return addAll(size, c);
-	}
+  /**
+   * Add each element in the supplied Collection to this List. It is undefined
+   * what happens if you modify the list while this is taking place; for
+   * example, if the collection contains this list.  c can contain objects
+   * of any type, as well as null values.
+   *
+   * @param c a Collection containing elements to be added to this List
+   * @return true if the list was modified, in other words c is not empty
+   * @throws NullPointerException if c is null
+   */
+  @Override public boolean addAll(Collection<? extends E> c)
+  {
+    return addAll(size, c);
+  }
 
-	/**
-	 * Add all elements in the supplied collection, inserting them beginning
-	 * at the specified index.  c can contain objects of any type, as well
-	 * as null values.
-	 *
-	 * @param index the index at which the elements will be inserted
-	 * @param c the Collection containing the elements to be inserted
-	 * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; 0
-	 * @throws NullPointerException if c is null
-	 */
-	@Override
-	public boolean addAll(int index, Collection<? extends E> c) {
-		checkBoundInclusive(index);
-		Iterator<? extends E> itr = c.iterator();
-		int csize = c.size();
+  /**
+   * Add all elements in the supplied collection, inserting them beginning
+   * at the specified index.  c can contain objects of any type, as well
+   * as null values.
+   *
+   * @param index the index at which the elements will be inserted
+   * @param c the Collection containing the elements to be inserted
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; 0
+   * @throws NullPointerException if c is null
+   */
+  @Override public boolean addAll(int index, Collection<? extends E> c)
+  {
+    checkBoundInclusive(index);
+    Iterator<? extends E> itr = c.iterator();
+    int csize = c.size();
 
-		modCount++;
-		if (csize + size > data.length) {
-			ensureCapacity(size + csize);
-		}
-		int end = index + csize;
-		if (size > 0 && index != size) {
-			Vm.arrayCopy(data, index, data, end, size - index);
-		}
-		size += csize;
-		for (; index < end; index++) {
-			data[index] = itr.next();
-		}
-		return csize > 0;
-	}
+    modCount++;
+    if (csize + size > data.length) {
+      ensureCapacity(size + csize);
+    }
+    int end = index + csize;
+    if (size > 0 && index != size) {
+      Vm.arrayCopy(data, index, data, end, size - index);
+    }
+    size += csize;
+    for (; index < end; index++) {
+      data[index] = itr.next();
+    }
+    return csize > 0;
+  }
 
-	/**
-	 * Removes all elements in the half-open interval [fromIndex, toIndex).
-	 * Does nothing when toIndex is equal to fromIndex.
-	 *
-	 * @param fromIndex the first index which will be removed
-	 * @param toIndex one greater than the last index which will be removed
-	 * @throws IndexOutOfBoundsException if fromIndex &gt; toIndex
-	 */
-	@Override
-	protected void removeRange(int fromIndex, int toIndex) {
-		int change = toIndex - fromIndex;
-		if (change > 0) {
-			modCount++;
-			Vm.arrayCopy(data, toIndex, data, fromIndex, size - toIndex);
-			size -= change;
-		} else if (change < 0) {
-			throw new IndexOutOfBoundsException();
-		}
-	}
+  /**
+   * Removes all elements in the half-open interval [fromIndex, toIndex).
+   * Does nothing when toIndex is equal to fromIndex.
+   *
+   * @param fromIndex the first index which will be removed
+   * @param toIndex one greater than the last index which will be removed
+   * @throws IndexOutOfBoundsException if fromIndex &gt; toIndex
+   */
+  @Override protected void removeRange(int fromIndex, int toIndex)
+  {
+    int change = toIndex - fromIndex;
+    if (change > 0) {
+      modCount++;
+      Vm.arrayCopy(data, toIndex, data, fromIndex, size - toIndex);
+      size -= change;
+    } else if (change < 0) {
+      throw new IndexOutOfBoundsException();
+    }
+  }
 
-	/**
-	 * Checks that the index is in the range of possible elements (inclusive).
-	 *
-	 * @param index the index to check
-	 * @throws IndexOutOfBoundsException if index &gt; size
-	 */
-	private void checkBoundInclusive(int index) {
-		// Implementation note: we do not check for negative ranges here, since
-		// use of a negative index will cause an ArrayIndexOutOfBoundsException,
-		// a subclass of the required exception, with no effort on our part.
-		if (index > size) {
-			raiseBoundsError(index);
-		}
-	}
+  /**
+   * Checks that the index is in the range of possible elements (inclusive).
+   *
+   * @param index the index to check
+   * @throws IndexOutOfBoundsException if index &gt; size
+   */
+  private void checkBoundInclusive(int index)
+  {
+    // Implementation note: we do not check for negative ranges here, since
+    // use of a negative index will cause an ArrayIndexOutOfBoundsException,
+    // a subclass of the required exception, with no effort on our part.
+    if (index > size) {
+      raiseBoundsError(index);
+    }
+  }
 
-	/**
-	 * Checks that the index is in the range of existing elements (exclusive).
-	 *
-	 * @param index the index to check
-	 * @throws IndexOutOfBoundsException if index &gt;= size
-	 */
-	private void checkBoundExclusive(int index) {
-		// Implementation note: we do not check for negative ranges here, since
-		// use of a negative index will cause an ArrayIndexOutOfBoundsException,
-		// a subclass of the required exception, with no effort on our part.
-		if (index >= size) {
-			raiseBoundsError(index);
-		}
-	}
+  /**
+   * Checks that the index is in the range of existing elements (exclusive).
+   *
+   * @param index the index to check
+   * @throws IndexOutOfBoundsException if index &gt;= size
+   */
+  private void checkBoundExclusive(int index)
+  {
+    // Implementation note: we do not check for negative ranges here, since
+    // use of a negative index will cause an ArrayIndexOutOfBoundsException,
+    // a subclass of the required exception, with no effort on our part.
+    if (index >= size) {
+      raiseBoundsError(index);
+    }
+  }
 
-	/**
-	 * Raise the ArrayIndexOfOutBoundsException.
-	 *
-	 * @param index the index of the access
-	 * @throws IndexOutOfBoundsException unconditionally
-	 */
-	private void raiseBoundsError(int index) {
-		// Implementaion note: put in a separate method to make the JITs job easier
-		// (separate common from uncommon code at method boundaries when trivial to
-		// do so).
-		throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-	}
+  /**
+   * Raise the ArrayIndexOfOutBoundsException.
+   *
+   * @param index the index of the access
+   * @throws IndexOutOfBoundsException unconditionally
+   */
+  private void raiseBoundsError(int index)
+  {
+    // Implementaion note: put in a separate method to make the JITs job easier
+    // (separate common from uncommon code at method boundaries when trivial to
+    // do so).
+    throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+  }
 
-	/**
-	 * Remove from this list all elements contained in the given collection.
-	 * This is not public, due to Sun's API, but this performs in linear
-	 * time while the default behavior of AbstractList would be quadratic.
-	 *
-	 * @param c the collection to filter out
-	 * @return true if this list changed
-	 * @throws NullPointerException if c is null
-	 */
-	boolean removeAllInternal(Collection<?> c) {
-		int i;
-		int j;
-		for (i = 0; i < size; i++) {
-			if (c.contains(data[i])) {
-				break;
-			}
-		}
-		if (i == size) {
-			return false;
-		}
+  /**
+   * Remove from this list all elements contained in the given collection.
+   * This is not public, due to Sun's API, but this performs in linear
+   * time while the default behavior of AbstractList would be quadratic.
+   *
+   * @param c the collection to filter out
+   * @return true if this list changed
+   * @throws NullPointerException if c is null
+   */
+  boolean removeAllInternal(Collection<?> c)
+  {
+    int i;
+    int j;
+    for (i = 0; i < size; i++) {
+      if (c.contains(data[i])) {
+        break;
+      }
+    }
+    if (i == size) {
+      return false;
+    }
 
-		modCount++;
-		for (j = i++; i < size; i++) {
-			if (!c.contains(data[i])) {
-				data[j++] = data[i];
-			}
-		}
-		size -= i - j;
-		return true;
-	}
+    modCount++;
+    for (j = i++; i < size; i++) {
+      if (!c.contains(data[i])) {
+        data[j++] = data[i];
+      }
+    }
+    size -= i - j;
+    return true;
+  }
 
-	/**
-	 * Retain in this vector only the elements contained in the given collection.
-	 * This is not public, due to Sun's API, but this performs in linear
-	 * time while the default behavior of AbstractList would be quadratic.
-	 *
-	 * @param c the collection to filter by
-	 * @return true if this vector changed
-	 * @throws NullPointerException if c is null
-	 * @since 1.2
-	 */
-	boolean retainAllInternal(Collection<?> c) {
-		int i;
-		int j;
-		for (i = 0; i < size; i++) {
-			if (!c.contains(data[i])) {
-				break;
-			}
-		}
-		if (i == size) {
-			return false;
-		}
+  /**
+   * Retain in this vector only the elements contained in the given collection.
+   * This is not public, due to Sun's API, but this performs in linear
+   * time while the default behavior of AbstractList would be quadratic.
+   *
+   * @param c the collection to filter by
+   * @return true if this vector changed
+   * @throws NullPointerException if c is null
+   * @since 1.2
+   */
+  boolean retainAllInternal(Collection<?> c)
+  {
+    int i;
+    int j;
+    for (i = 0; i < size; i++) {
+      if (!c.contains(data[i])) {
+        break;
+      }
+    }
+    if (i == size) {
+      return false;
+    }
 
-		modCount++;
-		for (j = i++; i < size; i++) {
-			if (c.contains(data[i])) {
-				data[j++] = data[i];
-			}
-		}
-		size -= i - j;
-		return true;
-	}
+    modCount++;
+    for (j = i++; i < size; i++) {
+      if (c.contains(data[i])) {
+        data[j++] = data[i];
+      }
+    }
+    size -= i - j;
+    return true;
+  }
 
-	public void sort(Comparator<? super E> c) {
-		Collections4D.sort((List<E>)this, c);
-	}
+  public void sort(Comparator<? super E> c)
+  {
+    Collections4D.sort((List<E>)this, c);
+  }
 }

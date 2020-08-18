@@ -11,9 +11,10 @@ package totalcross.ui.event;
  * to be constant or within any given thereshold of the expected frequency.
  */
 public interface UpdateListener {
-	/**
-	 * Called regularly by the system.
-	 * @param elapsedMilliseconds number of milliseconds since the last UpdateListenerTriggered call
-	 */
-	public void updateListenerTriggered(int elapsedMilliseconds);
+  /**
+   * Called regularly by the system.
+   * @param elapsedMilliseconds number of milliseconds since the last
+   *     UpdateListenerTriggered call
+   */
+  public void updateListenerTriggered(int elapsedMilliseconds);
 }

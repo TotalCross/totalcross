@@ -58,32 +58,32 @@ import java.util.NoSuchElementException;
  * @status updated to 1.4
  */
 public interface Iterator4D<E> {
-	/**
-	 * Tests whether there are elements remaining in the collection. In other
-	 * words, calling <code>next()</code> will not throw an exception.
-	 *
-	 * @return true if there is at least one more element in the collection
-	 */
-	boolean hasNext();
+  /**
+   * Tests whether there are elements remaining in the collection. In other
+   * words, calling <code>next()</code> will not throw an exception.
+   *
+   * @return true if there is at least one more element in the collection
+   */
+  boolean hasNext();
 
-	/**
-	 * Obtain the next element in the collection.
-	 *
-	 * @return the next element in the collection
-	 * @throws NoSuchElementException if there are no more elements
-	 */
-	E next();
+  /**
+   * Obtain the next element in the collection.
+   *
+   * @return the next element in the collection
+   * @throws NoSuchElementException if there are no more elements
+   */
+  E next();
 
-	/**
-	 * Remove from the underlying collection the last element returned by next
-	 * (optional operation). This method can be called only once after each
-	 * call to <code>next()</code>. It does not affect what will be returned
-	 * by subsequent calls to next.
-	 *
-	 * @throws IllegalStateException if next has not yet been called or remove
-	 *         has already been called since the last call to next.
-	 * @throws UnsupportedOperationException if this Iterator does not support
-	 *         the remove operation.
-	 */
-	void remove();
+  /**
+   * Remove from the underlying collection the last element returned by next
+   * (optional operation). This method can be called only once after each
+   * call to <code>next()</code>. It does not affect what will be returned
+   * by subsequent calls to next.
+   *
+   * @throws IllegalStateException if next has not yet been called or remove
+   *         has already been called since the last call to next.
+   * @throws UnsupportedOperationException if this Iterator does not support
+   *         the remove operation.
+   */
+  void remove();
 }

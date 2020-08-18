@@ -5,7 +5,8 @@
 package tc.tools.converter.tclass;
 
 /* This structure represents a class field. */
-public final class TCValue64Field extends TCField {
-	public double dvalue; // may be a long too. see flags.isLong
-	public long lvalue;
+public final class TCValue64Field extends TCField
+{
+  public double dvalue; // may be a long too. see flags.isLong
+  public long lvalue;
 }

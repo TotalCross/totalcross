@@ -4,11 +4,9 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
 
-public class DeployerException extends RuntimeException {
-	public DeployerException() {
-	}
+public class DeployerException extends RuntimeException
+{
+  public DeployerException() {}
 
-	public DeployerException(String msg) {
-		super(msg);
-	}
+  public DeployerException(String msg) { super(msg); }
 }

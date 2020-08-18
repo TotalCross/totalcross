@@ -6,35 +6,30 @@ package totalcross.io.device.gpiod;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
-public class GpiodLine {
+public class GpiodLine
+{
 
-	Object handle;
+  Object handle;
 
-	private GpiodLine() {
-	}
+  private GpiodLine() {}
 
-	@ReplacedByNativeOnDeploy
-	static GpiodLine open(GpiodChip chip, int line) {
-		return null;
-	}
+  @ReplacedByNativeOnDeploy static GpiodLine open(GpiodChip chip, int line)
+  {
+    return null;
+  }
 
-	@ReplacedByNativeOnDeploy
-	public int requestOutput(String consumer, int defaultValue) {
-		return -1;
-	}
+  @ReplacedByNativeOnDeploy
+  public int requestOutput(String consumer, int defaultValue)
+  {
+    return -1;
+  }
 
-	@ReplacedByNativeOnDeploy
-	public int setValue(int value) {
-		return -1;
-	}
+  @ReplacedByNativeOnDeploy public int setValue(int value) { return -1; }
 
-	@ReplacedByNativeOnDeploy
-	public int requestInput(String consumer) {
-		return -1;
-	}
+  @ReplacedByNativeOnDeploy public int requestInput(String consumer)
+  {
+    return -1;
+  }
 
-	@ReplacedByNativeOnDeploy
-	public int getValue() {
-		return -1;
-	}
+  @ReplacedByNativeOnDeploy public int getValue() { return -1; }
 }

@@ -6,18 +6,19 @@
 package totalcross.ui.gfx;
 
 /**
- * GfxSurface is an abstract class that is extended by drawing surfaces, which can have a Graphics.
- * <p>
- * Control and Image are the only two classes that implement the GfxSurface interface.
- * If any other class tries to extend GfxSurface, a RuntimeException will be thrown at the device.
+ * GfxSurface is an abstract class that is extended by drawing surfaces, which
+ * can have a Graphics. <p> Control and Image are the only two classes that
+ * implement the GfxSurface interface. If any other class tries to extend
+ * GfxSurface, a RuntimeException will be thrown at the device.
  */
 
-public abstract class GfxSurface {
-	public abstract int getX();
+public abstract class GfxSurface
+{
+  public abstract int getX();
 
-	public abstract int getY();
+  public abstract int getY();
 
-	public abstract int getWidth();
+  public abstract int getWidth();
 
-	public abstract int getHeight();
+  public abstract int getHeight();
 }

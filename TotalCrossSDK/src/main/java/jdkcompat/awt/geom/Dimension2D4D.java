@@ -46,66 +46,64 @@ package jdkcompat.awt.geom;
  * @since 1.2
  * @status updated to 1.4
  */
-public abstract class Dimension2D4D implements Cloneable {
-	/**
-	 * The default constructor.
-	 */
-	protected Dimension2D4D() {
-	}
+public abstract class Dimension2D4D implements Cloneable
+{
+  /**
+   * The default constructor.
+   */
+  protected Dimension2D4D() {}
 
-	/**
-	 * Get the width of this dimension. A negative result, while legal, is
-	 * undefined in meaning.
-	 *
-	 * @return the width
-	 */
-	public abstract double getWidth();
+  /**
+   * Get the width of this dimension. A negative result, while legal, is
+   * undefined in meaning.
+   *
+   * @return the width
+   */
+  public abstract double getWidth();
 
-	/**
-	 * Get the height of this dimension. A negative result, while legal, is
-	 * undefined in meaning.
-	 *
-	 * @return the height
-	 */
-	public abstract double getHeight();
+  /**
+   * Get the height of this dimension. A negative result, while legal, is
+   * undefined in meaning.
+   *
+   * @return the height
+   */
+  public abstract double getHeight();
 
-	/**
-	 * Set the size of this dimension to the requested values. Loss of precision
-	 * may occur.
-	 *
-	 * @param w the new width
-	 * @param h the new height
-	 */
-	public abstract void setSize(double w, double h);
+  /**
+   * Set the size of this dimension to the requested values. Loss of precision
+   * may occur.
+   *
+   * @param w the new width
+   * @param h the new height
+   */
+  public abstract void setSize(double w, double h);
 
-	/**
-	 * Set the size of this dimension to the requested value. Loss of precision
-	 * may occur.
-	 *
-	 * @param d the dimension containing the new values
-	 *
-	 * @throws NullPointerException if d is null
-	 */
-	public void setSize(Dimension2D4D d) {
-		setSize(d.getWidth(), d.getHeight());
-	}
+  /**
+   * Set the size of this dimension to the requested value. Loss of precision
+   * may occur.
+   *
+   * @param d the dimension containing the new values
+   *
+   * @throws NullPointerException if d is null
+   */
+  public void setSize(Dimension2D4D d) { setSize(d.getWidth(), d.getHeight()); }
 
-	/**
-	 * Create a new dimension of the same run-time type with the same contents
-	 * as this one.
-	 *
-	 * @return the clone
-	 *
-	 * @exception OutOfMemoryError If there is not enough memory available.
-	 *
-	 * @since 1.2
-	 */
-	@Override
-	public Object clone() {
-		try {
-			return super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw(Error) new InternalError().initCause(e);  // Impossible
-		}
-	}
+  /**
+   * Create a new dimension of the same run-time type with the same contents
+   * as this one.
+   *
+   * @return the clone
+   *
+   * @exception OutOfMemoryError If there is not enough memory available.
+   *
+   * @since 1.2
+   */
+  @Override public Object clone()
+  {
+    try {
+      return super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw(Error) new InternalError().initCause(e); // Impossible
+    }
+  }
 } // class Dimension2D

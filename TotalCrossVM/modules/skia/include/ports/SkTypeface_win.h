@@ -18,23 +18,27 @@
  *  corresponding typeface for the specified logfont. The caller is responsible
  *  for calling unref() when it is finished.
  */
-SK_API SkTypeface* SkCreateTypefaceFromLOGFONT(const LOGFONT&);
+SK_API SkTypeface*
+SkCreateTypefaceFromLOGFONT(const LOGFONT&);
 
 /**
  *  Copy the LOGFONT associated with this typeface into the lf parameter. Note
  *  that the lfHeight will need to be set afterwards, since the typeface does
  *  not track this (the paint does).
- *  typeface may be NULL, in which case we return the logfont for the default font.
+ *  typeface may be NULL, in which case we return the logfont for the default
+ * font.
  */
-SK_API void SkLOGFONTFromTypeface(const SkTypeface* typeface, LOGFONT* lf);
+SK_API void
+SkLOGFONTFromTypeface(const SkTypeface* typeface, LOGFONT* lf);
 
 /**
-  *  Set an optional callback to ensure that the data behind a LOGFONT is loaded.
-  *  This will get called if Skia tries to access the data but hits a failure.
-  *  Normally this is null, and is only required if the font data needs to be
-  *  remotely (re)loaded.
-  */
-SK_API void SkTypeface_SetEnsureLOGFONTAccessibleProc(void (*)(const LOGFONT&));
+ *  Set an optional callback to ensure that the data behind a LOGFONT is loaded.
+ *  This will get called if Skia tries to access the data but hits a failure.
+ *  Normally this is null, and is only required if the font data needs to be
+ *  remotely (re)loaded.
+ */
+SK_API void
+SkTypeface_SetEnsureLOGFONTAccessibleProc(void (*)(const LOGFONT&));
 
 // Experimental!
 //
@@ -44,12 +48,15 @@ struct IDWriteFactory;
 struct IDWriteFontCollection;
 struct IDWriteFontFallback;
 
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_GDI();
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory = NULL,
-		IDWriteFontCollection* collection = NULL);
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory,
-		IDWriteFontCollection* collection,
-		IDWriteFontFallback* fallback);
+SK_API sk_sp<SkFontMgr>
+SkFontMgr_New_GDI();
+SK_API sk_sp<SkFontMgr>
+SkFontMgr_New_DirectWrite(IDWriteFactory* factory = NULL,
+                          IDWriteFontCollection* collection = NULL);
+SK_API sk_sp<SkFontMgr>
+SkFontMgr_New_DirectWrite(IDWriteFactory* factory,
+                          IDWriteFontCollection* collection,
+                          IDWriteFontFallback* fallback);
 
 /**
  *  Creates an SkFontMgr which renders using DirectWrite and obtains its data
@@ -57,7 +64,8 @@ SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory,
  *
  *  If DirectWrite could not be initialized, will return NULL.
  */
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWriteRenderer(sk_sp<SkRemotableFontMgr>);
+SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWriteRenderer(
+  sk_sp<SkRemotableFontMgr>);
 
 /**
  *  Creates an SkRemotableFontMgr backed by DirectWrite using the default
@@ -65,7 +73,8 @@ SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWriteRenderer(sk_sp<SkRemotableFontM
  *
  *  If DirectWrite could not be initialized, will return NULL.
  */
-SK_API sk_sp<SkRemotableFontMgr> SkRemotableFontMgr_New_DirectWrite();
+SK_API sk_sp<SkRemotableFontMgr>
+SkRemotableFontMgr_New_DirectWrite();
 
-#endif  // SK_BUILD_FOR_WIN
-#endif  // SkTypeface_win_DEFINED
+#endif // SK_BUILD_FOR_WIN
+#endif // SkTypeface_win_DEFINED

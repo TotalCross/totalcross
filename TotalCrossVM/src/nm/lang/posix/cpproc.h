@@ -32,7 +32,6 @@ exception statement from your version. */
 #define _CLASSPATH_PROC_H_INCLUDED
 #define JNIEXPORT
 
-
 #include <sys/types.h>
 
 #define CPIO_EXEC_STDOUT 0
@@ -40,9 +39,16 @@ exception statement from your version. */
 #define CPIO_EXEC_STDERR 2
 #define CPIO_EXEC_NUM_PIPES 3
 
-JNIEXPORT int cpproc_forkAndExec(char* const* commandLine, char* const* newEnviron,
-								 int* fds, int pipe_count, pid_t* pid, const char* wd);
-JNIEXPORT int cpproc_waitpid(pid_t pid, int* status, pid_t* outpid, int options);
-JNIEXPORT int cpproc_kill(pid_t pid, int signal);
+JNIEXPORT int
+cpproc_forkAndExec(char* const* commandLine,
+                   char* const* newEnviron,
+                   int* fds,
+                   int pipe_count,
+                   pid_t* pid,
+                   const char* wd);
+JNIEXPORT int
+cpproc_waitpid(pid_t pid, int* status, pid_t* outpid, int options);
+JNIEXPORT int
+cpproc_kill(pid_t pid, int signal);
 
 #endif

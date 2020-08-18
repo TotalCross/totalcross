@@ -4,14 +4,13 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC174_freturn extends Return {
-	public BC174_freturn() {
-		super(1, -1, FLOAT);
-	}
+public class BC174_freturn extends Return
+{
+  public BC174_freturn() { super(1, -1, FLOAT); }
 
-	@Override
-	public void exec() {
-		returnValue.asDouble = stack[stackPtr - 1].asDouble;
-		returnValue.type = FLOAT;
-	}
+  @Override public void exec()
+  {
+    returnValue.asDouble = stack[stackPtr - 1].asDouble;
+    returnValue.type = FLOAT;
+  }
 }

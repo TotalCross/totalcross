@@ -11,15 +11,16 @@
 #include "SkColorFilter.h"
 #include "SkColorMatrix.h"
 
-class SK_API SkColorMatrixFilter : public SkColorFilter {
+class SK_API SkColorMatrixFilter : public SkColorFilter
+{
 public:
-	/**
-	 *  Create a colorfilter that multiplies the RGB channels by one color, and
-	 *  then adds a second color, pinning the result for each component to
-	 *  [0..255]. The alpha components of the mul and add arguments
-	 *  are ignored.
-	 */
-	static sk_sp<SkColorFilter> MakeLightingFilter(SkColor mul, SkColor add);
+  /**
+   *  Create a colorfilter that multiplies the RGB channels by one color, and
+   *  then adds a second color, pinning the result for each component to
+   *  [0..255]. The alpha components of the mul and add arguments
+   *  are ignored.
+   */
+  static sk_sp<SkColorFilter> MakeLightingFilter(SkColor mul, SkColor add);
 };
 
 #endif

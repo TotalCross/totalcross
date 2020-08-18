@@ -1,9 +1,9 @@
 /*
-* Copyright 2017 Google Inc.
-*
-* Use of this source code is governed by a BSD-style license that can be
-* found in the LICENSE file.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #ifndef SkHighContrastFilter_DEFINED
 #define SkHighContrastFilter_DEFINED
@@ -16,45 +16,49 @@
  *
  *  Provides transformations to improve contrast for users with low vision.
  */
-struct SkHighContrastConfig {
-	enum class InvertStyle {
-		kNoInvert,
-		kInvertBrightness,
-		kInvertLightness,
+struct SkHighContrastConfig
+{
+  enum class InvertStyle
+  {
+    kNoInvert,
+    kInvertBrightness,
+    kInvertLightness,
 
-		kLast = kInvertLightness
-	};
+    kLast = kInvertLightness
+  };
 
-	SkHighContrastConfig() {
-		fGrayscale = false;
-		fInvertStyle = InvertStyle::kNoInvert;
-		fContrast = 0.0f;
-	}
+  SkHighContrastConfig()
+  {
+    fGrayscale = false;
+    fInvertStyle = InvertStyle::kNoInvert;
+    fContrast = 0.0f;
+  }
 
-	SkHighContrastConfig(bool grayscale,
-						 InvertStyle invertStyle,
-						 SkScalar contrast)
-		: fGrayscale(grayscale),
-		  fInvertStyle(invertStyle),
-		  fContrast(contrast) {}
+  SkHighContrastConfig(bool grayscale,
+                       InvertStyle invertStyle,
+                       SkScalar contrast)
+    : fGrayscale(grayscale)
+    , fInvertStyle(invertStyle)
+    , fContrast(contrast)
+  {}
 
-	// Returns true if all of the fields are set within the valid range.
-	bool isValid() const {
-		return fInvertStyle >= InvertStyle::kNoInvert &&
-			   fInvertStyle <= InvertStyle::kInvertLightness &&
-			   fContrast >= -1.0 &&
-			   fContrast <= 1.0;
-	}
+  // Returns true if all of the fields are set within the valid range.
+  bool isValid() const
+  {
+    return fInvertStyle >= InvertStyle::kNoInvert &&
+           fInvertStyle <= InvertStyle::kInvertLightness && fContrast >= -1.0 &&
+           fContrast <= 1.0;
+  }
 
-	// If true, the color will be converted to grayscale.
-	bool fGrayscale;
+  // If true, the color will be converted to grayscale.
+  bool fGrayscale;
 
-	// Whether to invert brightness, lightness, or neither.
-	InvertStyle fInvertStyle;
+  // Whether to invert brightness, lightness, or neither.
+  InvertStyle fInvertStyle;
 
-	// After grayscale and inverting, the contrast can be adjusted linearly.
-	// The valid range is -1.0 through 1.0, where 0.0 is no adjustment.
-	SkScalar  fContrast;
+  // After grayscale and inverting, the contrast can be adjusted linearly.
+  // The valid range is -1.0 through 1.0, where 0.0 is no adjustment.
+  SkScalar fContrast;
 };
 
 /**
@@ -73,12 +77,13 @@ struct SkHighContrastConfig {
  * -1.0 to 1.0.
  */
 
-class SK_API SkHighContrastFilter {
+class SK_API SkHighContrastFilter
+{
 public:
-	// Returns the filter, or nullptr if the config is invalid.
-	static sk_sp<SkColorFilter> Make(const SkHighContrastConfig& config);
+  // Returns the filter, or nullptr if the config is invalid.
+  static sk_sp<SkColorFilter> Make(const SkHighContrastConfig& config);
 
-	static void InitializeFlattenables();
+  static void InitializeFlattenables();
 };
 
 #endif

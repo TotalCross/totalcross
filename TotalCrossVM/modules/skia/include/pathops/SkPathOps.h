@@ -14,17 +14,17 @@
 class SkPath;
 struct SkRect;
 
-
 // FIXME: move everything below into the SkPath class
 /**
-  *  The logical operations that can be performed when combining two paths.
-  */
-enum SkPathOp {
-	kDifference_SkPathOp,         //!< subtract the op path from the first path
-	kIntersect_SkPathOp,          //!< intersect the two paths
-	kUnion_SkPathOp,              //!< union (inclusive-or) the two paths
-	kXOR_SkPathOp,                //!< exclusive-or the two paths
-	kReverseDifference_SkPathOp,  //!< subtract the first path from the op path
+ *  The logical operations that can be performed when combining two paths.
+ */
+enum SkPathOp
+{
+  kDifference_SkPathOp,        //!< subtract the op path from the first path
+  kIntersect_SkPathOp,         //!< intersect the two paths
+  kUnion_SkPathOp,             //!< union (inclusive-or) the two paths
+  kXOR_SkPathOp,               //!< exclusive-or the two paths
+  kReverseDifference_SkPathOp, //!< subtract the first path from the op path
 };
 
 /** Set this path to the result of applying the Op to this path and the
@@ -43,7 +43,8 @@ enum SkPathOp {
                   inputs.
     @return True if the operation succeeded.
   */
-bool SK_API Op(const SkPath& one, const SkPath& two, SkPathOp op, SkPath* result);
+bool SK_API
+Op(const SkPath& one, const SkPath& two, SkPathOp op, SkPath* result);
 
 /** Set this path to a set of non-overlapping contours that describe the
     same area as the original path.
@@ -57,7 +58,8 @@ bool SK_API Op(const SkPath& one, const SkPath& two, SkPathOp op, SkPath* result
     @param result The simplified path. The result may be the input.
     @return True if simplification succeeded.
   */
-bool SK_API Simplify(const SkPath& path, SkPath* result);
+bool SK_API
+Simplify(const SkPath& path, SkPath* result);
 
 /** Set the resulting rectangle to the tight bounds of the path.
 
@@ -65,7 +67,8 @@ bool SK_API Simplify(const SkPath& path, SkPath* result);
     @param result The tight bounds of the path.
     @return True if the bounds could be computed.
   */
-bool SK_API TightBounds(const SkPath& path, SkRect* result);
+bool SK_API
+TightBounds(const SkPath& path, SkRect* result);
 
 /** Set the result with fill type winding to area equivalent to path.
     Returns true if successful. Does not detect if path contains contours which
@@ -79,35 +82,38 @@ bool SK_API TightBounds(const SkPath& path, SkRect* result);
     @param result The equivalent path with fill type set to winding.
     @return True if winding path was set.
   */
-bool SK_API AsWinding(const SkPath& path, SkPath* result);
+bool SK_API
+AsWinding(const SkPath& path, SkPath* result);
 
-/** Perform a series of path operations, optimized for unioning many paths together.
-  */
-class SK_API SkOpBuilder {
+/** Perform a series of path operations, optimized for unioning many paths
+ * together.
+ */
+class SK_API SkOpBuilder
+{
 public:
-	/** Add one or more paths and their operand. The builder is empty before the first
-	    path is added, so the result of a single add is (emptyPath OP path).
+  /** Add one or more paths and their operand. The builder is empty before the
+     first path is added, so the result of a single add is (emptyPath OP path).
 
-	    @param path The second operand.
-	    @param _operator The operator to apply to the existing and supplied paths.
-	 */
-	void add(const SkPath& path, SkPathOp _operator);
+      @param path The second operand.
+      @param _operator The operator to apply to the existing and supplied paths.
+   */
+  void add(const SkPath& path, SkPathOp _operator);
 
-	/** Computes the sum of all paths and operands, and resets the builder to its
-	    initial state.
+  /** Computes the sum of all paths and operands, and resets the builder to its
+      initial state.
 
-	    @param result The product of the operands.
-	    @return True if the operation succeeded.
-	  */
-	bool resolve(SkPath* result);
+      @param result The product of the operands.
+      @return True if the operation succeeded.
+    */
+  bool resolve(SkPath* result);
 
 private:
-	SkTArray<SkPath> fPathRefs;
-	SkTDArray<SkPathOp> fOps;
+  SkTArray<SkPath> fPathRefs;
+  SkTDArray<SkPathOp> fOps;
 
-	static bool FixWinding(SkPath* path);
-	static void ReversePath(SkPath* path);
-	void reset();
+  static bool FixWinding(SkPath* path);
+  static void ReversePath(SkPath* path);
+  void reset();
 };
 
 #endif

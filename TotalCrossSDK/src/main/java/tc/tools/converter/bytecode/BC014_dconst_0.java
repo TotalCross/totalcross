@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC014_dconst_0 extends LoadConstant {
-	public BC014_dconst_0() {
-		super(0d);
-	}
+public class BC014_dconst_0 extends LoadConstant
+{
+  public BC014_dconst_0() { super(0d); }
 }

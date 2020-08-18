@@ -13,28 +13,34 @@ package totalcross.ui.event;
  * @since TotalCross 1.27
  */
 
-public class MouseEvent extends PenEvent {
-	/** @see totalcross.ui.event.DragEvent
-	 */
-	public int wheelDirection;
+public class MouseEvent extends PenEvent
+{
+  /**
+   * @see totalcross.ui.event.DragEvent
+   */
+  public int wheelDirection;
 
-	/** The event type for a mouse moving over a control.
-	 * This is a hardware event.
-	 */
-	public static final int MOUSE_MOVE = EventType.MOUSE_MOVE;
+  /**
+   * The event type for a mouse moving over a control.
+   * This is a hardware event.
+   */
+  public static final int MOUSE_MOVE = EventType.MOUSE_MOVE;
 
-	/** The event type for a mouse moving into a control.
-	 * This is a software event (computed internally).
-	 */
-	public static final int MOUSE_IN = EventType.MOUSE_IN;
+  /**
+   * The event type for a mouse moving into a control.
+   * This is a software event (computed internally).
+   */
+  public static final int MOUSE_IN = EventType.MOUSE_IN;
 
-	/** The event type for a mouse moving outside a control.
-	 * This is a software event (computed internally).
-	 */
-	public static final int MOUSE_OUT = EventType.MOUSE_OUT;
+  /**
+   * The event type for a mouse moving outside a control.
+   * This is a software event (computed internally).
+   */
+  public static final int MOUSE_OUT = EventType.MOUSE_OUT;
 
-	/** The event type for a mouse wheel.
-	 * This is a hardware event.
-	 */
-	public static final int MOUSE_WHEEL = EventType.MOUSE_WHEEL;
+  /**
+   * The event type for a mouse wheel.
+   * This is a hardware event.
+   */
+  public static final int MOUSE_WHEEL = EventType.MOUSE_WHEEL;
 }

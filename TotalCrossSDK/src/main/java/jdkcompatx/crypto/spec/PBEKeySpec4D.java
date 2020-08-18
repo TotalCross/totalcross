@@ -16,8 +16,8 @@
  */
 
 /**
-* @author Alexander Y. Kleymenov
-*/
+ * @author Alexander Y. Kleymenov
+ */
 
 package jdkcompatx.crypto.spec;
 
@@ -30,185 +30,189 @@ import java.util.Arrays;
  * Password based encryption is described in <a
  * href="http://www.ietf.org/rfc/rfc2898.txt">PKCS #5</a>.
  */
-public class PBEKeySpec4D implements KeySpec {
+public class PBEKeySpec4D implements KeySpec
+{
 
-	private char[] password;
-	private final byte[] salt;
-	private final int iterationCount;
-	private final int keyLength;
+  private char[] password;
+  private final byte[] salt;
+  private final int iterationCount;
+  private final int keyLength;
 
-	/**
-	 * Creates a new <code>PBEKeySpec</code> with the specified password.
-	 *
-	 * @param password
-	 *            the password.
-	 */
-	public PBEKeySpec4D(char[] password) {
-		if (password == null) {
-			this.password = new char[0];
-		} else {
-			this.password = new char[password.length];
-			System.arraycopy(password, 0, this.password, 0, password.length);
-		}
-		salt = null;
-		iterationCount = 0;
-		keyLength = 0;
-	}
+  /**
+   * Creates a new <code>PBEKeySpec</code> with the specified password.
+   *
+   * @param password
+   *            the password.
+   */
+  public PBEKeySpec4D(char[] password)
+  {
+    if (password == null) {
+      this.password = new char[0];
+    } else {
+      this.password = new char[password.length];
+      System.arraycopy(password, 0, this.password, 0, password.length);
+    }
+    salt = null;
+    iterationCount = 0;
+    keyLength = 0;
+  }
 
-	/**
-	 * Creates a new <code>PBEKeySpec</code> with the specified password, salt,
-	 * iteration count and the desired length of the derived key.
-	 *
-	 * @param password
-	 *            the password.
-	 * @param salt
-	 *            the salt.
-	 * @param iterationCount
-	 *            the iteration count.
-	 * @param keyLength
-	 *            the desired key length of the derived key,
-	 * @throws NullPointerException
-	 *             if the salt is null.
-	 * @throws IllegalArgumentException
-	 *             if the salt is empty, iteration count is zero or negative or
-	 *             the key length is zero or negative.
-	 */
-	public PBEKeySpec4D(char[] password, byte[] salt, int iterationCount,
-						int keyLength) {
-		if (salt == null) {
-			throw new NullPointerException(
-				//                    Messages.getString("crypto.3B")
-			); //$NON-NLS-1$
-		}
-		if (salt.length == 0) {
-			throw new IllegalArgumentException(
-				//                    Messages.getString("crypto.3C")
-			); //$NON-NLS-1$
-		}
-		if (iterationCount <= 0) {
-			throw new IllegalArgumentException(
-				//                    Messages.getString("crypto.3D")
-			); //$NON-NLS-1$
-		}
-		if (keyLength <= 0) {
-			throw new IllegalArgumentException(
-				//                    Messages.getString("crypto.3E")
-			); //$NON-NLS-1$
-		}
+  /**
+   * Creates a new <code>PBEKeySpec</code> with the specified password, salt,
+   * iteration count and the desired length of the derived key.
+   *
+   * @param password
+   *            the password.
+   * @param salt
+   *            the salt.
+   * @param iterationCount
+   *            the iteration count.
+   * @param keyLength
+   *            the desired key length of the derived key,
+   * @throws NullPointerException
+   *             if the salt is null.
+   * @throws IllegalArgumentException
+   *             if the salt is empty, iteration count is zero or negative or
+   *             the key length is zero or negative.
+   */
+  public PBEKeySpec4D(char[] password,
+                      byte[] salt,
+                      int iterationCount,
+                      int keyLength)
+  {
+    if (salt == null) {
+      throw new NullPointerException(
+        //                    Messages.getString("crypto.3B")
+      ); //$NON-NLS-1$
+    }
+    if (salt.length == 0) {
+      throw new IllegalArgumentException(
+        //                    Messages.getString("crypto.3C")
+      ); //$NON-NLS-1$
+    }
+    if (iterationCount <= 0) {
+      throw new IllegalArgumentException(
+        //                    Messages.getString("crypto.3D")
+      ); //$NON-NLS-1$
+    }
+    if (keyLength <= 0) {
+      throw new IllegalArgumentException(
+        //                    Messages.getString("crypto.3E")
+      ); //$NON-NLS-1$
+    }
 
-		if (password == null) {
-			this.password = new char[0];
-		} else {
-			this.password = new char[password.length];
-			System.arraycopy(password, 0, this.password, 0, password.length);
-		}
-		this.salt = new byte[salt.length];
-		System.arraycopy(salt, 0, this.salt, 0, salt.length);
-		this.iterationCount = iterationCount;
-		this.keyLength = keyLength;
-	}
+    if (password == null) {
+      this.password = new char[0];
+    } else {
+      this.password = new char[password.length];
+      System.arraycopy(password, 0, this.password, 0, password.length);
+    }
+    this.salt = new byte[salt.length];
+    System.arraycopy(salt, 0, this.salt, 0, salt.length);
+    this.iterationCount = iterationCount;
+    this.keyLength = keyLength;
+  }
 
-	/**
-	 * Creates a new <code>PBEKeySpec</code> with the specified password, salt
-	 * and iteration count.
-	 *
-	 * @param password
-	 *            the password.
-	 * @param salt
-	 *            the salt.
-	 * @param iterationCount
-	 *            the iteration count.
-	 * @throws NullPointerException
-	 *             if salt is null.
-	 * @throws IllegalArgumentException
-	 *             if the salt is empty or iteration count is zero or negative.
-	 */
-	public PBEKeySpec4D(char[] password, byte[] salt, int iterationCount) {
-		if (salt == null) {
-			throw new NullPointerException(
-				//                    Messages.getString("crypto.3B")
-			); //$NON-NLS-1$
-		}
-		if (salt.length == 0) {
-			throw new IllegalArgumentException(
-				//                    Messages.getString("crypto.3C")
-			); //$NON-NLS-1$
-		}
-		if (iterationCount <= 0) {
-			throw new IllegalArgumentException(
-				//                    Messages.getString("crypto.3D")
-			); //$NON-NLS-1$
-		}
+  /**
+   * Creates a new <code>PBEKeySpec</code> with the specified password, salt
+   * and iteration count.
+   *
+   * @param password
+   *            the password.
+   * @param salt
+   *            the salt.
+   * @param iterationCount
+   *            the iteration count.
+   * @throws NullPointerException
+   *             if salt is null.
+   * @throws IllegalArgumentException
+   *             if the salt is empty or iteration count is zero or negative.
+   */
+  public PBEKeySpec4D(char[] password, byte[] salt, int iterationCount)
+  {
+    if (salt == null) {
+      throw new NullPointerException(
+        //                    Messages.getString("crypto.3B")
+      ); //$NON-NLS-1$
+    }
+    if (salt.length == 0) {
+      throw new IllegalArgumentException(
+        //                    Messages.getString("crypto.3C")
+      ); //$NON-NLS-1$
+    }
+    if (iterationCount <= 0) {
+      throw new IllegalArgumentException(
+        //                    Messages.getString("crypto.3D")
+      ); //$NON-NLS-1$
+    }
 
-		if (password == null) {
-			this.password = new char[0];
-		} else {
-			this.password = new char[password.length];
-			System.arraycopy(password, 0, this.password, 0, password.length);
-		}
-		this.salt = new byte[salt.length];
-		System.arraycopy(salt, 0, this.salt, 0, salt.length);
-		this.iterationCount = iterationCount;
-		this.keyLength = 0;
-	}
+    if (password == null) {
+      this.password = new char[0];
+    } else {
+      this.password = new char[password.length];
+      System.arraycopy(password, 0, this.password, 0, password.length);
+    }
+    this.salt = new byte[salt.length];
+    System.arraycopy(salt, 0, this.salt, 0, salt.length);
+    this.iterationCount = iterationCount;
+    this.keyLength = 0;
+  }
 
-	/**
-	 * Clears the password by overwriting it.
-	 */
-	public final void clearPassword() {
-		Arrays.fill(password, '?');
-		password = null;
-	}
+  /**
+   * Clears the password by overwriting it.
+   */
+  public final void clearPassword()
+  {
+    Arrays.fill(password, '?');
+    password = null;
+  }
 
-	/**
-	 * Returns a copy of the password of this key specification.
-	 *
-	 * @return a copy of the password of this key specification.
-	 * @throws IllegalStateException
-	 *             if the password has been cleared before.
-	 */
-	public final char[] getPassword() {
-		if (password == null) {
-			throw new IllegalStateException(
-				//                    Messages.getString("crypto.3F")
-			); //$NON-NLS-1$
-		}
-		char[] result = new char[password.length];
-		System.arraycopy(password, 0, result, 0, password.length);
-		return result;
-	}
+  /**
+   * Returns a copy of the password of this key specification.
+   *
+   * @return a copy of the password of this key specification.
+   * @throws IllegalStateException
+   *             if the password has been cleared before.
+   */
+  public final char[] getPassword()
+  {
+    if (password == null) {
+      throw new IllegalStateException(
+        //                    Messages.getString("crypto.3F")
+      ); //$NON-NLS-1$
+    }
+    char[] result = new char[password.length];
+    System.arraycopy(password, 0, result, 0, password.length);
+    return result;
+  }
 
-	/**
-	 * Returns a copy of the salt of this key specification.
-	 *
-	 * @return a copy of the salt of this key specification or null if none is
-	 *         specified.
-	 */
-	public final byte[] getSalt() {
-		if (salt == null) {
-			return null;
-		}
-		byte[] result = new byte[salt.length];
-		System.arraycopy(salt, 0, result, 0, salt.length);
-		return result;
-	}
+  /**
+   * Returns a copy of the salt of this key specification.
+   *
+   * @return a copy of the salt of this key specification or null if none is
+   *         specified.
+   */
+  public final byte[] getSalt()
+  {
+    if (salt == null) {
+      return null;
+    }
+    byte[] result = new byte[salt.length];
+    System.arraycopy(salt, 0, result, 0, salt.length);
+    return result;
+  }
 
-	/**
-	 * Returns the iteration count of this key specification.
-	 *
-	 * @return the iteration count of this key specification.
-	 */
-	public final int getIterationCount() {
-		return iterationCount;
-	}
+  /**
+   * Returns the iteration count of this key specification.
+   *
+   * @return the iteration count of this key specification.
+   */
+  public final int getIterationCount() { return iterationCount; }
 
-	/**
-	 * Returns the desired key length of the derived key.
-	 *
-	 * @return the desired key length of the derived key.
-	 */
-	public final int getKeyLength() {
-		return keyLength;
-	}
+  /**
+   * Returns the desired key length of the derived key.
+   *
+   * @return the desired key length of the derived key.
+   */
+  public final int getKeyLength() { return keyLength; }
 }
-

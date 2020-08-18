@@ -13,12 +13,14 @@
 #include "SkRefCnt.h"
 
 /**
- * Classifies GL contexts by which standard they implement (currently as OpenGL vs. OpenGL ES).
+ * Classifies GL contexts by which standard they implement (currently as OpenGL
+ * vs. OpenGL ES).
  */
-enum GrGLStandard {
-	kNone_GrGLStandard,
-	kGL_GrGLStandard,
-	kGLES_GrGLStandard,
+enum GrGLStandard
+{
+  kNone_GrGLStandard,
+  kGL_GrGLStandard,
+  kGLES_GrGLStandard,
 };
 static const int kGrGLStandardCnt = 3;
 
@@ -47,35 +49,37 @@ typedef double GrGLdouble;
 typedef double GrGLclampd;
 typedef void GrGLvoid;
 #ifndef SK_IGNORE_64BIT_OPENGL_CHANGES
-	#ifdef _WIN64
-		typedef signed long long int GrGLintptr;
-		typedef signed long long int GrGLsizeiptr;
-	#else
-		typedef signed long int GrGLintptr;
-		typedef signed long int GrGLsizeiptr;
-	#endif
+#ifdef _WIN64
+typedef signed long long int GrGLintptr;
+typedef signed long long int GrGLsizeiptr;
 #else
-	typedef signed long int GrGLintptr;
-	typedef signed long int GrGLsizeiptr;
+typedef signed long int GrGLintptr;
+typedef signed long int GrGLsizeiptr;
+#endif
+#else
+typedef signed long int GrGLintptr;
+typedef signed long int GrGLsizeiptr;
 #endif
 typedef void* GrGLeglImage;
 typedef struct __GLsync* GrGLsync;
 
-struct GrGLDrawArraysIndirectCommand {
-	GrGLuint fCount;
-	GrGLuint fInstanceCount;
-	GrGLuint fFirst;
-	GrGLuint fBaseInstance;  // Requires EXT_base_instance on ES.
+struct GrGLDrawArraysIndirectCommand
+{
+  GrGLuint fCount;
+  GrGLuint fInstanceCount;
+  GrGLuint fFirst;
+  GrGLuint fBaseInstance; // Requires EXT_base_instance on ES.
 };
 
 GR_STATIC_ASSERT(16 == sizeof(GrGLDrawArraysIndirectCommand));
 
-struct GrGLDrawElementsIndirectCommand {
-	GrGLuint fCount;
-	GrGLuint fInstanceCount;
-	GrGLuint fFirstIndex;
-	GrGLuint fBaseVertex;
-	GrGLuint fBaseInstance;  // Requires EXT_base_instance on ES.
+struct GrGLDrawElementsIndirectCommand
+{
+  GrGLuint fCount;
+  GrGLuint fInstanceCount;
+  GrGLuint fFirstIndex;
+  GrGLuint fBaseVertex;
+  GrGLuint fBaseInstance; // Requires EXT_base_instance on ES.
 };
 
 GR_STATIC_ASSERT(20 == sizeof(GrGLDrawElementsIndirectCommand));
@@ -83,13 +87,13 @@ GR_STATIC_ASSERT(20 == sizeof(GrGLDrawElementsIndirectCommand));
 /**
  * KHR_debug
  */
-typedef void (GR_GL_FUNCTION_TYPE* GRGLDEBUGPROC)(GrGLenum source,
-		GrGLenum type,
-		GrGLuint id,
-		GrGLenum severity,
-		GrGLsizei length,
-		const GrGLchar* message,
-		const void* userParam);
+typedef void(GR_GL_FUNCTION_TYPE* GRGLDEBUGPROC)(GrGLenum source,
+                                                 GrGLenum type,
+                                                 GrGLuint id,
+                                                 GrGLenum severity,
+                                                 GrGLsizei length,
+                                                 const GrGLchar* message,
+                                                 const void* userParam);
 
 /**
  * EGL types.
@@ -104,28 +108,34 @@ typedef unsigned int GrEGLBoolean;
 
 ///////////////////////////////////////////////////////////////////////////////
 /**
- * Types for interacting with GL resources created externally to Skia. GrBackendObjects for GL
- * textures are really const GrGLTexture*. The fFormat here should be a sized, internal format
- * for the texture. We will try to use the sized format if the GL Context supports it, otherwise
- * we will internally fall back to using the base internal formats.
+ * Types for interacting with GL resources created externally to Skia.
+ * GrBackendObjects for GL textures are really const GrGLTexture*. The fFormat
+ * here should be a sized, internal format for the texture. We will try to use
+ * the sized format if the GL Context supports it, otherwise we will internally
+ * fall back to using the base internal formats.
  */
-struct GrGLTextureInfo {
-	GrGLenum fTarget;
-	GrGLuint fID;
-	GrGLenum fFormat = 0;
+struct GrGLTextureInfo
+{
+  GrGLenum fTarget;
+  GrGLuint fID;
+  GrGLenum fFormat = 0;
 
-	bool operator==(const GrGLTextureInfo& that) const {
-		return fTarget == that.fTarget && fID == that.fID && fFormat == that.fFormat;
-	}
+  bool operator==(const GrGLTextureInfo& that) const
+  {
+    return fTarget == that.fTarget && fID == that.fID &&
+           fFormat == that.fFormat;
+  }
 };
 
-struct GrGLFramebufferInfo {
-	GrGLuint fFBOID;
-	GrGLenum fFormat = 0;
+struct GrGLFramebufferInfo
+{
+  GrGLuint fFBOID;
+  GrGLenum fFormat = 0;
 
-	bool operator==(const GrGLFramebufferInfo& that) const {
-		return fFBOID == that.fFBOID && fFormat == that.fFormat;
-	}
+  bool operator==(const GrGLFramebufferInfo& that) const
+  {
+    return fFBOID == that.fFBOID && fFormat == that.fFormat;
+  }
 };
 
 #endif

@@ -7,17 +7,11 @@ package tc.tools.converter.bb.attribute;
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
 
-public class Deprecated implements AttributeInfo {
-	@Override
-	public int length() {
-		return 0;
-	}
+public class Deprecated implements AttributeInfo
+{
+  @Override public int length() { return 0; }
 
-	@Override
-	public void load(DataStream ds) throws IOException {
-	}
+  @Override public void load(DataStream ds) throws IOException {}
 
-	@Override
-	public void save(DataStream ds) throws IOException {
-	}
+  @Override public void save(DataStream ds) throws IOException {}
 }

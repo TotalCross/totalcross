@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
-public class BC019_ldc_w extends BC018_ldc {
-	public BC019_ldc_w() {
-		super(readUInt16(pc + 1), 3);
-	}
+public class BC019_ldc_w extends BC018_ldc
+{
+  public BC019_ldc_w() { super(readUInt16(pc + 1), 3); }
 }

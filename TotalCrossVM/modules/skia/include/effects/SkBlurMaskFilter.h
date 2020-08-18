@@ -9,26 +9,30 @@
 #define SkBlurMaskFilter_DEFINED
 
 // we include this since our callers will need to at least be able to ref/unref
+#include "SkBlurTypes.h"
 #include "SkMaskFilter.h"
 #include "SkRect.h"
 #include "SkScalar.h"
-#include "SkBlurTypes.h"
 
 class SkRRect;
 
-class SK_API SkBlurMaskFilter {
+class SK_API SkBlurMaskFilter
+{
 public:
 #ifdef SK_SUPPORT_LEGACY_EMBOSSMASKFILTER
-	/** Create an emboss maskfilter
-	    @param blurSigma    standard deviation of the Gaussian blur to apply
-	                        before applying lighting (e.g. 3)
-	    @param direction    array of 3 scalars [x, y, z] specifying the direction of the light source
-	    @param ambient      0...1 amount of ambient light
-	    @param specular     coefficient for specular highlights (e.g. 8)
-	    @return the emboss maskfilter
-	*/
-	static sk_sp<SkMaskFilter> MakeEmboss(SkScalar blurSigma, const SkScalar direction[3],
-										  SkScalar ambient, SkScalar specular);
+  /** Create an emboss maskfilter
+      @param blurSigma    standard deviation of the Gaussian blur to apply
+                          before applying lighting (e.g. 3)
+      @param direction    array of 3 scalars [x, y, z] specifying the direction
+     of the light source
+      @param ambient      0...1 amount of ambient light
+      @param specular     coefficient for specular highlights (e.g. 8)
+      @return the emboss maskfilter
+  */
+  static sk_sp<SkMaskFilter> MakeEmboss(SkScalar blurSigma,
+                                        const SkScalar direction[3],
+                                        SkScalar ambient,
+                                        SkScalar specular);
 #endif
 };
 

@@ -17,16 +17,18 @@ typedef unsigned int GrMTLPixelFormat;
 
 ///////////////////////////////////////////////////////////////////////////////
 /**
- * Types for interacting with Metal resources created externally to Skia. Holds the MTLTexture as a
- * const void*. This is used by GrBackendObjects.
+ * Types for interacting with Metal resources created externally to Skia. Holds
+ * the MTLTexture as a const void*. This is used by GrBackendObjects.
  */
-struct GrMtlTextureInfo {
+struct GrMtlTextureInfo
+{
 public:
-	const void* fTexture; // Pointer to MTLTexture
+  const void* fTexture; // Pointer to MTLTexture
 
-	bool operator==(const GrMtlTextureInfo& that) const {
-		return fTexture == that.fTexture;
-	}
+  bool operator==(const GrMtlTextureInfo& that) const
+  {
+    return fTexture == that.fTexture;
+  }
 };
 
 #endif

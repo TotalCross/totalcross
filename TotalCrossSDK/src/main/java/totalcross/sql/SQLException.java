@@ -5,47 +5,39 @@
 
 package totalcross.sql;
 
-public class SQLException extends Exception {
-	String state;
-	int code;
-	SQLException next;
+public class SQLException extends Exception
+{
+  String state;
+  int code;
+  SQLException next;
 
-	public SQLException(String reason, String sqlState, int errorCode) {
-		super(reason);
-		this.state = sqlState;
-		this.code = errorCode;
-	}
+  public SQLException(String reason, String sqlState, int errorCode)
+  {
+    super(reason);
+    this.state = sqlState;
+    this.code = errorCode;
+  }
 
-	public SQLException(String reason, String sqlState) {
-		this(reason, sqlState, 0);
-	}
+  public SQLException(String reason, String sqlState)
+  {
+    this(reason, sqlState, 0);
+  }
 
-	public SQLException(String reason, Throwable cause) {
-		this(reason, null, 0);
-		initCause(cause);
-	}
+  public SQLException(String reason, Throwable cause)
+  {
+    this(reason, null, 0);
+    initCause(cause);
+  }
 
-	public SQLException(String reason) {
-		this(reason, null, 0);
-	}
+  public SQLException(String reason) { this(reason, null, 0); }
 
-	public SQLException() {
-		this(null, null, 0);
-	}
+  public SQLException() { this(null, null, 0); }
 
-	public String getSQLState() {
-		return state;
-	}
+  public String getSQLState() { return state; }
 
-	public int getErrorCode() {
-		return code;
-	}
+  public int getErrorCode() { return code; }
 
-	public SQLException getNextException() {
-		return next;
-	}
+  public SQLException getNextException() { return next; }
 
-	public void setNextException(SQLException ex) {
-		next = ex;
-	}
+  public void setNextException(SQLException ex) { next = ex; }
 }

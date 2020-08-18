@@ -1,19 +1,25 @@
 #if defined darwin || defined ANDROID || defined HEADLESS
 
 #ifdef ANDROID
-	#define FILL_LB fillNativeProcAddressesLB();
+#define FILL_LB fillNativeProcAddressesLB();
 #else
-	#define FILL_LB
+#define FILL_LB
 #endif
 
-#define initNativeProcAddresses() do{ htNativeProcAddresses = htNew(512, null); fillNativeProcAddressesTC(); FILL_LB }while(0)
+#define initNativeProcAddresses()                                              \
+  do {                                                                         \
+    htNativeProcAddresses = htNew(512, null);                                  \
+    fillNativeProcAddressesTC();                                               \
+    FILL_LB                                                                    \
+  } while (0)
 #define destroyNativeProcAddresses() htFree(&htNativeProcAddresses, null)
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void fillNativeProcAddressesTC();
+  void fillNativeProcAddressesTC();
 
 #ifdef __cplusplus
 }

@@ -5,12 +5,13 @@
 
 package totalcross.ui.image;
 
-/** This class is used to throw an exception when an image could not be loaded for any reason.
+/**
+ * This class is used to throw an exception when an image could not be loaded
+ * for any reason.
  * @since SuperWaba 5.8.
  */
 
-public class ImageException extends Exception {
-	public ImageException(String msg) {
-		super(msg);
-	}
+public class ImageException extends Exception
+{
+  public ImageException(String msg) { super(msg); }
 }

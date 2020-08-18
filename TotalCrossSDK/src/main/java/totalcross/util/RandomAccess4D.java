@@ -58,5 +58,5 @@ package totalcross.util;
  * @status updated to 1.4
  */
 public interface RandomAccess4D {
-	// Tagging interface only.
+  // Tagging interface only.
 }

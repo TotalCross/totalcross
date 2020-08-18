@@ -13,22 +13,23 @@
 /**
  *  Enum describing format of encoded data.
  */
-enum class SkEncodedImageFormat {
+enum class SkEncodedImageFormat
+{
 #ifdef SK_BUILD_FOR_GOOGLE3
-	kUnknown,
+  kUnknown,
 #endif
-	kBMP,
-	kGIF,
-	kICO,
-	kJPEG,
-	kPNG,
-	kWBMP,
-	kWEBP,
-	kPKM,
-	kKTX,
-	kASTC,
-	kDNG,
-	kHEIF,
+  kBMP,
+  kGIF,
+  kICO,
+  kJPEG,
+  kPNG,
+  kWBMP,
+  kWEBP,
+  kPKM,
+  kKTX,
+  kASTC,
+  kDNG,
+  kHEIF,
 };
 
-#endif  // SkEncodedImageFormat_DEFINED
+#endif // SkEncodedImageFormat_DEFINED

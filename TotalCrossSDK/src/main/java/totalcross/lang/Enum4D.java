@@ -47,158 +47,151 @@ import java.lang.reflect.Field;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
-public abstract class Enum4D<T extends Enum4D<T>> implements Comparable<T> {
-	/**
-	 * The name of this enum constant.
-	 */
-	final String name;
+public abstract class Enum4D<T extends Enum4D<T>> implements Comparable<T>
+{
+  /**
+   * The name of this enum constant.
+   */
+  final String name;
 
-	/**
-	 * The number of this enum constant.  Each constant is given a number
-	 * which matches the order in which it was declared, starting with zero.
-	 */
-	final int ordinal;
+  /**
+   * The number of this enum constant.  Each constant is given a number
+   * which matches the order in which it was declared, starting with zero.
+   */
+  final int ordinal;
 
-	/**
-	 * This constructor is used by the compiler to create enumeration constants.
-	 *
-	 * @param name the name of the enumeration constant.
-	 * @param ordinal the number of the enumeration constant, based on the
-	 *                declaration order of the constants and starting from zero.
-	 */
-	protected Enum4D(String name, int ordinal) {
-		this.name = name;
-		this.ordinal = ordinal;
-	}
+  /**
+   * This constructor is used by the compiler to create enumeration constants.
+   *
+   * @param name the name of the enumeration constant.
+   * @param ordinal the number of the enumeration constant, based on the
+   *                declaration order of the constants and starting from zero.
+   */
+  protected Enum4D(String name, int ordinal)
+  {
+    this.name = name;
+    this.ordinal = ordinal;
+  }
 
-	/**
-	 * Returns true if this enumeration is equivalent to the supplied object,
-	 * <code>o</code>.  Only one instance of an enumeration constant exists,
-	 * so the comparison is simply done using <code>==</code>.
-	 *
-	 * @param o the object to compare to this.
-	 * @return true if <code>this == o</code>.
-	 */
-	@Override
-	public final boolean equals(Object o) {
-		// Enum constants are singular, so we need only compare `=='.
-		return this == o;
-	}
+  /**
+   * Returns true if this enumeration is equivalent to the supplied object,
+   * <code>o</code>.  Only one instance of an enumeration constant exists,
+   * so the comparison is simply done using <code>==</code>.
+   *
+   * @param o the object to compare to this.
+   * @return true if <code>this == o</code>.
+   */
+  @Override public final boolean equals(Object o)
+  {
+    // Enum constants are singular, so we need only compare `=='.
+    return this == o;
+  }
 
-	/**
-	 * Returns the hash code of this constant.  This is simply the ordinal.
-	 *
-	 * @return the hash code of this enumeration constant.
-	 */
-	@Override
-	public final int hashCode() {
-		return ordinal;
-	}
+  /**
+   * Returns the hash code of this constant.  This is simply the ordinal.
+   *
+   * @return the hash code of this enumeration constant.
+   */
+  @Override public final int hashCode() { return ordinal; }
 
-	/**
-	 * Returns a textual representation of this enumeration constant.
-	 * By default, this is simply the declared name of the constant, but
-	 * specific enumeration types may provide an implementation more suited
-	 * to the data being stored.
-	 *
-	 * @return a textual representation of this constant.
-	 */
-	@Override
-	public String toString() {
-		return name;
-	}
+  /**
+   * Returns a textual representation of this enumeration constant.
+   * By default, this is simply the declared name of the constant, but
+   * specific enumeration types may provide an implementation more suited
+   * to the data being stored.
+   *
+   * @return a textual representation of this constant.
+   */
+  @Override public String toString() { return name; }
 
-	/**
-	 * Returns an integer which represents the relative ordering of this
-	 * enumeration constant.  Enumeration constants are ordered by their
-	 * ordinals, which represents their declaration order.  So, comparing
-	 * two identical constants yields zero, while one declared prior to
-	 * this returns a positive integer and one declared after yields a
-	 * negative integer.
-	 *
-	 * @param e the enumeration constant to compare.
-	 * @return a negative integer if <code>e.ordinal < this.ordinal</code>,
-	 *         zero if <code>e.ordinal == this.ordinal</code> and a positive
-	 *         integer if <code>e.ordinal > this.ordinal</code>.
-	 * @throws ClassCastException if <code>e</code> is not an enumeration
-	 *                            constant of the same class.
-	 */
-	@Override
-	public final int compareTo(T e) {
-		if (!getDeclaringClass().equals(e.getDeclaringClass())) {
-			throw new ClassCastException();
-		}
-		return ordinal - e.ordinal;
-	}
+  /**
+   * Returns an integer which represents the relative ordering of this
+   * enumeration constant.  Enumeration constants are ordered by their
+   * ordinals, which represents their declaration order.  So, comparing
+   * two identical constants yields zero, while one declared prior to
+   * this returns a positive integer and one declared after yields a
+   * negative integer.
+   *
+   * @param e the enumeration constant to compare.
+   * @return a negative integer if <code>e.ordinal < this.ordinal</code>,
+   *         zero if <code>e.ordinal == this.ordinal</code> and a positive
+   *         integer if <code>e.ordinal > this.ordinal</code>.
+   * @throws ClassCastException if <code>e</code> is not an enumeration
+   *                            constant of the same class.
+   */
+  @Override public final int compareTo(T e)
+  {
+    if (!getDeclaringClass().equals(e.getDeclaringClass())) {
+      throw new ClassCastException();
+    }
+    return ordinal - e.ordinal;
+  }
 
-	/**
-	 * Cloning of enumeration constants is prevented, to maintain their
-	 * singleton status.
-	 *
-	 * @return the cloned object.
-	 * @throws CloneNotSupportedException as enumeration constants can't be
-	 *         cloned.
-	 */
-	@Override
-	protected final Object clone() throws CloneNotSupportedException {
-		throw new CloneNotSupportedException("can't clone an enum constant");
-	}
+  /**
+   * Cloning of enumeration constants is prevented, to maintain their
+   * singleton status.
+   *
+   * @return the cloned object.
+   * @throws CloneNotSupportedException as enumeration constants can't be
+   *         cloned.
+   */
+  @Override protected final Object clone() throws CloneNotSupportedException
+  {
+    throw new CloneNotSupportedException("can't clone an enum constant");
+  }
 
-	/**
-	 * Returns the name of this enumeration constant.
-	 *
-	 * @return the name of the constant.
-	 */
-	public final String name() {
-		return name;
-	}
+  /**
+   * Returns the name of this enumeration constant.
+   *
+   * @return the name of the constant.
+   */
+  public final String name() { return name; }
 
-	/**
-	 * Returns the number of this enumeration constant, which represents
-	 * the order in which it was originally declared, starting from zero.
-	 *
-	 * @return the number of this constant.
-	 */
-	public final int ordinal() {
-		return ordinal;
-	}
+  /**
+   * Returns the number of this enumeration constant, which represents
+   * the order in which it was originally declared, starting from zero.
+   *
+   * @return the number of this constant.
+   */
+  public final int ordinal() { return ordinal; }
 
-	/**
-	 * Returns the type of this enumeration constant.  This is the class
-	 * corresponding to the declaration of the enumeration.
-	 *
-	 * @return the type of this enumeration constant.
-	 */
-	public final Class<T> getDeclaringClass() {
-		Class k = getClass(), s = k.getSuperclass();
-		// We might be in an anonymous subclass of the enum class, so go
-		// up one more level.
-		if (!s.equals(Enum.class)) {
-			return s;
-		}
-		return k;
-	}
+  /**
+   * Returns the type of this enumeration constant.  This is the class
+   * corresponding to the declaration of the enumeration.
+   *
+   * @return the type of this enumeration constant.
+   */
+  public final Class<T> getDeclaringClass()
+  {
+    Class k = getClass(), s = k.getSuperclass();
+    // We might be in an anonymous subclass of the enum class, so go
+    // up one more level.
+    if (!s.equals(Enum.class)) {
+      return s;
+    }
+    return k;
+  }
 
-	/**
-	 * Enumerations can not have finalization methods.
-	 *
-	 * @since 1.6
-	 */
-	@Override
-	protected final void finalize() {
-	}
+  /**
+   * Enumerations can not have finalization methods.
+   *
+   * @since 1.6
+   */
+  @Override protected final void finalize() {}
 
-	public static <T extends Enum4D<T>> T valueOf(Class<T> enumType, String name) {
-		Field[] declaredFields = enumType.getDeclaredFields();
-		try {
-			for (Field field : declaredFields) {
-				if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name)) {
-					return (T) field.get(null);
-				}
-			}
-		} catch (IllegalAccessException iae) {
-			throw new Error("Unable to access Enum class");
-		}
-		return null;
-	}
+  public static <T extends Enum4D<T>> T valueOf(Class<T> enumType, String name)
+  {
+    Field[] declaredFields = enumType.getDeclaredFields();
+    try {
+      for (Field field : declaredFields) {
+        if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) &&
+            field.getName().equals(name)) {
+          return (T)field.get(null);
+        }
+      }
+    } catch (IllegalAccessException iae) {
+      throw new Error("Unable to access Enum class");
+    }
+    return null;
+  }
 }

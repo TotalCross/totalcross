@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.oper;
 
-public class OperandNull extends Operand {
-	public OperandNull() {
-		super(opr_null);
-	}
+public class OperandNull extends Operand
+{
+  public OperandNull() { super(opr_null); }
 }

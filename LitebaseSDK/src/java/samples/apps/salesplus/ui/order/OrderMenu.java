@@ -5,18 +5,21 @@
 
 package samples.apps.salesplus.ui.order;
 
-import samples.apps.salesplus.ui.*;
 import samples.apps.salesplus.*;
+import samples.apps.salesplus.ui.*;
 
 /**
  * The order menu.
  */
-public class OrderMenu extends BaseMenu {
-	/**
-	 * The Constructor.
-	 */
-	public OrderMenu() {
-		super(new String[] {"New Order", "Search"}, new int[] {SalesPlus.NEW_ORDER, SalesPlus.ORDER_SEARCH},
-			  false);
-	}
+public class OrderMenu extends BaseMenu
+{
+  /**
+   * The Constructor.
+   */
+  public OrderMenu()
+  {
+    super(new String[] { "New Order", "Search" },
+          new int[] { SalesPlus.NEW_ORDER, SalesPlus.ORDER_SEARCH },
+          false);
+  }
 }

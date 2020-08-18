@@ -3,14 +3,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
-#if defined (darwin)
+#if defined(darwin)
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void resizeImageAtPath(char* src, char* dst, int maxPixelSize);
+  void resizeImageAtPath(char* src, char* dst, int maxPixelSize);
 
 #ifdef __cplusplus
 };

@@ -5,15 +5,18 @@
 
 package samples.apps.salesplus.ui.product;
 
-import samples.apps.salesplus.ui.*;
 import samples.apps.salesplus.*;
+import samples.apps.salesplus.ui.*;
 
-public class ProductMenu extends BaseMenu {
-	/**
-	 * The Constructor.
-	 */
-	public ProductMenu() {
-		super(new String[] {"New Product", "Search"}, new int[] {SalesPlus.NEW_PRODUCT, SalesPlus.PRODUCT_SEARCH},
-			  false);
-	}
+public class ProductMenu extends BaseMenu
+{
+  /**
+   * The Constructor.
+   */
+  public ProductMenu()
+  {
+    super(new String[] { "New Product", "Search" },
+          new int[] { SalesPlus.NEW_PRODUCT, SalesPlus.PRODUCT_SEARCH },
+          false);
+  }
 }

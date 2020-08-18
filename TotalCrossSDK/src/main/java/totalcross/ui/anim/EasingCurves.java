@@ -27,40 +27,53 @@ package totalcross.ui.anim;
  * [2] http://easings.net
  * [3] https://github.com/daimajia/AnimationEasingFunctions
  */
-public final class EasingCurves {
-	/**
-	 * Quadratic In Curve.
-	 * @param begin starting value
-	 * @param end ending value
-	 * @param duration duration
-	 * @param t current time (0 <= t < duration)
-	 * @return
-	 */
-	public static double InQuadratic(double begin, double end, double duration, double t) {
-		return end * (t /= duration) * t + begin;
-	}
+public final class EasingCurves
+{
+  /**
+   * Quadratic In Curve.
+   * @param begin starting value
+   * @param end ending value
+   * @param duration duration
+   * @param t current time (0 <= t < duration)
+   * @return
+   */
+  public static double InQuadratic(double begin,
+                                   double end,
+                                   double duration,
+                                   double t)
+  {
+    return end * (t /= duration) * t + begin;
+  }
 
-	/**
-	 * Quadratic Out Curve.
-	 * @param begin starting value
-	 * @param end ending value
-	 * @param duration duration
-	 * @param t current time (0 <= t < duration)
-	 * @return
-	 */
-	public static double OutQuadratic(double begin, double end, double duration, double t) {
-		return -end * (t /= duration) * (t - 2) + begin;
-	}
+  /**
+   * Quadratic Out Curve.
+   * @param begin starting value
+   * @param end ending value
+   * @param duration duration
+   * @param t current time (0 <= t < duration)
+   * @return
+   */
+  public static double OutQuadratic(double begin,
+                                    double end,
+                                    double duration,
+                                    double t)
+  {
+    return -end * (t /= duration) * (t - 2) + begin;
+  }
 
-	/**
-	 * Quadratic InOut Curve.
-	 * @param begin starting value
-	 * @param end ending value
-	 * @param duration duration
-	 * @param t current time (0 <= t < duration)
-	 * @return
-	 */
-	public static double InOutQuadratic(double begin, double end, double duration, double t) {
-		return -end * (t /= duration) * (t - 2) + begin;
-	}
+  /**
+   * Quadratic InOut Curve.
+   * @param begin starting value
+   * @param end ending value
+   * @param duration duration
+   * @param t current time (0 <= t < duration)
+   * @return
+   */
+  public static double InOutQuadratic(double begin,
+                                      double end,
+                                      double duration,
+                                      double t)
+  {
+    return -end * (t /= duration) * (t - 2) + begin;
+  }
 }

@@ -12,34 +12,40 @@
 #include "SkImageFilter.h"
 #include "SkPoint.h"
 
-class SK_API SkOffsetImageFilter : public SkImageFilter {
+class SK_API SkOffsetImageFilter : public SkImageFilter
+{
 public:
-	static sk_sp<SkImageFilter> Make(SkScalar dx, SkScalar dy,
-									 sk_sp<SkImageFilter> input,
-									 const CropRect* cropRect = nullptr);
+  static sk_sp<SkImageFilter> Make(SkScalar dx,
+                                   SkScalar dy,
+                                   sk_sp<SkImageFilter> input,
+                                   const CropRect* cropRect = nullptr);
 
-	SkRect computeFastBounds(const SkRect& src) const override;
+  SkRect computeFastBounds(const SkRect& src) const override;
 
-	Factory getFactory() const override {
-		return CreateProc;
-	}
+  Factory getFactory() const override { return CreateProc; }
 
 protected:
-	void flatten(SkWriteBuffer&) const override;
-	sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
-										SkIPoint* offset) const override;
-	sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
-	SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix& ctm,
-							   MapDirection, const SkIRect* inputRect) const override;
+  void flatten(SkWriteBuffer&) const override;
+  sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source,
+                                      const Context&,
+                                      SkIPoint* offset) const override;
+  sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+  SkIRect onFilterNodeBounds(const SkIRect&,
+                             const SkMatrix& ctm,
+                             MapDirection,
+                             const SkIRect* inputRect) const override;
 
 private:
-	SkOffsetImageFilter(SkScalar dx, SkScalar dy, sk_sp<SkImageFilter> input, const CropRect*);
-	static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-	friend class SkFlattenable::PrivateInitializer;
+  SkOffsetImageFilter(SkScalar dx,
+                      SkScalar dy,
+                      sk_sp<SkImageFilter> input,
+                      const CropRect*);
+  static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+  friend class SkFlattenable::PrivateInitializer;
 
-	SkVector fOffset;
+  SkVector fOffset;
 
-	typedef SkImageFilter INHERITED;
+  typedef SkImageFilter INHERITED;
 };
 
 #endif

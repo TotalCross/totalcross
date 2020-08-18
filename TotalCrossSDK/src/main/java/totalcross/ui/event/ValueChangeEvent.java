@@ -3,22 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui.event;
 
-public class ValueChangeEvent<T> extends Event<ValueChangeHandler<T>> {
+public class ValueChangeEvent<T> extends Event<ValueChangeHandler<T>>
+{
 
-	private T value;
+  private T value;
 
-	public ValueChangeEvent(Object target, T value) {
-		super(0, target, 0);
-		this.value = value;
-	}
+  public ValueChangeEvent(Object target, T value)
+  {
+    super(0, target, 0);
+    this.value = value;
+  }
 
-	public T getValue() {
-		return value;
-	}
+  public T getValue() { return value; }
 
-	@Override
-	public void dispatch(ValueChangeHandler<T> listener) {
-		listener.onValueChange(this);
-	}
+  @Override public void dispatch(ValueChangeHandler<T> listener)
+  {
+    listener.onValueChange(this);
+  }
 }
-

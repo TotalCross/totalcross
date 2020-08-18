@@ -23,49 +23,46 @@ import java.security.GeneralSecurityException;
  * The exception that is thrown when an invalid key specification is
  * encountered.
  */
-public class InvalidKeySpecException4D extends GeneralSecurityException {
+public class InvalidKeySpecException4D extends GeneralSecurityException
+{
 
-	/**
-	 * The serial version identifier.
-	 */
-	private static final long serialVersionUID = 3546139293998810778L;
+  /**
+   * The serial version identifier.
+   */
+  private static final long serialVersionUID = 3546139293998810778L;
 
-	/**
-	 * Creates a new {@code InvalidKeySpecException} with the specified message.
-	 *
-	 * @param msg
-	 *            the detail message of this exception.
-	 */
-	public InvalidKeySpecException4D(String msg) {
-		super(msg);
-	}
+  /**
+   * Creates a new {@code InvalidKeySpecException} with the specified message.
+   *
+   * @param msg
+   *            the detail message of this exception.
+   */
+  public InvalidKeySpecException4D(String msg) { super(msg); }
 
-	/**
-	 * Creates a new {@code InvalidKeySpecException}.
-	 */
-	public InvalidKeySpecException4D() {
-	}
+  /**
+   * Creates a new {@code InvalidKeySpecException}.
+   */
+  public InvalidKeySpecException4D() {}
 
-	/**
-	 * Creates a new {@code InvalidKeySpecException} with the specified message
-	 * and cause.
-	 *
-	 * @param message
-	 *            the detail message of this exception.
-	 * @param cause
-	 *            the cause of this exception.
-	 */
-	public InvalidKeySpecException4D(String message, Throwable cause) {
-		super(message, cause);
-	}
+  /**
+   * Creates a new {@code InvalidKeySpecException} with the specified message
+   * and cause.
+   *
+   * @param message
+   *            the detail message of this exception.
+   * @param cause
+   *            the cause of this exception.
+   */
+  public InvalidKeySpecException4D(String message, Throwable cause)
+  {
+    super(message, cause);
+  }
 
-	/**
-	 * Creates a new {@code InvalidKeySpecException} with the specified cause.
-	 *
-	 * @param cause
-	 *            the cause of this exception.
-	 */
-	public InvalidKeySpecException4D(Throwable cause) {
-		super(cause);
-	}
+  /**
+   * Creates a new {@code InvalidKeySpecException} with the specified cause.
+   *
+   * @param cause
+   *            the cause of this exception.
+   */
+  public InvalidKeySpecException4D(Throwable cause) { super(cause); }
 }
