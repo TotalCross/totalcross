@@ -123,9 +123,6 @@ void handleTextInputEvent(SDL_Event event) {
 
 void privatePumpEvent(Context currentContext)
 {
-   if (!privateIsEventAvailable())
-      return;
-
 #ifndef HEADLESS
    DFBInputEvent evt;
    int x, y;
