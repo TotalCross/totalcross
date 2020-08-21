@@ -103,6 +103,9 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	}
 
 	uint32 flags; 
+#ifdef __APPLE__
+	flags = SDL_WINDOW_SHOWN;
+#else
 	if(getenv("TC_FULLSCREEN") == NULL) {
 		flags = SDL_WINDOW_FULLSCREEN;
 	} else {
@@ -110,6 +113,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 		viewport.w -= viewport.w*0.09;
 		viewport.h -= viewport.h*0.09;
 	}
+#endif
 
 	// Create the window
 	if (IS_NULL(window = SDL_CreateWindow(
