@@ -225,14 +225,23 @@ void TCSDL_Present() {
  * Destroy all SDL allocated variables
  */
 void TCSDL_Destroy(ScreenSurface screen) {
-	if (screen->pixels != NULL) {
+	if (usesTexture && screen->pixels != NULL) {
 		free(screen->pixels);
 	}
 
 	if (SCREEN_EX(screen) != NULL) {
-		SDL_DestroyTexture(SCREEN_EX(screen)->texture);
-		SDL_DestroyRenderer(SCREEN_EX(screen)->renderer);
-		SDL_DestroyWindow(SCREEN_EX(screen)->window);
+		if (SCREEN_EX(screen)->surface != NULL) {
+			SDL_FreeSurface(SCREEN_EX(screen)->surface);
+		}
+		if (SCREEN_EX(screen)->texture != NULL) {
+			SDL_DestroyTexture(SCREEN_EX(screen)->texture);
+		}
+		if (SCREEN_EX(screen)->renderer != NULL) {
+			SDL_DestroyRenderer(SCREEN_EX(screen)->renderer);
+		}
+		if (SCREEN_EX(screen)->window != NULL) {
+			SDL_DestroyWindow(SCREEN_EX(screen)->window);
+		}
 		free(SCREEN_EX(screen));
 	}
 	SDL_Quit();
