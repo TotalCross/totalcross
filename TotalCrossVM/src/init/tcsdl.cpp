@@ -181,6 +181,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	SCREEN_EX(screen)->window = window;
 	SCREEN_EX(screen)->renderer = renderer;
 	SCREEN_EX(screen)->texture = texture;
+	SCREEN_EX(screen)->surface = surface;
 
 	SDL_FreeFormat(pixelformat);
 
