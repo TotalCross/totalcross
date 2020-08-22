@@ -15,6 +15,9 @@
 
 static SDL_Renderer* renderer;
 static SDL_Texture* texture;
+static SDL_Window *window; 
+static SDL_Surface *surface;
+static bool usesTexture;
 
 /*
  * Init steps to create a window and texture to Skia handling
@@ -81,7 +84,6 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	}
 
 	// Create the window
-	SDL_Window* window;
 	if (IS_NULL(window = SDL_CreateWindow(
 							 title,
 							 SDL_WINDOWPOS_UNDEFINED,
@@ -124,16 +126,23 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 		return false;
 	}
 
-	// MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
-	if (IS_NULL(texture = SDL_CreateTexture(
-							  renderer,
-							  windowPixelFormat,
-							  SDL_TEXTUREACCESS_STREAMING,
-							  width,
-							  height))) {
-		std::cerr << "SDL_CreateTexturet(): " << SDL_GetError() << '\n';
-		return false;
+	usesTexture = std::string(rendererInfo.name).compare(std::string("software"));
+
+	if(usesTexture) {
+		// MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
+		if (IS_NULL(texture = SDL_CreateTexture(
+								renderer,
+								windowPixelFormat,
+								SDL_TEXTUREACCESS_STREAMING,
+								width,
+								height))) {
+			std::cerr << "SDL_CreateTexturet(): " << SDL_GetError() << '\n';
+			return false;
+		}
+	} else {
+		surface = SDL_GetWindowSurface(window);
 	}
+
 	// Get pixel format struct
 	SDL_PixelFormat* pixelformat;
 	if (IS_NULL(pixelformat = SDL_AllocFormat(windowPixelFormat))) {
@@ -151,14 +160,21 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	screen->pitch = pixelformat->BytesPerPixel * screen->screenW;
 	// pixel order
 	screen->pixelformat = windowPixelFormat;
-	// Adjusts screen's pixel surface
-	if (IS_NULL(screen->pixels = (uint8*) malloc(screen->pitch * screen->screenH))) {
-		std::cerr << "Failed to alloc " << (screen->pitch * screen->screenH) << " bytes for pixel surface" << '\n';
-		return false;
+
+	if (usesTexture) {
+		// Adjusts screen's pixel surface
+		if (IS_NULL(screen->pixels = (uint8*) malloc(screen->pitch * screen->screenH))) {
+			std::cerr << "Failed to alloc " << (screen->pitch * screen->screenH) << " bytes for pixel surface" << '\n';
+			return false;
+		}
+	}else {
+		screen->pixels = (uint8*) surface->pixels;
 	}
 
 	if (IS_NULL(screen->extension = (ScreenSurfaceEx) malloc(sizeof(TScreenSurfaceEx)))) {
-		free(screen->pixels);
+		if (usesTexture) {
+			free(screen->pixels);
+		}
 		std::cerr << "Failed to alloc TScreenSurfaceEx of " << sizeof(TScreenSurfaceEx) << " bytes" << '\n';
 		return false;
 	}
@@ -180,8 +196,10 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
  * depends on it
  */
 void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
-	// Update the given texture rectangle with new pixel data.
-	SDL_UpdateTexture(texture, NULL, pixels, pitch);
+	if(usesTexture) {
+		// Update the given texture rectangle with new pixel data.
+		SDL_UpdateTexture(texture, NULL, pixels, pitch);
+	}
 	// Call SDL render present
 	TCSDL_Present();
 }
@@ -190,12 +208,16 @@ void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
  * Update the screen with rendering performed
  */
 void TCSDL_Present() {
-	// Copy a portion of the texture to the current rendering target
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
-	// Update the screen with rendering performed
-	SDL_RenderPresent(renderer);
-	// Clears the entire rendering targe
-	SDL_RenderClear(renderer);
+  if(usesTexture) {
+    // Copy a portion of the texture to the current rendering target
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    // Update the screen with rendering performed
+    SDL_RenderPresent(renderer);
+    // Clears the entire rendering targe
+    SDL_RenderClear(renderer);
+  } else {
+    SDL_UpdateWindowSurface(window);
+  }
 }
 
 /*
