@@ -13,10 +13,10 @@
 #include <iostream>
 #include <vector>
 
-static SDL_Renderer* renderer;
-static SDL_Texture* texture;
-static SDL_Window *window; 
-static SDL_Surface *surface;
+static SDL_Renderer* renderer = NULL;
+static SDL_Texture* texture = NULL;
+static SDL_Window *window = NULL; 
+static SDL_Surface *surface = NULL;
 static bool usesTexture;
 
 /*
