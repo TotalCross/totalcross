@@ -6,7 +6,7 @@ target 'TotalCross' do
   pod 'Firebase/Core', '4.3.0'
   pod 'Firebase/Messaging', '4.3.0'
   pod 'FirebaseInstanceID', '2.0.4'
-  pod "youtube-ios-player-helper", "~> 0.1.4"
+  pod "youtube-ios-player-helper", "~> 1.0.2"
 end
 
 target 'tcvm' do
@@ -14,7 +14,7 @@ target 'tcvm' do
   pod 'Firebase/Core', '4.3.0'
   pod 'Firebase/Messaging', '4.3.0'
   pod 'FirebaseInstanceID', '2.0.4'
-  pod "youtube-ios-player-helper", "~> 0.1.4"
+  pod "youtube-ios-player-helper", "~> 1.0.2"
 end
 
 post_install do |installer|
