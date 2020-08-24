@@ -1,6 +1,6 @@
 workspace 'TotalCross'
 
-platform :ios, '8.0'
+platform :ios, '10.0'
 target 'TotalCross' do
   project 'TotalCross.xcodeproject'
   pod 'Firebase/Core', '4.3.0'
