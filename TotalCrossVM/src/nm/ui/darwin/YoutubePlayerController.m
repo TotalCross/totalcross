@@ -136,9 +136,6 @@
     if (state == kYTPlayerStatePaused) {
         executeMethod(lifeContext, onStateChange, callback, STATE_PAUSED);
     }
-    if (state == kYTPlayerStateQueued) {
-        executeMethod(lifeContext, onStateChange, callback, STATE_CUED);
-    }
     if (state == kYTPlayerStateUnknown) {
         executeMethod(lifeContext, onStateChange, callback, STATE_UNKNOWN);
     }
