@@ -6,6 +6,22 @@ import totalcross.io.XStream;
 
 public class XSerialPort extends XStream {
 
+   public XSerialPort(String portName) {
+
+   }
+
+   public String portName() {
+      return null;
+   }
+
+   public XSerialPort setPortName(String portName) {
+      return this;
+   }
+
+   public XSerialPort open(int openMode) {
+      return this;
+   }
+
    /**
     * throws error on BOTH
     */
