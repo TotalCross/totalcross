@@ -6,6 +6,11 @@
 
 package totalcross.ui.media;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
 import totalcross.Launcher;
 import totalcross.io.IOException;
 import totalcross.io.RandomAccessStream;
@@ -93,9 +98,14 @@ public class MediaClip {
    */
   public MediaClip(RandomAccessStream stream) throws IOException {
     try {
+      mediaClipRef = AudioSystem.getClip();
       mediaStream = new Launcher.S2IS(stream);
-      mediaClipRef = new sun.audio.AudioStream(mediaStream);
+      ((Clip) mediaClipRef).open(AudioSystem.getAudioInputStream(mediaStream));
     } catch (java.io.IOException e) {
+      throw new totalcross.io.IOException(e.getMessage());
+    } catch (UnsupportedAudioFileException e) {
+      throw new totalcross.io.IOException(e.getMessage());
+    } catch (LineUnavailableException e) {
       throw new totalcross.io.IOException(e.getMessage());
     }
 
@@ -126,7 +136,7 @@ public class MediaClip {
     if (!Launcher.isApplication) {
       ((java.applet.AudioClip) mediaClipRef).play();
     } else {
-      sun.audio.AudioPlayer.player.start((sun.audio.AudioStream) mediaClipRef);
+      ((Clip) mediaClipRef).start();
     }
     currentState = STARTED;
     mainWindow.broadcastEvent(new MediaClipEvent(MediaClipEvent.STARTED, mainWindow));
@@ -149,7 +159,7 @@ public class MediaClip {
     if (!Launcher.isApplication) {
       ((java.applet.AudioClip) mediaClipRef).stop();
     } else {
-      sun.audio.AudioPlayer.player.stop((sun.audio.AudioStream) mediaClipRef);
+      ((Clip) mediaClipRef).stop();
     }
     currentState = PREFETCHED;
     mainWindow.broadcastEvent(new MediaClipEvent(MediaClipEvent.STOPPED, mainWindow));
@@ -198,7 +208,8 @@ public class MediaClip {
     if (!Launcher.isApplication) {
       ((java.applet.AudioClip) mediaClipRef).stop();
     } else {
-      sun.audio.AudioPlayer.player.stop((sun.audio.AudioStream) mediaClipRef); // guich@582_8
+      ((Clip) mediaClipRef).stop();
+      ((Clip) mediaClipRef).close();
     }
     mediaClipRef = null;
     currentState = CLOSED;

@@ -18,7 +18,6 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.security.auth.x500.X500Principal;
-import sun.security.validator.ValidatorException;
 import totalcross.crypto.CryptoException;
 import totalcross.io.IOException;
 import totalcross.net.Socket;
