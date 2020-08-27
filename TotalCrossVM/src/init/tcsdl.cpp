@@ -88,7 +88,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 							 SDL_WINDOWPOS_UNDEFINED,
 							 width,
 							 height,
-							 (getenv("TC_FULLSCREEN") == NULL) ?  SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN
+							 flags
 						 ))) {
 		std::cerr << "SDL_CreateWindow(): " << SDL_GetError() << '\n';
 		return false;
