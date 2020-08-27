@@ -20,9 +20,7 @@ archivesBaseName = 'totalcross-sdk'
 // can't be used yet, enconding is a mess
 compileJava.options.encoding = 'UTF-8'
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
+sourceCompatibility = JavaVersion.VERSION_1_8
 
 javadoc {
 	failOnError = false
@@ -39,8 +37,9 @@ retrolambda {
   incremental true
 }
 
-task wrapper(type: Wrapper) {
-   gradleVersion = '4.0.1'
+wrapper {
+    gradleVersion = '5.0'
+    distributionUrl = distributionUrl.replace("bin", "all")
 }
 
 sourceSets {
