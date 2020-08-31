@@ -107,10 +107,15 @@ dependencies {
 	// https://mvnrepository.com/artifact/net.coobird/thumbnailator
 	compile group: 'net.coobird', name: 'thumbnailator', version: '0.4.8'
 
-	// https://mvnrepository.com/artifact/junit/junit
-	testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 
     compile(group: 'com.totalcross.annotations', name: 'totalcross-annotations', version: '1.0.0')
+}
+
+test {
+    useJUnitPlatform{}
 }
 
 jar {
