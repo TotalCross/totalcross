@@ -10,7 +10,6 @@ Once you have all requirements installed will be able to build a TotalCross Virt
 
 ## Building the VM
 
-### Windows
 
 In order to be able to start a change on the iOS VM, we need to generate the Visual Studio project that describes our VM (TCVM.sln). To do so, execute the following commands on you terminal:
 
