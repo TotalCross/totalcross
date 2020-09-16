@@ -23,7 +23,7 @@ Next is building the `TCVM.dll` for this you'll need VSCode and the CMake Tools 
 Then you set the target to `tcvm`:
 ![](https://imgur.com/PIjFkhi.png)
 
-Lastly for the build press Build and your tcvm.dll will be ready to debug your applcation:
+Lastly, press Build and your tcvm.dll will be ready to debug your applcation:
 ![](https://imgur.com/YLo5AaS.png)
 
 Now we are able to develop new features and fix some bugs and Test on your Visual Studio Code.
