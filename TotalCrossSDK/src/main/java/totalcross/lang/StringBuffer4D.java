@@ -81,6 +81,22 @@ public final class StringBuffer4D {
   }
 
   /**
+   * Constructs a string buffer that contains the same characters as the specified
+   * CharSequence. The initial capacity of the string buffer is 16 plus the length
+   * of the CharSequence argument.</br>
+   * If the length of the specified CharSequence is less than or equal to zero,
+   * then an empty buffer of capacity 16 is returned.
+   * 
+   * @param seq the sequence to copy.
+   * @throws NullPointerException if seq is null
+   */
+  public StringBuffer4D(CharSequence seq) {
+    int len = count = seq.length();
+    charbuf = new char[len + 16];
+    seq.toString().getChars(0, len, charbuf, 0);
+  }
+
+  /**
    * Returns the number of characters in the buffer.
    */
   public int length() {
