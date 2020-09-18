@@ -202,3 +202,9 @@ Before submitting a pull request, please make sure the following is done:
 After your pull request has been submitted, TotalCross code maintainers will acknowledge it as soon as possible. We aim to do it in three days tops.
 
 TotalCross code maintainers hold backlog grooming meetings most Fridays. Your pull request will likely be discussed then and you should get a position on where it stands on TotalCross backlog the following Monday.
+
+| Action | Action deadline |
+|---|---|
+| Pull request committed | -  |
+| First reply | 3 days  | 
+| Backlog prioritisation feedback | 7 days  | 
