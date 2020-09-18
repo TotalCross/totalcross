@@ -465,7 +465,15 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   protected void parseArguments(String clazz, String... args) {
-    AnonymousUserData.instance().launcher(args);
+    // Send statistic data if user agreed
+    new Thread(() -> {
+      try {
+        AnonymousUserData.instance().launcher(args);
+      } catch (Exception e) {
+        //TODO: handle exception in a Log level
+      } 
+    }).start();
+
     int n = args.length, i = 0;
     String newDataPath = null;
     try {
