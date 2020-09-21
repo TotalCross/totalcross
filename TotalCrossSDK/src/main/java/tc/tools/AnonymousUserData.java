@@ -119,6 +119,7 @@ public class AnonymousUserData {
     private void doGetUUID() {
         HttpStream.Options options = new HttpStream.Options();
         options.socketFactory = new SSLSocketFactory();
+        options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
         try (HttpStream hs = new HttpStream(new URI(BASE_URL + GET_UUID), options)) {
             JSONObject ret = readJsonObject(hs);
             config.put("userUuid", ret.get("uuid"));
@@ -145,6 +146,7 @@ public class AnonymousUserData {
             options.postHeaders.put("accept", "application/json");
             options.postHeaders.put("Content-Type", "application/json");
 
+            options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
             JSONObject dataJson = new JSONObject();
             dataJson.put("os", System.getProperty("os.name"));
             dataJson.put("tc_version", Settings.versionStr);
