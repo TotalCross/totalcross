@@ -122,7 +122,7 @@ public class AnonymousUserData {
         options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
         try (HttpStream hs = new HttpStream(new URI(BASE_URL + GET_UUID), options)) {
             JSONObject ret = readJsonObject(hs);
-            config.put("userUuid", ret.get("uuid"));
+            config.put("uuid", ret.get("uuid"));
 
             try (PrintWriter writer = new PrintWriter(configFile)) {
                 writer.write(config.toString());
@@ -136,7 +136,7 @@ public class AnonymousUserData {
 
     private void doPost(String url, String... args) {
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
-            if (!config.has("userUuid")) {
+            if (!config.has("uuid")) {
                 doGetUUID();
             }
 
@@ -145,14 +145,14 @@ public class AnonymousUserData {
             options.socketFactory = new SSLSocketFactory();
             options.postHeaders.put("accept", "application/json");
             options.postHeaders.put("Content-Type", "application/json");
-
             options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
+            
             JSONObject dataJson = new JSONObject();
             dataJson.put("os", System.getProperty("os.name"));
             dataJson.put("tc_version", Settings.versionStr);
             dataJson.put("date", sdf.format(new Date()));
             dataJson.put("args", String.join(" ", args));
-            dataJson.put("userUuid", config.opt("userUuid"));
+            dataJson.put("userUuid", config.opt("uuid"));
             options.data = dataJson.toString();
 
             try (HttpStream hs = new HttpStream(new URI(url), options)) {

@@ -60,7 +60,7 @@ public class AnonymousUserDataTest {
         JSONObject object = new JSONObject(str);
 
         assertEquals(true, object.opt("userAcceptedToProvideAnonymousData"), "user accepted should be true");
-        assertNotNull(object.opt("userUuid"), "it should contains an userUuid");
+        assertNotNull(object.opt("uuid"), "it should contains an uuid");
 
     }
 
@@ -73,7 +73,7 @@ public class AnonymousUserDataTest {
         try {
             FileWriter myWriter = new FileWriter(f);
             myWriter.write("{\"userAcceptedToProvideAnonymousData\":true," +
-                    "\"userUuid\": \"" + existingToken + "\"}");
+                    "\"uuid\": \"" + existingToken + "\"}");
             myWriter.close();
           } catch (IOException e) {
             e.printStackTrace();
@@ -85,7 +85,7 @@ public class AnonymousUserDataTest {
         assertEquals(true, 
             anonymousUserData.getConfig().get("userAcceptedToProvideAnonymousData"),
                 "user agreement should come from config file");
-        assertEquals(existingToken, anonymousUserData.getConfig().get("userUuid"),
+        assertEquals(existingToken, anonymousUserData.getConfig().get("uuid"),
             "should use existing token");
     }
  
