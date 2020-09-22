@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import totalcross.json.JSONObject;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +26,7 @@ public class AnonymousUserDataTest {
 
     @BeforeEach
     void setup() {
+        AnonymousUserData.setBaseUrl("https://aqueous-plateau-93003.herokuapp.com/api/v1");
         anonymousUserData = AnonymousUserData.instance();
         configDirPath = Paths.get(System.getProperty("user.home"), "tc-test").toAbsolutePath().toString();
         configPath = Paths.get(configDirPath, "config.json").toAbsolutePath().toString();
@@ -35,7 +35,6 @@ public class AnonymousUserDataTest {
         anonymousUserData.setResponseRequester(() -> {
             return true;
         });
-        anonymousUserData.setBaseUrl("https://aqueous-plateau-93003.herokuapp.com/api/v1");
         anonymousUserData.loadConfiguration();
     }
 
@@ -68,7 +67,7 @@ public class AnonymousUserDataTest {
     void shouldUseInformationFromExistingConfigFile() throws IOException {
         // Create config file
         File f = new File(configPath);
-        String existingToken = "cf871c5e-dd38-4ab8-9796-48b79d076d59"; // existing on stage server
+        String existingToken = "d61cfa55-cb26-49f3-8468-2a91ed94971f"; // existing on stage server
         f.createNewFile();
         try {
             FileWriter myWriter = new FileWriter(f);
@@ -87,6 +86,33 @@ public class AnonymousUserDataTest {
                 "user agreement should come from config file");
         assertEquals(existingToken, anonymousUserData.getConfig().get("uuid"),
             "should use existing token");
+    }
+
+    @Test
+    void shouldEraseTheExistingInvalidUUIDAndGetANewValidOne() throws IOException {
+        // Create config file
+        File f = new File(configPath);
+        String existingInvalidUuid = "52f265eb-8d36-4ffe-b2c5-3c4affb278fe"; // existing invalid
+        f.createNewFile();
+        try {
+            FileWriter myWriter = new FileWriter(f);
+            myWriter.write("{\"userAcceptedToProvideAnonymousData\":true," +
+                    "\"uuid\": \"" + existingInvalidUuid + "\"}");
+            myWriter.close();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+
+        // Use config file
+        anonymousUserData.loadConfiguration();
+        anonymousUserData.launcher("/src", "200x800");
+        String newValidUuid = (String) anonymousUserData.getConfig().get("uuid");
+        assertNotEquals(existingInvalidUuid, newValidUuid,
+            "should existing uuid should be invalid");
+        assertNotEquals(existingInvalidUuid, newValidUuid,
+            "should use not be existing the existing invalid token");
+        assertTrue(anonymousUserData.checkUUID(newValidUuid), "new token should be valid");
+        
     }
  
 }
