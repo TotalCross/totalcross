@@ -30,6 +30,7 @@ public class AnonymousUserData {
     private static final String GET_UUID = "/users/get-anonymous-uuid";
     private static final String POST_LAUNCHER = "/launch";
     private static final String POST_DEPLOY = "/deploy";
+    private static final String CHECK_UUID = "/users/check-uuid";
 
     private static final String POPUP_TEXT = "We'd like to collect anonymous telemetry data to help us prioritize \n"
             + "improvements. This includes how often you deploy and launches \n"
@@ -78,6 +79,9 @@ public class AnonymousUserData {
         if(configFile.exists()) {
             try (FileInputStream fis = new FileInputStream(configFile)) {
                 config = readJsonObject(Stream.asStream(fis));
+                if(config.has("uuid") && !checkUUID((String) config.get("uuid"))) {
+                    config.remove("uuid");
+                }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -132,6 +136,32 @@ public class AnonymousUserData {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
+    }
+
+    /**
+     * Check for invalid uuid's which were generated on version 6.1.0. 
+     * The uuid's generated on such a version must be discarded from 
+     * the user local configuration.
+     */
+    public static boolean checkUUID(String uuid) {
+        HttpStream.Options options = new HttpStream.Options();
+        options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
+        if(BASE_URL.startsWith("https://")) {
+            options.socketFactory = new SSLSocketFactory();
+            System.out.println("https://");
+        }
+        try (HttpStream hs = new HttpStream(new URI(BASE_URL + CHECK_UUID + "?uuid=" + uuid), options)) {
+            JSONObject ret = readJsonObject(hs);
+            boolean isValid = (boolean) ret.get("isValid");
+            if(!isValid) {
+                config.remove("uuid");     
+            }
+            return isValid;
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        // returning avoids uuid to be changed if something goes wrong with the request
+        return true;       
     }
 
     private void doPost(String url, String... args) {
@@ -189,11 +219,11 @@ public class AnonymousUserData {
         }
     }
 
-    public String getBaseUrl() {
+    public static String getBaseUrl() {
         return BASE_URL;
     }
 
-    public void setBaseUrl(String url) {
+    public static void setBaseUrl(String url) {
         BASE_URL = url;
     }
 
