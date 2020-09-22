@@ -122,8 +122,18 @@ public class AnonymousUserData {
 
     private void doGetUUID() {
         HttpStream.Options options = new HttpStream.Options();
-        options.socketFactory = new SSLSocketFactory();
         options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
+        options.httpType = HttpStream.POST;
+        if(BASE_URL.startsWith("https://")) {
+            options.socketFactory = new SSLSocketFactory();
+        }
+        options.postHeaders.put("accept", "application/json");
+        options.postHeaders.put("Content-Type", "application/json");
+        
+        JSONObject dataJson = new JSONObject();
+        dataJson.put("os", System.getProperty("os.name"));
+        dataJson.put("tc_version", Settings.versionStr);
+        options.data = dataJson.toString();
         try (HttpStream hs = new HttpStream(new URI(BASE_URL + GET_UUID), options)) {
             JSONObject ret = readJsonObject(hs);
             config.put("uuid", ret.get("uuid"));
@@ -172,13 +182,14 @@ public class AnonymousUserData {
 
             HttpStream.Options options = new HttpStream.Options();
             options.httpType = HttpStream.POST;
-            options.socketFactory = new SSLSocketFactory();
+            if(BASE_URL.startsWith("https://")) {
+                options.socketFactory = new SSLSocketFactory();
+            }
             options.postHeaders.put("accept", "application/json");
             options.postHeaders.put("Content-Type", "application/json");
             options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
             
             JSONObject dataJson = new JSONObject();
-            dataJson.put("os", System.getProperty("os.name"));
             dataJson.put("tc_version", Settings.versionStr);
             dataJson.put("date", sdf.format(new Date()));
             dataJson.put("args", String.join(" ", args));
