@@ -94,51 +94,53 @@ android {
         destinationDir file('src/main/assets') // directory that you want your archive to be placed in
     }
 
-    task copyApk <<{
-        copy {
-			from fileTree('build/outputs/apk').files
-			into "../../../output/${buildType}/TotalCrossSDK/dist/vm/android"
-			include "**/app-main-${buildType}.apk"
-			rename { String fileName ->
-				fileName.replace("app-main-${buildType}", 'TotalCross')
-			}
-            eachFile { println it.file }
-        }
-        copy {
-            from zipTree("build/outputs/apk/singleApk/${buildType}/app-singleApk-${buildType}.apk").files
-            into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
-            include 'AndroidManifest.xml', 'resources.arsc'
-            rename { String fileName ->
-                fileName.replace('.', '_singleapk.')
+    task copyApk {
+        doLast {
+            copy {
+                from fileTree('build/outputs/apk').files
+                into "../../../output/${buildType}/TotalCrossSDK/dist/vm/android"
+                include "**/app-main-${buildType}.apk"
+                rename { String fileName ->
+                    fileName.replace("app-main-${buildType}", 'TotalCross')
+                }
+                eachFile { println it.file }
             }
-            eachFile { println it.file }
-        }
-        copy {
-            from zipTree("build/outputs/apk/includeSms/${buildType}/app-includeSms-${buildType}.apk").files
-            into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
-            include 'AndroidManifest.xml', 'resources.arsc'
-            rename { String fileName ->
-                fileName.replace('.', '_includeSms.')
+            copy {
+                from zipTree("build/outputs/apk/singleApk/${buildType}/app-singleApk-${buildType}.apk").files
+                into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
+                include 'AndroidManifest.xml', 'resources.arsc'
+                rename { String fileName ->
+                    fileName.replace('.', '_singleapk.')
+                }
+                eachFile { println it.file }
             }
-            eachFile { println it.file }
-        }
-        copy {
-            from fileTree('build/intermediates/res/main/' + buildType).files
-            into '../../../output/' + buildType + '/TotalCrossSDK/etc/launchers/android'
-            include 'resources-main' + buildType.capitalize() + '.ap_'
-            rename { String fileName ->
-                fileName.replace('-main' + buildType.capitalize(), '')
+            copy {
+                from zipTree("build/outputs/apk/includeSms/${buildType}/app-includeSms-${buildType}.apk").files
+                into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
+                include 'AndroidManifest.xml', 'resources.arsc'
+                rename { String fileName ->
+                    fileName.replace('.', '_includeSms.')
+                }
+                eachFile { println it.file }
             }
-            eachFile { println it.file }
-        }
-        copy {
-            from fileTree('build/intermediates/res/main/' + buildType).files
-            into '../../../TotalCrossSDK/etc/launchers/android'
-            include 'resources-main' + buildType.capitalize() + '.ap_'
-            rename { String fileName ->
-                fileName.replace('-main' + buildType.capitalize(), '')
+            copy {
+                from fileTree('build/intermediates/res/main/' + buildType).files
+                into '../../../output/' + buildType + '/TotalCrossSDK/etc/launchers/android'
+                include 'resources-main' + buildType.capitalize() + '.ap_'
+                rename { String fileName ->
+                    fileName.replace('-main' + buildType.capitalize(), '')
+                }
+                eachFile { println it.file }
             }
-            eachFile { println it.file }
+            copy {
+                from fileTree('build/intermediates/res/main/' + buildType).files
+                into '../../../TotalCrossSDK/etc/launchers/android'
+                include 'resources-main' + buildType.capitalize() + '.ap_'
+                rename { String fileName ->
+                    fileName.replace('-main' + buildType.capitalize(), '')
+                }
+                eachFile { println it.file }
+            }
         }
     }
 
