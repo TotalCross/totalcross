@@ -49,6 +49,7 @@ import tc.tools.AnonymousUserData;
 import tc.tools.JarClassPathLoader;
 import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
+import totalcross.io.RandomAccessStream;
 import totalcross.io.Stream;
 import totalcross.sys.Settings;
 import totalcross.sys.SpecialKeys;
@@ -2363,6 +2364,51 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     @Override
     public int writeBytes(byte[] buf, int start, int count) {
       return 0; // not supported
+    }
+  }
+
+  public static class S2FIS extends java.io.FilterInputStream {
+    private RandomAccessStream s;
+    private int pos = -1;
+    private int readLimit = -1;
+
+    public S2FIS(RandomAccessStream s) {
+      this(s, -1, true);
+    }
+
+    public S2FIS(RandomAccessStream s, int max) {
+      this(s, max, true);
+    }
+
+    public S2FIS(RandomAccessStream s, int max, boolean closeUnderlying) {
+      super(new S2IS(s, max, closeUnderlying));
+      this.s = s;
+    }
+
+    @Override
+    public synchronized void mark(int readlimit) {
+      try {
+        this.pos = s.getPos();
+        this.readLimit = readlimit;
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    @Override
+    public synchronized void reset() throws java.io.IOException {
+      if (this.pos == -1) {
+        throw new java.io.IOException("the stream has not been marked");
+      }
+      if (s.getPos() - this.pos > readLimit) {
+        throw new java.io.IOException("the mark has been invalidated");
+      }
+      s.setPos(this.pos);
+    }
+
+    @Override
+    public boolean markSupported() {
+      return true;
     }
   }
 
