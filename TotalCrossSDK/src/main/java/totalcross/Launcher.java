@@ -130,11 +130,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     addMouseWheelListener(this);
     addMouseMotionListener(this);
     try {
-      Runtime.runFinalizersOnExit(true);
-    } catch (Throwable t) {
-    }
-    //try {System.runFinalizersOnExit(true);} catch (Throwable t) {} // guich@300_31
-    try {
       JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/jna-4.2.2.jar");
       JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/jna-platform-4.2.2.jar");
       JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/slf4j-api-1.7.21.jar");
