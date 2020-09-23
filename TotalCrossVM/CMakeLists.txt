@@ -71,6 +71,7 @@ set(SOURCES
 
     ${TC_SRCDIR}/init/demo.c
     ${TC_SRCDIR}/init/globals.c
+    ${TC_SRCDIR}/init/testdbg.c
     ${TC_SRCDIR}/init/rvmdebug.c
     ${TC_SRCDIR}/init/rvmdebug_calls.c
     ${TC_SRCDIR}/init/nativeProcAddressesTC.c
@@ -493,7 +494,7 @@ endif(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
 link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
-set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
+set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES} src/init/rvmdebug_types.h)
 
 if(TCVM_SHARED)
   add_library(tcvm SHARED ${LIBRARY_ARGS})

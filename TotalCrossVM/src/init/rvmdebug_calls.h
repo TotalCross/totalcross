@@ -6,11 +6,32 @@
 #define TCVM_RVMDEBUG_CALLS_H
 
 #include "rvmdebug.h"
+#include "rvmdebug_types.h"
+
+int rvmLog(int level, const char* tag, const char* text);
+
+int rvmLogf(int level, const char* tag, const char* format, ...);
+jlong rvmRTGetThreadId(Env* env, Object* threadObj);
+jint rvmLockMutex(Mutex* mutex);
+jint rvmUnlockMutex(Mutex* mutex);
+jint rvmInitMutex(Mutex* mutex);
+void gcAddRoot(void* ptr);
+jboolean rvmExceptionCheck(Env* env);
+void* gcAllocate(size_t size);
+jboolean rvmThrowIllegalArgumentException(Env* env, const char* message);
+Object* rvmExceptionClear(Env* env);
+Object* rvmAllocateObject(Env* env, Class* clazz);
+jboolean rvmThrowInstantiationError(Env* env, const char* message);
+void rvmThrow(Env* env, Object* e);
+void rvmPushGatewayFrame(Env* env);
+void rvmPopGatewayFrame(Env* env);
+CallStackFrame* rvmGetNextCallStackMethod(Env* env, CallStack* callStack, jint* index);
+
 
 //jboolean rvmInitStrings(Env* env);
 //Object* rvmNewStringNoCopy(Env* env, CharArray* value, jint offset, jint length);
 //Object* rvmNewString(Env* env, const jchar* chars, jint length);
-//Object* rvmNewStringUTF(Env* env, const char* s, jint length);
+Object* rvmNewStringUTF(Env* env, const char* s, jint length);
 //Object* rvmNewStringAscii(Env* env, const char* s, jint length);
 //Object* rvmNewInternedStringUTF(Env* env, const char* s, jint length);
 //Object* rvmInternString(Env* env, Object* str);
@@ -22,15 +43,15 @@
 //void rvmGetStringUTFRegion(Env* env, Object* str, jint start, jint len, char* buf);
 
 
-//extern BooleanArray* rvmNewBooleanArray(Env* env, jint length);
-//extern ByteArray* rvmNewByteArray(Env* env, jint length);
-//extern CharArray* rvmNewCharArray(Env* env, jint length);
-//extern ShortArray* rvmNewShortArray(Env* env, jint length);
-//extern IntArray* rvmNewIntArray(Env* env, jint length);
-//extern LongArray* rvmNewLongArray(Env* env, jint length);
-//extern FloatArray* rvmNewFloatArray(Env* env, jint length);
-//extern DoubleArray* rvmNewDoubleArray(Env* env, jint length);
-//extern ObjectArray* rvmNewObjectArray(Env* env, jint length, Class* elementClass, Class* arrayClass, Object* init);
+jbooleanArray* rvmNewBooleanArray(Env* env, jint length);
+jbyteArray* rvmNewByteArray(Env* env, jint length);
+jcharArray* rvmNewCharArray(Env* env, jint length);
+jshortArray* rvmNewShortArray(Env* env, jint length);
+jintArray* rvmNewIntArray(Env* env, jint length);
+jlongArray* rvmNewLongArray(Env* env, jint length);
+jfloatArray* rvmNewFloatArray(Env* env, jint length);
+jdoubleArray* rvmNewDoubleArray(Env* env, jint length);
+jobjectArray* rvmNewObjectArray(Env* env, jint length, Class* elementClass, Class* arrayClass, Object* init);
 //extern Array* rvmNewMultiArray(Env* env, jint dims, jint* lengths, Class* type);
 //extern Array* rvmCloneArray(Env* env, Array* array);
 //extern jint rvmGetArrayDimensions(Env* env, Array* array);
@@ -42,7 +63,7 @@
 //extern const char* rvmGetReturnType(const char* desc);
 //extern const char* rvmGetNextParameterType(const char** desc);
 //extern jint rvmGetParameterCount(Method* method);
-//extern Method* rvmGetMethod(Env* env, Class* clazz, const char* name, const char* desc);
+Method* rvmGetMethod(Env* env, Class* clazz, const char* name, const char* desc);
 //extern jboolean rvmHasMethod(Env* env, Class* clazz, const char* name, const char* desc);
 //extern Method* rvmGetClassMethod(Env* env, Class* clazz, const char* name, const char* desc);
 //extern Method* rvmGetClassInitializer(Env* env, Class* clazz);
@@ -51,41 +72,41 @@
 //extern jboolean rvmUnregisterNative(Env* env, NativeMethod* method);
 //extern void* rvmResolveNativeMethodImpl(Env* env, NativeMethod* method, const char* shortMangledName, const char* longMangledName, Object* classLoader, void** ptr);
 //extern jboolean rvmLoadNativeLibrary(Env* env, const char* path, Object* classLoader);
-//extern Method* rvmFindMethodAtAddress(Env* env, void* address);
+Method* rvmFindMethodAtAddress(Env* env, void* address);
 //extern Method* rvmGetCallingMethod(Env* env);
-//extern CallStack* rvmCaptureCallStack(Env* env);
+CallStack* rvmCaptureCallStack(Env* env);
 //extern CallStack* rvmCaptureCallStackForThread(Env* env, Thread* thread);
 //extern CallStackFrame* rvmResolveCallStackFrame(Env* env, CallStackFrame* frame);
 //extern ObjectArray* rvmCallStackToStackTraceElements(Env* env, CallStack* callStack, jint first);
 //extern void rvmCallVoidInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern void rvmCallVoidInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+void rvmCallVoidInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern void rvmCallVoidInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern Object* rvmCallObjectInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern Object* rvmCallObjectInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+Object* rvmCallObjectInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern Object* rvmCallObjectInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jboolean rvmCallBooleanInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jboolean rvmCallBooleanInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jboolean rvmCallBooleanInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jboolean rvmCallBooleanInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jbyte rvmCallByteInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jbyte rvmCallByteInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jbyte rvmCallByteInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jbyte rvmCallByteInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jchar rvmCallCharInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jchar rvmCallCharInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jchar rvmCallCharInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jchar rvmCallCharInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jshort rvmCallShortInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jshort rvmCallShortInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jshort rvmCallShortInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jshort rvmCallShortInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jint rvmCallIntInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jint rvmCallIntInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jint rvmCallIntInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jint rvmCallIntInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jlong rvmCallLongInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jlong rvmCallLongInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jlong rvmCallLongInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jlong rvmCallLongInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jfloat rvmCallFloatInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jfloat rvmCallFloatInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jfloat rvmCallFloatInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jfloat rvmCallFloatInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern jdouble rvmCallDoubleInstanceMethod(Env* env, Object* obj, Method* method, ...);
-//extern jdouble rvmCallDoubleInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
+jdouble rvmCallDoubleInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jdouble rvmCallDoubleInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern void rvmCallNonvirtualVoidInstanceMethod(Env* env, Object* obj, Method* method, ...);
 //extern void rvmCallNonvirtualVoidInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
@@ -118,39 +139,39 @@
 //extern jdouble rvmCallNonvirtualDoubleInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args);
 //extern jdouble rvmCallNonvirtualDoubleInstanceMethodV(Env* env, Object* obj, Method* method, va_list args);
 //extern void rvmCallVoidClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern void rvmCallVoidClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+void rvmCallVoidClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern void rvmCallVoidClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern Object* rvmCallObjectClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern Object* rvmCallObjectClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+Object* rvmCallObjectClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern Object* rvmCallObjectClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jboolean rvmCallBooleanClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jboolean rvmCallBooleanClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jboolean rvmCallBooleanClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jboolean rvmCallBooleanClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jbyte rvmCallByteClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jbyte rvmCallByteClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jbyte rvmCallByteClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jbyte rvmCallByteClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jchar rvmCallCharClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jchar rvmCallCharClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jchar rvmCallCharClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jchar rvmCallCharClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jshort rvmCallShortClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jshort rvmCallShortClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jshort rvmCallShortClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jshort rvmCallShortClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jint rvmCallIntClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jint rvmCallIntClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jint rvmCallIntClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jint rvmCallIntClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jlong rvmCallLongClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jlong rvmCallLongClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jlong rvmCallLongClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jlong rvmCallLongClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jfloat rvmCallFloatClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jfloat rvmCallFloatClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jfloat rvmCallFloatClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jfloat rvmCallFloatClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 //extern jdouble rvmCallDoubleClassMethod(Env* env, Class* clazz, Method* method, ...);
-//extern jdouble rvmCallDoubleClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
+jdouble rvmCallDoubleClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args);
 //extern jdouble rvmCallDoubleClassMethodV(Env* env, Class* clazz, Method* method, va_list args);
 
 
 
-//extern Class* rvmFindClass(Env* env, const char* className);
+Class* rvmFindClass(Env* env, const char* className);
 //extern Class* rvmFindClassInClasspathForLoader(Env* env, const char* className, Object* classLoader);
 //extern Class* rvmFindClassUsingLoader(Env* env, const char* className, Object* classLoader);
 //extern Class* rvmFindClassByDescriptor(Env* env, const char* desc, Object* classLoader);

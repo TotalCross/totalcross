@@ -1,11 +1,46 @@
 #include "rvmdebug_calls.h"
+#include <stdarg.h>
 
-int rvmLog(int level, const char* tag, const char* text)
-{
+#define LOG_BUF_SIZE 1024
+#define IS_ENABLED(level) (_logLevel < LOG_LEVEL_SILENT && _logLevel <= level)
+
+jint _logLevel = LOG_LEVEL_TRACE;
+static const char* levels[] = {
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL"
+};
+
+static const char* level2String(int level) {
+    if (level < LOG_LEVEL_TRACE) level = LOG_LEVEL_TRACE;
+    return levels[level - LOG_LEVEL_TRACE];
 }
 
-int rvmLogf(int level, const char* tag, const char* format, ...)
-{
+static inline int logwrite(int level, const char* tag, const char* text) {
+    return fprintf(stderr, "[%s] %s: %s\n", level2String(level), tag, text); \
+}
+
+
+int rvmLog(int level, const char* tag, const char* text) {
+    if (IS_ENABLED(level)) {
+        return logwrite(level, tag, text);
+    }
+    return 0;
+}
+
+int rvmLogf(int level, const char* tag, const char* format, ...) {
+    va_list ap;
+    char buf[LOG_BUF_SIZE];
+    if (IS_ENABLED(level)) {
+        va_start(ap, format);
+        vsnprintf(buf, LOG_BUF_SIZE, format, ap);
+        va_end(ap);
+        return logwrite(level, tag, buf);
+    }
+    return 0;
 }
 
 void gcAddRoot(void* ptr)
@@ -14,22 +49,27 @@ void gcAddRoot(void* ptr)
 
 void* gcAllocate(size_t size)
 {
+    return 0;
 }
 
 Object* rvmAllocateObject(Env* env, Class* clazz)
 {
+    return 0;
 }
 
 CallStack* rvmCaptureCallStack(Env* env)
 {
+    return 0;
 }
 
 jboolean rvmExceptionCheck(Env* env)
 {
+    return 0;
 }
 
 Object* rvmExceptionClear(Env* env)
 {
+    return 0;
 }
 
 CallStackFrame* rvmResolveCallStackFrame(Env* env, CallStackFrame* frame) {
@@ -51,8 +91,24 @@ CallStackFrame* rvmResolveCallStackFrame(Env* env, CallStackFrame* frame) {
 //    }
 //    frame->lineNumber = METHOD_IS_NATIVE(frame->method) ? -2 : getLineNumber(frame);
 //    return frame;
+    return 0;
 }
 
+Method* rvmFindMethodAtAddress(Env* env, void* address) {
+//    Class* clazz = env->vm->options->findClassAt(env, address);
+//    if (!clazz) return NULL;
+//    Method* method = rvmGetMethods(env, clazz);
+//    if (rvmExceptionCheck(env)) return NULL;
+//    for (; method != NULL; method = method->next) {
+//        void* start = method->impl;
+//        void* end = start + method->size;
+//        if (start && address >= start && address < end) {
+//            return method;
+//        }
+//    }
+//    // TODO: We should never end up here
+    return NULL;
+}
 
 CallStackFrame* rvmGetNextCallStackMethod(Env* env, CallStack* callStack, jint* index)
 {
@@ -99,116 +155,145 @@ void rvmThrow(Env* env, Object* e)
 
 jboolean rvmThrowIllegalArgumentException(Env* env, const char* message)
 {
+    return 0;
 }
 
 jboolean rvmThrowInstantiationError(Env* env, const char* message)
 {
+    return 0;
 }
 
 Object* rvmNewStringUTF(Env* env, const char* s, jint length)
 {
+    return 0;
 }
 
 jfloat rvmCallFloatInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
-Object* rvmNewBooleanArray(Env* env, jint length)
+jbooleanArray* rvmNewBooleanArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewByteArray(Env* env, jint length)
+jbyteArray* rvmNewByteArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewCharArray(Env* env, jint length)
+jcharArray* rvmNewCharArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewShortArray(Env* env, jint length)
+jshortArray* rvmNewShortArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewIntArray(Env* env, jint length)
+jintArray* rvmNewIntArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewLongArray(Env* env, jint length)
+jlongArray* rvmNewLongArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewFloatArray(Env* env, jint length)
+jfloatArray* rvmNewFloatArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewDoubleArray(Env* env, jint length)
+jdoubleArray* rvmNewDoubleArray(Env* env, jint length)
 {
+    return 0;
 }
 
-Object* rvmNewObjectArray(Env* env, jint length, Class* elementClass, Class* arrayClass, Object* init)
+jobjectArray* rvmNewObjectArray(Env* env, jint length, Class* elementClass, Class* arrayClass, Object* init)
 {
+    return 0;
 }
 
 
 jboolean rvmCallBooleanInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jbyte rvmCallByteInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jchar rvmCallCharInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jshort rvmCallShortInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jint rvmCallIntInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jlong rvmCallLongInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jdouble rvmCallDoubleInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jboolean rvmCallBooleanClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jbyte rvmCallByteClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jchar rvmCallCharClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jshort rvmCallShortClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jint rvmCallIntClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jlong rvmCallLongClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jfloat rvmCallFloatClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 jdouble rvmCallDoubleClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
+
 void rvmCallVoidClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
 }
@@ -219,16 +304,20 @@ void rvmCallVoidInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* a
 
 Object* rvmCallObjectClassMethodA(Env* env, Class* clazz, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 Object* rvmCallObjectInstanceMethodA(Env* env, Object* obj, Method* method, jvalue* args)
 {
+    return 0;
 }
 
 Class* rvmFindClass(Env* env, const char* className)
 {
+    return 0;
 }
 
 Method* rvmGetMethod(Env* env, Class* clazz, const char* name, const char* desc)
 {
+    return 0;
 }

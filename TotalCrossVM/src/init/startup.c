@@ -18,6 +18,8 @@
  #include "posix/startup_c.h"
 #endif
 
+#include "testdbg.h"
+
 void rebootDevice(); // implemented in nm/sys/<plat>/Vm_c.h
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr);
 bool initGraphicsAfterSettings(Context currentContext);
@@ -497,6 +499,8 @@ jumpArgument:
 */
 TC_API int32 executeProgram(CharP argsOriginal)
 {
+    testdbg();
+
    Context c;
    int32 rc = startVM(argsOriginal, &c);
 

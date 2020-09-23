@@ -66,3 +66,7 @@ TotalCrossSDK/.idea
 TotalCrossVM/android/src/main/libs/armeabi/
 TotalCrossVM/android/app/src/main/assets/tcfiles\.zip
 TotalCrossVM/android/app/.cxx
+
+/**/.idea
+*.iml
+TotalCrossVM/debugger/target
