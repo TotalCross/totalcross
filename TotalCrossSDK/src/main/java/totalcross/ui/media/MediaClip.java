@@ -102,11 +102,11 @@ public class MediaClip {
       mediaStream = new Launcher.S2IS(stream);
       ((Clip) mediaClipRef).open(AudioSystem.getAudioInputStream(mediaStream));
     } catch (java.io.IOException e) {
-      throw new totalcross.io.IOException(e.getMessage());
+      throw new totalcross.io.IOException(e);
     } catch (UnsupportedAudioFileException e) {
-      throw new totalcross.io.IOException(e.getMessage());
+      throw new totalcross.io.IOException(e);
     } catch (LineUnavailableException e) {
-      throw new totalcross.io.IOException(e.getMessage());
+      throw new totalcross.io.IOException(e);
     }
 
     if (mediaClipRef == null) {
@@ -171,10 +171,7 @@ public class MediaClip {
    * @throws IOException
    */
   final public void reset() throws IOException {
-    try {
-      this.stop();
-    } catch (IOException e) {
-    }
+    this.stop();
   }
 
   /**
