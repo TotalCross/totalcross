@@ -127,7 +127,7 @@ public class SSLCTX {
     this.num_sessions = num_sessions;
 
     try {
-      Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+      Security.addProvider(Security.getProvider("SunJSSE"));
       ctx_ssl = SSLContext.getInstance("TLS");
     } catch (java.security.NoSuchAlgorithmException e) {
       throw new NoSuchAlgorithmException(e.getMessage());
