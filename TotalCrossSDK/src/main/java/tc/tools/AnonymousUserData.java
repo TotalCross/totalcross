@@ -32,12 +32,6 @@ public class AnonymousUserData {
     private static final String POST_DEPLOY = "/deploy";
     private static final String CHECK_UUID = "/users/check-uuid";
 
-    private static final String POPUP_TEXT = "We'd like to collect anonymous telemetry data to help us prioritize \n"
-            + "improvements. This includes how often you deploy and launches \n"
-            + "(on simulator) your app, which OS you deploy for, your timezone and \n"
-            + "which totalcross version you're using. We do not collect any personal \n"
-            + "data or sensitive information. Do you allow TotalCross to send us \n" + "anonymous report?";
-
     private static AnonymousUserData instance;
 
     private static ResponseRequester responseRequester;
@@ -120,16 +114,22 @@ public class AnonymousUserData {
         doPost(BASE_URL + POST_DEPLOY, args);
     }
 
-    private void doGetUUID() {
+    private static HttpStream.Options setupHttpOptions() {
         HttpStream.Options options = new HttpStream.Options();
         options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
-        options.httpType = HttpStream.POST;
-        if(BASE_URL.startsWith("https://")) {
+        if (BASE_URL.startsWith("https://")) {
             options.socketFactory = new SSLSocketFactory();
         }
         options.postHeaders.put("accept", "application/json");
         options.postHeaders.put("Content-Type", "application/json");
-        
+
+        return options;
+    }
+
+    private void doGetUUID() {
+        HttpStream.Options options = setupHttpOptions();
+        options.httpType = HttpStream.POST;
+
         JSONObject dataJson = new JSONObject();
         dataJson.put("os", System.getProperty("os.name"));
         dataJson.put("tc_version", Settings.versionStr);
@@ -149,17 +149,12 @@ public class AnonymousUserData {
     }
 
     /**
-     * Check for invalid uuid's which were generated on version 6.1.0. 
-     * The uuid's generated on such a version must be discarded from 
-     * the user local configuration.
+     * Check for invalid uuid's which were generated on version 6.1.0. The uuid's
+     * generated on such a version must be discarded from the user local
+     * configuration.
      */
     public static boolean checkUUID(String uuid) {
-        HttpStream.Options options = new HttpStream.Options();
-        options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
-        if(BASE_URL.startsWith("https://")) {
-            options.socketFactory = new SSLSocketFactory();
-            System.out.println("https://");
-        }
+        HttpStream.Options options = setupHttpOptions();
         try (HttpStream hs = new HttpStream(new URI(BASE_URL + CHECK_UUID + "?uuid=" + uuid), options)) {
             JSONObject ret = readJsonObject(hs);
             boolean isValid = (boolean) ret.get("isValid");
@@ -180,13 +175,8 @@ public class AnonymousUserData {
                 doGetUUID();
             }
 
-            HttpStream.Options options = new HttpStream.Options();
+            HttpStream.Options options = setupHttpOptions();
             options.httpType = HttpStream.POST;
-            if(BASE_URL.startsWith("https://")) {
-                options.socketFactory = new SSLSocketFactory();
-            }
-            options.postHeaders.put("accept", "application/json");
-            options.postHeaders.put("Content-Type", "application/json");
             options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
             
             JSONObject dataJson = new JSONObject();
@@ -215,6 +205,15 @@ public class AnonymousUserData {
     }
 
     private class DefaultResponseRequester implements ResponseRequester {
+        
+        private static final String POPUP_TEXT = 
+            "We'd like to collect anonymous telemetry data to help us prioritize \n"
+            + "improvements. This includes how often you deploy and launches \n"
+            + "(on simulator) your app, which OS you deploy for, your timezone and \n"
+            + "which totalcross version you're using. We do not collect any personal \n"
+            + "data or sensitive information. Do you allow TotalCross to send us \n" 
+            + "anonymous report?";
+
         @Override
         public boolean ask() throws Exception {
             final String[] options = new String[] { "Yes, send anonymous reports", "Don't send" };
