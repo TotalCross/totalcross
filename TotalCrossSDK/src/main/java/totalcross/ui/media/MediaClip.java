@@ -72,7 +72,7 @@ import totalcross.ui.MainWindow;
  */
 public class MediaClip {
   Object mediaClipRef;
-  Launcher.S2IS mediaStream;
+  Launcher.S2FIS mediaStream;
   int currentState;
 
   static MainWindow mainWindow = MainWindow.getMainWindow();
@@ -110,7 +110,7 @@ public class MediaClip {
   public MediaClip(RandomAccessStream stream) throws IOException {
     try {
       mediaClipRef = AudioSystem.getClip();
-      mediaStream = new Launcher.S2IS(stream);
+      mediaStream = new Launcher.S2FIS(stream);
       ((Clip) mediaClipRef).open(AudioSystem.getAudioInputStream(mediaStream));
     } catch (java.io.IOException e) {
       throw new totalcross.io.IOException(e);
