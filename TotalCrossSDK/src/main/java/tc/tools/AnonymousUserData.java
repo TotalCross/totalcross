@@ -4,11 +4,10 @@
 package tc.tools;
 
 import java.awt.GraphicsEnvironment;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -20,7 +19,6 @@ import totalcross.io.ByteArrayStream;
 import totalcross.io.Stream;
 import totalcross.json.JSONObject;
 import totalcross.net.HttpStream;
-import totalcross.net.URI;
 import totalcross.net.ssl.SSLSocketFactory;
 import totalcross.sys.Settings;
 
@@ -93,6 +91,41 @@ public class AnonymousUserData {
         }
     }
 
+    private static HttpURLConnection getConn(String url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setRequestProperty("Accept", "application/json");
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(60_000);
+        conn.setReadTimeout(60_000);
+        return conn;
+    }
+
+    private static String getReponseBody(HttpURLConnection conn) throws IOException {
+        try(BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            return response.toString();
+        }
+    }
+
+    private static void sendRequestBody(HttpURLConnection conn, String body) {
+        byte [] bytes = body.getBytes(StandardCharsets.UTF_8);
+        conn.setFixedLengthStreamingMode(bytes.length);
+        try(OutputStream os = conn.getOutputStream()) {
+            os.write(bytes);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void launcher(String... args) {
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
             try {
@@ -114,28 +147,18 @@ public class AnonymousUserData {
         doPost(BASE_URL + POST_DEPLOY, args);
     }
 
-    private static HttpStream.Options setupHttpOptions() {
-        HttpStream.Options options = new HttpStream.Options();
-        options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
-        if (BASE_URL.startsWith("https://")) {
-            options.socketFactory = new SSLSocketFactory();
-        }
-        options.postHeaders.put("accept", "application/json");
-        options.postHeaders.put("Content-Type", "application/json");
-
-        return options;
-    }
 
     private void doGetUUID() {
-        HttpStream.Options options = setupHttpOptions();
-        options.httpType = HttpStream.POST;
 
-        JSONObject dataJson = new JSONObject();
-        dataJson.put("os", System.getProperty("os.name"));
-        dataJson.put("tc_version", Settings.versionStr);
-        options.data = dataJson.toString();
-        try (HttpStream hs = new HttpStream(new URI(BASE_URL + GET_UUID), options)) {
-            JSONObject ret = readJsonObject(hs);
+        try {
+            HttpURLConnection conn = getConn(BASE_URL + GET_UUID);
+            conn.setRequestMethod("POST");
+
+            JSONObject dataJson = new JSONObject();
+            dataJson.put("os", System.getProperty("os.name"));
+            dataJson.put("tc_version", Settings.versionStr);
+            sendRequestBody(conn, dataJson.toString());
+            JSONObject ret = new JSONObject(getReponseBody(conn));
             config.put("uuid", ret.get("uuid"));
 
             try (PrintWriter writer = new PrintWriter(configFile)) {
@@ -143,9 +166,12 @@ public class AnonymousUserData {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-        } catch (IOException e1) {
-            e1.printStackTrace();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+
     }
 
     /**
@@ -154,19 +180,19 @@ public class AnonymousUserData {
      * configuration.
      */
     public static boolean checkUUID(String uuid) {
-        HttpStream.Options options = setupHttpOptions();
-        try (HttpStream hs = new HttpStream(new URI(BASE_URL + CHECK_UUID + "?uuid=" + uuid), options)) {
-            JSONObject ret = readJsonObject(hs);
+        try {
+            HttpURLConnection conn = getConn(BASE_URL + CHECK_UUID + "?uuid=" + uuid);
+            JSONObject ret = new JSONObject(getReponseBody(conn));
             boolean isValid = (boolean) ret.get("isValid");
             if(!isValid) {
-                config.remove("uuid");     
+                config.remove("uuid");
             }
             return isValid;
-        } catch (IOException e1) {
-            e1.printStackTrace();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        // returning avoids uuid to be changed if something goes wrong with the request
-        return true;       
+        return true;
     }
 
     private void doPost(String url, String... args) {
@@ -175,27 +201,22 @@ public class AnonymousUserData {
                 doGetUUID();
             }
 
-            HttpStream.Options options = setupHttpOptions();
-            options.httpType = HttpStream.POST;
-            options.openTimeOut = options.readTimeOut = options.writeTimeOut = 60_000;
-            
             JSONObject dataJson = new JSONObject();
             dataJson.put("tc_version", Settings.versionStr);
             dataJson.put("date", sdf.format(new Date()));
             dataJson.put("args", String.join(" ", args));
             dataJson.put("userUuid", config.opt("uuid"));
-            options.data = dataJson.toString();
 
-            try (HttpStream hs = new HttpStream(new URI(url), options)) {
-                try {
-                    if(hs.badResponseCode) {
-                        throw new Exception("Bad Code Response from server: " + hs.getStatus());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+            try {
+                HttpURLConnection conn = getConn(url);
+                conn.setRequestMethod("POST");
+                sendRequestBody(conn, dataJson.toString());
+                int status = conn.getResponseCode();
+                if(status >= 300) {
+                    throw new Exception("Bad Code Response from server: " + status);
                 }
-            } catch (IOException e1) {
-                e1.printStackTrace();
+            } catch ( Exception e) {
+                e.printStackTrace();
             }
         }
     }
