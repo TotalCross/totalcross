@@ -23,7 +23,7 @@ android {
 
     flavorDimensions "deploy"
     productFlavors {
-        main { dimension "deploy" }
+        standard { dimension "deploy" }
         singleApk { dimension "deploy" }
         includeSms { dimension "deploy" }
     }
@@ -91,7 +91,7 @@ android {
         }
         entryCompression ZipEntryCompression.STORED
         baseName 'tcfiles'
-        destinationDir file('src/main/assets') // directory that you want your archive to be placed in
+        destinationDir file('src/standard/assets') // directory that you want your archive to be placed in
     }
 
     task copyApk {
@@ -99,9 +99,9 @@ android {
             copy {
                 from fileTree('build/outputs/apk').files
                 into "../../../output/${buildType}/TotalCrossSDK/dist/vm/android"
-                include "**/app-main-${buildType}.apk"
+                include "**/app-standard-${buildType}.apk"
                 rename { String fileName ->
-                    fileName.replace("app-main-${buildType}", 'TotalCross')
+                    fileName.replace("app-standard-${buildType}", 'TotalCross')
                 }
                 eachFile { println it.file }
             }
@@ -124,20 +124,20 @@ android {
                 eachFile { println it.file }
             }
             copy {
-                from fileTree('build/intermediates/res/main/' + buildType).files
+                from fileTree('build/intermediates/res/standard/' + buildType).files
                 into '../../../output/' + buildType + '/TotalCrossSDK/etc/launchers/android'
-                include 'resources-main' + buildType.capitalize() + '.ap_'
+                include 'resources-standard' + buildType.capitalize() + '.ap_'
                 rename { String fileName ->
-                    fileName.replace('-main' + buildType.capitalize(), '')
+                    fileName.replace('-standard' + buildType.capitalize(), '')
                 }
                 eachFile { println it.file }
             }
             copy {
-                from fileTree('build/intermediates/res/main/' + buildType).files
+                from fileTree('build/intermediates/res/standard/' + buildType).files
                 into '../../../TotalCrossSDK/etc/launchers/android'
-                include 'resources-main' + buildType.capitalize() + '.ap_'
+                include 'resources-standard' + buildType.capitalize() + '.ap_'
                 rename { String fileName ->
-                    fileName.replace('-main' + buildType.capitalize(), '')
+                    fileName.replace('-standard' + buildType.capitalize(), '')
                 }
                 eachFile { println it.file }
             }
