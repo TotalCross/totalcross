@@ -19,7 +19,6 @@ TotalCrossSDK/etc/tools/android/AndroidManifest_singleapk.xml
 TotalCrossSDK/etc/tools/android/resources_singleapk.arsc
 TotalCrossSDK/etc/tools/bb/bin/sigtool.set
 TotalCrossSDK/etc/launchers/android/resources\.ap_
-TotalCrossVM/src/init/android/*.h
 TotalCrossVM/src/launchers/android/bin
 TotalCrossVM/src/launchers/android/gen
 output
