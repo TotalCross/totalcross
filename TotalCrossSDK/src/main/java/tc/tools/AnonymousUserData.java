@@ -6,6 +6,7 @@ package tc.tools;
 import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -90,36 +91,6 @@ public class AnonymousUserData {
         }
     }
 
-    private static HttpURLConnection getConn(String url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        conn.setDoInput(true);
-        conn.setDoOutput(true);
-        conn.setConnectTimeout(60_000);
-        conn.setReadTimeout(60_000);
-        return conn;
-    }
-
-    private static String getReponseBody(HttpURLConnection conn) throws IOException {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
-            return response.toString();
-        }
-    }
-
-    private static void sendRequestBody(HttpURLConnection conn, String body) throws IOException {
-        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
-        conn.setFixedLengthStreamingMode(bytes.length);
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(bytes);
-        }
-    }
-
     public void launcher(String... args) throws JSONException, IOException, Exception {
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
             boolean userAcceptedToContribute = responseRequester.ask();
@@ -136,14 +107,11 @@ public class AnonymousUserData {
     }
 
     private void doGetUUID() throws JSONException, IOException {
-        HttpURLConnection conn = getConn(BASE_URL + GET_UUID);
-        conn.setRequestMethod("POST");
-
         JSONObject dataJson = new JSONObject();
         dataJson.put("os", System.getProperty("os.name"));
         dataJson.put("tc_version", Settings.versionStr);
-        sendRequestBody(conn, dataJson.toString());
-        JSONObject ret = new JSONObject(getReponseBody(conn));
+
+        JSONObject ret = new HttpJsonConnection(BASE_URL + GET_UUID).doPost(dataJson).getResponse();
         config.put("uuid", ret.get("uuid"));
 
         try (PrintWriter writer = new PrintWriter(configFile)) {
@@ -160,10 +128,9 @@ public class AnonymousUserData {
      * @throws JSONException
      */
     public static boolean checkUUID(String uuid) throws JSONException, IOException {
-        HttpURLConnection conn = getConn(BASE_URL + CHECK_UUID + "?uuid=" + uuid);
-        JSONObject ret = new JSONObject(getReponseBody(conn));
+        JSONObject ret = new HttpJsonConnection(BASE_URL + CHECK_UUID + "?uuid=" + uuid).doGet().getResponse();
         boolean isValid = (boolean) ret.get("isValid");
-        if(!isValid) {
+        if (!isValid) {
             config.remove("uuid");
         }
         return isValid;
@@ -181,10 +148,7 @@ public class AnonymousUserData {
             dataJson.put("args", String.join(" ", args));
             dataJson.put("userUuid", config.opt("uuid"));
 
-            HttpURLConnection conn = getConn(url);
-            conn.setRequestMethod("POST");
-            sendRequestBody(conn, dataJson.toString());
-            int status = conn.getResponseCode();
+            final int status = new HttpJsonConnection(url).doPost(dataJson).responseCode();
             if (status >= 300) {
                 throw new IOException("Bad Code Response from server: " + status);
             }
@@ -246,5 +210,56 @@ public class AnonymousUserData {
 
     public JSONObject getConfig() {
         return config;
+    }
+
+    private static class HttpJsonConnection {
+
+        private HttpURLConnection conn;
+
+        class HttpJsonRequest {
+
+            int responseCode() throws IOException {
+                return conn.getResponseCode();
+            }
+
+            JSONObject getResponse() throws IOException {
+                try (final InputStream inputStream = conn.getInputStream();
+                        final ByteArrayOutputStream result = new ByteArrayOutputStream()) {
+                    final byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = inputStream.read(buffer)) != -1) {
+                        result.write(buffer, 0, length);
+                    }
+                    return new JSONObject(result.toString(StandardCharsets.UTF_8.name()));
+                }
+            }
+        }
+
+        HttpJsonConnection(String url) throws MalformedURLException, IOException {
+            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(60_000);
+            conn.setReadTimeout(60_000);
+        }
+
+        public HttpJsonRequest doGet() throws IOException {
+            conn.setRequestMethod("GET");
+            return new HttpJsonRequest();
+        }
+
+        public HttpJsonRequest doPost(JSONObject data) throws IOException {
+            conn.setRequestMethod("POST");
+
+            final byte[] bytes = data.toString().getBytes(StandardCharsets.UTF_8);
+            conn.setFixedLengthStreamingMode(bytes.length);
+            try (final OutputStream os = conn.getOutputStream()) {
+                os.write(bytes);
+            }
+
+            return new HttpJsonRequest();
+        }
     }
 }
