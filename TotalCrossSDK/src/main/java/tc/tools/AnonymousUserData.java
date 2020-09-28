@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 import net.harawata.appdirs.AppDirsFactory;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.Stream;
+import totalcross.json.JSONException;
 import totalcross.json.JSONObject;
 import totalcross.net.HttpStream;
 import totalcross.net.ssl.SSLSocketFactory;
@@ -43,13 +44,13 @@ public class AnonymousUserData {
     private static String configDirPath = AppDirsFactory.getInstance().getUserConfigDir("TotalCross", null, null)
             .replace("Application Support", "Preferences");
 
-    private AnonymousUserData() {
+    private AnonymousUserData() throws IOException {
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         responseRequester = new DefaultResponseRequester();
         loadConfiguration();
     }
 
-    public static AnonymousUserData instance() {
+    public static AnonymousUserData instance() throws IOException {
         if (instance == null) {
             instance = new AnonymousUserData();
         }
@@ -62,22 +63,20 @@ public class AnonymousUserData {
      * 
      * This must be transparent for the user, no exception or stack trace should
      * interrupt the usage of the SDK or pollute the standard output.
+     * 
+     * @throws IOException
      */
-    public static void loadConfiguration() {
+    public static void loadConfiguration() throws IOException {
         config = null;
         File configDir = new File(configDirPath);
         configDir.mkdirs();
         configFile = new File(configDir, "config.json");
-        if(configFile.exists()) {
+        if (configFile.exists()) {
             try (FileInputStream fis = new FileInputStream(configFile)) {
                 config = readJsonObject(Stream.asStream(fis));
-                if(config.has("uuid") && !checkUUID((String) config.get("uuid"))) {
+                if (config.has("uuid") && !checkUUID((String) config.get("uuid"))) {
                     config.remove("uuid");
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
         config = config == null ? new JSONObject() : config;
@@ -103,8 +102,7 @@ public class AnonymousUserData {
     }
 
     private static String getReponseBody(HttpURLConnection conn) throws IOException {
-        try(BufferedReader br = new BufferedReader(
-                new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
             StringBuilder response = new StringBuilder();
             String responseLine = null;
             while ((responseLine = br.readLine()) != null) {
@@ -114,88 +112,64 @@ public class AnonymousUserData {
         }
     }
 
-    private static void sendRequestBody(HttpURLConnection conn, String body) {
-        byte [] bytes = body.getBytes(StandardCharsets.UTF_8);
+    private static void sendRequestBody(HttpURLConnection conn, String body) throws IOException {
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         conn.setFixedLengthStreamingMode(bytes.length);
-        try(OutputStream os = conn.getOutputStream()) {
+        try (OutputStream os = conn.getOutputStream()) {
             os.write(bytes);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
-    public void launcher(String... args) {
+    public void launcher(String... args) throws JSONException, IOException, Exception {
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
-            try {
-                boolean userAcceptedToContribute = responseRequester.ask();
-                config.put("userAcceptedToProvideAnonymousData", userAcceptedToContribute);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            boolean userAcceptedToContribute = responseRequester.ask();
+            config.put("userAcceptedToProvideAnonymousData", userAcceptedToContribute);
             try (PrintWriter writer = new PrintWriter(configFile)) {
                 writer.write(config.toString());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             }
         }
         doPost(BASE_URL + POST_LAUNCHER, args);
     }
 
-    public void deploy(String... args) {
+    public void deploy(String... args) throws JSONException, IOException {
         doPost(BASE_URL + POST_DEPLOY, args);
     }
 
+    private void doGetUUID() throws JSONException, IOException {
+        HttpURLConnection conn = getConn(BASE_URL + GET_UUID);
+        conn.setRequestMethod("POST");
 
-    private void doGetUUID() {
+        JSONObject dataJson = new JSONObject();
+        dataJson.put("os", System.getProperty("os.name"));
+        dataJson.put("tc_version", Settings.versionStr);
+        sendRequestBody(conn, dataJson.toString());
+        JSONObject ret = new JSONObject(getReponseBody(conn));
+        config.put("uuid", ret.get("uuid"));
 
-        try {
-            HttpURLConnection conn = getConn(BASE_URL + GET_UUID);
-            conn.setRequestMethod("POST");
-
-            JSONObject dataJson = new JSONObject();
-            dataJson.put("os", System.getProperty("os.name"));
-            dataJson.put("tc_version", Settings.versionStr);
-            sendRequestBody(conn, dataJson.toString());
-            JSONObject ret = new JSONObject(getReponseBody(conn));
-            config.put("uuid", ret.get("uuid"));
-
-            try (PrintWriter writer = new PrintWriter(configFile)) {
-                writer.write(config.toString());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        try (PrintWriter writer = new PrintWriter(configFile)) {
+            writer.write(config.toString());
         }
-
-
     }
 
     /**
      * Check for invalid uuid's which were generated on version 6.1.0. The uuid's
      * generated on such a version must be discarded from the user local
      * configuration.
+     * 
+     * @throws IOException
+     * @throws JSONException
      */
-    public static boolean checkUUID(String uuid) {
-        try {
-            HttpURLConnection conn = getConn(BASE_URL + CHECK_UUID + "?uuid=" + uuid);
-            JSONObject ret = new JSONObject(getReponseBody(conn));
-            boolean isValid = (boolean) ret.get("isValid");
-            if(!isValid) {
-                config.remove("uuid");
-            }
-            return isValid;
-
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static boolean checkUUID(String uuid) throws JSONException, IOException {
+        HttpURLConnection conn = getConn(BASE_URL + CHECK_UUID + "?uuid=" + uuid);
+        JSONObject ret = new JSONObject(getReponseBody(conn));
+        boolean isValid = (boolean) ret.get("isValid");
+        if(!isValid) {
+            config.remove("uuid");
         }
-        return true;
+        return isValid;
     }
 
-    private void doPost(String url, String... args) {
+    private void doPost(String url, String... args) throws JSONException, IOException {
         if (config.optBoolean("userAcceptedToProvideAnonymousData", false)) {
             if (!config.has("uuid")) {
                 doGetUUID();
@@ -207,16 +181,12 @@ public class AnonymousUserData {
             dataJson.put("args", String.join(" ", args));
             dataJson.put("userUuid", config.opt("uuid"));
 
-            try {
-                HttpURLConnection conn = getConn(url);
-                conn.setRequestMethod("POST");
-                sendRequestBody(conn, dataJson.toString());
-                int status = conn.getResponseCode();
-                if(status >= 300) {
-                    throw new Exception("Bad Code Response from server: " + status);
-                }
-            } catch ( Exception e) {
-                e.printStackTrace();
+            HttpURLConnection conn = getConn(url);
+            conn.setRequestMethod("POST");
+            sendRequestBody(conn, dataJson.toString());
+            int status = conn.getResponseCode();
+            if (status >= 300) {
+                throw new IOException("Bad Code Response from server: " + status);
             }
         }
     }
@@ -277,5 +247,4 @@ public class AnonymousUserData {
     public JSONObject getConfig() {
         return config;
     }
-
 }
