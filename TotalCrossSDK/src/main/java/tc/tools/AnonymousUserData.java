@@ -38,7 +38,7 @@ public class AnonymousUserData {
 
     private static File configFile;
 
-    private static JSONObject config;
+    private JSONObject config;
 
     private SimpleDateFormat sdf;
 
@@ -68,6 +68,10 @@ public class AnonymousUserData {
 
     /* package */ void setConfigDirPath(String configDirPath) {
         this.configDirPath = configDirPath;
+    }
+
+    /* package */ JSONObject getConfig() {
+        return this.config;
     }
 
     /**
@@ -194,10 +198,6 @@ public class AnonymousUserData {
             }
             throw new Exception("Unexpected Response: user should provide a response.");
         }
-    }
-
-    public JSONObject getConfig() {
-        return config;
     }
 
     private static class HttpJsonConnection {
