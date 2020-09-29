@@ -17,8 +17,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import tc.tools.AnonymousUserData;
-
 public class AnonymousUserDataTest {
     static AnonymousUserData anonymousUserData;
     static String configDirPath;
@@ -26,8 +24,8 @@ public class AnonymousUserDataTest {
 
     @BeforeEach
     void setup() {
-        AnonymousUserData.setBaseUrl("https://aqueous-plateau-93003.herokuapp.com/api/v1");
         anonymousUserData = AnonymousUserData.instance();
+        anonymousUserData.setBaseUrl("https://aqueous-plateau-93003.herokuapp.com/api/v1");
         configDirPath = Paths.get(System.getProperty("user.home"), "tc-test").toAbsolutePath().toString();
         configPath = Paths.get(configDirPath, "config.json").toAbsolutePath().toString();
         anonymousUserData.setConfigDirPath(configDirPath);
