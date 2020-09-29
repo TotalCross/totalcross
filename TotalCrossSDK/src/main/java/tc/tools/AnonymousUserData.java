@@ -34,7 +34,7 @@ public class AnonymousUserData {
 
     private static AnonymousUserData instance;
 
-    private static ResponseRequester responseRequester;
+    private ResponseRequester responseRequester;
 
     private static File configFile;
 
@@ -60,6 +60,10 @@ public class AnonymousUserData {
 
     /* package */ void setBaseUrl(String url) {
         this.BASE_URL = url;
+    }
+
+    /* package */ void setResponseRequester(ResponseRequester responseRequester) {
+        this.responseRequester = responseRequester;
     }
 
     /**
@@ -194,14 +198,6 @@ public class AnonymousUserData {
 
     public void setConfigDirPath(String configDirPath) {
         AnonymousUserData.configDirPath = configDirPath;
-    }
-
-    public ResponseRequester getResponseRequester() {
-        return responseRequester;
-    }
-
-    public void setResponseRequester(ResponseRequester responseRequester) {
-        AnonymousUserData.responseRequester = responseRequester;
     }
 
     public JSONObject getConfig() {
