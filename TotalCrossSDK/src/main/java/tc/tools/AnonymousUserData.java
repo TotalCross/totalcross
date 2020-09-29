@@ -36,7 +36,7 @@ public class AnonymousUserData {
 
     private ResponseRequester responseRequester;
 
-    private static File configFile;
+    private File configFile;
 
     private JSONObject config;
 
