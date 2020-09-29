@@ -26,7 +26,7 @@ import totalcross.sys.Settings;
 
 public class AnonymousUserData {
 
-    private static String BASE_URL = "https://statistics.totalcross.com/api/v1";
+    private String BASE_URL = "https://statistics.totalcross.com/api/v1";
     private static final String GET_UUID = "/users/get-anonymous-uuid";
     private static final String POST_LAUNCHER = "/launch";
     private static final String POST_DEPLOY = "/deploy";
@@ -58,6 +58,10 @@ public class AnonymousUserData {
         return instance;
     }
 
+    /* package */ void setBaseUrl(String url) {
+        this.BASE_URL = url;
+    }
+
     /**
      * Always returns a valid config object. An empty one is returned if anything
      * fails, not exception is thrown.
@@ -67,7 +71,7 @@ public class AnonymousUserData {
      * 
      * @throws IOException
      */
-    public static void loadConfiguration() throws IOException {
+    public void loadConfiguration() throws IOException {
         config = null;
         File configDir = new File(configDirPath);
         configDir.mkdirs();
@@ -127,7 +131,7 @@ public class AnonymousUserData {
      * @throws IOException
      * @throws JSONException
      */
-    public static boolean checkUUID(String uuid) throws JSONException, IOException {
+    public boolean checkUUID(String uuid) throws JSONException, IOException {
         JSONObject ret = new HttpJsonConnection(BASE_URL + CHECK_UUID + "?uuid=" + uuid).doGet().getResponse();
         boolean isValid = (boolean) ret.get("isValid");
         if (!isValid) {
@@ -160,12 +164,12 @@ public class AnonymousUserData {
     }
 
     private class DefaultResponseRequester implements ResponseRequester {
-        
+
         private static final String POPUP_TEXT = 
             "We'd like to collect anonymous telemetry data to help us prioritize \n"
-            + "improvements. This includes how often you deploy and launches \n"
-            + "(on simulator) your app, which OS you deploy for, your timezone and \n"
-            + "which totalcross version you're using. We do not collect any personal \n"
+                + "improvements. This includes how often you deploy and launches \n"
+                + "(on simulator) your app, which OS you deploy for, your timezone and \n"
+                + "which totalcross version you're using. We do not collect any personal \n"
             + "data or sensitive information. Do you allow TotalCross to send us \n" 
             + "anonymous report?";
 
@@ -182,14 +186,6 @@ public class AnonymousUserData {
             }
             throw new Exception("Unexpected Response: user should provide a response.");
         }
-    }
-
-    public static String getBaseUrl() {
-        return BASE_URL;
-    }
-
-    public static void setBaseUrl(String url) {
-        BASE_URL = url;
     }
 
     public String getConfigDirPath() {
