@@ -42,7 +42,7 @@ public class AnonymousUserData {
 
     private SimpleDateFormat sdf;
 
-    private static String configDirPath = AppDirsFactory.getInstance().getUserConfigDir("TotalCross", null, null)
+    private String configDirPath = AppDirsFactory.getInstance().getUserConfigDir("TotalCross", null, null)
             .replace("Application Support", "Preferences");
 
     private AnonymousUserData() throws IOException {
@@ -64,6 +64,10 @@ public class AnonymousUserData {
 
     /* package */ void setResponseRequester(ResponseRequester responseRequester) {
         this.responseRequester = responseRequester;
+    }
+
+    /* package */ void setConfigDirPath(String configDirPath) {
+        this.configDirPath = configDirPath;
     }
 
     /**
@@ -190,14 +194,6 @@ public class AnonymousUserData {
             }
             throw new Exception("Unexpected Response: user should provide a response.");
         }
-    }
-
-    public String getConfigDirPath() {
-        return configDirPath;
-    }
-
-    public void setConfigDirPath(String configDirPath) {
-        AnonymousUserData.configDirPath = configDirPath;
     }
 
     public JSONObject getConfig() {
