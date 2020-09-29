@@ -107,9 +107,9 @@ public class AnonymousUserData {
         }
     }
 
-    public void launcher(String... args) throws JSONException, IOException, Exception {
+    public void launcher(String... args) throws JSONException, IOException {
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
-            boolean userAcceptedToContribute = responseRequester.ask();
+            Boolean userAcceptedToContribute = responseRequester.ask();
             config.put("userAcceptedToProvideAnonymousData", userAcceptedToContribute);
             try (PrintWriter writer = new PrintWriter(configFile)) {
                 writer.write(config.toString());
@@ -172,7 +172,7 @@ public class AnonymousUserData {
     }
 
     public interface ResponseRequester {
-        boolean ask() throws Exception;
+        Boolean ask();
     }
 
     private class DefaultResponseRequester implements ResponseRequester {
@@ -186,7 +186,7 @@ public class AnonymousUserData {
             + "anonymous report?";
 
         @Override
-        public boolean ask() throws Exception {
+        public Boolean ask() {
             final String[] options = new String[] { "Yes, send anonymous reports", "Don't send" };
             final ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("tc/crossy.png"));
             int dialogResult = JOptionPane.showOptionDialog(null, POPUP_TEXT, "", JOptionPane.YES_NO_OPTION,
@@ -196,7 +196,7 @@ public class AnonymousUserData {
             } else if (dialogResult == JOptionPane.NO_OPTION) {
                 return false;
             }
-            throw new Exception("Unexpected Response: user should provide a response.");
+            return null;
         }
     }
 
