@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC034_fload_0 extends LoadLocal {
-  public BC034_fload_0() {
-    super(0, FLOAT);
-  }
+	public BC034_fload_0() {
+		super(0, FLOAT);
+	}
 }

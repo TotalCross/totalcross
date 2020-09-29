@@ -14,7 +14,7 @@
 
 /**
  * Creates an array of <code>SQLValue</code>s.
- * 
+ *
  * @param count The array size.
  * @param heap The heap to allocate the array.
  * @return The <code>SQLValue</code> array.
@@ -22,18 +22,18 @@
 SQLValue** newSQLValues(int32 count, Heap heap);
 
 /**
- * Applies the function on the value. 
- * 
+ * Applies the function on the value.
+ *
  * @param value The value where the function will be applied.
  * @param sqlFunction The code of the function to be applied.
  * @param paramDataType The data type of the parameter.
  */
-void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataType); 
+void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataType);
 
 /**
  * Compares 2 values.
  *
- * @param context The thread context where the function is being executed. 
+ * @param context The thread context where the function is being executed.
  * @param value1 The fist value used in the comparison.
  * @param value1 The second value used in the comparison.
  * @param type The types of the values being compared.
@@ -49,7 +49,7 @@ int32 valueCompareTo(Context context, SQLValue* value1, SQLValue* value2, int32 
 
 /**
  * Checks if <code>applyDataTypeFunction()<code> correctly applies the data type functions.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
@@ -57,7 +57,7 @@ void test_applyDataTypeFunction(TestSuite* testSuite, Context currentContext);
 
 /**
  * Checks if <code>newSQLValues()<code> correctly creates an array of SQLValues.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
@@ -65,7 +65,7 @@ void test_newSQLValues(TestSuite* testSuite, Context currentContext);
 
 /**
  * Tests if <code>valueCompareTo</code> correctly compares <code>SQLValues</code>.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */

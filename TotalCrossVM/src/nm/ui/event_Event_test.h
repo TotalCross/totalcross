@@ -7,6 +7,6 @@
 
 TESTCASE(tueE_isAvailable) // totalcross/ui/event/Event native public static boolean isAvailable();
 {
-   TEST_SKIP;
-   finish: ;
+	TEST_SKIP;
+finish: ;
 }

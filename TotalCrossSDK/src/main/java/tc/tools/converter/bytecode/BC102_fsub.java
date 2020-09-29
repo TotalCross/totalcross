@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC102_fsub extends Arithmetic {
-  public BC102_fsub() {
-    super(-1, -2, -1, FLOAT);
-  }
+	public BC102_fsub() {
+		super(-1, -2, -1, FLOAT);
+	}
 
-  @Override
-  public void exec() {
-    stack[stackPtr - 2].asDouble -= stack[stackPtr - 1].asDouble;
-  }
+	@Override
+	public void exec() {
+		stack[stackPtr - 2].asDouble -= stack[stackPtr - 1].asDouble;
+	}
 }

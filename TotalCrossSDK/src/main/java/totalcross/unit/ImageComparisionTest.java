@@ -16,31 +16,31 @@ import totalcross.ui.gfx.Graphics;
  */
 
 public class ImageComparisionTest extends TestCase {
-  // set to true to record the compressed strings
-  protected boolean recording;
-  // set to true to debug, sending all output to the screen.
-  protected boolean debuggingOnScreen;
+	// set to true to record the compressed strings
+	protected boolean recording;
+	// set to true to debug, sending all output to the screen.
+	protected boolean debuggingOnScreen;
 
-  protected Graphics maing;
-  protected ImageTester it;
+	protected Graphics maing;
+	protected ImageTester it;
 
-  @Override
-  public void testRun() {
-    maing = MainWindow.getMainWindow().getGraphics();
-  }
+	@Override
+	public void testRun() {
+		maing = MainWindow.getMainWindow().getGraphics();
+	}
 
-  protected void assertOK(String in256, String in65536, String title) {
-    if (debuggingOnScreen) {
-      ;
-    } else if (recording) {
-      maing.drawImage(it, 0, 0);
-      if (!Settings.onJavaSE) {
-        Vm.sleep(10000);
-      }
-      Vm.debug("private String " + title + "_" + Settings.screenBPP + " = \"" + it.toString() + "\";");
-    } else {
-      it.title = title;
-      assertEquals(it, Settings.screenBPP == 8 ? in256 : in65536);
-    }
-  }
+	protected void assertOK(String in256, String in65536, String title) {
+		if (debuggingOnScreen) {
+			;
+		} else if (recording) {
+			maing.drawImage(it, 0, 0);
+			if (!Settings.onJavaSE) {
+				Vm.sleep(10000);
+			}
+			Vm.debug("private String " + title + "_" + Settings.screenBPP + " = \"" + it.toString() + "\";");
+		} else {
+			it.title = title;
+			assertEquals(it, Settings.screenBPP == 8 ? in256 : in65536);
+		}
+	}
 }

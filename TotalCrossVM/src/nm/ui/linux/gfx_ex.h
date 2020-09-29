@@ -21,18 +21,17 @@
 #include <directfb.h>
 #endif
 
-typedef struct TScreenSurfaceEx
-{
+typedef struct TScreenSurfaceEx {
 #ifdef HEADLESS
-   SDL_Window *window;
-   SDL_Renderer *renderer;
-   SDL_Texture *texture;
-   SDL_Surface* surface;
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	SDL_Texture *texture;
+	SDL_Surface* surface;
 #else
-   IDirectFB *dfb;
-   IDirectFBSurface *primary;
-   IDirectFBDisplayLayer *layer;
-   IDirectFBEventBuffer *events;
+	IDirectFB *dfb;
+	IDirectFBSurface *primary;
+	IDirectFBDisplayLayer *layer;
+	IDirectFBEventBuffer *events;
 #endif
 } *ScreenSurfaceEx, TScreenSurfaceEx;
 

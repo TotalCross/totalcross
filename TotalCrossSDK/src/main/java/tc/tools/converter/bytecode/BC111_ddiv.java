@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC111_ddiv extends Arithmetic {
-  public BC111_ddiv() {
-    super(-1, -2, -1, DOUBLE);
-  }
+	public BC111_ddiv() {
+		super(-1, -2, -1, DOUBLE);
+	}
 
-  @Override
-  public void exec() {
-    stack[stackPtr - 2].asDouble /= stack[stackPtr - 1].asDouble;
-  }
+	@Override
+	public void exec() {
+		stack[stackPtr - 2].asDouble /= stack[stackPtr - 1].asDouble;
+	}
 }

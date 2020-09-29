@@ -18,38 +18,30 @@ TCObject privateList(Context c, int32 hk, TCHARP key);
 
 #else
 
-static void privateGetInt(NMParams p, int32 hk, TCHARP key, TCHARP value)
-{
+static void privateGetInt(NMParams p, int32 hk, TCHARP key, TCHARP value) {
 }
 
-static void privateGetString(NMParams p, int32 hk, TCHARP key, TCHARP value)
-{
+static void privateGetString(NMParams p, int32 hk, TCHARP key, TCHARP value) {
 }
 
-static void privateGetBlob(NMParams p, int32 hk, TCHARP key, TCHARP value)
-{
+static void privateGetBlob(NMParams p, int32 hk, TCHARP key, TCHARP value) {
 }
 
-static void privateSetInt(Context c, int32 hk, TCHARP key, TCHARP value, int32 data)
-{
+static void privateSetInt(Context c, int32 hk, TCHARP key, TCHARP value, int32 data) {
 }
 
-static void privateSetString(Context c, int32 hk, TCHARP key, TCHARP value, CharP data)
-{
+static void privateSetString(Context c, int32 hk, TCHARP key, TCHARP value, CharP data) {
 }
 
-static void privateSetBlob(Context c, int32 hk, TCHARP key, TCHARP value, uint8* data, int32 len)
-{
+static void privateSetBlob(Context c, int32 hk, TCHARP key, TCHARP value, uint8* data, int32 len) {
 }
 
-static bool privateDelete(int32 hk, TCHARP key, TCHARP value)
-{
-   return false;
+static bool privateDelete(int32 hk, TCHARP key, TCHARP value) {
+	return false;
 }
 
-static TCObject privateList(Context c, int32 hk, TCHARP key)
-{
-   return null;
+static TCObject privateList(Context c, int32 hk, TCHARP key) {
+	return null;
 }
 
 #endif

@@ -4,11 +4,11 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 /**
- * This has the function declarations for a database in a plain binary file. The data and the metadata (header) is written in one file (.db). The 
- * strings and the blobs are written in the .dbo file. The current number of records inside the database is discovered only when the database is open 
- * by getting its size and discounting the header size. This has a double advantage: it is not necessary to waste space storing the current record 
- * count, and it is not needed to save the record count at each insertion. 
- * 
+ * This has the function declarations for a database in a plain binary file. The data and the metadata (header) is written in one file (.db). The
+ * strings and the blobs are written in the .dbo file. The current number of records inside the database is discovered only when the database is open
+ * by getting its size and discounting the header size. This has a double advantage: it is not necessary to waste space storing the current record
+ * count, and it is not needed to save the record count at each insertion.
+ *
  * This also has function declarations for a temporary database for <code>ResultSet</code> tables.
  */
 
@@ -32,7 +32,7 @@ bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, b
 
 /**
  * Sets the size of a row.
- * 
+ *
  * @param plainDB The <code>PlainDB</code>.
  * @param newRowSize The new row size.
  * @param buffer A buffer for the <code>PlainDB</code>.
@@ -40,9 +40,9 @@ bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, b
 void plainSetRowSize(PlainDB* plainDB, int32 newRowSize, uint8* buffer);
 
 /**
- * Adds a new record. The file pointer is positioned in the record's beginning so that the data can be written. Usually the record is first added, 
+ * Adds a new record. The file pointer is positioned in the record's beginning so that the data can be written. Usually the record is first added,
  * then the contents are written.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
@@ -51,7 +51,7 @@ bool plainAdd(Context context, PlainDB* plainDB);
 
 /**
  * Writes the data of the .db file buffer into the current file position.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
@@ -60,7 +60,7 @@ bool plainWrite(Context context, PlainDB* plainDB);
 
 /**
  * Reads a row at the given position into the .db file buffer.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param record The record to be read.
@@ -70,7 +70,7 @@ bool plainRead(Context context, PlainDB* plainDB, int32 record);
 
 /**
  * Rewrites a row at the given position.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param record The .db file record to be read.
@@ -91,7 +91,7 @@ bool plainRename(Context context, PlainDB* plainDB, CharP newName, TCHARP source
 
 /**
  * Writes the given metadata to the header of the .db file.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param buffer The data to be written.
@@ -102,12 +102,12 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
 
 /**
  * Reads the user metadata from the .db file header.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param buffer An static buffer for reading the metadata.
  * @return The metadata.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory. 
+ * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  * @return <code>null</code> if an error occurs; a metadata buffer, otherwise.
  */
 uint8* plainReadMetaData(Context context, PlainDB* plainDB, uint8* buffer);
@@ -117,14 +117,14 @@ uint8* plainReadMetaData(Context context, PlainDB* plainDB, uint8* buffer);
  *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
- * @param updatePos Indicates if <code>finalPos</code> must be re-calculated to shrink the file. 
+ * @param updatePos Indicates if <code>finalPos</code> must be re-calculated to shrink the file.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool plainClose(Context context, PlainDB* plainDB, bool updatePos);
 
 /**
  * Removes the table files.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param sourcePath The files path.
@@ -143,14 +143,14 @@ bool plainRemove(Context context, PlainDB* plainDB, TCHARP sourcePath);
 bool plainSetPos(Context context, PlainDB* plainDB, int32 record);
 
 /**
- * Compresses the memory file buffers at the current position. This is necessary so that the memory tables do not have unused space after computing 
+ * Compresses the memory file buffers at the current position. This is necessary so that the memory tables do not have unused space after computing
  * the select.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool plainShrinkToSize(Context context, PlainDB* plainDB); 
+bool plainShrinkToSize(Context context, PlainDB* plainDB);
 
 /**
  * Reads a value from a PlainDB.
@@ -166,14 +166,14 @@ bool plainShrinkToSize(Context context, PlainDB* plainDB);
  * @param isTempBlob Indicates if the blob is being read for a temporary table.
  * @param size The column size of the string being read.
  * @param heap A heap to allocate temporary strings.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset, int32 colType, uint8* buffer, bool isTemporary, bool isNull, 
-                                                                                                bool isTempBlob, int32 size, Heap heap);
+bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset, int32 colType, uint8* buffer, bool isTemporary, bool isNull,
+               bool isTempBlob, int32 size, Heap heap);
 
 /**
  * Writes a value to a table column.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param value The value to be written.
@@ -184,7 +184,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
  * @param addingNewRecord Indicates if it is an update or an insert.
  * @param isNull Indicates that the value being inserted is a null.
  * @paran isTempBlob Indicates if a temporary table is being used.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffer, int32 colType, int32 colSize, bool isValueOk, bool addingNewRecord, bool isNull, bool isTempBlob);
 
@@ -199,11 +199,11 @@ bool recordNotDeleted(uint8* buffer);
 /**
  * Loads a string from a table taking the storage format into consideration.
  *
- * @param context The thread context where the function is being executed. 
+ * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param string The buffer where the string will be stored.
  * @param length The length of the string to be loaded.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length);
 

@@ -5,12 +5,12 @@
 package tc.tools.converter.oper;
 
 public class OperandRegIc extends OperandRegI {
-  public OperandRegIc() {
-    super();
-    kind = opr_regIc;
-  }
+	public OperandRegIc() {
+		super();
+		kind = opr_regIc;
+	}
 
-  public OperandRegIc(int framePosition) {
-    super(opr_regIc, framePosition);
-  }
+	public OperandRegIc(int framePosition) {
+		super(opr_regIc, framePosition);
+	}
 }

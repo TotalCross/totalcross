@@ -10,7 +10,7 @@
 #define ALTERNATIVE_DEBUG "!alt_debug!"
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 bool initDebug();
@@ -28,7 +28,7 @@ TC_API void tcabort(char* msg, char* file, int32 line);
 #define TCABORT tcabort("", __FILE__,__LINE__)
 
 #ifdef __cplusplus
- } // __cplusplus
+}  // __cplusplus
 #endif
 
 #endif

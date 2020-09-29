@@ -1,39 +1,39 @@
 /* Comparator.java -- Interface for objects that specify an ordering
    Copyright (C) 1998, 2001, 2004, 2005 Free Software Foundation, Inc.
 
-This file is part of GNU Classpath.
+   This file is part of GNU Classpath.
 
-GNU Classpath is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GNU Classpath is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-GNU Classpath is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+   GNU Classpath is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU Classpath; see the file COPYING.  If not, write to the
-Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA.
+   You should have received a copy of the GNU General Public License
+   along with GNU Classpath; see the file COPYING.  If not, write to the
+   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA.
 
-Linking this library statically or dynamically with other modules is
-making a combined work based on this library.  Thus, the terms and
-conditions of the GNU General Public License cover the whole
-combination.
+   Linking this library statically or dynamically with other modules is
+   making a combined work based on this library.  Thus, the terms and
+   conditions of the GNU General Public License cover the whole
+   combination.
 
-As a special exception, the copyright holders of this library give you
-permission to link this library with independent modules to produce an
-executable, regardless of the license terms of these independent
-modules, and to copy and distribute the resulting executable under
-terms of your choice, provided that you also meet, for each linked
-independent module, the terms and conditions of the license of that
-module.  An independent module is a module which is not derived from
-or based on this library.  If you modify this library, you may extend
-this exception to your version of the library, but you are not
-obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version. */
+   As a special exception, the copyright holders of this library give you
+   permission to link this library with independent modules to produce an
+   executable, regardless of the license terms of these independent
+   modules, and to copy and distribute the resulting executable under
+   terms of your choice, provided that you also meet, for each linked
+   independent module, the terms and conditions of the license of that
+   module.  An independent module is a module which is not derived from
+   or based on this library.  If you modify this library, you may extend
+   this exception to your version of the library, but you are not
+   obligated to do so.  If you do not wish to do so, delete this
+   exception statement from your version. */
 
 package totalcross.util;
 
@@ -76,48 +76,48 @@ import java.util.TreeSet;
  * @status updated to 1.4
  */
 public interface Comparator4D<T> {
-  /**
-   * Return an integer that is negative, zero or positive depending on whether
-   * the first argument is less than, equal to or greater than the second
-   * according to this ordering. This method should obey the following
-   * contract:
-   * <ul>
-   *   <li>if compare(a, b) &lt; 0 then compare(b, a) &gt; 0</li>
-   *   <li>if compare(a, b) throws an exception, so does compare(b, a)</li>
-   *   <li>if compare(a, b) &lt; 0 and compare(b, c) &lt; 0 then compare(a, c)
-   *       &lt; 0</li>
-   *   <li>if compare(a, b) == 0 then compare(a, c) and compare(b, c) must
-   *       have the same sign</li>
-   * </ul>
-   * To be consistent with equals, the following additional constraint is
-   * in place:
-   * <ul>
-   *   <li>if a.equals(b) or both a and b are null, then
-   *       compare(a, b) == 0.</li>
-   * </ul><p>
-   *
-   * Although it is permissible for a comparator to provide an order
-   * inconsistent with equals, that should be documented.
-   *
-   * @param o1 the first object
-   * @param o2 the second object
-   * @return the comparison
-   * @throws ClassCastException if the elements are not of types that can be
-   *         compared by this ordering.
-   */
-  int compare(T o1, T o2);
+	/**
+	 * Return an integer that is negative, zero or positive depending on whether
+	 * the first argument is less than, equal to or greater than the second
+	 * according to this ordering. This method should obey the following
+	 * contract:
+	 * <ul>
+	 *   <li>if compare(a, b) &lt; 0 then compare(b, a) &gt; 0</li>
+	 *   <li>if compare(a, b) throws an exception, so does compare(b, a)</li>
+	 *   <li>if compare(a, b) &lt; 0 and compare(b, c) &lt; 0 then compare(a, c)
+	 *       &lt; 0</li>
+	 *   <li>if compare(a, b) == 0 then compare(a, c) and compare(b, c) must
+	 *       have the same sign</li>
+	 * </ul>
+	 * To be consistent with equals, the following additional constraint is
+	 * in place:
+	 * <ul>
+	 *   <li>if a.equals(b) or both a and b are null, then
+	 *       compare(a, b) == 0.</li>
+	 * </ul><p>
+	 *
+	 * Although it is permissible for a comparator to provide an order
+	 * inconsistent with equals, that should be documented.
+	 *
+	 * @param o1 the first object
+	 * @param o2 the second object
+	 * @return the comparison
+	 * @throws ClassCastException if the elements are not of types that can be
+	 *         compared by this ordering.
+	 */
+	int compare(T o1, T o2);
 
-  /**
-   * Return true if the object is equal to this object.  To be
-   * considered equal, the argument object must satisfy the constraints
-   * of <code>Object.equals()</code>, be a Comparator, and impose the
-   * same ordering as this Comparator. The default implementation
-   * inherited from Object is usually adequate.
-   *
-   * @param obj The object
-   * @return true if it is a Comparator that imposes the same order
-   * @see Object#equals(Object)
-   */
-  @Override
-  boolean equals(Object obj);
+	/**
+	 * Return true if the object is equal to this object.  To be
+	 * considered equal, the argument object must satisfy the constraints
+	 * of <code>Object.equals()</code>, be a Comparator, and impose the
+	 * same ordering as this Comparator. The default implementation
+	 * inherited from Object is usually adequate.
+	 *
+	 * @param obj The object
+	 * @return true if it is a Comparator that imposes the same order
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	boolean equals(Object obj);
 }

@@ -18,7 +18,7 @@ package totalcross.lang;
  *          // do something
  *       }
  *    }
- *    ... 
+ *    ...
  * }
  * </pre>
  * To use it:
@@ -40,5 +40,5 @@ package totalcross.lang;
  */
 
 public interface Runnable4D {
-  public void run();
+	public void run();
 }

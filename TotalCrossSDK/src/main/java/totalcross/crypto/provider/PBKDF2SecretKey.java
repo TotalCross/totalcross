@@ -9,43 +9,42 @@ import javax.crypto.spec.PBEKeySpec;
 
 public class PBKDF2SecretKey implements PBEKey {
 
-    private final PBEKeySpec keySpec;
-    
-    private final byte[] encoded;
+	private final PBEKeySpec keySpec;
 
-    PBKDF2SecretKey(PBEKeySpec keySpec, byte[] encoded) {
-        this.keySpec = keySpec;
-        this.encoded = encoded;
-    }
+	private final byte[] encoded;
 
-    @Override
-    public String getAlgorithm() {
-        return "PBKDF2WithHmacSHA1";
-    }
+	PBKDF2SecretKey(PBEKeySpec keySpec, byte[] encoded) {
+		this.keySpec = keySpec;
+		this.encoded = encoded;
+	}
 
-    @Override
-    public String getFormat() {
-        return "RAW";
-    }
+	@Override
+	public String getAlgorithm() {
+		return "PBKDF2WithHmacSHA1";
+	}
 
-    @Override
-    public byte[] getEncoded() {
-        return encoded;
-    }
+	@Override
+	public String getFormat() {
+		return "RAW";
+	}
 
-    @Override
-    public int getIterationCount() {
-        return keySpec.getIterationCount();
-    }
+	@Override
+	public byte[] getEncoded() {
+		return encoded;
+	}
 
-    @Override
-    public char[] getPassword() {
-        return keySpec.getPassword();
-    }
+	@Override
+	public int getIterationCount() {
+		return keySpec.getIterationCount();
+	}
 
-    @Override
-    public byte[] getSalt() {
-        return keySpec.getSalt();
-    }
+	@Override
+	public char[] getPassword() {
+		return keySpec.getPassword();
+	}
 
+	@Override
+	public byte[] getSalt() {
+		return keySpec.getSalt();
+	}
 }

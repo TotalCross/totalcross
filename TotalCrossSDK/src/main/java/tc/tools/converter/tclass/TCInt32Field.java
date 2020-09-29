@@ -6,5 +6,5 @@ package tc.tools.converter.tclass;
 
 /* This structure represents a class field. */
 public final class TCInt32Field extends TCField {
-  public int value;
+	public int value;
 }

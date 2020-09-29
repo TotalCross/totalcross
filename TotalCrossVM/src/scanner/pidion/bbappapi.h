@@ -21,13 +21,13 @@ extern "C" {
  */
 
 
-#define BB_CARDREADER_READ_TRACK1	1
-#define BB_CARDREADER_READ_TRACK2	2
-#define BB_CARDREADER_READ_TRACK3	4
+#define BB_CARDREADER_READ_TRACK1       1
+#define BB_CARDREADER_READ_TRACK2       2
+#define BB_CARDREADER_READ_TRACK3       4
 
-#define REG_MSR_VOLUME      					TEXT( "Drivers\\CardReader" )
-#define RV_VOLUME								TEXT("Volume")
-#define CARDREADER_VOLUME_EVENT					TEXT("CardReaderVolume")
+#define REG_MSR_VOLUME                                          TEXT( "Drivers\\CardReader" )
+#define RV_VOLUME                                                               TEXT("Volume")
+#define CARDREADER_VOLUME_EVENT                                 TEXT("CardReaderVolume")
 
 typedef LPVOID HBBCARDREADER;
 typedef void (WINAPI*CardReaderCallbackFunc)(DWORD dwArg, LPCTSTR data);
@@ -50,61 +50,61 @@ BBAPI DWORD WINAPI BBCardReaderEnableTrackSound( HBBCARDREADER hCardReader, int 
 #define BB_PRINTER_SEIKO            1
 #define BB_PRINTER_NONE             2
 
-#define BB_PRINT_DEFAULT			0
-#define BB_PRINT_EMPHASIZE			1
-#define BB_PRINT_CENTERALIGN		2
-#define BB_PRINT_RIGHTALIGN			4
-#define BB_PRINT_DOUBLEWIDTH		8
-#define BB_PRINT_DOUBLEHEIGHT		16
-#define BB_PRINT_DOUBLESIZE			24
-#define BB_PRINT_UNDERLINE			32
+#define BB_PRINT_DEFAULT                        0
+#define BB_PRINT_EMPHASIZE                      1
+#define BB_PRINT_CENTERALIGN            2
+#define BB_PRINT_RIGHTALIGN                     4
+#define BB_PRINT_DOUBLEWIDTH            8
+#define BB_PRINT_DOUBLEHEIGHT           16
+#define BB_PRINT_DOUBLESIZE                     24
+#define BB_PRINT_UNDERLINE                      32
 
-#define BB_PRINT_DENSITY_60PERCENT	0
-#define BB_PRINT_DENSITY_70PERCENT	1
-#define BB_PRINT_DENSITY_80PERCENT	2
-#define BB_PRINT_DENSITY_90PERCENT	3
-#define BB_PRINT_DENSITY_100PERCENT	4
-#define BB_PRINT_DENSITY_110PERCENT	5
-#define BB_PRINT_DENSITY_120PERCENT	6
-#define BB_PRINT_DENSITY_130PERCENT	7
-#define BB_PRINT_DENSITY_140PERCENT	8
-#define BB_PRINT_DENSITY_DEFAULT	BB_PRINT_DENSITY_90PERCENT
-#define BB_PRINT_DENSITY_MIN		BB_PRINT_DENSITY_60PERCENT
-#define BB_PRINT_DENSITY_MAX		BB_PRINT_DENSITY_140PERCENT
+#define BB_PRINT_DENSITY_60PERCENT      0
+#define BB_PRINT_DENSITY_70PERCENT      1
+#define BB_PRINT_DENSITY_80PERCENT      2
+#define BB_PRINT_DENSITY_90PERCENT      3
+#define BB_PRINT_DENSITY_100PERCENT     4
+#define BB_PRINT_DENSITY_110PERCENT     5
+#define BB_PRINT_DENSITY_120PERCENT     6
+#define BB_PRINT_DENSITY_130PERCENT     7
+#define BB_PRINT_DENSITY_140PERCENT     8
+#define BB_PRINT_DENSITY_DEFAULT        BB_PRINT_DENSITY_90PERCENT
+#define BB_PRINT_DENSITY_MIN            BB_PRINT_DENSITY_60PERCENT
+#define BB_PRINT_DENSITY_MAX            BB_PRINT_DENSITY_140PERCENT
 
-#define BB_PRINT_LINESPACING_ONESIXTH	24
-#define BB_PRINT_LINESPACING_DEFAULT	24
-#define BB_PRINT_LINESPACING_MAX		255
+#define BB_PRINT_LINESPACING_ONESIXTH   24
+#define BB_PRINT_LINESPACING_DEFAULT    24
+#define BB_PRINT_LINESPACING_MAX                255
 
-#define BB_PRINT_BARCODE_UPCA		65
-#define BB_PRINT_BARCODE_JAN13		67
-#define BB_PRINT_BARCODE_JAN8		68
-#define BB_PRINT_BARCODE_CODE39		69
-#define BB_PRINT_BARCODE_ITF		70
-#define BB_PRINT_BARCODE_CODABAR	71
-#define BB_PRINT_BARCODE_CODE93		72
-#define BB_PRINT_BARCODE_CODE128	73
+#define BB_PRINT_BARCODE_UPCA           65
+#define BB_PRINT_BARCODE_JAN13          67
+#define BB_PRINT_BARCODE_JAN8           68
+#define BB_PRINT_BARCODE_CODE39         69
+#define BB_PRINT_BARCODE_ITF            70
+#define BB_PRINT_BARCODE_CODABAR        71
+#define BB_PRINT_BARCODE_CODE93         72
+#define BB_PRINT_BARCODE_CODE128        73
 #define BB_PRINT_BARCODE_CODE128A   73
 #define BB_PRINT_BARCODE_CODE128B   74
 #define BB_PRINT_BARCODE_CODE128C   75
-#define BB_PRINT_BARCODE_STF		76
+#define BB_PRINT_BARCODE_STF            76
 
-#define BB_PRINT_BARCODE_WIDTH_THIN			2
-#define BB_PRINT_BARCODE_WIDTH_NORMAL	    3
-#define BB_PRINT_BARCODE_WIDTH_THICK	    4
+#define BB_PRINT_BARCODE_WIDTH_THIN                     2
+#define BB_PRINT_BARCODE_WIDTH_NORMAL       3
+#define BB_PRINT_BARCODE_WIDTH_THICK        4
 #define BB_PRINT_BARCODE_WIDTH_MORETHICK    5
 #define BB_PRINT_BARCODE_WIDTH_MOSTTHICK    6
 
-#define BB_PRINT_BARCODE_ALIGN_LEFT			0
-#define BB_PRINT_BARCODE_ALIGN_CENTER	    2
-#define BB_PRINT_BARCODE_ALIGN_RIGHT	    4
+#define BB_PRINT_BARCODE_ALIGN_LEFT                     0
+#define BB_PRINT_BARCODE_ALIGN_CENTER       2
+#define BB_PRINT_BARCODE_ALIGN_RIGHT        4
 
-#define BB_PRINT_BITMAP_NORMAL			    0
-#define BB_PRINT_BITMAP_DOUBLE_HEIGHT	    1
-#define BB_PRINT_BITMAP_DOUBLE_WIDTH	    2
-#define BB_PRINT_BITMAP_DOUBLE			    3
-#define BB_PRINT_BITMAP_ALIGN_CENTER		4
-#define BB_PRINT_BITMAP_ALIGN_RIGHT 		8
+#define BB_PRINT_BITMAP_NORMAL                      0
+#define BB_PRINT_BITMAP_DOUBLE_HEIGHT       1
+#define BB_PRINT_BITMAP_DOUBLE_WIDTH        2
+#define BB_PRINT_BITMAP_DOUBLE                      3
+#define BB_PRINT_BITMAP_ALIGN_CENTER            4
+#define BB_PRINT_BITMAP_ALIGN_RIGHT             8
 
 #define BB_PRINT_FONTTYPE_42                0
 #define BB_PRINT_FONTTYPE_40                1
@@ -117,11 +117,11 @@ BBAPI DWORD WINAPI BBCardReaderEnableTrackSound( HBBCARDREADER hCardReader, int 
 
 enum
 {
-	BB_PRINT_ERROR_NONE			= 0,
-	BB_PRINT_ERROR_NOPAPER		= 1,
-	BB_PRINT_ERROR_NOBLACKMARK	= 2,
-	BB_PRINT_ERROR_OVERHEAT		= 3,
-	BB_PRINT_ERROR_UNKNOWN		= 4,
+	BB_PRINT_ERROR_NONE                     = 0,
+	BB_PRINT_ERROR_NOPAPER          = 1,
+	BB_PRINT_ERROR_NOBLACKMARK      = 2,
+	BB_PRINT_ERROR_OVERHEAT         = 3,
+	BB_PRINT_ERROR_UNKNOWN          = 4,
 	// SEIKO PRINTER에서 추가된 Error 상황 . SEIKO Printer만 구동하는
 	// 장치에서 쓸 수 있다.
 	BB_PRINT_ERROR_INVALIDHANDLE = 5,  // 잘못된 HANDLE을 건드리는 경우
@@ -139,22 +139,21 @@ enum
 	BB_PRINT_ERROR_GETLINESPACING        = 17
 };
 
-typedef struct _FONTINFO
-{
-	LONG      lfHeight;
-    LONG      lfWidth;
-    LONG      lfEscapement;
-    LONG      lfOrientation;
-    LONG      lfWeight;
-    BYTE      lfItalic;
-    BYTE      lfUnderline;
-    BYTE      lfStrikeOut;
-    BYTE      lfCharSet;
-    BYTE      lfOutPrecision;
-    BYTE      lfClipPrecision;
-    BYTE      lfQuality;
-    BYTE      lfPitchAndFamily;
-    WCHAR     lfFaceName[LF_FACESIZE];
+typedef struct _FONTINFO {
+	LONG lfHeight;
+	LONG lfWidth;
+	LONG lfEscapement;
+	LONG lfOrientation;
+	LONG lfWeight;
+	BYTE lfItalic;
+	BYTE lfUnderline;
+	BYTE lfStrikeOut;
+	BYTE lfCharSet;
+	BYTE lfOutPrecision;
+	BYTE lfClipPrecision;
+	BYTE lfQuality;
+	BYTE lfPitchAndFamily;
+	WCHAR lfFaceName[LF_FACESIZE];
 }FONTINFO, *LPFONTINFO;
 
 typedef LPVOID HBBPRINTER;
@@ -169,7 +168,7 @@ BBAPI DWORD WINAPI BBPrinterGetLineSpacing(HBBPRINTER hPrinter, UCHAR *pucLineSp
 
 BBAPI DWORD WINAPI BBPrinterPrint(HBBPRINTER hPrinter, LPCTSTR lpcszData, DWORD dwOptions);
 BBAPI DWORD WINAPI BBPrinterPrintBarcode(HBBPRINTER hPrinter, LPCTSTR lpcszData, UCHAR ucHeight,
-			UCHAR ucWidth, UCHAR ucBarcodeSystem, UCHAR ucAlign);
+                                         UCHAR ucWidth, UCHAR ucBarcodeSystem, UCHAR ucAlign);
 
 BBAPI DWORD WINAPI BBPrinterPrintBitmap(HBBPRINTER hPrinter, LPCTSTR lpcszFilename, DWORD dwMode);
 BBAPI DWORD WINAPI BBPrinterFeedUntilMark(HBBPRINTER hPrinter);
@@ -178,29 +177,29 @@ BBAPI DWORD WINAPI BBPrinterClose(HBBPRINTER hPrinter);
 
 /*
     1200WL/1250 에서 추가된 함수
-*/
+ */
 BBAPI DWORD WINAPI BBPrinterRegisterFontType( HBBPRINTER hPrinter, UCHAR ucFontSubCode );
 BBAPI DWORD WINAPI BBPrinterRegisterFontFromSet( HBBPRINTER hPrinter, UCHAR ucCodeOfSet, UCHAR ucFontSubCode );
 
 /*
-	DC를 이용한 프린터 출력	
-*/
+        DC를 이용한 프린터 출력
+ */
 
-BBAPI DWORD WINAPI BBPrinterCreateDC ( HBBPRINTER hPrinter , UINT nWidth, UINT nHeight );
+BBAPI DWORD WINAPI BBPrinterCreateDC ( HBBPRINTER hPrinter, UINT nWidth, UINT nHeight );
 BBAPI DWORD WINAPI BBPrinterDeleteDC ( HBBPRINTER hPrinter );
 BBAPI DWORD WINAPI BBPrinterPrintDC  ( HBBPRINTER hPrinter );
-BBAPI DWORD WINAPI BBPrinterSetFont  ( HBBPRINTER hPrinter, LPFONTINFO lpFontInfo );	
+BBAPI DWORD WINAPI BBPrinterSetFont  ( HBBPRINTER hPrinter, LPFONTINFO lpFontInfo );
 BBAPI DWORD WINAPI BBPrinterDrawText ( HBBPRINTER hPrinter, LPCTSTR lpText, int nCount, int nLeft, int nTop, int nRight, int nBottom, UINT uFormat );
 BBAPI DWORD WINAPI BBPrinterBitBlt   ( HBBPRINTER hPrinter, LPCTSTR lpFilePath, int nXDest, int nYDest, int nWidth, int nHeight, int xSrc, int ySrc, DWORD dwRop );
 
 
 /*
-*  Barcode
-*/
+ *  Barcode
+ */
 //duration
 #define WM_SCANDECODEDATA   ( WM_USER + 701 )
 #define WM_SCANTRIGGER      ( WM_USER + 702 )
-#define WM_REPORT_TO_APP	( WM_USER + 703 )
+#define WM_REPORT_TO_APP        ( WM_USER + 703 )
 
 enum
 {
@@ -229,9 +228,9 @@ enum
 #define BB_BARCODE_SC_ERR_SCANENABLE 4     // SCAN_ENABLE/SCAN_DISABLE Setting Error
 #define BB_BARCODE_SC_ERR_SCANDISABLE 5    // SCAN이 가능하지 않은 경우 내는 Error
 #define BB_BARCODE_SC_ERR_STARTDECODE 6    // START_DECODE Error
-#define	BB_BARCODE_SC_ERR_STOPDECODE 7     // STOP_DECODE Error
+#define BB_BARCODE_SC_ERR_STOPDECODE 7     // STOP_DECODE Error
 #define BB_BARCODE_SC_ERR_PARAMREQUEST 8   // PARAM_REQUEST Error
-#define	BB_BARCODE_SC_ERR_PARAMSEND 9      // PARAM_SEND Error
+#define BB_BARCODE_SC_ERR_PARAMSEND 9      // PARAM_SEND Error
 #define BB_BARCODE_SC_ERR_PARAMDEFAULTS 10 // PARAM_DEFAULTS Error
 #define BB_BARCODE_SC_ERR_LED  11          // LED_ON/LED_OFF Error
 #define BB_BARCODE_SC_ERR_BEEP 12          // BEEP Error
@@ -412,41 +411,41 @@ BBAPI DWORD WINAPI BBBarcodeSetVolume(int nVolume);
 
 //ImagerBarcode only
 typedef enum {
-    SCAN_ILLUM_AIMER_OFF = 0,   // Neither aimers or illumination
-    SCAN_ILLUM_ONLY_ON,         // Illumination only
-    SCAN_AIMER_ONLY_ON,         // Aimers only
-    SCAN_ILLUM_AIMER_ON         // Both aimers and illumination.
+	SCAN_ILLUM_AIMER_OFF = 0, // Neither aimers or illumination
+	SCAN_ILLUM_ONLY_ON,     // Illumination only
+	SCAN_AIMER_ONLY_ON,     // Aimers only
+	SCAN_ILLUM_AIMER_ON     // Both aimers and illumination.
 } ScanIlluminat_t;
 
 typedef enum {
-    DECODE_MODE_STANDARD=1,
-    DECODE_MODE_ADVANCED_LINEAR,
-    DECODE_MODE_QUICK_OMNI=4
+	DECODE_MODE_STANDARD=1,
+	DECODE_MODE_ADVANCED_LINEAR,
+	DECODE_MODE_QUICK_OMNI=4
 } ImagerDecodeMode_t;
 
 typedef struct {
-    int Exposure;
-    int MaxExposure;
-    int Gain;
-    int MaxGain;
-    int TargetWhite;            // Acceptable target white value falls within the
-    int TargetWhiteWindow;      // range TargetWhite +/- TargetWhiteWindow
-    int ImageMustConform;       // Image must conform to defined exposure parameters
-    int NumUpdates;             // Max number of attempts to achieve target white value
-    int FrameRate;
-    int SpecExclusion;
-    int SpecSaturation;
-    int SpecLimit;
-    int FixedExposure;          // Exposure setting for fixed exposure mode
-    int FixedGain;              // Gain setting for fixed exposure mode
-    int FixedFrameRate;         // Frame rate for fixed exposure mode
+	int Exposure;
+	int MaxExposure;
+	int Gain;
+	int MaxGain;
+	int TargetWhite;        // Acceptable target white value falls within the
+	int TargetWhiteWindow;  // range TargetWhite +/- TargetWhiteWindow
+	int ImageMustConform;   // Image must conform to defined exposure parameters
+	int NumUpdates;         // Max number of attempts to achieve target white value
+	int FrameRate;
+	int SpecExclusion;
+	int SpecSaturation;
+	int SpecLimit;
+	int FixedExposure;      // Exposure setting for fixed exposure mode
+	int FixedGain;          // Gain setting for fixed exposure mode
+	int FixedFrameRate;     // Frame rate for fixed exposure mode
 } ExposureSettings_t;
 
 BBAPI DWORD WINAPI BBBarcodeImagerGetImagerInfo(HBBBARCODE hBarcode, PWORD pnCols, PWORD pnRows, PWORD pnBits);
 BBAPI DWORD WINAPI BBBarcodeImagerStreamInit(HBBBARCODE hBarcode, WORD nSkip, RECT * imgRect, BOOL bFlip);
 BBAPI DWORD WINAPI BBBarcodeImagerStreamStart(HBBBARCODE hBarcode, RECT *previewRect);
 BBAPI DWORD WINAPI BBBarcodeImagerStreamStop(HBBBARCODE hBarcode);
-BBAPI DWORD WINAPI BBBarcodeImagerStreamCapture(HBBBARCODE hBarcode, TCHAR *filename, unsigned int nFileWidth, unsigned int nFileHeight, BOOL bAutoSave=FALSE);
+BBAPI DWORD WINAPI BBBarcodeImagerStreamCapture(HBBBARCODE hBarcode, TCHAR *filename, unsigned int nFileWidth, unsigned int nFileHeight, BOOL bAutoSave = FALSE);
 BBAPI DWORD WINAPI BBBarcodeImagerSetExposureSettings(HBBBARCODE hBarcode, ExposureSettings_t *pExpsoureSettings);
 BBAPI DWORD WINAPI BBBarcodeImagerGetExposureSettings(HBBBARCODE hBarcode, ExposureSettings_t *pExpsoureSettings);
 BBAPI DWORD WINAPI BBBarcodeImagerSetScanningLightMode(HBBBARCODE hBarcode, ScanIlluminat_t LightMode);
@@ -467,8 +466,7 @@ typedef const char* PCCHAR;
 
 
 // xml 파일 설정을 위한 구조체
-typedef struct
-{
+typedef struct {
 	DWORD ItemIndex;
 	const char* item_name;
 	const char* group_name;
@@ -482,7 +480,6 @@ typedef struct
 		DWORD value_dword; //- PARAM_NUMERIC, PARAM_SLIDER, PARAM_CHAR
 		TCHAR value_wcharbuffer[MAX_TEXT_BUFFER]; //PARAM_TEXT, PARAM_PATH, PARAM_READONLY
 	};
-
 }SettingInfo;
 
 enum ItemIndex
@@ -492,20 +489,20 @@ enum ItemIndex
 	SCANNERTABINDEX,
 	DATAOPTIONTABINDEX,
 	IMGCAPTABINDEX,
-    REVISIONTABINDEX
+	REVISIONTABINDEX
 };
 
 enum ParamType {
-    PARAM_NUMERIC = 0,   //numeric value(숫자값) 선택
+	PARAM_NUMERIC = 0, //numeric value(숫자값) 선택
 	PARAM_OPTION,        //option(여러개중 하나를 선택)
 	PARAM_ENABLE,        //enable/disable 중 하나 선택
 	PARAM_CHAR,          //character값
 	PARAM_TEXT,          //text값(scanner에 setting할 값은 아니다.)
-	PARAM_PATH,			 // file path - add csyou
-	PARAM_SLIDER,		 // Slider - add csyou
-	PARAM_NUMERIC_TIME,	 // continues time(between same symbol)
+	PARAM_PATH,                      // file path - add csyou
+	PARAM_SLIDER,            // Slider - add csyou
+	PARAM_NUMERIC_TIME,      // continues time(between same symbol)
 	PARAM_NULL,           //not a parameter type
-    PARAM_READONLY
+	PARAM_READONLY
 };
 enum RevisonType {
 	BB_BARCODE_REVISION_API = 0,
@@ -513,12 +510,12 @@ enum RevisonType {
 	BB_BARCODE_REVISION_DRIVER
 };
 
-enum SoundMode{
-    BB_BARCODE_SOUND_WAVE = 0,
-    BB_BARCODE_SOUND_VIBRATE,
-    BB_BARCODE_SOUND_WAVE_VIBRATE,
-    BB_BARCODE_SOUND_EXTERNAL,
-    BB_BARCODE_SOUND_ERROR
+enum SoundMode {
+	BB_BARCODE_SOUND_WAVE = 0,
+	BB_BARCODE_SOUND_VIBRATE,
+	BB_BARCODE_SOUND_WAVE_VIBRATE,
+	BB_BARCODE_SOUND_EXTERNAL,
+	BB_BARCODE_SOUND_ERROR
 };
 
 // xml 파일 설정 정보 end
@@ -623,12 +620,12 @@ typedef LPVOID HBBNEOPRINTER;
 /*
  *	camera
  */
-#define WM_BBCAMERA_UPDATE_FPS					WM_USER+1000
+#define WM_BBCAMERA_UPDATE_FPS                                  WM_USER+1000
 
 #define BB_CAMERA_CODE_SUCCESS                  0
-#define BB_CAMERA_CODE_ERR_UNKNOWN				1
-#define BB_CAMERA_CODE_ERR_INVALID_HANDLE      	2
-#define BB_CAMERA_CODE_ERR_INVALID_PARAMETER   	3
+#define BB_CAMERA_CODE_ERR_UNKNOWN                              1
+#define BB_CAMERA_CODE_ERR_INVALID_HANDLE       2
+#define BB_CAMERA_CODE_ERR_INVALID_PARAMETER    3
 
 typedef enum
 {
@@ -638,7 +635,6 @@ typedef enum
 	wb_fluorescent_1,
 	wb_fluorescent_2,
 	wb_light_bulb
-
 } white_balance_mode;
 
 typedef enum
@@ -667,8 +663,6 @@ typedef enum
 	flip_y,
 	flip_x_y,
 	flip_origin
-
-
 } flip_mode;
 
 typedef enum
@@ -697,20 +691,17 @@ typedef enum
 	rotate_90,
 	rotate_180,
 	rotate_270
-
 } rotation_degree;
 
 typedef enum
 {
 	pixel_format_ycbcr = 0,
-	pixel_format_rgb_565,		// output data 가 bmp 이다.
-	pixel_format_rgb_565_raw	// output data 가 16bit rgb 데이터 이다.
-
+	pixel_format_rgb_565,           // output data 가 bmp 이다.
+	pixel_format_rgb_565_raw        // output data 가 16bit rgb 데이터 이다.
 } pixel_format_select;
 
 
-typedef struct _tagBBCameraParameter
-{
+typedef struct _tagBBCameraParameter {
 	unsigned int preview_width;
 	unsigned int preview_height;
 	unsigned int preview_x;
@@ -729,24 +720,22 @@ typedef struct _tagBBCameraParameter
 	unsigned int brightness;
 	effect_mode ef_mode;
 	white_balance_mode wb_mode;
-	flip_mode	fp_mode;
+	flip_mode fp_mode;
 	frame_rate_mode fr_mode;
 
 	unsigned int reserved[20];
-	BYTE* 		p_app_buffer;
-	BYTE* 		p_app_capture_buffer;	//still image capture에서 데이터를 받기위한 포인터
+	BYTE*           p_app_buffer;
+	BYTE*           p_app_capture_buffer;   //still image capture에서 데이터를 받기위한 포인터
 
-	save_mode			stillimage_savemode;
-	save_image_type		save_fileType;
-	unsigned int		ImageQuality;
+	save_mode stillimage_savemode;
+	save_image_type save_fileType;
+	unsigned int ImageQuality;
 
-	BOOL				isSaveFile;
-	rotation_degree		rotation;
-
+	BOOL isSaveFile;
+	rotation_degree rotation;
 } BBCameraParameter;
 
-typedef struct _tagBBCameraInfo
-{
+typedef struct _tagBBCameraInfo {
 	unsigned int preview_max_width;
 	unsigned int preview_max_height;
 	unsigned int preview_min_width;
@@ -755,7 +744,6 @@ typedef struct _tagBBCameraInfo
 	unsigned int image_max_height;
 
 	unsigned int reserved[20];
-
 } BBCameraInfo;
 
 
@@ -799,19 +787,19 @@ BBAPI DWORD WINAPI BBCameraSetExposureTime( HBBCAMERA, DWORD );
 /*
  *	IC Card
  */
-#define BB_ICCARD_SUCCESS                  		0
-#define BB_ICCARD_ERR_POWERED_DOWN				1
-#define BB_ICCARD_ERR_CARD_PROTOCOL_ERROR		2
-#define BB_ICCARD_ERR_ALREADY_POWERED_UP		3
-#define BB_ICCARD_ERR_CARD_REMOVED				4
-#define BB_ICCARD_ERR_CARD_MISSING				5
-#define BB_ICCARD_ERR_RETURNED_BY_CARD			6
-#define BB_ICCARD_ERR_UNKNOWN_ERROR				7
-#define BB_ICCARD_ERR_SERIAL_DEVICE				8
-#define BB_ICCARD_ERR_OPEN_FAILED				9
-#define BB_ICCARD_ERR_EXCHANGE_INTERRUPTED		10
-#define BB_ICCARD_ERR_INCORRECT_NUMBER			11
-#define BB_ICCARD_ERR_DEVICE_ERROR				12
+#define BB_ICCARD_SUCCESS                               0
+#define BB_ICCARD_ERR_POWERED_DOWN                              1
+#define BB_ICCARD_ERR_CARD_PROTOCOL_ERROR               2
+#define BB_ICCARD_ERR_ALREADY_POWERED_UP                3
+#define BB_ICCARD_ERR_CARD_REMOVED                              4
+#define BB_ICCARD_ERR_CARD_MISSING                              5
+#define BB_ICCARD_ERR_RETURNED_BY_CARD                  6
+#define BB_ICCARD_ERR_UNKNOWN_ERROR                             7
+#define BB_ICCARD_ERR_SERIAL_DEVICE                             8
+#define BB_ICCARD_ERR_OPEN_FAILED                               9
+#define BB_ICCARD_ERR_EXCHANGE_INTERRUPTED              10
+#define BB_ICCARD_ERR_INCORRECT_NUMBER                  11
+#define BB_ICCARD_ERR_DEVICE_ERROR                              12
 
 
 typedef unsigned char BBICCardStatus;
@@ -855,22 +843,22 @@ typedef unsigned char BBRFReader_CardResp;
 //typedef unsigned char BBRFReader_DSDR;
 
 /*
-#define BB_RFREADER_EXCUTE_SUCCESS                                          ( 0x90 | 0x00 )
-#define STATUS_INCORRECT_CLA_ERROR                                          ( 0x6E | 0x00 )
-#define STATUS_INCORRECT_INS_APDU_ARGUMENT_LC_ERROR                         ( 0x6D | 0x00 )
-#define STATUS_P1_P2_INCORRECT_ERROR                                        ( 0x6B | 0x00 )
-#define STATUS_INCORRECT_KEY_IN_ASC_ERROR                                   ( 0x6A | 0x80 )
-#define STATUS_INCORRECT_ASC_ERROR                                          ( 0x94 | 0x0B )
-#define STATUS_INCORRECT_LE_ERROR                                           ( 0x6C ) // 다시 검토 해봐야 함
-#define STATUS_A1_A2_OF_TARGET_BLOCK_INCORRECT_ERROR                        ( 0x94 | 0x0A )
-#define STATUS_AUTHENTICATION_FAIL_ERROR                                    ( 0x98 | 0x20 )
-#define STATUS_ACCESS_CONDITION_EXCUTE_ERROR                                ( 0x98 | 0x04 )
-#define STATUS_MEMORY_FAIL_ERROR                                            ( 0x94 | 0x02 )
-#define STATUS_VALUE_BLOCK_OPERATION_ERROR                                  ( 0x94 | 0x04 )
-#define STATUS_VALUE_BLOCK_OPERATION_OVERFLOW_ERROR                         ( 0x94 | 0x05 )
-#define STATUS_COMMAND_FAIL_ERROR                                           ( 0x94 | 0x0F )
-#define STATUS_COMMAND_EXCUTE_TIMEOUT_ERROR                                 ( 0x94 | 0xFF )
-*/
+ #define BB_RFREADER_EXCUTE_SUCCESS                                          ( 0x90 | 0x00 )
+ #define STATUS_INCORRECT_CLA_ERROR                                          ( 0x6E | 0x00 )
+ #define STATUS_INCORRECT_INS_APDU_ARGUMENT_LC_ERROR                         ( 0x6D | 0x00 )
+ #define STATUS_P1_P2_INCORRECT_ERROR                                        ( 0x6B | 0x00 )
+ #define STATUS_INCORRECT_KEY_IN_ASC_ERROR                                   ( 0x6A | 0x80 )
+ #define STATUS_INCORRECT_ASC_ERROR                                          ( 0x94 | 0x0B )
+ #define STATUS_INCORRECT_LE_ERROR                                           ( 0x6C ) // 다시 검토 해봐야 함
+ #define STATUS_A1_A2_OF_TARGET_BLOCK_INCORRECT_ERROR                        ( 0x94 | 0x0A )
+ #define STATUS_AUTHENTICATION_FAIL_ERROR                                    ( 0x98 | 0x20 )
+ #define STATUS_ACCESS_CONDITION_EXCUTE_ERROR                                ( 0x98 | 0x04 )
+ #define STATUS_MEMORY_FAIL_ERROR                                            ( 0x94 | 0x02 )
+ #define STATUS_VALUE_BLOCK_OPERATION_ERROR                                  ( 0x94 | 0x04 )
+ #define STATUS_VALUE_BLOCK_OPERATION_OVERFLOW_ERROR                         ( 0x94 | 0x05 )
+ #define STATUS_COMMAND_FAIL_ERROR                                           ( 0x94 | 0x0F )
+ #define STATUS_COMMAND_EXCUTE_TIMEOUT_ERROR                                 ( 0x94 | 0xFF )
+ */
 
 
 #define BB_RFREADER_SUCCESS                                                             0x00
@@ -925,17 +913,17 @@ typedef unsigned char BBRFReader_CardResp;
 #define BB_RFREADER_ERR_ISO15693_NOT_SUPPORTED_TEST_OPTION                              0xA3        //IFM2.0 추가
 
 /*
-//ISO15693 VICC Response Flags
-#define ISO15693_VICC_SET_ERR_FLAG              0x01
-#define ISO15693_EXTENSION_SET_ERR_FLAG         0x08
-#define ISO15693_VICC_SET_ERR_EXTENTION_FLAG    0x09
+   //ISO15693 VICC Response Flags
+ #define ISO15693_VICC_SET_ERR_FLAG              0x01
+ #define ISO15693_EXTENSION_SET_ERR_FLAG         0x08
+ #define ISO15693_VICC_SET_ERR_EXTENTION_FLAG    0x09
 
-//ISO15693 VICC Inforamtion Flag
-#define STATUS_ISO15693_INFO_NOT_SUPPORT_DSFID              0x01
-#define STATUS_ISO15693_INFO_NOT_SUPPORT_AFI                0x02
-#define STATUS_ISO15693_INFO_NOT_SUPPORT_MEMORY_SIZE        0x04
-#define STATUS_ISO15693_INFO_NOT_SUPPORT_IC_REFERENCE       0x08
-*/
+   //ISO15693 VICC Inforamtion Flag
+ #define STATUS_ISO15693_INFO_NOT_SUPPORT_DSFID              0x01
+ #define STATUS_ISO15693_INFO_NOT_SUPPORT_AFI                0x02
+ #define STATUS_ISO15693_INFO_NOT_SUPPORT_MEMORY_SIZE        0x04
+ #define STATUS_ISO15693_INFO_NOT_SUPPORT_IC_REFERENCE       0x08
+ */
 
 //ISO15693 VICC Response Flags
 #define BB_RFREADER_ERR_ISO15693_VICC_SET_ERR_FLAG              0x01
@@ -948,11 +936,11 @@ typedef unsigned char BBRFReader_CardResp;
 #define BB_RFREADER_ERR_ISO15693_INFO_NOT_SUPPORT_MEMORY_SIZE        0x04
 #define BB_RFREADER_ERR_ISO15693_INFO_NOT_SUPPORT_IC_REFERENCE       0x08
 
-#define BB_RFREADER_ERR_DEVICE_ERROR 		0x9900
-#define BB_RFREADER_ERR_SERIAL_DEVICE 		0x9901
-#define BB_RFREADER_ERR_OPEN_FAILED 		0x9902
-#define BB_RFREADER_ERR_SAM_OPEN_FAILED 	0x9903
-#define BB_RFREADER_ERR_UNKNOWN_ERROR		0x9904
+#define BB_RFREADER_ERR_DEVICE_ERROR            0x9900
+#define BB_RFREADER_ERR_SERIAL_DEVICE           0x9901
+#define BB_RFREADER_ERR_OPEN_FAILED             0x9902
+#define BB_RFREADER_ERR_SAM_OPEN_FAILED         0x9903
+#define BB_RFREADER_ERR_UNKNOWN_ERROR           0x9904
 
 //#define BB_RFREADER_FULL_SIZE 			0x9010
 
@@ -993,13 +981,13 @@ BBAPI DWORD WINAPI BBSAMISOInputSAM( HBBICCARD hICCard, BBISOHeader *Header, BBS
 
 //ISO14443 A
 /*
-typedef enum
-{
-	BB_RFREADER_NOT_VALUE,
-	BB_RFREADER_TG_GEMCOMBI_MPCOS_PRO_EASY32000=0x02,
-	BB_RFREADER_TG_GEMEASY8000=0x04
-}BBRFReader_ATQA;
-*/
+   typedef enum
+   {
+        BB_RFREADER_NOT_VALUE,
+        BB_RFREADER_TG_GEMCOMBI_MPCOS_PRO_EASY32000=0x02,
+        BB_RFREADER_TG_GEMEASY8000=0x04
+   }BBRFReader_ATQA;
+ */
 
 #define BB_RFREADER_TG_GEMCOMBI_MPCOS_PRO_EASY32000     0x02
 #define BB_RFREADER_TG_GEMEASY8000                      0x04
@@ -1035,9 +1023,9 @@ typedef enum
 	BB_RFREADER_SAK_GEMEASY8000_0x88=0x88,
 	BB_RFREADER_SAK_GEM_MPCOS=0x98,
 	BB_RFREADER_SAK_GEM_EASY320000=0x18,
-	BB_RFREADER_NOT_SN=0x04,						//Serial number is not detect
-	BB_RFREADER_ISO14443_4_COMPLIANT = 0x10,		//ISO 14443-4 Compliant
-	BB_RFREADER_ISO14443_4_NOT_COMPLIANT = 0x00	//Not ISO 14443-4 compliant
+	BB_RFREADER_NOT_SN=0x04,                                                //Serial number is not detect
+	BB_RFREADER_ISO14443_4_COMPLIANT = 0x10,                //ISO 14443-4 Compliant
+	BB_RFREADER_ISO14443_4_NOT_COMPLIANT = 0x00     //Not ISO 14443-4 compliant
 }BBRFReader_SAK;
 
 
@@ -1065,7 +1053,6 @@ enum BBRFReader_RFBaudRateTypeB
 	BB_RFREADER_RF_BDRB_212=0x90 | 0x01, //(Bit2=1 & Bit5=1)
 	BB_RFREADER_RF_BDRB_424=0xA0 | 0x02, //(Bit3=1 & Bit6=1)
 	BB_RFREADER_RF_BDRB_848=0xC0 | 0x04  //(Bit4=1 & Bit7=1)
-
 };
 
 
@@ -1097,21 +1084,19 @@ typedef unsigned char BBRFReader_TimeOut;
 
 
 
-typedef struct _tagSW
-{
-	BBRFReader_SW1 		SW1;
-	BBRFReader_SW2		SW2;
+typedef struct _tagSW {
+	BBRFReader_SW1 SW1;
+	BBRFReader_SW2 SW2;
 }BBRFReader_SW;
 
 
 
-typedef struct _tagMifare
-{
-	BBRFReader_SCT 				SmartCard_Type;
-	BBRFReader_ASC 				Authenticate_StateBit;
-	BBRFReader_ABL				AddressBlock;				//사용자 입력
-	BBRFReader_LE				LE;							//Combine Command 추가
-	BBRFReader_LC				LC;							//Combine Command 추가
+typedef struct _tagMifare {
+	BBRFReader_SCT SmartCard_Type;
+	BBRFReader_ASC Authenticate_StateBit;
+	BBRFReader_ABL AddressBlock;                                                    //사용자 입력
+	BBRFReader_LE LE;                                                                               //Combine Command 추가
+	BBRFReader_LC LC;                                                                               //Combine Command 추가
 }BBRFReader_Mifare;
 
 
@@ -1134,12 +1119,11 @@ typedef enum
 }BBRFReader_ATQBConstant;
 
 
-typedef struct _tagATQB
-{
-	BBRFReader_ATQBConstant 	Constant;
-	BBRFReader_PUPI				PICC[4];
-	BBRFReader_APPDATA			AppData[4];
-	BBRFReader_Protocol_Info	Pro_Info[3];
+typedef struct _tagATQB {
+	BBRFReader_ATQBConstant Constant;
+	BBRFReader_PUPI PICC[4];
+	BBRFReader_APPDATA AppData[4];
+	BBRFReader_Protocol_Info Pro_Info[3];
 } BBRFReader_ATQBResponse;
 
 
@@ -1159,10 +1143,9 @@ typedef enum
 }BitRate;
 
 
-typedef struct _tagBitRate
-{
-	BitRate 	ReaderToCard;
-	BitRate 	CardToReader;
+typedef struct _tagBitRate {
+	BitRate ReaderToCard;
+	BitRate CardToReader;
 }BBRFReader_BitRate;
 
 
@@ -1177,24 +1160,24 @@ typedef enum    //리턴된 값과 AND를 취하여 MBLI와 CID를 얻을수 있다..
 //ISO15693=================================================================================
 typedef enum
 {
-    BB_RFREADER_ISO15693_STANDARDMODE=0x00,
-    BB_RFREADER_ISO15693_FASTMODE=0x01
+	BB_RFREADER_ISO15693_STANDARDMODE=0x00,
+	BB_RFREADER_ISO15693_FASTMODE=0x01
 }BBRFReader_ISO15693_DataCordingMode;
 
 
 
 typedef enum
 {
-    BB_RFREADER_ISO15693_INVENTORY_16_SLOT = 0x00,
-    BB_RFREADER_ISO15693_INVENTORY_1_SLOT = 0x01
+	BB_RFREADER_ISO15693_INVENTORY_16_SLOT = 0x00,
+	BB_RFREADER_ISO15693_INVENTORY_1_SLOT = 0x01
 }BBRFReader_ISO15693_SLOT;
 
 
 
 typedef enum
 {
-    BB_RFREADER_ISO15693_INVENTORY_AFIF_NOTVAL = 0x00,
-    BB_RFREADER_ISO15693_INVENTORY_AFIF_VAL = 0x01,
+	BB_RFREADER_ISO15693_INVENTORY_AFIF_NOTVAL = 0x00,
+	BB_RFREADER_ISO15693_INVENTORY_AFIF_VAL = 0x01,
 }BBRFReader_ISO15693_AFIF;
 
 typedef unsigned char BBRFReader_ISO15693_AFIV;
@@ -1206,19 +1189,18 @@ typedef unsigned char BBRFReader_ISO15693_DSFID;
 typedef unsigned char BBRFReader_ISO15693_UID;
 typedef unsigned char BBRFReadeR_ISO15693_InventoryStatus;
 
-typedef struct _tagISO15693_InventoryRequest
-{
-    BBRFReader_ISO15693_SLOT         SlotSel;
-    BBRFReader_ISO15693_AFIF         AFIDValChk;
-    BBRFReader_ISO15693_AFIV         AFIVVal;
-    BBRFReader_ISO15693_MSKL         MaskLen;
-    BBRFReader_ISO15693_MSKV         *MaskVal;
-    BBRFReader_ISO15693_COLLPOS      CollPos;
-    BBRFReader_ISO15693_FLAG         Flag;
-    BBRFReader_ISO15693_DSFID        DSFID;
-    BBRFReader_ISO15693_UID          UID[8];
-    BBRFReadeR_ISO15693_InventoryStatus InventoryStatus;
-    DWORD                            ValidField;
+typedef struct _tagISO15693_InventoryRequest {
+	BBRFReader_ISO15693_SLOT SlotSel;
+	BBRFReader_ISO15693_AFIF AFIDValChk;
+	BBRFReader_ISO15693_AFIV AFIVVal;
+	BBRFReader_ISO15693_MSKL MaskLen;
+	BBRFReader_ISO15693_MSKV         *MaskVal;
+	BBRFReader_ISO15693_COLLPOS CollPos;
+	BBRFReader_ISO15693_FLAG Flag;
+	BBRFReader_ISO15693_DSFID DSFID;
+	BBRFReader_ISO15693_UID UID[8];
+	BBRFReadeR_ISO15693_InventoryStatus InventoryStatus;
+	DWORD ValidField;
 }BBRFReader_ISO15693_InventoryRequest;
 
 
@@ -1227,23 +1209,22 @@ typedef struct _tagISO15693_InventoryRequest
 
 typedef enum
 {
-    BB_RFREADER_ISO15693_ADDRESS    = 0x00,
-    BB_RFREADER_ISO15693_NONADDRESS = 0x01,
-    BB_RFREADER_ISO15693_SELECT     = 0x02
-
+	BB_RFREADER_ISO15693_ADDRESS    = 0x00,
+	BB_RFREADER_ISO15693_NONADDRESS = 0x01,
+	BB_RFREADER_ISO15693_SELECT     = 0x02
 }BBRFReader_ISO15693_MODE;
 
 typedef enum
 {
-    BB_RFREADER_ISO15693_NOTSECURE  = 0x00,
-    BB_RFREADER_ISO15693_SECURE     = 0x01
+	BB_RFREADER_ISO15693_NOTSECURE  = 0x00,
+	BB_RFREADER_ISO15693_SECURE     = 0x01
 }BBRFReader_ISO15693_SECURE;
 
 
 typedef enum
 {
-    BB_RFREADER_ISO15693_ASYNCRONOUS    = 0x00,
-    BB_RFREADER_ISO15693_POLLED         = 0x01
+	BB_RFREADER_ISO15693_ASYNCRONOUS    = 0x00,
+	BB_RFREADER_ISO15693_POLLED         = 0x01
 }BBRFReader_ISO15693_Reply;
 
 
@@ -1257,24 +1238,23 @@ typedef unsigned char BBRFReader_ISO15693_ValidField;
 typedef unsigned char BBRFReader_ISO15693_INFOF;
 typedef unsigned char BBRFReader_ISO15693_OTHER;
 
-typedef struct _tagISO15693_OptionCommand
-{
-    BBRFReader_ISO15693_MODE        Mode;
-    BBRFReader_ISO15693_SECURE      Secure;
-    BBRFReader_ISO15693_BlockNum    BlockNumber;
-    BBRFReader_ISO15693_BlockCount  BlockCount;
-    BBRFReader_ISO15693_UID         *UID;
-    BBRFReader_ISO15693_Reply       Reply;
-    BBRFReader_ISO15693_FLAG        Flag;
-    BBRFReader_ISO15693_RespSEC     *RespSecure;
-    BBRFReader_ISO15693_RespSEC     RespSecureLen;
-    BBRFReader_ISO15693_Data        *Data;
-    BBRFReader_ISO15693_ERROR       Error;
-    BBRFReader_ISO15693_DSFID       DSFID;
-    BBRFReader_ISO15693_AFIV        AFIVVal;
-    BBRFReader_ISO15693_INFOF       InfoFlag;
-    BBRFReader_ISO15693_OTHER       *Other;
-    DWORD                           ValidField;
+typedef struct _tagISO15693_OptionCommand {
+	BBRFReader_ISO15693_MODE Mode;
+	BBRFReader_ISO15693_SECURE Secure;
+	BBRFReader_ISO15693_BlockNum BlockNumber;
+	BBRFReader_ISO15693_BlockCount BlockCount;
+	BBRFReader_ISO15693_UID         *UID;
+	BBRFReader_ISO15693_Reply Reply;
+	BBRFReader_ISO15693_FLAG Flag;
+	BBRFReader_ISO15693_RespSEC     *RespSecure;
+	BBRFReader_ISO15693_RespSEC RespSecureLen;
+	BBRFReader_ISO15693_Data        *Data;
+	BBRFReader_ISO15693_ERROR Error;
+	BBRFReader_ISO15693_DSFID DSFID;
+	BBRFReader_ISO15693_AFIV AFIVVal;
+	BBRFReader_ISO15693_INFOF InfoFlag;
+	BBRFReader_ISO15693_OTHER       *Other;
+	DWORD ValidField;
 }BBRFReader_ISO15693_OptionCommand;
 
 #define     FLAG_NOT_ALL       0
@@ -1289,9 +1269,9 @@ BBAPI HBBICCARD WINAPI BBRFReaderOpen();
 BBAPI DWORD WINAPI BBRFReaderClose(HBBICCARD);
 
 //ISO14443_A
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestALL_A( HBBRFREADER , BBRFReader_ATQA * );
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestA( HBBRFREADER , BBRFReader_ATQA *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_A_Anticollision( HBBRFREADER , BBRFReader_CascadeLevel, BBRFReader_SerialNumber *, BBRFReader_Collision * );
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestALL_A( HBBRFREADER, BBRFReader_ATQA * );
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestA( HBBRFREADER, BBRFReader_ATQA *);
+BBAPI DWORD WINAPI BBRFReaderISO14443_A_Anticollision( HBBRFREADER, BBRFReader_CascadeLevel, BBRFReader_SerialNumber *, BBRFReader_Collision * );
 BBAPI DWORD WINAPI BBRFReaderISO14443_A_Select( HBBRFREADER hRFReader, BBRFReader_CascadeLevel, BBRFReader_SerialNumber *, BBRFReader_SAK *);
 BBAPI DWORD WINAPI BBRFReaderISO14443_A_Halt( HBBRFREADER );
 BBAPI DWORD WINAPI BBRFReaderISO14443_A_RequestForAnswerToSelect( HBBRFREADER, BBRFReader_CID, BBRFReader_ATS *, DWORD *);
@@ -1341,14 +1321,14 @@ BBAPI DWORD WINAPI BBRFReaderMifarePurse_Credit( HBBRFREADER, BBRFReader_Mifare 
 //ISO14443_B
 BBAPI DWORD WINAPI BBRFReaderISO14443_B_Request_B( HBBRFREADER, BBRFReader_AFI, BBRFReader_NBSLOT, BBRFReader_ATQBResponse *);
 BBAPI DWORD WINAPI BBRFReaderISO14443_B_RequestALL_B( HBBRFREADER, BBRFReader_AFI, BBRFReader_NBSLOT, BBRFReader_ATQBResponse *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_B_SlotMarker( HBBRFREADER , BBRFReader_SLOTNB, BBRFReader_ATQBResponse *);
-BBAPI DWORD WINAPI BBRFReaderISO14443_B_Attrib( HBBRFREADER, BBRFReader_PUPI *, BBRFReader_Protocol_Info *, BBRFReader_CID , BBRFReader_BitRate, BBRFReader_AttribResponse *);
+BBAPI DWORD WINAPI BBRFReaderISO14443_B_SlotMarker( HBBRFREADER, BBRFReader_SLOTNB, BBRFReader_ATQBResponse *);
+BBAPI DWORD WINAPI BBRFReaderISO14443_B_Attrib( HBBRFREADER, BBRFReader_PUPI *, BBRFReader_Protocol_Info *, BBRFReader_CID, BBRFReader_BitRate, BBRFReader_AttribResponse *);
 BBAPI DWORD WINAPI BBRFReaderISO14443_B_Halt_B( HBBRFREADER, BBRFReader_PUPI *);
 
 
 //ISO1443 A&B
 BBAPI DWORD WINAPI BBRFReaderISO14443_AB_DeSelect( HBBRFREADER hRFReader, BBRFReader_CID );
-BBAPI DWORD WINAPI BBRFReaderISO14443_AB_Exchange( HBBRFREADER hRFReader, BBRFReader_CID, BBRFReader_NAD, BBRFReader_CardCmd *, DWORD dwCardCmdLen , BBRFReader_CardResp *, DWORD *);
+BBAPI DWORD WINAPI BBRFReaderISO14443_AB_Exchange( HBBRFREADER hRFReader, BBRFReader_CID, BBRFReader_NAD, BBRFReader_CardCmd *, DWORD dwCardCmdLen, BBRFReader_CardResp *, DWORD *);
 BBAPI DWORD WINAPI BBRFReaderISO14443_AB_Poll( HBBRFREADER hRFReader, BBRFReader_CID );
 BBAPI DWORD WINAPI BBRFReaderISO14443_AB_GetMode_15_Status( HBBRFREADER hRFReader, BBRFReader_CardResp * );
 
@@ -1383,107 +1363,105 @@ BBAPI DWORD WINAPI BBUserInput( HBBICCARD hRFReader, unsigned char *strCmd, DWOR
 
 
 //NEW API
-typedef struct _CommSettings
-{
-	DWORD			baudrate;
-	char 			protocol;
+typedef struct _CommSettings {
+	DWORD baudrate;
+	char protocol;
 }CommSettings;
 
 
-typedef struct _ReaderSettings
-{
-//	CommSettings	commSettings;
-	DWORD			baudrate;
-	char 			protocol;
-	unsigned char 			stationID;
+typedef struct _ReaderSettings {
+	//	CommSettings	commSettings;
+	DWORD baudrate;
+	char protocol;
+	unsigned char stationID;
 }ReaderSettings;
 
 
 enum
 {
-	rcGetVersion			= 101,
-	rcResetReader			= 102,
-	rcResetField			= 103,
-	rcSetTagType			= 104,
-	rcWriteUserport			= 105,
-	rcAntennaOn				= 106,
-	rcAntennaOff			= 107,
+	rcGetVersion                    = 101,
+	rcResetReader                   = 102,
+	rcResetField                    = 103,
+	rcSetTagType                    = 104,
+	rcWriteUserport                 = 105,
+	rcAntennaOn                             = 106,
+	rcAntennaOff                    = 107,
 
-	rcIsoReqa				= 201,
-	rcSelect				= 202,
-	rcMultiList				= 203,
-	rcRATS					= 204,
-	rcPPSR					= 205,
-	rcHaltA					= 206,
-	rcSel1					= 207,
-	rcSel2					= 208,
-	rcSel3					= 209,
-	rcHighSpeed				= 210,
+	rcIsoReqa                               = 201,
+	rcSelect                                = 202,
+	rcMultiList                             = 203,
+	rcRATS                                  = 204,
+	rcPPSR                                  = 205,
+	rcHaltA                                 = 206,
+	rcSel1                                  = 207,
+	rcSel2                                  = 208,
+	rcSel3                                  = 209,
+	rcHighSpeed                             = 210,
 
-	rcIsoReqb				= 211,
-	rcSlotMarker			= 212,
-	rcAttrib				= 213,
-	rcHaltB					= 214,
-	rcDeSelect				= 215,
+	rcIsoReqb                               = 211,
+	rcSlotMarker                    = 212,
+	rcAttrib                                = 213,
+	rcHaltB                                 = 214,
+	rcDeSelect                              = 215,
 
-	rcAPDU					= 216,
-	rcGetPaypassModeStatus	= 217,
+	rcAPDU                                  = 216,
+	rcGetPaypassModeStatus  = 217,
 
-	rcReadBlock				= 301,
-	rcWriteBlock			= 302,
-	rcReadValue				= 303,
-	rcWriteValue			= 305,
-	rcCopyValue				= 306,
-	rcLogin					= 307,
-	rcDecreaseValue			= 308,
-	rcIncreaseValue			= 309,
-	rcTransfer				= 310,
+	rcReadBlock                             = 301,
+	rcWriteBlock                    = 302,
+	rcReadValue                             = 303,
+	rcWriteValue                    = 305,
+	rcCopyValue                             = 306,
+	rcLogin                                 = 307,
+	rcDecreaseValue                 = 308,
+	rcIncreaseValue                 = 309,
+	rcTransfer                              = 310,
 
-	rcChangeDataCodeMode	= 401,
-	rcInventoryRequest		= 402,
-	rcQuietRequest			= 403,
-	rcReadyRequest			= 404,
-	rcSelectRequest			= 405,
-	rcReadSingleBlock		= 406,
-	rcWriteSingleBlock		= 407,
-	rcLockBlock				= 408,
-	rcGetSystemInfo			= 409,
-	rcWriteMultiBlock		= 410,
-	rcReadMultiBlock		= 411,
-	rcWriteAFI				= 412,
-	rcLockAFI				= 413,
-	rcWriteDSFID			= 414,
-	rcLockDSFID				= 415,
-	rcGetMultiSecStatus		= 416,
-	rcCtxReqt				= 501, 
-	rcCtxIdentify			= 502, 
-	rcCtxSelect				= 503, 
-	rcCtxSelectAll			= 504, 
-	rcCtxRead				= 505, 
-	rcCtxWrite				= 506, 
-	rcCtxUpdate				= 507, 
-	rcCtxDesActive			= 508, 
-	rcCtxMultiRead			= 509, 
+	rcChangeDataCodeMode    = 401,
+	rcInventoryRequest              = 402,
+	rcQuietRequest                  = 403,
+	rcReadyRequest                  = 404,
+	rcSelectRequest                 = 405,
+	rcReadSingleBlock               = 406,
+	rcWriteSingleBlock              = 407,
+	rcLockBlock                             = 408,
+	rcGetSystemInfo                 = 409,
+	rcWriteMultiBlock               = 410,
+	rcReadMultiBlock                = 411,
+	rcWriteAFI                              = 412,
+	rcLockAFI                               = 413,
+	rcWriteDSFID                    = 414,
+	rcLockDSFID                             = 415,
+	rcGetMultiSecStatus             = 416,
+	rcCtxReqt                               = 501,
+	rcCtxIdentify                   = 502,
+	rcCtxSelect                             = 503,
+	rcCtxSelectAll                  = 504,
+	rcCtxRead                               = 505,
+	rcCtxWrite                              = 506,
+	rcCtxUpdate                             = 507,
+	rcCtxDesActive                  = 508,
+	rcCtxMultiRead                  = 509,
 
-	rcGetSAMTimeout			= 601,
-	rcSetSAMTimeout			= 602,
-	rcSetSAMIoMode			= 603,
-	rcDefSAMCardType		= 604,
-	rcSAMPowerOn			= 605,
-	rcSAMPPSSet				= 606,
-	rcICSAMConfigureSerial	= 607,
-	rcSAMExchangeAPDU		= 608,
-	rcSAMPowerDown			= 609,
-	rcICPowerOn				= 610,
-	rcGetICStatus			= 611,
-	rcSetICStatus			= 612,
-	rcSetICIOMode			= 613,
-	rcICDefCardType			= 614,
-	rcICPPSSet				= 615,
-	rcICExchangeAPDU		= 616,
-	rcICPowerDown			= 617,
-	rcGetSAMStatus			= 618,
-	rcGetICFirmwareVersion	= 619,
+	rcGetSAMTimeout                 = 601,
+	rcSetSAMTimeout                 = 602,
+	rcSetSAMIoMode                  = 603,
+	rcDefSAMCardType                = 604,
+	rcSAMPowerOn                    = 605,
+	rcSAMPPSSet                             = 606,
+	rcICSAMConfigureSerial  = 607,
+	rcSAMExchangeAPDU               = 608,
+	rcSAMPowerDown                  = 609,
+	rcICPowerOn                             = 610,
+	rcGetICStatus                   = 611,
+	rcSetICStatus                   = 612,
+	rcSetICIOMode                   = 613,
+	rcICDefCardType                 = 614,
+	rcICPPSSet                              = 615,
+	rcICExchangeAPDU                = 616,
+	rcICPowerDown                   = 617,
+	rcGetSAMStatus                  = 618,
+	rcGetICFirmwareVersion  = 619,
 
 	rcWriteRegister,
 	rcReadRegister
@@ -1492,137 +1470,137 @@ enum
 
 enum DESFireCmd
 {
-	cSAMOnOff				= 0x00,
-	cAuthenticate   		= 0x01,
-	cChangeKeySettings   	= 0x02,
-	cGetKeySettings   		= 0x03,
-	cChangeKey   			= 0x04,
-	cGetKeyVersion   		= 0x05,
-	cCreateApplication   	= 0x06,
-	cDeleteApplication   	= 0x07,
-	cGetApplicationIDs   	= 0x08,
-	cSelectApplication   	= 0x09,
-	cFormatPICC   			= 0x0A,
-	cGetVersion   			= 0x0B,
-	cGetFileIDs   			= 0x0C,
-	cGetFileSettings   		= 0x0D,
-	cChangeFileSettings   	= 0x0E,
+	cSAMOnOff                               = 0x00,
+	cAuthenticate                   = 0x01,
+	cChangeKeySettings      = 0x02,
+	cGetKeySettings                 = 0x03,
+	cChangeKey                      = 0x04,
+	cGetKeyVersion                  = 0x05,
+	cCreateApplication      = 0x06,
+	cDeleteApplication      = 0x07,
+	cGetApplicationIDs      = 0x08,
+	cSelectApplication      = 0x09,
+	cFormatPICC                     = 0x0A,
+	cGetVersion                     = 0x0B,
+	cGetFileIDs                     = 0x0C,
+	cGetFileSettings                = 0x0D,
+	cChangeFileSettings     = 0x0E,
 	cCreateStandardDataFile = 0x0F,
 	cCreateBackupDataFile   = 0x10,
-	cCreateValueFile   		= 0x11,
+	cCreateValueFile                = 0x11,
 	cCreateLinearRecordFile = 0x12,
 	cCreateCyclicRecordFile = 0x13,
-	cDeleteFile   			= 0x14,
-	cReadData   			= 0x15,
-	cReadRecords   			= 0x16,
-	cWriteData   			= 0x17,
-	cWriteRecords   		= 0x18,
-	cGetValue   			= 0x19,
-	cCredit   				= 0x1A,
-	cDebit   				= 0x1B,
-	cLimitedCredit   		= 0x1C,
-	cClearRecordFile   		= 0x1D,
-	cCommitTransaction   	= 0x1E,
-	cAbortTransaction   	= 0x1F,
-	cSetFileSettings   		= 0x20,
+	cDeleteFile                     = 0x14,
+	cReadData                       = 0x15,
+	cReadRecords                    = 0x16,
+	cWriteData                      = 0x17,
+	cWriteRecords                   = 0x18,
+	cGetValue                       = 0x19,
+	cCredit                                 = 0x1A,
+	cDebit                                  = 0x1B,
+	cLimitedCredit                  = 0x1C,
+	cClearRecordFile                = 0x1D,
+	cCommitTransaction      = 0x1E,
+	cAbortTransaction       = 0x1F,
+	cSetFileSettings                = 0x20,
 
-	cDisableCrypto   		= 0x30,
-	cChangeKeyEntry   		= 0x31,
-	cGetKeyEntry   			= 0x32,
-	cChangeKUCEntry   		= 0x33,
-	cGetKUCEntry   			= 0x34,
-	cChangeKeyPICC   		= 0x35,
-	cGetVersionSAM   		= 0x36,
-	cAuthenticateHost   	= 0x37,
+	cDisableCrypto                  = 0x30,
+	cChangeKeyEntry                 = 0x31,
+	cGetKeyEntry                    = 0x32,
+	cChangeKUCEntry                 = 0x33,
+	cGetKUCEntry                    = 0x34,
+	cChangeKeyPICC                  = 0x35,
+	cGetVersionSAM                  = 0x36,
+	cAuthenticateHost       = 0x37,
 	cSelectApplicationSAM   = 0x38,
-	cDumpSessionKey   		= 0x39,
-	cLoadInitVector   		= 0x3A,
-	cAuthenticatePICC1   	= 0x3B,
-	cAuthenticatePICC2   	= 0x3C,
-	cVerifyMAC   			= 0x3D,
-	cGenerateMAC   			= 0x3E,
-	cDecipherData   		= 0x3F,
-	cEncipherData   		= 0x40,
-	cSetLogicalChannel  	= 0x42
+	cDumpSessionKey                 = 0x39,
+	cLoadInitVector                 = 0x3A,
+	cAuthenticatePICC1      = 0x3B,
+	cAuthenticatePICC2      = 0x3C,
+	cVerifyMAC                      = 0x3D,
+	cGenerateMAC                    = 0x3E,
+	cDecipherData                   = 0x3F,
+	cEncipherData                   = 0x40,
+	cSetLogicalChannel      = 0x42
 };
 
 enum CalypsoCmd
 {
 	// SAM
-	cChangeSpeed					= 0x01,
-	cCheckSignedData				= 0x02,
-	cCipherCardData					= 0x03,
-	cCipherData						= 0x04,
-	cCipherSAMData					= 0x05,
-	cCipherSecret					= 0x06,
-	cComputeDigitalCertificate		= 0x07,
-	cComputeDigitalSignature		= 0x08,
-	cCTMGetChallenge				= 0x09,
-	cCTMGetKey						= 0x0A,
-	cCTMVerifyAntiCloseSignature	= 0x0B,
-	cDataDecipher					= 0x0C,
-	cDataEncipher					= 0x0D,
-	cDigestClose					= 0x0E,
-	cDigestInit						= 0x0F,
-	cDigestUpdate					= 0x10,
-	cEPCancelPurchase				= 0x11,
-	cEPCheck						= 0x12,
-	cEPLoad							= 0x13,
-	cEPPurchase						= 0x14,
-	cExternalAuthenticate			= 0x15,
-	cSAMGetChallenge				= 0x16, // Get Challenge
-	cSAMGetResponse					= 0x17, // Get Response
-	cGiveRandom						= 0x18,
-	cInternalAuthenticate			= 0x19,
-	cSAMReadData					= 0x1A, // Read Data
-	cReadKeyParameters				= 0x1B,
-	cReadWorkKeyParameters			= 0x1C,
-	cSelectDiversifier				= 0x1D,
-	cVerifyDigitalCertificate		= 0x1E,
-	cVerifyDigitalSignature			= 0x1F,
-	cVerifySecret					= 0x20,
-	cSAMWriteData					= 0x21, // Write Data
-	cWriteKey						= 0x22,
+	cChangeSpeed                                    = 0x01,
+	cCheckSignedData                                = 0x02,
+	cCipherCardData                                 = 0x03,
+	cCipherData                                             = 0x04,
+	cCipherSAMData                                  = 0x05,
+	cCipherSecret                                   = 0x06,
+	cComputeDigitalCertificate              = 0x07,
+	cComputeDigitalSignature                = 0x08,
+	cCTMGetChallenge                                = 0x09,
+	cCTMGetKey                                              = 0x0A,
+	cCTMVerifyAntiCloseSignature    = 0x0B,
+	cDataDecipher                                   = 0x0C,
+	cDataEncipher                                   = 0x0D,
+	cDigestClose                                    = 0x0E,
+	cDigestInit                                             = 0x0F,
+	cDigestUpdate                                   = 0x10,
+	cEPCancelPurchase                               = 0x11,
+	cEPCheck                                                = 0x12,
+	cEPLoad                                                 = 0x13,
+	cEPPurchase                                             = 0x14,
+	cExternalAuthenticate                   = 0x15,
+	cSAMGetChallenge                                = 0x16, // Get Challenge
+	cSAMGetResponse                                 = 0x17, // Get Response
+	cGiveRandom                                             = 0x18,
+	cInternalAuthenticate                   = 0x19,
+	cSAMReadData                                    = 0x1A, // Read Data
+	cReadKeyParameters                              = 0x1B,
+	cReadWorkKeyParameters                  = 0x1C,
+	cSelectDiversifier                              = 0x1D,
+	cVerifyDigitalCertificate               = 0x1E,
+	cVerifyDigitalSignature                 = 0x1F,
+	cVerifySecret                                   = 0x20,
+	cSAMWriteData                                   = 0x21, // Write Data
+	cWriteKey                                               = 0x22,
 	// RFID
-	cGetATR							= 0x40,
-	cGetResponse					= 0x41,
-	cSelectApp						= 0x42, // cSelectApplication
-	cSelectFile						= 0x43,
-	cInvalidate						= 0x44,
-	cRehabilitate					= 0x45,
-	cAppendRecord					= 0x46,
-	cDecrease						= 0x47,
-	cDecreaseMultiple				= 0x48,
-	cIncrease						= 0x49,
-	cIncreaseMultiple				= 0x4A,
-	cReadBinary						= 0x4B,
-	cReadRecord						= 0x4C,
-	cReadRecordMultiple				= 0x4D,
-	cSearchRecordMultiple			= 0x4E,
-	cUpdateBinary					= 0x4F,
-	cUpdateRecord					= 0x50,
-	cWriteBinary					= 0x51,
-	cWriteRecord					= 0x52,
-	cOpenSecureSession				= 0x53,
-	cCloseSecureSession				= 0x54,
-	cGetChallenge					= 0x55,
-	cVerifyPin						= 0x56,
-	cChangeKeys						= 0x57, // Change Key
-	cGetEP							= 0x58,
-	cDebitEP						= 0x59,
-	cUnDebitEP						= 0x5A,
-	cReloadEP						= 0x5B,
-	cStatus							= 0x5c,
-	cReadRecordStamped				= 0x5D,
-	cAbortSecureSession				= 0x5E
+	cGetATR                                                 = 0x40,
+	cGetResponse                                    = 0x41,
+	cSelectApp                                              = 0x42, // cSelectApplication
+	cSelectFile                                             = 0x43,
+	cInvalidate                                             = 0x44,
+	cRehabilitate                                   = 0x45,
+	cAppendRecord                                   = 0x46,
+	cDecrease                                               = 0x47,
+	cDecreaseMultiple                               = 0x48,
+	cIncrease                                               = 0x49,
+	cIncreaseMultiple                               = 0x4A,
+	cReadBinary                                             = 0x4B,
+	cReadRecord                                             = 0x4C,
+	cReadRecordMultiple                             = 0x4D,
+	cSearchRecordMultiple                   = 0x4E,
+	cUpdateBinary                                   = 0x4F,
+	cUpdateRecord                                   = 0x50,
+	cWriteBinary                                    = 0x51,
+	cWriteRecord                                    = 0x52,
+	cOpenSecureSession                              = 0x53,
+	cCloseSecureSession                             = 0x54,
+	cGetChallenge                                   = 0x55,
+	cVerifyPin                                              = 0x56,
+	cChangeKeys                                             = 0x57, // Change Key
+	cGetEP                                                  = 0x58,
+	cDebitEP                                                = 0x59,
+	cUnDebitEP                                              = 0x5A,
+	cReloadEP                                               = 0x5B,
+	cStatus                                                 = 0x5c,
+	cReadRecordStamped                              = 0x5D,
+	cAbortSecureSession                             = 0x5E
 };
-BBAPI char 	WINAPI BBRFReader_OpenComm( const char *commDevice, char autoDetect, const CommSettings* commSettings );
-BBAPI void  WINAPI BBRFReader_CloseComm();
-BBAPI DWORD	WINAPI BBRFReader_OpenReader( unsigned char id, short knownReader );
-BBAPI DWORD	WINAPI BBRFReader_CloseReader();
-BBAPI DWORD	WINAPI BBRFReader_ResetReader();
-BBAPI DWORD	WINAPI BBRFReader_ReadRegister( BYTE *byRegAddr );
-BBAPI DWORD	WINAPI BBRFReader_WriteRegister( BYTE *byRegAddr, BYTE *byRegData );
+BBAPI char WINAPI BBRFReader_OpenComm( const char *commDevice, char autoDetect, const CommSettings* commSettings );
+BBAPI void WINAPI BBRFReader_CloseComm();
+BBAPI DWORD WINAPI BBRFReader_OpenReader( unsigned char id, short knownReader );
+BBAPI DWORD WINAPI BBRFReader_CloseReader();
+BBAPI DWORD WINAPI BBRFReader_ResetReader();
+BBAPI DWORD WINAPI BBRFReader_ReadRegister( BYTE *byRegAddr );
+BBAPI DWORD WINAPI BBRFReader_WriteRegister( BYTE *byRegAddr, BYTE *byRegData );
 BBAPI void WINAPI BBRFReader_EmptyCommRcvBuffer();
 BBAPI char WINAPI BBRFReader_GetResumeState();
 BBAPI void WINAPI BBRFReader_SetCommBaudrate( DWORD dwBaudrate );
@@ -1639,20 +1617,20 @@ BBAPI unsigned char* WINAPI BBRFReader_GetReaderType( unsigned char *deviceVersi
 BBAPI char WINAPI BBRFReader_GetBinProtocol();
 BBAPI char WINAPI BBRFReader_GetDebugOutputState();
 BBAPI void WINAPI BBRFReader_SetDebugOutputState( char active );
-BBAPI char*	WINAPI BBRFReader_GetDebugOutput( char *buffer );
-BBAPI DWORD	WINAPI BBRFReader_SendCommand( char *readerCmd, unsigned char *data );
+BBAPI char*     WINAPI BBRFReader_GetDebugOutput( char *buffer );
+BBAPI DWORD WINAPI BBRFReader_SendCommand( char *readerCmd, unsigned char *data );
 BBAPI DWORD WINAPI BBRFReader_SendCommandGetData( char *readerCmd, unsigned char *data, unsigned char *resultBuf );
 BBAPI DWORD WINAPI BBRFReader_SendCommandGetDataTimeout( char *readerCmd, unsigned char* data, unsigned char* resultBuf, long timeout);
 
-BBAPI DWORD	WINAPI BBRFReader_GetData( unsigned char* resultBuf );
-BBAPI DWORD	WINAPI BBRFReader_GetDataTimeout( unsigned char *buffer, DWORD timeout );
+BBAPI DWORD WINAPI BBRFReader_GetData( unsigned char* resultBuf );
+BBAPI DWORD WINAPI BBRFReader_GetDataTimeout( unsigned char *buffer, DWORD timeout );
 
 //BBAPI DWORD	WINAPI BBRFReader_DESFire( DESFireCmd command, const unsigned char *data, unsigned char *resultBuf );
-BBAPI DWORD	WINAPI BBRFReader_DESFire( char command, const unsigned char *data, unsigned char *resultBuf );
-BBAPI DWORD	WINAPI BBRFReader_Calypso( byte command, const unsigned char *data, unsigned char *resultBuf );
+BBAPI DWORD WINAPI BBRFReader_DESFire( char command, const unsigned char *data, unsigned char *resultBuf );
+BBAPI DWORD WINAPI BBRFReader_Calypso( byte command, const unsigned char *data, unsigned char *resultBuf );
 
-BBAPI char	WINAPI BBRFReader_GetDESFireSAMTimeout();
-BBAPI void	WINAPI BBRFReader_SetDESFireSAMTimeout( char cTimeout );
+BBAPI char WINAPI BBRFReader_GetDESFireSAMTimeout();
+BBAPI void WINAPI BBRFReader_SetDESFireSAMTimeout( char cTimeout );
 BBAPI char* WINAPI BBRFReader_DESEncrypt( char cOptions, char* pbyKey, char* pbyData, long lLength, char* pbyBuffer );
 BBAPI char* WINAPI BBRFReader_DESDecrypt( char cOptions, char* pbyKey, char* pbyData, long lLength, char* pbyBuffer );
 BBAPI BOOL WINAPI BBRFReader_OpenICComm();

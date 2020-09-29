@@ -58,8 +58,8 @@
   #include <notify.h>
  #endif
  #if !defined WP8
- typedef HWAVEOUT MediaClipHandle;
- typedef WAVEHDR  MediaClipHeader;
+typedef HWAVEOUT MediaClipHandle;
+typedef WAVEHDR MediaClipHeader;
 #endif
 #endif
 
@@ -84,7 +84,7 @@
 
 #define LoadLibrary(x) LoadPackagedLibrary(x, 0)
 #define CreateFile(a, b, c, d, e, f, g) CreateFile2(a, b, c, e, 0)
- typedef unsigned char boolean;
+typedef unsigned char boolean;
 #define FindFirstFile(a, b) FindFirstFileEx(a, FindExInfoStandard, b, FindExSearchNameMatch, NULL, 0)
 #define VirtualAlloc(a, b, c, d) malloc(a * b)
 #define GetModuleHandle(a) 0
@@ -119,7 +119,7 @@
 #endif
 
 #if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)
-#include "dlmalloc.h"                                                         
+#include "dlmalloc.h"
 #endif
 #include "xtypes.h"
 #include "../event/specialkeys.h"

@@ -5,13 +5,15 @@
 
 // See "AudioQueueOutputCallback"
 static void playbackCallback (
-	void					*inUserData,
-	AudioQueueRef			inAudioQueue,
-	AudioQueueBufferRef		bufferReference
-) {
+	void                                    *inUserData,
+	AudioQueueRef inAudioQueue,
+	AudioQueueBufferRef bufferReference
+	) {
 	// This callback, being outside the implementation block, needs a reference to the AudioPlayer object
 	AudioPlayer *player = (__bridge AudioPlayer *) inUserData;
-	if ([player donePlayingFile]) return;
+	if ([player donePlayingFile]) {
+		return;
+	}
 
 	UInt32 numBytes;
 	UInt32 numPackets = [player numPacketsToRead];
@@ -26,59 +28,55 @@ static void playbackCallback (
 		[player startingPacketNumber],
 		&numPackets,
 		bufferReference->mAudioData
-	);
+		);
 
 	if (numPackets > 0) {
 
-		bufferReference->mAudioDataByteSize			= numBytes;
-		bufferReference->mPacketDescriptionCount	= numPackets;
+		bufferReference->mAudioDataByteSize = numBytes;
+		bufferReference->mPacketDescriptionCount = numPackets;
 
 		AudioQueueEnqueueBuffer (
 			inAudioQueue,
 			bufferReference,
 			0,
 			NULL
-		);
+			);
 
 		[player incrementStartingPacketNumberBy: (UInt32) numPackets];
-
 	} else {
 
-		[player setDonePlayingFile: YES];		// 'donePlayingFile' used by this callback and by setupAudioQueueBuffers
+		[player setDonePlayingFile: YES];               // 'donePlayingFile' used by this callback and by setupAudioQueueBuffers
 
 		// if playback is stopping because file is finished, call AudioQueueStop here;
 		// if user tapped Stop, then the AudioViewController calls AudioQueueStop
 		if (player.audioPlayerShouldStopImmediately == NO) {
 			[player stop];
 		}
-
 	}
 }
 
 // property callback function, invoked when a property changes.
 static void propertyListenerCallback (
-	void					*inUserData,
-	AudioQueueRef			queueObject,
-	AudioQueuePropertyID	propertyID
-) {
+	void                                    *inUserData,
+	AudioQueueRef queueObject,
+	AudioQueuePropertyID propertyID
+	) {
 	// This callback, being outside the implementation block, needs a reference to the AudioPlayer object
 	AudioPlayer *player = (__bridge AudioPlayer *) inUserData;
 
-	if (player.audioPlayerShouldStopImmediately == YES)
-    {
+	if (player.audioPlayerShouldStopImmediately == YES) {
 		// If the user tapped Stop, update the UI now. After the AudioPlayer object
 		//	and the underlying audio queue object have competely stopped, the
 		//	AudioViewController will release them.
 #if defined (THEOS)
 		[player.notificationDelegate updateUserInterfaceOnAudioQueueStateChange: player];
 #endif
-	}
-    else {
+	} else {
 		// if the file reached the end, update the UI after the run loop has finished.
 		//	This delay is required to ensure that the AudioPlayer class, and the
 		//	underlying audio queue object, are not destroyed while they are still
 		//	doing work.
-   // guich: all this is probably no longer used
+		// guich: all this is probably no longer used
 		//[player.notificationDelegate	performSelector: @selector (updateUserInterfaceOnAudioQueueStateChange:)
 		//								withObject: player
 		//								afterDelay: 0];
@@ -119,11 +117,11 @@ static void propertyListenerCallback (
 	UInt32 propertySize = sizeof (UInt32);
 
 	OSStatus result = AudioFileGetPropertyInfo (
-							file,
-							kAudioFilePropertyMagicCookieData,
-							&propertySize,
-							NULL
-						);
+		file,
+		kAudioFilePropertyMagicCookieData,
+		&propertySize,
+		NULL
+		);
 
 	if (!result && propertySize) {
 
@@ -134,14 +132,14 @@ static void propertyListenerCallback (
 			kAudioFilePropertyMagicCookieData,
 			&propertySize,
 			cookie
-		);
+			);
 
 		AudioQueueSetProperty (
 			queue,
 			kAudioQueueProperty_MagicCookie,
 			cookie,
 			propertySize
-		);
+			);
 
 		free (cookie);
 	}
@@ -155,7 +153,7 @@ static void propertyListenerCallback (
 		0x01, //fsRdPerm,						// read only
 		kAudioFileCAFType,
 		&audioFileID
-	);
+		);
 
 	UInt32 sizeOfPlaybackFormatASBDStruct = sizeof ([self audioFormat]);
 
@@ -166,7 +164,7 @@ static void propertyListenerCallback (
 		kAudioFilePropertyDataFormat,
 		&sizeOfPlaybackFormatASBDStruct,
 		&audioFormat
-	);
+		);
 }
 
 - (void) setupPlaybackAudioQueueObject {
@@ -178,9 +176,9 @@ static void propertyListenerCallback (
 		(__bridge void*) self,
 		CFRunLoopGetCurrent (),
 		kCFRunLoopCommonModes,
-		0,								// run loop flags
+		0,                                                              // run loop flags
 		&queueObject
-	);
+		);
 
 	// set the volume of the playback audio queue
 	[self setGain: 1.0];
@@ -189,7 +187,7 @@ static void propertyListenerCallback (
 		queueObject,
 		kAudioQueueParam_Volume,
 		gain
-	);
+		);
 
 	[self enableLevelMetering];
 
@@ -199,7 +197,7 @@ static void propertyListenerCallback (
 		kAudioQueueProperty_IsRunning,
 		propertyListenerCallback,
 		(__bridge void*) self
-	);
+		);
 
 	// copy the audio file's magic cookie to the audio queue object to give it
 	// as much info as possible about the audio data to play
@@ -215,7 +213,7 @@ static void propertyListenerCallback (
 	// prime the queue with some data before starting
 	// allocate and enqueue buffers
 	int bufferIndex;
-    bool isFormatVBR = (audioFormat.mBytesPerPacket == 0 || audioFormat.mFramesPerPacket == 0);
+	bool isFormatVBR = (audioFormat.mBytesPerPacket == 0 || audioFormat.mFramesPerPacket == 0);
 
 	for (bufferIndex = 0; bufferIndex < kNumberAudioDataBuffers; ++bufferIndex) {
 
@@ -230,15 +228,17 @@ static void propertyListenerCallback (
 			[self bufferByteSize],
 			(isFormatVBR ? self.numPacketsToRead : 0),
 			&buffers[bufferIndex]
-		);
+			);
 
 		playbackCallback (
 			(__bridge void*) self,
 			[self queueObject],
 			buffers[bufferIndex]
-		);
+			);
 
-		if ([self donePlayingFile]) break;
+		if ([self donePlayingFile]) {
+			break;
+		}
 	}
 }
 
@@ -249,8 +249,8 @@ static void propertyListenerCallback (
 
 	AudioQueueStart (
 		self.queueObject,
-		NULL			// start time. NULL means ASAP.
-	);
+		NULL                    // start time. NULL means ASAP.
+		);
 }
 
 - (void) stop {
@@ -258,7 +258,7 @@ static void propertyListenerCallback (
 	AudioQueueStop (
 		self.queueObject,
 		self.audioPlayerShouldStopImmediately
-	);
+		);
 
 	AudioFileClose (self.audioFileID);
 }
@@ -268,7 +268,7 @@ static void propertyListenerCallback (
 
 	AudioQueuePause (
 		self.queueObject
-	);
+		);
 }
 
 
@@ -276,8 +276,8 @@ static void propertyListenerCallback (
 
 	AudioQueueStart (
 		self.queueObject,
-		NULL			// start time. NULL means ASAP
-	);
+		NULL                    // start time. NULL means ASAP
+		);
 }
 
 
@@ -291,10 +291,10 @@ static void propertyListenerCallback (
 		kAudioFilePropertyPacketSizeUpperBound,
 		&propertySize,
 		&maxPacketSize
-	);
+		);
 
-	static const int maxBufferSize = 0x10000;	// limit maximum size to 64K
-	static const int minBufferSize = 0x4000;	// limit minimum size to 16K
+	static const int maxBufferSize = 0x10000;       // limit maximum size to 64K
+	static const int minBufferSize = 0x4000;        // limit minimum size to 16K
 
 	if (audioFormat.mFramesPerPacket) {
 		Float64 numPacketsForTime = audioFormat.mSampleRate / audioFormat.mFramesPerPacket * seconds;
@@ -305,8 +305,8 @@ static void propertyListenerCallback (
 		[self setBufferByteSize: maxBufferSize > maxPacketSize ? maxBufferSize : maxPacketSize];
 	}
 
-		// we're going to limit our size to our default
-	if (bufferByteSize > maxBufferSize && bufferByteSize > maxPacketSize) {
+	// we're going to limit our size to our default
+	if ((bufferByteSize > maxBufferSize)&& (bufferByteSize > maxPacketSize)) {
 		[self setBufferByteSize: maxBufferSize];
 	} else {
 		// also make sure we're not too small - we don't want to go the disk for too small chunks
@@ -321,7 +321,7 @@ static void propertyListenerCallback (
 
 - (void) dealloc {
 	AudioQueueDispose (queueObject,YES);
-   [super dealloc];
+	[super dealloc];
 }
 
 @end

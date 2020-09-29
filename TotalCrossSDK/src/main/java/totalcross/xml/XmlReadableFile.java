@@ -20,14 +20,14 @@ import totalcross.io.IOException;
  * </PRE>
  */
 public class XmlReadableFile extends XmlReadableByteArray {
-  /**
-   * Constructor
-   *
-   * @param f The file you want to read. Be sure to don't open it with DONT_OPEN mode.
-   * @throws IOException
-   */
-  public XmlReadableFile(File f) throws totalcross.io.IOException {
-    buf = new byte[f.getSize()];
-    f.readBytes(buf, 0, buf.length);
-  }
+	/**
+	 * Constructor
+	 *
+	 * @param f The file you want to read. Be sure to don't open it with DONT_OPEN mode.
+	 * @throws IOException
+	 */
+	public XmlReadableFile(File f) throws totalcross.io.IOException {
+		buf = new byte[f.getSize()];
+		f.readBytes(buf, 0, buf.length);
+	}
 }

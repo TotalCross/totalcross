@@ -17,11 +17,11 @@
  *
  * @param parser The structure returned from the parsing process.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLSelectStatement</code> structure. 
+ * @return A pointer to a <code>SQLSelectStatement</code> structure.
  */
 SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepared);
 
-/* 
+/*
  * Sets the value of a numeric parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -34,7 +34,7 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
  */
 bool setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type);
 
-/* 
+/*
  * Sets the value of a string parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -86,9 +86,9 @@ TCObject litebaseDoSelect(Context context, TCObject driver, SQLSelectStatement* 
 bool litebaseBindSelectStatement(Context context, TCObject driver, SQLSelectStatement* selectStmt);
 
 /**
- * Tries to put as inner table a table that has an index used more often in the where clause, when the where clause has a comparison between 
- * fields from different tables. e.g.: <code>select * from table1, table2 where table1.field1 = table2.field2 </code> If only 
- * <code>table1.field1</code> has index, changes the select to: <code>select * from table2, table1 where table1.field1 = table2.field2</code>. 
+ * Tries to put as inner table a table that has an index used more often in the where clause, when the where clause has a comparison between
+ * fields from different tables. e.g.: <code>select * from table1, table2 where table1.field1 = table2.field2 </code> If only
+ * <code>table1.field1</code> has index, changes the select to: <code>select * from table2, table1 where table1.field1 = table2.field2</code>.
  * If both tables has the same level of index using, sorts them by the row count.
  *
  * @param selectStmt A SQL select statement.
@@ -110,8 +110,8 @@ bool bindSelectStatement(Context context, SQLSelectStatement* selectStmt);
  * @param context The thread context where the function is being executed.
  * @param selectStmt The select statement to be validated.
  * @return <code>false</code> if a <code>SQLParseException</code> occurs; <code>true</code>, otherwise.
- * @throws SQLParseException If the order by and group by clauses do not match, if a query with group by is not well-formed, if there is a 
- * having clause without an aggregation, a field in the having clause is not in the select clause, there is no order by and there are aggregated 
+ * @throws SQLParseException If the order by and group by clauses do not match, if a query with group by is not well-formed, if there is a
+ * having clause without an aggregation, a field in the having clause is not in the select clause, there is no order by and there are aggregated
  * functions mixed with real columns, or there is an aggregation with an order by clause and no group by clause.
  */
 bool validateSelectStatement(Context context, SQLSelectStatement* selectStmt);
@@ -123,7 +123,7 @@ bool validateSelectStatement(Context context, SQLSelectStatement* selectStmt);
  * @param driver The connection with Litebase.
  * @param selectStmt The select statement to be validated.
  * @return The temporary result set table or null if an error occurs.
- * @throws OutOfMemoryError If there is not enougth memory alloc memory. 
+ * @throws OutOfMemoryError If there is not enougth memory alloc memory.
  */
 Table* generateResultSetTable(Context context, TCObject driver, SQLSelectStatement* selectStmt);
 
@@ -166,8 +166,8 @@ bool generateIndexedRowsMap(Context context, ResultSet** rsList, int32 size, boo
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
-						                                                                                                      int32 colIndex, Heap heap);
+bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator,
+                  int32 colIndex, Heap heap);
 /**
  * Merges two bitmaps into the first bitmap using the given boolean operator.
  *
@@ -179,10 +179,10 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp);
 
 /**
  * Concludes the calculation of the given aggregated function running totals based on the given record and the group count.
- * 
+ *
  * @param record The record that is the parameter for the aggregated function.
  * @param groupCount The result of a COUNT(*).
- * @param aggFunctionsRunTotals The results of the aggregated functions. 
+ * @param aggFunctionsRunTotals The results of the aggregated functions.
  * @param aggFunctionsCodes The aggregated function codes.
  * @param aggFunctionsParamCols The columns that are parameters to the aggregated functions.
  * @param aggFunctionsRealParamCols The real columns that are parameters to the aggregated functions.
@@ -190,9 +190,9 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp);
  * @param columnTypes The types of the columns.
  * @param groupCountCols The count for the groups.
  */
-void endAggFunctionsCalc(SQLValue** record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
-								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int8* columnTypes, 
-								                                                                                              int32* groupCountCols);
+void endAggFunctionsCalc(SQLValue** record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes,
+                         int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int8* columnTypes,
+                         int32* groupCountCols);
 /**
  * Creates a temporary table that stores only an integer value.
  *
@@ -201,12 +201,12 @@ void endAggFunctionsCalc(SQLValue** record, int32 groupCount, SQLValue* aggFunct
  * @param intValue The value to be put in the table.
  * @param colName The column name of the single table column.
  * @return The table if the method executes correctlty; <code>null</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory alloc memory. 
+ * @throws OutOfMemoryError If there is not enougth memory alloc memory.
  */
 Table* createIntValueTable(Context context, TCObject driver, int32 intValue, CharP colName);
 
-/** 
- * Binds the column information of the underlying tables to the select clause. 
+/**
+ * Binds the column information of the underlying tables to the select clause.
  *
  * @param context The thread context where the function is being executed.
  * @param clause The select clause.
@@ -218,7 +218,7 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause);
 
 /**
  * Remaps a table column names, so it uses the alias names of the given field list, instead of the original names.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param table The result set table.
  * @param fieldsList The field list of the select clause.
@@ -241,8 +241,8 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @param heap A heap to allocate temporary structures.
  * @return The total number of records added to the table or -1 if an error occurs.
  */
-int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
-                                             SQLSelectClause* selectClause, size_t* columnIndexesTables, int32 whereClauseType, Heap heap);
+int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes,
+                            SQLSelectClause* selectClause, size_t* columnIndexesTables, int32 whereClauseType, Heap heap);
 
 /**
  * Counts the number of ON bits.
@@ -255,7 +255,7 @@ int32 bitCount(int32* elements, int32 length);
 
 /**
  * Executes a join operation.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param list The list of the result sets.
  * @param numTables The number of tables of the select.
@@ -266,12 +266,12 @@ int32 bitCount(int32* elements, int32 length);
  * @param heap A heap to allocate temporary structures.
  * @return The number of records written to the temporary table or -1 if an error occurs.
  */
-int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLValue** values, 
-                                                                                    int32 whereClauseType, Heap heap);
+int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLValue** values,
+                  int32 whereClauseType, Heap heap);
 
 /**
  * Gets the next record to perform the join operation.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param rsIndex The index of the result set of the list used to get the next record.
  * @param verifyWhereCondition Indicates if the where clause needs to be verified.
@@ -282,12 +282,12 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
  * @return <code>VALIDATION_RECORD_OK</code>, <code>NO_RECORD</code>, <code>VALIDATION_RECORD_NOT_OK</code>,
  * <code>VALIDATION_RECORD_INCOMPLETE</code>, or -1 if an error occurs.
  */
-int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereCondition, int32 totalRs, int32 whereClauseType, ResultSet** rsList, 
-                                                                                                                         Heap heap);
+int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereCondition, int32 totalRs, int32 whereClauseType, ResultSet** rsList,
+                        Heap heap);
 
 /**
  * Evaluates an expression tree for a join.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param tree The expression tree to be evaluated.
  * @param rsList The list of the result sets.
@@ -299,7 +299,7 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
 int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, ResultSet** rsList, int32 totalRs, Heap heap);
 
 /**
- * Calculates aggregation functions. 
+ * Calculates aggregation functions.
  *
  * @param context The thread context where the function is being executed.
  * @param record The record of the values to be used in the calculation.
@@ -309,14 +309,14 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
  * @param aggFunctionsParamCols The columns that use aggregation functions.
  * @param aggFunctionsColsCount The number of columns that use aggregation functions.
  * @param columnTypes The types of the columns.
- * @param groupCountCols The columns that use count. 
+ * @param groupCountCols The columns that use count.
  */
-void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
-                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int8* columnTypes, int32* groupCountCols);
+void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes,
+                             int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int8* columnTypes, int32* groupCountCols);
 
 /**
  * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param resultSet The result set of the table.
  * @param heap A heap to allocate temporary structures.
@@ -331,4 +331,3 @@ void computeAnswer(Context context, ResultSet* resultSet, Heap heap);
 void findMaxMinIndex(SQLResultSetField* field);
 
 #endif
-

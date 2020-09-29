@@ -5,9 +5,9 @@
 
 #include <string.h>
 
-CharP privateGetErrorMessage(int32 errorCode, CharP buffer, uint32 size)
-{
-   if (strerror_r(errorCode, buffer, size))
-      return null;
-   return buffer;
+CharP privateGetErrorMessage(int32 errorCode, CharP buffer, uint32 size) {
+	if (strerror_r(errorCode, buffer, size)) {
+		return null;
+	}
+	return buffer;
 }

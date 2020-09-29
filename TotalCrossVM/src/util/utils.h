@@ -6,7 +6,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 TC_API void getDateTime(int32* year, int32* month, int32* day, int32* hour, int32* minute, int32* second, int32* millis);
@@ -96,7 +96,7 @@ typedef CharP (*int2strFunc)(int32 i, IntBuf buf);
  * DBL_MANT_DIG = 53
  * DBL_MIN_EXP = -1023
  * max_digits = 3 + 53 - (-1023) = 1079
- * 
+ *
  * We should set DoubleBuf to 1079 to support ANY double value.
  */
 typedef char DoubleBuf[1080];
@@ -156,7 +156,7 @@ void jstring2CharPEnv(jstring src, char* dest, JNIEnv* env);
 #endif
 
 #ifdef __cplusplus
- } // __cplusplus
+}  // __cplusplus
 #endif
 
 #endif

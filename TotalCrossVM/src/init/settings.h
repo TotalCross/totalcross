@@ -13,95 +13,92 @@
 
 typedef enum
 {
-   VMTWEAK_AUDIBLE_GC = 1,    /// Enable a sound when the garbage collector runs
-   VMTWEAK_DUMP_MEMORY_STATS, /// Collects memory usage statistics during all program run
-   VMTWEAK_MEM_PROFILER,      /// Collects memory usage statistics during a piece of code
-   VMTWEAK_DISABLE_GC,        /// Disables gc
-   VMTWEAK_TRACE_CREATED_CLASSOBJS,
-   VMTWEAK_TRACE_LOCKED_OBJS,
-   VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS,
-   VMTWEAK_TRACE_METHODS,
+	VMTWEAK_AUDIBLE_GC = 1, /// Enable a sound when the garbage collector runs
+	VMTWEAK_DUMP_MEMORY_STATS, /// Collects memory usage statistics during all program run
+	VMTWEAK_MEM_PROFILER, /// Collects memory usage statistics during a piece of code
+	VMTWEAK_DISABLE_GC,   /// Disables gc
+	VMTWEAK_TRACE_CREATED_CLASSOBJS,
+	VMTWEAK_TRACE_LOCKED_OBJS,
+	VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS,
+	VMTWEAK_TRACE_METHODS,
 } VmTweak;
 
 #define IS_VMTWEAK_ON(x) (vmTweaks & (1 << (x-1))) // guich@tc114_19: better use this macro
 
 typedef enum
 {
-   NO_BUTTON,
-   CLOSE_BUTTON,
-   MINIMIZE_BUTTON
+	NO_BUTTON,
+	CLOSE_BUTTON,
+	MINIMIZE_BUTTON
 } CloseButtonType; // guich@tc111_3
 
-typedef struct
-{
-   // These values are pointers to the fields in totalcross.sys.Settings
-   int32* dateFormatPtr;                 // byte      -    Java type
-   int32* dateSeparatorPtr;              // char
-   int32* weekStartPtr;                  // int
-   int32* is24HourPtr;                   // boolean
-   int32* timeSeparatorPtr;              // char
-   int32* thousandsSeparatorPtr;         // char
-   int32* decimalSeparatorPtr;           // char
-   int32* screenWidthPtr;                // int
-   int32* screenHeightPtr;               // int
-   int32* screenWidthInDPIPtr;           // int
-   int32* screenHeightInDPIPtr;          // int
-   int32* screenBPPPtr;                  // int
-   double* screenDensityPtr;
-   int32* romVersionPtr;                 // int
-   int32* virtualKeyboardPtr;            // boolean
-   int32* daylightSavingsPtr;            // boolean
-   int32* timeZonePtr;                   // int
-   int32* timeZoneMinutesPtr;            // int
-   int32* daylightSavingsMinutesPtr;     // int
-   int32* showSecretsPtr;                // boolean
-   int32* keyboardFocusTraversablePtr;   // boolean
-   int32* closeButtonTypePtr;            // int
-   int32* isFullScreenPtr;               // boolean
-   int32* uiStylePtr;                    // byte
-   int32* dontCloseApplicationPtr;       // boolean
-   TCObject* appSettingsPtr;             // java.lang.String
-   int32* multipleInstances;             // boolean
-   int32* gcCount;                       // int
-   int32* gcTime;                        // int
-   int32* chunksCreated;                 // int
-   TCObject* appSecretKeyPtr;            // java.lang.String
-   TCObject* appSettingsBinPtr;          // byte[]
-   int32* showMemoryMessagesAtExit;      // boolean
-   TCObject* timeZoneStrPtr;             // java.lang.String
-   int32* fingerTouchPtr;                // boolean
-   int32* disableDebug;                  // boolean (totalcross.sys.Vm)
-   TCObject* fullScreenPlatformsPtr;     // java.lang.String
-   int32* disableScreenRotation;         // boolean
-   int32* deviceFontHeightPtr;           // int
-   TCObject* iccidPtr;                   // java.lang.String
-   int32* resizableWindow;               // boolean
-   int32* windowFont;                    // int 
-   int32* isOpenGL;                      // boolean
-   TCObject* lineNumber;                 // java.lang.String
-   TCObject* bugreportEmail;             // java.lang.String
-   TCObject* appVersion;
-   int32 *unmovableSIP;                  // boolean
-   int32 *minimalUpdateInterval;         // int
+typedef struct {
+	// These values are pointers to the fields in totalcross.sys.Settings
+	int32* dateFormatPtr;            // byte      -    Java type
+	int32* dateSeparatorPtr;         // char
+	int32* weekStartPtr;             // int
+	int32* is24HourPtr;              // boolean
+	int32* timeSeparatorPtr;         // char
+	int32* thousandsSeparatorPtr;    // char
+	int32* decimalSeparatorPtr;      // char
+	int32* screenWidthPtr;           // int
+	int32* screenHeightPtr;          // int
+	int32* screenWidthInDPIPtr;      // int
+	int32* screenHeightInDPIPtr;     // int
+	int32* screenBPPPtr;             // int
+	double* screenDensityPtr;
+	int32* romVersionPtr;            // int
+	int32* virtualKeyboardPtr;       // boolean
+	int32* daylightSavingsPtr;       // boolean
+	int32* timeZonePtr;              // int
+	int32* timeZoneMinutesPtr;       // int
+	int32* daylightSavingsMinutesPtr; // int
+	int32* showSecretsPtr;           // boolean
+	int32* keyboardFocusTraversablePtr; // boolean
+	int32* closeButtonTypePtr;       // int
+	int32* isFullScreenPtr;          // boolean
+	int32* uiStylePtr;               // byte
+	int32* dontCloseApplicationPtr;  // boolean
+	TCObject* appSettingsPtr;        // java.lang.String
+	int32* multipleInstances;        // boolean
+	int32* gcCount;                  // int
+	int32* gcTime;                   // int
+	int32* chunksCreated;            // int
+	TCObject* appSecretKeyPtr;       // java.lang.String
+	TCObject* appSettingsBinPtr;     // byte[]
+	int32* showMemoryMessagesAtExit; // boolean
+	TCObject* timeZoneStrPtr;        // java.lang.String
+	int32* fingerTouchPtr;           // boolean
+	int32* disableDebug;             // boolean (totalcross.sys.Vm)
+	TCObject* fullScreenPlatformsPtr; // java.lang.String
+	int32* disableScreenRotation;    // boolean
+	int32* deviceFontHeightPtr;      // int
+	TCObject* iccidPtr;              // java.lang.String
+	int32* resizableWindow;          // boolean
+	int32* windowFont;               // int
+	int32* isOpenGL;                 // boolean
+	TCObject* lineNumber;            // java.lang.String
+	TCObject* bugreportEmail;        // java.lang.String
+	TCObject* appVersion;
+	int32 *unmovableSIP;             // boolean
+	int32 *minimalUpdateInterval;    // int
 } TTCSettings, *TCSettings;
 
-typedef struct
-{
-   int32 volume;
-   int32 ringer; // < 0 - not available
-   int32 volumeState; // 0 - disabled, < 0 - vibrate, > 0 - enabled
-   int32 ringerState; // 0 - disabled, < 0 - vibrate, > 0 - enabled
-   bool isSoundEnabled;
+typedef struct {
+	int32 volume;
+	int32 ringer; // < 0 - not available
+	int32 volumeState; // 0 - disabled, < 0 - vibrate, > 0 - enabled
+	int32 ringerState; // 0 - disabled, < 0 - vibrate, > 0 - enabled
+	bool isSoundEnabled;
 } TSoundSettings, *SoundSettings;
 
-typedef struct
-{
-   bool changed;
-   int32 left;
-   int32 top;
-   int32 right;
-   int32 bottom;
-   int32 topGap;	//flsobral@tc123: gap between the top of the screen and the sip.
+typedef struct {
+	bool changed;
+	int32 left;
+	int32 top;
+	int32 right;
+	int32 bottom;
+	int32 topGap;   //flsobral@tc123: gap between the top of the screen and the sip.
 } TVirtualKeyboardSettings, *VirtualKeyboardSettings;
 
 

@@ -5,7 +5,7 @@
 package tc.tools.converter.oper;
 
 public class OperandSymD32 extends OperandSymD {
-  public OperandSymD32(int index) {
-    super(index);
-  }
+	public OperandSymD32(int index) {
+		super(index);
+	}
 }

@@ -18,12 +18,12 @@
  * @param context The thread context where the function is being executed.
  * @param driver The connection with Litebase.
  * @param parser The result of the parsing process.
- * @return A pointer to a <code>SQLInsertStatement</code> structure. 
- * @throws SQLParseException If there is a field named "rowid". 
+ * @return A pointer to a <code>SQLInsertStatement</code> structure.
+ * @throws SQLParseException If there is a field named "rowid".
  */
 SQLInsertStatement* initSQLInsertStatement(Context context, TCObject driver, LitebaseParser* parser);
 
-/* 
+/*
  * Sets the value of a numeric parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -36,7 +36,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, TCObject driver, Lit
  */
 bool setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, int32 index, VoidP value, int32 type);
 
-/* 
+/*
  * Sets the value of a string or blob parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -52,7 +52,7 @@ bool setStrBlobParamValueIns(Context context, SQLInsertStatement* insertStmt, in
 
 // juliana@223_3: PreparedStatement.setNull() now works for blobs.
 /**
- * Sets null in a given field. 
+ * Sets null in a given field.
  *
  * @param context The thread context where the function is being executed.
  * @param insertStmt A SQL insert statement.

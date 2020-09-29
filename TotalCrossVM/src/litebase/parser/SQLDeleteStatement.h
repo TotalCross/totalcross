@@ -13,15 +13,15 @@
 #include "Litebase.h"
 
 /**
- * Initializes a SQL detete statement for a given SQL. 
+ * Initializes a SQL detete statement for a given SQL.
  *
  * @param parser The parse structure with parse information concerning the SQL.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLDeleteStatement</code> structure. 
+ * @return A pointer to a <code>SQLDeleteStatement</code> structure.
  */
 SQLDeleteStatement* initSQLDeleteStatement(LitebaseParser* parser, bool isPrepared);
 
-/* 
+/*
  * Sets the value of a numeric parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -34,7 +34,7 @@ SQLDeleteStatement* initSQLDeleteStatement(LitebaseParser* parser, bool isPrepar
  */
 bool setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type);
 
-/* 
+/*
  * Sets the value of a string parameter at the given index.
  *
  * @param context The thread context where the function is being executed.
@@ -85,4 +85,3 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt);
 bool litebaseBindDeleteStatement(Context context, TCObject driver, SQLDeleteStatement* deleteStmt);
 
 #endif
-

@@ -18,10 +18,10 @@
 
 enum
 {
-   INVALID        = -1,
-   READ_WRITE     =  3,
-   CREATE         =  4,
-   CREATE_EMPTY   =  5
+	INVALID        = -1,
+	READ_WRITE     =  3,
+	CREATE         =  4,
+	CREATE_EMPTY   =  5
 };
 
 

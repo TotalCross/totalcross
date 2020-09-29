@@ -11,13 +11,11 @@ import samples.apps.salesplus.ui.*;
 /**
  * The report menu by product.
  */
-public class ByProductMenu extends BaseMenu
-{
-   /**
-    * The constructor.
-    */
-   public ByProductMenu()
-   {
-      super(new String[]{"Month", "Day", "Period"}, new int[]{SalesPlus.MONTH2, SalesPlus.DAY2, SalesPlus.PERIOD}, false);
-   }
+public class ByProductMenu extends BaseMenu {
+	/**
+	 * The constructor.
+	 */
+	public ByProductMenu() {
+		super(new String[] {"Month", "Day", "Period"}, new int[] {SalesPlus.MONTH2, SalesPlus.DAY2, SalesPlus.PERIOD}, false);
+	}
 }

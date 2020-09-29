@@ -5,7 +5,7 @@
 package tc.tools.converter.oper;
 
 public class OperandConstant32 extends OperandConstant {
-  public OperandConstant32(int value, int type) {
-    super(value, type);
-  }
+	public OperandConstant32(int value, int type) {
+		super(value, type);
+	}
 }

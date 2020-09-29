@@ -10,27 +10,27 @@ import totalcross.io.Stream;
 import totalcross.io.StreamConnectionNotifier;
 
 public class SerialPortServer4D extends StreamConnectionNotifier {
-  Object nativeHandle;
+	Object nativeHandle;
 
-  public SerialPortServer4D(String uuid, String[] params) throws IOException {
-    createSerialPortServer(uuid, params);
-  }
+	public SerialPortServer4D(String uuid, String[] params) throws IOException {
+		createSerialPortServer(uuid, params);
+	}
 
-  native private void createSerialPortServer(String uuid, String[] params) throws IOException;
+	native private void createSerialPortServer(String uuid, String[] params) throws IOException;
 
-  @Override
-  native public Stream accept() throws IOException;
+	@Override
+	native public Stream accept() throws IOException;
 
-  @Override
-  native public void close() throws IOException;
+	@Override
+	native public void close() throws IOException;
 
-  @Override
-  protected void finalize() {
-    if (nativeHandle != null) {
-      try {
-        this.close();
-      } catch (IOException e) {
-      }
-    }
-  }
+	@Override
+	protected void finalize() {
+		if (nativeHandle != null) {
+			try {
+				this.close();
+			} catch (IOException e) {
+			}
+		}
+	}
 }

@@ -25,8 +25,7 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 using namespace TotalCross;
 
-IFrameworkView^ MainViewFactory::CreateView()
-{
+IFrameworkView^ MainViewFactory::CreateView() {
 	String ^vmPath = Windows::ApplicationModel::Package::Current->InstalledLocation->Path;
 	String ^appPath = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
 	// Essa linha daqui de baixo dever� ser apagada; ela deve ser chamada por Settings
@@ -43,7 +42,6 @@ IFrameworkView^ MainViewFactory::CreateView()
 	return ref new MainView(cmdLine, vmPath, appPath);
 }
 
-MainViewFactory::MainViewFactory(String^ cmdLine)
-{
+MainViewFactory::MainViewFactory(String^ cmdLine) {
 	this->cmdLine = cmdLine;
 }

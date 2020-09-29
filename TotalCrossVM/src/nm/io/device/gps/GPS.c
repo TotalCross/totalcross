@@ -5,8 +5,8 @@
 
 
 
-#include "tcvm.h" 
- 
+#include "tcvm.h"
+
 #if defined (WINCE)
  #include "win/GPS_c.h"
 #elif defined (ANDROID)
@@ -16,60 +16,57 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native private boolean startGPS() throws totalcross.io.IOException;
-{
+TC_API void tidgGPS_startGPS(NMParams p) { // totalcross/io/device/gps/GPS native private boolean startGPS() throws totalcross.io.IOException;
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
-   Err err;
+	Err err;
 
-#ifdef ANDROID   
-   if ((err = nativeStartGPS(p->obj[0])) != NO_ERROR)
-#else
-   if ((err = nativeStartGPS()) != NO_ERROR)
-#endif
-   {
-      if (err == 2) {
-         throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
-      }
 #ifdef ANDROID
-      else if (err == 1) {
-         throwException(p->currentContext, IOException, "No environment");
-      }
+	if ((err = nativeStartGPS(p->obj[0])) != NO_ERROR)
+#else
+	if ((err = nativeStartGPS()) != NO_ERROR)
 #endif
-      else {
-         throwExceptionWithCode(p->currentContext, IOException, err);
-      }
-   }
-   p->retI = (err == NO_ERROR);
+	{
+		if (err == 2) {
+			throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
+		}
+#ifdef ANDROID
+		else if (err == 1) {
+			throwException(p->currentContext, IOException, "No environment");
+		}
+#endif
+		else {
+			throwExceptionWithCode(p->currentContext, IOException, err);
+		}
+	}
+	p->retI = (err == NO_ERROR);
 #elif defined (WP8)
-   p->retI = nativeStartGPSCPP();
+	p->retI = nativeStartGPSCPP();
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tidgGPS_updateLocation(NMParams p) // totalcross/io/device/gps/GPS native private int updateLocation();
-{
-   int32 flags = 0;
+TC_API void tidgGPS_updateLocation(NMParams p) { // totalcross/io/device/gps/GPS native private int updateLocation();
+	int32 flags = 0;
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
-   Err err;
+	Err err;
 
-   if ((err = nativeUpdateLocation(p->currentContext, p->obj[0], &flags)) > 0)
-   {
-      if (err == 2)
-         throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
-      else
-         throwExceptionWithCode(p->currentContext, IOException, err);
-   }
-   p->retI = flags;
+	if ((err = nativeUpdateLocation(p->currentContext, p->obj[0], &flags)) > 0) {
+		if (err == 2) {
+			throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
+		} else {
+			throwExceptionWithCode(p->currentContext, IOException, err);
+		}
+	}
+	p->retI = flags;
 #elif defined (WP8)
-   p->retI = nativeUpdateLocationCPP(p->currentContext, p->obj[0]);
-#endif 
+	p->retI = nativeUpdateLocationCPP(p->currentContext, p->obj[0]);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tidgGPS_stopGPS(NMParams p) // totalcross/io/device/gps/GPS native private void stopGPS();
-{
+TC_API void tidgGPS_stopGPS(NMParams p) { // totalcross/io/device/gps/GPS native private void stopGPS();
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
-   nativeStopGPS();
+	nativeStopGPS();
 #elif defined (WP8)
-   nativeStopGPSCPP();
+	nativeStopGPSCPP();
 #endif
 }
 

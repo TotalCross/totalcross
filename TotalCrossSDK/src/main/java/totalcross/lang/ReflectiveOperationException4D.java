@@ -5,7 +5,7 @@
 
 package totalcross.lang;
 
-/** 
+/**
  * Umbrella exception for exceptions when using reflection.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
@@ -21,13 +21,12 @@ package totalcross.lang;
  */
 
 public class ReflectiveOperationException4D extends Exception {
-  /** Constructs an empty Exception. */
-  public ReflectiveOperationException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public ReflectiveOperationException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public ReflectiveOperationException4D(String msg) {
-    super(msg);
-  }
-
+	/** Constructs an exception with the given message. */
+	public ReflectiveOperationException4D(String msg) {
+		super(msg);
+	}
 }

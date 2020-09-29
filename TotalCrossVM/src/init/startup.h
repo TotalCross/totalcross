@@ -25,7 +25,7 @@ typedef int32 (*executeProgramFunc)(CharP args);
 TC_API int32 startVM(CharP argsOriginal, Context* cOut);
 TC_API int32 startProgram(Context currentContext);
 
-bool wokeUp();  
+bool wokeUp();
 
 #ifdef __cplusplus
 }
@@ -33,14 +33,14 @@ bool wokeUp();
 
 #ifdef ANDROID
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
-   jclass androidFindClass(JNIEnv* env, CharP className);
-   char* getTotalCrossAndroidClass(CharP className);
-   JNIEnv* getJNIEnv();
+jclass androidFindClass(JNIEnv* env, CharP className);
+char* getTotalCrossAndroidClass(CharP className);
+JNIEnv* getJNIEnv();
    #define JOBJ_CLASS(x) (*env)->GetObjectClass(env, x)
 #ifdef __cplusplus
- } // __cplusplus
+}  // __cplusplus
 #endif
 #endif
 

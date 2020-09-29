@@ -17,7 +17,7 @@ extern Hashtable htLoadedClasses;
 extern TCClassArray vLoadedClasses;
 
 // tcexception.c
-extern CharP throwableAsCharP[(int32)ThrowableCount];
+extern CharP throwableAsCharP[(int32) ThrowableCount];
 
 // event_c.h
 extern int32 lastPenX, lastPenY, actionStart;
@@ -103,7 +103,7 @@ extern TVirtualKeyboardSettings vkSettings;
 extern jmethodID jsetElapsed;
 #endif
 
-// objectmemorymanager.c    
+// objectmemorymanager.c
 extern bool runningGC,runningFinalizer,disableGC,callGConMainThread;
 extern TCObjectArray freeList; // the array with lists of free objects
 extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
@@ -287,13 +287,13 @@ extern HINSTANCE coreDll, cellcoreDll;
 #endif
 
 #if defined (WIN32)
- extern bool initWinsock();
- extern void closeWinsock();
+extern bool initWinsock();
+extern void closeWinsock();
 #endif
 
 #if defined (WINCE)
- extern bool initAygshell();
- extern void closeAygshell();
+extern bool initAygshell();
+extern void closeAygshell();
 #endif
 
 #if defined (HEADLESS)

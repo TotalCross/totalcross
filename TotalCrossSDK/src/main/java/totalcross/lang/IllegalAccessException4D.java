@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * Thrown when you try to load a private class using Class.newInstance. 
+/**
+ * Thrown when you try to load a private class using Class.newInstance.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class IllegalAccessException4D extends ReflectiveOperationException {
-  /** Constructs an empty Exception. */
-  public IllegalAccessException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public IllegalAccessException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public IllegalAccessException4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public IllegalAccessException4D(String msg) {
+		super(msg);
+	}
 }

@@ -11,7 +11,7 @@ import totalcross.ui.event.ValueChangeHandler;
 import totalcross.ui.font.Font;
 import totalcross.util.UnitsConverter;
 
-public class FloatingLabel<T extends Control & HasValue<?>> {
+public class FloatingLabel<T extends Control & HasValue< ? > > {
 
 	private T target;
 
@@ -28,7 +28,7 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 	private boolean isExpanded = true;
 
 	private int executedTime;
-	
+
 	private int topX, topY;
 
 	public final UpdateListener updateListener = new UpdateListener() {
@@ -83,21 +83,21 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 			});
 		}
 
-    target.addValueChangeHandler(
-        new ValueChangeHandler<Object>() {
+		target.addValueChangeHandler(
+			new ValueChangeHandler<Object>() {
 
-          @Override
-          public void onValueChange(ValueChangeEvent<Object> event) {
-            // pay attention to the ! (not) at the beginning
-            if (!((isExpanded && target.getValue() == null)
-                || (!isExpanded && target.getValue() != null)
-                || (!isExpanded && target.getValue() == null && target instanceof TextControl))) {
-              animateMaterial(target.isDisplayed());
-            }
-          }
-        });
-  }
-	
+			@Override
+			public void onValueChange(ValueChangeEvent<Object> event) {
+				// pay attention to the ! (not) at the beginning
+				if (!((isExpanded && (target.getValue() == null) )
+				      || (!isExpanded && (target.getValue() != null) )
+				      || (!isExpanded && (target.getValue() == null) && target instanceof TextControl))) {
+					animateMaterial(target.isDisplayed());
+				}
+			}
+		});
+	}
+
 	public FloatingLabel(T target, int variable1, int variable2) {
 		this(target);
 		this.topX = variable1;
@@ -116,9 +116,9 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 				}
 			}
 			if (target instanceof OutlinedEdit
-					? percentage == -1 ? true
-							: executedTime / ((OutlinedEdit) target).totalTime < 1
-					: true) {
+			                ? (percentage == -1) ? true
+			                                : (executedTime / ((OutlinedEdit) target).totalTime < 1)
+			                : true) {
 				if (fcap.size != captionAnimationFontTarget.size) {
 					if (slow) {
 						inccap = fcap.size == targetFont.size ? -1 : 1;
@@ -154,21 +154,21 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 			} else if (timeT < 0) {
 				timeT = 0;
 			}
-			
+
 			// Label Font size Animation
 			int textSizeDifference = target.getFont().size - captionFontSmall.size;
-			if (isExpanded ? testPercentage < timeT : testPercentage > 1 - timeT) {
+			if (isExpanded ? (testPercentage < timeT) : (testPercentage > 1 - timeT)) {
 				fcap = fcap.adjustedBy(inccap);
 				testPercentage += -inccap / (float) textSizeDifference;
 				float lastStep = (isExpanded ? (textSizeDifference - 1) : 1) / (float) textSizeDifference;
 				float lastStepLastFortyPercent = isExpanded ? lastStep + 6 / 10 / textSizeDifference : 4 / 10 * lastStep;
 				if (isExpanded ? timeT < lastStepLastFortyPercent
-						: 1 - timeT > lastStepLastFortyPercent && testPercentage == lastStep) {
+				                         : 1 - timeT > lastStepLastFortyPercent && (testPercentage == lastStep) ) {
 					fcap = fcap.adjustedBy(-inccap);
 					testPercentage -= -inccap / (float) textSizeDifference;
 				}
 			}
-			
+
 			// Label Position Animation
 			if(fcap.size == (isExpanded ? captionFontSmall.size : target.font.size)) {
 				timeT = 1;
@@ -191,7 +191,7 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 			ycap = ycap0 * (fcap.fm.height - fmHmin) / (target.getFont().fm.height - fmHmin);
 			xcap = xcap0 * (fcap.fm.height - fmHmin) / (target.getFont().fm.height - fmHmin);
 		} else {
-			if(target instanceof Edit && ((Edit) target).chars.length() > 0) {
+			if(target instanceof Edit && (((Edit) target).chars.length() > 0)) {
 				fullStep();
 				return;
 			}
@@ -204,13 +204,13 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 			}
 			// Label Font size Animation
 			int textSizeDifference = target.getFont().size - captionFontSmall.size;
-			if (isExpanded ? testPercentage < timeT : testPercentage > 1 - timeT) {
+			if (isExpanded ? (testPercentage < timeT) : (testPercentage > 1 - timeT)) {
 				fcap = fcap.adjustedBy(inccap);
 				testPercentage += -inccap / (float) textSizeDifference;
 				float lastStep = (isExpanded ? (textSizeDifference - 1) : 1) / (float) textSizeDifference;
 				float lastStepLastFortyPercent = isExpanded ? lastStep + 6 / 10 / textSizeDifference : 4 / 10 * lastStep;
 				if (isExpanded ? timeT < lastStepLastFortyPercent
-						: 1 - timeT > lastStepLastFortyPercent && testPercentage == lastStep) {
+				                         : 1 - timeT > lastStepLastFortyPercent && (testPercentage == lastStep) ) {
 					fcap = fcap.adjustedBy(-inccap);
 					testPercentage -= -inccap / (float) textSizeDifference;
 				}
@@ -219,7 +219,7 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 				}
 			}
 			// Label Position Animation
-			yA = isExpanded ? ycap0  : UnitsConverter.toPixels(Control.DP + 20) - captionFontSmall.fm.ascent - captionFontSmall.fm.descent;
+			yA = isExpanded ? ycap0 : UnitsConverter.toPixels(Control.DP + 20) - captionFontSmall.fm.ascent - captionFontSmall.fm.descent;
 			yB = !isExpanded ? ycap0 : UnitsConverter.toPixels(Control.DP + 20) - captionFontSmall.fm.ascent - captionFontSmall.fm.descent;
 			ycap = (int) (yA * (1 - timeT) + yB * timeT);
 		}
@@ -241,23 +241,23 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 		}
 		testPercentage = -inccap;
 	}
-	
+
 	public int getExtraHeight() {
 		return captionFontSmall.fm.height;
 	}
-	
+
 	public Font getCaptionFontSmall() {
 		return captionFontSmall;
 	}
-	
+
 	public Font getFcap() {
 		return fcap;
 	}
-	
+
 	public boolean isBig() {
 		return isExpanded;
 	}
-	
+
 	public int getTopX() {
 		return topX;
 	}

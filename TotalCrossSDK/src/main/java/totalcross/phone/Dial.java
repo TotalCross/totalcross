@@ -16,27 +16,27 @@ import totalcross.io.IOException;
  */
 
 final public class Dial {
-  /** 
-   * A dial listener that will receive events informing the actual status of the dialing.
-   * Does not work on the currently supported platforms.  
-   * @deprecated */
-  @Deprecated
-  public static interface Listener {
-    public void dialStatusChange(String msg);
-  }
+	/**
+	 * A dial listener that will receive events informing the actual status of the dialing.
+	 * Does not work on the currently supported platforms.
+	 * @deprecated */
+	@Deprecated
+	public static interface Listener {
+		public void dialStatusChange(String msg);
+	}
 
-  /** The listener that will receive status change messages. Does not work on the currently supported platforms.  */
-  public static Listener listener;
+	/** The listener that will receive status change messages. Does not work on the currently supported platforms.  */
+	public static Listener listener;
 
-  /** Dials the given number. */
-  @ReplacedByNativeOnDeploy
-  public static void number(String number) throws IOException {
-  }
+	/** Dials the given number. */
+	@ReplacedByNativeOnDeploy
+	public static void number(String number) throws IOException {
+	}
 
-  /** Hangs up a running call. Does not work on the currently supported platforms. 
-   * @deprecated*/
-  @Deprecated
-  @ReplacedByNativeOnDeploy
-  public static void hangup() {
-  }
+	/** Hangs up a running call. Does not work on the currently supported platforms.
+	 * @deprecated*/
+	@Deprecated
+	@ReplacedByNativeOnDeploy
+	public static void hangup() {
+	}
 }

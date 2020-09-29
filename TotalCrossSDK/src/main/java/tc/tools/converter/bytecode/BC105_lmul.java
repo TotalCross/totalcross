@@ -5,12 +5,12 @@
 package tc.tools.converter.bytecode;
 
 public class BC105_lmul extends Arithmetic {
-  public BC105_lmul() {
-    super(-1, -2, -1, LONG);
-  }
+	public BC105_lmul() {
+		super(-1, -2, -1, LONG);
+	}
 
-  @Override
-  public void exec() {
-    stack[stackPtr - 2].asLong *= stack[stackPtr - 1].asLong;
-  }
+	@Override
+	public void exec() {
+		stack[stackPtr - 2].asLong *= stack[stackPtr - 1].asLong;
+	}
 }

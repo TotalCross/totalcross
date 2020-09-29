@@ -11,402 +11,408 @@ static char* LOWER4 = "1E011E031E051E071E091E0B1E0D1E0F1E111E131E151E171E191E1B1
 static char* UPPER3 = "0490B510010210410610810A10C10E11011211411611811A11C11E12012212412612812A12C12E13013213413613913B13D13F14114314514714A14C14E15015215415615815A15C15E16016216416616816A16C16E17017217417617817917B17D17F18118218418618718918A18B18E18F19019119319419619719819C19D19F1A01A21A41A61A71A91AC1AE1AF1B11B21B31B51B71B81BC1C41C51C71C81CA1CB1CD1CF1D11D31D51D71D91DB1DE1E01E21E41E61E81EA1EC1EE1F11F21F41F61F71F81FA1FC1FE20020220420620820A20C20E21021221421621821A21C21E22022222422622822A22C22E23023234538638838938A38C38E38F39139239339439539639739839939A39B39C39D39E39F3A03A13A33A43A53A63A73A83A93AA3AB3C23D03D13D53D63D83DA3DC3DE3E03E23E43E63E83EA3EC3EE3F03F13F43F53F73F93FA40040140240340440540640740840940A40B40C40D40E40F41041141241341441541641741841941A41B41C41D41E41F42042142242342442542642742842942A42B42C42D42E42F46046246446646846A46C46E47047247447647847A47C47E48048A48C48E49049249449649849A49C49E4A04A24A44A64A84AA4AC4AE4B04B24B44B64B84BA4BC4BE4C14C34C54C74C94CB4CD4D04D24D44D64D84DA4DC4DE4E04E24E44E64E84EA4EC4EE4F04F24F44F850050250450650850A50C50E53153253353453553653753853953A53B53C53D53E53F54054154254354454554654754854954A54B54C54D54E54F550551552553554555556";
 static char* UPPER4 = "1E001E021E041E061E081E0A1E0C1E0E1E101E121E141E161E181E1A1E1C1E1E1E201E221E241E261E281E2A1E2C1E2E1E301E321E341E361E381E3A1E3C1E3E1E401E421E441E461E481E4A1E4C1E4E1E501E521E541E561E581E5A1E5C1E5E1E601E621E641E661E681E6A1E6C1E6E1E701E721E741E761E781E7A1E7C1E7E1E801E821E841E861E881E8A1E8C1E8E1E901E921E941E9B1EA01EA21EA41EA61EA81EAA1EAC1EAE1EB01EB21EB41EB61EB81EBA1EBC1EBE1EC01EC21EC41EC61EC81ECA1ECC1ECE1ED01ED21ED41ED61ED81EDA1EDC1EDE1EE01EE21EE41EE61EE81EEA1EEC1EEE1EF01EF21EF41EF61EF81F081F091F0A1F0B1F0C1F0D1F0E1F0F1F181F191F1A1F1B1F1C1F1D1F281F291F2A1F2B1F2C1F2D1F2E1F2F1F381F391F3A1F3B1F3C1F3D1F3E1F3F1F481F491F4A1F4B1F4C1F4D1F591F5B1F5D1F5F1F681F691F6A1F6B1F6C1F6D1F6E1F6F1F881F891F8A1F8B1F8C1F8D1F8E1F8F1F981F991F9A1F9B1F9C1F9D1F9E1F9F1FA81FA91FAA1FAB1FAC1FAD1FAE1FAF1FB81FB91FBA1FBB1FBC1FBE1FC81FC91FCA1FCB1FCC1FD81FD91FDA1FDB1FE81FE91FEA1FEB1FEC1FF81FF91FFA1FFB1FFC2126212A212B2160216121622163216421652166216721682169216A216B216C216D216E216F24B624B724B824B924BA24BB24BC24BD24BE24BF24C024C124C224C324C424C524C624C724C824C924CA24CB24CC24CD24CE24CFFF21FF22FF23FF24FF25FF26FF27FF28FF29FF2AFF2BFF2CFF2DFF2EFF2FFF30FF31FF32FF33FF34FF35FF36FF37FF38FF39FF3A";
 
-TC_API JCharP CharP2JCharP(CharP s, int32 len)
-{
-   if (len < 0 ) len = xstrlen(s);
-   return CharP2JCharPBuf(s, len, (JCharP)xmalloc((len+1)*2), true);
+TC_API JCharP CharP2JCharP(CharP s, int32 len) {
+	if (len < 0 ) {
+		len = xstrlen(s);
+	}
+	return CharP2JCharPBuf(s, len, (JCharP) xmalloc((len+1)*2), true);
 }
 
-TC_API CharP JCharP2CharP(JCharP js, int32 len)
-{
-   if (len < 0 ) len = JCharPLen(js);
-   return JCharP2CharPBuf(js, len, (CharP)xmalloc(len+1));
+TC_API CharP JCharP2CharP(JCharP js, int32 len) {
+	if (len < 0 ) {
+		len = JCharPLen(js);
+	}
+	return JCharP2CharPBuf(js, len, (CharP) xmalloc(len+1));
 }
 
-TC_API JCharP CharP2JCharPBuf(CharP s, int32 len, JCharP buffer, bool endWithZero)
-{
-   JCharP js = buffer;
-   if (len < 0) len = xstrlen(s);
-   if (js)
-   {
-      while (len-- > 0)
-         *js++ = *s++ & 0xFF;
-      if (endWithZero) *js = 0;
-   }
-   return buffer;
+TC_API JCharP CharP2JCharPBuf(CharP s, int32 len, JCharP buffer, bool endWithZero) {
+	JCharP js = buffer;
+	if (len < 0) {
+		len = xstrlen(s);
+	}
+	if (js) {
+		while (len-- > 0) {
+			*js++ = *s++ & 0xFF;
+		}
+		if (endWithZero) {
+			*js = 0;
+		}
+	}
+	return buffer;
 }
 
-TC_API CharP JCharP2CharPBuf(JCharP js, int32 len, CharP buffer)
-{
-   CharP s = buffer;
-   if (len < 0) len = JCharPLen(js);
-   if (s)
-   {
-      while (len-- > 0)
-         *s++ = (uint8)*js++;
-      *s = 0;
-   }
-   return buffer;
+TC_API CharP JCharP2CharPBuf(JCharP js, int32 len, CharP buffer) {
+	CharP s = buffer;
+	if (len < 0) {
+		len = JCharPLen(js);
+	}
+	if (s) {
+		while (len-- > 0) {
+			*s++ = (uint8)*js++;
+		}
+		*s = 0;
+	}
+	return buffer;
 }
 
-TC_API int32 JCharPLen(JCharP s)
-{
-   int32 len = 0;
-   while (*s++)
-      len++;
-   return len;
+TC_API int32 JCharPLen(JCharP s) {
+	int32 len = 0;
+	while (*s++) {
+		len++;
+	}
+	return len;
 }
 
 // given the hex char, return its decimal value
-static int32 digitOf(char c) // don't inline!
-{
-   return ('0' <= c && c <= '9') ? (c - '0') : (c - 'A' + 10);
+static int32 digitOf(char c) { // don't inline!
+	return ('0' <= c && c <= '9') ? (c - '0') : (c - 'A' + 10);
 }
 
 // given the 3-char hex value, return its decimal value
-static int32 hex2unsigned3(CharP p)
-{
-   return (digitOf(*(p)) << 8) | (digitOf(*(p+1)) << 4) | digitOf(*(p+2));
+static int32 hex2unsigned3(CharP p) {
+	return (digitOf(*(p)) << 8) | (digitOf(*(p+1)) << 4) | digitOf(*(p+2));
 }
 
 // given the 4-char hex value, return its decimal value
-static int32 hex2unsigned4(CharP p)
-{
-   return (digitOf(*p) << 12) | (digitOf(*(p+1)) << 8) | (digitOf(*(p+2)) << 4) | digitOf(*(p+3));
+static int32 hex2unsigned4(CharP p) {
+	return (digitOf(*p) << 12) | (digitOf(*(p+1)) << 8) | (digitOf(*(p+2)) << 4) | digitOf(*(p+3));
 }
 
 // search for a given fixed-size-3 string
-static char* searchChar3(CharP from, CharP what)
-{
-   for (; *from; from+=3)
-      if (*from == *what && *(from+1) == *(what+1) && *(from+2) == *(what+2))
-         return from;
-   return NULL;
+static char* searchChar3(CharP from, CharP what) {
+	for (; *from; from += 3)
+		if ((*from == *what) && (*(from+1) == *(what+1)) && (*(from+2) == *(what+2))) {
+			return from;
+		}
+	return NULL;
 }
 
 // search for a given fixed-size-4 string
-static char* searchChar4(CharP from, CharP what)
-{
-   for (; *from; from+=4)
-      if (*from == *what && *(from+1) == *(what+1) && *(from+2) == *(what+2) && *(from+3) == *(what+3))
-         return from;
-   return NULL;
+static char* searchChar4(CharP from, CharP what) {
+	for (; *from; from += 4)
+		if ((*from == *what) && (*(from+1) == *(what+1)) && (*(from+2) == *(what+2)) && (*(from+3) == *(what+3))) {
+			return from;
+		}
+	return NULL;
 }
 
 // converts a char to lower case, supporting unicode
-TC_API JChar JCharToLower(JChar c)
-{
-   char buf5[5];
-   // prioritize ascii
-   if (('A' <= c && c <= 'Z') || (0xc0 <= c && c <= 0xdd && c != 215)) // added 215 to here too - guich@502_6: replaced the strange unicode values by hexadecimal
-      return c + 32;
-   else
-   if (c > 255) // guich@554_24
-   {
-      CharP buf = buf5;
-      CharP p;
-      if (c < 0x1000)
-      {
-         int2hex(c,3,buf);
-         p = searchChar3(UPPER3,buf); // search in upper,
-         if (p)
-            return hex2unsigned3(&LOWER3[p-UPPER3]); // return from lower
-      }
-      else
-      {
-         int2hex(c,4,buf);
-         p = searchChar4(UPPER4,buf); // search in lower
-         if (p)
-            return hex2unsigned4(&LOWER4[p-UPPER4]); // return from upper
-         // special cases
-         if (c == 0x2126)
-            return 0x3C9;
-         if (c == 0x212A)
-            return 0x6B;
-         if (c == 0x212B)
-            return 0xE5;
-      }
-   }
-   return c;
+TC_API JChar JCharToLower(JChar c) {
+	char buf5[5];
+	// prioritize ascii
+	if ((('A' <= c) && (c <= 'Z') ) || ((0xc0 <= c) && (c <= 0xdd) && (c != 215) )) { // added 215 to here too - guich@502_6: replaced the strange unicode values by hexadecimal
+		return c + 32;
+	} else if (c > 255) { // guich@554_24
+		CharP buf = buf5;
+		CharP p;
+		if (c < 0x1000) {
+			int2hex(c,3,buf);
+			p = searchChar3(UPPER3,buf); // search in upper,
+			if (p) {
+				return hex2unsigned3(&LOWER3[p-UPPER3]); // return from lower
+			}
+		} else {
+			int2hex(c,4,buf);
+			p = searchChar4(UPPER4,buf); // search in lower
+			if (p) {
+				return hex2unsigned4(&LOWER4[p-UPPER4]); // return from upper
+			}
+			// special cases
+			if (c == 0x2126) {
+				return 0x3C9;
+			}
+			if (c == 0x212A) {
+				return 0x6B;
+			}
+			if (c == 0x212B) {
+				return 0xE5;
+			}
+		}
+	}
+	return c;
 }
 
 // converts a char to upper case, supporting unicode
-TC_API JChar JCharToUpper(JChar c)
-{
-   char buf5[5];
-   if (('a' <= c && c <= 'z') || (0xe0 <= c && c <= 0xfd && c != 247)) // guich@502_6: replaced the strange unicode values by hexadecimal
-      return c - 32;
-   else
-   if (c > 255) // guich@554_24
-   {
-      CharP buf = buf5;
-      CharP p;
-      if (c < 0x1000)
-      {
-         int2hex(c,3,buf);
-         p = searchChar3(LOWER3,buf); // search in upper,
-         if (p)
-            return hex2unsigned3(&UPPER3[p-LOWER3]); // return from lower
-      }
-      else
-      {
-         int2hex(c,4,buf);
-         p = searchChar4(LOWER4,buf); // search in lower
-         if (p)
-            return hex2unsigned4(&UPPER4[p-LOWER4]); // return from upper
-         if (c == 0x1FBE)
-            return 0x399;
-
-      }
-   }
-   return c;
+TC_API JChar JCharToUpper(JChar c) {
+	char buf5[5];
+	if ((('a' <= c) && (c <= 'z') ) || ((0xe0 <= c) && (c <= 0xfd) && (c != 247) )) { // guich@502_6: replaced the strange unicode values by hexadecimal
+		return c - 32;
+	} else if (c > 255) { // guich@554_24
+		CharP buf = buf5;
+		CharP p;
+		if (c < 0x1000) {
+			int2hex(c,3,buf);
+			p = searchChar3(LOWER3,buf); // search in upper,
+			if (p) {
+				return hex2unsigned3(&UPPER3[p-LOWER3]); // return from lower
+			}
+		} else {
+			int2hex(c,4,buf);
+			p = searchChar4(LOWER4,buf); // search in lower
+			if (p) {
+				return hex2unsigned4(&UPPER4[p-LOWER4]); // return from upper
+			}
+			if (c == 0x1FBE) {
+				return 0x399;
+			}
+		}
+	}
+	return c;
 }
 
-TC_API int32 JCharPIndexOfJCharP(JCharP me, JCharP other, int32 start, int32 meLen, int32 otherLen) // guich@320_6
-{
-   JChar c;
-   int32 count = meLen >= 0 ? meLen : JCharPLen(me);
-   int32 scount = otherLen >= 0 ? otherLen : JCharPLen(other);
-   int32 j = (count - scount);
-   int32 len;
-   JCharP s;
-   JCharP s1;
-   if (start < 0)
-      start = 0;
-   else
-   if (start >= count)
-      return -1;
-   if (scount == 0)
-      return start;
-   if (otherLen == 1)
-      return JCharPIndexOfJChar(me, *other, start, meLen);
+TC_API int32 JCharPIndexOfJCharP(JCharP me, JCharP other, int32 start, int32 meLen, int32 otherLen) { // guich@320_6
+	JChar c;
+	int32 count = meLen >= 0 ? meLen : JCharPLen(me);
+	int32 scount = otherLen >= 0 ? otherLen : JCharPLen(other);
+	int32 j = (count - scount);
+	int32 len;
+	JCharP s;
+	JCharP s1;
+	if (start < 0) {
+		start = 0;
+	} else if (start >= count) {
+		return -1;
+	}
+	if (scount == 0) {
+		return start;
+	}
+	if (otherLen == 1) {
+		return JCharPIndexOfJChar(me, *other, start, meLen);
+	}
 
-   me += start; // guich@557_4: fixes error when the given start was < 0.
-   c = *other++;
-   scount--;
+	me += start; // guich@557_4: fixes error when the given start was < 0.
+	c = *other++;
+	scount--;
 
 notFound:
-   while (1)
-   {
-      // search for the next ocurrence of the first char of other in me
-      while (start <= j && *me != c)
-      {
-         start++;
-         me++;
-      }
+	while (1) {
+		// search for the next ocurrence of the first char of other in me
+		while (start <= j && *me != c) {
+			start++;
+			me++;
+		}
 
-      // passed end of string?
-      if (start > j)
-         return -1;
+		// passed end of string?
+		if (start > j) {
+			return -1;
+		}
 
-      // now search the other strings
-      len = scount;
-      s = me+1;
-      s1 = other;
-      while (len--)
-         if (*s++ != *s1++)
-         {
-            start++;
-            me++; // guich@321_3
-            goto notFound;
-         }
+		// now search the other strings
+		len = scount;
+		s = me+1;
+		s1 = other;
+		while (len--) {
+			if (*s++ != *s1++) {
+				start++;
+				me++; // guich@321_3
+				goto notFound;
+			}
+		}
 
-      return start;
-   }
+		return start;
+	}
 }
 
-TC_API int32 JCharPLastIndexOfJCharP(JCharP me, JCharP other, int32 start, int32 meLen, int32 otherLen)
-{
-   JChar c;
-   int32 count = meLen >= 0 ? meLen : JCharPLen(me);
-   int32 scount = otherLen >= 0 ? otherLen : JCharPLen(other);
-   int32 len;
-   JCharP s;
-   JCharP s1;
-   if (start < 0)
-      start = 0;
-   else
-   if (start > count)
-      return -1;
-   if (scount == 0)
-      return start;
-   if (otherLen == 1)
-      return JCharPLastIndexOfJChar(me, meLen, *other, start-1);
+TC_API int32 JCharPLastIndexOfJCharP(JCharP me, JCharP other, int32 start, int32 meLen, int32 otherLen) {
+	JChar c;
+	int32 count = meLen >= 0 ? meLen : JCharPLen(me);
+	int32 scount = otherLen >= 0 ? otherLen : JCharPLen(other);
+	int32 len;
+	JCharP s;
+	JCharP s1;
+	if (start < 0) {
+		start = 0;
+	} else if (start > count) {
+		return -1;
+	}
+	if (scount == 0) {
+		return start;
+	}
+	if (otherLen == 1) {
+		return JCharPLastIndexOfJChar(me, meLen, *other, start-1);
+	}
 
-   me += --start; // guich@557_4: fixes error when the given start was < 0.
-   c = *other++;
-   scount--;
+	me += --start; // guich@557_4: fixes error when the given start was < 0.
+	c = *other++;
+	scount--;
 
 notFound:
-   while (1)
-   {
-      // search for the next ocurrence of the first char of other in me
-      while (start >= 0 && *me != c)
-      {
-         start--;
-         me--;
-      }
+	while (1) {
+		// search for the next ocurrence of the first char of other in me
+		while (start >= 0 && *me != c) {
+			start--;
+			me--;
+		}
 
-      // passed end of string?
-      if (start < 0)
-         return -1;
+		// passed end of string?
+		if (start < 0) {
+			return -1;
+		}
 
-      // now search the other strings
-      len = scount;
-      s = me+1;
-      s1 = other;
-      while (len--)
-         if (*s++ != *s1++)
-         {
-            start--;
-            me--; // guich@321_3
-            goto notFound;
-         }
+		// now search the other strings
+		len = scount;
+		s = me+1;
+		s1 = other;
+		while (len--) {
+			if (*s++ != *s1++) {
+				start--;
+				me--; // guich@321_3
+				goto notFound;
+			}
+		}
 
-      return start;
-   }
+		return start;
+	}
 }
 
-TC_API int32 JCharPIndexOfJChar(JCharP me, JChar what, int32 start, int32 meLen) // guich@320_6
-{
-   int32 n = meLen >= 0 ? meLen : JCharPLen(me);
+TC_API int32 JCharPIndexOfJChar(JCharP me, JChar what, int32 start, int32 meLen) { // guich@320_6
+	int32 n = meLen >= 0 ? meLen : JCharPLen(me);
 
-   if (start < 0)
-      start = 0;
-   else
-   if (start >= n)
-      return -1;
+	if (start < 0) {
+		start = 0;
+	} else if (start >= n) {
+		return -1;
+	}
 
-   for (me += start; start < n; start++)
-      if (*me++ == what)
-         return start;
-   return -1;
+	for (me += start; start < n; start++)
+		if (*me++ == what) {
+			return start;
+		}
+	return -1;
 }
 
-TC_API bool JCharPEqualsJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen)
-{
-   if (me == other) // same object?
-      return true;
-   else
-   if (me && other)
-   {
-      if (meLen < 0) meLen = JCharPLen(me);
-      if (otherLen < 0) otherLen = JCharPLen(other);
-      if (meLen != otherLen)
-         return false;
-      while (meLen-- > 0)
-         if (*me++ != *other++)
-            return false;
-      return true;
-   }
-   return false;
+TC_API bool JCharPEqualsJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen) {
+	if (me == other) { // same object?
+		return true;
+	} else if (me && other) {
+		if (meLen < 0) {
+			meLen = JCharPLen(me);
+		}
+		if (otherLen < 0) {
+			otherLen = JCharPLen(other);
+		}
+		if (meLen != otherLen) {
+			return false;
+		}
+		while (meLen-- > 0) {
+			if (*me++ != *other++) {
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
-TC_API int32 JCharPCompareToJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen)
-{
-   int32 n,ml,ol;
-   ml = meLen >= 0 ? meLen : JCharPLen(me);
-   ol = otherLen >= 0 ? otherLen : JCharPLen(other);
-   for (n = min32(ml, ol); n--; me++, other++)
-      if (*me != *other)
-         return (int32)*me - (int32)*other;
-   return ml - ol;
+TC_API int32 JCharPCompareToJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen) {
+	int32 n,ml,ol;
+	ml = meLen >= 0 ? meLen : JCharPLen(me);
+	ol = otherLen >= 0 ? otherLen : JCharPLen(other);
+	for (n = min32(ml, ol); n--; me++, other++)
+		if (*me != *other) {
+			return (int32)*me - (int32)*other;
+		}
+	return ml - ol;
 }
 
-TC_API int32 JCharPHashCode(JCharP s, int32 len)
-{
-   int32 hash=0;
-   if (len < 0) len = JCharPLen(s);
-   while (len-- > 0)
-      hash = (hash<<5) - hash + (int32)*s++; // was 31*hash
-   return hash;
+TC_API int32 JCharPHashCode(JCharP s, int32 len) {
+	int32 hash = 0;
+	if (len < 0) {
+		len = JCharPLen(s);
+	}
+	while (len-- > 0) {
+		hash = (hash<<5) - hash + (int32)*s++; // was 31*hash
+	}
+	return hash;
 }
 
-TC_API TCHARP JCharP2TCHARP(JCharP from, int32 len)
-{
-   TCHARP buf;
-   if ((buf = (TCHARP) xmalloc((len+1)*sizeof(TCHAR))) == null)
-      return null;
-   return JCharP2TCHARPBuf(from, len, buf);
+TC_API TCHARP JCharP2TCHARP(JCharP from, int32 len) {
+	TCHARP buf;
+	if ((buf = (TCHARP) xmalloc((len+1)*sizeof(TCHAR))) == null) {
+		return null;
+	}
+	return JCharP2TCHARPBuf(from, len, buf);
 }
 
-TC_API TCHARP JCharP2TCHARPBuf(JCharP from, int32 len, TCHARP buf)
-{
+TC_API TCHARP JCharP2TCHARPBuf(JCharP from, int32 len, TCHARP buf) {
 #ifdef UNICODE
-   tcsncpy(buf, from, len);
-   buf[len] = 0;
-   return buf;
+	tcsncpy(buf, from, len);
+	buf[len] = 0;
+	return buf;
 #else
-   return JCharP2CharPBuf(from, len, buf);
+	return JCharP2CharPBuf(from, len, buf);
 #endif
 }
 
-TC_API JCharP TCHARP2JCharP(TCHARP from, JCharP to, int32 len)
-{
+TC_API JCharP TCHARP2JCharP(TCHARP from, JCharP to, int32 len) {
 #ifdef UNICODE
-   tcsncpy(to, from, len);
-   to[len] = 0;
-   return to;
+	tcsncpy(to, from, len);
+	to[len] = 0;
+	return to;
 #else
-   return CharP2JCharPBuf(from, len, to, true);
+	return CharP2JCharPBuf(from, len, to, true);
 #endif
 }
 
-TC_API bool JCharPStartsWithJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen, int32 from)
-{
-   if (from < 0 || from > (meLen-otherLen))
-      return false;
-   else
-      for (me += from; otherLen-- > 0;)
-         if (*me++ != *other++)
-            return false;
-   return true;
+TC_API bool JCharPStartsWithJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen, int32 from) {
+	if ((from < 0) || (from > (meLen-otherLen))) {
+		return false;
+	} else {
+		for (me += from; otherLen-- > 0;)
+			if (*me++ != *other++) {
+				return false;
+			}
+	}
+	return true;
 }
 
-TC_API bool JCharPEndsWithJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen)
-{
-   return JCharPStartsWithJCharP(me, other, meLen, otherLen, meLen - otherLen);
+TC_API bool JCharPEndsWithJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen) {
+	return JCharPStartsWithJCharP(me, other, meLen, otherLen, meLen - otherLen);
 }
 
-TC_API bool JCharPEqualsIgnoreCaseJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen)
-{
-   if (me == other) // same object?
-      return true;
-   else
-   if (me && other)
-   {
-      if (meLen < 0) meLen = JCharPLen(me);
-      if (otherLen < 0) otherLen = JCharPLen(other);
-      if (meLen != otherLen)
-         return false;
-      while (meLen-- > 0)
-         if (JCharToLower(*me++) != JCharToLower(*other++))
-            return false;
-      return true;
-   }
-   return false;
+TC_API bool JCharPEqualsIgnoreCaseJCharP(JCharP me, JCharP other, int32 meLen, int32 otherLen) {
+	if (me == other) { // same object?
+		return true;
+	} else if (me && other) {
+		if (meLen < 0) {
+			meLen = JCharPLen(me);
+		}
+		if (otherLen < 0) {
+			otherLen = JCharPLen(other);
+		}
+		if (meLen != otherLen) {
+			return false;
+		}
+		while (meLen-- > 0) {
+			if (JCharToLower(*me++) != JCharToLower(*other++)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
-TC_API int32 JCharPLastIndexOfJChar(JCharP me, int32 meLen, JChar c, int32 startIndex)
-{
-   if (0 <= startIndex && startIndex < meLen)
-      for (; startIndex >= 0; startIndex--)
-         if (me[startIndex] == c) 
-            return startIndex;
-   return -1;
+TC_API int32 JCharPLastIndexOfJChar(JCharP me, int32 meLen, JChar c, int32 startIndex) {
+	if ((0 <= startIndex) && (startIndex < meLen) ) {
+		for (; startIndex >= 0; startIndex--)
+			if (me[startIndex] == c) {
+				return startIndex;
+			}
+	}
+	return -1;
 }
 
-TC_API void JCharPDupBuf(JCharP original, int32 length, JCharP buffer)
-{
-   xmemmove(buffer, original, length << 1);
-   buffer[length] = 0;
+TC_API void JCharPDupBuf(JCharP original, int32 length, JCharP buffer) {
+	xmemmove(buffer, original, length << 1);
+	buffer[length] = 0;
 }
 
-TC_API JCharP JCharPDup(JCharP original, int32 length)
-{
-   JCharP buffer = (JCharP)xmalloc((length + 1) << 1);
-   
-   if (buffer)
-      xmemmove(buffer, original, length << 1);
-   return buffer;
+TC_API JCharP JCharPDup(JCharP original, int32 length) {
+	JCharP buffer = (JCharP) xmalloc((length + 1) << 1);
+
+	if (buffer) {
+		xmemmove(buffer, original, length << 1);
+	}
+	return buffer;
 }

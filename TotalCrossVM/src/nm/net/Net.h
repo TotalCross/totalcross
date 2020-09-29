@@ -29,32 +29,32 @@
          u_long S_addr;
       } S_un;
    };
-*/
+ */
 
  #endif
 
  #if !defined SOCKET
   #ifdef _WIN64
-   typedef UINT_PTR SOCKET;
+typedef UINT_PTR SOCKET;
   #else
-   typedef u_int SOCKET;
+typedef u_int SOCKET;
   #endif
 #endif
 
 #endif
 
-   enum
-   {
-      NC_UNDEFINED      = -1,
-      NC_DEFAULT        =  0,
-      NC_GPRS           =  1
-   };
+enum
+{
+	NC_UNDEFINED      = -1,
+	NC_DEFAULT        =  0,
+	NC_GPRS           =  1
+};
 
-   enum
-   {
-      CM_CRADLE      = 1,
-      CM_WIFI        = 2,
-      CM_CELLULAR    = 3
-   };
+enum
+{
+	CM_CRADLE      = 1,
+	CM_WIFI        = 2,
+	CM_CELLULAR    = 3
+};
 
 #endif

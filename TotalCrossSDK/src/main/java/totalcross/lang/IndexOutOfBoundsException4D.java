@@ -5,8 +5,8 @@
 
 package totalcross.lang;
 
-/** 
- * Thrown when an index is used outside of the defined bounds. 
+/**
+ * Thrown when an index is used outside of the defined bounds.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -21,12 +21,12 @@ package totalcross.lang;
  */
 
 public class IndexOutOfBoundsException4D extends RuntimeException {
-  /** Constructs an empty Exception. */
-  public IndexOutOfBoundsException4D() {
-  }
+	/** Constructs an empty Exception. */
+	public IndexOutOfBoundsException4D() {
+	}
 
-  /** Constructs an exception with the given message. */
-  public IndexOutOfBoundsException4D(String msg) {
-    super(msg);
-  }
+	/** Constructs an exception with the given message. */
+	public IndexOutOfBoundsException4D(String msg) {
+		super(msg);
+	}
 }

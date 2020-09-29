@@ -8,7 +8,6 @@
 #include "tcvm.h"
 #include "compilation.date"
 
-int32 getCompilationDate()
-{
-   return COMPILATION_MASK ^ COMPILATION_DATE;
+int32 getCompilationDate() {
+	return COMPILATION_MASK ^ COMPILATION_DATE;
 }

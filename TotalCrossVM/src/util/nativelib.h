@@ -7,7 +7,7 @@
 #define NATIVELIB_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /// Load a library with the given name
@@ -28,16 +28,15 @@ bool attachNativeLib(Context currentContext, CharP name);
 /// Called by the vm when it exits to destroy all native libs.
 void destroyNativeLib();
 
-typedef struct
-{
-   VoidP handle;
-   getProcAddressFunc getProcAddress; // Palm OS dlls must request the address of each API function, and to do this they require getProcAddress
-   alertFunc alert;
-   Context currentContext;
-   CharP commandLine; // the command line passed to the executable that called this dll
+typedef struct {
+	VoidP handle;
+	getProcAddressFunc getProcAddress; // Palm OS dlls must request the address of each API function, and to do this they require getProcAddress
+	alertFunc alert;
+	Context currentContext;
+	CharP commandLine; // the command line passed to the executable that called this dll
 #ifdef WIN32
-   HWND mainHWnd;
-#endif   
+	HWND mainHWnd;
+#endif
 } *OpenParams, TOpenParams;
 
 /// Must be implemented by a native library. Returns true if library initialization was successful.
@@ -48,17 +47,16 @@ typedef void (*NativeLibCloseFunc)();
 /// Must return true if the event was handled, false otherwise.
 typedef bool (*NativeLibHandleEventFunc)(VoidP eventP);
 
-typedef struct
-{
-   VoidP handle;
-   uint32 ref;
-   NativeLibOpenFunc     LibOpen;        // required
-   NativeLibCloseFunc    LibClose;       // not required
-   NativeLibHandleEventFunc HandleEvent; // not required
+typedef struct {
+	VoidP handle;
+	uint32 ref;
+	NativeLibOpenFunc LibOpen;       // required
+	NativeLibCloseFunc LibClose;     // not required
+	NativeLibHandleEventFunc HandleEvent; // not required
 } TNativeLib, *NativeLib;
 
 #ifdef __cplusplus
- } // __cplusplus
+}  // __cplusplus
 #endif
 
 #endif

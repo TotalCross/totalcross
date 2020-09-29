@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC081_lastore extends StoreArray {
-  public BC081_lastore() {
-    super(-4, 0, 1, 2, LONG);
-  }
+	public BC081_lastore() {
+		super(-4, 0, 1, 2, LONG);
+	}
 }

@@ -15,7 +15,7 @@
 
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* texture = NULL;
-static SDL_Window *window = NULL; 
+static SDL_Window *window = NULL;
 static SDL_Surface *surface = NULL;
 static bool usesTexture;
 
@@ -47,7 +47,9 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
 	std::cout << "SDL_VIDEODRIVER usable   :";
 	for (int i = 0; i < drivers.size(); ++i) {
-      if( !drivers[ i ] ) continue;
+		if( !drivers[ i ] ) {
+			continue;
+		}
 		std::cout << " " << SDL_GetVideoDriver(i);
 	}
 	std::cout << '\n';
@@ -61,7 +63,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
 	SDL_DisplayMode DM;
 	// Get current display mode of all displays.
-  	for(int i = 0; i < SDL_GetNumVideoDisplays(); ++i){
+	for(int i = 0; i < SDL_GetNumVideoDisplays(); ++i) {
 		int should_be_zero = SDL_GetCurrentDisplayMode(i, &DM);
 
 		if(should_be_zero != 0) {
@@ -74,7 +76,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	int width = (getenv("TC_WIDTH")  == NULL) ? DM.w : std::stoi(getenv("TC_WIDTH"));
 	int height = (getenv("TC_HEIGHT") == NULL) ? DM.h : std::stoi(getenv("TC_HEIGHT"));
 
-	uint32 flags; 
+	uint32 flags;
 	if(getenv("TC_FULLSCREEN") == NULL) {
 		flags = SDL_WINDOW_FULLSCREEN;
 	} else {
@@ -85,13 +87,13 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
 	// Create the window
 	if (IS_NULL(window = SDL_CreateWindow(
-							 title,
-							 SDL_WINDOWPOS_UNDEFINED,
-							 SDL_WINDOWPOS_UNDEFINED,
-							 width,
-							 height,
-							 flags
-						 ))) {
+			    title,
+			    SDL_WINDOWPOS_UNDEFINED,
+			    SDL_WINDOWPOS_UNDEFINED,
+			    width,
+			    height,
+			    flags
+			    ))) {
 		std::cerr << "SDL_CreateWindow(): " << SDL_GetError() << '\n';
 		return false;
 	}
@@ -131,11 +133,11 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	if(usesTexture) {
 		// MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
 		if (IS_NULL(texture = SDL_CreateTexture(
-								renderer,
-								windowPixelFormat,
-								SDL_TEXTUREACCESS_STREAMING,
-								width,
-								height))) {
+				    renderer,
+				    windowPixelFormat,
+				    SDL_TEXTUREACCESS_STREAMING,
+				    width,
+				    height))) {
 			std::cerr << "SDL_CreateTexturet(): " << SDL_GetError() << '\n';
 			return false;
 		}
@@ -167,7 +169,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 			std::cerr << "Failed to alloc " << (screen->pitch * screen->screenH) << " bytes for pixel surface" << '\n';
 			return false;
 		}
-	}else {
+	} else {
 		screen->pixels = (uint8*) surface->pixels;
 	}
 
@@ -209,23 +211,23 @@ void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
  * Update the screen with rendering performed
  */
 void TCSDL_Present() {
-  if(usesTexture) {
-    // Copy a portion of the texture to the current rendering target
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    // Update the screen with rendering performed
-    SDL_RenderPresent(renderer);
-    // Clears the entire rendering targe
-    SDL_RenderClear(renderer);
-  } else {
-    SDL_UpdateWindowSurface(window);
-  }
+	if(usesTexture) {
+		// Copy a portion of the texture to the current rendering target
+		SDL_RenderCopy(renderer, texture, NULL, NULL);
+		// Update the screen with rendering performed
+		SDL_RenderPresent(renderer);
+		// Clears the entire rendering targe
+		SDL_RenderClear(renderer);
+	} else {
+		SDL_UpdateWindowSurface(window);
+	}
 }
 
 /*
  * Destroy all SDL allocated variables
  */
 void TCSDL_Destroy(ScreenSurface screen) {
-	if (usesTexture && screen->pixels != NULL) {
+	if (usesTexture && (screen->pixels != NULL)) {
 		free(screen->pixels);
 	}
 

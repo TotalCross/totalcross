@@ -13,7 +13,7 @@
 #include "Litebase.h"
 
 /**
- * Initializes the pointers to TotalCross functions used by Litebase. 
+ * Initializes the pointers to TotalCross functions used by Litebase.
  */
 void initTCVMLib(void);
 
@@ -21,7 +21,7 @@ void initTCVMLib(void);
 
 /**
  * Tests if the TotalCross functions were loaded successfully.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */

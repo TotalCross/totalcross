@@ -1,5 +1,5 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -15,10 +15,10 @@ typedef id Context;
 #undef Class
 
 /* not used!
-int iphone_cameraClick(int w, int h, char* fileName)
-{
+   int iphone_cameraClick(int w, int h, char* fileName)
+   {
     NSString* string = [NSString stringWithFormat:@"%s", fileName];
     int ret = [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
     return ret;
-}
-*/
+   }
+ */

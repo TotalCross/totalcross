@@ -34,17 +34,17 @@
    Note that FIELD_I32 does not require the class argument.
 
    In a class, at first are fields from the super classes, then the fields from the current class.
-*/
+ */
 
 // java.lang.String
 #define String_chars(o)             ((o)->asObj)  // String has a single field, "char[] chars", and since it is widely used, we'll do an optimization here, not using FIELD_OBJ
 #define String_charsLen(o)          (ARRAYOBJ_LEN(String_chars(o)))
-#define String_charsStart(o)        ((JCharP)(ARRAYOBJ_START(String_chars(o))))
+#define String_charsStart(o)        ((JCharP) (ARRAYOBJ_START(String_chars(o))))
 
 // java.lang.StringBuffer
 #define StringBuffer_chars(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define StringBuffer_charsLen(o)    (ARRAYOBJ_LEN(StringBuffer_chars(o)))
-#define StringBuffer_charsStart(o)  ((JCharP)(ARRAYOBJ_START(StringBuffer_chars(o))))
+#define StringBuffer_charsStart(o)  ((JCharP) (ARRAYOBJ_START(StringBuffer_chars(o))))
 #define StringBuffer_count(o)       FIELD_I32(o, 0)
 
 // java.lang.Class
@@ -165,8 +165,8 @@
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
 #define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 3)
-#define Image_changed(o)            *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 4)))
-#define Image_instanceCount(o)      *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
+#define Image_changed(o)            *((int32*) ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 4)))
+#define Image_instanceCount(o)      *((int32*) ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
 
 #define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 #define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
@@ -226,10 +226,10 @@
 #define Conduit_conduitHandle(o)                getInstanceFieldObject(o, "conduitHandle", "totalcross.io.sync.Conduit")
 #define Conduit_conduitName(o)                  *getInstanceFieldObject(o, "conduitName", "totalcross.io.sync.Conduit")
 #define Conduit_targetApplicationId(o)          *getInstanceFieldObject(o, "targetApplicationId", "totalcross.io.sync.Conduit")
-#define Conduit_targetAppPath(o)               	getInstanceFieldObject(o, "targetAppPath", "totalcross.io.sync.Conduit")
+#define Conduit_targetAppPath(o)                getInstanceFieldObject(o, "targetAppPath", "totalcross.io.sync.Conduit")
 
 // totalcross.io.sync.RemotePDBFile
-#define RemotePDBFile_name(o)             	FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define RemotePDBFile_name(o)                   FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define RemotePDBFile_mode(o)                FIELD_I32(o, 0)
 #define RemotePDBFile_open(o)                FIELD_I32(o, 1)
 #define RemotePDBFile_lastSearchedRec(o)     FIELD_I32(o, 4)
@@ -272,7 +272,7 @@
 #define GPS_lastFix(o)                    *getInstanceFieldObject(o, "lastFix", "totalcross.io.device.gps.GPS")
 #define GPS_pdop(o)                       *getInstanceFieldDouble(o, "pdop", "totalcross.io.device.gps.GPS")
 #define GPS_lowSignalReason(o)            *getInstanceFieldObject(o, "lowSignalReason", "totalcross.io.device.gps.GPS")
-#define GPS_messageReceived(o)            *getInstanceFieldObject(o, "messageReceived", "totalcross.io.device.gps.GPS") 
+#define GPS_messageReceived(o)            *getInstanceFieldObject(o, "messageReceived", "totalcross.io.device.gps.GPS")
 #define GPS_precision(o)                  *getInstanceFieldInt(o, "precision", "totalcross.io.device.gps.GPS")
 
 // totalcross.net.Socket
@@ -422,8 +422,8 @@
 #define SmsMessage_userData(o)                        *getInstanceFieldObject(o, "userData", "totalcross.telephony.SmsMessage")
 
 //totalcross.notification.Notification
-#define Notification_title(o)                     	*getInstanceFieldObject(o, "title", "totalcross.notification.Notification")
-#define Notification_text(o)       					*getInstanceFieldObject(o, "text", "totalcross.notification.Notification")
+#define Notification_title(o)                           *getInstanceFieldObject(o, "title", "totalcross.notification.Notification")
+#define Notification_text(o)                                            *getInstanceFieldObject(o, "text", "totalcross.notification.Notification")
 
 #define GpiodChip_handle(o)             *getInstanceFieldObject(o, "handle", "totalcross.io.device.gpiod.GpiodChip")
 #define GpiodLine_handle(o)             *getInstanceFieldObject(o, "handle", "totalcross.io.device.gpiod.GpiodLine")

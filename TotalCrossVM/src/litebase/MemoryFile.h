@@ -27,7 +27,7 @@ void mfSetPos(XFile* xFile, int32 position);
  * @param xFile The memory file.
  * @param newSize the new size of the buffer.
  * @return <code>true</code> if it was possible to allocate the new memory file buffer; <code>false</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory. 
+ * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
 bool mfGrowTo(Context context, XFile* xFile, uint32 newSize);
 
@@ -58,7 +58,7 @@ bool mfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
  *
  * @param context The thread context where the function is being executed.
  * @param xFile The memory file.
- * @return Always <code>true</code>. It has a return value in order to be compatible with <code>nfClose()</code>. 
+ * @return Always <code>true</code>. It has a return value in order to be compatible with <code>nfClose()</code>.
  */
 bool mfClose(Context context, XFile* xFile);
 
@@ -66,23 +66,23 @@ bool mfClose(Context context, XFile* xFile);
 
 /**
  * Tests if <code>mfClose()</code> works properly.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
-void test_mfClose(TestSuite* testSuite, Context currentContext);   
+void test_mfClose(TestSuite* testSuite, Context currentContext);
 
 /**
  * Tests if <code>mfGrowTo()</code> works properly.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
-void test_mfGrowTo(TestSuite* testSuite, Context currentContext);  
+void test_mfGrowTo(TestSuite* testSuite, Context currentContext);
 
 /**
  * Tests if <code>mfReadBytes()</code> works properly.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
@@ -90,15 +90,15 @@ void test_mfReadBytes(TestSuite* testSuite, Context currentContext);
 
 /**
  * Tests if <code>mfSetPos()</code> works properly.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
-void test_mfSetPos(TestSuite* testSuite, Context currentContext); 
+void test_mfSetPos(TestSuite* testSuite, Context currentContext);
 
 /**
  * Tests if <code>mfWriteBytes()</code> works properly.
- * 
+ *
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */

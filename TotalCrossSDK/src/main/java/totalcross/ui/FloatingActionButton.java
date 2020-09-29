@@ -28,8 +28,9 @@ public class FloatingActionButton extends Control {
 				pressed = false;
 				backImg = null;
 				Window.needsPaint = true;
-				if (e.x >= 0 && e.x <= width && e.y >= 0 && e.y <= height)
+				if ((e.x >= 0)&& (e.x <= width)&& (e.y >= 0)&& (e.y <= height)) {
 					postPressedEvent();
+				}
 			}
 
 			@Override
@@ -42,7 +43,7 @@ public class FloatingActionButton extends Control {
 
 			@Override
 			public void penDrag(DragEvent e) {
-				if (e.x < 0 || e.x > width || e.y < 0 || e.y > height) {
+				if ((e.x < 0)|| (e.x > width)|| (e.y < 0)|| (e.y > height)) {
 					e.consumed = true;
 					pressed = false;
 					backImg = null;
@@ -113,7 +114,7 @@ public class FloatingActionButton extends Control {
 		if (backImg == null) {
 			try {
 				backImg = Resources.floatingBkg.getPressedInstance(width, height, backColor,
-						pressed ? Color.darker(backColor) : backColor, true);
+				                                                   pressed ? Color.darker(backColor) : backColor, true);
 			} catch (ImageException e) {
 				e.printStackTrace();
 			}

@@ -21,37 +21,36 @@
 #import "sipargs.h"
 #import "YTPlayerView.h"
 
-@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate, UIDocumentInteractionControllerDelegate, AVCaptureMetadataOutputObjectsDelegate>
-{
-   NSMutableArray* _events;
-   ChildView *child_view;
-   int lastOrientationSentToVM;
-   // keyboard
-   UITextView* kbd;
-   UIView* kbdDisabled;
-   NSRange lastRange;
-   // camera
-   NSString* imageFileName;
-   int imageW,imageH;
-   UIImagePickerController *imagePicker;
-   // barcode
-   AVCaptureSession *_session;
-   AVCaptureDevice *_device;
-   AVCaptureDeviceInput *_input;
-   AVCaptureMetadataOutput *_output;
-   AVCaptureVideoPreviewLayer *_prevLayer;
-   UIButton *barCodeButton;
-   UIView *_highlightView;
-   NSTimeInterval timeSpentReadingTheSameBarCode;
-   // Youtube Player
-   
-   // gps
-@public   
-   CLLocationManager* locationManager;
-   int locationFlags, locationDate, locationTime, locationSat, locationCount;
-   double locationVeloc, locationPDOP, locationDir;
-   double locationLat, locationLon;
-   WKWebView * webView;
+@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate, UIDocumentInteractionControllerDelegate, AVCaptureMetadataOutputObjectsDelegate> {
+	NSMutableArray* _events;
+	ChildView *child_view;
+	int lastOrientationSentToVM;
+	// keyboard
+	UITextView* kbd;
+	UIView* kbdDisabled;
+	NSRange lastRange;
+	// camera
+	NSString* imageFileName;
+	int imageW,imageH;
+	UIImagePickerController *imagePicker;
+	// barcode
+	AVCaptureSession *_session;
+	AVCaptureDevice *_device;
+	AVCaptureDeviceInput *_input;
+	AVCaptureMetadataOutput *_output;
+	AVCaptureVideoPreviewLayer *_prevLayer;
+	UIButton *barCodeButton;
+	UIView *_highlightView;
+	NSTimeInterval timeSpentReadingTheSameBarCode;
+	// Youtube Player
+
+	// gps
+	@public
+	CLLocationManager* locationManager;
+	int locationFlags, locationDate, locationTime, locationSat, locationCount;
+	double locationVeloc, locationPDOP, locationDir;
+	double locationLat, locationLon;
+	WKWebView * webView;
 }
 - (bool)hasEvents;
 - (void)addEvent:(NSDictionary*)event;
@@ -76,11 +75,10 @@
 - (UIViewController *) documentInteractionControllerViewControllerForPreview : (UIDocumentInteractionController *) controller;
 @end
 
-typedef struct
-{
-//   __unsafe_unretained UIWindow  *_window;
-   __unsafe_unretained MainViewController  *_mainview;
-   __unsafe_unretained ChildView *_childview;
+typedef struct {
+	//   __unsafe_unretained UIWindow  *_window;
+	__unsafe_unretained MainViewController  *_mainview;
+	__unsafe_unretained ChildView *_childview;
 } TScreenSurfaceEx, *ScreenSurfaceEx;
 
 @interface WMFigPluginView : NSObject

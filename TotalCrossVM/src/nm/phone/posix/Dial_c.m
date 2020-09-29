@@ -15,8 +15,7 @@ typedef id Context;
 #include "event.h"
 #undef Class
 
-void iphone_dialNumber(char* number)
-{
-    NSString* string = [NSString stringWithFormat:@"%s", number];
-    [DEVICE_CTX->_mainview dialNumber:string];
+void iphone_dialNumber(char* number) {
+	NSString* string = [NSString stringWithFormat:@"%s", number];
+	[DEVICE_CTX->_mainview dialNumber:string];
 }

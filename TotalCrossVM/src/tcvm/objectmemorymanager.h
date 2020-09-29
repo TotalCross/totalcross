@@ -12,8 +12,8 @@ extern "C" {
 
 typedef enum
 {
-   UNLOCKED,
-   LOCKED,
+	UNLOCKED,
+	LOCKED,
 } LockState;
 
 /// ALWAYS call createObject instead of this one, unless you will call another constructor besides of the default one
@@ -75,7 +75,7 @@ TC_API void setObjectLock(TCObject o, LockState lock);
 typedef void (*setObjectLockFunc)(TCObject o, LockState lock);
 
 /// Returns a pointer to the Object properties given an Object
-#define OBJ_PROPERTIES(o) ((ObjectProperties)(((uint8*)(o))-sizeof(TObjectProperties)))
+#define OBJ_PROPERTIES(o) ((ObjectProperties) (((uint8*) (o))-sizeof(TObjectProperties)))
 #define OBJ_ISLOCKED(o)     (OBJ_PROPERTIES(o)->lock  == 1)
 
 /** A Java Object is a Class instance.
@@ -87,19 +87,17 @@ typedef void (*setObjectLockFunc)(TCObject o, LockState lock);
  *
  * An Object is composed by its ObjectProperties, followed by a Value array.
  */
-struct TObjectProperties
-{
-   TCClass class_;
-   TCObject next,prev;
-   struct
-   {
-      uint32 size: 30; // object's size
-      uint32 lock: 1;  // lock the object, preventing it from being gc'd. The initial purpose of locking an object was to lock all constant pool strings and speedup the garbage collector process.
-      uint32 mark: 1;  // mark the object during a garbage collect.
+struct TObjectProperties {
+	TCClass class_;
+	TCObject next,prev;
+	struct {
+		uint32 size : 30; // object's size
+		uint32 lock : 1; // lock the object, preventing it from being gc'd. The initial purpose of locking an object was to lock all constant pool strings and speedup the garbage collector process.
+		uint32 mark : 1; // mark the object during a garbage collect.
 #if TBITS==64
-      uint32 dumb;
+		uint32 dumb;
 #endif
-   };
+	};
 };
 
 typedef uint8* Chunk;
@@ -110,7 +108,7 @@ typedef uint8* Chunk;
 /// Gets the length of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
 #define ARRAYOBJ_LEN(o) ((o)->arrayLen)
 /// Gets the start of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
-#define ARRAYOBJ_START(o) (((uint8*)(o))+TSIZE)
+#define ARRAYOBJ_START(o) (((uint8*) (o))+TSIZE)
 
 // Gets the size in bytes of an array. Added to support 64-bit without needing to change tcz structure
 #define TC_ARRAYSIZE(c, len) (c->flags.isObjectArray ? len * TSIZE : len << c->flags.bits2shift)

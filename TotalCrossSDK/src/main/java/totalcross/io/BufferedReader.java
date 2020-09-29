@@ -9,7 +9,7 @@ import java.io.Reader;
 import totalcross.sys.Vm;
 
 public class BufferedReader extends Reader {
-	
+
 	private Reader in;
 	private int sz;
 	private int szRead;
@@ -26,11 +26,11 @@ public class BufferedReader extends Reader {
 		this.sz = sz;
 		this.buff = new char[sz];
 	}
-	
+
 	public BufferedReader(Reader in) {
 		this(in, 4096);
 	}
-	
+
 	@Override
 	public void mark(int readAheadLimit) throws IOException {
 		if (closed) {
@@ -42,7 +42,7 @@ public class BufferedReader extends Reader {
 			char[] newBuff = new char[readAheadLimit];
 			int savedChars = szRead - offset;
 			Vm.arrayCopy(buff, offset, newBuff, 0, savedChars);
-			
+
 			markPosition = 0;
 			offset = 0;
 			sz = readAheadLimit;
@@ -52,13 +52,13 @@ public class BufferedReader extends Reader {
 			// deve fazer o shift do não lido para o máximo pra esquerda o possível
 			// cuidado com overlaps!!
 			markPosition = 0;
-			
+
 			int oldOffset = offset;
 			int oldSzRead = szRead;
-			
+
 			offset = 0;
 			szRead = oldSzRead - oldOffset;
-			
+
 			if (oldOffset < szRead) {
 				// caso não tenha overlaps, só copiar para a nova posição
 				Vm.arrayCopy(buff, 0, buff, oldOffset, szRead);
@@ -74,12 +74,12 @@ public class BufferedReader extends Reader {
 		}
 		originalLeftAlive = leftAlive = readAheadLimit;
 	}
-	
+
 	@Override
 	public boolean markSupported() {
 		return true;
 	}
-	
+
 	@Override
 	public void reset() throws IOException {
 		if (closed) {
@@ -92,7 +92,7 @@ public class BufferedReader extends Reader {
 			throw new IOException("reset mark is invalid");
 		}
 	}
-	
+
 	public String readLine() throws IOException {
 		if (closed) {
 			throw new IOException("Reader closed");
@@ -102,7 +102,7 @@ public class BufferedReader extends Reader {
 		}
 		StringBuilder builder = new StringBuilder();
 		boolean eol = false;
-		
+
 		while (!eol) {
 			if (offset >= szRead) {
 				resetBuffer();
@@ -113,7 +113,7 @@ public class BufferedReader extends Reader {
 			}
 			char c = buff[offset];
 			advanceOffset();
-			
+
 			if (c == '\r') {
 				eol = true;
 				if (offset >= szRead) {
@@ -135,12 +135,12 @@ public class BufferedReader extends Reader {
 		}
 		return builder.toString();
 	}
-	
+
 	private void advanceOffset() {
 		offset++;
 		leftAlive--;
 	}
-	
+
 	private void advanceOffset(int n) {
 		offset += n;
 		leftAlive -= n;
@@ -150,12 +150,11 @@ public class BufferedReader extends Reader {
 		if (eof) {
 			return;
 		}
-		
+
 		if (leftAlive < 0) {
 			resetBufferSimple();
 		} else {
 			resetMarkedBuffer();
-			
 		}
 	}
 
@@ -173,7 +172,7 @@ public class BufferedReader extends Reader {
 			szRead = offset + read;
 		}
 	}
-	
+
 	// reseta o offset para 0 e atualiza szRead para a quantidade de bytes de fato lidos
 	// se a leitura dos bytes falhar, ou seja, in.read(buff) retornar -1, coloca eof como true
 	private void resetBufferSimple() throws IOException {
@@ -202,19 +201,19 @@ public class BufferedReader extends Reader {
 		}
 		return -1;
 	}
-	
+
 	// XXX não tenta ler até acabar os caracteres, então não obedece totalmente ao comportamento
 	// descrito no javadoc de java.io.BufferedReader.read(char[], int, int)
 	@Override
 	public int read(char[] cbuf, int off, int len) throws IOException {
 		int adequateLen;
-		
+
 		if (len > szRead - offset) {
 			adequateLen = szRead - offset;
 		} else {
 			adequateLen = len;
 		}
-		
+
 		if (adequateLen == 0) {
 			resetBuffer();
 			if (eof) {
@@ -238,7 +237,7 @@ public class BufferedReader extends Reader {
 		this.closed = true;
 		in.close();
 	}
-	
+
 	@Override
 	public long skip(long n) throws IOException {
 		if (closed) {
@@ -249,7 +248,7 @@ public class BufferedReader extends Reader {
 		}
 		int delta = szRead - offset;
 		if (n < delta) {
-			advanceOffset((int)n);
+			advanceOffset((int) n);
 			return n;
 		} else {
 			if (leftAlive >= 0) {

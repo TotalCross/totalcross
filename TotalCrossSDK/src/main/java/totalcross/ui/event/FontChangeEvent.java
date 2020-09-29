@@ -8,29 +8,29 @@ import totalcross.ui.font.Font;
 
 public class FontChangeEvent extends Event<FontChangeHandler> {
 
-  private static Type<FontChangeHandler> TYPE;
+	private static Type<FontChangeHandler> TYPE;
 
-  public final Font font;
+	public final Font font;
 
-  public static final Type<FontChangeHandler> getType() {
-    if (TYPE == null) {
-      TYPE = new Type<FontChangeHandler>();
-    }
-    return TYPE;
-  }
+	public static final Type<FontChangeHandler> getType() {
+		if (TYPE == null) {
+			TYPE = new Type<FontChangeHandler>();
+		}
+		return TYPE;
+	}
 
-  public FontChangeEvent(Control target, Font font) {
-    this.target = target;
-    this.font = font;
-  }
+	public FontChangeEvent(Control target, Font font) {
+		this.target = target;
+		this.font = font;
+	}
 
-  @Override
-  public void dispatch(FontChangeHandler listener) {
-    listener.onFontChange(this);
-  }
+	@Override
+	public void dispatch(FontChangeHandler listener) {
+		listener.onFontChange(this);
+	}
 
-//  @Override
-//  public Type<FontChangeHandler> getAssociatedType() {
-//    return TYPE;
-//  }
+	//  @Override
+	//  public Type<FontChangeHandler> getAssociatedType() {
+	//    return TYPE;
+	//  }
 }

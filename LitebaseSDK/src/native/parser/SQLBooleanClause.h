@@ -15,17 +15,17 @@
 /**
  * Creates and initializes a boolean clause.
  *
- * @param heap The heap to allocate a <code>SQLBooleanClause</code> structure. 
- * @return A pointer to a <code>SQLBooleanClause</code> structure. 
+ * @param heap The heap to allocate a <code>SQLBooleanClause</code> structure.
+ * @return A pointer to a <code>SQLBooleanClause</code> structure.
  */
 SQLBooleanClause* initSQLBooleanClause(Heap heap);
 
 /**
- * Applies the table indices to the boolean clause. The method will possibly transform the SQL boolean tree, eliminating the branches that can be 
+ * Applies the table indices to the boolean clause. The method will possibly transform the SQL boolean tree, eliminating the branches that can be
  * resolved through the table indexes.
  *
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
- * @param tableIndices The table indices; each position in the array relates to a column in the table; a <code>null</code> value indicates no 
+ * @param tableIndices The table indices; each position in the array relates to a column in the table; a <code>null</code> value indicates no
  * index on that column.
  * @param columnsCount The number of columns of the table.
  * @param hasComposedIndex Indicates if the table has a composed index.
@@ -54,11 +54,11 @@ void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* b
  * @param compIndex The composed index.
  * @return The current branch of the tree.
  */
-SQLBooleanClauseTree* applyComposedIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, uint8* columns, uint8* operators, 
-																											 SQLBooleanClauseTree** indexesValueTree, ComposedIndex* compIndex);
-					
+SQLBooleanClauseTree* applyComposedIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, uint8* columns, uint8* operators,
+                                                 SQLBooleanClauseTree** indexesValueTree, ComposedIndex* compIndex);
+
 /**
- * Applies the table indexes to the boolean clause. The method will possibly transform the SQL boolean tree, to eliminate the branches that can be 
+ * Applies the table indexes to the boolean clause. The method will possibly transform the SQL boolean tree, to eliminate the branches that can be
  * resolved through the table indexes.
  *
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
@@ -92,11 +92,11 @@ bool sqlBooleanClausePreVerify(Context context, SQLBooleanClause* booleanClause)
  * @param resultSet the ResultSet used for the evaluation.
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @param heap A heap to alocate temporary strings in the expression tree.
- * @return 1, if the current record of the result set satisfies the boolean clause; 0  if the current record of the result set does not satisfy the 
+ * @return 1, if the current record of the result set satisfies the boolean clause; 0  if the current record of the result set does not satisfy the
  * boolean clause; -1, otherwise.
  */
 int32 sqlBooleanClauseSatisfied(Context context, SQLBooleanClause* booleanClause, ResultSet* resultSet, Heap heap);
-                                                                          
+
 /**
  * Binds the column information of the underlying table list to the boolean clause.
  *
@@ -107,25 +107,25 @@ int32 sqlBooleanClauseSatisfied(Context context, SQLBooleanClause* booleanClause
  * @param tableList The table list of the select clause.
  * @param tableListSize The number of tables of the table list.
  * @param heap A heap to allocate some new <code>SQLBooleanClauseTree</code> nodes.
- * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise. 
+ * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise.
  */
-bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int8* columnTypes, 
-											                                                  SQLResultSetTable** tableList, int32 tableListSize, Heap heap);
+bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int8* columnTypes,
+                                 SQLResultSetTable** tableList, int32 tableListSize, Heap heap);
 
 /**
- * Verifies if the column names are correct and belongs to the table list and is used only to verify if where clause and having clause field list 
+ * Verifies if the column names are correct and belongs to the table list and is used only to verify if where clause and having clause field list
  * is the field list of the where/having clause.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param fieldList The field list of the where/having clause.
  * @param fieldsCount The number of fields.
  * @param tableList The table list.
  * @param tableListSize The numbers of tables of the table list.
- * @return <code>true</code>, if field name verification found no problems; <code>false</code>, otherwise. 
+ * @return <code>true</code>, if field name verification found no problems; <code>false</code>, otherwise.
  * @throws SQLParseException If there is an unknown or an ambiguos column name.
  */
-bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList, int32 fieldsCount, SQLResultSetTable** tableList, 
-											                                                                    int32 tableListSize);
+bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList, int32 fieldsCount, SQLResultSetTable** tableList,
+                                  int32 tableListSize);
 
 /**
  * Binds the column information of the underlying table to the boolean clause.
@@ -134,19 +134,19 @@ bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @param rsTable The <code>SQLResultSetTable</code> table of the update or delete statement.
  * @param heap A heap to allocate some new <code>SQLBooleanClauseTree</code> nodes.
- * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise. 
+ * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise.
  */
 bool bindColumnsSQLBooleanClauseSimple(Context context, SQLBooleanClause* clause, SQLResultSetTable* rsTable, Heap heap);
 
 /**
- * Verifies if the column names are correct and belongs to the table and is used only to verify if where clause field list is the field list of 
+ * Verifies if the column names are correct and belongs to the table and is used only to verify if where clause field list is the field list of
  * the where clause.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param fieldList The field list of the where/having clause.
  * @param fieldsCount The number of fields.
  * @param rsTable The <code>SQLResultSetTable</code> table of the update or delete statement.
- * @return <code>true</code>, if field name verification found no problems; <code>false</code>, otherwise. 
+ * @return <code>true</code>, if field name verification found no problems; <code>false</code>, otherwise.
  * @throws SQLParseException If there is an unknown or an ambiguos column name.
  */
 bool verifyColumnNamesOnTable(Context context, SQLResultSetField** fieldList, int32 fieldsCount, SQLResultSetTable* rsTable);

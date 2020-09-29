@@ -9,27 +9,27 @@ import totalcross.ui.image.ImageLoader.Target;
 
 public class ImageControlTarget implements Target<ImageControl> {
 
-  ImageControl ic;
-  List<SizeReadyCallback> callbacks;
+	ImageControl ic;
+	List<SizeReadyCallback> callbacks;
 
-  ImageControlTarget(ImageControl ic) {
-    this.ic = ic;
-    ic.target = this;
-  }
+	ImageControlTarget(ImageControl ic) {
+		this.ic = ic;
+		ic.target = this;
+	}
 
-  @Override
-  public void getSize(SizeReadyCallback callback) {
-    if (callbacks == null) {
-      callbacks = new ArrayList<>();
-    }
-    callbacks.add(callback);
-  }
+	@Override
+	public void getSize(SizeReadyCallback callback) {
+		if (callbacks == null) {
+			callbacks = new ArrayList<>();
+		}
+		callbacks.add(callback);
+	}
 
-  public void sizeChanged(int width, int height) {
-    if (callbacks != null) {
-      for (SizeReadyCallback sizeReadyCallback : callbacks) {
-        sizeReadyCallback.onSizeReady(width, height);
-      }
-    }
-  }
+	public void sizeChanged(int width, int height) {
+		if (callbacks != null) {
+			for (SizeReadyCallback sizeReadyCallback : callbacks) {
+				sizeReadyCallback.onSizeReady(width, height);
+			}
+		}
+	}
 }

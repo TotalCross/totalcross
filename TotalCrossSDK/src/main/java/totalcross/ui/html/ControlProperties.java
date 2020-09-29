@@ -14,26 +14,25 @@ import totalcross.ui.Control;
  * @author Pierre G. Richard / Jim Guistwite
  */
 public class ControlProperties {
-  /** The name of this control */
-  public String name;
+	/** The name of this control */
+	public String name;
 
-  /** The value held by this controll */
-  public String value;
+	/** The value held by this controll */
+	public String value;
 
-  /** The style of this control */
-  public Style style;
+	/** The style of this control */
+	public Style style;
 
-  /** True to glue the next control in this one. */
-  public boolean glue;
+	/** True to glue the next control in this one. */
+	public boolean glue;
 
-  public ControlProperties(String name, String value, Style style) {
-    this.name = name;
-    this.value = value;
-    this.style = style;
-  }
+	public ControlProperties(String name, String value, Style style) {
+		this.name = name;
+		this.value = value;
+		this.style = style;
+	}
 
-  public static Style getStyle(Control c) {
-    return ((ControlProperties) c.appObj).style;
-  }
-
+	public static Style getStyle(Control c) {
+		return ((ControlProperties) c.appObj).style;
+	}
 }

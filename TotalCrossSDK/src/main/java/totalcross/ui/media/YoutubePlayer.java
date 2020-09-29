@@ -59,7 +59,7 @@ public class YoutubePlayer {
 
 	/**
 	 * Sets the end point of the video.
-	 * 
+	 *
 	 * @param end the end point of the video in seconds.
 	 */
 	public YoutubePlayer end(int end) {
@@ -69,7 +69,7 @@ public class YoutubePlayer {
 
 	/**
 	 * Sets the start point of the video.
-	 * 
+	 *
 	 * @param start the start point of the video in seconds.
 	 */
 	public YoutubePlayer start(int start) {
@@ -80,7 +80,7 @@ public class YoutubePlayer {
 	public interface Callback {
 		/**
 		 * Listener to the state of the player.
-		 * 
+		 *
 		 * @see totalcross.ui.media.YoutubePlayer#ERROR_UNKNOWN
 		 * @see totalcross.ui.media.YoutubePlayer#ERROR_VIDEO_NOT_FOUND
 		 * @see totalcross.ui.media.YoutubePlayer#STATE_BUFFERING
@@ -96,33 +96,31 @@ public class YoutubePlayer {
 
 	/**
 	 * Plays a video with the video id passed (value from v query parameter).
-	 * 
+	 *
 	 * @param url the video id eg.:
 	 *            https://www.youtube.com/watch?v=<b>xBM4luqmCKs</b>.
 	 */
 	public void play(String id) throws IOException {
-		play(id	, null);
+		play(id, null);
 	}
 
 	/**
 	 * Plays a video with the video id passed and has a callback function that
 	 * returns the state of the the player.
-	 * 
+	 *
 	 * @param url      the video id eg.:
 	 *                 https://www.youtube.com/watch?v=<b>xBM4luqmCKs</b>.
 	 * @param callback the YoutubePlayer.Callback
 	 * @see {@link Callback#onStateChange(int)}
 	 */
 	public void play(String id, Callback callback) throws IOException {
-	    if(!totalcross.net.ConnectionManager.isInternetAccessible()) {
-	        throw new IOException("Could not reach https://youtube.com");
-        }
+		if(!totalcross.net.ConnectionManager.isInternetAccessible()) {
+			throw new IOException("Could not reach https://youtube.com");
+		}
 		play(id, callback, autoPlay, end, start);
 	}
 
 	@ReplacedByNativeOnDeploy
 	private void play(String id, Callback callback, boolean autoPlay, int end, int start) {
-
 	}
-
 }

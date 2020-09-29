@@ -3,27 +3,27 @@ package totalcross.json.zip;
 import totalcross.json.JSONException;
 
 /*
- Copyright (c) 2013 JSON.org
+   Copyright (c) 2013 JSON.org
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
 
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
 
- The Software shall be used for Good, not Evil.
+   The Software shall be used for Good, not Evil.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
  */
 
 /**
@@ -48,358 +48,356 @@ import totalcross.json.JSONException;
  */
 public class Huff implements None, PostMortem {
 
-  /**
-   * The number of symbols known to the encoder.
-   */
-  private final int domain;
+	/**
+	 * The number of symbols known to the encoder.
+	 */
+	private final int domain;
 
-  /**
-   * The number of characters to process before generation is no longer done.
-   */
-  public static final int education = 1000000;
+	/**
+	 * The number of characters to process before generation is no longer done.
+	 */
+	public static final int education = 1000000;
 
-  /**
-   * An array that maps symbol values to symbols.
-   */
-  private final Symbol[] symbols;
+	/**
+	 * An array that maps symbol values to symbols.
+	 */
+	private final Symbol[] symbols;
 
-  /**
-   * The root of the decoding table, and the terminal of the encoding table.
-   */
-  private Symbol table;
+	/**
+	 * The root of the decoding table, and the terminal of the encoding table.
+	 */
+	private Symbol table;
 
-  /**
-   * The number of characters left to learn to adapt the coding table.
-   */
-  private int toLearn;
+	/**
+	 * The number of characters left to learn to adapt the coding table.
+	 */
+	private int toLearn;
 
-  /**
-   * Have any weights changed since the table was last generated?
-   */
-  private boolean upToDate = false;
+	/**
+	 * Have any weights changed since the table was last generated?
+	 */
+	private boolean upToDate = false;
 
-  /**
-   * The number of bits in the last symbol. This is used in tracing.
-   */
-  private int width;
+	/**
+	 * The number of bits in the last symbol. This is used in tracing.
+	 */
+	private int width;
 
-  private static class Symbol implements PostMortem {
-    public Symbol back;
-    public Symbol next;
-    public Symbol zero;
-    public Symbol one;
-    public final int integer;
-    public long weight;
+	private static class Symbol implements PostMortem {
+		public Symbol back;
+		public Symbol next;
+		public Symbol zero;
+		public Symbol one;
+		public final int integer;
+		public long weight;
 
-    /**
-     * Make a symbol representing a character or other value.
-     *
-     * @param integer
-     *            The symbol's number
-     */
-    public Symbol(int integer) {
-      this.integer = integer;
-      this.weight = 0;
-      this.next = null;
-      this.back = null;
-      this.one = null;
-      this.zero = null;
-    }
+		/**
+		 * Make a symbol representing a character or other value.
+		 *
+		 * @param integer
+		 *            The symbol's number
+		 */
+		public Symbol(int integer) {
+			this.integer = integer;
+			this.weight = 0;
+			this.next = null;
+			this.back = null;
+			this.one = null;
+			this.zero = null;
+		}
 
-    @Override
-    public boolean postMortem(PostMortem pm) {
-      boolean result = true;
-      Symbol that = (Symbol) pm;
+		@Override
+		public boolean postMortem(PostMortem pm) {
+			boolean result = true;
+			Symbol that = (Symbol) pm;
 
-      if (this.integer != that.integer || this.weight != that.weight) {
-        return false;
-      }
-      if ((this.back == null) != (that.back == null)) {
-        return false;
-      }
-      Symbol zero = this.zero;
-      Symbol one = this.one;
-      if (zero == null) {
-        if (that.zero != null) {
-          return false;
-        }
-      } else {
-        result = zero.postMortem(that.zero);
-      }
-      if (one == null) {
-        if (that.one != null) {
-          return false;
-        }
-      } else {
-        result = one.postMortem(that.one);
-      }
-      return result;
-    }
+			if ((this.integer != that.integer) || (this.weight != that.weight) ) {
+				return false;
+			}
+			if ((this.back == null) != (that.back == null)) {
+				return false;
+			}
+			Symbol zero = this.zero;
+			Symbol one = this.one;
+			if (zero == null) {
+				if (that.zero != null) {
+					return false;
+				}
+			} else {
+				result = zero.postMortem(that.zero);
+			}
+			if (one == null) {
+				if (that.one != null) {
+					return false;
+				}
+			} else {
+				result = one.postMortem(that.one);
+			}
+			return result;
+		}
+	}
 
-  }
+	/**
+	 * Construct a Huffman encoder/decoder.
+	 *
+	 * @param domain
+	 *            The number of values known to the object.
+	 */
+	public Huff(int domain) {
+		this.domain = domain;
+		this.toLearn = education;
+		int length = domain * 2 - 1;
+		this.symbols = new Symbol[length];
 
-  /**
-   * Construct a Huffman encoder/decoder.
-   *
-   * @param domain
-   *            The number of values known to the object.
-   */
-  public Huff(int domain) {
-    this.domain = domain;
-    this.toLearn = education;
-    int length = domain * 2 - 1;
-    this.symbols = new Symbol[length];
+		// Make the leaf symbols.
 
-    // Make the leaf symbols.
+		for (int i = 0; i < domain; i += 1) {
+			symbols[i] = new Symbol(i);
+		}
 
-    for (int i = 0; i < domain; i += 1) {
-      symbols[i] = new Symbol(i);
-    }
+		// Make the links.
 
-    // Make the links.
+		for (int i = domain; i < length; i += 1) {
+			symbols[i] = new Symbol(none);
+		}
+	}
 
-    for (int i = domain; i < length; i += 1) {
-      symbols[i] = new Symbol(none);
-    }
-  }
+	/**
+	 * Generate the encoding/decoding table. The table determines the bit
+	 * sequences used by the read and write methods.
+	 */
+	public void generate() {
+		if (!this.upToDate) {
 
-  /**
-   * Generate the encoding/decoding table. The table determines the bit
-   * sequences used by the read and write methods.
-   */
-  public void generate() {
-    if (!this.upToDate) {
+			// Phase One: Sort the symbols by weight into a linked list.
 
-      // Phase One: Sort the symbols by weight into a linked list.
+			Symbol head = this.symbols[0];
+			Symbol next;
+			Symbol previous = head;
+			Symbol symbol;
 
-      Symbol head = this.symbols[0];
-      Symbol next;
-      Symbol previous = head;
-      Symbol symbol;
+			this.table = null;
+			head.next = null;
+			for (int i = 1; i < this.domain; i += 1) {
+				symbol = symbols[i];
 
-      this.table = null;
-      head.next = null;
-      for (int i = 1; i < this.domain; i += 1) {
-        symbol = symbols[i];
+				// If this symbol weights less than the head, then it becomes the new head.
 
-        // If this symbol weights less than the head, then it becomes the new head.
+				if (symbol.weight < head.weight) {
+					symbol.next = head;
+					head = symbol;
+				} else {
 
-        if (symbol.weight < head.weight) {
-          symbol.next = head;
-          head = symbol;
-        } else {
+					// We will start the search from the previous symbol instead of the head unless
+					// the current symbol weights less than the previous symbol.
 
-          // We will start the search from the previous symbol instead of the head unless
-          // the current symbol weights less than the previous symbol.
+					if (symbol.weight < previous.weight) {
+						previous = head;
+					}
 
-          if (symbol.weight < previous.weight) {
-            previous = head;
-          }
+					// Find a connected pair (previous and next) where the symbol weighs the same
+					// or more than previous but less than the next. Link the symbol between them.
 
-          // Find a connected pair (previous and next) where the symbol weighs the same
-          // or more than previous but less than the next. Link the symbol between them.
+					while (true) {
+						next = previous.next;
+						if ((next == null) || (symbol.weight < next.weight) ) {
+							break;
+						}
+						previous = next;
+					}
+					symbol.next = next;
+					previous.next = symbol;
+					previous = symbol;
+				}
+			}
 
-          while (true) {
-            next = previous.next;
-            if (next == null || symbol.weight < next.weight) {
-              break;
-            }
-            previous = next;
-          }
-          symbol.next = next;
-          previous.next = symbol;
-          previous = symbol;
-        }
-      }
+			// Phase Two: Make new symbols from the two lightest symbols until only one
+			// symbol remains. The final symbol becomes the root of the table binary tree.
 
-      // Phase Two: Make new symbols from the two lightest symbols until only one
-      // symbol remains. The final symbol becomes the root of the table binary tree.
+			int avail = this.domain;
+			Symbol first;
+			Symbol second;
+			previous = head;
+			while (true) {
+				first = head;
+				second = first.next;
+				head = second.next;
+				symbol = this.symbols[avail];
+				avail += 1;
+				symbol.weight = first.weight + second.weight;
+				symbol.zero = first;
+				symbol.one = second;
+				symbol.back = null;
+				first.back = symbol;
+				second.back = symbol;
+				if (head == null) {
+					break;
+				}
 
-      int avail = this.domain;
-      Symbol first;
-      Symbol second;
-      previous = head;
-      while (true) {
-        first = head;
-        second = first.next;
-        head = second.next;
-        symbol = this.symbols[avail];
-        avail += 1;
-        symbol.weight = first.weight + second.weight;
-        symbol.zero = first;
-        symbol.one = second;
-        symbol.back = null;
-        first.back = symbol;
-        second.back = symbol;
-        if (head == null) {
-          break;
-        }
+				// Insert the new symbol back into the sorted list.
 
-        // Insert the new symbol back into the sorted list.
+				if (symbol.weight < head.weight) {
+					symbol.next = head;
+					head = symbol;
+					previous = head;
+				} else {
+					while (true) {
+						next = previous.next;
+						if ((next == null) || (symbol.weight < next.weight) ) {
+							break;
+						}
+						previous = next;
+					}
+					symbol.next = next;
+					previous.next = symbol;
+					previous = symbol;
+				}
+			}
 
-        if (symbol.weight < head.weight) {
-          symbol.next = head;
-          head = symbol;
-          previous = head;
-        } else {
-          while (true) {
-            next = previous.next;
-            if (next == null || symbol.weight < next.weight) {
-              break;
-            }
-            previous = next;
-          }
-          symbol.next = next;
-          previous.next = symbol;
-          previous = symbol;
-        }
+			// The last remaining symbol is the root of the table.
 
-      }
+			this.table = symbol;
+			this.upToDate = true;
+		}
+	}
 
-      // The last remaining symbol is the root of the table.
+	private boolean postMortem(int integer) {
+		int[] bits = new int[this.domain];
+		Symbol symbol = this.symbols[integer];
+		if (symbol.integer != integer) {
+			return false;
+		}
+		int i = 0;
+		while (true) {
+			Symbol back = symbol.back;
+			if (back == null) {
+				break;
+			}
+			if (back.zero == symbol) {
+				bits[i] = 0;
+			} else if (back.one == symbol) {
+				bits[i] = 1;
+			} else {
+				return false;
+			}
+			i += 1;
+			symbol = back;
+		}
+		if (symbol != this.table) {
+			return false;
+		}
+		this.width = 0;
+		symbol = this.table;
+		while (symbol.integer == none) {
+			i -= 1;
+			symbol = bits[i] != 0 ? symbol.one : symbol.zero;
+		}
+		return symbol.integer == integer && i == 0;
+	}
 
-      this.table = symbol;
-      this.upToDate = true;
-    }
-  }
+	/**
+	 * Compare two Huffman tables.
+	 */
+	@Override
+	public boolean postMortem(PostMortem pm) {
 
-  private boolean postMortem(int integer) {
-    int[] bits = new int[this.domain];
-    Symbol symbol = this.symbols[integer];
-    if (symbol.integer != integer) {
-      return false;
-    }
-    int i = 0;
-    while (true) {
-      Symbol back = symbol.back;
-      if (back == null) {
-        break;
-      }
-      if (back.zero == symbol) {
-        bits[i] = 0;
-      } else if (back.one == symbol) {
-        bits[i] = 1;
-      } else {
-        return false;
-      }
-      i += 1;
-      symbol = back;
-    }
-    if (symbol != this.table) {
-      return false;
-    }
-    this.width = 0;
-    symbol = this.table;
-    while (symbol.integer == none) {
-      i -= 1;
-      symbol = bits[i] != 0 ? symbol.one : symbol.zero;
-    }
-    return symbol.integer == integer && i == 0;
-  }
+		// Go through every integer in the domain, generating its bit sequence, and
+		// then prove that that bit sequence produces the same integer.
 
-  /**
-   * Compare two Huffman tables.
-   */
-  @Override
-  public boolean postMortem(PostMortem pm) {
+		for (int integer = 0; integer < this.domain; integer += 1) {
+			if (!postMortem(integer)) {
+				JSONzip.log("\nBad huff ");
+				JSONzip.logchar(integer, integer);
+				return false;
+			}
+		}
+		return this.table.postMortem(((Huff) pm).table);
+	}
 
-    // Go through every integer in the domain, generating its bit sequence, and
-    // then prove that that bit sequence produces the same integer.
+	/**
+	 * Read bits until a symbol can be identified. The weight of the read
+	 * symbol will be incremented.
+	 *
+	 * @param bitreader
+	 *            The source of bits.
+	 * @return The integer value of the symbol.
+	 * @throws JSONException
+	 */
+	public int read(BitReader bitreader) throws JSONException {
+		try {
+			this.width = 0;
+			Symbol symbol = this.table;
+			while (symbol.integer == none) {
+				this.width += 1;
+				symbol = bitreader.bit() ? symbol.one : symbol.zero;
+			}
+			tick(symbol.integer);
+			if (JSONzip.probe) {
+				JSONzip.logchar(symbol.integer, this.width);
+			}
+			return symbol.integer;
+		} catch (Throwable e) {
+			throw new JSONException(e);
+		}
+	}
 
-    for (int integer = 0; integer < this.domain; integer += 1) {
-      if (!postMortem(integer)) {
-        JSONzip.log("\nBad huff ");
-        JSONzip.logchar(integer, integer);
-        return false;
-      }
-    }
-    return this.table.postMortem(((Huff) pm).table);
-  }
+	/**
+	 * Increase the weight associated with a value by 1.
+	 *
+	 * @param value
+	 *            The number of the symbol to tick
+	 */
+	public void tick(int value) {
+		if (this.toLearn > 0) {
+			this.toLearn -= 1;
+			this.symbols[value].weight += 1;
+			this.upToDate = false;
+		}
+	}
 
-  /**
-   * Read bits until a symbol can be identified. The weight of the read
-   * symbol will be incremented.
-   *
-   * @param bitreader
-   *            The source of bits.
-   * @return The integer value of the symbol.
-   * @throws JSONException
-   */
-  public int read(BitReader bitreader) throws JSONException {
-    try {
-      this.width = 0;
-      Symbol symbol = this.table;
-      while (symbol.integer == none) {
-        this.width += 1;
-        symbol = bitreader.bit() ? symbol.one : symbol.zero;
-      }
-      tick(symbol.integer);
-      if (JSONzip.probe) {
-        JSONzip.logchar(symbol.integer, this.width);
-      }
-      return symbol.integer;
-    } catch (Throwable e) {
-      throw new JSONException(e);
-    }
-  }
+	/**
+	 * Recur from a symbol back, emitting bits. We recur before emitting to
+	 * make the bits come out in the right order.
+	 *
+	 * @param symbol
+	 *            The symbol to write.
+	 * @param bitwriter
+	 *            The bitwriter to write it to.
+	 * @throws JSONException
+	 */
+	private void write(Symbol symbol, BitWriter bitwriter) throws JSONException {
+		try {
+			Symbol back = symbol.back;
+			if (back != null) {
+				this.width += 1;
+				write(back, bitwriter);
+				if (back.zero == symbol) {
+					bitwriter.zero();
+				} else {
+					bitwriter.one();
+				}
+			}
+		} catch (Throwable e) {
+			throw new JSONException(e);
+		}
+	}
 
-  /**
-   * Increase the weight associated with a value by 1.
-   *
-   * @param value
-   *            The number of the symbol to tick
-   */
-  public void tick(int value) {
-    if (this.toLearn > 0) {
-      this.toLearn -= 1;
-      this.symbols[value].weight += 1;
-      this.upToDate = false;
-    }
-  }
-
-  /**
-   * Recur from a symbol back, emitting bits. We recur before emitting to
-   * make the bits come out in the right order.
-   *
-   * @param symbol
-   *            The symbol to write.
-   * @param bitwriter
-   *            The bitwriter to write it to.
-   * @throws JSONException
-   */
-  private void write(Symbol symbol, BitWriter bitwriter) throws JSONException {
-    try {
-      Symbol back = symbol.back;
-      if (back != null) {
-        this.width += 1;
-        write(back, bitwriter);
-        if (back.zero == symbol) {
-          bitwriter.zero();
-        } else {
-          bitwriter.one();
-        }
-      }
-    } catch (Throwable e) {
-      throw new JSONException(e);
-    }
-  }
-
-  /**
-   * Write the bits corresponding to a symbol. The weight of the symbol will
-   * be incremented.
-   *
-   * @param value
-   *            The number of the symbol to write
-   * @param bitwriter
-   *            The destination of the bits.
-   * @throws JSONException
-   */
-  public void write(int value, BitWriter bitwriter) throws JSONException {
-    this.width = 0;
-    write(this.symbols[value], bitwriter);
-    tick(value);
-    if (JSONzip.probe) {
-      JSONzip.logchar(value, this.width);
-    }
-  }
+	/**
+	 * Write the bits corresponding to a symbol. The weight of the symbol will
+	 * be incremented.
+	 *
+	 * @param value
+	 *            The number of the symbol to write
+	 * @param bitwriter
+	 *            The destination of the bits.
+	 * @throws JSONException
+	 */
+	public void write(int value, BitWriter bitwriter) throws JSONException {
+		this.width = 0;
+		write(this.symbols[value], bitwriter);
+		tick(value);
+		if (JSONzip.probe) {
+			JSONzip.logchar(value, this.width);
+		}
+	}
 }

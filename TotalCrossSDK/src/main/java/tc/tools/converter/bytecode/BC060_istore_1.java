@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC060_istore_1 extends StoreLocal {
-  public BC060_istore_1() {
-    super(1, -1, INT);
-  }
+	public BC060_istore_1() {
+		super(1, -1, INT);
+	}
 }

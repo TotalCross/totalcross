@@ -9,8 +9,8 @@ package totalcross.util;
  */
 
 public class ElementNotFoundException extends Exception {
-  /** Constructs an exception with the given message. */
-  public ElementNotFoundException(String s) {
-    super(s);
-  }
+	/** Constructs an exception with the given message. */
+	public ElementNotFoundException(String s) {
+		super(s);
+	}
 }

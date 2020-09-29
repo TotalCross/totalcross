@@ -13,9 +13,9 @@ void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, boo
 bool windowGetSIP();
 
 /*static void windowSetDeviceTitle(TCObject titleObj)
-{
+   {
    UNUSED(titleObj)
-}*/
+   }*/
 
 #ifdef __cplusplus
 }

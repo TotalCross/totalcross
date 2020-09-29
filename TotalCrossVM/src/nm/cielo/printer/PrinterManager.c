@@ -1,5 +1,5 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -10,20 +10,19 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tcspPM_internalPrintText_ssp(NMParams p) // totalcross/cielo/sdk/printer/PrinterManager private native void internalPrintText(String textToPrint, String printerAttributes, totalcross.cielo.printer.PrinterManager.PrinterListenerInternal printerListener);
-{
-    TCObject printerManager = p->obj[0];
-    TCObject textToPrint = p->obj[1];
-    TCObject printerAttributes = p->obj[2];
-    TCObject printerListener = p->obj[3];
-    
+TC_API void tcspPM_internalPrintText_ssp(NMParams p) { // totalcross/cielo/sdk/printer/PrinterManager private native void internalPrintText(String textToPrint, String printerAttributes, totalcross.cielo.printer.PrinterManager.PrinterListenerInternal printerListener);
+	TCObject printerManager = p->obj[0];
+	TCObject textToPrint = p->obj[1];
+	TCObject printerAttributes = p->obj[2];
+	TCObject printerListener = p->obj[3];
+
 #if defined (ANDROID)
-    // first, lock the printerListener to make sure it won't be collected by the GC
-    if (printerListener != null) {
-        setObjectLock(printerListener, LOCKED);
-    }
-    // make native android call
-    cieloPrintManagerPrintText(textToPrint, printerAttributes, printerListener);
+	// first, lock the printerListener to make sure it won't be collected by the GC
+	if (printerListener != null) {
+		setObjectLock(printerListener, LOCKED);
+	}
+	// make native android call
+	cieloPrintManagerPrintText(textToPrint, printerAttributes, printerListener);
 #endif
 }
 #ifdef ENABLE_TEST_SUITE

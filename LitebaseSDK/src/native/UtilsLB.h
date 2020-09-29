@@ -20,7 +20,7 @@
  * @param length1 The length of the first string.
  * @param length2 The length of the second string.
  * @param isCaseless Indicates if the comparison is caseless or not.
- * @return 0 if both strings are equal; a positive value if first character that does not match has a greater value in string1 than in string2; a 
+ * @return 0 if both strings are equal; a positive value if first character that does not match has a greater value in string1 than in string2; a
  * negative value, otherwise.
  */
 int32 str16CompareTo(JCharP string1, JCharP string2, int32 length1, int32 length2, bool isCaseless);
@@ -46,27 +46,27 @@ bool str16StartsWith(JCharP charsStr, JCharP prefixStr, int32 charsLen, int32 pr
  * @param charsLen The length of <code>charsStr</code>.
  * @param subLen The length of <code>subStr</code>.
  * @param isCaseless Indicates if the search is caseless or not.
- * @return 0 if the substring is empty; the index of the substring in the first string, or -1 if the substring does not occur in the other string. 
+ * @return 0 if the substring is empty; the index of the substring in the first string, or -1 if the substring does not occur in the other string.
  */
 int32 str16IndexOf(JCharP charsStr, JCharP subStr, int32 charsLen, int32 subLen, bool isCaseless);
 
 /**
  * Returns the number of days that a specific month has.
- * 
+ *
  * @param month The month number: from 1 to 12.
  * @param year The year.
- * @return The number of days that the month has, taking a possible leap year into consideration. 
+ * @return The number of days that the month has, taking a possible leap year into consideration.
  */
 int32 getDaysInMonth(int32 month, int32 year);
 
-/**  
- * Verifies if year, month, and day forms a valid date. 
+/**
+ * Verifies if year, month, and day forms a valid date.
  *
  * @param year The year.
  * @param month The month.
  * @param day The day.
  * @return An int of the format YYYYMMDD if the date is valid; otherwise, returns -1.
-*/
+ */
 int32 verifyDate(int32 year, int32 month, int32 day);
 
 /**
@@ -86,11 +86,11 @@ CharP strLeftTrim(CharP chars);
 CharP strTrim(CharP chars);
 
 /**
-* Does a left and right trim in tchar a string.
-*
-* @param chars The tchar string to be trimmed.
-* @return The tchar string with the blanks in the beggining and in the end trimmed.
-*/
+ * Does a left and right trim in tchar a string.
+ *
+ * @param chars The tchar string to be trimmed.
+ * @return The tchar string with the blanks in the beggining and in the end trimmed.
+ */
 TCHARP tstrTrim(TCHARP chars);
 
 /**
@@ -103,7 +103,7 @@ TCHARP tstrTrim(TCHARP chars);
 JCharP str16LeftTrim(JCharP string16Str, int32* string16Len);
 
 /**
- * Verifies if a string is a valid Date and transforms it into a correspondent int date. 
+ * Verifies if a string is a valid Date and transforms it into a correspondent int date.
  *
  * @param chars A string in a date format.
  * @returns A correspondent int datetime or -1 if the date is invalid.
@@ -111,10 +111,10 @@ JCharP str16LeftTrim(JCharP string16Str, int32* string16Len);
 int32 testAndPrepareDate(CharP chars);
 
 /**
- * Verifies if a string is a valid Time and transforms it into a correspondent int datetime. The time ranges from 00:00:00:000 to 23:59:59:9999 (it 
- * accepts dots and colons). This method is very flexible. For instance: 2:-:8:10 is the same as 2:0:8:10 and returns 20008010; 02:.:8:1 is the same 
+ * Verifies if a string is a valid Time and transforms it into a correspondent int datetime. The time ranges from 00:00:00:000 to 23:59:59:9999 (it
+ * accepts dots and colons). This method is very flexible. For instance: 2:-:8:10 is the same as 2:0:8:10 and returns 20008010; 02:.:8:1 is the same
  * as 02:0.0:8 and returns 20000008; :4:8:19 is the same as 0:4:8:19 and returns; 408019 2.4.a.876 is the same as 2.4.0.876 and returns 20400876.
- * 
+ *
  * @param chars A string in a time format.
  * @returns A correspondent int datetime or -1 if the value is not a valid time.
  */
@@ -127,7 +127,7 @@ int32 testAndPrepareTime(CharP chars);
  * @param value The record value which will hold the date or datetime as integer(s).
  * @param chars The date or datetime as a string.
  * @param type <code>DATE_TYPE</code> or </code>DATETIME_TYPE</code>.
- * @return <code>false</code> if the string format is wrong; <code>true</code>, otherwise. 
+ * @return <code>false</code> if the string format is wrong; <code>true</code>, otherwise.
  * @throws SQLParseException If the string format is wrong.
  */
 bool testAndPrepareDateAndTime(Context context, SQLValue* value, CharP chars, int32 type);
@@ -174,7 +174,7 @@ int8* duplicateByteArray(int8* byteArray, int32 size, Heap heap);
  *
  * @param count The size of the <code>IntVector</code>, which can't be null.
  * @param heap A heap to allocate the <code>IntVector</code> integer array.
- * @return The <code>IntVector</code>. 
+ * @return The <code>IntVector</code>.
  */
 IntVector newIntBits(int32 count, Heap heap);
 
@@ -189,20 +189,20 @@ int32 findNextBitSet(IntVector* intVector, int32 start);
 
 /**
  * Compares the two records, using the sort column list.
- * 
+ *
  * @param record1 The first record to be compared.
  * @param record2 The second record to be compared.
  * @param nullsRecord1 The null values of the first record.
  * @param nullsRecord2 The null values of the second record.
  * @param sortFieldListCount The number of elements of <code>sortFieldList</code>.
  * @param sortFieldList The order of evaluation of the record.
- * @return 0 if the arrays are identical in the comparison order; a positive number if <code>record1[]</code> is greater than <code>record2[]</code>; 
+ * @return 0 if the arrays are identical in the comparison order; a positive number if <code>record1[]</code> is greater than <code>record2[]</code>;
  * otherwise, a negative number.
- */ 
-int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1, uint8* nullsRecord2, int32 sortFieldListCount, 
-                                                                                                       SQLResultSetField** sortFieldList);
+ */
+int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1, uint8* nullsRecord2, int32 sortFieldListCount,
+                     SQLResultSetField** sortFieldList);
 
-/** 
+/**
  * Sets and resets one bit in an array of bytes.
  *
  * @param items The array of bytes
@@ -213,7 +213,7 @@ void setBit(uint8* items, int32 index, bool isOn);
 
 /**
  * Gets the full name of a file: path + file name.
- * 
+ *
  * @param fileName The file name.
  * @param sourcePath The path where the table is stored.
  * @param buffer Receives path + file name with a path separator if necessary.
@@ -256,12 +256,12 @@ bool JCharPStartsWithCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, 
  */
 bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int32 asciiLen, bool ignoreCase);
 
-/**                                                                         
- * Gets the current path used by the system to store application files.     
- *                                                                          
+/**
+ * Gets the current path used by the system to store application files.
+ *
  * @param sourcePath The path used by the system to store application files.
- */                                                                         
-void getCurrentPath(TCHARP sourcePath);   
+ */
+void getCurrentPath(TCHARP sourcePath);
 
 /**
  * Formats a date in a unicode buffer.
@@ -285,7 +285,7 @@ void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer);
  * @param millis Millis.
  * @param buffer The buffer for the unicode formated date.
  */
-void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer);      
+void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer);
 
 /**
  * Converts a short stored in a string into a short.
@@ -324,22 +324,22 @@ bool setDateObject(NMParams params, int32 date);
  */
 bool setTimeObject(NMParams params, int32 date, int32 time);
 
-/** 
- * Creates a new hash table for the temporary tables size statistics. 
- * 
+/**
+ * Creates a new hash table for the temporary tables size statistics.
+ *
  * @param count The initial size.
  * @return A hash table for the temporary tables size statistics.
  */
 MemoryUsageHT muNew(int32 count);
 
-/** 
+/**
  * Gets the stored statistics item with the given key.
  *
  * @param table A hash table for the temporary tables size statistics.
  * @param key The hash key.
  * @param dbSize Receives the stored .db file size.
  * @param dboSize Receives the stored .dbo file size.
- * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise. 
+ * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise.
  */
 bool muGet(MemoryUsageHT* table, int32 key, int32* dbSize, int32* dboSize);
 
@@ -347,23 +347,23 @@ bool muGet(MemoryUsageHT* table, int32 key, int32* dbSize, int32* dboSize);
  * Once the number of elements gets above the load factor, rehashes the hash table.
  *
  * @param table A hash table for the temporary tables size statistics.
- * @return <code>true</code> if there is enough memory to rehashes the table; <code>false</code>, otherwise. 
+ * @return <code>true</code> if there is enough memory to rehashes the table; <code>false</code>, otherwise.
  */
 bool muRehash(MemoryUsageHT* table);
 
-/** 
+/**
  * Puts the given pair of key/values in the hash table. If the key already exists, the value will be replaced.
  *
  * @param table A hash table for the temporary tables size statistics.
  * @param key The hash key.
  * @param dbSize The .db file size to be stored.
  * @param dboSize The .dbo file size to be stored.
- * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise. 
+ * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise.
  */
 bool muPut(MemoryUsageHT* table, int32 key, int32 dbSize, int32 dboSize);
 
-/** 
- * Frees the hashtable. 
+/**
+ * Frees the hashtable.
  *
  * @param table A hash table for the temporary tables size statistics.
  */
@@ -371,7 +371,7 @@ void muFree(MemoryUsageHT* table);
 
 /**
  * Indicates if a buffer is only composed by zeros or not.
- * 
+ *
  * @param buffer The buffer.
  * @param length The size of the buffer.
  * @return <code>true</code> if the buffer is only composed by zeros; <code>false</code>, otherwise.

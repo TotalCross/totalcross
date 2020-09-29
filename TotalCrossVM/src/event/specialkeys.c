@@ -21,17 +21,14 @@
 #endif
 //
 
-int32 keyPortable2Device(PortableSpecialKeys key)
-{
-   return privateKeyPortable2Device(key);
+int32 keyPortable2Device(PortableSpecialKeys key) {
+	return privateKeyPortable2Device(key);
 }
 
-PortableSpecialKeys keyDevice2Portable(int32 key)
-{
-   return privateKeyDevice2Portable(key);
+PortableSpecialKeys keyDevice2Portable(int32 key) {
+	return privateKeyDevice2Portable(key);
 }
 
-PortableModifiers keyGetPortableModifiers(int32 mods)
-{
-   return privateKeyGetPortableModifiers(mods);
+PortableModifiers keyGetPortableModifiers(int32 mods) {
+	return privateKeyGetPortableModifiers(mods);
 }

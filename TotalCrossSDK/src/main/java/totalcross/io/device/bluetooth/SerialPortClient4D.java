@@ -9,30 +9,30 @@ import totalcross.io.IOException;
 import totalcross.io.Stream;
 
 public class SerialPortClient4D extends Stream {
-  Object nativeHandle;
+	Object nativeHandle;
 
-  public SerialPortClient4D(String address, int port, String[] params) throws IOException {
-    createSerialPortClient(address, port, params);
-  }
+	public SerialPortClient4D(String address, int port, String[] params) throws IOException {
+		createSerialPortClient(address, port, params);
+	}
 
-  native private void createSerialPortClient(String address, int port, String[] params) throws IOException;
+	native private void createSerialPortClient(String address, int port, String[] params) throws IOException;
 
-  @Override
-  native public int readBytes(byte[] buf, int start, int count) throws IOException;
+	@Override
+	native public int readBytes(byte[] buf, int start, int count) throws IOException;
 
-  @Override
-  native public int writeBytes(byte[] buf, int start, int count) throws IOException;
+	@Override
+	native public int writeBytes(byte[] buf, int start, int count) throws IOException;
 
-  @Override
-  native public void close() throws IOException;
+	@Override
+	native public void close() throws IOException;
 
-  @Override
-  protected void finalize() {
-    if (nativeHandle != null) {
-      try {
-        this.close();
-      } catch (IOException e) {
-      }
-    }
-  }
+	@Override
+	protected void finalize() {
+		if (nativeHandle != null) {
+			try {
+				this.close();
+			} catch (IOException e) {
+			}
+		}
+	}
 }

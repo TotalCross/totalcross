@@ -21,21 +21,21 @@ extern "C" {
 // Crossplatform Types
 
 #define SWAP16_FORCED(n) (((((unsigned int) n) << 8) & 0xFF00) | \
-      ((((unsigned int) n) >> 8) & 0x00FF))
+	                  ((((unsigned int) n) >> 8) & 0x00FF))
 
 #define SWAP32_FORCED(n) (((((unsigned long) n) << 24) & 0xFF000000) |   \
-      ((((unsigned long) n) <<  8) & 0x00FF0000) |   \
-      ((((unsigned long) n) >>  8) & 0x0000FF00) |   \
-      ((((unsigned long) n) >> 24) & 0x000000FF))
+	                  ((((unsigned long) n) <<  8) & 0x00FF0000) |   \
+	                  ((((unsigned long) n) >>  8) & 0x0000FF00) |   \
+	                  ((((unsigned long) n) >> 24) & 0x000000FF))
 
 #ifndef UNUSED
-#define UNUSED(x) x=x;
+#define UNUSED(x) x = x;
 #endif
 
 #if !defined(linux) && !defined(__arm__) && (defined(WINCE) || defined(WIN32))
- #define I64_CONST(x) x##L
+ #define I64_CONST(x) x ## L
 #else
- #define I64_CONST(x) x##LL
+ #define I64_CONST(x) x ## LL
 #endif
 
 #ifdef darwin
@@ -52,7 +52,7 @@ extern "C" {
 #define __bridge
 #endif
 
- /////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 // Basic types
 // explicit signed types (some compilers consider "char" as unsigned by default for instance).
 typedef signed char int8;
@@ -62,17 +62,17 @@ typedef unsigned int uint32;
 typedef signed short int16;
 typedef unsigned short uint16;
 #if defined(WINCE) || defined(WIN32)
- typedef __int64 int64;
- typedef unsigned __int64 uint64;
+typedef __int64 int64;
+typedef unsigned __int64 uint64;
 #else
- typedef signed long long int64;
- typedef unsigned long long uint64;
+typedef signed long long int64;
+typedef unsigned long long uint64;
 #endif
 typedef void* VoidP;
 typedef char* CharP;
 
 #if defined (WINCE)
- typedef int intptr_t;
+typedef int intptr_t;
 #endif
 
 #if defined(linux)
@@ -94,11 +94,11 @@ typedef JChar* JCharP;
  #if defined(WINCE) || defined(WIN32)
   #define inline __inline
   #if defined(UNICODE) && !defined(__cplusplus)
-  typedef uint16 TCHAR;
+typedef uint16 TCHAR;
   #endif
  #else
     #define TEXT(x) x
-    typedef char TCHAR;
+typedef char TCHAR;
  #endif
 #endif
 typedef TCHAR* TCHARP;
@@ -157,7 +157,7 @@ typedef int64 TValue64;      // guich@tc111_7: must use int64, because double as
 typedef int64* Value64;
 typedef int64* Value64Array;
 
-#define REGD(x) ((double*)(x))
+#define REGD(x) ((double*) (x))
 #define REGL(x) x
 
 /////////////////////////////////////////////////////////////////////////
@@ -168,7 +168,7 @@ typedef int64* Value64Array;
 #define xstrcmp(str1, str2) strcmp(str1, str2)
 CharP xstrncpy(CharP dest, CharP src, int32 len); // this one makes sure that the string is terminated with \0
 #define xstrcpy(dest, src) strcpy(dest, src)
-#define xstrlen(str) (int)strlen(str)
+#define xstrlen(str) (int) strlen(str)
 #define xstrcat(dest, src) strcat(dest, src)
 CharP xstrrchr(CharP str, int32 what);
 #define xstrchr(str, what) strchr(str, what)
@@ -177,43 +177,43 @@ CharP xstrrchr(CharP str, int32 what);
 #define xstrvprintf vsprintf
 // faster routines to move 8, 4, 2 and TSIZE pointers
 #define xmove8(dest,src)                         \
-   do                                            \
-   {                                             \
-      ((uint8*)(dest))[0] = ((uint8*)(src))[0];  \
-      ((uint8*)(dest))[1] = ((uint8*)(src))[1];  \
-      ((uint8*)(dest))[2] = ((uint8*)(src))[2];  \
-      ((uint8*)(dest))[3] = ((uint8*)(src))[3];  \
-      ((uint8*)(dest))[4] = ((uint8*)(src))[4];  \
-      ((uint8*)(dest))[5] = ((uint8*)(src))[5];  \
-      ((uint8*)(dest))[6] = ((uint8*)(src))[6];  \
-      ((uint8*)(dest))[7] = ((uint8*)(src))[7];  \
-   } while(0)
+	do                                            \
+	{                                             \
+		((uint8*) (dest))[0] = ((uint8*) (src))[0];  \
+		((uint8*) (dest))[1] = ((uint8*) (src))[1];  \
+		((uint8*) (dest))[2] = ((uint8*) (src))[2];  \
+		((uint8*) (dest))[3] = ((uint8*) (src))[3];  \
+		((uint8*) (dest))[4] = ((uint8*) (src))[4];  \
+		((uint8*) (dest))[5] = ((uint8*) (src))[5];  \
+		((uint8*) (dest))[6] = ((uint8*) (src))[6];  \
+		((uint8*) (dest))[7] = ((uint8*) (src))[7];  \
+	} while (0)
 #define xmove4(dest,src)                         \
-   do                                            \
-   {                                             \
-      ((uint8*)(dest))[0] = ((uint8*)(src))[0];  \
-      ((uint8*)(dest))[1] = ((uint8*)(src))[1];  \
-      ((uint8*)(dest))[2] = ((uint8*)(src))[2];  \
-      ((uint8*)(dest))[3] = ((uint8*)(src))[3];  \
-   } while(0)
+	do                                            \
+	{                                             \
+		((uint8*) (dest))[0] = ((uint8*) (src))[0];  \
+		((uint8*) (dest))[1] = ((uint8*) (src))[1];  \
+		((uint8*) (dest))[2] = ((uint8*) (src))[2];  \
+		((uint8*) (dest))[3] = ((uint8*) (src))[3];  \
+	} while (0)
 #define xmove2(dest,src)                         \
-   do                                            \
-   {                                             \
-      ((uint8*)(dest))[0] = ((uint8*)(src))[0];  \
-      ((uint8*)(dest))[1] = ((uint8*)(src))[1];  \
-   } while(0)
+	do                                            \
+	{                                             \
+		((uint8*) (dest))[0] = ((uint8*) (src))[0];  \
+		((uint8*) (dest))[1] = ((uint8*) (src))[1];  \
+	} while (0)
 #ifdef WP8 // remove vc2013 warnings
 #define xmoveptr(dest,src)                       \
-   xmove4(dest, src);                       
+	xmove4(dest, src);
 #else
 #define xmoveptr(dest, src)                       \
-   do                                            \
-   {                                             \
-      if (TSIZE == 4)                          \
-         xmove4(dest,src);                       \
-      else                                       \
-         xmove8(dest,src);                       \
-   } while(0)
+	do                                            \
+	{                                             \
+		if (TSIZE == 4)                          \
+		xmove4(dest,src);                       \
+		else                                       \
+		xmove8(dest,src);                       \
+	} while (0)
 #endif
 
 #define xmemmove(dest, src, len) memmove(dest, src, len)
@@ -244,7 +244,7 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
  #define tcscmp strcmp
  #define tcsncpy xstrncpy
  #define tcscpy strcpy
- #define tcslen (int)strlen
+ #define tcslen (int) strlen
  #define tcscat strcat
  #define tcsrchr xstrrchr
  #define tcschr strchr

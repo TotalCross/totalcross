@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC071_dstore_0 extends StoreLocal {
-  public BC071_dstore_0() {
-    super(0, -2, DOUBLE);
-  }
+	public BC071_dstore_0() {
+		super(0, -2, DOUBLE);
+	}
 }

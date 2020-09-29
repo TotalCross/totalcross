@@ -21,481 +21,481 @@ import totalcross.sys.InvalidNumberException;
 
 /**
  * The wrapper for the primitive type {@code float}.
- * 
+ *
  * @see java.lang.Number
  * @since 1.0
  */
 public final class Float4D extends Number implements Comparable<Float4D> {
 
-    private static final long serialVersionUID = -2671257302660747028L;
+	private static final long serialVersionUID = -2671257302660747028L;
 
-    /**
-     * The value which the receiver represents.
-     */
-    private final float value;
+	/**
+	 * The value which the receiver represents.
+	 */
+	private final float value;
 
-    /**
-     * Constant for the maximum {@code float} value, (2 - 2<sup>-23</sup>) * 2<sup>127</sup>.
-     */
-    public static final float MAX_VALUE = 3.40282346638528860e+38f;
+	/**
+	 * Constant for the maximum {@code float} value, (2 - 2<sup>-23</sup>) * 2<sup>127</sup>.
+	 */
+	public static final float MAX_VALUE = 3.40282346638528860e+38f;
 
-    /**
-     * Constant for the minimum {@code float} value, 2<sup>-149</sup>.
-     */
-    public static final float MIN_VALUE = 1.40129846432481707e-45f;
+	/**
+	 * Constant for the minimum {@code float} value, 2<sup>-149</sup>.
+	 */
+	public static final float MIN_VALUE = 1.40129846432481707e-45f;
 
-    /**
-     * Constant for the Not-a-Number (NaN) value of the {@code float} type.
-     */
-    public static final float NaN = 0.0f / 0.0f;
+	/**
+	 * Constant for the Not-a-Number (NaN) value of the {@code float} type.
+	 */
+	public static final float NaN = 0.0f / 0.0f;
 
-    /**
-     * Constant for the Positive Infinity value of the {@code float} type.
-     */
-    public static final float POSITIVE_INFINITY = 1.0f / 0.0f;
+	/**
+	 * Constant for the Positive Infinity value of the {@code float} type.
+	 */
+	public static final float POSITIVE_INFINITY = 1.0f / 0.0f;
 
-    /**
-     * Constant for the Negative Infinity value of the {@code float} type.
-     */
-    public static final float NEGATIVE_INFINITY = -1.0f / 0.0f;
+	/**
+	 * Constant for the Negative Infinity value of the {@code float} type.
+	 */
+	public static final float NEGATIVE_INFINITY = -1.0f / 0.0f;
 
-    /**
-     * The {@link Class} object that represents the primitive type {@code
-     * float}.
-     *
-     * @since 1.1
-     */
-//    @SuppressWarnings("unchecked")
-//    public static final Class<Float> TYPE = (Class<Float>) new float[0]
-//            .getClass().getComponentType();
-    public static final Class<Float> TYPE = Float.class;
+	/**
+	 * The {@link Class} object that represents the primitive type {@code
+	 * float}.
+	 *
+	 * @since 1.1
+	 */
+	//    @SuppressWarnings("unchecked")
+	//    public static final Class<Float> TYPE = (Class<Float>) new float[0]
+	//            .getClass().getComponentType();
+	public static final Class<Float> TYPE = Float.class;
 
-    // Note: This can't be set to "float.class", since *that* is
-    // defined to be "java.lang.Float.TYPE";
+	// Note: This can't be set to "float.class", since *that* is
+	// defined to be "java.lang.Float.TYPE";
 
-    /**
-     * Constant for the number of bits needed to represent a {@code float} in
-     * two's complement form.
-     *
-     * @since 1.5
-     */
-    public static final int SIZE = 32;
+	/**
+	 * Constant for the number of bits needed to represent a {@code float} in
+	 * two's complement form.
+	 *
+	 * @since 1.5
+	 */
+	public static final int SIZE = 32;
 
-    /**
-     * Constructs a new {@code Float} with the specified primitive float value.
-     * 
-     * @param value
-     *            the primitive float value to store in the new instance.
-     */
-    public Float4D(float value) {
-        this.value = value;
-    }
+	/**
+	 * Constructs a new {@code Float} with the specified primitive float value.
+	 *
+	 * @param value
+	 *            the primitive float value to store in the new instance.
+	 */
+	public Float4D(float value) {
+		this.value = value;
+	}
 
-    /**
-     * Constructs a new {@code Float} with the specified primitive double value.
-     * 
-     * @param value
-     *            the primitive double value to store in the new instance.
-     */
-    public Float4D(double value) {
-        this.value = (float) value;
-    }
+	/**
+	 * Constructs a new {@code Float} with the specified primitive double value.
+	 *
+	 * @param value
+	 *            the primitive double value to store in the new instance.
+	 */
+	public Float4D(double value) {
+		this.value = (float) value;
+	}
 
-    /**
-     * Constructs a new {@code Float} from the specified string.
-     * 
-     * @param string
-     *            the string representation of a float value.
-     * @throws NumberFormatException
-     *             if {@code string} can not be decoded into a float value.
-     * @see #parseFloat(String)
-     */
-    public Float4D(String string) throws NumberFormatException {
-        this(parseFloat(string));
-    }
+	/**
+	 * Constructs a new {@code Float} from the specified string.
+	 *
+	 * @param string
+	 *            the string representation of a float value.
+	 * @throws NumberFormatException
+	 *             if {@code string} can not be decoded into a float value.
+	 * @see #parseFloat(String)
+	 */
+	public Float4D(String string) throws NumberFormatException {
+		this(parseFloat(string));
+	}
 
-    /**
-     * Compares this object to the specified float object to determine their
-     * relative order. There are two special cases:
-     * <ul>
-     * <li>{@code Float.NaN} is equal to {@code Float.NaN} and it is greater
-     * than any other float value, including {@code Float.POSITIVE_INFINITY};</li>
-     * <li>+0.0f is greater than -0.0f</li>
-     * </ul>
-     * 
-     * @param object
-     *            the float object to compare this object to.
-     * @return a negative value if the value of this float is less than the
-     *         value of {@code object}; 0 if the value of this float and the
-     *         value of {@code object} are equal; a positive value if the value
-     *         of this float is greater than the value of {@code object}.
-     * @see java.lang.Comparable
-     * @since 1.2
-     */
-    public int compareTo(Float4D object) {
-        return compare(value, object.value); 
-    }
+	/**
+	 * Compares this object to the specified float object to determine their
+	 * relative order. There are two special cases:
+	 * <ul>
+	 * <li>{@code Float.NaN} is equal to {@code Float.NaN} and it is greater
+	 * than any other float value, including {@code Float.POSITIVE_INFINITY};</li>
+	 * <li>+0.0f is greater than -0.0f</li>
+	 * </ul>
+	 *
+	 * @param object
+	 *            the float object to compare this object to.
+	 * @return a negative value if the value of this float is less than the
+	 *         value of {@code object}; 0 if the value of this float and the
+	 *         value of {@code object} are equal; a positive value if the value
+	 *         of this float is greater than the value of {@code object}.
+	 * @see java.lang.Comparable
+	 * @since 1.2
+	 */
+	public int compareTo(Float4D object) {
+		return compare(value, object.value);
+	}
 
-    @Override
-    public byte byteValue() {
-        return (byte) value;
-    }
+	@Override
+	public byte byteValue() {
+		return (byte) value;
+	}
 
-    @Override
-    public double doubleValue() {
-        return value;
-    }
+	@Override
+	public double doubleValue() {
+		return value;
+	}
 
-    /**
-     * Compares this instance with the specified object and indicates if they
-     * are equal. In order to be equal, {@code object} must be an instance of
-     * {@code Float} and have the same float value as this object.
-     * 
-     * @param object
-     *            the object to compare this float with.
-     * @return {@code true} if the specified object is equal to this
-     *         {@code Float}; {@code false} otherwise.
-     */
-    @Override
-    public boolean equals(Object object) {
-        return (object == this)
-                || (object instanceof Float4D)
-                && (floatToIntBits(this.value) == floatToIntBits(((Float4D) object).value));
-    }
+	/**
+	 * Compares this instance with the specified object and indicates if they
+	 * are equal. In order to be equal, {@code object} must be an instance of
+	 * {@code Float} and have the same float value as this object.
+	 *
+	 * @param object
+	 *            the object to compare this float with.
+	 * @return {@code true} if the specified object is equal to this
+	 *         {@code Float}; {@code false} otherwise.
+	 */
+	@Override
+	public boolean equals(Object object) {
+		return (object == this)
+		       || (object instanceof Float4D)
+		       && (floatToIntBits(this.value) == floatToIntBits(((Float4D) object).value));
+	}
 
-    /**
-     * Converts the specified float value to a binary representation conforming
-     * to the IEEE 754 floating-point single precision bit layout. All
-     * <em>Not-a-Number (NaN)</em> values are converted to a single NaN
-     * representation ({@code 0x7ff8000000000000L}).
-     * 
-     * @param value
-     *            the float value to convert.
-     * @return the IEEE 754 floating-point single precision representation of
-     *         {@code value}.
-     * @see #floatToRawIntBits(float)
-     * @see #intBitsToFloat(int)
-     */
-//    public static native int floatToIntBits(float value);
-    public static int floatToIntBits(float value) {
-        if (isNaN(value)) {
-          return 0x7fc00000;
-        } else {
-          return floatToRawIntBits(value);
-        }
-    }
-    
-    
-    /**
-     * Converts the specified float value to a binary representation conforming
-     * to the IEEE 754 floating-point single precision bit layout.
-     * <em>Not-a-Number (NaN)</em> values are preserved.
-     * 
-     * @param value
-     *            the float value to convert.
-     * @return the IEEE 754 floating-point single precision representation of
-     *         {@code value}.
-     * @see #floatToIntBits(float)
-     * @see #intBitsToFloat(int)
-     */
-//    public static native int floatToRawIntBits(float value);
-    public static int floatToRawIntBits(float value) {
-        return Convert.doubleToIntBits(value);
-    }
-    
-    /**
-     * Gets the primitive value of this float.
-     * 
-     * @return this object's primitive value.
-     */
-    @Override
-    public float floatValue() {
-        return value;
-    }
+	/**
+	 * Converts the specified float value to a binary representation conforming
+	 * to the IEEE 754 floating-point single precision bit layout. All
+	 * <em>Not-a-Number (NaN)</em> values are converted to a single NaN
+	 * representation ({@code 0x7ff8000000000000L}).
+	 *
+	 * @param value
+	 *            the float value to convert.
+	 * @return the IEEE 754 floating-point single precision representation of
+	 *         {@code value}.
+	 * @see #floatToRawIntBits(float)
+	 * @see #intBitsToFloat(int)
+	 */
+	//    public static native int floatToIntBits(float value);
+	public static int floatToIntBits(float value) {
+		if (isNaN(value)) {
+			return 0x7fc00000;
+		} else {
+			return floatToRawIntBits(value);
+		}
+	}
 
-    @Override
-    public int hashCode() {
-        return floatToIntBits(value);
-    }
 
-    /**
-     * Converts the specified IEEE 754 floating-point single precision bit
-     * pattern to a Java float value.
-     * 
-     * @param bits
-     *            the IEEE 754 floating-point single precision representation of
-     *            a float value.
-     * @return the float value converted from {@code bits}.
-     * @see #floatToIntBits(float)
-     * @see #floatToRawIntBits(float)
-     */
-//    public static native float intBitsToFloat(int bits);
-    public static float intBitsToFloat(int bits) {
-        return (float) Convert.intBitsToDouble(bits);
-    }
+	/**
+	 * Converts the specified float value to a binary representation conforming
+	 * to the IEEE 754 floating-point single precision bit layout.
+	 * <em>Not-a-Number (NaN)</em> values are preserved.
+	 *
+	 * @param value
+	 *            the float value to convert.
+	 * @return the IEEE 754 floating-point single precision representation of
+	 *         {@code value}.
+	 * @see #floatToIntBits(float)
+	 * @see #intBitsToFloat(int)
+	 */
+	//    public static native int floatToRawIntBits(float value);
+	public static int floatToRawIntBits(float value) {
+		return Convert.doubleToIntBits(value);
+	}
 
-    @Override
-    public int intValue() {
-        return (int) value;
-    }
+	/**
+	 * Gets the primitive value of this float.
+	 *
+	 * @return this object's primitive value.
+	 */
+	@Override
+	public float floatValue() {
+		return value;
+	}
 
-    /**
-     * Indicates whether this object represents an infinite value.
-     * 
-     * @return {@code true} if the value of this float is positive or negative
-     *         infinity; {@code false} otherwise.
-     */
-    public boolean isInfinite() {
-        return isInfinite(value);
-    }
+	@Override
+	public int hashCode() {
+		return floatToIntBits(value);
+	}
 
-    /**
-     * Indicates whether the specified float represents an infinite value.
-     * 
-     * @param f
-     *            the float to check.
-     * @return {@code true} if the value of {@code f} is positive or negative
-     *         infinity; {@code false} otherwise.
-     */
-    public static boolean isInfinite(float f) {
-        return (f == POSITIVE_INFINITY) || (f == NEGATIVE_INFINITY);
-    }
+	/**
+	 * Converts the specified IEEE 754 floating-point single precision bit
+	 * pattern to a Java float value.
+	 *
+	 * @param bits
+	 *            the IEEE 754 floating-point single precision representation of
+	 *            a float value.
+	 * @return the float value converted from {@code bits}.
+	 * @see #floatToIntBits(float)
+	 * @see #floatToRawIntBits(float)
+	 */
+	//    public static native float intBitsToFloat(int bits);
+	public static float intBitsToFloat(int bits) {
+		return (float) Convert.intBitsToDouble(bits);
+	}
 
-    /**
-     * Indicates whether this object is a <em>Not-a-Number (NaN)</em> value.
-     * 
-     * @return {@code true} if this float is <em>Not-a-Number</em>;
-     *         {@code false} if it is a (potentially infinite) float number.
-     */
-    public boolean isNaN() {
-        return isNaN(value);
-    }
+	@Override
+	public int intValue() {
+		return (int) value;
+	}
 
-    /**
-     * Indicates whether the specified float is a <em>Not-a-Number (NaN)</em>
-     * value.
-     * 
-     * @param f
-     *            the float value to check.
-     * @return {@code true} if {@code f} is <em>Not-a-Number</em>;
-     *         {@code false} if it is a (potentially infinite) float number.
-     */
-    public static boolean isNaN(float f) {
-        return f != f;
-    }
+	/**
+	 * Indicates whether this object represents an infinite value.
+	 *
+	 * @return {@code true} if the value of this float is positive or negative
+	 *         infinity; {@code false} otherwise.
+	 */
+	public boolean isInfinite() {
+		return isInfinite(value);
+	}
 
-    @Override
-    public long longValue() {
-        return (long) value;
-    }
+	/**
+	 * Indicates whether the specified float represents an infinite value.
+	 *
+	 * @param f
+	 *            the float to check.
+	 * @return {@code true} if the value of {@code f} is positive or negative
+	 *         infinity; {@code false} otherwise.
+	 */
+	public static boolean isInfinite(float f) {
+		return (f == POSITIVE_INFINITY) || (f == NEGATIVE_INFINITY);
+	}
 
-    /**
-     * Parses the specified string as a float value.
-     * 
-     * @param string
-     *            the string representation of a float value.
-     * @return the primitive float value represented by {@code string}.
-     * @throws NumberFormatException
-     *             if {@code string} is {@code null}, has a length of zero or
-     *             can not be parsed as a float value.
-     * @see #valueOf(String)
-     * @since 1.2
-     */
-    public static float parseFloat(String string) throws NumberFormatException {
-        try {
-            return (float) Convert.toDouble(string);
-          } catch (InvalidNumberException e) {
-            throw new NumberFormatException(e.getMessage());
-          }
-    }
+	/**
+	 * Indicates whether this object is a <em>Not-a-Number (NaN)</em> value.
+	 *
+	 * @return {@code true} if this float is <em>Not-a-Number</em>;
+	 *         {@code false} if it is a (potentially infinite) float number.
+	 */
+	public boolean isNaN() {
+		return isNaN(value);
+	}
 
-    @Override
-    public short shortValue() {
-        return (short) value;
-    }
+	/**
+	 * Indicates whether the specified float is a <em>Not-a-Number (NaN)</em>
+	 * value.
+	 *
+	 * @param f
+	 *            the float value to check.
+	 * @return {@code true} if {@code f} is <em>Not-a-Number</em>;
+	 *         {@code false} if it is a (potentially infinite) float number.
+	 */
+	public static boolean isNaN(float f) {
+		return f != f;
+	}
 
-    @Override
-    public String toString() {
-        return Float.toString(value);
-    }
+	@Override
+	public long longValue() {
+		return (long) value;
+	}
 
-    /**
-     * Returns a string containing a concise, human-readable description of the
-     * specified float value.
-     * 
-     * @param f
-     *             the float to convert to a string.
-     * @return a printable representation of {@code f}.
-     */
-    public static String toString(float f) {
-        return Convert.toString(f);
-    }
+	/**
+	 * Parses the specified string as a float value.
+	 *
+	 * @param string
+	 *            the string representation of a float value.
+	 * @return the primitive float value represented by {@code string}.
+	 * @throws NumberFormatException
+	 *             if {@code string} is {@code null}, has a length of zero or
+	 *             can not be parsed as a float value.
+	 * @see #valueOf(String)
+	 * @since 1.2
+	 */
+	public static float parseFloat(String string) throws NumberFormatException {
+		try {
+			return (float) Convert.toDouble(string);
+		} catch (InvalidNumberException e) {
+			throw new NumberFormatException(e.getMessage());
+		}
+	}
 
-    /**
-     * Parses the specified string as a float value.
-     * 
-     * @param string
-     *            the string representation of a float value.
-     * @return a {@code Float} instance containing the float value represented
-     *         by {@code string}.
-     * @throws NumberFormatException
-     *             if {@code string} is {@code null}, has a length of zero or
-     *             can not be parsed as a float value.
-     * @see #parseFloat(String)
-     */
-    public static Float valueOf(String string) throws NumberFormatException {
-        return valueOf(parseFloat(string));
-    }
+	@Override
+	public short shortValue() {
+		return (short) value;
+	}
 
-    /**
-     * Compares the two specified float values. There are two special cases:
-     * <ul>
-     * <li>{@code Float.NaN} is equal to {@code Float.NaN} and it is greater
-     * than any other float value, including {@code Float.POSITIVE_INFINITY};</li>
-     * <li>+0.0f is greater than -0.0f</li>
-     * </ul>
-     * 
-     * @param float1
-     *            the first value to compare.
-     * @param float2
-     *            the second value to compare.
-     * @return a negative value if {@code float1} is less than {@code float2};
-     *         0 if {@code float1} and {@code float2} are equal; a positive
-     *         value if {@code float1} is greater than {@code float2}.
-     * @since 1.4
-     */
-    public static int compare(float float1, float float2) {
-        // Non-zero, non-NaN checking.
-        if (float1 > float2) {
-            return 1;
-        }
-        if (float2 > float1) {
-            return -1;
-        }
-        if (float1 == float2 && 0.0f != float1) {
-            return 0;
-        }
+	@Override
+	public String toString() {
+		return Float.toString(value);
+	}
 
-        // NaNs are equal to other NaNs and larger than any other float
-        if (isNaN(float1)) {
-            if (isNaN(float2)) {
-                return 0;
-            }
-            return 1;
-        } else if (isNaN(float2)) {
-            return -1;
-        }
+	/**
+	 * Returns a string containing a concise, human-readable description of the
+	 * specified float value.
+	 *
+	 * @param f
+	 *             the float to convert to a string.
+	 * @return a printable representation of {@code f}.
+	 */
+	public static String toString(float f) {
+		return Convert.toString(f);
+	}
 
-        // Deal with +0.0 and -0.0
-        int f1 = floatToRawIntBits(float1);
-        int f2 = floatToRawIntBits(float2);
-        // The below expression is equivalent to:
-        // (f1 == f2) ? 0 : (f1 < f2) ? -1 : 1
-        // because f1 and f2 are either 0 or Integer.MIN_VALUE
-        return (f1 >> 31) - (f2 >> 31);
-    }
+	/**
+	 * Parses the specified string as a float value.
+	 *
+	 * @param string
+	 *            the string representation of a float value.
+	 * @return a {@code Float} instance containing the float value represented
+	 *         by {@code string}.
+	 * @throws NumberFormatException
+	 *             if {@code string} is {@code null}, has a length of zero or
+	 *             can not be parsed as a float value.
+	 * @see #parseFloat(String)
+	 */
+	public static Float valueOf(String string) throws NumberFormatException {
+		return valueOf(parseFloat(string));
+	}
 
-    /**
-     * Returns a {@code Float} instance for the specified float value.
-     * 
-     * @param f
-     *            the float value to store in the instance.
-     * @return a {@code Float} instance containing {@code f}.
-     * @since 1.5
-     */
-    public static Float valueOf(float f) {
-        return new Float(f);
-    }
+	/**
+	 * Compares the two specified float values. There are two special cases:
+	 * <ul>
+	 * <li>{@code Float.NaN} is equal to {@code Float.NaN} and it is greater
+	 * than any other float value, including {@code Float.POSITIVE_INFINITY};</li>
+	 * <li>+0.0f is greater than -0.0f</li>
+	 * </ul>
+	 *
+	 * @param float1
+	 *            the first value to compare.
+	 * @param float2
+	 *            the second value to compare.
+	 * @return a negative value if {@code float1} is less than {@code float2};
+	 *         0 if {@code float1} and {@code float2} are equal; a positive
+	 *         value if {@code float1} is greater than {@code float2}.
+	 * @since 1.4
+	 */
+	public static int compare(float float1, float float2) {
+		// Non-zero, non-NaN checking.
+		if (float1 > float2) {
+			return 1;
+		}
+		if (float2 > float1) {
+			return -1;
+		}
+		if ((float1 == float2) && (0.0f != float1) ) {
+			return 0;
+		}
 
-    /**
-     * Converts the specified float into its hexadecimal string representation.
-     *
-     * @param f
-     *            the float to convert.
-     * @return the hexadecimal string representation of {@code f}.
-     * @since 1.5
-     */
-    public static String toHexString(float f) {
-        /*
-         * Reference: http://en.wikipedia.org/wiki/IEEE_754
-         */
-        if (f != f) {
-            return "NaN"; //$NON-NLS-1$
-        }
-        if (f == POSITIVE_INFINITY) {
-            return "Infinity"; //$NON-NLS-1$
-        }
-        if (f == NEGATIVE_INFINITY) {
-            return "-Infinity"; //$NON-NLS-1$
-        }
+		// NaNs are equal to other NaNs and larger than any other float
+		if (isNaN(float1)) {
+			if (isNaN(float2)) {
+				return 0;
+			}
+			return 1;
+		} else if (isNaN(float2)) {
+			return -1;
+		}
 
-        int bitValue = floatToIntBits(f);
+		// Deal with +0.0 and -0.0
+		int f1 = floatToRawIntBits(float1);
+		int f2 = floatToRawIntBits(float2);
+		// The below expression is equivalent to:
+		// (f1 == f2) ? 0 : (f1 < f2) ? -1 : 1
+		// because f1 and f2 are either 0 or Integer.MIN_VALUE
+		return (f1 >> 31) - (f2 >> 31);
+	}
 
-        boolean negative = (bitValue & 0x80000000) != 0;
-        // mask exponent bits and shift down
-        int exponent = (bitValue & 0x7f800000) >>> 23;
-        // mask significand bits and shift up
-        // significand is 23-bits, so we shift to treat it like 24-bits
-        int significand = (bitValue & 0x007FFFFF) << 1;
+	/**
+	 * Returns a {@code Float} instance for the specified float value.
+	 *
+	 * @param f
+	 *            the float value to store in the instance.
+	 * @return a {@code Float} instance containing {@code f}.
+	 * @since 1.5
+	 */
+	public static Float valueOf(float f) {
+		return new Float(f);
+	}
 
-        if (exponent == 0 && significand == 0) {
-            return (negative ? "-0x0.0p0" : "0x0.0p0"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
+	/**
+	 * Converts the specified float into its hexadecimal string representation.
+	 *
+	 * @param f
+	 *            the float to convert.
+	 * @return the hexadecimal string representation of {@code f}.
+	 * @since 1.5
+	 */
+	public static String toHexString(float f) {
+		/*
+		 * Reference: http://en.wikipedia.org/wiki/IEEE_754
+		 */
+		if (f != f) {
+			return "NaN"; //$NON-NLS-1$
+		}
+		if (f == POSITIVE_INFINITY) {
+			return "Infinity"; //$NON-NLS-1$
+		}
+		if (f == NEGATIVE_INFINITY) {
+			return "-Infinity"; //$NON-NLS-1$
+		}
 
-        StringBuilder hexString = new StringBuilder(10);
-        if (negative) {
-            hexString.append("-0x"); //$NON-NLS-1$
-        } else {
-            hexString.append("0x"); //$NON-NLS-1$
-        }
+		int bitValue = floatToIntBits(f);
 
-        if (exponent == 0) { // denormal (subnormal) value
-            hexString.append("0."); //$NON-NLS-1$
-            // significand is 23-bits, so there can be 6 hex digits
-            int fractionDigits = 6;
-            // remove trailing hex zeros, so Integer.toHexString() won't print
-            // them
-            while ((significand != 0) && ((significand & 0xF) == 0)) {
-                significand >>>= 4;
-                fractionDigits--;
-            }
-            // this assumes Integer.toHexString() returns lowercase characters
-            String hexSignificand = Integer.toHexString(significand);
+		boolean negative = (bitValue & 0x80000000) != 0;
+		// mask exponent bits and shift down
+		int exponent = (bitValue & 0x7f800000) >>> 23;
+		// mask significand bits and shift up
+		// significand is 23-bits, so we shift to treat it like 24-bits
+		int significand = (bitValue & 0x007FFFFF) << 1;
 
-            // if there are digits left, then insert some '0' chars first
-            if (significand != 0 && fractionDigits > hexSignificand.length()) {
-                int digitDiff = fractionDigits - hexSignificand.length();
-                while (digitDiff-- != 0) {
-                    hexString.append('0');
-                }
-            }
-            hexString.append(hexSignificand);
-            hexString.append("p-126"); //$NON-NLS-1$
-        } else { // normal value
-            hexString.append("1."); //$NON-NLS-1$
-            // significand is 23-bits, so there can be 6 hex digits
-            int fractionDigits = 6;
-            // remove trailing hex zeros, so Integer.toHexString() won't print
-            // them
-            while ((significand != 0) && ((significand & 0xF) == 0)) {
-                significand >>>= 4;
-                fractionDigits--;
-            }
-            // this assumes Integer.toHexString() returns lowercase characters
-            String hexSignificand = Integer.toHexString(significand);
+		if ((exponent == 0) && (significand == 0)) {
+			return (negative ? "-0x0.0p0" : "0x0.0p0"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 
-            // if there are digits left, then insert some '0' chars first
-            if (significand != 0 && fractionDigits > hexSignificand.length()) {
-                int digitDiff = fractionDigits - hexSignificand.length();
-                while (digitDiff-- != 0) {
-                    hexString.append('0');
-                }
-            }
-            hexString.append(hexSignificand);
-            hexString.append('p');
-            // remove exponent's 'bias' and convert to a string
-            hexString.append(Integer.toString(exponent - 127));
-        }
-        return hexString.toString();
-    }
+		StringBuilder hexString = new StringBuilder(10);
+		if (negative) {
+			hexString.append("-0x"); //$NON-NLS-1$
+		} else {
+			hexString.append("0x"); //$NON-NLS-1$
+		}
+
+		if (exponent == 0) { // denormal (subnormal) value
+			hexString.append("0."); //$NON-NLS-1$
+			// significand is 23-bits, so there can be 6 hex digits
+			int fractionDigits = 6;
+			// remove trailing hex zeros, so Integer.toHexString() won't print
+			// them
+			while ((significand != 0) && ((significand & 0xF) == 0)) {
+				significand >>>= 4;
+				fractionDigits--;
+			}
+			// this assumes Integer.toHexString() returns lowercase characters
+			String hexSignificand = Integer.toHexString(significand);
+
+			// if there are digits left, then insert some '0' chars first
+			if ((significand != 0) && (fractionDigits > hexSignificand.length())) {
+				int digitDiff = fractionDigits - hexSignificand.length();
+				while (digitDiff-- != 0) {
+					hexString.append('0');
+				}
+			}
+			hexString.append(hexSignificand);
+			hexString.append("p-126"); //$NON-NLS-1$
+		} else { // normal value
+			hexString.append("1."); //$NON-NLS-1$
+			// significand is 23-bits, so there can be 6 hex digits
+			int fractionDigits = 6;
+			// remove trailing hex zeros, so Integer.toHexString() won't print
+			// them
+			while ((significand != 0) && ((significand & 0xF) == 0)) {
+				significand >>>= 4;
+				fractionDigits--;
+			}
+			// this assumes Integer.toHexString() returns lowercase characters
+			String hexSignificand = Integer.toHexString(significand);
+
+			// if there are digits left, then insert some '0' chars first
+			if ((significand != 0) && (fractionDigits > hexSignificand.length())) {
+				int digitDiff = fractionDigits - hexSignificand.length();
+				while (digitDiff-- != 0) {
+					hexString.append('0');
+				}
+			}
+			hexString.append(hexSignificand);
+			hexString.append('p');
+			// remove exponent's 'bias' and convert to a string
+			hexString.append(Integer.toString(exponent - 127));
+		}
+		return hexString.toString();
+	}
 }

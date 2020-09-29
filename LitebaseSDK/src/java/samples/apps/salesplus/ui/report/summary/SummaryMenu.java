@@ -11,14 +11,11 @@ import samples.apps.salesplus.*;
 /**
  * The report summary menu.
  */
-public class SummaryMenu extends BaseMenu
-{
-   /**
-    * The constructor.
-    */
-   public SummaryMenu()
-   {
-      super(new String[]{"Day", "Month"}, new int[]{SalesPlus.DAY, SalesPlus.MONTH}, false);
-   }
-
+public class SummaryMenu extends BaseMenu {
+	/**
+	 * The constructor.
+	 */
+	public SummaryMenu() {
+		super(new String[] {"Day", "Month"}, new int[] {SalesPlus.DAY, SalesPlus.MONTH}, false);
+	}
 }

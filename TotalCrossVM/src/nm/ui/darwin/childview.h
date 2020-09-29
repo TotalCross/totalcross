@@ -11,17 +11,16 @@
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 
-@interface ChildView : UIView
-{
-   bool isMultitouching;
-   int shiftY;
-   UIViewController* controller;
-   EAGLContext *glcontext;
+@interface ChildView : UIView {
+	bool isMultitouching;
+	int shiftY;
+	UIViewController* controller;
+	EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
-   bool firstCall;
-   UIDeviceOrientation lastKnownOrientation;
-@public
-   int taskbarHeight;
+	bool firstCall;
+	UIDeviceOrientation lastKnownOrientation;
+	@public
+	int taskbarHeight;
 }
 - (CGRect)getBounds;
 - (CGSize)getResolution;

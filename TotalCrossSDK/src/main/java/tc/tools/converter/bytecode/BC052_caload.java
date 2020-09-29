@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC052_caload extends LoadArray {
-  public BC052_caload() {
-    super(-1, -1, 0, -1, CHAR);
-  }
+	public BC052_caload() {
+		super(-1, -1, 0, -1, CHAR);
+	}
 }

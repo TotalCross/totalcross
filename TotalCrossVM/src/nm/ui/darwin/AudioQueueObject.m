@@ -21,21 +21,21 @@
 
 - (void) setNotificationDelegate: (id) inDelegate {
 
-    notificationDelegate = inDelegate;
+	notificationDelegate = inDelegate;
 }
 
 - (BOOL) isRunning {
 
-	UInt32		isRunning;
-	UInt32		propertySize = sizeof (UInt32);
-	OSStatus	result;
+	UInt32 isRunning;
+	UInt32 propertySize = sizeof (UInt32);
+	OSStatus result;
 
-	 result =	AudioQueueGetProperty (
-					queueObject,
-					kAudioQueueProperty_IsRunning,
-					&isRunning,
-					&propertySize
-				);
+	result = AudioQueueGetProperty (
+		queueObject,
+		kAudioQueueProperty_IsRunning,
+		&isRunning,
+		&propertySize
+		);
 
 	if (result != noErr) {
 		return false;
@@ -59,7 +59,7 @@
 		kAudioQueueProperty_EnableLevelMetering,
 		&trueValue,
 		sizeof (UInt32)
-	);
+		);
 }
 
 
@@ -74,10 +74,10 @@
 		(AudioQueuePropertyID) kAudioQueueProperty_CurrentLevelMeter,
 		self.audioLevels,
 		&propertySize
-	);
+		);
 
-	levels[0]		= self.audioLevels[0].mAveragePower;
-	peakLevels[0]	= self.audioLevels[0].mPeakPower;
+	levels[0] = self.audioLevels[0].mAveragePower;
+	peakLevels[0] = self.audioLevels[0].mPeakPower;
 }
 
 @end

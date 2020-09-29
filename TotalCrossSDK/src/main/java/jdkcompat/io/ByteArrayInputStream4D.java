@@ -10,50 +10,48 @@ import java.io.InputStream;
 import totalcross.sys.Vm;
 
 public class ByteArrayInputStream4D extends InputStream {
-  private byte[] buf;
-  private int offset;
-  private int length;
+	private byte[] buf;
+	private int offset;
+	private int length;
 
-  public ByteArrayInputStream4D(byte[] buf) {
-    this(buf, 0, buf.length);
+	public ByteArrayInputStream4D(byte[] buf) {
+		this(buf, 0, buf.length);
+	}
 
-  }
+	public ByteArrayInputStream4D(byte[] buf, int offset, int length) {
+		this.buf = buf;
+		this.offset = offset;
+		this.length = length;
+	}
 
-  public ByteArrayInputStream4D(byte[] buf, int offset, int length) {
-    this.buf = buf;
-    this.offset = offset;
-    this.length = length;
-  }
+	@Override
+	public int read() throws IOException {
+		byte[] buf = new byte[1];
+		int count = read(buf, 0, 1);
+		return count > 0 ? buf[0] : -1;
+	}
 
-  @Override
-  public int read() throws IOException {
-    byte[] buf = new byte[1];
-    int count = read(buf, 0, 1);
-    return count > 0 ? buf[0] : -1;
-  }
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
+		int availableRead = this.length - this.offset;
 
-  @Override
-  public int read(byte[] b, int off, int len) throws IOException {
-    int availableRead = this.length - this.offset;
+		if (availableRead == 0) {
+			return -1;
+		}
 
-    if (availableRead == 0) {
-      return -1;
-    }
+		int deltaRead = len - off;
+		int originalOffset = this.offset;
+		int reallyRead;
 
-    int deltaRead = len - off;
-    int originalOffset = this.offset;
-    int reallyRead;
-
-    // if we can read at least the remaining size, read all
-    if (deltaRead >= availableRead) {
-      reallyRead = availableRead;
-      this.offset = this.length;
-    } else {
-      reallyRead = deltaRead;
-      this.offset += deltaRead;
-    }
-    Vm.arrayCopy(buf, originalOffset, b, off, reallyRead);
-    return reallyRead;
-  }
-
+		// if we can read at least the remaining size, read all
+		if (deltaRead >= availableRead) {
+			reallyRead = availableRead;
+			this.offset = this.length;
+		} else {
+			reallyRead = deltaRead;
+			this.offset += deltaRead;
+		}
+		Vm.arrayCopy(buf, originalOffset, b, off, reallyRead);
+		return reallyRead;
+	}
 }

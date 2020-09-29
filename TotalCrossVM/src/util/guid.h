@@ -10,13 +10,12 @@
 
 #ifndef GUID_DEFINED
  #define GUID_DEFINED
-   typedef struct _GUID
-   {
-      uint32   Data1;
-      uint16   Data2;
-      uint16   Data3;
-      uint8    Data4[8];
-   } GUID;
+typedef struct _GUID {
+	uint32 Data1;
+	uint16 Data2;
+	uint16 Data3;
+	uint8 Data4[8];
+} GUID;
 #endif // !defined(GUID_DEFINED)
 
 #ifndef MAX_GUID_STRING_LEN
@@ -29,7 +28,7 @@
  #define GuidZero GuidZeroW
 #else
  #define GuidZero GuidZeroA
-#endif 
+#endif
 
 TC_API void GUID2TCHARP(GUID guid, TCHARP szGuid);
 typedef void (*GUID2TCHARPFunc)(GUID guid, TCHARP szGuid);

@@ -18,9 +18,9 @@ public class CircularProgressBar extends Control {
 	private Icon icon;
 	private int iconColor;
 	private int ix, iy;// icon's x and y.
-	
+
 	/**
-	 * 
+	 *
 	 * */
 	public CircularProgressBar(int thickness, int maxValue, int value, IconType icon) {
 		this.thickness = thickness;
@@ -40,27 +40,27 @@ public class CircularProgressBar extends Control {
 			this.icon = new Icon(icon);
 		}
 	}
-	
+
 	public CircularProgressBar(int thickness, int maxValue, IconType icon) {
 		this(thickness, maxValue, 1, icon);
 	}
-	
+
 	public CircularProgressBar(int thickness, IconType icon) {
 		this(thickness, 100, 1, icon);
 	}
-	
+
 	public CircularProgressBar(int thickness, int maxValue, int value) {
 		this(thickness, maxValue, value, null);
 	}
-	
+
 	public CircularProgressBar(int thickness, int maxValue) {
 		this(thickness, maxValue, 1, null);
 	}
-	
+
 	public CircularProgressBar(int thickness) {
 		this(thickness, 100, 1, null);
 	}
-	
+
 	@Override
 	public void onPaint(Graphics g) {
 		int outsideCircleRadius = width/2;
@@ -68,9 +68,9 @@ public class CircularProgressBar extends Control {
 		g.backColor = value != maxValue ? backColor : foreColor;
 		g.fillCircle(width/2, height/2, outsideCircleRadius - 1);
 		if(value != maxValue) {
-			g.foreColor = foreColor; 
+			g.foreColor = foreColor;
 			g.backColor = foreColor;
-			g.fillPie(width/2, height/2, outsideCircleRadius - 1, 90 - (double) value/maxValue * 360 , 90);
+			g.fillPie(width/2, height/2, outsideCircleRadius - 1, 90 - (double) value/maxValue * 360, 90);
 		}
 		g.foreColor = g.backColor = parent.backColor;
 		g.fillCircle(width/2, height/2, insideCircleRadius - 1);
@@ -92,7 +92,7 @@ public class CircularProgressBar extends Control {
 			icon.onPaint(g);
 		}
 	}
-	
+
 	@Override
 	protected void onBoundsChanged(boolean screenChanged) {
 		super.onBoundsChanged(screenChanged);
@@ -101,38 +101,38 @@ public class CircularProgressBar extends Control {
 			iy = (height - icon.getPreferredHeight())/2;
 		}
 	}
-	
+
 	@Override
 	public <H extends EventHandler> void onEvent(Event<H> event) {
 		if(event.target == this) {
 			switch (event.type) {
-			case KeyEvent.ACTION_KEY_PRESS:
-				postPressedEvent();
-				break;
-			case PenEvent.PEN_UP:
-				PenEvent pe = (PenEvent) event;
-				if((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x, pe.y)) {
+				case KeyEvent.ACTION_KEY_PRESS:
 					postPressedEvent();
-				}
-				break;
+					break;
+				case PenEvent.PEN_UP:
+					PenEvent pe = (PenEvent) event;
+					if((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x, pe.y)) {
+						postPressedEvent();
+					}
+					break;
 			}
 		}
 	}
-	
+
 	@Override
 	public int getPreferredWidth() {
 		return UnitsConverter.toPixels(DP + 50);
 	}
-	
+
 	@Override
 	public int getPreferredHeight() {
 		return UnitsConverter.toPixels(DP + 50);
 	}
-	
+
 	public int getMaxValue() {
 		return maxValue;
 	}
-	
+
 	public void setMaxValue(int maxValue) {
 		if(maxValue == this.maxValue) {
 			return;
@@ -140,11 +140,11 @@ public class CircularProgressBar extends Control {
 		this.maxValue = maxValue;
 		Window.needsPaint = true;
 	}
-	
+
 	public int getValue() {
 		return value;
 	}
-	
+
 	public void setValue(int value) {
 		if(value == this.value) {
 			return;
@@ -176,5 +176,4 @@ public class CircularProgressBar extends Control {
 		this.icon = icon;
 		Window.needsPaint = true;
 	}
-
 }

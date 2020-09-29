@@ -28,33 +28,32 @@ typedef TTCZFileHeader* TCZFileHeader;
 
 struct TTCZFileHeader // common members to all instances
 {
-   CharPArray names;
-   Int32Array offsets;
-   Int32Array uncompressedSizes;
-   int16 version;
-   int16 attr; // see ATTR_xxx above
+	CharPArray names;
+	Int32Array offsets;
+	Int32Array uncompressedSizes;
+	int16 version;
+	int16 attr; // see ATTR_xxx above
 #ifdef ANDROID
-   int32 apkIdx; // index in java's array
-#else      
-   FILE* fin;
-#endif   
-   int32 instanceCount;
-   int32 realFilePos; // the current seek position
-   ConstantPool cp; // this is the Global constant pool that came in this tcz file
-   Heap hheap;
+	int32 apkIdx; // index in java's array
+#else
+	FILE* fin;
+#endif
+	int32 instanceCount;
+	int32 realFilePos; // the current seek position
+	ConstantPool cp; // this is the Global constant pool that came in this tcz file
+	Heap hheap;
 };
 
 /** A TCZ (TotalCross ZLib) file is a kind of zip file. It supports multiple opens and reads
     in the same physical file.
-*/
-struct TTCZFile
-{
-   TCZFileHeader header; // common properties
-   uint8 buf[TCZ_BUFFER_SIZE];
-   int32 expectedFilePos; // the expected seek position (may change if several instances are processing the same file)
-   Heap tempHeap; // can be assigned by the user to branch to an error handler if something wrong happens
-   int32 uncompressedSize;
-   z_stream zs;
+ */
+struct TTCZFile {
+	TCZFileHeader header; // common properties
+	uint8 buf[TCZ_BUFFER_SIZE];
+	int32 expectedFilePos; // the expected seek position (may change if several instances are processing the same file)
+	Heap tempHeap; // can be assigned by the user to branch to an error handler if something wrong happens
+	int32 uncompressedSize;
+	z_stream zs;
 };
 
 /// Reads a number of bytes from the given tcz. Returns the number of bytes read, if the end of file has been reached

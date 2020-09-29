@@ -18,7 +18,8 @@ extern "C" {
 
 // {436EF144-B4FB-4863-A041-8F905A62C572}
 // DEFINE_GUID(IID_DestNetInternet,     0x436ef144, 0xb4fb, 0x4863, 0xa0, 0x41, 0x8f, 0x90, 0x5a, 0x62, 0xc5, 0x72);
-const GUID IID_DestNetInternet = { 0x436ef144, 0xb4fb, 0x4863, { 0xa0, 0x41, 0x8f, 0x90, 0x5a, 0x62, 0xc5, 0x72 } };
+const GUID IID_DestNetInternet = { 0x436ef144, 0xb4fb, 0x4863, { 0xa0, 0x41, 0x8f, 0x90, 0x5a, 0x62, 0xc5, 0x72 }
+};
 
 
 // {A1182988-0D73-439e-87AD-2A5B369F808B}
@@ -70,7 +71,7 @@ const GUID IID_DestNetSecureWAP = { 0xf28d1f74, 0x72be, 0x4394, { 0xa4, 0xa7, 0x
 // If none of these flags are specified, then only a direct IP connection (or tunnel) will be attempted.
 //
 // -----------------------------------------------------------------------------
-#define CONNMGR_FLAG_PROXY_HTTP		(0x1) // @constdefine HTTP Proxy supported
+#define CONNMGR_FLAG_PROXY_HTTP         (0x1) // @constdefine HTTP Proxy supported
 #define CONNMGR_FLAG_PROXY_WAP      (0x2) // @constdefine WAP Proxy (gateway) supported
 #define CONNMGR_FLAG_PROXY_SOCKS4   (0x4) // @constdefine SOCKS4 Proxy supported
 #define CONNMGR_FLAG_PROXY_SOCKS5   (0x8) // @constdefine SOCKS5 Proxy supported
@@ -101,23 +102,23 @@ const GUID IID_DestNetSecureWAP = { 0xf28d1f74, 0x72be, 0x4394, { 0xa4, 0xa7, 0x
 //
 // -----------------------------------------------------------------------------
 
-#define CONNMGR_PRIORITY_VOICE          		0x20000
+#define CONNMGR_PRIORITY_VOICE                          0x20000
 // @constdefine Voice, highest priority, reserved for internal use only.
 
-#define CONNMGR_PRIORITY_USERINTERACTIVE		0x08000
-// @constdefine User initiated action caused this request, and UI is        	
+#define CONNMGR_PRIORITY_USERINTERACTIVE                0x08000
+// @constdefine User initiated action caused this request, and UI is
 // currently pending on the creation of this connection.
 // This is appropriate for an interactive browsing session,
 // or if the user selects "MORE" at the bottom of a truncated
 // mail message, etc.
 
 
-#define CONNMGR_PRIORITY_USERBACKGROUND		    0x02000
+#define CONNMGR_PRIORITY_USERBACKGROUND             0x02000
 // @constdefine User initiated connection which has recently become idle.
 // A connection should be marked as idle when it is no
-// longer the user's current task.		
+// longer the user's current task.
 
-#define CONNMGR_PRIORITY_USERIDLE				0x0800		
+#define CONNMGR_PRIORITY_USERIDLE                               0x0800
 // @constdefine Interactive user task which has been idle for an application
 // specified time.  The application should toggle the state
 // between CONNMGR_PRIORITY_USERIDLE and CONNMGR_PRIORITY_USERINTERACTIVE as the user
@@ -125,13 +126,13 @@ const GUID IID_DestNetSecureWAP = { 0xf28d1f74, 0x72be, 0x4394, { 0xa4, 0xa7, 0x
 // optimize responsiveness to the interactive application,
 // while sharing the connection with background applications.
 
-#define CONNMGR_PRIORITY_HIPRIBKGND			    0x0200
+#define CONNMGR_PRIORITY_HIPRIBKGND                         0x0200
 // @constdefine High priority background connection
 
-#define CONNMGR_PRIORITY_IDLEBKGND			    0x0080
+#define CONNMGR_PRIORITY_IDLEBKGND                          0x0080
 // @constdefine Idle priority background connection
 
-#define CONNMGR_PRIORITY_EXTERNALINTERACTIVE	0x0020
+#define CONNMGR_PRIORITY_EXTERNALINTERACTIVE    0x0020
 // @constdefine Connection is requested on behalf of an external entity, but
 // is an interactive session (e.g. AT Command Iterpreter)
 
@@ -153,21 +154,20 @@ const GUID IID_DestNetSecureWAP = { 0xf28d1f74, 0x72be, 0x4394, { 0xa4, 0xa7, 0x
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct _CONNMGR_CONNECTIONINFO
-{
-    DWORD cbSize;       // @field Size of this structure
-    DWORD dwParams;     // @field Valid parms, set of CONNMGR_PARAM_*
-    DWORD dwFlags;      // @field Connection flags, set of CONNMGR_FLAG_*
-    DWORD dwPriority;   // @field Priority, one of CONNMGR_PRIORITY_*
-    BOOL bExclusive;    // @field Connection is exclusive, see comments
-    BOOL bDisabled;     // @field Don't actually connect
-    GUID guidDestNet;   // @field GUID of network to connect to
-    HWND hWnd;          // @field hWnd to post status change messages to
-    UINT uMsg;          // @field Msg to use when posting status changes
-    LPARAM lParam;      // @field lParam to use when posting status changes
-    ULONG ulMaxCost;    // @field Max acceptable cost of connection
-    ULONG ulMinRcvBw;   // @field Min acceptable receive bandwidth of connection
-    ULONG ulMaxConnLatency; // @field Max acceptable connect latency
+typedef struct _CONNMGR_CONNECTIONINFO {
+	DWORD cbSize;   // @field Size of this structure
+	DWORD dwParams; // @field Valid parms, set of CONNMGR_PARAM_*
+	DWORD dwFlags;  // @field Connection flags, set of CONNMGR_FLAG_*
+	DWORD dwPriority; // @field Priority, one of CONNMGR_PRIORITY_*
+	BOOL bExclusive; // @field Connection is exclusive, see comments
+	BOOL bDisabled; // @field Don't actually connect
+	GUID guidDestNet; // @field GUID of network to connect to
+	HWND hWnd;      // @field hWnd to post status change messages to
+	UINT uMsg;      // @field Msg to use when posting status changes
+	LPARAM lParam;  // @field lParam to use when posting status changes
+	ULONG ulMaxCost; // @field Max acceptable cost of connection
+	ULONG ulMinRcvBw; // @field Min acceptable receive bandwidth of connection
+	ULONG ulMaxConnLatency; // @field Max acceptable connect latency
 } CONNMGR_CONNECTIONINFO;
 
 // @comm bExclusive: If false, the connection is shared among all applications, and other
@@ -188,10 +188,10 @@ typedef struct _CONNMGR_CONNECTIONINFO
 //
 // -----------------------------------------------------------------------------
 HRESULT WINAPI ConnMgrEstablishConnection
-    (
-    CONNMGR_CONNECTIONINFO *pConnInfo,  // @parm Params describing requested connection
-    HANDLE *phConnection                // @parm Returned connection handle
-    );
+(
+	CONNMGR_CONNECTIONINFO *pConnInfo, // @parm Params describing requested connection
+	HANDLE *phConnection            // @parm Returned connection handle
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -205,12 +205,12 @@ HRESULT WINAPI ConnMgrEstablishConnection
 // -----------------------------------------------------------------------------
 typedef HRESULT (__stdcall *ConnMgrEstablishConnectionSyncProc)
 // HRESULT WINAPI ConnMgrEstablishConnectionSync
-    (
-    CONNMGR_CONNECTIONINFO *pConnInfo,  // @parm Params describing requested connection
-    HANDLE *phConnection,               // @parm Returned connection handle
-    DWORD dwTimeout,                    // @parm Timeout
-    DWORD *pdwStatus                    // @parm Final status value, one of CONNMGR_STATUS_*
-    );
+(
+	CONNMGR_CONNECTIONINFO *pConnInfo, // @parm Params describing requested connection
+	HANDLE *phConnection,           // @parm Returned connection handle
+	DWORD dwTimeout,                // @parm Timeout
+	DWORD *pdwStatus                // @parm Final status value, one of CONNMGR_STATUS_*
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -259,10 +259,10 @@ typedef HRESULT (__stdcall *ConnMgrEstablishConnectionSyncProc)
 // -----------------------------------------------------------------------------
 typedef HRESULT (__stdcall *ConnMgrConnectionStatusProc)
 // HRESULT WINAPI ConnMgrConnectionStatus
-    (
-    HANDLE hConnection,    // @parm Handle to connection, returned from ConnMgrEstablishConnection
-    DWORD *pdwStatus       // @parm Returns current connection status, one of CONNMGR_STATUS_*
-    );
+(
+	HANDLE hConnection, // @parm Handle to connection, returned from ConnMgrEstablishConnection
+	DWORD *pdwStatus   // @parm Returns current connection status, one of CONNMGR_STATUS_*
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -275,10 +275,10 @@ typedef HRESULT (__stdcall *ConnMgrConnectionStatusProc)
 // -----------------------------------------------------------------------------
 typedef HRESULT (__stdcall *ConnMgrReleaseConnectionProc)
 // HRESULT WINAPI ConnMgrReleaseConnection
-    (
-    HANDLE hConnection,    // @parm Handle to connection, returned from ConnMgrEstablishConnection
-    LONG lCache            // @parm ConnMgr can cache connection
-    );
+(
+	HANDLE hConnection, // @parm Handle to connection, returned from ConnMgrEstablishConnection
+	LONG lCache        // @parm ConnMgr can cache connection
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -290,10 +290,10 @@ typedef HRESULT (__stdcall *ConnMgrReleaseConnectionProc)
 //
 // -----------------------------------------------------------------------------
 HRESULT WINAPI ConnMgrSetConnectionPriority
-    (
-    HANDLE hConnection,    // @parm Handle to connection, returned from ConnMgrEstablishConnection
-    DWORD dwPriority       // @parm New priority
-    );
+(
+	HANDLE hConnection, // @parm Handle to connection, returned from ConnMgrEstablishConnection
+	DWORD dwPriority   // @parm New priority
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -305,15 +305,15 @@ HRESULT WINAPI ConnMgrSetConnectionPriority
 //
 // -----------------------------------------------------------------------------
 HRESULT WINAPI ConnMgrProviderMessage
-    (
-    HANDLE hConnection,         // @parm Optional, Handle to connection
-    const GUID *pguidProvider,  // @parm Provider GUID
-    DWORD *pdwIndex,            // @parm Optional index, used to address multiple providers associated with connection
-    DWORD dwMsg1,               // @parm General param 1
-    DWORD dwMsg2,               // @parm General param 2
-    PBYTE pParams,              // @param Pointer to params structure
-    ULONG cbParamSize           // @param size of params structure
-    );
+(
+	HANDLE hConnection,     // @parm Optional, Handle to connection
+	const GUID *pguidProvider, // @parm Provider GUID
+	DWORD *pdwIndex,        // @parm Optional index, used to address multiple providers associated with connection
+	DWORD dwMsg1,           // @parm General param 1
+	DWORD dwMsg2,           // @parm General param 2
+	PBYTE pParams,          // @param Pointer to params structure
+	ULONG cbParamSize       // @param size of params structure
+);
 
 #define CONNMGR_MAX_DESC 128    // @constdefine Max size of a network description
 
@@ -326,11 +326,10 @@ HRESULT WINAPI ConnMgrProviderMessage
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct _CONNMGR_DESTINATION_INFO
-{
-    GUID guid;  // @field GUID associated with network
-    TCHAR szDescription[CONNMGR_MAX_DESC];  // @field Description of network
-    BOOL fSecure; // @field Is it OK to allow multi-homing on the network
+typedef struct _CONNMGR_DESTINATION_INFO {
+	GUID guid; // @field GUID associated with network
+	TCHAR szDescription[CONNMGR_MAX_DESC]; // @field Description of network
+	BOOL fSecure; // @field Is it OK to allow multi-homing on the network
 } CONNMGR_DESTINATION_INFO;
 
 
@@ -344,10 +343,10 @@ typedef struct _CONNMGR_DESTINATION_INFO
 //
 // -----------------------------------------------------------------------------
 HRESULT WINAPI ConnMgrEnumDestinations
-    (
-    int nIndex,                            // @param Index of network
-    CONNMGR_DESTINATION_INFO *pDestInfo    // @param ptr to structure to fill in with info about network
-    );
+(
+	int nIndex,                        // @param Index of network
+	CONNMGR_DESTINATION_INFO *pDestInfo // @param ptr to structure to fill in with info about network
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -358,16 +357,15 @@ HRESULT WINAPI ConnMgrEnumDestinations
 // @comm None
 //
 // -----------------------------------------------------------------------------
-typedef struct _SCHEDULEDCONNECTIONINFO
-{
-    GUID guidDest;                  // @field Guid of network
-    UINT64 uiStartTime;             // @field Starting time, same ref as filetime
-    UINT64 uiEndTime;               // @field Ending time, same ref as filetime
-    UINT64 uiPeriod;                // @field Period between schedule attempts
-    TCHAR szAppName[MAX_PATH];    // @field App name to execute when scheduled
-    TCHAR szCmdLine[MAX_PATH];    // @field Cmd line to execute when scheduled
-    TCHAR szToken[32];            // @field Unique token identifying this scheduled connection
-    BOOL bPiggyback;                // @field If true, execute app whenever network is available
+typedef struct _SCHEDULEDCONNECTIONINFO {
+	GUID guidDest;              // @field Guid of network
+	UINT64 uiStartTime;         // @field Starting time, same ref as filetime
+	UINT64 uiEndTime;           // @field Ending time, same ref as filetime
+	UINT64 uiPeriod;            // @field Period between schedule attempts
+	TCHAR szAppName[MAX_PATH]; // @field App name to execute when scheduled
+	TCHAR szCmdLine[MAX_PATH]; // @field Cmd line to execute when scheduled
+	TCHAR szToken[32];        // @field Unique token identifying this scheduled connection
+	BOOL bPiggyback;            // @field If true, execute app whenever network is available
 } SCHEDULEDCONNECTIONINFO;
 
 // -----------------------------------------------------------------------------
@@ -380,9 +378,9 @@ typedef struct _SCHEDULEDCONNECTIONINFO
 //
 // -----------------------------------------------------------------------------
 HRESULT WINAPI ConnMgrRegisterScheduledConnection
-    (
-     SCHEDULEDCONNECTIONINFO *pSCI  // @param Ptr to struct describing scheduled connection
-     );
+(
+	SCHEDULEDCONNECTIONINFO *pSCI // @param Ptr to struct describing scheduled connection
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -394,9 +392,9 @@ HRESULT WINAPI ConnMgrRegisterScheduledConnection
 //
 // -----------------------------------------------------------------------------
 HRESULT WINAPI ConnMgrUnregisterScheduledConnection
-    (
-     LPCTSTR pwszToken  // @param Token of scheduled connection to unregister
-     );
+(
+	LPCTSTR pwszToken // @param Token of scheduled connection to unregister
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -409,11 +407,11 @@ HRESULT WINAPI ConnMgrUnregisterScheduledConnection
 // -----------------------------------------------------------------------------
 typedef HRESULT (__stdcall *ConnMgrMapURLProc)
 // HRESULT WINAPI ConnMgrMapURL
-    (
-     LPCTSTR pwszURL, // @parm URL to map
-     GUID *pguid,     // @parm Returned network GUID
-     DWORD *pdwIndex  // @parm Index in table for next search
-     );
+(
+	LPCTSTR pwszURL, // @parm URL to map
+	GUID *pguid,  // @parm Returned network GUID
+	DWORD *pdwIndex // @parm Index in table for next search
+);
 
 // -----------------------------------------------------------------------------
 //
@@ -439,8 +437,8 @@ HANDLE WINAPI ConnMgrApiReadyEvent();
 
 typedef enum _ConnMgrConRefTypeEnum
 {
-    ConRefType_NAP = 0,     // @constdefine NAP connection reference
-    ConRefType_PROXY        // @constdefine PROXY connection reference
+	ConRefType_NAP = 0, // @constdefine NAP connection reference
+	ConRefType_PROXY    // @constdefine PROXY connection reference
 } ConnMgrConRefTypeEnum;
 
 // -----------------------------------------------------------------------------
@@ -456,9 +454,9 @@ typedef enum _ConnMgrConRefTypeEnum
 typedef HRESULT (__stdcall *ConnMgrMapConRefProc)
 //HRESULT WINAPI ConnMgrMapConRef
 (
-    ConnMgrConRefTypeEnum e,        // @parm Specify type of connection reference
-    LPCTSTR szConRef,               // @parm Connection reference to map
-    GUID *pGUID                     // @parm Returned connection reference GUID
+	ConnMgrConRefTypeEnum e,    // @parm Specify type of connection reference
+	LPCTSTR szConRef,           // @parm Connection reference to map
+	GUID *pGUID                 // @parm Returned connection reference GUID
 );
 
 #ifdef __cplusplus

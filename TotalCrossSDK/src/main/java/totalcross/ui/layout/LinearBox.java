@@ -6,7 +6,7 @@ import totalcross.ui.Control;
 
 /**
  * Base class for HBox and VBox components. Contains most of the functionality needed
- * for these layouts to work. 
+ * for these layouts to work.
  * This class should not be used explicitly or inherited.
  * @author João, Ygor
  */
@@ -17,7 +17,7 @@ public abstract class LinearBox extends Container {
 	public static final int LAYOUT_DISTRIBUTE = 3;
 	/** Distribute and scale each element to fill the entire width of this component */
 	public static final int LAYOUT_FILL = 4;
-	
+
 	/** Aligns each child along the left/top border */
 	public static final int ALIGNMENT_LEFT = 0;
 	/** Aligns each child along the right/bottom border */
@@ -26,7 +26,7 @@ public abstract class LinearBox extends Container {
 	public static final int ALIGNMENT_CENTER = 2;
 	/** Stretches each child object */
 	public static final int ALIGNMENT_STRETCH = 3;
-	
+
 
 	/** The mode that the components will be displayed. */
 	protected int mode;
@@ -55,22 +55,22 @@ public abstract class LinearBox extends Container {
 	}
 
 	/**Adds the given control to this component and performs all layout operations
-	 * to fit it within the layout. Consider using the 'suspendLayout' and 
+	 * to fit it within the layout. Consider using the 'suspendLayout' and
 	 * 'resumeLayout' methods if you plan on adding many controls at once.
 	 */
 	@Override
 	public void add(Control control) {
 		super.add(control);
-		if (!suspendLayout && this.setX != SETX_NOT_SET) {
+		if (!suspendLayout && (this.setX != SETX_NOT_SET)) {
 			suspendLayout = true;
 			resizeElements(this.mode, this.alignment);
 			suspendLayout = false;
 		}
 	}
-	
+
 	/**Adds the given control to this component using the given width and height
-	 * and performs all layout operations to fit it within the layout. 
-	 * Consider using the 'suspendLayout' and  'resumeLayout' methods if you plan 
+	 * and performs all layout operations to fit it within the layout.
+	 * Consider using the 'suspendLayout' and  'resumeLayout' methods if you plan
 	 * on adding many controls at once.
 	 */
 	@Override
@@ -102,14 +102,14 @@ public abstract class LinearBox extends Container {
 	public void add(Control control, int x, int y, int w, int h, Control relative) {
 		throw new RuntimeException("This layout does not supports this action. Use the add(control), add(control, w, h) or pin(control, x, y, w, h) instead.");
 	}
-	
-	
+
+
 	/** Used internally to add controls to this layout */
 	protected void internalAdd(Control control, int x, int y, int w, int h, Control relative) {
 		super.add(control, x, y, w, h, relative);
 	}
 
-	
+
 
 	/**
 	 * Suspends all layout operations from 'add' calls until a 'resumeLayout' call.
@@ -126,7 +126,7 @@ public abstract class LinearBox extends Container {
 		if (!this.suspendLayout) {
 			throw new RuntimeException("Calling 'resumeLayout' without first calling 'suspendLayout'");
 		}
-		
+
 		if (this.setX != SETX_NOT_SET) {
 			resizeElements(this.mode, this.alignment);
 			suspendLayout = false;
@@ -152,7 +152,7 @@ public abstract class LinearBox extends Container {
 	public void setLayout(int mode, int alignment) {
 		this.mode = mode;
 		this.alignment = alignment;
-		if (!suspendLayout && this.setX != SETX_NOT_SET) {
+		if (!suspendLayout && (this.setX != SETX_NOT_SET)) {
 			resizeElements(mode, alignment);
 		}
 	}
@@ -171,7 +171,7 @@ public abstract class LinearBox extends Container {
 	@Override
 	public void setInsets(int left, int right, int top, int bottom) {
 		super.setInsets(left, right, top, bottom);
-		if (!suspendLayout && this.setX != SETX_NOT_SET) {
+		if (!suspendLayout && (this.setX != SETX_NOT_SET)) {
 			resizeElements(mode, alignment);
 		}
 	}

@@ -8,7 +8,7 @@ package totalcross.ui.event;
 /** Interface used to listen to enable/disable states. */
 
 public interface EnabledStateChangeListener extends EventHandler {
-  /** The state has changed.
-   */
-  public void enabledStateChange(EnabledStateChangeEvent e);
+	/** The state has changed.
+	 */
+	public void enabledStateChange(EnabledStateChangeEvent e);
 }

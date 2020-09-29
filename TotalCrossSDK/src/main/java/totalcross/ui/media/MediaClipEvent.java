@@ -14,27 +14,26 @@ import totalcross.ui.event.Event;
  */
 
 public class MediaClipEvent extends Event<MediaClipHandler> {
-  /** The event type when the play starts. */
-  public static final int STARTED = 550;
-  /** The event type when the play ends. */
-  public static final int STOPPED = 551;
-  /** The event type when the play pauses. */
-  public static final int CLOSED = 552;
-  public static final int ERROR = 553;
-  public static final int END_OF_MEDIA = 554;
+	/** The event type when the play starts. */
+	public static final int STARTED = 550;
+	/** The event type when the play ends. */
+	public static final int STOPPED = 551;
+	/** The event type when the play pauses. */
+	public static final int CLOSED = 552;
+	public static final int ERROR = 553;
+	public static final int END_OF_MEDIA = 554;
 
-  /** Constructs a MediaClipEvent, setting the type and target to the given parameters. */
-  public MediaClipEvent(int type, Object target) {
-    super(type, target, Vm.getTimeStamp());
-  }
+	/** Constructs a MediaClipEvent, setting the type and target to the given parameters. */
+	public MediaClipEvent(int type, Object target) {
+		super(type, target, Vm.getTimeStamp());
+	}
 
-  /** Constructs an empty MediaClipEvent. */
-  public MediaClipEvent() {
-  }
+	/** Constructs an empty MediaClipEvent. */
+	public MediaClipEvent() {
+	}
 
-  @Override
-  public void dispatch(MediaClipHandler listener) {
-    // TODO Auto-generated method stub
-    
-  }
+	@Override
+	public void dispatch(MediaClipHandler listener) {
+		// TODO Auto-generated method stub
+	}
 }

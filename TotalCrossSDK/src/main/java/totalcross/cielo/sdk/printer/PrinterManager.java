@@ -13,14 +13,14 @@ import totalcross.sys.Vm;
 
 /**
  * Usage example:
- * 
+ *
  * <pre>
  * HashMap<String, Integer> printerAttributes = new HashMap<>();
- * 
+ *
  * printerAttributes.put(PrinterAttributes.KEY_ALIGN, PrinterAttributes.VAL_ALIGN_CENTER);
  * printerAttributes.put(PrinterAttributes.KEY_TYPEFACE, 1);
  * printerAttributes.put(PrinterAttributes.KEY_TEXT_SIZE, 20);
- * 
+ *
  * String textToPrint = "TEXT TO PRINT";
  * PrinterManager.getInstance()
  *               .printText(textToPrint, printerAttributes);
@@ -28,50 +28,50 @@ import totalcross.sys.Vm;
  */
 public class PrinterManager {
 
-    private static PrinterManager instance;
+	private static PrinterManager instance;
 
-    private PrinterManager() {
-    }
+	private PrinterManager() {
+	}
 
-    public static PrinterManager getInstance() {
-        if (instance == null) {
-            instance = new PrinterManager();
-        }
-        return instance;
-    }
+	public static PrinterManager getInstance() {
+		if (instance == null) {
+			instance = new PrinterManager();
+		}
+		return instance;
+	}
 
-    static class PrinterListenerInternal {
-        PrinterListener printerListener;
+	static class PrinterListenerInternal {
+		PrinterListener printerListener;
 
-        PrinterListenerInternal(PrinterListener printerListener) {
-            this.printerListener = printerListener;
-        }
-    }
+		PrinterListenerInternal(PrinterListener printerListener) {
+			this.printerListener = printerListener;
+		}
+	}
 
-    public void printText(String textToPrint, Map<String, Integer> printerAttributes) {
-        printText(textToPrint, printerAttributes, null);
-    }
+	public void printText(String textToPrint, Map<String, Integer> printerAttributes) {
+		printText(textToPrint, printerAttributes, null);
+	}
 
-    private void printText(String textToPrint, Map<String, Integer> printerAttributes,
-            PrinterListener printerListener) {
-        StringBuffer sb = new StringBuffer();
-        for (Map.Entry<String, Integer> entry : printerAttributes.entrySet()) {
-            sb.append(entry.getKey());
-            sb.append('=');
-            sb.append(entry.getValue());
-            sb.append('&');
-        }
-        sb.deleteCharAt(sb.length() - 1);
+	private void printText(String textToPrint, Map<String, Integer> printerAttributes,
+	                       PrinterListener printerListener) {
+		StringBuffer sb = new StringBuffer();
+		for (Map.Entry<String, Integer> entry : printerAttributes.entrySet()) {
+			sb.append(entry.getKey());
+			sb.append('=');
+			sb.append(entry.getValue());
+			sb.append('&');
+		}
+		sb.deleteCharAt(sb.length() - 1);
 
-        internalPrintText(
-                textToPrint,
-                sb.toString(),
-                printerListener == null ? null : new PrinterListenerInternal(printerListener));
-    }
+		internalPrintText(
+			textToPrint,
+			sb.toString(),
+			printerListener == null ? null : new PrinterListenerInternal(printerListener));
+	}
 
-    @ReplacedByNativeOnDeploy
-    private void internalPrintText(String textToPrint, String printerAttributes,
-            PrinterListenerInternal printerListener) {
-        Vm.debug("PRINT ONLY AVAILABLE ON CIELO DEVICE");
-    }
+	@ReplacedByNativeOnDeploy
+	private void internalPrintText(String textToPrint, String printerAttributes,
+	                               PrinterListenerInternal printerListener) {
+		Vm.debug("PRINT ONLY AVAILABLE ON CIELO DEVICE");
+	}
 }

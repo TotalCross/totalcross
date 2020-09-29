@@ -8,34 +8,31 @@
 
 static HINSTANCE aygshellDll = NULL;
 
-bool initAygshell()
-{
+bool initAygshell() {
 #ifdef WINCE
-  aygshellDll = LoadLibrary(_T("aygshell.dll"));
+	aygshellDll = LoadLibrary(_T("aygshell.dll"));
 
-  if (aygshellDll != null) {
-    _DMProcessConfigXML = (DMProcessConfigXMLProc)GetProcAddress(aygshellDll, _T("DMProcessConfigXML"));
-    _Vibrate = (VibrateProc) GetProcAddress(aygshellDll, _T("Vibrate"));
-    _VibrateStop = (VibrateStopProc) GetProcAddress(aygshellDll, _T("VibrateStop"));
-    _SHSetImeMode = (SHSetImeModeProc) GetProcAddress(aygshellDll, _T("SHSetImeMode"));
-    _SHGetImeMode = (SHGetImeModeProc) GetProcAddress(aygshellDll, _T("SHGetImeMode"));
-    _SHCameraCapture = (SHCameraCaptureProc)GetProcAddress(aygshellDll, _T("SHCameraCapture"));
-    _SndGetSound = (SndGetSoundProc) GetProcAddress(aygshellDll, _T("SndGetSound"));
-    _SndSetSound = (SndSetSoundProc)GetProcAddress(aygshellDll, _T("SndSetSound"));
-    _SHFullScreen = (SHFullScreenProc)GetProcAddress(aygshellDll, _T("SHFullScreen"));
-    _SHDoneButton = (SHDoneButtonProc)GetProcAddress(aygshellDll, _T("SHDoneButton"));
-  }
+	if (aygshellDll != null) {
+		_DMProcessConfigXML = (DMProcessConfigXMLProc) GetProcAddress(aygshellDll, _T("DMProcessConfigXML"));
+		_Vibrate = (VibrateProc) GetProcAddress(aygshellDll, _T("Vibrate"));
+		_VibrateStop = (VibrateStopProc) GetProcAddress(aygshellDll, _T("VibrateStop"));
+		_SHSetImeMode = (SHSetImeModeProc) GetProcAddress(aygshellDll, _T("SHSetImeMode"));
+		_SHGetImeMode = (SHGetImeModeProc) GetProcAddress(aygshellDll, _T("SHGetImeMode"));
+		_SHCameraCapture = (SHCameraCaptureProc) GetProcAddress(aygshellDll, _T("SHCameraCapture"));
+		_SndGetSound = (SndGetSoundProc) GetProcAddress(aygshellDll, _T("SndGetSound"));
+		_SndSetSound = (SndSetSoundProc) GetProcAddress(aygshellDll, _T("SndSetSound"));
+		_SHFullScreen = (SHFullScreenProc) GetProcAddress(aygshellDll, _T("SHFullScreen"));
+		_SHDoneButton = (SHDoneButtonProc) GetProcAddress(aygshellDll, _T("SHDoneButton"));
+	}
 #endif
-   return true;
+	return true;
 }
 
-void closeAygshell()
-{
+void closeAygshell() {
 #ifdef WINCE
-   if (aygshellDll != null)
-   {
-      FreeLibrary(aygshellDll);
-      aygshellDll = null;
-   }
+	if (aygshellDll != null) {
+		FreeLibrary(aygshellDll);
+		aygshellDll = null;
+	}
 #endif
 }

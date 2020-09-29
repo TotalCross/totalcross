@@ -21,55 +21,53 @@ extern "C" {
 #endif
 
 typedef size_t HTKey; // 64-bit hardware
-   
-typedef struct HTEntryType
-{
-   HTKey key;
-   union
-   {
-      int32 i32;
-      VoidP ptr;
-   };
-   struct HTEntryType *next;
+
+typedef struct HTEntryType {
+	HTKey key;
+	union
+	{
+		int32 i32;
+		VoidP ptr;
+	};
+	struct HTEntryType *next;
 } HtEntry;
 
-typedef struct
-{
-   HtEntry **items;
-   int32 size;
-   int32 hash;
-   int32 threshold;
-   Heap heap;
+typedef struct {
+	HtEntry **items;
+	int32 size;
+	int32 hash;
+	int32 threshold;
+	Heap heap;
 } Hashtable;
 
 typedef void (*VisitElementFunc)(int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 typedef void (*VisitElementKeyFunc)(HTKey key, int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 typedef bool (*VisitElementContextFunc)(Context context, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 
-TC_API  Hashtable   htNew     (int32 count, Heap heap); // heap is optional; if passed, the rehash function will not be called if the hashtable gets too big (in this case, remember to initialize the hashtable with a value big enough to hold all items)
+TC_API Hashtable   htNew     (int32 count, Heap heap);  // heap is optional; if passed, the rehash function will not be called if the hashtable gets too big (in this case, remember to initialize the hashtable with a value big enough to hold all items)
 typedef Hashtable (*htNewFunc)(int32 count, Heap heap);
-TC_API  int32   htGet32           (Hashtable *iht, HTKey key);  // returns 0 if the key was not found
+TC_API int32   htGet32           (Hashtable *iht, HTKey key);   // returns 0 if the key was not found
 typedef int32 (*htGet32Func)      (Hashtable *iht, HTKey key);
-TC_API  int32   htGet32Inv        (Hashtable *iht, HTKey key);  // returns -1 if the key was not found
+TC_API int32   htGet32Inv        (Hashtable *iht, HTKey key);   // returns -1 if the key was not found
 typedef int32 (*htGet32InvFunc)   (Hashtable *iht, HTKey key);
-TC_API  VoidP   htGetPtr          (Hashtable *iht, HTKey key);
+TC_API VoidP   htGetPtr          (Hashtable *iht, HTKey key);
 typedef VoidP (*htGetPtrFunc)     (Hashtable *iht, HTKey key);
-TC_API  bool    htPut32           (Hashtable *iht, HTKey key, int32 value);  // replaces the key if it exists
-typedef bool  (*htPut32Func)      (Hashtable *iht, HTKey key, int32 value);
-TC_API  bool    htPut32IfNew      (Hashtable *iht, HTKey key, int32 value);  // keeps the old key if it exists
-typedef bool  (*htPut32IfNewFunc) (Hashtable *iht, HTKey key, int32 value);
-TC_API  bool    htPutPtr          (Hashtable *iht, HTKey key, VoidP value);  // replaces the key if it exists
-typedef bool  (*htPutPtrFunc)     (Hashtable *iht, HTKey key, VoidP value);
-TC_API  bool    htPutPtrIfNew     (Hashtable *iht, HTKey key, VoidP value);  // keeps the old key if it exists
-typedef bool  (*htPutPtrIfNewFunc)(Hashtable *iht, HTKey key, VoidP value);
-TC_API  void    htRemove          (Hashtable *iht, HTKey key);
-typedef void  (*htRemoveFunc)     (Hashtable *iht, HTKey key);               // removes the key from the table. If there's a heap, the pointer is NOT freed
-TC_API  void    htFree     (Hashtable *iht, VisitElementFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
-typedef void  (*htFreeFunc)(Hashtable *iht, VisitElementFunc freeElement);
-TC_API  bool    htFreeContext     (Context context, Hashtable *iht, VisitElementContextFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
-typedef bool  (*htFreeContextFunc)(Context context, Hashtable *iht, VisitElementContextFunc freeElement);
-TC_API  bool    htInc             (Hashtable *iht, HTKey key, int32 incValue);  // holds a count of something
-typedef bool  (*htIncFunc)        (Hashtable *iht, HTKey key, int32 incValue);
+TC_API bool    htPut32           (Hashtable *iht, HTKey key, int32 value);   // replaces the key if it exists
+typedef bool (*htPut32Func)      (Hashtable *iht, HTKey key, int32 value);
+TC_API bool    htPut32IfNew      (Hashtable *iht, HTKey key, int32 value);   // keeps the old key if it exists
+typedef bool (*htPut32IfNewFunc) (Hashtable *iht, HTKey key, int32 value);
+TC_API bool    htPutPtr          (Hashtable *iht, HTKey key, VoidP value);   // replaces the key if it exists
+typedef bool (*htPutPtrFunc)     (Hashtable *iht, HTKey key, VoidP value);
+TC_API bool    htPutPtrIfNew     (Hashtable *iht, HTKey key, VoidP value);   // keeps the old key if it exists
+typedef bool (*htPutPtrIfNewFunc)(Hashtable *iht, HTKey key, VoidP value);
+TC_API void    htRemove          (Hashtable *iht, HTKey key);
+typedef void (*htRemoveFunc)     (Hashtable *iht, HTKey key);                // removes the key from the table. If there's a heap, the pointer is NOT freed
+TC_API void    htFree     (Hashtable *iht, VisitElementFunc freeElement);  // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
+typedef void (*htFreeFunc)(Hashtable *iht, VisitElementFunc freeElement);
+TC_API bool    htFreeContext     (Context context, Hashtable *iht, VisitElementContextFunc freeElement);  // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
+typedef bool (*htFreeContextFunc)(Context context, Hashtable *iht, VisitElementContextFunc freeElement);
+TC_API bool    htInc             (Hashtable *iht, HTKey key, int32 incValue);   // holds a count of something
+typedef bool (*htIncFunc)        (Hashtable *iht, HTKey key, int32 incValue);
 void htTraverse(Hashtable *iht, VisitElementFunc visitElement);
 void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement);
 ///////////////////////////////////////////////////////////////////////////
@@ -110,101 +108,101 @@ void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement);
 
 // List declaration
 #define DeclareList(type)                              \
-typedef struct type##s                                 \
-{                                                      \
-   struct type##s *next;                               \
-   struct type##s *prev;                               \
-   type value;                                         \
-} type##s;                                             \
-type##s* type##sAdd(type##s *l, type value, Heap h);   \
-type##s* type##sRemove(type##s *l, type value, Heap h);\
-bool type##sContains(type##s *l, type value);          \
-void type##sDestroy(type##s *l, Heap h);
+	typedef struct type ## s                                 \
+	{                                                      \
+		struct type ## s *next;                               \
+		struct type ## s *prev;                               \
+		type value;                                         \
+	} type ## s;                                             \
+	type ## s* type ## sAdd(type ## s *l, type value, Heap h);   \
+	type ## s* type ## sRemove(type ## s *l, type value, Heap h); \
+	bool type ## sContains(type ## s *l, type value);          \
+	void type ## sDestroy(type ## s *l, Heap h);
 
 // List implementation
 #define ImplementList(type)                         \
-type##s* type##sAdd(type##s *l, type value, Heap h) \
-{                                                   \
-   if (!l)                                          \
-   {                                                \
-      l = h ? (type##s*)heapAlloc(h,sizeof(type##s))  \
-            : (type##s*)xmalloc(sizeof(type##s));   \
-      if (l)                                        \
-      {                                             \
-         l->value = value;                          \
-         l->next = l->prev = l;                     \
-      }                                             \
-   }                                                \
-   else                                             \
-   {                                                \
-      type##s *e;                                   \
-      e = h ? (type##s*)heapAlloc(h,sizeof(type##s))  \
-            : (type##s*)xmalloc(sizeof(type##s));   \
-      if (e)                                        \
-      {                                             \
-         e->value = value;                          \
-         e->prev = l->prev;                         \
-         e->next = l;                               \
-         l->prev->next = e;                         \
-         l->prev = e;                               \
-      }                                             \
-      else return null;                             \
-   }                                                \
-   return l;                                        \
-}                                                   \
+	type ## s* type ## sAdd(type ## s *l, type value, Heap h) \
+	{                                                   \
+		if (!l)                                          \
+		{                                                \
+			l = h ? (type ## s*) heapAlloc(h,sizeof(type ## s))  \
+	    : (type ## s*) xmalloc(sizeof(type ## s));   \
+			if (l)                                        \
+			{                                             \
+				l->value = value;                          \
+				l->next = l->prev = l;                     \
+			}                                             \
+		}                                                \
+		else                                             \
+		{                                                \
+			type ## s *e;                                   \
+			e = h ? (type ## s*) heapAlloc(h,sizeof(type ## s))  \
+	    : (type ## s*) xmalloc(sizeof(type ## s));   \
+			if (e)                                        \
+			{                                             \
+				e->value = value;                          \
+				e->prev = l->prev;                         \
+				e->next = l;                               \
+				l->prev->next = e;                         \
+				l->prev = e;                               \
+			}                                             \
+			else return null;                             \
+			}                                                \
+			return l;                                        \
+			}                                                   \
                                                     \
-void type##sDestroy(type##s *l, Heap h)             \
-{                                                   \
-   if (h)                                           \
-      heapDestroy(h);                               \
-   else                                             \
-   {                                                \
-      type##s *le = l;                              \
-      if (le != null)                               \
-         do                                         \
-         {                                          \
-            type##s *next = le->next;               \
-            le->next = le->prev = null;             \
-            xfree(le);                              \
-            le = next;                              \
-         } while (le != l);                         \
-   }                                                \
-}                                                   \
+			void type ## sDestroy(type ## s *l, Heap h)             \
+			{                                                   \
+				if (h)                                           \
+				heapDestroy(h);                               \
+				else                                             \
+				{                                                \
+					type ## s *le = l;                              \
+					if (le != null)                               \
+					do                                         \
+					{                                          \
+						type ## s *next = le->next;               \
+						le->next = le->prev = null;             \
+						xfree(le);                              \
+						le = next;                              \
+					} while (le != l);                         \
+				}                                                \
+			}                                                   \
                                                     \
-type##s* type##sRemove(type##s *l, type value, Heap h)\
-{                                                   \
-   type##s* head = l;                               \
-   if (head && h == null)                           \
-      do                                            \
-      {                                             \
-         if (l->value == value)                     \
-         {                                          \
-            if (l->prev) l->prev->next = l->next;   \
-            if (l->next) l->next->prev = l->prev;   \
-            if (l == head)                          \
-               head = l->prev != head ? l->prev : null; \
-            l->next = l->prev = null;               \
-            xfree(l);                               \
-            break;                                  \
-         }                                          \
-         l = l->next;                               \
-      } while (head != l);                          \
-   return head;                                     \
-}                                                   \
-bool type##sContains(type##s *l, type value)        \
-{                                                   \
-   type##s* head = l;                               \
-   if (head)                                        \
-      do                                            \
-      {                                             \
-         if (l == null)                             \
-            return false;                           \
-      	if (l->value == value)                     \
-      		return true;                            \
-         l = l->next;                               \
-      } while (head != l);                          \
-   return false;                                    \
-}
+			type ## s* type ## sRemove(type ## s *l, type value, Heap h) \
+			{                                                   \
+				type ## s* head = l;                               \
+				if (head && h == null)                           \
+				do                                            \
+				{                                             \
+					if (l->value == value)                     \
+					{                                          \
+						if (l->prev) l->prev->next = l->next;   \
+						if (l->next) l->next->prev = l->prev;   \
+						if (l == head)                          \
+						head = l->prev != head ? l->prev : null; \
+						l->next = l->prev = null;               \
+						xfree(l);                               \
+						break;                                  \
+					}                                          \
+					l = l->next;                               \
+				} while (head != l);                          \
+				return head;                                     \
+			}                                                   \
+			bool type ## sContains(type ## s *l, type value)        \
+			{                                                   \
+				type ## s* head = l;                               \
+				if (head)                                        \
+				do                                            \
+				{                                             \
+					if (l == null)                             \
+					return false;                           \
+					if (l->value == value)                     \
+					return true;                            \
+					l = l->next;                               \
+					} while (head != l);                          \
+					return false;                                    \
+					}
 
 // Returns the number of elements added to this list.
 int32 listGetCount(VoidP list);
@@ -242,15 +240,15 @@ DeclareList(VoidP); // VoidPs
 #define newArray(sizeofElem,len,mp) privateNewArray(sizeofElem,len,mp,__FILE__,__LINE__)
 void* privateNewArray(int32 sizeofElem, int32 len, Heap mp, const char *file, int line);
 
-#define freeArray(p) do {if (p) {uint8* b = ((uint8*)p)-TSIZE; xfree(b); p = null;}} while (0)
-#define heapFreeArray(heap,p) do {if (p) {uint8* b = ((uint8*)p)-TSIZE; heapFree(heap, b); p = null;}} while (0)
+#define freeArray(p) do {if (p) {uint8* b = ((uint8*) p)-TSIZE; xfree(b); p = null;}} while (0)
+#define heapFreeArray(heap,p) do {if (p) {uint8* b = ((uint8*) p)-TSIZE; heapFree(heap, b); p = null;}} while (0)
 
-#define newArrayOf(type, len, heap) (type)newArray(sizeof(T##type), len, heap)
-#define newPtrArrayOf(type, len, heap) (type##Array)newArray(sizeof(type), len, heap) // used for primitive types, TCObject and (J)CharP arrays
+#define newArrayOf(type, len, heap) (type) newArray(sizeof(T ## type), len, heap)
+#define newPtrArrayOf(type, len, heap) (type ## Array) newArray(sizeof(type), len, heap) // used for primitive types, TCObject and (J)CharP arrays
 
-#define SET_ARRAYLEN(x) (((size_t*)x)[-1])
-#define ARRAYLEN(x) ((int32)(((size_t*)x)[-1]))
-#define ARRAYLENV(x) ((x)?ARRAYLEN(x):0) // checks if x is null, returning 0 if yes
+#define SET_ARRAYLEN(x) (((size_t*) x)[-1])
+#define ARRAYLEN(x) ((int32) (((size_t*) x)[-1]))
+#define ARRAYLENV(x) ((x) ? ARRAYLEN(x) : 0) // checks if x is null, returning 0 if yes
 
 ///////////////////////////////////////////////////////////////////////////
 // Stack
@@ -260,12 +258,11 @@ void* privateNewArray(int32 sizeofElem, int32 len, Heap mp, const char *file, in
 // using IF_HEAP_ERROR
 // When popping, false is returned when the stack end is reached.
 
-typedef struct
-{
-   Heap heap;
-   VoidPs *current, *head;
-   UInt8Array pos, blockEnd, blockStart;
-   int32 initialBlockSize, elemSize;
+typedef struct {
+	Heap heap;
+	VoidPs *current, *head;
+	UInt8Array pos, blockEnd, blockStart;
+	int32 initialBlockSize, elemSize;
 } *Stack, TStack;
 
 TC_API Stack newStack(int32 elemCount, int32 elemSize, Heap defHeap);

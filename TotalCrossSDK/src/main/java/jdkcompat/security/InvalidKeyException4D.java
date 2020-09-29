@@ -25,45 +25,45 @@ import java.security.KeyException;
  */
 public class InvalidKeyException4D extends KeyException {
 
-    private static final long serialVersionUID = 5698479920593359816L;
+	private static final long serialVersionUID = 5698479920593359816L;
 
-    /**
-     * Constructs a new instance of {@code InvalidKeyException} with the given
-     * message.
-     *
-     * @param msg
-     *            the detail message for this exception.
-     */
-    public InvalidKeyException4D(String msg) {
-        super(msg);
-    }
+	/**
+	 * Constructs a new instance of {@code InvalidKeyException} with the given
+	 * message.
+	 *
+	 * @param msg
+	 *            the detail message for this exception.
+	 */
+	public InvalidKeyException4D(String msg) {
+		super(msg);
+	}
 
-    /**
-     * Constructs a new instance of {@code InvalidKeyException}.
-     */
-    public InvalidKeyException4D() {
-    }
+	/**
+	 * Constructs a new instance of {@code InvalidKeyException}.
+	 */
+	public InvalidKeyException4D() {
+	}
 
-    /**
-     * Constructs a new instance of {@code InvalidKeyException} with the given
-     * message and the cause.
-     *
-     * @param message
-     *            the detail message for this exception.
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public InvalidKeyException4D(String message, Throwable cause) {
-        super(message, cause);
-    }
+	/**
+	 * Constructs a new instance of {@code InvalidKeyException} with the given
+	 * message and the cause.
+	 *
+	 * @param message
+	 *            the detail message for this exception.
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public InvalidKeyException4D(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    /**
-     * Constructs a new instance of {@code InvalidKeyException} with the cause.
-     *
-     * @param cause
-     *            the exception which is the cause for this exception.
-     */
-    public InvalidKeyException4D(Throwable cause) {
-        super(cause);
-    }
+	/**
+	 * Constructs a new instance of {@code InvalidKeyException} with the cause.
+	 *
+	 * @param cause
+	 *            the exception which is the cause for this exception.
+	 */
+	public InvalidKeyException4D(Throwable cause) {
+		super(cause);
+	}
 }

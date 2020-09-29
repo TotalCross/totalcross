@@ -17,8 +17,8 @@
 
 
 #ifdef __cplusplus
-extern "C"{
-#endif 
+extern "C" {
+#endif
 
 // Global constants
 
@@ -51,50 +51,43 @@ extern "C"{
 
 
 
-typedef struct
-{
-   BYTE  *rgbDataBuffer;
-   DWORD dwDataBufferSize;
-   DWORD dwBytesReturned;
-   DWORD   dwTimeout;
-   UINT32   iSymbology;
-   UINT32   iDataType;
-   
+typedef struct {
+	BYTE  *rgbDataBuffer;
+	DWORD dwDataBufferSize;
+	DWORD dwBytesReturned;
+	DWORD dwTimeout;
+	UINT32 iSymbology;
+	UINT32 iDataType;
 }READ_DATA_STRUCT;
 
-typedef struct
-{
-   size_t   StructSize;
-   BYTE  *rgbDataBuffer;
-   DWORD dwDataBufferSize;
-   DWORD dwBytesReturned;
-   DWORD   dwTimeout;
-   UINT32   iSymbology;
-   UINT32   iDataType;
-   DWORD hDevice;
-   
+typedef struct {
+	size_t StructSize;
+	BYTE  *rgbDataBuffer;
+	DWORD dwDataBufferSize;
+	DWORD dwBytesReturned;
+	DWORD dwTimeout;
+	UINT32 iSymbology;
+	UINT32 iDataType;
+	DWORD hDevice;
 }READ_DATA_STRUCT_EX;
 
 
 
-typedef struct
-{
-    DWORD nStructBytes;
-    DWORD nCharsInName;
-    WCHAR rgcFriendlyName[ 64 ];
-    DWORD dwPortID;
-    DWORD nCharsInDeviceType;
-    WCHAR rgcDeviceType[ 64 ];
-    DWORD nCharsInPortName;
-    WCHAR rgcPortName[ 64 ];
-
+typedef struct {
+	DWORD nStructBytes;
+	DWORD nCharsInName;
+	WCHAR rgcFriendlyName[ 64 ];
+	DWORD dwPortID;
+	DWORD nCharsInDeviceType;
+	WCHAR rgcDeviceType[ 64 ];
+	DWORD nCharsInPortName;
+	WCHAR rgcPortName[ 64 ];
 }ITCSCAN_DEVICE_DETAILS;
 
-typedef struct 
-{ 
-    DWORD wStructSize;
-    WCHAR rgcSymbologyID[ 10 ];
-    DWORD nActualSymbologyIDBytes;
+typedef struct {
+	DWORD wStructSize;
+	WCHAR rgcSymbologyID[ 10 ];
+	DWORD nActualSymbologyIDBytes;
 }  ITCSCAN_SID;
 
 
@@ -102,11 +95,11 @@ typedef struct
 // Function declarations
 
 HRESULT ITCSCAN_Open(INT32 *pHandle,LPCTSTR pszDeviceName);
-HRESULT ITCSCAN_Open2(INT32 *pHandle,LPCTSTR pszDeviceName, HWND hwnd); 
+HRESULT ITCSCAN_Open2(INT32 *pHandle,LPCTSTR pszDeviceName, HWND hwnd);
 HRESULT ITCSCAN_Close(INT32 pHandle);
 HRESULT ITCSCAN_SyncRead(INT32 pHandle, READ_DATA_STRUCT * pReadDataBlock);
 HRESULT ITCSCAN_SyncReadEx(INT32 pHandle, READ_DATA_STRUCT_EX * pReadDataBlock);
-HRESULT ITCSCAN_SyncReadWSid(INT32 pHandle, READ_DATA_STRUCT * pReadDataBlock, ITCSCAN_SID *pSid);                         
+HRESULT ITCSCAN_SyncReadWSid(INT32 pHandle, READ_DATA_STRUCT * pReadDataBlock, ITCSCAN_SID *pSid);
 HRESULT ITCSCAN_CancelRead (INT32 pHandle, BOOL FlushBufferedData,DWORD *pdwTotalDiscardedMessages,DWORD *pdwTotalDiscardedBytes);
 HRESULT ITCSCAN_GetAttribute (INT32 pHandle, int eAttribID, BYTE rgbBuffer[], DWORD dwBufferSize, DWORD *pnBufferData);
 HRESULT ITCSCAN_SetAttribute(INT32 pHandle,int eAttribID,BYTE rgbData[],DWORD dwBufferSize );

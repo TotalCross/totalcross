@@ -5,7 +5,6 @@
 
 
 
-static TCHARPs* PDBFileListByTypeCreator(uint32 creator, uint32 type, int32* count, Heap h)
-{
-   return listDatabasesByTypeCreator(type, creator, count, h);
+static TCHARPs* PDBFileListByTypeCreator(uint32 creator, uint32 type, int32* count, Heap h) {
+	return listDatabasesByTypeCreator(type, creator, count, h);
 }

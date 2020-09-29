@@ -31,17 +31,16 @@ extern "C"
 typedef uint32 Pixel32; // 32 bpp
 #ifndef SKIA_H
 typedef uint16 Pixel565; // 16 bpp
-typedef uint8  PixelPal; // 8 bpp - palettized
+typedef uint8 PixelPal;  // 8 bpp - palettized
 #endif
 typedef Pixel32 Pixel;
 
 typedef union
 {
-   struct
-   {
-      uint8 a,b,g,r;
-   };
-   Pixel pixel;
+	struct {
+		uint8 a,b,g,r;
+	};
+	Pixel pixel;
 } PixelConv;
 typedef struct {uint8 b,g,r;} Pixel24;
 
@@ -49,21 +48,21 @@ typedef struct {uint8 b,g,r;} Pixel24;
 
 typedef enum
 {
-   SURF_IMAGE,
-   SURF_CONTROL
+	SURF_IMAGE,
+	SURF_CONTROL
 } SurfaceType;
 
 typedef struct TScreenSurface // represents a device-dependant surface, there's only ONE per application
 {
-   uint8* pixels; // pixels in native format
-   __unsafe_unretained TCObject mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
-   int32 pitch; // screen memory pitch size in bytes
-   uint32 bpp;
-   int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;
-   int32 hRes, vRes;
-   void *extension; // platform specific data
-   int32 shiftY;
-   uint32 pixelformat;
+	uint8* pixels; // pixels in native format
+	__unsafe_unretained TCObject mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
+	int32 pitch; // screen memory pitch size in bytes
+	uint32 bpp;
+	int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;
+	int32 hRes, vRes;
+	void *extension; // platform specific data
+	int32 shiftY;
+	uint32 pixelformat;
 } *ScreenSurface, TScreenSurface;
 
 
@@ -84,8 +83,8 @@ PixelConv makePixelConvRGB(int32 rgb);
  */
 extern void *deviceCtx;
 
-#define SCREEN_EX(x)        ((ScreenSurfaceEx)((x)->extension))
-#define DEVICE_CTX          ((ScreenSurfaceEx)deviceCtx)
+#define SCREEN_EX(x)        ((ScreenSurfaceEx) ((x)->extension))
+#define DEVICE_CTX          ((ScreenSurfaceEx) deviceCtx)
 
 #ifdef __cplusplus
 }

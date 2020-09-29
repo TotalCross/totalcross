@@ -56,80 +56,80 @@ bool setParamValueString(Context context, SQLBooleanClauseTree* booleanClauseTre
 /**
  * Checks the if the operand value string contains pattern matching characters and assigns the proper matching type.
  *
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  */
 void setPatternMatchType(SQLBooleanClauseTree* booleanClauseTree);
 
 /**
  * Weighs the tree to order the table on join operation.
  *
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  */
 void weightTheTree(SQLBooleanClauseTree* booleanClauseTree);
 
 /**
  * Prepares the tree for the join operation.
  *
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  */
 void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree);
 
 /**
  * Used for composed indices to find some properties related to a branch of the expression tree.
  *
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param columns The columns of the expression tree.
  * @param operators The operators of the expression tree.
  * @param indexesValueTree The part of the tree that uses indices.
  * @param position The index of branch being analized.
  * @param fieldsCount The number of fields of the boolean clause.
  */
-void getBranchProperties(SQLBooleanClauseTree* booleanClauseTree, uint8* columns, uint8* operators, SQLBooleanClauseTree** indexesValueTree,  
-								                                                                            int32 position, int32 fieldsCount);
-/** 
+void getBranchProperties(SQLBooleanClauseTree* booleanClauseTree, uint8* columns, uint8* operators, SQLBooleanClauseTree** indexesValueTree,
+                         int32 position, int32 fieldsCount);
+/**
  * Gets a value from a result set and applies a sql function if there is one to be applied.
- * 
+ *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param value The value returned from the result set or the result of a function on a value of the result set.
  * @return <code>true</code> if the value could be fetched correctly; <code>false</code>, otherwise.
  */
 bool getOperandValue(Context context, SQLBooleanClauseTree* booleanClauseTree, SQLValue* value);
 
-/** 
+/**
  * Checks if an operand is null.
- * 
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ *
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @return <code>true</code> if the operand is null and a null value is being searched or vice-versa; <code>false</code>, otherwise.
  */
 bool compareNullOperands(SQLBooleanClauseTree* booleanClauseTree);
 
 /**
  * Compares two numerical operands.
- * 
+ *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @return The evaluation of the comparison expression or -1 if an error occurs.
  */
 int32 compareNumericOperands(Context context, SQLBooleanClauseTree* booleanClauseTree);
 
-/** 
+/**
  * Compares two strings using LIKE and NOT LIKE.
- * 
+ *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param ignoreCase Indicates if both strings are CHARS_NOCASE.
  * @return The evaluation of the comparison expression.
  * @param heap A heap to alocate temporary strings in the expression tree.
- * @return The evaluation of the comparison expression or -1 if an error occurs. 
+ * @return The evaluation of the comparison expression or -1 if an error occurs.
  */
 int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTree, bool ignoreCase, Heap heap);
 
 /**
  * Normal comparison between two strings.
- * 
+ *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param ignoreCase Indicates if both strings are CHARS_NOCASE.
  * @param heap A heap to alocate temporary strings in the expression tree.
  * @return The evaluation of the comparison expression or -1 if an error occurs.
@@ -138,9 +138,9 @@ int32 compareStringOperands(Context context, SQLBooleanClauseTree* booleanClause
 
 /**
  * Evaluates an expression tree.
- * 
+ *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param heap A heap to alocate temporary strings in the expression tree.
  * @return The value of the expression evaluation or -1 if an error occurs.
  */
@@ -150,27 +150,27 @@ int32 booleanTreeEvaluate(Context context, SQLBooleanClauseTree* booleanClauseTr
  * Binds the column information of the underlying table to the boolean clause tree nodes.
  *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @return <code>false</code> If an exception is thrown; <code>true</code>, otherwise.
  * @throws DriverException If there are imcompatible types or a column cannot be bound.
  */
 bool bindColumnsSQLBooleanClauseTree(Context context, SQLBooleanClauseTree* booleanClauseTree);
 
 /**
- * Infers the operation value type, according to the left and right values involved in the operation. 
- * 
+ * Infers the operation value type, according to the left and right values involved in the operation.
+ *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @return <code>false</code> If an exception is thrown; <code>true</code>, otherwise.
  * @throws SQLParseException If left and right values have incompatible types  or there is a blob type in the comparison.
  */
 bool inferOperationValueType(Context context, SQLBooleanClauseTree* booleanClauseTree);
 
-/** 
+/**
  * Converts a number in the string format to its numerical representation.
- * 
+ *
  * @param context The thread context where the function is being executed.
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param type The number type.
  * @throws SQLParseException If the value to be converted is not a valid number.
  */
@@ -179,9 +179,9 @@ bool convertValue(Context context, SQLBooleanClauseTree* booleanClauseTree, int3
 // juliana@214_4: removes not from expression trees so that indices can be used in more situations.
 /**
  * Removes the not operators from an expression tree.
- * 
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
- * @param heap The heap to allocate a <code>SQLBooleanClauseTree</code> node. 
+ *
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
+ * @param heap The heap to allocate a <code>SQLBooleanClauseTree</code> node.
  * @return The expression tree without nots.
  */
 SQLBooleanClauseTree* removeNots(SQLBooleanClauseTree* booleanClauseTree, Heap heap);
@@ -189,14 +189,14 @@ SQLBooleanClauseTree* removeNots(SQLBooleanClauseTree* booleanClauseTree, Heap h
 /**
  * Gets the field index given the hash code of the SQL function used or the field if there is no function applied.
  *
- * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
+ * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @return The index of the field used by this branch of the tree.
  */
 int32 getFieldIndex(SQLBooleanClauseTree* booleanClauseTree);
 
 /**
- * Clones an expression tree of a where clause of a select prepared statement. 
- * 
+ * Clones an expression tree of a where clause of a select prepared statement.
+ *
  * @param booleanClauseTree The expression tree to be cloned.
  * @param destTree The old destination tree. If the nodes are the same of the tree cloned, the node is reused in the cloned tree.
  * @param heap A heap to allocate the new tree.

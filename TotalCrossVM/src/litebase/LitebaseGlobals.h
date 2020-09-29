@@ -19,7 +19,7 @@ extern Hashtable htCreatedDrivers; // The hash table for the created connections
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // The list of table files currently opened.
 #if defined(POSIX) || defined(ANDROID)
-extern XFilesList filesList; 
+extern XFilesList filesList;
 #endif
 
 // Globals for the parser.
@@ -29,11 +29,11 @@ extern uint8 is[256];                   // An array to help the selection of the
 extern int8 function_x_datatype[10][7]; // Matrix of data types which applies to the SQL functions.
 extern CharP names[10];                 // An array with the names of the SQL data functions.
 extern uint8 bitsInNibble[16];          // Used to count bits in an index bitmap.
-extern JChar questionMark[2];           // A jchar string representing "?".                                    
-                
-// juliana@parser_1: improved Litebase parser.                
-                                                                                              
-// Classes used.                                                                              
+extern JChar questionMark[2];           // A jchar string representing "?".
+
+// juliana@parser_1: improved Litebase parser.
+
+// Classes used.
 extern TCClass litebaseConnectionClass; // LitebaseConnection
 extern TCClass loggerClass;             // Logger
 
@@ -43,10 +43,10 @@ extern DECLARE_MUTEX(parser); // Mutex for the parser.
 extern DECLARE_MUTEX(log);    // Mutex for logging.
 extern DECLARE_MUTEX(files);  // Mutex for the Litebase files list.
 
-// rnovais@568_10 @570_1 
-extern int8 aggregateFunctionsTypes[FUNCTION_AGG_SUM + 1];  // Aggregate functions table. 
+// rnovais@568_10 @570_1
+extern int8 aggregateFunctionsTypes[FUNCTION_AGG_SUM + 1];  // Aggregate functions table.
 extern int8 dataTypeFunctionsTypes[FUNCTION_DT_LOWER + 1];  // Data Type functions table.
-extern uint8 monthDays[12];                                 // Number of days in a month. 
+extern uint8 monthDays[12];                                 // Number of days in a month.
 extern uint8 typeSizes[11];                                 // Each type size in the .db file.
 
 // Error messages.
@@ -97,7 +97,7 @@ extern heapAllocFunc TC_heapAlloc;
 extern heapDestroyPrivateFunc TC_heapDestroyPrivate;
 extern hstrdupFunc TC_hstrdup;
 extern htFreeFunc TC_htFree;
-extern htFreeContextFunc TC_htFreeContext; 
+extern htFreeContextFunc TC_htFreeContext;
 extern htGet32Func TC_htGet32;
 extern htGet32InvFunc TC_htGet32Inv;
 extern htGetPtrFunc TC_htGetPtr;

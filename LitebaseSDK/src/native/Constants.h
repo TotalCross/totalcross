@@ -17,9 +17,9 @@
 #define DBO_EXT  ".dbo" // Database object files.
 #define IDK_EXT  ".idk" // Index b-tree files.
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 
-// Constants used in date format.  
+// Constants used in date format.
 #define DATE_MDY  1  // rnovais@567_2: month day year.
 #define DATE_DMY  2  // rnovais@567_2: day month year.
 #define DATE_YMD  3  // rnovais@567_2: year month day.
@@ -30,7 +30,7 @@
 
 // These numbers must be synchronized with ResultSetMetaData types.
 #define UNDEFINED_TYPE     -1 // Undefined type.
-#define CHARS_TYPE         0  // CHARS type. 
+#define CHARS_TYPE         0  // CHARS type.
 #define SHORT_TYPE         1  // SHORT type.
 #define INT_TYPE           2  // INT type.
 #define LONG_TYPE          3  // LONG type.
@@ -43,7 +43,7 @@
 #define BLOB_TYPE          10 // BLOB type.
 
 // Constants for tables and indices.
-#define DEFAULT_ROW_INC  10    // The default record increment when growing the table file.  
+#define DEFAULT_ROW_INC  10    // The default record increment when growing the table file.
 #define CACHE_SIZE       20    // The index cache size.
 #define RECGROWSIZE      64    // The record increment for indices.
 #define SECTOR_SIZE      512   // The record size used to calculate the number of keys per b-tree node.
@@ -61,8 +61,8 @@
 #define FUNCTION_AGG_AVG    3  // AVG()
 #define FUNCTION_AGG_SUM    4  // SUM()
 
-// rnovais@568_10: supported DtaType Functions 
-#define FUNCTION_DT_NONE   -1 // No function. 
+// rnovais@568_10: supported DtaType Functions
+#define FUNCTION_DT_NONE   -1 // No function.
 #define FUNCTION_DT_YEAR    0 // YEAR()
 #define FUNCTION_DT_MONTH   1 // MONTH()
 #define FUNCTION_DT_DAY     2 // DAY()
@@ -79,8 +79,8 @@
 #define WC_TYPE_OR_DIFF_RS   1 // It is an OR of expressions.
 
 // juliana@250_8: now the maximum number of columns, fields, tables, etc is 254 instead of 128 except on palm.
-// guich@561_1: maximums for the parsing process. 
-#define MAXIMUMS 254 // guich@561_1: maximums for the parsing process. 
+// guich@561_1: maximums for the parsing process.
+#define MAXIMUMS 254 // guich@561_1: maximums for the parsing process.
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 #ifdef ANDROID
@@ -89,9 +89,9 @@
 #define MAX_OPEN_FILES 128
 #elif defined POSIX
 #define MAX_OPEN_FILES 1024
-#endif 
+#endif
 
-// Available operand types. 
+// Available operand types.
 #define OP_NONE                0 // No operator.
 #define OP_BOOLEAN_AND         1 // Boolean operator AND.
 #define OP_BOOLEAN_OR          2 // Boolean operator OR.
@@ -117,7 +117,7 @@
 #define CMD_DROP_TABLE           3  // DROP TABLE ...
 #define CMD_DROP_INDEX           4  // DROP INDEX ...
 #define CMD_ALTER_DROP_PK        5  // ALTER TABLE ... DROP PRIMAY KEY
-#define CMD_ALTER_ADD_PK         6  // ALTER TABLE ... ADD PRIMARY KEY (...) 
+#define CMD_ALTER_ADD_PK         6  // ALTER TABLE ... ADD PRIMARY KEY (...)
 #define CMD_ALTER_RENAME_TABLE   7  // ALTER TABLE ... RENAME TO ...
 #define CMD_ALTER_RENAME_COLUMN  8  // ALTER TABLE ... RENAME ... TO ...
 #define CMD_ALTER_ADD_COLUMN     9  // ALTER TABLE ADD... (new column definition) // juliana@add_1
@@ -150,86 +150,86 @@
 #define TSMD_ONLY_DELETEDROWSCOUNT  1 // Saves only the deleted rows count and header information.
 #define TSMD_ONLY_AUXROWID          2 //rnovais@570_61: Also save the auxiliary row id.
 #define TSMD_ONLY_PRIMARYKEYCOL     3 // Also save the primary key column information.
-#define TSMD_ATLEAST_INDEXES        4 // Also save index information. 
+#define TSMD_ATLEAST_INDEXES        4 // Also save index information.
 #define TSMD_EVERYTHING             5 // Save everything.
 
 // Constants used to differenciate the kinds of tokens.
 // juliana@parser_1: improved Litebase parser.
-#define IS_ALPHA       1  // Is an alphabetic character [a..z]|[A..Z]. 
+#define IS_ALPHA       1  // Is an alphabetic character [a..z]|[A..Z].
 #define IS_DIGIT       2  // Is a digit [0..9].
 #define IS_SIGN        4  // Is a sign (+ / -).
 #define IS_END_NUM     8  // Is a numer type identifier (e|E|d|D|l|L).
 #define IS_RELATIONAL  16 // Is a relational operator: '>', '<', and '!'.
-#define IS_PUNCT       32 // Is a punctution symbol: ':', ',', '?', and '='. 
+#define IS_PUNCT       32 // Is a punctution symbol: ':', ',', '?', and '='.
 #define IS_OPERATOR    64 // Is a operator symbol: '*', '(', ')'.
 #define IS_ALPHA_DIGIT 3  // (IS_ALPHA|IS_DIGIT|'_').
 #define IS_START_DIGIT 6  // (IS_DIGIT|IS_SIGN).
 #define PARSER_EOF     -1 // End of file.
-#define PARSER_ERROR   -2 // Parser error.  
+#define PARSER_ERROR   -2 // Parser error.
 
 // Reserved words.
 #define NUM_RESERVED 61          // Number of reserved words.
-#define HT_ABS			96370       // ABS reserved word hash code.
-#define HT_ADD			96417       // ADD reserved word hash code.
-#define HT_ALTER		92913686    // ALTER reserved word hash code.
-#define HT_AND			96727       // AND reserved word hash code. 
-#define HT_AS			3122        // AS reserved word hash code.
-#define HT_ASC			96881       // ASC reserved word hash code.
-#define HT_AVG			96978       // AVG reserved word hash code.
-#define HT_BLOB		3026845     // BLOB reserved word hash code.
-#define HT_BY			3159        // BY reserved word hash code.
-#define HT_CHAR		3052374     // CHAR reserved word hash code.
-#define HT_COUNT		94851343    // COUNT reserved word hash code.
-#define HT_CREATE		-1352294148 // CREATE reserved word hash code.
-#define HT_DATE		3076014     // DATE reserved word hash code. 
+#define HT_ABS                  96370       // ABS reserved word hash code.
+#define HT_ADD                  96417       // ADD reserved word hash code.
+#define HT_ALTER                92913686    // ALTER reserved word hash code.
+#define HT_AND                  96727       // AND reserved word hash code.
+#define HT_AS                   3122        // AS reserved word hash code.
+#define HT_ASC                  96881       // ASC reserved word hash code.
+#define HT_AVG                  96978       // AVG reserved word hash code.
+#define HT_BLOB         3026845     // BLOB reserved word hash code.
+#define HT_BY                   3159        // BY reserved word hash code.
+#define HT_CHAR         3052374     // CHAR reserved word hash code.
+#define HT_COUNT                94851343    // COUNT reserved word hash code.
+#define HT_CREATE               -1352294148 // CREATE reserved word hash code.
+#define HT_DATE         3076014     // DATE reserved word hash code.
 #define HT_DATETIME  1793702779  // DATETIME reserved word hash code.
-#define HT_DAY			99228       // DAY reserved word hash code.
-#define HT_DEFAULT	1544803905  // DEFAULT reserved word hash code.
-#define HT_DELETE		-1335458389 // DELETE reserved word hash code.
-#define HT_DESC		3079825     // DESC reserved word hash code.
+#define HT_DAY                  99228       // DAY reserved word hash code.
+#define HT_DEFAULT      1544803905  // DEFAULT reserved word hash code.
+#define HT_DELETE               -1335458389 // DELETE reserved word hash code.
+#define HT_DESC         3079825     // DESC reserved word hash code.
 #define HT_DISTINCT  288698108   // DISTINCT reserved word hash code.
-#define HT_DOUBLE		-1325958191 // DOUBLE reserved word hash code.
-#define HT_DROP		3092207     // DROP reserved word hash code.
-#define HT_FLOAT		97526364    // FLOAT reserved word hash code.
-#define HT_FROM		3151786     // FROM reserved word hash code.
-#define HT_GROUP		98629247    // GROUP reserved word hash code.
-#define HT_HAVING		-1224334299 // HAVING reserved word hash code.
-#define HT_HOUR		3208676     // HOUR reserved word hash code.
-#define HT_INDEX		100346066   // INDEX reserved word hash code.
-#define HT_INSERT		-1183792455 // INSERT reserved word hash code.
-#define HT_INT			104431      // INT reserved word hash code.
-#define HT_INTO		3237472     // INTO reserved word hash code. 
-#define HT_IS			3370        // IS reserved word hash code.
-#define HT_KEY			106079      // KEY reserved word hash code.
-#define HT_LIKE		3321751     // LIKE reserved word hash code.
-#define HT_LONG		3327612     // LONG reserved word hash code.
-#define HT_LOWER		103164673   // LOWER reserved word hash code.
-#define HT_MAX			107876      // MAX reserved word hash code.
-#define HT_MILLIS		-1074095546 // MILLIS reserved word hash code.
-#define HT_MIN			108114      // MIN reserved word hash code.
-#define HT_MINUTE		-1074026988 // MINUTE reserved word hash code.
-#define HT_MONTH		104080000   // MONTH reserved word hash code.
-#define HT_NOCASE		-1040203663 // NOCASE reserved word hash code.
-#define HT_NOT			109267      // NOT reserved word hash code. 
-#define HT_NULL		3392903     // NULL reserved word hash code. 
-#define HT_ON			3551        // ON reserved word hash code.
-#define HT_OR			3555        // OR reserved word hash code.
-#define HT_ORDER		106006350   // ORDER reserved word hash code.
-#define HT_PRIMARY	-314765822  // PRIMARY reserved word hash code.
-#define HT_RENAME		-934594754  // RENAME reserved word hash code.
-#define HT_SECOND		-906279820  // SECOND reserved word hash code.
-#define HT_SELECT		-906021636  // SELECT reserved word hash code.
-#define HT_SET			113762      // SET reserved word hash code.
-#define HT_SHORT		109413500   // SHORT reserved word hash code.
-#define HT_SUM			114251      // SUM reserved word hash code.
-#define HT_TABLE		110115790   // TABLE reserved word hash code.
-#define HT_TO			3707        // TO reserved word hash code.
-#define HT_UPDATE		-838846263  // UPDATE reserved word hash code.
-#define HT_UPPER		111499426   // UPPER reserved word hash code.
-#define HT_VALUES		-823812830  // VALUES reserved word hash code.
-#define HT_VARCHAR	236613373   // VARCHAR reserved word hash code.
-#define HT_WHERE		113097959   // WHERE reserved word hash code.
-#define HT_YEAR		3704893     // YEAR reserved word hash code.
+#define HT_DOUBLE               -1325958191 // DOUBLE reserved word hash code.
+#define HT_DROP         3092207     // DROP reserved word hash code.
+#define HT_FLOAT                97526364    // FLOAT reserved word hash code.
+#define HT_FROM         3151786     // FROM reserved word hash code.
+#define HT_GROUP                98629247    // GROUP reserved word hash code.
+#define HT_HAVING               -1224334299 // HAVING reserved word hash code.
+#define HT_HOUR         3208676     // HOUR reserved word hash code.
+#define HT_INDEX                100346066   // INDEX reserved word hash code.
+#define HT_INSERT               -1183792455 // INSERT reserved word hash code.
+#define HT_INT                  104431      // INT reserved word hash code.
+#define HT_INTO         3237472     // INTO reserved word hash code.
+#define HT_IS                   3370        // IS reserved word hash code.
+#define HT_KEY                  106079      // KEY reserved word hash code.
+#define HT_LIKE         3321751     // LIKE reserved word hash code.
+#define HT_LONG         3327612     // LONG reserved word hash code.
+#define HT_LOWER                103164673   // LOWER reserved word hash code.
+#define HT_MAX                  107876      // MAX reserved word hash code.
+#define HT_MILLIS               -1074095546 // MILLIS reserved word hash code.
+#define HT_MIN                  108114      // MIN reserved word hash code.
+#define HT_MINUTE               -1074026988 // MINUTE reserved word hash code.
+#define HT_MONTH                104080000   // MONTH reserved word hash code.
+#define HT_NOCASE               -1040203663 // NOCASE reserved word hash code.
+#define HT_NOT                  109267      // NOT reserved word hash code.
+#define HT_NULL         3392903     // NULL reserved word hash code.
+#define HT_ON                   3551        // ON reserved word hash code.
+#define HT_OR                   3555        // OR reserved word hash code.
+#define HT_ORDER                106006350   // ORDER reserved word hash code.
+#define HT_PRIMARY      -314765822  // PRIMARY reserved word hash code.
+#define HT_RENAME               -934594754  // RENAME reserved word hash code.
+#define HT_SECOND               -906279820  // SECOND reserved word hash code.
+#define HT_SELECT               -906021636  // SELECT reserved word hash code.
+#define HT_SET                  113762      // SET reserved word hash code.
+#define HT_SHORT                109413500   // SHORT reserved word hash code.
+#define HT_SUM                  114251      // SUM reserved word hash code.
+#define HT_TABLE                110115790   // TABLE reserved word hash code.
+#define HT_TO                   3707        // TO reserved word hash code.
+#define HT_UPDATE               -838846263  // UPDATE reserved word hash code.
+#define HT_UPPER                111499426   // UPPER reserved word hash code.
+#define HT_VALUES               -823812830  // VALUES reserved word hash code.
+#define HT_VARCHAR      236613373   // VARCHAR reserved word hash code.
+#define HT_WHERE                113097959   // WHERE reserved word hash code.
+#define HT_YEAR         3704893     // YEAR reserved word hash code.
 
 #define MAX_RESERVED_SIZE 9 // The maximum size of a reserved word.
 
@@ -279,9 +279,9 @@
 #define TK_CLOSE           41 // ')' token.
 #define TK_ASTERISK        42 // '*' token.
 #define TK_MIN             43 // MIN reserved word token.
-#define TK_COMMA           44 // ',' token. 
+#define TK_COMMA           44 // ',' token.
 #define TK_MINUTE          45 // MINUTE reserved word token.
-#define TK_DOT             46 // '.' token. 
+#define TK_DOT             46 // '.' token.
 #define TK_MONTH           47 // MONTH reserved word token.
 #define TK_NOT             48 // NOT reserved word token.
 #define TK_NULL            49 // NULL reserved word token.
@@ -307,7 +307,7 @@
 #define TK_YEAR            69 // YEAR reserved word token.
 #define TK_IDENT           70 // Identifier token.
 #define TK_STR             71 // String token.
-#define TK_NUMBER          72 // Number token. 
+#define TK_NUMBER          72 // Number token.
 #define TK_GREATER_EQUAL   73 // '>=' token.
 #define TK_LESS_EQUAL      74 // '<=' token.
 #define TK_DIFF            75 // '<>' or '!=' token.
@@ -333,9 +333,9 @@
 // Column errors.
 #define ERR_UNKNOWN_COLUMN                9  // "Unknown column "
 #define ERR_INVALID_COLUMN_NAME           10 // "Invalid column name: "
-#define ERR_INVALID_COLUMN_NUMBER         11 // "Invalid column number: " 
+#define ERR_INVALID_COLUMN_NUMBER         11 // "Invalid column number: "
 #define ERR_COLUMN_DOESNOT_HAVE_AN_INDEX  12 // "The following column(s) does (do) not have an associated index "
-#define ERR_AMBIGUOUS_COLUMN_NAME         13 // "Column name in field list is ambiguous: " 
+#define ERR_AMBIGUOUS_COLUMN_NAME         13 // "Column name in field list is ambiguous: "
 #define ERR_COLUMN_NOT_FOUND              14 // "Column not found: "
 #define ERR_DUPLICATED_COLUMN_NAME        15 // "Duplicated column name: "
 
@@ -358,7 +358,7 @@
 #define ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER  25 // "Length of default value is bigger than column size."
 #define ERR_NOT_NULL_DEFAULT                26 // "An added column declared as NOT NULL must have a not null default value."
 
-// Driver errors.  
+// Driver errors.
 #define ERR_DRIVER_CLOSED             27 // "This driver instance was closed and can't be used anymore. Please get a new instance of it."
 #define ERR_RESULTSET_CLOSED          28 // "ResultSet already closed!"
 #define ERR_RESULTSETMETADATA_CLOSED  29 // "ResultSetMetaData can't be used after the ResultSet is closed. "
@@ -373,7 +373,7 @@
 #define ERR_TABLE_ALREADY_CREATED  36 // "Table already created: "
 #define ERR_WRONG_STRING_FORMAT    37 // "It is not possible to open a table within a connection with a different string format."
 #define ERR_WRONG_CRYPTO_FORMAT    38 // "It is not possible to open a table within a connection with a different cryptography format."
-   
+
 // ROWID errors.
 #define ERR_ROWID_CANNOT_BE_CHANGED  39 // "ROWID can't be changed by the user!"
 
@@ -384,13 +384,13 @@
 #define ERR_PARAMETER_NOT_DEFINED           43 // "A value was not defined for the parameter "
 #define ERR_INVALID_PARAMETER_INDEX         44 // "Invalid parameter index."
 
-// Rename errors. 
+// Rename errors.
 #define ERR_TABLE_ALREADY_EXIST   45 // "Can't rename table. This table already exists: "
 #define ERR_COLUMN_ALREADY_EXIST  46 // "Column already exists: "
 
 // Alias errors.
 #define ERR_NOT_UNIQUE_ALIAS_TABLE  47 // "Not unique table/alias: "
-#define ERR_DUPLICATE_ALIAS         48 // "This alias is already being used in this expression: " 
+#define ERR_DUPLICATE_ALIAS         48 // "This alias is already being used in this expression: "
 #define ERR_REQUIRED_ALIAS          49 // "An alias is required for the aggregate function column."
 
 // Litebase.execute() error.
@@ -407,7 +407,7 @@
 #define ERR_IS_NOT_AGGREG_FUNCTION             54
 
 // "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause."
-#define ERR_CANNOT_MIX_AGGREG_FUNCTION         55 
+#define ERR_CANNOT_MIX_AGGREG_FUNCTION         55
 
 #define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  56 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
 
@@ -425,12 +425,12 @@
 #define ERR_DROP_PRIMARY_KEY       62 // "Can't drop a primary key index with drop index."
 #define ERR_INDEX_LARGE            63 // "Index too large. It can't have more than 32767 nodes."
 
-// NOT NULL errors. 
-#define ERR_PK_CANT_BE_NULL     64  // "Primary key can't have null." 
+// NOT NULL errors.
+#define ERR_PK_CANT_BE_NULL     64  // "Primary key can't have null."
 #define ERR_FIELD_CANT_BE_NULL  65  // "Field can't be null: "
 #define ERR_PARAM_NULL          66  // "A parameter in a where clause can't be null."
 
-// Result set errors. 
+// Result set errors.
 #define ERR_RS_INV_POS           67 // "ResultSet in invalid record position: ."
 #define ERR_RS_DEC_PLACES_START  68 // "Invalid value for decimal places: . It must range from -1 to 40."
 
@@ -449,8 +449,8 @@
 #define ERR_TABLE_OPENED       80 // "An opened table can't be recovered or converted: " // juliana@230_12
 
 // BLOB errors.
-#define ERR_BLOB_TOO_BIG        81 // "The total size of a blob can't be greater then 10 Mb."  
-#define ERR_INVALID_MULTIPLIER  82 // "This is not a valid size multiplier." 
+#define ERR_BLOB_TOO_BIG        81 // "The total size of a blob can't be greater then 10 Mb."
+#define ERR_INVALID_MULTIPLIER  82 // "This is not a valid size multiplier."
 #define ERR_BLOB_PRIMARY_KEY    83 // "A blob type can't be part of a primary key."
 #define ERR_BLOB_INDEX          84 // "A BLOB column can't be indexed."
 #define ERR_BLOB_WHERE          85 // "A BLOB can't be in the where clause."
@@ -461,20 +461,20 @@
 
 #define TOTAL_ERRORS  90 // Total Litebase possible errors.
 
-#define MAX_NUM_INDEXES_APPLIED 32 // The maximum number of indexes to be applied. 
+#define MAX_NUM_INDEXES_APPLIED 32 // The maximum number of indexes to be applied.
 
 // Pattern matching types.
 #define PAT_MATCH_STARTS_WITH  1 // %...
 #define PAT_MATCH_ENDS_WITH    2 // ...%
 #define PAT_MATCH_CONTAINS     3 // %...%
 #define PAT_MATCH_ANYTHING     4 // %
-#define PAT_MATCH_MIDDLE       5 // rnovais@568_1: accept % in the middle: ...%... 
+#define PAT_MATCH_MIDDLE       5 // rnovais@568_1: accept % in the middle: ...%...
 #define PAT_MATCH_EQUAL        6 // rnovais@568_1: accept without %.
 
 #define PAT_MATCH_CHAR_ZERO_MORE '%' // Pattern matching characters
 
 // Possibles type for the select clause.
-#define COUNT_WITH_WHERE  1 // select count(*) from table_name where ... 
+#define COUNT_WITH_WHERE  1 // select count(*) from table_name where ...
 
 #define CACHE_INITIAL_SIZE  2048 // Table files initial cache size.
 #define INDEX_SORT_MAX_TIME 40   // The maximum time (in seconds) that will be taken to sort a table before creating the index.
@@ -487,7 +487,7 @@
 #define VALIDATION_RECORD_INCOMPLETE_OK  4 // Used internally on booleanTreeEvaluateJoin(). The current branch was validated as true.
 
 // guich@_300: addes support for basic synchronization.
-#define ROW_ATTR_SYNCED   0X00000000L // Indicates if the a row was synced. 
+#define ROW_ATTR_SYNCED   0X00000000L // Indicates if the a row was synced.
 #define ROW_ATTR_NEW      0X40000000L // Indicates if the row is new.
 #define ROW_ATTR_UPDATED  0x80000000L // Indicates if the row was updated.
 #define ROW_ATTR_DELETED  0XC0000000L // Indicates if the row was deleted.
@@ -496,7 +496,7 @@
 #define ROW_ATTR_SHIFT    30L         // The shift for the row attributes.
 
 // juliana@230_16: solved a bug with row iterator.
-#define ROW_ATTR_SYNCED_MASK  0 // Indicates if the a row was synced.  
+#define ROW_ATTR_SYNCED_MASK  0 // Indicates if the a row was synced.
 #define ROW_ATTR_DELETED_MASK 3 // Indicates if the row was deleted.
 
 // juliana@210_2: now Litebase supports tables with ascii strings.
@@ -507,15 +507,15 @@
 
 // Numerical limits.
 #define MIN_SHORT_VALUE   (int16)-32768              // The minimum short value: -32768.
-#define MAX_SHORT_VALUE   (int16)32767               // The maximum short value: 32767.
+#define MAX_SHORT_VALUE   (int16) 32767               // The maximum short value: 32767.
 
 #ifdef POSIX // juliana@226_18: minimum float and double values for POSIX are different from IEEE values.
    #define MIN_FLOAT_VALUE   1.17549435e-38
    #define MIN_DOUBLE_VALUE  2.2250738585072014e-308
 #else
-   #define MIN_FLOAT_VALUE   1.4e-45    // The minimum float value: 1.4e-45f. 
-   #define MIN_DOUBLE_VALUE  4.9E-324   // The minimum double value: 4.9E-324. 
-#endif 
-#define MAX_FLOAT_VALUE   3.4028235e+38 // The maximum float value: 3.4028235e+38f. 
+   #define MIN_FLOAT_VALUE   1.4e-45    // The minimum float value: 1.4e-45f.
+   #define MIN_DOUBLE_VALUE  4.9E-324   // The minimum double value: 4.9E-324.
+#endif
+#define MAX_FLOAT_VALUE   3.4028235e+38 // The maximum float value: 3.4028235e+38f.
 
 #endif

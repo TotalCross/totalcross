@@ -21,40 +21,40 @@ import java.io.Serializable;
 
 /**
  * {@code Key} is the common interface for all keys.
- * 
+ *
  * @see PublicKey
  * @see PrivateKey
  */
 public interface Key4D extends Serializable {
-    /**
-     * The {@code serialVersionUID} to be compatible with JDK1.1.
-     */
-    public static final long serialVersionUID = 6603384152749567654L;
+	/**
+	 * The {@code serialVersionUID} to be compatible with JDK1.1.
+	 */
+	public static final long serialVersionUID = 6603384152749567654L;
 
-    /**
-     * Returns the name of the algorithm of this key. If the algorithm is
-     * unknown, {@code null} is returned.
-     * 
-     * @return the name of the algorithm of this key or {@code null} if the
-     *         algorithm is unknown.
-     */
-    public String getAlgorithm();
+	/**
+	 * Returns the name of the algorithm of this key. If the algorithm is
+	 * unknown, {@code null} is returned.
+	 *
+	 * @return the name of the algorithm of this key or {@code null} if the
+	 *         algorithm is unknown.
+	 */
+	public String getAlgorithm();
 
-    /**
-     * Returns the name of the format used to encode this key, or {@code null}
-     * if it can not be encoded.
-     * 
-     * @return the name of the format used to encode this key, or {@code null}
-     *         if it can not be encoded.
-     */
-    public String getFormat();
+	/**
+	 * Returns the name of the format used to encode this key, or {@code null}
+	 * if it can not be encoded.
+	 *
+	 * @return the name of the format used to encode this key, or {@code null}
+	 *         if it can not be encoded.
+	 */
+	public String getFormat();
 
-    /**
-     * Returns the encoded form of this key, or {@code null} if encoding is not
-     * supported by this key.
-     * 
-     * @return the encoded form of this key, or {@code null} if encoding is not
-     *         supported by this key.
-     */
-    public byte[] getEncoded();
+	/**
+	 * Returns the encoded form of this key, or {@code null} if encoding is not
+	 * supported by this key.
+	 *
+	 * @return the encoded form of this key, or {@code null} if encoding is not
+	 *         supported by this key.
+	 */
+	public byte[] getEncoded();
 }

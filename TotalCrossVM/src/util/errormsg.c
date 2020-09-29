@@ -11,7 +11,6 @@
  #include "posix/errormsg_c.h"
 #endif
 
-TC_API CharP getErrorMessage(int32 errorCode, CharP buffer, uint32 size)
-{
-   return privateGetErrorMessage(errorCode, buffer, size);
+TC_API CharP getErrorMessage(int32 errorCode, CharP buffer, uint32 size) {
+	return privateGetErrorMessage(errorCode, buffer, size);
 }

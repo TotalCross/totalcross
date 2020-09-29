@@ -9,80 +9,80 @@ import totalcross.notification.Notification;
 import java.util.HashMap;
 
 public class RemoteMessage {
-    private HashMap<String, String> data;
-    private String collapsedKey;
-    private String messageId;
-    private String messageType;
-    private int ttl;
+	private HashMap<String, String> data;
+	private String collapsedKey;
+	private String messageId;
+	private String messageType;
+	private int ttl;
 
-    public RemoteMessage () {
-        data = new HashMap<String, String>();
-    }
+	public RemoteMessage () {
+		data = new HashMap<String, String>();
+	}
 
-    public static final class Builder {
-        RemoteMessage rm;
+	public static final class Builder {
+		RemoteMessage rm;
 
-        public Builder () {
-            rm = new RemoteMessage();
-        }
+		public Builder () {
+			rm = new RemoteMessage();
+		}
 
-        public Builder addData(String key, String value) {
-            rm.data.put(key, value);
-            return this;
-        }
+		public Builder addData(String key, String value) {
+			rm.data.put(key, value);
+			return this;
+		}
 
-        public RemoteMessage build() {
-            return rm;
-        }
+		public RemoteMessage build() {
+			return rm;
+		}
 
-        public Builder clearData() {
-            rm = new RemoteMessage();
-            return this;
-        }
+		public Builder clearData() {
+			rm = new RemoteMessage();
+			return this;
+		}
 
-        public Builder setCollapsedKey(String collapsedKey) {
-            rm.collapsedKey = collapsedKey;
-            return this;
-        }
+		public Builder setCollapsedKey(String collapsedKey) {
+			rm.collapsedKey = collapsedKey;
+			return this;
+		}
 
-        public Builder setData(HashMap<String, String> data) {
-            rm.data = data;
-            return this;
-        }
+		public Builder setData(HashMap<String, String> data) {
+			rm.data = data;
+			return this;
+		}
 
-        public Builder setMessageId(String messageId) {
-            rm.messageId = messageId;
-            return this;
-        }
+		public Builder setMessageId(String messageId) {
+			rm.messageId = messageId;
+			return this;
+		}
 
-        public Builder setMessageType(String messageType) {
-            rm.messageType = messageType;
-            return this;
-        }
+		public Builder setMessageType(String messageType) {
+			rm.messageType = messageType;
+			return this;
+		}
 
-        public Builder setTtl(int ttl) {
-            rm.ttl = ttl;
-            return this;
-        }
-    }
+		public Builder setTtl(int ttl) {
+			rm.ttl = ttl;
+			return this;
+		}
+	}
 
-    public HashMap<String, String> getData() {
-        return data;
-    }
+	public HashMap<String, String> getData() {
+		return data;
+	}
 
-    public String getCollapsedKey() {
-        return collapsedKey;
-    }
+	public String getCollapsedKey() {
+		return collapsedKey;
+	}
 
-    public String getMessageId() {
-        return messageId;
-    }
+	public String getMessageId() {
+		return messageId;
+	}
 
-    public String getMessageType() {
-        return messageType;
-    }
+	public String getMessageType() {
+		return messageType;
+	}
 
-    public int getTtl() {
-        return ttl;
-    }
+	public int getTtl() {
+		return ttl;
+	}
 }

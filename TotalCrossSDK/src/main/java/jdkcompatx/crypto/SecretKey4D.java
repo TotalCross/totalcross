@@ -16,8 +16,8 @@
  */
 
 /**
-* @author Vera Y. Petrashkova
-*/
+ * @author Vera Y. Petrashkova
+ */
 
 package jdkcompatx.crypto;
 
@@ -36,10 +36,10 @@ import java.security.Key;
  */
 public interface SecretKey4D extends Key {
 
-    /**
-     * The serialization version identifier.
-     *
-     * @serial
-     */
-    public static final long serialVersionUID = -4795878709595146952L;
+	/**
+	 * The serialization version identifier.
+	 *
+	 * @serial
+	 */
+	public static final long serialVersionUID = -4795878709595146952L;
 }

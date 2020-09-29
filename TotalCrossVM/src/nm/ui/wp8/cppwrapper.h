@@ -13,14 +13,13 @@
 extern "C" {
 #endif
 
-struct eventQueueMember 
-{
+struct eventQueueMember {
 	int type;
 	int key;
 	int x;
 	int y;
 	int modifiers;
-   int count;
+	int count;
 };
 
 char *GetAppPathWP8();
@@ -93,7 +92,7 @@ bool privateWindowGetSIP();
 void appExit();
 void appSetFullScreen();
 
-// Settings                   
+// Settings
 bool isVirtualKeyboard();
 int getOSVersion();
 double getDpiX();

@@ -7,6 +7,6 @@
 
 TESTCASE(jlT_printStackTraceNative) // java/lang/Throwable native private void printStackTraceNative();
 {
-   TEST_SKIP;
-   finish: ;
+	TEST_SKIP;
+finish: ;
 }

@@ -16,8 +16,8 @@
  */
 
 /**
-* @author Vera Y. Petrashkova
-*/
+ * @author Vera Y. Petrashkova
+ */
 
 package jdkcompatx.crypto.interfaces;
 
@@ -28,30 +28,29 @@ import javax.crypto.SecretKey;
  */
 public interface PBEKey4D extends SecretKey {
 
-    /**
-     * The serial version identifier.
-     */
-    public static final long serialVersionUID = -1430015993304333921L;
+	/**
+	 * The serial version identifier.
+	 */
+	public static final long serialVersionUID = -1430015993304333921L;
 
-    /**
-     * Returns the iteration count, 0 if not specified.
-     *
-     * @return the iteration count, 0 if not specified.
-     */
-    public int getIterationCount();
+	/**
+	 * Returns the iteration count, 0 if not specified.
+	 *
+	 * @return the iteration count, 0 if not specified.
+	 */
+	public int getIterationCount();
 
-    /**
-     * Returns a copy of the salt data or null if not specified.
-     *
-     * @return a copy of the salt data or null if not specified.
-     */
-    public byte[] getSalt();
+	/**
+	 * Returns a copy of the salt data or null if not specified.
+	 *
+	 * @return a copy of the salt data or null if not specified.
+	 */
+	public byte[] getSalt();
 
-    /**
-     * Returns a copy to the password.
-     *
-     * @return a copy to the password.
-     */
-    public char[] getPassword();
-
+	/**
+	 * Returns a copy to the password.
+	 *
+	 * @return a copy to the password.
+	 */
+	public char[] getPassword();
 }

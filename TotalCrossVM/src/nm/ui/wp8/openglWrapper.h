@@ -41,7 +41,7 @@ typedef GLchar TCGchar;
 typedef TCGfloat mat4[16];
 typedef union
 {
-	struct{ TCGubyte r, g, b, a; };
+	struct { TCGubyte r, g, b, a; };
 	Pixel pixel;
 } glpixel;
 

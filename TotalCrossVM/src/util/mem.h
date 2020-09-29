@@ -46,8 +46,8 @@ TC_API uint8* privateXrealloc(uint8* ptr, uint32 size, const char *file, int lin
 typedef uint8* (*privateXreallocFunc)(uint8* ptr, uint32 size, const char *file, int line);
 TC_API uint8* privateXcalloc(uint32 NumOfElements, uint32 SizeOfElements, const char *file, int line); // allocate and zero the memory region
 typedef uint8* (*privateXcallocFunc)(uint32 NumOfElements, uint32 SizeOfElements, const char *file, int line);
-#define newX(x) (x)xmalloc(sizeof(T##x))
-#define newXH(x,p) (x)heapAlloc(p, sizeof(T##x))
+#define newX(x) (x) xmalloc(sizeof(T ## x))
+#define newXH(x,p) (x) heapAlloc(p, sizeof(T ## x))
 
 TC_API void setCountToReturnNull(int32 n); // defines a number that, when reached, will cause xmalloc to return null.
 typedef void (*setCountToReturnNullFunc)(int32 n);
@@ -77,53 +77,50 @@ typedef TMemBlock* MemBlock;
 
 typedef void (*HeapFinalizerFunc)(Heap heap, void* bag);
 
-struct TMemBlock
-{
-   uint32 availSize;
-   uint8* block;
-   uint8* current; // current pointer inside the block
-   struct TMemBlock *next;
+struct TMemBlock {
+	uint32 availSize;
+	uint8* block;
+	uint8* current; // current pointer inside the block
+	struct TMemBlock *next;
 };
 
 typedef char CExceptionFileCharBuf[64];
 
 /**
- Structure used to save all informations about a C Exception (simulated with setjmp/longjmp.
- You can save the Heap's exception and overwrite it with a new one, and then restore the original.
- E.G.:
- CException old;
- old = heap->ex;
- IF_HEAP_ERROR(heap)
- {
+   Structure used to save all informations about a C Exception (simulated with setjmp/longjmp.
+   You can save the Heap's exception and overwrite it with a new one, and then restore the original.
+   E.G.:
+   CException old;
+   old = heap->ex;
+   IF_HEAP_ERROR(heap)
+   {
     heap->ex = old;
     ...
 
- Note that each CException takes about 400 bytes of memory.
-*/
-typedef struct
-{
-   CExceptionFileCharBuf creationFile, errorFile, setjmpFile; // can't be a char pointer because an external library may release the pointer before we show the leak error
-   uint32 creationLine, errorLine, setjmpLine;
-   int32 errorCode;
-   jmp_buf errorJump;
+   Note that each CException takes about 400 bytes of memory.
+ */
+typedef struct {
+	CExceptionFileCharBuf creationFile, errorFile, setjmpFile; // can't be a char pointer because an external library may release the pointer before we show the leak error
+	uint32 creationLine, errorLine, setjmpLine;
+	int32 errorCode;
+	jmp_buf errorJump;
 } CException;
 
-struct THeap
-{
-   MemBlock current;
-   CException ex;
-   HeapFinalizerFunc finalizerFunc;
-   void* finalizerBag;
-   uint32 totalAvail,totalAlloc,numAlloc,blocksAlloc,count; // memory statistics
-   bool greedyAlloc; // set to true allocate less memory for each block. will increase the number of blocks. In UIGadgets for example, greedy = unused 11982 (495 blocks), not greedy = unused 576428 (72 blocks)
+struct THeap {
+	MemBlock current;
+	CException ex;
+	HeapFinalizerFunc finalizerFunc;
+	void* finalizerBag;
+	uint32 totalAvail,totalAlloc,numAlloc,blocksAlloc,count; // memory statistics
+	bool greedyAlloc; // set to true allocate less memory for each block. will increase the number of blocks. In UIGadgets for example, greedy = unused 11982 (495 blocks), not greedy = unused 576428 (72 blocks)
 };
 
 /// create a memory heap, with an optional finalizer
 TC_API Heap privateHeapCreate(bool add2list, const char *file, int32 line);
-typedef Heap(*privateHeapCreateFunc)(bool add2list, const char *file, int32 line);
+typedef Heap (*privateHeapCreateFunc)(bool add2list, const char *file, int32 line);
 /// destroy the heap and all pointers inside it
 TC_API void heapDestroyPrivate(Heap m, bool added2list);
-typedef void(*heapDestroyPrivateFunc)(Heap m, bool added2list);
+typedef void (*heapDestroyPrivateFunc)(Heap m, bool added2list);
 /// alloc a pointer inside the heap
 TC_API void* heapAlloc(Heap m, uint32 size);
 typedef void* (*heapAllocFunc)(Heap m, uint32 size);

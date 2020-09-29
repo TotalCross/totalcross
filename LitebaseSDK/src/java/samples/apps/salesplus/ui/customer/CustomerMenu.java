@@ -11,14 +11,12 @@ import samples.apps.salesplus.ui.*;
 /**
  * The customer menu.
  */
-public class CustomerMenu extends BaseMenu
-{
-   /**
-    * The constructor.
-    */
-   public CustomerMenu()
-   {
-      super(new String[]{"New Customer", "Search"},
-             new int[]{SalesPlus.NEW_CUSTOMER, SalesPlus.CUSTOMER_SEARCH}, false);
-   }
+public class CustomerMenu extends BaseMenu {
+	/**
+	 * The constructor.
+	 */
+	public CustomerMenu() {
+		super(new String[] {"New Customer", "Search"},
+		      new int[] {SalesPlus.NEW_CUSTOMER, SalesPlus.CUSTOMER_SEARCH}, false);
+	}
 }

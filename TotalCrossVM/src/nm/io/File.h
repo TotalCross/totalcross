@@ -10,13 +10,12 @@
 
 #include "tcvm.h"
 
-typedef struct _NATIVE_FILE
-{
+typedef struct _NATIVE_FILE {
    #if defined (WIN32) || defined (WINCE)
-      HANDLE handle;
-      TCHAR path[MAX_PATH+1];
+	HANDLE handle;
+	TCHAR path[MAX_PATH+1];
    #else
-      FILE* handle;
+	FILE* handle;
    #endif
 } NATIVE_FILE;
 
@@ -33,40 +32,40 @@ typedef struct _NATIVE_FILE
 
 enum
 {
-   INVALID        = 0,
-   DONT_OPEN      = 1,
-   READ_WRITE     = 2,
-   READ_ONLY      = 3,
-   CREATE         = 4,
-   CREATE_EMPTY   = 5,
-   CLOSED         = 6,
+	INVALID        = 0,
+	DONT_OPEN      = 1,
+	READ_WRITE     = 2,
+	READ_ONLY      = 3,
+	CREATE         = 4,
+	CREATE_EMPTY   = 5,
+	CLOSED         = 6,
 };
 
 enum
 {
-   TIME_CREATED  = 0x1,
-   TIME_MODIFIED = 0x2,
-   TIME_ACCESSED = 0x4,
-   TIME_ALL      = 0xF
+	TIME_CREATED  = 0x1,
+	TIME_MODIFIED = 0x2,
+	TIME_ACCESSED = 0x4,
+	TIME_ALL      = 0xF
 };
 
 enum
 {
-   ATTR_NORMAL        = 0,
-   ATTR_ARCHIVE       = 1,
-   ATTR_HIDDEN        = 2,
-   ATTR_READ_ONLY     = 4,
-   ATTR_SYSTEM        = 8,
-   INVALID_ATTR_VALUE = 0xffffffff
+	ATTR_NORMAL        = 0,
+	ATTR_ARCHIVE       = 1,
+	ATTR_HIDDEN        = 2,
+	ATTR_READ_ONLY     = 4,
+	ATTR_SYSTEM        = 8,
+	INVALID_ATTR_VALUE = 0xffffffff
 };
 
 #if defined (WINCE)
- typedef struct _STORAGE_IDENTIFICATION {
-   DWORD dwSize;
-   DWORD dwFlags;
-   DWORD dwManufactureIDOffset;
-   DWORD dwSerialNumOffset;
- } STORAGE_IDENTIFICATION, *PSTORAGE_IDENTIFICATION;
+typedef struct _STORAGE_IDENTIFICATION {
+	DWORD dwSize;
+	DWORD dwFlags;
+	DWORD dwManufactureIDOffset;
+	DWORD dwSerialNumOffset;
+} STORAGE_IDENTIFICATION, *PSTORAGE_IDENTIFICATION;
 
  #include <winioctl.h>
 

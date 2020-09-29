@@ -65,7 +65,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize);
  * Sets the current file position.
  *
  * @param xFile A pointer to the normal file structure.
- * @param newPos The new file position. 
+ * @param newPos The new file position.
  */
 void nfSetPos(XFile* xFile, int32 newPos);
 
@@ -81,9 +81,9 @@ void nfSetPos(XFile* xFile, int32 newPos);
  */
 bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath);
 
-/** 
+/**
  * Closes a file.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param xFile A pointer to the normal file structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
@@ -91,9 +91,9 @@ bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath);
  */
 bool nfClose(Context context, XFile* xFile);
 
-/** 
+/**
  * Removes a file.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param xFile A pointer to the normal file structure.
  * @param sourcePath The path where the file is stored.
@@ -126,7 +126,7 @@ bool flushCache(Context context, XFile* xFile);
 
 /**
  * Prepares an error message when an error occurs when dealing with files.
- * 
+ *
  * @param context The thread context where the function is being executed.
  * @param errorCode The file error code.
  * @param fileName The file where the error ocurred.
@@ -141,7 +141,7 @@ void fileError(Context context, int32 errorCode, CharP fileName);
  *
  * @param context The thread context where the function is being executed.
  * @param xFile A pointer to the normal file structure.
- * @param mode Indicates if the file must be created or just opened. 
+ * @param mode Indicates if the file must be created or just opened.
  * @return The error code if an error occurred or zero if the function succeeds.
  */
 int32 openFile(Context context, XFile* xFile, int32 mode);

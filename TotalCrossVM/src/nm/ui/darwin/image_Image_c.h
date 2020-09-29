@@ -7,12 +7,12 @@
 
 #if defined (darwin)
  #ifdef __cplusplus
-  extern "C" {
+extern "C" {
  #endif
 
- void resizeImageAtPath(char* src, char* dst, int maxPixelSize);
+void resizeImageAtPath(char* src, char* dst, int maxPixelSize);
 
  #ifdef __cplusplus
-  };
+};
  #endif
 #endif // darwin

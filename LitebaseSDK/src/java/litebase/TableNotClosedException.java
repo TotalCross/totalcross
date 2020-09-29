@@ -11,16 +11,13 @@ package litebase;
  *
  * @see LitebaseConnection#recoverTable(String)
  */
-public class TableNotClosedException extends RuntimeException
-{
-   /**
-    * Constructs a new <code>TableNotClosedException</code> exception with the specified detail message.
-    *
-    * @param tableName The name of the table not closed properly.
-    */
-   TableNotClosedException(String tableName)
-   {
-      super(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_NOT_CLOSED) + tableName + '.');
-   }
-   
+public class TableNotClosedException extends RuntimeException {
+	/**
+	 * Constructs a new <code>TableNotClosedException</code> exception with the specified detail message.
+	 *
+	 * @param tableName The name of the table not closed properly.
+	 */
+	TableNotClosedException(String tableName) {
+		super(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_NOT_CLOSED) + tableName + '.');
+	}
 }

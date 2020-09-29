@@ -5,7 +5,7 @@
 package tc.tools.converter.bytecode;
 
 public class BC042_aload_0 extends LoadLocal {
-  public BC042_aload_0() {
-    super(0, OBJECT);
-  }
+	public BC042_aload_0() {
+		super(0, OBJECT);
+	}
 }

@@ -38,7 +38,7 @@ import totalcross.xml.XmlReader;
  *
  */
 public class I18N {
-	
+
 	public static I18N aa;
 	public static I18N ab;
 	public static I18N ae;
@@ -242,20 +242,19 @@ public class I18N {
 	private boolean isEmpty() {
 		return empty;
 	}
-	
+
 	private I18N (String iso639Code) {
-		
+
 		map = new HashMap<String, String>();
 		byte [] file = Vm.getFile("resources/i18n/"+iso639Code+".xml");
 		if(file == null) {
 			empty = true;
-		}
-		else {
+		} else {
 
 			AbstractCharacterConverter acc = Convert.charConverter;
 			Convert.setDefaultConverter("UTF-8");
 			XmlReader rdr = new XmlReader();
-			
+
 			rdr.setContentHandler(new ContentHandler() {
 				int tag = 0;
 				String att_value;
@@ -266,17 +265,16 @@ public class I18N {
 					if(aux != null) {
 						this.tag = tag;
 						att_value = aux;
-						
 					}
 				}
-				
+
 				@Override
 				public void endElement(int tag) {
 					if(this.tag == tag) {
 						map.put(att_value, value);
 					}
 				}
-				
+
 				@Override
 				public void characters(String s) {
 					value = s;
@@ -291,7 +289,7 @@ public class I18N {
 			Convert.charConverter = acc;
 		}
 	}
-	
+
 	/**
 	 * Loads all I18N instances
 	 * @return
@@ -300,9 +298,9 @@ public class I18N {
 		if(alreadyInitted) {
 			return;
 		}
-		
+
 		alreadyInitted = true;
-		
+
 		aa = new I18N("aa");
 		ab = new I18N("ab");
 		ae = new I18N("ae");
@@ -492,8 +490,6 @@ public class I18N {
 		zh = new I18N("zh");
 		zu = new I18N("zu");
 		none = new I18N("default");
-		
-		
 	}
 
 	/**
@@ -502,198 +498,573 @@ public class I18N {
 	 * @return
 	 */
 	public static I18N getI18N (String iso639Code) {
-		
-		if(iso639Code.equals("aa")) return aa;
-		if(iso639Code.equals("ab")) return ab;
-		if(iso639Code.equals("ae")) return ae;
-		if(iso639Code.equals("af")) return af;
-		if(iso639Code.equals("ak")) return ak;
-		if(iso639Code.equals("am")) return am;
-		if(iso639Code.equals("an")) return an;
-		if(iso639Code.equals("ar")) return ar;
-		if(iso639Code.equals("as")) return as;
-		if(iso639Code.equals("av")) return av;
-		if(iso639Code.equals("ay")) return ay;
-		if(iso639Code.equals("az")) return az;
-		if(iso639Code.equals("ba")) return ba;
-		if(iso639Code.equals("be")) return be;
-		if(iso639Code.equals("bg")) return bg;
-		if(iso639Code.equals("bh")) return bh;
-		if(iso639Code.equals("bi")) return bi;
-		if(iso639Code.equals("bm")) return bm;
-		if(iso639Code.equals("bn")) return bn;
-		if(iso639Code.equals("bo")) return bo;
-		if(iso639Code.equals("br")) return br;
-		if(iso639Code.equals("bs")) return bs;
-		if(iso639Code.equals("ca")) return ca;
-		if(iso639Code.equals("ce")) return ce;
-		if(iso639Code.equals("ch")) return ch;
-		if(iso639Code.equals("co")) return co;
-		if(iso639Code.equals("cr")) return cr;
-		if(iso639Code.equals("cs")) return cs;
-		if(iso639Code.equals("cu")) return cu;
-		if(iso639Code.equals("cv")) return cv;
-		if(iso639Code.equals("cy")) return cy;
-		if(iso639Code.equals("da")) return da;
-		if(iso639Code.equals("de")) return de;
-		if(iso639Code.equals("dv")) return dv;
-		if(iso639Code.equals("dz")) return dz;
-		if(iso639Code.equals("ee")) return ee;
-		if(iso639Code.equals("el")) return el;
-		if(iso639Code.equals("en")) return en;
-		if(iso639Code.equals("eo")) return eo;
-		if(iso639Code.equals("es")) return es;
-		if(iso639Code.equals("et")) return et;
-		if(iso639Code.equals("eu")) return eu;
-		if(iso639Code.equals("fa")) return fa;
-		if(iso639Code.equals("ff")) return ff;
-		if(iso639Code.equals("fi")) return fi;
-		if(iso639Code.equals("fj")) return fj;
-		if(iso639Code.equals("fo")) return fo;
-		if(iso639Code.equals("fr")) return fr;
-		if(iso639Code.equals("fy")) return fy;
-		if(iso639Code.equals("ga")) return ga;
-		if(iso639Code.equals("gd")) return gd;
-		if(iso639Code.equals("gl")) return gl;
-		if(iso639Code.equals("gn")) return gn;
-		if(iso639Code.equals("gu")) return gu;
-		if(iso639Code.equals("gv")) return gv;
-		if(iso639Code.equals("ha")) return ha;
-		if(iso639Code.equals("he")) return he;
-		if(iso639Code.equals("hi")) return hi;
-		if(iso639Code.equals("ho")) return ho;
-		if(iso639Code.equals("hr")) return hr;
-		if(iso639Code.equals("ht")) return ht;
-		if(iso639Code.equals("hu")) return hu;
-		if(iso639Code.equals("hy")) return hy;
-		if(iso639Code.equals("hz")) return hz;
-		if(iso639Code.equals("ia")) return ia;
-		if(iso639Code.equals("id")) return id;
-		if(iso639Code.equals("ie")) return ie;
-		if(iso639Code.equals("ig")) return ig;
-		if(iso639Code.equals("ii")) return ii;
-		if(iso639Code.equals("ik")) return ik;
-		if(iso639Code.equals("in")) return in;
-		if(iso639Code.equals("io")) return io;
-		if(iso639Code.equals("is")) return is;
-		if(iso639Code.equals("it")) return it;
-		if(iso639Code.equals("iu")) return iu;
-		if(iso639Code.equals("iw")) return iw;
-		if(iso639Code.equals("ja")) return ja;
-		if(iso639Code.equals("ji")) return ji;
-		if(iso639Code.equals("jv")) return jv;
-		if(iso639Code.equals("ka")) return ka;
-		if(iso639Code.equals("kg")) return kg;
-		if(iso639Code.equals("ki")) return ki;
-		if(iso639Code.equals("kj")) return kj;
-		if(iso639Code.equals("kk")) return kk;
-		if(iso639Code.equals("kl")) return kl;
-		if(iso639Code.equals("km")) return km;
-		if(iso639Code.equals("kn")) return kn;
-		if(iso639Code.equals("ko")) return ko;
-		if(iso639Code.equals("kr")) return kr;
-		if(iso639Code.equals("ks")) return ks;
-		if(iso639Code.equals("ku")) return ku;
-		if(iso639Code.equals("kv")) return kv;
-		if(iso639Code.equals("kw")) return kw;
-		if(iso639Code.equals("ky")) return ky;
-		if(iso639Code.equals("la")) return la;
-		if(iso639Code.equals("lb")) return lb;
-		if(iso639Code.equals("lg")) return lg;
-		if(iso639Code.equals("li")) return li;
-		if(iso639Code.equals("ln")) return ln;
-		if(iso639Code.equals("lo")) return lo;
-		if(iso639Code.equals("lt")) return lt;
-		if(iso639Code.equals("lu")) return lu;
-		if(iso639Code.equals("lv")) return lv;
-		if(iso639Code.equals("mg")) return mg;
-		if(iso639Code.equals("mh")) return mh;
-		if(iso639Code.equals("mi")) return mi;
-		if(iso639Code.equals("mk")) return mk;
-		if(iso639Code.equals("ml")) return ml;
-		if(iso639Code.equals("mn")) return mn;
-		if(iso639Code.equals("mo")) return mo;
-		if(iso639Code.equals("mr")) return mr;
-		if(iso639Code.equals("ms")) return ms;
-		if(iso639Code.equals("mt")) return mt;
-		if(iso639Code.equals("my")) return my;
-		if(iso639Code.equals("na")) return na;
-		if(iso639Code.equals("nb")) return nb;
-		if(iso639Code.equals("nd")) return nd;
-		if(iso639Code.equals("ne")) return ne;
-		if(iso639Code.equals("ng")) return ng;
-		if(iso639Code.equals("nl")) return nl;
-		if(iso639Code.equals("nn")) return nn;
-		if(iso639Code.equals("no")) return no;
-		if(iso639Code.equals("nr")) return nr;
-		if(iso639Code.equals("nv")) return nv;
-		if(iso639Code.equals("ny")) return ny;
-		if(iso639Code.equals("oc")) return oc;
-		if(iso639Code.equals("oj")) return oj;
-		if(iso639Code.equals("om")) return om;
-		if(iso639Code.equals("or")) return or;
-		if(iso639Code.equals("os")) return os;
-		if(iso639Code.equals("pa")) return pa;
-		if(iso639Code.equals("pi")) return pi;
-		if(iso639Code.equals("pl")) return pl;
-		if(iso639Code.equals("ps")) return ps;
-		if(iso639Code.equals("pt")) return pt;
-		if(iso639Code.equals("qu")) return qu;
-		if(iso639Code.equals("rm")) return rm;
-		if(iso639Code.equals("rn")) return rn;
-		if(iso639Code.equals("ro")) return ro;
-		if(iso639Code.equals("ru")) return ru;
-		if(iso639Code.equals("rw")) return rw;
-		if(iso639Code.equals("sa")) return sa;
-		if(iso639Code.equals("sc")) return sc;
-		if(iso639Code.equals("sd")) return sd;
-		if(iso639Code.equals("se")) return se;
-		if(iso639Code.equals("sg")) return sg;
-		if(iso639Code.equals("si")) return si;
-		if(iso639Code.equals("sk")) return sk;
-		if(iso639Code.equals("sl")) return sl;
-		if(iso639Code.equals("sm")) return sm;
-		if(iso639Code.equals("sn")) return sn;
-		if(iso639Code.equals("so")) return so;
-		if(iso639Code.equals("sq")) return sq;
-		if(iso639Code.equals("sr")) return sr;
-		if(iso639Code.equals("ss")) return ss;
-		if(iso639Code.equals("st")) return st;
-		if(iso639Code.equals("su")) return su;
-		if(iso639Code.equals("sv")) return sv;
-		if(iso639Code.equals("sw")) return sw;
-		if(iso639Code.equals("ta")) return ta;
-		if(iso639Code.equals("te")) return te;
-		if(iso639Code.equals("tg")) return tg;
-		if(iso639Code.equals("th")) return th;
-		if(iso639Code.equals("ti")) return ti;
-		if(iso639Code.equals("tk")) return tk;
-		if(iso639Code.equals("tl")) return tl;
-		if(iso639Code.equals("tn")) return tn;
-		if(iso639Code.equals("to")) return to;
-		if(iso639Code.equals("tr")) return tr;
-		if(iso639Code.equals("ts")) return ts;
-		if(iso639Code.equals("tt")) return tt;
-		if(iso639Code.equals("tw")) return tw;
-		if(iso639Code.equals("ty")) return ty;
-		if(iso639Code.equals("ug")) return ug;
-		if(iso639Code.equals("uk")) return uk;
-		if(iso639Code.equals("ur")) return ur;
-		if(iso639Code.equals("uz")) return uz;
-		if(iso639Code.equals("ve")) return ve;
-		if(iso639Code.equals("vi")) return vi;
-		if(iso639Code.equals("vo")) return vo;
-		if(iso639Code.equals("wa")) return wa;
-		if(iso639Code.equals("wo")) return wo;
-		if(iso639Code.equals("xh")) return xh;
-		if(iso639Code.equals("yi")) return yi;
-		if(iso639Code.equals("yo")) return yo;
-		if(iso639Code.equals("za")) return za;
-		if(iso639Code.equals("zh")) return zh;
-		if(iso639Code.equals("zu")) return zu;
+
+		if(iso639Code.equals("aa")) {
+			return aa;
+		}
+		if(iso639Code.equals("ab")) {
+			return ab;
+		}
+		if(iso639Code.equals("ae")) {
+			return ae;
+		}
+		if(iso639Code.equals("af")) {
+			return af;
+		}
+		if(iso639Code.equals("ak")) {
+			return ak;
+		}
+		if(iso639Code.equals("am")) {
+			return am;
+		}
+		if(iso639Code.equals("an")) {
+			return an;
+		}
+		if(iso639Code.equals("ar")) {
+			return ar;
+		}
+		if(iso639Code.equals("as")) {
+			return as;
+		}
+		if(iso639Code.equals("av")) {
+			return av;
+		}
+		if(iso639Code.equals("ay")) {
+			return ay;
+		}
+		if(iso639Code.equals("az")) {
+			return az;
+		}
+		if(iso639Code.equals("ba")) {
+			return ba;
+		}
+		if(iso639Code.equals("be")) {
+			return be;
+		}
+		if(iso639Code.equals("bg")) {
+			return bg;
+		}
+		if(iso639Code.equals("bh")) {
+			return bh;
+		}
+		if(iso639Code.equals("bi")) {
+			return bi;
+		}
+		if(iso639Code.equals("bm")) {
+			return bm;
+		}
+		if(iso639Code.equals("bn")) {
+			return bn;
+		}
+		if(iso639Code.equals("bo")) {
+			return bo;
+		}
+		if(iso639Code.equals("br")) {
+			return br;
+		}
+		if(iso639Code.equals("bs")) {
+			return bs;
+		}
+		if(iso639Code.equals("ca")) {
+			return ca;
+		}
+		if(iso639Code.equals("ce")) {
+			return ce;
+		}
+		if(iso639Code.equals("ch")) {
+			return ch;
+		}
+		if(iso639Code.equals("co")) {
+			return co;
+		}
+		if(iso639Code.equals("cr")) {
+			return cr;
+		}
+		if(iso639Code.equals("cs")) {
+			return cs;
+		}
+		if(iso639Code.equals("cu")) {
+			return cu;
+		}
+		if(iso639Code.equals("cv")) {
+			return cv;
+		}
+		if(iso639Code.equals("cy")) {
+			return cy;
+		}
+		if(iso639Code.equals("da")) {
+			return da;
+		}
+		if(iso639Code.equals("de")) {
+			return de;
+		}
+		if(iso639Code.equals("dv")) {
+			return dv;
+		}
+		if(iso639Code.equals("dz")) {
+			return dz;
+		}
+		if(iso639Code.equals("ee")) {
+			return ee;
+		}
+		if(iso639Code.equals("el")) {
+			return el;
+		}
+		if(iso639Code.equals("en")) {
+			return en;
+		}
+		if(iso639Code.equals("eo")) {
+			return eo;
+		}
+		if(iso639Code.equals("es")) {
+			return es;
+		}
+		if(iso639Code.equals("et")) {
+			return et;
+		}
+		if(iso639Code.equals("eu")) {
+			return eu;
+		}
+		if(iso639Code.equals("fa")) {
+			return fa;
+		}
+		if(iso639Code.equals("ff")) {
+			return ff;
+		}
+		if(iso639Code.equals("fi")) {
+			return fi;
+		}
+		if(iso639Code.equals("fj")) {
+			return fj;
+		}
+		if(iso639Code.equals("fo")) {
+			return fo;
+		}
+		if(iso639Code.equals("fr")) {
+			return fr;
+		}
+		if(iso639Code.equals("fy")) {
+			return fy;
+		}
+		if(iso639Code.equals("ga")) {
+			return ga;
+		}
+		if(iso639Code.equals("gd")) {
+			return gd;
+		}
+		if(iso639Code.equals("gl")) {
+			return gl;
+		}
+		if(iso639Code.equals("gn")) {
+			return gn;
+		}
+		if(iso639Code.equals("gu")) {
+			return gu;
+		}
+		if(iso639Code.equals("gv")) {
+			return gv;
+		}
+		if(iso639Code.equals("ha")) {
+			return ha;
+		}
+		if(iso639Code.equals("he")) {
+			return he;
+		}
+		if(iso639Code.equals("hi")) {
+			return hi;
+		}
+		if(iso639Code.equals("ho")) {
+			return ho;
+		}
+		if(iso639Code.equals("hr")) {
+			return hr;
+		}
+		if(iso639Code.equals("ht")) {
+			return ht;
+		}
+		if(iso639Code.equals("hu")) {
+			return hu;
+		}
+		if(iso639Code.equals("hy")) {
+			return hy;
+		}
+		if(iso639Code.equals("hz")) {
+			return hz;
+		}
+		if(iso639Code.equals("ia")) {
+			return ia;
+		}
+		if(iso639Code.equals("id")) {
+			return id;
+		}
+		if(iso639Code.equals("ie")) {
+			return ie;
+		}
+		if(iso639Code.equals("ig")) {
+			return ig;
+		}
+		if(iso639Code.equals("ii")) {
+			return ii;
+		}
+		if(iso639Code.equals("ik")) {
+			return ik;
+		}
+		if(iso639Code.equals("in")) {
+			return in;
+		}
+		if(iso639Code.equals("io")) {
+			return io;
+		}
+		if(iso639Code.equals("is")) {
+			return is;
+		}
+		if(iso639Code.equals("it")) {
+			return it;
+		}
+		if(iso639Code.equals("iu")) {
+			return iu;
+		}
+		if(iso639Code.equals("iw")) {
+			return iw;
+		}
+		if(iso639Code.equals("ja")) {
+			return ja;
+		}
+		if(iso639Code.equals("ji")) {
+			return ji;
+		}
+		if(iso639Code.equals("jv")) {
+			return jv;
+		}
+		if(iso639Code.equals("ka")) {
+			return ka;
+		}
+		if(iso639Code.equals("kg")) {
+			return kg;
+		}
+		if(iso639Code.equals("ki")) {
+			return ki;
+		}
+		if(iso639Code.equals("kj")) {
+			return kj;
+		}
+		if(iso639Code.equals("kk")) {
+			return kk;
+		}
+		if(iso639Code.equals("kl")) {
+			return kl;
+		}
+		if(iso639Code.equals("km")) {
+			return km;
+		}
+		if(iso639Code.equals("kn")) {
+			return kn;
+		}
+		if(iso639Code.equals("ko")) {
+			return ko;
+		}
+		if(iso639Code.equals("kr")) {
+			return kr;
+		}
+		if(iso639Code.equals("ks")) {
+			return ks;
+		}
+		if(iso639Code.equals("ku")) {
+			return ku;
+		}
+		if(iso639Code.equals("kv")) {
+			return kv;
+		}
+		if(iso639Code.equals("kw")) {
+			return kw;
+		}
+		if(iso639Code.equals("ky")) {
+			return ky;
+		}
+		if(iso639Code.equals("la")) {
+			return la;
+		}
+		if(iso639Code.equals("lb")) {
+			return lb;
+		}
+		if(iso639Code.equals("lg")) {
+			return lg;
+		}
+		if(iso639Code.equals("li")) {
+			return li;
+		}
+		if(iso639Code.equals("ln")) {
+			return ln;
+		}
+		if(iso639Code.equals("lo")) {
+			return lo;
+		}
+		if(iso639Code.equals("lt")) {
+			return lt;
+		}
+		if(iso639Code.equals("lu")) {
+			return lu;
+		}
+		if(iso639Code.equals("lv")) {
+			return lv;
+		}
+		if(iso639Code.equals("mg")) {
+			return mg;
+		}
+		if(iso639Code.equals("mh")) {
+			return mh;
+		}
+		if(iso639Code.equals("mi")) {
+			return mi;
+		}
+		if(iso639Code.equals("mk")) {
+			return mk;
+		}
+		if(iso639Code.equals("ml")) {
+			return ml;
+		}
+		if(iso639Code.equals("mn")) {
+			return mn;
+		}
+		if(iso639Code.equals("mo")) {
+			return mo;
+		}
+		if(iso639Code.equals("mr")) {
+			return mr;
+		}
+		if(iso639Code.equals("ms")) {
+			return ms;
+		}
+		if(iso639Code.equals("mt")) {
+			return mt;
+		}
+		if(iso639Code.equals("my")) {
+			return my;
+		}
+		if(iso639Code.equals("na")) {
+			return na;
+		}
+		if(iso639Code.equals("nb")) {
+			return nb;
+		}
+		if(iso639Code.equals("nd")) {
+			return nd;
+		}
+		if(iso639Code.equals("ne")) {
+			return ne;
+		}
+		if(iso639Code.equals("ng")) {
+			return ng;
+		}
+		if(iso639Code.equals("nl")) {
+			return nl;
+		}
+		if(iso639Code.equals("nn")) {
+			return nn;
+		}
+		if(iso639Code.equals("no")) {
+			return no;
+		}
+		if(iso639Code.equals("nr")) {
+			return nr;
+		}
+		if(iso639Code.equals("nv")) {
+			return nv;
+		}
+		if(iso639Code.equals("ny")) {
+			return ny;
+		}
+		if(iso639Code.equals("oc")) {
+			return oc;
+		}
+		if(iso639Code.equals("oj")) {
+			return oj;
+		}
+		if(iso639Code.equals("om")) {
+			return om;
+		}
+		if(iso639Code.equals("or")) {
+			return or;
+		}
+		if(iso639Code.equals("os")) {
+			return os;
+		}
+		if(iso639Code.equals("pa")) {
+			return pa;
+		}
+		if(iso639Code.equals("pi")) {
+			return pi;
+		}
+		if(iso639Code.equals("pl")) {
+			return pl;
+		}
+		if(iso639Code.equals("ps")) {
+			return ps;
+		}
+		if(iso639Code.equals("pt")) {
+			return pt;
+		}
+		if(iso639Code.equals("qu")) {
+			return qu;
+		}
+		if(iso639Code.equals("rm")) {
+			return rm;
+		}
+		if(iso639Code.equals("rn")) {
+			return rn;
+		}
+		if(iso639Code.equals("ro")) {
+			return ro;
+		}
+		if(iso639Code.equals("ru")) {
+			return ru;
+		}
+		if(iso639Code.equals("rw")) {
+			return rw;
+		}
+		if(iso639Code.equals("sa")) {
+			return sa;
+		}
+		if(iso639Code.equals("sc")) {
+			return sc;
+		}
+		if(iso639Code.equals("sd")) {
+			return sd;
+		}
+		if(iso639Code.equals("se")) {
+			return se;
+		}
+		if(iso639Code.equals("sg")) {
+			return sg;
+		}
+		if(iso639Code.equals("si")) {
+			return si;
+		}
+		if(iso639Code.equals("sk")) {
+			return sk;
+		}
+		if(iso639Code.equals("sl")) {
+			return sl;
+		}
+		if(iso639Code.equals("sm")) {
+			return sm;
+		}
+		if(iso639Code.equals("sn")) {
+			return sn;
+		}
+		if(iso639Code.equals("so")) {
+			return so;
+		}
+		if(iso639Code.equals("sq")) {
+			return sq;
+		}
+		if(iso639Code.equals("sr")) {
+			return sr;
+		}
+		if(iso639Code.equals("ss")) {
+			return ss;
+		}
+		if(iso639Code.equals("st")) {
+			return st;
+		}
+		if(iso639Code.equals("su")) {
+			return su;
+		}
+		if(iso639Code.equals("sv")) {
+			return sv;
+		}
+		if(iso639Code.equals("sw")) {
+			return sw;
+		}
+		if(iso639Code.equals("ta")) {
+			return ta;
+		}
+		if(iso639Code.equals("te")) {
+			return te;
+		}
+		if(iso639Code.equals("tg")) {
+			return tg;
+		}
+		if(iso639Code.equals("th")) {
+			return th;
+		}
+		if(iso639Code.equals("ti")) {
+			return ti;
+		}
+		if(iso639Code.equals("tk")) {
+			return tk;
+		}
+		if(iso639Code.equals("tl")) {
+			return tl;
+		}
+		if(iso639Code.equals("tn")) {
+			return tn;
+		}
+		if(iso639Code.equals("to")) {
+			return to;
+		}
+		if(iso639Code.equals("tr")) {
+			return tr;
+		}
+		if(iso639Code.equals("ts")) {
+			return ts;
+		}
+		if(iso639Code.equals("tt")) {
+			return tt;
+		}
+		if(iso639Code.equals("tw")) {
+			return tw;
+		}
+		if(iso639Code.equals("ty")) {
+			return ty;
+		}
+		if(iso639Code.equals("ug")) {
+			return ug;
+		}
+		if(iso639Code.equals("uk")) {
+			return uk;
+		}
+		if(iso639Code.equals("ur")) {
+			return ur;
+		}
+		if(iso639Code.equals("uz")) {
+			return uz;
+		}
+		if(iso639Code.equals("ve")) {
+			return ve;
+		}
+		if(iso639Code.equals("vi")) {
+			return vi;
+		}
+		if(iso639Code.equals("vo")) {
+			return vo;
+		}
+		if(iso639Code.equals("wa")) {
+			return wa;
+		}
+		if(iso639Code.equals("wo")) {
+			return wo;
+		}
+		if(iso639Code.equals("xh")) {
+			return xh;
+		}
+		if(iso639Code.equals("yi")) {
+			return yi;
+		}
+		if(iso639Code.equals("yo")) {
+			return yo;
+		}
+		if(iso639Code.equals("za")) {
+			return za;
+		}
+		if(iso639Code.equals("zh")) {
+			return zh;
+		}
+		if(iso639Code.equals("zu")) {
+			return zu;
+		}
 
 		return none;
-		
 	}
 
 	/**
@@ -701,7 +1072,9 @@ public class I18N {
 	 * @param name
 	 * @return
 	 */
-	public String getValue(String name) {return map.get(name);}
+	public String getValue(String name) {
+		return map.get(name);
+	}
 
 	/**
 	 * Returns I18N for the device default language. If there is no xml file for this language,
