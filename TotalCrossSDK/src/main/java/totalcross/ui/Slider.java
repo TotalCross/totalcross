@@ -38,6 +38,10 @@ public class Slider extends ScrollBar {
   public int ticksColor = -1;
   /**Height of the bar*/
   public int barHeight = -1;
+  /**Bar border in horizontal mode is round*/
+  public boolean barBorderRound = false;
+  /**Radius of the round border*/
+  public int roundBorderRadius;
   
   /** Constructs a HORIZONTAL Slider. */
   public Slider() {
@@ -224,6 +228,13 @@ public class Slider extends ScrollBar {
 	        g.translate(0, dragBarPos);
 	      } else {
 	        g.backColor = !invertDirection ? empty : filled;
+          if(barBorderRound) {
+            g.fillCircle((uiMaterial ? midBarSize : 0) + roundBorderRadius, p + barHeight/2, roundBorderRadius);
+            g.fillCircle((uiMaterial ? midBarSize : 0) + barSize - roundBorderRadius, p + barHeight/2, roundBorderRadius);
+            g.draw3dRect((uiMaterial ? midBarSize : 0) + roundBorderRadius, p, barSize - roundBorderRadius*2, s, Graphics.R3D_FILL, false, false, fourColors);
+          } else {
+            g.draw3dRect(uiMaterial ? midBarSize : 0, p, barSize, s, uiMaterial ? Graphics.R3D_FILL : Graphics.R3D_RAISED, false, false, fourColors);
+          }
         	g.draw3dRect(uiMaterial ? midBarSize : 0, p, barSize, s, uiMaterial ? Graphics.R3D_FILL : Graphics.R3D_RAISED, false, false, fourColors);
 	        g.backColor = invertDirection ? empty : filled;
 	        if (dragBarPos > 0 && drawFilledArea) {
