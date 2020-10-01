@@ -8,6 +8,7 @@ package totalcross.ui;
 import totalcross.sys.Settings;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
 import totalcross.util.UnitsConverter;
 
 /** Slider is a simple slider.
@@ -42,6 +43,10 @@ public class Slider extends ScrollBar {
   public boolean barBorderRound = false;
   /**Radius of the round border*/
   public int roundBorderRadius;
+  /**Size of the marker that indicates progress(when not using an image as a marker)*/
+  public int markerSize = -1;
+  /**Image used in place of the drawn marker*/
+  public Image markerImage = null;
   
   /** Constructs a HORIZONTAL Slider. */
   public Slider() {
@@ -235,7 +240,6 @@ public class Slider extends ScrollBar {
           } else {
             g.draw3dRect(uiMaterial ? midBarSize : 0, p, barSize, s, uiMaterial ? Graphics.R3D_FILL : Graphics.R3D_RAISED, false, false, fourColors);
           }
-        	g.draw3dRect(uiMaterial ? midBarSize : 0, p, barSize, s, uiMaterial ? Graphics.R3D_FILL : Graphics.R3D_RAISED, false, false, fourColors);
 	        g.backColor = invertDirection ? empty : filled;
 	        if (dragBarPos > 0 && drawFilledArea) {
 	          g.fillRect(k + (uiMaterial ? midBarSize/2 : 0), p + k, drawFilledArea ? dragBarPos : size - (uiMaterial ? midBarSize*2 : 0), uiMaterial ? s : s - k - k);
@@ -258,14 +262,17 @@ public class Slider extends ScrollBar {
 	      
 	      g.backColor = isEnabled() ? uiMaterial ? sliderColor : fourColors[0] : bc;
 	      g.foreColor = isEnabled() ? uiMaterial ? sliderColor : fourColors[1] : getForeColor();
-	      if (uiMaterial) {
-	        boolean f = hasFocus();
-	        int r = f ? midBarSize : fmH / 4;
-	        g.drawCircle(verticalBar ? width / 2 : 0, verticalBar ? 0 : height / 2, r);
-	      } else {
-	        g.fillPolygon(barX, barY, 5);
-	        g.drawPolygon(barX, barY, 5);
-	      }
+      if (markerImage != null) {
+          g.drawImage(markerImage, (verticalBar ? width / 2 : 0) - markerImage.getWidth() / 2,
+                  (verticalBar ? 0 : height / 2) - markerImage.getHeight() / 2, true);
+      } else if (uiMaterial) {
+          boolean f = hasFocus();
+          int r = f ? midBarSize : fmH / 4;
+          g.drawCircle(verticalBar ? width / 2 : 0, verticalBar ? 0 : height / 2, markerSize != -1 ? markerSize : r);
+      } else {
+          g.fillPolygon(barX, barY, 5);
+          g.drawPolygon(barX, barY, 5);
+      }
 	      break;
 	    }
     }
