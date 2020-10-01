@@ -36,12 +36,15 @@ public class Slider extends ScrollBar {
   public int circleColor = -1;
   /**The color of the slider ticks*/
   public int ticksColor = -1;
-  /**Size of the bar when it is using MaterialUI*/
-  public int barHeight = UnitsConverter.toPixels(2 + DP);
+  /**Height of the bar*/
+  public int barHeight = -1;
   
   /** Constructs a HORIZONTAL Slider. */
   public Slider() {
     this(HORIZONTAL);
+    if(!uiMaterial){
+      this.barHeight = Math.max(4, verticalBar ? (width / 2) : (height / 2));
+    }
   }
 
   /** Constructs a Slider with the given orientation.
@@ -102,6 +105,14 @@ public class Slider extends ScrollBar {
     super.onFontChanged();
   }
 
+  @Override
+  public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged) {
+    super.setRect(x, y, width, height, relative, screenChanged);
+    if(barHeight == -1 && !uiMaterial){
+      this.barHeight = Math.max(4, verticalBar ? (width / 2) : (height / 2));
+    }
+  }
+
   /** Returns the drag bar position. */
   public int getDragBarPos(int value) {
     return Math.min(dragBarMax, (int) (valuesPerPixel * (value - minimum) + 0.5d)) + midBarSize;
@@ -148,7 +159,7 @@ public class Slider extends ScrollBar {
 	}
 	
     int bc = getBackColor(), p, s;
-    s = uiMaterial ? barHeight : Math.max(4, verticalBar ? (width / 2) : (height / 2));
+    s = barHeight;
     p = verticalBar ? (width - s) / 2 : (height - s) / 2; // guich@tc126_72: center based on bar size
     switch (Settings.uiStyle) {
 	    case Settings.Holo:
