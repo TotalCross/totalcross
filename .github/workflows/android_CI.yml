@@ -8,6 +8,8 @@ jobs:
   build:
     name: Build Android with Gradle
     runs-on: ubuntu-18.04
+    container:
+      image: docker://fabernovel/android:api-29-ndk-v1.2.0
 
     steps:
     - name: Checkout
@@ -27,4 +29,4 @@ jobs:
 
     - name: Build with Gradle
       working-directory: TotalCrossVM/android
-      run: ./gradlew clean && ./gradlew assembleDebug
+      run: ./gradlew assembleDebug
