@@ -5,6 +5,7 @@
 
 package totalcross.android;
 
+import android.Manifest;
 import android.speech.tts.TextToSpeech;
 import totalcross.*;
 import totalcross.android.PathUtil;
@@ -24,6 +25,7 @@ import android.net.*;
 import android.os.*;
 import android.provider.*;
 import android.speech.*;
+import android.support.v4.content.ContextCompat;
 import android.util.*;
 import android.view.*;
 import android.view.ViewGroup.*;
@@ -400,7 +402,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       return image;
   }
 
-    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int captureMode) {
+    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int captureMode, int flashMode) {
         try {
             imageFN = s;
             this.cameraType = cameraType;
@@ -439,6 +441,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                 intent.putExtra("height", height);
                 intent.putExtra("allowRotation", allowRotation);
                 intent.putExtra("captureMode", captureMode);
+                intent.putExtra("flashMode", flashMode);
                 startActivityForResult(intent, TAKE_PHOTO);
                 Launcher4A.instance.nativeInitSize(null, -998, 0);
             }
@@ -449,6 +452,8 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
             Launcher4A.pictureTaken(1);
         }
     }
+
+
 
     private void dialNumber(String number)
    {
@@ -637,7 +642,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       case CAMERA:
                captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
                                                                ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"),b.getInt("showCamera.cameraType")
-                                                                , b.getInt("showCamera.captureMode"));
+                                                                , b.getInt("showCamera.captureMode"), b.getInt("showCamera.flashMode"));
         break;
       case TITLE:
         setTitle(b.getString("setDeviceTitle.title"));

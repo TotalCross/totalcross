@@ -51,6 +51,7 @@ static void cameraClick(NMParams p)
    int cameraType = Camera_cameraType(obj);
    JNIEnv *env = getJNIEnv();      
    int captureMode = Camera_captureMode(obj);
+   int flashMode = Camera_flashMode(obj);
    bool isPhoto = captureMode == 0;
    if (env)                      
    {
@@ -88,7 +89,7 @@ static void cameraClick(NMParams p)
       }
       CharP2JCharPBuf(fileName,len,jfn,true);
       s = (*env)->NewString(env,jfn,len);
-      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType, captureMode); 
+      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType, captureMode, flashMode); 
       for (takingPicture = true; takingPicture;) // block vm until the picture is taken
          Sleep(250);
       switch (code)

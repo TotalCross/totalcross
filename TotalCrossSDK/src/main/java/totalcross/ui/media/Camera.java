@@ -108,6 +108,9 @@ public class Camera {
   /** The camera type; defaults to CAMERA_CUSTOM. */
   public int cameraType;
 
+  /** The flash mode; defaults do FLASH_OFF */
+  public int flashMode = 0;
+
   /** The original camera used in TotalCross */
   public static final int CAMERA_CUSTOM = 0;
   /** The native camera application; a copy of the image is returned. */
@@ -142,6 +145,12 @@ public class Camera {
 
   /** The default title when used in desktop */
   public static String fcbTitle = "Select a photo";
+
+  /** Used in the flashMode, to turn it on. */
+  public static final int FLASH_OFF = 0;
+  
+  /** Used in the flashMode, to turn it on. */
+  public static final int FLASH_ON = 1;
 
   public Camera() {}
 
