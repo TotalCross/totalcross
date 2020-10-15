@@ -20,7 +20,15 @@
   <a href="https://totalcross.com/community/" target="_blank">Community</a>
 </div>
 
+
+
+<br>
+<div align="center">
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
+![build](https://github.com/TotalCross/totalcross/workflows/build/badge.svg)
+
+</div>
 
 ## Install
 
