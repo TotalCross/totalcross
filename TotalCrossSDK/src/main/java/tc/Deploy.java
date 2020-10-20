@@ -172,7 +172,13 @@ public class Deploy {
       showException(e, null);
       throw e;
     } finally {
-      AnonymousUserData.instance().deploy(args);
+      new Thread(() -> {
+        try {
+          AnonymousUserData.instance().deploy(args);
+        } catch (Exception e) {
+          //TODO: handle exception in a Log level
+        } 
+      }).start();
     }
   }
 

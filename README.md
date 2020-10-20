@@ -20,7 +20,15 @@
   <a href="https://totalcross.com/community/" target="_blank">Community</a>
 </div>
 
+
+
+<br>
+<div align="center">
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FTotalCross%2Ftotalcross?ref=badge_shield)
+![build](https://github.com/TotalCross/totalcross/workflows/build/badge.svg)
+
+</div>
 
 ## Install
 
@@ -32,7 +40,7 @@ To start you only need to install it on your machine, and you have two options:
 
 The quickest way to start using TotalCross is to download the [VSCode plugin](https://marketplace.visualstudio.com/items?itemName=totalcross.vscode-totalcross). We highly recommend this route as it is a smoother process.
 
-Make sure all dependencies are fulfilled ([Java JDK 1.8+](https://www.azul.com/downloads/zulu-community/?version=java-8-lts&architecture=x86-64-bit&package=jdk), [Maven 3.6.2+](https://maven.apache.org/download.cgi), and
+Make sure all dependencies are fulfilled ([Java JDK 11+](https://www.azul.com/downloads/zulu-community/?version=java-11-lts&architecture=x86-64-bit&package=jdk), [Maven 3.6.2+](https://maven.apache.org/download.cgi), and
 [Microsoft Java Extension Plugin](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack)), create a new project, and you are ready to go!
 
 ### ... or run TotalCross from scratch yourself!
@@ -106,7 +114,7 @@ Check out our [documentation](https://learn.totalcross.com/documentation/compone
 
 ## Have any questions?
 
-Join our [Telegram group](https://t.me/totalcrosscommunity). [Bruno](https://github.com/brunoamuniz) and [Italo](https://github.com/ItaloYeltsin) are super quick to welcome and provide help to new users.
+Join our [Telegram group](https://t.me/totalcrosscommunity). We are super quick to welcome and provide help to new users :sweat_smile:.
 
 There's also a handy [FAQ.md](./FAQ.md) file with all sorts of useful information, as what is inside this repo, how TotalCross works, how to become a contributor, and more.
 
