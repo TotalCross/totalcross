@@ -141,13 +141,6 @@ bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTC
    return true;
 }
 
-TC_API void tsS_refresh(NMParams p) // totalcross/sys/Settings native public static void refresh();
-{
-   UNUSED(p);
-   updateDaylightSavings(p->currentContext);
-   storeSettings(false); // guich@tc136
-}
-
 static bool inSerialNumberExclusionList() // empties the serial number in devices that returns it incorrectly
 {                     
    int32 i;
@@ -244,6 +237,13 @@ void storeSettings(bool quittingApp) // guich@230_22
    restoreVKSettings();
 #endif
    }
+}
+
+TC_API void tsS_refresh(NMParams p) // totalcross/sys/Settings native public static void refresh();
+{
+   UNUSED(p);
+   updateDaylightSavings(p->currentContext);
+   storeSettings(false); // guich@tc136
 }
 
 void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings

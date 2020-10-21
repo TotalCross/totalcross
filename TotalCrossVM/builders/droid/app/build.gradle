@@ -3,6 +3,7 @@
 apply plugin: 'com.android.application'
 
  repositories { 
+     google()
      jcenter()
      maven {
          url "http://maven.totalcross.com/artifactory/build"
@@ -32,7 +33,7 @@ android {
         externalNativeBuild {
             cmake {
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
-                arguments "-DANDROID_TOOLCHAIN=gcc"
+                arguments "-DANDROID_TOOLCHAIN=clang"
                 cppFlags "-std=c++14"
             }
         }
@@ -85,7 +86,8 @@ android {
         destinationDir file('src/main/assets') // directory that you want your archive to be placed in
     }
 
-    task copyApk << {
+    task copyApk {
+        doLast {
         copy {
 			from fileTree('build/outputs/apk').files
 			into '../../../../output/release/TotalCrossSDK/dist/vm/android'
@@ -125,6 +127,7 @@ android {
             rename { String fileName ->
                 fileName.replace('-standardRelease', '')
             }
+        }
         }
     }
 
@@ -170,9 +173,9 @@ dependencies {
     // Enables MultiDex. This allows the app to have more than 64k methods
     implementation 'com.android.support:multidex:1.0.1'
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    // testImplementation 'junit:junit:4.12'
+    // androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    // androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
    
     implementation(group: 'ScanditBarcodeScanner', name: 'ScanditBarcodeScanner', version: 'b1', ext: 'aar')
 }

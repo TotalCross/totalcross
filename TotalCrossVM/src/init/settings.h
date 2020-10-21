@@ -108,16 +108,20 @@ typedef struct
 } TVirtualKeyboardSettings, *VirtualKeyboardSettings;
 
 bool hasVirtualKeyboard();
+#if !defined __clang__ || defined darwin // some settings.h functions do not compile onder clang
 bool initSettings(Context currentContext, CharP mainClassName, TCZFile loadedTCZ);
 bool retrieveSettings(Context currentContext, CharP mainClassName);
-void retrieveSettingsChangedAtStaticInitializer(Context currentContext);
 void storeSettings(bool quittingApp);
+#endif
+void retrieveSettingsChangedAtStaticInitializer(Context currentContext);
 void restoreVKSettings();
 
 TC_API TCSettings getSettingsPtr(); // to be called by another dll to get access to the tcSettings structure
 typedef TCSettings (*getSettingsPtrFunc)(); // to be called by another dll to get access to the tcSettings structure
 
+#if !defined __clang__ || defined darwin // some settings.h functions do not compile onder clang
 TC_API bool getDataPath(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
+#endif
 typedef bool (*getDataPathFunc)(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
 void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp); // updates Settings.screenWidth/screenHeight
 

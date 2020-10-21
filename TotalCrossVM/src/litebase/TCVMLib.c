@@ -56,7 +56,9 @@ void initTCVMLib()
    TC_executeMethod = GETPROCADDRESS(executeMethod);
    TC_getApplicationId = GETPROCADDRESS(getApplicationId);
    TC_getAppPath = GETPROCADDRESS(getAppPath);
+   #ifndef __clang__ // some settings.h functions do not compile onder clang
    TC_getDataPath = GETPROCADDRESS(getDataPath);
+   #endif
    TC_getDateTime = GETPROCADDRESS(getDateTime);
    TC_getErrorMessage = GETPROCADDRESS(getErrorMessage);
    TC_getSettingsPtr = GETPROCADDRESS(getSettingsPtr);
