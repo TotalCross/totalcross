@@ -13,6 +13,7 @@ import totalcross.util.*;
  * Represents a SQL Statement that can be prepared (compiled) once and executed many times with different parameter
  * values.
  */
+@Deprecated
 public class PreparedStatement
 {
    /**

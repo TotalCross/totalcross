@@ -8,6 +8,7 @@ package litebase;
 /**
  * Internal use only. Represents a SQL element, like data types, operands, and functions. It also has useful methods.
  */
+@Deprecated
 class SQLElement
 {
    // Possible SQL Commands.

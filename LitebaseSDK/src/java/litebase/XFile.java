@@ -10,6 +10,7 @@ import totalcross.io.*;
 /**
  * This is a cross-file interface. It defines operations common to NormalFile and MemoryFile.
  */
+@Deprecated
 abstract class XFile extends Stream
 {
    /**

@@ -11,6 +11,7 @@ import totalcross.util.InvalidDateException;
 /**
  * Internal use only. Abstract class for SQL statements.
  */
+@Deprecated
 abstract class SQLStatement
 {
    /**

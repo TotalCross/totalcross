@@ -11,6 +11,7 @@ import totalcross.util.IntHashtable;
 /**
  * Internal use only. Represents the "select" clause portion of a SQL query.
  */
+@Deprecated
 class SQLSelectClause
 {
    // Possibles types for the select clause

@@ -12,6 +12,7 @@ import totalcross.util.*;
 /**
  * This class is the one used to issue SQL commands. Read Litebase Companion chapters for more information.
  */
+@Deprecated
 public class LitebaseConnection
 { 
    /**

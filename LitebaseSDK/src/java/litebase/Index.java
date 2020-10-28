@@ -12,6 +12,7 @@ import totalcross.util.*;
 /**
  * Represents a B-Tree header.
  */
+@Deprecated
 class Index
 {
    /**

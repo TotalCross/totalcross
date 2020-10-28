@@ -8,6 +8,7 @@ package litebase;
 /**
  * Represents a field of a statement except for SELECTs.
  */
+@Deprecated
 class SQLFieldDefinition
 {
    /**

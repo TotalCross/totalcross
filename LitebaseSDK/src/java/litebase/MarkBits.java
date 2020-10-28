@@ -12,6 +12,7 @@ import totalcross.util.IntVector;
  * Generates the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. This class should only be used
  * if the result set has a WHERE clause.
  */
+@Deprecated
 class MarkBits
 {
    /**

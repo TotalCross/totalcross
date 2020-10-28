@@ -12,6 +12,7 @@ import totalcross.util.*;
 /**
  * Represents a value which can be inserted in a column of a table.
  */
+@Deprecated
 class SQLValue
 {
    /**

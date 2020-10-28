@@ -9,6 +9,7 @@ package litebase;
 /**
  * This exception may be dispatched by routines that handle the parsing of an SQL command. It is an unchecked Exception (it can be thrown any time).
  */
+@Deprecated
 public class SQLParseException extends RuntimeException
 {
    /** 

@@ -12,6 +12,7 @@ import totalcross.util.*;
 /**
  * Internal use only. Represents a SQL <code>SELECT</code> statement.
  */
+@Deprecated
 class SQLSelectStatement extends SQLStatement
 {
    /**

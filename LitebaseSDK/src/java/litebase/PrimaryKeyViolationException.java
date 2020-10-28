@@ -11,6 +11,7 @@ package litebase;
  * the primary key rule. It can also be thrown when adding a primary key to a table if there is a duplicated or null in a primary key. It is an 
  * unchecked Exception (can be thrown any time).
  */
+@Deprecated
 public class PrimaryKeyViolationException extends RuntimeException
 {
    /**

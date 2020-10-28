@@ -12,6 +12,7 @@ import totalcross.util.*;
 /**
  * Internal use only. Represents a boolean clause (<code>WHERE</code> or <code>HAVING</code>) in a SQL query.
  */
+@Deprecated
 class SQLBooleanClause
 {
    /**

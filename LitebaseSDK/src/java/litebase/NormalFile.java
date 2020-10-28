@@ -10,6 +10,7 @@ import totalcross.io.*;
 /**
  * This is a normal file, ie, a file that is stored in disk.
  */
+@Deprecated
 class NormalFile extends XFile
 {
    /** 

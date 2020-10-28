@@ -11,6 +11,7 @@ import totalcross.util.*;
  * Internal use only. Represents a SQL column list clause, like order by or group by. <BR>
  * <i>Note:</i> The select clause has a different class <code>SQLSelectClause</code>, since it has a different complexity.
  */
+@Deprecated
 class SQLColumnListClause
 {
    /**

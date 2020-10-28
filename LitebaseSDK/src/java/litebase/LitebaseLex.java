@@ -10,6 +10,7 @@ import totalcross.sys.*;
 /**
  * Used to do SQL lexical analysis.
  */
+@Deprecated
 class LitebaseLex
 {  
    // Constants used to differenciate the kinds of tokens.

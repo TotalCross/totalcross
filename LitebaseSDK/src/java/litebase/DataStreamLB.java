@@ -11,6 +11,7 @@ import totalcross.io.*;
 /**
  * Is the same of <code>DataStreamLE</code> except for being able to use cryptography.
  */
+@Deprecated
 class DataStreamLB extends DataStreamLE
 {
    /**

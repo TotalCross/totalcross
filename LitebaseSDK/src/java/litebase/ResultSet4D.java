@@ -21,6 +21,7 @@ import totalcross.util.*;
  *
  * Result sets cannot be constructed directly; instead, an sql must be issued to the driver.
  */
+@Deprecated
 public class ResultSet4D
 {
    /**

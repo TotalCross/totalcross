@@ -8,6 +8,7 @@ package litebase;
 /**
  * Internal use only. Represents a table of various statements, except for inserts.
  */
+@Deprecated
 class SQLResultSetTable
 {
    /**

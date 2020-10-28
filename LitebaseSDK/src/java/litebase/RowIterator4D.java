@@ -12,6 +12,7 @@ import totalcross.util.Date;
  * Native class used to iterate through the rows of a database. It can access some attributes from the row that eases the control of which row was 
  * changed, deleted or is newer since a synchronization.
  */
+@Deprecated
 public class RowIterator4D
 {
    /**
