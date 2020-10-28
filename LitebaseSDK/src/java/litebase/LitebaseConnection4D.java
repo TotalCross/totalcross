@@ -11,6 +11,7 @@ import totalcross.util.Logger;
 /**
  * This class is the native one used to issue SQL commands. Read Litebase Companion chapters for more information.
  */
+@Deprecated
 public class LitebaseConnection4D
 {   
    /**

@@ -8,6 +8,7 @@ package litebase;
 /**
  * Hash table for Litebase SQL reserved words.
  */
+@Deprecated
 class ReservedHashtable
 {
    /** 

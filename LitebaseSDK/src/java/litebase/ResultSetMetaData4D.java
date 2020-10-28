@@ -10,6 +10,7 @@ package litebase;
  * <code>ResultSet</code> returns no data.
  * <P>Important: it is not possible to retrieve these information if the <code>ResultSet</code> is closed!
  */
+@Deprecated
 public class ResultSetMetaData4D
 {
    /**

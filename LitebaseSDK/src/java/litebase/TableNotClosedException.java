@@ -11,6 +11,7 @@ package litebase;
  *
  * @see LitebaseConnection#recoverTable(String)
  */
+@Deprecated
 public class TableNotClosedException extends RuntimeException
 {
    /**

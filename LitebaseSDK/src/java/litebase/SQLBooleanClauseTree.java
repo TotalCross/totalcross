@@ -12,6 +12,7 @@ import totalcross.util.*;
 /**
  * Internal use only. A tree structure used to evaluate a SQL boolean clause for a given result set.
  */
+@Deprecated
 class SQLBooleanClauseTree
 {
    // Pattern match types

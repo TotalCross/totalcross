@@ -10,6 +10,7 @@ package litebase;
 /**
  * Contains error messages with multi-language support. By now, only English and Portuguese are implemented.
  */
+@Deprecated
 class LitebaseMessage
 {
    // General errors.

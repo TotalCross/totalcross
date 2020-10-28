@@ -10,6 +10,7 @@ package litebase;
  * This exception may be dispatched if any problem, other than a SQL parsing error, occurs. It is an unchecked Exception
  * (it can be thrown any time).
  */
+@Deprecated
 public class DriverException extends RuntimeException
 {
    /** 

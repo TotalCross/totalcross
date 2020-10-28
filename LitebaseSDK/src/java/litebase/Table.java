@@ -13,6 +13,7 @@ import totalcross.util.*;
 /**
  * The structure of a table.
  */
+@Deprecated
 class Table
 {
    /**

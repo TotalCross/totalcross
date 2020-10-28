@@ -15,6 +15,7 @@ import totalcross.util.*;
  * This is the implementation of a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and 
  * speed, targeting the creation of indices, where the table's record is far greater than the index record.
  */
+@Deprecated
 class Node
 {
    /**

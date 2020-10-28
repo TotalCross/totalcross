@@ -8,6 +8,7 @@ package litebase;
 /**
  * Hash table for Litebase SQL reserved words collision list. 
  */
+@Deprecated
 class Entry
 {
    /**

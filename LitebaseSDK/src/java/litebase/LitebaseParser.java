@@ -13,6 +13,7 @@ import totalcross.util.*;
 /**
  * This class calls <code>yyparse()</code> and builds the parser result.
  */
+@Deprecated
 class LitebaseParser
 {
    /**

@@ -11,6 +11,7 @@ import totalcross.sys.*;
 /**
  * This class has useful constants, fields, and methods for the other Litebase classes.
  */
+@Deprecated
 class Utils
 {
    /**

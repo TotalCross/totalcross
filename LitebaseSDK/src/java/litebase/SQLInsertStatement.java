@@ -12,6 +12,7 @@ import totalcross.util.InvalidDateException;
 /**
  * Internal use only. Represents a SQL <code>INSERT</code> statement.
  */
+@Deprecated
 class SQLInsertStatement extends SQLStatement
 {
    /** 

@@ -10,6 +10,7 @@ package litebase;
  * This exception may be thrown by <code>LitebaseConnection.execute</code>, when a table or index has already been
  * created. It is an unchecked Exception (can be thrown any time).
  */
+@Deprecated
 public class AlreadyCreatedException extends RuntimeException
 {
    /**

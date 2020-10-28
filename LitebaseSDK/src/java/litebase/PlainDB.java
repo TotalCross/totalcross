@@ -17,6 +17,7 @@ import totalcross.util.*;
  * 
  * This also has the implementation of a temporary database for <code>ResultSet</code> tables.
  */
+@Deprecated
 class PlainDB
 {
    /**

@@ -12,6 +12,7 @@ import totalcross.util.InvalidDateException;
 /**
  * Represents a SQL <code>DELETE</code> statement.
  */
+@Deprecated
 class SQLDeleteStatement extends SQLStatement
 {
    /** 

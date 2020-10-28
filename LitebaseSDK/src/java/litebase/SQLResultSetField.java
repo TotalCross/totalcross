@@ -8,6 +8,7 @@ package litebase;
 /**
  * Internal use only. Represents a field of a <code>ResultSet</code>.
  */
+@Deprecated
 class SQLResultSetField
 {
    /** 

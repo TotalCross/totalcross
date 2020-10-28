@@ -12,6 +12,7 @@ import totalcross.util.InvalidDateException;
 /**
  * This class represents the key of a record. It may be any of the SQL types defined here.
  */
+@Deprecated
 class Key
 {
    /**

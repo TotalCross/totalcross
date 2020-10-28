@@ -8,6 +8,7 @@ package litebase;
 /**
  * Represents a composed index.
  */
+@Deprecated
 class ComposedIndex
 {
    /**

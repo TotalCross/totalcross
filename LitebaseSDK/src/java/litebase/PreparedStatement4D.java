@@ -11,6 +11,7 @@ import totalcross.util.*;
 /**
  * Native class that represents a SQL Statement that can be prepared (compiled) once and executed many times with different parameter values.
  */
+@Deprecated
 public class PreparedStatement4D
 {
    /**
