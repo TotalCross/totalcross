@@ -226,8 +226,16 @@ public class FloatingLabel<T extends Control & HasValue<?>> {
 	}
 
 	private void fullStep() {
-		// Label Font size Animation
-		fcap = fcap.adjustedBy(isExpanded ? captionFontSmall.size - target.getFont().size : target.getFont().size - captionFontSmall.size);
+        // Label Font size Animation
+        if (fcap.size != captionAnimationFontTarget.size) {
+            int delta = isExpanded ? captionFontSmall.size - target.getFont().size : target.getFont().size - captionFontSmall.size;
+            int newSize = delta + fcap.size;
+            if ( (!isExpanded && newSize > captionAnimationFontTarget.size) || (isExpanded && newSize < captionAnimationFontTarget.size)) {
+                delta = captionAnimationFontTarget.size - fcap.size;
+            }
+            fcap = fcap.adjustedBy(delta);
+        }
+
 		// Label Position Animation
 		if (target instanceof OutlinedEdit) {
 			xcap = !isExpanded ? xcap0 : topX;
