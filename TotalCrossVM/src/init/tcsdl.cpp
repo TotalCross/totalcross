@@ -139,8 +139,6 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 			std::cerr << "SDL_CreateTexturet(): " << SDL_GetError() << '\n';
 			return false;
 		}
-	} else {
-		surface = SDL_GetWindowSurface(window);
 	}
 
 	// Get pixel format struct
@@ -161,14 +159,9 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	// pixel order
 	screen->pixelformat = windowPixelFormat;
 
-	if (usesTexture) {
-		// Adjusts screen's pixel surface
-		if (IS_NULL(screen->pixels = (uint8*) malloc(screen->pitch * screen->screenH))) {
-			std::cerr << "Failed to alloc " << (screen->pitch * screen->screenH) << " bytes for pixel surface" << '\n';
-			return false;
-		}
-	}else {
-		screen->pixels = (uint8*) surface->pixels;
+	if (IS_NULL(screen->pixels = (uint8*) malloc(screen->pitch * screen->screenH))) {
+		std::cerr << "Failed to alloc " << (screen->pitch * screen->screenH) << " bytes for pixel surface" << '\n';
+		return false;
 	}
 
 	if (IS_NULL(screen->extension = (ScreenSurfaceEx) malloc(sizeof(TScreenSurfaceEx)))) {
@@ -178,6 +171,15 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 		std::cerr << "Failed to alloc TScreenSurfaceEx of " << sizeof(TScreenSurfaceEx) << " bytes" << '\n';
 		return false;
 	}
+
+	surface = SDL_CreateRGBSurfaceWithFormatFrom(
+						screen->pixels, 
+						screen->screenW,
+						screen->screenH,
+						screen->bpp,
+						screen->pitch,
+						windowPixelFormat);
+
 	SCREEN_EX(screen)->window = window;
 	SCREEN_EX(screen)->renderer = renderer;
 	SCREEN_EX(screen)->texture = texture;
@@ -200,6 +202,9 @@ void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
 	if(usesTexture) {
 		// Update the given texture rectangle with new pixel data.
 		SDL_UpdateTexture(texture, NULL, pixels, pitch);
+	} else {
+		// Copy virtual surface to window surface
+		SDL_BlitSurface(surface, NULL, SDL_GetWindowSurface(window), NULL);
 	}
 	// Call SDL render present
 	TCSDL_Present();
