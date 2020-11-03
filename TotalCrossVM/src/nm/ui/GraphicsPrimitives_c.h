@@ -407,16 +407,15 @@ end:
 static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSurf, int32 srcX, int32 srcY, int32 w, int32 h,
                         int32 dstX, int32 dstY, int32 doClip)
 {
-    if (Surface_isImage(srcSurf))
-    {
-        TCObject pixelsObj = Image_pixels(srcSurf);
-        Pixel *pixels = (Pixel *)ARRAYOBJ_START(pixelsObj);
-        int32 width = Image_width(srcSurf);
-        int32 height = Image_height(srcSurf);
+    if (Surface_isImage(srcSurf)) {
         int32 id = Image_textureId(srcSurf);
-
-        Image_textureId(srcSurf) = skia_makeBitmap(id, pixels, width, height);
-
+        if (Image_changed(srcSurf) || id == -1) {
+            TCObject pixelsObj = Image_pixels(srcSurf);
+            Pixel *pixels = (Pixel *)ARRAYOBJ_START(pixelsObj);
+            int32 width = Image_width(srcSurf);
+            int32 height = Image_height(srcSurf);
+            Image_textureId(srcSurf) = skia_makeBitmap(id, pixels, width, height);
+        }
         dstX += Graphics_transX(dstSurf);
         dstY += Graphics_transY(dstSurf);
         skia_setClip(Get_Clip(dstSurf));
