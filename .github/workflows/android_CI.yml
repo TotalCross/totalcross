@@ -1,12 +1,12 @@
-name: Android CI
+name: Android_CI
 
 on:
   push:
     branches: [ master ]
 
 jobs:
-  build:
-    name: Build Android with Gradle
+  build_android:
+    name: Build Android 
     runs-on: ubuntu-18.04
     container:
       image: docker://fabernovel/android:api-28-gcloud-ndk-v1.2.0
@@ -29,4 +29,10 @@ jobs:
 
     - name: Build with Gradle
       working-directory: TotalCrossVM/android
-      run: ./gradlew assembleDebug
+      run: ./gradlew assembleDebug assembleAssets copyApk --stacktrace
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v2
+      with:
+        name: TotalCross_Android
+        path: TotalCrossVM/android/

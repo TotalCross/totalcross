@@ -38,5 +38,19 @@ jobs:
     - name: build image
       run: |
         docker buildx build -f TotalCrossVM/docker/${{ matrix.project }}/Dockerfile \
-        --tag gomex/totalcross-${{ matrix.project }} \
+        --tag totalcross/totalcross-${{ matrix.project }} \
         --platform linux/${{ matrix.arch }} .
+ 
+    - name: copy /build
+      run: |
+        docker run -d --name totalcross-${{ matrix.project }} totalcross/totalcross-${{ matrix.project }} sleep 30
+        docker cp totalcross/totalcross-${{ matrix.project }}:/build /build_{{ matrix.project }}
+        docker rm -fv totalcross-${{ matrix.project }}
+        
+    - name: upload build {{ matrix.project }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: build_{{ matrix.project }}
+        path: /build_{{ matrix.project }}
+ 
+ 

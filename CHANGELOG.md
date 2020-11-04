@@ -1,6 +1,66 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.1.1 - October 2020
+Hello! This minor release has as main objective:
+- **Static SDL2** - Brings it back to work properly on Angstrom for target Linux ARM;
+- **Display env-vars** - Configurable displays bounds;
+- **`SSLSocketFactory`** - Change `SSLSocketFactory` to always yield a `SSLSocket`;
+- **Fixes** - Minor bug fixes :wrench:.
+
+Join our [community on the telegram](https://t.me/totalcrosscommunity) to give feedback about this release!
+
+### Static SDL2
+
+SDL is now statically linked for Linux arm32v7. Some very simple systems do not have the possibility of installing SDL2 in an easy way. On Angström-type systems this required a certain kludge exporting the path to extern `.so` with `LD_LIBRARY_PATH=<path-to-.so>`. We didn't want it to be hard, that's why the change!
+
+### Display env-vars
+We now introduce 3 environment variables for execution. Since we do not have an automatic viewport they need to be set up they are:
+|     | TC_WIDTH  | TC_HEIGHT  | TC_FULLSCREEN  |
+|---|---|---|---|
+| Description  | Size of `width` in pixels  | Size of `height` in pixels  | Only do something when comes to `false` or `0` | 
+| Values  |  int | int  | bool | 
+
+You can use them as follows for Linux and Linux ARM platforms:
+
+```bash
+$ TC_WIDTH=1280 TC_HEIGHT=720 TC_FULLSCREEN=false ./Launcher MyApp
+```
+When the fullscreen is deactivated the TC is opened in a window and its logic like:
+```cpp
+width -= width*0.09;
+height -= height*0.09;
+```
+That should change soon. See more in #99.
+
+>The syntax #\<number\> is related to pull request in GitHub repository.
+
+### `SSLSocketFactory`
+Should always yields a `SSLSocket` when in `SSLSocketFactory`. As
+`SSLSocketFactory` extends `SocketFactory` and does not override the
+`createSocket(String, int)` method, and calls from super classe. As
+`SocketFactory` yields plain sockets...
+
+This fix just delegates to `createSocket(String, int, int)` passing the default
+`Socket.DEFAULT_OPEN_TIMEOUT` as the open timeout argument. Maybe it should be
+better to call `new SSLSocket(String, int)`, but this constructor does not
+exists yet. See more in #122.
+
+> Thanks **@jeffque** :smiley:!
+
+### Fixes
+Corrections were made:
+- Launch args not being parsed, i.e., ex. `/density` #94;
+- SDL didn't work properly in systems without libSDL2-dev, `CreateRenderer()` bug #99;
+- SDL use `SDL_Surface` instead of `SDL_Renderer` when hardware accelerated graphics is not available;
+- iOS: Update `youtube-ios-player-helper` from 0.0.16 to 1.0.2. This is required because UIWebView, a component used by this dependency, is deprecated resulting the error ITMS-90809 when uploading the app for the app store;
+- iOS: fix missing icon files when generating;
+- Remove some Sun private libraries are not guaranteed to be available to any JDK besides
+the Oracle JDK 8 or previous;
+- Fix `AnonymousUserData` usage;
+- `StringBuffer` adds missing `CharSequence` constructor.
+
+
 ## 6.1.0 - July 2020
 Welcome to the July 2020 release (version 6.1.0). We hope you enjoy the updates in this version. The key highlights are:
   - **Maven plugin new version** - your pom.xml file should change;
