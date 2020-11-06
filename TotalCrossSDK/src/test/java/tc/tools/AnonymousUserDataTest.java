@@ -23,7 +23,7 @@ public class AnonymousUserDataTest {
     static String configPath;
 
     @BeforeEach
-    void setup() {
+    void setup() throws IOException {
         anonymousUserData = AnonymousUserData.instance();
         anonymousUserData.setBaseUrl("https://aqueous-plateau-93003.herokuapp.com/api/v1");
         configDirPath = Paths.get(System.getProperty("user.home"), "tc-test").toAbsolutePath().toString();
