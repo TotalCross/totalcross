@@ -190,7 +190,8 @@ public class AlphabetKeyboard extends Container {
     button.setForeColor(FORE_COLOR);
     button.setFont(font);
     button.setBackColor(Color.getRGB(233, 233, 235));
-    button.effect = null;
+    // find a better way to disable effects, this method produces double pen_up events
+    // button.effect = null;
   }
 
   public void changeCase(boolean toUpperCase) {
