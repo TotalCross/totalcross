@@ -96,6 +96,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private int toBpp = 24;
   private int toWidth = -1;
   private int toHeight = -1;
+  private boolean fullscreen = false;
   private String className;
   private boolean appletInitialized; // guich@500_1
   private LauncherFrame frame;
@@ -277,6 +278,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     private Insets insets;
 
     public LauncherFrame() {
+      if (fullscreen) {
+        setExtendedState(Frame.MAXIMIZED_BOTH);
+        setUndecorated(true);
+      }
       setBackground(new java.awt.Color(getScreenColor(mainWindow.getBackColor())));
       setResizable(Settings.resizableWindow); // guich@570_54
       setLayout(null);
@@ -405,6 +410,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     System.out.println("*  /scr android     : Android             (same of /scr 320x568x24)");
     System.out.println("   /scr iphone      : iPhone 8 resolution (same of /scr 750x1334x24 /density 2)");
     System.out.println("   /scr ipad        : iPad resolution     (same of /scr 1536x2048x24 /density 2)");
+    System.out.println("   /fullscreen      : Use full-screen window");
     System.out.println("   /pos x,y         : Sets the openning position of the application");
     System.out.println("   /uiStyle Flat    : Flat user interface style");
     System.out.println("*  /uiStyle Vista   : Vista user interface style");
@@ -518,6 +524,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             }
           }
           System.out.println("Screen is " + toWidth + "x" + toHeight + "x" + toBpp);
+        } else if (args[i].equalsIgnoreCase("/fullscreen")) {
+          fullscreen = true;
         } else if (args[i].equalsIgnoreCase("/r")) {
           ++i;
         } else if (args[i].equalsIgnoreCase("/pos")) /* x,y */
