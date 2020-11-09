@@ -15,6 +15,7 @@ def buildType // stores build type, debug or release
 
 android {
     compileSdkVersion 28
+    ndkVersion "21.0.6113669"
     compileOptions {
     	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
         sourceCompatibility JavaVersion.VERSION_1_8
