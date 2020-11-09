@@ -29,10 +29,10 @@ jobs:
 
     - name: Build with Gradle
       working-directory: TotalCrossVM/android
-      run: ./gradlew assembleDebug --stacktrace
+      run: ./gradlew dist --stacktrace
     
     - name: Upload APK
       uses: actions/upload-artifact@v2
       with:
-        name: APK Android
-        path: TotalCrossVM/android/app/
+        name: TotalCross_Android
+        path: TotalCrossVM/android/
