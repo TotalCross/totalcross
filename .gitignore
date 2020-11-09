@@ -63,3 +63,4 @@ build/
 TotalCrossVM/android/src/main/libs/armeabi/
 TotalCrossVM/android/.idea
 TotalCrossVM/android/app/src/main/assets/tcfiles\.zip
+TotalCrossVM/android/app/.cxx
