@@ -29,11 +29,11 @@ jobs:
 
     - name: Build TotalCrossSDK
       working-directory: TotalCrossSDK
-      run: ./gradlew dist
+      run: ./gradlew clean dist --stacktrace
       
     - name: Build Android
       working-directory: TotalCrossVM/android
-      run: ./gradlew assembleDebug copyApk
+      run: ./gradlew assembleDebug copyApk --stacktrace
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
