@@ -611,39 +611,38 @@ public class Container extends Control {
     } else if (!transparentBackground
         && (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground))) {
       fillBackground(g, b);
-    } else {
-	    switch (borderStyle) {
-	    case BORDER_NONE:
-	      break;
-	
-	    case BORDER_TOP:
-	      g.foreColor = borderColor != -1 ? borderColor : getForeColor();
-	      g.drawRect(0, 0, width, 0);
-	      break;
-	
-	    case BORDER_SIMPLE:
-	      g.foreColor = borderColor != -1 ? borderColor : getForeColor();
-	      g.drawRect(0, 0, width, height);
-	      break;
-	
-	    case BORDER_ROUNDED:
-        if(Settings.onJavaSE) { // used on simulator
-          g.drawWindowBorder(0, 0, width, height, 0, 0, borderColor != -1 ? borderColor : getForeColor(), b, b, b, 2,
-              false);
+    }
+    switch (borderStyle) {
+    case BORDER_NONE:
+      break;
+
+    case BORDER_TOP:
+      g.foreColor = borderColor != -1 ? borderColor : getForeColor();
+      g.drawRect(0, 0, width, 0);
+      break;
+
+    case BORDER_SIMPLE:
+      g.foreColor = borderColor != -1 ? borderColor : getForeColor();
+      g.drawRect(0, 0, width, height);
+      break;
+
+    case BORDER_ROUNDED:
+      if(Settings.onJavaSE) { // used on simulator
+        g.drawWindowBorder(0, 0, width, height, 0, 0, borderColor != -1 ? borderColor : getForeColor(), b, b, b, 2,
+            false);
+      }
+      else {
+        g.backColor = backColor;
+        g.fillRoundRect(0, 0, width, height, borderRadius);
+        if(borderColor != -1 ) {
+          g.foreColor = borderColor;
+          g.drawRoundRect(0, 0, width, height, borderRadius);
         }
-        else {
-          g.backColor = backColor;
-          g.fillRoundRect(0, 0, width, height, borderRadius);
-          if(borderColor != -1 ) {
-            g.foreColor = borderColor;
-            g.drawRoundRect(0, 0, width, height, borderRadius);
-          }
-        }
-	      break;
-	
-	    default:
-	      g.draw3dRect(0, 0, width, height, borderStyle, false, false, fourColors);
-	    }
+      }
+      break;
+
+    default:
+      g.draw3dRect(0, 0, width, height, borderStyle, false, false, fourColors);
     }
   }
 
