@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cmake.sourceDirectory": "${workspaceFolder}/TotalCrossVM",
+		"java.configuration.updateBuildConfiguration": "interactive",
+		"files.watcherExclude": {
+			"**/.gradle/**": true
+		}
+	}
+}
