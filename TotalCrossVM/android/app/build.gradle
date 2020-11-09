@@ -133,7 +133,7 @@ android {
                 eachFile { println it.file }
             }
             copy {
-                from fileTree('build/intermediates/res/standard/' + buildType).files
+                from fileTree('build/intermediates/processed_res/standard'+ buildType.capitalize() +'/out').files
                 into '../../../TotalCrossSDK/etc/launchers/android'
                 include 'resources-standard' + buildType.capitalize() + '.ap_'
                 rename { String fileName ->

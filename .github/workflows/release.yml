@@ -2,7 +2,13 @@ name: Release
 
 on:
   push:
-    branches: [ master ]
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v6.1.1, v7.0.0
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Versão (nome da tag a ser referenciada)'
+        required: true
 
 jobs:
   build:

@@ -37,7 +37,7 @@ retrolambda {
 }
 
 wrapper {
-    gradleVersion = '5.0'
+    gradleVersion = '5.6.4'
     distributionUrl = distributionUrl.replace("bin", "all")
 }
 
