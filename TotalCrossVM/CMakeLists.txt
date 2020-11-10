@@ -530,7 +530,7 @@ if(${CMAKE_VERSION} VERSION_LESS "3.8" OR MSVC)
     CXX_EXTENSIONS NO
   )
 else()
-  target_compile_features(tcvm PUBLIC cxx_std_11)
+  target_compile_features(tcvm PUBLIC cxx_std_14)
 endif()
 # XCode Properties
 if(CMAKE_GENERATOR STREQUAL Xcode)
