@@ -111,7 +111,8 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
     // the different OpenGL variants (Core, ES, etc). Most of the code bellow is dedicated to create
     // a GL context and produce a valid rendertarget out of it for rendering.
-    sk_sp<GrContext> grContext(GrContext::MakeGL(nullptr));
+    auto interface = GrGLMakeNativeInterface();
+    sk_sp<GrContext> grContext(GrContext::MakeGL(interface));
 
     GLint defaultFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFBO);
