@@ -46,6 +46,10 @@ android {
             }
         }
     }
+
+    packagingOptions {
+        pickFirst "**/libskia.so"
+    }
     
     signingConfigs {
         config {
