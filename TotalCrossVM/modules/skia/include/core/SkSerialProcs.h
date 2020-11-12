@@ -8,9 +8,9 @@
 #ifndef SkSerialProcs_DEFINED
 #define SkSerialProcs_DEFINED
 
-#include "include/core/SkImage.h"
-#include "include/core/SkPicture.h"
-#include "include/core/SkTypeface.h"
+#include "SkImage.h"
+#include "SkPicture.h"
+#include "SkTypeface.h"
 
 /**
  *  A serial-proc is asked to serialize the specified object (e.g. picture or image).

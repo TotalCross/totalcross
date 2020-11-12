@@ -8,7 +8,7 @@
 #ifndef SkAnnotation_DEFINED
 #define SkAnnotation_DEFINED
 
-#include "include/core/SkTypes.h"
+#include "SkTypes.h"
 
 class SkData;
 struct SkPoint;

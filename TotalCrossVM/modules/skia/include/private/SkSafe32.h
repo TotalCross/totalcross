@@ -8,7 +8,7 @@
 #ifndef SkSafe32_DEFINED
 #define SkSafe32_DEFINED
 
-#include "include/core/SkTypes.h"
+#include "SkTypes.h"
 
 static constexpr int32_t Sk64_pin_to_s32(int64_t x) {
     return x < SK_MinS32 ? SK_MinS32 : (x > SK_MaxS32 ? SK_MaxS32 : (int32_t)x);

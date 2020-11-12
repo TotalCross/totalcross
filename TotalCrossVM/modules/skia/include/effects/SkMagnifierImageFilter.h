@@ -9,20 +9,36 @@
 #ifndef SkMagnifierImageFilter_DEFINED
 #define SkMagnifierImageFilter_DEFINED
 
-#include "include/core/SkImageFilter.h"
-#include "include/core/SkRect.h"
+#include "SkRect.h"
+#include "SkImageFilter.h"
 
-// DEPRECATED: Use include/effects/SkImageFilters::Magnifier
-class SK_API SkMagnifierImageFilter {
+class SK_API SkMagnifierImageFilter : public SkImageFilter {
 public:
     static sk_sp<SkImageFilter> Make(const SkRect& srcRect, SkScalar inset,
                                      sk_sp<SkImageFilter> input,
-                                     const SkImageFilter::CropRect* cropRect = nullptr);
+                                     const CropRect* cropRect = nullptr);
 
-    static void RegisterFlattenables();
+    Factory getFactory() const override { return CreateProc; }
+
+protected:
+    SkMagnifierImageFilter(const SkRect& srcRect,
+                           SkScalar inset,
+                           sk_sp<SkImageFilter> input,
+                           const CropRect* cropRect);
+    void flatten(SkWriteBuffer&) const override;
+
+    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
+                                        SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
 
 private:
-    SkMagnifierImageFilter() = delete;
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
+
+    SkRect   fSrcRect;
+    SkScalar fInset;
+
+    typedef SkImageFilter INHERITED;
 };
 
 #endif

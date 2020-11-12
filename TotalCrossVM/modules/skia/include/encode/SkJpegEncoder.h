@@ -8,7 +8,7 @@
 #ifndef SkJpegEncoder_DEFINED
 #define SkJpegEncoder_DEFINED
 
-#include "include/encode/SkEncoder.h"
+#include "SkEncoder.h"
 
 class SkJpegEncoderMgr;
 class SkWStream;
@@ -91,7 +91,7 @@ private:
     SkJpegEncoder(std::unique_ptr<SkJpegEncoderMgr>, const SkPixmap& src);
 
     std::unique_ptr<SkJpegEncoderMgr> fEncoderMgr;
-    using INHERITED = SkEncoder;
+    typedef SkEncoder INHERITED;
 };
 
 #endif

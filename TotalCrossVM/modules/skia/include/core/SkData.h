@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "include/core/SkRefCnt.h"
+#include "SkRefCnt.h"
 
 class SkStream;
 
@@ -51,7 +51,7 @@ public:
             // only assert we're unique if we're not empty
             SkASSERT(this->unique());
         }
-        return const_cast<void*>(fPtr);
+        return fPtr;
     }
 
     /**
@@ -161,7 +161,7 @@ private:
     friend class SkNVRefCnt<SkData>;
     ReleaseProc fReleaseProc;
     void*       fReleaseProcContext;
-    const void* fPtr;
+    void*       fPtr;
     size_t      fSize;
 
     SkData(const void* ptr, size_t size, ReleaseProc, void* context);
@@ -176,7 +176,7 @@ private:
 
     static void DummyReleaseProc(const void*, void*); // {}
 
-    using INHERITED = SkRefCnt;
+    typedef SkRefCnt INHERITED;
 };
 
 #endif

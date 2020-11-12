@@ -10,11 +10,11 @@
 #ifndef SkParsePath_DEFINED
 #define SkParsePath_DEFINED
 
-#include "include/core/SkPath.h"
+#include "SkPath.h"
 
 class SkString;
 
-class SK_API SkParsePath {
+class SkParsePath {
 public:
     static bool FromSVGString(const char str[], SkPath*);
     static void ToSVGString(const SkPath&, SkString*);

@@ -8,19 +8,36 @@
 #ifndef SkOffsetImageFilter_DEFINED
 #define SkOffsetImageFilter_DEFINED
 
-#include "include/core/SkImageFilter.h"
+#include "SkFlattenable.h"
+#include "SkImageFilter.h"
+#include "SkPoint.h"
 
-// DEPRECATED: Use include/effects/SkImageFilters::Offset
-class SK_API SkOffsetImageFilter {
+class SK_API SkOffsetImageFilter : public SkImageFilter {
 public:
     static sk_sp<SkImageFilter> Make(SkScalar dx, SkScalar dy,
                                      sk_sp<SkImageFilter> input,
-                                     const SkImageFilter::CropRect* cropRect = nullptr);
+                                     const CropRect* cropRect = nullptr);
 
-    static void RegisterFlattenables();
+    SkRect computeFastBounds(const SkRect& src) const override;
+
+    Factory getFactory() const override { return CreateProc; }
+
+protected:
+    void flatten(SkWriteBuffer&) const override;
+    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
+                                        SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+    SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix& ctm,
+                               MapDirection, const SkIRect* inputRect) const override;
 
 private:
-    SkOffsetImageFilter() = delete;
+    SkOffsetImageFilter(SkScalar dx, SkScalar dy, sk_sp<SkImageFilter> input, const CropRect*);
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
+
+    SkVector fOffset;
+
+    typedef SkImageFilter INHERITED;
 };
 
 #endif

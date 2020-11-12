@@ -8,20 +8,36 @@
 #ifndef SkColorFilterImageFilter_DEFINED
 #define SkColorFilterImageFilter_DEFINED
 
-#include "include/core/SkColorFilter.h"
-#include "include/core/SkImageFilter.h"
+#include "SkImageFilter.h"
+#include "SkColorFilter.h"
 
-// DEPRECATED: Use include/effects/SkImageFilters::ColorFilter
-class SK_API SkColorFilterImageFilter {
+class SK_API SkColorFilterImageFilter : public SkImageFilter {
 public:
     static sk_sp<SkImageFilter> Make(sk_sp<SkColorFilter> cf,
                                      sk_sp<SkImageFilter> input,
-                                     const SkImageFilter::CropRect* cropRect = nullptr);
+                                     const CropRect* cropRect = nullptr);
 
-    static void RegisterFlattenables();
+    Factory getFactory() const override { return CreateProc; }
+
+protected:
+    void flatten(SkWriteBuffer&) const override;
+    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
+                                        SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+    bool onIsColorFilterNode(SkColorFilter**) const override;
+    bool onCanHandleComplexCTM() const override { return true; }
+    bool affectsTransparentBlack() const override;
 
 private:
-    SkColorFilterImageFilter() = delete;
+    SkColorFilterImageFilter(sk_sp<SkColorFilter> cf,
+                             sk_sp<SkImageFilter> input,
+                             const CropRect* cropRect);
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
+
+    sk_sp<SkColorFilter> fColorFilter;
+
+    typedef SkImageFilter INHERITED;
 };
 
 #endif

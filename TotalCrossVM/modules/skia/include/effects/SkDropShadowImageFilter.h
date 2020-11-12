@@ -8,12 +8,12 @@
 #ifndef SkDropShadowImageFilter_DEFINED
 #define SkDropShadowImageFilter_DEFINED
 
-#include "include/core/SkColor.h"
-#include "include/core/SkImageFilter.h"
-#include "include/core/SkScalar.h"
+#include "SkColor.h"
+#include "SkFlattenable.h"
+#include "SkImageFilter.h"
+#include "SkScalar.h"
 
-// DEPRECATED: Use include/effects/SkImageFilters::DropShadow and DropShadowOnly
-class SK_API SkDropShadowImageFilter {
+class SK_API SkDropShadowImageFilter : public SkImageFilter {
 public:
     enum ShadowMode {
         kDrawShadowAndForeground_ShadowMode,
@@ -27,12 +27,32 @@ public:
     static sk_sp<SkImageFilter> Make(SkScalar dx, SkScalar dy, SkScalar sigmaX, SkScalar sigmaY,
                                      SkColor color, ShadowMode shadowMode,
                                      sk_sp<SkImageFilter> input,
-                                     const SkImageFilter::CropRect* cropRect = nullptr);
+                                     const CropRect* cropRect = nullptr);
 
-    static void RegisterFlattenables();
+    SkRect computeFastBounds(const SkRect&) const override;
+
+    Factory getFactory() const override { return CreateProc; }
+
+protected:
+    void flatten(SkWriteBuffer&) const override;
+    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
+                                        SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+    SkIRect onFilterNodeBounds(const SkIRect& src, const SkMatrix& ctm,
+                               MapDirection, const SkIRect* inputRect) const override;
 
 private:
-    SkDropShadowImageFilter() = delete;
+    SkDropShadowImageFilter(SkScalar dx, SkScalar dy, SkScalar sigmaX, SkScalar sigmaY, SkColor,
+                            ShadowMode shadowMode, sk_sp<SkImageFilter> input,
+                            const CropRect* cropRect);
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
+
+    SkScalar fDx, fDy, fSigmaX, fSigmaY;
+    SkColor fColor;
+    ShadowMode fShadowMode;
+
+    typedef SkImageFilter INHERITED;
 };
 
 #endif

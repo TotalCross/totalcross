@@ -8,10 +8,10 @@
 #ifndef SkImageEncoder_DEFINED
 #define SkImageEncoder_DEFINED
 
-#include "include/core/SkBitmap.h"
-#include "include/core/SkData.h"
-#include "include/core/SkEncodedImageFormat.h"
-#include "include/core/SkStream.h"
+#include "SkBitmap.h"
+#include "SkData.h"
+#include "SkEncodedImageFormat.h"
+#include "SkStream.h"
 
 /**
  * Encode SkPixmap in the given binary image format.
@@ -27,11 +27,10 @@
  * Will always return false if Skia is compiled without image
  * encoders.
  *
- * For SkEncodedImageFormat::kWEBP, if quality is 100, it will use lossless compression. Otherwise
- * it will use lossy.
+ * Note that webp encodes will use webp lossy compression.
  *
  * For examples of encoding an image to a file or to a block of memory,
- * see tools/ToolUtils.h.
+ * see tools/sk_tool_utils.h.
  */
 SK_API bool SkEncodeImage(SkWStream* dst, const SkPixmap& src,
                           SkEncodedImageFormat format, int quality);
@@ -57,8 +56,7 @@ inline bool SkEncodeImage(SkWStream* dst, const SkBitmap& src, SkEncodedImageFor
  * Will always return nullptr if Skia is compiled without image
  * encoders.
  *
- * For SkEncodedImageFormat::kWEBP, if quality is 100, it will use lossless compression. Otherwise
- * it will use lossy.
+ * Note that webp encodes will use webp lossy compression.
  */
 SK_API sk_sp<SkData> SkEncodePixmap(const SkPixmap& src, SkEncodedImageFormat format, int quality);
 

@@ -8,11 +8,11 @@
 #ifndef SkXPSDocument_DEFINED
 #define SkXPSDocument_DEFINED
 
-#include "include/core/SkTypes.h"
+#include "SkTypes.h"
 
 #ifdef SK_BUILD_FOR_WIN
 
-#include "include/core/SkDocument.h"
+#include "SkDocument.h"
 
 struct IXpsOMObjectFactory;
 

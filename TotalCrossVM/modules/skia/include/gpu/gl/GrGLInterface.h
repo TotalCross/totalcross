@@ -8,9 +8,9 @@
 #ifndef GrGLInterface_DEFINED
 #define GrGLInterface_DEFINED
 
-#include "include/core/SkRefCnt.h"
-#include "include/gpu/gl/GrGLExtensions.h"
-#include "include/gpu/gl/GrGLFunctions.h"
+#include "GrGLFunctions.h"
+#include "GrGLExtensions.h"
+#include "SkRefCnt.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,6 +35,13 @@ SK_API sk_sp<const GrGLInterface> GrGLMakeNativeInterface();
 SK_API const GrGLInterface* GrGLCreateNativeInterface();
 
 /**
+ * Creates a null GrGLInterface that doesn't draw anything. Used for measuring
+ * CPU overhead. TODO: We would like to move this to tools/gpu/gl/null but currently
+ * Chromium is using it in its unit tests.
+ */
+const SK_API GrGLInterface* GrGLCreateNullInterface(bool enableNVPR = false);
+
+/**
  * GrContext uses the following interface to make all calls into OpenGL. When a
  * GrContext is created it is given a GrGLInterface. The interface's function
  * pointers must be valid for the OpenGL context associated with the GrContext.
@@ -47,14 +54,7 @@ SK_API const GrGLInterface* GrGLCreateNativeInterface();
  */
 struct SK_API GrGLInterface : public SkRefCnt {
 private:
-    using INHERITED = SkRefCnt;
-
-#if GR_GL_CHECK_ERROR
-    // This is here to avoid having our debug code that checks for a GL error after most GL calls
-    // accidentally swallow an OOM that should be reported.
-    mutable bool fOOMed = false;
-    bool fSuppressErrorLogging = false;
-#endif
+    typedef SkRefCnt INHERITED;
 
 public:
     GrGLInterface();
@@ -63,19 +63,6 @@ public:
     // function pointers have been initialized for both the GL version and any advertised
     // extensions.
     bool validate() const;
-
-#if GR_GL_CHECK_ERROR
-    GrGLenum checkError(const char* location, const char* call) const;
-    bool checkAndResetOOMed() const;
-    void suppressErrorLogging();
-#endif
-
-#if GR_TEST_UTILS
-    GrGLInterface(const GrGLInterface& that)
-            : fStandard(that.fStandard)
-            , fExtensions(that.fExtensions)
-            , fFunctions(that.fFunctions) {}
-#endif
 
     // Indicates the type of GL implementation
     union {
@@ -101,7 +88,6 @@ public:
         GrGLFunction<GrGLBindFragDataLocationIndexedFn> fBindFragDataLocationIndexed;
         GrGLFunction<GrGLBindFramebufferFn> fBindFramebuffer;
         GrGLFunction<GrGLBindRenderbufferFn> fBindRenderbuffer;
-        GrGLFunction<GrGLBindSamplerFn> fBindSampler;
         GrGLFunction<GrGLBindTextureFn> fBindTexture;
         GrGLFunction<GrGLBindVertexArrayFn> fBindVertexArray;
         GrGLFunction<GrGLBlendBarrierFn> fBlendBarrier;
@@ -126,12 +112,10 @@ public:
         GrGLFunction<GrGLCreateShaderFn> fCreateShader;
         GrGLFunction<GrGLCullFaceFn> fCullFace;
         GrGLFunction<GrGLDeleteBuffersFn> fDeleteBuffers;
-        GrGLFunction<GrGLDeleteFencesFn> fDeleteFences;
         GrGLFunction<GrGLDeleteFramebuffersFn> fDeleteFramebuffers;
         GrGLFunction<GrGLDeleteProgramFn> fDeleteProgram;
         GrGLFunction<GrGLDeleteQueriesFn> fDeleteQueries;
         GrGLFunction<GrGLDeleteRenderbuffersFn> fDeleteRenderbuffers;
-        GrGLFunction<GrGLDeleteSamplersFn> fDeleteSamplers;
         GrGLFunction<GrGLDeleteShaderFn> fDeleteShader;
         GrGLFunction<GrGLDeleteTexturesFn> fDeleteTextures;
         GrGLFunction<GrGLDeleteVertexArraysFn> fDeleteVertexArrays;
@@ -151,7 +135,6 @@ public:
         GrGLFunction<GrGLEnableVertexAttribArrayFn> fEnableVertexAttribArray;
         GrGLFunction<GrGLEndQueryFn> fEndQuery;
         GrGLFunction<GrGLFinishFn> fFinish;
-        GrGLFunction<GrGLFinishFenceFn> fFinishFence;
         GrGLFunction<GrGLFlushFn> fFlush;
         GrGLFunction<GrGLFlushMappedBufferRangeFn> fFlushMappedBufferRange;
         GrGLFunction<GrGLFramebufferRenderbufferFn> fFramebufferRenderbuffer;
@@ -159,12 +142,10 @@ public:
         GrGLFunction<GrGLFramebufferTexture2DMultisampleFn> fFramebufferTexture2DMultisample;
         GrGLFunction<GrGLFrontFaceFn> fFrontFace;
         GrGLFunction<GrGLGenBuffersFn> fGenBuffers;
-        GrGLFunction<GrGLGenFencesFn> fGenFences;
         GrGLFunction<GrGLGenFramebuffersFn> fGenFramebuffers;
         GrGLFunction<GrGLGenerateMipmapFn> fGenerateMipmap;
         GrGLFunction<GrGLGenQueriesFn> fGenQueries;
         GrGLFunction<GrGLGenRenderbuffersFn> fGenRenderbuffers;
-        GrGLFunction<GrGLGenSamplersFn> fGenSamplers;
         GrGLFunction<GrGLGenTexturesFn> fGenTextures;
         GrGLFunction<GrGLGenVertexArraysFn> fGenVertexArrays;
         GrGLFunction<GrGLGetBufferParameterivFn> fGetBufferParameteriv;
@@ -204,19 +185,14 @@ public:
         GrGLFunction<GrGLMapBufferRangeFn> fMapBufferRange;
         GrGLFunction<GrGLMapBufferSubDataFn> fMapBufferSubData;
         GrGLFunction<GrGLMapTexSubImage2DFn> fMapTexSubImage2D;
-        GrGLFunction<GrGLMemoryBarrierFn> fMemoryBarrier;
-        GrGLFunction<GrGLDrawArraysInstancedBaseInstanceFn> fDrawArraysInstancedBaseInstance;
-        GrGLFunction<GrGLDrawElementsInstancedBaseVertexBaseInstanceFn> fDrawElementsInstancedBaseVertexBaseInstance;
         GrGLFunction<GrGLMultiDrawArraysIndirectFn> fMultiDrawArraysIndirect;
         GrGLFunction<GrGLMultiDrawElementsIndirectFn> fMultiDrawElementsIndirect;
-        GrGLFunction<GrGLMultiDrawArraysInstancedBaseInstanceFn> fMultiDrawArraysInstancedBaseInstance;
-        GrGLFunction<GrGLMultiDrawElementsInstancedBaseVertexBaseInstanceFn> fMultiDrawElementsInstancedBaseVertexBaseInstance;
-        GrGLFunction<GrGLPatchParameteriFn> fPatchParameteri;
         GrGLFunction<GrGLPixelStoreiFn> fPixelStorei;
         GrGLFunction<GrGLPolygonModeFn> fPolygonMode;
         GrGLFunction<GrGLPopGroupMarkerFn> fPopGroupMarker;
         GrGLFunction<GrGLPushGroupMarkerFn> fPushGroupMarker;
         GrGLFunction<GrGLQueryCounterFn> fQueryCounter;
+        GrGLFunction<GrGLRasterSamplesFn> fRasterSamples;
         GrGLFunction<GrGLReadBufferFn> fReadBuffer;
         GrGLFunction<GrGLReadPixelsFn> fReadPixels;
         GrGLFunction<GrGLRenderbufferStorageFn> fRenderbufferStorage;
@@ -248,10 +224,7 @@ public:
         GrGLFunction<GrGLBindUniformLocationFn> fBindUniformLocation;
 
         GrGLFunction<GrGLResolveMultisampleFramebufferFn> fResolveMultisampleFramebuffer;
-        GrGLFunction<GrGLSamplerParameteriFn> fSamplerParameteri;
-        GrGLFunction<GrGLSamplerParameterivFn> fSamplerParameteriv;
         GrGLFunction<GrGLScissorFn> fScissor;
-        GrGLFunction<GrGLSetFenceFn> fSetFence;
         GrGLFunction<GrGLShaderSourceFn> fShaderSource;
         GrGLFunction<GrGLStencilFuncFn> fStencilFunc;
         GrGLFunction<GrGLStencilFuncSeparateFn> fStencilFuncSeparate;
@@ -259,12 +232,9 @@ public:
         GrGLFunction<GrGLStencilMaskSeparateFn> fStencilMaskSeparate;
         GrGLFunction<GrGLStencilOpFn> fStencilOp;
         GrGLFunction<GrGLStencilOpSeparateFn> fStencilOpSeparate;
-        GrGLFunction<GrGLTestFenceFn> fTestFence;
         GrGLFunction<GrGLTexBufferFn> fTexBuffer;
         GrGLFunction<GrGLTexBufferRangeFn> fTexBufferRange;
         GrGLFunction<GrGLTexImage2DFn> fTexImage2D;
-        GrGLFunction<GrGLTexParameterfFn> fTexParameterf;
-        GrGLFunction<GrGLTexParameterfvFn> fTexParameterfv;
         GrGLFunction<GrGLTexParameteriFn> fTexParameteri;
         GrGLFunction<GrGLTexParameterivFn> fTexParameteriv;
         GrGLFunction<GrGLTexSubImage2DFn> fTexSubImage2D;
@@ -335,6 +305,9 @@ public:
         /* NV_framebuffer_mixed_samples */
         GrGLFunction<GrGLCoverageModulationFn> fCoverageModulation;
 
+        /* ARB_sample_shading */
+        GrGLFunction<GrGLMinSampleShadingFn> fMinSampleShading;
+
         /* ARB_sync */
         GrGLFunction<GrGLFenceSyncFn> fFenceSync;
         GrGLFunction<GrGLIsSyncFn> fIsSync;
@@ -357,9 +330,9 @@ public:
         /* EXT_window_rectangles */
         GrGLFunction<GrGLWindowRectanglesFn> fWindowRectangles;
 
-        /* GL_QCOM_tiled_rendering */
-        GrGLFunction<GrGLStartTilingFn> fStartTiling;
-        GrGLFunction<GrGLEndTilingFn> fEndTiling;
+        /* EGL functions */
+        GrGLFunction<GrEGLCreateImageFn> fEGLCreateImage;
+        GrGLFunction<GrEGLDestroyImageFn> fEGLDestroyImage;
     } fFunctions;
 
 #if GR_TEST_UTILS

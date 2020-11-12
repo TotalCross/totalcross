@@ -8,9 +8,9 @@
 #ifndef Sk1DPathEffect_DEFINED
 #define Sk1DPathEffect_DEFINED
 
-#include "include/core/SkFlattenable.h"
-#include "include/core/SkPath.h"
-#include "include/core/SkPathEffect.h"
+#include "SkFlattenable.h"
+#include "SkPathEffect.h"
+#include "SkPath.h"
 
 class SkPathMeasure;
 
@@ -31,8 +31,12 @@ protected:
     */
     virtual SkScalar next(SkPath* dst, SkScalar dist, SkPathMeasure&) const = 0;
 
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
+    bool exposedInAndroidJavaAPI() const override { return true; }
+#endif
+
 private:
-    using INHERITED = SkPathEffect;
+    typedef SkPathEffect INHERITED;
 };
 
 class SK_API SkPath1DPathEffect : public Sk1DPathEffect {
@@ -54,6 +58,8 @@ public:
     */
     static sk_sp<SkPathEffect> Make(const SkPath& path, SkScalar advance, SkScalar phase, Style);
 
+    Factory getFactory() const override { return CreateProc; }
+
 protected:
     SkPath1DPathEffect(const SkPath& path, SkScalar advance, SkScalar phase, Style);
     void flatten(SkWriteBuffer&) const override;
@@ -64,14 +70,15 @@ protected:
     SkScalar next(SkPath*, SkScalar, SkPathMeasure&) const override;
 
 private:
-    SK_FLATTENABLE_HOOKS(SkPath1DPathEffect)
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
 
     SkPath      fPath;          // copied from constructor
     SkScalar    fAdvance;       // copied from constructor
     SkScalar    fInitialOffset; // computed from phase
     Style       fStyle;         // copied from constructor
 
-    using INHERITED = Sk1DPathEffect;
+    typedef Sk1DPathEffect INHERITED;
 };
 
 #endif

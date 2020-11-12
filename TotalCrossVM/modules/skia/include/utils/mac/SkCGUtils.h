@@ -8,10 +8,10 @@
 #ifndef SkCGUtils_DEFINED
 #define SkCGUtils_DEFINED
 
-#include "include/core/SkImage.h"
-#include "include/core/SkImageInfo.h"
-#include "include/core/SkPixmap.h"
-#include "include/core/SkSize.h"
+#include "SkSize.h"
+#include "SkImageInfo.h"
+#include "SkImage.h"
+#include "SkPixmap.h"
 
 #if defined(SK_BUILD_FOR_MAC) || defined(SK_BUILD_FOR_IOS)
 
@@ -63,7 +63,7 @@ SK_API CGImageRef SkCreateCGImageRefWithColorspace(const SkBitmap& bm,
  *  by CGColorSpaceCreateDeviceRGB()
  */
 static inline CGImageRef SkCreateCGImageRef(const SkBitmap& bm) {
-    return SkCreateCGImageRefWithColorspace(bm, nil);
+    return SkCreateCGImageRefWithColorspace(bm, NULL);
 }
 
 /**
@@ -73,6 +73,14 @@ static inline CGImageRef SkCreateCGImageRef(const SkBitmap& bm) {
  *  colorspace returned by CGColorSpaceCreateDeviceRGB()
  */
 void SkCGDrawBitmap(CGContextRef, const SkBitmap&, float x, float y);
+
+/**
+ *  Return a provider that wraps the specified stream.
+ *  When the provider is finally deleted, it will delete the stream.
+ */
+CGDataProviderRef SkCreateDataProviderFromStream(std::unique_ptr<SkStreamRewindable>);
+
+CGDataProviderRef SkCreateDataProviderFromData(sk_sp<SkData>);
 
 #endif  // defined(SK_BUILD_FOR_MAC) || defined(SK_BUILD_FOR_IOS)
 #endif  // SkCGUtils_DEFINED

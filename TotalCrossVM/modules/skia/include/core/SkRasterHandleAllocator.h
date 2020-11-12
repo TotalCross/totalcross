@@ -8,7 +8,7 @@
 #ifndef SkRasterHandleAllocator_DEFINED
 #define SkRasterHandleAllocator_DEFINED
 
-#include "include/core/SkImageInfo.h"
+#include "SkImageInfo.h"
 
 class SkBitmap;
 class SkCanvas;
@@ -24,7 +24,7 @@ class SkMatrix;
  *
  *      std::unique_ptr<SkCanvas> canvas = SkRasterHandleAllocator::MakeCanvas(
  *              SkImageInfo::Make(...),
- *              std::make_unique<MySubclassRasterHandleAllocator>(...),
+ *              skstd::make_unique<MySubclassRasterHandleAllocator>(...),
  *              nullptr);
  *
  *  If you have already allocated the base layer (and its handle, release-proc etc.) then you

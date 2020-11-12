@@ -8,37 +8,21 @@
 #ifndef SkPathRef_DEFINED
 #define SkPathRef_DEFINED
 
-#include "include/core/SkMatrix.h"
-#include "include/core/SkPathTypes.h"
-#include "include/core/SkPoint.h"
-#include "include/core/SkRRect.h"
-#include "include/core/SkRect.h"
-#include "include/core/SkRefCnt.h"
-#include "include/private/SkIDChangeListener.h"
-#include "include/private/SkMutex.h"
-#include "include/private/SkTDArray.h"
-#include "include/private/SkTemplates.h"
-#include "include/private/SkTo.h"
+#include "SkAtomics.h"
+#include "SkMatrix.h"
+#include "SkMutex.h"
+#include "SkPoint.h"
+#include "SkRRect.h"
+#include "SkRect.h"
+#include "SkRefCnt.h"
+#include "SkTDArray.h"
+#include "SkTemplates.h"
+#include "SkTo.h"
 
-#include <atomic>
 #include <limits>
-#include <tuple>
 
-struct SkPathView;
 class SkRBuffer;
 class SkWBuffer;
-
-enum class SkPathConvexity {
-    kConvex,
-    kConcave,
-    kUnknown,
-};
-
-enum class SkPathFirstDirection {
-    kCW,         // == SkPathDirection::kCW
-    kCCW,        // == SkPathDirection::kCCW
-    kUnknown,
-};
 
 /**
  * Holds the path verbs and points. It is versioned by a generation ID. None of its public methods
@@ -57,45 +41,31 @@ enum class SkPathFirstDirection {
 
 class SK_API SkPathRef final : public SkNVRefCnt<SkPathRef> {
 public:
-    SkPathRef(SkTDArray<SkPoint> points, SkTDArray<uint8_t> verbs, SkTDArray<SkScalar> weights,
-              unsigned segmentMask)
-        : fPoints(std::move(points))
-        , fVerbs(std::move(verbs))
-        , fConicWeights(std::move(weights))
-    {
-        fBoundsIsDirty = true;    // this also invalidates fIsFinite
-        fGenerationID = 0;        // recompute
-        fSegmentMask = segmentMask;
-        fIsOval = false;
-        fIsRRect = false;
-        // The next two values don't matter unless fIsOval or fIsRRect are true.
-        fRRectOrOvalIsCCW = false;
-        fRRectOrOvalStartIdx = 0xAC;
-        SkDEBUGCODE(fEditorsAttached.store(0);)
-
-        this->computeBounds();  // do this now, before we worry about multiple owners/threads
-        SkDEBUGCODE(this->validate();)
-    }
-
     class Editor {
     public:
         Editor(sk_sp<SkPathRef>* pathRef,
                int incReserveVerbs = 0,
                int incReservePoints = 0);
 
-        ~Editor() { SkDEBUGCODE(fPathRef->fEditorsAttached--;) }
+        ~Editor() { SkDEBUGCODE(sk_atomic_dec(&fPathRef->fEditorsAttached);) }
 
         /**
          * Returns the array of points.
          */
-        SkPoint* writablePoints() { return fPathRef->getWritablePoints(); }
+        SkPoint* points() { return fPathRef->getPoints(); }
         const SkPoint* points() const { return fPathRef->points(); }
 
         /**
          * Gets the ith point. Shortcut for this->points() + i
          */
-        SkPoint* atPoint(int i) { return fPathRef->getWritablePoints() + i; }
-        const SkPoint* atPoint(int i) const { return &fPathRef->fPoints[i]; }
+        SkPoint* atPoint(int i) {
+            SkASSERT((unsigned) i < (unsigned) fPathRef->fPointCnt);
+            return this->points() + i;
+        }
+        const SkPoint* atPoint(int i) const {
+            SkASSERT((unsigned) i < (unsigned) fPathRef->fPointCnt);
+            return this->points() + i;
+        }
 
         /**
          * Adds the verb and allocates space for the number of points indicated by the verb. The
@@ -118,17 +88,6 @@ public:
                                      int numVbs,
                                      SkScalar** weights = nullptr) {
             return fPathRef->growForRepeatedVerb(verb, numVbs, weights);
-        }
-
-        /**
-         * Concatenates all verbs from 'path' onto the pathRef's verbs array. Increases the point
-         * count by the number of points in 'path', and the conic weight count by the number of
-         * conics in 'path'.
-         *
-         * Returns pointers to the uninitialized points and conic weights data.
-         */
-        std::tuple<SkPoint*, SkScalar*> growForVerbsInPath(const SkPathRef& path) {
-            return fPathRef->growForVerbsInPath(path);
         }
 
         /**
@@ -280,7 +239,7 @@ public:
                                       const SkPathRef& src,
                                       const SkMatrix& matrix);
 
-  //  static SkPathRef* CreateFromBuffer(SkRBuffer* buffer);
+    static SkPathRef* CreateFromBuffer(SkRBuffer* buffer);
 
     /**
      * Rollsback a path ref to zero verbs and points with the assumption that the path ref will be
@@ -290,24 +249,24 @@ public:
     static void Rewind(sk_sp<SkPathRef>* pathRef);
 
     ~SkPathRef();
-    int countPoints() const { return fPoints.count(); }
-    int countVerbs() const { return fVerbs.count(); }
+    int countPoints() const { return fPointCnt; }
+    int countVerbs() const { return fVerbCnt; }
     int countWeights() const { return fConicWeights.count(); }
 
     /**
      * Returns a pointer one beyond the first logical verb (last verb in memory order).
      */
-    const uint8_t* verbsBegin() const { return fVerbs.begin(); }
+    const uint8_t* verbs() const { return fVerbs; }
 
     /**
      * Returns a const pointer to the first verb in memory (which is the last logical verb).
      */
-    const uint8_t* verbsEnd() const { return fVerbs.end(); }
+    const uint8_t* verbsMemBegin() const { return this->verbs() - fVerbCnt; }
 
     /**
      * Returns a const pointer to the first point.
      */
-    const SkPoint* points() const { return fPoints.begin(); }
+    const SkPoint* points() const { return fPoints; }
 
     /**
      * Shortcut for this->points() + this->countPoints()
@@ -320,8 +279,14 @@ public:
     /**
      * Convenience methods for getting to a verb or point by index.
      */
-    uint8_t atVerb(int index) const { return fVerbs[index]; }
-    const SkPoint& atPoint(int index) const { return fPoints[index]; }
+    uint8_t atVerb(int index) const {
+        SkASSERT((unsigned) index < (unsigned) fVerbCnt);
+        return this->verbs()[~index];
+    }
+    const SkPoint& atPoint(int index) const {
+        SkASSERT((unsigned) index < (unsigned) fPointCnt);
+        return this->points()[index];
+    }
 
     bool operator== (const SkPathRef& ref) const;
 
@@ -344,13 +309,15 @@ public:
      */
     uint32_t genID() const;
 
-    void addGenIDChangeListener(sk_sp<SkIDChangeListener>);   // Threadsafe.
-    int genIDChangeListenerCount();                           // Threadsafe
+    struct GenIDChangeListener : SkRefCnt {
+        virtual ~GenIDChangeListener() {}
+        virtual void onChange() = 0;
+    };
+
+    void addGenIDChangeListener(sk_sp<GenIDChangeListener>);  // Threadsafe.
 
     bool isValid() const;
     SkDEBUGCODE(void validate() const { SkASSERT(this->isValid()); } )
-
-    SkPathView view(SkPathFillType, SkPathConvexity) const;
 
 private:
     enum SerializationOffsets {
@@ -364,6 +331,11 @@ private:
 
     SkPathRef() {
         fBoundsIsDirty = true;    // this also invalidates fIsFinite
+        fPointCnt = 0;
+        fVerbCnt = 0;
+        fVerbs = nullptr;
+        fPoints = nullptr;
+        fFreeSpace = 0;
         fGenerationID = kEmptyGenID;
         fSegmentMask = 0;
         fIsOval = false;
@@ -371,7 +343,7 @@ private:
         // The next two values don't matter unless fIsOval or fIsRRect are true.
         fRRectOrOvalIsCCW = false;
         fRRectOrOvalStartIdx = 0xAC;
-        SkDEBUGCODE(fEditorsAttached.store(0);)
+        SkDEBUGCODE(fEditorsAttached = 0;)
         SkDEBUGCODE(this->validate();)
     }
 
@@ -406,8 +378,8 @@ private:
     /** Makes additional room but does not change the counts or change the genID */
     void incReserve(int additionalVerbs, int additionalPoints) {
         SkDEBUGCODE(this->validate();)
-        fPoints.setReserve(fPoints.count() + additionalPoints);
-        fVerbs.setReserve(fVerbs.count() + additionalVerbs);
+        size_t space = additionalVerbs * sizeof(uint8_t) + additionalPoints * sizeof (SkPoint);
+        this->makeSpace(space);
         SkDEBUGCODE(this->validate();)
     }
 
@@ -416,7 +388,6 @@ private:
     void resetToSize(int verbCount, int pointCount, int conicCount,
                      int reserveVerbs = 0, int reservePoints = 0) {
         SkDEBUGCODE(this->validate();)
-        this->callGenIDChangeListeners();
         fBoundsIsDirty = true;      // this also invalidates fIsFinite
         fGenerationID = 0;
 
@@ -424,10 +395,28 @@ private:
         fIsOval = false;
         fIsRRect = false;
 
-        fPoints.setReserve(pointCount + reservePoints);
-        fPoints.setCount(pointCount);
-        fVerbs.setReserve(verbCount + reserveVerbs);
-        fVerbs.setCount(verbCount);
+        size_t newSize = sizeof(uint8_t) * verbCount + sizeof(SkPoint) * pointCount;
+        size_t newReserve = sizeof(uint8_t) * reserveVerbs + sizeof(SkPoint) * reservePoints;
+        size_t minSize = newSize + newReserve;
+
+        ptrdiff_t sizeDelta = this->currSize() - minSize;
+
+        if (sizeDelta < 0 || static_cast<size_t>(sizeDelta) >= 3 * minSize) {
+            sk_free(fPoints);
+            fPoints = nullptr;
+            fVerbs = nullptr;
+            fFreeSpace = 0;
+            fVerbCnt = 0;
+            fPointCnt = 0;
+            this->makeSpace(minSize, true);
+            fVerbCnt = verbCount;
+            fPointCnt = pointCount;
+            fFreeSpace -= newSize;
+        } else {
+            fPointCnt = pointCount;
+            fVerbCnt = verbCount;
+            fFreeSpace = this->currSize() - minSize;
+        }
         fConicWeights.setCount(conicCount);
         SkDEBUGCODE(this->validate();)
     }
@@ -448,17 +437,62 @@ private:
     SkPoint* growForVerb(int /*SkPath::Verb*/ verb, SkScalar weight);
 
     /**
-     * Concatenates all verbs from 'path' onto our own verbs array. Increases the point count by the
-     * number of points in 'path', and the conic weight count by the number of conics in 'path'.
-     *
-     * Returns pointers to the uninitialized points and conic weights data.
+     * Ensures that the free space available in the path ref is >= size. The verb and point counts
+     * are not changed. May allocate extra capacity, unless |exact| is true.
      */
-    std::tuple<SkPoint*, SkScalar*> growForVerbsInPath(const SkPathRef& path);
+    void makeSpace(size_t size, bool exact = false) {
+        SkDEBUGCODE(this->validate();)
+        if (size <= fFreeSpace) {
+            return;
+        }
+        size_t growSize = size - fFreeSpace;
+        size_t oldSize = this->currSize();
+
+        if (!exact) {
+            // round to next multiple of 8 bytes
+            growSize = (growSize + 7) & ~static_cast<size_t>(7);
+            // we always at least double the allocation
+            if (growSize < oldSize) {
+                growSize = oldSize;
+            }
+            if (growSize < kMinSize) {
+                growSize = kMinSize;
+            }
+        }
+
+        constexpr size_t maxSize = std::numeric_limits<size_t>::max();
+        size_t newSize;
+        if (growSize <= maxSize - oldSize) {
+            newSize = oldSize + growSize;
+        } else {
+            SK_ABORT("Path too big.");
+        }
+        // Note that realloc could memcpy more than we need. It seems to be a win anyway. TODO:
+        // encapsulate this.
+        fPoints = reinterpret_cast<SkPoint*>(sk_realloc_throw(fPoints, newSize));
+        size_t oldVerbSize = fVerbCnt * sizeof(uint8_t);
+        void* newVerbsDst = SkTAddOffset<void>(fPoints, newSize - oldVerbSize);
+        void* oldVerbsSrc = SkTAddOffset<void>(fPoints, oldSize - oldVerbSize);
+        memmove(newVerbsDst, oldVerbsSrc, oldVerbSize);
+        fVerbs = SkTAddOffset<uint8_t>(fPoints, newSize);
+        fFreeSpace += growSize;
+        SkDEBUGCODE(this->validate();)
+    }
 
     /**
      * Private, non-const-ptr version of the public function verbsMemBegin().
      */
-    uint8_t* verbsBeginWritable() { return fVerbs.begin(); }
+    uint8_t* verbsMemWritable() {
+        SkDEBUGCODE(this->validate();)
+        return fVerbs - fVerbCnt;
+    }
+
+    /**
+     * Gets the total amount of space allocated for verbs, points, and reserve.
+     */
+    size_t currSize() const {
+        return reinterpret_cast<intptr_t>(fVerbs) - reinterpret_cast<intptr_t>(fPoints);
+    }
 
     /**
      * Called the first time someone calls CreateEmpty to actually create the singleton.
@@ -478,16 +512,16 @@ private:
     }
 
     // called only by the editor. Note that this is not a const function.
-    SkPoint* getWritablePoints() {
+    SkPoint* getPoints() {
         SkDEBUGCODE(this->validate();)
         fIsOval = false;
         fIsRRect = false;
-        return fPoints.begin();
+        return fPoints;
     }
 
     const SkPoint* getPoints() const {
         SkDEBUGCODE(this->validate();)
-        return fPoints.begin();
+        return fPoints;
     }
 
     void callGenIDChangeListeners();
@@ -498,17 +532,21 @@ private:
 
     mutable SkRect   fBounds;
 
-    SkTDArray<SkPoint>  fPoints;
-    SkTDArray<uint8_t>  fVerbs;
+    SkPoint*            fPoints; // points to begining of the allocation
+    uint8_t*            fVerbs; // points just past the end of the allocation (verbs grow backwards)
+    int                 fVerbCnt;
+    int                 fPointCnt;
+    size_t              fFreeSpace; // redundant but saves computation
     SkTDArray<SkScalar> fConicWeights;
 
     enum {
         kEmptyGenID = 1, // GenID reserved for path ref with zero points and zero verbs.
     };
     mutable uint32_t    fGenerationID;
-    SkDEBUGCODE(std::atomic<int> fEditorsAttached;) // assert only one editor in use at any time.
+    SkDEBUGCODE(int32_t fEditorsAttached;) // assert that only one editor in use at any time.
 
-    SkIDChangeListener::List fGenIDChangeListeners;
+    SkMutex                         fGenIDChangeListenersMutex;
+    SkTDArray<GenIDChangeListener*> fGenIDChangeListeners;  // pointers are reffed
 
     mutable uint8_t  fBoundsIsDirty;
     mutable bool     fIsFinite;    // only meaningful if bounds are valid
@@ -524,8 +562,6 @@ private:
     friend class PathRefTest_Private;
     friend class ForceIsRRect_Private; // unit test isRRect
     friend class SkPath;
-    friend class SkPathBuilder;
-    friend class SkPathPriv;
 };
 
 #endif

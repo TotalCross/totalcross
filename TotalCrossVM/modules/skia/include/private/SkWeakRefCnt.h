@@ -8,7 +8,7 @@
 #ifndef SkWeakRefCnt_DEFINED
 #define SkWeakRefCnt_DEFINED
 
-#include "include/core/SkRefCnt.h"
+#include "SkRefCnt.h"
 #include <atomic>
 
 /** \class SkWeakRefCnt
@@ -71,6 +71,11 @@ public:
     /** Return the weak reference count. */
     int32_t getWeakCnt() const {
         return fWeakCnt.load(std::memory_order_relaxed);
+    }
+
+    void validate() const {
+        this->INHERITED::validate();
+        SkASSERT(getWeakCnt() > 0);
     }
 #endif
 
@@ -164,7 +169,7 @@ private:
     /* Invariant: fWeakCnt = #weak + (fRefCnt > 0 ? 1 : 0) */
     mutable std::atomic<int32_t> fWeakCnt;
 
-    using INHERITED = SkRefCnt;
+    typedef SkRefCnt INHERITED;
 };
 
 #endif

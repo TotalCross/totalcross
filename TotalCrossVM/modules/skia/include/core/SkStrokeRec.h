@@ -8,13 +8,13 @@
 #ifndef SkStrokeRec_DEFINED
 #define SkStrokeRec_DEFINED
 
-#include "include/core/SkPaint.h"
-#include "include/private/SkMacros.h"
+#include "../private/SkMacros.h"
+#include "SkPaint.h"
 
 class SkPath;
 
 SK_BEGIN_REQUIRE_DENSE
-class SK_API SkStrokeRec {
+class SkStrokeRec {
 public:
     enum InitStyle {
         kHairline_InitStyle,
@@ -127,7 +127,7 @@ public:
             return this->getStyle() == other.getStyle();
         }
         return fWidth == other.fWidth &&
-               (fJoin != SkPaint::kMiter_Join || fMiterLimit == other.fMiterLimit) &&
+               fMiterLimit == other.fMiterLimit &&
                fCap == other.fCap &&
                fJoin == other.fJoin &&
                fStrokeAndFill == other.fStrokeAndFill;

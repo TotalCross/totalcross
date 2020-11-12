@@ -8,16 +8,16 @@
 #ifndef SkMergeImageFilter_DEFINED
 #define SkMergeImageFilter_DEFINED
 
-#include "include/core/SkImageFilter.h"
+#include "SkFlattenable.h"
+#include "SkImageFilter.h"
 
-// DEPRECATED: Use include/effects/SkImageFilters::Merge
-class SK_API SkMergeImageFilter {
+class SK_API SkMergeImageFilter : public SkImageFilter {
 public:
     static sk_sp<SkImageFilter> Make(sk_sp<SkImageFilter>* const filters, int count,
-                                     const SkImageFilter::CropRect* cropRect = nullptr);
+                                     const CropRect* cropRect = nullptr);
 
     static sk_sp<SkImageFilter> Make(sk_sp<SkImageFilter> first, sk_sp<SkImageFilter> second,
-                                     const SkImageFilter::CropRect* cropRect = nullptr) {
+                                     const CropRect* cropRect = nullptr) {
         sk_sp<SkImageFilter> array[] = {
             std::move(first),
             std::move(second),
@@ -25,10 +25,21 @@ public:
         return Make(array, 2, cropRect);
     }
 
-    static void RegisterFlattenables();
+    Factory getFactory() const override { return CreateProc; }
+
+protected:
+    void flatten(SkWriteBuffer&) const override;
+    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
+                                        SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+    bool onCanHandleComplexCTM() const override { return true; }
 
 private:
-    SkMergeImageFilter() = delete;
+    SkMergeImageFilter(sk_sp<SkImageFilter>* const filters, int count, const CropRect* cropRect);
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
+
+    typedef SkImageFilter INHERITED;
 };
 
 #endif

@@ -13,7 +13,7 @@
 #ifndef SkUnPreMultiply_DEFINED
 #define SkUnPreMultiply_DEFINED
 
-#include "include/core/SkColor.h"
+#include "SkColor.h"
 
 class SK_API SkUnPreMultiply {
 public:
@@ -48,6 +48,8 @@ public:
     }
 
     static SkColor PMColorToColor(SkPMColor c);
+
+    static uint32_t UnPreMultiplyPreservingByteOrder(SkPMColor c);
 
 private:
     static const uint32_t gTable[256];

@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "include/core/SkTypes.h"
+#include "SkTypes.h"
 
 #if defined(SK_BUILD_FOR_WIN)
 
-#include "include/core/SkData.h"
-#include "include/core/SkImageGenerator.h"
+#include "SkData.h"
+#include "SkImageGenerator.h"
 
 #include <memory>
 

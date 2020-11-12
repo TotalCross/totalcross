@@ -8,7 +8,7 @@
 #ifndef SkFilterQuality_DEFINED
 #define SkFilterQuality_DEFINED
 
-#include "include/core/SkTypes.h"
+#include "SkTypes.h"
 
 /**
  *  Controls how much filtering to be done when scaling/transforming complex colors

@@ -8,17 +8,34 @@
 #ifndef SkComposeImageFilter_DEFINED
 #define SkComposeImageFilter_DEFINED
 
-#include "include/core/SkImageFilter.h"
+#include "SkFlattenable.h"
+#include "SkImageFilter.h"
 
-// DEPRECATED: Use include/effects/SkImageFilters::Compose
-class SK_API SkComposeImageFilter {
+class SK_API SkComposeImageFilter : public SkImageFilter {
 public:
     static sk_sp<SkImageFilter> Make(sk_sp<SkImageFilter> outer, sk_sp<SkImageFilter> inner);
 
-    static void RegisterFlattenables();
+    SkRect computeFastBounds(const SkRect& src) const override;
+
+    Factory getFactory() const override { return CreateProc; }
+
+protected:
+    explicit SkComposeImageFilter(sk_sp<SkImageFilter> inputs[2]) : INHERITED(inputs, 2, nullptr) {
+        SkASSERT(inputs[0].get());
+        SkASSERT(inputs[1].get());
+    }
+    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
+                                        SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+    SkIRect onFilterBounds(const SkIRect&, const SkMatrix& ctm,
+                           MapDirection, const SkIRect* inputRect) const override;
+    bool onCanHandleComplexCTM() const override { return true; }
 
 private:
-    SkComposeImageFilter() = delete;
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
+
+    typedef SkImageFilter INHERITED;
 };
 
 #endif

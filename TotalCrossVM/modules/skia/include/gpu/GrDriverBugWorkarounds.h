@@ -16,10 +16,10 @@
 // To regenerate this file, set gn arg "skia_generate_workarounds = true".
 // This is not rebuilt by default to avoid embedders having to have extra
 // build steps.
-#include "include/gpu/GrDriverBugWorkaroundsAutogen.h"
+#include "GrDriverBugWorkaroundsAutogen.h"
 #endif
 
-#include "include/core/SkTypes.h"
+#include "SkTypes.h"
 
 #include <stdint.h>
 #include <vector>
@@ -34,7 +34,6 @@ enum GrDriverBugWorkaroundType {
 class SK_API GrDriverBugWorkarounds {
  public:
   GrDriverBugWorkarounds();
-  GrDriverBugWorkarounds(const GrDriverBugWorkarounds&) = default;
   explicit GrDriverBugWorkarounds(const std::vector<int32_t>& workarounds);
 
   GrDriverBugWorkarounds& operator=(const GrDriverBugWorkarounds&) = default;

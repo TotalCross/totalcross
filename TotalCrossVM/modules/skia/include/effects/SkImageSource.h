@@ -8,11 +8,11 @@
 #ifndef SkImageSource_DEFINED
 #define SkImageSource_DEFINED
 
-#include "include/core/SkImage.h"
-#include "include/core/SkImageFilter.h"
+#include "SkFlattenable.h"
+#include "SkImage.h"
+#include "SkImageFilter.h"
 
-// DEPRECATED: Use include/effects/SkImageFilters::Image
-class SK_API SkImageSource {
+class SK_API SkImageSource : public SkImageFilter {
 public:
     static sk_sp<SkImageFilter> Make(sk_sp<SkImage> image);
     static sk_sp<SkImageFilter> Make(sk_sp<SkImage> image,
@@ -20,10 +20,34 @@ public:
                                      const SkRect& dstRect,
                                      SkFilterQuality filterQuality);
 
-    static void RegisterFlattenables();
+    SkRect computeFastBounds(const SkRect& src) const override;
+
+    Factory getFactory() const override { return CreateProc; }
+
+protected:
+    void flatten(SkWriteBuffer&) const override;
+
+    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
+                                        SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
+
+    SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix& ctm,
+                               MapDirection, const SkIRect* inputRect) const override;
 
 private:
-    SkImageSource() = delete;
+    explicit SkImageSource(sk_sp<SkImage>);
+    SkImageSource(sk_sp<SkImage>,
+                  const SkRect& srcRect,
+                  const SkRect& dstRect,
+                  SkFilterQuality);
+    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
+    friend class SkFlattenable::PrivateInitializer;
+
+    sk_sp<SkImage>   fImage;
+    SkRect           fSrcRect, fDstRect;
+    SkFilterQuality  fFilterQuality;
+
+    typedef SkImageFilter INHERITED;
 };
 
 #endif

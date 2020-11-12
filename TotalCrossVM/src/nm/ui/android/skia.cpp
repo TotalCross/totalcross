@@ -34,34 +34,33 @@
 #include <math.h>
 
 
-#include "include/core/SkPathEffect.h"
-#include "include/core/SkGraphics.h"
-#include "include/core/SkSurface.h"
-#include "include/core/SkString.h"
-#include "include/core/SkTime.h"
-#include "include/core/SkCanvas.h"
-#include "include/utils/SkRandom.h"
-#include "include/core/SkTypeface.h"
-#include "include/core/SkImage.h"
-#include "include/core/SkImageInfo.h"
-#include "include/core/SkImageEncoder.h"
-#include "include/core/SkPath.h"
-#include "include/effects/SkGradientShader.h"
-#include "include/core/SkTextBlob.h"
+#include "SkPathEffect.h"
+#include "SkGraphics.h"
+#include "SkSurface.h"
+#include "SkString.h"
+#include "SkTime.h"
+#include "SkCanvas.h"
+#include "SkRandom.h"
+#include "SkTypeface.h"
+#include "SkImage.h"
+#include "SkImageInfo.h"
+#include "SkImageEncoder.h"
+#include "SkPath.h"
+#include "SkGradientShader.h"
 
-#include "include/gpu/gl/GrGLAssembleInterface.h"
-#include "include/gpu/gl/GrGLConfig.h"
-#include "include/gpu/gl/GrGLExtensions.h"
-#include "include/gpu/gl/GrGLFunctions.h"
-#include "include/gpu/gl/GrGLInterface.h"
-#include "include/gpu/gl/GrGLTypes.h"
+#include "gl/GrGLAssembleInterface.h"
+#include "gl/GrGLConfig.h"
+#include "gl/GrGLExtensions.h"
+#include "gl/GrGLFunctions.h"
+#include "gl/GrGLInterface.h"
+#include "gl/GrGLTypes.h"
 
-#include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrContext.h"
-#include "include/gpu/GrTypes.h"
+#include "GrBackendSurface.h"
+#include "GrContext.h"
+#include "GrTypes.h"
 
-#include "include/core/SkColorSpace.h"
-#include "include/effects/SkDashPathEffect.h"
+#include "SkColorSpace.h"
+#include "SkDashPathEffect.h"
 
 #include <vector>
 #include <map>
@@ -131,8 +130,8 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
 #ifdef HEADLESS
-    bitmap.installPixels(SkImageInfo::Make(w,
-                                           h,
+    bitmap.installPixels(SkImageInfo::Make(w, 
+                                           h, 
                                            (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), (Uint32 *)pixels, pitch);
     canvas = new SkCanvas(bitmap);
 #else
@@ -167,14 +166,18 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 #endif
     // The forepaint is used for "draw" methods
     forePaint.setStyle(SkPaint::kStroke_Style);
-    forePaint.setAntiAlias(true);
+    forePaint.setTextSize(16);
     forePaint.setAntiAlias(true);
 
-    //the backpaint is used for "fill" methods
+    forePaint.setAntiAlias(true);
+    forePaint.setLCDRenderText(true);
+    // the backpaint is used for "fill" methods
     backPaint.setStyle(SkPaint::kFill_Style);
+    backPaint.setTextSize(16);
     backPaint.setAntiAlias(true);
 
     backPaint.setAntiAlias(true);
+    backPaint.setLCDRenderText(true);
     canvas->clear(SK_ColorWHITE);
     flushSkia();
 }
@@ -226,7 +229,9 @@ sk_sp<SkTypeface> skia_getTypeface(int32 typefaceIndex) {
 
 int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, int32 fontSize)
 {
-    return SkFont(skia_getTypeface(typefaceIndex),fontSize).measureText(text,charCount,SkTextEncoding::kUTF16);
+    backPaint.setTypeface(skia_getTypeface(typefaceIndex));
+    backPaint.setTextSize(fontSize);
+    return backPaint.measureText(text, charCount);
 }
 
 static void releaseProc(void* addr, void* ) {
@@ -347,10 +352,11 @@ void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, int32 x0
 {
     SKIA_TRACE()
 
-    const auto txtFont {SkFont(skia_getTypeface(typefaceIndex),fontSize)};
-    const auto txtBlob {SkTextBlob::MakeFromText(text,chrCount,txtFont,SkTextEncoding::kUTF16)};
+    backPaint.setTypeface(skia_getTypeface(typefaceIndex));
+    backPaint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
     backPaint.setColor(foreColor);
-    canvas->drawTextBlob(txtBlob,x0,y0,backPaint);
+    backPaint.setTextSize(fontSize);
+    canvas->drawText(text, chrCount, x0, y0, backPaint);
 }
 
 void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
@@ -366,7 +372,7 @@ void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, in
             SkColor colors[3] = {pc2, pc1, pc2};
             backPaint.setShader(SkGradientShader::MakeLinear(
                     points, colors, nullptr, 3,
-                    SkTileMode::kClamp, 0, nullptr));
+                    SkShader::kClamp_TileMode, 0, nullptr));
             canvas->drawOval(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), backPaint);
             backPaint.setShader(nullptr);
         } else {
@@ -425,7 +431,7 @@ void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
         SkColor colors[2] = {c1, c2};
         backPaint.setShader(SkGradientShader::MakeLinear(
                 points, colors, nullptr, 2,
-                SkTileMode::kClamp, 0, nullptr));
+                SkShader::kClamp_TileMode, 0, nullptr));
     }
 
     canvas->translate(tx, ty);
@@ -444,7 +450,7 @@ SkPath _skia_makeArcPath(const SkRect& oval, SkScalar startAngle, SkScalar sweep
 
     SkPath path;
     path.setIsVolatile(true);
-    path.setFillType(SkPathFillType::kWinding);
+    path.setFillType(SkPath::kWinding_FillType);
     path.reset();
     if (SkScalarAbs(sweepAngle) >= 360.f) {
         path.addOval(oval);
@@ -496,7 +502,7 @@ void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx
             SkColor colors[2] = {c, c2};
             backPaint.setShader(SkGradientShader::MakeLinear(
                     points, colors, nullptr, 3,
-                    SkTileMode::kClamp, 0, nullptr));
+                    SkShader::kClamp_TileMode, 0, nullptr));
 
             canvas->drawPath(arcPath, backPaint);
             backPaint.setShader(nullptr);
@@ -545,7 +551,7 @@ void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32
     SkColor colors[2] = {static_cast<SkColor>(startColor), static_cast<SkColor>(endColor)};
     backPaint.setShader(SkGradientShader::MakeLinear(
             points, colors, nullptr, 3,
-            SkTileMode::kClamp, 0, nullptr));
+            SkShader::kClamp_TileMode, 0, nullptr));
 
     canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(startX, startY, w, h), topLeftRadius, topLeftRadius), backPaint);
     backPaint.setShader(nullptr);

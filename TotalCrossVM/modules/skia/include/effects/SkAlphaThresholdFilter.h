@@ -8,11 +8,10 @@
 #ifndef SkAlphaThresholdFilter_DEFINED
 #define SkAlphaThresholdFilter_DEFINED
 
-#include "include/core/SkImageFilter.h"
+#include "SkImageFilter.h"
 
 class SkRegion;
 
-// DEPRECATED: Use include/effects/SkImageFilters::AlphaThreshold
 class SK_API SkAlphaThresholdFilter {
 public:
     /**
@@ -27,10 +26,7 @@ public:
                                      const SkImageFilter::CropRect* cropRect = nullptr);
 
 
-    static void RegisterFlattenables();
-
-private:
-    SkAlphaThresholdFilter() = delete;
+    static void InitializeFlattenables();
 };
 
 #endif

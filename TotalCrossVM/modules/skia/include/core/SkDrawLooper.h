@@ -10,20 +10,26 @@
 #ifndef SkDrawLooper_DEFINED
 #define SkDrawLooper_DEFINED
 
-#include "include/core/SkBlurTypes.h"
-#include "include/core/SkColor.h"
-#include "include/core/SkFlattenable.h"
-#include "include/core/SkPoint.h"
-#include <functional>  // std::function
+#include "../private/SkNoncopyable.h"
+#include "SkBlurTypes.h"
+#include "SkFlattenable.h"
+#include "SkPoint.h"
+#include "SkColor.h"
 
 class  SkArenaAlloc;
 class  SkCanvas;
-class  SkMatrix;
+class  SkColorSpaceXformer;
 class  SkPaint;
 struct SkRect;
+class  SkString;
 
 /** \class SkDrawLooper
-    DEPRECATED: No longer supported in Skia.
+    Subclasses of SkDrawLooper can be attached to a SkPaint. Where they are,
+    and something is drawn to a canvas with that paint, the looper subclass will
+    be called, allowing it to modify the canvas and/or paint for that draw call.
+    More than that, via the next() method, the looper can modify the draw to be
+    invoked multiple times (hence the name loop-er), allow it to perform effects
+    like shadows or frame/fills, that require more than one pass.
 */
 class SK_API SkDrawLooper : public SkFlattenable {
 public:
@@ -33,18 +39,10 @@ public:
      *  Subclasses of SkDrawLooper should create a subclass of this object to
      *  hold state specific to their subclass.
      */
-    class SK_API Context {
+    class SK_API Context : ::SkNoncopyable {
     public:
         Context() {}
         virtual ~Context() {}
-
-        struct Info {
-            SkVector fTranslate;
-            bool     fApplyPostCTM;
-
-            void applyToCTM(SkMatrix* ctm) const;
-            void applyToCanvas(SkCanvas*) const;
-        };
 
         /**
          *  Called in a loop on objects returned by SkDrawLooper::createContext().
@@ -60,18 +58,14 @@ public:
          *  false, the canvas has been restored to the state it was
          *  initially, before createContext() was first called.
          */
-        virtual bool next(Info*, SkPaint*) = 0;
-
-    private:
-        Context(const Context&) = delete;
-        Context& operator=(const Context&) = delete;
+        virtual bool next(SkCanvas* canvas, SkPaint* paint) = 0;
     };
 
     /**
      *  Called right before something is being drawn. Returns a Context
      *  whose next() method should be called until it returns false.
      */
-    virtual Context* makeContext(SkArenaAlloc*) const = 0;
+    virtual Context* makeContext(SkCanvas*, SkArenaAlloc*) const = 0;
 
     /**
      * The fast bounds functions are used to enable the paint to be culled early
@@ -118,14 +112,18 @@ public:
                                   kSkDrawLooper_Type, data, size, procs).release()));
     }
 
-    void apply(SkCanvas* canvas, const SkPaint& paint,
-               std::function<void(SkCanvas*, const SkPaint&)>);
-
 protected:
+    sk_sp<SkDrawLooper> makeColorSpace(SkColorSpaceXformer* xformer) const {
+        return this->onMakeColorSpace(xformer);
+    }
+    virtual sk_sp<SkDrawLooper> onMakeColorSpace(SkColorSpaceXformer*) const = 0;
+
     SkDrawLooper() {}
 
 private:
-    using INHERITED = SkFlattenable;
+    friend class SkColorSpaceXformer;
+
+    typedef SkFlattenable INHERITED;
 };
 
 #endif

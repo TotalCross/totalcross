@@ -8,13 +8,14 @@
 #ifndef SkMaskFilter_DEFINED
 #define SkMaskFilter_DEFINED
 
-#include "include/core/SkBlurTypes.h"
-#include "include/core/SkCoverageMode.h"
-#include "include/core/SkFlattenable.h"
-#include "include/core/SkScalar.h"
+#include "SkBlurTypes.h"
+#include "SkCoverageMode.h"
+#include "SkFlattenable.h"
+#include "SkScalar.h"
 
 class SkMatrix;
 struct SkRect;
+class SkString;
 
 /** \class SkMaskFilter
 
@@ -32,6 +33,27 @@ public:
     static sk_sp<SkMaskFilter> MakeBlur(SkBlurStyle style, SkScalar sigma,
                                         bool respectCTM = true);
 
+    /**
+     *  Construct a maskfilter whose effect is to first apply the inner filter and then apply
+     *  the outer filter to the result of the inner's. Returns nullptr on failure.
+     */
+    static sk_sp<SkMaskFilter> MakeCompose(sk_sp<SkMaskFilter> outer, sk_sp<SkMaskFilter> inner);
+
+    /**
+     *  Compose two maskfilters together using a coverage mode. Returns nullptr on failure.
+     */
+    static sk_sp<SkMaskFilter> MakeCombine(sk_sp<SkMaskFilter> filterA, sk_sp<SkMaskFilter> filterB,
+                                           SkCoverageMode mode);
+
+    /**
+     *  Construct a maskfilter with an additional transform.
+     *
+     *  Note: unlike shader local matrices, this transform composes next to the CTM.
+     *
+     *    TotalMatrix = CTM x MaskFilterMatrix x (optional/downstream) ShaderLocalMatrix
+     */
+    sk_sp<SkMaskFilter> makeWithMatrix(const SkMatrix&) const;
+
     static SkFlattenable::Type GetFlattenableType() {
         return kSkMaskFilter_Type;
     }
@@ -48,7 +70,7 @@ public:
     }
 
 private:
-    static void RegisterFlattenables();
+    static void InitializeFlattenables();
     friend class SkFlattenable;
 };
 

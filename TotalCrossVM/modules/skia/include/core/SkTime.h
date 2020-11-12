@@ -10,8 +10,8 @@
 #ifndef SkTime_DEFINED
 #define SkTime_DEFINED
 
-#include "include/core/SkTypes.h"
-#include "include/private/SkMacros.h"
+#include "../private/SkMacros.h"
+#include "SkTypes.h"
 
 class SkString;
 
@@ -57,5 +57,6 @@ private:
     const char* fLabel;
     double      fNow;
 };
+#define SkAutoTime(...) SK_REQUIRE_LOCAL_VAR(SkAutoTime)
 
 #endif

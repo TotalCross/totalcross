@@ -8,12 +8,31 @@
 #ifndef SkICC_DEFINED
 #define SkICC_DEFINED
 
-#include "include/core/SkData.h"
+#include "SkData.h"
+#include "SkMatrix44.h"
+#include "SkRefCnt.h"
 
-struct skcms_Matrix3x3;
-struct skcms_TransferFunction;
+struct SkColorSpaceTransferFn;
 
-SK_API sk_sp<SkData> SkWriteICCProfile(const skcms_TransferFunction&,
-                                       const skcms_Matrix3x3& toXYZD50);
+SK_API sk_sp<SkData> SkWriteICCProfile(const SkColorSpaceTransferFn&, const float toXYZD50[9]);
+
+namespace SkICC {
+    static inline sk_sp<SkData> WriteToICC(const SkColorSpaceTransferFn& fn,
+                                           const SkMatrix44& toXYZD50) {
+        if (toXYZD50.get(3,0) == 0 && toXYZD50.get(3,1) == 0 && toXYZD50.get(3,2) == 0 &&
+            toXYZD50.get(3,3) == 1 &&
+            toXYZD50.get(0,3) == 0 && toXYZD50.get(1,3) == 0 && toXYZD50.get(2,3) == 0) {
+
+            float m33[9];
+            for (int r = 0; r < 3; r++)
+            for (int c = 0; c < 3; c++) {
+                m33[3*r+c] = toXYZD50.get(r,c);
+            }
+            return SkWriteICCProfile(fn, m33);
+
+        }
+        return nullptr;
+    }
+}
 
 #endif//SkICC_DEFINED

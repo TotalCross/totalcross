@@ -8,45 +8,59 @@
 #ifndef SkColorMatrix_DEFINED
 #define SkColorMatrix_DEFINED
 
-#include "include/core/SkTypes.h"
-
-#include <algorithm>
-#include <array>
+#include "SkScalar.h"
 
 class SK_API SkColorMatrix {
 public:
-    constexpr SkColorMatrix() : SkColorMatrix(1, 0, 0, 0, 0,
-                                              0, 1, 0, 0, 0,
-                                              0, 0, 1, 0, 0,
-                                              0, 0, 0, 1, 0) {}
+    enum {
+        kCount = 20
+    };
+    SkScalar    fMat[kCount];
 
-    constexpr SkColorMatrix(float m00, float m01, float m02, float m03, float m04,
-                            float m10, float m11, float m12, float m13, float m14,
-                            float m20, float m21, float m22, float m23, float m24,
-                            float m30, float m31, float m32, float m33, float m34)
-        : fMat { m00, m01, m02, m03, m04,
-                 m10, m11, m12, m13, m14,
-                 m20, m21, m22, m23, m24,
-                 m30, m31, m32, m33, m34 } {}
+    enum Elem {
+        kR_Scale    = 0,
+        kG_Scale    = 6,
+        kB_Scale    = 12,
+        kA_Scale    = 18,
+
+        kR_Trans    = 4,
+        kG_Trans    = 9,
+        kB_Trans    = 14,
+        kA_Trans    = 19,
+    };
 
     void setIdentity();
-    void setScale(float rScale, float gScale, float bScale, float aScale = 1.0f);
+    void setScale(SkScalar rScale, SkScalar gScale, SkScalar bScale,
+                  SkScalar aScale = SK_Scalar1);
+    void postTranslate(SkScalar rTrans, SkScalar gTrans, SkScalar bTrans,
+                       SkScalar aTrans = 0);
 
-    void postTranslate(float dr, float dg, float db, float da);
+    enum Axis {
+        kR_Axis = 0,
+        kG_Axis = 1,
+        kB_Axis = 2
+    };
+    void setRotate(Axis, SkScalar degrees);
+    void setSinCos(Axis, SkScalar sine, SkScalar cosine);
+    void preRotate(Axis, SkScalar degrees);
+    void postRotate(Axis, SkScalar degrees);
 
     void setConcat(const SkColorMatrix& a, const SkColorMatrix& b);
     void preConcat(const SkColorMatrix& mat) { this->setConcat(*this, mat); }
     void postConcat(const SkColorMatrix& mat) { this->setConcat(mat, *this); }
 
-    void setSaturation(float sat);
+    void setSaturation(SkScalar sat);
+    void setRGB2YUV();
+    void setYUV2RGB();
 
-    void setRowMajor(const float src[20]) { std::copy_n(src, 20, fMat.begin()); }
-    void getRowMajor(float dst[20]) const { std::copy_n(fMat.begin(), 20, dst); }
+    bool operator==(const SkColorMatrix& other) const {
+        return 0 == memcmp(fMat, other.fMat, sizeof(fMat));
+    }
 
-private:
-    std::array<float, 20> fMat;
+    bool operator!=(const SkColorMatrix& other) const { return !((*this) == other); }
 
-    friend class SkColorFilters;
+    static bool NeedsClamping(const SkScalar[20]);
+    static void SetConcat(SkScalar result[20], const SkScalar outer[20], const SkScalar inner[20]);
 };
 
 #endif

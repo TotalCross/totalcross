@@ -16,7 +16,7 @@
 // If you're looking for the tracing macros to instrument Skia itself, those
 // live in src/core/SkTraceEvent.h
 
-#include "include/core/SkTypes.h"
+#include "SkTypes.h"
 
 class SK_API SkEventTracer {
 public:

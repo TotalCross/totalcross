@@ -8,14 +8,13 @@
 #ifndef SkAnimatedImage_DEFINED
 #define SkAnimatedImage_DEFINED
 
-#include "include/codec/SkCodecAnimation.h"
-#include "include/core/SkBitmap.h"
-#include "include/core/SkDrawable.h"
-#include "include/core/SkMatrix.h"
-#include "include/core/SkRect.h"
+#include "SkBitmap.h"
+#include "SkCodecAnimation.h"
+#include "SkDrawable.h"
+#include "SkMatrix.h"
+#include "SkRect.h"
 
 class SkAndroidCodec;
-class SkImage;
 class SkPicture;
 
 /**
@@ -23,19 +22,6 @@ class SkPicture;
  */
 class SK_API SkAnimatedImage : public SkDrawable {
 public:
-    /**
-     *  Create an SkAnimatedImage from the SkAndroidCodec.
-     *
-     *  Returns null on failure to allocate pixels. On success, this will
-     *  decode the first frame.
-     *
-     *  @param info Width and height may require scaling.
-     *  @param cropRect Rectangle to crop to after scaling.
-     *  @param postProcess Picture to apply after scaling and cropping.
-     */
-    static sk_sp<SkAnimatedImage> Make(std::unique_ptr<SkAndroidCodec>,
-            const SkImageInfo& info, SkIRect cropRect, sk_sp<SkPicture> postProcess);
-
     /**
      *  Create an SkAnimatedImage from the SkAndroidCodec.
      *
@@ -84,13 +70,6 @@ public:
     int decodeNextFrame();
 
     /**
-     *  Returns the current frame as an SkImage. The SkImage will not change
-     *  after it has been returned.
-     *  If there is no current frame, nullptr will be returned.
-     */
-    sk_sp<SkImage> getCurrentFrame();
-
-    /**
      *  How long to display the current frame.
      *
      *  Useful for the first frame, for which decodeNextFrame is called
@@ -117,16 +96,6 @@ public:
     int getRepetitionCount() const {
         return fRepetitionCount;
     }
-
-    /**
-     *  Return the total number of frames in the animation.
-     */
-    int getFrameCount() const { return fFrameCount; }
-
-    /**
-     * Return the (possibly scaled) dimensions of the image.
-     */
-    SkISize dimensions() const { return fScaledSize; }
 
 protected:
     SkRect onGetBounds() override;
@@ -179,7 +148,7 @@ private:
     int computeNextFrame(int current, bool* animationEnded);
     double finish();
 
-    using INHERITED = SkDrawable;
+    typedef SkDrawable INHERITED;
 };
 
 #endif // SkAnimatedImage_DEFINED

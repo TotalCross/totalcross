@@ -8,8 +8,8 @@
 #ifndef SkPngEncoder_DEFINED
 #define SkPngEncoder_DEFINED
 
-#include "include/core/SkDataTable.h"
-#include "include/encode/SkEncoder.h"
+#include "SkEncoder.h"
+#include "SkDataTable.h"
 
 class SkPngEncoderMgr;
 class SkWStream;
@@ -88,7 +88,7 @@ protected:
     SkPngEncoder(std::unique_ptr<SkPngEncoderMgr>, const SkPixmap& src);
 
     std::unique_ptr<SkPngEncoderMgr> fEncoderMgr;
-    using INHERITED = SkEncoder;
+    typedef SkEncoder INHERITED;
 };
 
 static inline SkPngEncoder::FilterFlag operator|(SkPngEncoder::FilterFlag x,

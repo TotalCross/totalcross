@@ -8,10 +8,10 @@
 #ifndef SkRemotableFontMgr_DEFINED
 #define SkRemotableFontMgr_DEFINED
 
-#include "include/core/SkFontStyle.h"
-#include "include/core/SkRefCnt.h"
-#include "include/core/SkTypes.h"
-#include "include/private/SkTemplates.h"
+#include "../private/SkTemplates.h"
+#include "SkFontStyle.h"
+#include "SkRefCnt.h"
+#include "SkTypes.h"
 
 class SkDataTable;
 class SkStreamAsset;
@@ -50,7 +50,7 @@ private:
     int fCount;
     SkAutoTMalloc<SkFontIdentity> fData;
 
-    using INHERITED = SkRefCnt;
+    typedef SkRefCnt INHERITED;
 };
 
 class SK_API SkRemotableFontMgr : public SkRefCnt {
@@ -133,7 +133,7 @@ public:
     virtual SkStreamAsset* getData(int dataId) const = 0;
 
 private:
-    using INHERITED = SkRefCnt;
+    typedef SkRefCnt INHERITED;
 };
 
 #endif

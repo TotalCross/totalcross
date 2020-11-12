@@ -8,7 +8,7 @@
 #ifndef SkPerlinNoiseShader_DEFINED
 #define SkPerlinNoiseShader_DEFINED
 
-#include "include/core/SkShader.h"
+#include "SkShader.h"
 
 /** \class SkPerlinNoiseShader
 
@@ -51,7 +51,7 @@ public:
     static sk_sp<SkShader> MakeImprovedNoise(SkScalar baseFrequencyX, SkScalar baseFrequencyY,
                                              int numOctaves, SkScalar z);
 
-    static void RegisterFlattenables();
+    static void InitializeFlattenables();
 
 private:
     SkPerlinNoiseShader() = delete;

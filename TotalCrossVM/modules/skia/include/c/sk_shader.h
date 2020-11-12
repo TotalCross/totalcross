@@ -11,12 +11,12 @@
 #ifndef sk_shader_DEFINED
 #define sk_shader_DEFINED
 
-#include "include/c/sk_types.h"
+#include "sk_types.h"
 
 SK_C_PLUS_PLUS_BEGIN_GUARD
 
-SK_API void sk_shader_ref(sk_shader_t*);
-SK_API void sk_shader_unref(sk_shader_t*);
+void sk_shader_ref(sk_shader_t*);
+void sk_shader_unref(sk_shader_t*);
 
 typedef enum {
     CLAMP_SK_SHADER_TILEMODE,
@@ -42,7 +42,7 @@ typedef enum {
                       NULL) entries.
     @param mode The tiling mode
 */
-SK_API sk_shader_t* sk_shader_new_linear_gradient(const sk_point_t points[2],
+sk_shader_t* sk_shader_new_linear_gradient(const sk_point_t points[2],
                                            const sk_color_t colors[],
                                            const float colorPos[],
                                            int colorCount,
@@ -71,7 +71,7 @@ SK_API sk_shader_t* sk_shader_new_linear_gradient(const sk_point_t points[2],
     @param tileMode The tiling mode
     @param localMatrix May be NULL
 */
-SK_API sk_shader_t* sk_shader_new_radial_gradient(const sk_point_t* center,
+sk_shader_t* sk_shader_new_radial_gradient(const sk_point_t* center,
                                            float radius,
                                            const sk_color_t colors[],
                                            const float colorPos[],
@@ -96,7 +96,7 @@ SK_API sk_shader_t* sk_shader_new_radial_gradient(const sk_point_t* center,
                       not NULL) entries
     @param localMatrix May be NULL
 */
-SK_API sk_shader_t* sk_shader_new_sweep_gradient(const sk_point_t* center,
+sk_shader_t* sk_shader_new_sweep_gradient(const sk_point_t* center,
                                           const sk_color_t colors[],
                                           const float colorPos[],
                                           int colorCount,
@@ -127,7 +127,7 @@ SK_API sk_shader_t* sk_shader_new_sweep_gradient(const sk_point_t* center,
     @param localMatrix May be NULL
 
 */
-SK_API sk_shader_t* sk_shader_new_two_point_conical_gradient(
+sk_shader_t* sk_shader_new_two_point_conical_gradient(
         const sk_point_t* start,
         float startRadius,
         const sk_point_t* end,

@@ -8,13 +8,13 @@
 #ifndef SkXfermodeImageFilter_DEFINED
 #define SkXfermodeImageFilter_DEFINED
 
-#include "include/core/SkBlendMode.h"
-#include "include/core/SkImageFilter.h"
+#include "SkArithmeticImageFilter.h"
+#include "SkBlendMode.h"
+#include "SkImageFilter.h"
 
 /**
  * This filter takes a SkBlendMode, and uses it to composite the foreground over the background.
  * If foreground or background is NULL, the input bitmap (src) is used instead.
- // DEPRECATED: Use include/effects/SkImageFilters::XferMode
  */
 class SK_API SkXfermodeImageFilter {
 public:
@@ -25,7 +25,7 @@ public:
         return Make(mode, std::move(background), nullptr, nullptr);
     }
 
-    static void RegisterFlattenables();
+    static void InitializeFlattenables();
 
 private:
     SkXfermodeImageFilter();    // can't instantiate
