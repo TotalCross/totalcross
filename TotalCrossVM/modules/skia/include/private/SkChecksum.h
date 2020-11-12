@@ -8,16 +8,11 @@
 #ifndef SkChecksum_DEFINED
 #define SkChecksum_DEFINED
 
-#include "../private/SkNoncopyable.h"
-#include "SkString.h"
-#include "SkTLogic.h"
-#include "SkTypes.h"
-
-// #include "SkOpts.h"
-// It's sort of pesky to be able to include SkOpts.h here, so we'll just re-declare what we need.
-namespace SkOpts {
-    extern uint32_t (*hash_fn)(const void*, size_t, uint32_t);
-}
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkNoncopyable.h"
+#include "include/private/SkOpts_spi.h"
+#include "include/private/SkTLogic.h"
 
 class SkChecksum : SkNoncopyable {
 public:
@@ -54,12 +49,12 @@ public:
 // It should be both reasonably fast and high quality.
 struct SkGoodHash {
     template <typename K>
-    SK_WHEN(sizeof(K) == 4, uint32_t) operator()(const K& k) const {
+    std::enable_if_t<sizeof(K) == 4, uint32_t> operator()(const K& k) const {
         return SkChecksum::Mix(*(const uint32_t*)&k);
     }
 
     template <typename K>
-    SK_WHEN(sizeof(K) != 4, uint32_t) operator()(const K& k) const {
+    std::enable_if_t<sizeof(K) != 4, uint32_t> operator()(const K& k) const {
         return SkOpts::hash_fn(&k, sizeof(K), 0);
     }
 

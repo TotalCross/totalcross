@@ -8,9 +8,9 @@
 #ifndef SkRandom_DEFINED
 #define SkRandom_DEFINED
 
-#include "../private/SkFixed.h"
-#include "../private/SkFloatBits.h"
-#include "SkScalar.h"
+#include "include/core/SkScalar.h"
+#include "include/private/SkFixed.h"
+#include "include/private/SkFloatBits.h"
 
 /** \class SkRandom
 
@@ -49,7 +49,7 @@ public:
      *  Returns value [0...1) as an IEEE float
      */
     float nextF() {
-        unsigned int floatint = 0x3f800000 | (this->nextU() >> 9);
+        int floatint = 0x3f800000 | (int)(this->nextU() >> 9);
         float f = SkBits2Float(floatint) - 1.0f;
         return f;
     }

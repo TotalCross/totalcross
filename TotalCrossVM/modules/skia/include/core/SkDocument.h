@@ -8,8 +8,8 @@
 #ifndef SkDocument_DEFINED
 #define SkDocument_DEFINED
 
-#include "SkRefCnt.h"
-#include "SkScalar.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
 
 class SkCanvas;
 class SkWStream;
@@ -64,7 +64,7 @@ protected:
 
     // note: subclasses must call close() in their destructor, as the base class
     // cannot do this for them.
-    virtual ~SkDocument();
+    ~SkDocument() override;
 
     virtual SkCanvas* onBeginPage(SkScalar width, SkScalar height) = 0;
     virtual void onEndPage() = 0;
@@ -85,7 +85,7 @@ private:
     SkWStream* fStream;
     State      fState;
 
-    typedef SkRefCnt INHERITED;
+    using INHERITED = SkRefCnt;
 };
 
 #endif

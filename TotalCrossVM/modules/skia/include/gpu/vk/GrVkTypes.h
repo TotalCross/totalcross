@@ -9,9 +9,15 @@
 #ifndef GrVkTypes_DEFINED
 #define GrVkTypes_DEFINED
 
+#include "include/core/SkTypes.h"
+#include "include/gpu/vk/GrVkVulkan.h"
+
+#ifndef VK_VERSION_1_1
+#error Skia requires the use of Vulkan 1.1 headers
+#endif
+
 #include <functional>
-#include "GrTypes.h"
-#include "GrVkDefines.h"
+#include "include/gpu/GrTypes.h"
 
 typedef intptr_t GrVkBackendMemory;
 
@@ -20,27 +26,12 @@ typedef intptr_t GrVkBackendMemory;
  * Vulkan textures are really const GrVkImageInfo*
  */
 struct GrVkAlloc {
-    GrVkAlloc()
-            : fMemory(VK_NULL_HANDLE)
-            , fOffset(0)
-            , fSize(0)
-            , fFlags(0)
-            , fBackendMemory(0)
-            , fUsesSystemHeap(false) {}
-
-    GrVkAlloc(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, uint32_t flags)
-            : fMemory(memory)
-            , fOffset(offset)
-            , fSize(size)
-            , fFlags(flags)
-            , fBackendMemory(0)
-            , fUsesSystemHeap(false) {}
-
-    VkDeviceMemory    fMemory;  // can be VK_NULL_HANDLE iff is an RT and is borrowed
-    VkDeviceSize      fOffset;
-    VkDeviceSize      fSize;    // this can be indeterminate iff Tex uses borrow semantics
-    uint32_t          fFlags;
-    GrVkBackendMemory fBackendMemory; // handle to memory allocated via GrVkMemoryAllocator.
+    // can be VK_NULL_HANDLE iff is an RT and is borrowed
+    VkDeviceMemory    fMemory = VK_NULL_HANDLE;
+    VkDeviceSize      fOffset = 0;
+    VkDeviceSize      fSize = 0;  // this can be indeterminate iff Tex uses borrow semantics
+    uint32_t          fFlags = 0;
+    GrVkBackendMemory fBackendMemory = 0; // handle to memory allocated via GrVkMemoryAllocator.
 
     enum Flag {
         kNoncoherent_Flag = 0x1,   // memory must be flushed to device after mapping
@@ -54,56 +45,81 @@ struct GrVkAlloc {
 
 private:
     friend class GrVkHeap; // For access to usesSystemHeap
-    bool fUsesSystemHeap;
+    bool fUsesSystemHeap = false;
 };
+
+// This struct is used to pass in the necessary information to create a VkSamplerYcbcrConversion
+// object for an VkExternalFormatANDROID.
+struct GrVkYcbcrConversionInfo {
+    bool operator==(const GrVkYcbcrConversionInfo& that) const {
+        // Invalid objects are not required to have all other fields initialized or matching.
+        if (!this->isValid() && !that.isValid()) {
+            return true;
+        }
+        return this->fFormat == that.fFormat &&
+               this->fExternalFormat == that.fExternalFormat &&
+               this->fYcbcrModel == that.fYcbcrModel &&
+               this->fYcbcrRange == that.fYcbcrRange &&
+               this->fXChromaOffset == that.fXChromaOffset &&
+               this->fYChromaOffset == that.fYChromaOffset &&
+               this->fChromaFilter == that.fChromaFilter &&
+               this->fForceExplicitReconstruction == that.fForceExplicitReconstruction;
+    }
+    bool operator!=(const GrVkYcbcrConversionInfo& that) const { return !(*this == that); }
+
+    bool isValid() const { return fYcbcrModel != VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY; }
+
+    // Format of the source image. Must be set to VK_FORMAT_UNDEFINED for external images or
+    // a valid image format otherwise.
+    VkFormat fFormat = VK_FORMAT_UNDEFINED;
+
+    // The external format. Must be non-zero for external images, zero otherwise.
+    // Should be compatible to be used in a VkExternalFormatANDROID struct.
+    uint64_t fExternalFormat = 0;
+
+    VkSamplerYcbcrModelConversion fYcbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY;
+    VkSamplerYcbcrRange fYcbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL;
+    VkChromaLocation fXChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+    VkChromaLocation fYChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+    VkFilter fChromaFilter = VK_FILTER_NEAREST;
+    VkBool32 fForceExplicitReconstruction = false;
+
+    // For external images format features here should be those returned by a call to
+    // vkAndroidHardwareBufferFormatPropertiesANDROID
+    VkFormatFeatureFlags fFormatFeatures = 0;
+};
+
+/*
+ * When wrapping a GrBackendTexture or GrBackendRendenderTarget, the fCurrentQueueFamily should
+ * either be VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_EXTERNAL, or VK_QUEUE_FAMILY_FOREIGN_EXT. If
+ * fSharingMode is VK_SHARING_MODE_EXCLUSIVE then fCurrentQueueFamily can also be the graphics
+ * queue index passed into Skia.
+ */
 struct GrVkImageInfo {
-    VkImage        fImage;
-    GrVkAlloc      fAlloc;
-    VkImageTiling  fImageTiling;
-    VkImageLayout  fImageLayout;
-    VkFormat       fFormat;
-    uint32_t       fLevelCount;
-    uint32_t       fCurrentQueueFamily;
+    VkImage                  fImage = VK_NULL_HANDLE;
+    GrVkAlloc                fAlloc;
+    VkImageTiling            fImageTiling = VK_IMAGE_TILING_OPTIMAL;
+    VkImageLayout            fImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkFormat                 fFormat = VK_FORMAT_UNDEFINED;
+    VkImageUsageFlags        fImageUsageFlags = 0;
+    uint32_t                 fSampleCount = 1;
+    uint32_t                 fLevelCount = 0;
+    uint32_t                 fCurrentQueueFamily = VK_QUEUE_FAMILY_IGNORED;
+    GrProtected              fProtected = GrProtected::kNo;
+    GrVkYcbcrConversionInfo  fYcbcrConversionInfo;
+    VkSharingMode            fSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    GrVkImageInfo()
-            : fImage(VK_NULL_HANDLE)
-            , fAlloc()
-            , fImageTiling(VK_IMAGE_TILING_OPTIMAL)
-            , fImageLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-            , fFormat(VK_FORMAT_UNDEFINED)
-            , fLevelCount(0)
-            , fCurrentQueueFamily(VK_QUEUE_FAMILY_IGNORED) {}
-
-    GrVkImageInfo(VkImage image, GrVkAlloc alloc, VkImageTiling imageTiling, VkImageLayout layout,
-                  VkFormat format, uint32_t levelCount,
-                  uint32_t currentQueueFamily = VK_QUEUE_FAMILY_IGNORED)
-            : fImage(image)
-            , fAlloc(alloc)
-            , fImageTiling(imageTiling)
-            , fImageLayout(layout)
-            , fFormat(format)
-            , fLevelCount(levelCount)
-            , fCurrentQueueFamily(currentQueueFamily) {}
-
-    GrVkImageInfo(const GrVkImageInfo& info, VkImageLayout layout)
-            : fImage(info.fImage)
-            , fAlloc(info.fAlloc)
-            , fImageTiling(info.fImageTiling)
-            , fImageLayout(layout)
-            , fFormat(info.fFormat)
-            , fLevelCount(info.fLevelCount)
-            , fCurrentQueueFamily(info.fCurrentQueueFamily) {}
-
-    // This gives a way for a client to update the layout of the Image if they change the layout
-    // while we're still holding onto the wrapped texture. They will first need to get a handle
-    // to our internal GrVkImageInfo by calling getTextureHandle on a GrVkTexture.
-    void updateImageLayout(VkImageLayout layout) { fImageLayout = layout; }
-
+#if GR_TEST_UTILS
     bool operator==(const GrVkImageInfo& that) const {
         return fImage == that.fImage && fAlloc == that.fAlloc &&
                fImageTiling == that.fImageTiling && fImageLayout == that.fImageLayout &&
-               fFormat == that.fFormat && fLevelCount == that.fLevelCount;
+               fFormat == that.fFormat && fImageUsageFlags == that.fImageUsageFlags &&
+               fSampleCount == that.fSampleCount && fLevelCount == that.fLevelCount &&
+               fCurrentQueueFamily == that.fCurrentQueueFamily && fProtected == that.fProtected &&
+               fYcbcrConversionInfo == that.fYcbcrConversionInfo &&
+               fSharingMode == that.fSharingMode;
     }
+#endif
 };
 
 using GrVkGetProc = std::function<PFN_vkVoidFunction(
@@ -112,5 +128,36 @@ using GrVkGetProc = std::function<PFN_vkVoidFunction(
         VkDevice     // device or VK_NULL_HANDLE
         )>;
 
+/**
+ * This object is wrapped in a GrBackendDrawableInfo and passed in as an argument to
+ * drawBackendGpu() calls on an SkDrawable. The drawable will use this info to inject direct
+ * Vulkan calls into our stream of GPU draws.
+ *
+ * The SkDrawable is given a secondary VkCommandBuffer in which to record draws. The GPU backend
+ * will then execute that command buffer within a render pass it is using for its own draws. The
+ * drawable is also given the attachment of the color index, a compatible VkRenderPass, and the
+ * VkFormat of the color attachment so that it can make VkPipeline objects for the draws. The
+ * SkDrawable must not alter the state of the VkRenderpass or sub pass.
+ *
+ * Additionally, the SkDrawable may fill in the passed in fDrawBounds with the bounds of the draws
+ * that it submits to the command buffer. This will be used by the GPU backend for setting the
+ * bounds in vkCmdBeginRenderPass. If fDrawBounds is not updated, we will assume that the entire
+ * attachment may have been written to.
+ *
+ * The SkDrawable is always allowed to create its own command buffers and submit them to the queue
+ * to render offscreen textures which will be sampled in draws added to the passed in
+ * VkCommandBuffer. If this is done the SkDrawable is in charge of adding the required memory
+ * barriers to the queue for the sampled images since the Skia backend will not do this.
+ *
+ * The VkImage is informational only and should not be used or modified in any ways.
+ */
+struct GrVkDrawableInfo {
+    VkCommandBuffer fSecondaryCommandBuffer;
+    uint32_t        fColorAttachmentIndex;
+    VkRenderPass    fCompatibleRenderPass;
+    VkFormat        fFormat;
+    VkRect2D*       fDrawBounds;
+    VkImage         fImage;
+};
 
 #endif

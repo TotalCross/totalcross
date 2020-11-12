@@ -8,9 +8,8 @@
 #ifndef SkDataTable_DEFINED
 #define SkDataTable_DEFINED
 
-#include "../private/SkTDArray.h"
-#include "SkData.h"
-#include "SkString.h"
+#include "include/core/SkData.h"
+#include "include/private/SkTDArray.h"
 
 /**
  *  Like SkData, SkDataTable holds an immutable data buffer. The data buffer is
@@ -109,11 +108,11 @@ private:
     SkDataTable(const void* array, size_t elemSize, int count,
                 FreeProc, void* context);
     SkDataTable(const Dir*, int count, FreeProc, void* context);
-    virtual ~SkDataTable();
+    ~SkDataTable() override;
 
     friend class SkDataTableBuilder;    // access to Dir
 
-    typedef SkRefCnt INHERITED;
+    using INHERITED = SkRefCnt;
 };
 
 #endif
