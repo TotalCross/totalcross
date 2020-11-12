@@ -8,10 +8,10 @@
 #ifndef Sk2DPathEffect_DEFINED
 #define Sk2DPathEffect_DEFINED
 
-#include "SkFlattenable.h"
-#include "SkPath.h"
-#include "SkPathEffect.h"
-#include "SkMatrix.h"
+#include "include/core/SkFlattenable.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkPathEffect.h"
 
 class SK_API Sk2DPathEffect : public SkPathEffect {
 protected:
@@ -47,7 +47,7 @@ private:
     Sk2DPathEffect& operator=(const Sk2DPathEffect&);
 
     friend class Sk2DPathEffectBlitter;
-    typedef SkPathEffect INHERITED;
+    using INHERITED = SkPathEffect;
 };
 
 class SK_API SkLine2DPathEffect : public Sk2DPathEffect {
@@ -60,8 +60,6 @@ public:
     }
 
 
-    Factory getFactory() const override { return CreateProc; }
-
 protected:
     SkLine2DPathEffect(SkScalar width, const SkMatrix& matrix)
         : Sk2DPathEffect(matrix), fWidth(width) {
@@ -73,12 +71,11 @@ protected:
     void nextSpan(int u, int v, int ucount, SkPath*) const override;
 
 private:
-    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-    friend class SkFlattenable::PrivateInitializer;
+    SK_FLATTENABLE_HOOKS(SkLine2DPathEffect)
 
     SkScalar fWidth;
 
-    typedef Sk2DPathEffect INHERITED;
+    using INHERITED = Sk2DPathEffect;
 };
 
 class SK_API SkPath2DPathEffect : public Sk2DPathEffect {
@@ -91,8 +88,6 @@ public:
         return sk_sp<SkPathEffect>(new SkPath2DPathEffect(matrix, path));
     }
 
-    Factory getFactory() const override { return CreateProc; }
-
 protected:
     SkPath2DPathEffect(const SkMatrix&, const SkPath&);
     void flatten(SkWriteBuffer&) const override;
@@ -100,12 +95,11 @@ protected:
     void next(const SkPoint&, int u, int v, SkPath*) const override;
 
 private:
-    static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);
-    friend class SkFlattenable::PrivateInitializer;
+    SK_FLATTENABLE_HOOKS(SkPath2DPathEffect)
 
     SkPath  fPath;
 
-    typedef Sk2DPathEffect INHERITED;
+    using INHERITED = Sk2DPathEffect;
 };
 
 #endif

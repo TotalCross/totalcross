@@ -8,9 +8,9 @@
 #ifndef GrVkExtensions_DEFINED
 #define GrVkExtensions_DEFINED
 
-#include "../../private/SkTArray.h"
-#include "SkString.h"
-#include "vk/GrVkTypes.h"
+#include "include/core/SkString.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "include/private/SkTArray.h"
 
 /**
  * Helper class that eats in an array of extensions strings for instance and device and allows for
@@ -34,10 +34,10 @@ public:
         uint32_t fSpecVersion;
 
         struct Less {
-            bool operator() (const Info& a, const SkString& b) {
+            bool operator()(const Info& a, const SkString& b) const {
                 return strcmp(a.fName.c_str(), b.c_str()) < 0;
             }
-            bool operator() (const SkString& a, const GrVkExtensions::Info& b) {
+            bool operator()(const SkString& a, const GrVkExtensions::Info& b) const {
                 return strcmp(a.c_str(), b.fName.c_str()) < 0;
             }
         };

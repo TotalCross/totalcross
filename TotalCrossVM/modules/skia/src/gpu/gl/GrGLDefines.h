@@ -34,6 +34,7 @@
 #define GR_GL_TRIANGLES                      0x0004
 #define GR_GL_TRIANGLE_STRIP                 0x0005
 #define GR_GL_TRIANGLE_FAN                   0x0006
+#define GR_GL_PATCHES                        0x000E
 
 /* AlphaFunction (not supported in ES20) */
 /*      GL_NEVER */
@@ -147,6 +148,7 @@
 /*      GL_ALWAYS */
 
 /* EnableCap */
+#define GR_GL_TEXTURE_NONE                   0x0000
 #define GR_GL_TEXTURE_2D                     0x0DE1
 #define GR_GL_CULL_FACE                      0x0B44
 #define GR_GL_BLEND                          0x0BE2
@@ -212,7 +214,6 @@
 #define GR_GL_COLOR_CLEAR_VALUE              0x0C22
 #define GR_GL_COLOR_WRITEMASK                0x0C23
 #define GR_GL_UNPACK_ALIGNMENT               0x0CF5
-#define GR_GL_UNPACK_FLIP_Y                  0x9240
 #define GR_GL_PACK_ALIGNMENT                 0x0D05
 #define GR_GL_PACK_REVERSE_ROW_ORDER         0x93A4
 #define GR_GL_MAX_TEXTURE_SIZE               0x0D33
@@ -257,6 +258,11 @@
 #define GR_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT            0x83F2
 #define GR_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT            0x83F3
 
+#define GR_GL_COMPRESSED_SRGB_S3TC_DXT1_EXT            0x8C4C
+#define GR_GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT      0x8C4D
+#define GR_GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT      0x8C4E
+#define GR_GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT      0x8C4F
+
 #define GR_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG          0x8C00
 #define GR_GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG          0x8C01
 #define GR_GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG         0x8C02
@@ -273,11 +279,11 @@
 #define GR_GL_COMPRESSED_SIGNED_RG11_EAC               0x9273
 
 #define GR_GL_COMPRESSED_RGB8_ETC2                     0x9274
-#define GR_GL_COMPRESSED_SRGB8                         0x9275
+#define GR_GL_COMPRESSED_SRGB8_ETC2                    0x9275
 #define GR_GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1      0x9276
 #define GR_GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1     0x9277
-#define GR_GL_COMPRESSED_RGBA8_ETC2                    0x9278
-#define GR_GL_COMPRESSED_SRGB8_ALPHA8_ETC2             0x9279
+#define GR_GL_COMPRESSED_RGBA8_ETC2_EAC                0x9278
+#define GR_GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC         0x9279
 
 #define GR_GL_COMPRESSED_LUMINANCE_LATC1               0x8C70
 #define GR_GL_COMPRESSED_SIGNED_LUMINANCE_LATC1        0x8C71
@@ -461,6 +467,7 @@
 
 /* Luminance sized formats */
 #define GR_GL_LUMINANCE8                     0x8040
+#define GR_GL_LUMINANCE16F                   0x881E
 
 /* Alpha sized formats */
 #define GR_GL_ALPHA8                         0x803C
@@ -481,6 +488,7 @@
 #define GR_GL_RG16                           0x822C
 #define GR_GL_R16F                           0x822D
 #define GR_GL_R32F                           0x822E
+#define GR_GL_RG16F                          0x822F
 
 /* RG sized integer formats */
 #define GR_GL_RG8I                           0x8237
@@ -513,6 +521,7 @@
 #define GR_GL_RGBA16F                        0x881A
 #define GR_GL_RGBA32F                        0x8814
 #define GR_GL_RG32F                          0x8230
+#define GR_GL_RGBA16                         0x805B
 
 /* RGBA integer sized formats */
 #define GR_GL_RGBA8I                         0x8D8E
@@ -536,6 +545,8 @@
 #define GR_GL_FRAGMENT_SHADER                          0x8B30
 #define GR_GL_VERTEX_SHADER                            0x8B31
 #define GR_GL_GEOMETRY_SHADER                          0x8DD9
+#define GR_GL_TESS_CONTROL_SHADER                      0x8E88
+#define GR_GL_TESS_EVALUATION_SHADER                   0x8E87
 #define GR_GL_MAX_VERTEX_ATTRIBS                       0x8869
 #define GR_GL_MAX_VERTEX_UNIFORM_VECTORS               0x8DFB
 #define GR_GL_MAX_VARYING_VECTORS                      0x8DFC
@@ -670,6 +681,7 @@
 #define GR_GL_REPEAT                         0x2901
 #define GR_GL_CLAMP_TO_EDGE                  0x812F
 #define GR_GL_MIRRORED_REPEAT                0x8370
+#define GR_GL_CLAMP_TO_BORDER                0x812D
 
 /* Texture Swizzle */
 #define GR_GL_TEXTURE_SWIZZLE_R              0x8E42
@@ -987,15 +999,7 @@
 #define GR_GL_PATH_MODELVIEW                                0x1700
 
 /*  ARM specific define for MSAA support on framebuffer fetch */
-#define GR_GL_FETCH_PER_SAMPLE_ARM                          0x8F65
-
-/* GL_EXT_raster_multisample */
-#define GR_GL_RASTER_MULTISAMPLE                            0x9327
-#define GR_GL_RASTER_SAMPLES                                0x9328
-#define GR_GL_MAX_RASTER_SAMPLES                            0x9329
-#define GR_GL_RASTER_FIXED_SAMPLE_LOCATIONS                 0x932A
-#define GR_GL_MULTISAMPLE_RASTERIZATION_ALLOWED             0x932B
-#define GR_GL_EFFECTIVE_RASTER_SAMPLES                      0x932C
+#define GR_GL_FETCH_PER_SAMPLE                              0x8F65
 
 /* GL_KHR_debug */
 #define GR_GL_DEBUG_OUTPUT                                  0x92E0
@@ -1038,14 +1042,50 @@
 
 /* GL_OES_EGL_image_external */
 #define GR_GL_TEXTURE_EXTERNAL                              0x8D65
+#define GR_GL_TEXTURE_BINDING_EXTERNAL                      0x8D67
 
 /* GL_ARB_texture_rectangle or GL_ANGLE_texture_rectangle */
 #define GR_GL_TEXTURE_RECTANGLE                             0x84F5
+#define GR_GL_TEXTURE_BINDING_RECTANGLE                     0x84F6
 
 /* GL_EXT_window_rectangles */
 #define GR_GL_MAX_WINDOW_RECTANGLES                         0x8f14
 #define GR_GL_INCLUSIVE                                     0x8f10
 #define GR_GL_EXCLUSIVE                                     0x8f11
+
+/** GL_QCOM_tiled_rendering */
+#define GR_GL_COLOR_BUFFER_BIT0                             0x00000001
+#define GR_GL_COLOR_BUFFER_BIT1                             0x00000002
+#define GR_GL_COLOR_BUFFER_BIT2                             0x00000004
+#define GR_GL_COLOR_BUFFER_BIT3                             0x00000008
+#define GR_GL_COLOR_BUFFER_BIT4                             0x00000010
+#define GR_GL_COLOR_BUFFER_BIT5                             0x00000020
+#define GR_GL_COLOR_BUFFER_BIT6                             0x00000040
+#define GR_GL_COLOR_BUFFER_BIT7                             0x00000080
+#define GR_GL_DEPTH_BUFFER_BIT0                             0x00000100
+#define GR_GL_DEPTH_BUFFER_BIT1                             0x00000200
+#define GR_GL_DEPTH_BUFFER_BIT2                             0x00000400
+#define GR_GL_DEPTH_BUFFER_BIT3                             0x00000800
+#define GR_GL_DEPTH_BUFFER_BIT4                             0x00001000
+#define GR_GL_DEPTH_BUFFER_BIT5                             0x00002000
+#define GR_GL_DEPTH_BUFFER_BIT6                             0x00004000
+#define GR_GL_DEPTH_BUFFER_BIT7                             0x00008000
+#define GR_GL_STENCIL_BUFFER_BIT0                           0x00010000
+#define GR_GL_STENCIL_BUFFER_BIT1                           0x00020000
+#define GR_GL_STENCIL_BUFFER_BIT2                           0x00040000
+#define GR_GL_STENCIL_BUFFER_BIT3                           0x00080000
+#define GR_GL_STENCIL_BUFFER_BIT4                           0x00100000
+#define GR_GL_STENCIL_BUFFER_BIT5                           0x00200000
+#define GR_GL_STENCIL_BUFFER_BIT6                           0x00400000
+#define GR_GL_STENCIL_BUFFER_BIT7                           0x00800000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT0                       0x01000000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT1                       0x02000000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT2                       0x04000000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT3                       0x08000000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT4                       0x10000000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT5                       0x20000000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT6                       0x40000000
+#define GR_GL_MULTISAMPLE_BUFFER_BIT7                       0x80000000
 
 /* GL_ARB_sync */
 #define GR_GL_SYNC_GPU_COMMANDS_COMPLETE                    0x9117
@@ -1058,6 +1098,8 @@
 
 /* GL_EXT_geometry_shader */
 #define GR_GL_LINES_ADJACENCY                               0x000A
+
+#define GR_GL_PATCH_VERTICES                                0x8E72
 
 /* GL_ARB_internalformat_query */
 #define GR_GL_NUM_SAMPLE_COUNTS                             0x9380
@@ -1076,5 +1118,29 @@
 /* Programs */
 #define GR_GL_PROGRAM_BINARY_RETRIEVABLE_HINT               0x8257
 #define GL_PROGRAM_BINARY_LENGTH                            0x8741
+
+/* GL_NV_conservative_raster */
+#define GR_GL_CONSERVATIVE_RASTERIZATION                    0x9346
+
+/* Barriers */
+#define GR_GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT               0x0001
+#define GR_GL_ELEMENT_ARRAY_BARRIER_BIT                     0x0002
+#define GR_GL_UNIFORM_BARRIER_BIT                           0x0004
+#define GR_GL_TEXTURE_FETCH_BARRIER_BIT                     0x0008
+#define GR_GL_SHADER_IMAGE_ACCESS_BARRIER_BIT               0x0020
+#define GR_GL_COMMAND_BARRIER_BIT                           0x0040
+#define GR_GL_PIXEL_BUFFER_BARRIER_BIT                      0x0080
+#define GR_GL_TEXTURE_UPDATE_BARRIER_BIT                    0x0100
+#define GR_GL_BUFFER_UPDATE_BARRIER_BIT                     0x0200
+#define GR_GL_FRAMEBUFFER_BARRIER_BIT                       0x0400
+#define GR_GL_TRANSFORM_FEEDBACK_BARRIER_BIT                0x0800
+#define GR_GL_ATOMIC_COUNTER_BARRIER_BIT                    0x1000
+#define GR_GL_ALL_BARRIER_BITS                              0xffffffff
+
+/** GL_NV_fence_sync */
+#define GR_GL_ALL_COMPLETED                                 0x84F2
+
+/* Tessellation */
+#define GR_GL_MAX_TESS_GEN_LEVEL_OES                        0x8E7E
 
 #endif

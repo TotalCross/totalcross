@@ -9,13 +9,21 @@
 #ifndef SkTDArray_DEFINED
 #define SkTDArray_DEFINED
 
-#include "SkMalloc.h"
-#include "SkTo.h"
-#include "SkTypes.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkMalloc.h"
+#include "include/private/SkTo.h"
 
+#include <algorithm>
 #include <initializer_list>
 #include <utility>
 
+/** SkTDArray<T> implements a std::vector-like array for raw data-only objects that do not require
+    construction or destruction. The constructor and destructor for T will not be called; T objects
+    will always be moved via raw memcpy. Newly created T objects will contain uninitialized memory.
+
+    In most cases, std::vector<T> can provide a similar level of performance for POD objects when
+    used with appropriate care. In new code, consider std::vector<T> instead.
+*/
 template <typename T> class SkTDArray {
 public:
     SkTDArray() : fArray(nullptr), fReserve(0), fCount(0) {}
@@ -101,10 +109,8 @@ public:
 
     T*        begin() { return fArray; }
     const T*  begin() const { return fArray; }
-    const T* cbegin() const { return fArray; }
     T*        end() { return fArray ? fArray + fCount : nullptr; }
     const T*  end() const { return fArray ? fArray + fCount : nullptr; }
-    const T* cend() const { return fArray ? fArray + fCount : nullptr; }
 
     T&  operator[](int index) {
         SkASSERT(index < fCount);
@@ -118,9 +124,9 @@ public:
     T&  getAt(int index)  {
         return (*this)[index];
     }
-    const T&  getAt(int index) const {
-        return (*this)[index];
-    }
+
+    const T& back() const { SkASSERT(fCount > 0); return fArray[fCount-1]; }
+          T& back()       { SkASSERT(fCount > 0); return fArray[fCount-1]; }
 
     void reset() {
         if (fArray) {
@@ -183,12 +189,6 @@ public:
             }
         }
         return fArray + oldCount;
-    }
-
-    T* appendClear() {
-        T* result = this->append();
-        *result = 0;
-        return result;
     }
 
     T* insert(int index) {
@@ -263,7 +263,7 @@ public:
         if (index >= fCount) {
             return 0;
         }
-        int count = SkMin32(max, fCount - index);
+        int count = std::min(max, fCount - index);
         memcpy(dst, fArray + index, sizeof(T) * count);
         return count;
     }
@@ -320,15 +320,6 @@ public:
         this->reset();
     }
 
-    void visitAll(void visitor(T&)) {
-        T* stop = this->end();
-        for (T* curr = this->begin(); curr < stop; curr++) {
-            if (*curr) {
-                visitor(*curr);
-            }
-        }
-    }
-
 #ifdef SK_DEBUG
     void validate() const {
         SkASSERT((fReserve == 0 && fArray == nullptr) ||
@@ -338,14 +329,17 @@ public:
 #endif
 
     void shrinkToFit() {
-        fReserve = fCount;
-        fArray = (T*)sk_realloc_throw(fArray, fReserve * sizeof(T));
+        if (fReserve != fCount) {
+            SkASSERT(fReserve > fCount);
+            fReserve = fCount;
+            fArray = (T*)sk_realloc_throw(fArray, fReserve * sizeof(T));
+        }
     }
 
 private:
     T*      fArray;
-    int     fReserve;
-    int     fCount;
+    int     fReserve;   // size of the allocation in fArray (#elements)
+    int     fCount;     // logical number of elements (fCount <= fReserve)
 
     /**
      *  Adjusts the number of elements in the array.
@@ -380,7 +374,7 @@ private:
         SkASSERT_RELEASE( SkTFitsIn<int>(reserve) );
 
         fReserve = SkTo<int>(reserve);
-        fArray = (T*)sk_realloc_throw(fArray, fReserve * sizeof(T));
+        fArray = (T*)sk_realloc_throw(fArray, (size_t)fReserve * sizeof(T));
     }
 };
 

@@ -8,10 +8,10 @@
 #ifndef SkFontMgr_DEFINED
 #define SkFontMgr_DEFINED
 
-#include "SkFontArguments.h"
-#include "SkFontStyle.h"
-#include "SkRefCnt.h"
-#include "SkTypes.h"
+#include "include/core/SkFontArguments.h"
+#include "include/core/SkFontStyle.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkTypes.h"
 
 class SkData;
 class SkFontData;
@@ -32,7 +32,7 @@ protected:
     SkTypeface* matchStyleCSS3(const SkFontStyle& pattern);
 
 private:
-    typedef SkRefCnt INHERITED;
+    using INHERITED = SkRefCnt;
 };
 
 class SK_API SkFontMgr : public SkRefCnt {
@@ -86,8 +86,6 @@ public:
     SkTypeface* matchFamilyStyleCharacter(const char familyName[], const SkFontStyle&,
                                           const char* bcp47[], int bcp47Count,
                                           SkUnichar character) const;
-
-    SkTypeface* matchFaceStyle(const SkTypeface*, const SkFontStyle&) const;
 
     /**
      *  Create a typeface for the specified data and TTC index (pass 0 for none)
@@ -146,7 +144,7 @@ protected:
     virtual sk_sp<SkTypeface> onMakeFromStreamIndex(std::unique_ptr<SkStreamAsset>,
                                                     int ttcIndex) const = 0;
     virtual sk_sp<SkTypeface> onMakeFromStreamArgs(std::unique_ptr<SkStreamAsset>,
-                                                   const SkFontArguments&) const;
+                                                   const SkFontArguments&) const = 0;
     virtual sk_sp<SkTypeface> onMakeFromFontData(std::unique_ptr<SkFontData>) const;
     virtual sk_sp<SkTypeface> onMakeFromFile(const char path[], int ttcIndex) const = 0;
 
@@ -157,7 +155,7 @@ private:
     /** Implemented by porting layer to return the default factory. */
     static sk_sp<SkFontMgr> Factory();
 
-    typedef SkRefCnt INHERITED;
+    using INHERITED = SkRefCnt;
 };
 
 #endif
