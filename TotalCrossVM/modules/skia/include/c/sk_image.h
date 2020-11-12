@@ -11,7 +11,7 @@
 #ifndef sk_image_DEFINED
 #define sk_image_DEFINED
 
-#include "sk_types.h"
+#include "include/c/sk_types.h"
 
 SK_C_PLUS_PLUS_BEGIN_GUARD
 
@@ -28,7 +28,7 @@ SK_API sk_image_t* sk_image_new_raster_copy(const sk_imageinfo_t*, const void* p
  *  On success, the encoded data may be processed immediately, or it may be ref()'d for later
  *  use.
  */
-SK_API sk_image_t* sk_image_new_from_encoded(const sk_data_t* encoded, const sk_irect_t* subset);
+SK_API sk_image_t* sk_image_new_from_encoded(const sk_data_t* encoded);
 
 /**
  *  Encode the image's pixels and return the result as a new PNG in a

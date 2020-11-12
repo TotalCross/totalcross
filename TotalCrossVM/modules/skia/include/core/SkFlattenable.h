@@ -8,7 +8,7 @@
 #ifndef SkFlattenable_DEFINED
 #define SkFlattenable_DEFINED
 
-#include "SkRefCnt.h"
+#include "include/core/SkRefCnt.h"
 
 class SkData;
 class SkReadBuffer;
@@ -28,7 +28,7 @@ public:
     enum Type {
         kSkColorFilter_Type,
         kSkDrawable_Type,
-        kSkDrawLooper_Type,
+        kSkDrawLooper_Type, // no longer used internally by Skia
         kSkImageFilter_Type,
         kSkMaskFilter_Type,
         kSkPathEffect_Type,
@@ -37,7 +37,7 @@ public:
         kSkShaderBase_Type,
         kSkUnused_Type,     // used to be SkUnitMapper
         kSkUnused_Type2,
-        kSkNormalSource_Type,
+        kSkUnused_Type3,    // use to be NormalSource,
     };
 
     typedef sk_sp<SkFlattenable> (*Factory)(SkReadBuffer&);
@@ -52,27 +52,13 @@ public:
 
     /**
      *  Returns the name of the object's class.
-     *
-     *  Subclasses should override this function if they intend to provide
-     *  support for flattening without using the global registry.
-     *
-     *  If the flattenable is registered, there is no need to override.
      */
-    virtual const char* getTypeName() const {
-    #ifdef SK_DISABLE_READBUFFER
-        // Should not be reachable by PathKit WebAssembly Code.
-        SkASSERT(false);
-        return nullptr;
-    #else
-        return FactoryToName(getFactory());
-    #endif
-    }
+    virtual const char* getTypeName() const = 0;
 
     static Factory NameToFactory(const char name[]);
     static const char* FactoryToName(Factory);
-    static bool NameToType(const char name[], Type* type);
 
-    static void Register(const char name[], Factory, Type);
+    static void Register(const char name[], Factory);
 
     /**
      *  Override this if your subclass needs to record data that it will need to recreate itself
@@ -96,18 +82,36 @@ public:
 protected:
     class PrivateInitializer {
     public:
-        static void InitCore();
         static void InitEffects();
         static void InitImageFilters();
     };
 
 private:
-    static void InitializeFlattenablesIfNeeded();
+    static void RegisterFlattenablesIfNeeded();
     static void Finalize();
 
     friend class SkGraphics;
 
-    typedef SkRefCnt INHERITED;
+    using INHERITED = SkRefCnt;
 };
+
+#if defined(SK_DISABLE_EFFECT_DESERIALIZATION)
+    #define SK_REGISTER_FLATTENABLE(type) do{}while(false)
+
+    #define SK_FLATTENABLE_HOOKS(type)                                   \
+        static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);           \
+        friend class SkFlattenable::PrivateInitializer;                  \
+        Factory getFactory() const override { return nullptr; }          \
+        const char* getTypeName() const override { return #type; }
+#else
+    #define SK_REGISTER_FLATTENABLE(type)                                \
+        SkFlattenable::Register(#type, type::CreateProc)
+
+    #define SK_FLATTENABLE_HOOKS(type)                                   \
+        static sk_sp<SkFlattenable> CreateProc(SkReadBuffer&);           \
+        friend class SkFlattenable::PrivateInitializer;                  \
+        Factory getFactory() const override { return type::CreateProc; } \
+        const char* getTypeName() const override { return #type; }
+#endif
 
 #endif

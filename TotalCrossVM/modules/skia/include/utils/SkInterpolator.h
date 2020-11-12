@@ -9,9 +9,9 @@
 #ifndef SkInterpolator_DEFINED
 #define SkInterpolator_DEFINED
 
-#include "../private/SkNoncopyable.h"
-#include "../private/SkTo.h"
-#include "SkScalar.h"
+#include "include/core/SkScalar.h"
+#include "include/private/SkNoncopyable.h"
+#include "include/private/SkTo.h"
 
 class SK_API SkInterpolatorBase : SkNoncopyable {
 public:
@@ -119,7 +119,7 @@ private:
 #ifdef SK_DEBUG
     SkScalar(* fScalarsArray)[10];
 #endif
-    typedef SkInterpolatorBase INHERITED;
+    using INHERITED = SkInterpolatorBase;
 };
 
 /** Interpolate a cubic curve, typically to provide an ease-in ease-out transition.

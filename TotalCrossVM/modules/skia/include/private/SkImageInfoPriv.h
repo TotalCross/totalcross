@@ -8,74 +8,73 @@
 #ifndef SkImageInfoPriv_DEFINED
 #define SkImageInfoPriv_DEFINED
 
-#include "SkImageInfo.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkImageInfo.h"
 
-enum SkColorTypeComponentFlag {
-    kRed_SkColorTypeComponentFlag    = 0x1,
-    kGreen_SkColorTypeComponentFlag  = 0x2,
-    kBlue_SkColorTypeComponentFlag   = 0x4,
-    kAlpha_SkColorTypeComponentFlag  = 0x8,
-    kGray_SkColorTypeComponentFlag   = 0x10,
-    kRGB_SkColorTypeComponentFlags   = kRed_SkColorTypeComponentFlag |
-                                       kGreen_SkColorTypeComponentFlag |
-                                       kBlue_SkColorTypeComponentFlag,
-    kRGBA_SkColorTypeComponentFlags  = kRGB_SkColorTypeComponentFlags |
-                                       kAlpha_SkColorTypeComponentFlag,
-};
-
-static inline uint32_t SkColorTypeComponentFlags(SkColorType ct) {
+static inline uint32_t SkColorTypeChannelFlags(SkColorType ct) {
     switch (ct) {
-        case kUnknown_SkColorType:      return 0;
-        case kAlpha_8_SkColorType:      return kAlpha_SkColorTypeComponentFlag;
-        case kRGB_565_SkColorType:      return kRGB_SkColorTypeComponentFlags;
-        case kARGB_4444_SkColorType:    return kRGBA_SkColorTypeComponentFlags;
-        case kRGBA_8888_SkColorType:    return kRGBA_SkColorTypeComponentFlags;
-        case kRGB_888x_SkColorType:     return kRGB_SkColorTypeComponentFlags;
-        case kBGRA_8888_SkColorType:    return kRGBA_SkColorTypeComponentFlags;
-        case kRGBA_1010102_SkColorType: return kRGBA_SkColorTypeComponentFlags;
-        case kRGB_101010x_SkColorType:  return kRGB_SkColorTypeComponentFlags;
-        case kGray_8_SkColorType:       return kGray_SkColorTypeComponentFlag;
-        case kRGBA_F16_SkColorType:     return kRGBA_SkColorTypeComponentFlags;
-        case kRGBA_F32_SkColorType:     return kRGBA_SkColorTypeComponentFlags;
+        case kUnknown_SkColorType:            return 0;
+        case kAlpha_8_SkColorType:            return kAlpha_SkColorChannelFlag;
+        case kRGB_565_SkColorType:            return kRGB_SkColorChannelFlags;
+        case kARGB_4444_SkColorType:          return kRGBA_SkColorChannelFlags;
+        case kRGBA_8888_SkColorType:          return kRGBA_SkColorChannelFlags;
+        case kRGB_888x_SkColorType:           return kRGB_SkColorChannelFlags;
+        case kBGRA_8888_SkColorType:          return kRGBA_SkColorChannelFlags;
+        case kRGBA_1010102_SkColorType:       return kRGBA_SkColorChannelFlags;
+        case kRGB_101010x_SkColorType:        return kRGB_SkColorChannelFlags;
+        case kBGRA_1010102_SkColorType:       return kRGBA_SkColorChannelFlags;
+        case kBGR_101010x_SkColorType:        return kRGB_SkColorChannelFlags;
+        case kGray_8_SkColorType:             return kGray_SkColorChannelFlag;
+        case kRGBA_F16Norm_SkColorType:       return kRGBA_SkColorChannelFlags;
+        case kRGBA_F16_SkColorType:           return kRGBA_SkColorChannelFlags;
+        case kRGBA_F32_SkColorType:           return kRGBA_SkColorChannelFlags;
+        case kR8G8_unorm_SkColorType:         return kRG_SkColorChannelFlags;
+        case kA16_unorm_SkColorType:          return kAlpha_SkColorChannelFlag;
+        case kR16G16_unorm_SkColorType:       return kRG_SkColorChannelFlags;
+        case kA16_float_SkColorType:          return kAlpha_SkColorChannelFlag;
+        case kR16G16_float_SkColorType:       return kRG_SkColorChannelFlags;
+        case kR16G16B16A16_unorm_SkColorType: return kRGBA_SkColorChannelFlags;
     }
-    return 0;
+    SkUNREACHABLE;
 }
 
 static inline bool SkColorTypeIsAlphaOnly(SkColorType ct) {
-    return kAlpha_SkColorTypeComponentFlag == SkColorTypeComponentFlags(ct);
+    return SkColorTypeChannelFlags(ct) == kAlpha_SkColorChannelFlag;
 }
 
 static inline bool SkAlphaTypeIsValid(unsigned value) {
     return value <= kLastEnum_SkAlphaType;
 }
 
-static inline bool SkColorTypeIsGray(SkColorType ct) {
-    auto flags = SkColorTypeComponentFlags(ct);
-    // Currently assuming that a color type has only gray or does not have gray.
-    SkASSERT(!(kGray_SkColorTypeComponentFlag & flags) || kGray_SkColorTypeComponentFlag == flags);
-    return kGray_SkColorTypeComponentFlag == flags;
-}
-
 static int SkColorTypeShiftPerPixel(SkColorType ct) {
     switch (ct) {
-        case kUnknown_SkColorType:      return 0;
-        case kAlpha_8_SkColorType:      return 0;
-        case kRGB_565_SkColorType:      return 1;
-        case kARGB_4444_SkColorType:    return 1;
-        case kRGBA_8888_SkColorType:    return 2;
-        case kRGB_888x_SkColorType:     return 2;
-        case kBGRA_8888_SkColorType:    return 2;
-        case kRGBA_1010102_SkColorType: return 2;
-        case kRGB_101010x_SkColorType:  return 2;
-        case kGray_8_SkColorType:       return 0;
-        case kRGBA_F16_SkColorType:     return 3;
-        case kRGBA_F32_SkColorType:     return 4;
+        case kUnknown_SkColorType:            return 0;
+        case kAlpha_8_SkColorType:            return 0;
+        case kRGB_565_SkColorType:            return 1;
+        case kARGB_4444_SkColorType:          return 1;
+        case kRGBA_8888_SkColorType:          return 2;
+        case kRGB_888x_SkColorType:           return 2;
+        case kBGRA_8888_SkColorType:          return 2;
+        case kRGBA_1010102_SkColorType:       return 2;
+        case kRGB_101010x_SkColorType:        return 2;
+        case kBGRA_1010102_SkColorType:       return 2;
+        case kBGR_101010x_SkColorType:        return 2;
+        case kGray_8_SkColorType:             return 0;
+        case kRGBA_F16Norm_SkColorType:       return 3;
+        case kRGBA_F16_SkColorType:           return 3;
+        case kRGBA_F32_SkColorType:           return 4;
+        case kR8G8_unorm_SkColorType:         return 1;
+        case kA16_unorm_SkColorType:          return 1;
+        case kR16G16_unorm_SkColorType:       return 2;
+        case kA16_float_SkColorType:          return 1;
+        case kR16G16_float_SkColorType:       return 2;
+        case kR16G16B16A16_unorm_SkColorType: return 3;
     }
-    return 0;
+    SkUNREACHABLE;
 }
 
 static inline size_t SkColorTypeMinRowBytes(SkColorType ct, int width) {
-    return width * SkColorTypeBytesPerPixel(ct);
+    return (size_t)(width * SkColorTypeBytesPerPixel(ct));
 }
 
 static inline bool SkColorTypeIsValid(unsigned value) {
@@ -86,11 +85,46 @@ static inline size_t SkColorTypeComputeOffset(SkColorType ct, int x, int y, size
     if (kUnknown_SkColorType == ct) {
         return 0;
     }
-    return y * rowBytes + (x << SkColorTypeShiftPerPixel(ct));
+    return (size_t)y * rowBytes + ((size_t)x << SkColorTypeShiftPerPixel(ct));
+}
+
+static inline bool SkColorTypeIsNormalized(SkColorType ct) {
+    switch (ct) {
+        case kUnknown_SkColorType:
+        case kAlpha_8_SkColorType:
+        case kRGB_565_SkColorType:
+        case kARGB_4444_SkColorType:
+        case kRGBA_8888_SkColorType:
+        case kRGB_888x_SkColorType:
+        case kBGRA_8888_SkColorType:
+        case kRGBA_1010102_SkColorType:
+        case kRGB_101010x_SkColorType:
+        case kBGRA_1010102_SkColorType:
+        case kBGR_101010x_SkColorType:
+        case kGray_8_SkColorType:
+        case kRGBA_F16Norm_SkColorType:
+        case kR8G8_unorm_SkColorType:
+        case kA16_unorm_SkColorType:
+        case kA16_float_SkColorType:          /*subtle... alpha is always [0,1]*/
+        case kR16G16_unorm_SkColorType:
+        case kR16G16B16A16_unorm_SkColorType: return true;
+
+        case kRGBA_F16_SkColorType:
+        case kRGBA_F32_SkColorType:
+        case kR16G16_float_SkColorType:       return false;
+    }
+    SkUNREACHABLE;
 }
 
 /**
- *  Returns true if |info| contains a valid combination of width, height, colorType, and alphaType.
+ *  Returns true if |info| contains a valid colorType and alphaType.
+ */
+static inline bool SkColorInfoIsValid(const SkColorInfo& info) {
+    return info.colorType() != kUnknown_SkColorType && info.alphaType() != kUnknown_SkAlphaType;
+}
+
+/**
+ *  Returns true if |info| contains a valid combination of width, height and colorInfo.
  */
 static inline bool SkImageInfoIsValid(const SkImageInfo& info) {
     if (info.width() <= 0 || info.height() <= 0) {
@@ -102,16 +136,7 @@ static inline bool SkImageInfoIsValid(const SkImageInfo& info) {
         return false;
     }
 
-    if (kUnknown_SkColorType == info.colorType() || kUnknown_SkAlphaType == info.alphaType()) {
-        return false;
-    }
-
-    if (kOpaque_SkAlphaType != info.alphaType() &&
-       (kRGB_565_SkColorType == info.colorType() || kGray_8_SkColorType == info.colorType())) {
-        return false;
-    }
-
-    return true;
+    return SkColorInfoIsValid(info.colorInfo());
 }
 
 /**

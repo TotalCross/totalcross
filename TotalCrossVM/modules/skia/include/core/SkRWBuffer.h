@@ -8,7 +8,7 @@
 #ifndef SkRWBuffer_DEFINED
 #define SkRWBuffer_DEFINED
 
-#include "SkRefCnt.h"
+#include "include/core/SkRefCnt.h"
 
 struct SkBufferBlock;
 struct SkBufferHead;
@@ -59,7 +59,7 @@ public:
 
 private:
     SkROBuffer(const SkBufferHead* head, size_t available, const SkBufferBlock* fTail);
-    virtual ~SkROBuffer();
+    ~SkROBuffer() override;
 
     const SkBufferHead*     fHead;
     const size_t            fAvailable;
