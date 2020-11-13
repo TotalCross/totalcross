@@ -374,7 +374,7 @@ public class PushButtonGroup extends Control {
       }
     }
   }
-
+Image img;
   @Override
   public void onPaint(Graphics g) {
     if (g == null) {
@@ -413,9 +413,11 @@ public class PushButtonGroup extends Control {
         	if (uiAndroid) {
                 if(border)
                 {
-                	Image img = getAndroidButton(r.width, r.height,
+                  if (img==null) {
+                    img = getAndroidButton(r.width, r.height,
                             isEnabled() ? back : Color.interpolate(back, parent.backColor), i == sel && !uiMaterial);
                     img.alphaMask = alphaValue;
+                  }
                     NinePatch.tryDrawImage(g, img, r.x, r.y);
                 }
                 continue;
