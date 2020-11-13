@@ -21,6 +21,8 @@ import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 
+import java.util.HashMap;
+
 /** Group or matrix of pushbuttons in a single control. Is one of the most versatiles
  * controls of TotalCross.
  * Here is an example of constructor:
@@ -65,7 +67,8 @@ public class PushButtonGroup extends Control {
   private int[] btnFColors, btnBColors;
   private int nullNames;
   private int tempIndex = -1;
-  
+  private final HashMap<ImageState, Image> hashedImaged = new HashMap<>();
+
   /**
    * Set to true to have a border. Default is true.
    */
@@ -374,7 +377,7 @@ public class PushButtonGroup extends Control {
       }
     }
   }
-Image img;
+
   @Override
   public void onPaint(Graphics g) {
     if (g == null) {
@@ -413,11 +416,9 @@ Image img;
         	if (uiAndroid) {
                 if(border)
                 {
-                  if (img==null) {
-                    img = getAndroidButton(r.width, r.height,
-                            isEnabled() ? back : Color.interpolate(back, parent.backColor), i == sel && !uiMaterial);
-                    img.alphaMask = alphaValue;
-                  }
+                  Image img = new ImageState(r.width, r.height,
+                          isEnabled() ? back : Color.interpolate(back, parent.backColor),
+                          i == sel && !uiMaterial).getImage();
                     NinePatch.tryDrawImage(g, img, r.x, r.y);
                 }
                 continue;
@@ -743,5 +744,55 @@ public void setHighlightEmptyValues(boolean highlightEmptyValues) {
 
     _onEvent(ke);
     return this;
+  }
+
+  private  class ImageState {
+    int width;
+    int height;
+    int color;
+    boolean isSelected;
+
+    public ImageState(int width, int height, int color, boolean isSelected) {
+      this.width = width;
+      this.height = height;
+      this.color = color;
+      this.isSelected = isSelected;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      ImageState that = (ImageState) o;
+
+      if (width != that.width) return false;
+      if (height != that.height) return false;
+      if (color != that.color) return false;
+      return isSelected == that.isSelected;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = width;
+      result = 31 * result + height;
+      result = 31 * result + color;
+      result = 31 * result + (isSelected ? 1 : 0);
+      return result;
+    }
+
+    private Image getImage() {
+      if (hashedImaged.containsKey(this))
+        return hashedImaged.get(this);
+      Image img = null;
+      try {
+        img = getAndroidButton(width, height, color, isSelected);
+        if (img!=null)
+          img.alphaMask = alphaValue;
+        hashedImaged.put(this, img);
+      } catch (ImageException ignored) {
+      }
+      return img;
+    }
   }
 }
