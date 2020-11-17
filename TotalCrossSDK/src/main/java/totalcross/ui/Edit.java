@@ -227,6 +227,12 @@ protected int gap;
    */
   public static int clipboardDelay = 1500;
 
+
+  /**
+   * If setted it will force the Edit to use the color on background.
+   */
+  public boolean forceBackgroundColor = false;
+
   protected String validChars; // guich
   /** The KeyboardBox used in all Edits. */
   public static VirtualKeyboard keyboard; // guich
@@ -996,7 +1002,7 @@ protected int gap;
 					npback = NinePatch.getInstance().getNormalInstance(npParts, width, height,
 							isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0
 									: (back0 == parent.backColor ? Color.darker(back0, 32)
-											: Color.interpolate(back0, parent.backColor)),
+											: forceBackgroundColor ? back0 : Color.interpolate(back0, parent.backColor)),
 							false);
 					npback.alphaMask = alphaValue;
 				}
