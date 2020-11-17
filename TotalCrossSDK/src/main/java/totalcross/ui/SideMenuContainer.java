@@ -194,6 +194,10 @@ public class SideMenuContainer extends Container implements PenListener {
       this(caption, icon, iconColor, iconAlpha,true, presenter);
     }
 
+    public Item(String caption, IconType icon, int iconColor, final Presenter<Container> presenter) {
+      this(caption, icon, iconColor, 137,true, presenter);
+    }
+
     public Item(String caption, IconType icon, int iconColor, boolean showTitle, final Presenter<Container> presenter) {
       this(caption, icon, iconColor, 137, true, presenter);
     }
