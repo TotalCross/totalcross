@@ -79,7 +79,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         SOURCE: 's3://totalcross-pipeline/libs/'
-        DEST: 'libs'
+        DEST: 'TotalCrossSDK/etc/'
 
     - name: Download Dependences S3 Tools
       uses: prewk/s3-cp-action@master
@@ -87,11 +87,11 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         SOURCE: 's3://totalcross-pipeline/tools/'
-        DEST: 'tools'
+        DEST: 'TotalCrossSDK/etc/'
         
     - name: list files
       run: |
-        ls -ltra -R ./TotalCrossSDK/etc/
+        ls -ltra -R
 
 #     - name: Build SDK
 #       working-directory: TotalCrossSDK
