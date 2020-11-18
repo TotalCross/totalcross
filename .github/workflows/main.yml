@@ -74,7 +74,7 @@ jobs:
         restore-keys: ${{ runner.os }}-gradle
 
     - name: Download Dependences S3
-    - uses: prewk/s3-cp-action@master
+      uses: prewk/s3-cp-action@master
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
