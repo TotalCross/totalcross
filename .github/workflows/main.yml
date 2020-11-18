@@ -81,15 +81,19 @@ jobs:
         SOURCE: 's3://totalcross-pipeline/'
         DEST: './TotalCrossSDK/etc/'
 
-    - name: Build SDK
-      working-directory: TotalCrossSDK
+    - name: list files
       run: |
-        ./gradlew dist -x test --stacktrace
+        ls -ltra -R ./TotalCrossSDK/etc/
+
+#     - name: Build SDK
+#       working-directory: TotalCrossSDK
+#       run: |
+#         ./gradlew dist -x test --stacktrace
     
-    - name: Build Android
-      working-directory: TotalCrossVM/android
-      run: |
-        ./gradlew assembleDebug copyApk -x test --stacktrace && ./gradlew assembleDebug copyApk -x test
+#     - name: Build Android
+#       working-directory: TotalCrossVM/android
+#       run: |
+#         ./gradlew assembleDebug copyApk -x test --stacktrace && ./gradlew assembleDebug copyApk -x test
  
 #     - name: Download Linux amd64
 #       uses: actions/download-artifact@v2
@@ -126,11 +130,11 @@ jobs:
 #         find TotalCrossSDK -name "*gradle*" -type f -exec rm -rf -- {} + && find TotalCrossSDK -name "*gradle*" -type d -exec rm -rf -- {} +
 #         rm -rf TotalCrossSDK/build TotalCrossSDK/build.xml TotalCrossSDK/proguard.txt TotalCrossSDK/src/test
         
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: TotalCross
-        path: |
-          TotalCrossSDK/
+#     - name: Upload artifacts
+#       uses: actions/upload-artifact@v2
+#       with:
+#         name: TotalCross
+#         path: |
+#           TotalCrossSDK/
 
 
