@@ -79,8 +79,8 @@ jobs:
         command: cp
         source: s3://totalcross-pipeline/libs/*
         destination: TotalCrossSDK/etc/libs/
-        aws_access_key_id: ${{ secret.AWS_ACCESS_KEY_ID }}
-        aws_secret_access_key: ${{ secret.AWS_SECRET_ACCESS_KEY }}
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         
     - name: Download Dependences Tools
       uses: keithweaver/aws-s3-github-action@master
@@ -88,8 +88,8 @@ jobs:
         command: cp
         source: s3://totalcross-pipeline/tools/*
         destination: TotalCrossSDK/etc/tools/
-        aws_access_key_id: ${{ secret.AWS_ACCESS_KEY_ID }}
-        aws_secret_access_key: ${{ secret.AWS_SECRET_ACCESS_KEY }}
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Build SDK
       working-directory: TotalCrossSDK
