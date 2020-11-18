@@ -73,14 +73,22 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
 
-    - name: Download Dependences S3
+    - name: Download Dependences S3 Libs
       uses: prewk/s3-cp-action@master
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/'
-        DEST: './TotalCrossSDK/etc/'
+        SOURCE: 's3://totalcross-pipeline/libs'
+        DEST: './TotalCrossSDK/etc/libs'
 
+    - name: Download Dependences S3 Tools
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/tools'
+        DEST: './TotalCrossSDK/etc/tools'
+        
     - name: list files
       run: |
         ls -ltra -R ./TotalCrossSDK/etc/
