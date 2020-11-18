@@ -61,33 +61,33 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: set up JDK 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
+#     - name: set up JDK 11
+#       uses: actions/setup-java@v1
+#       with:
+#         java-version: 11
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v2
-      with:
-        path: ~/.gradle/caches
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-        restore-keys: ${{ runner.os }}-gradle
+#     - name: Cache Gradle packages
+#       uses: actions/cache@v2
+#       with:
+#         path: ~/.gradle/caches
+#         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+#         restore-keys: ${{ runner.os }}-gradle
 
     - name: Download Dependences S3 Libs
       uses: prewk/s3-cp-action@master
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/libs'
-        DEST: './TotalCrossSDK/etc/libs'
+        SOURCE: 's3://totalcross-pipeline/libs/'
+        DEST: './TotalCrossSDK/etc/libs/'
 
     - name: Download Dependences S3 Tools
       uses: prewk/s3-cp-action@master
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/tools'
-        DEST: './TotalCrossSDK/etc/tools'
+        SOURCE: 's3://totalcross-pipeline/tools/'
+        DEST: './TotalCrossSDK/etc/tools/'
         
     - name: list files
       run: |
