@@ -21,8 +21,6 @@ import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 
-import java.util.HashMap;
-
 /** Group or matrix of pushbuttons in a single control. Is one of the most versatiles
  * controls of TotalCross.
  * Here is an example of constructor:
@@ -57,7 +55,8 @@ public class PushButtonGroup extends Control {
   private int maxWidth = -1;
   private boolean simpleBorder = uiFlat; // guich@552_22: added uiFlat
   /** The bounds of each of the buttons. Never change this directly. */
-  public Rect rects[];
+  public final Rect[] rects;
+  private final ImageCache imageCache;
   private int count;
   private boolean allSameWidth;
   private int[] tX;
@@ -67,7 +66,6 @@ public class PushButtonGroup extends Control {
   private int[] btnFColors, btnBColors;
   private int nullNames;
   private int tempIndex = -1;
-  private final HashMap<ImageState, Image> hashedImaged = new HashMap<>();
 
   /**
    * Set to true to have a border. Default is true.
@@ -160,6 +158,7 @@ public class PushButtonGroup extends Control {
     count = names.length;
     widths = new int[count];
     rects = new Rect[count];
+    imageCache = new ImageCache(count);
     tX = new int[count];
     if (rows < 1) {
       rows = 1;
@@ -416,10 +415,10 @@ public class PushButtonGroup extends Control {
         	if (uiAndroid) {
                 if(border)
                 {
-                  Image img = new ImageState(r.width, r.height,
+                  Image img = imageCache.getImage(r.width, r.height,
                           isEnabled() ? back : Color.interpolate(back, parent.backColor),
-                          i == sel && !uiMaterial).getImage();
-                    NinePatch.tryDrawImage(g, img, r.x, r.y);
+                          i == sel && !uiMaterial, i);
+                  NinePatch.tryDrawImage(g, img, r.x, r.y);
                 }
                 continue;
               } else if (uiVista) {
@@ -746,53 +745,62 @@ public void setHighlightEmptyValues(boolean highlightEmptyValues) {
     return this;
   }
 
-  private  class ImageState {
-    int width;
-    int height;
-    int color;
-    boolean isSelected;
 
-    public ImageState(int width, int height, int color, boolean isSelected) {
-      this.width = width;
-      this.height = height;
-      this.color = color;
-      this.isSelected = isSelected;
+  private class ImageCache {
+    private final int[] normalWidth;
+    private final int[] normalHeight;
+    private final int[] normalColor;
+    private final int[] selectedWidth;
+    private final int[] selectedHeight;
+    private final int[] selectedColor;
+    private final Image[] normal;
+    private final Image[] selected;
+
+    private ImageCache(int elements) {
+      normalWidth = new int[elements];
+      normalHeight = new int[elements];
+      normalColor = new int[elements];
+      selectedWidth = new int[elements];
+      selectedHeight = new int[elements];
+      selectedColor = new int[elements];
+      normal = new Image[elements];
+      selected = new Image[elements];
     }
 
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      ImageState that = (ImageState) o;
-
-      if (width != that.width) return false;
-      if (height != that.height) return false;
-      if (color != that.color) return false;
-      return isSelected == that.isSelected;
+    private int getWidth(int index, boolean selected) {
+      return selected ? selectedWidth[index] : normalWidth[index];
     }
 
-    @Override
-    public int hashCode() {
-      int result = width;
-      result = 31 * result + height;
-      result = 31 * result + color;
-      result = 31 * result + (isSelected ? 1 : 0);
-      return result;
+    private int getHeight(int index, boolean selected) {
+      return selected ? selectedHeight[index] : normalHeight[index];
     }
 
-    private Image getImage() {
-      if (hashedImaged.containsKey(this))
-        return hashedImaged.get(this);
+    private int getColor(int index, boolean selected) {
+      return selected ? selectedColor[index] : normalColor[index];
+    }
+
+    private Image getImage(int index, boolean selected) {
+      return selected ? this.selected[index] : normal[index];
+    }
+
+    private Image setImage(int index, boolean selected, int width, int height, int color) {
       Image img = null;
       try {
-        img = getAndroidButton(width, height, color, isSelected);
-        if (img!=null)
-          img.alphaMask = alphaValue;
-        hashedImaged.put(this, img);
+        img = getAndroidButton(width, height, color, selected);
+        (selected ? this.selected : normal)[index] = img;
+        (selected ? this.selectedWidth : normalWidth)[index] = width;
+        (selected ? this.selectedHeight : normalHeight)[index] = height;
+        (selected ? this.selectedColor : normalColor)[index] = color;
       } catch (ImageException ignored) {
       }
       return img;
+    }
+
+    private Image getImage(int width, int height, int color, boolean isSelected, int index) {
+      Image img;
+      if ((img = getImage(index, isSelected)) != null && getWidth(index, isSelected) == width && getHeight(index, isSelected) == height && getColor(index, isSelected) == color)
+        return img;
+      return setImage(index, isSelected, width, height, color);
     }
   }
 }
