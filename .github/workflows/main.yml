@@ -135,7 +135,7 @@ jobs:
         cp -p -a -R Linux_arm64/Launcher TotalCrossSDK/etc/launchers/linux_arm64/
         cp -p -a -R Linux_amd64/Launcher TotalCrossSDK/etc/launchers/linux/
         cp -p -a -R Linux_arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
-        mv TotalCrossSDK/build/docs/javadoc TotalCrossSDK/docs/html
+        rm -rf TotalCrossSDK/docs/* && mv TotalCrossSDK/build/docs/javadoc TotalCrossSDK/docs/html
         mv TotalCrossSDK/build/libs TotalCrossSDK/etc/
         mv LitebaseLib.tcz TotalCrossSDK/dist/vm/
         find TotalCrossSDK -name .DS_Store -exec rm -rf -- {} +
