@@ -127,8 +127,6 @@ jobs:
 
     - name: Manager files
       run: |
-        unzip -n libs.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
-        unzip -n tools.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
         mkdir -p TotalCrossSDK/dist/vm/linux TotalCrossSDK/dist/vm/linux_arm TotalCrossSDK/dist/vm/linux_arm64 
         mkdir -p TotalCrossSDK/etc/launchers/linux TotalCrossSDK/etc/launchers/linux_arm TotalCrossSDK/etc/launchers/linux_arm64
         cp -p -a -R Linux_amd64/libtcvm.so TotalCrossSDK/dist/vm/linux/
@@ -144,7 +142,9 @@ jobs:
         find TotalCrossSDK -name "*git*" -exec rm -rf -- {} +
         find TotalCrossSDK -name "*gradle*" -type f -exec rm -rf -- {} + && find TotalCrossSDK -name "*gradle*" -type d -exec rm -rf -- {} +
         rm -rf TotalCrossSDK/build TotalCrossSDK/build.xml TotalCrossSDK/proguard.txt TotalCrossSDK/src/test
-        
+        unzip -n libs.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
+        unzip -n tools.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
