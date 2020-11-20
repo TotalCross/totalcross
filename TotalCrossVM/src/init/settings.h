@@ -119,10 +119,8 @@ void restoreVKSettings();
 TC_API TCSettings getSettingsPtr(); // to be called by another dll to get access to the tcSettings structure
 typedef TCSettings (*getSettingsPtrFunc)(); // to be called by another dll to get access to the tcSettings structure
 
-#if !defined __clang__ || defined darwin // some settings.h functions do not compile onder clang
-TC_API bool getDataPath(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
-#endif
-typedef bool (*getDataPathFunc)(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
+TC_API int32 getDataPath(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
+typedef int32 (*getDataPathFunc)(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
 void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp); // updates Settings.screenWidth/screenHeight
 
 TC_API void getRomSerialNumber(CharP outBuf); // stores the rom serial number in the given buffer of size 128.
