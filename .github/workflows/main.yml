@@ -96,7 +96,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         SOURCE: 's3://totalcross-pipeline/LitebaseLib.tcz'
         DEST: 'LitebaseLib.tcz'
-#
+
     - name: Download Dependences S3 Android Key
       uses: prewk/s3-cp-action@master
       env:
@@ -165,11 +165,11 @@ jobs:
         find TotalCrossSDK -name "*git*" -exec rm -rf -- {} +
         find TotalCrossSDK -name "*gradle*" -type f -exec rm -rf -- {} + && find TotalCrossSDK -name "*gradle*" -type d -exec rm -rf -- {} +
         rm -rf TotalCrossSDK/build TotalCrossSDK/build.xml TotalCrossSDK/proguard.txt TotalCrossSDK/src/test
-        unzip -n libs.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
-        unzip -n tools.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
-        unzip -n key_android.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
-        unzip -n lb.zip -x "__MACOSX/*"  -d TotalCrossSDK/src/
-        unzip -n docs_litebase.zip -x "__MACOSX/*"  -d TotalCrossSDK/docs/html
+        unzip -n libs.zip -x "__MACOSX/*" -d TotalCrossSDK/etc/
+        unzip -n tools.zip -x "__MACOSX/*" -d TotalCrossSDK/etc/
+        unzip -n key_android.zip -d TotalCrossSDK/etc/
+        unzip -n lb.zip -d TotalCrossSDK/src/
+        unzip -n docs_litebase.zip -d TotalCrossSDK/docs/html
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
