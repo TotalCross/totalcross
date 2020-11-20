@@ -96,6 +96,30 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         SOURCE: 's3://totalcross-pipeline/LitebaseLib.tcz'
         DEST: 'LitebaseLib.tcz'
+#
+    - name: Download Dependences S3 Android Key
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/key_android.zip'
+        DEST: 'key_android.zip'
+
+    - name: Download Dependences S3 Docs Litebase
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/docs_litebase.zip'
+        DEST: 'docs_litebase.zip'
+
+    - name: Download Dependences S3 Sources Litebase
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/lb.zip'
+        DEST: 'lb.zip'
 
     - name: Build SDK
       working-directory: TotalCrossSDK
@@ -136,7 +160,6 @@ jobs:
         cp -p -a -R Linux_amd64/Launcher TotalCrossSDK/etc/launchers/linux/
         cp -p -a -R Linux_arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
         rm -rf TotalCrossSDK/docs/* && mv TotalCrossSDK/build/docs/javadoc TotalCrossSDK/docs/html
-        mv TotalCrossSDK/build/libs TotalCrossSDK/etc/
         mv LitebaseLib.tcz TotalCrossSDK/dist/vm/
         find TotalCrossSDK -name .DS_Store -exec rm -rf -- {} +
         find TotalCrossSDK -name "*git*" -exec rm -rf -- {} +
@@ -144,6 +167,9 @@ jobs:
         rm -rf TotalCrossSDK/build TotalCrossSDK/build.xml TotalCrossSDK/proguard.txt TotalCrossSDK/src/test
         unzip -n libs.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
         unzip -n tools.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
+        unzip -n key_android.zip -x "__MACOSX/*"  -d TotalCrossSDK/etc/
+        unzip -n lb.zip -x "__MACOSX/*"  -d TotalCrossSDK/src/
+        unzip -n docs_litebase.zip -x "__MACOSX/*"  -d TotalCrossSDK/docs/html
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
