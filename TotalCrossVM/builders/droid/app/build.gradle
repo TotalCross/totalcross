@@ -133,7 +133,6 @@ android {
     }
 
 	assemble.mustRunAfter assembleAssets
-	copyApk.mustRunAfter assemble
     project.afterEvaluate{
 	    applicationVariants.all { com.android.build.gradle.api.ApplicationVariant variant ->
 		    	variant.assemble.dependsOn(['assembleAssets'])
