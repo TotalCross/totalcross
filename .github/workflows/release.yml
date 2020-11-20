@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  push:
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v6.1.1, v7.0.0
   workflow_dispatch:
     inputs:
       tag:
