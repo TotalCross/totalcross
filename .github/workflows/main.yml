@@ -3,6 +3,7 @@ name: Build and upload Zip TotalCross
 on:
   schedule:
     - cron: "0 3 * * 1-5"
+  workflow_dispatch:
   push:
     branches: [ master ]
 
