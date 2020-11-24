@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Versão (nome da tag a ser referenciada)'
+        description: 'Version (name of the tag to be referenced)'
         required: true
 
 jobs:
@@ -32,8 +32,8 @@ jobs:
 
       - name: "CHANGELOG Release ${{ github.event.inputs.tag }}"
         run: |
-          versao=$(echo '${{ github.event.inputs.tag }}' | sed 's/v//g')
-          sed -n '/^## '$versao'/,/^## /p' CHANGELOG.md | sed -e '$d' > CHANGELOG-${{ github.event.inputs.tag }}.md
+          version=$(echo '${{ github.event.inputs.tag }}' | sed 's/v//g')
+          sed -n '/^## '$version'/,/^## /p' CHANGELOG.md | sed -e '$d' > CHANGELOG-${{ github.event.inputs.tag }}.md
           
       - name: Create Release
         id: create_release
