@@ -148,6 +148,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/phone/Dial.c
     ${TC_SRCDIR}/nm/phone/SMS.c
     ${TC_SRCDIR}/nm/phone/CellInfo.c
+    ${TC_SRCDIR}/nm/telephony/TelephonyManager.c
     ${TC_SRCDIR}/nm/telephony/SmsManager.c
     ${TC_SRCDIR}/nm/firebase/firebase.c
 
