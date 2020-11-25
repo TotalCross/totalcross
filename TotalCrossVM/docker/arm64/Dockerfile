@@ -1,4 +1,4 @@
-FROM arm64v8/ubuntu:xenial
+FROM arm64v8/ubuntu:xenial AS build
 # 
 
 MAINTAINER Italo Yeltsin "br.yeltsin@gmail.com"
@@ -63,5 +63,14 @@ RUN rm -r /SDL
 ENV BUILD_FOLDER /build
 
 WORKDIR ${BUILD_FOLDER}
+
+# utilize o diretorio TotalCrossVM como diretorio de contexto de build para o Docker
+COPY . /sources
+
+RUN cmake /sources -DPNG_ARM_NEON_OPT=0 -G Ninja && ninja
+
 CMD ["/bin/bash", "-c", "make", "-j$(($(nproc) + 2))", "-f", "${BUILD_FOLDER}/Makefile"]
 # CMD ["make", "clean"]
+
+FROM scratch AS export
+COPY --from=build /build /
