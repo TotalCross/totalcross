@@ -1,0 +1,182 @@
+name: Build and upload Zip TotalCross
+
+on:
+  schedule:
+    - cron: "0 3 * * 1-5"
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build_linux:
+    name: Build '${{ matrix.project }}' Docker container
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [ amd64,arm32v7,arm64 ]
+        include:
+        # includes a new variable of npm with a value of 2
+        # for the matrix leg matching the os and version
+        - project: amd64
+          arch: amd64
+        - project: arm32v7
+          arch: arm/7
+        - project: arm64
+          arch: arm64/8
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: crazy-max/ghaction-docker-buildx@v3
+
+    - name: build image
+      run: |
+        docker buildx build --no-cache -f TotalCrossVM/docker/${{ matrix.project }}/Dockerfile \
+        --output out_${{ matrix.project }} \
+        --tag totalcross/linux-${{ matrix.project }}-build \
+        --platform linux/${{ matrix.arch }} TotalCrossVM/
+
+    - name: list files
+      run: |
+        ls -ltra -R out_${{ matrix.project }}
+         
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Linux_${{ matrix.project }}
+        path: |
+          out_${{ matrix.project }}
+          
+  build_sdk_android:
+    name: Build SDK and Android 
+    needs: build_linux
+    runs-on: ubuntu-18.04
+    container:
+      image: docker://fabernovel/android:api-28-gcloud-ndk-v1.2.0
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+
+    - name: Download Dependences S3 Libs
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/libs.zip'
+        DEST: 'libs.zip'
+
+    - name: Download Dependences S3 Tools
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/tools.zip'
+        DEST: 'tools.zip'
+
+    - name: Download Dependences S3 LitebaseLib.tcz
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/LitebaseLib.tcz'
+        DEST: 'LitebaseLib.tcz'
+
+    - name: Download Dependences S3 Android Key
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/key_android.zip'
+        DEST: 'key_android.zip'
+
+    - name: Download Dependences S3 Docs Litebase
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/docs_litebase.zip'
+        DEST: 'docs_litebase.zip'
+
+    - name: Download Dependences S3 Sources Litebase
+      uses: prewk/s3-cp-action@master
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE: 's3://totalcross-pipeline/lb.zip'
+        DEST: 'lb.zip'
+
+    - name: Build SDK
+      working-directory: TotalCrossSDK
+      run: |
+        ./gradlew dist -x test --stacktrace
+    
+    - name: Build Android
+      working-directory: TotalCrossVM/android
+      run: |
+        ./gradlew assembleDebug copyApk -x test --stacktrace && ./gradlew assembleDebug copyApk -x test
+ 
+    - name: Download Linux amd64
+      uses: actions/download-artifact@v2
+      with:
+        name: Linux_amd64
+        path: Linux_amd64
+ 
+    - name: Download Linux arm32
+      uses: actions/download-artifact@v2
+      with:
+        name: Linux_arm32v7
+        path: Linux_arm32v7
+ 
+    - name: Download Linux arm64
+      uses: actions/download-artifact@v2
+      with:
+        name: Linux_arm64
+        path: Linux_arm64
+
+    - name: Manager files
+      run: |
+        mkdir -p TotalCrossSDK/dist/vm/linux TotalCrossSDK/dist/vm/linux_arm TotalCrossSDK/dist/vm/linux_arm64 
+        mkdir -p TotalCrossSDK/etc/launchers/linux TotalCrossSDK/etc/launchers/linux_arm TotalCrossSDK/etc/launchers/linux_arm64
+        cp -p -a -R Linux_amd64/libtcvm.so TotalCrossSDK/dist/vm/linux/
+        cp -p -a -R Linux_arm32v7/libtcvm.so TotalCrossSDK/dist/vm/linux_arm/
+        cp -p -a -R Linux_arm64/libtcvm.so TotalCrossSDK/dist/vm/linux_arm64/
+        cp -p -a -R Linux_arm64/Launcher TotalCrossSDK/etc/launchers/linux_arm64/
+        cp -p -a -R Linux_amd64/Launcher TotalCrossSDK/etc/launchers/linux/
+        cp -p -a -R Linux_arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
+        rm -rf TotalCrossSDK/docs/* && mv TotalCrossSDK/build/docs/javadoc TotalCrossSDK/docs/html
+        mv LitebaseLib.tcz TotalCrossSDK/dist/vm/
+        find TotalCrossSDK -name .DS_Store -exec rm -rf -- {} +
+        find TotalCrossSDK -name "*git*" -exec rm -rf -- {} +
+        find TotalCrossSDK -name "*gradle*" -type f -exec rm -rf -- {} + && find TotalCrossSDK -name "*gradle*" -type d -exec rm -rf -- {} +
+        rm -rf TotalCrossSDK/build TotalCrossSDK/build.xml TotalCrossSDK/proguard.txt TotalCrossSDK/src/test
+        unzip -n libs.zip -x "__MACOSX/*" -d TotalCrossSDK/etc/
+        unzip -n tools.zip -x "__MACOSX/*" -d TotalCrossSDK/etc/
+        unzip -n key_android.zip -d TotalCrossSDK/etc/
+        unzip -n lb.zip -d TotalCrossSDK/src/
+        unzip -n docs_litebase.zip -d TotalCrossSDK/docs/html
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: TotalCross
+        path: |
+          TotalCrossSDK/
+
+
