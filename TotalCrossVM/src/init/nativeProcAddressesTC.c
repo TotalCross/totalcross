@@ -549,6 +549,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_setPositionD_i"), &tmA_setPositionD_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_setVisibleD_b"), &tmA_setVisibleD_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_isVisibleD"), &tmA_isVisibleD);
+   htPutPtr(&htNativeProcAddresses, hashCode("ttTM_nativeInitialize"), &ttTM_nativeInitialize);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendTextMessage_sss"), &ttSM_sendTextMessage_sss);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendDataMessage_ssiB"), &ttSM_sendDataMessage_ssiB);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_si"), &ttSM_registerSmsReceiver_si);
