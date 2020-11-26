@@ -79,7 +79,7 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/libs.zip'
+        SOURCE: 's3://${{ secrets.S3_BUCKET }}/libs.zip'
         DEST: 'libs.zip'
 
     - name: Download Dependences S3 Tools
@@ -87,7 +87,7 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/tools.zip'
+        SOURCE: 's3://${{ secrets.S3_BUCKET }}/tools.zip'
         DEST: 'tools.zip'
 
     - name: Download Dependences S3 LitebaseLib.tcz
@@ -95,7 +95,7 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/LitebaseLib.tcz'
+        SOURCE: 's3://${{ secrets.S3_BUCKET }}/LitebaseLib.tcz'
         DEST: 'LitebaseLib.tcz'
 
     - name: Download Dependences S3 Android Key
@@ -103,7 +103,7 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/key_android.zip'
+        SOURCE: 's3://${{ secrets.S3_BUCKET }}/key_android.zip'
         DEST: 'key_android.zip'
 
     - name: Download Dependences S3 Docs Litebase
@@ -111,7 +111,7 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/docs_litebase.zip'
+        SOURCE: 's3://${{ secrets.S3_BUCKET }}/docs_litebase.zip'
         DEST: 'docs_litebase.zip'
 
     - name: Download Dependences S3 Sources Litebase
@@ -119,7 +119,7 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://totalcross-pipeline/lb.zip'
+        SOURCE: 's3://${{ secrets.S3_BUCKET }}/lb.zip'
         DEST: 'lb.zip'
 
     - name: Build SDK
