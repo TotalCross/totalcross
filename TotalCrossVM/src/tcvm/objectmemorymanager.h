@@ -112,6 +112,8 @@ typedef uint8* Chunk;
 /// Gets the start of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
 #define ARRAYOBJ_START(o) (((uint8*)(o))+TSIZE)
 
+#define ARRAYOBJ_GET(o, i) (*((TCObjectArray) ARRAYOBJ_START(o) + i))
+
 // Gets the size in bytes of an array. Added to support 64-bit without needing to change tcz structure
 #define TC_ARRAYSIZE(c, len) (c->flags.isObjectArray ? len * TSIZE : len << c->flags.bits2shift)
 
