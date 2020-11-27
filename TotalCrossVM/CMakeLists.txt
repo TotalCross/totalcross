@@ -643,7 +643,7 @@ add_executable(Launcher
 
 if(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
   target_compile_options(Launcher PRIVATE /GS-)
-  target_link_options(Launcher PRIVATE /ENTRY:)
+  target_link_options(Launcher PRIVATE /STACK:0x200000 /ENTRY:)
 endif()
 
 if(MSVC)
