@@ -1,5 +1,5 @@
-FROM arm32v7/ubuntu:xenial AS build
-# 
+FROM arm32v7/ubuntu:bionic AS build
+#
 
 MAINTAINER Italo Yeltsin "br.yeltsin@gmail.com"
 
@@ -10,7 +10,6 @@ RUN apt-get update && \
         ninja-build \
         build-essential \
         libfontconfig1-dev \
-# SDL2 
         libtool \
         libasound2-dev \
         libpulse-dev \
@@ -24,7 +23,6 @@ RUN apt-get update && \
         libxxf86vm-dev \
         libxss-dev \
         libgl1-mesa-dev \
-        libesd0-dev \
         libdbus-1-dev \
         libudev-dev \
         libgles2-mesa-dev \
@@ -33,13 +31,12 @@ RUN apt-get update && \
         fcitx-libs-dev \
         libsamplerate0-dev \
         libsndio-dev \
-# Wayland
         libwayland-dev \
         libxkbcommon-dev \
         wayland-protocols \
         git \
         ca-certificates; \
-    apt-get install -y libgles1-mesa-dev || apt-get -f install; \
+    apt-get install -y libglvnd-dev || apt-get -f install; \
     apt-get clean
 
 RUN git clone https://github.com/SDL-mirror/SDL.git \
@@ -53,24 +50,9 @@ RUN git clone https://github.com/SDL-mirror/SDL.git \
         -DSDL_SHARED=0 \
         -DSDL_AUDIO=0 \
         -DVIDEO_VIVANTE=ON \
-        -DVIDEO_WAYLAND=ON \ 
+        -DVIDEO_WAYLAND=ON \
         -DWAYLAND_SHARED=ON; \
     ninja install
 
 # clean up
-RUN rm -r /SDL  
-
-ENV BUILD_FOLDER /build
-
-WORKDIR ${BUILD_FOLDER}
-
-# utilize o diretorio TotalCrossVM como diretorio de contexto de build para o Docker
-COPY . /sources
-
-RUN cmake /sources -G Ninja && ninja
-
-CMD ["/bin/bash", "-c", "make", "-j$(($(nproc) + 2))", "-f", "${BUILD_FOLDER}/Makefile"]
-# CMD ["make", "clean"]
-
-FROM scratch AS export
-COPY --from=build /build /
+RUN rm -r /SDL
