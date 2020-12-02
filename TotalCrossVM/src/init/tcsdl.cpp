@@ -19,6 +19,15 @@ static SDL_Window *window = NULL;
 static SDL_Surface *surface = NULL;
 static bool usesTexture;
 
+/**
+ * Returns the current time in microseconds.
+ */
+long getMicrotime(){
+	struct timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
+}
+
 /*
  * Init steps to create a window and texture to Skia handling
  *
@@ -229,10 +238,12 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
  * depends on it
  */
 void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
+	PROFILE_START
 	if(usesTexture) {
 		// Update the given texture rectangle with new pixel data.
 		SDL_UpdateTexture(texture, NULL, pixels, pitch);
 	}
+	PROFILE_STOP
 	// Call SDL render present
 	TCSDL_Present();
 }
@@ -241,6 +252,7 @@ void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
  * Update the screen with rendering performed
  */
 void TCSDL_Present() {
+	PROFILE_START
   if(usesTexture) {
     // Copy a portion of the texture to the current rendering target
     SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -251,6 +263,7 @@ void TCSDL_Present() {
   } else {
     SDL_UpdateWindowSurface(window);
   }
+  PROFILE_STOP
 }
 
 /*

@@ -18,6 +18,13 @@ extern "C" {
     #endif
     #include "GraphicsPrimitives.h"
 
+#include <sys/time.h>
+
+long getMicrotime();
+    #define PROFILE_START long profileStart = getMicrotime();
+    #define PROFILE_STOP { Uint32 profileElapsed = (getMicrotime() - profileStart); if (profileElapsed >= 0) { printf("%s: %d\n", __func__, profileElapsed); } }
+
+
     bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
     void TCSDL_Present();

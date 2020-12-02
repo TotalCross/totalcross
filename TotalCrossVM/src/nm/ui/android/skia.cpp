@@ -181,7 +181,9 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 
 void flushSkia()
 {
+    PROFILE_START
     canvas->flush();
+    PROFILE_STOP
 #ifdef HEADLESS
     TCSDL_UpdateTexture(bitmap.width(), bitmap.height(), bitmap.rowBytes(),bitmap.getPixels());
 #endif
@@ -194,6 +196,7 @@ int32 skia_makeTypeface(char* name, void *data, int32 size)
     std::string key = name;
     int32 idx = skia_getTypefaceIndex(name);
     
+    PROFILE_START
     if (idx == -1 && typefaceIdx < TYPEFACE_LEN - 1) {
         sk_sp<SkData> typefaceData = SkData::MakeWithCopy(data, size);
         sk_sp<SkTypeface> typeface = SkTypeface::MakeFromData(typefaceData);
@@ -201,32 +204,43 @@ int32 skia_makeTypeface(char* name, void *data, int32 size)
         typefaces[typefaceIdx++] = typeface;
         typefaceIndexMap[key] = idx;
     }
+    PROFILE_STOP
     
     return idx;
 }
 
 int32 skia_getTypefaceIndex(char* name) {
+    PROFILE_START
     std::string key = name;
     std::map<std::string, int>::iterator it = typefaceIndexMap.find(key);
 
+int32 ret = -1;
     if (it != typefaceIndexMap.end()) {
-    	return it->second;
+    	ret = it->second;
     }
-    
-    return -1;
+    PROFILE_STOP
+
+    return ret;
 }
 
 sk_sp<SkTypeface> skia_getTypeface(int32 typefaceIndex) {
+    PROFILE_START
+    sk_sp<SkTypeface> ret;
     if (typefaceIndex >= 0 && typefaceIndex < typefaceIdx) {
-        return typefaces[typefaceIndex];
+        ret = typefaces[typefaceIndex];
     } else {
-        return SkTypeface::MakeFromName(nullptr, SkFontStyle());
+        ret = SkTypeface::MakeFromName(nullptr, SkFontStyle());
     }
+        PROFILE_STOP
+        return ret;
 }
 
 int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, int32 fontSize)
 {
-    return SkFont(skia_getTypeface(typefaceIndex),fontSize).measureText(text,charCount,SkTextEncoding::kUTF16);
+PROFILE_START
+    int32 ret = SkFont(skia_getTypeface(typefaceIndex),fontSize).measureText(text,charCount,SkTextEncoding::kUTF16);
+PROFILE_STOP
+return ret;
 }
 
 static void releaseProc(void* addr, void* ) {
@@ -237,6 +251,7 @@ static void releaseProc(void* addr, void* ) {
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
     SKIA_TRACE()
 
+    PROFILE_START
     //TODO: reuse pixel data and avoid all this allocation, maybe using data directly with the correct color type
     int32 *converted = new int32[w * h];
     for (int i = 0; i < w * h; i++) {
@@ -253,6 +268,7 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
         SkBitmap& bitmap = textures[id];
         bitmap.installPixels(SkImageInfo::Make(w, h, kN32_SkColorType, kUnpremul_SkAlphaType), (void*)converted, sizeof(Pixel) * w, releaseProc, nullptr);
     }
+    PROFILE_STOP
 
     return id;
 }
@@ -268,21 +284,27 @@ void skia_deleteBitmap(int32 id) {
 
 void skia_setClip(int32 x1, int32 y1, int32 x2, int32 y2)
 {
+    PROFILE_START
     canvas->save();
     canvas->clipRect(SkRect::MakeLTRB(x1, y1, x2, y2));
+    PROFILE_STOP
 }
 void skia_restoreClip()
 {
+    PROFILE_START
     canvas->restore();
+    PROFILE_STOP
 }
 
 void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32 srcW, int32 srcH, int32 w, int32 h, int32 dstX, int32 dstY, int32 alphaMask, int32 doClip)
 {
     SKIA_TRACE()
 
+    PROFILE_START
     alphaPaint.setAlpha(alphaMask);
     canvas->drawBitmapRect(textures[id], SkRect::MakeXYWH(srcX, srcY, w, h),
                            SkRect::MakeXYWH(dstX, dstY, w, h), &alphaPaint);
+    PROFILE_STOP
 }
 
 // The getPixel call demands a 1-pixel readback from the GPU. Avoid it if possible.
@@ -290,27 +312,39 @@ Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y)
 {
     SKIA_TRACE()
 
+PROFILE_START
     SkBitmap bitmap;
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(1, 1));
+
+    Pixel p = -1;
     if (!canvas->readPixels(bitmap, x, y))
     {
-        return -1;
+        // goto finish;
     }
+    else {
 
     Pixel pixel = bitmap.getAddr32(0, 0)[0];
-    return (((pixel >> 24) & 0xFF) << 24) | (((pixel & 0xFF) << 16) | (((pixel >> 8) & 0xFF) << 8) | ((pixel >> 16) & 0xFF));
+    p = (((pixel >> 24) & 0xFF) << 24) | (((pixel & 0xFF) << 16) | (((pixel >> 8) & 0xFF) << 8) | ((pixel >> 16) & 0xFF));
+    }
+PROFILE_STOP
+return p;
 }
 
 void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     backPaint.setColor(pixel);
     canvas->drawRect(SkRect::MakeXYWH(x, y, 1, 1), backPaint);
+    PROFILE_STOP
 }
 
 void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     float intervals[] = {5, 5};
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 2.5f));
     skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel1);
@@ -319,43 +353,57 @@ void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 7.5f));
     skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel2);
     forePaint.setPathEffect(nullptr);
+    PROFILE_STOP
 }
 
 void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     forePaint.setColor(pixel);
     canvas->drawLine(x1, y1, x2, y2, forePaint);
+    PROFILE_STOP
 }
 
 void skia_drawRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     forePaint.setColor(pixel);
     canvas->drawRect(SkRect::MakeXYWH(x, y, w, h), forePaint);
+    PROFILE_STOP
 }
 
 void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel)
 {
     SKIA_TRACE()
     // printf("Exe log: skia fill rect = %#010x\n",pixel);
+
+    PROFILE_START
     backPaint.setColor(pixel);
     canvas->drawRect(SkRect::MakeXYWH(x, y, w, h), backPaint);
+    PROFILE_STOP
 }
 
 void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth, int32 fontSize, int32 typefaceIndex)
 {
     SKIA_TRACE()
 
+PROFILE_START
     const auto txtFont {SkFont(skia_getTypeface(typefaceIndex),fontSize)};
     const auto txtBlob {SkTextBlob::MakeFromText(text,chrCount,txtFont,SkTextEncoding::kUTF16)};
     backPaint.setColor(foreColor);
     canvas->drawTextBlob(txtBlob,x0,y0,backPaint);
+PROFILE_STOP
 }
 
 void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     if (fill) {
         if (gradient) {
             SkPoint points[3] = {
@@ -377,41 +425,53 @@ void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, in
         forePaint.setColor(pc1);
         canvas->drawOval(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), forePaint);
     }
+    PROFILE_STOP
 }
 
 SkPath _skia_makePath(int32 *x, int32 *y, int32 n)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     SkPath path;
     path.moveTo(x[0], y[0]);
     for (int i = 1; i < n; ++i) {
         path.lineTo(x[i], y[i]);
     }
+    PROFILE_STOP
 
     return path;
 }
 void _skia_getPathBounds(int32 *x, int32 *y, int32 n, int32* minY, int32* maxY)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     *minY = y[0];
     *maxY = y[0];
     for (int i = 1; i < n; ++i) {
         *minY = y[i] < *minY ? y[i] : *minY;
         *maxY = *maxY < y[i] ? y[i] : *maxY;
     }
+    PROFILE_STOP
 }
 void skia_drawPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 nPoints, int32 tx, int32 ty, Pixel pixel)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     forePaint.setColor(pixel);
     canvas->translate(tx, ty);
     canvas->drawPath(_skia_makePath(xPoints, yPoints, nPoints), forePaint);
     canvas->translate(-tx, -ty);
+    PROFILE_STOP
 }
 
 void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 nPoints, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     SkPath path = _skia_makePath(xPoints, yPoints, nPoints);
 
     backPaint.setColor(c1);
@@ -435,10 +495,13 @@ void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
     if (gradient) {
         backPaint.setShader(nullptr);
     }
+    PROFILE_STOP
 }
 
 // Adapted from SkPathPriv::CreateDrawArcPath
 SkPath _skia_makeArcPath(const SkRect& oval, SkScalar startAngle, SkScalar sweepAngle, bool useCenter) {
+    PROFILE_START
+
     SkASSERT(!oval.isEmpty());
     SkASSERT(sweepAngle);
 
@@ -448,8 +511,8 @@ SkPath _skia_makeArcPath(const SkRect& oval, SkScalar startAngle, SkScalar sweep
     path.reset();
     if (SkScalarAbs(sweepAngle) >= 360.f) {
         path.addOval(oval);
-        return path;
     }
+    else {
     if (useCenter) {
         path.moveTo(oval.centerX(), oval.centerY());
     }
@@ -475,11 +538,14 @@ SkPath _skia_makeArcPath(const SkRect& oval, SkScalar startAngle, SkScalar sweep
     if (useCenter) {
         path.close();
     }
+    }
 
+    PROFILE_STOP
     return path;
 }
 void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
 {
+    PROFILE_START
     double start = -startAngle;
     double sweepAngle = -(endAngle - startAngle);
     SKIA_TRACE()
@@ -512,25 +578,33 @@ void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx
         forePaint.setColor(c);
         canvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, pie, forePaint);
     }
+    PROFILE_STOP
 }
 
 void skia_drawRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     forePaint.setColor(c);
     canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), forePaint);
+PROFILE_STOP
 }
 
 void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c)
 {
     SKIA_TRACE()
+    PROFILE_START
     backPaint.setColor(c);
     canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), backPaint);
+PROFILE_STOP
 }
 
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
 {
     SKIA_TRACE()
+
+    PROFILE_START
     int32 w = endX - startX;
     int32 h = endY - startY;
     SkPoint points[2];
@@ -549,10 +623,14 @@ void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32
 
     canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(startX, startY, w, h), topLeftRadius, topLeftRadius), backPaint);
     backPaint.setShader(nullptr);
+    PROFILE_STOP
 }
+
 int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet)
 {
     SKIA_TRACE()
+    int ret;
+    PROFILE_START
     // SkImageInfo info = SkImageInfo::MakeN32Premul(w, h);
 
     SkBitmap bitmap;
@@ -561,11 +639,12 @@ int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32
     // SkBitmap bitmap;
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(w, h));
     if (isGet) {
-        return canvas->readPixels(bitmap, x, y);
+        ret = canvas->readPixels(bitmap, x, y);
     } else {
-        return canvas->writePixels(bitmap, x, y);
+        ret = canvas->writePixels(bitmap, x, y);
     }
-
+PROFILE_STOP
+return ret;
     // Pixel pixel = bitmap.getAddr32(0, 0)[0];
     // return (((pixel >> 24) & 0xFF) << 24) | (((pixel & 0xFF) << 16) | (((pixel >> 8) & 0xFF) << 8) | ((pixel >> 16) & 0xFF));
 
@@ -577,7 +656,9 @@ int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32
 }
 
 void skia_shiftScreen(int32 x, int32 y) {
+    PROFILE_START
     canvas->translate(x, y);
+    PROFILE_STOP
     flushSkia();
 }
 
