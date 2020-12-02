@@ -12,6 +12,7 @@
 #include "tcsdl.h"
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* texture = NULL;
@@ -28,6 +29,9 @@ long getMicrotime(){
 	return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
 }
 
+inline auto getMicrotimeChrono() {
+	return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+}
 /*
  * Init steps to create a window and texture to Skia handling
  *
