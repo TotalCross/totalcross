@@ -124,6 +124,8 @@ SkPaint forePaint; // used for contours
 SkPaint backPaint; // used for fills
 SkPaint alphaPaint; // used for alphaMask
 SkBitmap bitmap;
+SkFont   skFont;
+
 #define TYPEFACE_LEN 32
 sk_sp<SkTypeface> typefaces[TYPEFACE_LEN];
 int typefaceIdx = 0;
@@ -423,11 +425,18 @@ void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel 
 void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth, int32 fontSize, int32 typefaceIndex)
 {
     SKIA_TRACE()
+    const auto newTypeFace = skia_getTypeface(typefaceIndex);
 
-    const auto txtFont {SkFont(skia_getTypeface(typefaceIndex),fontSize)};
-    const auto txtBlob {SkTextBlob::MakeFromText(text,chrCount,txtFont,SkTextEncoding::kUTF16)};
-    backPaint.setColor(foreColor);
-    canvas->drawTextBlob(txtBlob,x0,y0,backPaint);
+    if(skFont.getTypeface() != newTypeFace.get()) {
+        skFont.setTypeface(newTypeFace);
+    }
+    if(skFont.getSize() != fontSize) {
+        skFont.setSize(fontSize);
+    }
+    if(backPaint.getColor() != foreColor){
+        backPaint.setColor(foreColor);
+    }
+    canvas->drawTextBlob(SkTextBlob::MakeFromText(text,chrCount,skFont,SkTextEncoding::kUTF16),x0,y0,backPaint);
 }
 
 void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
