@@ -66,6 +66,34 @@
 #include <map>
 
 
+extern "C" {
+#if !defined APPLE && !defined ANDROID && defined linux
+// Avoid dependency on glibc 2.27
+// These functions are used by Skia .a file, so we have to define a wrapper.
+// https://stackoverflow.com/questions/8823267/linking-against-older-symbol-version-in-a-so-file
+__asm__(".symver log2f,log2f@GLIBC_2.4");
+float __wrap_log2f(float x) {
+  return log2f(x);
+}
+
+__asm__(".symver powf,powf@GLIBC_2.4");
+float __wrap_powf(float x, float y) {
+  return powf(x, y);
+}
+
+__asm__(".symver expf,expf@GLIBC_2.4");
+float __wrap_expf(float x) {
+  return expf(x);
+}
+
+__asm__(".symver exp2f,exp2f@GLIBC_2.4");
+float __wrap_exp2f(float x) {
+  return exp2f(x);
+}
+#endif
+}
+
+
 #define SKIA_DEBUG
 // #define SKIA_TRACE
 
