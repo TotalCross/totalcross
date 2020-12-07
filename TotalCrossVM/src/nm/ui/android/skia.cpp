@@ -172,6 +172,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     surface = gpuSurface;
     canvas = gpuCanvas;
 #endif
+    skFont.setSize(16);
     // The forepaint is used for "draw" methods
     forePaint.setStyle(SkPaint::kStroke_Style);
     forePaint.setAntiAlias(true);
@@ -233,7 +234,15 @@ sk_sp<SkTypeface> skia_getTypeface(int32 typefaceIndex) {
 
 int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, int32 fontSize)
 {
-    return SkFont(skia_getTypeface(typefaceIndex),fontSize).measureText(text,charCount,SkTextEncoding::kUTF16);
+    const auto newTypeFace = skia_getTypeface(typefaceIndex);
+
+    if(skFont.getTypeface() != newTypeFace.get()) {
+        skFont.setTypeface(newTypeFace);
+    }
+    if(skFont.getSize() != fontSize) {
+        skFont.setSize(fontSize);
+    }
+    return skFont.measureText(text,charCount,SkTextEncoding::kUTF16);
 }
 
 static void releaseProc(void* addr, void* ) {
