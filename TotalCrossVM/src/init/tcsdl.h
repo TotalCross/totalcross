@@ -20,11 +20,11 @@ extern "C" {
 
 #include <sys/time.h>
 
-long getMicrotime();
-auto getMicrotimeChrono();
-    #define PROFILE_START long profileStart = getMicrotimeChrono();
-    #define PROFILE_STOP { Uint32 profileElapsed = (getMicrotimeChrono() - profileStart); if (profileElapsed >= 0) { printf("%s: %d\n", __func__, profileElapsed); } }
+long getMicrotime(char* name);
+void profileStop(char* name);
 
+    #define PROFILE_START getMicrotime((char*) __func__);
+    #define PROFILE_STOP profileStop((char*) __func__);
 
     bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
