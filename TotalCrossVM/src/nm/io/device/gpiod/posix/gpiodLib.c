@@ -10,6 +10,11 @@
 #include <dlfcn.h>
 #include <glob.h>
 
+#if !defined APPLE && !defined ANDROID && defined linux
+// Avoid dependency on glibc 2.27
+__asm__(".symver glob,glob@GLIBC_2.4");
+#endif
+
 static void* gpiodLib = NULL;
 
 _gpiod_chip_open_by_numberProc _gpiod_chip_open_by_number;

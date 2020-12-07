@@ -611,6 +611,7 @@ else()
   target_link_libraries(tcvm ${SKIA_LIBRARIES} pthread stdc++)
   if(NOT APPLE AND UNIX)
     target_link_libraries(tcvm fontconfig)
+    target_link_libraries(tcvm -Wl,--wrap=log2f,--wrap=powf,--wrap=expf,--wrap=exp2f) # Avoid glibc dependencies
   endif(NOT APPLE AND UNIX)
 endif(DEFINED ANDROID_ABI)
 
