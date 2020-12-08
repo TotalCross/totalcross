@@ -10,7 +10,7 @@
 #include <dlfcn.h>
 #include <glob.h>
 
-#if !defined APPLE && !defined ANDROID && defined linux
+#if !defined APPLE && !defined ANDROID && defined linux && defined __arm__ && !defined __aarch64__
 // Avoid dependency on glibc 2.27
 __asm__(".symver glob,glob@GLIBC_2.4");
 #endif
