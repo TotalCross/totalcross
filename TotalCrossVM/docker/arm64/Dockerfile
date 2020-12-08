@@ -23,7 +23,7 @@ RUN apt-get update && \
         libxss-dev \
         libgl1-mesa-dev \
 # Lastly available on Xenial, deprecated for Bionic
-#       libesd0-dev \
+        libesd0-dev \
         libdbus-1-dev \
         libudev-dev \
         libgles2-mesa-dev \
