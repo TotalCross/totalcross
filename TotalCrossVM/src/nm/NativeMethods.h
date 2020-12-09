@@ -567,6 +567,7 @@ TC_API void tmA_setSizeD_i(NMParams p);
 TC_API void tmA_setPositionD_i(NMParams p);
 TC_API void tmA_setVisibleD_b(NMParams p);
 TC_API void tmA_isVisibleD(NMParams p);
+TC_API void ttTM_nativeInitialize(NMParams p);
 TC_API void ttSM_sendTextMessage_sss(NMParams p);
 TC_API void ttSM_sendDataMessage_ssiB(NMParams p);
 TC_API void ttSM_registerSmsReceiver_si(NMParams p);

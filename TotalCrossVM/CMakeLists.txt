@@ -148,6 +148,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/phone/Dial.c
     ${TC_SRCDIR}/nm/phone/SMS.c
     ${TC_SRCDIR}/nm/phone/CellInfo.c
+    ${TC_SRCDIR}/nm/telephony/TelephonyManager.c
     ${TC_SRCDIR}/nm/telephony/SmsManager.c
     ${TC_SRCDIR}/nm/firebase/firebase.c
 
@@ -529,7 +530,7 @@ if(${CMAKE_VERSION} VERSION_LESS "3.8" OR MSVC)
     CXX_EXTENSIONS NO
   )
 else()
-  target_compile_features(tcvm PUBLIC cxx_std_11)
+  target_compile_features(tcvm PUBLIC cxx_std_17)
 endif()
 # XCode Properties
 if(CMAKE_GENERATOR STREQUAL Xcode)
@@ -610,6 +611,7 @@ else()
   target_link_libraries(tcvm ${SKIA_LIBRARIES} pthread stdc++)
   if(NOT APPLE AND UNIX)
     target_link_libraries(tcvm fontconfig)
+    target_link_libraries(tcvm -Wl,--wrap=log2f,--wrap=powf,--wrap=expf,--wrap=exp2f) # Avoid glibc dependencies
   endif(NOT APPLE AND UNIX)
 endif(DEFINED ANDROID_ABI)
 
@@ -642,7 +644,7 @@ add_executable(Launcher
 
 if(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
   target_compile_options(Launcher PRIVATE /GS-)
-  target_link_options(Launcher PRIVATE /ENTRY:)
+  target_link_options(Launcher PRIVATE /STACK:0x200000 /ENTRY:)
 endif()
 
 if(MSVC)

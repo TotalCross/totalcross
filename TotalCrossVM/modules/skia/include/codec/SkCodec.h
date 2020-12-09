@@ -8,19 +8,19 @@
 #ifndef SkCodec_DEFINED
 #define SkCodec_DEFINED
 
-#include "../private/SkNoncopyable.h"
-#include "../private/SkTemplates.h"
-#include "../private/SkEncodedInfo.h"
-#include "SkCodecAnimation.h"
-#include "SkColor.h"
-#include "SkEncodedImageFormat.h"
-#include "SkEncodedOrigin.h"
-#include "SkImageInfo.h"
-#include "SkPixmap.h"
-#include "SkSize.h"
-#include "SkStream.h"
-#include "SkTypes.h"
-#include "SkYUVSizeInfo.h"
+#include "include/codec/SkCodecAnimation.h"
+#include "include/codec/SkEncodedOrigin.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkEncodedImageFormat.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkPixmap.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkTypes.h"
+#include "include/core/SkYUVAPixmaps.h"
+#include "include/private/SkEncodedInfo.h"
+#include "include/private/SkNoncopyable.h"
+#include "include/private/SkTemplates.h"
 
 #include <vector>
 
@@ -33,7 +33,7 @@ class SkSampler;
 namespace DM {
 class CodecSrc;
 class ColorCodecSrc;
-}
+} // namespace DM
 
 /**
  *  Abstraction layer directly on top of an image codec.
@@ -112,6 +112,24 @@ public:
     static const char* ResultToString(Result);
 
     /**
+     * For container formats that contain both still images and image sequences,
+     * instruct the decoder how the output should be selected. (Refer to comments
+     * for each value for more details.)
+     */
+    enum class SelectionPolicy {
+        /**
+         *  If the container format contains both still images and image sequences,
+         *  SkCodec should choose one of the still images. This is the default.
+         */
+        kPreferStillImage,
+        /**
+         *  If the container format contains both still images and image sequences,
+         *  SkCodec should choose one of the image sequences for animation.
+         */
+        kPreferAnimation,
+    };
+
+    /**
      *  If this stream represents an encoded image that we know how to decode,
      *  return an SkCodec that can decode it. Otherwise return NULL.
      *
@@ -145,8 +163,10 @@ public:
      *  If NULL is returned, the stream is deleted immediately. Otherwise, the
      *  SkCodec takes ownership of it, and will delete it when done with it.
      */
-    static std::unique_ptr<SkCodec> MakeFromStream(std::unique_ptr<SkStream>, Result* = nullptr,
-                                                   SkPngChunkReader* = nullptr);
+    static std::unique_ptr<SkCodec> MakeFromStream(
+            std::unique_ptr<SkStream>, Result* = nullptr,
+            SkPngChunkReader* = nullptr,
+            SelectionPolicy selectionPolicy = SelectionPolicy::kPreferStillImage);
 
     /**
      *  If this data represents an encoded image that we know how to decode,
@@ -170,12 +190,22 @@ public:
 
     /**
      *  Return a reasonable SkImageInfo to decode into.
+     *
+     *  If the image has an ICC profile that does not map to an SkColorSpace,
+     *  the returned SkImageInfo will use SRGB.
      */
     SkImageInfo getInfo() const { return fEncodedInfo.makeImageInfo(); }
 
     SkISize dimensions() const { return {fEncodedInfo.width(), fEncodedInfo.height()}; }
     SkIRect bounds() const {
         return SkIRect::MakeWH(fEncodedInfo.width(), fEncodedInfo.height());
+    }
+
+    /**
+     * Return the ICC profile of the encoded data.
+     */
+    const skcms_ICCProfile* getICCProfile() const {
+        return this->getEncodedInfo().profile();
     }
 
     /**
@@ -324,9 +354,13 @@ public:
      *
      *         If the info contains a non-null SkColorSpace, the codec
      *         will perform the appropriate color space transformation.
-     *         If the caller passes in the same color space that was
-     *         reported by the codec, the color space transformation is
-     *         a no-op.
+     *
+     *         If the caller passes in the SkColorSpace that maps to the
+     *         ICC profile reported by getICCProfile(), the color space
+     *         transformation is a no-op.
+     *
+     *         If the caller passes a null SkColorSpace, no color space
+     *         transformation will be done.
      *
      *  If a scanline decode is in progress, scanline mode will end, requiring the client to call
      *  startScanlineDecode() in order to return to decoding scanlines.
@@ -347,49 +381,36 @@ public:
     }
 
     /**
-     *  If decoding to YUV is supported, this returns true.  Otherwise, this
-     *  returns false and does not modify any of the parameters.
+     *  If decoding to YUV is supported, this returns true. Otherwise, this
+     *  returns false and the caller will ignore output parameter yuvaPixmapInfo.
      *
-     *  @param sizeInfo   Output parameter indicating the sizes and required
-     *                    allocation widths of the Y, U, and V planes.
-     *  @param colorSpace Output parameter.  If non-NULL this is set to kJPEG,
-     *                    otherwise this is ignored.
+     * @param  supportedDataTypes Indicates the data type/planar config combinations that are
+     *                            supported by the caller. If the generator supports decoding to
+     *                            YUV(A), but not as a type in supportedDataTypes, this method
+     *                            returns false.
+     *  @param yuvaPixmapInfo Output parameter that specifies the planar configuration, subsampling,
+     *                        orientation, chroma siting, plane color types, and row bytes.
      */
-    bool queryYUV8(SkYUVSizeInfo* sizeInfo, SkYUVColorSpace* colorSpace) const {
-        if (nullptr == sizeInfo) {
-            return false;
-        }
-
-        return this->onQueryYUV8(sizeInfo, colorSpace);
-    }
+    bool queryYUVAInfo(const SkYUVAPixmapInfo::SupportedDataTypes& supportedDataTypes,
+                       SkYUVAPixmapInfo* yuvaPixmapInfo) const;
 
     /**
      *  Returns kSuccess, or another value explaining the type of failure.
-     *  This always attempts to perform a full decode.  If the client only
-     *  wants size, it should call queryYUV8().
+     *  This always attempts to perform a full decode. To get the planar
+     *  configuration without decoding use queryYUVAInfo().
      *
-     *  @param sizeInfo   Needs to exactly match the values returned by the
-     *                    query, except the WidthBytes may be larger than the
-     *                    recommendation (but not smaller).
-     *  @param planes     Memory for each of the Y, U, and V planes.
+     *  @param yuvaPixmaps  Contains preallocated pixmaps configured according to a successful call
+     *                      to queryYUVAInfo().
      */
-    Result getYUV8Planes(const SkYUVSizeInfo& sizeInfo, void* planes[3]) {
-        if (nullptr == planes || nullptr == planes[0] || nullptr == planes[1] ||
-                nullptr == planes[2]) {
-            return kInvalidInput;
-        }
-
-        if (!this->rewindIfNeeded()) {
-            return kCouldNotRewind;
-        }
-
-        return this->onGetYUV8Planes(sizeInfo, planes);
-    }
+    Result getYUVAPlanes(const SkYUVAPixmaps& yuvaPixmaps);
 
     /**
      *  Prepare for an incremental decode with the specified options.
      *
      *  This may require a rewind.
+     *
+     *  If kIncompleteInput is returned, may be called again after more data has
+     *  been provided to the source SkStream.
      *
      *  @param dstInfo Info of the destination. If the dimensions do not match
      *      those of getInfo, this implies a scale.
@@ -409,10 +430,11 @@ public:
     /**
      *  Start/continue the incremental decode.
      *
-     *  Not valid to call before calling startIncrementalDecode().
+     *  Not valid to call before a call to startIncrementalDecode() returns
+     *  kSuccess.
      *
-     *  After the first call, should only be called again if more data has been
-     *  provided to the source SkStream.
+     *  If kIncompleteInput is returned, may be called again after more data has
+     *  been provided to the source SkStream.
      *
      *  Unlike getPixels and getScanlines, this does not do any filling. This is
      *  left up to the caller, since they may be skipping lines or continuing the
@@ -593,7 +615,8 @@ public:
     struct FrameInfo {
         /**
          *  The frame that this frame needs to be blended with, or
-         *  kNoFrame if this frame is independent.
+         *  kNoFrame if this frame is independent (so it can be
+         *  drawn over an uninitialized buffer).
          *
          *  Note that this is the *earliest* frame that can be used
          *  for blending. Any frame from [fRequiredFrame, i) can be
@@ -672,6 +695,14 @@ public:
         return this->onGetRepetitionCount();
     }
 
+    // Register a decoder at runtime by passing two function pointers:
+    //    - peek() to return true if the span of bytes appears to be your encoded format;
+    //    - make() to attempt to create an SkCodec from the given stream.
+    // Not thread safe.
+    static void Register(
+            bool                     (*peek)(const void*, size_t),
+            std::unique_ptr<SkCodec> (*make)(std::unique_ptr<SkStream>, SkCodec::Result*));
+
 protected:
     const SkEncodedInfo& getEncodedInfo() const { return fEncodedInfo; }
 
@@ -708,13 +739,10 @@ protected:
                                void* pixels, size_t rowBytes, const Options&,
                                int* rowsDecoded) = 0;
 
-    virtual bool onQueryYUV8(SkYUVSizeInfo*, SkYUVColorSpace*) const {
-        return false;
-    }
+    virtual bool onQueryYUVAInfo(const SkYUVAPixmapInfo::SupportedDataTypes&,
+                                 SkYUVAPixmapInfo*) const { return false; }
 
-    virtual Result onGetYUV8Planes(const SkYUVSizeInfo&, void*[3] /*planes*/) {
-        return kUnimplemented;
-    }
+    virtual Result onGetYUVAPlanes(const SkYUVAPixmaps&) { return kUnimplemented; }
 
     virtual bool onGetValidSubset(SkIRect* /*desiredSubset*/) const {
         // By default, subsets are not supported.
@@ -772,6 +800,14 @@ protected:
 
     virtual int onOutputScanline(int inputScanline) const;
 
+    /**
+     *  Return whether we can convert to dst.
+     *
+     *  Will be called for the appropriate frame, prior to initializing the colorXform.
+     */
+    virtual bool conversionSupported(const SkImageInfo& dst, bool srcIsOpaque,
+                                     bool needsColorXform);
+
     // Some classes never need a colorXform e.g.
     // - ICO uses its embedded codec's colorXform
     // - WBMP is just Black/White
@@ -817,14 +853,6 @@ private:
     int                                fCurrScanline;
 
     bool                               fStartedIncrementalDecode;
-
-    /**
-     *  Return whether we can convert to dst.
-     *
-     *  Will be called for the appropriate frame, prior to initializing the colorXform.
-     */
-    virtual bool conversionSupported(const SkImageInfo& dst, bool srcIsOpaque,
-                                     bool needsColorXform);
 
     bool initializeColorXform(const SkImageInfo& dstInfo, SkEncodedInfo::Alpha, bool srcIsOpaque);
 

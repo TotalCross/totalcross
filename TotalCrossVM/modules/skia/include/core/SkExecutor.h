@@ -10,14 +10,17 @@
 
 #include <functional>
 #include <memory>
+#include "include/core/SkTypes.h"
 
-class SkExecutor {
+class SK_API SkExecutor {
 public:
     virtual ~SkExecutor();
 
     // Create a thread pool SkExecutor with a fixed thread count, by default the number of cores.
-    static std::unique_ptr<SkExecutor> MakeFIFOThreadPool(int threads = 0);
-    static std::unique_ptr<SkExecutor> MakeLIFOThreadPool(int threads = 0);
+    static std::unique_ptr<SkExecutor> MakeFIFOThreadPool(int threads = 0,
+                                                          bool allowBorrowing = true);
+    static std::unique_ptr<SkExecutor> MakeLIFOThreadPool(int threads = 0,
+                                                          bool allowBorrowing = true);
 
     // There is always a default SkExecutor available by calling SkExecutor::GetDefault().
     static SkExecutor& GetDefault();

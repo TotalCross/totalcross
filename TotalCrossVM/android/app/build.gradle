@@ -14,7 +14,7 @@ apply plugin: 'com.android.application'
 def buildType // stores build type, debug or release
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     ndkVersion "21.0.6113669"
     compileOptions {
     	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
@@ -32,7 +32,7 @@ android {
     defaultConfig {
         applicationId "totalcross.android"
         minSdkVersion 15
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
@@ -41,10 +41,14 @@ android {
             cmake {
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
                 arguments "-DANDROID_TOOLCHAIN=clang", "-DANDROID_LIBS_DIR="+sourceSets.getByName("main").jniLibs.srcDirs[0]
-                cppFlags "-std=c++14"
+                cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"
             }
         }
+    }
+
+    packagingOptions {
+        pickFirst "**/libskia.so"
     }
     
     signingConfigs {
@@ -99,7 +103,7 @@ android {
         doLast {
             copy {
                 from fileTree('build/outputs/apk').files
-                into "../../../output/${buildType}/TotalCrossSDK/dist/vm/android"
+                into "../../../TotalCrossSDK/dist/vm/android"
                 include "**/app-standard-${buildType}.apk"
                 rename { String fileName ->
                     fileName.replace("app-standard-${buildType}", 'TotalCross')
@@ -108,7 +112,7 @@ android {
             }
             copy {
                 from zipTree("build/outputs/apk/singleApk/${buildType}/app-singleApk-${buildType}.apk").files
-                into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
+                into "../../../TotalCrossSDK/etc/tools/android"
                 include 'AndroidManifest.xml', 'resources.arsc'
                 rename { String fileName ->
                     fileName.replace('.', '_singleapk.')
@@ -117,7 +121,7 @@ android {
             }
             copy {
                 from zipTree("build/outputs/apk/includeSms/${buildType}/app-includeSms-${buildType}.apk").files
-                into "../../../output/${buildType}/TotalCrossSDK/etc/tools/android"
+                into "../../../TotalCrossSDK/etc/tools/android"
                 include 'AndroidManifest.xml', 'resources.arsc'
                 rename { String fileName ->
                     fileName.replace('.', '_includeSms.')
@@ -125,8 +129,8 @@ android {
                 eachFile { println it.file }
             }
             copy {
-                from fileTree('build/intermediates/res/standard/' + buildType).files
-                into '../../../output/' + buildType + '/TotalCrossSDK/etc/launchers/android'
+                from fileTree('build/intermediates/res/merged/standard/' + buildType).files
+                into '../../../TotalCrossSDK/etc/launchers/android'
                 include 'resources-standard' + buildType.capitalize() + '.ap_'
                 rename { String fileName ->
                     fileName.replace('-standard' + buildType.capitalize(), '')
@@ -134,7 +138,7 @@ android {
                 eachFile { println it.file }
             }
             copy {
-                from fileTree('build/intermediates/res/standard/' + buildType).files
+                from fileTree('build/intermediates/processed_res/standard'+ buildType.capitalize() +'/out').files
                 into '../../../TotalCrossSDK/etc/launchers/android'
                 include 'resources-standard' + buildType.capitalize() + '.ap_'
                 rename { String fileName ->

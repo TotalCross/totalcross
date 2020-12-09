@@ -262,7 +262,7 @@ void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int
 #endif
 }
 
-TC_API bool getDataPath(CharP storeInto)
+TC_API int32 getDataPath(CharP storeInto)
 {
    TCObject dataPathObj = *getStaticFieldObject(null,settingsClass, "dataPath");
    if (dataPathObj == null)

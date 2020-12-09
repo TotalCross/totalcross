@@ -147,11 +147,6 @@ public final class Settings4A
       // userName
       userName = null; // still looking for a way to retrieve this on droid.	   
 	   
-      fillTelephonySettings();
-      while (!telephonyInitialized) {
-    	  try {Thread.sleep(10);} catch (Exception e) {}
-      }
-      
       // if using a new device, get its serial number. otherwise, create one from the mac-address
       if (romVersion >= 9) // gingerbread
          try

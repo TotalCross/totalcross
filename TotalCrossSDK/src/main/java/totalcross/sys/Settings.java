@@ -393,8 +393,6 @@ public final class Settings {
    * In Android 3.0 or greater it will return the serial number; in Android 1.x and 2.x will return
    * a consistent number that MAY be the same across resets, but has no relation to the real serial number.
    * 
-   * @see #imei
-   * @see #iccid
    * @since SuperWaba 4.21
    */
   public static String romSerialNumber;
@@ -585,25 +583,48 @@ public final class Settings {
    */
   public static boolean showDesktopMessages = true;
 
-  /** Field that represents the smartphone IMEI (if this device is a GSM, UMTS or IDEN smartphone), or null if there's none.
+  /**
+   * Field that represents the smartphone IMEI (if this device is a GSM, UMTS or
+   * IDEN smartphone), or null if there's none.
+   * 
    * @since TotalCross 1.0
+   * @deprecated This field was deprecated and it may be undefined or hold an
+   *             invalid value.
    */
+  @Deprecated
   public static String imei;
 
-  /** Field that represents the smartphone IMEIs; used in phones with more than one line.
+  /**
+   * Field that represents the smartphone IMEIs; used in phones with more than one
+   * line.
+   * 
    * @since TotalCross 1.0
+   * @deprecated This field was deprecated and it may be undefined or hold an
+   *             invalid value.
    */
+  @Deprecated
   public static String[] imeis;
 
-  /** Field that represents the smartphone ESN (if this device is a CDMA smartphone) or null if there's none.
+  /**
+   * Field that represents the smartphone ESN (if this device is a CDMA
+   * smartphone) or null if there's none.
+   * 
    * @since TotalCross 1.0
+   * @deprecated This field was deprecated and it may be undefined or hold an
+   *             invalid value.
    */
+  @Deprecated
   public static String esn;
 
-  /** Field that represents the serial number of the GSM chip or null if there's none. 
-   * Works for Windows Mobile and Android.
+  /**
+   * Field that represents the serial number of the GSM chip or null if there's
+   * none. Works for Windows Mobile and Android.
+   * 
    * @since TotalCross 1.27
+   * @deprecated This field was deprecated and it may be undefined or hold an
+   *             invalid value.
    */
+  @Deprecated
   public static String iccid;
 
   /** If set to true, the application will ignore the event "Close application" issued by the operating system.
@@ -919,11 +940,17 @@ public final class Settings {
   @Deprecated
   public static int windowFont;
 
-  /** Returns the line number of the device. Note that if the phone is off it may return null. 
-   * It can be null also if the device uses a non-standard API. Works only on Android, since iOS
-   * does not allow to get it programatically. For dual-sim devices, returns only the first line number.
+  /**
+   * Returns the line number of the device. Note that if the phone is off it may
+   * return null. It can be null also if the device uses a non-standard API. Works
+   * only on Android, since iOS does not allow to get it programatically. For
+   * dual-sim devices, returns only the first line number.
+   * 
    * @since TotalCross 1.7 / 2.0
+   * @deprecated This field was deprecated and it may be undefined or hold an
+   *             invalid value.
    */
+  @Deprecated
   public static String lineNumber;
 
   /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */

@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v6.1.1, v7.0.0
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version (name of the tag to be referenced)'
+        required: true
+
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Download last artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: main.yml
+          workflow_conclusion: success
+          name: TotalCross
+          path: ../TotalCross
+
+      - name: "ZIP TotalCross"
+        run: |
+          zip -r TotalCross-${{ github.event.inputs.tag }}.zip ../TotalCross
+
+      - name: "CHANGELOG Release ${{ github.event.inputs.tag }}"
+        run: |
+          version=$(echo '${{ github.event.inputs.tag }}' | sed 's/v//g')
+          sed -n '/^## '$version'/,/^## /p' CHANGELOG.md | sed -e '$d' > CHANGELOG-${{ github.event.inputs.tag }}.md
+          
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          release_name: Release ${{ github.event.inputs.tag }}
+          body_path: CHANGELOG-${{ github.event.inputs.tag }}.md
+          draft: false
+          prerelease: false
+          
+      - name: Upload Release ZIP
+        id: upload-zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./TotalCross-${{ github.event.inputs.tag }}.zip
+          asset_name: TotalCross-${{ github.event.inputs.tag }}.zip
+          asset_content_type: application/zip
+

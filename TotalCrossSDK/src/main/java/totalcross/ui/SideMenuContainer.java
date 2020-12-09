@@ -190,11 +190,19 @@ public class SideMenuContainer extends Container implements PenListener {
       this.presenter = presenter;
     }
 
+    public Item(String caption, IconType icon, int iconColor, int iconAlpha, final Presenter<Container> presenter) {
+      this(caption, icon, iconColor, iconAlpha,true, presenter);
+    }
+
     public Item(String caption, IconType icon, int iconColor, final Presenter<Container> presenter) {
-      this(caption, icon, iconColor, true, presenter);
+      this(caption, icon, iconColor, 137,true, presenter);
     }
 
     public Item(String caption, IconType icon, int iconColor, boolean showTitle, final Presenter<Container> presenter) {
+      this(caption, icon, iconColor, 137, true, presenter);
+    }
+    
+    public Item(String caption, IconType icon, int iconColor, int iconAlpha, boolean showTitle, final Presenter<Container> presenter) {
       super(caption, new Container() {
         @Override
         public void initUI() {
@@ -202,7 +210,7 @@ public class SideMenuContainer extends Container implements PenListener {
           this.setInsets((int) ((Settings.screenWidth < 320 ? 8 : 16) * Settings.screenDensity), 0, 0, 0);
           Icon i = new Icon(icon);
           i.setForeColor(iconColor);
-          i.setAlpha(137);
+          i.setAlpha(iconAlpha);
           add(i, LEFT, CENTER);
         }
       });
