@@ -192,9 +192,8 @@ public class NumericAndSymbolsKeyboard extends Container {
   }
 
   private void configureKeyboardKey(Button button) {
-    Font font = getFont().asBold();
     button.setForeColor(FORE_COLOR);
-    button.setFont(font);
+    // button.setFont(getFont().asBold()); // not supported with default system font
     button.setBackColor(Color.getRGB(233, 233, 235));
     button.effect = null;
   }

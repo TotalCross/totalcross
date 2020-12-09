@@ -28,7 +28,6 @@ import totalcross.ui.gfx.Graphics;
  * c.labelAlign = RIGHT;
  * c.foreColors = new int[]{Color.RED,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,};
  * c.setInsets(2,2,2,2);
- * c.setFont(font.asBold()); // labels are bold
  * c.childrenFont = font;    // but controls are normal
  * add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
  * for (int i =0; i < labels.length-2; i++)

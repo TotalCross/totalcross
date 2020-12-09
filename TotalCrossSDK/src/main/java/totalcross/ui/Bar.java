@@ -322,7 +322,7 @@ public class Bar extends Container {
     this.title = title != null ? new BarButton(title) : null;
     this.backgroundStyle = uiMaterial ? BACKGROUND_SOLID : BACKGROUND_SHADED;
     //this.ignoreInsets = true;
-    setFont(font.asBold());
+    // setFont(font.asBold()); // not supported with default system font
   }
 
   /** 

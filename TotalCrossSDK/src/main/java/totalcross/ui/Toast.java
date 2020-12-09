@@ -31,7 +31,7 @@ public class Toast {
   /** The stopping fade value, used on transparency. Defaults to 200. */
   public static int fade = 200;
   /** The font to be used. Defaults to the default bold font. */
-  public static Font font = MainWindow.getDefaultFont().asBold();
+  public static Font font = MainWindow.getDefaultFont();
   /**This button will appear on the right of this component.*/
   private static Button action;
   

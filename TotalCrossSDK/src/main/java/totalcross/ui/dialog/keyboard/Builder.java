@@ -69,16 +69,16 @@ public class Builder extends Control {
     Button button = new Button(text, img, textPosition, gap);
 
     if (BTN_REGULAR == status) {
-      button.setFont(button.getFont().asBold());
+      // button.setFont(button.getFont().asBold()); // not supported with default system font
       button.setBackForeColors(Color.getRGB(143, 152, 162), Color.WHITE);
     } else if (BTN_SPOTLIGHT == status) {
-      button.setFont(button.getFont().asBold());
+      // button.setFont(button.getFont().asBold()); // not supported with default system font
       button.setBackForeColors(Color.getRGB(98, 190, 64), Color.WHITE);
     } else if (BTN_FORM == status) {
-      button.setFont(button.getFont().asBold());
+      // button.setFont(button.getFont().asBold()); // not supported with default system font
       button.setBackForeColors(APP_BACK_COLOR, APP_FORE_COLOR);
     } else {
-      button.setFont(button.getFont().asBold());
+      // button.setFont(button.getFont().asBold()); // not supported with default system font
       button.setBackForeColors(Color.getRGB(98, 190, 64), Color.WHITE);
     }
 

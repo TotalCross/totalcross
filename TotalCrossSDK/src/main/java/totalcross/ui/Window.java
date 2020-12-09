@@ -304,7 +304,7 @@ public class Window extends Container {
     asWindow = this;
     foreColor = UIColors.controlsFore; // assign the default colors
     backColor = UIColors.controlsBack;
-    titleFont = MainWindow.defaultFont.asBold();
+    titleFont = MainWindow.defaultFont;
     titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height / 2 : 0;
     if (UIColors.windowBorder != 0) {
       borderColor = UIColors.windowBorder;

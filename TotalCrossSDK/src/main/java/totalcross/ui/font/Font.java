@@ -167,7 +167,7 @@ public final class Font {
   @Deprecated
   public Font asBold() {
     if (name.equals(DEFAULT))
-      throw new IllegalArgumentException("System font does not support bold version");
+      System.err.println("System font does not support bold version");
     return getFont(name, true, size, skiaIndex); // guich@450_36: cache the bolded font - guich@580_10: cached now in the Hashtable.
   }
 

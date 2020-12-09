@@ -128,7 +128,7 @@ public class MenuBar extends Window {
     borderStyle = -1; // guich@220_48
 
     this.items = items;
-    setFont(getFont().asBold()); // use a bold font.
+    // setFont(font.asBold()); // not supported with default system font
   }
 
   /** Returns the matrix of Menuitems passed in the constructor. */

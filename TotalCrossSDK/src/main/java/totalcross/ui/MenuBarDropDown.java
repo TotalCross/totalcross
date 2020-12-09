@@ -85,7 +85,7 @@ public class MenuBarDropDown extends Window {
     canDrag = false;
     popX = x;
     popY = y;
-    setFont(getFont().asBold()); // use a bold font.
+    // setFont(font.asBold()); // not supported with default system font
     setBackColor(Color.WHITE);
     borderStyle = -1; // guich@220_48
     started = true; // avoid calling the initUI method

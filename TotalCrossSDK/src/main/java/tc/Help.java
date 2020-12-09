@@ -107,9 +107,9 @@ public class Help extends MainWindow {
       c0.add(btPdf = new ShadedButton("Companion", fimg, Color.WHITE, Orange), SAME, AFTER + 50, SAME, SAME);
       btPdf.setBackColor(Orange);
       tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
-      btHtml.setFont(font.asBold());
-      btBlog.setFont(font.asBold());
-      btPdf.setFont(font.asBold());
+      btHtml.setFont(font);
+      btBlog.setFont(font);
+      btPdf.setFont(font);
 
       rgLang = new RadioGroupController();
       c0.add(rPt = new Radio("Português", rgLang), RIGHT - 150, AFTER + 50);
