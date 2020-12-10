@@ -63,7 +63,7 @@ public class AttributeList extends Hashtable {
    * @param attrValue The unquoted value of the attribute.
    * @param dlm Delimiter that started the attribute value (<code>'</code> or <code>"</code>), or <code>'\0'</code> if none.
    */
-  public final void addAttribute(String attrName, String attrValue, byte dlm) {
+  public final void addAttribute(String attrName, String attrValue, char dlm) {
     attrName = getKey(attrName); // guich@tc113_12: convert toLowerCase
     if ((filter == null) || filter.acceptAttribute(attrName, attrValue, dlm)) {
       put(attrName, new AttributeValue(attrValue, dlm));
@@ -125,7 +125,7 @@ public class AttributeList extends Hashtable {
      * @param dlm Delimiter that started the attribute value (<code>'</code> or <code>"</code>), or <code>'\0'</code> if none.
      * @return <code>true</code> if the attribute can be entered; <code>false</code>, otherwise.
      */
-    boolean acceptAttribute(String attrName, String attrValue, byte dlm);
+    boolean acceptAttribute(String attrName, String attrValue, char dlm);
   }
 
   /** 
@@ -222,7 +222,7 @@ public class AttributeList extends Hashtable {
   /** Private class to store Attribute values with their delimiter */
   private static class AttributeValue {
     private String value;
-    private byte dlm;
+    private char dlm;
 
     /**
      * Constructor
@@ -230,7 +230,7 @@ public class AttributeList extends Hashtable {
      * @param value unquoted value for this AttributeValue
      * @param delemiter single quote, double quote or 0
      */
-    AttributeValue(String value, byte dlm) {
+    AttributeValue(String value, char dlm) {
       this.value = value;
       this.dlm = dlm;
     }

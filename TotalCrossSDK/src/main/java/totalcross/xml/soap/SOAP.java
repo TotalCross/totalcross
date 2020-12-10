@@ -5,6 +5,8 @@
 
 package totalcross.xml.soap;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.CompressedByteArrayStream;
 import totalcross.io.Stream;
@@ -160,7 +162,7 @@ public class SOAP // guich@570_34
       return (lowerTag.endsWith("return") || lowerTag.endsWith("result"));
     }
 
-    public ParseAnswer(Stream stream) throws SyntaxException, totalcross.io.IOException {
+    public ParseAnswer(Stream stream) throws SyntaxException, totalcross.io.IOException, UnsupportedEncodingException {
       tokenize(stream);
     }
 
@@ -170,8 +172,8 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundStartTagName(byte buffer[], int offset, int count) {
-      String tag = lastTag = new String(Convert.charConverter.bytes2chars(buffer, offset, count)); // flsobral@tc100b5_46: all String constructors now use the CharacterConverter.bytes2chars.
+    public void foundStartTagName(char buffer[], int offset, int count) {
+      String tag = lastTag = new String(Arrays.copyOfRange(buffer, offset, count)); // flsobral@tc100b5_46: all String constructors now use the CharacterConverter.bytes2chars.
       if (errorReasonState == 1 && tag.equals("faultstring")) {
         errorReasonState = 2;
       }
@@ -188,7 +190,7 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundEndTagName(byte buffer[], int offset, int count) {
+    public void foundEndTagName(char buffer[], int offset, int count) {
       if (sb.length() >= 0) // flsobral@tc100: replaced > by >= so empty tags are not ignored
       {
         if (isInReturn) {
@@ -211,9 +213,9 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundAttributeName(byte buffer[], int offset, int count) {
+    public void foundAttributeName(char buffer[], int offset, int count) {
       if (isInReturn) {
-        String tag = new String(Convert.charConverter.bytes2chars(buffer, offset, count));
+        String tag = new String(Arrays.copyOfRange(buffer, offset, count));
         if (tag.equals("xsi:type")) {
           isInType = true;
         }
@@ -221,9 +223,9 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundAttributeValue(byte buffer[], int offset, int count, byte dlm) {
+    public void foundAttributeValue(char buffer[], int offset, int count, char dlm) {
       if (isInReturn && isInType) {
-        String tag = new String(Convert.charConverter.bytes2chars(buffer, offset, count));
+        String tag = new String(Arrays.copyOfRange(buffer, offset, count));
         try {
           type = htTypes.get(tag.hashCode());
         } catch (ElementNotFoundException e) {
@@ -257,7 +259,7 @@ public class SOAP // guich@570_34
     }
 
     @Override
-    public void foundCharacterData(byte buffer[], int offset, int count) {
+    public void foundCharacterData(char buffer[], int offset, int count) {
       if (errorReasonState == 2) // guich@582_1: get the error message
       {
         errorReasonState = 3;
@@ -266,10 +268,10 @@ public class SOAP // guich@570_34
           // ok, here we'll trick the parser: find where the message ends. this avoid problems when the message has strange chars on it. it is safe, since the message is below 1k, the size of the buffer
           i++;
         }
-        errorReason = new String(Convert.charConverter.bytes2chars(buffer, offset, i - offset));
+        errorReason = new String(Arrays.copyOfRange(buffer, offset, i - offset));
       }
       if (isInReturn) {
-        sb.append(new String(Convert.charConverter.bytes2chars(buffer, offset, count)));
+        sb.append(new String(Arrays.copyOfRange(buffer, offset, count)));
       }
     }
   }

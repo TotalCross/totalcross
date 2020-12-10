@@ -24,9 +24,11 @@ package totalcross.xml.rpc;
  * information on the Apache Software Foundation, please see <http://www.apache.org/>.
  */
 
+import java.io.UnsupportedEncodingException;
 import totalcross.io.IOException;
 import totalcross.net.Base64;
 import totalcross.net.UnknownHostException;
+import totalcross.sys.Convert;
 import totalcross.sys.Time;
 import totalcross.ui.html.TagDereferencer;
 import totalcross.util.ElementNotFoundException;
@@ -96,7 +98,7 @@ public class XmlRpcClient extends XmlReader {
    *            If the remote procedure call was unsuccessful
    * @throws IOException
    */
-  public Object execute(String method, Vector params) throws XmlRpcException, IOException {
+  public Object execute(String method, Vector params) throws XmlRpcException, IOException, UnsupportedEncodingException {
     writer.reset();
     writeRequest(method, params);
     byte[] writerBytes = writer.getBytes();
@@ -104,7 +106,7 @@ public class XmlRpcClient extends XmlReader {
 
     // parse the response
     try {
-      parse(response, 0, response.length);
+      parse(Convert.charConverter.bytes2chars(response, 0, response.length), 0, response.length);
     } catch (SyntaxException e) {
       throw new XmlRpcException(e.getMessage());
     }
@@ -132,8 +134,8 @@ public class XmlRpcClient extends XmlReader {
   }
 
   @Override
-  protected int getTagCode(byte[] b, int offset, int count) {
-    int hash = TagDereferencer.hashCode(b, offset, count);
+  protected int getTagCode(char[] c, int offset, int count) {
+    int hash = TagDereferencer.hashCode(Convert.charConverter.chars2bytes(c, 0, c.length), offset, count);
     try {
       return XmlRpcValue.tag2code.get(hash);
     } catch (ElementNotFoundException e) {

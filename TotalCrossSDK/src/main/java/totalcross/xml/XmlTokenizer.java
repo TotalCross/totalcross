@@ -6,6 +6,8 @@
 
 package totalcross.xml;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import totalcross.io.Stream;
 import totalcross.sys.Convert;
 import totalcross.sys.Vm;
@@ -131,9 +133,9 @@ public class XmlTokenizer {
   private int readPos;
   private int state;
   private int substate;
-  private byte[] endTagToSkipTo;
+  private char[] endTagToSkipTo;
   private int ixEndTagToSkipTo;
-  private byte quote;
+  private char quote;
   private boolean strictlyXml;
   private boolean resolveCharRef;
 
@@ -191,14 +193,14 @@ public class XmlTokenizer {
    *           number of bytes to tokenize
    * @exception SyntaxException
    */
-  public final void tokenize(byte input[], int offset, int count) throws SyntaxException {
+  public final void tokenize(char input[], int offset, int count) throws SyntaxException {
     ofsStart = 0;
     ofsCur = offset;
     ofsEnd = count;
     readPos = offset;
     state = 0;
     foundStartOfInput(input, offset, count);
-    tokenizeBytes(input);
+    tokenizeCharacters(input);
     endTokenize(input);
   }
 
@@ -209,7 +211,7 @@ public class XmlTokenizer {
    *           byte array to tokenize
    * @exception SyntaxException
    */
-  public final void tokenize(byte input[]) throws SyntaxException {
+  public final void tokenize(char input[]) throws SyntaxException {
     tokenize(input, 0, input.length);
   }
 
@@ -221,9 +223,10 @@ public class XmlTokenizer {
    * @exception SyntaxException
    * @throws totalcross.io.IOException
    */
-  public final void tokenize(Stream input) throws SyntaxException, totalcross.io.IOException {
-    byte buffer[] = new byte[1024];
-    tokenize(input, buffer, 0, input.readBytes(buffer, 0, buffer.length), 0);
+  public final void tokenize(Stream input) 
+      throws SyntaxException, totalcross.io.IOException, UnsupportedEncodingException {
+    char buffer[] = new char[1024];
+    tokenize(input, buffer, 0, input.readBytes(Convert.charConverter.chars2bytes(buffer, 0, buffer.length), 0, buffer.length), 0);
   }
 
   /**
@@ -246,8 +249,8 @@ public class XmlTokenizer {
    * @exception SyntaxException
    * @throws totalcross.io.IOException
    */
-  public final void tokenize(Stream input, byte[] buffer, int start, int end, int pos)
-      throws SyntaxException, totalcross.io.IOException {
+  public final void tokenize(Stream input, char[] buffer, int start, int end, int pos)
+      throws SyntaxException, totalcross.io.IOException, UnsupportedEncodingException {
     ofsStart = start;
     ofsCur = start;
     ofsEnd = end;
@@ -255,7 +258,7 @@ public class XmlTokenizer {
     state = 0;
     foundStartOfInput(buffer, 0, ofsEnd);
     while (ofsCur < ofsEnd) {
-      tokenizeBytes(buffer); // returns when ofsCur == ofsEnd
+      tokenizeCharacters(buffer); // returns when ofsCur == ofsEnd
       if (ofsEnd == buffer.length) {
         // no more room
         if (ofsStart > 0) {
@@ -272,16 +275,16 @@ public class XmlTokenizer {
           ofsCur = ofsStart = 0;
         } else {
           // nothing else to do than to extend
-          byte oldBuffer[] = buffer;
+          char oldBuffer[] = buffer;
           int newSize = oldBuffer.length * 15 / 10; // guich@510_17: instead of double, grow 50%...
-          buffer = new byte[newSize];
+          buffer = new char[newSize];
           Vm.arrayCopy(oldBuffer, 0, buffer, 0, ofsEnd);
         }
       }
       if (ofsCur >= ofsEnd) {
         break;
       }
-      ofsEnd = ofsCur + input.readBytes(buffer, ofsCur, buffer.length - ofsCur);
+      ofsEnd = ofsCur + input.readBytes(Convert.charConverter.chars2bytes(buffer, 0, buffer.length), ofsCur, buffer.length - ofsCur);
     }
     endTokenize(buffer);
   }
@@ -300,15 +303,15 @@ public class XmlTokenizer {
    * @return the resulting character, or '&#x5C;uffff' (not a unicode
    *         character) if the conversion could not be done
    */
-  public static final char resolveCharacterReference(byte input[], int offset, int count) {
+  public static final char resolveCharacterReference(char input[], int offset, int count) {
     if ((count > 1) && (input[offset] == '#')) {
       if ((input[++offset] == 'x') || (input[offset] == 'X')) {
-        return hex2char(input, offset + 1, count - 2);
+        return hex2char(Convert.charConverter.chars2bytes(input, 0, input.length), offset + 1, count - 2);
       } else {
-        return dec2char(input, offset, count - 1);
+        return dec2char(Convert.charConverter.chars2bytes(input, 0, input.length), offset, count - 1);
       }
     } else {
-      return ref2char(input, offset, count);
+      return ref2char(Convert.charConverter.chars2bytes(input, 0, input.length), offset, count);
     }
   }
 
@@ -346,10 +349,10 @@ public class XmlTokenizer {
    * @param count
    *           number of relevant bytes
    */
-  protected final void setCdataContents(byte input[], int offset, int count) {
-    endTagToSkipTo = new byte[count];
+  protected final void setCdataContents(char input[], int offset, int count) {
+    endTagToSkipTo = new char[count];
     for (int i = 0; i < count; ++i) {
-      byte b = input[offset + i];
+      char b = input[offset + i];
       if ('a' <= b) {
         b -= ('a' - 'A'); // fast toUpper
       }
@@ -420,7 +423,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes to be tokenized
    */
-  protected void foundStartOfInput(byte input[], int offset, int count) {
+  protected void foundStartOfInput(char input[], int offset, int count) {
   }
 
   /**
@@ -435,7 +438,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the tag name is made of
    */
-  protected void foundStartTagName(byte input[], int offset, int count) {
+  protected void foundStartTagName(char input[], int offset, int count) {
   }
 
   /**
@@ -450,7 +453,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the tag name is made of
    */
-  protected void foundEndTagName(byte input[], int offset, int count) {
+  protected void foundEndTagName(char input[], int offset, int count) {
   }
 
   /**
@@ -487,7 +490,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the character data content is made of
    */
-  protected void foundCharacterData(byte input[], int offset, int count) {
+  protected void foundCharacterData(char input[], int offset, int count) {
   }
 
   /**
@@ -516,7 +519,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the attribute name is made of
    */
-  protected void foundAttributeName(byte input[], int offset, int count) {
+  protected void foundAttributeName(char input[], int offset, int count) {
   }
 
   /**
@@ -535,7 +538,7 @@ public class XmlTokenizer {
    *           delimiter that started the attribute value (' or "). '\0' if
    *           none
    */
-  protected void foundAttributeValue(byte input[], int offset, int count, byte dlm) {
+  protected void foundAttributeValue(char input[], int offset, int count, char dlm) {
   }
 
   /**
@@ -552,7 +555,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the comment is made of
    */
-  protected void foundComment(byte input[], int offset, int count) {
+  protected void foundComment(char input[], int offset, int count) {
   }
 
   /**
@@ -570,7 +573,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the processing instruction is made of
    */
-  protected void foundProcessingInstruction(byte input[], int offset, int count) {
+  protected void foundProcessingInstruction(char input[], int offset, int count) {
   }
 
   /**
@@ -588,7 +591,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the declaration is made of
    */
-  protected void foundDeclaration(byte input[], int offset, int count) {
+  protected void foundDeclaration(char input[], int offset, int count) {
   }
 
   /**
@@ -649,7 +652,7 @@ public class XmlTokenizer {
    *           number of bytes the reference name is made of
    * @see XmlTokenizer#setStrictlyXml(boolean toSet)
    */
-  protected void foundReference(byte input[], int offset, int count) {
+  protected void foundReference(char input[], int offset, int count) {
   }
 
   /**
@@ -666,7 +669,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes the invalidData is made of
    */
-  protected void foundInvalidData(byte input[], int offset, int count) {
+  protected void foundInvalidData(char input[], int offset, int count) {
   }
 
   /**
@@ -689,9 +692,9 @@ public class XmlTokenizer {
    *           byte array to parse
    * @exception SyntaxException
    */
-  private void tokenizeBytes(byte input[]) throws SyntaxException {
+  private void tokenizeCharacters(char input[]) throws SyntaxException {
     while (ofsCur < ofsEnd) {
-      int ch = (int) input[ofsCur] & 0xFF;
+      char ch = input[ofsCur];
       switch (state) {
       case 0:
         ofsStart = ofsCur;
@@ -727,7 +730,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         if (ch == '>') {
           state = 0;
@@ -749,7 +752,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         if (ch == '>') {
           state = 0;
@@ -767,7 +770,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         if ((is[ch] & ISSPACE) != 0) {
           state = 5;
@@ -786,7 +789,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         if (ch == '=') {
           state = 6;
@@ -808,10 +811,10 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
-        if ((is[ch] & ISQUOTE) != 0) {
-          quote = (byte) ch;
+        if (ch == '\"') {
+          quote = ch;
           ofsStart = ofsCur;
           state = 7;
         } else if (!strictlyXml) {
@@ -830,7 +833,8 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
+          System.out.println("ch read: " + ch);
         }
         ++ofsStart;
         foundAttributeValue(input, ofsStart, ofsCur - ofsStart, quote);
@@ -863,7 +867,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         if (ofsCur > ofsStart) {
           foundCharacterData(input, ofsStart, ofsCur - ofsStart);
@@ -880,7 +884,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         tellReference(input, ofsStart + 1, ofsCur - ofsStart - 1);
         if (ch == ';') {
@@ -912,7 +916,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         if (ch == '>') {
           state = 0;
@@ -931,7 +935,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         if (ch == '>') {
           state = 0;
@@ -944,9 +948,9 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
-        foundAttributeValue(input, ofsStart, ofsCur - ofsStart, (byte) 0);
+        foundAttributeValue(input, ofsStart, ofsCur - ofsStart, '\0');
         if (ch == '>') {
           state = 0;
         } else {
@@ -966,7 +970,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         foundDeclaration(input, ofsStart, ofsCur - ofsStart);
         state = 0;
@@ -988,7 +992,7 @@ public class XmlTokenizer {
             if (++ofsCur >= ofsEnd) {
               return;
             }
-            ch = (int) input[ofsCur] & 0xFF;
+            ch = input[ofsCur];
           }
           substate = 1;
           break;
@@ -1004,7 +1008,7 @@ public class XmlTokenizer {
             if (++ofsCur >= ofsEnd) {
               return;
             }
-            ch = (int) input[ofsCur] & 0xFF;
+            ch = input[ofsCur];
           }
           if (ch == '>') {
             foundComment(input, ofsStart + 1, ofsCur - ofsStart - 3);
@@ -1034,7 +1038,7 @@ public class XmlTokenizer {
             if (++ofsCur >= ofsEnd) {
               return;
             }
-            ch = (int) input[ofsCur] & 0xFF;
+            ch = input[ofsCur];
           }
           substate = 1;
           break;
@@ -1058,7 +1062,7 @@ public class XmlTokenizer {
             if (++ofsCur >= ofsEnd) {
               return;
             }
-            ch = (int) input[ofsCur] & 0xFF;
+            ch = input[ofsCur];
           }
           foundInvalidData(input, ofsStart, ofsCur - ofsStart);
           state = 0;
@@ -1069,7 +1073,7 @@ public class XmlTokenizer {
           if (++ofsCur >= ofsEnd) {
             return;
           }
-          ch = (int) input[ofsCur] & 0xFF;
+          ch = input[ofsCur];
         }
         state = 23;
         break;
@@ -1106,6 +1110,8 @@ public class XmlTokenizer {
           }
         }
         break;
+        default:
+        ch = input[ofsCur];
       }
       ++ofsCur;
     }
@@ -1123,7 +1129,7 @@ public class XmlTokenizer {
    * @param input
    *           current buffer
    */
-  private void endTokenize(byte[] input) throws SyntaxException {
+  private void endTokenize(char[] input) throws SyntaxException {
     switch (state) {
     case 0:
       break;
@@ -1154,7 +1160,7 @@ public class XmlTokenizer {
    * @param count
    *           number of bytes of the reference
    */
-  private void tellReference(byte[] input, int offset, int count) throws SyntaxException {
+  private void tellReference(char[] input, int offset, int count) throws SyntaxException {
     if (resolveCharRef) {
       char res = resolveCharacterReference(input, offset, count);
       if (strictlyXml && (res == '\uffff')) {

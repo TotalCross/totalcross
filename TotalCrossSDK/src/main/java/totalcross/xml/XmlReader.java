@@ -8,6 +8,7 @@ package totalcross.xml;
 
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import totalcross.io.Stream;
 
@@ -148,7 +149,7 @@ public class XmlReader extends XmlTokenizer {
    * @throws totalcross.io.IOException
    * @see #setContentHandler
    */
-  public final void parse(Stream input) throws SyntaxException, totalcross.io.IOException {
+  public final void parse(Stream input) throws SyntaxException, totalcross.io.IOException, UnsupportedEncodingException {
     newlineSignificant = 0;
     state = SPRING_STATE;
     if (cntHandler != null) {
@@ -178,8 +179,8 @@ public class XmlReader extends XmlTokenizer {
    * @exception SyntaxException
    * @throws totalcross.io.IOException
    */
-  public final void parse(Stream input, byte[] buffer, int start, int end, int pos)
-      throws SyntaxException, totalcross.io.IOException {
+  public final void parse(Stream input, char[] buffer, int start, int end, int pos)
+      throws SyntaxException, totalcross.io.IOException, UnsupportedEncodingException {
     newlineSignificant = 0;
     state = SPRING_STATE;
     if (cntHandler != null) {
@@ -213,7 +214,7 @@ public class XmlReader extends XmlTokenizer {
    *           number of bytes to parse
    * @exception SyntaxException
    */
-  public final void parse(byte[] input, int offset, int count) throws SyntaxException {
+  public final void parse(char[] input, int offset, int count) throws SyntaxException {
     newlineSignificant = 0;
     state = SPRING_STATE;
     if (cntHandler != null) {
@@ -274,21 +275,21 @@ public class XmlReader extends XmlTokenizer {
    * Also, we *do* know that the count is > 0.
    *
    * @param b
-   *           byte array containing the bytes to be hashed
+   *           char array containing the bytes to be hashed
    * @param offset
-   *           position of the first byte in the array
+   *           position of the first char in the array
    * @param count
-   *           number of bytes to be hashed
+   *           number of chars to be hashed
    * @return the corresponding hash code
    */
-  protected int getTagCode(byte b[], int offset, int count) {
+  protected int getTagCode(char b[], int offset, int count) {
     int i = b[offset];
     tagName = new String(b).substring(offset, offset + count);
     if ('a' <= i) {
       i -= ('a' - 'A'); // fast toUpper
     }
     while (--count > 0) {
-      byte ch = b[++offset];
+      char ch = b[++offset];
       if ('a' <= ch) {
         ch -= ('a' - 'A'); // fast toUpper
       }
@@ -301,7 +302,7 @@ public class XmlReader extends XmlTokenizer {
    * Override of XmlTokenizer
    */
   @Override
-  public void foundStartTagName(byte buffer[], int offset, int count) {
+  public void foundStartTagName(char buffer[], int offset, int count) {
     switch (state) {
     case START_TAG_STATE:
       reportStartTag();
@@ -318,7 +319,7 @@ public class XmlReader extends XmlTokenizer {
    * Override of XmlTokenizer
    */
   @Override
-  public void foundEndTagName(byte buffer[], int offset, int count) {
+  public void foundEndTagName(char buffer[], int offset, int count) {
     switch (state) {
     case START_TAG_STATE:
       reportStartTag();
@@ -348,7 +349,7 @@ public class XmlReader extends XmlTokenizer {
    * Override of XmlTokenizer
    */
   @Override
-  public final void foundCharacterData(byte buffer[], int offset, int count) {
+  public final void foundCharacterData(char buffer[], int offset, int count) {
     if (state == START_TAG_STATE) {
       reportStartTag();
     }
@@ -372,21 +373,21 @@ public class XmlReader extends XmlTokenizer {
 
   /** Override of XmlTokenizer */
   @Override
-  public final void foundAttributeName(byte buffer[], int offset, int count) {
+  public final void foundAttributeName(char buffer[], int offset, int count) {
     flushAttribute();
     attrName = new String(buffer, offset, count);
   }
 
   /** Override of XmlTokenizer */
   @Override
-  public final void foundAttributeValue(byte buffer[], int offset, int count, byte dlm) {
+  public final void foundAttributeValue(char buffer[], int offset, int count, char dlm) {
     attList.addAttribute(attrName, new String(buffer, offset, count), dlm);
     attrName = null;
   }
 
   /** Override of XmlTokenizer */
   @Override
-  public final void foundComment(byte buffer[], int offset, int count) {
+  public final void foundComment(char buffer[], int offset, int count) {
     switch (state) {
     case START_TAG_STATE:
       reportStartTag();
@@ -418,14 +419,14 @@ public class XmlReader extends XmlTokenizer {
    * @since TotalCross 1.27
    */
   @Override
-  protected void foundDeclaration(byte[] input, int offset, int count) {
+  protected void foundDeclaration(char[] input, int offset, int count) {
     flushAttribute();
     cntHandler.startElement(tagNameHashId, attList);
     attList.clear();
 
-    if (count > 7 && new String(totalcross.sys.Convert.charConverter.bytes2chars(input, offset, 7)).equals("[CDATA[")) {
+    if (count > 7 && new String(Arrays.copyOfRange(input, offset, 7)).equals("[CDATA[")) {
       cntHandler.cdata(tagNameHashId,
-          new String(totalcross.sys.Convert.charConverter.bytes2chars(input, offset + 7, count - 9)));
+          new String(Arrays.copyOfRange(input, offset + 7, count - 9)));
     }
   }
 
@@ -459,7 +460,7 @@ public class XmlReader extends XmlTokenizer {
    * @param count
    *           number of bytes to ws-coalesce
    */
-  private void storeData(byte input[], int offset, int count, boolean stripLeadingSpaces) {
+  private void storeData(char input[], int offset, int count, boolean stripLeadingSpaces) {
     if (newlineSignificant > 0) {
       if (stripLeadingSpaces) {
         while ((count > 0) && (input[offset] & 0xFF) <= ' ') {
@@ -468,7 +469,7 @@ public class XmlReader extends XmlTokenizer {
         }
       }
       if (count > 0) {
-        pcdata.append(totalcross.sys.Convert.charConverter.bytes2chars(input, offset, count)); // kcchan@554_39
+        pcdata.append(Arrays.copyOfRange(input, offset, count)); // kcchan@554_39
       }
     } else {
       int from = offset - 1;
@@ -482,7 +483,7 @@ public class XmlReader extends XmlTokenizer {
           while ((--count > 0) && (input[from] & 0xFF) > ' ') {
             ++from;
           }
-          pcdata.append(totalcross.sys.Convert.charConverter.bytes2chars(input, fromOrig, from - fromOrig)); // kcchan@554_39
+          pcdata.append(Arrays.copyOfRange(input, fromOrig, from - fromOrig)); // kcchan@554_39
           if (count == 0) {
             break;
           } else {
@@ -520,7 +521,7 @@ public class XmlReader extends XmlTokenizer {
    */
   private void flushAttribute() {
     if (attrName != null) {
-      attList.addAttribute(attrName, "", (byte) 0);
+      attList.addAttribute(attrName, "", '\0');
       attrName = null;
     }
   }
