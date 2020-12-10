@@ -3,7 +3,6 @@ FROM arm64v8/ubuntu:xenial AS build
 # TotalCross
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        cmake \
         ninja-build \
         build-essential \
         libfontconfig1-dev \
@@ -40,6 +39,15 @@ RUN apt-get update && \
     apt-get install -y libglvnd-dev || apt-get -f install; \
     apt-get clean
 
+RUN git clone https://github.com/Kitware/CMake.git \
+        --branch=v3.19.1 \
+        --single-branch \
+        --depth=1 \
+        && cd CMake \
+        && ./bootstrap \
+        && make \
+        && make install
+
 RUN git clone https://github.com/SDL-mirror/SDL.git \
         --branch=release-2.0.10 \
         --single-branch \
@@ -56,6 +64,7 @@ RUN git clone https://github.com/SDL-mirror/SDL.git \
     ninja install
 
 # clean up
+RUN rm -r /CMake
 RUN rm -r /SDL  
 
 ENV BUILD_FOLDER /build
