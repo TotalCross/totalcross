@@ -1,7 +1,5 @@
-FROM arm64v8/ubuntu:bionic AS build
-# 
-RUN echo 'deb http://us.archive.ubuntu.com/ubuntu/ artful multiverse' >> /etc/apt/sources.list
-RUN echo 'deb-src http://us.archive.ubuntu.com/ubuntu/ artful multiverse' >> /etc/apt/sources.list
+FROM arm64v8/ubuntu:xenial AS build
+
 # TotalCross
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
