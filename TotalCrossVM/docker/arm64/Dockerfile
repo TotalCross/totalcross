@@ -40,7 +40,7 @@ RUN apt-get update && \
     apt-get clean
 
 RUN git clone https://github.com/Kitware/CMake.git \
-        --branch=v3.19.1 \
+        --branch=v3.9.6 \
         --single-branch \
         --depth=1 \
         && cd CMake \
