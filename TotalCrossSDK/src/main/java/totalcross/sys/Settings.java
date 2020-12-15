@@ -581,7 +581,7 @@ public final class Settings {
    * Note that doing so may hide important messages! Do it with caution.
    * @since TotalCross 1.0
    */
-  public static boolean showDesktopMessages = true;
+  public static boolean showDesktopMessages = false;
 
   /**
    * Field that represents the smartphone IMEI (if this device is a GSM, UMTS or
