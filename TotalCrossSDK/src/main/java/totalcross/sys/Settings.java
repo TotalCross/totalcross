@@ -581,8 +581,12 @@ public final class Settings {
    * Note that doing so may hide important messages! Do it with caution.
    * @since TotalCross 1.0
    */
-  public static boolean showDesktopMessages = false;
-
+  public static boolean showDesktopMessages = true;
+  /** set true if you wanna see all the debug messages
+   * 
+   *
+   */
+  public static boolean showDebugMessages=false;
   /**
    * Field that represents the smartphone IMEI (if this device is a GSM, UMTS or
    * IDEN smartphone), or null if there's none.

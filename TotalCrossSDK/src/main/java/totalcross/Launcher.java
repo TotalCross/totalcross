@@ -96,7 +96,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private int toBpp = 24;
   private int toWidth = -1;
   private int toHeight = -1;
-  private boolean debugInfo=false;
+  
   private boolean fullscreen = false;
   private String className;
   private boolean appletInitialized; // guich@500_1
@@ -607,8 +607,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             }
             toDensityValue = screenDensityDecimal.doubleValue();
         } else if(args[i].equalsIgnoreCase("/dbginfo")){
-          debugInfo=true;
-          Settings.showDesktopMessages=true;
+          Settings.showDebugMessages=true;
         } else {
           throw new Exception();
         }
@@ -1122,6 +1121,12 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.err.println(s);
     }
   }
+  public static void debug(String s){
+    if(totalcross.sys.Settings.showDebugMessages){
+      System.out.println(s);
+    }
+  }
+
   //// Graphics ////////////////////////////////////////////////////////////////////
 
   private void createColorPaletteLookupTables() {
@@ -1554,7 +1559,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         }
       }
       if (stream == null) {
-        print(sread + "file not found\n");
+        debug(sread + "file not found\n");
       }
     } catch (FileNotFoundException ee) {
       print("file not found");
@@ -1588,7 +1593,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   /** used in some classes so they can correctly open files. used internally by readBytes. */
   public OutputStream openOutputStream(String path) {
-    print("\nopening for write " + path);
+    debug("\nopening for write " + path);
     String dataPath = getDataPath();
     OutputStream stream = null;
     String readPath = (String) htOpenedAt.get(path); // guich@tc112_20
@@ -1606,9 +1611,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         // search in the place where it was read - guich@200b4_82
         if (readPath != null) {
           try {
-            print("#1 - read path");
+            debug("#1 - read path");
             stream = new FileOutputStream(new java.io.File(readPath, path));
-            print("found in " + readPath);
+            debug("found in " + readPath);
           } catch (Exception e) {
             stream = null;
           }
@@ -1619,22 +1624,22 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         // search in the Settings.dataPath
         try {
           String p = isOk(dataPath) ? (dataPath + path) : path;
-          print("#2 - Settings.dataPath");
+          debug("#2 - Settings.dataPath");
           stream = new FileOutputStream(p);
-          print("found in " + p);
+          debug("found in " + p);
         } catch (Exception e) {
           stream = null;
         }
         // search in the classpath
         if (stream == null) {
-          print("#3 - classpath");
+          debug("#3 - classpath");
           File[] dirs = getClassPathDirectories();
           File f = null;
           for (int i = 0; i < dirs.length; i++) {
             try {
               f = new File(dirs[i], path);
               if (f.isFile()) {
-                print("found in " + dirs[i]);
+                debug("found in " + dirs[i]);
                 break;
               }
             } catch (Exception e) {
@@ -1642,7 +1647,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             }
           }
           if (f == null) {
-            print("could not find file in the classpath");
+            debug("could not find file in the classpath");
           } else {
             stream = new FileOutputStream(f);
           }
@@ -1653,7 +1658,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         if (stream == null) {
           try {
             URL codeBase = getCodeBase();
-            print("#1- codeBase: " + codeBase);
+            debug("#1- codeBase: " + codeBase);
             String cb = codeBase.toString();
             char lastc = cb.charAt(cb.length() - 1);
             char firstc = path.charAt(0);
@@ -1662,7 +1667,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             }
             url = new URL(cb + path);
             stream = openOutputUrl(url);
-            print("found under codebase: " + url);
+            debug("found under codebase: " + url);
           } catch (Exception e) {
             e.printStackTrace();
             /* neither in the codebase */}
@@ -1670,20 +1675,20 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         // third in the localhost
         if (stream == null) {
           try {
-            print("#2- url: file://localhost/" + dataPath + path);
+            debug("#2- url: file://localhost/" + dataPath + path);
             url = new URL("file://localhost/" + dataPath + path); // guich@120
             stream = openOutputUrl(url);
-            print("found under localhost: " + url);
+            debug("found under localhost: " + url);
           } catch (Exception e) {
           }
         }
         ;
       }
       if (stream == null) {
-        print("file not found");
+        debug("file not found");
       }
     } catch (FileNotFoundException ee) {
-      print("file not found");
+      debug("file not found");
     } catch (Exception e) {
       /*if (!msgShowed) */print("error in Vm.openOutputStream: " + e.getMessage());
       return null;
