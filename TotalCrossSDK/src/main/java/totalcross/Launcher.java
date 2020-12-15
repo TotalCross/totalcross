@@ -96,6 +96,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private int toBpp = 24;
   private int toWidth = -1;
   private int toHeight = -1;
+  private boolean debugInfo=false;
   private boolean fullscreen = false;
   private String className;
   private boolean appletInitialized; // guich@500_1
@@ -605,6 +606,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                 throw new Exception();
             }
             toDensityValue = screenDensityDecimal.doubleValue();
+        } else if(args[i].equalsIgnoreCase("/dbginfo")){
+          debugInfo=true;
+          Settings.showDesktopMessages=true;
         } else {
           throw new Exception();
         }
