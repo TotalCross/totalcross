@@ -370,7 +370,7 @@ public class MessageBox extends Window {
     }
     
     
-    if(uiMaterial && updateFonts && title != null) {
+    if(updateFonts && title != null) {
     	title[0] = new Label("");
     	title[1] = new Label("");
 		title[0].setFont(titleFont);
@@ -383,7 +383,7 @@ public class MessageBox extends Window {
     boolean hasTitle = false;
     if(title[0] != null) {
     	hasTitle = !title[0].getText().equals("");
-    	if(uiMaterial && hasTitle) {
+    	if(hasTitle) {
     		add(title[0], paddingLeft, paddingTop + (image == null ? 0 : AFTER), FILL - paddingRight, title[0].fm.height, image == null ? null : imageControl);
     		if(!title[1].getText().equals("")) {
     			int title1fmH = title[1].fm.height;
