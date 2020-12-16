@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # set the project name
-project(TCVM VERSION 6.1.1)
+project(TCVM VERSION 6.1.1 LANGUAGES CXX C)
 
 if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   if(CMAKE_GENERATOR STREQUAL Xcode)
@@ -14,6 +14,48 @@ if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   else() # others
     set(TCVM_SHARED ON) 
   endif()
+endif()
+
+set(TCVM_TARGET "${CMAKE_HOST_SYSTEM_NAME}" CACHE STRING "TotalCross virtual machine target platform")
+set_property(CACHE TCVM_TARGET PROPERTY STRINGS Linux_X86_64 Linux_AARCH64 Linux_ARMHF MACOS IOS ANDROID_AARCH ANDROID_ARMHF WINDOWS)
+if(TCVM_TARGET MATCHES "${CMAKE_HOST_SYSTEM_NAME}")
+  message("Cross-compiling ...")
+  if(TCVM_TARGET STREQUAL Linux_X86_64 OR TCVM_TARGET STREQUAL Linux_AARCH64 OR TCVM_TARGET STREQUAL Linux_ARMHF)
+  set(CMAKE_SYSTEM_NAME Linux)
+  if(TCVM_TARGET MATCHES Linux_X86_64)
+  message("x86_64 ...")
+  set(CMAKE_SYSTEM_PROCESSOR x86_64)
+  endif()
+  if(TCVM_TARGET MATCHES Linux_AARCH)
+  message("aarch64 ...")
+  set(CMAKE_SYSTEM_PROCESSOR aarch64)
+  endif()
+  if(TCVM_TARGET MATCHES Linux_ARMHF)
+  message("arm 64 ...")
+  set(CMAKE_SYSTEM_PROCESSOR arm)
+  
+  endif()
+  endif()
+  message("Target system: ${CMAKE_SYSTEM_NAME}")
+  message("Target processor: ${CMAKE_SYSTEM_PROCESSOR}")
+  set(TCVM_C_COMPILER "" CACHE FILEPATH "C cross-compiler for TotalCrossVM")
+  set(TCVM_CXX_COMPILER "" CACHE FILEPATH "C++ cross-compiler for TotalCrossVM")
+  set(TCVM_SYSROOT "" CACHE PATH "Target platform sysroot for TotalCrossVM")
+  set(TCVM_EXTRA_HEADERS "" CACHE PATH "Target platform extra header files for TotalCrossVM")
+  set(TCVM_EXTRA_LIBS "" CACHE PATH "Target platform extra library files for TotalCrossVM")
+  # specify the cross compiler
+  set(CMAKE_C_COMPILER ${TCVM_C_COMPILER})
+  set(CMAKE_CXX_COMPILER ${TCVM_CXX_COMPILER})
+  # where is the target environment
+  set(CMAKE_FIND_ROOT_PATH ${TCVM_SYSROOT})
+  set(CMAKE_SYSROOT ${TCVM_SYSROOT})
+
+  # search for programs in the build host directories
+  set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+  # for libraries and headers in the target directories
+  set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+  set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+  set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 endif()
 
 # Find SDL2 and Skia
@@ -531,8 +573,22 @@ if(${CMAKE_VERSION} VERSION_LESS "3.8" OR MSVC)
   )
 else()
   target_compile_features(tcvm PUBLIC cxx_std_17)
+  message("Compiled with CXX_17")
 endif()
-message(CXX_STANDARD)
+
+message("Extra TCVM headers: ${TCVM_EXTRA_HEADERS}")
+message("Extra TCVM libs: ${TCVM_EXTRA_LIBS}")
+
+target_include_directories(tcvm PUBLIC ${TCVM_EXTRA_HEADERS})
+link_directories(tcvm ${TCVM_EXTRA_LIBS})
+
+message(
+  "CMake version: ${CMAKE_VERSION}\n"
+  "Compiler C++ version: ${CMAKE_CXX_COMPILER_VERSION}\n"
+  "Compiler C++ ABI: ${CMAKE_CXX_COMPILER_ABI}\n"
+  "Compiler C   version: ${CMAKE_C_COMPILER_VERSION}\n"
+  "Compiler C   ABI: ${CMAKE_C_COMPILER_ABI}\n"
+  )
 # XCode Properties
 if(CMAKE_GENERATOR STREQUAL Xcode)
   
