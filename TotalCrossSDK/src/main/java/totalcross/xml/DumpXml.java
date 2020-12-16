@@ -5,6 +5,7 @@
 
 package totalcross.xml;
 
+import java.io.UnsupportedEncodingException;
 import totalcross.io.Stream;
 import totalcross.sys.Vm;
 
@@ -28,22 +29,22 @@ public class DumpXml extends XmlTokenizer {
   public DumpXml() {
   }
 
-  public DumpXml(Stream stream) throws SyntaxException, totalcross.io.IOException {
+  public DumpXml(Stream stream) throws SyntaxException, totalcross.io.IOException, UnsupportedEncodingException {
     tokenize(stream);
   }
 
   @Override
-  public void foundStartOfInput(byte buffer[], int offset, int count) {
+  public void foundStartOfInput(char buffer[], int offset, int count) {
     Vm.debug("Start: " + new String(buffer, offset, count));
   }
 
   @Override
-  public void foundStartTagName(byte buffer[], int offset, int count) {
+  public void foundStartTagName(char buffer[], int offset, int count) {
     Vm.debug("StartTagName: " + new String(buffer, offset, count));
   }
 
   @Override
-  public void foundEndTagName(byte buffer[], int offset, int count) {
+  public void foundEndTagName(char buffer[], int offset, int count) {
     Vm.debug("EndTagName: " + new String(buffer, offset, count));
   }
 
@@ -53,7 +54,7 @@ public class DumpXml extends XmlTokenizer {
   }
 
   @Override
-  public void foundCharacterData(byte buffer[], int offset, int count) {
+  public void foundCharacterData(char buffer[], int offset, int count) {
     Vm.debug("Content: " + new String(buffer, offset, count));
   }
 
@@ -63,12 +64,12 @@ public class DumpXml extends XmlTokenizer {
   }
 
   @Override
-  public void foundAttributeName(byte buffer[], int offset, int count) {
+  public void foundAttributeName(char buffer[], int offset, int count) {
     Vm.debug("AttributeName: " + new String(buffer, offset, count));
   }
 
   @Override
-  public void foundAttributeValue(byte buffer[], int offset, int count, byte dlm) {
+  public void foundAttributeValue(char buffer[], int offset, int count, char dlm) {
     Vm.debug("AttributeValue: " + new String(buffer, offset, count));
   }
 

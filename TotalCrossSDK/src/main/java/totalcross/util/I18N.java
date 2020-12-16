@@ -1,5 +1,6 @@
 package totalcross.util;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -283,8 +284,10 @@ public class I18N {
 				}
 			});
 			try {
-				rdr.parse(file, 0, file.length);
+				rdr.parse(Convert.charConverter.bytes2chars(file, 0, file.length), 0, file.length);
 			} catch (SyntaxException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
 			//restore default Char Convert

@@ -6,8 +6,10 @@
 
 package totalcross.xml;
 
+import java.io.UnsupportedEncodingException;
 import totalcross.io.IOException;
 import totalcross.net.URI;
+import totalcross.sys.Convert;
 
 /** Make an XmlReadable from a byte array. */
 public class XmlReadableByteArray implements XmlReadable {
@@ -30,7 +32,11 @@ public class XmlReadableByteArray implements XmlReadable {
   @Override
   public void readXml(XmlReader rdr) throws SyntaxException, IOException {
     rdr.setCaseInsensitive(caseInsensitive);
-    rdr.parse(buf, 0, buf.length);
+    try {
+      rdr.parse(Convert.charConverter.bytes2chars(buf, 0, buf.length), 0, buf.length);
+    } catch(UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
     //buf = null; - don't do this, otherwise HtmlBrowser's font change won't work 
   }
 

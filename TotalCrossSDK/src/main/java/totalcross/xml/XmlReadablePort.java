@@ -6,8 +6,10 @@
 
 package totalcross.xml;
 
+import java.io.UnsupportedEncodingException;
 import totalcross.io.device.PortConnector;
 import totalcross.net.URI;
+import totalcross.sys.Convert;
 
 /**
  * Make an XmlReadable from a PortConnector Example:
@@ -59,7 +61,11 @@ public class XmlReadablePort extends XmlReadableByteArray {
 
   @Override
   public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException {
-    rdr.parse(stream, buf, 0, ofsEnd, 0);
+    try {
+      rdr.parse(stream, Convert.charConverter.bytes2chars(buf, 0, buf.length), 0, ofsEnd, 0);
+    } catch(UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
     stream.close();
     buf = null;
   }

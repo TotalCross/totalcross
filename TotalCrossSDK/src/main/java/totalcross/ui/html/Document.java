@@ -409,8 +409,8 @@ public class Document extends ScrollContainer {
 
     /** Impl. note: only works when reference resolution has been disabled */
     @Override
-    protected void foundReference(byte input[], int offset, int count) {
-      char res = NamedEntitiesDereferencer.toCode(input, offset, count);
+    protected void foundReference(char input[], int offset, int count) {
+      char res = NamedEntitiesDereferencer.toCode(Convert.charConverter.chars2bytes(input, 0, input.length), offset, count);
       if (res == 0) {
         res = super.resolveCharacterReference(input, offset, count);
       }
@@ -418,12 +418,12 @@ public class Document extends ScrollContainer {
     }
 
     @Override
-    protected int getTagCode(byte b[], int offset, int count) {
-      return TagDereferencer.toCode(b, offset, count);
+    protected int getTagCode(char b[], int offset, int count) {
+      return TagDereferencer.toCode(Convert.charConverter.chars2bytes(b, 0, b.length), offset, count);
     }
 
     @Override
-    public final void foundStartTagName(byte buffer[], int offset, int count) {
+    public final void foundStartTagName(char buffer[], int offset, int count) {
       super.foundStartTagName(buffer, offset, count);
       switch (tagNameHashId) {
       case TagDereferencer.SCRIPT:
@@ -438,7 +438,7 @@ public class Document extends ScrollContainer {
     }
 
     @Override
-    public final void foundEndTagName(byte buffer[], int offset, int count) {
+    public final void foundEndTagName(char buffer[], int offset, int count) {
       super.foundEndTagName(buffer, offset, count);
       switch (tagNameHashId) {
       case TagDereferencer.PRE:

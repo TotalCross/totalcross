@@ -6,10 +6,12 @@
 
 package totalcross.xml;
 
+import java.io.UnsupportedEncodingException;
 import totalcross.io.IOException;
 import totalcross.io.IllegalArgumentIOException;
 import totalcross.net.HttpStream;
 import totalcross.net.URI;
+import totalcross.sys.Convert;
 
 /**
  * An XmlReadableSocket has a Socket stream that takes care of the HTTP
@@ -51,7 +53,11 @@ public class XmlReadableSocket extends HttpStream implements XmlReadable {
   @Override
   public void readXml(XmlReader rdr) throws SyntaxException, totalcross.io.IOException {
     rdr.setCaseInsensitive(caseInsensitive);
-    rdr.parse(socket, buffer, ofsStart, ofsEnd, readPos);
+    try {
+      rdr.parse(socket, Convert.charConverter.bytes2chars(buffer, 0, buffer.length), ofsStart, ofsEnd, readPos);
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
     socket.close();
   }
 
