@@ -834,7 +834,6 @@ public class XmlTokenizer {
             return;
           }
           ch = input[ofsCur];
-          System.out.println("ch read: " + ch);
         }
         ++ofsStart;
         foundAttributeValue(input, ofsStart, ofsCur - ofsStart, quote);
