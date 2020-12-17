@@ -250,7 +250,7 @@ public class XmlTokenizer {
    * @throws totalcross.io.IOException
    */
   public final void tokenize(Stream input, char[] buffer, int start, int end, int pos)
-      throws SyntaxException, totalcross.io.IOException, UnsupportedEncodingException {
+      throws SyntaxException, totalcross.io.IOException {
     ofsStart = start;
     ofsCur = start;
     ofsEnd = end;
