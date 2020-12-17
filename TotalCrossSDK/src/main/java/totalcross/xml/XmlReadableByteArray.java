@@ -32,11 +32,7 @@ public class XmlReadableByteArray implements XmlReadable {
   @Override
   public void readXml(XmlReader rdr) throws SyntaxException, IOException {
     rdr.setCaseInsensitive(caseInsensitive);
-    try {
-      rdr.parse(Convert.charConverter.bytes2chars(buf, 0, buf.length), 0, buf.length);
-    } catch(UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
+    rdr.parse(Convert.charConverter.bytes2chars(buf, 0, buf.length), 0, buf.length);
     //buf = null; - don't do this, otherwise HtmlBrowser's font change won't work 
   }
 
