@@ -55,6 +55,7 @@ jobs:
           
   build_sdk_android:
     name: Build SDK and Android 
+    if: ${{ always() }}
     needs: build_linux
     runs-on: ubuntu-18.04
     container:
@@ -135,33 +136,52 @@ jobs:
         ./gradlew assembleDebug copyApk -x test --stacktrace && ./gradlew assembleDebug copyApk -x test
  
     - name: Download Linux amd64
+      continue-on-error: true
       uses: actions/download-artifact@v2
       with:
         name: Linux_amd64
         path: Linux_amd64
+
+    - name: Manage Linux amd64 files
+      if: ${{ success() }}
+      run: |
+        mkdir -p TotalCrossSDK/dist/vm/linux
+        mkdir -p TotalCrossSDK/etc/launchers/linux
+        cp -p -a -R Linux_amd64/libtcvm.so TotalCrossSDK/dist/vm/linux/
+        cp -p -a -R Linux_amd64/Launcher TotalCrossSDK/etc/launchers/linux/
  
     - name: Download Linux arm32
+      continue-on-error: true
       uses: actions/download-artifact@v2
       with:
         name: Linux_arm32v7
         path: Linux_arm32v7
  
+    - name: Manage Linux arm32 files
+      if: ${{ success() }}
+      run: |
+        mkdir -p TotalCrossSDK/dist/vm/linux_arm
+        mkdir -p TotalCrossSDK/etc/launchers/linux_arm
+        cp -p -a -R Linux_arm32v7/libtcvm.so TotalCrossSDK/dist/vm/linux_arm/
+        cp -p -a -R Linux_arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
+
     - name: Download Linux arm64
+      continue-on-error: true
       uses: actions/download-artifact@v2
       with:
         name: Linux_arm64
         path: Linux_arm64
 
-    - name: Manager files
+    - name: Manage Linux arm64 files
+      if: ${{ success() }}
       run: |
-        mkdir -p TotalCrossSDK/dist/vm/linux TotalCrossSDK/dist/vm/linux_arm TotalCrossSDK/dist/vm/linux_arm64 
-        mkdir -p TotalCrossSDK/etc/launchers/linux TotalCrossSDK/etc/launchers/linux_arm TotalCrossSDK/etc/launchers/linux_arm64
-        cp -p -a -R Linux_amd64/libtcvm.so TotalCrossSDK/dist/vm/linux/
-        cp -p -a -R Linux_arm32v7/libtcvm.so TotalCrossSDK/dist/vm/linux_arm/
+        mkdir -p TotalCrossSDK/dist/vm/linux_arm64
+        mkdir -p TotalCrossSDK/etc/launchers/linux_arm64
         cp -p -a -R Linux_arm64/libtcvm.so TotalCrossSDK/dist/vm/linux_arm64/
         cp -p -a -R Linux_arm64/Launcher TotalCrossSDK/etc/launchers/linux_arm64/
-        cp -p -a -R Linux_amd64/Launcher TotalCrossSDK/etc/launchers/linux/
-        cp -p -a -R Linux_arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
+
+    - name: Manager files
+      run: |
         rm -rf TotalCrossSDK/docs/* && mv TotalCrossSDK/build/docs/javadoc TotalCrossSDK/docs/html
         mv LitebaseLib.tcz TotalCrossSDK/dist/vm/
         find TotalCrossSDK -name .DS_Store -exec rm -rf -- {} +
