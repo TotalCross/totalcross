@@ -11,20 +11,11 @@ on:
 
 jobs:
   build_linux:
-    name: Build '${{ matrix.project }}' Docker container
+    name: Build '${{ matrix.project }}'
     strategy:
       fail-fast: false
       matrix:
-        project: [ amd64,arm32v7,arm64 ]
-        include:
-        # includes a new variable of npm with a value of 2
-        # for the matrix leg matching the os and version
-        - project: amd64
-          arch: amd64
-        - project: arm32v7
-          arch: arm/7
-        - project: arm64
-          arch: arm64/8
+        project: [ linux-amd64, linux-arm32v7, linux-arm64 ]
 
     runs-on: ubuntu-20.04
 
@@ -32,26 +23,19 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: crazy-max/ghaction-docker-buildx@v3
+    - name: Allow multiarch
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-    - name: build image
+    - name: Build VM & Launcher
       run: |
-        docker buildx build --no-cache -f TotalCrossVM/docker/${{ matrix.project }}/Dockerfile \
-        --output out_${{ matrix.project }} \
-        --tag totalcross/linux-${{ matrix.project }}-build \
-        --platform linux/${{ matrix.arch }} TotalCrossVM/
+        mkdir -p build
+        docker run -v ${PWD}/build:/build -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -c "cmake /sources/TotalCrossVM -G Ninja && ninja"
 
-    - name: list files
-      run: |
-        ls -ltra -R out_${{ matrix.project }}
-         
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: Linux_${{ matrix.project }}
-        path: |
-          out_${{ matrix.project }}
+        name: ${{ matrix.project }}
+        path: build
           
   build_sdk_android:
     name: Build SDK and Android 
@@ -139,46 +123,46 @@ jobs:
       continue-on-error: true
       uses: actions/download-artifact@v2
       with:
-        name: Linux_amd64
-        path: Linux_amd64
+        name: linux-amd64
+        path: linux-amd64
 
     - name: Manage Linux amd64 files
       if: ${{ success() }}
       run: |
         mkdir -p TotalCrossSDK/dist/vm/linux
         mkdir -p TotalCrossSDK/etc/launchers/linux
-        cp -p -a -R Linux_amd64/libtcvm.so TotalCrossSDK/dist/vm/linux/
-        cp -p -a -R Linux_amd64/Launcher TotalCrossSDK/etc/launchers/linux/
+        cp -p -a -R linux-amd64/libtcvm.so TotalCrossSDK/dist/vm/linux/
+        cp -p -a -R linux-amd64/Launcher TotalCrossSDK/etc/launchers/linux/
  
     - name: Download Linux arm32
       continue-on-error: true
       uses: actions/download-artifact@v2
       with:
-        name: Linux_arm32v7
-        path: Linux_arm32v7
+        name: linux-arm32v7
+        path: linux-arm32v7
  
     - name: Manage Linux arm32 files
       if: ${{ success() }}
       run: |
         mkdir -p TotalCrossSDK/dist/vm/linux_arm
         mkdir -p TotalCrossSDK/etc/launchers/linux_arm
-        cp -p -a -R Linux_arm32v7/libtcvm.so TotalCrossSDK/dist/vm/linux_arm/
-        cp -p -a -R Linux_arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
+        cp -p -a -R linux-arm32v7/libtcvm.so TotalCrossSDK/dist/vm/linux_arm/
+        cp -p -a -R linux-arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
 
     - name: Download Linux arm64
       continue-on-error: true
       uses: actions/download-artifact@v2
       with:
-        name: Linux_arm64
-        path: Linux_arm64
+        name: linux-arm64
+        path: linux-arm64
 
     - name: Manage Linux arm64 files
       if: ${{ success() }}
       run: |
         mkdir -p TotalCrossSDK/dist/vm/linux_arm64
         mkdir -p TotalCrossSDK/etc/launchers/linux_arm64
-        cp -p -a -R Linux_arm64/libtcvm.so TotalCrossSDK/dist/vm/linux_arm64/
-        cp -p -a -R Linux_arm64/Launcher TotalCrossSDK/etc/launchers/linux_arm64/
+        cp -p -a -R linux-arm64/libtcvm.so TotalCrossSDK/dist/vm/linux_arm64/
+        cp -p -a -R linux-arm64/Launcher TotalCrossSDK/etc/launchers/linux_arm64/
 
     - name: Manager files
       run: |
