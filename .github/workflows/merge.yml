@@ -1,0 +1,64 @@
+name: Merge flow
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-linux:
+    name: Build '${{ matrix.project }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [ linux-amd64, linux-arm32v7, linux-arm64 ]
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Allow multiarch
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+    - name: Build VM & Launcher
+      run: |
+        docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -c "cmake /sources/TotalCrossVM -G Ninja && ninja"
+          
+  build-sdk-and-android:
+    name: Build `${{ matrix.project.name }}`
+    runs-on: ubuntu-18.04
+    container:
+      image: docker://fabernovel/android:api-28-gcloud-ndk-v1.2.0
+    strategy:
+      fail-fast: false
+      matrix:
+        project: 
+          - name: SDK
+            command: ./gradlew dist -x test --stacktrace
+            directory: TotalCrossSDK
+          - name: Android
+            command: ./gradlew assembleDebug copyApk -x test --stacktrace && ./gradlew assembleDebug copyApk -x test
+            directory: TotalCrossVM/android
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+
+    - name: Build ${{ matrix.project.name }}
+      working-directory: ${{ matrix.project.directory }}
+      run: ${{ matrix.project.command }}
