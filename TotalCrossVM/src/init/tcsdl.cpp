@@ -12,12 +12,74 @@
 #include "tcsdl.h"
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* texture = NULL;
 static SDL_Window *window = NULL; 
 static SDL_Surface *surface = NULL;
 static bool usesTexture;
+
+#include <map>
+#include <chrono>
+
+typedef std::chrono::high_resolution_clock::time_point TimeVar;
+#define duration(a) std::chrono::duration_cast<std::chrono::nanoseconds>(a).count()
+#define timeNow() std::chrono::high_resolution_clock::now()
+
+typedef struct {
+    char name[128];
+    long sum;
+    long count;
+    long max;
+	 TimeVar last;
+} TFunctionProfile;
+
+std::map<std::string, TFunctionProfile*> functionProfileMap;
+
+/**
+ * Returns the current time in microseconds.
+ */
+long getMicrotime(char* name){
+	// struct timeval currentTime;
+	// gettimeofday(&currentTime, NULL);
+	// return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
+
+	std::string s = name;
+	std::map<std::string, TFunctionProfile*>::iterator it = functionProfileMap.find(s);
+	TFunctionProfile* tfp = NULL;
+	if (it != functionProfileMap.end()) {
+		tfp = it->second;
+	}
+	if (tfp == NULL) {
+		tfp = (TFunctionProfile*) malloc(sizeof(TFunctionProfile));
+		memset(tfp, 0, sizeof(TFunctionProfile));
+		strcpy(tfp->name, name);
+		functionProfileMap[s] = tfp;
+	}
+	tfp->last = timeNow();
+
+	return 0;
+}
+
+void profileStop(char* name) {
+	std::string s = name;
+	std::map<std::string, TFunctionProfile*>::iterator it = functionProfileMap.find(s);
+	TFunctionProfile* tfp = NULL;
+	if (it != functionProfileMap.end()) {
+		tfp = it->second;
+	}
+	if (tfp == NULL) {
+		printf("WTTTFFFFFFF???!!!\n");
+	} else {
+		long profileElapsed = duration(timeNow()-tfp->last);
+		tfp->count++;
+		tfp->sum += profileElapsed;
+		if (profileElapsed > tfp->max) {
+			tfp->max = profileElapsed;
+		}
+	}
+}
 
 /*
  * Init steps to create a window and texture to Skia handling
@@ -229,10 +291,12 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
  * depends on it
  */
 void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
+	PROFILE_START
 	if(usesTexture) {
 		// Update the given texture rectangle with new pixel data.
 		SDL_UpdateTexture(texture, NULL, pixels, pitch);
 	}
+	PROFILE_STOP
 	// Call SDL render present
 	TCSDL_Present();
 }
@@ -241,6 +305,7 @@ void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
  * Update the screen with rendering performed
  */
 void TCSDL_Present() {
+	PROFILE_START
   if(usesTexture) {
     // Copy a portion of the texture to the current rendering target
     SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -251,12 +316,22 @@ void TCSDL_Present() {
   } else {
     SDL_UpdateWindowSurface(window);
   }
+  PROFILE_STOP
+  printf("\n");
 }
 
 /*
  * Destroy all SDL allocated variables
  */
 void TCSDL_Destroy(ScreenSurface screen) {
+	std::map<std::string, TFunctionProfile*>::iterator it;
+
+	for ( it = functionProfileMap.begin(); it != functionProfileMap.end(); it++ )
+	{
+		TFunctionProfile* tfp = it->second;
+		debug("%s: %lu, %lu, %lu", tfp->name, tfp->count, tfp->sum, tfp->max);
+	}
+
 	if (usesTexture && screen->pixels != NULL) {
 		free(screen->pixels);
 	}
