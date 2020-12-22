@@ -81,9 +81,6 @@ void profileStop(char* name) {
 	}
 }
 
-inline auto getMicrotimeChrono() {
-	return std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
-}
 /*
  * Init steps to create a window and texture to Skia handling
  *
@@ -320,6 +317,7 @@ void TCSDL_Present() {
     SDL_UpdateWindowSurface(window);
   }
   PROFILE_STOP
+  printf("\n");
 }
 
 /*

@@ -20,11 +20,31 @@ extern "C" {
 
 #include <sys/time.h>
 
+#define PROFILE_CPUTIME_SYSTIME 1
+
 long getMicrotime(char* name);
 void profileStop(char* name);
 
+#define ReportMeasurment(t1, t2) {\
+    static int callNum {};\
+    static double cpuTime {};\
+    callNum++;\
+    double elps = (double)(t2-t1)/CLOCKS_PER_SEC;\
+    cpuTime += elps;\
+    printf("%-25s\t%-.20f\n",__FUNCTION__,cpuTime/callNum);\
+}
+
+#ifdef PROFILE_WALLTIME_CHRONO
     #define PROFILE_START getMicrotime((char*) __func__);
     #define PROFILE_STOP profileStop((char*) __func__);
+#elif  PROFILE_CPUTIME_SYSTIME
+    #define PROFILE_START auto start_profile {clock()};
+    #define PROFILE_STOP {auto stop_profile {clock()};\
+    ReportMeasurment(start_profile,stop_profile);}
+#else
+    #define PROFILE_START
+    #define PROFILE_STOP
+#endif
 
     bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
