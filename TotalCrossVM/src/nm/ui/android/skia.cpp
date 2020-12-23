@@ -293,16 +293,14 @@ void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32
 
 #if USE_WRITE_PIXELS
     /*
-        Fast drawing, probably can only be used to draw fully opaque images 
+        Fast drawing, can only be used to draw fully opaque images 
         without sampling (src and dst dimensions are the same).
         Makes drawing JPEG and opaque PNGs over 10x faster.
-        PLEASE NOTICE ARGUMENT ALPHA MASK IS IGNORED HERE
         
         TODO: 
             - add actual numbers to back this statement
-            - test usage with non opaque images
-            - test usage with non opaque alpha mask
     */
+if (texture.isOpaque() && alphaMask == 255) {
     canvas->writePixels(
         texture.info(), 
         texture.getPixels(), 
@@ -310,16 +308,18 @@ void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32
         dstX,
         dstY
     );
-#else
-    alphaPaint.setAlpha(alphaMask);
-    canvas->drawBitmapRect(
-        texture, 
-        SkRect::MakeXYWH(srcX, srcY, w, h),
-        SkRect::MakeXYWH(dstX, dstY, w, h), 
-        &alphaPaint, 
-        SkCanvas::kFast_SrcRectConstraint
-    );
+} else
 #endif
+    {
+        alphaPaint.setAlpha(alphaMask);
+        canvas->drawBitmapRect(
+            texture, 
+            SkRect::MakeXYWH(srcX, srcY, w, h),
+            SkRect::MakeXYWH(dstX, dstY, w, h), 
+            &alphaPaint, 
+            SkCanvas::kFast_SrcRectConstraint
+        );
+    }
 }
 
 // The getPixel call demands a 1-pixel readback from the GPU. Avoid it if possible.
