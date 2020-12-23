@@ -5,6 +5,9 @@
 
 #include "skia.h"
 
+#define USE_COMPUTE_OPAQUE 1
+#define USE_WRITE_PIXELS 1
+
 #if __APPLE__
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>
@@ -248,9 +251,11 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
         SkBitmap bitmap;
 		bitmap.installPixels(SkImageInfo::Make(w, h, kN32_SkColorType, kUnpremul_SkAlphaType),
 							 (void*)converted, sizeof(Pixel) * w, releaseProc, nullptr);
+#if USE_COMPUTE_OPAQUE
 		if (SkBitmap::ComputeIsOpaque(bitmap)) {
 			bitmap.setAlphaType(kOpaque_SkAlphaType);
 		}
+#endif
         id = textures.size();
         textures.push_back(bitmap);
     } else {
@@ -285,25 +290,36 @@ void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32
     SKIA_TRACE()
 
 	SkBitmap texture = textures[id];
-	if (texture.isOpaque() && alphaMask == 255) {
-		/*
-			Fast drawing, can only be used to draw fully opaque images 
-			without sampling (src and dst dimensions are the same).
-			Makes drawing JPEG and opaque PNGs over 10x faster.
-			
-			TODO: add actual numbers to back this statement
-		*/
-		canvas->writePixels(
-			texture.info(), 
-			texture.getPixels(), 
-			texture.rowBytes(),
-			dstX,
-			dstY);
-	} else {
+
+#if USE_WRITE_PIXELS
+    /*
+        Fast drawing, probably can only be used to draw fully opaque images 
+        without sampling (src and dst dimensions are the same).
+        Makes drawing JPEG and opaque PNGs over 10x faster.
+        PLEASE NOTICE ARGUMENT ALPHA MASK IS IGNORED HERE
+        
+        TODO: 
+            - add actual numbers to back this statement
+            - test usage with non opaque images
+            - test usage with non opaque alpha mask
+    */
+    canvas->writePixels(
+        texture.info(), 
+        texture.getPixels(), 
+        texture.rowBytes(),
+        dstX,
+        dstY
+    );
+#else
     alphaPaint.setAlpha(alphaMask);
-		canvas->drawBitmapRect(texture, SkRect::MakeXYWH(srcX, srcY, w, h),
-							SkRect::MakeXYWH(dstX, dstY, w, h), &alphaPaint, SkCanvas::kFast_SrcRectConstraint);
-	}
+    canvas->drawBitmapRect(
+        texture, 
+        SkRect::MakeXYWH(srcX, srcY, w, h),
+        SkRect::MakeXYWH(dstX, dstY, w, h), 
+        &alphaPaint, 
+        SkCanvas::kFast_SrcRectConstraint
+    );
+#endif
 }
 
 // The getPixel call demands a 1-pixel readback from the GPU. Avoid it if possible.
