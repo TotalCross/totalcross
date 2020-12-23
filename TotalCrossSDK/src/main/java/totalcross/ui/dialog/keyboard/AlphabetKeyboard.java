@@ -186,7 +186,7 @@ public class AlphabetKeyboard extends Container {
   }
 
   private void configureKeyboardKey(Button button) {
-    Font font = getFont().asBold();
+    Font font = getFont();
     button.setForeColor(FORE_COLOR);
     button.setFont(font);
     button.setBackColor(Color.getRGB(233, 233, 235));

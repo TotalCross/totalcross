@@ -100,7 +100,6 @@ public class Button extends Control implements TextControl {
 	 * Button btn = new Button("Bárbara\nHazan", new Image("button1.png"), CENTER, 8);
 	 * btn.setBackColor(backColor);
 	 * btn.borderColor3DG = 0x008800; // used to colorize the image
-	 * btn.setFont(font.asBold());
 	 * btn.setBorder(Button.BORDER_GRAY_IMAGE);
 	 * add(btn, CENTER, CENTER);
 	 * </pre>
