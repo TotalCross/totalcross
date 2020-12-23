@@ -108,6 +108,7 @@ jobs:
       working-directory: TotalCrossSDK
       run: |
         ./gradlew dist -x test --stacktrace
+        cp build/libs/totalcross-sdk-* dist
     
     - name: Build Android
       working-directory: TotalCrossVM/android
