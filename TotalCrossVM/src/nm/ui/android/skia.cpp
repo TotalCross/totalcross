@@ -7,6 +7,7 @@
 
 #define USE_COMPUTE_OPAQUE 1
 #define USE_WRITE_PIXELS 1
+#define USE_COLORTYPE_CONVERSION 1
 
 #if __APPLE__
 #ifdef darwin
@@ -234,7 +235,7 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, i
 
 static void releaseProc(void* addr, void* ) {
     // printf("releaseProc called\n");
-    delete[] (uint32_t*) addr;
+    operator delete (addr);
 }
 
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
@@ -251,6 +252,20 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
         SkBitmap bitmap;
 		bitmap.installPixels(SkImageInfo::Make(w, h, kN32_SkColorType, kUnpremul_SkAlphaType),
 							 (void*)converted, sizeof(Pixel) * w, releaseProc, nullptr);
+
+#if USE_COLORTYPE_CONVERSION
+        void* dstPixels = operator new(w * h * canvas->imageInfo().bytesPerPixel());
+        SkImageInfo dstImageInfo = 
+            SkImageInfo::Make(
+                w, 
+                h, 
+                canvas->imageInfo().colorType(), 
+                canvas->imageInfo().alphaType()
+            );
+        bitmap.readPixels(dstImageInfo, dstPixels, dstImageInfo.minRowBytes(), 0, 0);
+        bitmap.installPixels(dstImageInfo, dstPixels, dstImageInfo.minRowBytes(), releaseProc, nullptr);
+#endif
+
 #if USE_COMPUTE_OPAQUE
 		if (SkBitmap::ComputeIsOpaque(bitmap)) {
 			bitmap.setAlphaType(kOpaque_SkAlphaType);
