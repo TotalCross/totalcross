@@ -136,13 +136,14 @@ Our commit style:
 About our standard:
 - The header (first line) is the only mandatory part of the commit message;
 - The body and footer are both optional but its use is highly encouraged;
+> The blank line separating the header from the body is critical, same for footer.
 - The header should contains:
   - A type:
     - Must be lowercase;
   - A subject:
     - Must be non capitalized;
     - Must omit any trailing punctuation.
-  - Must be limited to 80 characters or less;
+  - Must be limited to 80 characters or less (length = type + subject);
 - The body:
   - Must have a leading blank line;
   - Each line must be limited to 80 characters or less.
@@ -161,21 +162,20 @@ You also should follow these general guidelines when committing:
 
 Example of commit message:
 ```
-Summarize changes in around 80 characters or less
+doc: summarize changes in around 80 characters or less
 
 More detailed explanatory text, if necessary. Wrap it to about 80
 characters per line. In some contexts, the first line is treated as
 the subject of the commit and the rest of the text as the body. The
-blank line separating the summary from the body is critical (unless
+blank line separating the header from the body is critical (unless
 you omit the body entirely); various tools like `log`, `shortlog`
-and.
-
+and. 
 Explain the problem that this commit is solving. Focus on why you
 are making this change as opposed to how (the code explains that).
 Are there side effects or other unintuitive consequences of this
 change? Here's the place to explain them.
 
-Resolves: #123
+Closes #123
 ```
 
 ### Why all these rules?
