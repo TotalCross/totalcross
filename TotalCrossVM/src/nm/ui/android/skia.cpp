@@ -8,6 +8,7 @@
 #define USE_COMPUTE_OPAQUE 1
 #define USE_WRITE_PIXELS 1
 #define USE_COLORTYPE_CONVERSION 1
+#define USE_NATIVE_SWAP 1
 
 #if __APPLE__
 #ifdef darwin
@@ -237,16 +238,36 @@ static void releaseProc(void* addr, void* ) {
     // printf("releaseProc called\n");
     operator delete (addr);
 }
+#if USE_NATIVE_SWAP
+inline uint32_t builtinSwap32(uint32_t val) noexcept {
+        #if defined(__clang__)
+            return  __builtin_bswap32(val);
+        #elif defined(__GNUG__)
+            return  __builtin_bswap32(val);
+        #elif defined(_MSC_VER)
+             return = _byteswap_ulong(val);
+        #endif
+}
+#endif
 
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
     SKIA_TRACE()
 
-    //TODO: reuse pixel data and avoid all this allocation, maybe using data directly with the correct color type
-    int32 *converted = new int32[w * h];
-    for (int i = 0; i < w * h; i++) {
-        int32 pixel = ((Pixel*)data)[i];
-        converted[i] = (((pixel >> 24) & 0xFF)) | ((((pixel >> 16) & 0xFF) << 8) | (((pixel >> 8) & 0xFF) << 16) | ((pixel & 0xFF) << 24));
-    }
+    #if USE_NATIVE_SWAP
+        const auto count = w * h;
+        int32 *converted = new int32[count];
+        auto d32 = reinterpret_cast<Pixel*>(data);
+        for (int i = 0; i < count; i++) {
+            converted[i] = builtinSwap32(d32[i]);
+        }
+    #else
+        //TODO: reuse pixel data and avoid all this allocation, maybe using data directly with the correct color type
+        int32 *converted = new int32[w * h];
+        for (int i = 0; i < w * h; i++) {
+            int32 pixel = ((Pixel*)data)[i];
+            converted[i] = (((pixel >> 24) & 0xFF)) | ((((pixel >> 16) & 0xFF) << 8) | (((pixel >> 8) & 0xFF) << 16) | ((pixel & 0xFF) << 24));
+        }
+    #endif
 
     if (id < 0) { // must create a new bitmap
         SkBitmap bitmap;
