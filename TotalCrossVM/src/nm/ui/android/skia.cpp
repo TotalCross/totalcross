@@ -238,6 +238,7 @@ static void releaseProc(void* addr, void* ) {
     // printf("releaseProc called\n");
     operator delete (addr);
 }
+
 #if USE_NATIVE_SWAP
 inline uint32_t builtinSwap32(uint32_t val) noexcept {
         #if defined(__clang__)
@@ -252,11 +253,11 @@ inline uint32_t builtinSwap32(uint32_t val) noexcept {
 
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
     SKIA_TRACE()
-
+    
     #if USE_NATIVE_SWAP
         const auto count = w * h;
-        int32 *converted = new int32[count];
-        auto d32 = reinterpret_cast<Pixel*>(data);
+        int32* const converted = new int32[count];
+        const auto d32 = reinterpret_cast<const Pixel*>(data);
         for (int i = 0; i < count; i++) {
             converted[i] = builtinSwap32(d32[i]);
         }
@@ -295,7 +296,7 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
         }
 #endif
         id = textures.size();
-        textures.push_back(bitmap);
+        textures.emplace_back(std::move(bitmap));
     } else {
         SkBitmap& bitmap = textures[id];
         bitmap.installPixels(SkImageInfo::Make(w, h, kN32_SkColorType, kUnpremul_SkAlphaType), (void*)converted, sizeof(Pixel) * w, releaseProc, nullptr);
@@ -327,21 +328,21 @@ void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32
 {
     SKIA_TRACE()
 
-	SkBitmap texture = textures[id];
+	const auto& texture {textures[id]};
 
 #if USE_WRITE_PIXELS
     /*
-        Fast drawing, can only be used to draw fully opaque images 
+        Fast drawing, can only be used to draw fully opaque images
         without sampling (src and dst dimensions are the same).
         Makes drawing JPEG and opaque PNGs over 10x faster.
-        
-        TODO: 
+
+        TODO:
             - add actual numbers to back this statement
     */
 if (texture.isOpaque() && alphaMask == 255) {
     canvas->writePixels(
-        texture.info(), 
-        texture.getPixels(), 
+        texture.info(),
+        texture.getPixels(),
         texture.rowBytes(),
         dstX,
         dstY
@@ -351,10 +352,11 @@ if (texture.isOpaque() && alphaMask == 255) {
     {
         alphaPaint.setAlpha(alphaMask);
         canvas->drawBitmapRect(
-            texture, 
+            texture,
+            //texture.bounds(),
             SkRect::MakeXYWH(srcX, srcY, w, h),
-            SkRect::MakeXYWH(dstX, dstY, w, h), 
-            &alphaPaint, 
+            SkRect::MakeXYWH(dstX, dstY, w, h),
+            &alphaPaint,
             SkCanvas::kFast_SrcRectConstraint
         );
     }
