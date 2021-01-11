@@ -21,7 +21,7 @@ jobs:
       - name: Download last artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: main.yml
+          workflow: package.yml
           workflow_conclusion: success
           name: TotalCross
           path: ../TotalCross
