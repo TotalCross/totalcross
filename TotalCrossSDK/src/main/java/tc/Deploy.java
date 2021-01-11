@@ -22,6 +22,7 @@ import tc.tools.deployer.Deployer4Linux;
 import tc.tools.deployer.Deployer4Win32;
 import tc.tools.deployer.Deployer4WinCE;
 import tc.tools.deployer.Deployer4LinuxArm;
+import tc.tools.deployer.Deployer4LinuxArm64;
 import tc.tools.deployer.DeployerException;
 import tc.tools.deployer.Utils;
 import totalcross.util.ElementNotFoundException;
@@ -105,6 +106,7 @@ public class Deploy {
         }
           if ((options & BUILD_LINUX_ARM) != 0) {
               new Deployer4LinuxArm();
+              new Deployer4LinuxArm64();
           }
         if ((options & BUILD_APPLET) != 0) {
           new Deployer4Applet();
