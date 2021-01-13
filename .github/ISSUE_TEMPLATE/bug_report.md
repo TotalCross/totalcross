@@ -7,34 +7,23 @@ assignees: ''
 
 ---
 
-## Issue Title
-A clear and objective summary of the bug.
-
 ## Describe the bug
 A clear and concise description of what the bug is and the actual behavior.
 
+
+## Devices:
+Please complete the following information:
+ - System OS (name and version): [e.g. Linux Raspbian 10]
+ - TotalCross Version: [e.g. 6.1.0]
+ - TotalCross backend: [e.g. TotalCross binary or Zulu OpenJDK]
+ - Architecture: [e.g. ARM64]
+ - Device description: [e.g. Raspberry Pi 3 model b+]
+ 
+ 
 ## To Reproduce
-To reproduce the error, the code must also be sent. It can be the origin of your application or an example (as long as it faithfully reproduces the error you are getting in the original application). 
+Please provide a **minimum working example**. E.g. provide a link to a code that it doesn't work, or provide the code that was tried and didn't produce the correct results. If there are exceptions and/or error messages, please provide it here
 
-Depending on the case, it is also important to describe the steps to reproduce the error: 
-
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-## Expected behavior
-A clear and concise description of what you expected to happen.
 
 ## Screenshots or videos
 If applicable, add some screenshots and/or videos to help to explain your problem.
 
-## Devices:
-Please complete the following information:
- - Device: [e.g. Raspberry Pi 3 model b+]
- - OS: [e.g. Linux Raspbian]
- - OS Version: [e.g. 10]
- - TotalCross Version: [e.g. 6.0.4]
-
-## Additional context
-Add any other context about the problem here.
