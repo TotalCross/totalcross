@@ -2,10 +2,12 @@
 BASEDIR=$(dirname $0)
 WORKDIR=$(pwd)
 
-rm -Rf bin
-mkdir build
+mkdir -p ${WORKDIR}/.gradle
 
 # execute docker run
-docker run -v ${WORKDIR}/../android/build:/build \
-                -v ${WORKDIR}/../../:/sources \
-                -it fabernovel/android:api-28-gcloud-ndk-v1.2.0 /bin/bash
+docker run                                            \
+   -v ${WORKDIR}/../../../:/totalcross                \
+   -v ${WORKDIR}/.gradle:/root/.gradle                \
+   -it fabernovel/android:api-29-ndk-v1.2.0           \
+   bash -c "cd /totalcross/TotalCrossVM/android &&    \
+            ./gradlew --no-daemon assembleAssets assembleDebug"
