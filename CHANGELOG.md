@@ -1,6 +1,71 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.0.0 - January 2021
+
+Welcome to 2021, and our first **stable release**! Let's get straight to the objectives:
+
+- **Huge bug fixes** - Many long-standing bugs have been resolved;
+- **arm64 distribution** - Now deploy TotalCross applications for linux arm64 is much easier;
+- **Skia update** - A new room for improvements.
+
+Join our [community on the telegram](https://t.me/totalcrosscommunity) to give feedback about this release!
+
+### Huge bug fixes
+
+Our main goal with this version is to keep it as stable as possible. We need a solid foundation for the future of the tool. With that we focus on correcting new and old problems that accompanied us in version 6. The main bugs resolved and that are very important for totalcross stackholders are:
+
+- `VirtualKeyboard` issues: this component widely used for embedded devices has some bugs that hinder the execution of applications; 
+- Android black screen: now everything works correctly when running the .apk for the first time;
+- Build issues: we updated the versions of Android API, Android NDK and Gradle. Fixed bugs related to the build for legacy systems (GLIBC issue). Changes were made to implement CICD with Github Actions.
+
+You can see the full list of issues resolved at the end of the note.
+
+### arm64 distribution
+
+As a cross-platform tool we need to pay attention in market changes and one of those that has caught our attention is the adoption of arm64 devices. To meet this demand we are launching a new feature:
+
+> Any package made with the `-linux_arm` flag will **also** result in arm64 artifacts.
+
+As always just transfer the files to your device! You can customize the build for your distro for now the `TotalCross/totaldocker` repository can help :sweat_smile:
+
+### Skia update
+
+Our Skia branch was starting to get outdated, so we upgraded to branch `m87` in some platforms. They are: `linux` (x86_64) and `linux_arm` (32v7). This opened the door to a new room of enhancement that we will work along the 7.x.x lifecycle. Some bugs have already been detected and should appear as minors or patches. In the next versions we will have the new Skia on more platforms.
+
+### Fixes
+
+We closed the following issues:
+
+- #124
+- #140
+- #185
+- #176
+- #180
+- #184
+- #181
+- #193
+- #198
+- #123
+- #179
+- #165
+- #92
+- #190
+- #234
+- #238
+- #236
+- #248
+- #177
+- #235
+- #231
+- #217
+- #189
+- #196
+- #178
+
+You can see all of these issues in the repository https://github.com/TotalCross/totalcross/issues.
+
+
 ## 6.1.1 - October 2020
 Hello! This minor release has as main objective:
 - **Static SDL2** - Brings it back to work properly on Angstrom for target Linux ARM;
