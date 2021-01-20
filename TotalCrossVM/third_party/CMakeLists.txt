@@ -10,7 +10,7 @@ execute_process(COMMAND "${CMAKE_COMMAND}" --build .
 
 IF (NOT(NOT APPLE AND UNIX 
    AND (CMAKE_SYSTEM_NAME STREQUAL "Linux") 
-   AND ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm"))
+   AND ${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l"))
   add_subdirectory("${CMAKE_CURRENT_BINARY_DIR}/zlib/src"
                    "${CMAKE_CURRENT_BINARY_DIR}/zlib/build"
   )
