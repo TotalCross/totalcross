@@ -6,7 +6,7 @@
 
 
 #include "tcvm.h"
-#include "../../../zlib/zutil.h"
+#include "zutil.h"
 
 #define BUFSIZE   0x400
 
