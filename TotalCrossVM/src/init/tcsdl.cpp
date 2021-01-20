@@ -34,20 +34,8 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	std::cout << "Testing video drivers..." << '\n';
 	std::vector< bool > drivers(SDL_GetNumVideoDrivers());
 
-	for (int i = 0; i < drivers.size(); ++i) {
-		drivers[i] = (0 == SDL_VideoInit(SDL_GetVideoDriver(i)));
-		SDL_VideoQuit();
-	}
-
 	std::cout << "SDL_VIDEODRIVER available:";
 	for (int i = 0; i < drivers.size(); ++i) {
-		std::cout << " " << SDL_GetVideoDriver(i);
-	}
-	std::cout << '\n';
-
-	std::cout << "SDL_VIDEODRIVER usable   :";
-	for (int i = 0; i < drivers.size(); ++i) {
-      if( !drivers[ i ] ) continue;
 		std::cout << " " << SDL_GetVideoDriver(i);
 	}
 	std::cout << '\n';
