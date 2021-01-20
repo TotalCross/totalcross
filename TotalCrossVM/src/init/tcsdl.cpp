@@ -125,7 +125,21 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	std::cout << '\n';
 
 	// Create a 2D rendering context for a window
-	if (IS_NULL(renderer = SDL_CreateRenderer(window, -1, NO_FLAGS))) {
+	if (IS_NULL(renderer = SDL_CreateRenderer(
+							window, 
+							-1, 
+/*
+	Some devices crash when opengl is used, so for now,
+	we'll force the usage of the software renderer until we
+	find a way to test for hardware accelerated graphics
+	support without crashing.
+*/
+#if !defined APPLE && !defined ANDROID && defined linux && defined __arm__
+							SDL_RENDERER_SOFTWARE
+#else
+							NO_FLAGS
+#endif
+	))) {
 		std::cerr << "SDL_CreateRenderer(): " << SDL_GetError() << '\n';
 		std::cout << '\n' << "HINT: try to export SDL_RENDER_DRIVER environment variable with an available render driver!" << '\n';
 		return false;
