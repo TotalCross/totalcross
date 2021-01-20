@@ -16,6 +16,8 @@ if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   endif()
 endif()
 
+add_subdirectory(third_party) 
+
 # Find SDL2 and Skia
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
@@ -90,18 +92,6 @@ set(SOURCES
     ${TC_SRCDIR}/minizip/ioapi.c
     ${TC_SRCDIR}/minizip/unzip.c
     ${TC_SRCDIR}/minizip/zip.c
-
-    ${TC_SRCDIR}/zlib/adler32.c
-    ${TC_SRCDIR}/zlib/compress.c
-    ${TC_SRCDIR}/zlib/crc32.c
-    ${TC_SRCDIR}/zlib/deflate.c
-    ${TC_SRCDIR}/zlib/infback.c
-    ${TC_SRCDIR}/zlib/inffast.c
-    ${TC_SRCDIR}/zlib/inflate.c
-    ${TC_SRCDIR}/zlib/inftrees.c
-    ${TC_SRCDIR}/zlib/trees.c
-    ${TC_SRCDIR}/zlib/uncompr.c
-    ${TC_SRCDIR}/zlib/zutil.c
 
     ${TC_SRCDIR}/ras/ras_Utils.c
 
@@ -426,7 +416,6 @@ include_directories(${TC_SRCDIR}/sync)
 include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
-include_directories(${TC_SRCDIR}/zlib)
 
 if(MSVC)
   include_directories(${TC_SRCDIR}/nm/qrcode/win)
@@ -497,6 +486,14 @@ if(TCVM_SHARED)
   add_library(tcvm SHARED ${LIBRARY_ARGS})
 else()
   add_library(tcvm STATIC ${LIBRARY_ARGS})
+endif()
+
+# ZLIB
+target_include_directories(tcvm PRIVATE
+    "${ZLIB_INCLUDE_DIR}"
+    )
+if(ZLIB_SHOULD_LINK)
+  target_link_libraries(tcvm zlibstatic)
 endif()
 
 # Set C/CXX flags
