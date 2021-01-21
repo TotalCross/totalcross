@@ -284,3 +284,9 @@ void TCSDL_Destroy(ScreenSurface screen) {
 void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height) {
 	SDL_GetWindowSize(SCREEN_EX(screen)->window, width, height);
 }
+
+void TCSDL_WindowSizeChanged(ScreenSurface screen, int32 width, int32 height) {
+	SCREEN_EX(screen)->surface = surface = SDL_GetWindowSurface(SCREEN_EX(screen)->window);
+	screen->screenW = width;
+	screen->screenH = height;
+}
