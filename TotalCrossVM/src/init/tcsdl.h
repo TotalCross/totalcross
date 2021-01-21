@@ -23,6 +23,7 @@ extern "C" {
     void TCSDL_Present();
     void TCSDL_Destroy(ScreenSurface screen);
     void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height);
+    void TCSDL_WindowSizeChanged(ScreenSurface screen, int32 width, int32 height);
 
 #ifdef __cplusplus
 }

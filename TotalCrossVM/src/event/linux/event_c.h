@@ -187,10 +187,11 @@ void privatePumpEvent(Context currentContext)
    if(SDL_PollEvent(&event)) {
       if(event.type == SDL_WINDOWEVENT) {
          if(event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            int width, height;
-            TCSDL_GetWindowSize(&screen, &width, &height);
-            // screenChange(mainContext, width, height,0,0,false);
-            printf("Exe log: size changed!\n");
+            int width = event.window.data1;
+            int height = event.window.data2;
+            // SDL_Surface must be refreshed after a SDL_WINDOWEVENT_SIZE_CHANGED event
+            TCSDL_WindowSizeChanged(&screen, width, height);
+            // screenChange(mainContext, width, height, 0, 0, false);
          }
          TCSDL_Present();
       }
