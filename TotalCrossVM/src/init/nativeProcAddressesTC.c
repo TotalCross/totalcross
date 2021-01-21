@@ -450,11 +450,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZS_readBytes_Bii"), &tuzZS_readBytes_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZS_writeBytes_Bii"), &tuzZS_writeBytes_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZS_close"), &tuzZS_close);
-   htPutPtr(&htNativeProcAddresses, hashCode("txXT_resolveCharacterReference_B"), &txXT_resolveCharacterReference_B);
-   htPutPtr(&htNativeProcAddresses, hashCode("txXT_setCdataContents_Bii"), &txXT_setCdataContents_Bii);
-   htPutPtr(&htNativeProcAddresses, hashCode("txXT_tokenizeBytes_B"), &txXT_tokenizeBytes_B);
-   htPutPtr(&htNativeProcAddresses, hashCode("txXT_endTokenize_B"), &txXT_endTokenize_B);
-   htPutPtr(&htNativeProcAddresses, hashCode("txXT_nativeCreate"), &txXT_nativeCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tcpPBKDF2WHSHA1F_generateSecretI"), &tcpPBKDF2WHSHA1F_generateSecretI);
    htPutPtr(&htNativeProcAddresses, hashCode("tcdMD5D_init"), &tcdMD5D_init);
    htPutPtr(&htNativeProcAddresses, hashCode("tcdMD5D_process_B"), &tcdMD5D_process_B);

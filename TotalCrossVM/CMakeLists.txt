@@ -245,8 +245,6 @@ set(SOURCES
     ${TC_SRCDIR}/event/Event.c
     ${TC_SRCDIR}/event/specialkeys.c
 
-    ${TC_SRCDIR}/nm/xml/xml_XmlTokenizer.c
-
     ${TC_SRCDIR}/palmdb/palmdb.c
 
     ${TC_SRCDIR}/sqlite/sqlite3.c
