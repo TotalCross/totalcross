@@ -1,12 +1,12 @@
-package totalcross.util;
+package jdkcompat.util;
 
 import java.util.Comparator;
 import java.util.function.Supplier;
 
 import java.util.Arrays;
 
-public final class Objects {
-	private Objects() {}
+public final class Objects4D {
+	private Objects4D() {}
 
 	public static <T> int compare(T a, T b, Comparator<? super T> c) {
 		return a == b? 0: c.compare(a, b);
