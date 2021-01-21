@@ -804,10 +804,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\nm\xml\xml_XmlTokenizer_test.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\nm\util\zip_ZLib_test.h"
 					>
 				</File>
@@ -1665,14 +1661,6 @@
 						>
 					</File>
 				</Filter>
-			</Filter>
-			<Filter
-				Name="xml"
-				>
-				<File
-					RelativePath="..\..\src\nm\xml\xml_XmlTokenizer.c"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="phone"

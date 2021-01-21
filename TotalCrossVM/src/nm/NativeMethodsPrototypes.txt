@@ -445,11 +445,6 @@ TC_API void tuzZS_closeEntry(NMParams p);
 TC_API void tuzZS_readBytes_Bii(NMParams p);
 TC_API void tuzZS_writeBytes_Bii(NMParams p);
 TC_API void tuzZS_close(NMParams p);
-TC_API void txXT_resolveCharacterReference_B(NMParams p);
-TC_API void txXT_setCdataContents_Bii(NMParams p);
-TC_API void txXT_tokenizeBytes_B(NMParams p);
-TC_API void txXT_endTokenize_B(NMParams p);
-TC_API void txXT_nativeCreate(NMParams p);
 TC_API void tcpPBKDF2WHSHA1F_generateSecretI(NMParams p);
 TC_API void tcdMD5D_init(NMParams p);
 TC_API void tcdMD5D_process_B(NMParams p);
@@ -2334,26 +2329,6 @@ TC_API void tuzZS_writeBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream na
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_close(NMParams p) // totalcross/util/zip/ZipStream native public void close() throws IOException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void txXT_resolveCharacterReference_B(NMParams p) // totalcross/xml/XmlTokenizer native public static char resolveCharacterReference(byte []input, int offset, int count);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void txXT_setCdataContents_Bii(NMParams p) // totalcross/xml/XmlTokenizer native protected void setCdataContents(byte []input, int offset, int count);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void txXT_tokenizeBytes_B(NMParams p) // totalcross/xml/XmlTokenizer native private void tokenizeBytes(byte []input) throws SyntaxException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void txXT_endTokenize_B(NMParams p) // totalcross/xml/XmlTokenizer native private void endTokenize(byte []input) throws SyntaxException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void txXT_nativeCreate(NMParams p) // totalcross/xml/XmlTokenizer native private void nativeCreate();
 {
 }
 //////////////////////////////////////////////////////////////////////////

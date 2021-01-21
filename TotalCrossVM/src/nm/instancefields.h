@@ -321,20 +321,6 @@
 #define Throwable_msg(o)                  getInstanceFieldObject(o, "msg", "java.lang.Throwable") // this may be an object that extends throwable
 #define Throwable_trace(o)                getInstanceFieldObject(o, "trace", "java.lang.Throwable")
 
-// totalcross.xml.XmlTokenizer
-#define XmlTokenizer_endTagToSkipTo(o)    FIELD_OBJ(o, OBJ_CLASS(o), 0)
-#define XmlTokenizer_bag(o)               FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define XmlTokenizer_ofsStart(o)          FIELD_I32(o, 0)
-#define XmlTokenizer_ofsCur(o)            FIELD_I32(o, 1)
-#define XmlTokenizer_ofsEnd(o)            FIELD_I32(o, 2)
-#define XmlTokenizer_readPos(o)           FIELD_I32(o, 3)
-#define XmlTokenizer_state(o)             FIELD_I32(o, 4)
-#define XmlTokenizer_substate(o)          FIELD_I32(o, 5)
-#define XmlTokenizer_ixEndTagToSkipTo(o)  FIELD_I32(o, 6)
-#define XmlTokenizer_quote(o)             FIELD_I32(o, 7)
-#define XmlTokenizer_strictlyXml(o)       FIELD_I32(o, 8)
-#define XmlTokenizer_resolveCharRef(o)    FIELD_I32(o, 9)
-
 // java.lang.Thread
 #define Thread_taskID(o)                  FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Thread_runnable(o)                FIELD_OBJ(o, OBJ_CLASS(o), 1)
