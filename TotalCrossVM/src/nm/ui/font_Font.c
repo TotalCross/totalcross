@@ -7,7 +7,7 @@
 
 #include "tcvm.h"
 #include "PalmFont_c.h"
-#if defined ANDROID || defined darwin || defined HEADLESS
+#if defined SKIA_H && (defined ANDROID || defined darwin || defined HEADLESS)
 #include "android/skia.h"
 #endif
 
@@ -37,6 +37,7 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
    if(!(nameTTF[len-4] == '.' && nameTTF[len-3] == 't' && nameTTF[len-2] == 't' && nameTTF[len-1] == 'f')) {
       xstrcat(nameTTF, ".ttf");
    }
+
    int32 fontIdx = skia_getTypefaceIndex(nameTTF);
    if (fontIdx == -1) {
        if ((file = tczGetFile(nameTTF, false)) != null) {

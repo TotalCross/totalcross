@@ -12,7 +12,9 @@ void privateScreenChange(int32 w, int32 h)
 }
 
 #include "../../init/tcsdl.h"
+#ifdef SKIA_H
 #include "../android/skia.h"
+#endif
 
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
@@ -63,7 +65,8 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 
    screen->screenW = w;
    screen->screenH = h;
-
+#else
+   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
 #endif
    return true;
 }
@@ -87,6 +90,8 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen) // scree
    bounds.x2 = currentContext->dirtyX2;
    bounds.y2 = currentContext->dirtyY2;
    SCREEN_EX(screen)->primary->Flip(SCREEN_EX(screen)->primary, &bounds, DSFLIP_ONSYNC);
+#else
+   TCSDL_UpdateTexture(screen->screenW, screen->screenH, screen->pitch, screen->pixels);
 #endif
 }
 

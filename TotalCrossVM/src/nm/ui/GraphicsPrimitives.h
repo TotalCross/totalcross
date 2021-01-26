@@ -10,7 +10,7 @@
 
 #include "tcclass.h"
 
-#if defined ANDROID || defined darwin || defined HEADLESS
+#if defined SKIA_H && (defined ANDROID || defined darwin || defined HEADLESS)
 #include "android/skia.h"
 #endif
 

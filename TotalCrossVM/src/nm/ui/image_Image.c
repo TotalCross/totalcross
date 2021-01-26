@@ -145,7 +145,7 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
    p->retO = thisObj;
 }
 
-#if defined ANDROID || defined darwin || defined HEADLESS
+#if defined SKIA_H && (defined ANDROID || defined darwin || defined HEADLESS)
 #include "android/skia.h"
 #endif
 //////////////////////////////////////////////////////////////////////////
