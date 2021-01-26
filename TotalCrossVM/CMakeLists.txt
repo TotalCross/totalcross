@@ -16,6 +16,11 @@ if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   endif()
 endif()
 
+# Use skia
+if (NOT DEFINED USE_SKIA)
+  set(USE_SKIA ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
@@ -34,10 +39,11 @@ IF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
 ENDIF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
 
 # Find Skia
-if(NOT MSVC)
+if(NOT MSVC AND USE_SKIA)
   find_package(Skia REQUIRED)
   include_directories(${SKIA_INCLUDE_DIRS})
-endif(NOT MSVC)
+  add_definitions(-DUSE_SKIA)
+endif(NOT MSVC AND USE_SKIA)
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LB_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src/litebase")
