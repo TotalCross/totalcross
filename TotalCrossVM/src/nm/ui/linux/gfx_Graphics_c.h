@@ -12,7 +12,7 @@ void privateScreenChange(int32 w, int32 h)
 }
 
 #include "../../init/tcsdl.h"
-#ifdef SKIA_H
+#ifdef USE_SKIA
 #include "../android/skia.h"
 #endif
 

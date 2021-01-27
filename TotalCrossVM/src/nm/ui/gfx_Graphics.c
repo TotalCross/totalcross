@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
-#if defined SKIA_H && (defined ANDROID || defined darwin || defined HEADLESS)
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
 #define Graphics_forePixel(o) (Graphics_foreColor(o) | 0xFF000000)
 #define Graphics_backPixel(o) (Graphics_backColor(o) | 0xFF000000)
 #else

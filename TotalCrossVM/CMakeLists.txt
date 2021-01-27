@@ -34,6 +34,7 @@ ENDIF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
 if(NOT MSVC AND USE_SKIA)
   find_package(Skia REQUIRED)
   include_directories(${SKIA_INCLUDE_DIRS})
+  add_compile_definitions(USE_SKIA)
 endif(NOT MSVC AND USE_SKIA)
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
