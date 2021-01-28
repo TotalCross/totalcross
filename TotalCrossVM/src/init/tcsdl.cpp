@@ -235,6 +235,8 @@ void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
 	if(usesTexture) {
 		// Update the given texture rectangle with new pixel data.
 		SDL_UpdateTexture(texture, NULL, pixels, pitch);
+	} else {
+		surface = SDL_GetWindowSurface(window);
 	}
 	// Call SDL render present
 	TCSDL_Present();
