@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # set the project name
-project(TCVM VERSION 7.0.1)
+project(TCVM VERSION 7.0.2)
 
 if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   if(CMAKE_GENERATOR STREQUAL Xcode)
