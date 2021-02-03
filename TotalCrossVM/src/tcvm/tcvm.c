@@ -181,6 +181,8 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    int32 hashName,hashParams;
    ThreadHandle thread;
 
+   printf("m: %s, %s\n", method->class_->name, method->name);
+
 #ifdef DIRECT_JUMP // use a direct jump if supported
    uint32 **address;
    uint32 **addrMtdParam;
@@ -502,6 +504,10 @@ mainLoop:
          {
             newMethod = mac->m;
 contCall:
+            if (xstrcmp(newMethod->name, "fibR") == 0) {
+               int a = 0;
+               a++;
+            }
             regI  = context->regI; // same of regI += method->iCount
             regO  = context->regO;
             reg64 = context->reg64;
@@ -586,6 +592,10 @@ cont:
                   if (--nparam == 0) // if no more parameters, continue. putting this here avoids another "if (nparam > 0)" after this block ends.
                      goto noMoreParams;
                }
+            if (xstrcmp(newMethod->name, "fibR") == 0) {
+               int a = 0;
+               a++;
+            }
                // The method's parameters are passed in the registers, in sequence.
                params = (uint8*)(code+1);
                for (; nparam-- > 0; params++, regs++)
@@ -622,6 +632,9 @@ cont:
                }
             }
 noMoreParams:
+
+                  // OPCODE(RETURN_reg64) context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {reg64      [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = reg64[code->reg.reg];      goto resumePreviousMethod;} else {returnedValue.asInt64  = reg64[code->reg.reg];     goto finishMethod;}
+
             if (!newMethod->flags.isNative)
             {
                // replace current variables by the new ones
@@ -748,6 +761,11 @@ notYetLinked:
             hashName = cp->hashNames[code->mtd.sym];
             hashParams = cp->hashParams[code->mtd.sym];
             methodName = cp->mtdfld[sym[1]];
+            printf("m2: %s, %s\n", className, methodName);
+            if (xstrcmp(methodName, "fibR") == 0) {
+               int a = 10;
+               a++;
+            }
             if (code->op.op == CALL_virtual)
             {
                c = OBJ_CLASS(regO[code->mtd.this_]); // search for the method starting on the class pointed by "this"
