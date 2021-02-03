@@ -94,34 +94,39 @@ public final class String4D implements Comparable<String4D>, CharSequence {
     }
   }
 
+  public String4D(byte[] bytes, int offset, int length, Charset charset) {
+    try {
+      AbstractCharacterConverter converter = charset instanceof AbstractCharacterConverter
+          ? ((AbstractCharacterConverter) charset)
+          : Convert.charConverter;
+      chars = converter.bytes2chars(bytes, offset, length);
+    } catch (ArrayIndexOutOfBoundsException aioobe) {
+      throw new IndexOutOfBoundsException(
+          "bytes: " + bytes.length + " bytes length, offset: " + offset + ", length: " + length);
+    }
+  }
+
+  public String4D(byte[] bytes, int offset, int length, String charsetName) throws UnsupportedEncodingException {
+    this(bytes, offset, length, getCharset(charsetName));
+  }
+
+  public String4D(byte[] bytes, Charset charset) {
+    this(bytes, 0, bytes.length, charset);
+  }
+
+  public String4D(byte[] bytes, String charsetName) throws UnsupportedEncodingException {
+    this(bytes, 0, bytes.length, getCharset(charsetName));
+  }
+
   /** Creates a string from the given byte array. The bytes are converted to char using the CharacterConverter 
    * associated in the charConverter member of totalcross.sys.Convert.
    * @see totalcross.sys.Convert#setDefaultConverter(String) 
    * @see totalcross.sys.CharacterConverter
    * @see totalcross.sys.UTF8CharacterConverter 
    */
-  public String4D(byte[] value, int offset, int count) {
-    try {
-      chars = Convert.charConverter.bytes2chars(value, offset, count);
-    } catch (ArrayIndexOutOfBoundsException aioobe) // guich@tc123_33
-    {
-      throw new StringIndexOutOfBoundsException(
-          "value: " + value.length + " bytes length, offset: " + offset + ", count: " + count);
-    }
+  public String4D(byte[] bytes, int offset, int length) {
+    this(bytes, offset, length, (Charset) Convert.charConverter);
   }
-  
-    public String4D(byte[] value, int offset, int count, String encoding) throws UnsupportedEncodingException {
-        try {
-            Charset charset = getCharset(encoding);
-            if (charset instanceof AbstractCharacterConverter) {
-                chars = ((AbstractCharacterConverter) charset).bytes2chars(value, offset, count);
-            }
-            chars = Convert.charConverter.bytes2chars(value, offset, count);
-        } catch (ArrayIndexOutOfBoundsException aioobe) {
-            throw new IndexOutOfBoundsException(
-                    "value: " + value.length + " bytes length, offset: " + offset + ", count: " + count);
-        }
-    }
 
   /** Creates a string from the given byte array. The bytes are converted to char using the CharacterConverter 
    * associated in the charConverter member of totalcross.sys.Convert. 
@@ -129,13 +134,8 @@ public final class String4D implements Comparable<String4D>, CharSequence {
    * @see totalcross.sys.CharacterConverter
    * @see totalcross.sys.UTF8CharacterConverter 
    */
-  public String4D(byte[] value) {
-    try {
-      chars = Convert.charConverter.bytes2chars(value, 0, value.length);
-    } catch (ArrayIndexOutOfBoundsException aioobe) // guich@tc123_33
-    {
-      throw new StringIndexOutOfBoundsException(aioobe.getMessage());
-    }
+  public String4D(byte[] bytes) {
+    this(bytes, 0, bytes.length, (Charset) Convert.charConverter);
   }
 
   /**
@@ -689,7 +689,7 @@ public final class String4D implements Comparable<String4D>, CharSequence {
     return substring(beginIndex, endIndex);
   }
   
-  private Charset getCharset(final String encoding)
+  private static Charset getCharset(final String encoding)
           throws UnsupportedEncodingException {
       Charset charset = lastCharset;
       if (charset == null || !encoding.equalsIgnoreCase(charset.name())) {
