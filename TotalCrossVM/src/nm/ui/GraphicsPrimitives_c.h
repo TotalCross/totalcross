@@ -419,6 +419,9 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
         dstX += Graphics_transX(dstSurf);
         dstY += Graphics_transY(dstSurf);
         skia_setClip(Get_Clip(dstSurf));
+        if (Image_frameCount(srcSurf) > 1) {
+           srcX += Image_currentFrame(srcSurf) * w;
+        }
         skia_drawSurface(0, Image_textureId(srcSurf), srcX, srcY, w, h, w, h, dstX, dstY, Image_alphaMask(srcSurf), doClip);
         skia_restoreClip();
     }
