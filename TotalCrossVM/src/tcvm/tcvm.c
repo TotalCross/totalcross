@@ -642,6 +642,25 @@ noMoreParams:
                cp = class_->cp;
                method = newMethod;
                code = method->code;
+
+               if (xstrcmp(newMethod->name, "fibR") == 0) {
+                  int a = 0;
+                  a++;
+
+                  // if argument in hash, set reg64 & XSELECT
+
+                  switch (reg64[-(int32)method->v64Count]) {
+                     case 0:reg64[code->reg.reg] = 1; XSELECT(address,RETURN_reg64); 
+                     case 1:reg64[code->reg.reg] = 1; XSELECT(address,RETURN_reg64); 
+                     case 2:reg64[code->reg.reg] = 2; XSELECT(address,RETURN_reg64); 
+                     case 3:reg64[code->reg.reg] = 3; XSELECT(address,RETURN_reg64); 
+                     case 4:reg64[code->reg.reg] = 5; XSELECT(address,RETURN_reg64); 
+                     case 5:reg64[code->reg.reg] = 8; XSELECT(address,RETURN_reg64); 
+                     case 6:reg64[code->reg.reg] = 13; XSELECT(address,RETURN_reg64); 
+                     case 7:reg64[code->reg.reg] = 21; XSELECT(address,RETURN_reg64); 
+                     case 8:reg64[code->reg.reg] = 34; XSELECT(address,RETURN_reg64); 
+                  }
+               }
                NEXT_OP0
             }
             // no else here!
@@ -865,6 +884,10 @@ returnVoid:
          if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd)
          {
 resumePreviousMethod:
+            // if (fibR) {
+            //    // save argument -> result in hashmap
+            // }
+
             code = ((Code)context->callStack[-1]) + method->paramSkip; // now that retReg was used, its safe to skip over the parameters
             // pop the current method's stack frame
             context->regI  -= method->iCount;
