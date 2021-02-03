@@ -424,9 +424,9 @@ public class XmlReader extends XmlTokenizer {
     cntHandler.startElement(tagNameHashId, attList);
     attList.clear();
 
-    if (count > 7 && new String(Arrays.copyOfRange(input, offset, 7)).equals("[CDATA[")) {
+    if (count > 7 && new String(Arrays.copyOfRange(input, offset, offset + 7)).equals("[CDATA[")) {
       cntHandler.cdata(tagNameHashId,
-          new String(Arrays.copyOfRange(input, offset + 7, count - 9)));
+          new String(Arrays.copyOfRange(input, offset + 7, offset + count - 9)));
     }
   }
 
@@ -469,7 +469,7 @@ public class XmlReader extends XmlTokenizer {
         }
       }
       if (count > 0) {
-        pcdata.append(Arrays.copyOfRange(input, offset, count)); // kcchan@554_39
+        pcdata.append(Arrays.copyOfRange(input, offset, offset + count)); // kcchan@554_39
       }
     } else {
       int from = offset - 1;
@@ -483,7 +483,7 @@ public class XmlReader extends XmlTokenizer {
           while ((--count > 0) && (input[from] & 0xFF) > ' ') {
             ++from;
           }
-          pcdata.append(Arrays.copyOfRange(input, fromOrig, from - fromOrig)); // kcchan@554_39
+          pcdata.append(Arrays.copyOfRange(input, fromOrig, from)); // kcchan@554_39
           if (count == 0) {
             break;
           } else {
