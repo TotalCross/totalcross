@@ -173,7 +173,7 @@ public class SOAP // guich@570_34
 
     @Override
     public void foundStartTagName(char buffer[], int offset, int count) {
-      String tag = lastTag = new String(Arrays.copyOfRange(buffer, offset, count)); // flsobral@tc100b5_46: all String constructors now use the CharacterConverter.bytes2chars.
+      String tag = lastTag = new String(Arrays.copyOfRange(buffer, offset, offset + count)); // flsobral@tc100b5_46: all String constructors now use the CharacterConverter.bytes2chars.
       if (errorReasonState == 1 && tag.equals("faultstring")) {
         errorReasonState = 2;
       }
@@ -215,7 +215,7 @@ public class SOAP // guich@570_34
     @Override
     public void foundAttributeName(char buffer[], int offset, int count) {
       if (isInReturn) {
-        String tag = new String(Arrays.copyOfRange(buffer, offset, count));
+        String tag = new String(Arrays.copyOfRange(buffer, offset, offset + count));
         if (tag.equals("xsi:type")) {
           isInType = true;
         }
@@ -225,7 +225,7 @@ public class SOAP // guich@570_34
     @Override
     public void foundAttributeValue(char buffer[], int offset, int count, char dlm) {
       if (isInReturn && isInType) {
-        String tag = new String(Arrays.copyOfRange(buffer, offset, count));
+        String tag = new String(Arrays.copyOfRange(buffer, offset, offset + count));
         try {
           type = htTypes.get(tag.hashCode());
         } catch (ElementNotFoundException e) {
@@ -268,10 +268,10 @@ public class SOAP // guich@570_34
           // ok, here we'll trick the parser: find where the message ends. this avoid problems when the message has strange chars on it. it is safe, since the message is below 1k, the size of the buffer
           i++;
         }
-        errorReason = new String(Arrays.copyOfRange(buffer, offset, i - offset));
+        errorReason = new String(Arrays.copyOfRange(buffer, offset, i));
       }
       if (isInReturn) {
-        sb.append(new String(Arrays.copyOfRange(buffer, offset, count)));
+        sb.append(new String(Arrays.copyOfRange(buffer, offset, offset + count)));
       }
     }
   }
