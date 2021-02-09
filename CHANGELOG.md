@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.2] - 2021-02-09
+
+### Added
+- String: added missing constructors that handle charset encoding.
+
+### Fixed
+- XmlReader and SOAP: Fixed bugs introduced on version 7.0.0.
+- Image: Fixed bug introduced on version 7.0.0 that caused animated images to draw only its first frame - #296 
+
 ## [7.0.1] - 2021-01-28
 
 ### Added
@@ -1117,3 +1126,4 @@ the ScrollContainer reseta it to true
 
 [7.0.0]: https://github.com/totalcross/TotalCross/compare/v6.1.1...v7.0.0
 [7.0.1]: https://github.com/totalcross/TotalCross/compare/v7.0.0...v7.0.1
+[7.0.2]: https://github.com/totalcross/TotalCross/compare/v7.0.1...v7.0.2
