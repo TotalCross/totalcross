@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.1] - 2021-01-28
+
+### Added
+- Added a few tweaks to improve drawing performance:
+  - Improved color type conversion performance by using compiler specific byte swap functions.
+  - :rocket: **Greatly** improved image drawing performance by performing color type conversion only once, instead of letting Skia handle it automatically on every draw operation.
+  - :rocket: **Greatly** improved drawing performance for fully opaque images, by skipping alpha channel conversion on draw. Drawing JPEGs and opaque PNGs got over 10 times faster on some tested devices.
+  - Improved text drawing performance by caching font objects and avoiding unnecessary font loading.
+  
+### Changed
+- Force usage of software graphics on Linux/ARM systems until we find a proper way to detect support for hardware accelerated graphics - #259
+
+### Fixed
+- Class java.util.Objects would sometimes be not available on the device.
+- Segfault during SDL initialization reported in some systems - #263, #265
+- Fixed screen not updating on some devices, by refreshing the SDL_Surface on repaint.
+- XmlTokenizer was still trying to use the old byte implementation when running on device.
+
 ## [7.0.0] - 2021-01-18
 
 Welcome to 2021, and our first **stable release**! Let's get straight to the objectives:
@@ -1098,3 +1116,4 @@ the ScrollContainer reseta it to true
 - `Class.getCanonicalName()` doesn't return the canonical name, but defaults to `Class.getName()`
 
 [7.0.0]: https://github.com/totalcross/TotalCross/compare/v6.1.1...v7.0.0
+[7.0.1]: https://github.com/totalcross/TotalCross/compare/v7.0.0...v7.0.1
