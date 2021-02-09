@@ -1124,6 +1124,7 @@ the ScrollContainer reseta it to true
 ### Known issues
 - `Class.getCanonicalName()` doesn't return the canonical name, but defaults to `Class.getName()`
 
+[Unreleased]: https://github.com/totalcross/TotalCross/compare/v7.0.2...master
 [7.0.0]: https://github.com/totalcross/TotalCross/compare/v6.1.1...v7.0.0
 [7.0.1]: https://github.com/totalcross/TotalCross/compare/v7.0.0...v7.0.1
 [7.0.2]: https://github.com/totalcross/TotalCross/compare/v7.0.1...v7.0.2
