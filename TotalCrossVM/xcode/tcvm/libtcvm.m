@@ -8,7 +8,7 @@
 #import "tcvm.h"
 #import "startup.h"
 #import "libtcvm.h"
-#import "firebase.h"
+#import "nm/firebase/firebase.h"
 @implementation tcvm
 
 + (NSInteger) startVM:(Context*)context appName:(char *)appName
