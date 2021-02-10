@@ -73,7 +73,7 @@
 
 
 extern "C" {
-#if !defined APPLE && !defined ANDROID && defined linux && defined __arm__ && !defined __aarch64__
+#if !defined APPLE && !defined ANDROID && !defined darwin && defined linux && defined __arm__ && !defined __aarch64__
 // Avoid dependency on glibc 2.27
 // These functions are used by Skia .a file, so we have to define a wrapper.
 // https://stackoverflow.com/questions/8823267/linking-against-older-symbol-version-in-a-so-file
