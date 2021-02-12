@@ -1,0 +1,23 @@
+# Copyright (C) 2021 TotalCross Global Mobile Platform Ltda.
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+cmake_minimum_required(VERSION 2.8.2)
+
+include(ExternalProject)
+
+project(SQLite3)
+
+ExternalProject_Add(SQLite3
+    GIT_REPOSITORY https://github.com/sqlite/sqlite.git
+    GIT_TAG version-3.13.0
+    GIT_SHALLOW true
+    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/sqlite3/src"
+    BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/sqlite3/build"
+    UPDATE_COMMAND ""
+    PATCH_COMMAND patch -p1 <  ${CMAKE_CURRENT_LIST_DIR}/sqlite3/patch.diff
+    CONFIGURE_COMMAND export CC=gcc && sh ${CMAKE_CURRENT_BINARY_DIR}/sqlite3/src/configure && make sqlite3.c
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    TEST_COMMAND ""
+)

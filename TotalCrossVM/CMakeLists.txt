@@ -22,6 +22,8 @@ else()
   add_library(tcvm STATIC)
 endif()
 
+add_subdirectory(third_party) 
+
 # Find SDL2 and Skia
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
@@ -253,7 +255,6 @@ set(SOURCES
 
     ${TC_SRCDIR}/palmdb/palmdb.c
 
-    ${TC_SRCDIR}/sqlite/sqlite3.c
     ${TC_SRCDIR}/nm/db/NativeDB.c
 
     ${TC_SRCDIR}/scanner/ios/ios_barcode.c
@@ -427,12 +428,12 @@ include_directories(${TC_SRCDIR}/png)
 include_directories(${TC_SRCDIR}/ras)
 include_directories(${TC_SRCDIR}/scanner)
 include_directories(${TC_SRCDIR}/scanner/android)
-include_directories(${TC_SRCDIR}/sqlite)
 include_directories(${TC_SRCDIR}/sync)
 include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
 include_directories(${TC_SRCDIR}/zlib)
+include_directories(${SQLITE3_INCLUDE_DIR})
 
 if(MSVC)
   include_directories(${TC_SRCDIR}/nm/qrcode/win)
@@ -497,7 +498,7 @@ endif(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
 link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
-set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
+set(LIBRARY_ARGS ${SOURCES} ${SQLITE3_SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 # Set C/CXX flags

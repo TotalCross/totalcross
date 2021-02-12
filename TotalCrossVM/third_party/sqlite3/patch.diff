@@ -1,0 +1,81 @@
+diff --git a/src/os_unix.c b/src/os_unix.c
+index f5b01e99..7d2b6ef6 100644
+--- a/src/os_unix.c
++++ b/src/os_unix.c
+@@ -5404,6 +5404,9 @@ static int fillInUnixFile(
+ ** If no suitable temporary file directory can be found, return NULL.
+ */
+ static const char *unixTempFileDir(void){
++#if defined(ANDROID) || defined(darwin) || defined(POSIX) // guich: use the app path
++   return appPath;
++#else
+   static const char *azDirs[] = {
+      0,
+      0,
+@@ -5430,6 +5433,7 @@ static const char *unixTempFileDir(void){
+     zDir = azDirs[i++];
+   }
+   return 0;
++#endif 
+ }
+ 
+ /*
+diff --git a/src/sqliteInt.h b/src/sqliteInt.h
+index c90d4dc9..90a502a1 100644
+--- a/src/sqliteInt.h
++++ b/src/sqliteInt.h
+@@ -12,6 +12,7 @@
+ ** Internal interface definitions for SQLite.
+ **
+ */
++#include "sqlite3_tc.h"
+ #ifndef _SQLITEINT_H_
+ #define _SQLITEINT_H_
+ 
+@@ -1367,8 +1368,46 @@ struct sqlite3 {
+ #ifdef SQLITE_USER_AUTHENTICATION
+   sqlite3_userauth auth;        /* User authentication information */
+ #endif
++ MUTEX_TYPE tcmutex;
++ bool validMutex;
+ };
+ 
++int32 lockSqlite3(void* handle)
++{
++   if (handle)
++   {
++      sqlite3* db = (sqlite3*)handle;
++      if (db->validMutex)
++      {RESERVE_MUTEX_VAR(db->tcmutex);}
++   }
++   return 0;
++}
++
++void unlockSqlite3(void* handle)
++{
++   if (handle)
++   {
++      sqlite3* db = (sqlite3*)handle;
++      if (db->validMutex)
++      {RELEASE_MUTEX_VAR(db->tcmutex);}
++   }
++}
++
++void initSqlite3Mutex(void* db_)
++{
++   sqlite3* db = (sqlite3*)db_;
++   SETUP_MUTEX;
++   INIT_MUTEX_VAR(db->tcmutex);
++   db->validMutex = true;
++}
++
++void destroySqlite3Mutex(void* db_)
++{
++   sqlite3* db = (sqlite3*)db_;
++   DESTROY_MUTEX_VAR(db->tcmutex);
++   db->validMutex = false;
++}
++
+ /*
+ ** A macro to discover the encoding of a database.
+ */
