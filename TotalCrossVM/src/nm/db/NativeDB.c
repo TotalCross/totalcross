@@ -15,7 +15,7 @@
  */
 
 #include "tcvm.h"
-#include "../../sqlite/sqlite3.h"
+#include "sqlite3.h"
 
 //TC_API void tdsNDB_exec_s(NMParams p) // totalcross/db/sqlite/NativeDB native void exec(String sql) throws SQLException;
 //TC_API void tdsNDB_result_error_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_error(long context, String err);
