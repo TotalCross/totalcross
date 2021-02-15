@@ -1,0 +1,80 @@
+--- sqlite3.c	2016-05-18 08:07:03.000000000 -0300
++++ sqlite3tc.c	2021-02-15 15:49:31.000000000 -0300
+@@ -1,3 +1,4 @@
++#include "sqlite3_tc.h"
+ /******************************************************************************
+ ** This file is an amalgamation of many separate C source files from SQLite
+ ** version 3.13.0.  By combining all the individual C code files into this 
+@@ -13784,8 +13785,46 @@
+ #ifdef SQLITE_USER_AUTHENTICATION
+   sqlite3_userauth auth;        /* User authentication information */
+ #endif
++ MUTEX_TYPE tcmutex;
++ bool validMutex;
+ };
+ 
++int32 lockSqlite3(void* handle)
++{
++   if (handle)
++   {
++      sqlite3* db = (sqlite3*)handle;
++      if (db->validMutex)
++      {RESERVE_MUTEX_VAR(db->tcmutex);}
++   }
++   return 0;
++}
++
++void unlockSqlite3(void* handle)
++{
++   if (handle)
++   {
++      sqlite3* db = (sqlite3*)handle;
++      if (db->validMutex)
++      {RELEASE_MUTEX_VAR(db->tcmutex);}
++   }
++}
++
++void initSqlite3Mutex(void* db_)
++{
++   sqlite3* db = (sqlite3*)db_;
++   SETUP_MUTEX;
++   INIT_MUTEX_VAR(db->tcmutex);
++   db->validMutex = true;
++}
++
++void destroySqlite3Mutex(void* db_)
++{
++   sqlite3* db = (sqlite3*)db_;
++   DESTROY_MUTEX_VAR(db->tcmutex);
++   db->validMutex = false;
++}
++
+ /*
+ ** A macro to discover the encoding of a database.
+ */
+@@ -34501,6 +34540,9 @@
+ ** If no suitable temporary file directory can be found, return NULL.
+ */
+ static const char *unixTempFileDir(void){
++#if defined(ANDROID) || defined(darwin) || defined(POSIX) // guich: use the app path
++   return appPath;
++#else
+   static const char *azDirs[] = {
+      0,
+      0,
+@@ -34527,6 +34569,7 @@
+     zDir = azDirs[i++];
+   }
+   return 0;
++#endif  
+ }
+ 
+ /*
+@@ -181934,6 +181977,7 @@
+   return rc;
+ }
+ 
++
+ /*
+ ** If pNode currently points to a match, this function returns SQLITE_OK
+ ** without modifying it. Otherwise, pNode is advanced until it does point
