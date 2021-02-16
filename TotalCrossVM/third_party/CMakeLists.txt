@@ -2,16 +2,10 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
-# Download and unpack at configure time
-configure_file(sqlite3/CMakeLists.txt.in sqlite3/CMakeLists.txt)
+add_subdirectory(sqlite3) 
+add_dependencies(tcvm SQLite3)
 
-execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sqlite3"
-)
-execute_process(COMMAND "${CMAKE_COMMAND}" --build .
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sqlite3"
-)
-configure_file(sqlite3/sqlite3_tc.h sqlite3/src/sqlite3_tc.h)
-
-SET(SQLITE3_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/sqlite3/src" PARENT_SCOPE)
-SET(SQLITE3_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/sqlite3/src/sqlite3.c" PARENT_SCOPE)
+if(CMAKE_GENERATOR STREQUAL Xcode)
+   get_target_property(SQLITE3_INCLUDES SQLite3 INTERFACE_INCLUDE_DIRECTORIES)
+   target_include_directories(tcvm PRIVATE "${SQLITE3_INCLUDES}")
+endif(CMAKE_GENERATOR STREQUAL Xcode)

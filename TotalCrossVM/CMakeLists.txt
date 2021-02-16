@@ -433,7 +433,6 @@ include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
 include_directories(${TC_SRCDIR}/zlib)
-include_directories(${SQLITE3_INCLUDE_DIR})
 
 if(MSVC)
   include_directories(${TC_SRCDIR}/nm/qrcode/win)
@@ -498,7 +497,7 @@ endif(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
 link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
-set(LIBRARY_ARGS ${SOURCES} ${SQLITE3_SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
+set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 # Set C/CXX flags
@@ -556,6 +555,8 @@ endif()
 if(DEFINED SDL2_LIBRARY)
   target_link_libraries(tcvm ${SDL2_LIBRARY})
 endif(DEFINED SDL2_LIBRARY)
+
+target_link_libraries(tcvm SQLite3)
 
 if(DEFINED ANDROID_ABI)
   add_library(libskia SHARED IMPORTED)
