@@ -16,6 +16,12 @@ if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   endif()
 endif()
 
+if(TCVM_SHARED)
+  add_library(tcvm SHARED)
+else()
+  add_library(tcvm STATIC)
+endif()
+
 # Find SDL2 and Skia
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
@@ -492,12 +498,7 @@ link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
 set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
-
-if(TCVM_SHARED)
-  add_library(tcvm SHARED ${LIBRARY_ARGS})
-else()
-  add_library(tcvm STATIC ${LIBRARY_ARGS})
-endif()
+target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 # Set C/CXX flags
 target_compile_options(tcvm
