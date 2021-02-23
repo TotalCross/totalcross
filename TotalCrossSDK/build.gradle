@@ -260,9 +260,7 @@ task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar
     injars 'build/libs/totalcross-sdk-' + project.version + '-intermediate.jar'
     outjars 'build/libs/totalcross-sdk-' + project.version + '.jar'
 
-    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-    libraryjars "${System.getProperty('java.home')}/lib/jce.jar"
-    libraryjars "${System.getProperty('java.home')}/lib/jsse.jar"
+    libraryjars "${System.getProperty('java.home')}/jmods"
     libraryjars files(configurations.compile.collect())
     
     keepattributes 'SourceFile,LineNumberTable'
