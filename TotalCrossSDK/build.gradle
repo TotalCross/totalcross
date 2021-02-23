@@ -146,7 +146,6 @@ jar {
     from(sourceSets.desktop.output) {
         exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
     }
-    from(sourceSets.litebase.output)
     from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
     from new File(project.rootDir, 'etc/fonts/Material Icons.tcz')
     into("META-INF/maven/$project.group/$baseName") {
