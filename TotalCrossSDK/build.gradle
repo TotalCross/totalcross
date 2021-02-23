@@ -91,7 +91,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'net.sf.proguard:proguard-gradle:5.3.3'
+        classpath 'net.sf.proguard:proguard-gradle:6.2.2'
     }
 }
 
