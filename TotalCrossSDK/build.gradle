@@ -257,20 +257,20 @@ task tcuiJar(type: Jar) {
 task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar) {
     configuration 'proguard.txt'
 
-    injars 'build/libs/totalcross-sdk-' + project.version + '-intermediate.jar'
-    outjars 'build/libs/totalcross-sdk-' + project.version + '.jar'
+    injars totalcrossJar.archivePath
+    outjars "${libsDir}/" + archivesBaseName + '-' + project.version + '-proguard.jar'
 
     libraryjars "${System.getProperty('java.home')}/jmods"
     libraryjars files(configurations.compile.collect())
     
     keepattributes 'SourceFile,LineNumberTable'
-    renamesourcefileattribute 'totalcross-sdk-' + project.version
-    printmapping 'build/libs/totalcross-sdk-' + project.version + '.map'
+    renamesourcefileattribute archivesBaseName + '-' + project.version
+    printmapping "${libsDir}/" + archivesBaseName + '-' + project.version + '.map'
     
 	doLast{
       ant.signjar(
                   jar: myProguardTask.outputs.files.singleFile,
-                  signedJar: myProguardTask.outputs.files.singleFile,
+                  signedJar: jar.archivePath,
                   alias:'tcandroidkey',
                   storetype:"jks",
                   keystore: new File(projectDir, "etc/security/tcandroidkey.keystore").getAbsolutePath(),
