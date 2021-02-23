@@ -26,6 +26,7 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Panel;
 import java.awt.Point;
@@ -54,7 +55,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
 
-import net.coobird.thumbnailator.Thumbnails;
 import tc.tools.JarClassPathLoader;
 import tc.tools.RegisterSDK;
 import tc.tools.deployer.DeploySettings;
@@ -1198,7 +1198,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     int w = totalcross.sys.Settings.screenWidth;
     int h = totalcross.sys.Settings.screenHeight;
     if (screenMis == null) {
-      screenMis = new MemoryImageSource(w, h, new DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0),
+      screenMis = new MemoryImageSource(w, h, 
+              GraphicsEnvironment.
+              getLocalGraphicsEnvironment().getDefaultScreenDevice().
+              getDefaultConfiguration().getColorModel(),
           screenPixels, 0, w);
       screenMis.setAnimated(true);
       screenMis.setFullBufferUpdates(true);
@@ -1222,15 +1225,14 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
     if (toScale != 1) // guich@tc126_74 - guich@tc130 
     {
-        if (fastScale) {
-            g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this);
-        } else {
-            try {
-                g.drawImage(Thumbnails.of(toBufferedImage(screenImg)).size(ww, hh).asBufferedImage(), 0, 0, this);
-            } catch (java.io.IOException e) {
-                e.printStackTrace();
-            }
-        }
+      if (!MainWindow.isMainThread()) {
+        g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this); // this is faster than use img.getScaledInstance
+      } else {
+        Image img = screenImg.getScaledInstance(ww, hh,
+            toScale != (int) toScale && !fastScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
+        g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
+        img.flush();
+      }
     } else if (g != null) {
       g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this); // this is faster than use img.getScaledInstance
     }
