@@ -140,7 +140,8 @@ dependencies {
     compile(group: 'com.totalcross.annotations', name: 'totalcross-annotations', version: '1.0.0')
 }
 
-jar {
+// totalcross.jar
+task totalcrossJar(type: Jar) {
     classifier = 'intermediate'
 
     from(sourceSets.desktop.output) {
@@ -166,6 +167,7 @@ jar {
         }
     }
 }
+
 publishing {
     publications {
         mavenCustom(MavenPublication) {
@@ -286,7 +288,7 @@ tasks.withType(Jar) {
     includeEmptyDirs = false
 }
 
-task deployTcbase(type:JavaExec, dependsOn: [jar, myProguardTask, tcbaseJar]) {
+task deployTcbase(type:JavaExec, dependsOn: [totalcrossJar, myProguardTask, tcbaseJar]) {
 	main = 'tc.Deploy'
 	args = [
 		tcbaseJar.archivePath, 
@@ -295,11 +297,11 @@ task deployTcbase(type:JavaExec, dependsOn: [jar, myProguardTask, tcbaseJar]) {
 		'/r', '5443444B3018A93884C5D622'
 		]
 	classpath = files(
-        jar.archivePath, 
+        totalcrossJar.archivePath, 
         configurations.runtime.collect())
 }
 
-task deployTcui(type:JavaExec, dependsOn: [jar, myProguardTask, tcuiJar]) {
+task deployTcui(type:JavaExec, dependsOn: [totalcrossJar, myProguardTask, tcuiJar]) {
 	main = 'tc.Deploy'
 	args = [
 		tcuiJar.archivePath, 
@@ -308,7 +310,7 @@ task deployTcui(type:JavaExec, dependsOn: [jar, myProguardTask, tcuiJar]) {
 		'/r', '5443444B3018A93884C5D622'
 		]
 	classpath = files(
-        jar.archivePath, 
+        totalcrossJar.archivePath, 
         configurations.runtime.collect())
 }
 
