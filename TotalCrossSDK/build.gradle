@@ -313,7 +313,17 @@ task deployTcui(type:JavaExec, dependsOn: [jar, myProguardTask, tcuiJar]) {
         configurations.runtime.collect())
 }
 
-task dist(dependsOn: [build, javadoc]) {
+/**
+    Sources
+*/
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from (sourceSets.desktop.allSource) { 
+    	exclude 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    }
+}
+
+task dist(dependsOn: [build, javadoc, sourcesJar]) {
 
 	doLast{
 		copy { 
@@ -334,18 +344,6 @@ task dist(dependsOn: [build, javadoc]) {
 }
 
 build.finalizedBy(myProguardTask, deployTcbase, deployTcui)
-
-/**
-    Sources
-*/
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from (sourceSets.desktop.allSource) { 
-    	exclude 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
-    }
-}
-javadoc.finalizedBy(sourcesJar)
-
 
 artifacts {
     obfuscatedArchive( myProguardTask.outputs.files.singleFile ) {
