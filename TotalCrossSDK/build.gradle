@@ -273,7 +273,7 @@ task myProguardTask(type: proguard.gradle.ProGuardTask, dependsOn: totalcrossJar
                   signedJar: myProguardTask.outputs.files.singleFile,
                   alias:'tcandroidkey',
                   storetype:"jks",
-                  keystore: new File("etc/security/tcandroidkey.keystore").getAbsolutePath(),
+                  keystore: new File(projectDir, "etc/security/tcandroidkey.keystore").getAbsolutePath(),
                   storepass:"@ndroid\$w",
                   keypass:"@ndroidsw",
                   verbose:true,
