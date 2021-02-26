@@ -228,8 +228,8 @@ static int checkActivation(Context currentContext)
    retb = (uint8*)ARRAYOBJ_START(ret);
 
    // check if free sdk
-   if (strEqn(retb, "TCST",4))
-	  return ISFREE;              
+   // if (strEqn(retb, "TCST",4))
+	//   return ISFREE;
 	if (strEqn(retb, "TCDK",4))
 	  return ISNORAS;
 
