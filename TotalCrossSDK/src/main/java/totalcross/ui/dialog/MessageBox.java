@@ -629,14 +629,16 @@ public class MessageBox extends Window {
       break;
     case ControlEvent.PRESSED:
       selected = -1;
-      for (int i = 0; i < btns.length; i++) {
-		Button button = btns[i];
-		if (e.target == button) {
-            selected = i;
-            unpop();
-            break;
+        if(btns != null) {
+            for (int i = 0; i < btns.length; i++) {
+                Button button = btns[i];
+                if (e.target == button) {
+                    selected = i;
+                    unpop();
+                    break;
+                }
+            }
         }
-	  }
       break;
     }
   }
