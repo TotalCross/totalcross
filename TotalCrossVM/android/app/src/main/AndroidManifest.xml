@@ -15,6 +15,7 @@
          android:resizeableActivity="true"
          android:allowBackup="true"
          android:backupInForeground="false"
+         android:requestLegacyExternalStorage="true"
          tools:replace="android:label, android:icon, android:theme"
          >
         <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
