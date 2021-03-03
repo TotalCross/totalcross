@@ -983,18 +983,25 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
            final String intentPackage = j.optString("package");
            final String intentData = j.optString("data");
            final String intentType = j.optString("type");
-           
-           Intent i = new Intent(Intent.ACTION_VIEW);
+           Intent i = null;
            if (intentPackage != null) {
-             i.setPackage(intentPackage);
+             i = getPackageManager().getLaunchIntentForPackage(intentPackage);
            }
-           if (intentData != null && intentType != null) {
-             i.setDataAndType(Uri.parse(intentData), intentType);
-           } else if (intentData != null) {
-             i.setData(Uri.parse(intentData));
+           if (i == null) {
+             i = new Intent(Intent.ACTION_VIEW);
+             if (intentPackage != null) {
+               i.setPackage(intentPackage);
+             }
            }
-           startActivity(i);
-         }
+           if (i != null) {
+             if (intentData != null && intentType != null) {
+               i.setDataAndType(Uri.parse(intentData), intentType);
+             } else if (intentData != null) {
+               i.setData(Uri.parse(intentData));
+             }
+             startActivity(i);
+           }
+          }
          else
          if (command.toLowerCase().endsWith(".apk"))
          {
