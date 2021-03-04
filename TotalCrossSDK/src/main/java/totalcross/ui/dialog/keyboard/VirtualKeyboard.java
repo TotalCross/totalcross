@@ -294,7 +294,6 @@ public class VirtualKeyboard extends Window {
   
   @Override
   public void popup() {
-    setRect(false);
     super.popup();
   }
 
@@ -305,7 +304,6 @@ public class VirtualKeyboard extends Window {
 
   @Override
   public void postUnpop() {
-    Window.getTopMost().repaintNow();
     isOpen = false;
   }
 
