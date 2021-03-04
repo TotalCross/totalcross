@@ -101,7 +101,7 @@ public class Edit extends Control implements TextControl, HasValue<String> {
 				if (!isTopMost()) {
 			          focusOut();
 			        } else if (parent != null) {
-			          Window.needsPaint = true;
+			          Edit.this.repaintNow();
 			          // guich@tc130: show the copy/paste menu
 			          /*                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
 			                   if (showClipboardMenu())
