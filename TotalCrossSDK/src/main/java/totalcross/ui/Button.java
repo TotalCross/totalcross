@@ -172,7 +172,7 @@ public class Button extends Control implements TextControl {
 	protected int tx0, ty0, ix0, iy0;
 	protected int fColor, pressColor = -1;
 	protected int fourColors[] = new int[4];
-	private int txtPos, tiGap, maxTW;
+	protected int txtPos, tiGap, maxTW;
 	private boolean fixPressColor;
 	/**The border color.*/
 	public int borderColor;
@@ -193,8 +193,8 @@ public class Button extends Control implements TextControl {
 	public int paddingBottom;
 	private boolean iconOnHorizontal;
 
-	private String[] lines;
-	private int[] linesW;
+	protected String[] lines;
+	protected int[] linesW;
 
 	/**
 	 * Sets the image that will be displayed when the user press this button. Only

@@ -9,40 +9,42 @@ import totalcross.ui.Container;
 import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.image.Image;
+import totalcross.ui.gfx.Graphics;
+import totalcross.sys.Convert;
 
 public class AlphabetKeyboard extends Container {
 
   // First line
-  public Button btQ;
-  public Button btW;
-  public Button btE;
-  public Button btR;
-  public Button btT;
-  public Button btY;
-  public Button btU;
-  public Button btI;
-  public Button btO;
-  public Button btP;
+  public CaseSensitiveButton btQ;
+  public CaseSensitiveButton btW;
+  public CaseSensitiveButton btE;
+  public CaseSensitiveButton btR;
+  public CaseSensitiveButton btT;
+  public CaseSensitiveButton btY;
+  public CaseSensitiveButton btU;
+  public CaseSensitiveButton btI;
+  public CaseSensitiveButton btO;
+  public CaseSensitiveButton btP;
 
   // Second line
-  public Button btA;
-  public Button btS;
-  public Button btD;
-  public Button btF;
-  public Button btG;
-  public Button btH;
-  public Button btJ;
-  public Button btK;
-  public Button btL;
+  public CaseSensitiveButton btA;
+  public CaseSensitiveButton btS;
+  public CaseSensitiveButton btD;
+  public CaseSensitiveButton btF;
+  public CaseSensitiveButton btG;
+  public CaseSensitiveButton btH;
+  public CaseSensitiveButton btJ;
+  public CaseSensitiveButton btK;
+  public CaseSensitiveButton btL;
 
   // Third line
-  public Button btZ;
-  public Button btX;
-  public Button btC;
-  public Button btV;
-  public Button btB;
-  public Button btN;
-  public Button btM;
+  public CaseSensitiveButton btZ;
+  public CaseSensitiveButton btX;
+  public CaseSensitiveButton btC;
+  public CaseSensitiveButton btV;
+  public CaseSensitiveButton btB;
+  public CaseSensitiveButton btN;
+  public CaseSensitiveButton btM;
 
   public Button btComma;
   public Button btPeriod;
@@ -57,34 +59,34 @@ public class AlphabetKeyboard extends Container {
 
   public AlphabetKeyboard() {
     // First line
-    btQ = new Button("Q");
-    btW = new Button("W");
-    btE = new Button("E");
-    btR = new Button("R");
-    btT = new Button("T");
-    btY = new Button("Y");
-    btU = new Button("U");
-    btI = new Button("I");
-    btO = new Button("O");
-    btP = new Button("P");
+    btQ = new CaseSensitiveButton("Q");
+    btW = new CaseSensitiveButton("W");
+    btE = new CaseSensitiveButton("E");
+    btR = new CaseSensitiveButton("R");
+    btT = new CaseSensitiveButton("T");
+    btY = new CaseSensitiveButton("Y");
+    btU = new CaseSensitiveButton("U");
+    btI = new CaseSensitiveButton("I");
+    btO = new CaseSensitiveButton("O");
+    btP = new CaseSensitiveButton("P");
     // Second line
-    btA = new Button("A");
-    btS = new Button("S");
-    btD = new Button("D");
-    btF = new Button("F");
-    btG = new Button("G");
-    btH = new Button("H");
-    btJ = new Button("J");
-    btK = new Button("K");
-    btL = new Button("L");
+    btA = new CaseSensitiveButton("A");
+    btS = new CaseSensitiveButton("S");
+    btD = new CaseSensitiveButton("D");
+    btF = new CaseSensitiveButton("F");
+    btG = new CaseSensitiveButton("G");
+    btH = new CaseSensitiveButton("H");
+    btJ = new CaseSensitiveButton("J");
+    btK = new CaseSensitiveButton("K");
+    btL = new CaseSensitiveButton("L");
     // Third line
-    btZ = new Button("Z");
-    btX = new Button("X");
-    btC = new Button("C");
-    btV = new Button("V");
-    btB = new Button("B");
-    btN = new Button("N");
-    btM = new Button("M");
+    btZ = new CaseSensitiveButton("Z");
+    btX = new CaseSensitiveButton("X");
+    btC = new CaseSensitiveButton("C");
+    btV = new CaseSensitiveButton("V");
+    btB = new CaseSensitiveButton("B");
+    btN = new CaseSensitiveButton("N");
+    btM = new CaseSensitiveButton("M");
     btComma = new Button(",");
     btPeriod = new Button(".");
     // Last line
@@ -193,66 +195,99 @@ public class AlphabetKeyboard extends Container {
   }
 
   public void changeCase(boolean toUpperCase) {
+    isUpperCase = toUpperCase;
     if (toUpperCase) {
       btCase.setText("[a]");
-      btQ.setText(btQ.getText().toUpperCase());
-      btW.setText(btW.getText().toUpperCase());
-      btE.setText(btE.getText().toUpperCase());
-      btR.setText(btR.getText().toUpperCase());
-      btT.setText(btT.getText().toUpperCase());
-      btY.setText(btY.getText().toUpperCase());
-      btU.setText(btU.getText().toUpperCase());
-      btI.setText(btI.getText().toUpperCase());
-      btO.setText(btO.getText().toUpperCase());
-      btP.setText(btP.getText().toUpperCase());
-      // Second line
-      btA.setText(btA.getText().toUpperCase());
-      btS.setText(btS.getText().toUpperCase());
-      btD.setText(btD.getText().toUpperCase());
-      btF.setText(btF.getText().toUpperCase());
-      btG.setText(btG.getText().toUpperCase());
-      btH.setText(btH.getText().toUpperCase());
-      btJ.setText(btJ.getText().toUpperCase());
-      btK.setText(btK.getText().toUpperCase());
-      btL.setText(btL.getText().toUpperCase());
-      // Third line
-      btZ.setText(btZ.getText().toUpperCase());
-      btX.setText(btX.getText().toUpperCase());
-      btC.setText(btC.getText().toUpperCase());
-      btV.setText(btV.getText().toUpperCase());
-      btB.setText(btB.getText().toUpperCase());
-      btN.setText(btN.getText().toUpperCase());
-      btM.setText(btM.getText().toUpperCase());
     } else {
       btCase.setText("[A]");
-      btQ.setText(btQ.getText().toLowerCase());
-      btW.setText(btW.getText().toLowerCase());
-      btE.setText(btE.getText().toLowerCase());
-      btR.setText(btR.getText().toLowerCase());
-      btT.setText(btT.getText().toLowerCase());
-      btY.setText(btY.getText().toLowerCase());
-      btU.setText(btU.getText().toLowerCase());
-      btI.setText(btI.getText().toLowerCase());
-      btO.setText(btO.getText().toLowerCase());
-      btP.setText(btP.getText().toLowerCase());
-      // Second line
-      btA.setText(btA.getText().toLowerCase());
-      btS.setText(btS.getText().toLowerCase());
-      btD.setText(btD.getText().toLowerCase());
-      btF.setText(btF.getText().toLowerCase());
-      btG.setText(btG.getText().toLowerCase());
-      btH.setText(btH.getText().toLowerCase());
-      btJ.setText(btJ.getText().toLowerCase());
-      btK.setText(btK.getText().toLowerCase());
-      btL.setText(btL.getText().toLowerCase());
-      // Third line
-      btZ.setText(btZ.getText().toLowerCase());
-      btX.setText(btX.getText().toLowerCase());
-      btC.setText(btC.getText().toLowerCase());
-      btV.setText(btV.getText().toLowerCase());
-      btB.setText(btB.getText().toLowerCase());
-      btN.setText(btN.getText().toLowerCase());
-      btM.setText(btM.getText().toLowerCase());
+    }
+  }
+
+  class TextBlob {
+    String text;
+    Font font;
+    String[] lines;
+    int[] linesW;
+    int maxTW;
+
+    TextBlob(String text, Font font) {
+      this.text = text;
+      this.font = font;
+
+      lines = Convert.tokenizeString(text, '\n');
+      if (text != null) {
+        if (linesW == null || linesW.length != lines.length) {
+          linesW = new int[lines.length];
+        }
+        int[] linesW = this.linesW;
+        maxTW = 0;
+        for (int i = lines.length - 1; i >= 0; i--) {
+          linesW[i] = font.fm.stringWidth(lines[i]);
+          maxTW = Math.max(maxTW, linesW[i]);
+        }
+      }
+    }
+  }
+
+  class TextBlobButton extends Button {
+    TextBlob blob;
+
+    TextBlobButton(String text) {
+      super((String) null);
+      if (text != null) {
+        this.setText(new TextBlob(text, this.font));
+      }
+    }
+
+    TextBlobButton(TextBlob blob) {
+      super((String) null);
+      this.setText(blob);
+    }
+
+    public void setText(TextBlob blob) {
+      this.blob = blob;
+      this.font = blob.font;
+      this.text = blob.text;
+      this.lines = blob.lines;
+      this.linesW = blob.linesW;
+      this.maxTW = blob.maxTW;
+      onBoundsChanged(false);
+    }
+
+    @Override
+    public void setText(String text) {
+      this.setText(new TextBlob(text, this.font));
+    }
+  }
+
+  boolean isUpperCase = true;
+
+  class CaseSensitiveButton extends TextBlobButton {
+    TextBlob tb1;
+    TextBlob tb2;
+    boolean isUpperCase = true;
+
+    CaseSensitiveButton(String t) {
+      super((String) null);
+      tb1 = new TextBlob(t.toUpperCase(), this.font);
+      tb2 = new TextBlob(t.toLowerCase(), this.font);
+      this.setText(tb1);
+    }
+
+    CaseSensitiveButton(String t1, String t2) {
+      super((String) null);
+      tb1 = new TextBlob(t1, this.font);
+      tb2 = new TextBlob(t2, this.font);
+      this.setText(tb1);
+    }
+
+    @Override
+    public void onPaint(Graphics g) {
+      if (AlphabetKeyboard.this.isUpperCase != this.isUpperCase) {
+        this.setText(AlphabetKeyboard.this.isUpperCase ? tb1 : tb2);
+        this.isUpperCase = AlphabetKeyboard.this.isUpperCase;
+      }
+      super.onPaint(g);
     }
   }
 }
