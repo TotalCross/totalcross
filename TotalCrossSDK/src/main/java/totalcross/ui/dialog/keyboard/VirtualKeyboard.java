@@ -71,7 +71,7 @@ public class VirtualKeyboard extends Window {
   private int animDir = BOTTOM;
   protected int totalTime = 400;
   private ControlAnimation currentAnimation;
-  private boolean fadeOnPopAndUnpop = true;
+  private boolean fadeOnPopAndUnpop = false;
 
   public static void orientationChanged(boolean changed) {
     changeOrientation = changed;
