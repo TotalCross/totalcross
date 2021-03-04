@@ -310,24 +310,19 @@ public class VirtualKeyboard extends Window {
   }
 
   @Override
-  public void unpop() {
+  protected void onUnpop() {
     if (currentAnimation != null) {
       return;
     }
 
-    if (animDir == CENTER) {
-      currentAnimation = FadeAnimation.create(this, false, null, totalTime);
-    } else {
-      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime);
-      if (fadeOnPopAndUnpop) {
-        currentAnimation.with(FadeAnimation.create(this, false, null, totalTime));
-      }
+    currentAnimation = PathAnimation.create(this, -animDir, null, totalTime);
+    if (fadeOnPopAndUnpop) {
+      currentAnimation.with(FadeAnimation.create(this, true, null, totalTime));
     }
     currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
       @Override
       public void onAnimationFinished(ControlAnimation anim) {
         currentAnimation = null;
-        VirtualKeyboard.super.unpop();
       }
     });
     currentAnimation.start();
