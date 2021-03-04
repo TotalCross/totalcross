@@ -263,7 +263,7 @@ public class VirtualKeyboard extends Window {
       return;
     }
 
-    currentAnimation = PathAnimation.create(this, BOTTOM, null, totalTime);
+    currentAnimation = PathAnimation.create(this, animDir, null, totalTime);
     if (fadeOnPopAndUnpop) {
       currentAnimation.with(FadeAnimation.create(this, true, null, totalTime));
     }
