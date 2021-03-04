@@ -110,7 +110,7 @@ public class Edit extends Control implements TextControl, HasValue<String> {
 			                      break;
 			                   }
 			           */ }
-				cursorShowing = !cursorShowing;
+				cursorShowing = !hasFocus ? false : !cursorShowing;
 				blinkTime = 0;
 			}
 		}
