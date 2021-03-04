@@ -97,7 +97,7 @@ public class Edit extends Control implements TextControl, HasValue<String> {
 		@Override
 		public void updateListenerTriggered(int elapsedMilliseconds) {
 			blinkTime  += elapsedMilliseconds;
-			if(blinkTime > 350) {
+			if(blinkTime > 500) {
 				if (!isTopMost()) {
 			          focusOut();
 			        } else if (parent != null) {
