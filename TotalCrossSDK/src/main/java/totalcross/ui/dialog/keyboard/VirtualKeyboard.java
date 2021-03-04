@@ -247,18 +247,6 @@ public class VirtualKeyboard extends Window {
   
   @Override
   protected void onPopup() {
-    btnCancelPressed = false;
-    setFocus(valueEdit);
-    int end = valueEdit.getLength();
-    valueEdit.setCursorPos(end, end);
-    previousValue = valueEdit.getText();
-
-    if (previousValue != null && previousValue.equals("")) {
-      clrIcon.setVisible(false);
-    } else {
-      clrIcon.setVisible(true);
-    }
-    
     if (currentAnimation != null) {
       return;
     }
@@ -271,6 +259,17 @@ public class VirtualKeyboard extends Window {
       @Override
       public void onAnimationFinished(ControlAnimation anim) {
         currentAnimation = null;
+        btnCancelPressed = false;
+        setFocus(valueEdit);
+        int end = valueEdit.getLength();
+        valueEdit.setCursorPos(end, end);
+        previousValue = valueEdit.getText();
+    
+        if (previousValue != null && previousValue.equals("")) {
+          clrIcon.setVisible(false);
+        } else {
+          clrIcon.setVisible(true);
+        }
       }
     });
     currentAnimation.start();
