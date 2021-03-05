@@ -259,8 +259,6 @@ set(SOURCES
 
     ${TC_SRCDIR}/scanner/ios/ios_barcode.c
 
-    ${TC_SRCDIR}/nm/cielo/printer/PrinterManager.c
-
     ${TC_SRCDIR}/nm/qrcode/qrcode_generation.c
 
     ${TC_SRCDIR}/nm/io/device/gpiod/Gpiod.c

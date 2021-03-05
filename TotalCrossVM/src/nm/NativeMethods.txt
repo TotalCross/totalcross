@@ -544,5 +544,4 @@ totalcross/telephony/SmsManager|public native void sendDataMessage(String destin
 totalcross/telephony/SmsManager|public native void registerSmsReceiver(totalcross.telephony.SmsReceiver receiver, int port);
 totalcross/firebase/iid/FirebaseInstanceId|public native String getToken();
 totalcross/notification/NotificationManager|public void notify(totalross.notification.Notification notification);
-totalcross/cielo/sdk/printer/PrinterManager|private native void internalPrintText(String textToPrint, String printerAttributes, totalcross.cielo.printer.PrinterManager.PrinterListenerInternal printerListener);
 totalcross/qrcode/QRCode|private native byte[][] nativeGetBytes(String text, int errorCorrection, int version);

@@ -569,7 +569,6 @@ TC_API void ttSM_registerSmsReceiver_si(NMParams p);
 TC_API void tfiFII_getToken(NMParams p);
 TC_API void tnNM_notify_n(NMParams p);
 TC_API void tcpPBKDF2WHSHA1F_generateSecretI(NMParams p);
-TC_API void tcspPM_internalPrintText_ssp(NMParams p);
 TC_API void tqQRC_nativeGetBytes_sii(NMParams p);
 TC_API void tidgGC_open_i(NMParams p);
 TC_API void tidgGL_open_gi(NMParams p);

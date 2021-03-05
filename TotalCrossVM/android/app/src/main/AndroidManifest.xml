@@ -4,11 +4,8 @@
       android:versionCode="305419896"
       android:versionName="!1.0!"
       android:sharedUserId="totalcross.app.sharedid"
-      xmlns:tools="http://schemas.android.com/tools"
     >
     
-   	<uses-sdk tools:overrideLibrary="com.cielo.lio, cielo.sdk.ordermanager, cielo.printer.client"/>
-
     <application android:icon="@drawable/icon" 
     	android:label="TotalCross Virtual Machine"
          android:theme="@style/TCThemeNS" android:name="android.support.multidex.MultiDexApplication"
@@ -16,7 +13,6 @@
          android:allowBackup="true"
          android:backupInForeground="false"
          android:requestLegacyExternalStorage="true"
-         tools:replace="android:label, android:icon, android:theme"
          >
         <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
         <meta-data android:name="android.max_aspect" android:value="2.33" />

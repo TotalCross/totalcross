@@ -104,7 +104,6 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jNotificationManager4A	= androidFindClass(env, "totalcross/android/NotificationManager4A");
    jFirebaseInstanceId  = androidFindClass(env, "com/google/firebase/iid/FirebaseInstanceId");
    jTcFirebaseUtils     = androidFindClass(env, "totalcross/android/firebase/FirebaseUtils");
-   jCieloPrinterManager4A   = androidFindClass(env, "totalcross/android/cielo/PrinterManager4A");
    jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
    jsoundToText      = (*env)->GetStaticMethodID(env, applicationClass, "soundToText", "(Ljava/lang/String;)Ljava/lang/String;");
    jsoundFromText    = (*env)->GetStaticMethodID(env, applicationClass, "soundFromText", "(Ljava/lang/String;)V");
