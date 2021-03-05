@@ -1,0 +1,70 @@
+apply plugin: 'com.android.library'
+
+ repositories { 
+     google()
+     jcenter()
+     maven {
+         url "http://maven.totalcross.com/artifactory/build"
+         credentials {
+             username = "$System.env.TC_REPO_USERNAME"
+             password = "$System.env.TC_REPO_PASSWORD"
+         }
+     }
+ }
+
+android {
+    compileSdkVersion 29
+    ndkVersion "21.0.6113669"
+    compileOptions {
+    	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 29
+        versionCode 305419896
+        versionName "!1.0!"
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
+                arguments "-DANDROID_TOOLCHAIN=clang", "-DANDROID_LIBS_DIR="+sourceSets.getByName("main").jniLibs.srcDirs[0]
+                cppFlags "-std=c++14", "-DSK_GL"
+                targets "tcvm"
+            }
+        }
+    }
+
+    packagingOptions {
+        pickFirst "**/libskia.so"
+    }
+    
+    signingConfigs {
+        config {
+            keyAlias 'tcandroidkey'
+            keyPassword '@ndroidsw'
+            storeFile file('../tcandroidkey.keystore')
+            storePassword '@ndroid$w'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "../../CMakeLists.txt"
+        }
+    }
+}

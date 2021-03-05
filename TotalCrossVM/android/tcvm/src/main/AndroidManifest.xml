@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.totalcross.tcvm"
+      android:versionCode="305419896"
+      android:versionName="!1.0!"
+      android:sharedUserId="totalcross.app.sharedid"
+    >
+
+    <application />
+
+	<uses-feature android:glEsVersion="0x00020000" />
+</manifest>
