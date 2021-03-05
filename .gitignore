@@ -46,3 +46,9 @@ TotalCrossVM/builders/vc2008/build/
 
 .cxx/
 .gradle/
+.settings/
+.idea/
+.project
+.classpath
+
+build/
