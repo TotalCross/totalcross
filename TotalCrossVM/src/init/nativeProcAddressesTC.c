@@ -550,7 +550,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_si"), &ttSM_registerSmsReceiver_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tfiFII_getToken"), &tfiFII_getToken);
    htPutPtr(&htNativeProcAddresses, hashCode("tnNM_notify_n"), &tnNM_notify_n);
-   htPutPtr(&htNativeProcAddresses, hashCode("tcspPM_internalPrintText_ssp"), &tcspPM_internalPrintText_ssp);
    htPutPtr(&htNativeProcAddresses, hashCode("tqQRC_nativeGetBytes_sii"), &tqQRC_nativeGetBytes_sii);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);

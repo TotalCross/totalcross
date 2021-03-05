@@ -184,12 +184,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     
     implementation 'com.android.support:customtabs:25.1.0'
-    
-    // https://mvnrepository.com/artifact/cielo.printer.client/printer-manager
-	//compile group: 'cielo.printer.client', name: 'printer-manager', version: '2.3.1'
-	
-	// https://mvnrepository.com/artifact/com.cielo.lio/order-manager
-    compile group: 'com.cielo.lio', name: 'order-manager', version: '0.19.8'
 
     //Youtube API
     implementation files('libs/YouTubeAndroidPlayerApi.jar')

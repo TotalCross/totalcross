@@ -544,7 +544,6 @@ TC_API void ttSM_sendDataMessage_ssiB(NMParams p);
 TC_API void ttSM_registerSmsReceiver_si(NMParams p);
 TC_API void tfiFII_getToken(NMParams p);
 TC_API void tnNM_notify_n(NMParams p);
-TC_API void tcspPM_internalPrintText_ssp(NMParams p);
 TC_API void tqQRC_nativeGetBytes_sii(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
@@ -2725,10 +2724,6 @@ TC_API void tfiFII_getToken(NMParams p) // totalcross/firebase/iid/FirebaseInsta
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnNM_notify_n(NMParams p) // totalcross/notification/NotificationManager public void notify(totalross.notification.Notification notification);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tcspPM_internalPrintText_ssp(NMParams p) // totalcross/cielo/sdk/printer/PrinterManager private native void internalPrintText(String textToPrint, String printerAttributes, totalcross.cielo.printer.PrinterManager.PrinterListenerInternal printerListener);
 {
 }
 //////////////////////////////////////////////////////////////////////////

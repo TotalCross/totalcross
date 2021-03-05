@@ -4,7 +4,7 @@
 	package="totalcross.android"
 	>
 
-	<application android:label="Stub" tools:replace="android:label">
+	<application android:label="Stub" tools:replace="label">
 		<activity android:name=".Loader">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
