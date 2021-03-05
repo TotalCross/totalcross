@@ -9,4 +9,5 @@ docker run                                                  \
     -v ${WORKDIR}/../../:/vm                                \
     -v ${WORKDIR}/.gradle:/root/.gradle                     \
     -it fabernovel/android:api-29-ndk-v1.2.0                \
-    bash -c "cd /vm/builders/droid && ./gradlew assembleRelease"
+    bash -c "cd /vm/builders/droid  &&                      \
+            ./gradlew --no-daemon clean assembleAssets assembleRelease"

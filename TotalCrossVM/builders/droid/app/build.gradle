@@ -31,13 +31,6 @@ android {
         versionName "!1.0!"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                abiFilters 'armeabi-v7a', 'arm64-v8a'
-                arguments "-DANDROID_TOOLCHAIN=clang"
-                cppFlags "-std=c++14"
-            }
-        }
     }
     
     signingConfigs {
@@ -65,11 +58,7 @@ android {
             signingConfig signingConfigs.config
         }
     }
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
-    }
+    
     task assembleAssets(type:Zip) {
         outputs.upToDateWhen { false }
         from ('../../../../TotalCrossSDK/dist/vm') {
@@ -141,6 +130,7 @@ android {
 }
 
 dependencies {
+    implementation project(":tcvm")
 	// com.symbol.emdk must be excluded from compile and added as provided
     implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['com.symbol.emdk-*.jar'])
     compileOnly fileTree(dir: 'libs', include: ['com.symbol.emdk-6.7.jar'])
