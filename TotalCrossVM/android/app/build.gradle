@@ -41,20 +41,8 @@ android {
         versionName "!1.0!"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                abiFilters 'armeabi-v7a', 'arm64-v8a'
-                arguments "-DANDROID_TOOLCHAIN=clang", "-DANDROID_LIBS_DIR="+sourceSets.getByName("main").jniLibs.srcDirs[0]
-                cppFlags "-std=c++14", "-DSK_GL"
-                targets "tcvm"
-            }
-        }
     }
 
-    packagingOptions {
-        pickFirst "**/libskia.so"
-    }
-    
     signingConfigs {
         config {
             keyAlias 'tcandroidkey'
@@ -81,11 +69,6 @@ android {
         }
     }
     
-    externalNativeBuild {
-        cmake {
-            path "../../CMakeLists.txt"
-        }
-    }
     task assembleAssets(type:Zip) {
         // outputs.upToDateWhen { false }
         from ('../../../TotalCrossSDK/dist/vm') {
@@ -163,6 +146,7 @@ android {
 }
 
 dependencies {
+    implementation project(":tcvm")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'com.android.support:appcompat-v7:26.0.2'
