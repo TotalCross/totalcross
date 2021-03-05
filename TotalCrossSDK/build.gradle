@@ -218,6 +218,16 @@ publishing {
     }
 }
 
+/** 
+    Javadoc
+ */
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc {
+    	exclude 'jdkcompat*/**', 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    }
+}
+javadoc.finalizedBy(javadocJar)
 
 task signJar {
     try {
@@ -318,7 +328,7 @@ task deployTcui(type:JavaExec, dependsOn: [totalcrossJar, myProguardTask, tcuiJa
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from (sourceSets.desktop.allSource) { 
-    	exclude 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
+    	exclude '**/*.orig', '**/*.html', '**/chartypes.bin', 'tc/**', 'ras/**', '**/*4A.java', '**/*4D.java'
     }
 }
 
@@ -350,6 +360,6 @@ artifacts {
         // can also set classifier, extension, name, etc as needed (some defaults will be inferred from the filename)
         // see https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/ConfigurablePublishArtifact.html
     }
-    archives sourcesJar, tcbaseJar, tcuiJar
+    archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
 }
 
