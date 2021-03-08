@@ -43,20 +43,10 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
-    signingConfigs {
-        config {
-            keyAlias 'tcandroidkey'
-            keyPassword "$System.env.TC_KEY_PASSWORD"
-            storeFile file("$System.env.TC_PATH_TO_KEY_STORE")
-            storePassword "$System.env.TC_STORE_PASSWORD"
-        }
-    }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config\
         }
         debug {}
     }
