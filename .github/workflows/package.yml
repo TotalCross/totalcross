@@ -114,7 +114,7 @@ jobs:
     - name: Build Android
       working-directory: TotalCrossVM/android
       run: |
-        ./gradlew assembleDebug copyApk -x test --stacktrace
+        ./gradlew assembleRelease copyApk -x test --stacktrace
  
     - name: Download Linux amd64
       continue-on-error: true
