@@ -1,5 +1,3 @@
-
-
 apply plugin: 'com.android.application'
 
  repositories { 
@@ -33,15 +31,6 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     
-    signingConfigs {
-        config {
-            keyAlias 'tcandroidkey'
-            keyPassword '@ndroidsw'
-            storeFile file('../tcandroidkey.keystore')
-            storePassword '@ndroid$w'
-        }
-    }
-
     flavorDimensions "deploy"
     productFlavors {
         standard { dimension "deploy" }
@@ -52,11 +41,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
         }
-        debug {
-            signingConfig signingConfigs.config
-        }
+        debug {}
     }
     
     task assembleAssets(type:Zip) {
