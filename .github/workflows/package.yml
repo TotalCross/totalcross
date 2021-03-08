@@ -39,7 +39,7 @@ jobs:
     needs: build_linux
     runs-on: ubuntu-18.04
     container:
-      image: docker://fabernovel/android:api-28-gcloud-ndk-v1.2.0
+      image: docker://fabernovel/android:api-29-ndk-v1.2.0
 
     steps:
     - name: Checkout
