@@ -1,21 +1,15 @@
 #!/bin/bash
 
-cd ~/build
+OUTDIR=${PWD}/build/TotalCross
 
-BASEDIR=${PWD}
+echo "STARTING iOS"
 
-./setup-ios.sh
-rm -rf ios*
+# iOS
+IOS_USER=user180640
+IOS_SERVER=NY741.macincloud.com
 
-git clone --shallow-submodules --depth 1 --single-branch --branch master git@gitlab.com:totalcross/vm.git ios
-unzip ScanditBarcodeScanner.framework-b1.zip -d ios/TotalCrossVM/builders/xcode
-
-pushd ios/TotalCrossVM/builders/xcode
-   pod install
-   xcodebuild -workspace TotalCross.xcworkspace -scheme TotalCross BUILD_DIR=${PWD} archive -archivePath build/TotalCross.xcarchive teamID="W5Y7X2KNUL" -configuration Release
-   xcodebuild -exportArchive -archivePath build/TotalCross.xcarchive -exportPath build/TotalCross.ipa -exportOptionsPlist ExportOptions.plist
-popd
-
-pushd ios/TotalCrossVM/builders/xcode/build
-   zip -r $BASEDIR/ios.zip .
-popd
+scp build-ios.sh $IOS_USER@$IOS_SERVER:~/build/
+ssh $IOS_USER@$IOS_SERVER "~/build/build-ios.sh"
+scp $IOS_USER@$IOS_SERVER:~/build/ios.zip build/ios.zip
+unzip -u -j -q build/ios.zip **/TotalCross.ipa -d $OUTDIR/dist/vm/ios
+unzip -u -q build/ios.zip TotalCross.xcarchive/* -d $OUTDIR/etc/tools/iOSCodesign
