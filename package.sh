@@ -1,5 +1,11 @@
 #!/bin/bash
 
+secs_to_human() {
+    echo "Time Elapsed : $(( ${1} / 3600 ))h $(( (${1} / 60) % 60 ))m $(( ${1} % 60 ))s"
+}
+
+start=$(date +%s)
+
 OUTDIR=${PWD}/build/TotalCross
 IOS_USER=user180640
 IOS_SERVER=NY741.macincloud.com
@@ -78,3 +84,4 @@ pushd TotalCrossVM/builders/droid
    popd
 popd
 
+secs_to_human "$(($(date +%s) - ${start}))"
