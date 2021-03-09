@@ -40,7 +40,7 @@ jobs:
             command: ./gradlew dist -x test --stacktrace
             directory: TotalCrossSDK
           - name: Android
-            command: ./gradlew assembleRelease copyApk -x test --stacktrace
+            command: ./gradlew assembleRelease -x test --stacktrace
             directory: TotalCrossVM/android
 
     steps:
