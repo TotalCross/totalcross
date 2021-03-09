@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.3] - 2021-03-09
+
+- **Performance boost and reduced binary size on Linux and Android** - This was actually our mistake, those targets were being built for debugging since we started using CMake. This release should have performance at least twice as better as the previous releases built with CMake.
+
+- **Build system improvements**
+  - SQLite3 source code removed from our repository, downloading and patching is performed by CMake.
+  - Android build improved, it should be A LOT faster for most systems.
+
+- **Edit and virtual keyboard performance improvements**
+
+### Changed
+- Removed Cielo Lio text printing support, reducing the Android binary size. (Let us know if you need this feature back)
+
+### Fixed
+- Android:
+  - Fixed launching third party apps using Vm.exec
+  - Fixed permission for writing on storage for android-29
+> Starting from target-sdk 29 application should use scoped storage
+https://developer.android.com/training/data-storage#scoped-storage
+- API:
+  - MessageBox: fixed NPE during unpop when the MessageBox is created without buttons (i.e. button captions is null) - #304
+
 ## [7.0.2] - 2021-02-09
 
 ### Added
@@ -1128,3 +1150,4 @@ the ScrollContainer reseta it to true
 [7.0.0]: https://github.com/totalcross/TotalCross/compare/v6.1.1...v7.0.0
 [7.0.1]: https://github.com/totalcross/TotalCross/compare/v7.0.0...v7.0.1
 [7.0.2]: https://github.com/totalcross/TotalCross/compare/v7.0.1...v7.0.2
+[7.0.3]: https://github.com/totalcross/TotalCross/compare/v7.0.3...v7.0.3
