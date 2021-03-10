@@ -115,7 +115,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    file.first4 = first4;
 
    /* initialize default error handling. */
-   errbase.heap = heap;
+   // errbase.heap = heap;
 
    IF_HEAP_ERROR(heap)
    {
@@ -260,7 +260,7 @@ bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStr
    bufAux = (uint8*) heapAlloc(heap, scanLineOut);
 
    /* initialize default error handling. */
-   errbase.heap = heap;
+   // errbase.heap = heap;
 
    // initialize error handler and compressor.
    cinfo.err = jpeg_std_error(&errbase);
@@ -371,7 +371,7 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    bufAux = (uint8*) heapAlloc(heap, scanLineOut);
 
    /* initialize default error handling. */
-   errbase.heap = heap;
+   // errbase.heap = heap;
 
    // initialize error handler and compressor.
    cinfo.err = jpeg_std_error(&errbase);
