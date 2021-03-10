@@ -6,6 +6,8 @@
 #ifndef TCZLIB_H
 #define TCZLIB_H
 
+#include "xtypes.h"
+#include "tcclass.h"
 #include "../zlib/zlib.h"
 
 #define TCZ_VERSION 200

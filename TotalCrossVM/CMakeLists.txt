@@ -201,6 +201,8 @@ set(SOURCES
     ${TC_SRCDIR}/png/pngset.c
     ${TC_SRCDIR}/png/pngtrans.c
 
+    ${TC_SRCDIR}/jpeg/jdatadst_tc.c
+    ${TC_SRCDIR}/jpeg/jdatasrc_tc.c
     ${TC_SRCDIR}/jpeg/JpegLoader.c
 
     ${TC_SRCDIR}/event/Event.c
