@@ -9,7 +9,9 @@
 * This software is based in part on the work of the Independent JPEG Group.
 */
 
-#include "cdjpeg.h"     /* Common decls for cjpeg/djpeg applications */
+#include <stdio.h>
+#include <stddef.h>
+#include <jpeglib.h>     /* Common decls for cjpeg/djpeg applications */
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin

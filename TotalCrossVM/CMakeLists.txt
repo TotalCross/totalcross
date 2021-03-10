@@ -201,54 +201,7 @@ set(SOURCES
     ${TC_SRCDIR}/png/pngset.c
     ${TC_SRCDIR}/png/pngtrans.c
 
-    ${TC_SRCDIR}/jpeg/jcapimin.c
-    ${TC_SRCDIR}/jpeg/jcapistd.c
-    ${TC_SRCDIR}/jpeg/jccoefct.c
-    ${TC_SRCDIR}/jpeg/jccolor.c
-    ${TC_SRCDIR}/jpeg/jcdctmgr.c
-    ${TC_SRCDIR}/jpeg/jchuff.c
-    ${TC_SRCDIR}/jpeg/jcinit.c
-    ${TC_SRCDIR}/jpeg/jcmainct.c
-    ${TC_SRCDIR}/jpeg/jcmarker.c
-    ${TC_SRCDIR}/jpeg/jcmaster.c
-    ${TC_SRCDIR}/jpeg/jcomapi.c
-    ${TC_SRCDIR}/jpeg/jcparam.c
-    ${TC_SRCDIR}/jpeg/jcphuff.c
-    ${TC_SRCDIR}/jpeg/jcprepct.c
-    ${TC_SRCDIR}/jpeg/jcsample.c
-    ${TC_SRCDIR}/jpeg/jdapimin.c
-    ${TC_SRCDIR}/jpeg/jdapistd.c
-    ${TC_SRCDIR}/jpeg/jdatadst.c
-    ${TC_SRCDIR}/jpeg/jdatasrc.c
-    ${TC_SRCDIR}/jpeg/jdcoefct.c
-    ${TC_SRCDIR}/jpeg/jdcolor.c
-    ${TC_SRCDIR}/jpeg/jddctmgr.c
-    ${TC_SRCDIR}/jpeg/jdhuff.c
-    ${TC_SRCDIR}/jpeg/jdinput.c
-    ${TC_SRCDIR}/jpeg/jdmainct.c
-    ${TC_SRCDIR}/jpeg/jdmarker.c
-    ${TC_SRCDIR}/jpeg/jdmaster.c
-    ${TC_SRCDIR}/jpeg/jdphuff.c
-    ${TC_SRCDIR}/jpeg/jdpostct.c
-    ${TC_SRCDIR}/jpeg/jdsample.c
-    ${TC_SRCDIR}/jpeg/jerror.c
-    ${TC_SRCDIR}/jpeg/jfdctfst.c
-    ${TC_SRCDIR}/jpeg/jmemmgr.c
-    ${TC_SRCDIR}/jpeg/jmemnobs.c
     ${TC_SRCDIR}/jpeg/JpegLoader.c
-    ${TC_SRCDIR}/jpeg/jquant1.c
-    ${TC_SRCDIR}/jpeg/jquant2.c
-    ${TC_SRCDIR}/jpeg/jutils.c
-    ${TC_SRCDIR}/jpeg/jcarith.c
-    ${TC_SRCDIR}/jpeg/jdarith.c
-    ${TC_SRCDIR}/jpeg/jdmerge.c
-    ${TC_SRCDIR}/jpeg/jidctflt.c
-    ${TC_SRCDIR}/jpeg/jidctfst.c
-    ${TC_SRCDIR}/jpeg/jidctint.c
-    ${TC_SRCDIR}/jpeg/jfdctflt.c
-    ${TC_SRCDIR}/jpeg/jfdctint.c
-    ${TC_SRCDIR}/jpeg/jaricom.c
-    ${TC_SRCDIR}/jpeg/rdbmp.c
 
     ${TC_SRCDIR}/event/Event.c
     ${TC_SRCDIR}/event/specialkeys.c
@@ -554,7 +507,7 @@ if(DEFINED SDL2_LIBRARY)
   target_link_libraries(tcvm ${SDL2_LIBRARY})
 endif(DEFINED SDL2_LIBRARY)
 
-target_link_libraries(tcvm SQLite3)
+target_link_libraries(tcvm SQLite3 turbojpeg)
 
 if(DEFINED ANDROID_ABI)
   add_library(libskia SHARED IMPORTED)
