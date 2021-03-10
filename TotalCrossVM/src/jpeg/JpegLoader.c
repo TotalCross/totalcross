@@ -115,8 +115,6 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    file.first4 = first4;
 
    /* initialize default error handling. */
-   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
-   errbase.last_addon_message = JMSG_LASTADDONCODE;
    errbase.heap = heap;
 
    IF_HEAP_ERROR(heap)
@@ -262,8 +260,6 @@ bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStr
    bufAux = (uint8*) heapAlloc(heap, scanLineOut);
 
    /* initialize default error handling. */
-   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
-   errbase.last_addon_message = JMSG_LASTADDONCODE;
    errbase.heap = heap;
 
    // initialize error handler and compressor.
@@ -375,8 +371,6 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    bufAux = (uint8*) heapAlloc(heap, scanLineOut);
 
    /* initialize default error handling. */
-   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
-   errbase.last_addon_message = JMSG_LASTADDONCODE;
    errbase.heap = heap;
 
    // initialize error handler and compressor.
