@@ -49,32 +49,25 @@ ExternalProject_Add(turbojpegDownload
     # BUILD_COMMAND ""
     # INSTALL_COMMAND ""
     TEST_COMMAND ""
-    BUILD_BYPRODUCTS libturbojpeg.a
+    BUILD_BYPRODUCTS 
+        ${JPEG_TURBO_INSTALL_PREFIX}/lib/libturbojpeg.a
 )
 
-add_custom_target(turbojpeg)
+add_library(turbojpeg STATIC IMPORTED GLOBAL)
+# make sure SQLite3Download is executed first
 add_dependencies(turbojpeg turbojpegDownload)
 
-# # SET(FXCM_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/src/ForexConnectDownload/include)
-# # SET(FXCM_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/src/ForexConnectDownload/lib)
+set_target_properties(turbojpeg 
+    PROPERTIES 
+        IMPORTED_LOCATION ${JPEG_TURBO_INSTALL_PREFIX}/lib/libturbojpeg.a)
 
-# add_library(turbojpeg STATIC IMPORTED GLOBAL)
+        target_include_directories(tcvm PRIVATE 
+        ${JPEG_TURBO_INSTALL_PREFIX}/include
+    )
 
-# # make sure SQLite3Download is executed first
-# add_dependencies(turbojpeg turbojpegDownload)
-
-# # ExternalProject_Get_Property(turbojpegDownload )
-
-# set_target_properties(turbojpeg 
-#     PROPERTIES 
-#         IMPORTED_LOCATION ${JPEG_TURBO_INSTALL_PREFIX}/libturbojpeg.a)
-#         # /Users/flsobral/repos/TotalCrossLGPL/build/third_party/turbojpeg/turbojpegDownload-prefix/src/turbojpegDownload-build/libturbojpeg.a)
-#         # ${CMAKE_CURRENT_BINARY_DIR}/turbojpegDownload-build/libturbojpeg.a)
-
-# # target_include_directories(turbojpeg IMPORTED 
-# #     "${CMAKE_CURRENT_BINARY_DIR}/src"
-# #     ${CMAKE_CURRENT_LIST_DIR}
-# # )
+# target_include_directories(turbojpeg INTERFACE 
+#     ${JPEG_TURBO_INSTALL_PREFIX}/include
+# )
 
 
 # # using INTERFACE no compilation is performed
