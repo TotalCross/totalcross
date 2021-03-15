@@ -28,7 +28,7 @@ ExternalProject_Add(turbojpegDownload
     GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
     # SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/src"
     UPDATE_COMMAND ""
-    CMAKE_GENERATOR $<IF:$<STREQUAL:"${CMAKE_SYSTEM_NAME}","Android">,"\"Unix Makefiles\"",${CMAKE_GENERATOR}>
+    CMAKE_GENERATOR $<IF:$<STREQUAL:"${CMAKE_SYSTEM_NAME}","Android">,Unix Makefiles,${CMAKE_GENERATOR}>
     CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
     CMAKE_GENERATOR_TOOLSET ${CMAKE_GENERATOR_TOOLSET}
     CMAKE_ARGS
