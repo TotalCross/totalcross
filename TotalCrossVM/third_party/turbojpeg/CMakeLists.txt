@@ -24,9 +24,11 @@ set(${PROJECT_NAME}_HOMEPAGE_URL https://sqlite.org)
 
 set(JPEG_TURBO_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/libjpeg-turbo-install)
 
-set(JPEG_TURBO_CMAKE_GENERATOR
-    $<IF:$<STREQUAL:"${CMAKE_SYSTEM_NAME}","Android">,"Unix Makefiles",${CMAKE_GENERATOR}>
-)
+if(CMAKE_SYSTEM_NAME STREQUAL Android)
+set(JPEG_TURBO_CMAKE_GENERATOR "Unix Makefiles")
+else()
+set(JPEG_TURBO_CMAKE_GENERATOR ${CMAKE_GENERATOR})
+endif()
 
 ExternalProject_Add(turbojpegDownload
     GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
