@@ -25,7 +25,7 @@ jobs:
     - name: Build VM & Launcher
       run: |
         mkdir -p build
-        docker run -v ${PWD}/build:/build -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.2 bash -c "cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja && ninja"
+        docker run -v ${PWD}/build:/build -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.3 bash -c "cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja && ninja"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
