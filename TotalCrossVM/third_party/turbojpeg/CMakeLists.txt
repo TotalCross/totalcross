@@ -32,6 +32,8 @@ endif()
 
 ExternalProject_Add(turbojpegDownload
     GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
+    GIT_TAG 2.0.6
+    GIT_SHALLOW ON
     # SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/src"
     UPDATE_COMMAND ""
     CMAKE_GENERATOR ${JPEG_TURBO_CMAKE_GENERATOR}
