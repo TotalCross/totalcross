@@ -92,13 +92,13 @@ android {
                                 into "${rootDir}/../../TotalCrossSDK/dist/vm/android"
                                 rename { 'TotalCross.apk' }
                             }
+                            copy {
+                                from fileTree('build/intermediates/processed_res/' + variant.name +'/out').files
+                                into "${rootDir}/../../TotalCrossSDK/etc/launchers/android"
+                                include 'resources-' + variant.name + '.ap_'
+                                rename { 'resources.ap_' }
+                            }
                         }
-                    }
-                    copy {
-                        from fileTree('build/intermediates/processed_res/' + variant.name +'/out').files
-                        into '${rootDir}/../../TotalCrossSDK/etc/launchers/android'
-                        include 'resources-' + variant.name + '.ap_'
-                        rename { 'resources.ap_' }
                     }
                 } else {
                     variant.outputs.each { output ->
