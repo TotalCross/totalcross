@@ -62,14 +62,14 @@ android {
     
     task assembleAssets(type:Zip) {
         // outputs.upToDateWhen { false }
-        from ('../../../../TotalCrossSDK/dist/vm') {
+        from ('${rootDir}/../../../TotalCrossSDK/dist/vm') {
             include 'TCBase.tcz'
             include 'TCUI.tcz'
         }
-        from ('../../../../TotalCrossSDK/etc/fonts') {
+        from ('${rootDir}/../../../TotalCrossSDK/etc/fonts') {
             include 'TCFont.tcz'
         }
-        from ('../../../../LitebaseSDK/dist/lib/') {
+        from ('${rootDir}/../../../LitebaseSDK/dist/lib/') {
             include 'LitebaseLib.tcz'
         }
         entryCompression ZipEntryCompression.STORED
@@ -90,16 +90,16 @@ android {
                         if (outputFile != null && outputFile.name.endsWith('.apk')) {
                             copy {
                                 from outputFile
-                                into "../../../../TotalCrossSDK/dist/vm/android"
+                                into "${rootDir}/../../../TotalCrossSDK/dist/vm/android"
                                 rename { 'TotalCross.apk' }
                             }
+                            copy {
+                                from fileTree('build/intermediates/processed_res/' + variant.name +'/out').files
+                                into "${rootDir}/../../../TotalCrossSDK/etc/launchers/android"
+                                include 'resources-' + variant.name + '.ap_'
+                                rename { 'resources.ap_' }
+                            }
                         }
-                    }
-                    copy {
-                        from fileTree('build/intermediates/processed_res/' + variant.name +'/out').files
-                        into '../../../../TotalCrossSDK/etc/launchers/android'
-                        include 'resources-' + variant.name + '.ap_'
-                        rename { 'resources.ap_' }
                     }
                 } else {
                     variant.outputs.each { output ->
@@ -107,7 +107,7 @@ android {
                         if (outputFile != null && outputFile.name.endsWith('.apk')) {
                             copy {
                                 from zipTree(outputFile).files
-                                into "../../../../TotalCrossSDK/etc/tools/android"
+                                into "${rootDir}/../../../TotalCrossSDK/etc/tools/android"
                                 include 'AndroidManifest.xml', 'resources.arsc'
                                 rename { String fileName ->
                                     fileName.replace('.', '_' + variant.flavorName + '.')
