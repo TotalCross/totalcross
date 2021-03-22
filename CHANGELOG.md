@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Android:
+  - Fixed packaging of binaries included in the release.
+
 ## [7.0.3] - 2021-03-09
 
 - **Performance boost and reduced binary size on Linux and Android** - This was actually our mistake, those targets were being built for debugging since we started using CMake. This release should have performance at least twice as better as the previous releases built with CMake.
@@ -16,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Android build improved, it should be A LOT faster for most systems.
 
 - **Edit and virtual keyboard performance improvements**
+
+### Known issues
+- Android prebuilt binaries included in this release are broken, skip this release for Android or rebuild the binaries from the sources and replace them locally.
 
 ### Changed
 - Removed Cielo Lio text printing support, reducing the Android binary size. (Let us know if you need this feature back)
