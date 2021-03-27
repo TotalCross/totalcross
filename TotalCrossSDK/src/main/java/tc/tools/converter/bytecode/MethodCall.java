@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
@@ -20,7 +21,7 @@ public class MethodCall extends ByteCode {
     JavaConstantInfo jci = (JavaConstantInfo) cp.constants[idx];
     int classIndex = jci.index1;
     int nameAndTypeIndex = jci.index2;
-    className = cp.getString1(classIndex);
+    className = cp.getClassName(jci);
     name = cp.getString1(nameAndTypeIndex);
     parameters = cp.getString2(nameAndTypeIndex);
     pcInc = 3;
