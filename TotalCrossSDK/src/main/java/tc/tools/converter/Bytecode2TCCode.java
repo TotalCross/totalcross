@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter;
@@ -1517,6 +1518,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
     case INVOKESPECIAL: //183
     case INVOKESTATIC: //184
     case INVOKEINTERFACE: //185
+    case INVOKEDYNAMIC: //186
     {
       MethodCall ji = (MethodCall) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
@@ -1575,7 +1577,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
       }
 
       OperandReg _this;
-      if (op == INVOKESTATIC) {
+      if (op == INVOKESTATIC || op == INVOKEDYNAMIC) {
         _this = new OperandReg(TCConstants.opr_regO);
         _this.index = 0;
       } else {
@@ -1604,7 +1606,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
       }
       break;
     }
-    case NEW: //187 (186 is not used)
+    case NEW: //187
     {
       BC187_new ji = (BC187_new) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
