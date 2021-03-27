@@ -39,14 +39,19 @@ public final class JavaConstantPool {
           break;
         case 7: // Class
         case 8: // String
-          constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort());
-          break;
+        case 16: // method type
+        constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort());
+        break;
         case 9: // field
         case 10: // method
         case 11: // interface method
         case 12: // name and type
-          constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort(), ds.readUnsignedShort());
-          break;
+        case 18: // invoke dynamic
+        constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort(), ds.readUnsignedShort());
+        break;
+        case 15: // method handle
+        constants[i] = new JavaConstantInfo(b, ds.readByte(), ds.readUnsignedShort());
+        break;
         }
       }
     }
