@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter;
@@ -224,6 +225,7 @@ public interface JConstants {
   public static final int INVOKESPECIAL = 183;
   public static final int INVOKESTATIC = 184;
   public static final int INVOKEINTERFACE = 185;
+  public static final int INVOKEDYNAMIC = 186;
   public static final int NEW = 187;
   public static final int NEWARRAY = 188;
   public static final int ANEWARRAY = 189;
