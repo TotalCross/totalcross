@@ -224,6 +224,7 @@ public interface JConstants {
   public static final int INVOKESPECIAL = 183;
   public static final int INVOKESTATIC = 184;
   public static final int INVOKEINTERFACE = 185;
+  public static final int INVOKEDYNAMIC = 186;
   public static final int NEW = 187;
   public static final int NEWARRAY = 188;
   public static final int ANEWARRAY = 189;
