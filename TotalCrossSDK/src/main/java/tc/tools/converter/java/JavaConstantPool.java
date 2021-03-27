@@ -76,4 +76,11 @@ public final class JavaConstantPool {
     JavaConstantInfo ci = (JavaConstantInfo) constants[idx];
     return (String) constants[ci.index2];
   }
+
+  public String getClassName(JavaConstantInfo jci) {
+    if (jci.type == 18) {
+      return String.valueOf(jci.index1);
+    }
+    return getString1(jci.index1);
+  }
 }
