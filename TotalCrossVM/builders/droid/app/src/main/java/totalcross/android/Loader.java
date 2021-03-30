@@ -435,7 +435,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
     private void dialNumber(String number)
    {
 	try {
-    startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number)));
+    startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + number)));
     } catch (SecurityException e) {
     	e.printStackTrace();
     }
