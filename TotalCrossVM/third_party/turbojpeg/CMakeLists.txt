@@ -30,6 +30,14 @@ else()
 set(JPEG_TURBO_CMAKE_GENERATOR ${CMAKE_GENERATOR})
 endif()
 
+set(JPEG_TURBO_LIB_PREFIX ${JPEG_TURBO_INSTALL_PREFIX}/lib)
+if(MSVC)
+set(JPEG_TURBO_LIB_NAME turbojpeg-static.lib)
+else()
+set(JPEG_TURBO_LIB_NAME libturbojpeg.a)
+endif()
+set(JPEG_TURBO_LIB_PATH ${JPEG_TURBO_LIB_PREFIX}/${JPEG_TURBO_LIB_NAME})
+
 ExternalProject_Add(turbojpegDownload
     GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
     GIT_TAG 2.0.6
@@ -64,7 +72,7 @@ ExternalProject_Add(turbojpegDownload
     # INSTALL_COMMAND ""
     TEST_COMMAND ""
     BUILD_BYPRODUCTS 
-        ${JPEG_TURBO_INSTALL_PREFIX}/lib/libturbojpeg.a
+        ${JPEG_TURBO_LIB_PATH}
 )
 
 add_library(turbojpeg STATIC IMPORTED GLOBAL)
@@ -73,11 +81,13 @@ add_dependencies(turbojpeg turbojpegDownload)
 
 set_target_properties(turbojpeg 
     PROPERTIES 
-        IMPORTED_LOCATION ${JPEG_TURBO_INSTALL_PREFIX}/lib/libturbojpeg.a)
+        IMPORTED_LOCATION ${JPEG_TURBO_LIB_PATH}
+)
 
-        target_include_directories(tcvm PRIVATE 
+target_include_directories(tcvm 
+    PRIVATE 
         ${JPEG_TURBO_INSTALL_PREFIX}/include
-    )
+)
 
 # target_include_directories(turbojpeg INTERFACE 
 #     ${JPEG_TURBO_INSTALL_PREFIX}/include
