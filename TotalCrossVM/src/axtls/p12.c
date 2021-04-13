@@ -62,7 +62,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include "os_port.h"
 #include "ssl.h"
 
 /* all commented out if not used */
@@ -105,7 +105,7 @@ int pkcs8_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
     }
 
     /* unencrypted key? */
-    if (asn1_get_int(buf, &offset, &version) > 0 && *version == 0)
+    if (asn1_get_big_int(buf, &offset, &version) > 0 && *version == 0)
     {
         ret = p8_add_key(ssl_ctx, buf);
         goto error;
@@ -257,7 +257,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
         goto error;
     }
 
-    if (asn1_get_int(buf, &offset, &version) < 0 || *version != 3)
+    if (asn1_get_big_int(buf, &offset, &version) < 0 || *version != 3)
     {
         ret = SSL_ERROR_INVALID_VERSION;
         goto error;
@@ -283,7 +283,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
         goto error;
 
     auth_safes_len = auth_safes_end - auth_safes_start;
-    auth_safes = (uint8_t*)malloc(auth_safes_len);
+    auth_safes = malloc(auth_safes_len);
 
     memcpy(auth_safes, &buf[auth_safes_start], auth_safes_len);
 
@@ -463,7 +463,7 @@ static int get_pbe_params(uint8_t *buf, int *offset,
     *salt = &buf[*offset];
     *offset += len;
 
-    if ((len = asn1_get_int(buf, offset, &iter)) < 0)
+    if ((len = asn1_get_big_int(buf, offset, &iter)) < 0)
         goto error;
 
     *iterations = 0;

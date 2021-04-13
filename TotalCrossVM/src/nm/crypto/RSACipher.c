@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
-#include "../../axtls/crypto.h"
+#include "axtls.h"
 
 #define OPERATION_ENCRYPT 0
 #define OPERATION_DECRYPT 1

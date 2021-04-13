@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include "os_port.h"
 #include "ssl.h"
 
 static int do_obj(SSL_CTX *ssl_ctx, int obj_type, 
@@ -108,7 +108,7 @@ error:
 EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int mem_type, 
         const uint8_t *data, int len, const char *password)
 {
-	static const char * const begin = "-----BEGIN";
+    static const char * const begin = "-----BEGIN";
     int ret;
     SSLObjLoader *ssl_obj;
 
@@ -130,7 +130,9 @@ EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int mem_type,
 #endif
     }
     else
-		ret = do_obj(ssl_ctx, mem_type, ssl_obj, password);
+    {
+    ret = do_obj(ssl_ctx, mem_type, ssl_obj, password);
+    }
 
     ssl_obj_free(ssl_obj);
     return ret;
@@ -484,7 +486,6 @@ int load_key_certs(SSL_CTX *ssl_ctx)
     else if (!(options & SSL_NO_DEFAULT_KEY))
     {
 #if defined(CONFIG_SSL_USE_DEFAULT_KEY) || defined(CONFIG_SSL_SKELETON_MODE)
-        static const    /* saves a few bytes and RAM */
 #include "cert.h"
         ssl_obj_memory_load(ssl_ctx, SSL_OBJ_X509_CERT, 
                     default_certificate, default_certificate_len, NULL);

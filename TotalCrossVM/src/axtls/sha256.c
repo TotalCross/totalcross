@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2015, Cameron Rich
- *
+ * 
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
  *
@@ -207,7 +207,7 @@ static void SHA256_Process(const uint8_t digest[64], SHA256_CTX *ctx)
 
 /**
  * Accepts an array of octets as the next portion of the message.
-	*/
+ */
 void SHA256_Update(SHA256_CTX *ctx, const uint8_t * msg, int len)
 {
     uint32_t left = ctx->total[0] & 0x3F;
@@ -220,7 +220,7 @@ void SHA256_Update(SHA256_CTX *ctx, const uint8_t * msg, int len)
         ctx->total[1]++;
 
     if (left && len >= fill)
-	{
+    {
         memcpy((void *) (ctx->buffer + left), (void *)msg, fill);
         SHA256_Process(ctx->buffer, ctx);
         len -= fill;
@@ -229,16 +229,16 @@ void SHA256_Update(SHA256_CTX *ctx, const uint8_t * msg, int len)
     }
 
     while (len >= 64)
-	{
+    {
         SHA256_Process(msg, ctx);
         len -= 64;
         msg  += 64;
-	}
+    }
 
     if (len)
-	{
+    {
         memcpy((void *) (ctx->buffer + left), (void *) msg, len);
-	}
+    }
 }
 
 /**

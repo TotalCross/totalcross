@@ -6,7 +6,7 @@
 
 
 #include "tcvm.h"
-#include "../../axtls/crypto.h"
+#include "axtls.h"
 
 #define OPERATION_SIGN 0
 #define OPERATION_VERIFY 1
