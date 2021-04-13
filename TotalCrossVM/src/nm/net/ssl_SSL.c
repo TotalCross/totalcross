@@ -394,7 +394,7 @@ TC_API void tnsSSLCTX_newClient_sB(NMParams p) // totalcross/net/ssl/SSLCTX nati
    }
    UNLOCKVAR(htSSL);
 
-   SSL_sslRef(ssl) = (int64)ssl_client_new(ssl_ctx, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL, id ? ARRAYOBJ_LEN(id) : 0);
+   SSL_sslRef(ssl) = (int64)ssl_client_new(ssl_ctx, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL, id ? ARRAYOBJ_LEN(id) : 0, null);
    p->retO = ssl;
 
    setObjectLock(p->retO, UNLOCKED);      

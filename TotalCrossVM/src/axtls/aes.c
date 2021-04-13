@@ -35,6 +35,7 @@
  */
 
 #include <string.h>
+#include "os_port.h"
 #include "crypto.h"
 
 #define rot1(x) (((x) << 24) | ((x) >> 8))

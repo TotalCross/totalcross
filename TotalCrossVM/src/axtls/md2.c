@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string.h>
+#include "os_port.h"
 #include "crypto.h"
 
 #if defined(OPENSSL)

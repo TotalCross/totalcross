@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Cameron Rich
+ * Copyright (c) 2012-2016, Cameron Rich
  * 
  * All rights reserved.
  * 
@@ -29,69 +29,45 @@
  */
 
 /**
- * An implementation of the RC4/ARC4 algorithm.
- * Originally written by Christophe Devine.
+ * @file os_int.h
+ *
+ * Ensure a consistent bit size 
  */
 
-#include <string.h>
-#include "os_port.h"
-#include "crypto.h"
+#ifndef HEADER_OS_INT_H
+#define HEADER_OS_INT_H
 
-/* only used for PKCS12 now */
-#ifdef CONFIG_SSL_USE_PKCS12
-
-/**
- * Get ready for an encrypt/decrypt operation
- */
-void RC4_setup(RC4_CTX *ctx, const uint8_t *key, int length)
-{
-    int i, j = 0, k = 0, a;
-    uint8_t *m;
-
-    ctx->x = 0;
-    ctx->y = 0;
-    m = ctx->m;
-
-    for (i = 0; i < 256; i++)
-        m[i] = i;
-
-    for (i = 0; i < 256; i++)
-    {
-        a = m[i];
-        j = (uint8_t)(j + a + key[k]);
-        m[i] = m[j]; 
-        m[j] = a;
-
-        if (++k >= length) 
-            k = 0;
-    }
-}
-
-/**
- * Perform the encrypt/decrypt operation (can use it for either since
- * this is a stream cipher).
- * NOTE: *msg and *out must be the same pointer (performance tweak)
- */
-void RC4_crypt(RC4_CTX *ctx, const uint8_t *msg, uint8_t *out, int length)
-{ 
-    int i;
-    uint8_t *m, x, y, a, b;
-
-    x = ctx->x;
-    y = ctx->y;
-    m = ctx->m;
-
-    for (i = 0; i < length; i++)
-    {
-        a = m[++x];
-        y += a;
-        m[x] = b = m[y];
-        m[y] = a;
-        out[i] ^= m[(uint8_t)(a + b)];
-    }
-
-    ctx->x = x;
-    ctx->y = y;
-}
-
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+#if defined(WIN32)
+typedef unsigned char uint8_t;
+typedef char int8_t;
+typedef unsigned short uint16_t;
+typedef short int16_t;
+typedef unsigned int uint32_t;
+typedef int int32_t;
+typedef unsigned __int64 uint64_t;
+typedef __int64 int64_t;
+#else   /* Not Win32 */
+
+#ifdef CONFIG_PLATFORM_SOLARIS
+#include <inttypes.h>
+#else
+#include <stdint.h>
+
+#if !defined(linux) && !defined(ANDROID)
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+#endif
+
+#endif /* Not Solaris */
+
+#endif /* Not Win32 */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif 

@@ -6,7 +6,7 @@
 
 
 #include "tcvm.h"
-#include "../../axtls/crypto.h"
+#include "axtls.h"
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcdMD5D_init(NMParams p) // totalcross/crypto/digest/MD5Digest native private void init();

@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2007-2016, Cameron Rich
- *
+ * 
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
  *
@@ -41,6 +41,7 @@
 extern "C" {
 #endif
 
+#include "os_int.h"
 #include "axssl_config.h"
 #include <stdio.h>
 #define TC_privateXfree                privateXfree
@@ -48,9 +49,6 @@ extern "C" {
 #define TC_privateXrealloc             privateXrealloc
 #define TC_privateXcalloc              privateXcalloc
 #include "tcvm.h"  //flsobral@tc114_36: including tcvm.h to be able to use xmalloc and xfree.
-#if defined(WIN32)
-#include "winsockLib.h"
-#endif
 
 #if defined(WIN32)
 #define STDCALL                 __stdcall
@@ -84,63 +82,23 @@ int _isatty(int fd);
 
 #endif
 
-#if defined(PALMOS)
-#if defined(__arm__)
-#include <PalmOSARM.h>
-#else
-#include <PalmOS.h>
-#endif
-typedef UInt8 uint8_t;
-typedef Int16 int16_t;
-typedef UInt16 uint16_t;
-typedef Int32 int32_t;
-typedef UInt32 uint32_t;
-#elif defined(__SYMBIAN32__)
-#include <sys/types.h>
-#elif defined(WIN32)
-#if 0 /* my Win32 headers don't define the capitalized types below :-( */
-typedef UINT8 uint8_t;
-typedef INT8 int8_t;
-typedef UINT16 uint16_t;
-typedef INT16 int16_t;
-typedef UINT32 uint32_t;
-typedef INT32 int32_t;
-typedef UINT64 uint64_t;
-typedef INT64 int64_t;
-#else
-typedef unsigned char uint8_t;
-typedef char int8_t;
-typedef unsigned short uint16_t;
-typedef short int16_t;
-typedef unsigned int uint32_t;
-typedef int int32_t;
-#endif
-#endif
-
-#if !defined(linux) && !defined(ANDROID) && !defined(__SYMBIAN32__) 
- #if defined WIN32
-  typedef __int64 int64_t;
-  typedef unsigned __int64 uint64_t;
- #else
-  typedef long long int64_t;
-  typedef unsigned long long uint64_t;
- #endif
-#endif
-
 #ifdef WIN32
 
 /* Windows CE stuff */
 #if defined(_WIN32_WCE)
 #include <basetsd.h>
+#define abort() tcabort("AXTLS",__FILE__,__LINE__) // TOTALCROSS
 #else
 #include <io.h>
 #include <process.h>
 #include <sys/timeb.h>
 #include <fcntl.h>
-#include <direct.h>
 #endif      /* _WIN32_WCE */
 
-//#include <winsock.h> //flsobral: winsocLib will take care of this for us.
+#include "winsockLib.h"
+#if !defined(_WIN32_WCE)
+#include <direct.h>
+#endif
 #undef getpid
 #undef open
 #undef close
@@ -176,9 +134,9 @@ typedef int int32_t;
 
 /* This fix gets around a problem where a win32 application on a cygwin xterm
    doesn't display regular output (until a certain buffer limit) - but it works
-   fine under a normal DOS window. This is a hack to get around the issue -
+   fine under a normal DOS window. This is a hack to get around the issue - 
    see http://www.khngai.com/emacs/tty.php  */
-#define TTY_FLUSH()             if (!_isatty((int)_fileno(stdout))) fflush(stdout);
+#define TTY_FLUSH()             if (!_isatty(_fileno(stdout))) fflush(stdout);
 
 /*
  * automatically build some library dependencies.
@@ -200,33 +158,19 @@ EXP_FUNC void STDCALL gettimeofday(struct timeval* t,void* timezone);
 EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2);
 EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
 #endif
-/*
-#elif defined(__WINDOWS__)
 
-#	include <winsock2.h>
-#	include <sys/param.h>
-*/
-#	if BYTE_ORDER == LITTLE_ENDIAN
-#		define be64toh(x) ntohll(x)
-#	elif BYTE_ORDER == BIG_ENDIAN
-		/* that would be xbox 360 */
-#		define be64toh(x) (x)
-#	else
-#		error byte order not supported
-#	endif
+#ifdef _WIN32_WCE
+EXP_FUNC size_t strnlen(const char *str, size_t max);
+#endif
 
 #else   /* Not Win32 */
-
-#ifdef CONFIG_PLATFORM_SOLARIS
-#include <inttypes.h>
-#else
-#endif /* Not Solaris */
 
 #include <unistd.h>
 #include <pwd.h>
 #include <netdb.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -242,15 +186,18 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
 #define SOCKET_CLOSE(A)         if (A >= 0) close(A)
 #define TTY_FLUSH()
 
+#endif  /* Not Win32 */
+
 #ifndef be64toh
- #ifdef __APPLE__
+ #if defined __APPLE__ || BYTE_ORDER == LITTLE_ENDIAN
   #define be64toh(x) ntohll(x)
+ #elif BYTE_ORDER == BIG_ENDIAN
+  /* that would be xbox 360 */
+  #define be64toh(x) (x)
  #else
   #define be64toh(x) __be64_to_cpu(x)
  #endif
 #endif
-
-#endif  /* Not Win32 */
 
 //flsobral@tc115: Removed ifdef for PalmOS, it's the same code for all platforms from now on. (seems to fix the problem with corrupted VMs)
 #if defined (TOTALCROSS_INTEGRATION) //flsobral@tc114_36: we'll use tcvm functions instead.
@@ -263,6 +210,25 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
  #define malloc(A)       xmalloc(A)
  #define calloc(A,B)     xcalloc(A,B)
  #define realloc(A, B)   xrealloc(A, B)
+
+ extern int debug(const char *s, ...);
+ #define printf debug
+
+
+ #undef exit
+ #define exit(A)                 TCABORT
+
+extern int tcSocketReadWrite(int fd, char *buf, int count, int isRead);
+
+#undef SOCKET_READ
+#undef SOCKET_WRITE
+#undef SOCKET_CLOSE
+#undef TTY_FLUSH
+
+#define SOCKET_READ(A,B,C)      tcSocketReadWrite(A,B,C,1)
+#define SOCKET_WRITE(A,B,C)     tcSocketReadWrite(A,B,C,0)
+#define SOCKET_CLOSE(A)         if (A >= 0) close(A)
+#define TTY_FLUSH()
 
 #else // previous code
 
@@ -316,22 +282,35 @@ void exit_now(const char *format, ...);
 #endif
 #endif
 
-#if defined(TOTALCROSS_INTEGRATION)
-#undef SOCKET_READ
-#undef SOCKET_WRITE
-#undef SOCKET_CLOSE
+/* Mutexing definitions */
+#if defined(CONFIG_SSL_CTX_MUTEXING)
+#if defined(WIN32)
+#define SSL_CTX_MUTEX_TYPE          HANDLE
+#define SSL_CTX_MUTEX_INIT(A)       A=CreateMutex(0, FALSE, 0)
+#define SSL_CTX_MUTEX_DESTROY(A)    CloseHandle(A)
+#define SSL_CTX_LOCK(A)             WaitForSingleObject(A, INFINITE)
+#define SSL_CTX_UNLOCK(A)           ReleaseMutex(A)
+#elif HAVE_PTHREAD
+#include <pthread.h>
+#define SSL_CTX_MUTEX_TYPE          pthread_mutex_t
+#define SSL_CTX_MUTEX_INIT(A)       pthread_mutex_init(&A, NULL)
+#define SSL_CTX_MUTEX_DESTROY(A)    pthread_mutex_destroy(&A)
+#define SSL_CTX_LOCK(A)             pthread_mutex_lock(&A)
+#define SSL_CTX_UNLOCK(A)           pthread_mutex_unlock(&A)
+#else
+#undef CONFIG_SSL_CTX_MUTEXING
+#endif
+#endif
 
-extern int tcSocketReadWrite(int fd, char *buf, int count, int isRead);
-extern int debug(const char *s, ...);
-
-#define printf debug
-
-#define SOCKET_READ(A,B,C)    tcSocketReadWrite(A,B,C,1)
-#define SOCKET_WRITE(A,B,C)   tcSocketReadWrite(A,B,C,0)
-#endif // TOTALCROSS_INTEGRATION
+#if !defined(CONFIG_SSL_CTX_MUTEXING) /* no mutexing */
+#define SSL_CTX_MUTEX_INIT(A)
+#define SSL_CTX_MUTEX_DESTROY(A)
+#define SSL_CTX_LOCK(A)
+#define SSL_CTX_UNLOCK(A)
+#endif
 
 #ifdef __cplusplus
-};
+}
 #endif
 
-#endif
+#endif 

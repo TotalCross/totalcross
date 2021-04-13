@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2015, Cameron Rich
+ * Copyright (c) 2007-2016, Cameron Rich
  * 
  * All rights reserved.
  * 
@@ -39,7 +39,7 @@
 extern "C" {
 #endif
 
-#include "axssl_config.h"
+#include "bigint_impl.h"
 #include "bigint.h"
 
 #ifndef STDCALL
@@ -222,6 +222,8 @@ EXP_FUNC int STDCALL MD2Final(MD2_CTX *, uint8_t *digest);
 void hmac_md5(const uint8_t *msg, int length, const uint8_t *key, 
         int key_len, uint8_t *digest);
 void hmac_sha1(const uint8_t *msg, int length, const uint8_t *key, 
+        int key_len, uint8_t *digest);
+void hmac_sha256(const uint8_t *msg, int length, const uint8_t *key, 
         int key_len, uint8_t *digest);
 
 /**************************************************************************

@@ -31,14 +31,7 @@
 #ifndef BIGINT_HEADER
 #define BIGINT_HEADER
 
-#include "axssl_config.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "os_port.h"
-#include "bigint_impl.h"
+#include "crypto.h"
 
 BI_CTX *bi_initialize(void);
 void bi_terminate(BI_CTX *ctx);
@@ -96,8 +89,11 @@ bigint *bi_square(BI_CTX *ctx, bigint *bi);
 #define bi_square(A, B)     bi_multiply(A, bi_copy(B), B)
 #endif
 
-#ifdef __cplusplus
-}
+#ifdef CONFIG_BIGINT_CRT
+bigint *bi_crt(BI_CTX *ctx, bigint *bi,
+        bigint *dP, bigint *dQ,
+        bigint *p, bigint *q,
+        bigint *qInv);
 #endif
 
 #endif
