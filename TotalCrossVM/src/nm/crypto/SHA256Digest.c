@@ -12,7 +12,7 @@
 
 
 #include "tcvm.h"
-#include "../../axtls/crypto.h"
+#include "axtls.h"
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcdSHA256D_init(NMParams p) // totalcross/crypto/digest/SHA256Digest native private void init();

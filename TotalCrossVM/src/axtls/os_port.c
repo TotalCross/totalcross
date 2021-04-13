@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2007-2016, Cameron Rich
- *
+ * 
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
  *
@@ -37,24 +37,21 @@
 #include <time.h>
 #endif
 #include <stdlib.h>
-#include <stdio.h>
-#if !defined(PALMOS) && !defined(_WIN32_WCE)
+#if !defined(_WIN32_WCE)
 #include <errno.h>
 #endif
 #include <stdarg.h>
 #include "os_port.h"
 
-#define abort() tcabort("AXTLS",__FILE__,__LINE__) // TOTALCROSS
-
 #ifdef WIN32
 /**
- * gettimeofday() not in Win32
+ * gettimeofday() not in Win32 
  */
 EXP_FUNC void STDCALL gettimeofday(struct timeval* t, void* timezone)
-{
+{       
 #if defined(_WIN32_WCE)
     t->tv_sec = time(NULL);
-    t->tv_usec = 0;                         /* 1sec precision only */
+    t->tv_usec = 0;                         /* 1sec precision only */ 
 #else
     struct _timeb timebuffer;
     _ftime(&timebuffer);
@@ -66,6 +63,7 @@ EXP_FUNC void STDCALL gettimeofday(struct timeval* t, void* timezone)
 /**
  * strcasecmp() not in Win32
  */
+#ifndef __clang__
 EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2)
 {
     while (tolower(*s1) == tolower(*s2++))
@@ -78,7 +76,15 @@ EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2)
 
     return *(unsigned char *)s1 - *(unsigned char *)(s2 - 1);
 }
+#endif
 
+#ifdef _WIN32_WCE
+EXP_FUNC size_t strnlen(const char *str, size_t max)
+{
+    const char *end = memchr (str, 0, max);
+    return end ? (size_t)(end - str) : max;
+}
+#endif
 #endif
 
 //+fdie@20090325 support certificate expiration dates beyond 2050
@@ -131,7 +137,6 @@ char* ctime(const time_t* timer)
 #undef fopen
 
 #if !defined (TOTALCROSS_INTEGRATION) //flsobral@tc114_36: no longer used by totalcross.
-#if !defined(PALMOS)
 
 #undef malloc
 #undef realloc
@@ -186,7 +191,6 @@ EXP_FUNC void * STDCALL ax_calloc(size_t n, size_t s)
 }
 #endif
 
-#endif //!defined(PALMOS)
 #endif
 
 #if !defined(TOTALCROSS_INTEGRATION)
@@ -219,13 +223,10 @@ EXP_FUNC int STDCALL ax_open(const char *pathname, int flags)
  */
 void exit_now(const char *format, ...)
 {
-#if !defined(PALMOS)
     va_list argp;
     va_start(argp, format);
     vfprintf(stderr, format, argp);
     va_end(argp);
-#endif
-    abort();
 }
 
 #endif

@@ -2707,6 +2707,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\axtls\axtls.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\axtls\bigint.c"
 				>
 			</File>

@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include "os_port.h"
 #include "ssl.h"
 
 #define OPENSSL_CTX_ATTR  ((OPENSSL_CTX *)ssl_ctx->bonus_attr)
@@ -63,16 +64,16 @@ typedef struct
 
 SSL_CTX * SSL_CTX_new(ssl_func_type_t meth)
 {
-   SSL_CTX *ssl_ctx = ssl_ctx_new(0, 5);
-   ssl_ctx->bonus_attr = malloc(sizeof(OPENSSL_CTX));
+    SSL_CTX *ssl_ctx = ssl_ctx_new(0, 5);
+    ssl_ctx->bonus_attr = malloc(sizeof(OPENSSL_CTX));
     OPENSSL_CTX_ATTR->ssl_func_type = meth;
-   return ssl_ctx;
+    return ssl_ctx;
 }
 
 void SSL_CTX_free(SSL_CTX * ssl_ctx)
 {
-   free(ssl_ctx->bonus_attr);
-   ssl_ctx_free(ssl_ctx);
+    free(ssl_ctx->bonus_attr);
+    ssl_ctx_free(ssl_ctx);
 }
 
 SSL * SSL_new(SSL_CTX *ssl_ctx)
@@ -287,9 +288,9 @@ void SSL_load_error_strings(void ) {}
 void ERR_print_errors_fp(FILE *fp) {}
 
 #ifndef CONFIG_SSL_SKELETON_MODE
-long SSL_CTX_get_timeout(const SSL_CTX *ssl_ctx) {
+long SSL_CTX_get_timeout(const SSL_CTX *ssl_ctx) { 
                             return CONFIG_SSL_EXPIRY_TIME*3600; }
-long SSL_CTX_set_timeout(SSL_CTX *ssl_ctx, long t) {
+long SSL_CTX_set_timeout(SSL_CTX *ssl_ctx, long t) { 
                             return SSL_CTX_get_timeout(ssl_ctx); }
 #endif
 void BIO_printf(FILE *f, const char *format, ...)

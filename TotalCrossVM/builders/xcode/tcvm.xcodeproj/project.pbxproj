@@ -38,6 +38,7 @@
 		0F8C8C731549CFC700E0967F /* tls1_clnt.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A151549CFC700E0967F /* tls1_clnt.c */; };
 		0F8C8C741549CFC700E0967F /* tls1_svr.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A161549CFC700E0967F /* tls1_svr.c */; };
 		0F8C8C751549CFC700E0967F /* version.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A171549CFC700E0967F /* version.h */; };
+		0F8C8C761549CFC700E0967F /* axtls.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A191549CFC700E0967F /* version.h */; };
 		0F8C8C781549CFC700E0967F /* event.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A1D1549CFC700E0967F /* event.m */; };
 		0F8C8C791549CFC700E0967F /* event_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A1E1549CFC700E0967F /* event_c.h */; };
 		0F8C8C7A1549CFC700E0967F /* specialkeys_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A1F1549CFC700E0967F /* specialkeys_c.h */; };
@@ -471,6 +472,7 @@
 		0F8C8A151549CFC700E0967F /* tls1_clnt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tls1_clnt.c; sourceTree = "<group>"; };
 		0F8C8A161549CFC700E0967F /* tls1_svr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tls1_svr.c; sourceTree = "<group>"; };
 		0F8C8A171549CFC700E0967F /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
+		0F8C8A191549CFC700E0967F /* axtls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = axtls.h; sourceTree = "<group>"; };
 		0F8C8A1D1549CFC700E0967F /* event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = event.m; sourceTree = "<group>"; };
 		0F8C8A1E1549CFC700E0967F /* event_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = event_c.h; sourceTree = "<group>"; };
 		0F8C8A1F1549CFC700E0967F /* specialkeys_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = specialkeys_c.h; sourceTree = "<group>"; };
@@ -995,6 +997,7 @@
 				0F8C8A151549CFC700E0967F /* tls1_clnt.c */,
 				0F8C8A161549CFC700E0967F /* tls1_svr.c */,
 				0F8C8A171549CFC700E0967F /* version.h */,
+				0F8C8A191549CFC700E0967F /* axtls.h */,
 			);
 			path = axtls;
 			sourceTree = "<group>";
@@ -1988,6 +1991,7 @@
 				0F8C8C701549CFC700E0967F /* ssl.h in Headers */,
 				0F8C8C721549CFC700E0967F /* tls1.h in Headers */,
 				0F8C8C751549CFC700E0967F /* version.h in Headers */,
+				0F8C8C761549CFC700E0967F /* axtls.h in Headers */,
 				0F8C8C791549CFC700E0967F /* event_c.h in Headers */,
 				0F8C8C7A1549CFC700E0967F /* specialkeys_c.h in Headers */,
 				0F8C8C7C1549CFC700E0967F /* event.h in Headers */,
