@@ -257,19 +257,21 @@ public class SSL {
         javax.net.ssl.SSLSocket sslSocket = (javax.net.ssl.SSLSocket) ssl;
         sslSocket.setSoTimeout(socket.readTimeout);
 
-        InputStream is = sslSocket.getInputStream();
-        int r = is.read(); // first, read one byte using the timeout
-        if (r != -1) {
-          int count = is.available();
-          byte[] buf = rh.m_buf = new byte[count + 1];
+        if(!sslSocket.isInputShutdown()){
+          InputStream is = sslSocket.getInputStream();
+          int r = is.read(); // first, read one byte using the timeout
+          if (r != -1) {
+            int count = is.available();
+            byte[] buf = rh.m_buf = new byte[count + 1];
 
-          buf[0] = (byte) r;
-          if (count > 0) {
-            is.read(buf, 1, count);
+            buf[0] = (byte) r;
+            if (count > 0) {
+              is.read(buf, 1, count);
+            }
+
+            return count + 1;
           }
-
-          return count + 1;
-        }
+        }        
       } catch (java.io.IOException e) {
         throw new IOException(e.getMessage());
       }
