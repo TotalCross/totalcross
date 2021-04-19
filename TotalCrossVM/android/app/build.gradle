@@ -14,7 +14,7 @@ apply plugin: 'com.android.application'
 def buildType // stores build type, debug or release
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 29
     ndkVersion "21.0.6113669"
     compileOptions {
     	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
@@ -36,7 +36,7 @@ android {
     defaultConfig {
         applicationId "totalcross.android"
         minSdkVersion 15
-        targetSdkVersion 30
+        targetSdkVersion 29
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
