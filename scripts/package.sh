@@ -8,12 +8,16 @@ secs_to_human() {
 
 start=$(date +%s)
 
-OUTDIR=${PWD}/build/TotalCross
+BASEDIR=$(cd ..; pwd)
+OUTDIR=$BASEDIR/build/TotalCross
 
-rm -rf build/
-git clean -f -d -X
+pushd $BASEDIR
+    rm -rf $BASEDIR/build/
+    git clean -f -d -X
+popd
 
-./package-sdk.sh & ./package-ios.sh & ./package-android.sh
-wait
+./package-sdk.sh
+./package-android.sh
+./package-ios.sh
 
 secs_to_human "$(($(date +%s) - ${start}))"

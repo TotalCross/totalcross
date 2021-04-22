@@ -1,11 +1,12 @@
 #!/bin/bash
 
-OUTDIR=${PWD}/build/TotalCross
+BASEDIR=$(cd ..; pwd)
+OUTDIR=$BASEDIR/build/TotalCross
 
 echo "STARTING SDK"
 
 mkdir -p $OUTDIR/dist/vm/wince
-pushd TotalCrossSDK
+pushd $BASEDIR/TotalCrossSDK
    cp README.txt $OUTDIR
    cp license.txt $OUTDIR
 
