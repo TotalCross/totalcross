@@ -186,9 +186,10 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     canvas->clear(SK_ColorWHITE);
     flushSkia();
 }
-
+int count=0;
 void flushSkia()
 {
+    LOGD("countflush: %d",++count);
     canvas->flush();
 #ifdef HEADLESS
     TCSDL_UpdateTexture(bitmap.width(), bitmap.height(), bitmap.rowBytes(),bitmap.getPixels());
