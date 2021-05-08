@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2015, Cameron Rich
+ * Copyright (c) 2007-2019, Cameron Rich
  * 
  * All rights reserved.
  * 
@@ -39,7 +39,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "crypto.h"
+#include "os_port.h"
 #include "crypto_misc.h"
 #ifdef CONFIG_WIN32_USE_CRYPTO_LIB
 #include "wincrypt.h"
@@ -86,13 +86,13 @@ int get_file(const char *filename, uint8_t **buf)
 
     /* Win CE doesn't support stat() */
     fseek(stream, 0, SEEK_END);
-    filesize = (int)ftell(stream);
+    filesize = ftell(stream);
     *buf = (uint8_t *)malloc(filesize);
     fseek(stream, 0, SEEK_SET);
 
     do
     {
-        bytes_read = (int)fread(*buf+total_bytes, 1, filesize-total_bytes, stream);
+        bytes_read = fread(*buf+total_bytes, 1, filesize-total_bytes, stream);
         total_bytes += bytes_read;
     } while (total_bytes < filesize && bytes_read > 0);
     
@@ -101,7 +101,6 @@ int get_file(const char *filename, uint8_t **buf)
 }
 #endif
 
-extern int tweakSSL;
 /**
  * Initialise the Random Number Generator engine.
  * - On Win32 use the platform SDK's crypto engine.
@@ -111,7 +110,7 @@ extern int tweakSSL;
 EXP_FUNC void STDCALL RNG_initialize()
 {
 #if !defined(WIN32) && defined(CONFIG_USE_DEV_URANDOM)
-    rng_fd = ax_open("/dev/urandom", O_RDONLY);
+    rng_fd = open("/dev/urandom", O_RDONLY);
 #elif defined(WIN32) && defined(CONFIG_WIN32_USE_CRYPTO_LIB)
     if (!CryptAcquireContext(&gCryptProv, 
                       NULL, NULL, PROV_RSA_FULL, 0))
@@ -123,18 +122,18 @@ EXP_FUNC void STDCALL RNG_initialize()
                        PROV_RSA_FULL, 
                        CRYPT_NEWKEYSET))
         {
-            debug("CryptoLib: %s %x", unsupported_str, GetLastError());
-            TCABORT;//exit(1);
+            printf("CryptoLib: %x\n", unsupported_str, GetLastError());
+            exit(1);
         }
     }
 #else
     /* start of with a stack to copy across */
-    int i;
+    int i = rand();
     memcpy(entropy_pool, &i, ENTROPY_POOL_SIZE);
 #if defined rand_r
     rand_r((unsigned int *)entropy_pool);
 #else
-	srand((unsigned int)*entropy_pool);
+    srand((unsigned int)*entropy_pool);
 #endif
 #endif
 }

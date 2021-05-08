@@ -5,7 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [7.1.0] - 2021-04-23
+
+### Added
+- Added new build options to disable Skia and use our original graphical primitives, resulting in a very smaller libtcvm (~3MB) that also works on OpenBSD. Thanks @erathke for this contribution! #287
+>Usage:
+>`cmake <source_dir> -DUSE_SKIA=OFF`
+
+### Changed
+- Updated library Axtls from version 1.5.4 to 2.1.5 to include support for TLS 1.2.
+
+### Fixed
+- Android
+  - Reverted Android build to target SDK 29 in order to fix support for Android 11.
+- Launcher
+  - Fixed Android deploy on case sensitive systems.
+- Simulator
+  - SSL: Fixed bug on some JDK implementations that would throw IOException on getInputStream after EOF.
+
+## [7.0.4] - 2021-04-06
+
+### Changed
+- Simulator: Removes resizing of font on simulator for better fidelity across platforms - #293
+
+### Fixed
+- Android:
+  - Fixed packaging of binaries included in the release.
 
 ## [7.0.3] - 2021-03-09
 
@@ -16,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Android build improved, it should be A LOT faster for most systems.
 
 - **Edit and virtual keyboard performance improvements**
+
+### Known issues
+- Android prebuilt binaries included in this release are broken, skip this release for Android or rebuild the binaries from the sources and replace them locally.
 
 ### Changed
 - Removed Cielo Lio text printing support, reducing the Android binary size. (Let us know if you need this feature back)
@@ -1146,8 +1174,10 @@ the ScrollContainer reseta it to true
 ### Known issues
 - `Class.getCanonicalName()` doesn't return the canonical name, but defaults to `Class.getName()`
 
-[Unreleased]: https://github.com/totalcross/TotalCross/compare/v7.0.2...master
+[Unreleased]: https://github.com/totalcross/TotalCross/compare/v7.1.0...master
 [7.0.0]: https://github.com/totalcross/TotalCross/compare/v6.1.1...v7.0.0
 [7.0.1]: https://github.com/totalcross/TotalCross/compare/v7.0.0...v7.0.1
 [7.0.2]: https://github.com/totalcross/TotalCross/compare/v7.0.1...v7.0.2
-[7.0.3]: https://github.com/totalcross/TotalCross/compare/v7.0.3...v7.0.3
+[7.0.3]: https://github.com/totalcross/TotalCross/compare/v7.0.2...v7.0.3
+[7.0.4]: https://github.com/totalcross/TotalCross/compare/v7.0.3...v7.0.4
+[7.1.0]: https://github.com/totalcross/TotalCross/compare/v7.0.4...v7.1.0

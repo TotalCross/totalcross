@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
-#include "../axtls/crypto.h"
+#include "axtls.h"
 
 #if defined (WINCE)
  #include "../nm/io/device/RadioDevice.h"

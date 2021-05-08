@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "os_port.h"
 #include "crypto.h"
 
 static void RSA_priv_key_new_common(RSA_CTX *rsa_ctx,

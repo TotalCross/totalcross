@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2015, Cameron Rich
+ * Copyright (c) 2007-2017, Cameron Rich
  * 
  * All rights reserved.
  * 
@@ -44,27 +44,12 @@
 #include "crypto_misc.h"
 
 #ifdef CONFIG_SSL_CERT_VERIFICATION
-/**
- * Retrieve the signature from a certificate.
- */
-static const uint8_t *get_signature(const uint8_t *asn1_sig, int *len)
-{
-    int offset = 0;
-    const uint8_t *ptr = NULL;
-
-    if (asn1_next_obj(asn1_sig, &offset, ASN1_SEQUENCE) < 0 || 
-            asn1_skip_obj(asn1_sig, &offset, ASN1_SEQUENCE))
-        goto end_get_sig;
-
-    if (asn1_sig[offset++] != ASN1_OCTET_STRING)
-        goto end_get_sig;
-    *len = get_asn1_length(asn1_sig, &offset);
-    ptr = &asn1_sig[offset];          /* all ok */
-
-end_get_sig:
-    return ptr;
-}
-
+static int x509_v3_subject_alt_name(const uint8_t *cert, int offset, 
+        X509_CTX *x509_ctx);
+static int x509_v3_basic_constraints(const uint8_t *cert, int offset, 
+        X509_CTX *x509_ctx);
+static int x509_v3_key_usage(const uint8_t *cert, int offset, 
+        X509_CTX *x509_ctx);
 #endif
 
 /**
@@ -75,8 +60,11 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
 {
     int begin_tbs, end_tbs;
     int ret = X509_NOT_OK, offset = 0, cert_size = 0;
+    int version = 0;
     X509_CTX *x509_ctx;
+#ifdef CONFIG_SSL_CERT_VERIFICATION /* only care if doing verification */
     BI_CTX *bi_ctx;
+#endif
 
     *ctx = (X509_CTX *)calloc(1, sizeof(X509_CTX));
     x509_ctx = *ctx;
@@ -94,11 +82,10 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
     if (asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
         goto end_cert;
 
-    if (cert[offset] == ASN1_EXPLICIT_TAG)   /* optional version */
-    {
-        if (asn1_version(cert, &offset, x509_ctx))
-            goto end_cert;
-    }
+    /* optional version */
+    if (cert[offset] == ASN1_EXPLICIT_TAG && 
+            asn1_version(cert, &offset, &version) == X509_NOT_OK)
+        goto end_cert;
 
     if (asn1_skip_obj(cert, &offset, ASN1_INTEGER) || /* serial number */ 
             asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
@@ -119,9 +106,9 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
         goto end_cert;
     }
 
+#ifdef CONFIG_SSL_CERT_VERIFICATION /* only care if doing verification */
     bi_ctx = x509_ctx->rsa_ctx->bi_ctx;
 
-#ifdef CONFIG_SSL_CERT_VERIFICATION /* only care if doing verification */
     /* use the appropriate signature algorithm */
     switch (x509_ctx->sig_type)
     {
@@ -181,50 +168,11 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
             break;
     }
 
-    if (cert[offset] == ASN1_V3_DATA)
+    if (version == 2 && asn1_next_obj(cert, &offset, ASN1_V3_DATA) > 0)
     {
-        int suboffset;
-
-        ++offset;
-        get_asn1_length(cert, &offset);
-
-        if ((suboffset = asn1_find_subjectaltname(cert, offset)) > 0)
-        {
-            if (asn1_next_obj(cert, &suboffset, ASN1_OCTET_STRING) > 0)
-            {
-                int altlen;
-
-                if ((altlen = asn1_next_obj(cert, 
-                                            &suboffset, ASN1_SEQUENCE)) > 0)
-                {
-                    int endalt = suboffset + altlen;
-                    int totalnames = 0;
-
-                    while (suboffset < endalt)
-                    {
-                        int type = cert[suboffset++];
-                        int dnslen = get_asn1_length(cert, &suboffset);
-
-                        if (type == ASN1_CONTEXT_DNSNAME)
-                        {
-                            x509_ctx->subject_alt_dnsnames = (char**)
-                                    realloc(x509_ctx->subject_alt_dnsnames, 
-                                       (totalnames + 2) * sizeof(char*));
-                            x509_ctx->subject_alt_dnsnames[totalnames] = 
-                                    (char*)malloc(dnslen + 1);
-                            x509_ctx->subject_alt_dnsnames[totalnames+1] = NULL;
-                            memcpy(x509_ctx->subject_alt_dnsnames[totalnames], 
-                                    cert + suboffset, dnslen);
-                            x509_ctx->subject_alt_dnsnames[
-                                    totalnames][dnslen] = 0;
-                            ++totalnames;
-                        }
-
-                        suboffset += dnslen;
-                    }
-                }
-            }
-        }
+        x509_v3_subject_alt_name(cert, offset, x509_ctx);
+        x509_v3_basic_constraints(cert, offset, x509_ctx);
+        x509_v3_key_usage(cert, offset, x509_ctx);
     }
 
     offset = end_tbs;   /* skip the rest of v3 data */
@@ -251,6 +199,136 @@ end_cert:
 
     return ret;
 }
+
+#ifdef CONFIG_SSL_CERT_VERIFICATION /* only care if doing verification */
+static int x509_v3_subject_alt_name(const uint8_t *cert, int offset, 
+        X509_CTX *x509_ctx)
+{
+    if ((offset = asn1_is_subject_alt_name(cert, offset)) > 0)
+    {
+        x509_ctx->subject_alt_name_present = true;
+        x509_ctx->subject_alt_name_is_critical = 
+                        asn1_is_critical_ext(cert, &offset);
+
+        if (asn1_next_obj(cert, &offset, ASN1_OCTET_STRING) > 0)
+        {
+            int altlen;
+
+            if ((altlen = asn1_next_obj(cert, &offset, ASN1_SEQUENCE)) > 0)
+            {
+                int endalt = offset + altlen;
+                int totalnames = 0;
+
+                while (offset < endalt)
+                {
+                    int type = cert[offset++];
+                    int dnslen = get_asn1_length(cert, &offset);
+
+                    if (type == ASN1_CONTEXT_DNSNAME)
+                    {
+                        /* sanity check the hostname due to
+https://tools.cisco.com/security/center/viewAlert.x?alertId=18852
+                         */
+                        if (strnlen((const char *)&cert[offset], dnslen) !=
+                                    dnslen)
+                        {
+                            return X509_VFY_ERROR_NO_TRUSTED_CERT;
+                        }
+
+                        x509_ctx->subject_alt_dnsnames = (char**)
+                                realloc(x509_ctx->subject_alt_dnsnames, 
+                                   (totalnames + 2) * sizeof(char*));
+                        x509_ctx->subject_alt_dnsnames[totalnames] = 
+                                (char*)malloc(dnslen + 1);
+                        x509_ctx->subject_alt_dnsnames[totalnames+1] = NULL;
+                        memcpy(x509_ctx->subject_alt_dnsnames[totalnames], 
+                                cert + offset, dnslen);
+                        x509_ctx->subject_alt_dnsnames[totalnames][dnslen] = 0;
+                        totalnames++;
+                    }
+
+                    offset += dnslen;
+                }
+            }
+        }
+    }
+
+    return X509_OK;
+}
+
+/**
+ * Basic constraints - see https://tools.ietf.org/html/rfc5280#page-39
+ */
+static int x509_v3_basic_constraints(const uint8_t *cert, int offset, 
+        X509_CTX *x509_ctx)
+{
+    int ret = X509_OK;
+    int lenSeq = 0;
+
+    if ((offset = asn1_is_basic_constraints(cert, offset)) == 0)
+        goto end_contraints;
+
+    x509_ctx->basic_constraint_present = true;
+    x509_ctx->basic_constraint_is_critical = 
+                    asn1_is_critical_ext(cert, &offset);
+
+    /* Assign Defaults in case not specified
+    basic_constraint_cA will already by zero by virtue of the calloc */
+    x509_ctx->basic_constraint_cA = 0;
+    /* basic_constraint_pathLenConstraint is unlimited by default. 
+    10000 is just a large number (limits.h is not already included) */
+    x509_ctx->basic_constraint_pathLenConstraint = 10000;
+    
+    if ((asn1_next_obj(cert, &offset, ASN1_OCTET_STRING) < 0) ||
+            ((lenSeq = asn1_next_obj(cert, &offset, ASN1_SEQUENCE)) < 0))
+    {
+        ret = X509_NOT_OK;       
+    }
+    
+    /* If the Sequence Length is greater than zero, 
+    continue with the basic_constraint_cA */
+    if ((lenSeq>0)&&(asn1_get_bool(cert, &offset, 
+            &x509_ctx->basic_constraint_cA) < 0))
+    {
+        ret = X509_NOT_OK;
+    }
+    
+    /* If the Sequence Length is greater than 3, it has more content than 
+    the basic_constraint_cA bool, so grab the pathLenConstraint */
+    if ((lenSeq>3) && (asn1_get_int(cert, &offset, 
+            &x509_ctx->basic_constraint_pathLenConstraint) < 0))
+    {
+        ret = X509_NOT_OK;
+    }
+
+end_contraints:
+    return ret;
+}
+
+/*
+ * Key usage - see https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+ */
+static int x509_v3_key_usage(const uint8_t *cert, int offset, 
+        X509_CTX *x509_ctx)
+{
+    int ret = X509_OK;
+
+    if ((offset = asn1_is_key_usage(cert, offset)) == 0)
+        goto end_key_usage;
+
+    x509_ctx->key_usage_present = true;
+    x509_ctx->key_usage_is_critical = asn1_is_critical_ext(cert, &offset);
+
+    if (asn1_next_obj(cert, &offset, ASN1_OCTET_STRING) < 0 ||
+            asn1_get_bit_string_as_int(cert, &offset, &x509_ctx->key_usage))
+    {
+        ret = X509_NOT_OK;       
+    }
+
+end_key_usage:
+    return ret;
+}
+#endif
 
 /**
  * Free an X.509 object's resources.
@@ -293,16 +371,57 @@ void x509_free(X509_CTX *x509_ctx)
 }
 
 #ifdef CONFIG_SSL_CERT_VERIFICATION
+
+static const uint8_t sig_prefix_md5[] = {0x30, 0x20, 0x30, 0x0C, 0x06, 0x08, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10};
+static const uint8_t sig_prefix_sha1[] = {0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0E, 0x03, 0x02, 0x1A, 0x05, 0x00, 0x04, 0x14};
+static const uint8_t sig_prefix_sha256[] = {0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20};
+static const uint8_t sig_prefix_sha384[] = {0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02, 0x05, 0x00, 0x04, 0x30};
+static const uint8_t sig_prefix_sha512[] = {0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05, 0x00, 0x04, 0x40};
+
 /**
  * Take a signature and decrypt it.
  */
-static bigint *sig_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
-        bigint *modulus, bigint *pub_exp)
+static bigint *sig_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len, 
+        uint8_t sig_type, bigint *modulus, bigint *pub_exp)
 {
-    int i, size;
+    int i;
     bigint *decrypted_bi, *dat_bi;
     bigint *bir = NULL;
     uint8_t *block = (uint8_t *)alloca(sig_len);
+
+    const uint8_t *sig_prefix = NULL; 
+    uint8_t sig_prefix_size = 0, hash_len = 0;
+    /* adjust our expections */
+    switch (sig_type)
+    {
+        case SIG_TYPE_MD5:
+            sig_prefix = sig_prefix_md5;
+            sig_prefix_size = sizeof(sig_prefix_md5);
+        break;
+        case SIG_TYPE_SHA1:
+            sig_prefix = sig_prefix_sha1;
+            sig_prefix_size = sizeof(sig_prefix_sha1);
+        break;
+        case SIG_TYPE_SHA256:
+            sig_prefix = sig_prefix_sha256;
+            sig_prefix_size = sizeof(sig_prefix_sha256);
+        break;
+        case SIG_TYPE_SHA384:
+            sig_prefix = sig_prefix_sha384;
+            sig_prefix_size = sizeof(sig_prefix_sha384);
+        break;
+        case SIG_TYPE_SHA512:
+            sig_prefix = sig_prefix_sha512;
+            sig_prefix_size = sizeof(sig_prefix_sha512);
+        break;
+    }
+
+    if (sig_prefix) 
+        hash_len = sig_prefix[sig_prefix_size - 1];
+ 
+    /* check length (#A) */
+    if (sig_len < 2 + 8 + 1 + sig_prefix_size + hash_len)
+        goto err;
 
     /* decrypt */
     dat_bi = bi_import(ctx, sig, sig_len);
@@ -314,22 +433,30 @@ static bigint *sig_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
     bi_export(ctx, decrypted_bi, block, sig_len);
     ctx->mod_offset = BIGINT_M_OFFSET;
 
-    i = 10; /* start at the first possible non-padded byte */
-    while (block[i++] && i < sig_len);
-    size = sig_len - i;
-
-    /* get only the bit we want */
-    if (size > 0)
-    {
-        int len;
-        const uint8_t *sig_ptr = get_signature(&block[i], &len);
-
-        if (sig_ptr)
-        {
-            bir = bi_import(ctx, sig_ptr, len);
-        }
+    /* check the first 2 bytes */
+    if (block[0] != 0 || block[1] != 1)
+        goto err;
+    
+    /* check the padding */
+    i = 2; /* start at the first padding byte */
+    while (i < sig_len - 1 - sig_prefix_size - hash_len)
+    { /* together with (#A), we require at least 8 bytes of padding */
+        if (block[i++] != 0xFF)
+            goto err;
     }
 
+    /* check end of padding */
+    if (block[i++] != 0)
+        goto err;
+    
+    /* check the ASN.1 metadata */
+    if (memcmp(block+i, sig_prefix, sig_prefix_size))
+        goto err;
+
+    /* now we can get the hash we need */
+    bir = bi_import(ctx, block + i + sig_prefix_size, hash_len);
+
+err:
     /* save a few bytes of memory */
     bi_clear_cache(ctx);
     return bir;
@@ -345,8 +472,10 @@ static bigint *sig_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
  * - That the certificate(s) are not self-signed.
  * - The certificate chain is valid.
  * - The signature of the certificate is valid.
+ * - Basic constraints 
  */
-int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert) 
+int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert, 
+        int *pathLenConstraint) 
 {
     int ret = X509_OK, i = 0;
     bigint *cert_sig;
@@ -389,6 +518,33 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
         goto end_verify;
     }
 
+    if (cert->basic_constraint_present)
+    {
+        /* If the cA boolean is not asserted,
+           then the keyCertSign bit in the key usage extension MUST NOT be
+           asserted. */
+        if (!cert->basic_constraint_cA &&
+                IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_KEY_CERT_SIGN))
+        {
+            ret = X509_VFY_ERROR_BASIC_CONSTRAINT;
+            goto end_verify;
+        }
+
+        /* The pathLenConstraint field is meaningful only if the cA boolean is
+           asserted and the key usage extension, if present, asserts the
+           keyCertSign bit.  In this case, it gives the maximum number of 
+           non-self-issued intermediate certificates that may follow this 
+           certificate in a valid certification path. */
+        if (cert->basic_constraint_cA &&
+            (!cert->key_usage_present || 
+                IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_KEY_CERT_SIGN)) &&
+            (cert->basic_constraint_pathLenConstraint+1) < *pathLenConstraint)
+        {
+            ret = X509_VFY_ERROR_BASIC_CONSTRAINT;
+            goto end_verify;
+        }
+    }
+
     next_cert = cert->next;
 
     /* last cert in the chain - look for a trusted cert */
@@ -396,17 +552,29 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
     {
        if (ca_cert_ctx != NULL) 
        {
-            /* go thu the CA store */
+            /* go thru the CA store */
             while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i])
             {
+                /* the extension is present but the cA boolean is not 
+                   asserted, then the certified public key MUST NOT be used 
+                   to verify certificate signatures. */
+                if (cert->basic_constraint_present && 
+                        !ca_cert_ctx->cert[i]->basic_constraint_cA)
+                {
+                    i++;
+                    continue;
+                }
+                        
                 if (asn1_compare_dn(cert->ca_cert_dn,
                                             ca_cert_ctx->cert[i]->cert_dn) == 0)
                 {
                     /* use this CA certificate for signature verification */
-                    match_ca_cert = 1;
+                    match_ca_cert = true;
                     ctx = ca_cert_ctx->cert[i]->rsa_ctx->bi_ctx;
                     mod = ca_cert_ctx->cert[i]->rsa_ctx->m;
                     expn = ca_cert_ctx->cert[i]->rsa_ctx->e;
+
+
                     break;
                 }
 
@@ -443,7 +611,7 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
     }
 
     /* check the signature */
-    cert_sig = sig_verify(ctx, cert->signature, cert->sig_len, 
+    cert_sig = sig_verify(ctx, cert->signature, cert->sig_len, cert->sig_type,
                         bi_clone(ctx, mod), bi_clone(ctx, expn));
 
     if (cert_sig && cert->digest)
@@ -465,7 +633,8 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
     /* go down the certificate chain using recursion. */
     if (next_cert != NULL)
     {
-        ret = x509_verify(ca_cert_ctx, next_cert);
+        (*pathLenConstraint)++; /* don't include last certificate */
+        ret = x509_verify(ca_cert_ctx, next_cert, pathLenConstraint);
     }
 
 end_verify:
@@ -492,9 +661,140 @@ void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
     printf("%s\n", cert->cert_dn[X509_ORGANIZATION] ?
         cert->cert_dn[X509_ORGANIZATION] : not_part_of_cert);
 
-    printf("Organizational Unit (OU):\t");
-    printf("%s\n", cert->cert_dn[X509_ORGANIZATIONAL_UNIT] ?
-        cert->cert_dn[X509_ORGANIZATIONAL_UNIT] : not_part_of_cert);
+    if (cert->cert_dn[X509_ORGANIZATIONAL_UNIT]) 
+    {
+        printf("Organizational Unit (OU):\t");
+        printf("%s\n", cert->cert_dn[X509_ORGANIZATIONAL_UNIT]);
+    }
+
+    if (cert->cert_dn[X509_LOCATION]) 
+    {
+        printf("Location (L):\t\t\t");
+        printf("%s\n", cert->cert_dn[X509_LOCATION]);
+    }
+
+    if (cert->cert_dn[X509_COUNTRY]) 
+    {
+        printf("Country (C):\t\t\t");
+        printf("%s\n", cert->cert_dn[X509_COUNTRY]);
+    }
+
+    if (cert->cert_dn[X509_STATE]) 
+    {
+        printf("State (ST):\t\t\t");
+        printf("%s\n", cert->cert_dn[X509_STATE]);
+    }
+
+    if (cert->basic_constraint_present)
+    {
+        printf("Basic Constraints:\t\t%sCA:%s, pathlen:%d\n",
+                cert->basic_constraint_is_critical ? 
+                    "critical, " : "",
+                cert->basic_constraint_cA? "TRUE" : "FALSE",
+                cert->basic_constraint_pathLenConstraint);
+    }
+
+    if (cert->key_usage_present)
+    {
+        bool has_started = false;
+        printf("Key Usage:\t\t\t%s", cert->key_usage_is_critical ? 
+                    "critical, " : "");
+
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_DIGITAL_SIGNATURE))
+        {
+            printf("Digital Signature");
+            has_started = true;
+        }
+
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_NON_REPUDIATION))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("Non Repudiation");
+            has_started = true;
+        }
+
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_KEY_ENCIPHERMENT))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("Key Encipherment");
+            has_started = true;
+        }
+        
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_DATA_ENCIPHERMENT))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("Data Encipherment");
+            has_started = true;
+        }
+
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_KEY_AGREEMENT))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("Key Agreement");
+            has_started = true;
+        }
+
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_KEY_CERT_SIGN))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("Key Cert Sign");
+            has_started = true;
+        }
+
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_CRL_SIGN))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("CRL Sign");
+            has_started = true;
+        }
+       
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_ENCIPHER_ONLY))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("Encipher Only");
+            has_started = true;
+        }
+
+        if (IS_SET_KEY_USAGE_FLAG(cert, KEY_USAGE_DECIPHER_ONLY))
+        {
+            if (has_started)
+                printf(", ");
+
+            printf("Decipher Only");
+            has_started = true;
+        }
+
+        printf("\n");
+    }
+
+    if (cert->subject_alt_name_present)
+    {
+        printf("Subject Alt Name:\t\t%s", cert->subject_alt_name_is_critical 
+                ?  "critical, " : "");
+        if (cert->subject_alt_dnsnames)
+        {
+            int i = 0;
+
+            while (cert->subject_alt_dnsnames[i])
+                printf("%s ", cert->subject_alt_dnsnames[i++]);
+        }
+        printf("\n");
+
+    }
 
     printf("=== CERTIFICATE ISSUED BY ===\n");
     printf("Common Name (CN):\t\t");
@@ -505,9 +805,29 @@ void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
     printf("%s\n", cert->ca_cert_dn[X509_ORGANIZATION] ?
         cert->ca_cert_dn[X509_ORGANIZATION] : not_part_of_cert);
 
-    printf("Organizational Unit (OU):\t");
-    printf("%s\n", cert->ca_cert_dn[X509_ORGANIZATIONAL_UNIT] ?
-        cert->ca_cert_dn[X509_ORGANIZATIONAL_UNIT] : not_part_of_cert);
+    if (cert->ca_cert_dn[X509_ORGANIZATIONAL_UNIT]) 
+    {
+        printf("Organizational Unit (OU):\t");
+        printf("%s\n", cert->ca_cert_dn[X509_ORGANIZATIONAL_UNIT]);
+    }
+
+    if (cert->ca_cert_dn[X509_LOCATION]) 
+    {
+        printf("Location (L):\t\t\t");
+        printf("%s\n", cert->ca_cert_dn[X509_LOCATION]);
+    }
+
+    if (cert->ca_cert_dn[X509_COUNTRY]) 
+    {
+        printf("Country (C):\t\t\t");
+        printf("%s\n", cert->ca_cert_dn[X509_COUNTRY]);
+    }
+
+    if (cert->ca_cert_dn[X509_STATE]) 
+    {
+        printf("State (ST):\t\t\t");
+        printf("%s\n", cert->ca_cert_dn[X509_STATE]);
+    }
 
     printf("Not Before:\t\t\t%s", ctime(&cert->not_before));
     printf("Not After:\t\t\t%s", ctime(&cert->not_after));
@@ -515,9 +835,6 @@ void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
     printf("Sig Type:\t\t\t");
     switch (cert->sig_type)
     {
-        case SIG_TYPE_MD2:
-            printf("MD2\n");
-            break;
         case SIG_TYPE_MD5:
             printf("MD5\n");
             break;
@@ -540,8 +857,10 @@ void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
 
     if (ca_cert_ctx)
     {
+        int pathLenConstraint = 0;
         printf("Verify:\t\t\t\t%s\n",
-                x509_display_error(x509_verify(ca_cert_ctx, cert)));
+                x509_display_error(x509_verify(ca_cert_ctx, cert,
+                        &pathLenConstraint)));
     }
 
 #if 0
@@ -591,6 +910,9 @@ const char * x509_display_error(int error)
 
         case X509_INVALID_PRIV_KEY:
             return "Invalid private key";
+
+        case X509_VFY_ERROR_BASIC_CONSTRAINT:
+            return "Basic constraint invalid";
 
         default:
             return "Unknown";

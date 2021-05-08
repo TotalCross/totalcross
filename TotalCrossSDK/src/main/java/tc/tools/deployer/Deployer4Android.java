@@ -453,7 +453,7 @@ public class Deployer4Android {
         bas = new totalcross.io.ByteArrayStream(bytes);
         bas.skipBytes(bytes.length);
     } else if (singleApk) {
-        byte[] bytes = Utils.loadFile(DeploySettings.etcDir + "tools/android/AndroidManifest_singleapk.xml", true);
+        byte[] bytes = Utils.loadFile(DeploySettings.etcDir + "tools/android/AndroidManifest_singleApk.xml", true);
         bas = new totalcross.io.ByteArrayStream(bytes);
         bas.skipBytes(bytes.length);
     } else {
@@ -633,7 +633,7 @@ public class Deployer4Android {
         key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
                 (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'n', (byte) 0, 'd',
                 (byte) 0, 'r', (byte) 0, 'o', (byte) 0, 'i', (byte) 0, 'd', (byte) 0 };
-            all = Utils.loadFile(DeploySettings.etcDir + "tools/android/resources_singleapk.arsc", true);
+            all = Utils.loadFile(DeploySettings.etcDir + "tools/android/resources_singleApk.arsc", true);
     } else {
       key = new byte[] { 't', (byte) 0, 'o', (byte) 0, 't', (byte) 0, 'a', (byte) 0, 'l', (byte) 0, 'c', (byte) 0, 'r',
           (byte) 0, 'o', (byte) 0, 's', (byte) 0, 's', (byte) 0, '.', (byte) 0, 'a', (byte) 0, 'p', (byte) 0, 'p',
