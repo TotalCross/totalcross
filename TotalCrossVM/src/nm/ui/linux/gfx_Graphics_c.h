@@ -23,7 +23,8 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    *(tcSettings.isFullScreenPtr)=true;
 #endif
 #ifdef SKIA_H
-   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
+   char* title = getenv("TC_TITLE"); // setting window title
+   TCSDL_Init(screen, title ? title : exeName, *(tcSettings.isFullScreenPtr));
 #elif !defined HEADLESS
    DFBResult err;
    IDirectFB *_dfb;
@@ -66,7 +67,8 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenW = w;
    screen->screenH = h;
 #else
-   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
+   char* title = getenv("TC_TITLE"); // setting window title
+   TCSDL_Init(screen, title ? title : exeName, *(tcSettings.isFullScreenPtr));
 #endif
    return true;
 }

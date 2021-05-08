@@ -412,6 +412,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     System.out.println("   /scr iphone      : iPhone 8 resolution (same of /scr 750x1334x24 /density 2)");
     System.out.println("   /scr ipad        : iPad resolution     (same of /scr 1536x2048x24 /density 2)");
     System.out.println("   /fullscreen      : Use full-screen window");
+    System.out.println("   /title           : Sets the window title");
     System.out.println("   /pos x,y         : Sets the openning position of the application");
     System.out.println("   /uiStyle Flat    : Flat user interface style");
     System.out.println("*  /uiStyle Vista   : Vista user interface style");
@@ -527,6 +528,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           System.out.println("Screen is " + toWidth + "x" + toHeight + "x" + toBpp);
         } else if (args[i].equalsIgnoreCase("/fullscreen")) {
           fullscreen = true;
+        } else if (args[i].equalsIgnoreCase("/title")) {
+            frameTitle = args[++i];
         } else if (args[i].equalsIgnoreCase("/r")) {
           ++i;
         } else if (args[i].equalsIgnoreCase("/pos")) /* x,y */
