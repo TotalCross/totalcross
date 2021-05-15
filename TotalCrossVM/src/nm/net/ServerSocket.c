@@ -62,7 +62,7 @@ TC_API void tnSS_serversocketCreate_iiis(NMParams p) // totalcross/net/ServerSoc
    xfree(szAddress);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnSS_nativeAccept(NMParams p) // totalcross/net/ServerSocket native public void nativeAccept() throws totalcross.io.IOException;
+TC_API void tnSS_nativeAccept(NMParams p) // totalcross/net/ServerSocket native private void nativeAccept() throws totalcross.io.IOException;
 {
    TCObject serverSocket = p->obj[0];
    TCObject serverSocketRef = ServerSocket_serverRef(serverSocket);
