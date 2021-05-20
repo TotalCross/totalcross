@@ -63,6 +63,9 @@ import totalcross.util.Vector;
  */
 
 public class Control extends GfxSurface {
+	/** Utilzado para setar um ID nos componentes para que possam ser buscados via
+	 * reflection */
+	private String ID;
   /** Used when this Control is translucent */
   public static enum TranslucentShape {
     NONE, RECT, ROUND, LESS_ROUND, CIRCLE
@@ -2807,5 +2810,12 @@ public class Control extends GfxSurface {
   public void setDoEffect(boolean doEffect) {
 	this.doEffect = doEffect;
   }
-  
+
+	public void setID(String ID) {
+		this.ID = ID;
+	}
+
+	public String getID() {
+		return ID;
+	}
 }
