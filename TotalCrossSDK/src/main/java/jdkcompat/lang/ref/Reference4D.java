@@ -5,7 +5,7 @@
 package jdkcompat.lang.ref;
 
 public abstract class Reference4D<T> {
-  T ref;
+  private T ref;
 
   public T get() {
     return ref;
