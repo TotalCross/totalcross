@@ -776,6 +776,8 @@ Type type2javaType(CharP type)
 bool isSuperClass(TCClass s, TCClass t) // s instanceof t
 {
    int32 i;
+   if (t == NULL)
+      return false;
    for (; s != null; s = s->superClass)
       if (s == t)
          return true;
