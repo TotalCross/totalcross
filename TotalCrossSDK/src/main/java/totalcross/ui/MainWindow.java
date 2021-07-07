@@ -6,8 +6,11 @@
 
 package totalcross.ui;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.firebase.FirebaseManager;
 import totalcross.firebase.FirebaseMessagingService;
 import totalcross.firebase.iid.FirebaseInstanceId;
@@ -75,7 +78,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
   private static Thread mainThread;
   private Lock runnersLock = new Lock();
   private Vector runners = new Vector(1);
-  private ArrayList<UpdateListener> updateListeners = new ArrayList<UpdateListener>();
+  private ArrayList<WeakReference<UpdateListener>> updateListeners = new ArrayList<>();
   private long lastUpdateCallTimestamp = 0;
 
   /** Constructs a main window with no title and no border. */
@@ -549,7 +552,12 @@ public class MainWindow extends Window implements totalcross.MainClass {
     if (elapsedMilliseconds >= Settings.minimalUpdateInterval) {
        // Reverse-for allows for the safe removal of updateListeners during the update event
        for (int i = updateListeners.size() - 1; i >= 0; i--) {
-          updateListeners.get(i).updateListenerTriggered(elapsedMilliseconds);
+         UpdateListener ul = updateListeners.get(i).get();
+         if (ul != null) {
+           ul.updateListenerTriggered(elapsedMilliseconds);
+         } else {
+           updateListeners.remove(i);
+         }
        }
        lastUpdateCallTimestamp = timestamp;
     }
@@ -699,19 +707,44 @@ public class MainWindow extends Window implements totalcross.MainClass {
   }
   
   
-  /** Adds a listener for Update events. 
-   * @see totalcross.ui.event.UpdateListener 
-   */ 
-  public void addUpdateListener(UpdateListener listener) { 
-     updateListeners.add(listener); 
-  } 
-  /** Removes a listener for Update events 
-   * @see totalcross.ui.event.UpdateEventListener 
-   * @since TotalCross 5.00 
-   */ 
-  public void removeUpdateListener(UpdateListener listener) { 
-     updateListeners.remove(listener); 
-  } 
+  /**
+   * Registers a listener for Update events, which SHOULD be unregistered as soon
+   * as its done processing. Listeners are registered as weak references, and
+   * therefore are automatically removed by the GC when they are no longer
+   * reachable. Which means that a strong reference for the listener must be kept
+   * before the registration and kept until the processing is done.
+   * 
+   * This is a protection to prevent leaks and release CPU and memory resources,
+   * but registered listeners should ALWAYS be explicitly unregistered by the user
+   * once its work is done.
+   * 
+   * @see totalcross.ui.event.UpdateListener
+   */
+  public void addUpdateListener(UpdateListener listener) {
+    int idx = updateListeners.size() - 1;
+    while (idx >= 0 && updateListeners.get(idx).get() != listener) {
+      idx--;
+    }
+    if (idx < 0) {
+      updateListeners.add(new WeakReference<UpdateListener>(listener));
+    }
+  }
+
+  /**
+   * Removes a listener for Update events
+   * 
+   * @see totalcross.ui.event.UpdateEventListener
+   * @since TotalCross 5.00
+   */
+  public void removeUpdateListener(UpdateListener listener) {
+    int idx = updateListeners.size() - 1;
+    while (idx >= 0 && updateListeners.get(idx).get() != listener) {
+      idx--;
+    }
+    if (idx >= 0) {
+      updateListeners.remove(idx);
+    }
+  }
 
   /** The same of <code>runOnMainThread(r, true)</code>. 
    * @see #runOnMainThread(Runnable, boolean) 
