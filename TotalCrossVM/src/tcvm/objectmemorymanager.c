@@ -317,7 +317,7 @@ static Hashtable htObjsPerClass;
 bool initObjectMemoryManager()
 {
    int32 i,skip = sizeof(TObjectProperties), size = skip+TSIZE, n = OBJARRAY_MAX_INDEX+1;
-   uint8 *f, *u, *l;
+   uint8 *f, *u, *l, *w;
    ommHeap = heapCreate();
    chunksHeap = heapCreate();
    if (chunksHeap == null) return false;
@@ -330,13 +330,17 @@ bool initObjectMemoryManager()
    f = heapAlloc(ommHeap, size * n); // here we alloc the whole block of objects
    u = heapAlloc(ommHeap, size * n);
    l = heapAlloc(ommHeap, size * 1); // the locked list is a single array
+   w = heapAlloc(ommHeap, size * 1); // weak reference list is a single array
    f += skip;
    u += skip;
    l += skip;
+   w += skip;
    freeList = newPtrArrayOf(TCObject,n,ommHeap);
    usedList = newPtrArrayOf(TCObject,n,ommHeap);
    lockList = newPtrArrayOf(TCObject,1,ommHeap);
+   weakList = newPtrArrayOf(TCObject,1,ommHeap);
    lockList[0] = (TCObject)l;
+   weakList[0] = (TCObject)w;
    for (i =0; i < n; i++) // and now we just assign the starting pointer of each block
    {
       freeList[i] = (TCObject)f; f += size;
@@ -709,6 +713,19 @@ static void markSingleObject(TCObject o, bool dump) // NEVER call this directly,
       objs.start = (TCObjectArray)ARRAYOBJ_START(o);
       if (objs.start != null && (objs.n = ARRAYOBJ_LEN(o)) > 0)
          stackPush(objStack, &objs);
+   }
+   else // prevents WeakReference from marking its reference as used
+   if (c == weakReferenceClass)
+   {
+      if (FIELD_OBJ(o, OBJ_CLASS(o), 0) != NULL) {
+         int32 size,idx;
+         size = OBJ_SIZE(o);
+         idx = size2idx(size);
+         // remove from the free list
+         removeNodeFromDblList(freeList[idx], o);
+         // and put it in the weak list
+         insertNodeInDblList(weakList[0], o);
+      }
    }
    else // else, mark the instance fields of this object (note that arrays have no object instance fields)
    if (c->objInstanceFields != null)
@@ -1175,6 +1192,25 @@ heaperror:
                if (traceCreatedClassObjs) htInc(&htObjsPerClass, (int32)OBJ_CLASS(o),-1);
                OBJ_CLASS(o) = null; // set the object "free"
             }
+
+   // 4. clear weak references to "freed" objects
+   for (o=OBJ_PROPERTIES(*weakList)->next; o != null;)
+   {
+      int32 size,idx;
+      TCObject next = OBJ_PROPERTIES(o)->next; // protection in case something below breaks the loop
+      TCObject ref = FIELD_OBJ(o, OBJ_CLASS(o), 0);
+      if (ref != NULL && OBJ_CLASS(ref) == NULL) {
+         FIELD_OBJ(o, OBJ_CLASS(o), 0) = NULL;
+      }
+      size = OBJ_SIZE(o);
+      idx = size2idx(size);
+
+      // remove from the weak list
+      removeNodeFromDblList(weakList[0], o);
+      // and put it in the used list
+      insertNodeInDblList(usedList[idx], o);
+      o = next;
+   }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr
    if (COMPUTETIME) debug("G finished finalizers");
    
@@ -1188,7 +1224,7 @@ heaperror:
 
    runningFinalizer = false;
    markedAsUsed = !markedAsUsed;
-   // 4. Join all adjacent free objects and free the chunk if only one object remains
+   // 5. Join all adjacent free objects and free the chunk if only one object remains
 #ifndef ENABLE_TEST_SUITE // this scrambles the test
    if (COMPUTETIME) debug("G joining chunks...");
    heapFreeAsking(chunksHeap, joinAdjacentObjects);
