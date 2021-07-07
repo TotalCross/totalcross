@@ -352,6 +352,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
           }
           waitUntilStarted();
           imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
+          weakReferenceClass = loadClass(currentContext, "java.lang.ref.WeakReference", false);
           mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
           gcContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError");
           lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
@@ -419,6 +420,7 @@ jumpArgument:
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
+   weakReferenceClass = loadClass(currentContext, "java.lang.ref.WeakReference", false);
    loadExceptionClasses(currentContext); // guich@tc112_18
    voidTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Void",      false), "TYPE");
    booleanTYPE = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
