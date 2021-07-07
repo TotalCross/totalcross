@@ -12,6 +12,7 @@ static bool saveRestoreOMM(bool save)
       freeList2 = freeList;             freeList = null;
       usedList2 = usedList;             usedList = null;
       lockList2 = lockList;             lockList = null;
+      weakList2 = weakList;             weakList = null;
       markedAsUsed2 = markedAsUsed;     markedAsUsed = 0;
       gcCount2 = *tcSettings.gcCount;   *tcSettings.gcCount = 0;
       ommHeap2 = ommHeap;               ommHeap = null;
@@ -30,6 +31,7 @@ static bool saveRestoreOMM(bool save)
       freeList = freeList2;
       usedList = usedList2;
       lockList = lockList2;
+      weakList = weakList2;
       markedAsUsed = markedAsUsed2;
       *tcSettings.gcCount = gcCount2;
       ommHeap = ommHeap2;

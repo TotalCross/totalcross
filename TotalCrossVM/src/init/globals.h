@@ -108,18 +108,21 @@ extern bool runningGC,runningFinalizer,disableGC,callGConMainThread;
 extern TCObjectArray freeList; // the array with lists of free objects
 extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
 extern TCObjectArray lockList; // locked objects list
+extern TCObjectArray weakList; // weak reference list
 extern uint32 markedAsUsed; // starts as 1
 extern uint32 objCreated,skippedGC,objLocked; // a few counters
 extern int32 lastGC, markedImages;
 extern Heap ommHeap;
 extern Heap chunksHeap;
 extern Stack objStack;
+extern TCClass weakReferenceClass;
 #if defined(ENABLE_TEST_SUITE)
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
 extern bool canTraverse;
 extern TCObjectArray freeList2; // the array with lists of free objects
 extern TCObjectArray usedList2; // the array with lists of used objects (allocated after the last GC)
 extern TCObjectArray lockList2; // locked objects list
+extern TCObjectArray weakList2; // weak reference list
 extern uint32 markedAsUsed2; // starts as 1
 extern uint32 gcCount2,objCreated2,skippedGC2,objLocked2; // the current gc count
 extern Heap ommHeap2,chunksHeap2;

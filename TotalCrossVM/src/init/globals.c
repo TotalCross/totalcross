@@ -128,6 +128,7 @@ bool runningFinalizer = 0;
 TCObjectArray freeList = { 0 }; // the array with lists of free objects
 TCObjectArray usedList = { 0 }; // the array with lists of used objects (allocated after the last GC)
 TCObjectArray lockList = { 0 }; // locked objects list
+TCObjectArray weakList = { 0 }; // weak reference list
 uint32 markedAsUsed = 1; // starts as 1
 uint32 objCreated = 0;
 uint32 skippedGC = 0;
@@ -136,12 +137,14 @@ int32 lastGC = 0, markedImages = 0;
 Heap ommHeap = NULL;
 Heap chunksHeap = NULL;
 Stack objStack = NULL;
+TCClass weakReferenceClass;
 #if defined(ENABLE_TEST_SUITE)
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
 bool canTraverse=true;
 TCObjectArray freeList2 = { 0 }; // the array with lists of free objects
 TCObjectArray usedList2 = { 0 }; // the array with lists of used objects (allocated after the last GC)
 TCObjectArray lockList2 = { 0 }; // locked objects list
+TCObjectArray weakList2 = { 0 }; // weak reference list
 uint32 markedAsUsed2 = 1; // starts as 1
 // the current gc count
 uint32 gcCount2 = 0;
