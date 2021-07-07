@@ -715,7 +715,7 @@ static void markSingleObject(TCObject o, bool dump) // NEVER call this directly,
          stackPush(objStack, &objs);
    }
    else // prevents WeakReference from marking its reference as used
-   if (c == weakReferenceClass)
+   if (c == weakReferenceClass || isSuperClass(c, weakReferenceClass))
    {
       if (FIELD_OBJ(o, OBJ_CLASS(o), 0) != NULL) {
          int32 size,idx;
