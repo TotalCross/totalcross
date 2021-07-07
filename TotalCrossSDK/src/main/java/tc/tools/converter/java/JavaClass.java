@@ -9,6 +9,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import tc.tools.converter.Bytecode2TCCode;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStream;
 
@@ -96,8 +97,12 @@ public final class JavaClass {
 
     className = classNode.name;
 
-    superClass = classNode.superName;
+    superClass = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(classNode.superName);
+
     interfaces = (String[]) classNode.interfaces.toArray(new String[] {});
+    for (int i = 0; i < interfaces.length; i++) {
+      interfaces[i] = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(interfaces[i]);
+    }
 
     fields = new JavaField[classNode.fields.size()];
     for (int i = 0; i < fields.length; i++) {
