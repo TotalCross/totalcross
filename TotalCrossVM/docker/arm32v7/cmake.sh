@@ -8,4 +8,4 @@ mkdir build
 # execute docker run
 sudo docker run -v ${WORKDIR}/../arm32v7/build:/build \
                 -v ${WORKDIR}/../../:/sources \
-                -t totalcross/linux-arm32v7-build bash -c "cmake /sources -G Ninja && ninja"
+                -t totalcross/linux-arm32v7:bionic bash -c "cmake /sources -G Ninja && ninja"
