@@ -1,3 +1,7 @@
+// Copyright (C) 2021 TotalCross Global Mobile Platform Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 /*
  * jdatasrc.c
  *
@@ -16,8 +20,7 @@
  */
 
 /* this is not a core library module, so it doesn't define JPEG_INTERNALS */
-#include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglib_tc.h"
 #include "jerror.h"
 
 
@@ -42,7 +45,7 @@ typedef my_source_mgr * my_src_ptr;
  */
 
 METHODDEF(void)
-init_source (j_decompress_ptr cinfo)
+init_tiF_source (j_decompress_ptr cinfo)
 {
   my_src_ptr src = (my_src_ptr) cinfo->src;
 
@@ -52,13 +55,6 @@ init_source (j_decompress_ptr cinfo)
    */
   src->start_of_file = TRUE;
 }
-
-METHODDEF(void)
-init_mem_source (j_decompress_ptr cinfo)
-{
-  /* no work necessary here */
-}
-
 
 /*
  * Fill the input buffer --- called whenever buffer is emptied.
@@ -94,7 +90,7 @@ init_mem_source (j_decompress_ptr cinfo)
  */
 
 METHODDEF(boolean)
-fill_input_buffer (j_decompress_ptr cinfo)
+fill_tiF_input_buffer (j_decompress_ptr cinfo)
 {
   my_src_ptr src = (my_src_ptr) cinfo->src;
   size_t nbytes;
@@ -117,28 +113,6 @@ fill_input_buffer (j_decompress_ptr cinfo)
 
   return TRUE;
 }
-
-METHODDEF(boolean)
-fill_mem_input_buffer (j_decompress_ptr cinfo)
-{
-  static const JOCTET mybuffer[4] = {
-    (JOCTET) 0xFF, (JOCTET) JPEG_EOI, 0, 0
-  };
-
-  /* The whole JPEG data is expected to reside in the supplied memory
-   * buffer, so any request for more data beyond the given buffer size
-   * is treated as an error.
-   */
-  WARNMS(cinfo, JWRN_JPEG_EOF);
-
-  /* Insert a fake EOI marker */
-
-  cinfo->src->next_input_byte = mybuffer;
-  cinfo->src->bytes_in_buffer = 2;
-
-  return TRUE;
-}
-
 
 /*
  * Skip data --- used to skip over a potentially large amount of
@@ -207,7 +181,7 @@ term_source (j_decompress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_stdio_src (j_decompress_ptr cinfo, JPEGFILE * infile)
+jpeg_tiF_src (j_decompress_ptr cinfo, JPEGFILE * infile)
 {
   my_src_ptr src;
 
@@ -221,55 +195,20 @@ jpeg_stdio_src (j_decompress_ptr cinfo, JPEGFILE * infile)
   if (cinfo->src == NULL) {	/* first time for this JPEG object? */
     cinfo->src = (struct jpeg_source_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  SIZEOF(my_source_mgr));
+				  sizeof(my_source_mgr));
     src = (my_src_ptr) cinfo->src;
     src->buffer = (JOCTET *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  INPUT_BUF_SIZE * SIZEOF(JOCTET));
+				  INPUT_BUF_SIZE * sizeof(JOCTET));
   }
 
   src = (my_src_ptr) cinfo->src;
-  src->pub.init_source = init_source;
-  src->pub.fill_input_buffer = fill_input_buffer;
+  src->pub.init_source = init_tiF_source;
+  src->pub.fill_input_buffer = fill_tiF_input_buffer;
   src->pub.skip_input_data = skip_input_data;
   src->pub.resync_to_restart = jpeg_resync_to_restart; /* use default method */
   src->pub.term_source = term_source;
   src->infile = infile;
   src->pub.bytes_in_buffer = 0; /* forces fill_input_buffer on first read */
   src->pub.next_input_byte = NULL; /* until buffer loaded */
-}
-
-
-/*
- * Prepare for input from a supplied memory buffer.
- * The buffer must contain the whole JPEG data.
- */
-
-GLOBAL(void)
-jpeg_mem_src (j_decompress_ptr cinfo,
-	      const unsigned char * inbuffer, unsigned long insize)
-{
-  struct jpeg_source_mgr * src;
-
-  if (inbuffer == NULL || insize == 0)	/* Treat empty input as fatal error */
-    ERREXIT(cinfo, JERR_INPUT_EMPTY);
-
-  /* The source object is made permanent so that a series of JPEG images
-   * can be read from the same buffer by calling jpeg_mem_src only before
-   * the first one.
-   */
-  if (cinfo->src == NULL) {	/* first time for this JPEG object? */
-    cinfo->src = (struct jpeg_source_mgr *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  SIZEOF(struct jpeg_source_mgr));
-  }
-
-  src = cinfo->src;
-  src->init_source = init_mem_source;
-  src->fill_input_buffer = fill_mem_input_buffer;
-  src->skip_input_data = skip_input_data;
-  src->resync_to_restart = jpeg_resync_to_restart; /* use default method */
-  src->term_source = term_source;
-  src->bytes_in_buffer = (size_t) insize;
-  src->next_input_byte = (const JOCTET *) inbuffer;
 }
