@@ -1061,7 +1061,7 @@ void gc2(Context currentContext, bool lockOMM)
 {
    int32 i;
    TCClass c;
-   TCObjectArray freeL, usedL, weakL;
+   TCObjectArray freeL, usedL;
    TCObject o;
    int32 iniT,endT;
    int32 nfree,nused,compIni,freemem;
