@@ -78,7 +78,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
   private static Thread mainThread;
   private Lock runnersLock = new Lock();
   private Vector runners = new Vector(1);
-  private ArrayList<WeakReference<UpdateListener>> updateListeners = new ArrayList<WeakReference<UpdateListener>>();
+  private ArrayList<WeakReference<UpdateListener>> updateListeners = new ArrayList<>();
   private long lastUpdateCallTimestamp = 0;
 
   /** Constructs a main window with no title and no border. */
