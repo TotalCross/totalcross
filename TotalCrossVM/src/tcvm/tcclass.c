@@ -776,11 +776,13 @@ Type type2javaType(CharP type)
 bool isSuperClass(TCClass s, TCClass t) // s instanceof t
 {
    int32 i;
+   if (t == NULL)
+      return false;
    for (; s != null; s = s->superClass)
       if (s == t)
          return true;
       else
-      if (s->interfaces != null)
+      if (t->flags.isInterface && s->interfaces != null)
          for (i = ARRAYLEN(s->interfaces)-1; i >= 0; i--)
             if (isSuperClass(s->interfaces[i], t))
                return true;
