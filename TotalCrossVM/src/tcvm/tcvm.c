@@ -490,6 +490,7 @@ mainLoop:
             goto throwNullPointerException;
          }
          thisClass = OBJ_CLASS(regO[code->mtd.this_]);
+callVirtualClass:
 		 if (thisClass == null)
 		 {
 			 exceptionMsg = "Obj class is null";
@@ -763,6 +764,11 @@ notYetLinked:
                   c = params.retO ? OBJ_CLASS(params.retO) : null;
                   if (c == null)
                      goto throwClassNotFoundException;
+               }
+               if (thisClass != c)
+               {
+                  thisClass = c;
+                  goto callVirtualClass;
                }
             }
             else
