@@ -129,20 +129,23 @@ static void createMethodObject(Context currentContext, Method m, TCClass declari
       setObjectLock(Method_name(*ret) = createStringObjectFromCharP(currentContext,isConstructor ? declaringClass->name : m->name,-1),UNLOCKED);
       createClassObject(currentContext, declaringClass->name, Type_Null, &Method_declaringClass(*ret),null);
       // parameters and exceptions
-      Method_parameterTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = m->paramCount);
-      if (Method_parameterTypes(*ret) && n > 0)
+      ptrObj = createArrayObject(currentContext, "[java.lang.Class", n = m->paramCount);
+      if (ptrObj && n > 0)
       {
-         TCObject* oa = (TCObject*)ARRAYOBJ_START(Method_parameterTypes(*ret));
+         TCObject* oa = (TCObject*)ARRAYOBJ_START(ptrObj);
          for (i=0; i < n; i++)
             createClassObject(currentContext, declaringClass->cp->cls[m->cpParams[i]], m->cpParams[i] < Type_Object ? m->cpParams[i] : Type_Null, oa++, null);
       }
-      Method_exceptionTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = 0); // thrown exceptions is not stored in TCClass!
-      if (Method_exceptionTypes(*ret) && n > 0)
+      setObjectLock(Method_parameterTypes(*ret) = ptrObj, UNLOCKED);
+
+      ptrObj = createArrayObject(currentContext, "[java.lang.Class", n = 0); // thrown exceptions is not stored in TCClass!
+      if (ptrObj && n > 0)
       {
-         TCObject* oa = (TCObject*)ARRAYOBJ_START(Method_exceptionTypes(*ret));
+         TCObject* oa = (TCObject*)ARRAYOBJ_START(ptrObj);
          for (i=0; i < n; i++)
             createClassObject(currentContext, m->exceptionHandlers[i].className, Type_Null, oa++, null);
       }
+      setObjectLock(Method_exceptionTypes(*ret) = ptrObj, UNLOCKED);
 
       // return and type
       if (!isConstructor)
