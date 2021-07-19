@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#include "tcvm.h"
+#include "Class.h"
 
 typedef char NameBuf[256];
 

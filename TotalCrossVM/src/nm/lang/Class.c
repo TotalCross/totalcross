@@ -5,7 +5,7 @@
 
 
 
-#include "tcvm.h"
+#include "Class.h"
 
 TC_API void jlC_forName_s(NMParams p);
 
@@ -570,13 +570,13 @@ TC_API void jlC_getFields(NMParams p) // java/lang/Class public native java.lang
 TC_API void jlC_getMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
 {
    TCObject this_ = p->obj[0];
-   TCObject methods = FIELD_OBJ(this_, OBJ_CLASS(this_), 4);
+   TCObject methods = Class_methods(this_);
    TCObject ret;
 
    if (methods == null)
    {
       getMCarray(p,false,true);
-      FIELD_OBJ(this_, OBJ_CLASS(this_), 4) = methods = p->retO;
+      Class_methods(this_) = methods = p->retO;
    }
 
    ret = createArrayObject(p->currentContext, "[java.lang.reflect.Method", ARRAYOBJ_LEN(methods));
