@@ -16,47 +16,49 @@ import java.util.List;
 import java.util.Map;
 
 /**
-    The JSONFactory class helps converting json objects into Java objects, using reflection.
-
-    Some examples:
-
-    <pre>
-    class Car 
-    {
-       private int id;
-       private String description;
-
-       public int getId()
-       {
-          return id;
-       }
-       public void setId(int id)
-       {
-          this.id = id;
-       }
-       public String getDescription()
-       {
-          return description;
-       }
-       public void setDescription(String description)
-       {
-          this.description = description;
-       }
-    }
-    </pre>
-
-    You can retrieve a new Car object using:
-    <pre>
-    Car cc = JSONFactory.parse("{\"carro\":{\"id\":-1,\"descricao\":\"GOL\"}}", Carro.class);
-    </pre>
-
-    You may also retrieve a list or an array. See the JSONSample in the TotalCrossAPI.
+ * The JSONFactory class helps converting json objects into Java objects, using
+ * reflection.
+ * 
+ * Some examples:
+ * 
+ * <pre>
+ * class Car {
+ *   private int id;
+ *   private String description;
+ * 
+ *   public int getId() {
+ *     return id;
+ *   }
+ * 
+ *   public void setId(int id) {
+ *     this.id = id;
+ *   }
+ * 
+ *   public String getDescription() {
+ *     return description;
+ *   }
+ * 
+ *   public void setDescription(String description) {
+ *     this.description = description;
+ *   }
+ * }
+ * </pre>
+ * 
+ * You can retrieve a new Car object using:
+ * 
+ * <pre>
+ * Car cc = JSONFactory.parse("{\"carro\":{\"id\":-1,\"descricao\":\"GOL\"}}", Carro.class);
+ * </pre>
+ * 
+ * You may also retrieve a list or an array. See the JSONSample in the
+ * TotalCrossAPI.
  */
 public class JSONFactory {
   private static Map<Class<?>, Map<String, Method>> classes = new HashMap<>();
 
-  public static <T> List<T> asList(String json, Class<T> classOfT) throws InstantiationException,
-      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
+  public static <T> List<T> asList(String json, Class<T> classOfT)
+      throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+      JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
     List<T> list = new ArrayList<T>();
     try {
       JSONArray jsonArray = new JSONArray(json);
@@ -93,13 +95,15 @@ public class JSONFactory {
     return parse(new JSONObject(json), classOfT);
   }
 
-  public static <T> T parse(JSONArray jsonArray, Class<T> classOfT) throws InstantiationException,
-  IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
-      return parse(null, jsonArray, classOfT);
+  public static <T> T parse(JSONArray jsonArray, Class<T> classOfT)
+      throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+      JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
+    return parse(null, jsonArray, classOfT);
   }
-  
-  private static <T> T parse(Object outerObject, JSONArray jsonArray, Class<T> classOfT) throws InstantiationException,
-      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
+
+  private static <T> T parse(Object outerObject, JSONArray jsonArray, Class<T> classOfT)
+      throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+      JSONException, ArrayIndexOutOfBoundsException, NoSuchMethodException, SecurityException {
     if (classOfT.isArray()) {
       T array;
       try {
@@ -115,14 +119,16 @@ public class JSONFactory {
     }
     return parse(outerObject, jsonArray, classOfT);
   }
-  
-  public static <T> T parse(JSONObject jsonObject, Class<T> classOfT) throws InstantiationException,
-  IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, NoSuchMethodException, SecurityException {
-      return parse(null, jsonObject, classOfT);
+
+  public static <T> T parse(JSONObject jsonObject, Class<T> classOfT)
+      throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+      JSONException, NoSuchMethodException, SecurityException {
+    return parse(null, jsonObject, classOfT);
   }
 
-  private static <T> T parse(Object outerObject, JSONObject jsonObject, Class<T> classOfT) throws InstantiationException,
-      IllegalAccessException, IllegalArgumentException, InvocationTargetException, JSONException, NoSuchMethodException, SecurityException {
+  private static <T> T parse(Object outerObject, JSONObject jsonObject, Class<T> classOfT)
+      throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+      JSONException, NoSuchMethodException, SecurityException {
     if (classOfT.isArray()) {
       throw new IllegalArgumentException();
     }
