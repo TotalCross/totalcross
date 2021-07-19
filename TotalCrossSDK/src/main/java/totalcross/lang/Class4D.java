@@ -32,6 +32,7 @@ public final class Class4D<T> {
   Object nativeStruct; // TClass
   String targetName; // java.lang.String
   String ncached, cached;
+  Method[] methods;
 
   /** The TotalCross deployer can find classes that are instantiated using Class.forName if, and only if, they are
    * String constants. If you build the className dynamically, then you must include the file passing it to the tc.Deploy
