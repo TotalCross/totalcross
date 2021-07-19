@@ -569,7 +569,27 @@ TC_API void jlC_getFields(NMParams p) // java/lang/Class public native java.lang
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
 {
-   getMCarray(p,false,true);
+   TCObject this_ = p->obj[0];
+   TCObject methods = FIELD_OBJ(this_, OBJ_CLASS(this_), 4);
+   TCObject ret;
+
+   if (methods == null)
+   {
+      getMCarray(p,false,true);
+      FIELD_OBJ(this_, OBJ_CLASS(this_), 4) = methods = p->retO;
+   }
+
+   ret = createArrayObject(p->currentContext, "[java.lang.reflect.Method", ARRAYOBJ_LEN(methods));
+   if (ret)
+   {
+      int32 length = ARRAYOBJ_LEN(methods);
+      TCObjectArray psrc = (TCObjectArray) ARRAYOBJ_START(methods);
+      TCObjectArray pdst = (TCObjectArray) ARRAYOBJ_START(ret);
+
+      while (length-- >= 0)
+         *pdst++ = *psrc++;
+   }
+   setObjectLock(p->retO = ret, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
