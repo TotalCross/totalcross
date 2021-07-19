@@ -501,7 +501,7 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
    if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
    {
       if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
-      htInc(&htObjsPerClass, (int32)c, 1);
+      htInc(&htObjsPerClass, (size_t)c, 1);
    }
 
    if (_TRACE_OBJCREATION) debug("G %X obj created %s of size %d at %d. lock: %d. mark: %d. context: %X", o, className, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o), markedAsUsed, currentContext);
@@ -547,7 +547,7 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
    {
       if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
-      htInc(&htObjsPerClass, (int32)c, 1);
+      htInc(&htObjsPerClass, (size_t)c, 1);
    }
    if (_TRACE_OBJCREATION) debug("G %X array obj created %s len %d, size = %d at %d. lock: %d", o, c->name,len, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o));
 end:
@@ -785,7 +785,7 @@ static int32 countObjectsInList(TCObject o, bool dump, int32 mark, int32* size, 
    {
       ObjectProperties op = OBJ_PROPERTIES(o);
       if (htOut) 
-         htInc(htOut, (int)OBJ_CLASS(o),1);
+         htInc(htOut, (size_t)OBJ_CLASS(o),1);
       if (size)
          *size += op->size;
       if (_TRACE_OBJCREATION && dump) debug("G %X",o);
@@ -928,12 +928,12 @@ static void finalizeObject(TCObject o, TCClass c)
    {
       MUTEX_TYPE* mutex;
 
-      mutex = htGetPtr(&htMutexes, (int32)o);
+      mutex = htGetPtr(&htMutexes, (size_t)o);
       if (mutex)
       {
          DESTROY_MUTEX_VAR(*mutex);
          xfree(mutex);
-         htRemove(&htMutexes, (int32)o);         
+         htRemove(&htMutexes, (size_t)o);         
       }
 
       if (c->finalizeMethod == null) 
@@ -1150,7 +1150,7 @@ heaperror:
          {
             if (strEq(OBJ_CLASS(o)->name,BYTE_ARRAY))
                debug("locked ba: %X",o);
-            htInc(&htCount, (int32)OBJ_CLASS(o), 1);
+            htInc(&htCount, (size_t)OBJ_CLASS(o), 1);
             lockCount++;
          }
          //if (_TRACE_OBJCREATION) debug("G marking locked obj %X",o);
@@ -1189,7 +1189,7 @@ heaperror:
             if ((c = OBJ_CLASS(o)) != null)
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
-               if (traceCreatedClassObjs) htInc(&htObjsPerClass, (int32)OBJ_CLASS(o),-1);
+               if (traceCreatedClassObjs) htInc(&htObjsPerClass, (size_t)OBJ_CLASS(o),-1);
                OBJ_CLASS(o) = null; // set the object "free"
             }
 
