@@ -5,11 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-/*
-* This software is based in part on the work of the Independent JPEG Group.
-*/
-
-#include "cdjpeg.h"     /* Common decls for cjpeg/djpeg applications */
+#include "jpeglib_tc.h"
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin
@@ -113,9 +109,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    file.first4 = first4;
 
    /* initialize default error handling. */
-   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
-   errbase.last_addon_message = JMSG_LASTADDONCODE;
-   errbase.heap = heap;
+   // errbase.heap = heap;
 
    IF_HEAP_ERROR(heap)
    {
@@ -138,7 +132,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
       file.params[0].asObj = file.inputStreamObj;
       file.params[1].asObj = file.bufObj;
    }
-   jpeg_stdio_src(&cinfo, &file); /* Specify data source for decompression */
+   jpeg_tiF_src(&cinfo, &file); /* Specify data source for decompression */
    jpeg_read_header(&cinfo, TRUE); /* Read file header, set default decompression parameters */
    /* override with specified decompression parameters */
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
@@ -260,16 +254,14 @@ bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStr
    bufAux = (uint8*) heapAlloc(heap, scanLineOut);
 
    /* initialize default error handling. */
-   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
-   errbase.last_addon_message = JMSG_LASTADDONCODE;
-   errbase.heap = heap;
+   // errbase.heap = heap;
 
    // initialize error handler and compressor.
    cinfo.err = jpeg_std_error(&errbase);
    jpeg_create_compress(&cinfo);
 
    // set the compressor output to dstFile
-   jpeg_stdio_dest(&cinfo, &dstFile);
+   jpeg_tiF_dest(&cinfo, &dstFile);
 
 	cinfo.image_width = width; 	/* image width and height, in pixels */
 	cinfo.image_height = height;
@@ -373,16 +365,14 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    bufAux = (uint8*) heapAlloc(heap, scanLineOut);
 
    /* initialize default error handling. */
-   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
-   errbase.last_addon_message = JMSG_LASTADDONCODE;
-   errbase.heap = heap;
+   // errbase.heap = heap;
 
    // initialize error handler and compressor.
    cinfo.err = jpeg_std_error(&errbase);
    jpeg_create_compress(&cinfo);
 
    // set the compressor output to dstFile
-   jpeg_stdio_dest(&cinfo, &dstFile);
+   jpeg_tiF_dest(&cinfo, &dstFile);
 
 	cinfo.image_width = width; 	/* image width and height, in pixels */
 	cinfo.image_height = height;
