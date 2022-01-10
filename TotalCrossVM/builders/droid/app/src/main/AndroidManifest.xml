@@ -5,9 +5,9 @@
       android:versionName="!1.0!"
       android:sharedUserId="totalcross.app.sharedid"
     >
-    
+
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
-         android:theme="@style/TCThemeNS" android:requestLegacyExternalStorage="true" android:name="android.support.multidex.MultiDexApplication">
+         android:theme="@style/TCThemeNS" android:requestLegacyExternalStorage="true" android:name="androidx.multidex.MultiDexApplication">
         <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
         <uses-library android:name="com.symbol.emdk" android:required="false" />
         <activity android:name=".Loader" 
@@ -56,7 +56,7 @@
             </intent-filter>
         </service>
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="com.totalcross.android.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

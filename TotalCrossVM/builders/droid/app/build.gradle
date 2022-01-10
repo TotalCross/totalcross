@@ -1,26 +1,25 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
  repositories { 
      mavenCentral()
      maven {
          url "http://maven.totalcross.com/artifactory/build"
+         allowInsecureProtocol true
          credentials {
              username = 'builder'
              password = 's3nh4d0bu1ld3r'
          }
+         // allows downloading artifacts without metadata (a pom file)
+         metadataSources { artifact() }
      }
  }
 
 def buildType // stores build type, debug or release
 
 android {
-    compileSdkVersion 29
-    ndkVersion "21.0.6113669"
-    compileOptions {
-    	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+    compileSdkVersion 31
+    ndkVersion "21.4.7075529"
 
     aaptOptions {
         noCompress 'zip'
@@ -35,12 +34,12 @@ android {
 
     defaultConfig {
         applicationId "totalcross.android"
-        minSdkVersion 10
+        minSdkVersion 15
         targetSdkVersion 29
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     buildTypes {
@@ -152,11 +151,15 @@ dependencies {
     implementation 'com.google.zxing:core:3.2.0'
 
     // Enables MultiDex. This allows the app to have more than 64k methods
-    implementation 'com.android.support:multidex:1.0.1'
+    implementation 'androidx.multidex:multidex:2.0.0'
 
     // testImplementation 'junit:junit:4.12'
     // androidTestImplementation 'com.android.support.test:runner:1.0.2'
     // androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
    
     implementation(group: 'ScanditBarcodeScanner', name: 'ScanditBarcodeScanner', version: 'b1', ext: 'aar')
+
+    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

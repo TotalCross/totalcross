@@ -5,6 +5,7 @@ apply plugin: 'com.android.library'
      mavenCentral()
      maven {
          url "http://maven.totalcross.com/artifactory/build"
+         allowInsecureProtocol true
          credentials {
              username = 'builder'
              password = 's3nh4d0bu1ld3r'
@@ -13,8 +14,8 @@ apply plugin: 'com.android.library'
  }
 
 android {
-    compileSdkVersion 29
-    ndkVersion "21.0.6113669"
+    compileSdkVersion 31
+    ndkVersion "21.4.7075529"
     compileOptions {
     	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -22,12 +23,12 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 10
+        minSdkVersion 15
         targetSdkVersion 29
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         externalNativeBuild {
             cmake {
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
