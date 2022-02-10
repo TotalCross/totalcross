@@ -39,6 +39,26 @@ public class ElephantMemoryWriter implements ElephantMemoryStream {
     this.write(b);
   }
 
+  public void writeUnsignedLong(long value) {
+    byte[] b = new byte[8];
+    b[7] = (byte) value;
+    value >>= 8;
+    b[6] = (byte) value;
+    value >>= 8;
+    b[5] = (byte) value;
+    value >>= 8;
+    b[4] = (byte) value;
+    value >>= 8;
+    b[3] = (byte) value;
+    value >>= 8;
+    b[2] = (byte) value;
+    value >>= 8;
+    b[1] = (byte) value;
+    value >>= 8;
+    b[0] = (byte) value;
+    this.write(b);
+  }
+
   public void writeUnsignedIntLE(long value) throws IOException {
     byte[] b = new byte[4];
     int i = (int) value;

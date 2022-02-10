@@ -18,11 +18,7 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.x509.X509Store;
 
-import tc.tools.deployer.ipa.blob.BlobWrapper;
-import tc.tools.deployer.ipa.blob.CodeDirectory;
 import tc.tools.deployer.ipa.blob.EmbeddedSignature;
-import tc.tools.deployer.ipa.blob.Entitlements;
-import tc.tools.deployer.ipa.blob.Requirements;
 
 /**
  * http://llvm.org/docs/doxygen/html/MachOFormat_8h_source.html
@@ -103,31 +99,23 @@ public class MachObjectFile extends AppleBinary {
   public byte[] resign(KeyStore ks, X509Store certStore, String bundleIdentifier, byte[] entitlementsBytes, byte[] info,
       byte[] sourceData) throws IOException, CMSException, UnrecoverableKeyException, CertificateEncodingException,
       KeyStoreException, NoSuchAlgorithmException, OperatorCreationException {
-    // create a new codeDirectory with the new identifier, but keeping the same codeLimit
-    CodeDirectory codeDirectory = new CodeDirectory(bundleIdentifier, lc_signature.signature.codeDirectory.codeLimit);
-    // now create brand new entitlements and requirements
-    Entitlements entitlements = new Entitlements(entitlementsBytes);
-    Requirements requirements = new Requirements();
+    // update the bundle identifier
+    this.lc_signature.signature.setBundleIdentifier(bundleIdentifier);
+    
+    // update the entitlements data
+    this.lc_signature.signature.entitlements.setData(entitlementsBytes);
 
-    // now create the blob wrapper
-    BlobWrapper blobWrapper = new BlobWrapper(ks, certStore, codeDirectory);
+    // recalculate slots hashes
+    this.lc_signature.signature.updateCodeDirectoryHashes(this.data, info, sourceData, null);
 
-    // finally create the template of our new signature
-    EmbeddedSignature newSignature = new EmbeddedSignature(codeDirectory, entitlements, requirements, blobWrapper);
-
-    // add the new signature to the file
-    this.setEmbeddedSignature(newSignature);
-
-    // recalculate hashes
-    codeDirectory.setSpecialSlotsHashes(info, requirements.getBytes(), sourceData, null, entitlements.getBytes());
-    codeDirectory.setCodeSlotsHashes(this.data);
-
-    lc_signature.signature.sign();
+    lc_signature.signature.sign(ks, certStore);
     byte[] resignedData = lc_signature.signature.getBytes();
+/* 
+  Not sure if still valid, might want to test and maybe fix it later
     if (signatureTemplate.length != resignedData.length) {
       throw new IllegalStateException("Failed to resign the file, please try again.");
     }
-
+ */
     ElephantMemoryWriter writer = new ElephantMemoryWriter(data);
     writer.memorize();
     writer.moveTo(lc_signature.blobFileOffset);
