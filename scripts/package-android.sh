@@ -19,8 +19,6 @@ pushd $BASEDIR/TotalCrossSDK
       pushd tools/android
          cp AndroidManifest_singleApk.xml $OUTDIR/etc/tools/android
          cp resources_singleApk.arsc $OUTDIR/etc/tools/android
-         cp AndroidManifest_includeSms.xml $OUTDIR/etc/tools/android
-         cp resources_includeSms.arsc $OUTDIR/etc/tools/android
       popd
    popd
 popd
