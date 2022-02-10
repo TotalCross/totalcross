@@ -28,6 +28,7 @@ public class BlobCore {
 
   protected void readFromStream(ElephantMemoryReader reader)
       throws IOException, InstantiationException, IllegalAccessException {
-    reader.skip(length - 8);
+    data = new byte[(int) (length - 8)];
+    reader.read(data);
   }
 }

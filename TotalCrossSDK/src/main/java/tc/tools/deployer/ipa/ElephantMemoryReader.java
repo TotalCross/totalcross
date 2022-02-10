@@ -22,6 +22,12 @@ public class ElephantMemoryReader extends ByteArrayInputStream implements Elepha
     return ((((long) (b[0] & 0xFF)) << 24) | (((long) (b[1] & 0xFF)) << 16) | ((b[2] & 0xFF) << 8) | (b[3] & 0xFF));
   }
 
+  public long readUnsignedLong() throws IOException {
+    long l1 = (long) readUnsignedInt() & 0xFFFFFFFFL;
+    long l2 = (long) readUnsignedInt() & 0xFFFFFFFFL;
+    return (l1 << 32) | l2;
+  }
+
   public long readUnsignedIntLE() throws IOException {
     byte[] b = new byte[4];
     read(b);

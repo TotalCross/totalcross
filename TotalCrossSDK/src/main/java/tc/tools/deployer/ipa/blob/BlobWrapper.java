@@ -20,7 +20,7 @@ import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.bouncycastle.x509.X509Store;
+import org.bouncycastle.util.Store;
 
 public class BlobWrapper extends BlobCore {
   /**
@@ -29,20 +29,20 @@ public class BlobWrapper extends BlobCore {
    */
   public static final long CSMAGIC_BLOB_WRAPPER = 0xfade0b01;
 
-  private CodeDirectory codeDirectory;
-
   private CMSSignedDataGenerator signedDataGenerator;
 
   public BlobWrapper() {
     super(CSMAGIC_BLOB_WRAPPER);
   }
 
-  public BlobWrapper(KeyStore keyStore, X509Store certStore, CodeDirectory codeDirectory)
+  public BlobWrapper(KeyStore keyStore, Store certStore, CodeDirectory codeDirectory)
       throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException,
       OperatorCreationException, IOException, CMSException {
     super(CSMAGIC_BLOB_WRAPPER);
-    this.codeDirectory = codeDirectory;
+    sign(keyStore, certStore, codeDirectory);
+  }
 
+  public void sign(KeyStore keyStore, Store certStore, CodeDirectory codeDirectory) throws IOException, CMSException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException, OperatorCreationException {
     signedDataGenerator = new CMSSignedDataGenerator();
     String firstAlias = (String) keyStore.aliases().nextElement();
     PrivateKey priv = (PrivateKey) (keyStore.getKey(firstAlias, "".toCharArray()));
@@ -53,12 +53,8 @@ public class BlobWrapper extends BlobCore {
     SignerInfoGenerator signerGenerator = new JcaSignerInfoGeneratorBuilder(digestCalculator).build(sha1Signer, cert);
 
     signedDataGenerator.addSignerInfoGenerator(signerGenerator);
-    signedDataGenerator.addCertificates(certStore);
-
-    sign();
-  }
-
-  public void sign() throws IOException, CMSException {
+    signedDataGenerator.addCertificates(certStore);    
+    
     byte[] rawData = codeDirectory.getBytes();
     CMSProcessableByteArray content = (rawData != null) ? new CMSProcessableByteArray(rawData) : null;
     CMSSignedData sign = signedDataGenerator.generate(content, false);
