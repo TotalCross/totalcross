@@ -17,4 +17,8 @@ public class Entitlements extends BlobCore {
     this();
     this.data = data;
   }
+
+  public void setData(byte[] data) {
+    this.data = data;
+  }
 }
