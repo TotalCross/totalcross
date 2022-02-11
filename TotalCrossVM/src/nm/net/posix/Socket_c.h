@@ -67,7 +67,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr);
 static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost, bool *timedOut)
 {
    Err err;
-   int hostSocket;
+   int hostSocket = -1;
    int res;
    long arg;
    fd_set fdWriteSet;
@@ -243,7 +243,9 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
 Error: // Close the socket.
    err = (*isUnknownHost) ? EHOSTUNREACH : errno;
 Finish:
-   socketClose(&hostSocket);
+   if (hostSocket > 0) {
+      socketClose(&hostSocket);
+   }
    return err;
 }
 
