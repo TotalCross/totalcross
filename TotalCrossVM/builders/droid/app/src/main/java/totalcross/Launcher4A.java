@@ -1755,7 +1755,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
     public static final PermissionHandler STORAGE = new PermissionHandler(
             Loader.PermissionRequestCodes.EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.MANAGE_EXTERNAL_STORAGE);
 
     public static final PermissionHandler CAMERA = new PermissionHandler(
             Loader.PermissionRequestCodes.CAMERA,
