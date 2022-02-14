@@ -579,16 +579,28 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean eventIsAvailable()
    {
-      if (appPaused)
-         try {Thread.sleep(250);} catch (Exception e) {}
+      if (appPaused) {
+         try {
+            Thread.sleep(250);
+         } catch (Exception e) {
+            // just ignore
+         } 
+         return false;
+      }
       return eventThread.eventAvailable();
    }
    
    public static void pumpEvents()
    {
-      if (appPaused)
-         try {Thread.sleep(250);} catch (Exception e) {}
-      eventThread.pumpEvents();
+      if (appPaused) {
+         try {
+            Thread.sleep(250);
+         } catch (Exception e) {
+            // just ignore
+         }
+      } else {
+         eventThread.pumpEvents();
+      }
    }
    
    public static void alert(String msg) // if called from android package classes, must pass FALSE
@@ -1263,10 +1275,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
-      appPaused = false;
       instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
+      appPaused = false;
    }
    
    public static String getNativeResolutions()
