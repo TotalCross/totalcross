@@ -270,7 +270,7 @@
 				ORGANIZATIONNAME = "SuperWaba Ltda";
 				TargetAttributes = {
 					0F5AF5021507FA3600D6142B = {
-						DevelopmentTeam = W5Y7X2NKUL;
+						DevelopmentTeam = ZBCJTJJCMK;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -473,11 +473,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				DEBUG = "1 $(inherited)";
-				DEVELOPMENT_TEAM = R8FWE2RXQV;
+				DEVELOPMENT_TEAM = ZBCJTJJCMK;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -504,7 +504,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
-				PROVISIONING_PROFILE_SPECIFIER = TotalCross_WildCard_Development;
+				PROVISIONING_PROFILE_SPECIFIER = "RConnect Dev";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
@@ -518,7 +518,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEBUG = "1 $(inherited)";
-				DEVELOPMENT_TEAM = W5Y7X2NKUL;
+				DEVELOPMENT_TEAM = ZBCJTJJCMK;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -544,7 +544,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
-				PROVISIONING_PROFILE_SPECIFIER = "TotalCross Distribution";
+				PROVISIONING_PROFILE_SPECIFIER = RConnect_2022;
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};

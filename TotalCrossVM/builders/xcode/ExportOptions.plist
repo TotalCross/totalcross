@@ -5,11 +5,11 @@
 	<key>compileBitcode</key>
 	<true/>
 	<key>method</key>
-	<string>ad-hoc</string>
+	<string>enterprise</string>
 	<key>provisioningProfiles</key>
 	<dict>
 		<key>com.totalcross.vm</key>
-		<string>TotalCross Distribution</string>
+		<string>RConnect_2022</string>
 	</dict>
 	<key>signingCertificate</key>
 	<string>iPhone Distribution</string>
@@ -18,7 +18,7 @@
 	<key>stripSwiftSymbols</key>
 	<true/>
 	<key>teamID</key>
-	<string>W5Y7X2NKUL</string>
+	<string>ZBCJTJJCMK</string>
 	<key>thinning</key>
 	<string>&lt;none&gt;</string>
 </dict>

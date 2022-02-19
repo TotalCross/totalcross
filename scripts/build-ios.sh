@@ -12,6 +12,9 @@ unzip ScanditBarcodeScanner.framework-b1.zip -d ios/TotalCrossVM/builders/xcode
 
 pushd ios/TotalCrossVM/builders/xcode
    pod install
+   # Make sure legacy build system is enabled
+   /usr/libexec/PlistBuddy -c "Add :DisableBuildSystemDeprecationDiagnostic bool" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+   /usr/libexec/PlistBuddy -c "Set :DisableBuildSystemDeprecationDiagnostic true" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
    xcodebuild -workspace TotalCross.xcworkspace -scheme TotalCross BUILD_DIR=${PWD} archive -archivePath build/TotalCross.xcarchive teamID="W5Y7X2KNUL" -configuration Release
    xcodebuild -exportArchive -archivePath build/TotalCross.xcarchive -exportPath build/TotalCross.ipa -exportOptionsPlist ExportOptions.plist
 popd
