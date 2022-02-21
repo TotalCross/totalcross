@@ -24,7 +24,7 @@ BASEDIR=$2
 # http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
 command -v convert >/dev/null 2>&1 || { echo >&2 "I require imagemagick but it's not installed. If you have brew installed, execute 'brew install imagemagick' Aborting."; exit 1; }
 
-iconPath= "${BASEDIR}/Assets.xcassets/AppIcon.appiconset"
+iconPath="${BASEDIR}/Assets.xcassets/AppIcon.appiconset"
 
 mkdir -p "$iconPath"
 
