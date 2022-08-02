@@ -12,7 +12,7 @@
 #define SQLITE_THREADSAFE 0
 #define SQLITE_THREAD_OVERRIDE_LOCK 0
 #define SQLITE_WITHOUT_MSIZE 1
-#define SQLITE_MUTEX_OMIT
+#define SQLITE_MUTEX_OMIT 0
 #ifdef WP8
 #define SQLITE_WIN32_FILEMAPPING_API 1
 #define SQLITE_OMIT_WAL 1
@@ -21,6 +21,10 @@
 
 #if defined TOTALCROSS && defined POSIX && !defined __APPLE__ && !defined ANDROID
 #include <linux/mman.h>
+#endif
+
+#ifndef FILENAME_MAX
+#define FILENAME_MAX MAX_PATHNAME
 #endif
 
 #if !defined(FORCE_LIBC_ALLOC)

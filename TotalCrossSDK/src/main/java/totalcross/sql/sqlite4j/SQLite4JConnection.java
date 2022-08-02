@@ -30,7 +30,7 @@ public class SQLite4JConnection implements Connection {
   }
 
   @Override
-  public String nativeSQL(String sql) {
+  public String nativeSQL(String sql) throws SQLException {
     return con.nativeSQL(sql);
   }
 
