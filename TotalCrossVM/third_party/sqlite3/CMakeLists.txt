@@ -9,7 +9,7 @@ cmake_policy(SET CMP0048 NEW)
 include(ExternalProject)
 
 project(SQLite3
-    VERSION 3.13.0.0
+    VERSION 3.36.0.3
     LANGUAGES C
 )
 set(${PROJECT_NAME}_YEAR 2016)

@@ -19,7 +19,7 @@ public interface Connection extends AutoCloseable {
 
   public PreparedStatement prepareStatement(String sql) throws SQLException;
 
-  public String nativeSQL(String sql);
+  public String nativeSQL(String sql) throws SQLException;
 
   public void setAutoCommit(boolean autoCommit) throws SQLException;
 
