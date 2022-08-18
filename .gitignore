@@ -47,9 +47,10 @@ Breakpoints.xcbkptlist
 
 # Files from VS Code
 /**/.vs
+.history
 
 #CMake
-build/
+build*/
 
 #Gradle
 .gradle
