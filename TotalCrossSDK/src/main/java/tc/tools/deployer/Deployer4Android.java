@@ -314,7 +314,7 @@ public class Deployer4Android {
           throw new DeployerException("Keystore for APK signing not found!");
         }
       }
-      javaCmdList.add("--ks=" + keystore);
+      javaCmdList.add("--ks=" + new File(keystore).getAbsolutePath());
       javaCmdList.add("--ks-pass=pass:" + signingConfig.getProperty("apk_keystore_storepass"));
       javaCmdList.add("--ks-key-alias=" + signingConfig.getProperty("apk_keystore_alias"));
       javaCmdList.add("--key-pass=pass:" + signingConfig.getProperty("apk_keystore_keypass"));
