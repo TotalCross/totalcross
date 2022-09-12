@@ -193,7 +193,7 @@ public class ByteArrayStream extends RandomAccessStream {
   public int writeBytes(byte buf[], int start, int count) {
     if (len < (count + pos)) // grow the buffer
     {
-      int size = (count + pos) * 12 / 10; // grows 20% above the new needed capacity
+      int size = (int) ((count + pos) * 1.2); // grows 20% above the new needed capacity
       byte[] newBuffer = new byte[size];
       Vm.arrayCopy(buffer, 0, newBuffer, 0, pos);
       buffer = newBuffer;
