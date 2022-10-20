@@ -10,7 +10,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <sys/select.h>
+#include <poll.h>
 
 #if defined(ANDROID)
 #include <netinet/in.h>
@@ -31,19 +31,14 @@ static Err socketClose(SOCKET* socketHandle);
  *
  * struct sockaddr_in
  * struct hostent
- * fd_set
- * struct timeval
- *
- * FD_ZERO
- * FD_SET
- * FD_ISSET
+ * struct pollfd
  *
  * socket
  * gethostbyname
  * htons
  * fcntl
  * connect
- * select
+ * poll
  * errno
  *
  * OS Versions: POSIX compliant systems.
@@ -70,8 +65,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    int hostSocket = -1;
    int res;
    long arg;
-   fd_set fdWriteSet;
-   struct timeval timeout_val;
+   struct pollfd pfdWrite;
 #ifndef darwin
    struct hostent *phostent;
    struct sockaddr_in destination_sin;
@@ -157,11 +151,9 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
             goto Timeout;
          }
             
-      timeout_val.tv_sec = (timeout>=1000 ? timeout/1000 : 0 );
-      timeout_val.tv_usec = (timeout<1000 ? timeout : timeout%1000)*1000;
-      FD_ZERO(&fdWriteSet);
-      FD_SET(hostSocket, &fdWriteSet);
-      if ((res = select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val)) < 0) {
+      pfdWrite.fd = hostSocket;
+      pfdWrite.events = POLLOUT;
+      if ((res = poll(&pfdWrite, 1, timeout)) < 0) {
          goto Timeout;
       }
       if (res == 0) {
@@ -169,7 +161,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
          *timedOut = true;
          goto Timeout;
       }
-      if (!FD_ISSET(hostSocket, &fdWriteSet)) {
+      if (pfdWrite.revents & (POLLERR|POLLNVAL)) {
          goto Timeout;
       }
    }
@@ -203,11 +195,9 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       if (errno != EINPROGRESS)
          goto Error;
 
-      timeout_val.tv_sec = (timeout>=1000 ? timeout/1000 : 0 );
-      timeout_val.tv_usec = (timeout<1000 ? timeout : timeout%1000)*1000;
-      FD_ZERO(&fdWriteSet);
-      FD_SET(hostSocket, &fdWriteSet);
-      if ((res = select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val)) < 0) {
+      pfdWrite.fd = hostSocket;
+      pfdWrite.events = POLLOUT;
+      if ((res = poll(&pfdWrite, 1, timeout)) < 0) {
          goto Error;
       }
       if (res == 0)
@@ -216,7 +206,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
          *timedOut = true;
          goto Finish;
       }
-      if (!FD_ISSET(hostSocket, &fdWriteSet)) {
+      if (pfdWrite.revents & (POLLERR|POLLNVAL)) {
          goto Error;
       }
       lon = sizeof(int);
@@ -275,13 +265,9 @@ error:
 
 /*****   socketReadWriteBytes   *****
  *
- * fd_set
- * struct timeval
+ * struct pollfd
  *
- * FD_ZERO
- * FD_SET
- *
- * select
+ * poll
  * recv
  * send
  * errno
@@ -293,31 +279,23 @@ error:
  *************************************/
 static Err socketReadWriteBytes(SOCKET socketHandle, int32 timeoutMillis, CharP buf, int32 start, int32 count, int32* retCount, bool isRead)
 {
-   fd_set fdSet;
-   struct timeval timeout;
+   struct pollfd pfd;
    int32 result;
    int32 timestamp;
    *retCount = 0; // clear bytes count
 
    timestamp = getTimeStamp();
 
-   FD_ZERO(&fdSet);
-   FD_SET(socketHandle, &fdSet);
-
-   timeout.tv_sec  = timeoutMillis / 1000;
-   timeout.tv_usec = (timeoutMillis % 1000) * 1000;
-
-   if (isRead)
-      result = select(socketHandle+1, &fdSet, null, null, &timeout); //Read
-   else
-      result = select(socketHandle+1, null, &fdSet, null, &timeout); //Write
+   pfd.fd = socketHandle;
+   pfd.events = isRead ? POLLIN : POLLOUT;
+   result = poll(&pfd, 1, timeoutMillis);
 
    if (result == 0)  // select timed out, update retCount and return
    {
       *retCount = -2; // indicating it was a timeout.
       return NO_ERROR; // do not display platform specific error.
    }
-   else if (result < 0 || !FD_ISSET(socketHandle, &fdSet)) // select failed or socket is not set, return the error code.
+   else if (result < 0 || (pfd.revents & (POLLERR|POLLNVAL))) // select failed or socket is not set, return the error code.
       goto Error;
 
    do // flsobral@tc113_33: loop back only on EWOULDBLOCK, respecting the timeout.
