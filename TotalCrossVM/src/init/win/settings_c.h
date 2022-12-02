@@ -6,9 +6,7 @@
 
 
 #include "../../nm/ui/media_Sound.h"
-#if !defined WP8
- #include <Tapi.h>
-#endif
+#include <Tapi.h>
 
 #if defined (WINCE)
  #include "win/aygshellLib.h"
@@ -23,9 +21,7 @@
  // COBJMACROS must be defined to include the macros from wbemcli.h that are used
  // to invoke methods of WBEM objects when the code is in C.
  #define COBJMACROS
-#if !defined WP8
  #include <wbemcli.h>
-#endif
  
  // Define the CLSID_WbemLocator. It is defined in wbemcli.h only for C++ programs.
  GUID CLSID_WbemLocator2 =  { 0x4590f811, 0x1d3a, 0x11d0, { 0x89, 0x1f, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
@@ -75,16 +71,12 @@ static TCHAR *createRegistryKey(TCHAR *buf, uint32 crid)
 #define BIN_DEFAULT_KEY TEXT("Software\\TotalCross\\appSettings\\B1234") // guich@573_16
 static void deleteAppSettingsTry(uint32 crid, bool bin, bool isHKLM) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
 {
-#if !defined WP8
    TCHAR buf[40];
    tcscpy(buf, bin ? BIN_DEFAULT_KEY : STR_DEFAULT_KEY);
 #ifdef WINCE
    if (RegDeleteKey(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER, createRegistryKey(buf,crid)) != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
 #endif
       RegDeleteKey(HKEY_CURRENT_USER,createRegistryKey(buf,crid));
-#else
-	//WP8 should not use registry
-#endif
 }
 
 static void getSettingsFile(uint32 crid, bool bin, bool isHKLM, CharP out)
@@ -109,7 +101,7 @@ static void getSettingsFile(uint32 crid, bool bin, bool isHKLM, CharP out)
 
 static void deleteAppSettings(uint32 crid, bool bin, bool isHKLM) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
 {
-#if defined(WIN32) && !defined(WINCE) && !defined(WP8)
+#if defined(WIN32) && !defined(WINCE)
    char dest[MAX_PATHNAME];
    FILE* f;
    getSettingsFile(crid, bin, isHKLM, dest);
@@ -122,8 +114,7 @@ static void deleteAppSettings(uint32 crid, bool bin, bool isHKLM) // guich@573_1
 
 static void setAppSettings(uint32 crid, TCObject ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
-	//WP8 app should not use registry
-#if defined(WIN32) && !defined(WINCE) && !defined(WP8)
+#if defined(WIN32) && !defined(WINCE)
    char dest[MAX_PATHNAME];
    FILE* f;
    getSettingsFile(crid, bin, isHKLM, dest);
@@ -142,7 +133,7 @@ static void setAppSettings(uint32 crid, TCObject ptr, bool bin, bool isHKLM) // 
       fwrite(data,len,1,f);
       fclose(f);
    }
-#elif !defined WP8
+#else
    HKEY handle;
    DWORD disp;
    long ret;
@@ -186,8 +177,6 @@ static void char8tochar16(CharP value, int32 i)
 // don't forget to free the allocated buffer
 static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
-	// WP8 app should not use registry
-#if !defined WP8
    HKEY handle;
    long ret;
    DWORD len,type;
@@ -220,14 +209,11 @@ static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin,
       RegCloseKey(handle);
    }
    return target;
-#endif
-   return 0;
 }
 
 static TCObject getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
    TCObject o = null;
-#if !defined WP8
 #ifndef WINCE
    // guich@tc310: now we first look at the file, then at the registry
    char dest[MAX_PATHNAME];
@@ -261,14 +247,11 @@ end:
    if (o == null)
 #endif // wince
       o = getAppSettingsTry(currentContext, crid, bin, isHKLM); // first test at TC
-#endif
    return o;
 }
 
 static bool queryRegistry(HKEY key, TCHAR *subkey, TCHAR *name, char *buf, uint32 size)
 {
-	// WP8 app should not use registry
-#if !defined WP8
    HKEY handle;
    long ret;
    DWORD type;
@@ -281,7 +264,6 @@ static bool queryRegistry(HKEY key, TCHAR *subkey, TCHAR *name, char *buf, uint3
       RegCloseKey(handle);
       return true;
    }
-#endif
    return false;
 }
 
@@ -451,15 +433,11 @@ bool checkWindowsMobile()
 
 bool hasVirtualKeyboard()
 {
-#if defined (WP8)
-	return true;
-#else
  #if defined (WINCE) && _WIN32_WCE >= 300
    if (SipStatus() == SIP_STATUS_AVAILABLE)
       return true;
  #endif
    return false;
-#endif
 }
 
 void CALLBACK lineCallbackFunc(DWORD dwDevice, DWORD dwMsg, DWORD dwCallbackInstance, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3)
@@ -566,13 +544,8 @@ static void fillICCID() // guich@tc126_75
 
 static bool hasKeyboard()
 {
-	// jeffque: WP8 never has a keyboard.
-#if !defined WP8
    int32 ret;
    return queryRegistry(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Shell"), TEXT("HasKeyboard"), (char*)&ret, sizeof(ret)) && ret == 1;
-#else
-	return false;
-#endif
 }
 
 #ifndef WINCE
@@ -595,8 +568,6 @@ void GetMacAddress(char* serialBuf) // guich@tc110_96
    FreeLibrary(dll);
 }
 
-// header wbemcli.h not defined in WP8, looks like that
-#if !defined WP8
 int GetMacAddressWMI(char* serialBuf)
 {
    HRESULT hres;
@@ -830,7 +801,6 @@ cleanup:
    return hres;
 }
 #endif
-#endif
 
 void updateDaylightSavings(Context currentContext)
 {
@@ -858,24 +828,13 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    TCHAR wcbuf[MAX_PATH+1];
 #if !defined (WINCE)
    int32 len;
-#if !defined(WP8)
    HRESULT hres;
 #endif
-#endif
 
-#ifdef WP8
-   *(tcSettings.romVersionPtr) = getOSVersion();
-   getRomSerialNumberCPP(romSerialNumber);
-   getDeviceIdCPP(deviceId);
-   *(tcSettings.virtualKeyboardPtr) = isVirtualKeyboard();
-   platform = "WindowsPhone";
-   //   xstrcpy(deviceId, GetDisplayNameWP8());
-#else
    // OS version
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
    GetVersionEx(&osvi);
    *(tcSettings.romVersionPtr) = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
-#endif
 
 #ifdef WINCE
    romSerialNumber[0] = 0;
@@ -920,14 +879,11 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    if (queryRegistry(HKEY_CURRENT_USER, TEXT("ControlPanel\\Owner"), TEXT("Owner"), (char *)wcbuf, MAX_PATH*sizeof(TCHAR)))
       TCHARP2CharPBuf(wcbuf, userName);
 #else
-# ifndef WP8
    len = sizeof(deviceId);
    GetComputerName(deviceId,&len); // guich@568_2
    platform = "Win32";
    *(tcSettings.virtualKeyboardPtr) = GetSystemMetrics(SM_TABLETPC);
-# endif
 
-#if !defined WP8
    //use the mac address as the serial number
    hres = GetMacAddressWMI(romSerialNumber); // flsobral@tc126: first we try to retrieve the mac address using the WMI
    if (hres == WBEM_S_TIMEDOUT) // flsobral@tc129.1: give up if the operation failed after a timeout.
@@ -939,33 +895,19 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 //      if (romSerialNumber[0] == 0)
 //         xstrcpy(romSerialNumber, "unknown");
    }
-#endif
 
- 
-#if !defined WP8 
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
       queryRegistry(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Logon User Name", userName, sizeof(userName)) || // first, try as a winnt machine
       queryRegistry(HKEY_LOCAL_MACHINE, "Network\\Logon", "Username", userName, sizeof(userName))) // else, try as on windows 98
       ;
 #endif
-#endif
    {
-	   //XXX WP8 does not have GetDC or similar...
-#if !defined WP8
       HDC hdc = GetDC(mainHWnd);
       *(tcSettings.deviceFontHeightPtr) = abs(12 * GetDeviceCaps(hdc, LOGPIXELSY) / 72);
       DeleteDC(hdc);
-#else
-	  *(tcSettings.deviceFontHeightPtr) = (int32) getFontHeightCPP();
-#endif
    }
-#if defined WP8
-#define GetLocaleInfo_COMPAT GetLocaleInfoEx
-#define LOCALE_USER_DEFAULT_COMPAT LOCALE_NAME_USER_DEFAULT
-#else
 #define GetLocaleInfo_COMPAT GetLocaleInfo
 #define LOCALE_USER_DEFAULT_COMPAT LOCALE_USER_DEFAULT
-#endif
    *(tcSettings.decimalSeparatorPtr)     = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
    *(tcSettings.thousandsSeparatorPtr)   = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_STHOUSAND,wcbuf,2) ? (char)wcbuf[0] : ',';
    if (*(tcSettings.decimalSeparatorPtr) == *(tcSettings.thousandsSeparatorPtr)) // guich@421_12: make sure they differ
@@ -975,13 +917,6 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    *(tcSettings.weekStartPtr)            = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_IFIRSTDAYOFWEEK,wcbuf,2) ? (((char)wcbuf[0]-'0' + 1) % 7) : 0; // for SW, 0 is sunday; for Win, 6 is sunday
    *(tcSettings.is24HourPtr)             = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_ITIME,wcbuf,2) ? wcbuf[0] == '1' : true;
    *(tcSettings.dateFormatPtr)           = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_IDATE,wcbuf,2) ? ((char)wcbuf[0]-'0'+1) : 1; // MDY, DMY, YMD
-
-#if defined(WP8)
-   *(tcSettings.virtualKeyboardPtr)      = true;
-   *(tcSettings.fingerTouchPtr)          = true;
-   *(tcSettings.unmovableSIP)            = true;
-   //*(tcSettings.keyboardFocusTraversablePtr) = true;
-#endif
 
    // guich@340_33: timezone and daylight savings
    updateDaylightSavings(currentContext);

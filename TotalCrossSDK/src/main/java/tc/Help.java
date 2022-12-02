@@ -888,7 +888,7 @@ public class Help extends MainWindow {
       b2.add(ios = new Check("iOS"), LEFT + 50, AFTER);
       ios.appId = 2;
       tip(ios, "Deploys for iOS", "Faz o deploy para iOS");
-      b2.add(wmo = new Check("Win Mobile"), AFTER + 50, SAME);
+      b2.add(wmo = new Check("Win Mobile"), LEFT + 50, AFTER + 25);
       wmo.appId = 2;
       tip(wmo, "Deploys for Windows Mobile 5, 6 and 7", "Faz o deploy para Windows Mobile 5, 6 e 7");
       b2.add(and = new Check("Android"), SAME, BEFORE - 25);

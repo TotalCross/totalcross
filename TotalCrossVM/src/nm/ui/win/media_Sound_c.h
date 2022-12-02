@@ -24,9 +24,7 @@ BOOL WaveBeeperHoneywell(unsigned frequency, unsigned duration)
 
 static void soundPlay(CharP filename)
 {
-#ifdef WP8
-   nativeSoundPlayCPP(filename);
-#elif !defined(WINCE) // not sure if this works on wince
+#if !defined(WINCE) // not sure if this works on wince
    char mcidata[129]; // Data is returned by some MCI requests
    int32  mcidatalen=sizeof(mcidata)-1;
    char mcicmd[129];
@@ -143,8 +141,7 @@ static void soundSetEnabled(bool enableSound)
       waveOutSetVolume((HWAVEOUT) WAVE_MAPPER, 0xFFFF);
    else
       waveOutSetVolume((HWAVEOUT) WAVE_MAPPER, 0x0000);
-   //XXX how todo this in WP8?
-#elif !defined WP8
+#else
    int32 numDevices, NumControls, DeviceID;
    int32 ControlID;
    HMIXER hMixer = null;

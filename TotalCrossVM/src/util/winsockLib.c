@@ -14,7 +14,6 @@ static HMODULE ossvcsLib = null;
 
 bool initWinsock()
 {
-#ifndef WP8
    if (wsLib == null)
    {
 #if defined (WINCE)
@@ -69,7 +68,6 @@ bool initWinsock()
       pChangeRadioState    = (ChangeRadioStateProc)   GetProcAddress(ossvcsLib, MAKEINTRESOURCE(ChangeRadioState_ORDINAL));
       pFreeDeviceList      = (FreeDeviceListProc)     GetProcAddress(ossvcsLib, MAKEINTRESOURCE(FreeDeviceList_ORDINAL));
    }
-#endif
 #endif
    return true;
 }

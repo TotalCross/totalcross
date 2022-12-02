@@ -6,18 +6,14 @@
 
 
 #include "winsockLib.h"
-#if !defined WP8
 #pragma pack(8)
 #include <ws2bth.h>
 #pragma pack()
 #if defined (WINCE)
- #include <Bt_sdp.h>
-
-#define BTH_ADDR BT_ADDR
-
+   #include <Bt_sdp.h>
+   #define BTH_ADDR BT_ADDR
 #else
- #include <BluetoothAPIs.h>
-#endif
+   #include <BluetoothAPIs.h>
 #endif
 
 #define NATIVE_HANDLE SOCKET

@@ -10,7 +10,7 @@ import totalcross.io.IOException;
 
 /** Used to dial a number in a smartphone.
  * A single listener can receive messages from the system informing the current status.
- * Currently works on Android, and iOS.
+ * Currently works on Android and iOS.
  *
  * @since TotalCross 1.0
  */

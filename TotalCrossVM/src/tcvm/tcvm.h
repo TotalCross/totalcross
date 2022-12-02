@@ -41,11 +41,7 @@
 #include "../tcvm/tcapi.h"
 
 #if defined(WINCE) || defined(WIN32)
-#if defined WP8
- #define INCL_WINSOCK_API_PROTOTYPES 1
-#else
  #define INCL_WINSOCK_API_PROTOTYPES 0
-#endif
  #define INCL_WINSOCK_API_TYPEDEFS 1
  #include "winsock2.h"
  #include <windows.h>
@@ -57,10 +53,8 @@
  #if _WIN32_WCE >= 300
   #include <notify.h>
  #endif
- #if !defined WP8
  typedef HWAVEOUT MediaClipHandle;
  typedef WAVEHDR  MediaClipHeader;
-#endif
 #endif
 
 #include <stdarg.h>
@@ -69,53 +63,6 @@
 
 #ifdef darwin
 #define inline
-#endif
-
-#if defined WP8
-
-#include "cppwrapper.h"
-//#include "ThreadEmulation.h"
-#include <winsock2.h>
-
-#define GetSystemInfo(a) GetNativeSystemInfo(a)
-
-#define Beep(t,d) do {} while (0)
-#define GetTickCount() GetTickCount64()
-
-#define LoadLibrary(x) LoadPackagedLibrary(x, 0)
-#define CreateFile(a, b, c, d, e, f, g) CreateFile2(a, b, c, e, 0)
- typedef unsigned char boolean;
-#define FindFirstFile(a, b) FindFirstFileEx(a, FindExInfoStandard, b, FindExSearchNameMatch, NULL, 0)
-#define VirtualAlloc(a, b, c, d) malloc(a * b)
-#define GetModuleHandle(a) 0
-#define GetMessage(a, b, c, d) 0
-#define PostMessage(a, b, c, d)
-#define TranslateMessage(a)
-#define DispatchMessage(b)
-#define GetWindowLong(a, b) 0
-#define SetWindowLong(a, b, c)
-#define PeekMessage(a, b, c, d, e) 0
-#define GetDeviceCaps(a, b) 0
-#define DeleteDC(a)
-#define GetSystemMetrics(a) 0
-#define GetClassName(a, b, c)
-#define lstrlen(a) _tcslen(a)
-#define lstrcmpi(a, b) _tcsicmp(a, b)
-#define SetForegroundWindow(a)
-#define GetModuleFileName(a, b, c)
-#define EnumWindows(a, b)
-#define SetWindowPos(a, b, c, d, e, f, g) 0
-#define ExtEscape(a, b, c, d, e, f) 0
-#define ReleaseDC(a, b)
-#define SystemParametersInfo(a, b, c, d)
-#define GetClientRect(a, b)
-#define SelectPalette(a, b, c)
-#define RealizePalette(a)
-#define SelectObject(a, b) 0
-#define BitBlt(a, b, c, d, e, f, g, h, i)
-#define DeleteObject(a)
-#define GetLogicalDriveStrings(a, b) 0
-
 #endif
 
 #if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)

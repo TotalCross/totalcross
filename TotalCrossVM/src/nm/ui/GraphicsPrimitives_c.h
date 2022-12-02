@@ -8,10 +8,6 @@
 #include "GraphicsPrimitives.h"
 #include "math.h"
 
-#if defined (WP8)
-#include "openglWrapper.h"
-#endif
-
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
@@ -574,38 +570,10 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-#ifdef WP8
-         if (pixel1 == pixel2)
-            glDrawLine(x, y, x + width, y, pixel1, 255);
-         else
-         if (checkGLfloatBuffer(currentContext, width/2+2))
-         {
-            float *xya = glXYA;
-            int32 xx, ww, nn=0;
-            for (xx = x, ww = width; ww > 0; ww -= 2, xx += 2, nn++)
-            {
-               *xya++ = (float)xx;   
-               *xya++ = (float)y; // vertices
-               *xya++ = 1; // alpha
-            }
-            if (nn > 0) glDrawPixels(nn,pixel1);
-
-            xya = glXYA;
-            nn = 0;
-            for (xx = x + 1, ww = width - 1; ww > 0; ww -= 2, xx += 2, nn++)
-            {
-               *xya++ = (float)xx;
-               *xya++ = (float)y; // vertices
-               *xya++ = 1; // alpha
-            }
-            if (nn > 0) glDrawPixels(nn,pixel2);
-         }
-#else
          if (pixel1 == pixel2)
             glDrawLine(x, y, x + width, y, pixel1, 255);
          else
             glDrawDots(x, y, x + width, y, pixel1, pixel2);
-#endif
          currentContext->fullDirty = true;
       }
       else
@@ -656,38 +624,10 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-#ifdef WP8
-         if (pixel1 == pixel2)
-            glDrawLine(x, y, x, y + height, pixel1, 255);
-         else
-         if (checkGLfloatBuffer(currentContext, height/2+2))
-         {
-            float *xya = glXYA;
-            int32 yy, hh, nn = 0;
-            for (yy=y,hh=height; hh > 0; hh -= 2, yy += 2, nn++)
-            {
-               *xya++ = (float)x;
-               *xya++ = (float)yy; // vertices
-               *xya++ = 1; // alpha
-            }
-            if (nn > 0) glDrawPixels(nn,pixel1);
-
-            xya = glXYA;                                                
-            nn = 0;
-            for (yy = y+1, hh = height-1; hh > 0; hh -= 2, yy += 2, nn++)
-            {
-               *xya++ = (float)x;
-               *xya++ = (float)yy; // vertices
-               *xya++ = 1; // alpha
-            }
-            if (nn > 0) glDrawPixels(nn,pixel2);
-         }
-#else
          if (pixel1 == pixel2)
             glDrawLine(x, y, x, y + height, pixel1, 255);
          else
             glDrawDots(x, y, x, y + height, pixel1, pixel2);
-#endif
          currentContext->fullDirty = true;
       }
       else
@@ -916,12 +856,10 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
 #endif
 
 #ifndef SKIA_H
-#if !defined(WP8)
 static int32 abs32(int32 a)
 {
    return a < 0 ? -a : a;
 }
-#endif
 
 static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
 {
@@ -1627,7 +1565,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
    if (!xPoints1 || !yPoints1 || nPoints1 < 2)
       return;
 
-#if defined __gl2_h_ && !defined WP8
+#if defined __gl2_h_
    if (!gradient && (nPoints1 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1, isPie)) && (nPoints2 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2, isPie)) && Graphics_useOpenGL(g)) // opengl doesnt fills non-convex polygons well
    {
       if (nPoints1 > 0)
@@ -1778,7 +1716,7 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 {
    if (xPoints1 && yPoints1 && nPoints1 >= 2)
    {
-#if defined __gl2_h_ && !defined WP8
+#if defined __gl2_h_
       if (Graphics_useOpenGL(g) && (nPoints1 == 0 || isInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1)) && (nPoints2 == 0 || isInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2)))
       {
          if (nPoints1 > 0)
@@ -2455,7 +2393,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          Pixel565 *t = (Pixel565*)screen.pixels;
          if (shiftY == 0)
             for (count = screenH * screenW; count != 0; f++,count--)
-               #if defined(WIN32) && !defined(WP8)
+               #if defined(WIN32)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2463,7 +2401,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               #if defined(WIN32) && !defined(WP8)
+               #if defined(WIN32)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2487,7 +2425,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             else
             {
                for (count = currentContext->dirtyX2 - currentContext->dirtyX1; count != 0; pf++, count--)
-                  #if defined(WIN32) && !defined(WP8)
+                  #if defined(WIN32)
                   SETPIXEL565_(pt, pf->pixel)
                   #else
                   *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);

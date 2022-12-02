@@ -27,8 +27,6 @@ TC_API void tidRD_isSupported_i(NMParams p) // totalcross/io/device/RadioDevice 
       p->retI = RdIsSupported(type);
 #elif defined (ANDROID)
       p->retI = RdIsSupported(p->currentContext, type);
-#elif defined WP8
-      p->retI = true;
 #else
    p->retI = false;
 #endif
@@ -46,8 +44,6 @@ TC_API void tidRD_getState_i(NMParams p) // totalcross/io/device/RadioDevice nat
       p->retI = RdGetState(type);
 #elif defined (ANDROID)
       p->retI = RdGetState(p->currentContext, type);
-#elif defined (WP8)
-      p->retI = rdGetStateCPP(type);
 #else
       p->retI = RADIO_STATE_DISABLED;
 #endif      

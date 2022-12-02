@@ -127,7 +127,7 @@ typedef TUInt8 UInt8;
 typedef TDouble Double;
 typedef TInt64 Int64;
 
-#if !defined(INT32_MAX) && !defined(WP8)
+#if !defined(INT32_MAX)
  #define INT32_MAX (2147483647)
 #endif
 
@@ -202,10 +202,6 @@ CharP xstrrchr(CharP str, int32 what);
       ((uint8*)(dest))[0] = ((uint8*)(src))[0];  \
       ((uint8*)(dest))[1] = ((uint8*)(src))[1];  \
    } while(0)
-#ifdef WP8 // remove vc2013 warnings
-#define xmoveptr(dest,src)                       \
-   xmove4(dest, src);                       
-#else
 #define xmoveptr(dest, src)                       \
    do                                            \
    {                                             \
@@ -214,7 +210,6 @@ CharP xstrrchr(CharP str, int32 what);
       else                                       \
          xmove8(dest,src);                       \
    } while(0)
-#endif
 
 #define xmemmove(dest, src, len) memmove(dest, src, len)
 #define xmemzero(mem, len) memset(mem, 0, len)

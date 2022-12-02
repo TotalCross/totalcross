@@ -526,28 +526,32 @@ public final class Settings {
    */
   public static String appVersion;
 
-  /** Set it at the application's static initializer; should not contain spaces. Defines the company's information, which is used in iOS, Windows CE.
+  /** Set it at the application's static initializer; should not contain spaces. Defines the company's information, which is used in iOS and Windows CE.
    * In iOS is used to form the bundle suffix id. 
    * @since TotalCross 1.0
    */
   public static String companyInfo;
 
-  /** Set it at the application's static initializer. Defines the user's or company's contact email.
+  /** Set it at the application's static initializer. Defines the user's or company's contact email, which was used in WP8.
    * @since TotalCross 1.0
    */
+  @Deprecated
   public static String companyContact;
 
-  /** Set it at the application's static initializer. Defines the application's description.
+  /** Set it at the application's static initializer. Defines the application's description, which was used in WP8.
    * @since TotalCross 1.0
    */
+  @Deprecated
   public static String appDescription;
 
-  /** Set it at the application's static initializer. Defines the application's package identifier.
+  /** Set it at the application's static initializer. Defines the application's package identifier, which was used in WP8.
    */
+  @Deprecated
   public static String appPackageIdentifier;
 
-  /** Set it at the application's static initializer. Defines the application's package publisher.
+  /** Set it at the application's static initializer. Defines the application's package publisher, which was used in WP8.
    */
+  @Deprecated
   public static String appPackagePublisher;
 
   /** Set it at the application's static initializer. Defines the application's package id, which is used in iOS. */

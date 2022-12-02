@@ -495,9 +495,6 @@ static void reset1font(int32 i32, VoidP ptr)
       if (ENABLE_TEXTURE_TRACE) debug("reset1font: %d",uf->textureId[0]);
       glDeleteTexture(null, uf->textureId);
    }
-#ifdef WP8
-   uf->textureId[1] = 0;
-#endif
    uf->textureId[0] = 0;
 }
 #endif

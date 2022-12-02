@@ -64,7 +64,6 @@ extern int32 defScrX,defScrY,defScrW,defScrH;
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
-#ifndef WP8
    DWORD style;
    int32 width, height;
    RECT rect;
@@ -139,7 +138,6 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    ReleaseDC(mainHWnd, deviceContext);
 #endif
 
-#endif
 #if defined(_DEBUG) && !defined(WINCE)
    SetProcessAffinityMask(GetCurrentProcess(), 1);
 #endif

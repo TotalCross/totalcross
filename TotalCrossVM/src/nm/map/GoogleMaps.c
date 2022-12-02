@@ -25,9 +25,7 @@ TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native 
       p->retI = false;
       return;
    }
-#ifdef WP8
-   p->retI = showMap(String_charsStart(addr), String_charsLen(addr), 0, 0);
-#elif defined ANDROID
+#if defined ANDROID
    JNIEnv* env = getJNIEnv();         
    jstring jaddr = (*env)->NewString(env, (jchar*) String_charsStart(addr), String_charsLen(addr));
    jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowGoogleMaps, jaddr, (jboolean) p->i32[0]);
@@ -51,9 +49,7 @@ TC_API void tmGM_showRoute_sssi(NMParams p) // totalcross/map/GoogleMaps native 
       p->retI = false;
       return;
    }
-#ifdef WP8
-   p->retI = showMap(String_charsStart(addrI), String_charsLen(addrI), String_charsStart(addrF), String_charsLen(addrF));
-#elif defined ANDROID
+#if defined ANDROID
    JNIEnv* env = getJNIEnv();         
    TCObject coord = p->obj[2];
    jstring jaddrI = (*env)->NewString(env, (jchar*) String_charsStart(addrI), String_charsLen(addrI));

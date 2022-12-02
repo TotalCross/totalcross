@@ -13,11 +13,6 @@
 #define SQLITE_THREAD_OVERRIDE_LOCK 0
 #define SQLITE_WITHOUT_MSIZE 1
 #define SQLITE_MUTEX_OMIT 0
-#ifdef WP8
-#define SQLITE_WIN32_FILEMAPPING_API 1
-#define SQLITE_OMIT_WAL 1
-#define SQLITE_OS_WINRT 1
-#endif
 
 #if defined TOTALCROSS && defined POSIX && !defined __APPLE__ && !defined ANDROID
 #include <linux/mman.h>
