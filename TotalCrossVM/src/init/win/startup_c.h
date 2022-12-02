@@ -13,8 +13,6 @@ TC_API DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
 
 unsigned long __cdecl StartVMFromService(void* nnn) 
 {
-	// WP8 app should not use the registry
-#if !defined WP8
    // get the tcz name from the registry
    HKEY handle=(HKEY)0;
    DWORD err,size;
@@ -35,7 +33,6 @@ unsigned long __cdecl StartVMFromService(void* nnn)
       wsprintf(buf,TEXT("%d"),ret);
       MessageBox(0,buf,TEXT("Service Exit Code"),MB_OK);
    }
-#endif
    return 0;
 }
 
@@ -51,8 +48,6 @@ TC_API DWORD TSV_Init(DWORD dwData)
 static void getWorkingDir()
 {
 	char* sl;
-
-#ifndef WP8
    TCHAR d1[MAX_PATH], d2[MAX_PATH];
    // get the path to the vm
    GetModuleFileName(hModuleTCVM, d1, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
@@ -76,18 +71,6 @@ static void getWorkingDir()
 
    // store the exe name
    GetModuleFileName(GetModuleHandle(null), exeName, MAX_PATHNAME);
-#else
-   char *_path;
-   _path = GetVmPathWP8();
-   for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
-      if (*sl == '\\') *sl = '/';
-   xstrcpy(vmPath, _path);
-
-   _path = GetAppPathWP8();
-   for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
-	   if (*sl == '\\') *sl = '/';
-   xstrcpy(appPath, _path);
-#endif
 }
 
 #if defined(ENABLE_TEST_SUITE) && defined(WINCE)
@@ -228,7 +211,6 @@ void appSetFullScreen();
 
 static void setFullScreen()
 {
-#ifndef WP8
    int32 width = GetSystemMetrics(SM_CXSCREEN);
    int32 height = GetSystemMetrics(SM_CYSCREEN);
 #if !defined (WINCE) //flsobral@tc114_60: fixed fullscreen display on win32.
@@ -251,7 +233,4 @@ static void setFullScreen()
    SetForegroundWindow(mainHWnd);
    screen.screenY = screen.screenX = 0;
    screenChange(mainContext, width, height, screen.hRes, screen.vRes, false);
-#else
-   appSetFullScreen();
-#endif
 }

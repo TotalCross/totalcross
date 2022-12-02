@@ -30,10 +30,6 @@
 #define FOOTERS 1
 #endif
 
-#if defined WP8
-#undef MSPACES
-#undef FOOTERS
-#endif
 // TOTALCROSS END
 
 #ifdef __cplusplus

@@ -7,9 +7,7 @@
 
 #include "tcvm.h"
 
-#if defined WP8
-
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/CellInfo_c.h"
 #elif defined(ANDROID)
  #include "android/CellInfo_c.h"

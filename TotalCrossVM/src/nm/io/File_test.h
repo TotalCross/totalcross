@@ -580,7 +580,6 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #D
    currentContext->thrownException = null;
 
    // ----- ROOT -----
-#ifndef WP8
    p.obj[0] = createFile(currentContext, TEXT("/"), null, &path);
 
    ASSERT1_EQUALS(NotNull, p.obj[0]);
@@ -593,7 +592,7 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #D
    tiF_getSize(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(True, p.retI >= 0); // assert volume size is greater than zero
-#endif
+   
    finish:
       ;
 }
@@ -1063,11 +1062,9 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    rbP.i32[0] = 12;
    tiF_setPos_i(&rbP);
    
-#ifndef WP8
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
    currentContext->thrownException = null;
-#endif
 
    // #32 Moving the file pointer back to the beggining of the file
    rbP.obj[0] = rbP.obj[0];
@@ -1084,9 +1081,7 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    tiF_readBytes_Bii(&rbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-#ifndef WP8
    ASSERT2_EQUALS(I32, 11, rbP.retI); 
-#endif
 
    ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11)); 
 
@@ -1202,12 +1197,6 @@ TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte w
    ASSERT2_EQUALS(I32, Time_month(time), Time_month(t3));
    ASSERT2_EQUALS(I32, Time_day(time), Time_day(t3));
    
-#ifdef WP8   
-   ASSERT2_EQUALS(I32, Time_hour(time), Time_hour(t3));
-   ASSERT2_EQUALS(I32, Time_minute(time), Time_minute(t3));
-   ASSERT2_EQUALS(I32, Time_second(time), Time_second(t3));
-#endif
-
    finish:
       ;
 }

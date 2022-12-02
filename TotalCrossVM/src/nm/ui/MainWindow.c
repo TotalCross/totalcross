@@ -12,8 +12,7 @@ void privateExit(int32 code);
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuMW_restore(NMParams p) // totalcross/ui/MainWindow native public final void restore();
 {
-#if defined WP8
-#elif defined ANDROID
+#if defined ANDROID
    #define SOFT_UNEXIT 0x40000001
    privateExit(SOFT_UNEXIT);
 #elif defined WIN32 // guich@tc122_49
@@ -24,8 +23,7 @@ TC_API void tuMW_restore(NMParams p) // totalcross/ui/MainWindow native public f
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuMW_minimize(NMParams p) // totalcross/ui/MainWindow native public final void minimize();
 {
-#if defined WP8
-#elif defined ANDROID
+#if defined ANDROID
    #define SOFT_EXIT 0x40000000
    privateExit(SOFT_EXIT);
 #elif defined WIN32 // guich@tc122_49

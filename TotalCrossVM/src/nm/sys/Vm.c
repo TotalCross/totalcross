@@ -169,7 +169,7 @@ TC_API void tsV_sleep_i(NMParams p) // totalcross/sys/Vm native public static vo
    else
    {
       Sleep(max32(millis,1)); // don't sleep 0, or threads may starve to death
-#if defined WIN32 && !defined WP8
+#if defined WIN32
       //if (millis == 1) - guich@310: also for other sleep values
       {
          MSG msg;

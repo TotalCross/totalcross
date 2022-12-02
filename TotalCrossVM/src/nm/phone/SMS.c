@@ -5,16 +5,14 @@
 
 #include "tcvm.h"
 
-#if defined WP8
-
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/SMS_c.h"
 #endif
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public static void send(String destination, String message) throws totalcross.io.IOException;
 {
-#if defined (WINCE) || defined (WP8)
+#if defined (WINCE)
    TCObject destination = p->obj[0];
    TCObject message = p->obj[1];
    if (destination == null)
@@ -33,15 +31,6 @@ TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public stat
          throwException(p->currentContext, OutOfMemoryError, !szMessage?"When allocating 'message'":"'When allocating 'destination'");
       else
          SmsSend(p->currentContext, szMessage, szDestination);
-#elif defined (WP8)
-      JCharP szMessage = JCharPDup(String_charsStart(message), String_charsLen(message));
-      JCharP szDestination = JCharPDup(String_charsStart(destination), String_charsLen(destination));
-
-      if (!szMessage || !szDestination)
-         throwException(p->currentContext, OutOfMemoryError, !szMessage ? "When allocating 'message'" : "'When allocating 'destination'");
-      else
-         smsSendCPP(szMessage, szDestination);
-         
 #endif
       xfree(szMessage);
       xfree(szDestination);

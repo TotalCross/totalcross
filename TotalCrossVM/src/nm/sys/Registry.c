@@ -7,9 +7,7 @@
 
 #include "tcvm.h"
 
-#if defined (WP8)
-
-#elif defined(WINCE) || defined(WIN32)
+#if defined(WINCE) || defined(WIN32)
  #include "win/Registry_c.h"
 #else
  #include "posix/Registry_c.h"
@@ -44,7 +42,7 @@ static bool getKeyValue(NMParams p, TCHARP* key, TCHARP* value) // key and value
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_getInt_iss(NMParams p) // totalcross/sys/Registry native public static int getInt(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    TCHARP key=null, value=null;
    if (getKeyValue(p, &key, &value))
       privateGetInt(p, p->i32[0], key, value);
@@ -55,7 +53,7 @@ TC_API void tsR_getInt_iss(NMParams p) // totalcross/sys/Registry native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_getString_iss(NMParams p) // totalcross/sys/Registry native public static String getString(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    TCHARP key=null, value=null;
    if (getKeyValue(p, &key, &value))
       privateGetString(p, p->i32[0], key, value);
@@ -66,7 +64,7 @@ TC_API void tsR_getString_iss(NMParams p) // totalcross/sys/Registry native publ
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_getBlob_iss(NMParams p) // totalcross/sys/Registry native public static byte[] getBlob(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    TCHARP key=null, value=null;
    if (getKeyValue(p, &key, &value))
       privateGetBlob(p, p->i32[0], key, value);
@@ -77,7 +75,7 @@ TC_API void tsR_getBlob_iss(NMParams p) // totalcross/sys/Registry native public
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_set_issi(NMParams p) // totalcross/sys/Registry native public static void set(int hk, String key, String value, int data);
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    TCHARP key=null, value=null;
    if (getKeyValue(p, &key, &value))
       privateSetInt(p->currentContext, p->i32[0], key, value, p->i32[1]);
@@ -88,7 +86,7 @@ TC_API void tsR_set_issi(NMParams p) // totalcross/sys/Registry native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_set_isss(NMParams p) // totalcross/sys/Registry native public static void set(int hk, String key, String value, String data);
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    TCHARP key=null, value=null;
    CharP data=null;
    if (getKeyValue(p, &key, &value))
@@ -113,7 +111,7 @@ TC_API void tsR_set_isss(NMParams p) // totalcross/sys/Registry native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_set_issB(NMParams p) // totalcross/sys/Registry native public static void set(int hk, String key, String value, byte []data);
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    TCHARP key=null, value=null;
    if (getKeyValue(p, &key, &value))
    {
@@ -130,7 +128,7 @@ TC_API void tsR_set_issB(NMParams p) // totalcross/sys/Registry native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_delete_iss(NMParams p) // totalcross/sys/Registry native public static boolean delete(int hk, String key, String value);
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    // value can be null
    TCHARP key=null, value=null;
    TCObject keyObj, valueObj;
@@ -166,7 +164,7 @@ end:
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_list_is(NMParams p) // totalcross/sys/Registry native public static String[] list(int hk, String key);
 {
-#if !defined WP8 && (defined (WIN32) || defined (WINCE))
+#if (defined (WIN32) || defined (WINCE))
    TCHARP key=null;
    TCObject keyObj;
    keyObj = p->obj[0];

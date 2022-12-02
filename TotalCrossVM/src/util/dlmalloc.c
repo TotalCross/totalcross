@@ -544,13 +544,7 @@ void tcabort(char* msg, char* file, int line);
 #endif
 
 #if defined(WIN32) || defined(WINCE)
- #if defined WP8
-  #define MSPACES 0
-  #define GetTickCount() 0
-  #define GetSystemInfo(a) GetNativeSystemInfo(a)
- #else
-  #define MSPACES 1
- #endif
+ #define MSPACES 1
  #define FOOTERS 1
 #endif
 

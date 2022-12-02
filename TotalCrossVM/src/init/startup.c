@@ -93,8 +93,6 @@ int32 exitProgram(int32 exitcode)
       rebootDevice();      
    #ifdef ANDROID
    privateExit(exitcode); // exit from the android vm
-   #elif defined(WP8)
-   appExit();
    #endif
    return exitCode;
 }
@@ -401,7 +399,7 @@ jumpArgument:
    traceOn = true;
 #endif
 
-#if defined(darwin) || defined(ANDROID) || defined WP8
+#if defined(darwin) || defined(ANDROID)
    strcat(tczName, ".tcz");
 #endif
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context

@@ -654,7 +654,7 @@ public class Window extends Container {
         return;
       }
       if (Settings.isWindowsDevice() && shiftY > 0) {
-        shiftY = 0; // required for WP8. not sure on other platforms
+        shiftY = 0; // was required for WP8. not sure on other platforms
       }
       if (shiftY != 0) // is the screen shifted?
       {

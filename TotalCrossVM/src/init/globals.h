@@ -31,7 +31,7 @@ extern HANDLE hModuleTCVM;
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
 #endif
-#if defined(ANDROID) || defined(darwin) || defined(WP8)
+#if defined(ANDROID) || defined(darwin)
 extern int32 deviceFontHeight,iosScale;
 #endif
 

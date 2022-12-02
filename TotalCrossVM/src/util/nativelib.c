@@ -31,7 +31,7 @@ VoidP getProcAddress(const VoidP module, const char* funcName)
 }
 
 #if 0
-// (defined (darwin) && !defined (THEOS)) || defined(WP8)  || defined(ANDROID)
+// (defined (darwin) && !defined (THEOS)) || defined(ANDROID)
 bool LibOpen(OpenParams params);
 void LibClose();
 

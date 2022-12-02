@@ -4,10 +4,6 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include <math.h>
-#if defined WP8
-#include "openglWrapper.h"
-#endif
-
 
 static void setCurrentFrame(TCObject obj, int32 nr)
 {

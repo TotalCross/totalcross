@@ -7,8 +7,7 @@
 
 #include "Window.h"
 
-#if defined (WP8)
-#elif defined (WINCE) || defined (WIN32)
+#if defined (WINCE) || defined (WIN32)
  #include "win/Window_c.h"
 #elif defined (darwin)
  #include "darwin/Window_c.h"
@@ -25,8 +24,6 @@ TC_API void tuW_isSipShown(NMParams p) // totalcross/ui/Window native public sta
 #if defined (WINCE) && _WIN32_WCE >= 300
    if (*tcSettings.virtualKeyboardPtr)
       ret = windowGetSIP();
-#elif defined (WP8)
-      ret = privateWindowGetSIP();
 #elif defined(darwin)
    ret = windowGetSIP();
 #elif defined (ANDROID)
@@ -47,8 +44,6 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
 #if defined (WINCE) && _WIN32_WCE >= 300
    if (*tcSettings.virtualKeyboardPtr)
       windowSetSIP(sipOption, p->i32[1]);
-#elif defined (WP8)
-      privateWindowSetSIP(sipOption != SIP_HIDE);
 #elif defined(darwin)
    windowSetSIP(p->currentContext, sipOption, p->obj[0] /*control*/, p->i32[1] /*numeric*/);
 #elif defined (ANDROID)

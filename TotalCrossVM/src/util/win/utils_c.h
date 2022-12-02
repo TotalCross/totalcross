@@ -3,16 +3,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#if !defined(WP8) && !defined(WINCE)
+#if !defined(WINCE)
 #include "psapi.h"
 #pragma comment(lib, "psapi.lib") 
 #endif
 
 static int32 privateGetFreeMemory(bool maxblock)
 {
-#ifdef WP8
-   return getFreeMemoryWP8();
-#elif defined(WINCE)
+#if defined(WINCE)
    int32 result=1;
    MEMORYSTATUS ms = { 0 };  // works for most cases
    ms.dwLength = sizeof(MEMORYSTATUS); // bytes
@@ -29,9 +27,7 @@ static int32 privateGetFreeMemory(bool maxblock)
 
 int32 getUsedMemory()
 {
-#ifdef WP8
-   return getUsedMemoryWP8();
-#elif defined(WINCE)
+#if defined(WINCE)
    int32 result = 1;
    MEMORYSTATUS ms = { 0 };  // works for most cases
    ms.dwLength = sizeof(MEMORYSTATUS); // bytes

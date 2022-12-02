@@ -273,19 +273,6 @@ TC_API void tnCM_isAvailable_i(NMParams p) // totalcross/net/ConnectionManager n
    }
    else
       p->retI = CmIsAvailable(type);
-#elif defined WP8
-   switch (type)
-   {
-      case CM_CRADLE:
-         p->retI = false;
-         break;
-      case CM_WIFI:
-      case CM_CELLULAR:
-          p->retI = isAvailableCPP(type);
-         break;
-      default:
-         throwIllegalArgumentExceptionI(p->currentContext, "type", type);
-   }
 #else
    UNUSED(type);
    p->retI = false;

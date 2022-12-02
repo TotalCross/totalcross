@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#if !defined(WINCE) && !defined(WP8)
+#if !defined(WINCE)
 #include <tlhelp32.h>
 #endif
 
@@ -21,10 +21,8 @@ static void vmSetTime(TCObject time)
    newTime.wMilliseconds = Time_millis(time);
 #endif
 
-#ifndef WP8
    SetLocalTime(&newTime);
    SetLocalTime(&newTime);
-#endif
 }
 //XXX como carregar a dll do TC
 #define IOCTL_HAL_REBOOT 0x101003C
@@ -35,12 +33,8 @@ void rebootDevice()
    KernelIoControlProc procKernelIoControl = (KernelIoControlProc)GetProcAddress(coreDll, TEXT("KernelIoControl"));
    if (procKernelIoControl != null)
       procKernelIoControl(IOCTL_HAL_REBOOT, NULL, 0, NULL, 0, NULL);
-#elif !defined WP8
-   ExitWindowsEx(EWX_REBOOT,0);
 #else
-   /*HMODULE dll = LoadLibrary(TEXT("coredll.dll"));
-   SetSystemPowerStateProc SetSystemPowerState = (SetSystemPowerStateProc)GetProcAddress(dll, TEXT("SetSystemPowerState"));
-   SetSystemPowerState(null, 0x00800000, 4096);*/
+   ExitWindowsEx(EWX_REBOOT,0);
 #endif
 }
 
@@ -49,13 +43,11 @@ typedef HANDLE (__stdcall *RegisterServiceProc)(LPCWSTR lpszType,  DWORD dwIndex
 typedef BOOL (__stdcall *DeregisterServiceProc)(HANDLE hDevice);
 typedef HANDLE (__stdcall *GetServiceHandleProc)(LPWSTR szPrefix, LPWSTR szDllName, DWORD pdwDllBuf);
 
-#ifndef WP8 // defined in cppwrapper
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
    VoidP startInfo = null;
    int32 ret=-1;
 
-#if !defined(WP8)
    TCHAR pathargs[1024];
    BOOL ok;
    DWORD err;
@@ -93,9 +85,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       return srv != 0;
    }
 #endif
-#endif
-   //XXX all below should be reworked
-#if !defined WP8
+
 #ifndef WINCE
    if (strEq(szCommand,"running process"))
    {
@@ -220,10 +210,9 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       CloseHandle(processInfo.hProcess);
    }
    else ret = err;
-#endif
+
    return ret;
 }
-#endif
 
 void vmSetAutoOff(bool enable)
 {
@@ -243,8 +232,6 @@ void vmSetAutoOff(bool enable)
          SystemParametersInfo(SPI_SETBATTERYIDLETIMEOUT, oldAutoOffValue, null, 0);
       oldAutoOffValue = 0;
    }
-#elif defined WP8
-   vmSetAutoOffCPP(enable);
 #endif
 }
 
@@ -274,7 +261,7 @@ void registerHotkeys(Int32Array keys, bool isRegister)
          return;
       }
       //throwException(currentContext, RuntimeException, "Could not find entry point for hotkeys registration");
-      #elif !defined WP8
+      #else
       int32 n;
       for (n = ARRAYLEN(keys); n-- > 0; keys++)
          if (isRegister)
@@ -330,24 +317,16 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
  #define ClipboardFree(clipData)    LocalFree(clipData)
  #define ClipboardLock(clipData)    (TCHARP) clipData
  #define ClipboardUnlock(clipData)  clipData = clipData
-#elif !defined WP8
+#else
  #define CF_TCHARTEXT               CF_TEXT
  #define ClipboardAlloc(len)        GlobalAlloc(GPTR, sizeof(TCHAR)*(len + 1))
  #define ClipboardFree(clipData)    GlobalFree(clipData)
  #define ClipboardLock(clipData)    GlobalLock(clipData)
  #define ClipboardUnlock(clipData)  GlobalUnlock(clipData)
-#else
-#define CF_TCHARTEXT               CF_TEXT
-#define ClipboardAlloc(len)        GlobalAlloc(GPTR, sizeof(TCHAR)*(len + 1))
-#define ClipboardFree(clipData)    GlobalFree(clipData)
-#define ClipboardLock(clipData)    GlobalLock(clipData)
-#define ClipboardUnlock(clipData)  GlobalUnlock(clipData)
 #endif
 
 static void vmClipboardCopy(CharP string, int32 stringLen)
 {
-	//XXX
-#if !defined WP8
    HANDLE hClipData;
    TCHARP lpClipData;
 
@@ -381,13 +360,10 @@ static void vmClipboardCopy(CharP string, int32 stringLen)
    if (!SetClipboardData(CF_TCHARTEXT, lpClipData))
       ClipboardFree(hClipData);
    CloseClipboard();
-#endif
 }
 
 static TCObject vmClipboardPaste(Context currentContext)
 {
-	//XXX
-#if !defined WP8
    HANDLE hClipData;
    TCHARP lpClipData;
    TCObject o;
@@ -407,19 +383,12 @@ static TCObject vmClipboardPaste(Context currentContext)
       CloseClipboard();
    }
    return o;
-#else
-	return null;
-#endif
 }
 
 static bool vmIsKeyDown(int32 key)
 {
-#if !defined(WP8)
    key = keyPortable2Device(key);
    return (GetAsyncKeyState(key) & 0x8000) != 0;
-#else
-   return false;
-#endif
 }
 
 static int32 vmGetRemainingBattery()
@@ -440,7 +409,7 @@ static int32 vmGetRemainingBattery()
       }
    }
    return (ret > 100 ? 100 : ret);
-#elif !defined WP8 // guich@tc115_31
+#else
    SYSTEM_POWER_STATUS p;
    int32 ret=100;
 
@@ -450,8 +419,6 @@ static int32 vmGetRemainingBattery()
          ret = p.BatteryLifePercent;
    }
    return (ret > 100 ? 100 : ret);
-#else
-   return getRemainingBatery();
 #endif
 }
 
@@ -488,9 +455,6 @@ typedef struct _VIDEO_POWER_MANAGEMENT
 
 static bool vmTurnScreenOn(bool on)
 {
-#if defined WP8
-	return true;
-#else
 	HDC gdc;
 	int iESC;
 	bool ret;
@@ -514,7 +478,6 @@ static bool vmTurnScreenOn(bool on)
 		ReleaseDC(NULL, gdc);
 	}	
 	return ret;
-#endif
 }
 
 ////////////////////// guich@tc122_52: added VIBRATION
@@ -600,8 +563,5 @@ void vmVibrate(int32 ms)
    }
    if (vibThread == null && (vibtype == VIB_AYG || vibtype == VIB_CORE))
       vibThread = CreateThread(null, 0, (LPTHREAD_START_ROUTINE) VibrateThread, (int*)ms, 0, null);
-
-#elif defined WP8
-   vibrate(ms);
 #endif
 }

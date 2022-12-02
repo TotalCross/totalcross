@@ -30,7 +30,7 @@ static void privateDestroyDebug()
 
 static bool privateDebug(char* str)
 {
-#if defined(ENABLE_CONSOLE) && defined(WIN32) && !defined(WINCE) && !defined(WP8)
+#if defined(ENABLE_CONSOLE) && defined(WIN32) && !defined(WINCE)
    if (!consoleAllocated)
    {
       consoleAllocated = true;
@@ -72,7 +72,7 @@ static bool privateDebug(char* str)
    xfree(tstr);
    OutputDebugStringW(TEXT("\n"));
 }
-#elif (defined(WP8) && defined(DEBUG)) || (defined(WIN32) && defined(_DEBUG))
+#elif (defined(WIN32) && defined(_DEBUG))
    OutputDebugStringA(str);
    OutputDebugStringA("\n");
 #endif
@@ -128,11 +128,7 @@ static void privateAlert(CharP str)
    CloseHandle(h);
    SetForegroundWindow(mainHWnd);
    SetActiveWindow(mainHWnd);
-#elif !defined(WP8) 
-   MessageBox(mainHWnd,str,TEXT("ALERT"),MB_OK|MB_TOPMOST|MB_SETFOREGROUND);
 #else
-   JChar buf[2048]; // JCharP = TCHARP
-   CharP2JCharPBuf(str, min32(xstrlen(str), sizeof(buf)-1), buf, true);
-   alertCPP(buf);
+   MessageBox(mainHWnd,str,TEXT("ALERT"),MB_OK|MB_TOPMOST|MB_SETFOREGROUND);
 #endif
 }

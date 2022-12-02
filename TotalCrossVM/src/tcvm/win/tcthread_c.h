@@ -32,9 +32,7 @@ static ThreadHandle privateThreadGetCurrent()
 
 static void privateThreadDestroy(ThreadHandle h, bool threadDestroyingItself)
 {
-#ifndef WP8
    if (!threadDestroyingItself) TerminateThread(h, 0);
-#endif
    CloseHandle(h);
 }
 
