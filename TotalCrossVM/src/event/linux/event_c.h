@@ -78,8 +78,8 @@ void handleKeyboardEvent(SDL_Event event) {
       }
       if (key == SK_SCREEN_CHANGE)
       {
-         if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
-            screenChange(mainContext, *tcSettings.screenHeightPtr,*tcSettings.screenWidthPtr,0,0,false);
+         // if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
+         //    screenChange(mainContext, *tcSettings.screenHeightPtr,*tcSettings.screenWidthPtr,0,0,false);
       }
       else if (key != event.key.keysym.sym) {
          postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0, modifier);

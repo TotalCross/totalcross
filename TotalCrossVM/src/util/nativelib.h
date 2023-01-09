@@ -9,6 +9,8 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+ 
+#include "debug.h"
 
 /// Load a library with the given name
 VoidP loadLibrary(const char *libName);

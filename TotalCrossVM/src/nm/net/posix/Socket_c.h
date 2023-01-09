@@ -16,7 +16,7 @@
 #include <netinet/in.h>
 #endif
 
-#if defined (darwin)
+#if defined (__APPLE__)
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <err.h>
