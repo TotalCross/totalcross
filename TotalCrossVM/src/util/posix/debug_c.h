@@ -33,6 +33,10 @@ static bool privateDebug(char* str)
 {
     bool err = true;
    static char debugPath[MAX_PATHNAME];
+#if __APPLE__ && !defined darwin
+   printf(str);
+   printf("\n");
+#else
    if (!fdebug)
    {
       xstrprintf(debugPath, "%s/DebugConsole.txt", appPath);
@@ -55,6 +59,7 @@ static bool privateDebug(char* str)
          fsync(fileno(fdebug));
       }
    }
+#endif
     return err;
 }
 

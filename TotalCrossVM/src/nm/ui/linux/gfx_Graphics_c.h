@@ -97,13 +97,13 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen) // scree
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
-#ifndef HEADLESS
+#ifdef SKIA_H
+   TCSDL_Destroy(screen);
+#elif !defined HEADLESS
    if (SCREEN_EX(screen)->layer)
       SCREEN_EX(screen)->layer->Release (SCREEN_EX(screen)->layer);
    if (SCREEN_EX(screen)->primary)
       SCREEN_EX(screen)->primary->Release (SCREEN_EX(screen)->primary);
-#else
-   TCSDL_Destroy(screen);
 #endif
 }
 

@@ -1,4 +1,4 @@
-#if defined darwin || defined ANDROID || defined HEADLESS
+#if defined __APPLE__ || defined ANDROID || defined HEADLESS
 
 #define initNativeProcAddresses() do{ htNativeProcAddresses = htNew(512, null); fillNativeProcAddressesTC(); }while(0)
 #define destroyNativeProcAddresses() htFree(&htNativeProcAddresses, null)

@@ -62,7 +62,7 @@ void privateUnloadLibrary(VoidP libPtr)
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 {
-#if defined darwin || defined ANDROID || defined HEADLESS
+#if defined __APPLE__ || defined ANDROID || defined HEADLESS
     return (NativeMethod)htGetPtr(&htNativeProcAddresses, hashCode(funcName));
 #else
    void *tcvm = module ? module : dlopen(TEXT(VM_PATH), RTLD_LAZY);
