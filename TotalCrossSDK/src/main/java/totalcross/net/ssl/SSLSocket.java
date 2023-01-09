@@ -10,7 +10,6 @@ import totalcross.io.ByteArrayStream;
 import totalcross.io.IOException;
 import totalcross.net.Socket;
 import totalcross.net.UnknownHostException;
-import totalcross.sys.Vm;
 
 /**
  * This class extends Sockets and provides secure socket using protocols such as the "Secure Sockets Layer" (SSL) or
@@ -20,10 +19,12 @@ import totalcross.sys.Vm;
  * If handshaking fails for any reason, the SSLSocket is closed, and no further communications can be done.
  */
 public class SSLSocket extends Socket {
-  private SSLClient sslClient;
-  private SSL sslConnection;
-  private SSLReadHolder sslReader;
-  private ByteArrayStream buffer = null;
+  private byte[] context;
+  private byte[] mbedtls_net_context;
+  private byte[] mbedtls_entropy_context;
+  private byte[] mbedtls_ctr_drbg_context;
+  private byte[] mbedtls_ssl_context;
+  private byte[] mbedtls_ssl_config;
 
   /**
    * Constructs an SSL connection to a named host at a specified port, with the specified connection timeout, binding
@@ -42,7 +43,10 @@ public class SSLSocket extends Socket {
    */
   public SSLSocket(String host, int port, int timeout) throws UnknownHostException, IOException {
     super(host, port, timeout);
+    init();
   }
+
+  private native void init();
 
   /**
    * Creates a new SSLClient to be used by this instance of SSLSocket during the handshake. The default implementation
@@ -63,83 +67,44 @@ public class SSLSocket extends Socket {
    *            on a network level error
    */
   public void startHandshake() throws IOException {
-    try {
-      sslClient = prepareContext();
-      sslConnection = sslClient.connect(this, null);
-      Exception e = sslConnection.getLastException();
-      if (e != null) {
-        throw new IOException(e.getMessage());
-      }
-      int status;
-      for (int elapsedTime = 0; (status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS
-          && elapsedTime < super.readTimeout; elapsedTime += 25) {
-        Vm.sleep(25);
-      }
-      if (status != Constants.SSL_OK) {
-        throw new IOException("SSL handshake failed: " + status);
-      }
-      sslReader = new SSLReadHolder();
-      buffer = new ByteArrayStream(256);
-      buffer.mark();
-    } catch (Exception e) {
-      try {
-        this.close();
-      } catch (IOException e2) {
-      }
-      if (e instanceof IOException) {
-        throw (IOException) e;
-      }
-      throw new IOException(e.getMessage());
-    }
   }
 
   @Override
   public int readBytes(byte[] buf, int start, int count) throws IOException {
-    if (buffer == null) {
-      return super.readBytes(buf, start, count);
+    if (buf == null) {
+      throw new NullPointerException();
     }
-    if (buffer.available() == 0) {
-      int sslReadBytes = sslConnection.read(sslReader);
-      buffer.reuse();
-      if (sslReadBytes > 0) {
-        buffer.writeBytes(sslReader.getData(), 0, sslReadBytes);
-      }
-      buffer.mark();
+    if (start < 0 || count < 0 || start + count > buf.length) {
+      throw new IndexOutOfBoundsException();
     }
-    int readBytes = buffer.readBytes(buf, start, count);
+    if (count == 0) {
+      return 0;
+    }
 
-    return readBytes;
-  }
-
-  @Override
-  public int readBytes(byte[] buf) throws IOException {
-    return this.readBytes(buf, 0, buf.length);
+    return readWriteBytes(buf, start, count, true);
   }
 
   @Override
   public int writeBytes(byte[] buf, int start, int count) throws IOException {
-    if (buffer == null) {
-      return super.writeBytes(buf, start, count);
+    if (buf == null) {
+      throw new NullPointerException();
     }
-    if (start > 0) {
-      byte[] buf2 = new byte[count];
-      Vm.arrayCopy(buf, start, buf2, 0, count);
-      buf = buf2;
+    if (start < 0 || count < 0 || start + count > buf.length) {
+      throw new IndexOutOfBoundsException();
     }
-    return sslConnection.write(buf, count);
+    if (count == 0) {
+      return 0;
+    }
+
+    return readWriteBytes(buf, start, count, false);
   }
+
+  native private int readWriteBytes(byte[] buf, int start, int count, boolean isRead) throws IOException;
+
+  native private void cleanup();
 
   @Override
   public void close() throws IOException {
-    if (buffer != null) {
-      buffer = null;
-    }
-    if (sslConnection != null) {
-      sslConnection.dispose();
-    }
-    if (sslClient != null) {
-      sslClient.dispose();
-    }
-    super.close();
+    cleanup();
   }
 }

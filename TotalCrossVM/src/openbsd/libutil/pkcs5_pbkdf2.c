@@ -31,7 +31,7 @@
  * use os_port.h defines instead of sha1.h
  */
 //#include <sha1.h>
-#include "os_port.h"
+#include "axtls/os_port.h"
 
 /**
  * openbsd compat
@@ -43,7 +43,7 @@
 #define freezero(a, b) free(a)
 #endif
 
-#include "crypto.h"
+#include "axtls/crypto.h"
 #define SHA1_DIGEST_LENGTH SHA1_SIZE
 
 #ifndef MINIMUM

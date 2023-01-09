@@ -40,6 +40,10 @@
    typedef u_int SOCKET;
   #endif
 #endif
+#else
+
+typedef int SOCKET;
+#define INVALID_SOCKET 0
 
 #endif
 
