@@ -277,6 +277,7 @@
 
 // totalcross.net.Socket
 #define Socket_socketRef(o)               FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Socket_host(o)                    FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define Socket_readTimeout(o)             FIELD_I32(o, 0)
 #define Socket_writeTimeout(o)            FIELD_I32(o, 1)
 #define Socket_dontFinalize(o)            FIELD_I32(o, 2)

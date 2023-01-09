@@ -4,6 +4,8 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+include(FetchContent)
+
 # set the project name
 project(TCVM VERSION 7.0.2)
 
@@ -29,12 +31,66 @@ endif()
 
 add_subdirectory(third_party) 
 
+FetchContent_Declare(
+        mbedtls
+        GIT_REPOSITORY  https://github.com/Mbed-TLS/mbedtls.git
+        GIT_TAG         v3.2.1
+        GIT_PROGRESS    TRUE
+        USES_TERMINAL_DOWNLOAD TRUE)
+
+# FetchContent_MakeAvailable(mbedtls)
+
+set(CMAKE_C_FLAGS_OLD "${CMAKE_C_FLAGS}")
+
+# Add other flags here.
+
+if(DEFINED ANDROID_ABI)
+  if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
+    # Required to build mbedTLS for ARM 32
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMULADDC_CANNOT_USE_R7")
+  endif()
+endif()
+
+FetchContent_GetProperties(mbedtls)
+if(NOT mbedtls_POPULATED)
+    message("Setting up ARM mbedTLS...")
+    FetchContent_Populate(mbedtls)
+    set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
+    set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(INSTALL_MBEDTLS_HEADERS OFF CACHE BOOL "" FORCE)
+
+    add_subdirectory(${mbedtls_SOURCE_DIR} ${mbedtls_BINARY_DIR})
+    target_include_directories(mbedtls PUBLIC 
+      $<BUILD_INTERFACE:${mbedtls_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${mbedtls_SOURCE_DIR}>
+    )
+    install (TARGETS mbedtls mbedx509 mbedcrypto
+    EXPORT tcvm-target
+    FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Library
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Library
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Library
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Tools
+    )
+    set_target_properties(
+        mbedtls mbedx509 mbedcrypto
+        PROPERTIES
+        PUBLIC_HEADER "${mbedtls_SOURCE_DIR}/include/mbedtls"
+    )
+
+    if(CMAKE_GENERATOR STREQUAL Xcode)
+      include_directories("${mbedtls_SOURCE_DIR}/include/**")
+    endif()
+endif()
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_OLD}")
+
+target_link_libraries(tcvm MbedTLS::mbedcrypto MbedTLS::mbedx509 MbedTLS::mbedtls)
+
 # Find SDL2 and Skia
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
 # Find SDL2
 IF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
-  find_package(SDL2 REQUIRED)
+  find_package(SDL2 2.0.12 REQUIRED)
   include_directories(${SDL2_INCLUDE_DIR})
 ENDIF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
 
@@ -150,6 +206,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/nio/channels/FileChannelImpl.c
 
     ${TC_SRCDIR}/nm/net/ssl_SSL.c
+    ${TC_SRCDIR}/nm/net/SSLSocket.c
     ${TC_SRCDIR}/nm/net/ServerSocket.c
     ${TC_SRCDIR}/nm/net/Socket.c
     ${TC_SRCDIR}/nm/net/ConnectionManager.c
@@ -262,11 +319,15 @@ set(SOURCES
 
     ${TC_SRCDIR}/nm/db/NativeDB.c
 
+    ${TC_SRCDIR}/sqlite/sqlite3.c
+
     ${TC_SRCDIR}/scanner/ios/ios_barcode.c
 
     ${TC_SRCDIR}/nm/qrcode/qrcode_generation.c
 
     ${TC_SRCDIR}/nm/io/device/gpiod/Gpiod.c
+
+    ${TC_SRCDIR}/nm/xml/xml_XmlTokenizer.c
 
     )
 
@@ -400,6 +461,7 @@ include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
 include_directories(${TC_SRCDIR}/zlib)
+include_directories(${TC_SRCDIR}/sqlite)
 
 if(MSVC)
   include_directories(${TC_SRCDIR}/nm/qrcode/win)

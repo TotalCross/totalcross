@@ -87,17 +87,7 @@ public class Socket4D extends Stream {
   }
 
   public int readBytes(byte buf[]) throws totalcross.io.IOException {
-    if (socketRef == null) {
-      throw new totalcross.io.IOException("The socket is closed.");
-    }
-    if (buf == null) {
-      throw new java.lang.NullPointerException();
-    }
-    if (buf.length == 0) {
-      return 0;
-    }
-
-    return readWriteBytes(buf, 0, buf.length, true);
+    return readBytes(buf, 0, buf.length);
   }
 
   @Override
