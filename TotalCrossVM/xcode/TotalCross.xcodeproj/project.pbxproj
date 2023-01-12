@@ -86,7 +86,6 @@
 		3AC055B61F9418EB0023D206 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		C37036ADA68AA86F4FF8315C /* Pods-TotalCross.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TotalCross.release.xcconfig"; path = "Pods/Target Support Files/Pods-TotalCross/Pods-TotalCross.release.xcconfig"; sourceTree = "<group>"; };
-		D598D47E1EB7A1A2005C3DAE /* ScanditBarcodeScanner.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ScanditBarcodeScanner.framework; sourceTree = "<group>"; };
 		D598D4821EB8907B005C3DAE /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		D598D4841EB89096005C3DAE /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		D598D4861EB890AB005C3DAE /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -180,7 +179,6 @@
 				D598D4861EB890AB005C3DAE /* CoreVideo.framework */,
 				D598D4841EB89096005C3DAE /* MessageUI.framework */,
 				D598D4821EB8907B005C3DAE /* CoreText.framework */,
-				D598D47E1EB7A1A2005C3DAE /* ScanditBarcodeScanner.framework */,
 				3A52AAD3162739D900DCEE4A /* QuartzCore.framework */,
 				3A52AAD1162739C000DCEE4A /* OpenGLES.framework */,
 				3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */,
