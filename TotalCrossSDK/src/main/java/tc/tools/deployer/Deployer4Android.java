@@ -99,7 +99,8 @@ import totalcross.util.Vector;
 
 public class Deployer4Android {
   public static String signingPropertiesPath = null;
-  public static boolean forceAndroidStorageAccess = false;
+  public static boolean permissionManageExternalStorage = false;
+  public static boolean permissionRequestInstallPackages = false;
   private final Properties signingConfig = new Properties();
   private final String targetDir;
   private final String targetTCZ;
@@ -183,9 +184,13 @@ public class Deployer4Android {
     int versionCode = Utils.version2int(newVersion);
     originalManifest = originalManifest.replaceFirst("(.*\"[vV]ersionCode\"\\R.*\")[0-9]+(\"\\R)((?:.*\\R)*?)(.*int_decimal_value: )[0-9]+", "$1" + versionCode + "$2$3$4" + versionCode);
     originalManifest = originalManifest.replaceAll("totalcross\\.android", "totalcross." + targetTCZ);
-    if (!Deployer4Android.forceAndroidStorageAccess){
-      originalManifest = originalManifest.replace("android.permission.MANAGE_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE");
+    if (!Deployer4Android.permissionManageExternalStorage){
+      originalManifest = originalManifest.replace("<uses-permission android:name=\"android.permission.MANAGE_EXTERNAL_STORAGE\" />", "");
     }
+    if (!Deployer4Android.permissionRequestInstallPackages){
+      originalManifest = originalManifest.replace("<uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\" />", "");
+    }
+    
 
     if (!DeploySettings.quiet) {
       IOUtils.write(originalManifest, new FileOutputStream(new File(targetDir, "AndroidManifest.xml")));
