@@ -282,6 +282,10 @@ public class Deploy {
         case 'a':
           if ("/android_signing_config".equals(op)) {
             Deployer4Android.signingPropertiesPath = args[++i];
+          } else if ("/android_manage_external_storage".equals(op)) {
+            Deployer4Android.permissionManageExternalStorage = true;
+          } else if ("/android_request_install_packages".equals(op)) {
+            Deployer4Android.permissionRequestInstallPackages = true;
           }
           else if (op.equals("/autostart")) {
             System.out.println("Autostart on Android's boot");
@@ -303,11 +307,6 @@ public class Deploy {
           J2TC.dump = true;
           if (op.length() == 3 && op.charAt(2) == '2') {
             J2TC.dumpBytecodes = true;
-          }
-          break;
-        case 'f':
-          if ("/force_android_storage_access".equals(op)) {
-            Deployer4Android.forceAndroidStorageAccess = true;
           }
           break;
         case 's':
@@ -435,7 +434,8 @@ public class Deploy {
         + "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Supports: android. E.G.: /i android\n"
             + "   /k      : Keep the exe and other temporary files during wince generation\n"
             + "   /kn     : As /k, but does not create the cab files for wince\n"
-            + "   /force_android_storage_access : Adds the MANAGE_EXTERNAL_STORAGE permission to the manifest. The usage of this permission is subject to restrictions when submitted to the Play Store.\n "
+            + "   /android_manage_external_storage : Adds the MANAGE_EXTERNAL_STORAGE permission to the manifest. The usage of this permission is subject to restrictions when submitted to the Play Store.\n "
+            + "   /android_request_install_packages : Adds the REQUEST_INSTALL_PACKAGES permission to the manifest. The usage of this permission is subject to restrictions when submitted to the Play Store.\n "
             + "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"
             + "   /android_signing_config path : Specifies a path to a properties file containing keystore configuration for signing AAB and APK when deploying for Android.\n"
             + "   /n name : Override the name of the tcz file with the given name\n"
