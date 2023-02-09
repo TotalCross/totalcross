@@ -23,7 +23,8 @@ pushd ios/TotalCrossVM/xcode
    xcodebuild -exportArchive -archivePath build/TotalCross.xcarchive -exportPath build/TotalCross.ipa -exportOptionsPlist ExportOptions.plist
 popd
 
-pushd ios/TotalCrossVM/builders/xcode/build
+pushd ios/TotalCrossVM/xcode/build
+   mkdir -p $OUTDIR/dist/vm/ios
    cp TotalCross.ipa/TotalCross.ipa $OUTDIR/dist/vm/ios/
    cp -R TotalCross.xcarchive $OUTDIR/etc/tools/iOSCodesign/
 popd
