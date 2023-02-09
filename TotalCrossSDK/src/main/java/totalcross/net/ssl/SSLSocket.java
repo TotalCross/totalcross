@@ -5,11 +5,14 @@
 
 package totalcross.net.ssl;
 
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
 import totalcross.crypto.CryptoException;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.IOException;
 import totalcross.net.Socket;
 import totalcross.net.UnknownHostException;
+import totalcross.sys.Vm;
 
 /**
  * This class extends Sockets and provides secure socket using protocols such as the "Secure Sockets Layer" (SSL) or
@@ -25,6 +28,11 @@ public class SSLSocket extends Socket {
   private byte[] mbedtls_ctr_drbg_context;
   private byte[] mbedtls_ssl_context;
   private byte[] mbedtls_ssl_config;
+
+  private SSLClient sslClient;
+  private SSL sslConnection;
+  private SSLReadHolder sslReader;
+  private ByteArrayStream buffer = null;
 
   /**
    * Constructs an SSL connection to a named host at a specified port, with the specified connection timeout, binding
@@ -46,7 +54,9 @@ public class SSLSocket extends Socket {
     init();
   }
 
-  private native void init();
+  @ReplacedByNativeOnDeploy
+  private void init() {
+  }
 
   /**
    * Creates a new SSLClient to be used by this instance of SSLSocket during the handshake. The default implementation
@@ -67,6 +77,34 @@ public class SSLSocket extends Socket {
    *            on a network level error
    */
   public void startHandshake() throws IOException {
+    try {
+      sslClient = prepareContext();
+      sslConnection = sslClient.connect(this, null);
+      Exception e = sslConnection.getLastException();
+      if (e != null) {
+        throw new IOException(e.getMessage());
+      }
+      int status;
+      for (int elapsedTime = 0; (status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS
+          && elapsedTime < super.readTimeout; elapsedTime += 25) {
+        Vm.sleep(25);
+      }
+      if (status != Constants.SSL_OK) {
+        throw new IOException("SSL handshake failed: " + status);
+      }
+      sslReader = new SSLReadHolder();
+      buffer = new ByteArrayStream(256);
+      buffer.mark();
+    } catch (Exception e) {
+      try {
+        this.close();
+      } catch (IOException e2) {
+      }
+      if (e instanceof IOException) {
+        throw (IOException) e;
+      }
+      throw new IOException(e.getMessage());
+    }
   }
 
   @Override
@@ -99,9 +137,49 @@ public class SSLSocket extends Socket {
     return readWriteBytes(buf, start, count, false);
   }
 
-  native private int readWriteBytes(byte[] buf, int start, int count, boolean isRead) throws IOException;
+  @ReplacedByNativeOnDeploy
+  private int readWriteBytes(byte[] buf, int start, int count, boolean isRead) throws IOException {
+    if (isRead) {
+      if (buffer == null) {
+        return super.readBytes(buf, start, count);
+      }
+      if (buffer.available() == 0) {
+        int sslReadBytes = sslConnection.read(sslReader);
+        buffer.reuse();
+        if (sslReadBytes > 0) {
+          buffer.writeBytes(sslReader.getData(), 0, sslReadBytes);
+        }
+        buffer.mark();
+      }
+      int readBytes = buffer.readBytes(buf, start, count);
 
-  native private void cleanup();
+      return readBytes;
+    } else {
+      if (buffer == null) {
+        return super.writeBytes(buf, start, count);
+      }
+      if (start > 0) {
+        byte[] buf2 = new byte[count];
+        Vm.arrayCopy(buf, start, buf2, 0, count);
+        buf = buf2;
+      }
+      return sslConnection.write(buf, count);
+    }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void cleanup() throws IOException {
+    if (buffer != null) {
+      buffer = null;
+    }
+    if (sslConnection != null) {
+      sslConnection.dispose();
+    }
+    if (sslClient != null) {
+      sslClient.dispose();
+    }
+    super.close();
+  }
 
   @Override
   public void close() throws IOException {
