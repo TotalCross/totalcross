@@ -193,25 +193,25 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
    timestamp = getTimeStamp();
    retCount = 0;
    result = 0;
-   do // flsobral@tc113_33: loop back only on EWOULDBLOCK, respecting the timeout.
-   {
-      if (isRead)
-      {
+   do { // flsobral@tc113_33: loop back only on EWOULDBLOCK, respecting the timeout.
+      if (isRead) {
          result = mbedtls_ssl_read( ssl_context, buf + start + retCount, count - retCount); //Read
-         if (result == 0 && retCount >= 0) // flsobral@tc110_2: if result is 0, the connection was gracefully closed by the remote host.
-         {
-            retCount = -1;
+         if (result == 0 && retCount >= 0) { // flsobral@tc110_2: if result is 0, the connection was gracefully closed by the remote host.
             break;
          }
       }
-      else
+      else {
          result = mbedtls_ssl_write( ssl_context, buf + start + retCount, count - retCount); //Write
-      
-      if( result == MBEDTLS_ERR_SSL_WANT_READ || result == MBEDTLS_ERR_SSL_WANT_WRITE )
-         continue;
+      }
 
-        if( ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY )
-            break;
+      if( result == MBEDTLS_ERR_SSL_WANT_READ || result == MBEDTLS_ERR_SSL_WANT_WRITE ) {
+         continue;
+      }
+
+      if( ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY ) {
+         retCount = -1;
+         break;
+      }
 
       if (result < 0) {
          break;
