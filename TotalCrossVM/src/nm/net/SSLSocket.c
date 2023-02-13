@@ -161,6 +161,11 @@ TC_API void tnsSSLS_cleanup(NMParams p) // totalcross/net/ssl/SSLSocket native v
    SSLSocket_entropy_context(socket) = NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tnsSSLS_startHandshake(NMParams p) // totalcross/net/ssl/SSLSocket native void startHandshake() throws IOException;
+{
+   p->retO = null;
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSocket native private int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
    TCObject socket = p->obj[0];

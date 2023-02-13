@@ -76,6 +76,7 @@ public class SSLSocket extends Socket {
    * @throws IOException
    *            on a network level error
    */
+  @ReplacedByNativeOnDeploy
   public void startHandshake() throws IOException {
     try {
       sslClient = prepareContext();

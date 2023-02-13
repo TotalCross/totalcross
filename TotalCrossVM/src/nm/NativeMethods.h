@@ -326,6 +326,7 @@ TC_API void tnS_nativeClose(NMParams p);
 TC_API void tnS_readWriteBytes_Biib(NMParams p);
 TC_API void tnsSSLS_init(NMParams p);
 TC_API void tnsSSLS_cleanup(NMParams p);
+TC_API void tnsSSLS_startHandshake(NMParams p);
 TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p);
 TC_API void tnSS_serversocketCreate_iiis(NMParams p);
 TC_API void tnSS_nativeClose(NMParams p);
