@@ -304,6 +304,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_readWriteBytes_Biib"), &tnS_readWriteBytes_Biib);
    htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_init"), &tnsSSLS_init);
    htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_cleanup"), &tnsSSLS_cleanup);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_startHandshake"), &tnsSSLS_startHandshake);
    htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_readWriteBytes_Biib"), &tnsSSLS_readWriteBytes_Biib);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_serversocketCreate_iiis"), &tnSS_serversocketCreate_iiis);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_nativeClose"), &tnSS_nativeClose);
