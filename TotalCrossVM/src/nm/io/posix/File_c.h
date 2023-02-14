@@ -41,13 +41,13 @@ bool getSDCardPath(char* buf, int idx)
 }
 
 #define REQUEST_STORAGE_PERMISSION(func)                                                                       \
-   if (errno == EACCES) {                                                                    \
+   if (errno == EACCES || errno == EPERM) {                                                                    \
 	   /* ask for permission and get result */                                                                  \
 	   JNIEnv* env = getJNIEnv();                                                                               \
 	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");  \
 	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);                                \
 	   if (result <= 0) {                                                                                       \
-		   return EACCES;                                                                                         \
+		   return errno;                                                                                         \
 	   }                                                                                                        \
 	   return func;                                                                                             \
    }
