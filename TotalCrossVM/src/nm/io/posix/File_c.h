@@ -39,6 +39,18 @@ bool getSDCardPath(char* buf, int idx)
       buf[0] = 0;
    return buf[0] != 0;               
 }
+
+#define REQUEST_STORAGE_PERMISSION(func)                                                                       \
+   if (errno == EACCES) {                                                                    \
+	   /* ask for permission and get result */                                                                  \
+	   JNIEnv* env = getJNIEnv();                                                                               \
+	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");  \
+	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);                                \
+	   if (result <= 0) {                                                                                       \
+		   return EACCES;                                                                                         \
+	   }                                                                                                        \
+	   return func;                                                                                             \
+   }
 #endif
 /*
  *
@@ -97,16 +109,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
     return NO_ERROR;
 error:
 #if defined(ANDROID)
-   if (errno == EACCES) {
-	   // ask for permission and get result
-	   JNIEnv* env = getJNIEnv();
-	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
-	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
-	   if (result <= 0) {
-		   return EACCES;
-	   }
-	   return fileCreate(fref, path, mode, slot);
-   }
+   REQUEST_STORAGE_PERMISSION(fileCreate(fref, path, mode, slot));
 #endif
    return errno;
 }
@@ -192,16 +195,7 @@ Err fileCreateDir(TCHARP path, int32 slot)
 
 error:
 #if defined(ANDROID)
-   if (errno == EACCES) {
-	   // ask for permission and get result
-	   JNIEnv* env = getJNIEnv();
-	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
-	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
-	   if (result <= 0) {
-		   return EACCES;
-	   }
-	   return fileCreateDir(path, slot);
-   }
+   REQUEST_STORAGE_PERMISSION(fileCreateDir(path, slot));
 #endif
    return errno;
 }
@@ -240,16 +234,7 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
    return NO_ERROR;
 error:
 #if defined(ANDROID)
-   if (errno == EACCES) {
-       // ask for permission and get result
-       JNIEnv* env = getJNIEnv();
-       jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
-       jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
-       if (result <= 0) {
-           return EACCES;
-       }
-       return fileDelete(fref, path, slot, isOpen);
-   }
+   REQUEST_STORAGE_PERMISSION(fileDelete(fref, path, slot, isOpen));
 #endif
    return errno;
 }
@@ -345,16 +330,7 @@ static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 
 error:
 #if defined(ANDROID)
-   if (errno == EACCES) {
-       // ask for permission and get result
-       JNIEnv* env = getJNIEnv();
-       jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
-       jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
-       if (result <= 0) {
-           return EACCES;
-       }
-       return fileGetSize(fref, szPath, size);
-   }
+   REQUEST_STORAGE_PERMISSION(fileGetSize(fref, szPath, size));
 #endif
    return errno;
 }
