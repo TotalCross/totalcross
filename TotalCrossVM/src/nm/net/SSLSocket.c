@@ -223,7 +223,7 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
       }
 
       retCount += result; // update the number of bytes write/read
-   } while (retCount < count || (getTimeStamp() - timestamp < timeout));
+   } while (retCount < count /*|| (getTimeStamp() - timestamp < timeout)*/);
 
    p->retI = retCount;
    return;
