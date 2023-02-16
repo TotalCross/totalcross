@@ -1867,21 +1867,23 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
     }
 
     public static int requestStoragePermission() {
-       try {
-          PackageInfo packageInfo = Launcher4A.loader
-                  .getPackageManager()
-                  .getPackageInfo(Launcher4A.loader.getPackageName(), PackageManager.GET_PERMISSIONS);
-          if (packageInfo.requestedPermissions != null) {
-             for (String requestedPermission : packageInfo.requestedPermissions) {
-                if (Manifest.permission.MANAGE_EXTERNAL_STORAGE.compareTo(requestedPermission) == 0){
-                   Launcher4A.loader.requestManageStorageAccess();
-                   return PermissionHandler.GRANTED;
-                }
-             }
-          }
-       } catch (PackageManager.NameNotFoundException e) {
-          e.printStackTrace();
-       }
+      if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+         try {
+            PackageInfo packageInfo = Launcher4A.loader
+                     .getPackageManager()
+                     .getPackageInfo(Launcher4A.loader.getPackageName(), PackageManager.GET_PERMISSIONS);
+            if (packageInfo.requestedPermissions != null) {
+               for (String requestedPermission : packageInfo.requestedPermissions) {
+                  if (Manifest.permission.MANAGE_EXTERNAL_STORAGE.compareTo(requestedPermission) == 0){
+                     Launcher4A.loader.requestManageStorageAccess();
+                     return PermissionHandler.GRANTED;
+                  }
+               }
+            }
+         } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+         }
+      }
 
        return STORAGE.requestPermissions();
     }
