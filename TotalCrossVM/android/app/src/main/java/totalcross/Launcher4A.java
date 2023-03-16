@@ -1867,7 +1867,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
     }
 
     public static int requestStoragePermission() {
-      if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
          try {
             PackageInfo packageInfo = Launcher4A.loader
                      .getPackageManager()
