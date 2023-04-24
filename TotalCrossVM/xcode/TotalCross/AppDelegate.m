@@ -10,7 +10,8 @@
 #import "ViewController.h"
 #import "libtcvm.h"
 
-@import Firebase;
+@import FirebaseCore;
+@import FirebaseMessaging;
 
 #if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 @import UserNotifications;
