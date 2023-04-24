@@ -5,7 +5,7 @@
 
 #include "tcvm.h"
 #include "../firebase.h"
-@import Firebase;
+@import FirebaseMessaging;
 
 void privateFirebaseGetToken(NMParams p)
 {
