@@ -3,11 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F0A08D424E4906C007D83DF /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F46EC2424E4867300C2078E /* libtcvm.a */; };
 		0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF5071507FA3600D6142B /* UIKit.framework */; };
 		0F5AF50A1507FA3600D6142B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF5091507FA3600D6142B /* Foundation.framework */; };
 		0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF50B1507FA3600D6142B /* CoreGraphics.framework */; };
@@ -27,6 +26,7 @@
 		3A7BD5801C88C9F7005CCCF7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7BD57F1C88C9F7005CCCF7 /* Security.framework */; };
 		3A7CDBBF1A0D4F500006A94A /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3A7CDBBE1A0D4F500006A94A /* Default-568h@2x.png */; };
 		3AC055B71F9418EB0023D206 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3AC055B61F9418EB0023D206 /* GoogleService-Info.plist */; };
+		3AD877201AA4A44A008F9EDB /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AD877181AA4A41F008F9EDB /* libtcvm.a */; };
 		3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */; };
 		C725E001121DAC8FFFFA18FF /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFDF6A1138442D0091FFFF /* ImageIO.framework */; };
 		D598D4831EB8907B005C3DAE /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4821EB8907B005C3DAE /* CoreText.framework */; };
@@ -39,22 +39,20 @@
 		D598D4911EB89130005C3DAE /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4901EB89130005C3DAE /* libiconv.tbd */; };
 		D598D4931EB89139005C3DAE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4921EB89139005C3DAE /* libc++.tbd */; };
 		DDDDE001121DAC8FFFFADDDD /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */; };
-		ED9A283DF9BD3B5A8F31390E /* libPods-TotalCross.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 29A1774F82E46DD1E2D75604 /* libPods-TotalCross.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		0F46EC2324E4867300C2078E /* PBXContainerItemProxy */ = {
+		3AD877171AA4A41F008F9EDB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 0F46EC1D24E4867300C2078E /* tcvm.xcodeproj */;
+			containerPortal = 3AD877131AA4A41F008F9EDB /* tcvm.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8E18C65D492A42C7A25EF2B6;
+			remoteGlobalIDString = 0F003EB3150FEBBF004F0653;
 			remoteInfo = tcvm;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		00CFDF6A1138442D0091FFFF /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		0F46EC1D24E4867300C2078E /* tcvm.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = TCVM.xcodeproj; sourceTree = "<group>"; };
 		0F5AF5031507FA3600D6142B /* TotalCross.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TotalCross.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5AF5071507FA3600D6142B /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0F5AF5091507FA3600D6142B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -70,10 +68,9 @@
 		0F5AF5281507FA3600D6142B /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
-		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm/libtcvm.h"; sourceTree = "<group>"; };
+		0F7CBA4315545CC100E9BD43 /* tcvm/libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcvm/libtcvm.h; sourceTree = "<group>"; };
 		0FC6D3EB21C3E1D900D898AB /* Default-812h@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-812h@3x.png"; sourceTree = "<group>"; };
 		0FC8C746220C78AE006BA0BB /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
-		29A1774F82E46DD1E2D75604 /* libPods-TotalCross.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TotalCross.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37D71CAC1F6097BD0040D2A4 /* PushKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PushKit.framework; path = System/Library/Frameworks/PushKit.framework; sourceTree = SDKROOT; };
 		3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+MD5Addition.m"; path = "../../src/init/darwin/NSString+MD5Addition.m"; sourceTree = "<group>"; };
 		3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIDevice+IdentifierAddition.m"; path = "../../src/init/darwin/UIDevice+IdentifierAddition.m"; sourceTree = "<group>"; };
@@ -84,8 +81,8 @@
 		3A7BD57F1C88C9F7005CCCF7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		3A7CDBBE1A0D4F500006A94A /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		3AC055B61F9418EB0023D206 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		3AD877131AA4A41F008F9EDB /* tcvm.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = tcvm.xcodeproj; sourceTree = "<group>"; };
 		3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
-		C37036ADA68AA86F4FF8315C /* Pods-TotalCross.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TotalCross.release.xcconfig"; path = "Pods/Target Support Files/Pods-TotalCross/Pods-TotalCross.release.xcconfig"; sourceTree = "<group>"; };
 		D598D4821EB8907B005C3DAE /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		D598D4841EB89096005C3DAE /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		D598D4861EB890AB005C3DAE /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -96,7 +93,6 @@
 		D598D4901EB89130005C3DAE /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		D598D4921EB89139005C3DAE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		F9E3E69FBD93CED81FA85206 /* Pods-TotalCross.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TotalCross.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TotalCross/Pods-TotalCross.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,11 +100,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0F0A08D424E4906C007D83DF /* libtcvm.a in Frameworks */,
-				0FBD3BCE21A629660074F712 /* CoreFoundation.framework in Frameworks */,
-				D598D4831EB8907B005C3DAE /* CoreText.framework in Frameworks */,
-				0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */,
-				0FBD3BCC21A6293D0074F712 /* CoreServices.framework in Frameworks */,
 				D598D4931EB89139005C3DAE /* libc++.tbd in Frameworks */,
 				D598D4911EB89130005C3DAE /* libiconv.tbd in Frameworks */,
 				D598D48F1EB89126005C3DAE /* libz.tbd in Frameworks */,
@@ -117,8 +108,10 @@
 				D598D4891EB890C8005C3DAE /* AVFoundation.framework in Frameworks */,
 				D598D4871EB890AB005C3DAE /* CoreVideo.framework in Frameworks */,
 				D598D4851EB89096005C3DAE /* MessageUI.framework in Frameworks */,
+				D598D4831EB8907B005C3DAE /* CoreText.framework in Frameworks */,
 				37D71CAD1F6097BD0040D2A4 /* PushKit.framework in Frameworks */,
 				3A7BD5801C88C9F7005CCCF7 /* Security.framework in Frameworks */,
+				3AD877201AA4A44A008F9EDB /* libtcvm.a in Frameworks */,
 				3A52AAD4162739D900DCEE4A /* QuartzCore.framework in Frameworks */,
 				3A52AAD2162739C000DCEE4A /* OpenGLES.framework in Frameworks */,
 				3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */,
@@ -126,23 +119,15 @@
 				0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */,
 				0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */,
 				0F5AF50A1507FA3600D6142B /* Foundation.framework in Frameworks */,
+				0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */,
 				C725E001121DAC8FFFFA18FF /* ImageIO.framework in Frameworks */,
 				DDDDE001121DAC8FFFFADDDD /* MobileCoreServices.framework in Frameworks */,
-				ED9A283DF9BD3B5A8F31390E /* libPods-TotalCross.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0F46EC1E24E4867300C2078E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0F46EC2424E4867300C2078E /* libtcvm.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
@@ -152,7 +137,6 @@
 				0F5AF50D1507FA3600D6142B /* TotalCross */,
 				0F5AF5061507FA3600D6142B /* Frameworks */,
 				0F5AF5041507FA3600D6142B /* Products */,
-				4D722F9D89DAB3D1369D56C3 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -167,9 +151,6 @@
 		0F5AF5061507FA3600D6142B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0F46EC1D24E4867300C2078E /* tcvm.xcodeproj */,
-				0FBD3BCD21A629660074F712 /* CoreFoundation.framework */,
-				0FBD3BCB21A6293D0074F712 /* CoreServices.framework */,
 				D598D4921EB89139005C3DAE /* libc++.tbd */,
 				D598D4901EB89130005C3DAE /* libiconv.tbd */,
 				D598D48E1EB89126005C3DAE /* libz.tbd */,
@@ -184,7 +165,8 @@
 				3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */,
 				37D71CAC1F6097BD0040D2A4 /* PushKit.framework */,
 				3A7BD57F1C88C9F7005CCCF7 /* Security.framework */,
-				0F7CBA4315545CC100E9BD43 /* libtcvm.h */,
+				0F7CBA4315545CC100E9BD43 /* tcvm/libtcvm.h */,
+				3AD877131AA4A41F008F9EDB /* tcvm.xcodeproj */,
 				3A387B1218999E6C00D3DDAB /* AdSupport.framework */,
 				0F7318C21513DE2F001EE647 /* CFNetwork.framework */,
 				0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */,
@@ -194,7 +176,6 @@
 				0F5AF5281507FA3600D6142B /* SenTestingKit.framework */,
 				00CFDF6A1138442D0091FFFF /* ImageIO.framework */,
 				DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */,
-				29A1774F82E46DD1E2D75604 /* libPods-TotalCross.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -226,13 +207,9 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		4D722F9D89DAB3D1369D56C3 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				F9E3E69FBD93CED81FA85206 /* Pods-TotalCross.debug.xcconfig */,
-				C37036ADA68AA86F4FF8315C /* Pods-TotalCross.release.xcconfig */,
 			);
-			name = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -242,11 +219,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0F5AF5391507FA3600D6142B /* Build configuration list for PBXNativeTarget "TotalCross" */;
 			buildPhases = (
-				47F5A8519B39956011DFB8BB /* [CP] Check Pods Manifest.lock */,
 				0F5AF4FF1507FA3600D6142B /* Sources */,
 				0F5AF5001507FA3600D6142B /* Frameworks */,
 				0F5AF5011507FA3600D6142B /* Resources */,
-				EA77F572FB8C20A50011410A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -263,7 +238,8 @@
 		0F5AF4FA1507FA3600D6142B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = "SuperWaba Ltda";
 				TargetAttributes = {
 					0F5AF5021507FA3600D6142B = {
@@ -296,8 +272,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 0F46EC1E24E4867300C2078E /* Products */;
-					ProjectRef = 0F46EC1D24E4867300C2078E /* tcvm.xcodeproj */;
+					ProductGroup = 3AD877141AA4A41F008F9EDB /* Products */;
+					ProjectRef = 3AD877131AA4A41F008F9EDB /* tcvm.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -308,11 +284,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		0F46EC2424E4867300C2078E /* libtcvm.a */ = {
+		3AD877181AA4A41F008F9EDB /* libtcvm.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libtcvm.a;
-			remoteRef = 0F46EC2324E4867300C2078E /* PBXContainerItemProxy */;
+			remoteRef = 3AD877171AA4A41F008F9EDB /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -332,48 +308,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		47F5A8519B39956011DFB8BB /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TotalCross-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		EA77F572FB8C20A50011410A /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TotalCross/Pods-TotalCross-resources.sh",
-				"${PODS_ROOT}/youtube-ios-player-helper/youtube-ios-player-helper/Assets.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Assets.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TotalCross/Pods-TotalCross-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0F5AF4FF1507FA3600D6142B /* Sources */ = {
@@ -406,7 +340,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = arm64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -419,8 +353,8 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_RESOURCE_RULES_PATH = "";
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = 529KHJ5MR3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -458,7 +392,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = arm64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -471,7 +405,6 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_RESOURCE_RULES_PATH = "";
 				COPY_PHASE_STRIP = YES;
-				DEVELOPMENT_TEAM = W5Y7X2NKUL;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -504,15 +437,17 @@
 		};
 		0F5AF53A1507FA3600D6142B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F9E3E69FBD93CED81FA85206 /* Pods-TotalCross.debug.xcconfig */;
+			baseConfigurationReference = 3AA5AE7E3C5CF9160F7B2E5F /* Pods-TotalCross.debug.xcconfig */;
 			buildSettings = {
 				ARCHS = arm64;
 				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				DEBUG = "1 $(inherited)";
 				DEVELOPMENT_TEAM = ZBCJTJJCMK;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 228LV93DH2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -536,6 +471,7 @@
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "RConnect Dev";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "TotalCross Development";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
@@ -543,14 +479,16 @@
 		};
 		0F5AF53B1507FA3600D6142B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C37036ADA68AA86F4FF8315C /* Pods-TotalCross.release.xcconfig */;
+			baseConfigurationReference = 273110BFCECE613E1DF4357C /* Pods-TotalCross.release.xcconfig */;
 			buildSettings = {
-				ARCHS = arm64;
 				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				DEBUG = "1 $(inherited)";
 				DEVELOPMENT_TEAM = 228LV93DH2;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 228LV93DH2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -567,12 +505,13 @@
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.totalcross.vm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "TotalCross VM";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "TotalCross Development";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
