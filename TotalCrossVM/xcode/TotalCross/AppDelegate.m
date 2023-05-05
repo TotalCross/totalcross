@@ -97,7 +97,7 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
     NSString *filePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"GoogleService-Info.plist"];
     FIROptions *options = [[FIROptions alloc] initWithContentsOfFile:filePath];
     
-    if (options != nil) {
+    if (false && options != nil) {
       [FIRApp configureWithOptions:options];
         
         // [START register_for_notifications]
