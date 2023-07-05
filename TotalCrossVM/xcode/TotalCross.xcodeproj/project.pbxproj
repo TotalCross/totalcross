@@ -382,6 +382,10 @@
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = "";
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "9E86B290-3B52-4C8C-8B94-89FA147675DD";
@@ -428,6 +432,10 @@
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PROVISIONING_PROFILE = "";
