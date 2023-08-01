@@ -533,13 +533,15 @@ public class Deployer4Android {
     return null;
   }
 
-  private static PipedOutputStream outputToTFile(TFile file) {
+  private static PipedOutputStream outputToTFile(TFile file) throws IOException {
     final PipedOutputStream pOut = new PipedOutputStream();
+    final PipedInputStream pIn = new PipedInputStream(pOut);
+    
     new Thread(new Runnable() {
-  
+
       @Override
       public void run() {
-        try (PipedInputStream pIn = new PipedInputStream(pOut)) {
+        try {
           file.input(pIn);
         } catch (Exception e) {
           e.printStackTrace();
