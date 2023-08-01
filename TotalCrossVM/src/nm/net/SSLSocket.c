@@ -180,7 +180,6 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
    int32 retCount;
    Err err;
    int32 ret = 0;
-   int32 result;
    int32 timestamp;
 
    if (buffer == NULL) {
@@ -197,19 +196,18 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
 
    timestamp = getTimeStamp();
    retCount = 0;
-   result = 0;
    do { // flsobral@tc113_33: loop back only on EWOULDBLOCK, respecting the timeout.
       if (isRead) {
-         result = mbedtls_ssl_read( ssl_context, buf + start + retCount, count - retCount); //Read
-         if (result == 0 && retCount >= 0) { // flsobral@tc110_2: if result is 0, the connection was gracefully closed by the remote host.
+         ret = mbedtls_ssl_read( ssl_context, buf + start + retCount, count - retCount); //Read
+         if (ret == 0 && retCount >= 0) { // flsobral@tc110_2: if result is 0, the connection was gracefully closed by the remote host.
             break;
          }
       }
       else {
-         result = mbedtls_ssl_write( ssl_context, buf + start + retCount, count - retCount); //Write
+         ret = mbedtls_ssl_write( ssl_context, buf + start + retCount, count - retCount); //Write
       }
 
-      if( result == MBEDTLS_ERR_SSL_WANT_READ || result == MBEDTLS_ERR_SSL_WANT_WRITE ) {
+      if( ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE ) {
          continue;
       }
 
@@ -218,17 +216,17 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
          break;
       }
 
-      if (result < 0) {
-         break;
+      if (ret < 0) {
+         goto error;
       }
 
-      retCount += result; // update the number of bytes write/read
+      retCount += ret; // update the number of bytes write/read
    } while (retCount < count /*|| (getTimeStamp() - timestamp < timeout)*/);
 
    p->retI = retCount;
    return;
 
-   exit:
+   error:
    throwExceptionWithCode(p->currentContext, IOException, ret);
 }
 
