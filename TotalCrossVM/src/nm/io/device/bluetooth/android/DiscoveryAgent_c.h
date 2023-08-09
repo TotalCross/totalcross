@@ -10,6 +10,13 @@
 static TCObject nativeRetrieveDevices(Context currentContext, bool isPaired)
 {      
    JNIEnv* env = getJNIEnv();
+
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestBluetoothPermission", "()I");
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+   if (result <= 0) {
+      return null;
+   }
+
    jmethodID m = (*env)->GetStaticMethodID(env, jBluetooth4A, isPaired ? "getPairedDevices" : "getUnpairedDevices", "()[Ljava/lang/String;");
    jobjectArray inArray = (*env)->CallStaticObjectMethod(env, jBluetooth4A, m);
    TCObject outArray = null;

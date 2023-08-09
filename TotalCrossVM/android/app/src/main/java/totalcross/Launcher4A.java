@@ -1797,6 +1797,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+    public static final PermissionHandler BLUETOOTH = new PermissionHandler(
+            Loader.PermissionRequestCodes.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT);
+
     public static class PermissionHandler {
 
         public static final int REQUESTING = 0;
@@ -1904,4 +1909,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
        loader.playVideo(id, autoPlay, start, end);
     }
 
+    public static int requestBluetoothPermission() {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        return BLUETOOTH.requestPermissions();
+      }
+      return PermissionHandler.GRANTED;
+    }
 }
