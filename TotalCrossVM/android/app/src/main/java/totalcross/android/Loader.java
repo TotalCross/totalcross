@@ -1299,6 +1299,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
         public static int ACCESS_FINE_LOCATION = 1;
         public static int EXTERNAL_STORAGE = 2;
         public static int CAMERA = 3;
+        public static int BLUETOOTH = 4;
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
