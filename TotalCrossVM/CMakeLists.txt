@@ -75,6 +75,7 @@ if(NOT mbedtls_POPULATED)
         mbedtls mbedx509 mbedcrypto
         PROPERTIES
         PUBLIC_HEADER "${mbedtls_SOURCE_DIR}/include/mbedtls"
+        XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 13.0
     )
 
     if(CMAKE_GENERATOR STREQUAL Xcode)
