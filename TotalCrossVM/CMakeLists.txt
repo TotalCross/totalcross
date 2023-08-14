@@ -64,13 +64,6 @@ if(NOT mbedtls_POPULATED)
       $<BUILD_INTERFACE:${mbedtls_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${mbedtls_SOURCE_DIR}>
     )
-    install (TARGETS mbedtls mbedx509 mbedcrypto
-    EXPORT tcvm-target
-    FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Library
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Library
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Library
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Tools
-    )
     set_target_properties(
         mbedtls mbedx509 mbedcrypto
         PROPERTIES
