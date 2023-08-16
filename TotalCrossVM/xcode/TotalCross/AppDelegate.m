@@ -135,7 +135,7 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
             }];
         application.applicationIconBadgeNumber = 0;
         [FIRMessaging messaging].delegate = self;
-        [FIRMessaging messaging].shouldEstablishDirectChannel = YES;
+        // [FIRMessaging messaging].shouldEstablishDirectChannel = YES;
         
 #endif
     }
@@ -279,22 +279,22 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 // [START ios_10_data_message]
 // Receive data messages on iOS 10+ directly from FCM (bypassing APNs) when the app is in the foreground.
 // To enable direct data messages, you can set [Messaging messaging].shouldEstablishDirectChannel to YES.
-- (void)messaging:(nonnull FIRMessaging *)messaging
-didReceiveMessage:(nonnull FIRMessagingRemoteMessage *)remoteMessage {
+// - (void)messaging:(nonnull FIRMessaging *)messaging
+// didReceiveMessage:(nonnull FIRMessagingRemoteMessage *)remoteMessage {
     
-    NSArray *allKeys = [remoteMessage.appData allKeys];
-    NSMutableArray *keyArray = [[NSMutableArray alloc] init];
-    NSMutableArray *valueArray = [[NSMutableArray alloc] init];
+//     NSArray *allKeys = [remoteMessage.appData allKeys];
+//     NSMutableArray *keyArray = [[NSMutableArray alloc] init];
+//     NSMutableArray *valueArray = [[NSMutableArray alloc] init];
     
-    for (NSString *key in allKeys) {
-        NSObject * obj = remoteMessage.appData[key];
-        if ([obj isKindOfClass:[NSString class]]) {
-            [keyArray addObject:key];
-            [valueArray addObject:remoteMessage.appData[key]];
-        }
-    }
-    [tcvm privateOnMessageReceived: NULL messageType:NULL keys:keyArray values:valueArray collapsedKey:NULL ttl:0];
-}
+//     for (NSString *key in allKeys) {
+//         NSObject * obj = remoteMessage.appData[key];
+//         if ([obj isKindOfClass:[NSString class]]) {
+//             [keyArray addObject:key];
+//             [valueArray addObject:remoteMessage.appData[key]];
+//         }
+//     }
+//     [tcvm privateOnMessageReceived: NULL messageType:NULL keys:keyArray values:valueArray collapsedKey:NULL ttl:0];
+// }
 // [END ios_10_data_message]
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
