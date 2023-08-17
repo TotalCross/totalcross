@@ -212,7 +212,9 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
       }
 
       if( ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY ) {
-         retCount = -1;
+         if (retCount == 0) {
+            retCount = -1;
+         }
          break;
       }
 
