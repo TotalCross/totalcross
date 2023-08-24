@@ -2,6 +2,9 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
+# mbedTLS
+add_subdirectory(mbedtls)
+
 add_subdirectory(sqlite3) 
 add_dependencies(tcvm SQLite3)
 
