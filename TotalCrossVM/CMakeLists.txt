@@ -528,11 +528,6 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     XCODE_ATTRIBUTE_HEADER_SEARCH_PATHS "${INCLUDED_HEADERS_STR}"
     XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x"
     XCODE_ATTRIBUTE_GCC_C_LANGUAGE_STANDARD c99
-    # CMake ignores dependencies for static libraries, so we neeed to add their 
-    # path to library search paths and later manually add the dependencies in XCode 
-    # under Build Phases. More info here:
-    # https://cmake.org/cmake/help/latest/prop_tgt/XCODE_LINK_BUILD_PHASE_MODE.html
-    XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${mbedtls_BINARY_DIR}/library/$(CONFIGURATION)"
     XCODE_LINK_BUILD_PHASE_MODE BUILT_ONLY
   )
 endif()
