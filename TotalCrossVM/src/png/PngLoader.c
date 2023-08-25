@@ -7,8 +7,6 @@
 
 #include "png.h"
 #include "tcvm.h"
-#include "pngstruct.h"
-#include "pnginfo.h"
 
 static void row_callback(png_structp, png_bytep, png_uint_32, int);
 static void info_callback(png_structp png_ptr, png_infop info);
@@ -32,6 +30,8 @@ typedef struct
    png_bytep upixels;
    bool quit;
    Context currentContext;
+
+   png_infop info_ptr;
 } UserData;
 
 // Read the JPEG Input file.
@@ -73,7 +73,7 @@ int pngRead(void *buff, int count, UserData *in)
 
 static png_voidp usermalloc(png_structp png_ptr, png_size_t size)
 {
-   Heap h = (Heap)png_ptr->mem_ptr;
+   Heap h = (Heap) png_get_mem_ptr(png_ptr);
    return heapAlloc(h, (int)size);
 }
 void userfree(png_structp png_ptr, png_voidp ptr)
@@ -97,10 +97,8 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
 
    UserData userData;
    png_structp png_ptr;
-   png_infop info_ptr;
 
    xmemzero(&png_ptr, sizeof(png_ptr));
-   xmemzero(&info_ptr, sizeof(info_ptr));
    xmemzero(&userData, sizeof(userData));
 
    heap = heapCreate();
@@ -134,7 +132,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    png_ptr = png_create_read_struct_2(PNG_LIBPNG_VER_STRING, heap, error_callback, null, heap, usermalloc, userfree);
    if (png_ptr == NULL)
       HEAP_ERROR(heap, 999);
-   info_ptr = png_create_info_struct(png_ptr);
+   userData.info_ptr = png_create_info_struct(png_ptr);
 
    if (tcz == null)
    {
@@ -149,44 +147,54 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    png_set_progressive_read_fn(png_ptr,&userData,info_callback,row_callback,null);
 
    /* Create decompressor output buffer. */
-   while (!userData.quit && (count=pngRead(buffer, sizeof(buffer), &userData)) > 0)
-      png_process_data(png_ptr, info_ptr, buffer, count);
+   while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
+      png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
    // guich@tc100: check if a comment came with the png
-   if (info_ptr->text && strEq("Comment",info_ptr->text->key))
-   {
-      Image_comment(imageObj) = createStringObjectFromCharP(currentContext, info_ptr->text->text, (int)info_ptr->text->text_length);
+   png_textp text = null;
+   if (png_get_text(png_ptr, userData.info_ptr, &text, null) != 0 && text && strEq("Comment", text->key)) {
+      Image_comment(imageObj) = createStringObjectFromCharP(currentContext, text->text, (int)text->text_length);
       setObjectLock(Image_comment(imageObj), UNLOCKED);
    }
 
    // guich@tc100: set the transparent color
-   if (png_ptr->color_type == 6)
+   png_byte color_type = png_get_color_type(png_ptr, userData.info_ptr);
+   if (color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
       isAlpha = true;
-   else
-   if (png_ptr->num_trans > 0)
-   {             
-      if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) // palettized?
-      {
-         int32 i;
-         if (png_ptr->num_trans == 256 && png_ptr->color_type == 3)
-            isAlpha = true;
-         for (i = png_ptr->num_trans; --i >= 0;) // guich@tc120_60: must find the entry that has 0 in trans array
-            if (png_ptr->trans_alpha[i] == 0)
-            {
-               png_color c = png_ptr->palette[i];
-               transp = (c.red << 16) | (c.green << 8) | c.blue;
-               isAlpha = false;
-               break;
+   } else {
+      png_bytep trans_alpha = null;
+      int32 num_trans = 0;
+      png_color_16p trans_color = null;
+
+      if (png_get_tRNS(png_ptr, userData.info_ptr, &trans_alpha, &num_trans, &trans_color) != 0 && num_trans > 0) {
+         if (color_type == PNG_COLOR_TYPE_PALETTE) { // palettized?
+            int32 i;
+            if (num_trans == 256 && color_type == PNG_COLOR_TYPE_PALETTE) {
+               isAlpha = true;
             }
+            for (i = num_trans; --i >= 0;) { // guich@tc120_60: must find the entry that has 0 in trans array
+               if (trans_alpha[i] == 0) {
+                  png_colorp palette = null;
+                  int32 num_palette = 0;
+                  if(png_get_PLTE(png_ptr, userData.info_ptr, &palette, &num_palette) != 0) {
+                     png_color c = palette[i];
+                     transp = (c.red << 16) | (c.green << 8) | c.blue;
+                     isAlpha = false;
+                     break;
+                  }
+               }
+            }
+         }
+         else {
+            transp = (trans_color->red << 16) | (trans_color->green << 8) | trans_color->blue;
+         }
       }
-      else
-         transp = (info_ptr->trans_color.red << 16) | (info_ptr->trans_color.green << 8) | info_ptr->trans_color.blue;
    }
 
    // Finish decompression and release memory. Do it in this order because output module
    // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
    if (userData.upixels) png_free(png_ptr, userData.upixels);
-   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+   png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
 
    Image_width(imageObj) = userData.width;
    Image_height(imageObj) = userData.height;
@@ -207,13 +215,13 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
 */
 static void info_callback(png_structp png_ptr, png_infop info_ptr)
 {
-   png_uint_32 width;
-   png_uint_32 height;
-   int bit_depth;
-   int color_type;
-   int interlace_type;
-   int compression_type;
-   int filter_method;
+   png_uint_32 width = 0;
+   png_uint_32 height = 0;
+   int bit_depth = 0;
+   png_byte color_type = 0;
+   int interlace_type = 0;
+   int compression_type = 0;
+   int filter_method = 0;
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
 
    png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,&interlace_type,&compression_type,&filter_method);
@@ -234,8 +242,11 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    userData->lastPass = png_set_interlace_handling(png_ptr) - 1;
 
    // get updated info, and start the image
-   png_read_update_info(png_ptr, info_ptr);
-   if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE && png_ptr->num_trans != 0) // we don't support transparent palettes
+   png_read_update_info(png_ptr, userData->info_ptr);
+   info_ptr = userData->info_ptr;
+   color_type = png_get_color_type(png_ptr, info_ptr);
+   int32 num_trans = 0; // MUST BE INITIALIZED BEFORE png_get_tRNS
+   if (color_type != PNG_COLOR_TYPE_PALETTE && png_get_tRNS(png_ptr, info_ptr, null, &num_trans, null) != 0 && num_trans != 0) // we don't support transparent palettes
       png_set_strip_alpha(png_ptr);
    userData->width = (int32)width;
    userData->height = (int32)height;
@@ -277,7 +288,11 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
    {
       uint8* buffer = old_row;
       int32 x;
-      if (png_ptr->channels == 4 || (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE && png_ptr->num_trans > 6))
+      png_byte color_type = png_get_color_type(png_ptr, userData->info_ptr);
+      int32 num_trans = 0;
+      png_byte channels = png_get_channels(png_ptr, userData->info_ptr);
+      png_get_tRNS(png_ptr, userData->info_ptr, null, &num_trans, null);
+      if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6))
          for (x = 0; x < userData->width; x++, buffer += 4)
             *userData->pixels++ = makePixelA((uint8)buffer[3], (uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
       else
@@ -289,7 +304,7 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
 
 static void error_callback(png_structp png_ptr, png_const_charp msg)
 {
-   Heap h = (Heap)png_ptr->error_ptr;
+   Heap h = (Heap) png_get_error_ptr(png_ptr);
    HEAP_ERROR(h, 996);
    UNUSED(msg)
 }
