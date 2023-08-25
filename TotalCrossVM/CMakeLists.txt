@@ -29,9 +29,16 @@ else()
   add_library(tcvm STATIC)
 endif()
 
+# Support defining PNG_ARM_NEON_OPT externally
+if(DEFINED PNG_ARM_NEON_OPT)
+  add_definitions(-DPNG_ARM_NEON_OPT=${PNG_ARM_NEON_OPT})
+endif(DEFINED PNG_ARM_NEON_OPT)
+
+# cmake v1- sqlite still in the sources
 add_subdirectory(third_party) 
 
 target_link_libraries(tcvm zlibstatic)
+target_link_libraries(tcvm png_static)
 target_link_libraries(tcvm MbedTLS::mbedcrypto MbedTLS::mbedx509 MbedTLS::mbedtls)
 
 # Find SDL2 and Skia
@@ -186,19 +193,6 @@ set(SOURCES
     ${TC_SRCDIR}/nm/util/zip/CompressedStream.c
     ${TC_SRCDIR}/nm/util/zip/ZipFile.c
     ${TC_SRCDIR}/nm/util/zip/ZipEntry.c
-
-    ${TC_SRCDIR}/png/pngrutil.c
-    ${TC_SRCDIR}/png/pngerror.c
-    ${TC_SRCDIR}/png/pngget.c
-    ${TC_SRCDIR}/png/PngLoader.c
-    ${TC_SRCDIR}/png/pngmem.c
-    ${TC_SRCDIR}/png/pngpread.c
-    ${TC_SRCDIR}/png/pngread.c
-    ${TC_SRCDIR}/png/pngrio.c
-    ${TC_SRCDIR}/png/pngrtran.c
-    ${TC_SRCDIR}/png/png.c
-    ${TC_SRCDIR}/png/pngset.c
-    ${TC_SRCDIR}/png/pngtrans.c
 
     ${TC_SRCDIR}/jpeg/jcapimin.c
     ${TC_SRCDIR}/jpeg/jcapistd.c
@@ -389,7 +383,6 @@ include_directories(${TC_SRCDIR}/nm/ui)
 include_directories(${TC_SRCDIR}/nm/ui/android)
 include_directories(${TC_SRCDIR}/nm/xml)
 include_directories(${TC_SRCDIR}/palmdb)
-include_directories(${TC_SRCDIR}/png)
 include_directories(${TC_SRCDIR}/ras)
 include_directories(${TC_SRCDIR}/scanner)
 include_directories(${TC_SRCDIR}/scanner/android)
@@ -449,11 +442,6 @@ else()
   add_definitions(-Dlinux -DFORCE_LIBC_ALLOC -D_REENTRANT -DPOSIX -DHAVE_MREMAP=0 -fPIC -Wunused-function -Wno-import -fno-strict-aliasing)
 endif(DEFINED ANDROID_ABI)
 add_definitions(-DTOTALCROSS -DTC_EXPORTS)
-
-# Support defining PNG_ARM_NEON_OPT externally
-if(DEFINED PNG_ARM_NEON_OPT)
-  add_definitions(-DPNG_ARM_NEON_OPT=${PNG_ARM_NEON_OPT})
-endif(DEFINED PNG_ARM_NEON_OPT)
 
 if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
   add_definitions(-DCURRENT_DEBUG_PATH="${CMAKE_CURRENT_BINARY_DIR}")

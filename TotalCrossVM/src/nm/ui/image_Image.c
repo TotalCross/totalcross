@@ -32,9 +32,9 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
    {
       char magic[4]; // read the magic to find if its a png or a jpeg (note that jpeg has no magic)
       tczRead(tcz, magic, 4);
-      if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
+      if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
          pngLoad(p->currentContext, imageObj, null, null, tcz, magic);
-      else
+      } else
          jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, 0);
    }
 }
@@ -47,9 +47,9 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
    uint8* buf = ARRAYOBJ_START(bufObj);
    char magic[4];
    xmove4(magic, buf); // buf already comes filled from Java with the first 4 bytes
-   if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
+   if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
       pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic);
-   else
+   } else
       jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, 0);
 }
 //////////////////////////////////////////////////////////////////////////

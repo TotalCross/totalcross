@@ -7,13 +7,18 @@ add_subdirectory(zlib-ng)
 get_target_property(ZLIB_INCLUDE_DIRS zlibstatic PUBLIC_HEADER)
 get_target_property(ZLIB_BINARY_DIR zlibstatic BINARY_DIR)
 
+# png
+add_subdirectory(png)
+get_target_property(PNG_INCLUDE_DIRS png_static PUBLIC_HEADER)
+get_target_property(PNG_BINARY_DIR png_static BINARY_DIR)
+
 # mbedTLS
 add_subdirectory(mbedtls)
 get_target_property(MBEDTLS_INCLUDES mbedtls PUBLIC_HEADER)
 get_target_property(MBEDTLS_LIBRARIES mbedtls BINARY_DIR)
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
-    target_include_directories(tcvm PUBLIC "${ZLIB_INCLUDE_DIRS} ${MBEDTLS_INCLUDES}")
+    target_include_directories(tcvm PUBLIC "${ZLIB_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS} ${MBEDTLS_INCLUDES}")
 
     set_target_properties(
         tcvm
@@ -23,7 +28,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
         # path to library search paths and later manually add the dependencies in XCode 
         # under Build Phases. More info here:
         # https://cmake.org/cmake/help/latest/prop_tgt/XCODE_LINK_BUILD_PHASE_MODE.html
-        XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${ZLIB_BINARY_DIR}/$(CONFIGURATION) ${MBEDTLS_LIBRARIES}/$(CONFIGURATION)"
+        XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${ZLIB_BINARY_DIR}/$(CONFIGURATION) ${PNG_BINARY_DIR}/$(CONFIGURATION) ${MBEDTLS_LIBRARIES}/$(CONFIGURATION)"
     )
 endif()
 
