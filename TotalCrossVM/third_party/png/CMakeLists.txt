@@ -15,6 +15,7 @@ if(NOT libpng_POPULATED)
     message("Setting up PNG...")
 
     FetchContent_Populate(libpng)
+    set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # Use our own version of zlib
     set(PNG_SHARED OFF CACHE BOOL "" FORCE)
     set(PNG_FRAMEWORK OFF CACHE BOOL "" FORCE)
     set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE)
