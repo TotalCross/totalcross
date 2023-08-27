@@ -311,7 +311,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-
 /* Begin PBXSourcesBuildPhase section */
 		0F5AF4FF1507FA3600D6142B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -448,13 +447,12 @@
 		};
 		0F5AF53A1507FA3600D6142B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3AA5AE7E3C5CF9160F7B2E5F /* Pods-TotalCross.debug.xcconfig */;
 			buildSettings = {
 				ARCHS = arm64;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEBUG = "1 $(inherited)";
 				DEVELOPMENT_TEAM = ZBCJTJJCMK;
@@ -482,7 +480,7 @@
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "RConnect Dev";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "TotalCross Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "TotalCross VM";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
@@ -490,12 +488,11 @@
 		};
 		0F5AF53B1507FA3600D6142B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 273110BFCECE613E1DF4357C /* Pods-TotalCross.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEBUG = "1 $(inherited)";
 				DEVELOPMENT_TEAM = 228LV93DH2;
@@ -522,7 +519,7 @@
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "TotalCross VM";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "TotalCross Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "TotalCross VM";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
