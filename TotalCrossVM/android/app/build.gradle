@@ -18,7 +18,7 @@ apply plugin: 'kotlin-android'
 def buildType // stores build type, debug or release
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     ndkVersion "21.4.7075529"
 
     aaptOptions {
@@ -33,7 +33,7 @@ android {
     defaultConfig {
         applicationId "totalcross.android"
         minSdkVersion 19
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
