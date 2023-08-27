@@ -6,9 +6,10 @@
 
 
 #include "tcvm.h"
-#include "../../../zlib/zutil.h"
+#include "zlib.h"
 
 #define BUFSIZE   0x400
+#define DEF_MEM_LEVEL 8
 
 enum
 {

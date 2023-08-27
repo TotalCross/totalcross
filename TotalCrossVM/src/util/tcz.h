@@ -6,7 +6,7 @@
 #ifndef TCZLIB_H
 #define TCZLIB_H
 
-#include "../zlib/zlib.h"
+#include "zlib.h"
 
 #define TCZ_VERSION 200
 #define ATTR_HAS_MAINCLASS  1 // if false, it is a library-only module
