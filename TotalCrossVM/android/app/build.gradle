@@ -18,9 +18,10 @@ apply plugin: 'kotlin-android'
 def buildType // stores build type, debug or release
 
 android {
+    namespace 'totalcross.android'
     compileSdkVersion 33
 
-    aaptOptions {
+    androidResources {
         noCompress 'zip'
     }
 
