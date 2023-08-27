@@ -31,6 +31,7 @@ endif()
 
 add_subdirectory(third_party) 
 
+target_link_libraries(tcvm zlibstatic)
 target_link_libraries(tcvm MbedTLS::mbedcrypto MbedTLS::mbedx509 MbedTLS::mbedtls)
 
 # Find SDL2 and Skia
@@ -107,18 +108,6 @@ set(SOURCES
     ${TC_SRCDIR}/minizip/ioapi.c
     ${TC_SRCDIR}/minizip/unzip.c
     ${TC_SRCDIR}/minizip/zip.c
-
-    ${TC_SRCDIR}/zlib/adler32.c
-    ${TC_SRCDIR}/zlib/compress.c
-    ${TC_SRCDIR}/zlib/crc32.c
-    ${TC_SRCDIR}/zlib/deflate.c
-    ${TC_SRCDIR}/zlib/infback.c
-    ${TC_SRCDIR}/zlib/inffast.c
-    ${TC_SRCDIR}/zlib/inflate.c
-    ${TC_SRCDIR}/zlib/inftrees.c
-    ${TC_SRCDIR}/zlib/trees.c
-    ${TC_SRCDIR}/zlib/uncompr.c
-    ${TC_SRCDIR}/zlib/zutil.c
 
     ${TC_SRCDIR}/ras/ras_Utils.c
 
@@ -408,7 +397,6 @@ include_directories(${TC_SRCDIR}/sync)
 include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
-include_directories(${TC_SRCDIR}/zlib)
 include_directories(${TC_SRCDIR}/sqlite)
 
 if(MSVC)
