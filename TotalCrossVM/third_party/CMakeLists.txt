@@ -2,23 +2,28 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
+# zlib-ng
+add_subdirectory(zlib-ng)
+get_target_property(ZLIB_INCLUDE_DIRS zlibstatic PUBLIC_HEADER)
+get_target_property(ZLIB_BINARY_DIR zlibstatic BINARY_DIR)
+
 # mbedTLS
 add_subdirectory(mbedtls)
 get_target_property(MBEDTLS_INCLUDES mbedtls PUBLIC_HEADER)
 get_target_property(MBEDTLS_LIBRARIES mbedtls BINARY_DIR)
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
-    target_include_directories(tcvm PUBLIC "${MBEDTLS_INCLUDES}")
+    target_include_directories(tcvm PUBLIC "${ZLIB_INCLUDE_DIRS} ${MBEDTLS_INCLUDES}")
 
     set_target_properties(
         tcvm
         PROPERTIES
-        
+
         # CMake ignores dependencies for static libraries, so we neeed to add their 
         # path to library search paths and later manually add the dependencies in XCode 
         # under Build Phases. More info here:
         # https://cmake.org/cmake/help/latest/prop_tgt/XCODE_LINK_BUILD_PHASE_MODE.html
-        XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${MBEDTLS_LIBRARIES}/$(CONFIGURATION)"
+        XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${ZLIB_BINARY_DIR}/$(CONFIGURATION) ${MBEDTLS_LIBRARIES}/$(CONFIGURATION)"
     )
 endif()
 
