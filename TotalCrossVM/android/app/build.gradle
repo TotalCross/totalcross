@@ -19,7 +19,6 @@ def buildType // stores build type, debug or release
 
 android {
     compileSdkVersion 33
-    ndkVersion "21.4.7075529"
 
     aaptOptions {
         noCompress 'zip'
