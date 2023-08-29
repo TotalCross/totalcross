@@ -16,6 +16,7 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 33
     ndkVersion "21.4.7075529"
+    
     compileOptions {
     	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -32,7 +33,7 @@ android {
         externalNativeBuild {
             cmake {
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
-                arguments "-DANDROID_TOOLCHAIN=clang", "-DANDROID_LIBS_DIR="+sourceSets.getByName("main").jniLibs.srcDirs[0]
+                arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF", "-DANDROID_LIBS_DIR="+sourceSets.getByName("main").jniLibs.srcDirs[0]
                 cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"
             }
@@ -57,6 +58,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCMAKE_BUILD_TYPE=Release"
+                }
+            }
         }
         debug {
             signingConfig signingConfigs.config
