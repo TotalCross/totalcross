@@ -1,21 +1,33 @@
 package totalcross.android;
 
-import totalcross.*;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.os.Message;
 
-import android.content.*;
-import android.location.*;
-import android.os.*;
-import com.google.android.gms.common.*;
-import com.google.android.gms.common.api.*;
-import com.google.android.gms.common.api.GoogleApiClient.*;
-//import com.google.android.gms.location.*;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.location.GnssStatusCompat;
+import androidx.core.location.LocationManagerCompat;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
-public class GPSHelper implements android.location.LocationListener, GpsStatus.Listener, LocationListener, ConnectionCallbacks, OnConnectionFailedListener
+import totalcross.AndroidUtils;
+import totalcross.Launcher4A;
+
+public class GPSHelper extends GnssStatusCompat.Callback implements android.location.LocationListener, LocationListener, ConnectionCallbacks, OnConnectionFailedListener
 {
    public static GPSHelper instance = new GPSHelper();
    private GoogleApiClient googleApiClient;
@@ -113,22 +125,16 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
       }
       return null;
    }
-   
-   public void onGpsStatusChanged(int event) 
-   {
-      if (gps != null && (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX)) 
-      {
-        try {
-         GpsStatus status = gps.getGpsStatus(null);
-         Iterable<GpsSatellite> sats = status.getSatellites();
-         validSatellites = 0;
-         for (GpsSatellite sat : sats)
-            if (sat.usedInFix())
-               validSatellites++;
-        } catch (SecurityException e) {
-        	e.printStackTrace();
-        }
+
+   @Override
+   public void onSatelliteStatusChanged(@NonNull GnssStatusCompat status) {
+      int usedInFix = 0;
+      for (int i = 0 ; i < status.getSatelliteCount() ; i++) {
+         if (status.usedInFix(i)) {
+            usedInFix++;
+         }
       }
+      validSatellites = usedInFix;
    }
 
    public void onProviderDisabled(String provider)   {}
@@ -148,7 +154,7 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
          gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
          try {
          gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, instance);
-         gps.addGpsStatusListener(instance);
+         LocationManagerCompat.registerGnssStatusCallback(gps, ContextCompat.getMainExecutor(Launcher4A.loader),instance);
 	     } catch (SecurityException e) {
 		     e.printStackTrace();
 		 }
@@ -168,7 +174,7 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
          // try only to get satellite information, since this is not given by Google Play Services
          gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
          try {
-         gps.addGpsStatusListener(this);
+            LocationManagerCompat.registerGnssStatusCallback(gps, ContextCompat.getMainExecutor(Launcher4A.loader),instance);
          } catch (SecurityException e) {
          	e.printStackTrace();
          }    
@@ -184,8 +190,9 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
          LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
          googleApiClient = null;
       }
-      if (gps != null)
-         gps.removeGpsStatusListener(this);
+      if (gps != null) {
+         LocationManagerCompat.unregisterGnssStatusCallback(gps, this);
+      }
       gps = null;
       validSatellites = 0;
    }
