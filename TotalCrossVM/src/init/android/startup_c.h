@@ -107,13 +107,17 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
 }
 
 char* getTotalCrossAndroidClass(CharP className)
-{  
+{
+#ifdef DEBUG
+   return className;
+#else
 	 char* an;
 	 xstrcpy(tcabuf, className); // totalcross.android
 	 an = xstrstr(tcabuf,"android");
 	 if (an)
    	 xmemmove(an, targetPackage, 7);
 	 return tcabuf;
+#endif
 }
 
 jclass androidFindClass(JNIEnv* env, CharP className)
