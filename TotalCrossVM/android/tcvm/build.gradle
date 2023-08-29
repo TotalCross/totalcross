@@ -66,6 +66,11 @@ android {
         }
         debug {
             signingConfig signingConfigs.config
+            externalNativeBuild {
+                cmake {
+                    arguments "-DDEBUG=1"
+                }
+            }
         }
     }
 
