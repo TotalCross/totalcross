@@ -6,6 +6,7 @@ FetchContent_Declare(
     zlib
     GIT_REPOSITORY  https://github.com/zlib-ng/zlib-ng.git
     GIT_TAG         2.1.3
+    GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
     USES_TERMINAL_DOWNLOAD TRUE)
 

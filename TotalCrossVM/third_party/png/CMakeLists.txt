@@ -7,6 +7,7 @@ FetchContent_Declare(
     libpng
     GIT_REPOSITORY  https://github.com/glennrp/libpng.git
     GIT_TAG         v1.6.40
+    GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
     USES_TERMINAL_DOWNLOAD TRUE)
 

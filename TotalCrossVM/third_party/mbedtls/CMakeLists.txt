@@ -6,6 +6,7 @@ FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY  https://github.com/Mbed-TLS/mbedtls.git
     GIT_TAG         v3.2.1
+    GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
     USES_TERMINAL_DOWNLOAD TRUE)
 
