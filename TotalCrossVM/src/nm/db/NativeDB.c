@@ -70,14 +70,29 @@ static void throwexmsg(Context currentContext, TCObject this_, char *str)
     setObjectLock(o,UNLOCKED);
 }
 
-static sqlite3 * gethandle(Context currentContext, TCObject this_)
-{
-   return (sqlite3 *)NativeDB_pointer(this_);
+typedef struct _sqlitebag {
+   sqlite3* handle;
+   MUTEX_TYPE tcmutex;
+   bool validMutex;
+} sqlitebag;
+
+static sqlite3 * gethandle(Context currentContext, TCObject this_) {
+   sqlitebag* bag = (sqlitebag*) NativeDB_pointer(this_);
+   if (((int64) bag) == 0) {
+      bag = (sqlitebag*) xmalloc(sizeof(sqlitebag));
+      NativeDB_pointer(this_) = (int64) bag;
+   }
+   return bag->handle;
 }
 
-static void sethandle(Context currentContext, TCObject this_, sqlite3 * ref)
-{
-   NativeDB_pointer(this_) = (int64)ref;
+static void sethandle(Context currentContext, TCObject this_, sqlite3 * ref) {
+   sqlitebag* bag = (sqlitebag*) NativeDB_pointer(this_);
+   if (((int64) ref) == 0) {
+      xfree(bag);
+      NativeDB_pointer(this_) = 0L;
+   } else {
+      bag->handle = ref;
+   }
 }
 
 /**
@@ -88,19 +103,34 @@ IMPORTANT! TO AVOID DEADLOCK, UNLOCKDB MUST BE CALLED BEFORE ANY TCOBJECT ALLOCA
 #define LOCKDB int32 dumbmutex = lockdb(p->obj[0]);
 #define UNLOCKDB unlockdb(p->obj[0],dumbmutex);
 
-int32 lockSqlite3(void* handle);
-void unlockSqlite3(void* handle);
-void initSqlite3Mutex(void* db_);
-void destroySqlite3Mutex(void* db_);
-
-static int32 lockdb(TCObject this_)
-{
-   return lockSqlite3(gethandle(null,this_));
+void initSqlite3Mutex(TCObject this_) {
+   sqlitebag* bag = (sqlitebag*) NativeDB_pointer(this_);
+   SETUP_MUTEX;
+   INIT_MUTEX_VAR(bag->tcmutex);
+   bag->validMutex = true;
 }
 
-static void unlockdb(TCObject this_, int32 dumb)
-{
-   unlockSqlite3(gethandle(null,this_));
+void destroySqlite3Mutex(TCObject this_) {
+   sqlitebag* bag = (sqlitebag*) NativeDB_pointer(this_);
+   DESTROY_MUTEX_VAR(bag->tcmutex);
+   bag->validMutex = false;
+}
+
+static int32 lockdb(TCObject this_) {
+   sqlitebag* bag = (sqlitebag*) NativeDB_pointer(this_);
+
+   if (bag && bag->validMutex) {
+      RESERVE_MUTEX_VAR(bag->tcmutex);
+   }
+   return 0;
+}
+
+static void unlockdb(TCObject this_, int32 dumb) {
+   sqlitebag* bag = (sqlitebag*) NativeDB_pointer(this_);
+
+   if (bag && bag->validMutex) {
+      RELEASE_MUTEX_VAR(bag->tcmutex);
+   }
 }
 
 // INITIALISATION ///////////////////////////////////////////////////
@@ -114,6 +144,10 @@ TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native stat
       fclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function", false);
       aclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function$Aggregate", false);
       pclass  = loadClass(p->currentContext, "totalcross.db.sqlite.DB$ProgressObserver", false);
+#if defined(ANDROID) || defined(darwin) || defined(POSIX)
+      sqlite3_temp_directory = appPath;
+      setenv("SQLITE_TMPDIR", appPath, true);
+#endif
    }
 }
 
@@ -195,7 +229,7 @@ TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protect
     freeSafeString(str);
 
     sethandle(p->currentContext, this_, db);
-    initSqlite3Mutex(db);
+    initSqlite3Mutex(this_);
 }
 
 TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _close() throws SQLException;
@@ -205,7 +239,7 @@ TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected
    sqlite3* db = gethandle(p->currentContext, this_);
    if (db)
    {
-      destroySqlite3Mutex(db);
+      destroySqlite3Mutex(this_);
       if (sqlite3_close(db) == SQLITE_OK)
          sethandle(p->currentContext, this_, 0);
    }
