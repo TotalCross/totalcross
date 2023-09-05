@@ -34,12 +34,12 @@ if(DEFINED PNG_ARM_NEON_OPT)
   add_definitions(-DPNG_ARM_NEON_OPT=${PNG_ARM_NEON_OPT})
 endif(DEFINED PNG_ARM_NEON_OPT)
 
-# cmake v1- sqlite still in the sources
 add_subdirectory(third_party) 
 
 target_link_libraries(tcvm zlibstatic)
 target_link_libraries(tcvm png_static)
 target_link_libraries(tcvm MbedTLS::mbedcrypto MbedTLS::mbedx509 MbedTLS::mbedtls)
+target_link_libraries(tcvm SQLite3)
 
 # Find SDL2 and Skia
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
@@ -250,8 +250,6 @@ set(SOURCES
 
     ${TC_SRCDIR}/nm/db/NativeDB.c
 
-    ${TC_SRCDIR}/sqlite/sqlite3.c
-
     ${TC_SRCDIR}/scanner/ios/ios_barcode.c
 
     ${TC_SRCDIR}/nm/qrcode/qrcode_generation.c
@@ -390,7 +388,6 @@ include_directories(${TC_SRCDIR}/sync)
 include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
-include_directories(${TC_SRCDIR}/sqlite)
 
 if(MSVC)
   include_directories(${TC_SRCDIR}/nm/qrcode/win)
@@ -511,8 +508,6 @@ endif()
 if(DEFINED SDL2_LIBRARY)
   target_link_libraries(tcvm ${SDL2_LIBRARY})
 endif(DEFINED SDL2_LIBRARY)
-
-target_link_libraries(tcvm SQLite3)
 
 if(DEFINED ANDROID_ABI)
   add_library(libskia SHARED IMPORTED)

@@ -76,7 +76,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.googlecode.plist/dd-plist
     compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.19'
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.36.0.3'
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.32.3.3'
     // https://mvnrepository.com/artifact/de.schlichtherle.truezip/truezip-file
     compile group: 'de.schlichtherle.truezip', name: 'truezip-file', version: '7.5.1'
     // https://mvnrepository.com/artifact/de.schlichtherle.truezip/truezip-driver-zip

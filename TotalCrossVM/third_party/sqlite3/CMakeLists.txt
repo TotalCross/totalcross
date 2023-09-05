@@ -2,47 +2,59 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
-cmake_minimum_required(VERSION 2.8.2)
-# cmake policy required to use project property VERSION
-cmake_policy(SET CMP0048 NEW)
+cmake_minimum_required(VERSION 3.5)
 
-include(ExternalProject)
+include(FetchContent)
 
-project(SQLite3
-    VERSION 3.36.0.3
-    LANGUAGES C
-)
-set(${PROJECT_NAME}_YEAR 2016)
-# property <PROJECT>_HOMEPAGE_URL requires cmake 3.12
-# using a variable instead we can keep greater compatibility
-set(${PROJECT_NAME}_HOMEPAGE_URL https://sqlite.org)
+set(SQLite3_YEAR 2020)
+set(SQLite3_HOMEPAGE_URL https://sqlite.org)
+set(SQLite3_VERSION 3.32.03.00)
+string(REPLACE "." "" SQLite3_FILE_VERSION "${SQLite3_VERSION}")
 
-# Place a dummy source at configuration time
-if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/src/sqlite3.c")
-    configure_file(sqlite3_tc.h src/sqlite3.c)
+FetchContent_Declare(
+    sqlite3
+    URL             ${SQLite3_HOMEPAGE_URL}/${SQLite3_YEAR}/sqlite-amalgamation-${SQLite3_FILE_VERSION}.zip
+    USES_TERMINAL_DOWNLOAD TRUE)
+
+FetchContent_GetProperties(SQLite3)
+if(NOT sqlite3_POPULATED)
+    message("Setting up SQLite3...")
+
+    FetchContent_Populate(SQLite3)
+
+    # using INTERFACE to compile along the main project
+    add_library(SQLite3 INTERFACE
+        "${sqlite3_SOURCE_DIR}/sqlite3.c"
+    )
+
+    target_include_directories(SQLite3 INTERFACE 
+        ${sqlite3_SOURCE_DIR}
+    )
+
+    target_sources(SQLite3 INTERFACE 
+        "${sqlite3_SOURCE_DIR}/sqlite3.c"
+    )
+
+    target_compile_definitions(SQLite3 INTERFACE
+        -DSQLITE_HAS_CODEC 
+        -DSQLITE_ENABLE_COLUMN_METADATA=1
+        -DSQLITE_ENABLE_FTS3=1
+        -DSQLITE_ENABLE_LOAD_EXTENSION=1
+        -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT=1
+        -DSQLITE_ENABLE_FTS3_PARENTHESIS=1
+        -DSQLITE_ENABLE_RTREE=1
+        -DSQLITE_ENABLE_STAT2=1
+        -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 
+        -DSQLITE_THREADSAFE=0 
+        -DSQLITE_THREAD_OVERRIDE_LOCK=0 
+        -DSQLITE_WITHOUT_MSIZE=1
+  
+        -DSQLITE_DQS=0
+        -DSQLITE_DEFAULT_MEMSTATUS=0
+        -DSQLITE_DEFAULT_WAL_SYNCHRONOUS=1
+        -DQLITE_LIKE_DOESNT_MATCH_BLOBS
+        -DSQLITE_MAX_EXPR_DEPTH=0
+        -DSQLITE_OMIT_DEPRECATED
+        -DSQLITE_OMIT_PROGRESS_CALLBACK
+    )
 endif()
-
-ExternalProject_Add(SQLite3Download
-    URL ${SQLite3_HOMEPAGE_URL}/${SQLite3_YEAR}/sqlite-amalgamation-${SQLite3_VERSION_MAJOR}${SQLite3_VERSION_MINOR}${SQLite3_VERSION_PATCH}${SQLite3_VERSION_TWEAK}00.zip
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/src"
-    UPDATE_COMMAND ""
-    PATCH_COMMAND patch -p0 <  ${CMAKE_CURRENT_LIST_DIR}/sqlite3tc.patch
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ""
-    TEST_COMMAND ""
-)
-
-# using INTERFACE no compilation is performed
-add_library(SQLite3 INTERFACE)
-
-# make sure SQLite3Download is executed first
-add_dependencies(SQLite3 SQLite3Download)
-
-target_include_directories(SQLite3 INTERFACE 
-    "${CMAKE_CURRENT_BINARY_DIR}/src"
-    ${CMAKE_CURRENT_LIST_DIR}
-)
-target_sources(SQLite3 INTERFACE 
-    "${CMAKE_CURRENT_BINARY_DIR}/src/sqlite3.c"
-)
