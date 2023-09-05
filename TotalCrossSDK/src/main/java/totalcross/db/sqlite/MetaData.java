@@ -157,19 +157,21 @@ class MetaData implements DatabaseMetaData {
   }
 
   /**
+   * @throws SQLException
    * @see java.sql.DatabaseMetaData#getDatabaseMajorVersion()
    */
   @Override
-  public int getDatabaseMajorVersion() {
-    return 3;
+  public int getDatabaseMajorVersion() throws SQLException {
+    return Integer.parseInt(this.conn.libversion().split("\\.")[0]);
   }
 
   /**
+   * @throws SQLException
    * @see java.sql.DatabaseMetaData#getDatabaseMinorVersion()
    */
   @Override
-  public int getDatabaseMinorVersion() {
-    return 0;
+  public int getDatabaseMinorVersion() throws SQLException {
+    return Integer.parseInt(this.conn.libversion().split("\\.")[1]);
   }
 
   /**
@@ -401,7 +403,7 @@ class MetaData implements DatabaseMetaData {
    */
   @Override
   public String getDatabaseProductVersion() throws SQLException {
-    return conn.libversion();
+    return this.conn.libversion();
   }
 
   /**
