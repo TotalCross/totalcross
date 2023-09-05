@@ -17,8 +17,12 @@ add_subdirectory(mbedtls)
 get_target_property(MBEDTLS_INCLUDE_DIRS mbedtls PUBLIC_HEADER)
 get_target_property(MBEDTLS_BINARY_DIR mbedtls BINARY_DIR)
 
+# SQLite3
+add_subdirectory(sqlite3) 
+get_target_property(SQLITE3_INCLUDE_DIRS SQLite3 INTERFACE_INCLUDE_DIRECTORIES)
+
 if(CMAKE_GENERATOR STREQUAL Xcode)
-    target_include_directories(tcvm PUBLIC "${ZLIB_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS} ${MBEDTLS_INCLUDE_DIRS}")
+    target_include_directories(tcvm PUBLIC "${ZLIB_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS} ${MBEDTLS_INCLUDE_DIRS} ${SQLITE3_INCLUDE_DIRS}")
 
     set_target_properties(
         tcvm
@@ -31,11 +35,3 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
         XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${ZLIB_BINARY_DIR}/$(CONFIGURATION) ${PNG_BINARY_DIR}/$(CONFIGURATION) ${MBEDTLS_BINARY_DIR}/$(CONFIGURATION)"
     )
 endif()
-
-add_subdirectory(sqlite3) 
-add_dependencies(tcvm SQLite3)
-
-if(CMAKE_GENERATOR STREQUAL Xcode)
-   get_target_property(SQLITE3_INCLUDES SQLite3 INTERFACE_INCLUDE_DIRECTORIES)
-   target_include_directories(tcvm PRIVATE "${SQLITE3_INCLUDES}")
-endif(CMAKE_GENERATOR STREQUAL Xcode)
