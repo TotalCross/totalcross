@@ -1267,6 +1267,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return (int)size;
    }
 
+   public static String fileGetAppSpecificDir(String type, String dirName) {
+      File externalFilesDir = instance.getContext().getExternalFilesDir(type);
+      File file = new File(externalFilesDir, dirName);
+      if (!file.mkdirs()) {
+         AndroidUtils.debug(">>> Directory not created");
+      }
+      return file.getAbsolutePath();
+   }
+
    private static String paste;
    private static boolean pasted;
    

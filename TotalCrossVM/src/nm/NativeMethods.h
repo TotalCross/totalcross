@@ -449,6 +449,7 @@ TC_API void tiF_flush(NMParams p);
 TC_API void tiF_listRoots(NMParams p);
 TC_API void tiF_isEmpty(NMParams p);
 TC_API void tiF_chmod_i(NMParams p);
+TC_API void tiF_getAppSpecificDir_ss(NMParams p);
 TC_API void tuzCS_createInflate_s(NMParams p);
 TC_API void tuzCS_createDeflate_si(NMParams p);
 TC_API void tuzCS_readBytes_Bii(NMParams p);

@@ -931,6 +931,45 @@ TC_API void tiF_chmod_i(NMParams p) // totalcross/io/File native public int chmo
    }
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tiF_getAppSpecificDir_ss(NMParams p) // totalcross/io/File public static native File getAppSpecificDir(String type, String dirName) throws IOException;
+{
+   TCObject type = p->obj[0];
+   TCObject dirName = p->obj[1];
+   char szType[MAX_PATHNAME];
+   char szDirName[MAX_PATHNAME];
+   char szPath[MAX_PATHNAME];
+   TCObject pathObj;
+   TCObject fileObj;
+
+   if (type == null) {
+      throwNullArgumentException(p->currentContext, "type");
+   }
+   else if (dirName == null) {
+      throwNullArgumentException(p->currentContext, "dirName");
+   } else {
+      String2CharPBuf(type, szType);
+      String2CharPBuf(dirName, szDirName);
+#ifdef ANDROID
+      fileGetAppSpecificDir(szType, szDirName, szPath);
+#else
+      sprintf(szPath, "%s/%s/%s", appPath, szType, szDirName);
+#endif
+      pathObj = createStringObjectFromCharP(p->currentContext, szPath, xstrlen(szPath));
+      if (pathObj != null) {
+         fileObj = createObjectWithoutCallingDefaultConstructor(p->currentContext, "totalcross.io.File");
+         if (fileObj != null) {
+            Method constructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 3, "java.lang.String", J_INT, J_INT);
+            if (constructor != null) {
+               executeMethod(p->currentContext, constructor, fileObj, pathObj, DONT_OPEN, 0);
+            }
+            p->retO = fileObj;
+            setObjectLock(p->retO, UNLOCKED);
+         }
+         setObjectLock(pathObj, UNLOCKED);
+      }
+   }
+}
+//////////////////////////////////////////////////////////////////////////
 
 #ifdef ENABLE_TEST_SUITE
  #include "File_test.h"
