@@ -366,4 +366,10 @@ public class File4D extends RandomAccessStream implements FileStates {
       close();
     }
   }
+
+  public final static String DIRECTORY_PICTURES = "Pictures";
+  public final static String DIRECTORY_DOCUMENTS = "Documents";
+  public final static String DIRECTORY_DOWNLOADS = "Downloads";
+
+  public static native File getAppSpecificDir(String type, String dirName) throws IOException;
 }

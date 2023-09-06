@@ -1335,4 +1335,28 @@ public class File extends RandomAccessStream implements FileStates {
     readBytes(ret, 0, len);
     return ret;
   }
+
+  public final static String DIRECTORY_PICTURES = "Pictures";
+  public final static String DIRECTORY_DOCUMENTS = "Documents";
+  public final static String DIRECTORY_DOWNLOADS = "Downloads";
+
+  /**
+   * Returns a file object with a path writable by the application on the device
+   * storage.
+   * 
+   * @param type
+   * @param dirName
+   * @return
+   * @throws IOException
+   */
+  public static File getAppSpecificDir(String type, String dirName) throws IOException {
+    if (type == null) {
+      throw new NullPointerException("Argument type is null");
+    }
+    java.io.File file = new java.io.File(type, dirName);
+    if (file == null || !file.mkdirs()) {
+      throw new IOException();
+    }
+    return new File(file.getAbsolutePath(), DONT_OPEN);
+  }
 }

@@ -665,6 +665,23 @@ static Err fileChmod(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* mod)
    return NO_ERROR;
 }
 
+static Err fileGetAppSpecificDir(CharP type, CharP dirName, CharP outDirName) {
+#if defined(ANDROID)
+   JNIEnv* env = getJNIEnv();
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "fileGetAppSpecificDir", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+   jstring fileType = (*env)->NewStringUTF(env, type);
+   jstring fileParent = (*env)->NewStringUTF(env, dirName);
+   jstring jret = (*env)->CallStaticObjectMethod(env, applicationClass, method, fileType, fileParent);
+   int jlen = (*env)->GetStringUTFLength(env, jret);
+   jstring2CharP(jret, outDirName);
+   (*env)->DeleteLocalRef(env, jret);
+   (*env)->DeleteLocalRef(env, fileParent);
+   (*env)->DeleteLocalRef(env, fileType);
+#endif
+   return NO_ERROR;
+}
+
+
 #ifdef darwin
 
 /**

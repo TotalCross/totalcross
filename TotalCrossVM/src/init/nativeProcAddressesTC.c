@@ -441,6 +441,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_listRoots"), &tiF_listRoots);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_isEmpty"), &tiF_isEmpty);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_chmod_i"), &tiF_chmod_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tiF_getAppSpecificDir_ss"), &tiF_getAppSpecificDir_ss);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzCS_createInflate_s"), &tuzCS_createInflate_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzCS_createDeflate_si"), &tuzCS_createDeflate_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzCS_readBytes_Bii"), &tuzCS_readBytes_Bii);
