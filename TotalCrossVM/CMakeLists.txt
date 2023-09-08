@@ -391,7 +391,9 @@ include_directories(${TC_SRCDIR}/util/android)
 
 if(MSVC)
   include_directories(${TC_SRCDIR}/nm/qrcode/win)
-  include_directories(${TC_SRCDIR}/core/wince)
+  if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+    include_directories(${TC_SRCDIR}/core/wince) # Only include this folder for WinCE!
+  endif()
 else()
   include_directories(${TC_SRCDIR}/nm/qrcode)
   include_directories(${TC_SRCDIR}/nm/lang/posix)
