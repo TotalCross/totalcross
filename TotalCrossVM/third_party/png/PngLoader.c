@@ -218,7 +218,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    png_uint_32 width = 0;
    png_uint_32 height = 0;
    int bit_depth = 0;
-   png_byte color_type = 0;
+   int color_type = 0;
    int interlace_type = 0;
    int compression_type = 0;
    int filter_method = 0;
