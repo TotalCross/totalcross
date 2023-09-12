@@ -169,12 +169,12 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
       double p = fmin(p1, p2);
       int32 scale_num2 = 1;
       int32 scale_denom2;
-      
-      if (p < F1_8) {
+
+      if (p <= F1_8) {
          scale_denom2 = 8; // 1/8
-      } else if (p < F1_4) {
+      } else if (p <= F1_4) {
          scale_denom2 = 4; // 1/4
-      } else if (p < F1_2) {
+      } else if (p <= F1_2) {
          scale_denom2 = 2; // 1/2
       } else {
          scale_denom2 = 1; // original size
