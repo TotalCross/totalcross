@@ -12,7 +12,6 @@ import totalcross.sys.Settings;
 import totalcross.util.concurrent.Lock;
 
 public class ImageLoader {
-  
   public static interface ScaleType {
     public static final int CENTER = 0;
     public static final int CENTER_CLIP = 1;
@@ -35,7 +34,22 @@ public class ImageLoader {
   private static HashMap<String, ImageLoader> cache = new HashMap<>();
 
   private static Lock lock = new Lock();
-  
+
+  /**
+   * Default value for jpeg memory savings for instances of ImageLoader.
+   */
+  final public static double JPEG_MEMORY_SAVING_DEFAULT = 0.8;
+
+  /**
+   * Set with a value between 0 and 1 to adjust the factor by which jpeg images
+   * are reduced during load to save memory when using GPU accelerated graphics
+   * ({@link Settings#isOpenGL} is true, otherwise this setting is ignored).
+   * 
+   * Values above 1 or below 0 are ignored, and 1 is used instead.
+   * Default value is {@link #JPEG_MEMORY_SAVING_DEFAULT}
+   */
+  public double jpegMemorySaving = JPEG_MEMORY_SAVING_DEFAULT;
+
   public static ImageLoader get(String path) throws IOException {
     synchronized (lock) {
       ImageLoader loader = cache.get(path);
@@ -60,9 +74,16 @@ public class ImageLoader {
     }
 
     try {
-      i = Image.getJpegBestFit(path, desiredWidth, desiredHeight);
+      // If we're using GPU, accept a 20% smaller image to try saving some memory.
+      if (!Settings.isOpenGL || jpegMemorySaving >= 1 || jpegMemorySaving <= 0) {
+        i = Image.getJpegBestFit(path, desiredWidth, desiredHeight);
+      } else {
+        i = Image.getJpegBestFit(path,
+            (int) (desiredWidth * jpegMemorySaving),
+            (int) (desiredHeight * jpegMemorySaving));
+      }
     } catch (Exception e) {
-      // probably not a jpeg, we'll just ignore the exception and try again as a regular image.
+      // probably not a jpeg, just ignore the exception and retry as a regular image.
       i = new Image(path);
     }
     int actualWidth = i.getWidth();
@@ -75,8 +96,8 @@ public class ImageLoader {
             desiredWidth > desiredHeight);
       } else {
         i = i.smoothScaledFixedAspectRatio(
-                desiredWidth < desiredHeight ? desiredWidth : desiredHeight,
-                desiredWidth > desiredHeight);
+            desiredWidth < desiredHeight ? desiredWidth : desiredHeight,
+            desiredWidth > desiredHeight);
       }
     }
     // disabled mimap for now
