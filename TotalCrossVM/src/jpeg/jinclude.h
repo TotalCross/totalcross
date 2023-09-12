@@ -61,7 +61,10 @@ struct TJPEGFILE
    TCObject bufObj;
    TValue params[4];
    // the first 4 bytes
-   char *first4;
+   const char * first4;
+   const char * mapped;
+   int32 size;
+   int32 cursor;
    Context currentContext;
 };
 

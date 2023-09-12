@@ -22,36 +22,52 @@ int jpegRead(void *buff, int count, JPEGFILE *in)
 {
    int32 extra = 0,n;
    uint8* cur = (uint8*)buff;
-   if (in->first4) // place the first 4 bytes in the output buffer
-   {
-      xmove4(cur, in->first4);
-      in->first4 = null;
-      cur += 4;
-      count -= 4;
-      extra = 4;
-   }
-   if (in->tcz != null)
-      return tczRead(in->tcz, cur, count) + extra;
-   else
-   {
-      uint8* start = (uint8*)buff;
-      TCObject bufObj = in->params[1].asObj;
-      int tempBufSize = ARRAYOBJ_LEN(bufObj);
-      uint8 *tempBufStart = (uint8*)ARRAYOBJ_START(bufObj);
 
-      while (count > 0)
-      {
-         n=0;
-         in->params[3].asInt32 = (count < tempBufSize)? count : tempBufSize;
-         n = executeMethod(in->currentContext, in->readBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32).asInt32;
-         if (n <= 0)
-            break;
-         xmemmove(cur, tempBufStart, n);
-         cur += n;
-         count -= n;
+   if (in->mapped) {
+      extra = in->size - in->cursor;
+      if (extra == 0) {
+         return 0;
       }
-      return (int)(cur - start);
+      if (extra > count) {
+         extra = count;
+      }
+      memcpy(buff, in->mapped + in->cursor, extra);
+      in->cursor += extra;
+      return extra;
    }
+   else {
+      if (in->first4) // place the first 4 bytes in the output buffer
+      {
+         xmove4(cur, in->first4);
+         in->first4 = null;
+         cur += 4;
+         count -= 4;
+         extra = 4;
+      }
+      if (in->tcz != null)
+         return tczRead(in->tcz, cur, count) + extra;
+      else
+      {
+         uint8* start = (uint8*)buff;
+         TCObject bufObj = in->params[1].asObj;
+         int tempBufSize = ARRAYOBJ_LEN(bufObj);
+         uint8 *tempBufStart = (uint8*)ARRAYOBJ_START(bufObj);
+
+         while (count > 0)
+         {
+            n=0;
+            in->params[3].asInt32 = (count < tempBufSize)? count : tempBufSize;
+            n = executeMethod(in->currentContext, in->readBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32).asInt32;
+            if (n <= 0)
+               break;
+            xmemmove(cur, tempBufStart, n);
+            cur += n;
+            count -= n;
+         }
+         return (int)(cur - start);
+      }
+   }
+   return 0;
 }
 
 // Write the JPEG Output file.
@@ -79,7 +95,7 @@ int jpegWrite(void *buff, int count, JPEGFILE *in)
 #define F1_2 50
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom)
+void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, const char* first4, int32 size, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -105,10 +121,14 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
       file.tcz = tcz;
       tcz->tempHeap = heap;
    }
-   else
+   else if (inputStreamObj != null)
    {
       file.inputStreamObj = inputStreamObj;  // JPEG stream
       file.bufObj = bufObj;    // a byte array for readBytes()
+   } else {
+      file.mapped = first4;
+      file.size = size;
+      file.cursor = 0;
    }
    file.first4 = first4;
 
@@ -129,7 +149,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    cinfo.err = jpeg_std_error(&errbase);
    jpeg_create_decompress(&cinfo);
 
-   if (tcz == null)
+   if (inputStreamObj != null)
    {
       Method readBytesMethod = getMethod(OBJ_CLASS(file.inputStreamObj), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
       if (readBytesMethod == null)
