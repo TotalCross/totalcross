@@ -8,6 +8,7 @@ import totalcross.ui.Control;
 import totalcross.ui.ImageControl;
 import totalcross.ui.event.SizeChangeEvent;
 import totalcross.ui.event.SizeChangeHandler;
+import totalcross.sys.Settings;
 import totalcross.util.concurrent.Lock;
 
 public class ImageLoader {
@@ -68,10 +69,15 @@ public class ImageLoader {
     int actualHeight = i.getHeight();
 
     if (actualWidth != desiredWidth || actualHeight != desiredHeight) {
-      i =
-          i.smoothScaledFixedAspectRatio(
-              desiredWidth < desiredHeight ? desiredWidth : desiredHeight,
-              desiredWidth > desiredHeight);
+      if (Settings.isOpenGL) {
+        i.setHwScaleFixedAspectRatio(
+            desiredWidth < desiredHeight ? desiredWidth : desiredHeight,
+            desiredWidth > desiredHeight);
+      } else {
+        i = i.smoothScaledFixedAspectRatio(
+                desiredWidth < desiredHeight ? desiredWidth : desiredHeight,
+                desiredWidth > desiredHeight);
+      }
     }
     // disabled mimap for now
     // mipmap.put(key, i);
