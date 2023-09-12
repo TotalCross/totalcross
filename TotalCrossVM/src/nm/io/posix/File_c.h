@@ -13,6 +13,8 @@
 #include "sys/stat.h"
 #include <utime.h>
 
+#include "File.h"
+
 #if HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
 #endif
@@ -85,7 +87,7 @@ static Err fileGetCardSerialNumber(int32 slot, CharP serialNumber)
  *
  *************************************/
 
-static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
+Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
 {
    TCHAR * rwMode;
    struct stat statData;
@@ -126,7 +128,7 @@ error:
  *************************************/
 static Err fileFlush(NATIVE_FILE fref);
 
-static Err fileClose(NATIVE_FILE* fref)
+Err fileClose(NATIVE_FILE* fref)
 {
    FILE *hFile;
    struct stat statData;
@@ -300,7 +302,7 @@ static Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
  *
  *************************************/
 
-static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
+Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {
    if (fref.handle != INVALID_HANDLE_VALUE)
    {
