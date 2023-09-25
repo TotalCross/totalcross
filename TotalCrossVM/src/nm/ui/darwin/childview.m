@@ -110,7 +110,6 @@ extern bool isIpad;
 
 - (void)createGLcontext
 {
-   self.frame = [self getBounds];
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
    eaglLayer.opaque = TRUE;
    if (glcontext != null)
