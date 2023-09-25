@@ -24,7 +24,6 @@ bool setupGL(int width, int height);
    self = [ super init ];
    firstCall = true;
    controller = ctrl;
-   taskbarHeight = MIN([UIApplication sharedApplication].statusBarFrame.size.width,[UIApplication sharedApplication].statusBarFrame.size.height);
    self.opaque = YES;
    self.contentMode = UIViewContentModeScaleToFill;
    self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
@@ -68,44 +67,7 @@ void graphicsSetupIOS()
 - (CGSize)getResolution
 {
    CGRect r = [[UIScreen mainScreen] bounds];
-   return CGSizeMake(r.size.width * iosScale, (r.size.height - taskbarHeight) * iosScale);
-}
-
-extern bool isIpad;
-
-- (CGRect)getBounds
-{
-   CGRect r = [[UIScreen mainScreen] bounds];
-   if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
-   {
-      if (firstCall && taskbarHeight == 0) // fix a problem that, if there's no statusbar, the viewDidLayoutSubviews is not called. So we force it by using at setup a smaller size, which will be fixed at a later call
-      {
-         r.size.height--;
-         firstCall = false;
-      }
-      else
-      switch ([self getOrientation])
-      {
-         case UIDeviceOrientationPortraitUpsideDown:
-            r.origin.y = 0;
-            r.size.height -= taskbarHeight;
-            break;
-         case UIDeviceOrientationLandscapeLeft:
-            r.origin.y = taskbarHeight;
-            r.size.height -= taskbarHeight;
-            break;
-         case UIDeviceOrientationLandscapeRight:
-            r.origin.y = taskbarHeight;
-            r.size.height -= taskbarHeight;
-            break;
-         default: // UIDeviceOrientationPortrait and others
-            r.origin.y = taskbarHeight;
-            r.size.height -= taskbarHeight;
-            break;
-      }
-   }
-   //NSLog(@"bounds: %d,%d,%d,%d",(int)r.origin.x,(int)r.origin.y,(int)r.size.width,(int)r.size.height);
-   return r;
+   return CGSizeMake(r.size.width * iosScale, r.size.height * iosScale);
 }
 
 - (void)createGLcontext

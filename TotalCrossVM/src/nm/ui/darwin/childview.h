@@ -20,10 +20,7 @@
 	GLuint defaultFramebuffer, colorRenderbuffer;
    bool firstCall;
    UIDeviceOrientation lastKnownOrientation;
-@public
-   int taskbarHeight;
 }
-- (CGRect)getBounds;
 - (CGSize)getResolution;
 - (UIDeviceOrientation)getOrientation;
 - (id)init:(UIViewController*) ctrl;
