@@ -125,6 +125,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   
   private double toScaleValue = -1;
   private double toDensityValue = 1;
+  public totalcross.ui.Insets toInsetsPortrait;
+  public totalcross.ui.Insets toInsetsLandscape;
 
   @SuppressWarnings("deprecation")
   public Launcher() {
@@ -407,10 +409,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     System.out.println("   /scr WIDTHxHEIGHT     : sets the width and height resolution.");
     System.out.println("   /scr WIDTHxHEIGHTxBPP : sets the width, height and bits per pixel (8, 16, 24 or 32)");
     System.out.println("   /density <0.1 to 4>   : sets the screen pixel density");
-    System.out.println("   /scr win32       : Windows 32          (same of /scr 240x320x24)");
-    System.out.println("*  /scr android     : Android             (same of /scr 320x568x24)");
-    System.out.println("   /scr iphone      : iPhone 8 resolution (same of /scr 750x1334x24 /density 2)");
-    System.out.println("   /scr ipad        : iPad resolution     (same of /scr 1536x2048x24 /density 2)");
+    System.out.println("   /scr win32       : Windows 32            (same of /scr 240x320x24)");
+    System.out.println("*  /scr android     : Android               (same of /scr 360x592x24  /density 2)");
+    System.out.println("   /scr iPhone      : iPhone 15 resolution  (same of /scr 393x852x24  /density 3  /safeAreaPortrait 59,0,34,0 /safeAreaLandscape 0,59,21,59)");
+    System.out.println("   /scr iPhoneSE    : iPhone SE resolution  (same of /scr 375x667x24  /density 2)");
+    System.out.println("   /scr ipad        : iPad resolution       (same of /scr 768x1024x24 /density 2)");
     System.out.println("   /fullscreen      : Use full-screen window");
     System.out.println("   /pos x,y         : Sets the openning position of the application");
     System.out.println("   /uiStyle Flat    : Flat user interface style");
@@ -433,6 +436,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
     System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
     System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
+    System.out.println("   /safeAreaPortrait  top,left,bottom,right : sets a margin from the device borders to simulate devices with notch on portrait");
+    System.out.println("   /safeAreaLandscape top,left,bottom,right : sets a margin from the device borders to simulate devices with notch on landscape");
     System.out.println("The class name that extends MainWindow must always be the last argument");
     System.out.println("Please notice that the Launcher automatically scales down the resolution to fit in the display, to disable this behavior you may include the argument scale with the value 1");
   }
@@ -499,18 +504,25 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             toHeight = 320;
             toBpp = 24;
           } else if (next.equalsIgnoreCase("iPhone")) {
-            toWidth = 750;
-            toHeight = 1334;
+            toWidth = 393;
+            toHeight = 852;
+            toBpp = 24;
+            toDensityValue = 3;
+            toInsetsPortrait = new totalcross.ui.Insets(59, 0, 34, 0);
+            toInsetsLandscape = new totalcross.ui.Insets(0, 59, 21, 59);
+          } else if (next.equalsIgnoreCase("iPhoneSE")) {
+            toWidth = 375;
+            toHeight = 667;
             toBpp = 24;
             toDensityValue = 2;
           } else if (next.equalsIgnoreCase("ipad")) {
-              toWidth = 1536;
-              toHeight = 2048;
-              toBpp = 24;
-              toDensityValue = 2;
+            toWidth = 768;
+            toHeight = 1024;
+            toBpp = 24;
+            toDensityValue = 2;
           } else if (next.equalsIgnoreCase("android")) {
-            toWidth = 720;
-            toHeight = 1184;
+            toWidth = 360;
+            toHeight = 592;
             toBpp = 24;
             toDensityValue = 2;
           } else {
@@ -527,6 +539,18 @@ final public class Launcher extends java.applet.Applet implements WindowListener
           System.out.println("Screen is " + toWidth + "x" + toHeight + "x" + toBpp);
         } else if (args[i].equalsIgnoreCase("/fullscreen")) {
           fullscreen = true;
+        } else if (args[i].equalsIgnoreCase("/safeAreaPortrait")) {
+          String[] scr = tokenizeString(args[++i].toLowerCase(), ',');
+          if (scr.length != 4) {
+            throw new Exception("Argument /safeAreaPortrait expects 4 comma separated values in the following format: top,left,bottom,right");
+          }
+          toInsetsPortrait = new totalcross.ui.Insets(toInt(scr[0]), toInt(scr[1]), toInt(scr[2]), toInt(scr[3]));
+        } else if (args[i].equalsIgnoreCase("/safeAreaLandscape")) {
+          String[] scr = tokenizeString(args[++i].toLowerCase(), ',');
+          if (scr.length != 4) {
+            throw new Exception("Argument /safeAreaLandscape expects 4 comma separated values in the following format: top,left,bottom,right");
+          }
+          toInsetsLandscape = new totalcross.ui.Insets(toInt(scr[0]), toInt(scr[1]), toInt(scr[2]), toInt(scr[3]));
         } else if (args[i].equalsIgnoreCase("/r")) {
           ++i;
         } else if (args[i].equalsIgnoreCase("/pos")) /* x,y */
@@ -638,6 +662,20 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
     
     Settings.screenDensity = toDensityValue;
+    toWidth *= toDensityValue;
+    toHeight *= toDensityValue;
+    if (toInsetsPortrait != null) {
+      toInsetsPortrait.top *= toDensityValue;
+      toInsetsPortrait.left *= toDensityValue;
+      toInsetsPortrait.bottom *= toDensityValue;
+      toInsetsPortrait.right *= toDensityValue;
+    }
+    if (toInsetsLandscape != null) {
+      toInsetsLandscape.top *= toDensityValue;
+      toInsetsLandscape.left *= toDensityValue;
+      toInsetsLandscape.bottom *= toDensityValue;
+      toInsetsLandscape.right *= toDensityValue;
+    }
 
     /*
      * Gets the display resolution and automatically scales down the Launcher to fit

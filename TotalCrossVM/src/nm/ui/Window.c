@@ -74,6 +74,26 @@ TC_API void tuW_setOrientation_i(NMParams p) // totalcross/ui/Window native publ
    windowSetOrientation(p->i32[0]);
 #endif
 }
+//////////////////////////////////////////////////////////////////////////
+TCObject* safeAreaInsets;
+
+TC_API void tuW_getSafeAreaInsets(NMParams p) // totalcross/ui/Window public static Insets getSafeAreaInsets();
+{
+   if (safeAreaInsets == null) {
+      safeAreaInsets = getStaticFieldObject(p->currentContext, loadClass(p->currentContext, "totalcross.ui.Window", true), "safeAreaInsets");
+   }
+#ifdef darwin
+   if (safeAreaInsets != null && p->currentContext->thrownException == null) {
+      windowGetSafeAreaInsets(
+         &FIELD_I32(*safeAreaInsets, 0),
+         &FIELD_I32(*safeAreaInsets, 1),
+         &FIELD_I32(*safeAreaInsets, 2),
+         &FIELD_I32(*safeAreaInsets, 3)
+      );
+   }
+#endif
+   p->retO = (*safeAreaInsets);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "Window_test.h"

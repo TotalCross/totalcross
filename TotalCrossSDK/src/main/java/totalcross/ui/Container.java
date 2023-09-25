@@ -38,7 +38,7 @@ public class Container extends Control {
   private int pressColor = -1;
   private PenListener pe;
   private boolean cpressed;
-  private Image npback;
+  protected Image npback;
 
   /** Sets the type of background of this Container. To disable the background, set the 
    * <code>transparentBackground</code> of the Control class to true. This field is used when
