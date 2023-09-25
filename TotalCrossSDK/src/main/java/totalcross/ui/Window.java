@@ -30,6 +30,7 @@ import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Coord;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.Rect;
+import totalcross.ui.image.ImageException;
 import totalcross.ui.media.Sound;
 import totalcross.unit.UIRobot;
 import totalcross.util.ElementNotFoundException;
@@ -293,6 +294,8 @@ public class Window extends Container {
 
   /** A key listener that have priority over all other listeners. */
   public static KeyListener keyHook;
+
+  private static Insets safeAreaInsets = new Insets();
 
   ////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////
@@ -1157,6 +1160,11 @@ public class Window extends Container {
     }
   }
 
+  @ReplacedByNativeOnDeploy
+  public static Insets getSafeAreaInsets() {
+    return safeAreaInsets;
+  }
+
   ////////////////////////////////////////////////////////////////////////////////////
   /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
    * In this version, you provide the created Rect to be filled with the coords.
@@ -1180,6 +1188,53 @@ public class Window extends Container {
     }
     r.width = this.width - m - m;
     r.height = this.height - r.y - m;
+  
+    Insets i = MainWindow.getSafeAreaInsets();
+    if (this.y < i.top) {
+      r.y += i.top;
+    }
+    if (this.height > Settings.screenHeight - (i.top + i.bottom)) {
+      r.height -= i.top + i.bottom;
+    }
+    if (this.x < i.left) {
+      r.x += i.left;
+    }
+    if (this.width > Settings.screenWidth - (i.left + i.right)) {
+      r.width -= i.left + i.right;
+    }
+  }
+  
+  protected void fillBackground(Graphics g, int b) {
+    g.backColor = Color.BLACK;
+    g.fillRect(0, 0, width, height);
+
+    Rect r = getClientRect();
+    if (npParts != null && npback == null) {
+      try {
+        npback = NinePatch.getInstance().getNormalInstance(npParts, r.width, r.height, b, false);
+      } catch (ImageException e) {
+        if (Settings.onJavaSE)
+          e.printStackTrace();
+      }
+    } else if (npback == null) {
+      switch (backgroundStyle) {
+        case BACKGROUND_SOLID:
+          g.backColor = b;
+          g.fillRect(r.x, r.y, r.width, r.height);
+          break;
+        case BACKGROUND_SHADED:
+          g.fillShadedRect(r.x, r.y, r.width, r.height, true, false, foreColor, b, UIColors.shadeFactor);
+          break;
+        case BACKGROUND_SHADED_INV:
+          g.fillShadedRect(r.x, r.y, r.width, r.height, false, false, foreColor, b, UIColors.shadeFactor);
+          break;
+        case BACKGROUND_CYLINDRIC_SHADED:
+          g.drawCylindricShade(foreColor, b, r.x, r.y, r.width, r.height);
+          break;
+      }
+    }
+
+    NinePatch.tryDrawImage(g, npback, r.x, r.y);
   }
 
   ////////////////////////////////////////////////////////////////////////////////////

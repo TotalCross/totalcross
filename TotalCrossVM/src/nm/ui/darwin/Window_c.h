@@ -11,6 +11,7 @@ extern "C" {
 
 void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret);
 bool windowGetSIP();
+void windowGetSafeAreaInsets(int32* top, int32* left, int32* bottom, int32* right);
 
 /*static void windowSetDeviceTitle(TCObject titleObj)
 {
