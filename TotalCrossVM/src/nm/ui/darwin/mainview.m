@@ -555,10 +555,6 @@ void graphicsUpdateScreenIOS()
 {                
    [DEVICE_CTX->_childview updateScreen];
 }
-void graphicsIOSdoRotate()
-{
-   [DEVICE_CTX->_childview doRotate];
-}
 
 void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, int* timeZonePtr, int* timeZoneMinutesPtr, char* timeZoneStrPtr, int sizeofTimeZoneStr)
 {

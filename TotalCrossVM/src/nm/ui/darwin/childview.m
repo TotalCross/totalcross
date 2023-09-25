@@ -49,11 +49,6 @@ extern int32 deviceFontHeight,iosScale;
    // if ((deviceFontHeight&1) == 1) deviceFontHeight++; // even size fonts are better
 }
 
-- (void)doRotate
-{
-   [self createGLcontext]; // recreate buffers at the new screen layout
-}
-
 void graphicsSetupIOS()
 {
    [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
