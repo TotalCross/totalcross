@@ -28,7 +28,6 @@
 - (UIDeviceOrientation)getOrientation;
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
-- (void)doRotate;
 - (void)updateScreen;
 - (void)createGLcontext;
 

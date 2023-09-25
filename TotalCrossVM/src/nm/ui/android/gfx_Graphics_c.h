@@ -171,15 +171,10 @@ static void destroyEGL()
 
 #endif
 
-void graphicsIOSdoRotate();
 void privateScreenChange(int32 w, int32 h)
 {
-#ifdef darwin
-   graphicsIOSdoRotate();
-#else
-    appW = w;
-    appH = h;
-#endif
+   appW = w;
+   appH = h;
 }
 
 int32 graphicsStartup(ScreenSurface screen, int16 appTczAttr)
