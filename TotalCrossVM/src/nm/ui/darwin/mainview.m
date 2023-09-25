@@ -86,7 +86,6 @@ bool iosLowMemory;
    {
       //[self destroySIP];
       lastOrientationSentToVM = orientation;
-      child_view.frame = [child_view getBounds]; // SET THE CHILD_VIEW FRAME
       CGSize res = [child_view getResolution];
       [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
                         [NSNumber numberWithInt: res.width], @"width",
