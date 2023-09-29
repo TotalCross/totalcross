@@ -1162,7 +1162,8 @@ public class Window extends Container {
 
   @ReplacedByNativeOnDeploy
   public static Insets getSafeAreaInsets() {
-    return safeAreaInsets;
+    Insets preset = Settings.isLandscape() ? Launcher.instance.toInsetsLandscape : Launcher.instance.toInsetsPortrait;
+    return preset != null ? preset : safeAreaInsets;
   }
 
   ////////////////////////////////////////////////////////////////////////////////////
