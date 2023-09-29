@@ -27,7 +27,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.MemoryImageSource;
+import java.awt.image.DataBufferInt;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,6 +46,11 @@ import java.util.zip.ZipInputStream;
 
 import net.coobird.thumbnailator.Thumbnails;
 import tc.tools.AnonymousUserData;
+import net.coobird.thumbnailator.Thumbnails.Builder;
+import net.coobird.thumbnailator.resizers.configurations.Antialiasing;
+import net.coobird.thumbnailator.resizers.configurations.Dithering;
+import net.coobird.thumbnailator.resizers.configurations.Rendering;
+import net.coobird.thumbnailator.resizers.configurations.ScalingMode;
 import tc.tools.JarClassPathLoader;
 import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
@@ -112,8 +117,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private int lookupR[], lookupG[], lookupB[], lookupGray[];
   private int pal685[];
   private Class<?> _class; // used by the openInputStream method.
-  protected MemoryImageSource screenMis;
-  protected java.awt.Image screenImg;
+  protected BufferedImage screenImg;
+  private Builder<BufferedImage> thumbnailBuilder;
   private AlertBox alert;
   private String frameTitle;
   private String crid4settings; // prevent from having two different crids for loading and storing the settings.
@@ -911,13 +916,13 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   private void screenResized(int w, int h, boolean setframe) {
-    if (screenMis == null || (Settings.screenWidth == w && Settings.screenHeight == h)) {
+    if (screenImg == null || (Settings.screenWidth == w && Settings.screenHeight == h)) {
       return;
     }
     Settings.screenWidth = w;
     Settings.screenHeight = h;
     frame.setFrameSize(w, h, setframe);
-    screenMis = null; // force the creation of a new screen image
+    screenImg = null; // force the creation of a new screen image
     eventThread.pushEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.SCREEN_CHANGE, 0, 0, modifiers, Vm.getTimeStamp());
   }
 
@@ -1214,6 +1219,31 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   public void updateScreen() {
     //int ini = totalcross.sys.Vm.getTimeStamp();
+    int w = totalcross.sys.Settings.screenWidth;
+    int h = totalcross.sys.Settings.screenHeight;
+    int ww = (int) (w * toScale);
+    int hh = (int) (h * toScale);
+
+    if (screenImg == null) {
+      screenImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+      // We can typecast directly to DataBufferInt because that's the type used for images with 24+ bit color
+      DataBufferInt dbi = (DataBufferInt) screenImg.getRaster().getDataBuffer();
+      int[] pixels = dbi.getData();
+      // Copy whatever was drawn before
+      System.arraycopy(totalcross.ui.gfx.Graphics.mainWindowPixels, 0, pixels, 0, w*h);
+      // And replace with our bytes, now we no longer need to copy from the mainWindowPixels to our image. Saving a ton of memory.
+      totalcross.ui.gfx.Graphics.mainWindowPixels = pixels;
+      if (toScale != 1 && !fastScale) {
+        // And as a bonus, we can reuse the thumbnailator builder because it always references the same object.
+        thumbnailBuilder = Thumbnails
+            .of(screenImg)
+            .size(ww, hh)
+            .rendering(Rendering.SPEED)
+            .scalingMode(ScalingMode.PROGRESSIVE_BILINEAR)
+            .antialiasing(Antialiasing.OFF)
+            .dithering(Dithering.DISABLE);
+      }
+    }
     int[] pixels = totalcross.ui.gfx.Graphics.mainWindowPixels;
     int n = Settings.screenWidth * Settings.screenHeight;
     if (toBpp >= 24) {
@@ -1248,22 +1278,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       break;
     }
     }
-    int w = totalcross.sys.Settings.screenWidth;
-    int h = totalcross.sys.Settings.screenHeight;
-    if (screenMis == null) {
-      screenMis = new MemoryImageSource(w, h, 
-              GraphicsEnvironment.
-              getLocalGraphicsEnvironment().getDefaultScreenDevice().
-              getDefaultConfiguration().getColorModel(),
-          screenPixels, 0, w);
-      screenMis.setAnimated(true);
-      screenMis.setFullBufferUpdates(true);
-      screenImg = Toolkit.getDefaultToolkit().createImage(screenMis);
-    }
-    screenMis.newPixels();
     Graphics g = getGraphics();
-    int ww = (int) (w * toScale);
-    int hh = (int) (h * toScale);
     int shiftY = totalcross.ui.Window.shiftY;
     int shiftH = totalcross.ui.Window.shiftH;
     if ((shiftY + shiftH) > h) {
@@ -1282,7 +1297,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this);
         } else {
             try {
-                g.drawImage(Thumbnails.of(toBufferedImage(screenImg)).size(ww, hh).asBufferedImage(), 0, 0, this);
+                g.drawImage(thumbnailBuilder.asBufferedImage(), 0, 0, this);
             } catch (java.io.IOException e) {
                 e.printStackTrace();
             }
