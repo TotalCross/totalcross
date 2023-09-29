@@ -97,7 +97,7 @@ dependencies {
 	runtime group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
 	
 	// https://mvnrepository.com/artifact/net.coobird/thumbnailator
-	compile group: 'net.coobird', name: 'thumbnailator', version: '0.4.8'
+	compile group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
 
 	// https://mvnrepository.com/artifact/junit/junit
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'

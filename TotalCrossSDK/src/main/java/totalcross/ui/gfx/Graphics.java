@@ -169,6 +169,7 @@ public final class Graphics {
 
   @ReplacedByNativeOnDeploy
   private void create(GfxSurface surface) {
+    alpha = 0xFF000000; // On Java, alpha is always initialized with opaque
     if (surface instanceof Image) {
       pitch = ((Image) surface).getWidth();
     } else if (surface instanceof Control) {
