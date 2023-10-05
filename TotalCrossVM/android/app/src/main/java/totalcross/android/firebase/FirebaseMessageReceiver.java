@@ -29,9 +29,9 @@ import totalcross.android.Loader;
 import android.graphics.Color;
 import android.os.Build;
 import android.app.NotificationChannel;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.Builder;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationCompat.Builder;
 
 /**
  * Mudanças baseadas em https://developers.google.com/cloud-messaging/android/android-migrate-fcm

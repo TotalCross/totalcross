@@ -8,8 +8,11 @@ import android.os.*;
 import com.google.android.gms.common.*;
 import com.google.android.gms.common.api.*;
 import com.google.android.gms.common.api.GoogleApiClient.*;
-import com.google.android.gms.location.*;
+//import com.google.android.gms.location.*;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
 import java.util.*;
 
 public class GPSHelper implements android.location.LocationListener, GpsStatus.Listener, LocationListener, ConnectionCallbacks, OnConnectionFailedListener
