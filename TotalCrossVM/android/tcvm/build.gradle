@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
  repositories { 
      google()
-     jcenter()
+     mavenCentral()
      maven {
          url "http://maven.totalcross.com/artifactory/build"
          credentials {
