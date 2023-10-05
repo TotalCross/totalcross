@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
  repositories { 
-     jcenter()
+     mavenCentral()
      maven {
          url "http://maven.totalcross.com/artifactory/build"
          credentials {
