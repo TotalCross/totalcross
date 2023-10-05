@@ -30,8 +30,8 @@ import android.view.ViewGroup.*;
 import android.view.inputmethod.*;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import com.google.android.gms.ads.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -48,7 +48,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import  android.support.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 public class Loader extends Activity implements TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
 {

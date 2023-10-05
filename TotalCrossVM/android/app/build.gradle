@@ -1,26 +1,25 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
  repositories { 
      mavenCentral()
      maven {
          url "http://maven.totalcross.com/artifactory/build"
+         allowInsecureProtocol true
          credentials {
              username = "$System.env.TC_REPO_USERNAME"
              password = "$System.env.TC_REPO_PASSWORD"
          }
+         // allows downloading artifacts without metadata (a pom file)
+         metadataSources { artifact() }
      }
  }
 
 def buildType // stores build type, debug or release
 
 android {
-    compileSdkVersion 29
-    ndkVersion "21.0.6113669"
-    compileOptions {
-    	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+    compileSdkVersion 31
+    ndkVersion "21.4.7075529"
 
     aaptOptions {
         noCompress 'zip'
@@ -40,7 +39,7 @@ android {
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     buildTypes {
@@ -124,8 +123,6 @@ dependencies {
     implementation project(":tcvm")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.android.support:appcompat-v7:26.0.2'
-
     implementation 'com.google.android.gms:play-services-ads:' + googleGmsVersion
     implementation 'com.google.android.gms:play-services-maps:' + googleGmsVersion
     implementation 'com.google.android.gms:play-services-location:' + googleGmsVersion
@@ -152,14 +149,18 @@ dependencies {
     implementation 'com.google.zxing:core:3.2.0'
 
     // Enables MultiDex. This allows the app to have more than 64k methods
-    implementation 'com.android.support:multidex:1.0.1'
+    implementation 'androidx.multidex:multidex:2.0.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     
-    implementation 'com.android.support:customtabs:25.1.0'
+    implementation 'androidx.browser:browser:1.0.0'
 
     //Youtube API
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
+
+    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

@@ -13,13 +13,10 @@ import android.net.wifi.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
-import android.content.pm.PackageManager;
+
 import java.lang.reflect.*;
 import java.util.*;
 import java.net.NetworkInterface;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.app.ActivityCompat;
-import android.Manifest;
 
 import totalcross.*;
 
