@@ -50,10 +50,10 @@ static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alph
 #endif
 
 
-bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
-bool graphicsCreateScreenSurface(ScreenSurface screen);
+int32 graphicsStartup(ScreenSurface screen, int16 appTczAttr);
+int32 graphicsCreateScreenSurface(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen);
-void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
+void graphicsDestroy(ScreenSurface screen, int32 isScreenChange);
 #if !defined(NO_GRAPHICS_LOCK_NEEDED)
 bool graphicsLock(ScreenSurface screen, bool on);
 #endif
@@ -2283,7 +2283,7 @@ static int32 oldShiftY=9000000;
 #ifdef darwin
 static int32 lastAppHeightOnSipOpen;
 extern int keyboardH,realAppH;
-extern bool setShiftYonNextUpdateScreen;
+extern int32 setShiftYonNextUpdateScreen;
 
 static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *shiftH)
 {
@@ -2315,7 +2315,7 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
 }
 #elif defined(ANDROID)
 extern int realAppH;
-extern bool setShiftYonNextUpdateScreen;
+extern int32 setShiftYonNextUpdateScreen;
 static int32 lastAppHeightOnSipOpen;
 static int desiredShiftY=-1;
 static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *shiftH)

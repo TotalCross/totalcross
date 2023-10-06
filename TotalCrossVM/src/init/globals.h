@@ -49,7 +49,7 @@ extern bool destroyingApplication;
 extern TCObject mainClass;  // the instance being executed
 extern bool isMainWindow;   // extends MainWindow ?
 #if defined(ANDROID)
-JavaVM* androidJVM;
+extern JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
 extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A,jSmsManager4A,jNotificationManager4A,jFirebaseInstanceId,jTcFirebaseUtils;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
@@ -179,7 +179,7 @@ extern Hashtable htNativeProcAddresses;
 // tcz.c
 extern VoidPs* openTCZs;
 #ifdef ANDROID
-jmethodID jreadTCZ, jfindTCZ;
+extern jmethodID jreadTCZ, jfindTCZ;
 #endif
 
 // event.c
@@ -209,7 +209,7 @@ extern jmethodID jtone,jsoundEnable,jsoundPlay, jsoundToText, jsoundFromText;
 
 // money
 #ifdef ANDROID
-jmethodID jadsFunc;
+extern jmethodID jadsFunc;
 #endif
 
 // YoutubePlayer.c

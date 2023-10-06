@@ -50,7 +50,7 @@ static void resetGlobals()
 bool initGLES(ScreenSurface screen);
 
 void setTimerInterval(int32 t);
-bool setShiftYonNextUpdateScreen;
+int32 setShiftYonNextUpdateScreen;
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
 {
@@ -182,7 +182,7 @@ void privateScreenChange(int32 w, int32 h)
 #endif
 }
 
-bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
+int32 graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    screen->bpp = 32;
    screen->screenX = screen->screenY = 0;
@@ -194,7 +194,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    return initGLES(screen);
 }
 
-bool graphicsCreateScreenSurface(ScreenSurface screen)
+int32 graphicsCreateScreenSurface(ScreenSurface screen)
 {
 #ifndef ANDROID
    screen->extension = deviceCtx;
@@ -209,7 +209,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return screen->pixels != null;
 }
 
-void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
+void graphicsDestroy(ScreenSurface screen, int32 isScreenChange)
 {
 #ifdef ANDROID
    if (!isScreenChange)
