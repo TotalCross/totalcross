@@ -26,7 +26,6 @@ public class DeploySettings {
   public static String[] tczs;
   // constants for including the vm and/or litebase in a package 
   public static boolean packageVM;
-  public static boolean includeSms;
   public static String folderTotalCross3DistVM;
 
   public static String tczFileName;
