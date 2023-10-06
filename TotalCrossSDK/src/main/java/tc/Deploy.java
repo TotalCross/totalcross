@@ -280,7 +280,10 @@ public class Deploy {
       } else if (first == '/') {
         switch (op.charAt(1)) {
         case 'a':
-          if (op.equals("/autostart")) {
+          if ("/android_signing_config".equals(op)) {
+            Deployer4Android.signingPropertiesPath = args[++i];
+          }
+          else if (op.equals("/autostart")) {
             System.out.println("Autostart on Android's boot");
             DeploySettings.autoStart = true;
           } else {
@@ -434,6 +437,7 @@ public class Deploy {
             + "   /kn     : As /k, but does not create the cab files for wince\n"
             + "   /force_android_storage_access : Adds the MANAGE_EXTERNAL_STORAGE permission to the manifest. The usage of this permission is subject to restrictions when submitted to the Play Store.\n "
             + "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"
+            + "   /android_signing_config path : Specifies a path to a properties file containing keystore configuration for signing AAB and APK when deploying for Android.\n"
             + "   /n name : Override the name of the tcz file with the given name\n"
             + "   /o path : Override the output folder with the given path (defaults to the current folder)\n"
             + "   /p      : Package the vm and litebase with the application, creating a single installation file. "
