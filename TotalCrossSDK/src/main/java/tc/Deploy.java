@@ -381,11 +381,7 @@ public class Deploy {
           System.out.println("Creating single installation package");
           break;
         case 'i':
-          if (op.equals("/include_sms")) {
-            DeploySettings.includeSms = true;
-          } else {
-              DeploySettings.installPlatforms = args[++i].toLowerCase() + ",";
-          }
+          DeploySettings.installPlatforms = args[++i].toLowerCase() + ",";
           break;
 
         default:

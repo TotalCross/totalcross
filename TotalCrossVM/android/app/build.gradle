@@ -29,7 +29,6 @@ android {
     productFlavors {
         standard { dimension "deploy" }
         singleApk { dimension "deploy" }
-        includeSms { dimension "deploy" }
     }
 
     defaultConfig {
