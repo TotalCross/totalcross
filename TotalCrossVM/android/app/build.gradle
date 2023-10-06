@@ -28,7 +28,6 @@ android {
     flavorDimensions "deploy"
     productFlavors {
         standard { dimension "deploy" }
-        singleApk { dimension "deploy" }
     }
 
     defaultConfig {

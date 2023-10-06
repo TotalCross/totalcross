@@ -25,7 +25,6 @@ static void setFullScreen()
 
 static char targetPackage[8]; // totalcross.android -> totalcross.appapid
 static char tcabuf[128];
-static bool isSingleAPK;
 static char tczname[32];                                                                                           
 /*
  * Class:     totalcross_Launcher4A
@@ -59,14 +58,11 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jstring2CharP(jappPath, appPath);
    jstring2CharP(jvmPath, vmPath);
 
-   isSingleAPK = strEq(appPath, vmPath);
-   if (isSingleAPK)
-   {
-   	  int32 len = xstrlen(tczname);
-      xstrncpy(targetPackage, tczname, min32(7,len));
-      for (; len < 7; len++) // fill with _
-      	 targetPackage[len] = '_';
-   }
+   int32 len = xstrlen(tczname);
+   xstrncpy(targetPackage, tczname, min32(7,len));
+   for (; len < 7; len++) // fill with _
+      targetPackage[len] = '_';
+
    jplayYoutube = (*env)->GetStaticMethodID(env, applicationClass, "playVideo", "(Ljava/lang/String;ZII)V");
    jshowRoute        = (*env)->GetStaticMethodID(env, applicationClass, "showRoute", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)I");
    jshowGoogleMaps   = (*env)->GetStaticMethodID(env, applicationClass, "showGoogleMaps", "(Ljava/lang/String;Z)Z");
@@ -113,8 +109,6 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
 char* getTotalCrossAndroidClass(CharP className)
 {  
 	 char* an;
-	 if (!isSingleAPK)
-	 	  return className;
 	 xstrcpy(tcabuf, className); // totalcross.android
 	 an = xstrstr(tcabuf,"android");
 	 if (an)
