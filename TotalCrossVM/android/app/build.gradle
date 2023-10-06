@@ -136,7 +136,7 @@ dependencies {
     //Youtube API
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
 
-    implementation("androidx.appcompat:appcompat:1.4.0")
-    implementation "androidx.core:core-ktx:+"
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation "androidx.core:core-ktx:1.8.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
