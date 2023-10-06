@@ -9,7 +9,6 @@
 
 #import "ViewController.h"
 #import "libtcvm.h"
-//#import "liblitebase.h"
 
 @import Firebase;
 
@@ -78,7 +77,6 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
       exit((int)ret);
    else
    {
-//      [Litebase fillNativeProcAddressesLB];
       [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
    }
 }

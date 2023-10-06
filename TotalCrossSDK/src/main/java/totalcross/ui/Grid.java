@@ -170,7 +170,6 @@ public class Grid extends Container implements Scrollable {
       return null;
    }
    * </pre>
-   * See the AddressBook sample on Litebase.
    * @see #lastStartingRow
    */
   public interface DataSource // guich@570_87

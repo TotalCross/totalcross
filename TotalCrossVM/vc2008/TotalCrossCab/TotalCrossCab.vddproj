@@ -80,24 +80,6 @@
     {
         "File"
         {
-            "{BA458234-9B71-4F46-8107-E91156377184}:_197BE8F6E62E45A084B8960698CA4F88"
-            {
-            "SourcePath" = "8:..\\..\\..\\..\\build\\TotalCross\\dist\\vm\\LitebaseLib.tcz"
-            "TargetName" = "8:LitebaseLib.tcz"
-            "Tag" = "8:"
-            "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"
-            "Condition" = "8:"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "Register" = "3:0"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{BA458234-9B71-4F46-8107-E91156377184}:_856FAD01350F4182958686A776BB898A"
             {
             "SourcePath" = "8:..\\..\\..\\..\\build\\TotalCross\\dist\\vm\\TCUI.tcz"
@@ -188,32 +170,6 @@
         }
         "ProjectOutput"
         {
-            "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_21A1A9411F234F248ED3EED8B51565A3"
-            {
-            "SourcePath" = "8:..\\..\\..\\..\\build\\TotalCross\\dist\\vm\\wince\\Litebase.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"
-            "Condition" = "8:"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "Register" = "3:0"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:0"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{66EE456C-E926-4933-8F55-C2F572CE7444}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_BFA146B52640409DA38BD571171AD87E"
             {
             "SourcePath" = "8:..\\..\\..\\..\\build\\TotalCross\\dist\\vm\\wince\\TCVM.dll"

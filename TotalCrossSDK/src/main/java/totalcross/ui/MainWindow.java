@@ -472,9 +472,8 @@ public class MainWindow extends Window implements totalcross.MainClass {
   /**
    * Called just after the application is minimized. 
    * 
-   * If the user press the home key and then forces the application to stop (by going to the Settings / Applications), then
-   * all Litebase tables may be corrupted (actually, no data is lost, but a TableNotClosedException will be issued). So, its a good
-   * thing to call LitebaseConnection.closeAll in your litebase instances and recover them in the onRestore method.
+   * If the user press the home key and then forces the application to stop. So, its a good
+   * thing to close IO operations and recover them in the onRestore method.
    * <br><br>
    * When the onMinimize is called, the screen will only be able to be updated after it resumes (in other words,
    * calling repaint or repaintNow from the onMinimize method has no effect).

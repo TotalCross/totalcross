@@ -16,10 +16,6 @@
 -assumenosideeffects class * {
 ! *4D(...);
 }
--keep public class litebase.** {
-	public protected <fields>;
-    public protected <methods>;
-}
 
 # keep classes on "totalcross" package
 -keep class totalcross.** {

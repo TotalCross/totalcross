@@ -819,14 +819,6 @@ FILE* findFile(CharP name, CharP pathOut)
    }
 #endif // ENABLE_TEST_SUITE only
 #endif // WIN32 only
-#ifdef ANDROID
-   // 9. search also on litebase's path
-   if (f == null)
-   {
-      xstrprintf(fullName,"/data/data/litebase.android/%s",name);
-      f = fopen(fullName,"rb");
-   }
-#endif // _DEBUG
 
    if (f != null)
    {

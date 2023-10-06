@@ -23,7 +23,7 @@
 
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
-#if defined(ANDROID) && !defined(LITEBASE_H)
+#if defined(ANDROID)
 bool getSDCardPath(char* buf, int idx)
 {
    JNIEnv *env = getJNIEnv();                                      
@@ -158,11 +158,8 @@ static Err fileClose(NATIVE_FILE* fref)
  *************************************/
 
 //#define fileCreateDir(path, slot) CreateDirectory(path, null)
-#ifdef LITEBASE_H
-static
-#else
 Err fileCreateDir(TCHARP path, int32 slot);
-#endif
+
 Err fileCreateDir(TCHARP path, int32 slot)
 {
    struct stat statData;

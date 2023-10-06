@@ -46,13 +46,6 @@ sourceSets {
         java {
         }
     }
-    litebase {
-        java {
-            srcDirs = [new File(project.rootDir, '../LitebaseSDK/src/java')]
-            exclude 'samples/**', 'litebase/android/**', '**/*4D.java'
-        }
-        compileClasspath += sourceSets.main.runtimeClasspath
-    }
 }
 
 buildscript {
@@ -122,7 +115,6 @@ test {
 
 jar {
     exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
-    from(sourceSets.litebase.output)
     from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
     from new File(project.rootDir, 'etc/fonts/Material Icons.tcz')
     into("META-INF/maven/$project.group/$baseName") {
@@ -287,7 +279,6 @@ task sourcesJar(type: Jar) {
     from (sourceSets.main.allSource) { 
     	exclude 'tc/**', '**/*4A.java', '**/*4D.java'
     }
-    from (sourceSets.litebase.allSource)
 }
 javadoc.finalizedBy(sourcesJar)
 

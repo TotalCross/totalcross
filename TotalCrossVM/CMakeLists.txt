@@ -46,7 +46,6 @@ if(NOT MSVC AND USE_SKIA)
 endif(NOT MSVC AND USE_SKIA)
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(LB_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src/litebase")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
 
 set(SOURCES
@@ -298,40 +297,6 @@ if(DEFINED SKIA_LIBRARIES)
   )
 endif(DEFINED SKIA_LIBRARIES)
 
-if(NOT MSVC)
-  set(LB_SOURCES
-    ${LB_SRCDIR}/lbFile.c
-    ${LB_SRCDIR}/PlainDB.c
-    ${LB_SRCDIR}/TCVMLib.c
-    ${LB_SRCDIR}/Litebase.c
-    ${LB_SRCDIR}/ResultSet.c
-    ${LB_SRCDIR}/NativeMethods.c
-    ${LB_SRCDIR}/Table.c
-    ${LB_SRCDIR}/LitebaseGlobals.c
-    ${LB_SRCDIR}/nativeProcAddressesLB.c
-    ${LB_SRCDIR}/Key.c
-    ${LB_SRCDIR}/Node.c
-    ${LB_SRCDIR}/Index.c
-    ${LB_SRCDIR}/SQLValue.c
-    ${LB_SRCDIR}/MarkBits.c
-    ${LB_SRCDIR}/MemoryFile.c
-    ${LB_SRCDIR}/NormalFile.c
-    ${LB_SRCDIR}/PreparedStatement.c
-    ${LB_SRCDIR}/UtilsLB.c
-
-    ${LB_SRCDIR}/parser/LitebaseLex.c
-    ${LB_SRCDIR}/parser/LitebaseMessage.c
-    ${LB_SRCDIR}/parser/LitebaseParser.c
-    ${LB_SRCDIR}/parser/SQLBooleanClause.c
-    ${LB_SRCDIR}/parser/SQLBooleanClauseTree.c
-    ${LB_SRCDIR}/parser/SQLColumnListClause.c
-    ${LB_SRCDIR}/parser/SQLDeleteStatement.c
-    ${LB_SRCDIR}/parser/SQLInsertStatement.c
-    ${LB_SRCDIR}/parser/SQLSelectStatement.c
-    ${LB_SRCDIR}/parser/SQLUpdateStatement.c
-    )
-endif(NOT MSVC)
-
 if(CMAKE_GENERATOR STREQUAL Xcode)
   set(TCVM_iOS_FILES
     ${IOS_BUNDLE_SRCDIR}/tcvm/libtcvm.h
@@ -408,8 +373,6 @@ include_directories(${TC_SRCDIR}/event/android)
 include_directories(${TC_SRCDIR}/init)
 include_directories(${TC_SRCDIR}/init/android)
 include_directories(${TC_SRCDIR}/jpeg)
-include_directories(${TC_SRCDIR}/litebase)
-include_directories(${TC_SRCDIR}/litebase/parser)
 include_directories(${TC_SRCDIR}/minizip)
 include_directories(${TC_SRCDIR}/nm)
 include_directories(${TC_SRCDIR}/nm/crypto)
@@ -501,7 +464,7 @@ endif(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
 link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
-set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${LB_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
+set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 # Set C/CXX flags
@@ -662,7 +625,6 @@ endif(MSVC)
 endif()
 
 if(MSVC)
-  INCLUDE_EXTERNAL_MSPROJECT(Litebase ${CMAKE_CURRENT_SOURCE_DIR}/../LitebaseSDK/builders/vc2008/Litebase.vcproj)
   if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
     INCLUDE_EXTERNAL_MSPROJECT(Datalogic ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Datalogic.vcproj)
     INCLUDE_EXTERNAL_MSPROJECT(Dolphin ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Dolphin.vcproj)

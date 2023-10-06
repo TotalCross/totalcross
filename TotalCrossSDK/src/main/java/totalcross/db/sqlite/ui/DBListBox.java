@@ -17,7 +17,7 @@ import totalcross.ui.gfx.Graphics;
  * only. The background color of the control will be a lighter version of the
  * given color.
  * <p>
- * Note: this is a special version for the LitebaseConnection. It accepts
+ * Note: this is a special version. It accepts
  * a String matrix as the input, and does not allow add/remove/set of elements,
  * since it reflects the database and must be filled again after some row is
  * updated.
@@ -25,8 +25,6 @@ import totalcross.ui.gfx.Graphics;
  * Here is an example showing how it can be used:
  *
  * <pre>
- * import litebase.ui.*;
- * import litebase.*;
  *
  * public class MyProgram extends totalcross.ui.MainWindow
  * {

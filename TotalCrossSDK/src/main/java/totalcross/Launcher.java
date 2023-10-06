@@ -2612,9 +2612,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   public void setSIP(int option, Control edit, boolean secret) {
   }
 
-  public static void checkLitebaseAllowed() {
-  }
-
   @Override
   public void componentHidden(ComponentEvent arg0) {
   }

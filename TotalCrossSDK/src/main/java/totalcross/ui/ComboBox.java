@@ -625,7 +625,7 @@ public class ComboBox extends Container implements MaterialEffect.SideEffect, Ha
 
   private boolean isSupportedListBox() {
     String cl = pop.lb.getClass().getName();
-    return cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox");
+    return cl.equals("totalcross.ui.ListBox");
   }
 
   /** Pops up the ComboBoxDropDown */
