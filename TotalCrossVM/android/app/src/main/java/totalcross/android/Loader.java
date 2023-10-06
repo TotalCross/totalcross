@@ -5,6 +5,8 @@
 
 package totalcross.android;
 
+import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
+
 import android.speech.tts.TextToSpeech;
 import totalcross.*;
 import totalcross.android.PathUtil;
@@ -63,6 +65,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
   private static final int CAMERA_PIC_REQUEST = 1337;
   private static final int SPEECH_TO_TEXT = 1234324336;
   private static final int FROM_SCANDIT = 1234324337;
+  private static final int APP_STORAGE_ACCESS_REQUEST_CODE = 1234324338;
   private static boolean onMainLoop;
   public static boolean isFullScreen;
 
@@ -124,6 +127,9 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
    {
       switch (requestCode)
       {
+          case APP_STORAGE_ACCESS_REQUEST_CODE:
+              permissionInitialized = resultCode == RESULT_OK ? 1 : -1;
+              break;
     case FROM_SCANDIT:
             Launcher4A.zxingResult = data.getBooleanExtra("barcodeRecognized", false) ? data.getStringExtra("barcodeData") : null; //data.getStringExtra("barcodeSymbologyName").toUpperCase());
       Launcher4A.callingZXing = false;
@@ -134,8 +140,8 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       break;
 
     case SELECT_PICTURE:
-      if (resultCode == RESULT_OK)
-      {
+            if (resultCode == RESULT_OK)
+            {
         Uri uri = data.getData();
         String filePath = "";
         try {
@@ -147,12 +153,12 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
           
           if (filePath == null || filePath.startsWith("/enc") || !(new File(filePath).exists())) {
             try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
-              AndroidUtils.copyStreamToFile(inputStream, imageFN);
-            } catch (IOException ioe) {
-              AndroidUtils.handleException(ioe, false);
-              // pois eh... mesmo assim falhou i.i
-              resultCode = RESULT_OK + 1;
-            }
+          AndroidUtils.copyStreamToFile(inputStream, imageFN);
+        } catch (IOException ioe) {
+          AndroidUtils.handleException(ioe, false);
+          // pois eh... mesmo assim falhou i.i
+          resultCode = RESULT_OK + 1;
+        }
           } else {
             BufferedWriter writer = new BufferedWriter(new FileWriter(imageFN));
             writer.write(filePath);
@@ -160,7 +166,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
           }
         } catch (IOException e) {
           e.printStackTrace();
-        }
+      }
       }
       Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
       break;
@@ -237,29 +243,29 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
 
    private void removeLastImageFromGallery(long orig)
    {
-        try
-        {
+      try
+      {
             final String[] imageColumns = { MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DATE_ADDED,
                 MediaStore.Images.Media.DATA
             };
-            final String imageOrderBy = MediaStore.Images.Media._ID + " DESC";
-            Cursor imageCursor = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageColumns, null, null, imageOrderBy);
-            if (imageCursor.moveToFirst())
-            {
+      final String imageOrderBy = MediaStore.Images.Media._ID + " DESC";
+         Cursor imageCursor = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageColumns, null, null, imageOrderBy);
+         if (imageCursor.moveToFirst())
+         {
                 long last = new File(imageCursor.getString(2)).lastModified();
-                int id = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.Media._ID));
-                long dif = Math.abs(orig - last);
+        int id = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.Media._ID));
+        long dif = Math.abs(orig - last);
                 if (dif < 1000) { // 1 second - usually is less than 10ms
                     getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                             MediaStore.Images.Media._ID + "=?", new String[]{Long.toString(id)});
                 }
-            }
-        }
-        catch (Exception e)
-        {
-        AndroidUtils.handleException(e, false);
-        }
+         }
+      }
+      catch (Exception e)
+      {
+      AndroidUtils.handleException(e, false);
+    }
   }
 
    public static void autoRotatePhoto(ContentResolver contentResolver, String imagePath) {
@@ -593,7 +599,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
     setContentView(mainLayout);
     onMainLoop = true;
   }
-   
+
    public static void setMargins (View v, int l, int t, int r, int b) {
      if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
          ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
@@ -989,18 +995,18 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
            }
            if (i == null) {
              i = new Intent(Intent.ACTION_VIEW);
-             if (intentPackage != null) {
-               i.setPackage(intentPackage);
-             }
+           if (intentPackage != null) {
+             i.setPackage(intentPackage);
+           }
            }
            if (i != null) {
-             if (intentData != null && intentType != null) {
-               i.setDataAndType(Uri.parse(intentData), intentType);
-             } else if (intentData != null) {
-               i.setData(Uri.parse(intentData));
-             }
-             startActivity(i);
+           if (intentData != null && intentType != null) {
+             i.setDataAndType(Uri.parse(intentData), intentType);
+           } else if (intentData != null) {
+             i.setData(Uri.parse(intentData));
            }
+           startActivity(i);
+         }
           }
          else
          if (command.toLowerCase().endsWith(".apk"))
@@ -1329,5 +1335,18 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
           intent.putExtra("end", end);
       }
       startActivity(intent);
+    }
+    
+    private int permissionInitialized = 0;
+
+    public void requestManageStorageAccess() {
+        Intent intent = new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+        startActivityForResult(intent, Loader.APP_STORAGE_ACCESS_REQUEST_CODE);
+        while (permissionInitialized == 0) {
+            try {
+                Thread.sleep(10);
+            } catch (Exception e) {
+            }
+        }
     }
 }
