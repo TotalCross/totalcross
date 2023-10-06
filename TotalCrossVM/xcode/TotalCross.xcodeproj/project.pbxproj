@@ -288,7 +288,7 @@
 				ORGANIZATIONNAME = "SuperWaba Ltda";
 				TargetAttributes = {
 					0F5AF5021507FA3600D6142B = {
-						DevelopmentTeam = ZBCJTJJCMK;
+						DevelopmentTeam = 228LV93DH2;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -586,7 +586,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				DEBUG = "1 $(inherited)";
-				DEVELOPMENT_TEAM = ZBCJTJJCMK;
+				DEVELOPMENT_TEAM = 228LV93DH2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -608,7 +608,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e7eac71c-1b34-4f8e-9b1c-0006cf44dc45";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
-				PROVISIONING_PROFILE_SPECIFIER = RConnect_2022;
+				PROVISIONING_PROFILE_SPECIFIER = "TotalCross VM";
 				SDKROOT = iphoneos;
 				VALID_ARCHS = "arm64 arm64e x64";
 				WRAPPER_EXTENSION = app;
