@@ -14,9 +14,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
@@ -96,13 +98,22 @@ import totalcross.util.Vector;
  */
 
 public class Deployer4Android {
-  private static final boolean DEBUG = true;
+  public static String signingPropertiesPath = null;
   public static boolean forceAndroidStorageAccess = false;
+  private final Properties signingConfig = new Properties();
   private final String targetDir;
   private final String targetTCZ;
   private String tcFolder;
 
   public Deployer4Android() throws Exception {
+    try (FileInputStream fis = new FileInputStream(Utils.findPath(DeploySettings.etcDir + "security/android_keystore.properties", false))) {
+      signingConfig.load(fis);
+    }
+    if (Deployer4Android.signingPropertiesPath != null) {
+      try (FileInputStream fis = new FileInputStream(Deployer4Android.signingPropertiesPath)) {
+        signingConfig.load(fis);
+      }
+    }
     targetDir = DeploySettings.targetDir + "android/";
     FileUtils.deleteQuietly(new File(targetDir));
     String fileName = DeploySettings.filePrefix;
@@ -176,7 +187,7 @@ public class Deployer4Android {
       originalManifest = originalManifest.replace("android.permission.MANAGE_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE");
     }
 
-    if (DEBUG) {
+    if (!DeploySettings.quiet) {
       IOUtils.write(originalManifest, new FileOutputStream(new File(targetDir, "AndroidManifest.xml")));
     }
     try (FileOutputStream fos = new FileOutputStream(decodedManifestFile)) {
@@ -270,32 +281,47 @@ public class Deployer4Android {
 
     // 13. use jarsigner to sign the app
     // jarsigner -verbose -keystore $ANDROID_SIGNING_KEY -storepass $SIGN_KEY_PWD -keypass $KEY_PASS $TEMP_FILE $KEY_ALIAS
-    Utils.jarSigner(rawAabFile.getName(), rawAabFile.getParent());
+    if (Boolean.parseBoolean(signingConfig.getProperty("aab_signing_enabled"))) {
+      Utils.jarSigner(rawAabFile.getName(), rawAabFile.getParent(), (Properties) signingConfig.clone());
 
-    // 14. zipalign the app
-    // $ZIP_ALIGN -f -v -p 4 $TEMP_FILE $OUT_FILE
-    new ZipAlign().zipAlign(rawAabFile, new File(targetDir, fileName + ".aab"));
+      // 14. zipalign the app
+      // $ZIP_ALIGN -f -v -p 4 $TEMP_FILE $OUT_FILE
+      new ZipAlign().zipAlign(rawAabFile, new File(targetDir, fileName + ".aab"));
+    } else {
+      FileUtils.copyFile(rawAabFile, new File(targetDir, fileName + ".aab"));
+    }
 
     // 15. generate apk
     // java -Djava.io.tmpdir=$PWD -jar $BUNDLE_TOOL build-apks --bundle $OUT_FILE --mode universal --output rollback.apks --output-format=DIRECTORY --ks $ANDROID_SIGNING_KEY --ks-pass "pass:$SIGN_KEY_PWD" --ks-key-alias "$KEY_ALIAS" --key-pass "pass:$KEY_PASS"
+    List<String> javaCmdList = new ArrayList<>();
+    
     final String javaExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("java"));
-    final String keystore = Utils.findPath(DeploySettings.etcDir + "security/tcandroidkey.keystore", false);
-    String[] javaCmd = { 
-      javaExe, 
-      "-Djava.io.tmpdir=" + new File(targetDir).getAbsolutePath(), 
-      "-jar", new File(DeploySettings.etcDir, "tools/android/bundletool-all-1.10.0.jar").getAbsolutePath(), 
-      "build-apks", 
-      "--bundle=" + fileName + ".aab", 
-      "--mode=universal", 
-      "--output=" + fileName + ".apks", 
-      "--output-format=DIRECTORY", 
-      "--ks=" + keystore,
-      "--ks-pass=pass:@ndroid$w",
-      "--ks-key-alias=tcandroidkey",
-      "--key-pass=pass:@ndroidsw"
-    };
-    String execOutput = Utils.exec(javaCmd, new File(targetDir).getAbsolutePath());
-    if (DEBUG) {
+    javaCmdList.add(javaExe);
+    javaCmdList.add("-Djava.io.tmpdir=" + new File(targetDir).getAbsolutePath());
+    javaCmdList.add("-jar");
+    javaCmdList.add(new File(DeploySettings.etcDir, "tools/android/bundletool-all-1.10.0.jar").getAbsolutePath());
+    javaCmdList.add("build-apks");
+    javaCmdList.add("--bundle=" + fileName + ".aab");
+    javaCmdList.add("--mode=universal");
+    javaCmdList.add("--output=" + fileName + ".apks");
+    javaCmdList.add("--output-format=DIRECTORY");
+
+    if (Boolean.parseBoolean(signingConfig.getProperty("apk_signing_enabled"))) {
+      String keystore = Utils.findPath(signingConfig.getProperty("apk_keystore_path"), false);
+      if (keystore == null) {
+        keystore = Utils.findPath(DeploySettings.homeDir + signingConfig.getProperty("apk_keystore_path"), false);
+        if (keystore == null) {
+          throw new DeployerException("Keystore for APK signing not found!");
+        }
+      }
+      javaCmdList.add("--ks=" + keystore);
+      javaCmdList.add("--ks-pass=pass:" + signingConfig.getProperty("apk_keystore_storepass"));
+      javaCmdList.add("--ks-key-alias=" + signingConfig.getProperty("apk_keystore_alias"));
+      javaCmdList.add("--key-pass=pass:" + signingConfig.getProperty("apk_keystore_keypass"));
+    }
+
+    String execOutput = Utils.exec(javaCmdList.toArray(new String[0]), new File(targetDir).getAbsolutePath());
+    if (!DeploySettings.quiet) {
       System.out.println(execOutput);
     }
 

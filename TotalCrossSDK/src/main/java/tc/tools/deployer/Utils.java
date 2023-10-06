@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
 
+import java.io.FileInputStream;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -908,6 +910,14 @@ public class Utils {
 
   /////////////////////////////////////////////////////////////////////////////////////
   public static void jarSigner(String jar, String targetDir) throws Exception {
+    Properties config = new Properties();
+    try (FileInputStream fis = new FileInputStream(Utils.findPath(DeploySettings.etcDir + "security/android_keystore.properties", false))) {
+      config.load(fis);
+    }
+    jarSigner(jar, targetDir, config);
+  }
+
+  public static void jarSigner(String jar, String targetDir, Properties config) throws Exception {
     // Certificate fingerprint (MD5): 0D:79:8E:42:A9:CD:50:AC:29:72:85:F8:12:3C:22:0E
     // jarsigner -keystore P:\TotalCross3\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
     String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
@@ -918,27 +928,34 @@ public class Utils {
     if (jarsignerExe.contains(" ")) {
       jarsignerExe = DeploySettings.appendDotExe("jarsigner");
     }
-    String keystore = Utils.findPath(DeploySettings.etcDir + "security/tcandroidkey.keystore", false);
+    String keystore = Utils.findPath(config.getProperty("aab_keystore_path"), false);
     if (keystore == null) {
-      throw new DeployerException("File security/tcandroidkey.keystore not found!");
+      keystore = Utils.findPath(DeploySettings.homeDir + config.getProperty("aab_keystore_path"), false);
+      if (keystore == null) {
+        throw new DeployerException("Keystore for AAB signing not found!");
+      }
     }
     keystore = new java.io.File(keystore).getAbsolutePath();
     Vector v = new Vector(10);
     v.addElement(jarsignerExe);
     if (DeploySettings.dJavaVersion >= 1.7) {
-      v.addElements(new String[] { "-digestalg", "SHA1", "-sigalg", "MD5withRSA" });
+      v.addElements(new String[] { 
+        "-digestalg", config.getProperty("aab_keystore_digestalg"), 
+        "-sigalg", config.getProperty("aab_keystore_sigalg") });
     }
     v.addElement("-keystore");
     v.addElement(keystore);
+    v.addElement("-storetype");
+    v.addElement(config.getProperty("aab_keystore_storetype"));
     v.addElement("-storepass");
-    v.addElement("@ndroid$w");
+    v.addElement(config.getProperty("aab_keystore_storepass"));
     v.addElement("-keypass");
-    v.addElement("@ndroidsw");
+    v.addElement(config.getProperty("aab_keystore_keypass"));
     v.addElement(jar);
-    v.addElement("tcandroidkey");
+    v.addElement(config.getProperty("aab_keystore_alias"));
     String out = Utils.exec((String[]) v.toObjectArray(), targetDir);
     if (out != null && !out.startsWith("INPUT:jar signed")) {
-      throw new DeployerException("An error occured when signing the APK. The output is " + out);
+      throw new DeployerException("An error occured when signing the AAB. The output is " + out);
     }
   }
 
