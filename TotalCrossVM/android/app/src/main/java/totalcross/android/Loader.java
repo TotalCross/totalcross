@@ -204,7 +204,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                     AndroidUtils.copyFile(capturedImageFilePath, imageFN);
 
                     long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
-                    autoRotatePhoto(imageFN);
+                    autoRotatePhoto(getContentResolver(), imageFN);
                     // if the file was deleted, delete from database too
                     if (cameraType == CAMERA_NATIVE_NOCOPY) {
                         try {
@@ -262,18 +262,20 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
         }
   }
 
-   public static void autoRotatePhoto(String imagePath)
-   {
-      try
-      {
+   public static void autoRotatePhoto(ContentResolver contentResolver, String imagePath) {
+      try {
       File f = new File(imagePath);
-      ExifInterface exif = new ExifInterface(f.getPath());
+        ExifInterface exif = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+          exif = new ExifInterface(contentResolver.openFileDescriptor(Uri.fromFile(f), "r").getFileDescriptor());
+        } else {
+          exif = new ExifInterface(f.getPath());
+        }
       int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
       AndroidUtils.debug(imagePath + " -> " + orientation);
 
       int angle = 0;
-         switch (orientation)
-         {
+        switch (orientation) {
             case ExifInterface.ORIENTATION_ROTATE_90: angle  = 90;  break;
             case ExifInterface.ORIENTATION_ROTATE_180: angle = 180; break;
             case ExifInterface.ORIENTATION_ROTATE_270: angle = 270; break;
@@ -285,15 +287,13 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       BitmapFactory.Options options = new BitmapFactory.Options();
       options.inSampleSize = 2;
 
-      Bitmap bmp = BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+      Bitmap bmp = BitmapFactory.decodeStream(contentResolver.openInputStream(Uri.fromFile(f)), null, options);
       Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
-      FileOutputStream out = new FileOutputStream(f);
+      OutputStream out = contentResolver.openOutputStream(Uri.fromFile(f));
       bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
       out.close();
       AndroidUtils.debug("auto-rotated " + imagePath);
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
       AndroidUtils.handleException(e, false);
     }
   }

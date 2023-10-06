@@ -22,6 +22,7 @@ import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
 import android.content.res.*;
+import android.net.Uri;
 
 public class CameraViewer extends Activity // guich@tc126_34
 {
@@ -315,10 +316,10 @@ public class CameraViewer extends Activity // guich@tc126_34
       {
          try
          {
-            FileOutputStream outStream = new FileOutputStream(fileName); 
+            OutputStream outStream = getContentResolver().openOutputStream(Uri.fromFile(new File(fileName)));
             outStream.write(data);
             outStream.close();
-            Loader.autoRotatePhoto(fileName);
+            Loader.autoRotatePhoto(getContentResolver(), fileName);
             setResult(RESULT_OK);
             finish();
          }
