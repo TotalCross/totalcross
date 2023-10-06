@@ -19,7 +19,7 @@ import totalcross.util.Date;
 import totalcross.util.InvalidDateException;
 import totalcross.util.Vector;
 
-/** Utility class to make convertion from Litebase to SQLite easier. 
+/** Utility class to make convertion to SQLite easier. 
  * 
  * Important rules about date and time in SQLite.
  * 
@@ -290,8 +290,7 @@ public class SQLiteUtil {
     return new Date(sp == -1 ? sqldate : sqldate.substring(0, sp), Settings.DATE_YMD);
   }
 
-  /** Rebuild and shrink the entire database, like the old Litebase's <code>purge</code> method,
-   * but in this case it applies to all tables. 
+  /** Rebuild and shrink the entire database. 
    */
   public void shrinkDB() throws SQLException {
     Statement st = con().createStatement();

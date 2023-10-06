@@ -561,7 +561,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
     int n = chars.length();
     int pos = 0;
     for (; pos < n; pos++) {
-      int pos0 = pos == 0 || chars.charAt(pos - 1) < ' ' ? pos : pos - 1; // guich@tc113_37: when parsing "Update of /pcvsroot/LitebaseSDK/src/native/parser", it was breaking in the first /, but in the next loop iteration, it was skipping the first /, and, thus, computing a character less
+      int pos0 = pos == 0 || chars.charAt(pos - 1) < ' ' ? pos : pos - 1; // guich@tc113_37: when parsing "Update of /pcvsroot/src/native/parser", it was breaking in the first /, but in the next loop iteration, it was skipping the first /, and, thus, computing a character less
       first.addElement(pos = Convert.getBreakPos(fm, chars, pos0, tw, true)); // guich@tc166: we'll take care of the initial space/ENTER during drawing 
     }
     first.addElement(n);

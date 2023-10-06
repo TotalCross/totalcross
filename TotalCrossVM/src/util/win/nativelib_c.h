@@ -29,17 +29,6 @@ VoidP privateLoadLibrary(CharP libName)
       library = tryAt("../","",libName,".dll");
    if (library == null)
       library = tryAt(vmPath,"/",libName,".dll");
-#if defined(WIN32) && !(defined(WINCE) || defined(WP8))
-   if (library == null && strEq(libName,"litebase"))
-   {
-      TCHAR litebasePath[MAX_PATHNAME];
-      if (GetEnvironmentVariable(TEXT("TOTALCROSS3_HOME"), litebasePath, MAX_PATHNAME) != 0)
-      {
-         tcscat(litebasePath, TEXT("/dist/vm/win32")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
-         library = tryAt(litebasePath,"/",libName,".dll");
-      }
-   }
-#endif
 
 // - guich: this freezes the program in Intermec
 //   if (library == null && isWindowsMobile) // flsobral@tc113_27: WindowsCE doesn't seem to understand paths starting with two slashes.

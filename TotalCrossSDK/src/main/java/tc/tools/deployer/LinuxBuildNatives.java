@@ -22,7 +22,7 @@ import totalcross.io.File;
 import totalcross.util.Vector;
 
 /**
- * Generates Linux packages for TotalCross VM and Litebase.
+ * Generates Linux packages for TotalCross VM.
  */
 public class LinuxBuildNatives {
 

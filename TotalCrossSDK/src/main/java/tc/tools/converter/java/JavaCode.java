@@ -93,8 +93,7 @@ public final class JavaCode implements JConstants {
       }
     }
     String className = method.classOfMethod.className.replace('/', '.');
-    if (!lineNumberWarned && lineNumberLine == null && !className.startsWith("totalcross.")
-        && !className.startsWith("litebase.")) // guich@tc110_68
+    if (!lineNumberWarned && lineNumberLine == null && !className.startsWith("totalcross.")) // guich@tc110_68
     {
       lineNumberWarned = true;
       System.out.println(

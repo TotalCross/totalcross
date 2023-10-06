@@ -11,7 +11,6 @@ import totalcross.sys.Vm;
 
 /** This class represents a testcase. Just extend this class and implement the testRun method,
  * calling then the assert methods. The testcase must be added to a TestSuite class using the
- * addTestCase method. See the Litebase/alltests sample.
  */
 
 public abstract class TestCase {

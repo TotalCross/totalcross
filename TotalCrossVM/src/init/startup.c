@@ -102,8 +102,6 @@ int32 exitProgram(int32 exitcode)
 /*
  * flsobral@tc115
  * Changed loadLibraries to receive the path to be used, instead of always searching in the vm path.
- * This was originally done to find and load the LitebaseLib.tcz, but I remembered we already set
- * an environment variable with the Litebase installation path.
  * Right now this change is sort of pointless (the function is used only once to check the vm path),
  * but I decided to keep it that way because the function looks more useful/reusable that way.
  */
@@ -200,16 +198,6 @@ TC_API int32 startProgram(Context currentContext)
    if (!loadLibraries(currentContext, vmPath, true))
       return exitProgram(115);
    
-#if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
-   {
-      TCHAR litebasePath[MAX_PATHNAME];
-      if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
-      {
-         tcscat(litebasePath, TEXT("/dist/lib/LitebaseLib.tcz")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
-         tczLoad(currentContext, litebasePath);
-      }
-   }
-#endif
    // 3. Load the main class (also calls its static initializer)
    c = loadClass(currentContext, mainClassName, true); // some fields of totalcross.sys.Settings may be set by the programmer at the static initializer, called now
    if (c == null)

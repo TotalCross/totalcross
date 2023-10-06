@@ -6,9 +6,6 @@
 
 
 #include "../tcvm/tcvm.h"
-#ifdef LB_EXPORTS
-#include "Litebase.h"
-#endif
 
 #ifdef ENABLE_TEST_SUITE
 
@@ -45,7 +42,7 @@ static char* dump16(char16 *s, int len, int bufIdx)
    return (bufIdx==1) ? buf1 : buf2;
 }
 #endif
-static void _long2hex(int64 b, int32 places, CharP outBuf) // placed here to remove dependency of TotalCross for Litebase testcases
+static void _long2hex(int64 b, int32 places, CharP outBuf) // placed here to remove dependency of TotalCross for testcases
 {
    CharP b2h = "0123456789ABCDEF";
    outBuf += places;

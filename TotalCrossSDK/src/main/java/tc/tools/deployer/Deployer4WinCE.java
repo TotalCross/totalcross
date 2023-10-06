@@ -228,7 +228,7 @@ public class Deployer4WinCE {
       vLocals.addElements(DeploySettings.tczs);
       Utils.preprocessPKG(vLocals, false);
       Utils.preprocessPKG(vGlobals, false);
-      String tcFolder = null, lbFolder = null;
+      String tcFolder = null;
       if (DeploySettings.packageVM) // include the vm?
       {
         if (!hasExe) {
@@ -240,7 +240,6 @@ public class Deployer4WinCE {
           for (java.io.File file : defaultTczs) {
             vLocals.addElement(file.getAbsolutePath());
           }
-          lbFolder = Convert.appendPath(DeploySettings.folderTotalCross3DistVM, "wince");
           tcFolder = Convert.appendPath(DeploySettings.folderTotalCross3DistVM, "wince");
           // copy binary files
           try {
@@ -249,10 +248,6 @@ public class Deployer4WinCE {
           }
           String name = "/TCVM.dll";
           File.copy(Convert.appendPath(tcFolder, name), Convert.appendPath(targetDir, name));
-          if (lbFolder != null) {
-            name = "/Litebase.dll";
-            File.copy(Convert.appendPath(lbFolder, name), Convert.appendPath(targetDir, name));
-          }
         }
       }
 
@@ -310,7 +305,7 @@ public class Deployer4WinCE {
           "[SourceDisksFiles]\n" +
 
           (hasExe ? (DeploySettings.filePrefix + ".exe    = 1\n") : "")
-          + (tcFolder != null ? ("TCVM.dll      = 1\n") : "") + (lbFolder != null ? ("Litebase.dll  = 1\n") : "")
+          + (tcFolder != null ? ("TCVM.dll      = 1\n") : "") 
           + toString(vLocals, " = 2\n", false) + toString(vGlobals, " = 3\n", false) +
 
           //-----------------------------------------------
@@ -322,7 +317,7 @@ public class Deployer4WinCE {
           + "LocalFiles = 0,%InstallDir%\n" + "Startmenu = 0,%CE11%\n" +
 
           (hasExe ? ("[Binaries]\n" + DeploySettings.filePrefix + ".exe\n") : "")
-          + (tcFolder != null ? ("TCVM.dll\n") : "") + (lbFolder != null ? ("Litebase.dll\n") : "") +
+          + (tcFolder != null ? ("TCVM.dll\n") : "") +
 
           "[LocalFiles]\n" + toString(vLocals, "\n", true) +
 

@@ -76,7 +76,7 @@ import totalcross.util.Vector;
     way to delete the zip inside tha APK after the installation.
 
 
-    Also: all TotalCross programs must be signed with the same key, otherwise the vm and litebase 
+    Also: all TotalCross programs must be signed with the same key, otherwise the vm 
     will not be able to read data from the program's folder.
 
 

@@ -30,7 +30,8 @@ VoidP getProcAddress(const VoidP module, const char* funcName)
    return privateGetProcAddress(module, (char*)funcName);
 }
 
-#if (defined (darwin) && !defined (THEOS)) || defined(WP8)  || defined(ANDROID)
+#if 0
+// (defined (darwin) && !defined (THEOS)) || defined(WP8)  || defined(ANDROID)
 bool LibOpen(OpenParams params);
 void LibClose();
 
@@ -39,8 +40,6 @@ bool attachNativeLib(Context currentContext, CharP name)
     NativeLib lib;
     TOpenParams params;
     
-    if (!strEq(name, "Litebase"))
-        return false;
     if ((lib = newX(NativeLib)) != null)
     {
         params.commandLine = commandLine;

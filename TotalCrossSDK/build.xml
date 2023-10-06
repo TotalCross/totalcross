@@ -31,7 +31,6 @@
 <property name="output"                 value="${sdk.root}/../temp"/>
 <property name="target"                 value="${sdk.root}/../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
-<property name="lb.src"                 value="${sdk.root}/../LitebaseSDK/src/java"/>
 
 <!-- import ANT Contrib -->
 <taskdef classpath="${etc}/tools/ant/ant-contrib-1.0b3.jar" resource="net/sf/antcontrib/antcontrib.properties"/>
@@ -183,12 +182,6 @@ target: javadoc
   <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
   <mkdir dir="${output}/javadoc" />
 
-  <!-- join lb javadoc -->  
-  <copy todir="${output}/javadoc"><fileset dir="${lb.src}" excludes="**/*4D*,tc/**,litebase/android/**"/></copy>
-  <replace dir="${output}/javadoc/litebase" token="native public" value="//native public"><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/litebase" token="public static native" value="//public static native"><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/litebase" token="native static" value="//native static"><include name="**/*.java"/></replace>
-
   <copy todir="${output}/javadoc">
     <fileset dir="${src}" excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
   </copy>
@@ -222,7 +215,7 @@ target: javadoc
     <arg line="-d ${docs}/html"/>
     <arg line="-doctitle 'TotalCross SDK ${versionStr} (&lt;a href='https://gitlab.com/totalcross/TotalCross/blob/v${versionStr}/CHANGELOG.md' target='_blank' &gt;changelogs&lt;/a&gt;).'"/>
     <arg line="-source 1.8"/>
-    <arg line="-subpackages litebase -subpackages totalcross"/>
+    <arg line="-subpackages totalcross"/>
   </exec>
 
   <!-- replace all references in the javadocs, even if they don't create a link. -->

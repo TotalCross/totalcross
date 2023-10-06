@@ -535,7 +535,7 @@ Linux 32 bits (we only assure that it works on Debian distribution).
 \begin_layout Itemize
 Browser as Java applet (JDK 1.1 and above).
  Note that in this case you must enable some permission so that you can
- use files and, consequently, Litebase.
+ use files.
 \end_layout
 
 \begin_layout Itemize
@@ -791,7 +791,7 @@ In the sample above, commenting out the line marked with *****, the log
 
 \begin_layout Standard
 Generally speaking, you can create a thread to listen to a socket or a file
- or even a Litebase table in background, but be aware that if you try to
+ in background, but be aware that if you try to
  access the same resource by different threads your application might just
  blow up.
  We also don't recommend running the user interface in a background thread,
@@ -1213,7 +1213,6 @@ totalcross.*
 TCFont.tcz
 \family default
  is needed to run an application on Java.
- It also contains Litebase classes.
 \end_layout
 
 \begin_layout Itemize
@@ -1237,7 +1236,6 @@ tc.jar
 TCFont.tcz.
 
 \family default
- It also contains Litebase classes.
 \end_layout
 
 \begin_layout Itemize
@@ -1246,9 +1244,6 @@ TCFont.tcz.
 samples
 \family default
 : Installation files for all samples.
- Litebase samples are also inside, in the folder 
-\family typewriter
-litebase
 \family default
 .
  Lets take the TotalCrossAPI sample, located at 
@@ -1287,7 +1282,7 @@ applet
 \family default
 , otherwise errors may occur.
  You should also give special permission for file usage so that it is possible
- to manipulate files and Litebase.
+ to manipulate files.
 \end_layout
 
 \begin_layout Itemize
@@ -1363,7 +1358,7 @@ wp8
 \family typewriter
 .xap
 \family default
- file which includes the sample, TotalCross, and Litebase.
+ file which includes the sample.
  Note that to install the sample you must enable your phone to allow development
  mode.
 \end_layout
@@ -1436,7 +1431,7 @@ iOS
 vm
 \family default
 : virtual machine files that which will interpret your TotalCross code on
- the device and Litebase library.
+ the device.
  Below are instructions of how to install them in each platform:
 \end_layout
 
@@ -1454,12 +1449,8 @@ TCFont.tcz
 \family typewriter
 TCUI.tcz
 \family default
-, and 
-\family typewriter
-LitebaseLib.tcz
-\family default
 .
- These files are necessary to run TotalCross and Litebase on Windows 32
+ These files are necessary to run TotalCross on Windows 32
  and Linux.
 \end_layout
 
@@ -1477,7 +1468,6 @@ TotalCross.ipa
 .ipa
 \family default
  file for your application and the samples if you have an Apple key.
- It already includes Litebase.
 \end_layout
 
 \begin_layout Itemize
@@ -1488,10 +1478,6 @@ win32
 : have the files 
 \family typewriter
 TCVM.dll
-\family default
- and 
-\family typewriter
-Litebase.dll
 \family default
  on the same folder of the application or install TotalCross properly in
  your operational system.
@@ -1511,7 +1497,6 @@ TotalCross.xap
 .xap
 \family default
  of your application.
- It already includes Litebase.
 \end_layout
 
 \begin_layout Itemize
@@ -1527,7 +1512,7 @@ TotalCross.apk
 \family typewriter
 adb install -r TotalCross.apk
 \family default
-), which already includes Litebase.
+).
 \end_layout
 
 \begin_layout Itemize
@@ -1539,7 +1524,7 @@ linux
 \family typewriter
 .deb
 \family default
-) for TotalCross and Litebase to be used on linuxes.
+) for TotalCross to be used on linuxes.
 \end_layout
 
 \end_deeper
@@ -1561,9 +1546,6 @@ TotalCross Companion.pdf
 
 \begin_layout Itemize
 
-\family typewriter
-Litebase Companion.pdf
-\family default
 .
 \end_layout
 
@@ -1572,7 +1554,7 @@ The folder
 \family typewriter
 html
 \family default
-, which contains the generated javadocs for TotalCross and Litebase.
+, which contains the generated javadocs for TotalCross.
  Open the files 
 \family typewriter
 index.html
@@ -1652,14 +1634,6 @@ src
 tc/samples:
 \family default
  the sources files of all TotalCross samples.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-lb/samples:
-\family default
- the sources files of all Litebase samples.
 \end_layout
 
 \begin_layout Itemize
@@ -2775,7 +2749,6 @@ to
 <path>
 \family default
 : sets where the PDB and media files are stored.
- This is also the default path for Litebase table files.
 \end_layout
 
 \begin_layout Itemize
@@ -3477,7 +3450,7 @@ path
 
 type
 \family default
- : Packages the VM (and Litebase) with the application, creating a single
+ : Packages the VM with the application, creating a single
  installation file.
  The type parameter can be one of the following: 
 \family typewriter
@@ -3485,7 +3458,7 @@ demo
 \family default
 , 
 \family typewriter
-demo+ litebase
+demo
 \family default
 , 
 \family typewriter
@@ -3493,7 +3466,7 @@ release
 \family default
 , 
 \family typewriter
-release+litebase
+release
 \family default
  (where demo/release are the virtual machine types you want to include:
  the time-limited demonstration, or the release that requires activation).
@@ -5193,7 +5166,7 @@ When you generate a
 \family typewriter
 .xap
 \family default
- of your application, which includes TotalCross and Litebase, you can install
+ of your application, which includes TotalCross, you can install
  it yourself if you enable development mode on your device.
  Follow the instructions in
 \begin_inset Newline newline
@@ -5421,7 +5394,7 @@ icon72x72.png
 appicon.gif
 \family default
  (already used in other platforms) to 72x72 and use it.
- The first time that TotalCross, Litebase, and your application run, it
+ The first time that TotalCross, and your application run, it
  will take longer because the 
 \family typewriter
 .tcz
@@ -5555,7 +5528,7 @@ adb install -r TotalCrossAPI.apk
 \end_layout
 
 \begin_layout Standard
-Remember to install the TotalCross and Litebase 
+Remember to install the TotalCross 
 \family typewriter
 .apk
 \family default
@@ -5838,7 +5811,7 @@ Using the Release Vms
 
 \begin_layout Standard
 When you decide to release the application to your client, you must purchase
- TotalCross+Litebase licenses.
+ TotalCross licenses.
  See the correct approach going to the TotalCross 
 \begin_inset CommandInset href
 LatexCommand href
@@ -7302,7 +7275,7 @@ Now it is only needed to download and install one
 \family typewriter
 .exe
 \family default
- for TotalCross and Litebase SDK and VM.
+ for TotalCross SDK and VM.
  Make sure to change the paths used in your deploying process to reflect
  this change.
 \end_layout
@@ -7369,11 +7342,6 @@ Now there is another database option in TotalCross.
  SQLite version for all supported platforms.
  If it used the one available on the device when it has one, there could
  be differences in the API or table format.
- But remember that Litebase eases the task of synchronizing the device tables
- with tables on server databases such as SQLServer or Oracle by using the
- class 
-\family typewriter
-RowIterator
 \family default
 .
  If you want to do something similar using SQLite, you will have to do it
@@ -8079,7 +8047,6 @@ totalcross.db.sqlite
 .
  In the future, other databases might be added to TotalCross using JDBC
  specification.
- It is also intended to provide Litebase access using the JDBC API.
 \end_layout
 
 \begin_layout Chapter

@@ -68,9 +68,6 @@ android {
         from("${rootDir}/../../TotalCrossSDK/etc/fonts") {
             include 'TCFont.tcz'
         }
-        from("${rootDir}/../../LitebaseSDK/dist/lib/") {
-            include 'LitebaseLib.tcz'
-        }
     }
 
     afterEvaluate {

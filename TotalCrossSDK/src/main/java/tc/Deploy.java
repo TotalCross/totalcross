@@ -148,7 +148,7 @@ public class Deploy {
         if (!DeploySettings.testClass && DeploySettings.showBBPKGName != null) {
           System.out.println("\nThe BlackBerry's " + DeploySettings.showBBPKGName
               + ".cod package was created. The files will be copied to the folder \"" + DeploySettings.showBBPKGRoot
-              + "\". Remember that the files are not uninstalled when your application is removed, and, if they are Litebase tables, be sure to DONT CHANGE the default database path, or the installed files will not be found.");
+              + "\". Remember that the files are not uninstalled when your application is removed.");
         }
         if (DeploySettings.mainClassName == null && DeploySettings.isJarOrZip) {
           String fn = Utils.getFileName(fileName);
@@ -440,7 +440,7 @@ public class Deploy {
             + "   /android_signing_config path : Specifies a path to a properties file containing keystore configuration for signing AAB and APK when deploying for Android.\n"
             + "   /n name : Override the name of the tcz file with the given name\n"
             + "   /o path : Override the output folder with the given path (defaults to the current folder)\n"
-            + "   /p      : Package the vm and litebase with the application, creating a single installation file. "
+            + "   /p      : Package the vm with the application, creating a single installation file. "
             + "The SDK must be in the path or in the TOTALCROSS3_HOME environment variable. "
             + "The files are always installed at the same folder of the application, so each application will have its own vm.\n"
             + "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n"

@@ -30,7 +30,6 @@ import totalcross.util.Vector;
 /** JUnit implementation for TotalCross, to be used in the device (or in the desktop).
  * It simulates the same output that you get when using JUnit under Eclipse.
  * To use it, you must extend this class and add the test cases using the <code>addTestCase</code> method.
- * See an example in the Litebase SDK, in samples/sys/testcases folder.
  * <br><br>
  * You can also create a test suite without this user interface. Here's a sample:
  * <pre>
@@ -288,7 +287,7 @@ public abstract class TestSuite extends MainWindow {
       if (Settings.onJavaSE && l.startsWith(" at ")) {
         l = l.substring(4);
       }
-      if (!l.startsWith("totalcross.") && !l.startsWith("litebase.") && (l.indexOf(' ') >= 0 || l.indexOf(':') >= 0)) {
+      if (!l.startsWith("totalcross.") && (l.indexOf(' ') >= 0 || l.indexOf(':') >= 0)) {
         return l;
       }
     }

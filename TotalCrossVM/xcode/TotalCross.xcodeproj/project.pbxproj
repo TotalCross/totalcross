@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F0A08D324E49055007D83DF /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F46EC2A24E486D500C2078E /* libLitebase.a */; };
 		0F0A08D424E4906C007D83DF /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F46EC2424E4867300C2078E /* libtcvm.a */; };
 		0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF5071507FA3600D6142B /* UIKit.framework */; };
 		0F5AF50A1507FA3600D6142B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF5091507FA3600D6142B /* Foundation.framework */; };
@@ -51,19 +50,11 @@
 			remoteGlobalIDString = 8E18C65D492A42C7A25EF2B6;
 			remoteInfo = tcvm;
 		};
-		0F46EC2924E486D500C2078E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0F46EC2524E486D400C2078E /* Litebase.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0F91CB7B154EDC7A000868DA;
-			remoteInfo = Litebase;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		00CFDF6A1138442D0091FFFF /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		0F46EC1D24E4867300C2078E /* TCVM.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = TCVM.xcodeproj; sourceTree = "<group>"; };
-		0F46EC2524E486D400C2078E /* Litebase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Litebase.xcodeproj; path = ../../LitebaseSDK/builders/xcode/Litebase.xcodeproj; sourceTree = "<group>"; };
 		0F5AF5031507FA3600D6142B /* TotalCross.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TotalCross.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5AF5071507FA3600D6142B /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0F5AF5091507FA3600D6142B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -80,7 +71,6 @@
 		0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libtcvm.h; path = tcvm/libtcvm.h; sourceTree = "<group>"; };
-		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
 		0FBD3BCB21A6293D0074F712 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		0FBD3BCD21A629660074F712 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		0FC8C746220C78AE006BA0BB /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
@@ -116,7 +106,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F0A08D424E4906C007D83DF /* libtcvm.a in Frameworks */,
-				0F0A08D324E49055007D83DF /* libLitebase.a in Frameworks */,
 				0FBD3BCE21A629660074F712 /* CoreFoundation.framework in Frameworks */,
 				D598D4831EB8907B005C3DAE /* CoreText.framework in Frameworks */,
 				0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */,
@@ -155,14 +144,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0F46EC2624E486D400C2078E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0F46EC2A24E486D500C2078E /* libLitebase.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
@@ -185,7 +166,6 @@
 		0F5AF5061507FA3600D6142B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0F46EC2524E486D400C2078E /* Litebase.xcodeproj */,
 				0F46EC1D24E4867300C2078E /* TCVM.xcodeproj */,
 				0FBD3BCD21A629660074F712 /* CoreFoundation.framework */,
 				0FBD3BCB21A6293D0074F712 /* CoreServices.framework */,
@@ -205,7 +185,6 @@
 				37D71CAC1F6097BD0040D2A4 /* PushKit.framework */,
 				3A7BD57F1C88C9F7005CCCF7 /* Security.framework */,
 				0F7CBA4315545CC100E9BD43 /* libtcvm.h */,
-				0F7CBA4415545CE000E9BD43 /* liblitebase.h */,
 				3A387B1218999E6C00D3DDAB /* AdSupport.framework */,
 				0F7318C21513DE2F001EE647 /* CFNetwork.framework */,
 				0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */,
@@ -317,10 +296,6 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 0F46EC2624E486D400C2078E /* Products */;
-					ProjectRef = 0F46EC2524E486D400C2078E /* Litebase.xcodeproj */;
-				},
-				{
 					ProductGroup = 0F46EC1E24E4867300C2078E /* Products */;
 					ProjectRef = 0F46EC1D24E4867300C2078E /* TCVM.xcodeproj */;
 				},
@@ -338,13 +313,6 @@
 			fileType = archive.ar;
 			path = libtcvm.a;
 			remoteRef = 0F46EC2324E4867300C2078E /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		0F46EC2A24E486D500C2078E /* libLitebase.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libLitebase.a;
-			remoteRef = 0F46EC2924E486D500C2078E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

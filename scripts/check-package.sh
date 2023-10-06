@@ -25,7 +25,6 @@ OUTDIR=$BASEDIR/build
 
 pushd $OUTDIR
     #tcz
-    checkfile TotalCross/dist/vm LitebaseLib.tcz
     checkfile TotalCross/dist/vm TCBase.tcz
     checkfile TotalCross/dist/vm TCFont.tcz
     checkfile TotalCross/dist/vm TCUI.tcz
@@ -43,11 +42,9 @@ pushd $OUTDIR
     checkfile TotalCross/etc/launchers/ios Launcher
     #WIN32
     checkfile TotalCross/dist/vm/win32 TCVM.dll
-    checkfile TotalCross/dist/vm/win32 Litebase.dll
     checkfile TotalCross/etc/launchers/win32 Launcher.exe
     #Wince
     checkfile TotalCross/dist/vm/wince TotalCross.CAB
-    checkfile TotalCross/dist/vm/wince Litebase.dll
     checkfile TotalCross/dist/vm/wince Bematech.dll
     checkfile TotalCross/dist/vm/wince CEinstall.ini
     checkfile TotalCross/dist/vm/wince CabWiz.log

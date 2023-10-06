@@ -24,7 +24,7 @@ import totalcross.util.Vector;
 
 public class DeploySettings {
   public static String[] tczs;
-  // constants for including the vm and/or litebase in a package 
+  // constants for including the vm in a package 
   public static boolean packageVM;
   public static String folderTotalCross3DistVM;
 
@@ -129,7 +129,6 @@ public class DeploySettings {
     exclusionList.addElement("java/");
     exclusionList.addElement("[");
     exclusionList.addElement("tc/tools/");
-    exclusionList.addElement("litebase/");
     exclusionList.addElement("ras/");
     exclusionList.addElement("net/rim/");
 
@@ -200,7 +199,7 @@ public class DeploySettings {
     System.out.println("Etc directory: " + (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
     System.out.println("Classpath: " + cp0);
 
-    // find the demo and release folders for totalcross and litebase
+    // find the demo and release folders for totalcross
     String f = System.getenv("TOTALCROSS3_HOME");
     if (f == null) {
       f = System.getenv("TOTALCROSS3");

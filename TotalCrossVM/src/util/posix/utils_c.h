@@ -110,7 +110,7 @@ static int32 privateGetFreeMemory(bool maxblock)
    UNUSED(maxblock)
 
    if ((in = open(PROC_MEM_FILE, O_RDONLY)) < 0)
-      return 2048*1024; // 2mb at least, or some litebase tests will just skip over.
+      return 2048*1024; // 2mb at least, or some tests will just skip over.
 
    if (read(in, buf, sizeof(buf)) < sizeof(buf))
       return 2048*1024;
