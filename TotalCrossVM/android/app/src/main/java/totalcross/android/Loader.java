@@ -1340,7 +1340,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
     private int permissionInitialized = 0;
 
     public void requestManageStorageAccess() {
-        Intent intent = new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+        Intent intent = new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:totalcross." + Launcher4A.instance.tczname));
         startActivityForResult(intent, Loader.APP_STORAGE_ACCESS_REQUEST_CODE);
         while (permissionInitialized == 0) {
             try {
