@@ -55,22 +55,22 @@ android {
             buildType = 'debug'
         }
     }
-    
-    task assembleAssets(type:Zip) {
-        // outputs.upToDateWhen { false }
-        from ('${rootDir}/../../TotalCrossSDK/dist/vm') {
+
+    task assembleAssets(type: Zip) {
+        baseName "tcfiles"
+        entryCompression ZipEntryCompression.STORED
+        destinationDir file('src/main/assets')
+
+        from("${rootDir}/../../TotalCrossSDK/dist/vm") {
             include 'TCBase.tcz'
             include 'TCUI.tcz'
         }
-        from ('${rootDir}/../../TotalCrossSDK/etc/fonts') {
+        from("${rootDir}/../../TotalCrossSDK/etc/fonts") {
             include 'TCFont.tcz'
         }
-        from ('${rootDir}/../../LitebaseSDK/dist/lib/') {
+        from("${rootDir}/../../LitebaseSDK/dist/lib/") {
             include 'LitebaseLib.tcz'
         }
-        entryCompression ZipEntryCompression.STORED
-        baseName 'tcfiles'
-        destinationDir file('src/standard/assets') // directory that you want your archive to be placed in
     }
 
 	assemble.mustRunAfter assembleAssets
