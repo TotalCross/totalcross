@@ -159,6 +159,12 @@ public class AndroidUtils
 
     private static void loadTCVM(Context context) {
         try {
+           // Correct way to load a native library, required for aab distribution
+           System.loadLibrary("tcvm");
+        } catch (Throwable e0) {
+            handleException(e0, false);
+        
+        try {
             System.load(getRealPath(context.getApplicationInfo().nativeLibraryDir) + "/libtcvm.so");
         } catch (Throwable e1) {
             handleException(e1, false);
@@ -184,6 +190,7 @@ public class AndroidUtils
                     }
                 }
             }
+        }
         }
     }
 
