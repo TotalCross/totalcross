@@ -73,14 +73,13 @@ android {
         }
     }
 
-	assemble.mustRunAfter assembleAssets
+    afterEvaluate {
+        tasks.named("preBuild").get() dependsOn("assembleAssets")
+    }
+
     project.afterEvaluate{
-	    applicationVariants.all { com.android.build.gradle.api.ApplicationVariant variant ->
-		    	variant.assemble.dependsOn(['assembleAssets'])
-		}
-        android.applicationVariants.all { variant ->
-            variant.assemble.doLast {
-                if (variant.flavorName == 'standard') {
+        applicationVariants.all { variant->
+            variant.assembleProvider.get().doLast {
                     variant.outputs.each { output ->
                         def outputFile = output.outputFile
                         if (outputFile != null && outputFile.name.endsWith('.apk')) {
@@ -89,27 +88,6 @@ android {
                                 into "${rootDir}/../../TotalCrossSDK/dist/vm/android"
                                 rename { 'TotalCross.apk' }
                             }
-                            copy {
-                                from fileTree('build/intermediates/processed_res/' + variant.name +'/out').files
-                                into "${rootDir}/../../TotalCrossSDK/etc/launchers/android"
-                                include 'resources-' + variant.name + '.ap_'
-                                rename { 'resources.ap_' }
-                            }
-                        }
-                    }
-                } else {
-                    variant.outputs.each { output ->
-                        def outputFile = output.outputFile
-                        if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                            copy {
-                                from zipTree(outputFile).files
-                                into "${rootDir}/../../TotalCrossSDK/etc/tools/android"
-                                include 'AndroidManifest.xml', 'resources.arsc'
-                                rename { String fileName ->
-                                    fileName.replace('.', '_' + variant.flavorName + '.')
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -152,7 +130,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    
+   
     implementation 'androidx.browser:browser:1.0.0'
 
     //Youtube API
