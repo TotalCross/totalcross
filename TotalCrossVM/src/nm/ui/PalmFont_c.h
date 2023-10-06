@@ -425,7 +425,7 @@ Cleanup: /* CLEANUP */
 
 #ifdef __gl2_h_
 bool lowmemDevice;
-bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+int32 glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, int32 onlyAlpha);
 static int32 getMax(int32* values, int32 ret, int32 len)
 {
    for (; --len >= 0; values++)

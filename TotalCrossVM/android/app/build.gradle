@@ -19,7 +19,7 @@ def buildType // stores build type, debug or release
 
 android {
     compileSdkVersion 31
-    ndkVersion "21.4.7075529"
+    ndkVersion "25.0.8775105"
 
     aaptOptions {
         noCompress 'zip'
@@ -32,8 +32,8 @@ android {
 
     defaultConfig {
         applicationId "totalcross.android"
-        minSdkVersion 15
-        targetSdkVersion 29
+        minSdkVersion 19
+        targetSdkVersion 31
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true

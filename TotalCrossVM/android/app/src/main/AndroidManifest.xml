@@ -20,7 +20,7 @@
         <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|fontScale|keyboard" 
         android:maxAspectRatio="2.33"
-        >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -41,7 +41,8 @@
                  android:stateNotNeeded="true"
                  android:configChanges="orientation|keyboardHidden"
                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-                 android:windowSoftInputMode="stateAlwaysHidden">
+                 android:windowSoftInputMode="stateAlwaysHidden"
+                 android:exported="true">
          <intent-filter>
            <action android:name="totalcross.zxing.client.android.SCAN"/>
            <category android:name="android.intent.category.DEFAULT"/>
@@ -56,7 +57,8 @@
             android:configChanges="orientation|screenSize">
         </activity>
 
-        <receiver android:name=".StartupIntentReceiver">
+        <receiver android:name=".StartupIntentReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -67,14 +69,16 @@
         <!-- push notifications -->
         <!-- receives the message -->
 		<service
-			android:name="totalcross.android.firebase.FirebaseMessageReceiver">
+			android:name="totalcross.android.firebase.FirebaseMessageReceiver"
+            android:exported="true">
 			<intent-filter>
 				<action android:name="com.google.firebase.MESSAGING_EVENT" />
 			</intent-filter>
 		</service>
         <!-- receives the token (2nd time on) -->
         <service
-            android:name="totalcross.android.firebase.MyInstanceIDListenerService">
+            android:name="totalcross.android.firebase.MyInstanceIDListenerService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
