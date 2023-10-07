@@ -67,3 +67,8 @@ TotalCrossSDK/.idea
 TotalCrossVM/android/src/main/libs/armeabi/
 TotalCrossVM/android/app/src/main/assets/tcfiles\.zip
 TotalCrossVM/android/app/.cxx
+
+# CMake generated files
+CMakeFiles
+_deps
+CMakeCache.txt
