@@ -227,7 +227,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../build/TotalCross/etc/launchers/win32"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/build/tmp/$(ProjectName)-$(PlatformName)-$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -325,7 +325,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../build/TotalCross/etc/launchers/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/build/tmp/$(ProjectName)-$(PlatformName)-$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
