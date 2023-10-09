@@ -9,16 +9,9 @@ echo "STARTING ANDROID"
 mkdir -p $OUTDIR/dist/vm/android
 mkdir -p $OUTDIR/etc/launchers/android
 mkdir -p $OUTDIR/etc/tools/android
-pushd $BASEDIR/TotalCrossVM/builders/droid
-   ./build.sh
-popd
-pushd $BASEDIR/TotalCrossSDK
-   cp dist/vm/android/TotalCross.apk $OUTDIR/dist/vm/android
-   pushd etc
-      cp launchers/android/resources.ap_ $OUTDIR/etc/launchers/android
-      pushd tools/android
-         cp AndroidManifest_singleApk.xml $OUTDIR/etc/tools/android
-         cp resources_singleApk.arsc $OUTDIR/etc/tools/android
-      popd
+pushd $BASEDIR/TotalCrossVM/android
+   ./gradlew --no-daemon clean assembleAssets bundleRelease
+   pushd app/build/outputs/bundle/standardRelease
+      cp app-standard-release.aab $OUTDIR/dist/vm/android/TotalCross.aab
    popd
 popd

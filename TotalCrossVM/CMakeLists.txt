@@ -212,7 +212,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/net/ConnectionManager.c
 
     ${TC_SRCDIR}/nm/pim/POutlook.c
-
+    
     ${TC_SRCDIR}/nm/notification/notification.c
     
     ${TC_SRCDIR}/nm/phone/Dial.c

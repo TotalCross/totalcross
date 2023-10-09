@@ -74,22 +74,17 @@ android {
         tasks.named("preBuild").get() dependsOn("assembleAssets")
     }
 
-    project.afterEvaluate{
-        applicationVariants.all { variant->
-            variant.assembleProvider.get().doLast {
-                    variant.outputs.each { output ->
-                        def outputFile = output.outputFile
-                        if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                            copy {
-                                from outputFile
-                                into "${rootDir}/../../TotalCrossSDK/dist/vm/android"
-                                rename { 'TotalCross.apk' }
-                            }
-                    }
-                }
-            }
-        }
-	}
+    // project.afterEvaluate {
+    //     bundleRelease.doLast {
+    //         copy {
+    //             from("${buildDir}/outputs/bundle/standardRelease") {
+    //                 include '*-release.aab'
+    //                 into "${rootDir}/../../TotalCrossSDK/dist/vm/android"
+    //                 rename { 'TotalCross.aab' }
+    //             }
+    //         }
+    //     }
+	// }
 }
 
 dependencies {
