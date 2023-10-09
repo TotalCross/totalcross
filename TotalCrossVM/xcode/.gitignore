@@ -38,3 +38,4 @@ CMakeFiles
 CMakeScripts
 TCVM.xcodeproj
 cmake_install.cmake
+_deps/
