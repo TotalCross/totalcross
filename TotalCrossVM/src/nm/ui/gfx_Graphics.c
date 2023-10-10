@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
 #define Graphics_forePixel(o) (Graphics_foreColor(o) | 0xFF000000)
 #define Graphics_backPixel(o) (Graphics_backColor(o) | 0xFF000000)
 #else
@@ -385,7 +385,7 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
       graphicsLock(&screen, false);
    }                          
 #endif
-#else
+#elif USE_SKIA
    int32 fadeValue = p->i32[0];
    fadeScreen(p->currentContext, fadeValue);
 #endif

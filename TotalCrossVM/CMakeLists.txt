@@ -20,7 +20,14 @@ endif()
 
 # Use skia
 if (NOT DEFINED USE_SKIA)
-  set(USE_SKIA ON)
+  # Building for Apple Silicon, and not for iOS
+  if (APPLE AND CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64" AND NOT CMAKE_GENERATOR STREQUAL Xcode)
+    set(USE_SKIA OFF)
+  elseif (MSVC)
+    set(USE_SKIA OFF)
+  else()
+    set(USE_SKIA ON)
+  endif()
 endif()
 
 if(TCVM_SHARED)
@@ -281,11 +288,11 @@ if(NOT MSVC)
   )
 endif(NOT MSVC)
 
-if(DEFINED SKIA_LIBRARIES)
+if(USE_SKIA)
   set(TC_SKIA_SOURCES
     ${TC_SRCDIR}/nm/ui/android/skia.cpp
   )
-endif(DEFINED SKIA_LIBRARIES)
+endif(USE_SKIA)
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
   set(TCVM_iOS_FILES
