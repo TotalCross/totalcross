@@ -271,7 +271,7 @@ public class IntermecScanner implements IScanner
       { 
          if (bcr != null)
          {           	 
-             bcr.removeBarcodeReadListener(Launcher4A.loader);             
+            //  bcr.removeBarcodeReadListener(Launcher4A.loader);             
              bcr.setScannerEnable(false);
              bcr.close();
          }
@@ -335,7 +335,7 @@ public class IntermecScanner implements IScanner
          if (!(bcr = new BarcodeReader()).isScannerEnabled())
 		      bcr.setScannerEnable(true); // set barcode reader object for internal scanner
         
-         bcr.addBarcodeReadListener(Launcher4A.loader); // add barcode reader listener
+         // bcr.addBarcodeReadListener(Launcher4A.loader); // add barcode reader listener
       }
       catch (Exception exception)
       {
