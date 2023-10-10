@@ -256,7 +256,7 @@ set(SOURCES
 
     ${TC_SRCDIR}/nm/io/device/gpiod/Gpiod.c
 
-    ${TC_SRCDIR}/nm/xml/xml_XmlTokenizer.c
+    # ${TC_SRCDIR}/nm/xml/xml_XmlTokenizer.c
 
     )
 
