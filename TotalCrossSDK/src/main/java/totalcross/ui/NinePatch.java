@@ -220,35 +220,10 @@ public class NinePatch {
 	    }
   }
   
-/**
- * 
- * @param original teste0
- * @param side teste
- * @param corner teste2
- * */
-  public Parts load(Image original, int scalableAreaWidth, int scalableAreaHeight) {
-    try {
-      int w = original.getWidth();
-      int h = original.getHeight();
-      int[] buf = new int[w > h ? w : h];
-      Parts p = new Parts();
-      p.scalableAreaStartWidth = scalableAreaWidth;
-      p.scalableAreaEndWidth = original.getWidth() - scalableAreaWidth;
-      p.scalableAreaStartHeight = scalableAreaHeight;
-      p.scalableAreaEndHeight = original.getHeight() - scalableAreaHeight;
-      p.imgLT = getImageArea(buf, original, 0, 0, scalableAreaWidth, scalableAreaHeight);
-      p.imgRT = getImageArea(buf, original, w - scalableAreaWidth, 0, scalableAreaWidth, scalableAreaHeight);
-      p.imgLB = getImageArea(buf, original, 0, h - scalableAreaHeight, scalableAreaWidth, scalableAreaHeight);
-      p.imgRB = getImageArea(buf, original, w - scalableAreaWidth, h - scalableAreaHeight, scalableAreaWidth, scalableAreaHeight);
-      p.imgT = getImageArea(buf, original, scalableAreaWidth, 0, w - scalableAreaWidth * 2, scalableAreaHeight);
-      p.imgB = getImageArea(buf, original, scalableAreaWidth, h - scalableAreaHeight, w - scalableAreaWidth * 2, scalableAreaHeight);
-      p.imgL = getImageArea(buf, original, 0, scalableAreaHeight, scalableAreaWidth, h - scalableAreaHeight * 2);
-      p.imgR = getImageArea(buf, original, w - scalableAreaWidth, scalableAreaHeight, scalableAreaWidth, h - scalableAreaHeight * 2);
-      p.imgC = getImageArea(buf, original, scalableAreaWidth, scalableAreaHeight, w - scalableAreaWidth * 2, h - scalableAreaHeight * 2);
-      return p;
-    } catch (Exception e) {
-      throw new RuntimeException(e + " " + e.getMessage());
-    }
+  public Parts load(Image original, int scalableAreaStartWidth, int scalableAreaStartHeight) {
+    int scalableAreaEndWidth = original.getWidth() - scalableAreaStartWidth;
+    int scalableAreaEndHeight = original.getHeight() - scalableAreaStartHeight;
+    return load(original, scalableAreaStartWidth, scalableAreaEndWidth, scalableAreaStartHeight, scalableAreaEndHeight);
   }
 
   public Image getNormalInstance(Parts p, int width, int height, int color, boolean rotate) throws ImageException {
