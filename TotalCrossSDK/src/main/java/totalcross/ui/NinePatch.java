@@ -112,23 +112,6 @@ public class NinePatch {
     copyPixels(buf, img, orig, 0, 0, x, y, w, h);
     return img;
   }
-  /**
-   * Returns a Parts that should be used to set the npParts of a Control.
-   * @param original the original image with the guides.
-   * */
-  public Parts load(Image original) {
-	int w = original.getWidth();
-	int h = original.getHeight();
-	int[] buf = new int[w > h ? w : h];
-	int[] scalableAreas = getScalableArea(original);
-	Parts p = null;
-	try {
-		p = load(getImageArea(buf, original, 1, 1, w - 2, h - 2), scalableAreas[0], scalableAreas[1], scalableAreas[2], scalableAreas[3]);
-	} catch (ImageException e) {
-		e.printStackTrace();
-	}
-	return p;
-  }
   
   private int[] getScalableArea(Image image) {
 	  int w = image.getWidth();
@@ -224,6 +207,24 @@ public class NinePatch {
     int scalableAreaEndWidth = original.getWidth() - scalableAreaStartWidth;
     int scalableAreaEndHeight = original.getHeight() - scalableAreaStartHeight;
     return load(original, scalableAreaStartWidth, scalableAreaEndWidth, scalableAreaStartHeight, scalableAreaEndHeight);
+  }
+
+  /**
+   * Returns a Parts that should be used to set the npParts of a Control.
+   * @param original the original image with the guides.
+   * */
+  public Parts load(Image original) {
+    int w = original.getWidth();
+    int h = original.getHeight();
+    int[] buf = new int[w > h ? w : h];
+    int[] scalableAreas = getScalableArea(original);
+    Parts p = null;
+    try {
+      p = load(getImageArea(buf, original, 1, 1, w - 2, h - 2), scalableAreas[0], scalableAreas[1], scalableAreas[2], scalableAreas[3]);
+    } catch (ImageException e) {
+      e.printStackTrace();
+    }
+    return p;
   }
 
   public Image getNormalInstance(Parts p, int width, int height, int color, boolean rotate) throws ImageException {
