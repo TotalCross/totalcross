@@ -5,6 +5,8 @@
 
 package totalcross.ui;
 
+import java.util.HashMap;
+
 import totalcross.res.Resources;
 import totalcross.sys.Convert;
 import totalcross.sys.Settings;
@@ -215,18 +217,25 @@ public class NinePatch {
     return load(original, scalableAreaStartWidth, scalableAreaEndWidth, scalableAreaStartHeight, scalableAreaEndHeight);
   }
 
+  private HashMap<Image, Parts> simpleLoadMap = new HashMap<>();
+
   /**
    * Returns a Parts that should be used to set the npParts of a Control.
    * @param original the original image with the guides.
    * */
   public Parts load(Image original) {
+    Parts p = simpleLoadMap.get(original);
+    if (p != null) {
+      return p;
+    }
+
     int w = original.getWidth();
     int h = original.getHeight();
     int[] buf = new int[w > h ? w : h];
     int[] scalableAreas = getScalableArea(original);
-    Parts p = null;
     try {
       p = load(getImageArea(buf, original, 1, 1, w - 2, h - 2), scalableAreas[0], scalableAreas[1], scalableAreas[2], scalableAreas[3]);
+      simpleLoadMap.put(original, p);
     } catch (ImageException e) {
       e.printStackTrace();
     }
@@ -328,6 +337,7 @@ public class NinePatch {
   public void flush() {
     htBtn.clear();
     htPressBtn.clear();
+    simpleLoadMap.clear();
   }
 
   /** Used internally to prevent Out of Memory errors. */
