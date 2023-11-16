@@ -75,8 +75,30 @@ public class NinePatch {
   }
 
   public class Parts {
-    Image imgLT, imgT, imgRT, imgL, imgC, imgR, imgLB, imgB, imgRB; // left top right bottom
-    int scalableAreaStartWidth, scalableAreaEndWidth, scalableAreaStartHeight, scalableAreaEndHeight;
+    final Image imgLT, imgT, imgRT, imgL, imgC, imgR, imgLB, imgB, imgRB; // left top right bottom
+    final int scalableAreaStartWidth, scalableAreaEndWidth, scalableAreaStartHeight, scalableAreaEndHeight;
+
+    public Parts(Image original, int scalableAreaStartWidth, int scalableAreaEndWidth, int scalableAreaStartHeight,
+        int scalableAreaEndHeight) throws ImageException {
+      this.scalableAreaStartWidth = scalableAreaStartWidth;
+      this.scalableAreaEndWidth = scalableAreaEndWidth;
+      this.scalableAreaStartHeight = scalableAreaStartHeight;
+      this.scalableAreaEndHeight = scalableAreaEndHeight;
+
+      int w = original.getWidth();
+      int h = original.getHeight();
+      int[] buf = new int[w > h ? w : h];
+
+      this.imgLT = getImageArea(buf, original, 0, 0, scalableAreaStartWidth, scalableAreaStartHeight);
+      this.imgRT = getImageArea(buf, original, scalableAreaEndWidth, 0, w - scalableAreaEndWidth, scalableAreaStartHeight);
+      this.imgLB = getImageArea(buf, original, 0, scalableAreaEndHeight, scalableAreaStartWidth, h - scalableAreaEndHeight);
+      this.imgRB = getImageArea(buf, original, scalableAreaEndWidth, scalableAreaEndHeight, w - scalableAreaEndWidth, h - scalableAreaEndHeight);
+      this.imgT = getImageArea(buf, original, scalableAreaStartWidth, 0, scalableAreaEndWidth - scalableAreaStartWidth, scalableAreaStartHeight);
+      this.imgB = getImageArea(buf, original, scalableAreaStartWidth, scalableAreaEndHeight, scalableAreaEndWidth - scalableAreaStartWidth, h - scalableAreaEndHeight);
+      this.imgL = getImageArea(buf, original, 0, scalableAreaStartHeight, scalableAreaStartWidth, scalableAreaEndHeight - scalableAreaStartHeight);
+      this.imgR = getImageArea(buf, original, scalableAreaEndWidth, scalableAreaStartHeight, w - scalableAreaEndWidth, scalableAreaEndHeight - scalableAreaStartHeight);
+      this.imgC = getImageArea(buf, original, scalableAreaStartWidth, scalableAreaStartHeight, scalableAreaEndWidth - scalableAreaStartWidth, scalableAreaEndHeight - scalableAreaStartHeight);
+    }
   }
 
   private Lock imageLock = new Lock();
@@ -180,23 +202,7 @@ public class NinePatch {
   
   public Parts load(Image original, int scalableAreaStartWidth, int scalableAreaEndWidth, int scalableAreaStartHeight, int scalableAreaEndHeight) {
 	  try {
-	      int w = original.getWidth();
-	      int h = original.getHeight();
-	      int[] buf = new int[w > h ? w : h];
-	      Parts p = new Parts();
-	      p.scalableAreaStartWidth = scalableAreaStartWidth;
-	      p.scalableAreaEndWidth = scalableAreaEndWidth;
-	      p.scalableAreaStartHeight = scalableAreaStartHeight;
-	      p.scalableAreaEndHeight = scalableAreaEndHeight;
-	      p.imgLT = getImageArea(buf, original, 0, 0, scalableAreaStartWidth, scalableAreaStartHeight);
-	      p.imgRT = getImageArea(buf, original, scalableAreaEndWidth, 0, w - scalableAreaEndWidth, scalableAreaStartHeight);
-	      p.imgLB = getImageArea(buf, original, 0, scalableAreaEndHeight, scalableAreaStartWidth, h - scalableAreaEndHeight);
-	      p.imgRB = getImageArea(buf, original, scalableAreaEndWidth, scalableAreaEndHeight, w - scalableAreaEndWidth, h - scalableAreaEndHeight);
-	      p.imgT = getImageArea(buf, original, scalableAreaStartWidth, 0, scalableAreaEndWidth - scalableAreaStartWidth, scalableAreaStartHeight);
-	      p.imgB = getImageArea(buf, original, scalableAreaStartWidth, scalableAreaEndHeight, scalableAreaEndWidth - scalableAreaStartWidth, h - scalableAreaEndHeight);
-	      p.imgL = getImageArea(buf, original, 0, scalableAreaStartHeight, scalableAreaStartWidth, scalableAreaEndHeight - scalableAreaStartHeight);
-	      p.imgR = getImageArea(buf, original, scalableAreaEndWidth, scalableAreaStartHeight, w - scalableAreaEndWidth, scalableAreaEndHeight - scalableAreaStartHeight);
-	      p.imgC = getImageArea(buf, original, scalableAreaStartWidth, scalableAreaStartHeight, scalableAreaEndWidth - scalableAreaStartWidth, scalableAreaEndHeight - scalableAreaStartHeight);
+	      Parts p = new Parts(original, scalableAreaStartWidth, scalableAreaEndWidth, scalableAreaStartHeight, scalableAreaEndHeight);
 	      return p;
 	    } catch (Exception e) {
 	      throw new RuntimeException(e + " " + e.getMessage());
