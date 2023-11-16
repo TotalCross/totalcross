@@ -893,6 +893,7 @@ public class Button extends Control implements TextControl {
 
 	@Override
 	protected void onFontChanged() {
+		int oldMaxTW = maxTW;
 		if (text != null) {
 			if (linesW == null || linesW.length != lines.length) {
 				linesW = new int[lines.length];
@@ -904,7 +905,9 @@ public class Button extends Control implements TextControl {
 				maxTW = Math.max(maxTW, linesW[i]);
 			}
 		}
-		onBoundsChanged(false);
+		if (oldMaxTW != maxTW) {
+			onBoundsChanged(false);
+		}
 	}
 
 	@Override
