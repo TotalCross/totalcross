@@ -910,10 +910,17 @@ public class Button extends Control implements TextControl {
 		}
 	}
 
+	private void invalidateImages() {
+		if (npback != null) {
+			npback.freeTexture();
+			npback = null;
+		}
+	}
+
 	@Override
 	protected void onBoundsChanged(boolean screenChanged) {
 		int tiGap = getGap(this.tiGap);
-		npback = null;
+		invalidateImages();
 		if (imageHeightFactor != 0 && img0 != null) {
 			try {
 				img = img0.hwScaledFixedAspectRatio(height * imageHeightFactor / 100, true);
@@ -1057,7 +1064,7 @@ public class Button extends Control implements TextControl {
 	@Override
 	protected void onColorsChanged(boolean colorsChanged) {
 		boolean enabled = isEnabled();
-		npback = null;
+		invalidateImages();
 		if (!enabled && autoRepeatTimer != null) {
 			disableAutoRepeat();
 		}
