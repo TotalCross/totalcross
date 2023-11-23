@@ -587,7 +587,7 @@ public class Image4D extends GfxSurface {
 
   native public Image setTransparentColor(int color);
 
-  native private void freeTexture();
+  native public void freeTexture();
 
   @Override
   public void finalize() {

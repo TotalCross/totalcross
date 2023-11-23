@@ -443,6 +443,21 @@ public class Image extends GfxSurface {
   public void applyChanges() {
   }
 
+  /**
+   * In OpenGL platforms, attempts to free the texture associated with this
+   * object, if any. Does nothing if no texture is associated with this object, or
+   * if the texture associated is shared among multiple objects.
+   * This method provides a way of releasing memory resources without having to
+   * wait for garbage collection, but it can impact negatively on performance if
+   * used on objects that are still in use, causing the textures to be recreated.
+   * 
+   * In non-OpenGL, does nothing.
+   * 
+   * AVOID USING THIS METHOD IF UNSURE ABOUT IT.
+   */
+  public void freeTexture() {
+  }
+
   /** In OpenGL platforms, apply changes to the current texture and
    * frees the memory used for the pixels in internal memory (the 
    * image can, however, be drawn on screen because the texture will

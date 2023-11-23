@@ -177,7 +177,7 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native public void freeTexture();
 {
 #ifndef SKIA_H
 #ifdef __gl2_h_                         
