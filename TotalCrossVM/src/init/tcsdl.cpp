@@ -134,7 +134,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	find a way to test for hardware accelerated graphics
 	support without crashing.
 */
-#if !defined APPLE && !defined ANDROID && defined linux && defined __arm__
+#if !defined ANDROID && (defined __APPLE__ && defined __aarch64__ && !defined darwin) || (defined linux && defined __arm__)
 							SDL_RENDERER_SOFTWARE
 #else
 							NO_FLAGS
