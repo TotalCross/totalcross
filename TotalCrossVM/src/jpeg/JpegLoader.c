@@ -416,6 +416,8 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
 
    /* Make optional parameter settings here */
    jpeg_default_colorspace(&cinfo);
+   cinfo.dct_method = JDCT_FLOAT;
+   cinfo.optimize_coding = TRUE;
 
     /* Start compressor */
    jpeg_start_compress(&cinfo, true);
