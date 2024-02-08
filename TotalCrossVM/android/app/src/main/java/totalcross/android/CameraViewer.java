@@ -26,6 +26,8 @@ import android.net.Uri;
 
 public class CameraViewer extends Activity // guich@tc126_34
 {
+   int exifRotation = 0;
+
    class Preview extends SurfaceView implements SurfaceHolder.Callback
    { 
       Preview(Context context)
@@ -105,6 +107,7 @@ public class CameraViewer extends Activity // guich@tc126_34
                result = (info.orientation - degrees + 360) % 360;
             }
             camera.setDisplayOrientation(result);
+            exifRotation = result;
 		
             parameters.setPictureFormat(PixelFormat.JPEG);
             if (Build.VERSION.SDK_INT >= 14 && getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS) && !inFocusExclusionList())
@@ -268,7 +271,7 @@ public class CameraViewer extends Activity // guich@tc126_34
                   {
                      buttonClick.setClickable(false);
                      Camera.Parameters parameters = camera.getParameters();
-                     parameters.setRotation(rotation);
+                     parameters.setRotation(exifRotation);
                      try {
                     	 camera.setParameters(parameters);
                     	 camera.reconnect();
@@ -308,8 +311,6 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
       });
    }
-   
-   int rotation = 0;
 
    // Handles data for jpeg picture
    PictureCallback jpegCallback = new PictureCallback()
