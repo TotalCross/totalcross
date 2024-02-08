@@ -154,6 +154,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
           if (filePath == null || filePath.startsWith("/enc") || !(new File(filePath).exists())) {
             try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
           AndroidUtils.copyStreamToFile(inputStream, imageFN);
+          autoRotatePhoto(getContentResolver(), imageFN);
         } catch (IOException ioe) {
           AndroidUtils.handleException(ioe, false);
           // pois eh... mesmo assim falhou i.i
