@@ -101,6 +101,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
     htMtd.clear();
     htSF.clear();
     htIF.clear();
+    htCls.clear();
     vI32.removeAllElements();
     vI64.removeAllElements();
     vDbl.removeAllElements();
@@ -109,6 +110,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
     vMtd.removeAllElements();
     vSF.removeAllElements();
     vIF.removeAllElements();
+    vCls.removeAllElements();
     // make all arrays start from 1
     dCount = lCount = 1;
     vI32.addElement(temp);
