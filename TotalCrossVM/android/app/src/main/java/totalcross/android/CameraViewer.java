@@ -31,6 +31,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       Preview(Context context)
       {
          super(context);
+/* Disabled to fix rotation support
 		 if (allowRotation) 
 		 { 
 			switch (getResources().getConfiguration().orientation)
@@ -48,6 +49,7 @@ public class CameraViewer extends Activity // guich@tc126_34
 		 }
 		 else
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
+*/
          // Install a SurfaceHolder.Callback so we get notified when the
          // underlying surface is created and destroyed.
          holder = getHolder(); 
