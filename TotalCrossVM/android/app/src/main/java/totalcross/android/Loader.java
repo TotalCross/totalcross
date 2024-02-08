@@ -292,7 +292,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       Matrix mat = new Matrix();
       mat.postRotate(angle);
       BitmapFactory.Options options = new BitmapFactory.Options();
-      options.inSampleSize = 2;
+      options.inSampleSize = 1;
 
       Bitmap bmp = BitmapFactory.decodeStream(contentResolver.openInputStream(Uri.fromFile(f)), null, options);
       Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
