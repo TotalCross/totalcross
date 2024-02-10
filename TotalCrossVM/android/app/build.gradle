@@ -99,7 +99,6 @@ dependencies {
     implementation project(":tcvm")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.google.android.gms:play-services-ads:' + googleGmsVersion
     implementation 'com.google.android.gms:play-services-maps:' + googleGmsVersion
     implementation 'com.google.android.gms:play-services-location:' + googleGmsVersion
     implementation 'com.google.firebase:firebase-core:' + googleGmsVersion

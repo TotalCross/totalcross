@@ -756,8 +756,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          case SIP_HIDE:
             sipVisible = false;
-            if (Loader.adView != null)
-               showAds(true);
+            // if (Loader.adView != null)
+            //    showAds(true);
             if (Loader.isFullScreen)
                setLoaderFullScreen(true);
             else
@@ -769,8 +769,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             wasNumeric = numeric;
             sipVisible = true;
             imm.restartInput(instance);
-            if (Loader.adView != null)
-               showAds(false);
+            // if (Loader.adView != null)
+            //    showAds(false);
             if (Loader.isFullScreen)
                setLoaderFullScreen(false);
             else

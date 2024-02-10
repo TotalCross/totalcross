@@ -34,7 +34,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.*;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
-import com.google.android.gms.ads.*;
+// import com.google.android.gms.ads.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.zxing.integration.android.*;
@@ -620,7 +620,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
 
   RelativeLayout mainLayout;
   public static View mainView;
-  public static AdView adView;
+  // public static AdView adView;
 
    class EventHandler extends Handler 
    {
@@ -765,69 +765,69 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       TOP
   };
 
-   private AdSize toAdSize(int i)
-   {
-      switch (Size.values()[i])
-      {
-         case ADMOB_BANNER:  return AdSize.BANNER; 
-         case ADMOB_FULL:    return AdSize.FULL_BANNER;
-         case ADMOB_LARGE:   return AdSize.LARGE_BANNER;
-         case ADMOB_LEADER:  return AdSize.LEADERBOARD;
-         case ADMOB_MEDIUM:  return AdSize.MEDIUM_RECTANGLE;
-         case ADMOB_SKY:     return AdSize.WIDE_SKYSCRAPER;
-         case ADMOB_SMART:   return AdSize.SMART_BANNER;
-    }
-    return null;
-  }
+  //  private AdSize toAdSize(int i)
+  //  {
+  //     switch (Size.values()[i])
+  //     {
+  //        case ADMOB_BANNER:  return AdSize.BANNER; 
+  //        case ADMOB_FULL:    return AdSize.FULL_BANNER;
+  //        case ADMOB_LARGE:   return AdSize.LARGE_BANNER;
+  //        case ADMOB_LEADER:  return AdSize.LEADERBOARD;
+  //        case ADMOB_MEDIUM:  return AdSize.MEDIUM_RECTANGLE;
+  //        case ADMOB_SKY:     return AdSize.WIDE_SKYSCRAPER;
+  //        case ADMOB_SMART:   return AdSize.SMART_BANNER;
+  //   }
+  //   return null;
+  // }
 
    private void configureAd(String id)
    {
-    if (adView != null)
-      return;
+    // if (adView != null)
+    //   return;
 
-    adView = new AdView(this);
-    adView.setAdUnitId(id);
-    adView.setAdSize(defaultAdSize);
-    adView.setVisibility(adIsVisible ? View.VISIBLE : View.INVISIBLE);
-    adView.loadAd(new AdRequest.Builder().build());
+    // adView = new AdView(this);
+    // adView.setAdUnitId(id);
+    // adView.setAdSize(defaultAdSize);
+    // adView.setVisibility(adIsVisible ? View.VISIBLE : View.INVISIBLE);
+    // adView.loadAd(new AdRequest.Builder().build());
 
       RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
     adParams.addRule(adAtBottom ? RelativeLayout.ALIGN_PARENT_BOTTOM : RelativeLayout.ALIGN_PARENT_TOP);
-    mainLayout.addView(adView, adParams);
+    // mainLayout.addView(adView, adParams);
 
-      adView.setAdListener(new AdListener()
-      {
-      boolean firstAd = true;
-         public void onAdLoaded()
-         {
-        AndroidUtils.debug("onAdLoaded");
-            if (firstAd && adIsVisible)
-            {
-          firstAd = false;
-          adView.setVisibility(View.GONE);
-          adView.setVisibility(View.VISIBLE);
-        }
-      }
-         public void onAdFailedToLoad(int errorCode)
-         {
-        AndroidUtils.debug("onAdFailedToLoad: " + errorCode);
-      }
-         public void onAdOpened()
-         {
-        AndroidUtils.debug("onAdOpened");
-      }
-         public void onAdClosed()
-         {
-        AndroidUtils.debug("onAdClosed");
-      }
-         public void onAdLeftApplication()
-         {
-        AndroidUtils.debug("onAdLeftApplication");
-      }
-    });
+    //   adView.setAdListener(new AdListener()
+    //   {
+    //   boolean firstAd = true;
+    //      public void onAdLoaded()
+    //      {
+    //     AndroidUtils.debug("onAdLoaded");
+    //         if (firstAd && adIsVisible)
+    //         {
+    //       firstAd = false;
+    //       adView.setVisibility(View.GONE);
+    //       adView.setVisibility(View.VISIBLE);
+    //     }
+    //   }
+    //      public void onAdFailedToLoad(int errorCode)
+    //      {
+    //     AndroidUtils.debug("onAdFailedToLoad: " + errorCode);
+    //   }
+    //      public void onAdOpened()
+    //      {
+    //     AndroidUtils.debug("onAdOpened");
+    //   }
+    //      public void onAdClosed()
+    //      {
+    //     AndroidUtils.debug("onAdClosed");
+    //   }
+    //      public void onAdLeftApplication()
+    //      {
+    //     AndroidUtils.debug("onAdLeftApplication");
+    //   }
+    // });
   }
 
-  private AdSize defaultAdSize = AdSize.SMART_BANNER;
+  // private AdSize defaultAdSize = AdSize.SMART_BANNER;
   private boolean adAtBottom = true;
   private boolean adIsVisible;
 
@@ -841,24 +841,24 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       switch (b.getInt("func"))
       {
     case Launcher4A.GET_WH:
-      AdSize as = toAdSize(i);
-      ret = as.getHeightInPixels(this) * 1000000 + as.getWidthInPixels(this);
+      // AdSize as = toAdSize(i);
+      // ret = as.getHeightInPixels(this) * 1000000 + as.getWidthInPixels(this);
       break;
     case Launcher4A.SET_SIZE:
-      defaultAdSize = toAdSize(i);
-      if (adView != null)
-        adView.setAdSize(toAdSize(i));
+      // defaultAdSize = toAdSize(i);
+      // if (adView != null)
+      //   adView.setAdSize(toAdSize(i));
       break;
     case Launcher4A.SET_POSITION:
       adAtBottom = Position.values()[i] == Position.BOTTOM;
       break;
     case Launcher4A.SET_VISIBLE:
       adIsVisible = i == 1;
-      if (adView != null)
-        adView.setVisibility(adIsVisible ? View.VISIBLE : View.INVISIBLE);
+      // if (adView != null)
+      //   adView.setVisibility(adIsVisible ? View.VISIBLE : View.INVISIBLE);
       break;
     case Launcher4A.IS_VISIBLE:
-      ret = adView != null && adView.isShown() ? 1 : 0;
+      // ret = adView != null && adView.isShown() ? 1 : 0;
       break;
     case Launcher4A.CONFIGURE: // must be last step! 
       configureAd(s);
