@@ -5,7 +5,7 @@ include(FetchContent)
 FetchContent_Declare(
     zlib
     GIT_REPOSITORY  https://github.com/zlib-ng/zlib-ng.git
-    GIT_TAG         2.1.3
+    GIT_TAG         2.1.6
     GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
     USES_TERMINAL_DOWNLOAD TRUE)
@@ -21,11 +21,10 @@ if(NOT zlib_POPULATED)
     set(WITH_OPTIM ON CACHE BOOL "" FORCE)
     set(WITH_REDUCED_MEM OFF CACHE BOOL "" FORCE) # may be useful for embedded
     set(WITH_NEW_STRATEGIES ON CACHE BOOL "" FORCE)
-    if(NOT DEFINED ANDROID_ABI) # the clang compiler does not support '-march=native'
-        set(WITH_NATIVE_INSTRUCTIONS ON CACHE BOOL "" FORCE)
-    elseif(${ANDROID_ABI} STREQUAL "armeabi-v7a")
-        # compiler that comes with NDK 21 breaks on slide_hash_neon.c
-        set(WITH_NEON OFF CACHE BOOL "" FORCE)
+    if (DEFINED ANDROID_ABI)
+        if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
+            set(WITH_ARMV6 OFF CACHE BOOL "" FORCE) # https://github.com/zlib-ng/zlib-ng/issues/1616
+        endif()
     endif()
     set(WITH_UNALIGNED ON CACHE BOOL "" FORCE)
 
