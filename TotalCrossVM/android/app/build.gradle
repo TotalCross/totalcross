@@ -99,7 +99,8 @@ dependencies {
     implementation project(":tcvm")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.google.android.gms:play-services-maps:' + googleGmsVersion
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0' // dependency for FirebaseUtils, but only required when maps is 17+, go figure...
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation 'com.google.android.gms:play-services-location:' + googleGmsVersion
     implementation 'com.google.firebase:firebase-core:15.0.2'
     implementation 'com.google.firebase:firebase-messaging:15.0.2'
