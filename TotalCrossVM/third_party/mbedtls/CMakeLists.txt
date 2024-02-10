@@ -5,7 +5,7 @@ include(FetchContent)
 FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY  https://github.com/Mbed-TLS/mbedtls.git
-    GIT_TAG         v3.2.1
+    GIT_TAG         v3.5.2
     GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
     USES_TERMINAL_DOWNLOAD TRUE)
@@ -30,6 +30,9 @@ if(NOT mbedtls_POPULATED)
     set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
     set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
     set(INSTALL_MBEDTLS_HEADERS OFF CACHE BOOL "" FORCE)
+    if(CMAKE_GENERATOR STREQUAL Xcode) # https://github.com/Mbed-TLS/mbedtls/issues/7880
+        set(MBEDTLS_FATAL_WARNINGS OFF CACHE BOOL "" FORCE)
+    endif()
 
     add_subdirectory(${mbedtls_SOURCE_DIR} ${mbedtls_BINARY_DIR})
     target_include_directories(mbedtls PUBLIC 
