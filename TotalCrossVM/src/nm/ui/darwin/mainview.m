@@ -499,7 +499,7 @@ int isShown;
    locationDir = newLocation.course;
    locationPDOP = newLocation.horizontalAccuracy;
    locationVeloc = newLocation.speed;
-   NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:newLocation.timestamp];
+   NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond fromDate:newLocation.timestamp];
    locationDate = (int)([components day] + [components month] * 100 + [components year] * 10000);
    locationTime = (int)([components second] + [components minute] * 100 + [components hour] * 10000);
 }
