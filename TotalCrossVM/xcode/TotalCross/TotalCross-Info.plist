@@ -30,6 +30,8 @@
 	<string>Take pictures</string>
 	<key>NSLocationUsageDescription</key>
 	<string>Find current location</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Find current location always and when in use</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Find current location when in use</string>
 	<key>NSPhotoLibraryUsageDescription</key>
