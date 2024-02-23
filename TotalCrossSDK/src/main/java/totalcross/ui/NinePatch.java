@@ -203,7 +203,7 @@
        return scalableArea;
    }
    
-  public Parts load(Image original, int scalableAreaStartWidth, int scalableAreaEndWidth, int scalableAreaStartHeight, int scalableAreaEndHeight) {
+   private Parts load(Image original, int scalableAreaStartWidth, int scalableAreaEndWidth, int scalableAreaStartHeight, int scalableAreaEndHeight) {
      try {
        Parts p = new Parts(original, scalableAreaStartWidth, scalableAreaEndWidth, scalableAreaStartHeight, scalableAreaEndHeight);
        return p;
