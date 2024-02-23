@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -2400,5 +2401,26 @@ public class Image extends GfxSurface {
 
     final double scale = scaleNumerator / scaleDenominator;
     return new Image(path).smoothScaledBy(scale, scale);
+  }
+
+  @Override
+  public int hashCode() {
+    int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    if (p != null) {
+      try {
+        /*
+         * If bigger than 64x64, scale down for faster hashing.
+         * getScaledInstance is faster because it has native implementation.
+         */
+        if (p.length > 4096) {
+          Image i = this.getScaledInstance(64, 64);
+          return Arrays.hashCode(i.pixels);
+        }
+      } catch (ImageException e) {
+        e.printStackTrace();
+      }
+      return Arrays.hashCode(p);
+    }
+    return Arrays.hashCode(p);
   }
 }

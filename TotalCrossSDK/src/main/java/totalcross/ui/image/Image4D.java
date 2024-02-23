@@ -6,6 +6,8 @@
 
 package totalcross.ui.image;
 
+import java.util.Arrays;
+
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 import totalcross.io.ByteArrayStream;
@@ -75,6 +77,9 @@ public class Image4D extends GfxSurface {
   public int lastAccess = -1;
   int textureId = -1;
   
+  /** Used by lockChanges to store the hashCode before discarding the pixels */
+  private int hashCode = 0;
+
   // object
   private int[] pixels; // must be at Object position 0
   protected int[] pixelsOfAllFrames;
@@ -600,6 +605,12 @@ public class Image4D extends GfxSurface {
       if (changed[0]) {
         applyChanges();
       }
+      // calculate hashCode before discarding the pixels
+      int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+      if (p != null) {
+        hashCode = 0; // must be reset before calling hashCode()
+        hashCode = this.hashCode();
+      }
       pixels = pixelsOfAllFrames = null;
     }
   }
@@ -977,6 +988,33 @@ public class Image4D extends GfxSurface {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public int hashCode() {
+    // 1. lockChanges has already set hashCode
+    if (hashCode != 0) {
+      return hashCode;
+    }
+    // 2. image hasn't been locked, calculate from pixels
+    int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    if (p != null) {
+      try {
+        /*
+         * If bigger than 64x64, scale down for faster hashing.
+         * getScaledInstance is faster because it has native implementation.
+         */
+        if (p.length > 4096) {
+          Image4D i = this.getScaledInstance(64, 64);
+          return Arrays.hashCode(i.pixels);
+        }
+      } catch (ImageException e) {
+        e.printStackTrace();
+      }
+      return Arrays.hashCode(p);
+    }
+    // 3. hashCode not set and no pixels to calculate from? let Object handle it
+    return super.hashCode();
   }
 
   private static boolean hasNativeResizeJpeg() {
