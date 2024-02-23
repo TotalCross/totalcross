@@ -196,8 +196,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                   return;
            */ }
         if (npback == null || ((verticalBar ? npback.getHeight() : npback.getWidth()) != dragBarSize)) {
-          if(npParts == null)
-        	  setNinePatch(verticalBar ? Resources.scrollposv : Resources.scrollposh, 3, 2);
+          if (npParts == null) {
+            npParts = verticalBar ? types[0] : types[1];
+          }
           try {
             if (verticalBar) {
               npback = NinePatch.getInstance().getNormalInstance(npParts, width, dragBarSize, barColor,
