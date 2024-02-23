@@ -44,7 +44,8 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
   private boolean neverShow;
   private boolean showHandle = true;
   
-  private NinePatch.Parts types[];
+  private NinePatch.Parts npPartsVertical;
+  private NinePatch.Parts npPartsHorizontal;
 
   /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
   public static boolean AUTO_HIDE = true;
@@ -90,10 +91,13 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
     disableBlockIncrement = true;
     enableAutoScroll = false;
     tempShow();
-    
-    types = new NinePatch.Parts[2];
-    types[0] = NinePatch.getInstance().load(Resources.scrollposv, 3, 2);
-    types[1] = NinePatch.getInstance().load(Resources.scrollposh, 3, 2);
+
+    if (orientation == VERTICAL && npPartsVertical == null) {
+      npPartsVertical = NinePatch.getInstance().load(Resources.scrollposv, 3, 2);
+    }
+    if (orientation == HORIZONTAL && npPartsHorizontal == null) {
+      npPartsHorizontal = NinePatch.getInstance().load(Resources.scrollposh, 3, 2);
+    }
   }
 
   /** Call this to never show the ScrollPosition */
@@ -197,7 +201,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
            */ }
         if (npback == null || ((verticalBar ? npback.getHeight() : npback.getWidth()) != dragBarSize)) {
           if (npParts == null) {
-            npParts = verticalBar ? types[0] : types[1];
+            npParts = verticalBar ? npPartsVertical : npPartsHorizontal;
           }
           try {
             if (verticalBar) {
