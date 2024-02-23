@@ -44,8 +44,8 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
   private boolean neverShow;
   private boolean showHandle = true;
   
-  private NinePatch.Parts npPartsVertical;
-  private NinePatch.Parts npPartsHorizontal;
+  private static NinePatch.Parts npPartsVertical;
+  private static NinePatch.Parts npPartsHorizontal;
 
   /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
   public static boolean AUTO_HIDE = true;
