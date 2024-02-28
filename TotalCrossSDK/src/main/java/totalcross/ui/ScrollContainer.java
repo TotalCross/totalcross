@@ -227,7 +227,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
 
      isFromFlick = fromFlick;
      if (isFromFlick) { // In case of flick, scroll instantaneously
-        willScroll = internalScrollContent(dx, dy, fromFlick);
+      willScroll = internalScrollContent(dx, dy, fromFlick);
         resetTarget();
      } else { // In case of a drag, compute the target position and move to it smoothly
 
@@ -274,7 +274,10 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
          }
      }
 
-     if(startScroll && willScroll) postEvent(new ScrollEvent(ScrollEvent.SCROLL_START));
+     if ((startScroll || willScroll) && !scrollStarted) {
+       scrollStarted = true;
+       postEvent(new ScrollEvent(ScrollEvent.SCROLL_START));
+     }
 
      return willScroll;
   }
@@ -311,11 +314,16 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
         internalScrollContent((int)dx, (int)dy, isFromFlick);
      }
    }
+
+   boolean scrollStarted = false;
   
   private boolean internalScrollContent(int dx, int dy, boolean fromFlick) {
     boolean scrolled = false;
     if((sbV != null || sbH != null) && dx == 0 && dy == 0) {
-      postEvent(new ScrollEvent(ScrollEvent.SCROLL_END));
+      if (scrollStarted) {
+        scrollStarted = false;
+        postEvent(new ScrollEvent(ScrollEvent.SCROLL_END));
+      }
     }
     if (dx != 0 && sbH != null) {
       int oldValue = sbH.value;
