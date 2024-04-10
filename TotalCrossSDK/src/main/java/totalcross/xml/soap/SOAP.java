@@ -18,9 +18,6 @@ import totalcross.ui.html.EscapeHtml;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.IntHashtable;
 import totalcross.util.Vector;
-import totalcross.util.zip.CompressedStream;
-import totalcross.util.zip.GZipStream;
-import totalcross.util.zip.ZLibStream;
 import totalcross.xml.DumpXml;
 import totalcross.xml.SyntaxException;
 import totalcross.xml.XmlTokenizer;
@@ -109,6 +106,7 @@ public class SOAP // guich@570_34
    * This is a ready-only flag, set during the execute method, and changing its 
    * value has no effect.
    */
+  @Deprecated
   public boolean wasCompressionUsed; // guich@tc114_89
   /*
    * luciana@570_45 - Added these attributes and a constructor that only
@@ -658,9 +656,7 @@ public class SOAP // guich@570_34
       httpOptions.openTimeOut = openTimeout;
       httpOptions.writeTimeOut = writeTimeout;
       httpOptions.httpType = HttpStream.POST; //doPost = true;
-      if (!disableEncoding) {
-        httpOptions.postHeaders.put("Accept-Encoding", "deflate;q=1.0, gzip;q=0.5"); // flsobral@tc110_77: zlib encoding is preferred over gzip encoding.
-      }
+      httpOptions.disableEncoding = disableEncoding;
       httpOptions.postHeaders.put("Content-Type", "text/xml; charset=utf-8");
       httpOptions.postHeaders.put("SOAPAction", "\"" + namespace + (!namespace.endsWith("/") ? "/" : "") + mtd + "\""); // flsobral@tc100b5_48: only add a trailing slash if the namespace does not have one already.
       httpOptions.postPrefix = "<?xml version=\"1.0\" encoding=\"" + httpOptions.getCharsetEncoding() + "\"?>" + prefix
@@ -684,18 +680,8 @@ public class SOAP // guich@570_34
       Stream receivedStream;
       int initialSize = hs.contentLength > 0 ? hs.contentLength : 1024;
       if (hs.contentEncoding != null) {
-        wasCompressionUsed = false;
-        if (hs.contentEncoding.equalsIgnoreCase("deflate")) {
-          ZLibStream zs = new ZLibStream(hs, CompressedStream.INFLATE);
-          receivedStream = zs;
-          wasCompressionUsed = true;
-        } else if (hs.contentEncoding.equalsIgnoreCase("gzip")) {
-          GZipStream zs = new GZipStream(hs, CompressedStream.INFLATE); // flsobral@tc112_35: Better performance with GZipStream instead of GZip.
-          receivedStream = zs;
-          wasCompressionUsed = true;
-        } else {
-          throw new SOAPException("Unsupported encoding: " + hs.contentEncoding);
-        }
+        receivedStream = hs;
+        wasCompressionUsed = true;
       } else {
         //flsobral@tc110_73: Use ByteArrayStream if the content is already encoded, if the length is unknown, or if the length is known and lower than 70k. (zlib requires at least 65k to run, so we'll only use it when reading more than 70k.)
         boolean useBBAS = (hs.contentLength >= -1 && hs.contentLength <= 70000) || Vm.getFreeMemory() < 1024 * 1024;
@@ -710,7 +696,7 @@ public class SOAP // guich@570_34
         }
       }
       if (debug) {
-        if (receivedStream instanceof CompressedStream) {
+        if (hs.contentEncoding != null) {
           CompressedByteArrayStream bbas = new CompressedByteArrayStream();
           bbas.readFully(receivedStream, 5, initialSize);
           receivedStream.close();

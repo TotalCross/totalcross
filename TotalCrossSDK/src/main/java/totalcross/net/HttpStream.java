@@ -23,6 +23,9 @@ import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Hashtable;
 import totalcross.util.IOUtils;
+import totalcross.util.zip.CompressedStream;
+import totalcross.util.zip.GZipStream;
+import totalcross.util.zip.ZLibStream;
 
 /**
  * A HttpStream HAS-A totalcross.net.Socket and takes care of exchange protocol. It starts reading (in a buffer) at the
@@ -429,6 +432,18 @@ public class HttpStream extends Stream {
      */
     private String encoding = CHARSET_ISO88591;
 
+    /**
+     * The HttpStream request will ask the server for deflate or gzip encoded
+     * response by default. This behaviour can be changed by either setting this
+     * field to true or by explicitly adding the header Accept-Encoding to the
+     * request.
+     * <br>
+     * Please notice that HttpStream automatically detects and inflates the response
+     * received from the stream if a supported content encoding (deflate or gzip) is
+     * detected.
+     */
+    public boolean disableEncoding = false;
+
     /** Constructs a new Options class, from where you change the behaviour of an Http connection.
      * Sets the <code>postHeaders</code> to:
      * <pre>
@@ -611,33 +626,13 @@ public class HttpStream extends Stream {
 
   private AbstractCharacterConverter cc = (CharacterConverter) Convert.charsetForName("ISO-8859-1");
 
+  private Stream contentStream;
+
   @Override
   public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException {
-    int lastRead = IOUtils.EOF;
-    int bytesRead = 0;
-
-    if (ofsStart < ofsEnd) {
-      int len = ofsEnd - ofsStart;
-      if (count < len) {
-        Vm.arrayCopy(buffer, ofsStart, buf, start, count);
-        ofsStart += count;
-        bytesRead = count;
-      } else {
-        Vm.arrayCopy(buffer, ofsStart, buf, start, len);
-        ofsStart = ofsEnd;
-        buffer = null;
-        bytesRead = len;
-        if (count > len) {
-          lastRead = socket.readBytes(buf, start + len, count - len);
-        }
-      }
-    } else {
-      lastRead = socket.readBytes(buf, start, count);
-    }
-    bytesRead += (lastRead == IOUtils.EOF ? 0 : lastRead);
-
+    int bytesRead = contentStream.readBytes(buf, start, count);
     contentRead += (bytesRead == IOUtils.EOF ? 0 : bytesRead);
-    return (bytesRead == 0 && lastRead == IOUtils.EOF) ? IOUtils.EOF : bytesRead;
+    return bytesRead;
   }
 
   @Override
@@ -661,7 +656,7 @@ public class HttpStream extends Stream {
 
   @Override
   public void close() throws totalcross.io.IOException {
-    socket.close();
+    contentStream.close();
   }
 
   /**
@@ -821,6 +816,11 @@ public class HttpStream extends Stream {
         options.postHeaders.put("Content-Length", Convert.toString(len));
       }
     }
+
+    if (!options.postHeaders.exists("Accept-Encoding") && !options.disableEncoding) {
+      options.postHeaders.put("Accept-Encoding", "deflate;q=1.0, gzip;q=0.5"); // deflate is preferred for being faster and smaller than gzip
+    }
+
     // get the post headers in a single string
     options.postHeaders.dumpKeysValues(sb, ": ", Convert.CRLF); //flsobral@tc126: send post headers also on GET. Temporary fix to fix proxy and authorization support for both GET and POST.
     sb.append(Convert.CRLF);
@@ -851,6 +851,15 @@ public class HttpStream extends Stream {
     }
     if (state != 6 && Settings.onJavaSE) {
       Vm.debug("HTTP: " + getStatus()); // flsobral@tc110_95: No longer stop reading the header when a bad response code is found, so we can get the error cause.
+    }
+
+    contentStream = new PrefixedStream(buffer, ofsStart, ofsEnd, socket);
+    if (contentEncoding != null) {
+        if ("deflate".equalsIgnoreCase(contentEncoding)) {
+          contentStream = new ZLibStream(contentStream, CompressedStream.INFLATE);
+        } else if ("gzip".equalsIgnoreCase(contentEncoding)) {
+          contentStream = new GZipStream(contentStream, CompressedStream.INFLATE); // flsobral@tc112_35: Better performance with GZipStream instead of GZip.
+        }
     }
   }
 
@@ -1260,5 +1269,58 @@ public class HttpStream extends Stream {
       tr.doTrim = readTokensDoTrim;
     }
     return tr.readTokens();
+  }
+
+  private static class PrefixedStream extends Stream {
+
+    private byte[] prefix;
+    private int prefixStart;
+    private int prefixEnd;
+    private Stream s;
+
+    PrefixedStream(byte[] prefix, int start, int end, Stream s) {
+      this.prefix = prefix;
+      this.prefixStart = start;
+      this.prefixEnd = end;
+      this.s = s;
+    }
+
+    @Override
+    public int readBytes(byte[] buf, int start, int count) throws IOException {
+      int lastRead = IOUtils.EOF;
+      int bytesRead = 0;
+  
+      if (prefixStart < prefixEnd) {
+        int len = prefixEnd - prefixStart;
+        if (count < len) {
+          Vm.arrayCopy(prefix, prefixStart, buf, start, count);
+          prefixStart += count;
+          bytesRead = count;
+        } else {
+          Vm.arrayCopy(prefix, prefixStart, buf, start, len);
+          prefixStart = prefixEnd;
+          prefix = null;
+          bytesRead = len;
+          if (count > len) {
+            lastRead = s.readBytes(buf, start + len, count - len);
+          }
+        }
+      } else {
+        lastRead = s.readBytes(buf, start, count);
+      }
+      bytesRead += (lastRead == IOUtils.EOF ? 0 : lastRead);
+  
+      return (bytesRead == 0 && lastRead == IOUtils.EOF) ? IOUtils.EOF : bytesRead;
+    }
+
+    @Override
+    public int writeBytes(byte[] buf, int start, int count) throws IOException {
+      return s.writeBytes(buf, start, count);
+    }
+
+    @Override
+    public void close() throws IOException {
+      s.close();
+    }
   }
 }
