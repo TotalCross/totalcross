@@ -2,8 +2,12 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
-# zlib-ng
-add_subdirectory(zlib-ng)
+# zlib
+if (USE_MADLER_ZLIB)
+    add_subdirectory(zlib)
+else()
+    add_subdirectory(zlib-ng)
+endif()
 get_target_property(ZLIB_INCLUDE_DIRS zlibstatic PUBLIC_HEADER)
 get_target_property(ZLIB_BINARY_DIR zlibstatic BINARY_DIR)
 

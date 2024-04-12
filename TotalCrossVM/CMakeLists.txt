@@ -29,6 +29,13 @@ else()
   add_library(tcvm STATIC)
 endif()
 
+# Force using madler zlib on wince instead of zlib-ng, which isn't supported
+if(NOT DEFINED USE_MADLER_ZLIB)
+  if(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+    set(USE_MADLER_ZLIB ON)
+  endif()
+endif()
+
 # Support defining PNG_ARM_NEON_OPT externally
 if(DEFINED PNG_ARM_NEON_OPT)
   add_definitions(-DPNG_ARM_NEON_OPT=${PNG_ARM_NEON_OPT})
