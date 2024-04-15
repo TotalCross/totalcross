@@ -5,6 +5,7 @@
 
 #include "Net.h"
 
+#ifndef WINCE
 #include "mbedtls/platform.h"
 #include "mbedtls/net_sockets.h"
 #include "mbedtls/ssl.h"
@@ -18,10 +19,14 @@
 #define SSLSocket_ssl_config(o)              FIELD_OBJ(o, OBJ_CLASS(o), 4)
 
 const char *pers = "mini_client";
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnsSSLS_init(NMParams p) // totalcross/net/ssl/SSLSocket native void init();
 {
+#ifdef WINCE
+   p->retO = null;
+#else
    TCObject socket = p->obj[0];
    TCObject socketRef = Socket_socketRef(socket);
    TCObject socketHost = Socket_host(socket);
@@ -121,10 +126,14 @@ out_of_memory:
    throwException(p->currentContext, OutOfMemoryError, null);
 finish:
    ;
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnsSSLS_cleanup(NMParams p) // totalcross/net/ssl/SSLSocket native void cleanup();
 {
+#ifdef WINCE
+   p->retO = null;
+#else
    TCObject socket = p->obj[0];
    TCObject ctr_drbg_object = SSLSocket_ctr_drbg_context(socket);
    TCObject net_context_object = SSLSocket_net_context(socket);
@@ -159,6 +168,7 @@ TC_API void tnsSSLS_cleanup(NMParams p) // totalcross/net/ssl/SSLSocket native v
    SSLSocket_ssl_context(socket) = NULL;
    SSLSocket_ssl_config(socket) = NULL;
    SSLSocket_entropy_context(socket) = NULL;
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnsSSLS_startHandshake(NMParams p) // totalcross/net/ssl/SSLSocket native void startHandshake() throws IOException;
@@ -168,6 +178,9 @@ TC_API void tnsSSLS_startHandshake(NMParams p) // totalcross/net/ssl/SSLSocket n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSocket native private int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
+#ifdef WINCE
+   p->retO = null;
+#else
    TCObject socket = p->obj[0];
    TCObject buffer = p->obj[1];
    int32 start = p->i32[0];
@@ -230,6 +243,7 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
 
    error:
    throwExceptionWithCode(p->currentContext, IOException, ret);
+#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

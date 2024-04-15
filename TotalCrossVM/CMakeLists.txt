@@ -45,7 +45,9 @@ add_subdirectory(third_party)
 
 target_link_libraries(tcvm zlibstatic)
 target_link_libraries(tcvm png_static)
-target_link_libraries(tcvm MbedTLS::mbedcrypto MbedTLS::mbedx509 MbedTLS::mbedtls)
+if(NOT MSVC OR NOT ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+  target_link_libraries(tcvm MbedTLS::mbedcrypto MbedTLS::mbedx509 MbedTLS::mbedtls)
+endif()
 target_link_libraries(tcvm SQLite3)
 
 # Find SDL2 and Skia

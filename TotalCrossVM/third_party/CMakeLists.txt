@@ -17,9 +17,11 @@ get_target_property(PNG_INCLUDE_DIRS png_static PUBLIC_HEADER)
 get_target_property(PNG_BINARY_DIR png_static BINARY_DIR)
 
 # mbedTLS
-add_subdirectory(mbedtls)
-get_target_property(MBEDTLS_INCLUDE_DIRS mbedtls PUBLIC_HEADER)
-get_target_property(MBEDTLS_BINARY_DIR mbedtls BINARY_DIR)
+if(NOT MSVC OR NOT ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+    add_subdirectory(mbedtls)
+    get_target_property(MBEDTLS_INCLUDE_DIRS mbedtls PUBLIC_HEADER)
+    get_target_property(MBEDTLS_BINARY_DIR mbedtls BINARY_DIR)
+endif()
 
 # SQLite3
 add_subdirectory(sqlite3) 
