@@ -98,6 +98,9 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    UserData userData;
    png_structp png_ptr;
 
+   png_textp text = null;
+   png_byte color_type;
+
    xmemzero(&png_ptr, sizeof(png_ptr));
    xmemzero(&userData, sizeof(userData));
 
@@ -151,14 +154,13 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
    // guich@tc100: check if a comment came with the png
-   png_textp text = null;
    if (png_get_text(png_ptr, userData.info_ptr, &text, null) != 0 && text && strEq("Comment", text->key)) {
       Image_comment(imageObj) = createStringObjectFromCharP(currentContext, text->text, (int)text->text_length);
       setObjectLock(Image_comment(imageObj), UNLOCKED);
    }
 
    // guich@tc100: set the transparent color
-   png_byte color_type = png_get_color_type(png_ptr, userData.info_ptr);
+   color_type = png_get_color_type(png_ptr, userData.info_ptr);
    if (color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
       isAlpha = true;
    } else {
@@ -223,6 +225,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    int compression_type = 0;
    int filter_method = 0;
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
+   int32 num_trans = 0;
 
    png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,&interlace_type,&compression_type,&filter_method);
    
@@ -245,7 +248,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    png_read_update_info(png_ptr, userData->info_ptr);
    info_ptr = userData->info_ptr;
    color_type = png_get_color_type(png_ptr, info_ptr);
-   int32 num_trans = 0; // MUST BE INITIALIZED BEFORE png_get_tRNS
+   num_trans = 0; // MUST BE INITIALIZED BEFORE png_get_tRNS
    if (color_type != PNG_COLOR_TYPE_PALETTE && png_get_tRNS(png_ptr, info_ptr, null, &num_trans, null) != 0 && num_trans != 0) // we don't support transparent palettes
       png_set_strip_alpha(png_ptr);
    userData->width = (int32)width;
