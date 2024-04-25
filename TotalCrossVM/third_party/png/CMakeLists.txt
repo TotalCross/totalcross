@@ -23,6 +23,17 @@ if(NOT libpng_POPULATED)
     set(PNG_TESTS OFF CACHE BOOL "" FORCE)
     set(PNG_DEBUG_POSTFIX "" CACHE STRING "" FORCE) # XCode gets confused if used
 
+    # Edit pnglibconf.h
+    file(READ ${libpng_BINARY_DIR}/pnglibconf.h FILE_CONTENTS)
+    # Adds PNG_ABORT definition for WinCE
+    string(REPLACE "#endif /* PNGLCONF_H */" "\n#ifndef PNG_ABORT\n#ifdef _WIN32_WCE\n#  define PNG_ABORT() ExitProcess(0)\n#else\n#  define PNG_ABORT() abort()\n#endif\n#endif\n#endif  /* PNGLCONF_H */" FILE_CONTENTS "${FILE_CONTENTS}")
+    file(WRITE ${libpng_BINARY_DIR}/pnglibconf.h "${FILE_CONTENTS}")
+
+    # Replace abort with PNG_ABORT in pngerror.c
+    file(READ ${libpng_SOURCE_DIR}/pngerror.c FILE_CONTENTS)
+    string(REPLACE "abort();" "PNG_ABORT();" FILE_CONTENTS "${FILE_CONTENTS}")
+    file(WRITE ${libpng_SOURCE_DIR}/pngerror.c "${FILE_CONTENTS}")
+
     add_subdirectory(${libpng_SOURCE_DIR} ${libpng_BINARY_DIR})
 
     # Need this with SKIP_INSTALL_ALL enabled to find the headers
