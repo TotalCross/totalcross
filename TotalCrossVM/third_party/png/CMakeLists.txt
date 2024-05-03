@@ -34,6 +34,16 @@ if(NOT libpng_POPULATED)
     string(REPLACE "abort();" "PNG_ABORT();" FILE_CONTENTS "${FILE_CONTENTS}")
     file(WRITE ${libpng_SOURCE_DIR}/pngerror.c "${FILE_CONTENTS}")
 
+    # Fix for WinCE, which lacks errno.h - pngread.c
+    file(READ ${libpng_SOURCE_DIR}/pngread.c FILE_CONTENTS)
+    string(REPLACE "#  include <errno.h>" "#if defined (WINCE)\nextern int errno;\n#define strerror(x) NULL\n#else\n#   include <errno.h>\n#endif" FILE_CONTENTS "${FILE_CONTENTS}")
+    file(WRITE ${libpng_SOURCE_DIR}/pngread.c "${FILE_CONTENTS}")
+
+    # Fix for WinCE, which lacks errno.h - pngwrite.c
+    file(READ ${libpng_SOURCE_DIR}/pngwrite.c FILE_CONTENTS)
+    string(REPLACE "#  include <errno.h>" "#if defined (WINCE)\nextern int errno;\n#define strerror(x) NULL\n#define remove(x) 0\n#else\n#   include <errno.h>\n#endif" FILE_CONTENTS "${FILE_CONTENTS}")
+    file(WRITE ${libpng_SOURCE_DIR}/pngwrite.c "${FILE_CONTENTS}")
+
     add_subdirectory(${libpng_SOURCE_DIR} ${libpng_BINARY_DIR})
 
     # Need this with SKIP_INSTALL_ALL enabled to find the headers
