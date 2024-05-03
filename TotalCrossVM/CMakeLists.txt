@@ -49,7 +49,7 @@ endif()
 
 # Force using madler zlib on wince instead of zlib-ng, which isn't supported
 if(NOT DEFINED USE_MADLER_ZLIB)
-  if(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+  if(TARGET_WINCE)
     set(USE_MADLER_ZLIB ON)
   endif()
 endif()
@@ -63,7 +63,7 @@ add_subdirectory(third_party)
 
 target_link_libraries(tcvm zlibstatic)
 target_link_libraries(tcvm png_static)
-if(NOT MSVC OR NOT ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+if(NOT TARGET_WINCE)
   target_link_libraries(tcvm MbedTLS::mbedcrypto MbedTLS::mbedx509 MbedTLS::mbedtls)
 endif()
 target_link_libraries(tcvm SQLite3)
@@ -373,7 +373,7 @@ if(DEFINED ANDROID_ABI)
   )
 endif(DEFINED ANDROID_ABI)
 
-if(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+if(TARGET_WINCE)
   set(TC_WCE_SOURCES
     ${TC_SRCDIR}/util/win/aygshellLib.c
   )
@@ -416,7 +416,7 @@ include_directories(${TC_SRCDIR}/util/android)
 
 if(MSVC)
   include_directories(${TC_SRCDIR}/nm/qrcode/win)
-  if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+  if(TARGET_WINCE)
     include_directories(${TC_SRCDIR}/core/wince) # Only include this folder for WinCE!
   endif()
 else()
@@ -448,7 +448,7 @@ if(DEFINED ANDROID_ABI)
   if ("${ANDROID_ABI}" MATCHES "arm64-v8a")
 	  add_definitions(-DFORCE_LIBC_ALLOC)
   endif()
-elseif(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+elseif(TARGET_WINCE)
   add_definitions(-DUNICODE -D_WIN32_WCE=$(CEVER) -D_MSC_VER=1200 -D_REENTRANT -DLITTLE_ENDIAN)
 elseif(MSVC)
   add_definitions(-DFORCE_LIBC_ALLOC -DWIN32 -D_REENTRANT -DHAVE_MREMAP=0 -DLITTLE_ENDIAN)
@@ -581,7 +581,7 @@ if(DEFINED ANDROID_ABI)
                         ${log-lib} 
                         ${jnigraphics-lib} )
 elseif(MSVC)
-  if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+  if(TARGET_WINCE)
     target_link_libraries(tcvm secchk.lib coredll.lib corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib)
   else()
     target_link_libraries(tcvm winmm.lib ws2_32.lib imm32.lib Rasapi32.lib)
@@ -623,7 +623,7 @@ add_executable(Launcher
   ${LAUNCHER_RESOURCES}
 )
 
-if(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+if(TARGET_WINCE)
   target_compile_options(Launcher PRIVATE /GS-)
   target_link_options(Launcher PRIVATE /STACK:0x200000 /ENTRY:)
 endif()
@@ -640,7 +640,7 @@ endif()
 
 # Disabled for the time being
 # if(MSVC)
-#   if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+#   if(TARGET_WINCE)
 #     INCLUDE_EXTERNAL_MSPROJECT(Datalogic ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Datalogic.vcproj)
 #     INCLUDE_EXTERNAL_MSPROJECT(Dolphin ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Dolphin.vcproj)
 #     INCLUDE_EXTERNAL_MSPROJECT(Intermec ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Intermec.vcproj)

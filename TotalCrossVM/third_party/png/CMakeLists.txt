@@ -24,7 +24,7 @@ if(NOT libpng_POPULATED)
     set(PNG_TESTS OFF CACHE BOOL "" FORCE)
     set(PNG_DEBUG_POSTFIX "" CACHE STRING "" FORCE) # XCode gets confused if used
 
-    if(MSVC AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
+    if(TARGET_WINCE)
         # Edit pnglibconf.h
         file(READ ${libpng_BINARY_DIR}/pnglibconf.h FILE_CONTENTS)
         # Adds PNG_ABORT definition for WinCE
