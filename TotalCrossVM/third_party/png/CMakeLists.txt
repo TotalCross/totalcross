@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0007 NEW) # CMP0007: list command no longer ignores empty elements.
 
 include(FetchContent)
 
@@ -27,7 +28,20 @@ if(NOT libpng_POPULATED)
     file(READ ${libpng_BINARY_DIR}/pnglibconf.h FILE_CONTENTS)
     # Adds PNG_ABORT definition for WinCE
     string(REPLACE "#endif /* PNGLCONF_H */" "\n#ifndef PNG_ABORT\n#ifdef _WIN32_WCE\n#  define PNG_ABORT() ExitProcess(0)\n#else\n#  define PNG_ABORT() abort()\n#endif\n#endif\n#endif  /* PNGLCONF_H */" FILE_CONTENTS "${FILE_CONTENTS}")
-    file(WRITE ${libpng_BINARY_DIR}/pnglibconf.h "${FILE_CONTENTS}")
+    SET(FILE_OUTPUT "")
+    STRING(REGEX REPLACE ";" "\\\\;" FILE_CONTENTS "${FILE_CONTENTS}")
+    STRING(REGEX REPLACE "\r?\n" ";" FILE_CONTENTS "${FILE_CONTENTS}")
+    list(LENGTH FILE_CONTENTS FILE_LENGTH)
+    math(EXPR N "${FILE_LENGTH}-1")
+    foreach(FILE_INDEX RANGE ${N})
+        list(GET FILE_CONTENTS ${FILE_INDEX} line)
+        # Disable support for PNG WRITE
+        string(REGEX REPLACE "^(#define PNG_.*WRITE.*_SUPPORTED)$" "//\\1" line "${line}")
+        # Disable support for PNG_SAVE_INT_32_SUPPORTED
+        string(REGEX REPLACE "^(#define PNG_SAVE_INT_32_SUPPORTED)$" "//\\1" line "${line}")
+        SET(FILE_OUTPUT "${FILE_OUTPUT}${line}\n")
+    endforeach()
+    file(WRITE ${libpng_BINARY_DIR}/pnglibconf.h "${FILE_OUTPUT}")
 
     # Replace abort with PNG_ABORT in pngerror.c
     file(READ ${libpng_SOURCE_DIR}/pngerror.c FILE_CONTENTS)
@@ -40,9 +54,9 @@ if(NOT libpng_POPULATED)
     file(WRITE ${libpng_SOURCE_DIR}/pngread.c "${FILE_CONTENTS}")
 
     # Fix for WinCE, which lacks errno.h - pngwrite.c
-    file(READ ${libpng_SOURCE_DIR}/pngwrite.c FILE_CONTENTS)
-    string(REPLACE "#  include <errno.h>" "#if defined (WINCE)\nextern int errno;\n#define strerror(x) NULL\n#define remove(x) 0\n#else\n#   include <errno.h>\n#endif" FILE_CONTENTS "${FILE_CONTENTS}")
-    file(WRITE ${libpng_SOURCE_DIR}/pngwrite.c "${FILE_CONTENTS}")
+    # file(READ ${libpng_SOURCE_DIR}/pngwrite.c FILE_CONTENTS)
+    # string(REPLACE "#  include <errno.h>" "#if defined (WINCE)\nextern int errno;\n#define strerror(x) NULL\n#define remove(x) 0\n#else\n#   include <errno.h>\n#endif" FILE_CONTENTS "${FILE_CONTENTS}")
+    # file(WRITE ${libpng_SOURCE_DIR}/pngwrite.c "${FILE_CONTENTS}")
 
     add_subdirectory(${libpng_SOURCE_DIR} ${libpng_BINARY_DIR})
 
