@@ -22,20 +22,20 @@ if(NOT sqlite3_POPULATED)
 
     FetchContent_Populate(SQLite3)
 
-    # using INTERFACE to compile along the main project
-    add_library(SQLite3 INTERFACE
+    # STATIC is necessary for the VS2008 project to inherit the preprocessor definitions
+    add_library(SQLite3 STATIC
         "${sqlite3_SOURCE_DIR}/sqlite3.c"
     )
 
-    target_include_directories(SQLite3 INTERFACE 
+    target_include_directories(SQLite3 PUBLIC 
         ${sqlite3_SOURCE_DIR}
     )
 
-    target_sources(SQLite3 INTERFACE 
+    target_sources(SQLite3 PRIVATE 
         "${sqlite3_SOURCE_DIR}/sqlite3.c"
     )
 
-    target_compile_definitions(SQLite3 INTERFACE
+    target_compile_definitions(SQLite3 PRIVATE
         -DSQLITE_HAS_CODEC 
         -DSQLITE_ENABLE_COLUMN_METADATA=1
         -DSQLITE_ENABLE_FTS3=1
@@ -48,7 +48,7 @@ if(NOT sqlite3_POPULATED)
         -DSQLITE_THREADSAFE=0 
         -DSQLITE_THREAD_OVERRIDE_LOCK=0 
         -DSQLITE_WITHOUT_MSIZE=1
-  
+
         -DSQLITE_DQS=0
         -DSQLITE_DEFAULT_MEMSTATUS=0
         -DSQLITE_DEFAULT_WAL_SYNCHRONOUS=1
@@ -56,5 +56,12 @@ if(NOT sqlite3_POPULATED)
         -DSQLITE_MAX_EXPR_DEPTH=0
         -DSQLITE_OMIT_DEPRECATED
         -DSQLITE_OMIT_PROGRESS_CALLBACK
+    )
+
+    set_target_properties(
+        SQLite3
+        PROPERTIES
+        PUBLIC_HEADER "${sqlite3_SOURCE_DIR}"
+        XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 13.0
     )
 endif()
