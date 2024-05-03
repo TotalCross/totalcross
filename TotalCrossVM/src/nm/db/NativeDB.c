@@ -195,7 +195,7 @@ static CharP newSafeString(TCObject strObj, int32 *outlen)
    return ret;
 }
 
-static freeSafeString(CharP buf)
+static void freeSafeString(CharP buf)
 {
    buf -= 8;
    xfree(buf);

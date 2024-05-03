@@ -334,7 +334,7 @@ TC_API void tiPDBF_addRecord_ii(NMParams p) // totalcross/io/PDBFile native publ
          PDBFile_hvRecordPos(pdbFile) = pos;
          PDBFile_hvRecordOffset(pdbFile) = 0;
          PDBFile_hvRecordLength(pdbFile) = size;
-         PDBFile_hvRecordHandle(pdbFile) = handle;
+         PDBFile_hvRecordHandle(pdbFile) = (int64)handle;
          PDBFile_hvRecordChanged(pdbFile) = false;
       }
    }
@@ -381,7 +381,7 @@ TC_API void tiPDBF_resizeRecord_i(NMParams p) // totalcross/io/PDBFile native pu
       else
       {
          PDBFile_hvRecordLength(pdbFile) = size;
-         PDBFile_hvRecordHandle(pdbFile) = handle;
+         PDBFile_hvRecordHandle(pdbFile) = (int64)handle;
       }
    }
 }
@@ -550,7 +550,7 @@ TC_API void tiPDBF_setRecordPos_i(NMParams p) // totalcross/io/PDBFile native pu
             else
                size = MemHandleSize(handle);
             PDBFile_hvRecordLength(pdbFile) = size;
-            PDBFile_hvRecordHandle(pdbFile) = handle;
+            PDBFile_hvRecordHandle(pdbFile) = (int64)handle;
          }
          PDBFile_hvRecordPos(pdbFile) = pos;
          PDBFile_hvRecordOffset(pdbFile) = 0;
