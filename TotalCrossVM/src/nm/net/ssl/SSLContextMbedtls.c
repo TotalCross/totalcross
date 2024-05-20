@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#include "Net.h"
+#include "../Net.h"
 
 #ifndef WINCE
 #include "mbedtls/platform.h"
@@ -12,22 +12,23 @@
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 
-#define SSLSocket_net_context(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
-#define SSLSocket_entropy_context(o)         FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define SSLSocket_ctr_drbg_context(o)        FIELD_OBJ(o, OBJ_CLASS(o), 2)
-#define SSLSocket_ssl_context(o)             FIELD_OBJ(o, OBJ_CLASS(o), 3)
-#define SSLSocket_ssl_config(o)              FIELD_OBJ(o, OBJ_CLASS(o), 4)
+#define SSLContextMbedtls_net_context(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define SSLContextMbedtls_entropy_context(o)         FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define SSLContextMbedtls_ctr_drbg_context(o)        FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define SSLContextMbedtls_ssl_context(o)             FIELD_OBJ(o, OBJ_CLASS(o), 3)
+#define SSLContextMbedtls_ssl_config(o)              FIELD_OBJ(o, OBJ_CLASS(o), 4)
 
 const char *pers = "mini_client";
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnsSSLS_init(NMParams p) // totalcross/net/ssl/SSLSocket native void init();
+TC_API void tnsSSLCM_init_s(NMParams p) // totalcross/net/ssl/SSLContextMbedtls void init(Socket socket);
 {
 #ifdef WINCE
    p->retO = null;
 #else
-   TCObject socket = p->obj[0];
+   TCObject context = p->obj[0];
+   TCObject socket = p->obj[1];
    TCObject socketRef = Socket_socketRef(socket);
    TCObject socketHost = Socket_host(socket);
 
@@ -50,35 +51,35 @@ TC_API void tnsSSLS_init(NMParams p) // totalcross/net/ssl/SSLSocket native void
    if ((ctr_drbg_object = createByteArray(p->currentContext, sizeof(mbedtls_ctr_drbg_context))) == null) {
       goto out_of_memory;
    }
-   SSLSocket_ctr_drbg_context(socket) = ctr_drbg_object;
+   SSLContextMbedtls_ctr_drbg_context(context) = ctr_drbg_object;
    ctr_drbg = (mbedtls_ctr_drbg_context*) ARRAYOBJ_START(ctr_drbg_object);
    setObjectLock(ctr_drbg_object, UNLOCKED);
 
    if ((net_context_object = createByteArray(p->currentContext, sizeof(mbedtls_net_context))) == null) {
       goto out_of_memory;
    }
-   SSLSocket_net_context(socket) = net_context_object;
+   SSLContextMbedtls_net_context(context) = net_context_object;
    net_context = (mbedtls_net_context*) ARRAYOBJ_START(net_context_object);
    setObjectLock(net_context_object, UNLOCKED);
 
    if ((ssl_context_object = createByteArray(p->currentContext, sizeof(mbedtls_ssl_context))) == null) {
       goto out_of_memory;
    }
-   SSLSocket_ssl_context(socket) = ssl_context_object;
+   SSLContextMbedtls_ssl_context(context) = ssl_context_object;
    ssl_context = (mbedtls_ssl_context*) ARRAYOBJ_START(ssl_context_object);
    setObjectLock(ssl_context_object, UNLOCKED);
 
    if ((ssl_config_object = createByteArray(p->currentContext, sizeof(mbedtls_ssl_config))) == null) {
       goto out_of_memory;
    }
-   SSLSocket_ssl_config(socket) = ssl_config_object;
+   SSLContextMbedtls_ssl_config(context) = ssl_config_object;
    ssl_config = (mbedtls_ssl_config*) ARRAYOBJ_START(ssl_config_object);
    setObjectLock(ssl_config_object, UNLOCKED);
 
    if ((entropy_context_object = createByteArray(p->currentContext, sizeof(mbedtls_entropy_context))) == null) {
       goto out_of_memory;
    }
-   SSLSocket_entropy_context(socket) = entropy_context_object;
+   SSLContextMbedtls_entropy_context(context) = entropy_context_object;
    entropy_context = (mbedtls_entropy_context*) ARRAYOBJ_START(entropy_context_object);
    setObjectLock(entropy_context_object, UNLOCKED);
 
@@ -129,17 +130,17 @@ finish:
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnsSSLS_cleanup(NMParams p) // totalcross/net/ssl/SSLSocket native void cleanup();
+TC_API void tnsSSLCM_close(NMParams p) // totalcross/net/ssl/SSLContextMbedtls void close();
 {
 #ifdef WINCE
    p->retO = null;
 #else
-   TCObject socket = p->obj[0];
-   TCObject ctr_drbg_object = SSLSocket_ctr_drbg_context(socket);
-   TCObject net_context_object = SSLSocket_net_context(socket);
-   TCObject ssl_context_object = SSLSocket_ssl_context(socket);
-   TCObject ssl_config_object = SSLSocket_ssl_config(socket);
-   TCObject entropy_context_object = SSLSocket_entropy_context(socket);
+   TCObject context = p->obj[0];
+   TCObject ctr_drbg_object = SSLContextMbedtls_ctr_drbg_context(context);
+   TCObject net_context_object = SSLContextMbedtls_net_context(context);
+   TCObject ssl_context_object = SSLContextMbedtls_ssl_context(context);
+   TCObject ssl_config_object = SSLContextMbedtls_ssl_config(context);
+   TCObject entropy_context_object = SSLContextMbedtls_entropy_context(context);
    mbedtls_ctr_drbg_context* ctr_drbg;
    mbedtls_net_context* net_context;
    mbedtls_ssl_context* ssl_context;
@@ -147,7 +148,7 @@ TC_API void tnsSSLS_cleanup(NMParams p) // totalcross/net/ssl/SSLSocket native v
    mbedtls_entropy_context* entropy_context;
 
    if (ssl_context_object == NULL) {
-      throwException(p->currentContext, IOException, "socket is already closed");
+      throwException(p->currentContext, IOException, "context is already closed");
       return;
    }
 
@@ -163,30 +164,31 @@ TC_API void tnsSSLS_cleanup(NMParams p) // totalcross/net/ssl/SSLSocket native v
    mbedtls_ctr_drbg_free( ctr_drbg );
    mbedtls_entropy_free( entropy_context );
 
-   SSLSocket_ctr_drbg_context(socket) = NULL;
-   SSLSocket_net_context(socket) = NULL;
-   SSLSocket_ssl_context(socket) = NULL;
-   SSLSocket_ssl_config(socket) = NULL;
-   SSLSocket_entropy_context(socket) = NULL;
+   SSLContextMbedtls_ctr_drbg_context(context) = NULL;
+   SSLContextMbedtls_net_context(context) = NULL;
+   SSLContextMbedtls_ssl_context(context) = NULL;
+   SSLContextMbedtls_ssl_config(context) = NULL;
+   SSLContextMbedtls_entropy_context(context) = NULL;
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnsSSLS_startHandshake(NMParams p) // totalcross/net/ssl/SSLSocket native void startHandshake() throws IOException;
+TC_API void tnsSSLCM_startHandshake(NMParams p) // totalcross/net/ssl/SSLContextMbedtls native void startHandshake() throws IOException;
 {
    p->retO = null;
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSocket native private int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
+TC_API void tnsSSLCM_readWriteBytes_sBiib(NMParams p) // totalcross/net/ssl/SSLContextMbedtls int readWriteBytes(Socket socket, byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
 #ifdef WINCE
    p->retO = null;
 #else
-   TCObject socket = p->obj[0];
-   TCObject buffer = p->obj[1];
+   TCObject context = p->obj[0];
+   TCObject socket = p->obj[1];
+   TCObject buffer = p->obj[2];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    bool isRead = p->i32[2];
-   TCObject ssl_context_object = SSLSocket_ssl_context(socket);
+   TCObject ssl_context_object = SSLContextMbedtls_ssl_context(context);
    mbedtls_ssl_context* ssl_context  = (mbedtls_ssl_context*) ARRAYOBJ_START(ssl_context_object);
    CharP buf;
    int32 timeout;
@@ -247,5 +249,5 @@ TC_API void tnsSSLS_readWriteBytes_Biib(NMParams p) // totalcross/net/ssl/SSLSoc
 }
 
 #ifdef ENABLE_TEST_SUITE
-// #include "Socket_test.h"
+// #include "SSLContextMbedtls_test.h"
 #endif

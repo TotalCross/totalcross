@@ -177,7 +177,6 @@ set(SOURCES
     ${TC_SRCDIR}/nm/nio/channels/FileChannelImpl.c
 
     ${TC_SRCDIR}/nm/net/ssl_SSL.c
-    ${TC_SRCDIR}/nm/net/SSLSocket.c
     ${TC_SRCDIR}/nm/net/ServerSocket.c
     ${TC_SRCDIR}/nm/net/Socket.c
     ${TC_SRCDIR}/nm/net/ConnectionManager.c
@@ -376,6 +375,11 @@ endif(DEFINED ANDROID_ABI)
 if(TARGET_WINCE)
   set(TC_WCE_SOURCES
     ${TC_SRCDIR}/util/win/aygshellLib.c
+  )
+else()
+  set(SOURCES
+    ${SOURCES}
+    ${TC_SRCDIR}/nm/net/ssl/SSLContextMbedtls.c
   )
 endif()
 

@@ -303,10 +303,10 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_socketCreate_siib"), &tnS_socketCreate_siib);
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_nativeClose"), &tnS_nativeClose);
    htPutPtr(&htNativeProcAddresses, hashCode("tnS_readWriteBytes_Biib"), &tnS_readWriteBytes_Biib);
-   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_init"), &tnsSSLS_init);
-   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_cleanup"), &tnsSSLS_cleanup);
-   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_startHandshake"), &tnsSSLS_startHandshake);
-   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLS_readWriteBytes_Biib"), &tnsSSLS_readWriteBytes_Biib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLCM_init_s"), &tnsSSLCM_init_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLCM_close"), &tnsSSLCM_close);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLCM_startHandshake"), &tnsSSLCM_startHandshake);
+   htPutPtr(&htNativeProcAddresses, hashCode("tnsSSLCM_readWriteBytes_sBiib"), &tnsSSLCM_readWriteBytes_sBiib);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_serversocketCreate_iiis"), &tnSS_serversocketCreate_iiis);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_nativeClose"), &tnSS_nativeClose);
    htPutPtr(&htNativeProcAddresses, hashCode("tnSS_nativeAccept"), &tnSS_nativeAccept);

@@ -13,15 +13,7 @@ import totalcross.net.UnknownHostException;
 /**
  * SSLSocketFactory creates SSLSockets.
  */
-public class SSLSocketFactory extends SocketFactory {
-	private static SSLSocketFactory instance;
-
-	public static SocketFactory getDefault() {
-		if (instance == null) {
-			instance = new SSLSocketFactory();
-		}
-		return instance;
-	}
+public abstract class SSLSocketFactory extends SocketFactory {
 
 	@Override
 	public Socket createSocket(String host, int port) throws UnknownHostException, IOException {
@@ -29,7 +21,5 @@ public class SSLSocketFactory extends SocketFactory {
 	}
 
 	@Override
-  public Socket createSocket(String host, int port, int timeout) throws UnknownHostException, IOException {
-		return new SSLSocket(host, port, timeout);
-	}
+	public abstract Socket createSocket(String host, int port, int timeout) throws UnknownHostException, IOException;
 }
