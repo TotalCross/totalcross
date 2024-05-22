@@ -48,6 +48,7 @@
 void getSerialNum(char *id, int maxlen);
 #if defined (darwin)
    int getRomVersion();
+   TCObject getUniqueId(Context context);
 #endif
 
 #if !defined(darwin)
@@ -407,6 +408,23 @@ bool fillSettings(Context currentContext)
       setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "ANDROID_ID") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "UNIQUE_ID", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      TCObject keyMap = *getStaticFieldObject(currentContext, settingsClass, "keyMap");
+      Method mapPut = getMethod(OBJ_CLASS(keyMap), true, "put", 2, "java.lang.Object", "java.lang.Object");
+      TCObject key = createStringObjectFromCharP(currentContext, "device.id", -1);
+      TCObject value;
+
+      jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
+      value = createStringObjectFromCharP(currentContext, strTemp, -1);
+      executeMethod(currentContext, mapPut, keyMap, key, value);
+      setObjectLock(key, UNLOCKED);
+      setObjectLock(value, UNLOCKED);
+   }
+
    // device capabilities
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "virtualKeyboard", "Z");
    *tcSettings.virtualKeyboardPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
@@ -537,6 +555,19 @@ bool fillSettings(Context currentContext)
    *tcSettings.is24HourPtr              = time24h;
    *tcSettings.timeSeparatorPtr         = timeSep;
    *tcSettings.weekStartPtr             = ws;
+
+   TCObject keyMap = *getStaticFieldObject(currentContext, settingsClass, "keyMap");
+   Method mapPut = getMethod(OBJ_CLASS(keyMap), true, "put", 2, "java.lang.Object", "java.lang.Object");
+   TCObject key = createStringObjectFromCharP(currentContext, "device.id", -1);
+   TCObject value;
+#ifdef darwin
+   value = getUniqueId(currentContext);
+#else
+   value = createStringObjectFromCharP(currentContext, "MACOSX", -1);
+#endif
+   executeMethod(currentContext, mapPut, keyMap, key, value);
+   setObjectLock(key, UNLOCKED);
+   setObjectLock(value, UNLOCKED);
 
    return true;
 }

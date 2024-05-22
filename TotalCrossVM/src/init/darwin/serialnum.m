@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
+#include "tcvm.h"
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIDevice.h>
@@ -165,4 +165,15 @@ int getRomVersion()
 {
    float ver = [[[UIDevice currentDevice] systemVersion] floatValue];
    return (int) (ver * 100);
+}
+
+TCObject getUniqueId(Context context) {
+    float ver = [[[UIDevice currentDevice] systemVersion] floatValue];
+    NSString* nsserial = ver >= 6 ? [DeviceUID uid] : // new for iOS 6 or above
+                                    [[UIDevice currentDevice] uniqueGlobalDeviceIdentifier];
+    if (nsserial != nil) {
+       const char* serial = [nsserial cStringUsingEncoding:NSASCIIStringEncoding];
+       return createStringObjectFromCharP(context, serial, xstrlen(serial));
+    }
+    return null;
 }

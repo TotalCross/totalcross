@@ -13,10 +13,13 @@ import android.net.wifi.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
+import android.media.MediaDrm;
+import android.media.UnsupportedSchemeException;
 
 import java.lang.reflect.*;
 import java.util.*;
 import java.net.NetworkInterface;
+import java.util.UUID;
 
 import totalcross.*;
 
@@ -62,6 +65,7 @@ public final class Settings4A
    public static String serialNumber;
    public static String macAddress;
    public static String ANDROID_ID;
+   public static String UNIQUE_ID;
 
    // device capabilities
    public static boolean virtualKeyboard;
@@ -181,7 +185,19 @@ public final class Settings4A
          serialNumber = String.valueOf(((long)macAddress.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
       
       ANDROID_ID = Settings.Secure.getString(Launcher4A.loader.getContentResolver(), Settings.Secure.ANDROID_ID);
-      
+
+      final UUID COMMON_PSSH_UUID = new UUID(0x1077EFECC0B24D02L, 0xACE33C1E52E2FB4BL);
+      final UUID CLEARKEY_UUID = new UUID(0xE2719D58A985B3C9L, 0x781AB030AF78D30EL);
+      final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
+      final UUID PLAYREADY_UUID = new UUID(0x9A04F07998404286L, 0xAB92E65BE0885F95L);
+
+      try {
+          MediaDrm mediaDrm = new MediaDrm(WIDEVINE_UUID);
+          UNIQUE_ID = AndroidUtils.encode(mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID));
+      } catch (UnsupportedSchemeException e) {
+          AndroidUtils.handleException(e, false);
+      }
+
       // virtualKeyboard
       virtualKeyboard = true; // always available on droid?
       

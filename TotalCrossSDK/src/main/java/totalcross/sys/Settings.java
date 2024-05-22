@@ -6,6 +6,7 @@
 package totalcross.sys;
 
 import java.io.File;
+import java.util.HashMap;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 import totalcross.ui.IVirtualKeyboard;
@@ -1058,7 +1059,23 @@ public final class Settings {
 
   /** Set to false to disable UI positional errors that are shown in Java SE */
   public static boolean showUIErrors = true;
-  
+
+  private static final HashMap<String, String> keyMap = new HashMap<>();
+
+  /**
+   * Returns an id from the mobile device (Android and iOS) that should be
+   * persistent on reinstall.
+   * 
+   * <ul>
+   * <li>Android - Uses UUID with MediaDrm to generate an ID.</li>
+   * <li>iOS - Retrieves value from UIDevice.identifierForVendor
+   * (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor)</li>
+   * </ul>
+   */
+  public static String getUniqueId() {
+    return keyMap.getOrDefault("device.id", "NOT_SUPPORTED");
+  }
+
   /**
    * On Android it has the value of Settings.Secure.ANDROID_ID.
    * Refer to the Android documentation for more details about this identifier:
