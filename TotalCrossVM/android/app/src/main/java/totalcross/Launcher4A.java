@@ -1880,24 +1880,31 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
         }
     }
 
+    private static Boolean needsManageExternalStorage = null;
+
     public static int requestStoragePermission() {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-         try {
-            PackageInfo packageInfo = Launcher4A.loader
-                     .getPackageManager()
-                     .getPackageInfo(Launcher4A.loader.getPackageName(), PackageManager.GET_PERMISSIONS);
-            if (packageInfo.requestedPermissions != null) {
-               for (String requestedPermission : packageInfo.requestedPermissions) {
-                  if (Manifest.permission.MANAGE_EXTERNAL_STORAGE.compareTo(requestedPermission) == 0){
-                     Launcher4A.loader.requestManageStorageAccess();
-                     return PermissionHandler.GRANTED;
-                  }
-               }
-            }
-         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-         }
-      }
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+          if (needsManageExternalStorage == null) {
+             try {
+                needsManageExternalStorage = Boolean.FALSE;
+                PackageInfo packageInfo = Launcher4A.loader
+                      .getPackageManager()
+                      .getPackageInfo(Launcher4A.loader.getPackageName(), PackageManager.GET_PERMISSIONS);
+                if (packageInfo.requestedPermissions != null) {
+                   for (String requestedPermission : packageInfo.requestedPermissions) {
+                      if (Manifest.permission.MANAGE_EXTERNAL_STORAGE.compareTo(requestedPermission) == 0) {
+                         needsManageExternalStorage = Boolean.TRUE;
+                      }
+                   }
+                }
+             } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+             }
+          }
+          if (needsManageExternalStorage == Boolean.TRUE) {
+             needsManageExternalStorage = !Launcher4A.loader.requestManageStorageAccess();
+          }
+       }
 
        return STORAGE.requestPermissions();
     }
