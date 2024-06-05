@@ -257,7 +257,7 @@ public class JSONTokener {
    */
   public String nextString(char quote) throws JSONException {
     char c;
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder(64);
     for (;;) {
       c = this.next();
       switch (c) {
