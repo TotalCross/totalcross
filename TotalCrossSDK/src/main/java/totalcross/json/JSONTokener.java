@@ -1,5 +1,8 @@
 package totalcross.json;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /*
 Copyright (c) 2002 JSON.org
 
@@ -41,8 +44,7 @@ public class JSONTokener {
   //private ByteArrayStream  reader;
   private boolean usePrevious;
 
-  private int idx, len;
-  private String source;
+  private InputStream source;
 
   /**
    * Construct a JSONTokener from a Reader.
@@ -64,10 +66,29 @@ public class JSONTokener {
    * Construct a JSONTokener from an InputStream.
    * @param inputStream The source.
    */
-  /*    public JSONTokener(InputStream inputStream) throws JSONException {
-        this(new InputStreamReader(inputStream));
+  public JSONTokener(InputStream inputStream) throws JSONException {
+    source = inputStream;
+    // this(new InputStreamReader(inputStream));
+  }
+
+  class StringStream extends InputStream {
+
+    private String source;
+    private int idx;
+
+    StringStream(String source) {
+      this.source = source;
+      this.idx = 0;
     }
-   */
+
+    @Override
+    public int read() throws IOException {
+      if (idx >= source.length()) {
+        return -1;
+      }
+      return source.charAt(idx++);
+    }
+  }
 
   /**
    * Construct a JSONTokener from a string.
@@ -75,8 +96,7 @@ public class JSONTokener {
    * @param s     A source string.
    */
   public JSONTokener(String s) {
-    source = s;
-    len = s.length();
+    source = new StringStream(s);
     //this(new ByteArrayStream(s.getBytes()));//StringReader(s));
   }
 
@@ -143,8 +163,12 @@ public class JSONTokener {
       this.usePrevious = false;
       c = this.previous;
     } else {
-      c = idx == len ? 0 : source.charAt(idx++);//this.reader.read();
-
+      try {
+        c = source.read();
+      } catch (IOException e) {
+        throw new JSONException(e);
+      }
+      
       if (c <= 0) { // End of stream
         this.eof = true;
         c = 0;
@@ -375,17 +399,18 @@ public class JSONTokener {
    * @return The requested character, or zero if the requested character
    * is not found.
    */
+/* 
   public char skipTo(char to) throws JSONException {
     char c;
     try {
       long startIndex = this.index;
       long startCharacter = this.character;
       long startLine = this.line;
-      int oldIdx = idx;//this.reader.mark(1000000);
+      //this.reader.mark(1000000);
       do {
         c = this.next();
         if (c == 0) {
-          idx = oldIdx;//this.reader.reset();
+          //this.reader.reset();
           this.index = startIndex;
           this.character = startCharacter;
           this.line = startLine;
@@ -398,6 +423,7 @@ public class JSONTokener {
     this.back();
     return c;
   }
+ */
 
   /**
    * Make a JSONException to signal a syntax error.

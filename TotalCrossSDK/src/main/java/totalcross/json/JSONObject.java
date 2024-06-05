@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.io.InputStream;
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its external
@@ -317,6 +318,18 @@ public class JSONObject {
    *                duplicated key.
    */
   public JSONObject(String source) throws JSONException {
+    this(new JSONTokener(source));
+  }
+
+  /**
+   * Construct a JSONObject from a source input stream.
+   * 
+   * @param source input stream to read data from.
+   * @throws JSONException
+   *                If there is a syntax error in the source string or a
+   *                duplicated key.
+   */
+  public JSONObject(InputStream source) throws JSONException {
     this(new JSONTokener(source));
   }
 
