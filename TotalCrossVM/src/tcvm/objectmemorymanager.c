@@ -145,7 +145,7 @@ pointer to next):
 void gc2(Context currentContext, bool lockOMM);
 void soundTone(int32 frequency, int32 duration);
 
-#if (defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID)
+#if (defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID) || defined (__APPLE__)
 #define DEFAULT_CHUNK_SIZE (1024*1024-48)
 #else
 #define DEFAULT_CHUNK_SIZE (64*1024-64) 
