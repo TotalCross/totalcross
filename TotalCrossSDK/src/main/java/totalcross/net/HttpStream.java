@@ -6,6 +6,8 @@
 
 package totalcross.net;
 
+import java.security.NoSuchAlgorithmException;
+
 import totalcross.io.IOException;
 import totalcross.io.LineReader;
 import totalcross.io.Stream;
@@ -13,6 +15,7 @@ import totalcross.io.TokenReader;
 import totalcross.net.mail.MessagingException;
 import totalcross.net.mail.Multipart;
 import totalcross.net.mail.Part;
+import totalcross.net.ssl.SSLContext;
 import totalcross.net.ssl.SSLSocket;
 import totalcross.sys.AbstractCharacterConverter;
 import totalcross.sys.CharacterConverter;
@@ -408,12 +411,16 @@ public class HttpStream extends Stream {
     public int writeBytesSize = 1024;
 
     /**
-     * Socket factory used to create the underlying connection. You may replace it with a SSLSocketFactory to make a
-     * HTTPS connection over a secure socket, or with your own subclass of SocketFactory.
+     * Can be used to force HttpStream to use the defined socket factory when
+     * creating the underlying connection. HttpStream automatically picks the
+     * default socket factory for HTTP or HTTPS connections
+     * (SocketFactory.getDefault() and SSLContext.getDefault().getSocketFactory()
+     * respectively). Use this field only if you wish to replace this default
+     * behavior.
      * 
      * @since TotalCross 1.6
      */
-    public SocketFactory socketFactory = SocketFactory.getDefault();
+    public SocketFactory socketFactory = null;
 
     /**
      * Charset encoding ISO-8859-1
@@ -670,6 +677,7 @@ public class HttpStream extends Stream {
   protected void init(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException {
     int port;
     String strUri;
+    final boolean isHttps = "https".equals(uri.scheme.toString());
 
     this.uri = uri;
 
@@ -689,13 +697,18 @@ public class HttpStream extends Stream {
     buffer = new byte[BUFSIZE];
 
     if (port <= 0) {
-      if (uri.scheme.toString().equals("https")) {
-        port = 443;
-      } else {
-        port = 80;
-      }
+      port = isHttps ? 443 : 80;
     }
     state = -1;
+
+    if (options.socketFactory == null) {
+      try {
+        options.socketFactory = isHttps ? SSLContext.getDefault().getSocketFactory()
+            : SocketFactory.getDefault();
+      } catch (NoSuchAlgorithmException e) {
+        throw new IOException(e);
+      }
+    }
 
     socket = options.socketFactory.createSocket(strUri, port, options.openTimeOut);
     socket.readTimeout = options.readTimeOut;
