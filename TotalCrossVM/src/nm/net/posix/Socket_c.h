@@ -252,7 +252,7 @@ Finish:
  *************************************/
 static Err socketClose(SOCKET* socketHandle)
 {
-   shutdown(*socketHandle, SHUT_WR); // always call close, even if shutdown fails
+   shutdown(*socketHandle, SHUT_RDWR); // always call close, even if shutdown fails
    if (close(*socketHandle) < 0)
       goto error;
 
