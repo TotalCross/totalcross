@@ -158,7 +158,8 @@ TC_API void tnsSSLCM_close(NMParams p) // totalcross/net/ssl/SSLContextMbedtls v
    ssl_config = (mbedtls_ssl_config*) ARRAYOBJ_START(ssl_config_object);
    entropy_context = (mbedtls_entropy_context*) ARRAYOBJ_START(entropy_context_object);
 
-   mbedtls_net_free( net_context );
+   // Usually we would start with net_free, but we'll leave this to the Socket class
+   // mbedtls_net_free( net_context );
    mbedtls_ssl_free( ssl_context );
    mbedtls_ssl_config_free( ssl_config );
    mbedtls_ctr_drbg_free( ctr_drbg );
