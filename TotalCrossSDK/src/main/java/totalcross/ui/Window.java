@@ -1173,8 +1173,8 @@ public class Window extends Container {
   @Override
   protected void getClientRect(Rect r) // guich@450_36
   {
-    int m = borderGaps[borderStyle];
-    boolean onlyBorder = borderStyle == NO_BORDER
+    int m = (borderStyle < NO_BORDER || borderStyle > VERTICAL_GRADIENT) ? 0 : borderGaps[borderStyle];
+    boolean onlyBorder = borderStyle <= NO_BORDER
         || ((title == null || title.isEmpty()) && (borderStyle == ROUND_BORDER && uiAndroid));
 
     r.x = m;
