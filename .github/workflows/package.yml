@@ -28,7 +28,7 @@ jobs:
 
     steps:
     - name: Download SDK build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: sdk-build
         path: .
@@ -38,7 +38,7 @@ jobs:
  
     - name: Download Linux amd64
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: linux-amd64
         path: linux-amd64
@@ -53,7 +53,7 @@ jobs:
  
     - name: Download Linux arm32
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: linux-arm32v7
         path: linux-arm32v7
@@ -68,7 +68,7 @@ jobs:
 
     - name: Download Linux arm64
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: linux-arm64
         path: linux-arm64
@@ -83,7 +83,7 @@ jobs:
 
     - name: Download macOS ARM64
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: macos-arm64
         path: macos-arm64
@@ -98,7 +98,7 @@ jobs:
 
     - name: Download Windows
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: windows
         path: windows
@@ -114,7 +114,7 @@ jobs:
 
     - name: Download Android
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: android
         path: android
@@ -136,7 +136,7 @@ jobs:
 
     - name: Download iOS
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: ios
         path: ios
@@ -208,7 +208,7 @@ jobs:
         java-version: 17
 
     - name: Download packaged SDK zip
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.7
       with:
         name: TotalCross-${{ needs.package_totalcross.outputs.version }}
         path: packaged
