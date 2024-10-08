@@ -715,8 +715,6 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
             integrator.setDesiredBarcodeFormats(null);
           }
           integrator.setPrompt(scanmsg);
-          integrator.setResultDisplayDuration(1000);
-          integrator.autoWide(); // Wide scanning rectangle, may work better for 1D barcodes
           integrator.setCameraId(0); // Use a specific camera of the device
           integrator.initiateScan();
         }
