@@ -35,6 +35,7 @@ import android.widget.*;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 // import com.google.android.gms.ads.*;
+import com.google.android.gms.common.util.CollectionUtils;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.zxing.integration.android.*;
@@ -712,7 +713,11 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                   }
                   else
                   {
-            integrator.setDesiredBarcodeFormats(null);
+            List<String> modes = new ArrayList<>();
+            modes.addAll(IntentIntegrator.ONE_D_CODE_TYPES);
+            modes.addAll(IntentIntegrator.QR_CODE_TYPES);
+            modes.addAll(IntentIntegrator.DATA_MATRIX_TYPES);
+            integrator.setDesiredBarcodeFormats(modes);
           }
           integrator.setPrompt(scanmsg);
           integrator.setCameraId(0); // Use a specific camera of the device
