@@ -222,9 +222,6 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                                 new File(capturedImageFilePath).delete();
                             } catch (Exception e) {
                             }
-                            getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID
-                                    + "=" + cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)), null);
-                            removeLastImageFromGallery(date);
                         } catch (Exception e) {
                             AndroidUtils.handleException(e, false);
                         }
