@@ -65,9 +65,9 @@ android {
     }
 
     task assembleAssets(type: Zip) {
-        baseName "tcfiles"
+        archiveBaseName = "tcfiles"
         entryCompression ZipEntryCompression.STORED
-        destinationDir file('src/main/assets')
+        destinationDirectory = file('src/main/assets')
 
         from("${rootDir}/../../TotalCrossSDK/dist/vm") {
             include 'TCBase.tcz'
