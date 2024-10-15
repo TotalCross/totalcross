@@ -22,8 +22,11 @@ if(NOT zlib_POPULATED)
     set(WITH_REDUCED_MEM OFF CACHE BOOL "" FORCE) # may be useful for embedded
     set(WITH_NEW_STRATEGIES ON CACHE BOOL "" FORCE)
     if (DEFINED ANDROID_ABI)
-        if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
-            set(WITH_ARMV6 OFF CACHE BOOL "" FORCE) # https://github.com/zlib-ng/zlib-ng/issues/1616
+        # https://github.com/zlib-ng/zlib-ng/issues/1616
+        if(${ANDROID_ABI} STREQUAL "arm64-v8a")
+            set(WITH_ARMV6 OFF CACHE BOOL "" FORCE)
+        elseif(${ANDROID_ABI} STREQUAL "armeabi-v7a")
+            set(WITH_NEON OFF CACHE BOOL "" FORCE)
         endif()
     endif()
     set(WITH_UNALIGNED ON CACHE BOOL "" FORCE)
