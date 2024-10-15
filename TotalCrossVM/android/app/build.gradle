@@ -19,7 +19,7 @@ def buildType // stores build type, debug or release
 
 android {
     namespace 'totalcross.android'
-    compileSdkVersion 33
+    compileSdk 33
 
     androidResources {
         noCompress 'zip'
