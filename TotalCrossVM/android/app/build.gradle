@@ -19,7 +19,7 @@ def buildType // stores build type, debug or release
 
 android {
     namespace 'totalcross.android'
-    compileSdk 33
+    compileSdk 34
 
     androidResources {
         noCompress 'zip'
@@ -41,7 +41,7 @@ android {
     defaultConfig {
         applicationId "totalcross.android"
         minSdkVersion 19
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
@@ -128,6 +128,6 @@ dependencies {
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
 
     implementation("androidx.appcompat:appcompat:1.4.2")
-    implementation "androidx.core:core-ktx:1.8.0"
+    implementation "androidx.core:core-ktx:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
