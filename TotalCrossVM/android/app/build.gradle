@@ -108,12 +108,12 @@ dependencies {
     implementation 'com.github.cliftonlabs:json-simple:2.1.2'
 
     // Supports Android 4.0.3 and later (API level 15)
-    implementation 'com.journeyapps:zxing-android-embedded:3.4.0@aar'
+    implementation 'com.journeyapps:zxing-android-embedded:3.5.0@aar'
 
     // Version 3.0.x of zxing core contains some code that is not compatible on Android 2.2 and earlier.
     // This mostly affects encoding, but you should test if you plan to support these versions.
     // Older versions e.g. 2.2 may also work if you need support for older Android versions.
-    implementation 'com.google.zxing:core:3.2.0'
+    implementation 'com.google.zxing:core:3.3.0'
 
     // Enables MultiDex. This allows the app to have more than 64k methods
     implementation 'androidx.multidex:multidex:2.0.0'

@@ -187,11 +187,6 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
     case MAP_RETURN:
       Launcher4A.showingMap = false;
       break;
-    case IntentIntegrator.REQUEST_CODE:
-      IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-      Launcher4A.zxingResult = result.getContents();
-      Launcher4A.callingZXing = false;
-      break;
         case EXTCAMERA_RETURN: {
             if (capturedImageURI == null) {
                 AndroidUtils.debug("capturedImageURI is null!");
@@ -237,6 +232,13 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
         }
+        default:
+          if (requestCode == IntentIntegrator.REQUEST_CODE) {
+            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+            Launcher4A.zxingResult = result.getContents();
+            Launcher4A.callingZXing = false;
+          }
+          break;
     }
   }
 
