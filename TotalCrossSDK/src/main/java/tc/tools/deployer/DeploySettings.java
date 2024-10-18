@@ -199,23 +199,26 @@ public class DeploySettings {
     System.out.println("Classpath: " + cp0);
 
     // find the demo and release folders for totalcross
-    String f = System.getenv("TOTALCROSS3_HOME");
-    if (f == null) {
-      f = System.getenv("TOTALCROSS3");
+    if (distDir != null) {
+      folderTotalCross3DistVM = distDir + "vm/";
     }
-    if (f != null) {
-      folderTotalCross3DistVM = Convert.appendPath(f, "dist/vm/");
-      if (!new File(folderTotalCross3DistVM).isDir()) {
-        folderTotalCross3DistVM = Convert.appendPath(f, "vm/");
+    
+    if (folderTotalCross3DistVM == null) {
+      String f = System.getenv("TOTALCROSS3_HOME");
+      if (f == null) {
+        f = System.getenv("TOTALCROSS3");
+      }
+      if (f != null) {
+        folderTotalCross3DistVM = Convert.appendPath(f, "dist/vm/");
         if (!new File(folderTotalCross3DistVM).isDir()) {
-          folderTotalCross3DistVM = f;
+          folderTotalCross3DistVM = Convert.appendPath(f, "vm/");
+          if (!new File(folderTotalCross3DistVM).isDir()) {
+            folderTotalCross3DistVM = f;
+          }
         }
       }
     }
 
-    if (folderTotalCross3DistVM == null) {
-      folderTotalCross3DistVM = distDir + "vm/";
-    }
     // check if folders exist
     if (folderTotalCross3DistVM == null || !new File(folderTotalCross3DistVM).exists()) {
       folderTotalCross3DistVM = null;
