@@ -66,11 +66,11 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    int res;
    long arg;
    struct pollfd pfdWrite;
+   socklen_t lon;
+   int valopt;
 #ifndef darwin
    struct hostent *phostent;
    struct sockaddr_in destination_sin;
-   socklen_t lon;
-   int valopt;
 #else
    struct addrinfo hints;
    struct addrinfo *currentAddrInfo;
@@ -139,40 +139,48 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
          continue;
       }
         
-      // Set non-blocking
-      arg = fcntl(hostSocket, F_GETFL, NULL);
-      arg |= O_NONBLOCK;
-      fcntl(hostSocket, F_SETFL, arg);
+        // Set non-blocking
+        arg = fcntl(hostSocket, F_GETFL, NULL);
+        arg |= O_NONBLOCK;
+        fcntl(hostSocket, F_SETFL, arg);
  
-      res = connect(hostSocket, currentAddrInfo->ai_addr, currentAddrInfo->ai_addrlen);
-        
-      if (res < 0) {
-         if (errno != EINPROGRESS) {
-            goto Timeout;
-         }
-            
-      pfdWrite.fd = hostSocket;
-      pfdWrite.events = POLLOUT;
-      if ((res = poll(&pfdWrite, 1, timeout)) < 0) {
-         goto Timeout;
-      }
-      if (res == 0) {
-         err = ETIMEDOUT;
-         *timedOut = true;
-         goto Timeout;
-      }
-      if (pfdWrite.revents & (POLLERR|POLLNVAL)) {
-         goto Timeout;
-      }
-   }
-   *timedOut = false;
-   break;  /* okay we got one */
-        
-   Timeout:
-      close(hostSocket);
-      hostSocket = -1;
-      continue;
-   }
+        res = connect(hostSocket,
+                      currentAddrInfo->ai_addr, currentAddrInfo->ai_addrlen);
+        if (res < 0)
+        {
+           if (errno != EINPROGRESS)
+              goto close_and_continue;
+
+           pfdWrite.fd = hostSocket;
+           pfdWrite.events = POLLOUT;
+           if ((res = poll(&pfdWrite, 1, timeout)) < 0) {
+              goto close_and_continue;
+           }
+           if (res == 0)
+           {
+              err = ETIMEDOUT;
+              *timedOut = true;
+              goto close_and_continue;
+           }
+           if (pfdWrite.revents & (POLLERR|POLLNVAL)) {
+              goto close_and_continue;
+           }
+           lon = sizeof(int);
+           getsockopt(hostSocket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
+           if (valopt)
+           {
+              errno = valopt;
+              goto close_and_continue;
+           }
+        }
+ 
+        break;  /* okay we got one */
+close_and_continue:
+        close(hostSocket);
+        hostSocket = -1;
+        continue;
+    }
+clean_ios:
    freeaddrinfo(addrInfoList);
    if (hostSocket < 0) {
       goto Error;
@@ -231,7 +239,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    return NO_ERROR;
 
 Error: // Close the socket.
-   err = (*isUnknownHost) ? EHOSTUNREACH : errno;
+   err = (*isUnknownHost) ? EHOSTUNREACH : (err == ETIMEDOUT ? err : errno);
 Finish:
    if (hostSocket > 0) {
       socketClose(&hostSocket);
