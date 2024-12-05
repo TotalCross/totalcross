@@ -46,7 +46,10 @@
    // Youtube Player
    
    // gps
-@public   
+
+    // picker
+    UIDocumentPickerViewController *documentPickerController;
+@public
    CLLocationManager* locationManager;
    int locationFlags, locationDate, locationTime, locationSat, locationCount;
    double locationVeloc, locationPDOP, locationDir;
@@ -65,6 +68,7 @@
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
 - (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t;
+- (BOOL) documentPickerStart:(NSString*) fileName width:(int)w height:(int)h type:(int)t;
 - (void) updateLayout;
 - (void) dialNumber:(NSString*) number;
 - (BOOL) mapsShowAddress:(NSString*) address flags:(int)flags;

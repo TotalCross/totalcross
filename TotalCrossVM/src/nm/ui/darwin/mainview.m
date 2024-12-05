@@ -12,6 +12,7 @@
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 #import <AVFoundation/AVFoundation.h>
+@import UniformTypeIdentifiers;
 
 #define LKLayer CALayer
 
@@ -22,6 +23,8 @@ void Sleep(int ms);
 static bool callingCamera;
 UIWindow* barwindow;
 static bool callingBarcode;
+static bool callingDocumentPicker;
+static char documentChars[4096];
 
 static char barcode[2048];
 static NSMutableString *currBarcode;
@@ -405,6 +408,71 @@ int isShown;
    return imageFileName != null;
 }
 
+-(BOOL) documentPickerStart:(NSString*) fileName width:(int)w height:(int)h type:(int)t
+{
+    documentChars[0] = 0;
+    callingDocumentPicker = true;
+   {
+	   dispatch_sync(dispatch_get_main_queue(), ^
+	   {
+           BOOL allowsMultipleSelection = false;
+           BOOL pickDirectory = false;
+           BOOL isDirectory = false;
+           @try{
+               self->documentPickerController = [[UIDocumentPickerViewController alloc]
+                                                initWithDocumentTypes: isDirectory ? @[@"public.folder"] : @[@"public.item"]/*self.allowedExtensions*/
+                                                inMode: isDirectory ? UIDocumentPickerModeOpen : UIDocumentPickerModeImport];
+           } @catch (NSException * e) {
+//               Log(@"Couldn't launch documents file picker. Probably due to iOS version being below 11.0 and not having the iCloud entitlement. If so, just make sure to enable it for your app in Xcode. Exception was: %@", e);
+//               _result = nil;
+               return;
+           }
+           
+           self->documentPickerController.allowsMultipleSelection = NO;//allowsMultipleSelection;
+           self->documentPickerController.delegate = self;
+           self->documentPickerController.presentationController.delegate = self;
+           
+           [documentPickerController setDelegate:self];
+           [self presentModalViewController:documentPickerController animated:NO];
+	   });
+	   while (callingDocumentPicker)
+	      Sleep(100);
+	   UIDeviceOrientation o = [child_view getOrientation];
+	   if (o != UIDeviceOrientationLandscapeLeft && o != UIDeviceOrientationLandscapeRight) // when the camera comes back from landscape and we call updateLayout, the screen gets painted as if it was in portrait. this hack makes the screen a bit better, but still buggy.
+	      [self updateLayout];
+   }
+
+   return true;
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls{
+    if (urls != NULL && urls.count > 0) {
+        NSString *documentUrlString = [urls[0] absoluteString];
+        strncpy(documentChars, [documentUrlString cStringUsingEncoding: NSASCIIStringEncoding], MIN([documentUrlString length], sizeof(documentChars)));
+    }
+    
+    [self dismissModalViewControllerAnimated:NO];
+    callingDocumentPicker = false;
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url
+{
+//    [self documentPickerCompleted:controller documents:@[url]];
+    if (url != NULL) {
+        NSString *documentUrlString = [url absoluteString];
+        strncpy(documentChars, [documentUrlString cStringUsingEncoding: NSASCIIStringEncoding], MIN([documentUrlString length], sizeof(documentChars)));
+    }
+    
+    [self dismissModalViewControllerAnimated:NO];
+    callingDocumentPicker = false;
+}
+
+- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller
+{
+    [self dismissModalViewControllerAnimated:NO];
+    callingDocumentPicker = false;
+}
+
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
    [self->imagePicker dismissModalViewControllerAnimated:NO];
@@ -595,6 +663,21 @@ int iphone_cameraClick(int w, int h, int t, char* fileName)
 {
    NSString* string = [NSString stringWithFormat:@"%s", fileName];
    return [DEVICE_CTX->_mainview cameraClick:string width:w height:h type:t];
+}
+
+char* iphone_documentPickerStart(int w, int h, int t, char** ret)
+{
+   NSString* string = [NSString stringWithFormat:@"file.txt"];
+    xmemzero(documentChars, sizeof(documentChars));
+   [DEVICE_CTX->_mainview documentPickerStart:string width:w height:h type:t];
+    
+    if (documentChars[0] != 0) {
+        int n = xstrlen(documentChars);
+        (*ret) = xmalloc(sizeof(char) * (n + 1));
+        xstrncpy(*ret, documentChars, n);
+    }
+
+    return (*ret);
 }
 
 int iphone_gpsStart()
