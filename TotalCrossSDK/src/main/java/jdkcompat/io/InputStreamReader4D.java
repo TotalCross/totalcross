@@ -52,8 +52,10 @@ import java.io.InputStream;
 //import java.nio.charset.CoderResult;
 //import java.nio.charset.CodingErrorAction;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
-import totalcross.sys.CharacterConverter;
+import totalcross.sys.AbstractCharacterConverter;
 import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 
@@ -172,6 +174,7 @@ public class InputStreamReader4D extends Reader {
       throw new NullPointerException();
     }
     this.in = in;
+    this.cconv = Convert.charConverter;
     //    try
     //        {
     //          encoding = EncodingHelper.getDefaultEncoding();//SystemProperties.getProperty("file.encoding");
@@ -217,14 +220,15 @@ public class InputStreamReader4D extends Reader {
    * @exception UnsupportedEncodingException If the encoding scheme
    * requested is not available.
    */
-  //  public InputStreamReader4D(InputStream in, String encoding_name)
-  //    throws UnsupportedEncodingException
-  //  {
-  //    if (in == null
-  //        || encoding_name == null)
-  //      throw new NullPointerException();
-  //
-  //    this.in = in;
+   public InputStreamReader4D(InputStream in, String encoding_name)
+     throws UnsupportedEncodingException
+   {
+     if (in == null
+         || encoding_name == null)
+       throw new NullPointerException();
+  
+     this.in = in;
+     this.cconv = (AbstractCharacterConverter) Charset.forName(encoding_name);
   //    // Don't use NIO if avoidable
   //    if(EncodingHelper.isISOLatin1(encoding_name))
   //      {
@@ -253,7 +257,7 @@ public class InputStreamReader4D extends Reader {
   //      maxBytesPerChar = 1f;
   //      decoder = null;
   //    }
-  //  }
+   }
 
   /**
    * Creates an InputStreamReader that uses a decoder of the given
@@ -262,10 +266,11 @@ public class InputStreamReader4D extends Reader {
    *
    * @since 1.4
    */
-  //  public InputStreamReader4D(InputStream in, Charset charset) {
-  //    if (in == null)
-  //      throw new NullPointerException();
-  //    this.in = in;
+   public InputStreamReader4D(InputStream in, Charset charset) {
+     if (in == null)
+       throw new NullPointerException();
+     this.in = in;
+     this.cconv = (AbstractCharacterConverter) charset;
   //    decoder = charset.newDecoder();
   //
   //    try {
@@ -278,7 +283,7 @@ public class InputStreamReader4D extends Reader {
   //    decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
   //    decoder.reset();
   //    encoding = EncodingHelper.getOldCanonical(charset.name());
-  //  }
+   }
 
   /**
    * Creates an InputStreamReader that uses the given charset decoder
@@ -339,10 +344,10 @@ public class InputStreamReader4D extends Reader {
    *
    * @return The current encoding name
    */
-  //  public String getEncoding()
-  //  {
-  //    return in != null ? encoding : null;
-  //  }
+   public String getEncoding()
+   {
+     return in != null ? cconv.name() : null;
+   }
 
   /**
    * This method checks to see if the stream is ready to be read.  It
@@ -367,7 +372,7 @@ public class InputStreamReader4D extends Reader {
   private static final int BUFFER_SIZE = 16 * 1024;
   private byte[] readBytesBuff = new byte[BUFFER_SIZE];
 
-  private CharacterConverter cconv = (CharacterConverter) Convert.charsetForName("ISO-8859-1");
+  private final AbstractCharacterConverter cconv;
 
   /**
    * This method reads up to <code>length</code> characters from the stream into
