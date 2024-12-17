@@ -22,6 +22,8 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
  */
 public class UTF8CharacterConverter extends AbstractCharacterConverter {
 
+  public static char REPLACEMENT_CHARACTER = '\uFFFD';
+
   protected UTF8CharacterConverter() {
     super("UTF-8", new String[] {
         "unicode-1-1-utf-8",
@@ -53,14 +55,14 @@ public class UTF8CharacterConverter extends AbstractCharacterConverter {
       }
       if (start >= end) // If no byte follows,
       {
-        chars[tgtOfs++] = '?'; // set MCS
+        chars[tgtOfs++] = REPLACEMENT_CHARACTER; // set MCS
         break; // done
       }
       int c = (bytes[start++] & 0xFF) ^ 0x80; // 2nd byte
       if ((c & 0xC0) != 0) // starts new sequence?
       {
         --start; // Yes, backup
-        chars[tgtOfs++] = '?'; // set MCS
+        chars[tgtOfs++] = REPLACEMENT_CHARACTER; // set MCS
         continue; // pursue
       }
       int r = (c0 << 6) | c; // Get encoded value
@@ -71,14 +73,14 @@ public class UTF8CharacterConverter extends AbstractCharacterConverter {
       }
       if (start >= end) // If no byte follows,
       {
-        chars[tgtOfs++] = '?'; // set MCS
+        chars[tgtOfs++] = REPLACEMENT_CHARACTER; // set MCS
         break; // done
       }
       c = (bytes[start++] & 0xFF) ^ 0x80; // 3rd byte
       if ((c & 0xC0) != 0) // starts new sequence?
       {
         --start; // Yes, backup
-        chars[tgtOfs++] = '?'; // set MCS
+        chars[tgtOfs++] = REPLACEMENT_CHARACTER; // set MCS
         continue; // pursue
       }
       chars[tgtOfs++] = (char) ((r << 6) | c); // Get encoded value

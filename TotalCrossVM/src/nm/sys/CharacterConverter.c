@@ -70,14 +70,14 @@ TCObject utf8bytes2chars(Context currentContext, uint8* bytes, int32 length)
          }
          if (start >= end)                       // If no byte follows,
          {
-            *chars++ = '?';                      // set MCS
+            *chars++ = 0xFFFD;                      // set MCS
             break;                               // done
          }
          c = (bytes[start++] & 0xFF) ^ 0x80; // 2nd byte
          if ((c & 0xC0) != 0)                    // starts new sequence?
          {
             --start;                             // Yes, backup
-            *chars++ = '?';                      // set MCS
+            *chars++ = 0xFFFD;                      // set MCS
             continue;                            // pursue
          }
          r = (c0 << 6) | c;                  // Get encoded value
@@ -88,14 +88,14 @@ TCObject utf8bytes2chars(Context currentContext, uint8* bytes, int32 length)
          }
          if (start >= end)                       // If no byte follows,
          {
-            *chars++ = '?';                      // set MCS
+            *chars++ = 0xFFFD;                      // set MCS
             break;                               // done
          }
          c = (bytes[start++] & 0xFF) ^ 0x80;     // 3rd byte
          if ((c & 0xC0) != 0)                    // starts new sequence?
          {
             --start;                             // Yes, backup
-            *chars++ = '?';                      // set MCS
+            *chars++ = 0xFFFD;                      // set MCS
             continue;                            // pursue
          }
          *chars++ = (JChar)((r << 6) | c); // Get encoded value
