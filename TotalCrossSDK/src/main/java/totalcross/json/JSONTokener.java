@@ -1,7 +1,10 @@
 package totalcross.json;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+
+import jdkcompat.io.StringReader4D;
 
 /*
 Copyright (c) 2002 JSON.org
@@ -41,53 +44,18 @@ public class JSONTokener {
   private long index;
   private long line;
   private char previous;
-  //private ByteArrayStream  reader;
   private boolean usePrevious;
 
-  private InputStream source;
+  private Reader source;
 
   /**
    * Construct a JSONTokener from a Reader.
    *
    * @param reader     A reader.
    */
-  /*    public JSONTokener(ByteArrayStream reader) {
-        this.reader = reader;//reader.markSupported()? reader: new BufferedReader(reader);
-        this.eof = false;
-        this.usePrevious = false;
-        this.previous = 0;
-        this.index = 0;
-        this.character = 1;
-        this.line = 1;
-    }
-   */
 
-  /**
-   * Construct a JSONTokener from an InputStream.
-   * @param inputStream The source.
-   */
-  public JSONTokener(InputStream inputStream) throws JSONException {
-    source = inputStream;
-    // this(new InputStreamReader(inputStream));
-  }
-
-  class StringStream extends InputStream {
-
-    private String source;
-    private int idx;
-
-    StringStream(String source) {
-      this.source = source;
-      this.idx = 0;
-    }
-
-    @Override
-    public int read() throws IOException {
-      if (idx >= source.length()) {
-        return -1;
-      }
-      return source.charAt(idx++);
-    }
+  public JSONTokener(Reader reader) throws JSONException {
+    source = reader;
   }
 
   /**
@@ -96,8 +64,7 @@ public class JSONTokener {
    * @param s     A source string.
    */
   public JSONTokener(String s) {
-    source = new StringStream(s);
-    //this(new ByteArrayStream(s.getBytes()));//StringReader(s));
+    source = new StringReader4D(s);
   }
 
   /**
