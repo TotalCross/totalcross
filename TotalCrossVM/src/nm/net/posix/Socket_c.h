@@ -59,6 +59,8 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr);
 #endif
 #endif
 
+#define IPV6 true
+
 static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost, bool *timedOut)
 {
    Err err;
@@ -68,20 +70,20 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    struct pollfd pfdWrite;
    socklen_t lon;
    int valopt;
-#ifndef darwin
-   struct hostent *phostent;
-   struct sockaddr_in destination_sin;
-#else
+#if IPV6
    struct addrinfo hints;
    struct addrinfo *currentAddrInfo;
    struct addrinfo *addrInfoList;
    in_port_t* portPtr;
+#else
+   struct hostent *phostent;
+   struct sockaddr_in destination_sin;
 #endif
 
    /*
     * Resolve hostname
     */
-#if defined (darwin)
+#if IPV6
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
@@ -113,7 +115,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    destination_sin.sin_port = htons((uint16) port);
 #endif   
    
-#if defined (darwin)
+#if IPV6
     for (currentAddrInfo = addrInfoList; currentAddrInfo; currentAddrInfo = currentAddrInfo->ai_next) {
       // Set the port we want to connect to
       switch (currentAddrInfo->ai_family) {
