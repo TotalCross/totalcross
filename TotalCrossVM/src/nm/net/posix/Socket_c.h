@@ -83,7 +83,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
     */
 #if defined (darwin)
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_UNSPEC;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     if ((err = getaddrinfo(hostname, "http", &hints, &addrInfoList)) != 0) {
         //debug("getaddrinfo %d, %s", error, gai_strerror(error));
