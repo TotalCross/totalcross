@@ -389,15 +389,16 @@ public class InputStreamReader4D extends Reader {
    */
   @Override
   public int read(char[] b, int off, int len) throws java.io.IOException {
+    if (off < 0 || len < 0 || len > b.length - off) {
+      throw new IndexOutOfBoundsException();
+    }
+
     synchronized (lock) {
       if (eos) {
         return -1;
       }
 
-      int arraySize = b.length;
-      int maxReadable = Math.min(len, arraySize - off);
-      int remaining = maxReadable;
-
+      int remaining = len;
       int offsetUsed = off;
       int totalRead = 0;
 
