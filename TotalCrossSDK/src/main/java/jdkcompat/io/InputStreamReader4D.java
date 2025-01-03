@@ -433,6 +433,9 @@ public class InputStreamReader4D extends Reader {
   public int read() throws java.io.IOException {
     char[] buf = new char[1];
     int count = read(buf, 0, 1);
+    while (count == 0) {
+      count = read(buf, 0, 1);
+    }
     return count > 0 ? buf[0] : -1;
   }
 
