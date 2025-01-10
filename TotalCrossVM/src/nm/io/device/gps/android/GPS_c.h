@@ -8,6 +8,8 @@
 #define GPSFUNC_START   7
 #define GPSFUNC_STOP    8
 #define GPSFUNC_GETDATA 9
+#define GPSFUNC_RESETDATA     100
+#define GPSFUNC_DOWNLOADDATA  101
 
 static Err nativeStartGPS(TCObject gpsObject)
 {
@@ -34,6 +36,26 @@ static void nativeStopGPS()
    {
       jobject ret = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_STOP, -1);
       if (ret != null) (*env)->DeleteLocalRef(env, ret); // guich@tc125_1
+   }
+}
+
+static void nativeResetEphemeridesData() {
+   JNIEnv *env = getJNIEnv();
+   if (env) {
+      jobject ret = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_RESETDATA, -1);
+      if (ret != null) {
+         (*env)->DeleteLocalRef(env, ret); // guich@tc125_1
+      }
+   }
+}
+
+static void nativeDownloadEphemeridesData() {
+   JNIEnv *env = getJNIEnv();
+   if (env) {
+      jobject ret = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_DOWNLOADDATA, -1);
+      if (ret != null) {
+         (*env)->DeleteLocalRef(env, ret); // guich@tc125_1
+      }
    }
 }
 

@@ -400,6 +400,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_setValue_i"), &tidgGL_setValue_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_requestInput_s"), &tidgGL_requestInput_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tidgGL_getValue"), &tidgGL_getValue);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGPSED_delete"), &tidgGPSED_delete);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidgGPSED_download"), &tidgGPSED_download);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_create_sssi"), &tiPDBF_create_sssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_rename_s"), &tiPDBF_rename_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_addRecord_i"), &tiPDBF_addRecord_i);

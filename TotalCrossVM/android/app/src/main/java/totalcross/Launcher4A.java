@@ -833,6 +833,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int VIBRATE = 12;
    private static final int CLIPBOARD = 13;
    public static final int FIREBASE_MSG_RCVD = 14;
+
+   private static final int GPSFUNC_RESETDATA = 100;
+   private static final int GPSFUNC_DOWNLOADDATA = 101;
    
    private static int oldBrightness;
    private static Vibrator vibrator;
@@ -1063,6 +1066,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             return GPSHelper.instance.gpsTurn(true);
          case GPSFUNC_STOP:
             return GPSHelper.instance.gpsTurn(false);
+         case GPSFUNC_RESETDATA:
+            return GPSHelper.instance.gpsResetData();
+         case GPSFUNC_DOWNLOADDATA:
+            return GPSHelper.instance.gpsDownloadData();
       }
       return null;
    }

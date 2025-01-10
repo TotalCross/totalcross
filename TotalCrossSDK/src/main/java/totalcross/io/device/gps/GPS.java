@@ -522,6 +522,21 @@ public class GPS {
     return new String(msgChars, 0, msgChars.length - 2);
   }
 
+  public final static class EphemeridesData {
+
+    private EphemeridesData() {
+    }
+
+    @ReplacedByNativeOnDeploy
+    public static void delete() {
+    }
+
+    @ReplacedByNativeOnDeploy
+    public static void download() {
+    }
+
+  }
+
   @Override
   protected void finalize() {
     this.stop();

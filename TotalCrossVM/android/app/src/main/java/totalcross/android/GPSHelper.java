@@ -126,6 +126,21 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
       return null;
    }
 
+   public String gpsResetData() {
+      LocationManager locationmanager = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
+      locationmanager.sendExtraCommand(LocationManager.GPS_PROVIDER, "delete_aiding_data", null);
+      return null;
+   }
+
+   public String gpsDownloadData() {
+      LocationManager locationmanager = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
+      Bundle bundle = new Bundle();
+      locationmanager.sendExtraCommand(LocationManager.GPS_PROVIDER, "force_xtra_injection", bundle);
+      locationmanager.sendExtraCommand(LocationManager.GPS_PROVIDER, "force_psds_injection", bundle);
+      locationmanager.sendExtraCommand(LocationManager.GPS_PROVIDER, "force_time_injection", bundle);
+      return null;
+   }
+
    @Override
    public void onSatelliteStatusChanged(@NonNull GnssStatusCompat status) {
       int usedInFix = 0;

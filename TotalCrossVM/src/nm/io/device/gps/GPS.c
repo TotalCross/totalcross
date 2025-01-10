@@ -66,6 +66,20 @@ TC_API void tidgGPS_stopGPS(NMParams p) // totalcross/io/device/gps/GPS native p
    nativeStopGPS();
 #endif
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGPSED_delete(NMParams p) // totalcross/io/device/gps/GPS/EphemeridesData public static void delete();
+{
+#if defined(ANDROID)
+   nativeResetEphemeridesData();
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidgGPSED_download(NMParams p) // totalcross/io/device/gps/GPS/EphemeridesData public static void download();
+{
+#if defined(ANDROID)
+   nativeDownloadEphemeridesData();
+#endif
+}
 
 #ifdef ENABLE_TEST_SUITE
 //#include "GPS_test.h"

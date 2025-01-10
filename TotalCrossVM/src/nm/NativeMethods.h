@@ -408,6 +408,8 @@ TC_API void tidbSPC_close(NMParams p);
 TC_API void tidgGPS_startGPS(NMParams p);
 TC_API void tidgGPS_updateLocation(NMParams p);
 TC_API void tidgGPS_stopGPS(NMParams p);
+TC_API void tidgGPSED_delete(NMParams p);
+TC_API void tidgGPSED_download(NMParams p);
 TC_API void tiPDBF_create_sssi(NMParams p);
 TC_API void tiPDBF_rename_s(NMParams p);
 TC_API void tiPDBF_addRecord_i(NMParams p);
