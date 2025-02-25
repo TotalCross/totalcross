@@ -30,7 +30,10 @@
         <activity android:name=".WebViewer" 
         android:theme="@android:style/Theme.NoTitleBar"
         />
-        <activity android:name=".CameraViewer" android:configChanges="orientation|keyboardHidden"/>
+        <activity android:name=".CameraViewer"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@style/Theme.AppCompat"
+            />
         <activity android:name=".MapViewer" />
         <activity android:name=".YoutubePlayer"></activity>
         <uses-library android:name="com.google.android.maps" android:required="false" />

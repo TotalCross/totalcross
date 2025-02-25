@@ -5,6 +5,12 @@
   <FrameLayout android:id="@+id/preview"
     android:layout_weight="1" android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+
+    <view
+        android:id="@+id/previewView"
+        class="androidx.camera.view.PreviewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
   </FrameLayout>
   <LinearLayout 
         android:orientation="horizontal"

@@ -9,8 +9,12 @@ package totalcross.android;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+
 import totalcross.AndroidUtils;
-import android.app.*;
+
+import android.annotation.SuppressLint;
 import android.content.*;
 import android.content.pm.*;
 import android.graphics.*;
@@ -18,19 +22,269 @@ import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera;
 import android.media.*;
 import android.os.*;
+import android.provider.MediaStore;
+import android.util.Size;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
-import android.content.res.*;
 import android.net.Uri;
+import android.Manifest;
 
-public class CameraViewer extends Activity // guich@tc126_34
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.core.VideoCapture;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+//import androidx.camera.video.VideoCapture;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.common.util.concurrent.ListenableFuture;
+
+public class CameraViewer extends AppCompatActivity // guich@tc126_34
 {
+   private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+   PreviewView previewView;
+   private ImageCapture imageCapture;
+   @SuppressLint("RestrictedApi")
+   private VideoCapture videoCapture;
+
+   /** Called when the activity is first created. */
+   public void onCreate(Bundle savedInstanceState)
+   {
+      super.onCreate(savedInstanceState);
+      setContentView(R.layout.main);
+      setTitle("");
+      Bundle b = getIntent().getExtras();
+      fileName = b.getString("file");
+      stillQuality = b.getInt("quality");
+      width = b.getInt("width");
+      height = b.getInt("height");
+      allowRotation = b.getBoolean("allowRotation");
+
+      isMovie = fileName.endsWith(".3gp");
+
+//      myPreview = new MyPreview(this);
+//      ((FrameLayout) findViewById(R.id.preview)).addView(myPreview);
+      previewView = findViewById(R.id.previewView);
+
+      final Button buttonExit = (Button) findViewById(R.id.buttonExit);
+      buttonExit.setText("Exit");
+      buttonExit.setOnClickListener(new OnClickListener()
+      {
+         public void onClick(View v)
+         {
+            stopRecording();
+            setResult(RESULT_CANCELED);
+            finish();
+         }
+      });
+
+      final Button buttonClick = (Button) findViewById(R.id.buttonClick);
+      if (isMovie) {
+         buttonClick.setText("Start");
+         buttonClick.setOnClickListener(new OnClickListener() {
+            @SuppressLint("RestrictedApi")
+            public void onClick(View v) {
+               try {
+                  if (buttonClick.getText() == "Start") {
+                     buttonClick.setText("Stop");
+                     File f = new File(fileName);
+                     recordVideo(f);
+                  } else {
+                     videoCapture.stopRecording();
+                  }
+//                  if (recorder == null) {
+//                     buttonClick.setText("Stop");
+//                     startRecording();
+//                  } else {
+//                     stopRecording();
+//                     setResult(RESULT_OK);
+//                     finish();
+//                  }
+               } catch (Exception e) {
+                  AndroidUtils.handleException(e, false);
+                  stopPreview();
+                  setResult(RESULT_CANCELED);
+                  finish();
+               }
+            }
+         });
+      } else {
+         buttonClick.setText("Click");
+         buttonClick.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+               try {
+                  OutputStream outStream = getContentResolver().openOutputStream(Uri.fromFile(new File(fileName)));
+                  capturePhoto(outStream);
+//                  if (camera == null) // guich@tc130: prevent NPE
+//                     startPreview();
+//                  if (camera != null) {
+//                     buttonClick.setClickable(false);
+//                     Camera.Parameters parameters = camera.getParameters();
+//                     parameters.setRotation(exifRotation);
+//                     try {
+//                        camera.setParameters(parameters);
+//                        camera.reconnect();
+//                     } catch (Exception re) {
+//                        AndroidUtils.handleException(re, false);
+//                     }
+//                     camera.takePicture(null, null, jpegCallback);
+//                  } else {
+//                     setResult(RESULT_CANCELED);
+//                     finish();
+//                  }
+               } catch (Exception e) {
+                  AndroidUtils.handleException(e, false);
+//                  stopPreview();
+                  setResult(RESULT_CANCELED);
+                  finish();
+               }
+            }
+         });
+      }
+
+      cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+      cameraProviderFuture.addListener(() -> {
+         try {
+            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+            startCameraX(cameraProvider);
+         } catch (ExecutionException e) {
+            e.printStackTrace();
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+         }
+
+      }, getExecutor());
+   }
+
+   private Executor getExecutor() {
+      return ContextCompat.getMainExecutor(this);
+   }
+
+   @SuppressLint("RestrictedApi")
+   private void startCameraX(ProcessCameraProvider cameraProvider) {
+
+      cameraProvider.unbindAll();
+
+      CameraSelector cameraSelector = new CameraSelector.Builder()
+              .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+              .build();
+
+      Preview preview = new Preview.Builder().build();
+
+      preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+      imageCapture = new ImageCapture.Builder()
+              .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+              .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
+              .setTargetResolution(new Size(width, height))
+              .setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100)
+              .build();
+
+      videoCapture = new VideoCapture.Builder()
+              .setVideoFrameRate(30)
+              .build();
+
+      cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture, videoCapture);
+   }
+
+   @SuppressLint("RestrictedApi")
+   private void recordVideo(File f) {
+      if (videoCapture != null) {
+//         long timeStamp = System.currentTimeMillis();
+//         ContentValues contentValues = new ContentValues();
+//         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timeStamp);
+//         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/3gp");
+
+
+         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+         }
+         videoCapture.startRecording(
+                 new VideoCapture.OutputFileOptions.Builder(
+                         f
+//                         getContentResolver(),
+//                         MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+//                         contentValues
+                 ).build(),
+                 getExecutor(),
+                 new VideoCapture.OnVideoSavedCallback() {
+                    @Override
+                    public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
+//                       Toast.makeText(CameraViewer.this,"Saving...",Toast.LENGTH_SHORT).show();
+                       Uri uri = outputFileResults.getSavedUri();
+                       setResult(RESULT_OK);
+                       finish();
+                    }
+
+                    @Override
+                    public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
+//                       Toast.makeText(CameraViewer.this,"Error: "+ message ,Toast.LENGTH_SHORT).show();
+                       AndroidUtils.handleException(cause, false);
+                       setResult(RESULT_CANCELED);
+                       finish();
+                    }
+                 }
+
+         );
+
+
+      }
+   }
+
+   private void capturePhoto(OutputStream outStream) {
+//      long timeStamp = System.currentTimeMillis();
+//      ContentValues contentValues = new ContentValues();
+//      contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timeStamp);
+//      contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+
+      imageCapture.takePicture(
+              new ImageCapture.OutputFileOptions.Builder(
+                      outStream
+//                      getContentResolver(),
+//                      MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//                      contentValues
+              ).build(),
+              getExecutor(),
+              new ImageCapture.OnImageSavedCallback() {
+                 @Override
+                 public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+//                    Toast.makeText(CameraViewer.this,"Saving...",Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
+                 }
+
+                 @Override
+                 public void onError(@NonNull ImageCaptureException exception) {
+//                    Toast.makeText(CameraViewer.this,"Error: "+exception.getMessage(),Toast.LENGTH_SHORT).show();
+                    AndroidUtils.handleException(exception, false);
+                    setResult(RESULT_CANCELED);
+                    finish();
+                 }
+              });
+
+   }
+
+
+
    int exifRotation = 0;
 
-   class Preview extends SurfaceView implements SurfaceHolder.Callback
+   class MyPreview extends SurfaceView implements SurfaceHolder.Callback
    { 
-      Preview(Context context)
+      MyPreview(Context context)
       {
          super(context);
 /* Disabled to fix rotation support
@@ -145,10 +399,12 @@ public class CameraViewer extends Activity // guich@tc126_34
    boolean allowRotation;
    String fileName;
    int stillQuality, width,height;
-   Preview preview; 
+   MyPreview myPreview;
    MediaRecorder recorder;
    int cameraId;
    int result;
+
+
 
    private void startPreview()
    {
@@ -225,92 +481,9 @@ public class CameraViewer extends Activity // guich@tc126_34
       }  
    }
    
-   /** Called when the activity is first created. */
-   public void onCreate(Bundle savedInstanceState)
-   {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.main);
-      setTitle("");
-      Bundle b = getIntent().getExtras();
-      fileName = b.getString("file");
-      stillQuality = b.getInt("quality");
-      width = b.getInt("width");
-      height = b.getInt("height");
-	  allowRotation = b.getBoolean("allowRotation");
 
-      isMovie = fileName.endsWith(".3gp");
 
-      preview = new Preview(this); 
-      ((FrameLayout) findViewById(R.id.preview)).addView(preview);
 
-      final Button buttonExit = (Button) findViewById(R.id.buttonExit);
-      buttonExit.setOnClickListener(new OnClickListener()
-      {
-         public void onClick(View v)
-         {
-			   stopRecording();
-            setResult(RESULT_CANCELED);
-            finish();
-         }
-      });
-      
-      final Button buttonClick = (Button) findViewById(R.id.buttonClick);
-      buttonClick.setText(isMovie ? "Start" : "Click");
-      buttonExit.setText("Exit");
-      buttonClick.setOnClickListener(new OnClickListener()
-      {
-         public void onClick(View v)
-         {
-            try
-            {
-               if (!isMovie)
-               {
-                  if (camera == null) // guich@tc130: prevent NPE
-                     startPreview();
-                  if (camera != null)
-                  {
-                     buttonClick.setClickable(false);
-                     Camera.Parameters parameters = camera.getParameters();
-                     parameters.setRotation(exifRotation);
-                     try {
-                    	 camera.setParameters(parameters);
-                    	 camera.reconnect();
-                     } catch (Exception re) {
-                    	 AndroidUtils.handleException(re, false);
-                     }
-                     camera.takePicture(null, null, jpegCallback);
-                  }
-                  else
-                  {
-                     setResult(RESULT_CANCELED);
-                     finish();
-                  }
-               }
-               else
-               {
-                  if (recorder == null)
-                  {
-                     buttonClick.setText("Stop");
-                     startRecording();
-                  }
-                  else
-                  {
-                     stopRecording();
-                     setResult(RESULT_OK);
-                     finish();
-                  }
-               }
-            }
-            catch (Exception e) 
-            {
-               AndroidUtils.handleException(e,false);
-               stopPreview();
-               setResult(RESULT_CANCELED);
-               finish();
-            }
-         }
-      });
-   }
 
    // Handles data for jpeg picture
    PictureCallback jpegCallback = new PictureCallback()
