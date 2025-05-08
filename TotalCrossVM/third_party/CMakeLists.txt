@@ -10,6 +10,7 @@ else()
 endif()
 get_target_property(ZLIB_INCLUDE_DIRS zlibstatic PUBLIC_HEADER)
 get_target_property(ZLIB_BINARY_DIR zlibstatic BINARY_DIR)
+get_target_property(ZLIB_ROOT zlibstatic SOURCE_DIR) # Root for the zlib library, used by libpng
 
 # png
 add_subdirectory(png)

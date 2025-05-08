@@ -7,7 +7,7 @@ set(SKIP_INSTALL_ALL TRUE) # Skip default libPNG installation
 FetchContent_Declare(
     libpng
     GIT_REPOSITORY  https://github.com/glennrp/libpng.git
-    GIT_TAG         v1.6.40
+    GIT_TAG         v1.6.48
     GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
     USES_TERMINAL_DOWNLOAD TRUE)
@@ -17,10 +17,9 @@ if(NOT libpng_POPULATED)
     message("Setting up PNG...")
 
     FetchContent_Populate(libpng)
-    set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # Use our own version of zlib
     set(PNG_SHARED OFF CACHE BOOL "" FORCE)
     set(PNG_FRAMEWORK OFF CACHE BOOL "" FORCE)
-    set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE)
+    set(PNG_TOOLS OFF CACHE BOOL "" FORCE)
     set(PNG_TESTS OFF CACHE BOOL "" FORCE)
     set(PNG_DEBUG_POSTFIX "" CACHE STRING "" FORCE) # XCode gets confused if used
 
