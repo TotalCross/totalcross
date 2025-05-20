@@ -59,7 +59,12 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr);
 #endif
 #endif
 
-#define IPV6 true
+#define IPV4_RESOLUTION true
+#ifdef WINCE
+#define IPV6_RESOLUTION false
+#else
+#define IPV6_RESOLUTION true
+#endif
 
 static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost, bool *timedOut)
 {
@@ -70,12 +75,13 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    struct pollfd pfdWrite;
    socklen_t lon;
    int valopt;
-#if IPV6
+#if IPV6_RESOLUTION
    struct addrinfo hints;
    struct addrinfo *currentAddrInfo;
    struct addrinfo *addrInfoList;
    in_port_t* portPtr;
-#else
+#endif
+#if IPV4_RESOLUTION
    struct hostent *phostent;
    struct sockaddr_in destination_sin;
 #endif
@@ -83,39 +89,24 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    /*
     * Resolve hostname
     */
-#if IPV6
+#if IPV6_RESOLUTION
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     if ((err = getaddrinfo(hostname, "http", &hints, &addrInfoList)) != 0) {
         //debug("getaddrinfo %d, %s", error, gai_strerror(error));
         /*NOTREACHED*/
+#if IPV4_RESOLUTION
+        goto IPV4;
+#else
         goto Finish;
+#endif
     }
 #else
-   // Fill out the server socket's address information.
-   destination_sin.sin_family = AF_INET;
-   //destination_sin.sin_addr.s_addr = htonl(INADDR_ANY);
-   if ((destination_sin.sin_addr.s_addr = inet_addr(hostname)) == -1)
-   {
-      if ((phostent = gethostbyname(hostname)) == null)
-      {
-         if (h_errno == HOST_NOT_FOUND || h_errno == NO_ADDRESS || h_errno == NO_DATA) {
-            *isUnknownHost = true;
-         }
-         goto Error;
-      }
-      else
-      {
-         destination_sin.sin_family = phostent->h_addrtype;
-         xmemmove(&(destination_sin.sin_addr.s_addr), phostent->h_addr, phostent->h_length);
-      }
-   }
-   // Convert to network ordering.
-   destination_sin.sin_port = htons((uint16) port);
+    goto IPV4;
 #endif   
    
-#if IPV6
+#if IPV6_RESOLUTION
     for (currentAddrInfo = addrInfoList; currentAddrInfo; currentAddrInfo = currentAddrInfo->ai_next) {
       // Set the port we want to connect to
       switch (currentAddrInfo->ai_family) {
@@ -183,14 +174,41 @@ close_and_continue:
     }
 clean_ios:
    freeaddrinfo(addrInfoList);
-   if (hostSocket < 0) {
-      goto Error;
-      /*NOTREACHED*/
-   }
-#else   
-   if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-      goto Error;
+    if (hostSocket < 0) {
+        goto Error;
+        /*NOTREACHED*/
+    }
 
+    goto Success;
+#endif  
+
+#if IPV4_RESOLUTION
+IPV4:
+   // Fill out the server socket's address information.
+   destination_sin.sin_family = AF_INET;
+   //destination_sin.sin_addr.s_addr = htonl(INADDR_ANY);
+   if ((destination_sin.sin_addr.s_addr = inet_addr(hostname)) == -1)
+   {
+      if ((phostent = gethostbyname(hostname)) == null)
+      {
+         if (h_errno == HOST_NOT_FOUND || h_errno == NO_ADDRESS || h_errno == NO_DATA) {
+            *isUnknownHost = true;
+         }
+         goto Error;
+      }
+      else
+      {
+         destination_sin.sin_family = phostent->h_addrtype;
+         xmemmove(&(destination_sin.sin_addr.s_addr), phostent->h_addr, phostent->h_length);
+      }
+   }
+   // Convert to network ordering.
+   destination_sin.sin_port = htons((uint16) port);
+
+   // Open socket
+   if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+      goto Error;
+   }
    // Set non-blocking
    arg = fcntl(hostSocket, F_GETFL, NULL);
    arg |= O_NONBLOCK;
@@ -201,8 +219,9 @@ clean_ios:
                  sizeof(destination_sin));
    if (res < 0)
    {
-      if (errno != EINPROGRESS)
+      if (errno != EINPROGRESS) {
          goto Error;
+      }
 
       pfdWrite.fd = hostSocket;
       pfdWrite.events = POLLOUT;
@@ -236,6 +255,7 @@ clean_ios:
    */
 #endif
 
+Success:
    *socketHandle = hostSocket;
    return NO_ERROR;
 
