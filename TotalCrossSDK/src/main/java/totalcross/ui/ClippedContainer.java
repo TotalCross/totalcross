@@ -64,6 +64,9 @@ public class ClippedContainer extends Container {
       // now go forward until no other is visible
       for (i = first; i < n; i++) {
         Control child = (Control) items[i];
+        if (child == null) {
+          continue;
+        }
         if (painted++ > 0 && !child.isVisibleAndInside(bagClipY0, bagClipYf)) {
           break;
         }
