@@ -15,7 +15,7 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.totalcross.tcvm'
-    compileSdk 34
+    compileSdk 35
     ndkVersion "21.4.7075529"
     
     compileOptions {
@@ -26,7 +26,7 @@ android {
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 34
+        targetSdkVersion 35
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         externalNativeBuild {

@@ -19,7 +19,7 @@ def buildType // stores build type, debug or release
 
 android {
     namespace 'totalcross.android'
-    compileSdk 34
+    compileSdk 35
 
     androidResources {
         noCompress 'zip'
@@ -41,7 +41,7 @@ android {
     defaultConfig {
         applicationId "totalcross.android"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
