@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/videoPlayerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000">
+
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:keepScreenOn="true" />
+
+    <ImageButton
+        android:id="@+id/btnBackPlayer"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
+        android:contentDescription="Voltar"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_close_white"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="15dp"
+        android:fillColor="@android:color/white"
+        />
+
+    <LinearLayout
+        android:id="@+id/playerControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:layout_marginBottom="60dp"
+        android:padding="8dp">
+
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progressTint="#FFFFFF"
+            android:progressBackgroundTint="@color/colorPrimaryJup"
+            android:thumbTint="@color/colorPrimaryJup"
+            android:splitTrack="false" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingTop="6dp">
+
+            <ImageButton
+                android:id="@+id/btnRewind"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:adjustViewBounds="true"
+                android:background="@android:color/transparent"
+                android:contentDescription="Retroceder"
+                android:padding="6dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_retroceder"
+                app:tint="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/btnPlayPause"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:adjustViewBounds="true"
+                android:background="@android:color/transparent"
+                android:contentDescription="Tocar / Pausar"
+                android:padding="6dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_play_new"
+                app:tint="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/btnForward"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:adjustViewBounds="true"
+                android:background="@android:color/transparent"
+                android:contentDescription="Avançar"
+                android:padding="6dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_avancar"
+                app:tint="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/btnSalvar"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:adjustViewBounds="true"
+                android:background="@android:color/transparent"
+                android:contentDescription="Salvar"
+                android:padding="6dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_save_new"
+                app:tint="@android:color/white" />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

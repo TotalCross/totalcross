@@ -51,6 +51,9 @@ static void cameraClick(NMParams p)
    int cameraType = Camera_cameraType(obj);
    JNIEnv *env = getJNIEnv();      
    bool isPhoto = Camera_captureMode(obj) == 0;
+   int32 targetFps = Camera_targetFps(obj);
+   int32 videoTimeLimit = Camera_videoTimeLimit(obj);
+
    if (env)                      
    {
 	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
@@ -65,7 +68,7 @@ static void cameraClick(NMParams p)
       jstring s;
       int32 len;
       if (defaultFN == null)
-         createTempFileName(fileName, isPhoto ? ".jpg" : ".3gp");
+         createTempFileName(fileName, isPhoto ? ".jpg" : (cameraType == 5 ? ".mp4" : ".3gp"));
       else
       {
          JCharP2CharPBuf(String_charsStart(defaultFN),String_charsLen(defaultFN),fileName);
@@ -79,15 +82,25 @@ static void cameraClick(NMParams p)
          }
       }                                     
       len = xstrlen(fileName);
-      if (!isPhoto && len > 4 && fileName[len-3] != '3') // is a movie and filename is .jpg? make it 3gp
-      {
-         fileName[len-3] = '3';
-         fileName[len-2] = 'g';
-         fileName[len-1] = 'p';
+      if (len > 4) {
+         if (cameraType == 5) {
+            if (fileName[len - 1] != '4') {
+               fileName[len - 3] = 'm';
+               fileName[len - 2] = 'p';
+               fileName[len - 1] = '4';
+            }
+         }
+         else if (cameraType != 4) {
+            if (!isPhoto && fileName[len - 3] != '3') {
+               fileName[len - 3] = '3';
+               fileName[len - 2] = 'g';
+               fileName[len - 1] = 'p';
+            }
+         }
       }
       CharP2JCharPBuf(fileName,len,jfn,true);
       s = (*env)->NewString(env,jfn,len);
-      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType); 
+      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType, videoTimeLimit, targetFps); 
       for (takingPicture = true; takingPicture;) // block vm until the picture is taken
          Sleep(250);
       switch (code)

@@ -391,7 +391,9 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
   private static final int CAMERA_NATIVE = 1;
   private static final int CAMERA_NATIVE_NOCOPY = 2;
   private static final int FROM_GALLERY = 3;
-  private static String[] cameraTypes = { "CUSTOM", "NATIVE", "NATIVE_NOCOPY", "GALLERY", "UNDEFINED" };
+  private static final int VIDEO_PLAYER = 4;
+  private static final int VIDEO_RECORDER = 5;
+  private static String[] cameraTypes = { "CUSTOM", "NATIVE", "NATIVE_NOCOPY", "GALLERY", "VIDEO_PLAYER", "VIDEO_RECORDER", "UNDEFINED" };
   private int cameraType;
   
   private File createImageFile() throws IOException {
@@ -407,7 +409,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       return image;
   }
 
-    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType) {
+    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps) {
         try {
             imageFN = s;
             this.cameraType = cameraType;
@@ -415,12 +417,24 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                     + Build.MODEL.replaceAll("\\P{ASCII}", " ");
             AndroidUtils.debug(
                     "Taking photo " + width + "x" + height + " from "
-                            + cameraTypes[0 <= cameraType && cameraType <= 3 ? cameraType : 4]);
+                            + cameraTypes[0 <= cameraType && cameraType <= 5 ? cameraType : 6]);
             if (cameraType == FROM_GALLERY) {
                 Intent i = new Intent();
                 i.setType("image/*");
                 i.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(i, SELECT_PICTURE);
+            } else if (cameraType == VIDEO_PLAYER) {
+              Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoPlayerActivity"));
+              intent.putExtra("video_path", s);
+              intent.putExtra("playback_only", true);
+              startActivityForResult(intent, TAKE_PHOTO);
+            } else if (cameraType == VIDEO_RECORDER) {
+              Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
+              intent.putExtra("file", s);
+              intent.putExtra(VideoCaptureActivity.EXTRA_MAX_SECONDS, videoTimeLimit);
+              intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
+              intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
+              startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
@@ -435,7 +449,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
                 startActivityForResult(intent, CAMERA_PIC_REQUEST);
-            } else {
+            } else { // CAMERA CUSTOM
                 Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".CameraViewer"));
                 intent.putExtra("file", s);
                 intent.putExtra("quality", quality);
@@ -637,8 +651,16 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
         dialNumber(nr);
         break;
       case CAMERA:
-               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
-                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"),b.getInt("showCamera.cameraType"));
+               captureCamera(
+                  b.getString("showCamera.fileName"),
+                  b.getInt("showCamera.quality"),
+                  b.getInt("showCamera.width"),
+                  b.getInt("showCamera.height"),
+                  b.getBoolean("showCamera.allowRotation"),
+                  b.getInt("showCamera.cameraType"),
+                  b.getInt("showCamera.videoTimeLimit"),
+                  b.getInt("showCamera.targetFps")
+                );
         break;
       case TITLE:
         setTitle(b.getString("setDeviceTitle.title"));

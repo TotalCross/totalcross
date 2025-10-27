@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextureView
+        android:id="@+id/textureView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageButton
+        android:id="@+id/btnBackCapture"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
+        android:contentDescription="Voltar"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_close_white"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="15dp"
+        android:fillColor="@android:color/white"
+        />
+
+
+    <ImageButton
+        android:id="@+id/btnRecord"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="60dp"
+        android:background="@drawable/bg_record_button_white"
+        android:scaleType="centerInside"
+        android:src="@drawable/bg_record_button_small"
+        />
+
+</FrameLayout>

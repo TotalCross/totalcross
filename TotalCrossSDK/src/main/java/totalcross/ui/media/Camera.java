@@ -108,6 +108,11 @@ public class Camera {
   /** The camera type; defaults to CAMERA_CUSTOM. */
   public int cameraType;
 
+  /**
+   * Expected FPS for the output file created with CAMERA_VIDEO_RECORDER. 
+   */
+  public int targetFps = 30;
+
   /** The original camera used in TotalCross */
   public static final int CAMERA_CUSTOM = 0;
   /** The native camera application; a copy of the image is returned. */
@@ -116,6 +121,10 @@ public class Camera {
   public static final int CAMERA_NATIVE_NOCOPY = 2;
   /** Take the picture from the gallery. */
   public static final int CAMERA_FROM_GALLERY = 3;
+  /** Start video player for the file from defaultFileName. */
+  public static final int CAMERA_VIDEO_PLAYER = 4;
+  /** Record video. Use the fields videoTimeLimit, targetFps and stillQuality to better control the result. */
+  public static final int CAMERA_VIDEO_RECORDER = 5;
 
   /** Used in the cameraMode member. */
   public static final int CAMERACAPTURE_MODE_STILL = 0;

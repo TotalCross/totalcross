@@ -34,6 +34,15 @@
             android:configChanges="orientation|keyboardHidden"
             android:theme="@style/Theme.AppCompat"
             />
+        <activity
+            android:name=".VideoCaptureActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            />
+        <activity
+            android:name=".VideoPlayerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity android:name=".MapViewer" />
         <activity android:name=".YoutubePlayer"></activity>
         <uses-library android:name="com.google.android.maps" android:required="false" />
