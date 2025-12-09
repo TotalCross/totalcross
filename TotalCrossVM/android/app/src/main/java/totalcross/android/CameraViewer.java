@@ -3,32 +3,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 package totalcross.android;
 
-import java.io.*;
-import java.lang.reflect.Method;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-
-import totalcross.AndroidUtils;
-
-import android.annotation.SuppressLint;
-import android.content.*;
-import android.content.pm.*;
-import android.graphics.*;
-import android.hardware.Camera.PictureCallback;
-import android.hardware.Camera;
-import android.media.*;
-import android.os.*;
-import android.provider.MediaStore;
-import android.util.Size;
-import android.view.*;
-import android.view.View.OnClickListener;
-import android.widget.*;
-import android.net.Uri;
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.PixelFormat;
+import android.hardware.Camera;
+import android.hardware.Camera.PictureCallback;
+import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.util.Size;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,15 +33,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.core.VideoCapture;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-//import androidx.camera.video.VideoCapture;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+
+import totalcross.AndroidUtils;
 
 public class CameraViewer extends AppCompatActivity // guich@tc126_34
 {
@@ -245,6 +252,25 @@ public class CameraViewer extends AppCompatActivity // guich@tc126_34
       }
    }
 
+   private Bitmap imageProxyToBitmap(ImageProxy image) {
+      ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+      byte[] bytes = new byte[buffer.remaining()];
+      buffer.get(bytes);
+      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+   }
+
+   private Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees) {
+      Matrix matrix = new Matrix();
+      matrix.postRotate(rotationDegrees);
+      return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+   }
+
+   private void saveBitmap(Bitmap bitmap, OutputStream outStream) throws IOException {
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outStream);
+      outStream.flush();
+      outStream.close();
+   }
+
    private void capturePhoto(OutputStream outStream) {
 //      long timeStamp = System.currentTimeMillis();
 //      ContentValues contentValues = new ContentValues();
@@ -252,19 +278,28 @@ public class CameraViewer extends AppCompatActivity // guich@tc126_34
 //      contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
 
       imageCapture.takePicture(
-              new ImageCapture.OutputFileOptions.Builder(
-                      outStream
-//                      getContentResolver(),
-//                      MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                      contentValues
-              ).build(),
               getExecutor(),
-              new ImageCapture.OnImageSavedCallback() {
+              new ImageCapture.OnImageCapturedCallback() {
                  @Override
-                 public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                 public void onCaptureSuccess(@NonNull ImageProxy image) {
 //                    Toast.makeText(CameraViewer.this,"Saving...",Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK);
-                    finish();
+                    int rotation = image.getImageInfo().getRotationDegrees();
+
+                    // 1. Convert ImageProxy to Bitmap
+                    Bitmap bmp = imageProxyToBitmap(image);
+
+                    // 2. Adjust rotation
+                    bmp = rotateBitmap(bmp, rotation);
+
+                    try {
+                       saveBitmap(bmp, outStream);
+                       setResult(RESULT_OK);
+                       finish();
+                    } catch (IOException e) {
+                       AndroidUtils.handleException(e, false);
+                    }
+
+                    image.close();
                  }
 
                  @Override
