@@ -97,6 +97,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tumC_nativeClick"), &tumC_nativeClick);
    htPutPtr(&htNativeProcAddresses, hashCode("tumC_nativeFinalize"), &tumC_nativeFinalize);
    htPutPtr(&htNativeProcAddresses, hashCode("tumC_getNativeResolutions"), &tumC_getNativeResolutions);
+   htPutPtr(&htNativeProcAddresses, hashCode("tumC_getNativeVideoResolutions"), &tumC_getNativeVideoResolutions);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyChanges"), &tuiI_applyChanges);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageLoad_s"), &tuiI_imageLoad_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageParse_sB"), &tuiI_imageParse_sB);

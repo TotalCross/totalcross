@@ -40,6 +40,27 @@ static TCObject Camera_getNativeResolutions(Context currentContext)
    return ret;
 }
 
+static TCObject Camera_getNativeVideoResolutions(Context currentContext)
+{
+   JNIEnv *env = getJNIEnv();
+   TCObject ret = null;
+   
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+   if (result > 0) {
+       jstring src = (*env)->CallStaticObjectMethod(env, applicationClass, jgetNativeVideoResolutions); 
+       if (src != null) {
+          const char *str = (*env)->GetStringUTFChars(env, src, 0);
+          if (str) {
+             ret = createStringObjectFromCharP(currentContext,(CharP)str,-1);
+             (*env)->ReleaseStringUTFChars(env, src, str);
+          }
+          (*env)->DeleteLocalRef(env, src); // guich@tc125_1
+       }
+   }
+   return ret;
+}
+
 static void cameraClick(NMParams p)
 {
    TCObject obj = p->obj[0];

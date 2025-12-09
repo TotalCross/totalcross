@@ -280,4 +280,34 @@ public class Camera {
   private static String getNativeResolutions() {
     return null;
   }
+
+  /**
+   * Returns the resolutions supported by the device for video recording using the
+   * back camera. Currently, it works only on Android, other platforms return the
+   * same results as {@link #getSupportedResolutions}.
+   *
+   * <p>
+   * When the information is not available, a default list is returned and the
+   * first element is
+   * set to "Default values:".
+   *
+   * @since TotalCross 4.9.12
+   */
+  public static String[] getVideoResolutions() {
+    String[] ret = null;
+    if (Settings.platform.equals(Settings.ANDROID)) {
+      String s = getNativeVideoResolutions();
+      if (s != null) {
+        ret = sortResolutions(Convert.tokenizeString(s, ','));
+      }
+    } else {
+      ret = getSupportedResolutions();
+    }
+    return ret;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static String getNativeVideoResolutions() {
+    return null;
+  }
 }

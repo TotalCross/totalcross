@@ -75,6 +75,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jgetSDCardPath    = (*env)->GetStaticMethodID(env, applicationClass, "getSDCardPath", "(I)Ljava/lang/String;");
    jshowCamera       = (*env)->GetStaticMethodID(env, applicationClass, "showCamera", "(Ljava/lang/String;IIIZIII)V");
    jgetNativeResolutions= (*env)->GetStaticMethodID(env, applicationClass, "getNativeResolutions", "()Ljava/lang/String;");
+   jgetNativeVideoResolutions= (*env)->GetStaticMethodID(env, applicationClass, "getNativeVideoResolutions", "()Ljava/lang/String;");
    jgetDefaultToString = (*env)->GetStaticMethodID(env, applicationClass, "getDefaultToString", "()Ljava/lang/String;");
    jdial             = (*env)->GetStaticMethodID(env, applicationClass, "dial", "(Ljava/lang/String;)V");
    jgpsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "gpsFunc", "(II)Ljava/lang/String;");

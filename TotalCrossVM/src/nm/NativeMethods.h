@@ -110,6 +110,7 @@ TC_API void tumMC_record_iib(NMParams p);
 TC_API void tumC_nativeClick(NMParams p);
 TC_API void tumC_nativeFinalize(NMParams p);
 TC_API void tumC_getNativeResolutions(NMParams p);
+TC_API void tumC_getNativeVideoResolutions(NMParams p);
 TC_API void tumYP_play_scbii(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);

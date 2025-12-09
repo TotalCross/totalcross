@@ -264,6 +264,7 @@ DECLARE_MUTEX(htSSL);
 #ifdef ANDROID
 jmethodID jshowCamera;
 jmethodID jgetNativeResolutions;
+jmethodID jgetNativeVideoResolutions;
 jmethodID jgetDefaultToString;
 jmethodID jzxing;
 jmethodID jplayYoutube;

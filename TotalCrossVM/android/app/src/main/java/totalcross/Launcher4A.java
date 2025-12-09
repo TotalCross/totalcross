@@ -7,42 +7,90 @@
 
 package totalcross;
 
-import totalcross.android.*;
-import totalcross.android.Loader;
-
-import android.app.*;
-import android.app.ActivityManager.*;
-import android.content.*;
-import android.content.pm.*;
-import android.content.res.*;
-import android.graphics.*;
+import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.MemoryInfo;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.hardware.Camera;
-import android.location.*;
-import android.media.*;
-import android.net.*;
-import android.os.*;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.Location;
+import android.location.LocationManager;
+import android.media.AudioManager;
+import android.media.MediaRecorder;
+import android.media.SoundPool;
+import android.media.ToneGenerator;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.os.Looper;
-import android.provider.*;
-import android.telephony.*;
-import android.telephony.gsm.*;
-import android.text.*;
-import android.text.method.KeyListener;
-import android.util.*;
-import android.view.*;
-import android.view.View.*;
-import android.view.inputmethod.*;
-import android.widget.*;
-import java.io.*;
-import java.lang.reflect.*;
+import android.os.Message;
+import android.os.ResultReceiver;
+import android.os.StatFs;
+import android.os.Vibrator;
+import android.provider.Settings;
+import android.telephony.CellLocation;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
+import android.text.InputType;
+import android.util.DisplayMetrics;
+import android.util.Size;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.View.OnKeyListener;
+import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.*;
-import java.util.*;
-import java.util.zip.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
-import androidx.core.content.ContextCompat;
-import androidx.core.app.ActivityCompat;
-import android.Manifest;
+import totalcross.android.GPSHelper;
+import totalcross.android.Loader;
+import totalcross.android.Scanner4A;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener
 {
@@ -1348,6 +1396,59 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       catch (Exception e)
       {
+         AndroidUtils.handleException(e,false);
+         return null;
+      }
+   }
+
+   public static String getNativeVideoResolutions() {
+      try {
+         StringBuilder sb = new StringBuilder(32);
+
+         CameraManager manager = (CameraManager) instance.getContext().getSystemService(Context.CAMERA_SERVICE);
+         for (String cameraId : manager.getCameraIdList()) {
+
+            CameraCharacteristics characteristics =
+                    manager.getCameraCharacteristics(cameraId);
+
+            Integer lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
+
+            if (lensFacing == CameraCharacteristics.LENS_FACING_FRONT) {
+               continue;
+            }
+
+            StreamConfigurationMap map =
+                    characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
+            if (map == null) {
+               continue;
+            }
+
+            // --- PREVIEW RESOLUTIONS ---
+            // Size[] previewSizes = map.getOutputSizes(SurfaceTexture.class);
+            // Log.d("RES", "Preview Sizes:");
+            // for (Size s : previewSizes)
+            //     Log.d("RES", "  " + s.getWidth() + "x" + s.getHeight());
+
+            // --- VIDEO RESOLUTIONS (MediaRecorder / MediaCodec) ---
+            Size[] videoSizes = map.getOutputSizes(MediaRecorder.class);
+            // Log.d("RES", "Video Sizes:");
+            for (Size s : videoSizes) {
+               sb.append(s.getWidth()).append("x").append(s.getHeight()).append(',');
+            }
+            int l = sb.length();
+            if (l > 0) {
+               sb.setLength(l-1); // remove last ,
+            }
+
+            // --- IMAGE RESOLUTIONS ---
+            // Size[] jpegSizes = map.getOutputSizes(ImageFormat.JPEG);
+            // Log.d("RES", "JPEG Sizes:");
+            // for (Size s : jpegSizes)
+            //     Log.d("RES", "  " + s.getWidth() + "x" + s.getHeight());
+         }
+         return sb.toString();
+      } catch (Exception e) {
          AndroidUtils.handleException(e,false);
          return null;
       }
