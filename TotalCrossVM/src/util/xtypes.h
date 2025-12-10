@@ -106,18 +106,19 @@ typedef JChar* JCharP;
 #endif
 typedef TCHAR* TCHARP;
 
-#if !defined(__cplusplus) && !defined(__OBJC__) && !defined(_STDBOOL_H)
-#define _STDBOOL_H // prevent stdbool.h include on darwin
-#if __APPLE__
-#undef bool
-#define bool int
-#else
-typedef int bool;
-#endif
-#ifndef true
-#define true 1   // please do NOT change these to uppercase
-#define false 0
-#endif
+#if !defined(__cplusplus) && !defined(__OBJC__) && !(defined(__STDBOOL_H) || defined(__STDBOOL_H))
+   #define _STDBOOL_H // prevent stdbool.h include on darwin
+   #define __STDBOOL_H
+   #if __APPLE__
+      #undef bool
+      #define bool int
+   #else
+      typedef int bool;
+   #endif
+   #ifndef true
+      #define true 1   // please do NOT change these to uppercase
+      #define false 0
+   #endif
 #endif
 
 #if !defined(__HSDATATYPES__) && !(defined(darwin) && defined(__OBJC__)) // Palm OS defines these as non-ptr types, so we can't define them as ptr ones.

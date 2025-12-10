@@ -25,6 +25,7 @@ typedef int32 (*executeProgramFunc)(CharP args);
 TC_API int32 startVM(CharP argsOriginal, Context* cOut);
 TC_API int32 startProgram(Context currentContext);
 
+void callExecuteProgram();
 bool wokeUp();  
 
 #ifdef __cplusplus

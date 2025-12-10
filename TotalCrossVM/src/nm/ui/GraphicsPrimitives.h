@@ -73,6 +73,8 @@ Pixel makePixelARGB(int32 rgb);
 Pixel makePixelRGB(int32 rgb);
 PixelConv makePixelConvRGB(int32 rgb);
 
+void repaintActiveWindows(Context currentContext);
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged);
 
 /**
  * The device context points a structure containing platform specific data

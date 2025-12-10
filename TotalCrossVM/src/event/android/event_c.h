@@ -6,6 +6,11 @@
 
 
 #include "../init/android/totalcross_Launcher4A.h"
+#include "specialkeys.h"
+#include "GraphicsPrimitives.h"
+#include "startup.h"
+
+bool isEssentialKey(int32 portableKey);
 
 static bool keysMatch(int32 tcK, int32 sysK) // verifies if the given user key matches the system key
 {
@@ -36,7 +41,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          break;
       case totalcross_Launcher4A_KEY_PRESS:
       {
-         int32 key2 = privateKeyDevice2Portable(x);
+         int32 key2 = keyDevice2Portable(x);
          if (key2 == x) // no change?                  
             postEvent(mainContext, key == 0 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key == 0 ? key2 : key, 0,0, modifiers == 18 ? 0 : modifiers); // check if user is pressing the ALT key and pass 0, otherwise characters that are accessed using the alt key won't appear on screen
          else

@@ -26,7 +26,7 @@ static char debugstrSmall[64]; // used during startup and exit, when debugstr is
 
 bool initDebug()
 {
-   debugstr = malloc(16384); // don't use xmalloc!
+   debugstr = (CharP) malloc(16384); // don't use xmalloc!
    return debugstr != null && privateInitDebug();
 }
 

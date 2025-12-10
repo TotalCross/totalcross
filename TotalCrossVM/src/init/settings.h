@@ -106,11 +106,9 @@ typedef struct
 
 
 bool hasVirtualKeyboard();
-#if !defined __clang__ || defined __APPLE__ // some settings.h functions do not compile onder clang
 bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTCZ);
 bool retrieveSettings(Context currentContext, CharP mainClassName);
 void storeSettings(bool quittingApp);
-#endif
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext);
 void restoreVKSettings();
 

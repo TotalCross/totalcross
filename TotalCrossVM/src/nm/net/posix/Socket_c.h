@@ -12,13 +12,16 @@
 #include <sys/socket.h>
 #include <poll.h>
 
+#if defined _POSIX_VERSION
+#include <arpa/inet.h>
+#endif
+
 #if defined(ANDROID)
 #include <netinet/in.h>
 #endif
 
 #if defined (__APPLE__)
 #include <sys/time.h>
-#include <arpa/inet.h>
 #include <err.h>
 #endif
 

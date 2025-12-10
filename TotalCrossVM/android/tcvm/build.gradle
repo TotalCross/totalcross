@@ -16,8 +16,8 @@ apply plugin: 'com.android.library'
 android {
     namespace 'com.totalcross.tcvm'
     compileSdk 35
-    ndkVersion "25.2.9519653"
-    
+    ndkVersion "26.3.11579264"
+
     compileOptions {
     	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 35
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
