@@ -16,7 +16,7 @@ apply plugin: 'com.android.library'
 android {
     namespace 'com.totalcross.tcvm'
     compileSdk 35
-    ndkVersion "26.3.11579264"
+    ndkVersion "28.2.13676358"
 
     compileOptions {
     	// compile with Java 8 to allow using try-with-resources without raising the API level to 19
