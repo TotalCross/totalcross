@@ -375,6 +375,7 @@
 #define Camera_allowRotation(o)    FIELD_I32(o, 6)
 #define Camera_cameraType(o)       FIELD_I32(o, 7)
 #define Camera_targetFps(o)        FIELD_I32(o, 8)
+#define Camera_bitrate(o)          FIELD_I32(o, 9)
 
 // totalcross.util.concurrent.Lock
 #define Lock_mutex(o)        FIELD_OBJ(o, OBJ_CLASS(o), 0)

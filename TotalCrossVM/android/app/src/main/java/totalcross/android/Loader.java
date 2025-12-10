@@ -409,7 +409,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       return image;
   }
 
-    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps) {
+    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate) {
         try {
             imageFN = s;
             this.cameraType = cameraType;
@@ -436,6 +436,7 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
               intent.putExtra(VideoCaptureActivity.EXTRA_MAX_SECONDS, videoTimeLimit);
               intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
               intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
+              intent.putExtra("bitrate", bitrate);
               startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
                 ContentValues values = new ContentValues();
@@ -661,7 +662,8 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                   b.getBoolean("showCamera.allowRotation"),
                   b.getInt("showCamera.cameraType"),
                   b.getInt("showCamera.videoTimeLimit"),
-                  b.getInt("showCamera.targetFps")
+                  b.getInt("showCamera.targetFps"),
+                  b.getInt("showCamera.bitrate")
                 );
         break;
       case TITLE:

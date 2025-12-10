@@ -113,6 +113,23 @@ public class Camera {
    */
   public int targetFps = 30;
 
+  /**
+   * Video bitrate in kbps. Adjust this field to increase or decrease the quality
+   * and the size of the output video.
+   * <p>
+   * Quality is subjective and context related, therefore it's hard to define
+   * objective values. Higher resolutions also requires higher bitrates for better
+   * results.
+   * <p>
+   * Values in the range of 100kbps (100_000) and 400kbps (400_000) should be
+   * enough for most videos up to HD resolution (1280x720 or
+   * {@link #CAMERACAPTURE_STILLQUALITY_NORMAL}).
+   * <p>
+   * Values in the range of 1mbps (1_000_000) and 3mpbs (3_000_000) will provide
+   * the best quality a huge output file.
+   */
+  public int bitrate = 200_000;
+
   /** The original camera used in TotalCross */
   public static final int CAMERA_CUSTOM = 0;
   /** The native camera application; a copy of the image is returned. */

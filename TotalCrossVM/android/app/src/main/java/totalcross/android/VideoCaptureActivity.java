@@ -95,6 +95,8 @@ public class VideoCaptureActivity extends AppCompatActivity {
 
     private int height;
 
+    private int bitrate;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,6 +111,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
         targetFps = Math.max(5, b.getInt(EXTRA_TARGET_FPS, 30));
         width = b.getInt("width");
         height = b.getInt("height");
+        bitrate = b.getInt("bitrate", 200_000);
         int q = b.getInt(EXTRA_QUALITY, 2);
         qualidade = (q == 3 ? Quality.FHD : q == 1 ? Quality.SD : Quality.HD);
 
@@ -256,11 +259,11 @@ public class VideoCaptureActivity extends AppCompatActivity {
         videoCapture = new VideoCapture.Builder()
                 .setTargetRotation(rotation)
                 .setTargetResolution(targetSize)
-                .setVideoFrameRate(targetFps) // você pode ajustar
-                .setBitRate(200_000) // dosar para qualidade/compressão
+                .setVideoFrameRate(targetFps)
+                .setBitRate(bitrate)
                 .build();
 
-        // Bind final
+        // Final bind
         cameraProvider.bindToLifecycle(
                 this,
                 CameraSelector.DEFAULT_BACK_CAMERA,
