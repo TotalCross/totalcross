@@ -431,6 +431,8 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
             } else if (cameraType == VIDEO_RECORDER) {
               Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
               intent.putExtra("file", s);
+              intent.putExtra("width", width);
+              intent.putExtra("height", height);
               intent.putExtra(VideoCaptureActivity.EXTRA_MAX_SECONDS, videoTimeLimit);
               intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
               intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
