@@ -106,6 +106,44 @@ public class Deployer4Android {
   private final String targetTCZ;
   private String tcFolder;
 
+  abstract static class ProtocExec {
+    final static String NAME = "protoc";
+    final static String VERSION = "3.20.1";
+
+    public static String getExecutable() {
+      String osName = DeploySettings.isWindows() ? "win64" : (DeploySettings.isMac() ? "osx" : "linux");
+
+      String osArch = System.getProperty("os.arch");
+      if (DeploySettings.isWindows()) {
+        osArch = "";
+      } else if (osArch.equals("x86_64") || osArch.equals("amd64")) {
+        osArch = "x86_64";
+      } else if (osArch.equals("aarch64") || osArch.equals("arm64")) {
+        osArch = "aarch_64";
+      } else {
+        System.out.println("Couldn't detect system architecture, trying with x86_64");
+        osArch = "x86_64";
+      }
+
+      final String protocString = NAME + '-' + VERSION + '-' + osName + '-' + osArch;
+      final File protocBaseFolder = new File(DeploySettings.etcDir, "tools/android/protoc");
+      protocBaseFolder.mkdirs();
+
+      final File protocExecutable = new File(protocBaseFolder,
+          protocString + DeploySettings.appendDotExe("/bin/protoc"));
+      if (!protocExecutable.exists()) {
+        // download and unzip protoc
+      }
+
+      final String protocExecutablePath = protocExecutable.getAbsolutePath();
+      if (!protocExecutable.exists()) {
+        throw new RuntimeException("Couldn't find protoc at: " + protocExecutablePath);
+      }
+
+      return protocExecutablePath;
+    }
+  }
+
   public Deployer4Android() throws Exception {
     try (FileInputStream fis = new FileInputStream(Utils.findPath(DeploySettings.etcDir + "security/android_keystore.properties", false))) {
       signingConfig.load(fis);
@@ -165,7 +203,7 @@ public class Deployer4Android {
     
     // 5. decode the AndroidManifest
     // $PROTO_BIN --decode=aapt.pb.XmlNode --proto_path=tools Configuration.proto Resources.proto < $DEST_FOLDER/base/manifest/AndroidManifest.xml > AndroidManifest_temp.xml
-    final String protocExecutable = new File(new File(DeploySettings.etcDir, "tools/android"), "protoc/protoc-3.20.1-" + (DeploySettings.isWindows() ? "win64" : (DeploySettings.isUnix() ? "linux-x86_64" : "osx-x86_64")) + DeploySettings.appendDotExe("/bin/protoc")).getAbsolutePath();
+    final String protocExecutable = ProtocExec.getExecutable();
     String[] decodeCmd = { protocExecutable, "--decode=aapt.pb.XmlNode", "--proto_path=tools", "Configuration.proto", "Resources.proto" };
     
     Process process = Runtime.getRuntime().exec(decodeCmd, null, new File(DeploySettings.etcDir, "tools/android"));
