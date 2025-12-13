@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,9 +12,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,9 +30,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.crypto.RuntimeCryptoException;
 
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
@@ -108,31 +118,67 @@ public class Deployer4Android {
 
   abstract static class ProtocExec {
     final static String NAME = "protoc";
-    final static String VERSION = "3.20.1";
+    final static String VERSION = "21.0";
+    final static String BASE_URL = "https://github.com/protocolbuffers/protobuf/releases/download/v";
 
     public static String getExecutable() {
-      String osName = DeploySettings.isWindows() ? "win64" : (DeploySettings.isMac() ? "osx" : "linux");
+      String osName = null;
 
-      String osArch = System.getProperty("os.arch");
       if (DeploySettings.isWindows()) {
-        osArch = "";
-      } else if (osArch.equals("x86_64") || osArch.equals("amd64")) {
-        osArch = "x86_64";
-      } else if (osArch.equals("aarch64") || osArch.equals("arm64")) {
-        osArch = "aarch_64";
+        osName = "win64";
+      } else if (DeploySettings.isMac()) {
+        osName = "osx-universal_binary";
       } else {
-        System.out.println("Couldn't detect system architecture, trying with x86_64");
-        osArch = "x86_64";
+        String osArch = System.getProperty("os.arch");
+        if (osArch.equals("aarch64") || osArch.equals("arm64")) {
+          osArch = "aarch_64";
+        } else if (osArch.equals("x86_64") || osArch.equals("amd64")) {
+          osArch = "x86_64";
+        } else {
+          System.out.println("Couldn't detect system architecture, trying with x86_64");
+          osArch = "x86_64";
+        }
+        osName = "linux-" + osArch;
       }
 
-      final String protocString = NAME + '-' + VERSION + '-' + osName + '-' + osArch;
+      final String protocString = NAME + '-' + VERSION + '-' + osName;
       final File protocBaseFolder = new File(DeploySettings.etcDir, "tools/android/protoc");
       protocBaseFolder.mkdirs();
 
-      final File protocExecutable = new File(protocBaseFolder,
-          protocString + DeploySettings.appendDotExe("/bin/protoc"));
+      final File protocExecutable = new File(protocBaseFolder, DeploySettings.appendDotExe("bin/protoc"));
       if (!protocExecutable.exists()) {
+        final String downloadUrl = BASE_URL + VERSION + "/" + protocString + ".zip";
         // download and unzip protoc
+        try {
+          System.out.println("Downloading protoc...");
+          downloadAndUnzip(downloadUrl, protocBaseFolder.getAbsolutePath());
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to download protoc at: " + downloadUrl
+              + " ; You may download it yourself and unzip the contents into the folder: "
+              + protocBaseFolder.getAbsolutePath(), e);
+        }
+
+        if (DeploySettings.isMac()) {
+          try {
+            // Remove quarentine (macOS)
+            new ProcessBuilder("xattr", "-d", "com.apple.quarantine", protocExecutable.getAbsolutePath())
+                .start()
+                .waitFor();
+          } catch (InterruptedException | IOException e) {
+            throw new RuntimeException("Failed to remove protoc from quarentine (xattr -d com.apple.quarantine "
+                + protocExecutable.getAbsolutePath() + ")", e);
+          }
+        }
+        if (!DeploySettings.isWindows()) {
+          try {
+            // Make executable
+            Files.setPosixFilePermissions(
+                Paths.get(protocExecutable.getAbsolutePath()),
+                PosixFilePermissions.fromString("rwxr-xr-x"));
+          } catch (IOException e) {
+            throw new RuntimeException("Failed to set execution permission to: " + protocExecutable.getAbsolutePath());
+          }
+        }
       }
 
       final String protocExecutablePath = protocExecutable.getAbsolutePath();
@@ -141,6 +187,63 @@ public class Deployer4Android {
       }
 
       return protocExecutablePath;
+    }
+
+    public static void downloadAndUnzip(String fileUrl, String outputDir) throws Exception {
+      Path tempZip = Files.createTempFile("download", ".zip");
+
+      downloadFile(fileUrl, tempZip.toFile());
+
+      Files.createDirectories(Paths.get(outputDir));
+
+      unzip(tempZip.toString(), outputDir);
+    }
+
+    private static void downloadFile(String fileURL, File outputFile) throws IOException {
+      URL url = new URL(fileURL);
+      HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+      httpConn.setRequestProperty("User-Agent", "Mozilla/5.0"); // Prevents some servers from blocking the request
+
+      try (InputStream in = httpConn.getInputStream();
+          FileOutputStream out = new FileOutputStream(outputFile)) {
+
+        byte[] buffer = new byte[8192];
+        int len;
+
+        while ((len = in.read(buffer)) != -1) {
+          out.write(buffer, 0, len);
+        }
+      }
+
+      httpConn.disconnect();
+    }
+
+    private static void unzip(String zipFilePath, String destDirectory) throws IOException {
+      try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+
+        java.util.zip.ZipEntry entry = zipIn.getNextEntry();
+
+        while (entry != null) {
+          String filePath = destDirectory + File.separator + entry.getName();
+
+          if (!entry.isDirectory()) {
+            Files.createDirectories(Paths.get(filePath).getParent());
+
+            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+              byte[] bytesIn = new byte[4096];
+              int read;
+              while ((read = zipIn.read(bytesIn)) != -1) {
+                bos.write(bytesIn, 0, read);
+              }
+            }
+          } else {
+            Files.createDirectories(Paths.get(filePath));
+          }
+
+          zipIn.closeEntry();
+          entry = zipIn.getNextEntry();
+        }
+      }
     }
   }
 
