@@ -245,11 +245,6 @@ public class VideoCaptureActivity extends AppCompatActivity {
         // PREVIEW
         Preview preview = new Preview.Builder()
                 .setTargetRotation(rotation)
-                .setTargetAspectRatio(
-                        isLandscape
-                                ? AspectRatio.RATIO_16_9
-                                : AspectRatio.RATIO_4_3
-                )
                 .setTargetResolution(targetSize)
                 .build();
 
