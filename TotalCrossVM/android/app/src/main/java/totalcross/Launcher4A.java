@@ -63,8 +63,12 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+
+import org.jetbrains.annotations.Contract;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -851,6 +855,28 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return instance.getHeight();
    }
    
+    private Insets safeInsets;
+
+    public void onSafeAreaChanged(Insets insets) {
+        safeInsets = insets;
+    }
+
+    @Nullable
+    @Contract(pure = true)
+    static int[] getSafeAreaInsets()
+    {
+        if (instance.safeInsets == null) {
+            return null;
+        }
+        int[] insets = new int[4];
+        insets[0] = instance.safeInsets.top;
+        insets[1] = instance.safeInsets.left;
+        insets[2] = instance.safeInsets.bottom;
+        insets[3] = instance.safeInsets.right;
+
+        return insets;
+    }
+
    public static int setElapsed(int n)
    {
       if (n == 0)

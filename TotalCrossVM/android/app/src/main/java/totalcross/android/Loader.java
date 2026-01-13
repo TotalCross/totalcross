@@ -52,6 +52,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import androidx.browser.customtabs.CustomTabsIntent;
+import android.view.View;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
 
 public class Loader extends Activity implements TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
 {
@@ -616,6 +621,33 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
     mainLayout.addView(mainView);
     setContentView(mainLayout);
     onMainLoop = true;
+
+       WindowCompat.setDecorFitsSystemWindows(
+               getWindow(),
+               false
+       );
+       View rootView = getWindow().getDecorView();
+
+       ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
+
+           WindowInsetsCompat rootInsets = ViewCompat.getRootWindowInsets(view);
+
+           if (rootInsets == null) {
+               return insets;
+           }
+
+           Insets safeInsets = rootInsets.getInsetsIgnoringVisibility(
+                   WindowInsetsCompat.Type.systemBars()
+                           | WindowInsetsCompat.Type.displayCutout()
+           );
+
+           // IMPORTANT: make sure the view was already resized
+           view.post(() -> {
+               Launcher4A.instance.onSafeAreaChanged(safeInsets);
+           });
+
+           return WindowInsetsCompat.CONSUMED;
+       });
   }
 
    public static void setMargins (View v, int l, int t, int r, int b) {

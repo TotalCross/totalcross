@@ -34,3 +34,29 @@ static void windowSetOrientation(int32 o)
    jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setOrientation", "(I)V");
    (*env)->CallStaticVoidMethod(env, applicationClass, m, o);
 }
+
+static void windowGetSafeAreaInsets(int32 *top, int32 *left, int32 *bottom, int32 *right) {
+    JNIEnv *env = getJNIEnv();
+    jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "getSafeAreaInsets", "()[I");
+
+    jintArray array = (jintArray) (*env)->CallStaticObjectMethod(env, applicationClass, m);
+    if (array == null) {
+        return;
+    }
+
+    jint *values = (*env)->GetIntArrayElements(env, array, NULL);
+
+    *top = values[0];
+    *left = values[1];
+    *bottom = values[2];
+    *right = values[3];
+
+    (*env)->ReleaseIntArrayElements(
+            env,
+            array,
+            values,
+            JNI_ABORT
+    );
+
+    (*env)->DeleteLocalRef(env, array);
+}

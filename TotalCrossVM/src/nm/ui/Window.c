@@ -82,7 +82,7 @@ TC_API void tuW_getSafeAreaInsets(NMParams p) // totalcross/ui/Window public sta
    if (safeAreaInsets == null) {
       safeAreaInsets = getStaticFieldObject(p->currentContext, loadClass(p->currentContext, "totalcross.ui.Window", true), "safeAreaInsets");
    }
-#ifdef darwin
+#if defined darwin || defined ANDROID
    if (safeAreaInsets != null && p->currentContext->thrownException == null) {
       windowGetSafeAreaInsets(
          &FIELD_I32(*safeAreaInsets, 0),
