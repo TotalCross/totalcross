@@ -855,7 +855,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public static int getAppHeight()
    {
-      return instance.getHeight();
+       if (instance.safeInsets == null) {
+           return instance.getHeight();
+       }
+       return instance.getHeight() - (instance.sipInsetBottom > instance.safeInsets.bottom ? instance.sipInsetBottom : 0);
    }
    
     private Insets safeInsets;
