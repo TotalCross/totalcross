@@ -295,7 +295,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          appTitleH = lastScreenH - h; 
       
       if (sipVisible && !rotated) // sip changed and no rotation occured?
-         instance.nativeInitSize(null,-999,h); // signal vm that the keyboard will appear
+         instance.nativeInitSize(null,-999,100); // signal vm that the keyboard will appear at 100%
       else
       {
          instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
@@ -850,6 +850,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (eventThread != null)
          eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
    }
+
+   public int sipInsetBottom = -1;
 
    public static int getAppHeight()
    {

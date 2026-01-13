@@ -64,7 +64,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       {
          if (needsPaint != null)
          {
-            desiredglShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
+            desiredglShiftY = height == 0 ? 0 : height; // change only after the next screen update, since here we are running in a different thread
             setShiftYonNextUpdateScreen = true;
             *needsPaint = true; // schedule a screen paint to update the shiftY values
             setTimerInterval(1);
@@ -262,7 +262,7 @@ void setShiftYgl(int32 shiftY)
    {
       setShiftYonNextUpdateScreen = false;
 #ifdef ANDROID
-      glShiftY = max32(0,desiredglShiftY - shiftY); // guich: under 0 occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
+       glShiftY = desiredglShiftY > 0 ? shiftY * desiredglShiftY / 100 : 0;
 #else
       glShiftY = -shiftY;
 #endif

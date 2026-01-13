@@ -7,6 +7,8 @@ package totalcross.android;
 
 import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
 
+import static androidx.core.view.WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
+
 import android.speech.tts.TextToSpeech;
 import totalcross.*;
 import totalcross.android.PathUtil;
@@ -32,6 +34,8 @@ import android.view.ViewGroup.*;
 import android.view.inputmethod.*;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 // import com.google.android.gms.ads.*;
@@ -55,6 +59,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import android.view.View;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.graphics.Insets;
 
@@ -628,6 +633,31 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
        );
        View rootView = getWindow().getDecorView();
 
+       ViewCompat.setWindowInsetsAnimationCallback(
+               rootView,
+               new WindowInsetsAnimationCompat.Callback(
+                       DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+
+                   @NonNull
+                   @Override
+                   public WindowInsetsCompat onProgress(
+                           @NonNull WindowInsetsCompat insets,
+                           @NonNull List<WindowInsetsAnimationCompat> runningAnimations) {
+
+                       // Current sip height during animation
+                       int bottom = insets.getInsets(
+                               WindowInsetsCompat.Type.ime()
+                       ).bottom;
+
+                       // % of the keyboard shown, calculated using our cached SIP height
+                       int h = (int) ((double) bottom * 100) / Launcher4A.instance.sipInsetBottom;
+
+                       Launcher4A.instance.nativeInitSize(null, -999, h); // signal vm that the keyboard will appear
+
+                       return insets;
+                   }
+               });
+
        ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
 
            WindowInsetsCompat rootInsets = ViewCompat.getRootWindowInsets(view);
@@ -653,6 +683,11 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
            Launcher4A.sipVisible =
                    insets.isVisible(WindowInsetsCompat.Type.ime())
                            || imeInsets.bottom > 0;
+
+           // If the keyboard is visible, update our cached SIP height
+           if (imeInsets.bottom > 0) {
+               Launcher4A.instance.sipInsetBottom = imeInsets.bottom;
+           }
 
            return WindowInsetsCompat.CONSUMED;
        });
