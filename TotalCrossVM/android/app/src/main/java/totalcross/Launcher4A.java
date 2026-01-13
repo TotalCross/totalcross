@@ -765,7 +765,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static final int SIP_BOTTOM = 10002;
    public static final int SIP_SHOW = 10003;
    
-   static boolean sipVisible,wasNumeric;
+   public static boolean sipVisible;
+   static boolean wasNumeric;
    
    class SipClosedReceiver extends ResultReceiver
    {

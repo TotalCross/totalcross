@@ -646,6 +646,14 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                Launcher4A.instance.onSafeAreaChanged(safeInsets);
            });
 
+           Insets imeInsets = insets.getInsets(
+                   WindowInsetsCompat.Type.ime()
+           );
+
+           Launcher4A.sipVisible =
+                   insets.isVisible(WindowInsetsCompat.Type.ime())
+                           || imeInsets.bottom > 0;
+
            return WindowInsetsCompat.CONSUMED;
        });
   }
