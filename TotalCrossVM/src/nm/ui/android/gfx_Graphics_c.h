@@ -262,6 +262,12 @@ void setShiftYgl(int32 shiftY)
    {
       setShiftYonNextUpdateScreen = false;
 #ifdef ANDROID
+       if (shiftY == 0) { // keyboard is closing
+           if (desiredglShiftY == 0) { // keyboard animation has finished
+               lastShiftY = 0; // reset lastShiftY when the animation has finished
+           }
+           shiftY = lastShiftY; // keep using lastShiftY for smooth slide down animation
+       }
        glShiftY = desiredglShiftY > 0 ? -shiftY * desiredglShiftY / 100 : 0;
 #else
       glShiftY = -shiftY;

@@ -2298,6 +2298,9 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
          }
          if (oldShiftY != *shiftY) // prevent 100% cpu use - shift can change on ENTER or PEN_UP - now same code of iOS
          {
+             if (*shiftY == 0) { // keyboard is closing
+                 lastShiftY = oldShiftY; // save the original shiftY value for the slide down animation
+             }
             oldShiftY = *shiftY;
             setShiftYonNextUpdateScreen = true;
          }
