@@ -262,7 +262,7 @@ void setShiftYgl(int32 shiftY)
    {
       setShiftYonNextUpdateScreen = false;
 #ifdef ANDROID
-       glShiftY = desiredglShiftY > 0 ? shiftY * desiredglShiftY / 100 : 0;
+       glShiftY = desiredglShiftY > 0 ? -shiftY * desiredglShiftY / 100 : 0;
 #else
       glShiftY = -shiftY;
 #endif
