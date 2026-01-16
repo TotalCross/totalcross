@@ -71,7 +71,7 @@ uint8* lookupGray = NULL;
 int32* controlEnableUpdateScreenPtr = NULL;
 TScreenSurface screen = { 0 };
 TCClass uiColorsClass = { 0 };
-int32* shiftScreenColorP = NULL;
+int32* unsafeAreaColorP = NULL;
 int32* vistaFadeStepP = NULL;
 TCClass imageClass;
 int32 totalTextureLoaded;

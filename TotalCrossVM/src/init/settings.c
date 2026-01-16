@@ -133,7 +133,7 @@ bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTC
    saveVKSettings();
 #endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
-   shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
+   unsafeAreaColorP = getStaticFieldInt(uiColorsClass, "unsafeAreaColor");
    vistaFadeStepP = getStaticFieldInt(uiColorsClass, "vistaFadeStep");
    return true;
 }

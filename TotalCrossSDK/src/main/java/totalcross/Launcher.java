@@ -1285,7 +1285,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       totalcross.ui.Window.shiftY = shiftY = h - shiftH;
     }
     if (shiftY != 0) {
-      g.setColor(new Color(UIColors.shiftScreenColor));
+      g.setColor(new Color(UIColors.unsafeAreaColor));
       int yy = (int) (shiftH * toScale);
       g.fillRect(0, yy, ww, hh - yy); // erase empty area
       g.setClip(0, 0, ww, yy); // limit drawing area
@@ -1310,7 +1310,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       g.setClip(0, 0, ww, hh);
     }
     // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
-    //java.util.Arrays.fill(pixels, getScreenColor(UIColors.shiftScreenColor));
+    //java.util.Arrays.fill(pixels, getScreenColor(UIColors.unsafeAreaColor));
   }
 
   public static BufferedImage toBufferedImage(java.awt.Image img) {

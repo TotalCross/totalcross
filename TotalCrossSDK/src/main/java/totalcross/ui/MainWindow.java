@@ -160,7 +160,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
 
   @Override
   protected void fillBackground(Graphics g, int b) {
-    g.backColor = Color.BLACK;
+    g.backColor = UIColors.unsafeAreaColor;
     g.fillRect(0, 0, width, height);
 
     Rect r = getClientRect();

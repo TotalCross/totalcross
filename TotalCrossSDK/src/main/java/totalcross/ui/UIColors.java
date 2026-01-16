@@ -155,10 +155,19 @@ public final class UIColors // guich@564_6
   /** NumericBox action color. */
   public static int numericboxAction = keyboardAction;
 
-  /** The color that will be used to paint the disabled area when a screen shift occurs. 
+  /**
+   * Use {@link #unsafeAreaColor} instead.
+   * 
    * @since TotalCross 1.3
    */
+  @Deprecated
   public static int shiftScreenColor = 0x808080;
+
+  /**
+   * Color used to fill the unsafe areas of the screen and the disabled area when
+   * the screen is shifted. Default color is black.
+   */
+  public static int unsafeAreaColor = Color.BLACK;
 
   /** Background color of the clipboard menu that is opened at Edit and MultiEdit. */
   public static int clipboardBack = Color.YELLOW;

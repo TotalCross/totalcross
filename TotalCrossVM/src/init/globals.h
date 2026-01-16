@@ -64,7 +64,7 @@ extern uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 extern int32* controlEnableUpdateScreenPtr;
 extern TScreenSurface screen;
 extern TCClass uiColorsClass;
-extern int32* shiftScreenColorP;
+extern int32* unsafeAreaColorP;
 extern int32* vistaFadeStepP;
 extern TCClass imageClass;
 extern int32 totalTextureLoaded;

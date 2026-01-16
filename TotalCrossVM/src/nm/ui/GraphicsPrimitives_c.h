@@ -2324,7 +2324,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    int32 y, count;
 #endif
 
-   gray.pixel = makePixelARGB(*shiftScreenColorP);
+   gray.pixel = makePixelARGB(*unsafeAreaColorP);
 
 #ifndef __gl2_h_
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
@@ -2583,7 +2583,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    TCClass window;
    PixelConv gray;
 
-   gray.pixel = *shiftScreenColorP;
+   gray.pixel = *unsafeAreaColorP;
    
    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
    {              
