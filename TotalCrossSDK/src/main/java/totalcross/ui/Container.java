@@ -573,32 +573,36 @@ public class Container extends Control {
   }
 
   protected void fillBackground(Graphics g, int b) {
-	if(npParts != null && npback == null)  {
-		try {
-			npback = NinePatch.getInstance().getNormalInstance(npParts, width, height, b, false);
-		} catch(ImageException e) {
-			if(Settings.onJavaSE)
-				e.printStackTrace();
-		}
-	} else if(npback == null){
-	    switch (backgroundStyle) {
-	    case BACKGROUND_SOLID:
-	      g.backColor = b;
-	      g.fillRect(0, 0, width, height);
-	      break;
-	    case BACKGROUND_SHADED:
-	      g.fillShadedRect(0, 0, width, height, true, false, foreColor, b, UIColors.shadeFactor);
-	      break;
-	    case BACKGROUND_SHADED_INV:
-	      g.fillShadedRect(0, 0, width, height, false, false, foreColor, b, UIColors.shadeFactor);
-	      break;
-	    case BACKGROUND_CYLINDRIC_SHADED:
-	      g.drawCylindricShade(foreColor, b, 0, 0, width, height);
-	      break;
-	    }
-	}
+    fillBackground(g, b, foreColor, 0, 0, width, height);
+  }
 
-	NinePatch.tryDrawImage(g, npback, 0, 0);
+  protected void fillBackground(Graphics g, int backColor, int foreColor, int x, int y, int width, int height) {
+    if (npParts != null && npback == null) {
+      try {
+        npback = NinePatch.getInstance().getNormalInstance(npParts, width, height, backColor, false);
+      } catch (ImageException e) {
+        if (Settings.onJavaSE)
+          e.printStackTrace();
+      }
+    } else if (npback == null) {
+      switch (backgroundStyle) {
+        case BACKGROUND_SOLID:
+          g.backColor = backColor;
+          g.fillRect(x, y, width, height);
+          break;
+        case BACKGROUND_SHADED:
+          g.fillShadedRect(x, y, width, height, true, false, foreColor, backColor, UIColors.shadeFactor);
+          break;
+        case BACKGROUND_SHADED_INV:
+          g.fillShadedRect(x, y, width, height, false, false, foreColor, backColor, UIColors.shadeFactor);
+          break;
+        case BACKGROUND_CYLINDRIC_SHADED:
+          g.drawCylindricShade(foreColor, backColor, x, y, width, height);
+          break;
+      }
+    }
+
+    NinePatch.tryDrawImage(g, npback, x, y);
   }
 
   /** Draws the border (if any). If you override this method, be sure to call

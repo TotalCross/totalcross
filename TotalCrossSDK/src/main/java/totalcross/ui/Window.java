@@ -1189,55 +1189,8 @@ public class Window extends Container {
     }
     r.width = this.width - m - m;
     r.height = this.height - r.y - m;
-  
-    Insets i = MainWindow.getSafeAreaInsets();
-    if (this.y < i.top) {
-      r.y += i.top;
-    }
-    if (this.height > Settings.screenHeight - (i.top + i.bottom)) {
-      r.height -= i.top + i.bottom;
-    }
-    if (this.x < i.left) {
-      r.x += i.left;
-    }
-    if (this.width > Settings.screenWidth - (i.left + i.right)) {
-      r.width -= i.left + i.right;
-    }
   }
   
-  protected void fillBackground(Graphics g, int b) {
-    g.backColor = Color.BLACK;
-    g.fillRect(0, 0, width, height);
-
-    Rect r = getClientRect();
-    if (npParts != null && npback == null) {
-      try {
-        npback = NinePatch.getInstance().getNormalInstance(npParts, r.width, r.height, b, false);
-      } catch (ImageException e) {
-        if (Settings.onJavaSE)
-          e.printStackTrace();
-      }
-    } else if (npback == null) {
-      switch (backgroundStyle) {
-        case BACKGROUND_SOLID:
-          g.backColor = b;
-          g.fillRect(r.x, r.y, r.width, r.height);
-          break;
-        case BACKGROUND_SHADED:
-          g.fillShadedRect(r.x, r.y, r.width, r.height, true, false, foreColor, b, UIColors.shadeFactor);
-          break;
-        case BACKGROUND_SHADED_INV:
-          g.fillShadedRect(r.x, r.y, r.width, r.height, false, false, foreColor, b, UIColors.shadeFactor);
-          break;
-        case BACKGROUND_CYLINDRIC_SHADED:
-          g.drawCylindricShade(foreColor, b, r.x, r.y, r.width, r.height);
-          break;
-      }
-    }
-
-    NinePatch.tryDrawImage(g, npback, r.x, r.y);
-  }
-
   ////////////////////////////////////////////////////////////////////////////////////
   /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
    */

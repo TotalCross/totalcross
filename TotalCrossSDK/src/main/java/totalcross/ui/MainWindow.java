@@ -33,6 +33,7 @@ import totalcross.ui.event.WindowListener;
 import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
+import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
 import totalcross.unit.UIRobot;
 import totalcross.util.Hashtable;
@@ -135,6 +136,35 @@ public class MainWindow extends Window implements totalcross.MainClass {
     }
     FirebaseManager.getInstance().registerFirebaseInstanceIdService(initFirebaseInstanceIdService());
     FirebaseManager.getInstance().setMessagingService(initFirebaseMessagingService());
+  }
+
+  @Override
+  protected void getClientRect(Rect r) // guich@450_36
+  {
+    super.getClientRect(r);
+
+    Insets i = MainWindow.getSafeAreaInsets();
+    if (this.y >= 0 && this.y < i.top) {
+      r.y += i.top;
+    }
+    if (this.height > Settings.screenHeight - (i.top + i.bottom)) {
+      r.height -= i.top + i.bottom;
+    }
+    if (this.x >= 0 && this.x < i.left) {
+      r.x += i.left;
+    }
+    if (this.width > Settings.screenWidth - (i.left + i.right)) {
+      r.width -= i.left + i.right;
+    }
+  }
+
+  @Override
+  protected void fillBackground(Graphics g, int b) {
+    g.backColor = Color.BLACK;
+    g.fillRect(0, 0, width, height);
+
+    Rect r = getClientRect();
+    super.fillBackground(g, b, foreColor, r.x, r.y, r.width, r.height);
   }
 
   /**

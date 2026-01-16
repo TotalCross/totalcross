@@ -768,9 +768,11 @@ public class Control extends GfxSurface {
           parent.lastY = cli.y;
         }
       } else {
-        cli.y = cli.x = 0; // guich@450a_40
-        cli.width = Settings.screenWidth;
-        cli.height = Settings.screenHeight;
+        Insets i = Window.getSafeAreaInsets();
+        cli.x = i.left;
+        cli.y = i.top;
+        cli.width = Settings.screenWidth - i.left - i.right;
+        cli.height = Settings.screenHeight - i.top - i.bottom;
       }
 
       if (Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported) {
