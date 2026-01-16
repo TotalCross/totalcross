@@ -2324,7 +2324,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    int32 y, count;
 #endif
 
-   gray.pixel = *shiftScreenColorP;
+   gray.pixel = makePixelARGB(*shiftScreenColorP);
 
 #ifndef __gl2_h_
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
