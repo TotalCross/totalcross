@@ -493,6 +493,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       super.onSizeChanged(w, h, oldw, oldh);
    }
 
+   private boolean backDownReceived = false;
+   
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
       if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event))
@@ -500,12 +502,23 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
-         if (!hardwareKeyboardIsVisible && sipVisible)
-         {
-            if (event.getAction() == KeyEvent.ACTION_UP)
-               setSIP(SIP_HIDE,false);
-            return false;
-         }
+          if (!hardwareKeyboardIsVisible && (sipVisible || sipWasOpen)) {
+              if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                  backDownReceived = true;
+              }
+              /*
+               * Only react to the first ACTION_UP by checking backDownReceived.
+               * Uses backDownReceived and sipWasOpen to correctly handle the keyboard
+               * on Samsung's OneUI, because it reports the keyboard as closed before
+               * the back event is processed, and sends KeyEvent.ACTION_UP twice.
+               */
+              if (backDownReceived && event.getAction() == KeyEvent.ACTION_UP) {
+                  setSIP(SIP_HIDE, false);
+                  backDownReceived = false;
+                  Launcher4A.sipWasOpen = false;
+              }
+              return false;
+          }
       }
       switch (event.getAction())
       {
@@ -766,6 +779,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static final int SIP_SHOW = 10003;
    
    public static boolean sipVisible;
+   public static boolean sipWasOpen = false;
    static boolean wasNumeric;
    
    class SipClosedReceiver extends ResultReceiver

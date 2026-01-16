@@ -680,9 +680,18 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
                    WindowInsetsCompat.Type.ime()
            );
 
-           Launcher4A.sipVisible =
-                   insets.isVisible(WindowInsetsCompat.Type.ime())
-                           || imeInsets.bottom > 0;
+           boolean imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+                   || imeInsets.bottom > 0;
+
+           if (imeVisible) {
+               Launcher4A.sipVisible = true;
+               Launcher4A.sipWasOpen = false;
+           }
+
+           if (!imeVisible && Launcher4A.sipVisible) {
+               Launcher4A.sipWasOpen = true;
+               Launcher4A.sipVisible = false;
+           }
 
            // If the keyboard is visible, update our cached SIP height
            if (imeInsets.bottom > 0) {
