@@ -207,7 +207,7 @@ public class FileChooserBox extends Window {
       }
       return;
     }
-    setRect(LEFT + 5, TOP + 5, FILL - 5, FILL - 5);
+    setRect(CENTER, CENTER, SCREENSIZE + 80, SCREENSIZE + 80);
     setBackForeColors(UIColors.fileChooserBack, UIColors.fileChooserFore);
 
     if (cbRoot != null) // guich@tc126_10

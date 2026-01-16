@@ -125,7 +125,7 @@ public class CalculatorBox extends Window {
   {
     setBackColor(showOperations ? UIColors.calculatorBack : UIColors.numericboxBack); // before control definitions!
 
-    setRect(LEFT, TOP, WILL_RESIZE, WILL_RESIZE);
+    setRect(CENTER, CENTER, WILL_RESIZE, WILL_RESIZE);
 
     int hh = fmH * 2;
 
@@ -217,7 +217,6 @@ public class CalculatorBox extends Window {
 
     setInsets(2, 2, 2, 2);
     resize();
-    setRect(CENTER, CENTER, KEEP, KEEP);
 
     numericPad.setBackColor(showOperations ? UIColors.calculatorBack : UIColors.numericboxBack);
     pbgAction.setBackColor(showOperations ? UIColors.calculatorAction : UIColors.numericboxAction);

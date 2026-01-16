@@ -69,7 +69,7 @@ public class ColorChooserBox extends Window implements PenListener {
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
     setBackColor(UIColors.colorchooserboxBack);
     setForeColor(UIColors.colorchooserboxFore);
-    setRect(LEFT, TOP, FILL, FILL);
+    setRect(CENTER, CENTER, SCREENSIZEMIN + 85, SCREENSIZEMIN + 85);
   }
 
   @Override
