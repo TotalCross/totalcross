@@ -7,6 +7,7 @@ package totalcross.android;
 
 import android.Manifest;
 import android.content.Context;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,6 +38,10 @@ import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -153,6 +158,8 @@ public class CameraViewer extends AppCompatActivity {
             }
          });
       }
+
+        adjustToSafeArea(this);
 
       cameraProviderFuture = ProcessCameraProvider.getInstance(this);
       cameraProviderFuture.addListener(() -> {
@@ -315,6 +322,47 @@ public class CameraViewer extends AppCompatActivity {
         previewView.setOnTouchListener((v, e) -> {
             detector.onTouchEvent(e);
             return true;
+        });
+    }
+
+    private void adjustToSafeArea(Activity activity) {
+        WindowCompat.setDecorFitsSystemWindows(
+                getWindow(),
+                false
+        );
+        View rootView = activity.getWindow().getDecorView();
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
+
+            WindowInsetsCompat rootInsets =
+                    ViewCompat.getRootWindowInsets(view);
+
+            if (rootInsets == null) {
+                return insets;
+            }
+
+            Insets safeInsets = rootInsets.getInsetsIgnoringVisibility(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            Insets imeInsets = insets.getInsets(
+                    WindowInsetsCompat.Type.ime()
+            );
+
+            int bottomInset = Math.max(
+                    safeInsets.bottom,
+                    imeInsets.bottom
+            );
+
+            view.setPadding(
+                    safeInsets.left,
+                    safeInsets.top,
+                    safeInsets.right,
+                    bottomInset
+            );
+
+            return insets;
         });
     }
 }

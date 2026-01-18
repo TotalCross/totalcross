@@ -1,6 +1,7 @@
 package totalcross.android;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.ScaleGestureDetector;
 import android.view.Surface;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -34,6 +36,10 @@ import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -192,6 +198,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
         };
         orientationEventListener.enable();
 
+        adjustToSafeArea(this);
 
         if (permissionsGranted()) startCamera();
         else requestPermissions();
@@ -414,6 +421,47 @@ public class VideoCaptureActivity extends AppCompatActivity {
                 startCamera();
             }
         }
+    }
+
+    private void adjustToSafeArea(Activity activity) {
+        WindowCompat.setDecorFitsSystemWindows(
+                getWindow(),
+                false
+        );
+        View rootView = activity.getWindow().getDecorView();
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
+
+            WindowInsetsCompat rootInsets =
+                    ViewCompat.getRootWindowInsets(view);
+
+            if (rootInsets == null) {
+                return insets;
+            }
+
+            Insets safeInsets = rootInsets.getInsetsIgnoringVisibility(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            Insets imeInsets = insets.getInsets(
+                    WindowInsetsCompat.Type.ime()
+            );
+
+            int bottomInset = Math.max(
+                    safeInsets.bottom,
+                    imeInsets.bottom
+            );
+
+            view.setPadding(
+                    safeInsets.left,
+                    safeInsets.top,
+                    safeInsets.right,
+                    bottomInset
+            );
+
+            return insets;
+        });
     }
 
     /* =========================
