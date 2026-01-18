@@ -1,6 +1,7 @@
 package totalcross.android;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.os.Looper;
 import android.util.Size;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
+import android.view.ScaleGestureDetector;
 import android.view.Surface;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
+import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -38,6 +41,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -70,6 +74,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
     public static final String EXTRA_TARGET_FPS = "target_fps";
     public static final String EXTRA_QUALITY = "quality";
 
+    private Camera camera;
     private String lastSavedVideoPath = null;
 
     private static final int REQ_PERMS = 101;
@@ -275,12 +280,14 @@ public class VideoCaptureActivity extends AppCompatActivity {
                 .build();
 
         // Final bind
-        cameraProvider.bindToLifecycle(
+        camera = cameraProvider.bindToLifecycle(
                 this,
                 CameraSelector.DEFAULT_BACK_CAMERA,
                 preview,
                 videoCapture
         );
+
+        enablePinchToZoom(this, camera, previewView);
     }
 
     private void startRecording() {
@@ -407,5 +414,28 @@ public class VideoCaptureActivity extends AppCompatActivity {
                 startCamera();
             }
         }
+    }
+
+    /* =========================
+   🔍 PINCH TO ZOOM
+   ========================= */
+    private void enablePinchToZoom(Context context, Camera camera, PreviewView previewView) {
+        ScaleGestureDetector detector =
+                new ScaleGestureDetector(context,
+                        new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                            @Override
+                            public boolean onScale(@NonNull ScaleGestureDetector d) {
+                                float scale =
+                                        Objects.requireNonNull(camera.getCameraInfo().getZoomState()
+                                                .getValue()).getZoomRatio() * d.getScaleFactor();
+                                camera.getCameraControl().setZoomRatio(scale);
+                                return true;
+                            }
+                        });
+
+        previewView.setOnTouchListener((v, e) -> {
+            detector.onTouchEvent(e);
+            return true;
+        });
     }
 }

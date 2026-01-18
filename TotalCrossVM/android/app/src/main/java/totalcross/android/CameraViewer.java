@@ -6,6 +6,7 @@
 package totalcross.android;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +14,7 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Size;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
 
@@ -42,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -198,6 +201,7 @@ public class CameraViewer extends AppCompatActivity {
                 videoCapture
         );
 
+        enablePinchToZoom(this, camera, previewView);
    }
 
    private void recordVideo(File f) {
@@ -290,4 +294,27 @@ public class CameraViewer extends AppCompatActivity {
 		   recorder = null;
          }
       }
+
+    /* =========================
+    🔍 PINCH TO ZOOM
+    ========================= */
+    private void enablePinchToZoom(Context context, Camera camera, PreviewView previewView) {
+        ScaleGestureDetector detector =
+                new ScaleGestureDetector(context,
+                        new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                            @Override
+                            public boolean onScale(@NonNull ScaleGestureDetector d) {
+                                float scale =
+                                        Objects.requireNonNull(camera.getCameraInfo().getZoomState()
+                                                .getValue()).getZoomRatio() * d.getScaleFactor();
+                                camera.getCameraControl().setZoomRatio(scale);
+                                return true;
+                            }
+                        });
+
+        previewView.setOnTouchListener((v, e) -> {
+            detector.onTouchEvent(e);
+            return true;
+        });
+    }
 }
