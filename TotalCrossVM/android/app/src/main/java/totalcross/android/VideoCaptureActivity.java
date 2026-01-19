@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -15,6 +16,7 @@ import android.view.ScaleGestureDetector;
 import android.view.Surface;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -80,7 +82,9 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private Camera camera;
     private ImageButton btnSwitchCamera;
+    private TextView tvTimer;
     private ImageButton btnFlash;
+
     private String lastSavedVideoPath = null;
 
     private static final int REQ_PERMS = 101;
@@ -135,6 +139,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_capture);
 
+        tvTimer = findViewById(R.id.tvTimer);
         previewView = findViewById(R.id.previewView);
         btnRecord = findViewById(R.id.btnCapture);
         btnBackCapture = findViewById(R.id.btnBackCapture);
@@ -376,7 +381,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                                                 );
 
                                         updateTimer(seconds);
-                                        tvTimer.setVisibility(View.VISIBLE);
+                                        tvTimer.setVisibility(VISIBLE);
                                         tvTimer.setCompoundDrawablesWithIntrinsicBounds(
                                                 R.drawable.ic_rec_dot, 0, 0, 0
                                         );
@@ -419,6 +424,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         progressActive = true;
         recordingStartTime = System.currentTimeMillis();
         progressDrawable.setProgress(0f);
+        progressDrawable.setProgressColor(Color.RED);
         progressHandler.post(progressRunnable);
     }
 
@@ -448,6 +454,14 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             }
         }
     };
+
+    private void updateTimer(long seconds) {
+        long min = seconds / 60;
+        long sec = seconds % 60;
+
+        String text = String.format(Locale.US, "%02d:%02d", min, sec);
+        tvTimer.setText(text);
+    }
 
     private void takePhoto() {
         if (imageCapture == null) return;

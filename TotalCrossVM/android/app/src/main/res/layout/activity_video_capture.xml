@@ -24,6 +24,23 @@
         android:scaleType="fitCenter"
         android:layout_gravity="top|start" />
 
+    <TextView
+        android:id="@+id/tvTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="16dp"
+        android:padding="8dp"
+        android:text="00:00"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/bg_timer"
+        android:focusable="false"
+        android:clickable="false"
+        android:gravity="center_vertical"
+        android:drawablePadding="6dp"
+        android:visibility="gone"/>
+
     <!-- Overlay bottom -->
     <LinearLayout
         android:layout_width="match_parent"
