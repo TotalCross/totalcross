@@ -36,13 +36,13 @@ import java.util.concurrent.ExecutionException;
 
 public class VideoCaptureActivity extends AppCompatActivity {
 
-    public enum Quality {
+    public enum VideoQuality {
         FHD(1920, 1080), HD(1280,720), SD(720,480);
 
         final int width;
         final int height;
 
-        Quality(int width, int height) {
+        VideoQuality(int width, int height) {
             this.width = width;
             this.height = height;
         }
@@ -51,7 +51,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
             return isLandscape ? new Size(width, height) : new Size(height, width);
         }
 
-        public static Size getQualitySelectorFor(int width, int height, boolean isLandscape, Quality quality) {
+        public static Size getQualitySelectorFor(int width, int height, boolean isLandscape, VideoQuality quality) {
             if (width <= 0 || height <= 0) {
                 return quality.getQualitySelectorFor(isLandscape);
             }
@@ -85,7 +85,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
     // Params
     private int maxSeconds = 30;
     private int targetFps = 30;
-    private Quality qualidade = Quality.HD;
+    private VideoQuality qualidade = VideoQuality.HD;
 
     private RecordProgressDrawable progressDrawable;
 
@@ -113,7 +113,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
         height = b.getInt("height");
         bitrate = b.getInt("bitrate", 200_000);
         int q = b.getInt(EXTRA_QUALITY, 2);
-        qualidade = (q == 3 ? Quality.FHD : q == 1 ? Quality.SD : Quality.HD);
+        qualidade = (q == 3 ? VideoQuality.FHD : q == 1 ? VideoQuality.SD : VideoQuality.HD);
 
         lastSavedVideoPath = b.getString("file");
 //        lastSavedVideoPath = "/sdcard/DCIM/" + lastSavedVideoPath.substring(lastSavedVideoPath.lastIndexOf('/'));
@@ -237,7 +237,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
         boolean isLandscape =
                 rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270;
 
-        Size targetSize = Quality.getQualitySelectorFor(width, height, isLandscape, qualidade);
+        Size targetSize = VideoQuality.getQualitySelectorFor(width, height, isLandscape, qualidade);
 
         // Remove all before recreating
         cameraProvider.unbindAll();
