@@ -1,6 +1,5 @@
 package totalcross.android;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,15 +10,9 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
-
 import java.io.File;
 
-public class VideoPlayerActivity extends AppCompatActivity {
+public class VideoPlayerActivity extends AdjustedInsetsActivity {
 
     private VideoView videoView;
     private ImageButton btnPlayPause, btnAvancar, btnRetroceder, btnSalvar, btnBackPlayer;
@@ -128,8 +121,6 @@ public class VideoPlayerActivity extends AppCompatActivity {
         });
 
         videoView.setOnCompletionListener(mp -> btnPlayPause.setImageResource(R.drawable.ic_play_new));
-
-        adjustToSafeArea(this);
     }
 
     private void togglePlayPause() {
@@ -160,46 +151,5 @@ public class VideoPlayerActivity extends AppCompatActivity {
         super.onPause();
         handler.removeCallbacksAndMessages(null);
         if (videoView.isPlaying()) videoView.pause();
-    }
-
-    private void adjustToSafeArea(Activity activity) {
-        WindowCompat.setDecorFitsSystemWindows(
-                getWindow(),
-                false
-        );
-        View rootView = activity.getWindow().getDecorView();
-
-        ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
-
-            WindowInsetsCompat rootInsets =
-                    ViewCompat.getRootWindowInsets(view);
-
-            if (rootInsets == null) {
-                return insets;
-            }
-
-            Insets safeInsets = rootInsets.getInsetsIgnoringVisibility(
-                    WindowInsetsCompat.Type.systemBars()
-                            | WindowInsetsCompat.Type.displayCutout()
-            );
-
-            Insets imeInsets = insets.getInsets(
-                    WindowInsetsCompat.Type.ime()
-            );
-
-            int bottomInset = Math.max(
-                    safeInsets.bottom,
-                    imeInsets.bottom
-            );
-
-            view.setPadding(
-                    safeInsets.left,
-                    safeInsets.top,
-                    safeInsets.right,
-                    bottomInset
-            );
-
-            return insets;
-        });
     }
 }

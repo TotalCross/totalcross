@@ -1,7 +1,6 @@
 package totalcross.android;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,7 +18,6 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
@@ -40,10 +38,6 @@ import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -55,7 +49,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class VideoCaptureActivity extends AppCompatActivity {
+public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     public enum VideoQuality {
         FHD(1920, 1080), HD(1280,720), SD(720,480);
@@ -210,8 +204,6 @@ public class VideoCaptureActivity extends AppCompatActivity {
             }
         };
         orientationEventListener.enable();
-
-        adjustToSafeArea(this);
 
         if (permissionsGranted()) startCamera();
         else requestPermissions();
@@ -487,48 +479,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
             }
         }
     }
-
-    private void adjustToSafeArea(Activity activity) {
-        WindowCompat.setDecorFitsSystemWindows(
-                getWindow(),
-                false
-        );
-        View rootView = activity.getWindow().getDecorView();
-
-        ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
-
-            WindowInsetsCompat rootInsets =
-                    ViewCompat.getRootWindowInsets(view);
-
-            if (rootInsets == null) {
-                return insets;
-            }
-
-            Insets safeInsets = rootInsets.getInsetsIgnoringVisibility(
-                    WindowInsetsCompat.Type.systemBars()
-                            | WindowInsetsCompat.Type.displayCutout()
-            );
-
-            Insets imeInsets = insets.getInsets(
-                    WindowInsetsCompat.Type.ime()
-            );
-
-            int bottomInset = Math.max(
-                    safeInsets.bottom,
-                    imeInsets.bottom
-            );
-
-            view.setPadding(
-                    safeInsets.left,
-                    safeInsets.top,
-                    safeInsets.right,
-                    bottomInset
-            );
-
-            return insets;
-        });
-    }
-
+    
     /* =========================
    🔍 PINCH TO ZOOM
    ========================= */

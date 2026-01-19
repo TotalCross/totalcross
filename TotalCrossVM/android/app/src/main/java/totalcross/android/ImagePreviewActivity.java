@@ -5,11 +5,9 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import java.io.File;
 
-public class ImagePreviewActivity extends AppCompatActivity {
+public class ImagePreviewActivity extends AdjustedInsetsActivity {
 
     @Override
     protected void onCreate(Bundle b) {
