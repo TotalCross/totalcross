@@ -50,9 +50,9 @@ import java.util.concurrent.Executor;
 import totalcross.AndroidUtils;
 
 public class CameraViewer extends AdjustedInsetsActivity {
-   private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
-   PreviewView previewView;
-   private ImageCapture imageCapture;
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+    PreviewView previewView;
+    private ImageCapture imageCapture;
     private VideoCapture<Recorder> videoCapture;
     private Recording recorder;
     private Camera camera;
@@ -63,47 +63,49 @@ public class CameraViewer extends AdjustedInsetsActivity {
 
     boolean allowRotation;
 
-   /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.main);
-      setTitle("");
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+        setTitle("");
 
-      Bundle b = getIntent().getExtras();
-      fileName = b.getString("file");
-      stillQuality = b.getInt("quality");
-      width = b.getInt("width");
-      height = b.getInt("height");
-      allowRotation = b.getBoolean("allowRotation");
+        Bundle b = getIntent().getExtras();
+        fileName = b.getString("file");
+        stillQuality = b.getInt("quality");
+        width = b.getInt("width");
+        height = b.getInt("height");
+        allowRotation = b.getBoolean("allowRotation");
 
-      isMovie = fileName.endsWith(".3gp");
+        isMovie = fileName.endsWith(".3gp");
 
-      previewView = findViewById(R.id.previewView);
+        previewView = findViewById(R.id.previewView);
 
-      final Button buttonExit = (Button) findViewById(R.id.buttonExit);
-      buttonExit.setText("Exit");
+        final Button buttonExit = (Button) findViewById(R.id.buttonExit);
+        buttonExit.setText("Exit");
         buttonExit.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            stopRecording();
-            setResult(RESULT_CANCELED);
-            finish();
-         }
-      });
+                stopRecording();
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        });
 
-      final Button buttonClick = (Button) findViewById(R.id.buttonClick);
-      if (isMovie) {
-         buttonClick.setText("Start");
+        final Button buttonClick = (Button) findViewById(R.id.buttonClick);
+        if (isMovie) {
+            buttonClick.setText("Start");
             buttonClick.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-               try {
-                  if (buttonClick.getText() == "Start") {
-                     buttonClick.setText("Stop");
-                     File f = new File(fileName);
-                     recordVideo(f);
-                  } else {
+                public void onClick(View v) {
+                    try {
+                        if (buttonClick.getText() == "Start") {
+                            buttonClick.setText("Stop");
+                            File f = new File(fileName);
+                            recordVideo(f);
+                        } else {
                             stopRecording();
-                  }
+                        }
 //                  if (recorder == null) {
 //                     buttonClick.setText("Stop");
 //                     startRecording();
@@ -112,20 +114,20 @@ public class CameraViewer extends AdjustedInsetsActivity {
 //                     setResult(RESULT_OK);
 //                     finish();
 //                  }
-               } catch (Exception e) {
-                  AndroidUtils.handleException(e, false);
-                  setResult(RESULT_CANCELED);
-                  finish();
-               }
-            }
-         });
-      } else {
-         buttonClick.setText("Click");
+                    } catch (Exception e) {
+                        AndroidUtils.handleException(e, false);
+                        setResult(RESULT_CANCELED);
+                        finish();
+                    }
+                }
+            });
+        } else {
+            buttonClick.setText("Click");
             buttonClick.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-               try {
-                  OutputStream outStream = getContentResolver().openOutputStream(Uri.fromFile(new File(fileName)));
-                  capturePhoto(outStream);
+                public void onClick(View v) {
+                    try {
+                        OutputStream outStream = getContentResolver().openOutputStream(Uri.fromFile(new File(fileName)));
+                        capturePhoto(outStream);
 //                  if (camera == null) // guich@tc130: prevent NPE
 //                     startPreview();
 //                  if (camera != null) {
@@ -143,50 +145,50 @@ public class CameraViewer extends AdjustedInsetsActivity {
 //                     setResult(RESULT_CANCELED);
 //                     finish();
 //                  }
-               } catch (Exception e) {
-                  AndroidUtils.handleException(e, false);
+                    } catch (Exception e) {
+                        AndroidUtils.handleException(e, false);
 //                  stopPreview();
-                  setResult(RESULT_CANCELED);
-                  finish();
-               }
+                        setResult(RESULT_CANCELED);
+                        finish();
+                    }
+                }
+            });
+        }
+
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                startCameraX(cameraProvider);
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-         });
-      }
 
-      cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-      cameraProviderFuture.addListener(() -> {
-         try {
-            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-            startCameraX(cameraProvider);
-         } catch (ExecutionException e) {
-            e.printStackTrace();
-         } catch (InterruptedException e) {
-            e.printStackTrace();
-         }
+        }, getExecutor());
+    }
 
-      }, getExecutor());
-   }
+    private Executor getExecutor() {
+        return ContextCompat.getMainExecutor(this);
+    }
 
-   private Executor getExecutor() {
-      return ContextCompat.getMainExecutor(this);
-   }
+    private void startCameraX(ProcessCameraProvider cameraProvider) {
 
-   private void startCameraX(ProcessCameraProvider cameraProvider) {
-
-      cameraProvider.unbindAll();
+        cameraProvider.unbindAll();
 
         CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
-      Preview preview = new Preview.Builder().build();
+        Preview preview = new Preview.Builder().build();
 
-      preview.setSurfaceProvider(previewView.getSurfaceProvider());
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
-      imageCapture = new ImageCapture.Builder()
-              .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-              .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
-              .setTargetResolution(new Size(width, height))
-              .setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100)
-              .build();
+        imageCapture = new ImageCapture.Builder()
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
+                .setTargetResolution(new Size(width, height))
+                .setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100)
+                .build();
 
         videoCapture = VideoCapture.withOutput(new Recorder.Builder()
                 .setQualitySelector(QualitySelector.from(Quality.HD))
@@ -201,15 +203,15 @@ public class CameraViewer extends AdjustedInsetsActivity {
         );
 
         enablePinchToZoom(this, camera, previewView);
-   }
+    }
 
-   private void recordVideo(File f) {
-      if (videoCapture != null) {
+    private void recordVideo(File f) {
+        if (videoCapture != null) {
             if (ActivityCompat.checkSelfPermission(
                     this, Manifest.permission.RECORD_AUDIO) !=
                     PackageManager.PERMISSION_GRANTED) {
-            return;
-         }
+                return;
+            }
 
             recorder = videoCapture.getOutput()
                     .prepareRecording(this,
@@ -218,81 +220,79 @@ public class CameraViewer extends AdjustedInsetsActivity {
                     .start(getExecutor(), event -> {
                         if (event instanceof VideoRecordEvent.Finalize) {
                             setResult(RESULT_OK);
-                       finish();
-                    }
+                            finish();
+                        }
                     });
-      }
-   }
+        }
+    }
 
-   private Bitmap imageProxyToBitmap(ImageProxy image) {
-      ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-      byte[] bytes = new byte[buffer.remaining()];
-      buffer.get(bytes);
-      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-   }
+    private Bitmap imageProxyToBitmap(ImageProxy image) {
+        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
 
-   private Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees) {
-      Matrix matrix = new Matrix();
-      matrix.postRotate(rotationDegrees);
-      return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-   }
+    private Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotationDegrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
 
-   private void saveBitmap(Bitmap bitmap, OutputStream outStream) throws IOException {
-      bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outStream);
-      outStream.flush();
-      outStream.close();
-   }
+    private void saveBitmap(Bitmap bitmap, OutputStream outStream) throws IOException {
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outStream);
+        outStream.flush();
+        outStream.close();
+    }
 
-   private void capturePhoto(OutputStream outStream) {
+    private void capturePhoto(OutputStream outStream) {
 //      long timeStamp = System.currentTimeMillis();
 //      ContentValues contentValues = new ContentValues();
 //      contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timeStamp);
 //      contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
 
-      imageCapture.takePicture(
-              getExecutor(),
-              new ImageCapture.OnImageCapturedCallback() {
-                 @Override
-                 public void onCaptureSuccess(@NonNull ImageProxy image) {
+        imageCapture.takePicture(
+                getExecutor(),
+                new ImageCapture.OnImageCapturedCallback() {
+                    @Override
+                    public void onCaptureSuccess(@NonNull ImageProxy image) {
 //                    Toast.makeText(CameraViewer.this,"Saving...",Toast.LENGTH_SHORT).show();
-                    int rotation = image.getImageInfo().getRotationDegrees();
+                        int rotation = image.getImageInfo().getRotationDegrees();
 
-                    // 1. Convert ImageProxy to Bitmap
-                    Bitmap bmp = imageProxyToBitmap(image);
+                        // 1. Convert ImageProxy to Bitmap
+                        Bitmap bmp = imageProxyToBitmap(image);
 
-                    // 2. Adjust rotation
-                    bmp = rotateBitmap(bmp, rotation);
+                        // 2. Adjust rotation
+                        bmp = rotateBitmap(bmp, rotation);
 
-                    try {
-                       saveBitmap(bmp, outStream);
-                       setResult(RESULT_OK);
-                       finish();
-                    } catch (IOException e) {
-                       AndroidUtils.handleException(e, false);
+                        try {
+                            saveBitmap(bmp, outStream);
+                            setResult(RESULT_OK);
+                            finish();
+                        } catch (IOException e) {
+                            AndroidUtils.handleException(e, false);
+                        }
+
+                        image.close();
                     }
 
-                    image.close();
-                 }
-
-                 @Override
-                 public void onError(@NonNull ImageCaptureException exception) {
+                    @Override
+                    public void onError(@NonNull ImageCaptureException exception) {
 //                    Toast.makeText(CameraViewer.this,"Error: "+exception.getMessage(),Toast.LENGTH_SHORT).show();
-                    AndroidUtils.handleException(exception, false);
-                    setResult(RESULT_CANCELED);
-                    finish();
-                 }
-              });
+                        AndroidUtils.handleException(exception, false);
+                        setResult(RESULT_CANCELED);
+                        finish();
+                    }
+                });
 
-   }
+    }
 
-   private void stopRecording()
-   {
-      if (recorder != null)
-      {
+    private void stopRecording() {
+        if (recorder != null) {
             recorder.stop();
-		   recorder = null;
-         }
-      }
+            recorder = null;
+        }
+    }
 
     /* =========================
     🔍 PINCH TO ZOOM
@@ -316,5 +316,4 @@ public class CameraViewer extends AdjustedInsetsActivity {
             return true;
         });
     }
-
 }

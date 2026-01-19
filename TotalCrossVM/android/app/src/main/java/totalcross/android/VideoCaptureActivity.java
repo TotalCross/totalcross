@@ -27,7 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
@@ -137,16 +136,11 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     private ImageCapture imageCapture;
     private static final long PHOTO_THRESHOLD_MS = 200;
 
-    private enum CaptureMode { PHOTO, VIDEO, FULL }
     public static final int MODE_VIDEO = 0;
     public static final int MODE_PICTURE = 1;
     public static final int MODE_FULL = 2;
 
     private int captureMode;
-
-    private CaptureMode currentMode = null;
-
-    private static final int TARGET_RATIO = AspectRatio.RATIO_16_9;
 
     boolean flashEnabled;
 
@@ -428,7 +422,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                                         } else {
                                             if (TimeUnit.NANOSECONDS.toMillis(
                                                     finalize.getRecordingStats().getRecordedDurationNanos()
-                                                    ) < PHOTO_THRESHOLD_MS) {
+                                            ) < PHOTO_THRESHOLD_MS) {
                                                 // it's fine
                                                 if (captureMode == MODE_FULL) {
                                                     takePhoto();
