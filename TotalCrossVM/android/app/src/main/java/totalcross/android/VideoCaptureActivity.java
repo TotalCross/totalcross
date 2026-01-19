@@ -1,5 +1,8 @@
 package totalcross.android;
 
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -99,6 +102,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private static final int REQ_PERMS = 101;
     private static final int PLAYBACK_REQ = 201; // new request code for the player
+    private static final int IMAGE_REQ = 301;
 
     private PreviewView previewView;
     private ImageButton btnRecord;
@@ -133,7 +137,13 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     private ImageCapture imageCapture;
     private static final long PHOTO_THRESHOLD_MS = 200;
 
-    private enum CaptureMode { PHOTO, VIDEO }
+    private enum CaptureMode { PHOTO, VIDEO, FULL }
+    public static final int MODE_VIDEO = 0;
+    public static final int MODE_PICTURE = 1;
+    public static final int MODE_FULL = 2;
+
+    private int captureMode;
+
     private CaptureMode currentMode = null;
 
     private static final int TARGET_RATIO = AspectRatio.RATIO_16_9;
@@ -187,6 +197,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         previewView.setScaleType(PreviewView.ScaleType.FILL_CENTER);
 
         Bundle b = getIntent().getExtras();
+        captureMode = b.getInt("mode");
         maxSeconds = Math.max(1, b.getInt(EXTRA_MAX_SECONDS, 30));
         targetFps = Math.max(5, b.getInt(EXTRA_TARGET_FPS, 30));
         width = b.getInt("width");
@@ -210,17 +221,24 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             switch (ev.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     btnSwitchCamera.setEnabled(false);
-                    btnRecord.setImageDrawable(progressDrawable);
-                    videoCapture.setTargetRotation(deviceOrientation);
 
-                    startRecording();
-                    startProgress();
+                    if (captureMode != MODE_PICTURE) {
+                        btnRecord.setImageDrawable(progressDrawable);
+                        videoCapture.setTargetRotation(deviceOrientation);
+
+                        startRecording();
+                        startProgress();
+                    }
                     return true;
 
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    stopRecording();
-                    stopProgress();
+                    if (captureMode == MODE_PICTURE) {
+                        takePhoto();
+                    } else {
+                        stopRecording();
+                        stopProgress();
+                    }
 
                     flashEnabled = false;
                     btnFlash.setImageResource(R.drawable.ic_flash_off);
@@ -234,6 +252,9 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             setResult(RESULT_CANCELED);
             finish();
         });
+
+        TextView tvHint = findViewById(R.id.tvHint);
+        tvHint.setVisibility(captureMode == MODE_FULL ? VISIBLE : INVISIBLE);
 
         OrientationEventListener orientationEventListener = new OrientationEventListener(this) {
             @Override
@@ -352,9 +373,9 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         imageCapture =
                 new ImageCapture.Builder()
                         .setResolutionSelector(resolutionSelector)
-                .setTargetRotation(rotation)
+                        .setTargetRotation(rotation)
                         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                .build();
+                        .build();
 
         // Final bind
         camera = cameraProvider.bindToLifecycle(
@@ -396,7 +417,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                                         tvTimer.setCompoundDrawablesWithIntrinsicBounds(
                                                 R.drawable.ic_rec_dot, 0, 0, 0
                                         );
-                    }
+                                    }
                                     if (event instanceof VideoRecordEvent.Finalize) {
                                         tvTimer.setVisibility(View.GONE);
                                         VideoRecordEvent.Finalize finalize =
@@ -408,8 +429,10 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                                             if (TimeUnit.NANOSECONDS.toMillis(
                                                     finalize.getRecordingStats().getRecordedDurationNanos()
                                                     ) < PHOTO_THRESHOLD_MS) {
-                                                takePhoto();
                                                 // it's fine
+                                                if (captureMode == MODE_FULL) {
+                                                    takePhoto();
+                                                }
                                             } else {
                                                 file.delete();
                                                 Toast.makeText(
@@ -417,9 +440,9 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                                                         "Record failed: " + ((VideoRecordEvent.Finalize) event).getError(),
                                                         Toast.LENGTH_LONG
                                                 ).show();
-                    }
-                }
-    }
+                                            }
+                                        }
+                                    }
                                 });
     }
 
@@ -550,7 +573,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     private void openImagePreview(String path) {
         Intent i = new Intent(this, ImagePreviewActivity.class);
         i.putExtra("image_path", path);
-        startActivityForResult(i, PLAYBACK_REQ);
+        startActivityForResult(i, IMAGE_REQ);
     }
 
     private String buildOutputFilePath() {
@@ -565,7 +588,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PLAYBACK_REQ) {
+        if (requestCode == PLAYBACK_REQ || requestCode == IMAGE_REQ) {
             if (resultCode == RESULT_OK) {
                 setResult(RESULT_OK);
                 finish();

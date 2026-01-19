@@ -39,7 +39,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 // import com.google.android.gms.ads.*;
-import com.google.android.gms.common.util.CollectionUtils;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.zxing.integration.android.*;
@@ -403,7 +402,9 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
   private static final int FROM_GALLERY = 3;
   private static final int VIDEO_PLAYER = 4;
   private static final int VIDEO_RECORDER = 5;
-  private static String[] cameraTypes = { "CUSTOM", "NATIVE", "NATIVE_NOCOPY", "GALLERY", "VIDEO_PLAYER", "VIDEO_RECORDER", "UNDEFINED" };
+  private static final int PICTURE_ONLY = 6;
+  private static final int CAMERA_FULL = 7;
+  private static String[] cameraTypes = { "CUSTOM", "NATIVE", "NATIVE_NOCOPY", "GALLERY", "VIDEO_PLAYER", "VIDEO_RECORDER", "PICTURE_ONLY", "CAMERA_FULL", "UNDEFINED" };
   private int cameraType;
   
   private File createImageFile() throws IOException {
@@ -439,15 +440,35 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
               intent.putExtra("playback_only", true);
               startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == VIDEO_RECORDER) {
-              Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
-              intent.putExtra("file", s);
-              intent.putExtra("width", width);
-              intent.putExtra("height", height);
-              intent.putExtra(VideoCaptureActivity.EXTRA_MAX_SECONDS, videoTimeLimit);
-              intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
-              intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
-              intent.putExtra("bitrate", bitrate);
-              startActivityForResult(intent, TAKE_PHOTO);
+                Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
+                intent.putExtra("mode", VideoCaptureActivity.MODE_VIDEO);
+                intent.putExtra("file", s);
+                intent.putExtra("width", width);
+                intent.putExtra("height", height);
+                intent.putExtra(VideoCaptureActivity.EXTRA_MAX_SECONDS, videoTimeLimit);
+                intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
+                intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
+                intent.putExtra("bitrate", bitrate);
+                startActivityForResult(intent, TAKE_PHOTO);
+            } else if (cameraType == PICTURE_ONLY) {
+                Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
+                intent.putExtra("mode", VideoCaptureActivity.MODE_PICTURE);
+                intent.putExtra("file", s);
+                intent.putExtra("width", width);
+                intent.putExtra("height", height);
+                intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
+                startActivityForResult(intent, TAKE_PHOTO);
+            } else if (cameraType == CAMERA_FULL) {
+                Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
+                intent.putExtra("mode", VideoCaptureActivity.MODE_FULL);
+                intent.putExtra("file", s);
+                intent.putExtra("width", width);
+                intent.putExtra("height", height);
+                intent.putExtra(VideoCaptureActivity.EXTRA_MAX_SECONDS, videoTimeLimit);
+                intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
+                intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
+                intent.putExtra("bitrate", bitrate);
+                startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");

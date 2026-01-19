@@ -130,7 +130,12 @@ public class Camera {
    */
   public int bitrate = 200_000;
 
-  /** The original camera used in TotalCross */
+  /** 
+   * The original camera used in TotalCross 
+   * 
+   * @deprecated Use {@link #CAMERA_PICTURE}, {@link #CAMERA_VIDEO_RECORDER} or {@link #CAMERA_FULL} instead.
+   */
+  @Deprecated
   public static final int CAMERA_CUSTOM = 0;
   /** The native camera application; a copy of the image is returned. */
   public static final int CAMERA_NATIVE = 1;
@@ -142,6 +147,10 @@ public class Camera {
   public static final int CAMERA_VIDEO_PLAYER = 4;
   /** Record video. Use the fields videoTimeLimit, targetFps and stillQuality to better control the result. */
   public static final int CAMERA_VIDEO_RECORDER = 5;
+  /** Take picture */
+  public static final int CAMERA_PICTURE = 6;
+  /** Combination of {@link #CAMERA_PICTURE} and {@link #CAMERA_VIDEO_RECORDER}, let the user take a picture or record a video. */
+  public static final int CAMERA_FULL = 7;
 
   /** Used in the cameraMode member. */
   public static final int CAMERACAPTURE_MODE_STILL = 0;
