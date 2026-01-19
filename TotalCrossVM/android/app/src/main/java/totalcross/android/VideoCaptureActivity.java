@@ -23,7 +23,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
+import androidx.camera.core.resolutionselector.AspectRatioStrategy;
+import androidx.camera.core.resolutionselector.ResolutionSelector;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.video.FallbackStrategy;
 import androidx.camera.video.FileOutputOptions;
@@ -116,14 +120,23 @@ public class VideoCaptureActivity extends AppCompatActivity {
 
     private int bitrate;
 
+    private ImageCapture imageCapture;
     private static final long PHOTO_THRESHOLD_MS = 200;
+
+    private enum CaptureMode { PHOTO, VIDEO }
+    private CaptureMode currentMode = null;
+
+    private static final int TARGET_RATIO = AspectRatio.RATIO_16_9;
+
+    CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_capture);
 
         previewView = findViewById(R.id.previewView);
-        btnRecord = findViewById(R.id.btnRecord);
+        btnRecord = findViewById(R.id.btnCapture);
         btnBackCapture = findViewById(R.id.btnBackCapture);
 
         previewView.setScaleType(PreviewView.ScaleType.FILL_CENTER);
@@ -243,18 +256,10 @@ public class VideoCaptureActivity extends AppCompatActivity {
     private int lastRotation = -1;
 
     private void bindCamera() {
-        this.bindCamera(Surface.ROTATION_0);
+        bindCamera(deviceOrientation);
     }
 
     private void bindCamera(int rotation) {
-        if (cameraProvider == null) {
-            return;
-        }
-
-        // Nothing changed
-        if (rotation == lastRotation) {
-            return;
-        }
         lastRotation = rotation;
 
         boolean isLandscape =
@@ -265,10 +270,22 @@ public class VideoCaptureActivity extends AppCompatActivity {
         // Remove all before recreating
         cameraProvider.unbindAll();
 
+
+        /*
+            Preview, VideoCapture and ImageCapture must all be initialized using a compatible
+            aspect ratio, otherwise the binding may fail. Here, everything is initialized with
+            a 16:9 aspect ratio using the ResolutionSelector (Preview and ImageCapture) and
+            the QualitySelector with Quality.HD (VideoCapture).
+         */
+        ResolutionSelector resolutionSelector =
+                new ResolutionSelector.Builder()
+                        .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
+                        .build();
+
         // PREVIEW
         Preview preview = new Preview.Builder()
                 .setTargetRotation(rotation)
-                .setTargetResolution(targetSize)
+                .setResolutionSelector(resolutionSelector)
                 .build();
 
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
@@ -283,15 +300,21 @@ public class VideoCaptureActivity extends AppCompatActivity {
                         .build();
 
         videoCapture = VideoCapture.withOutput(recorder);
+
+        imageCapture =
+                new ImageCapture.Builder()
+                        .setResolutionSelector(resolutionSelector)
                 .setTargetRotation(rotation)
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
 
         // Final bind
         camera = cameraProvider.bindToLifecycle(
                 this,
-                CameraSelector.DEFAULT_BACK_CAMERA,
+                cameraSelector,
                 preview,
-                videoCapture
+                videoCapture,
+                imageCapture
         );
 
         enablePinchToZoom(this, camera, previewView);
@@ -337,6 +360,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
                                             if (TimeUnit.NANOSECONDS.toMillis(
                                                     finalize.getRecordingStats().getRecordedDurationNanos()
                                                     ) < PHOTO_THRESHOLD_MS) {
+                                                takePhoto();
                                                 // it's fine
                                             } else {
                                                 file.delete();
@@ -393,12 +417,53 @@ public class VideoCaptureActivity extends AppCompatActivity {
         }
     };
 
+    private void takePhoto() {
+        if (imageCapture == null) return;
+
+//        File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+//        if (dir != null && !dir.exists()) dir.mkdirs();
+//
+//        String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+//        File photoFile = new File(dir, "IMG_" + ts + ".jpg");
+        File photoFile = new File(lastSavedVideoPath);
+
+        ImageCapture.OutputFileOptions options =
+                new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
+        imageCapture.takePicture(
+                options,
+                ContextCompat.getMainExecutor(this),
+                new ImageCapture.OnImageSavedCallback() {
+
+                    @Override
+                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults result) {
+                        openImagePreview(photoFile.getAbsolutePath());
+                    }
+
+                    @Override
+                    public void onError(@NonNull ImageCaptureException exc) {
+                        Toast.makeText(
+                                VideoCaptureActivity.this,
+                                "Erro ao capturar foto",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
+        );
+    }
+
     private void openVideoPlayer(String path) {
         Intent videoIntent = new Intent(this, VideoPlayerActivity.class);
         videoIntent.putExtra("video_path", path);
         videoIntent.putExtra("playback_only", false);
         // start playback activity - restore capture upon return
         startActivityForResult(videoIntent, PLAYBACK_REQ);
+    }
+
+    private void openImagePreview(String path) {
+        Intent i = new Intent(this, ImagePreviewActivity.class);
+        i.putExtra("image_path", path);
+        startActivityForResult(i, PLAYBACK_REQ);
     }
 
     private String buildOutputFilePath() {

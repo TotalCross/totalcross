@@ -3,16 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    >
 
     <!-- Camera preview -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        app:implementationMode="performance" />
+        android:layout_height="match_parent"/>
 
     <!-- Back button (top-left) -->
     <ImageButton
@@ -24,28 +21,89 @@
         android:src="@drawable/ic_back_white"
         android:contentDescription="Back"
         app:tint="#FFFFFF"
+        android:scaleType="fitCenter"
         android:layout_gravity="top|start" />
 
-    <!-- Bottom bar -->
+    <!-- Overlay bottom -->
     <LinearLayout
-        android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:background="#22000000"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:layout_gravity="bottom">
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="#66000000">
 
-        <!-- Record button -->
+        <!-- Buttons -->
+        <LinearLayout
+            android:id="@+id/rowButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+        android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="8dp">
+
+            <!-- 1️⃣ Gallery -->
         <ImageButton
-            android:id="@+id/btnRecord"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/bg_record_button_small"
-            android:scaleType="centerInside"
-            android:contentDescription="Record"
-            android:padding="0dp" />
+                android:id="@+id/btnGallery"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                style="@style/CamSmallButton"
+                android:visibility="gone"
+                android:src="@drawable/ic_gallery"/>
+
+            <!-- 2️⃣ Flash -->
+            <ImageButton
+                android:id="@+id/btnFlash"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                style="@style/CamSmallButton"
+                android:src="@drawable/ic_flash_off"/>
+
+            <!-- 3️⃣ Capture -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="72dp"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/btnCapture"
+                    style="@style/CamMainButton"
+                    android:layout_gravity="center"
+                    android:src="@drawable/bg_record_button_small"/>
+            </FrameLayout>
+
+            <!-- 4️⃣ Blank space -->
+            <Space
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                style="@style/CamSmallButton"
+                android:visibility="gone"/>
+
+            <!-- 5️⃣ Switch camera -->
+            <ImageButton
+                android:id="@+id/btnSwitchCamera"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                style="@style/CamSmallButton"
+                android:src="@drawable/ic_switch_camera"/>
+
+        </LinearLayout>
+
+        <!-- Bottom message text -->
+        <TextView
+            android:id="@+id/tvHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hold to record • Touch for picture"
+            android:gravity="center"
+            android:padding="12dp"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:focusable="false"
+            android:clickable="false"/>
+
     </LinearLayout>
 
 </FrameLayout>
