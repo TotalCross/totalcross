@@ -79,6 +79,8 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     public static final String EXTRA_QUALITY = "quality";
 
     private Camera camera;
+    private ImageButton btnSwitchCamera;
+    private ImageButton btnFlash;
     private String lastSavedVideoPath = null;
 
     private static final int REQ_PERMS = 101;
@@ -122,6 +124,10 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private static final int TARGET_RATIO = AspectRatio.RATIO_16_9;
 
+    boolean flashEnabled;
+
+    boolean isFrontCamera;
+
     CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
     @Override
@@ -132,6 +138,36 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         previewView = findViewById(R.id.previewView);
         btnRecord = findViewById(R.id.btnCapture);
         btnBackCapture = findViewById(R.id.btnBackCapture);
+        ImageButton btnGallery = findViewById(R.id.btnGallery);
+        btnGallery.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/* video/*");
+            startActivity(intent);
+        });
+
+        btnFlash = findViewById(R.id.btnFlash);
+        btnFlash.setOnClickListener(v -> {
+            if (camera == null) return;
+
+            boolean enabled = flashEnabled;
+            camera.getCameraControl().enableTorch(!enabled);
+            flashEnabled = !enabled;
+
+            btnFlash.setImageResource(
+                    flashEnabled ? R.drawable.ic_flash_on : R.drawable.ic_flash_off
+            );
+        });
+
+        btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
+        btnSwitchCamera.setOnClickListener(v -> {
+            isFrontCamera = !isFrontCamera;
+            cameraSelector =
+                    isFrontCamera
+                            ? CameraSelector.DEFAULT_FRONT_CAMERA
+                            : CameraSelector.DEFAULT_BACK_CAMERA;
+
+            bindCamera(deviceOrientation);
+        });
 
         previewView.setScaleType(PreviewView.ScaleType.FILL_CENTER);
 
@@ -158,6 +194,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             }
             switch (ev.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    btnSwitchCamera.setEnabled(false);
                     btnRecord.setImageDrawable(progressDrawable);
                     videoCapture.setTargetRotation(deviceOrientation);
 
@@ -169,6 +206,10 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                 case MotionEvent.ACTION_CANCEL:
                     stopRecording();
                     stopProgress();
+
+                    flashEnabled = false;
+                    btnFlash.setImageResource(R.drawable.ic_flash_off);
+                    btnSwitchCamera.setEnabled(true);
                     return true;
             }
             return false;
@@ -261,7 +302,6 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
         // Remove all before recreating
         cameraProvider.unbindAll();
-
 
         /*
             Preview, VideoCapture and ImageCapture must all be initialized using a compatible
