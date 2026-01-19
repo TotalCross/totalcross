@@ -1,40 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:orientation="vertical" android:layout_width="fill_parent"
-  android:layout_height="fill_parent" android:id="@+id/layout">
-  <FrameLayout android:id="@+id/preview"
-    android:layout_weight="1" android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:id="@+id/layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
 
-    <view
-        android:id="@+id/previewView"
-        class="androidx.camera.view.PreviewView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-  </FrameLayout>
-  <LinearLayout 
-        android:orientation="horizontal"
+    <FrameLayout
+        android:id="@+id/preview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
+
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="1dip"
-        >
+        android:orientation="horizontal">
 
-    <Button 
-        android:text="Click" 
-        android:id="@+id/buttonClick" 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
-        />
+        <Button
+            android:id="@+id/buttonClick"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Click" />
 
-    <Button 
-        android:text="Exit" 
-        android:id="@+id/buttonExit" 
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" 
-        />
+        <Button
+            android:id="@+id/buttonExit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Exit" />
 
     </LinearLayout>
 </LinearLayout>

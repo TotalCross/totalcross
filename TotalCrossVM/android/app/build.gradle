@@ -40,7 +40,7 @@ android {
 
     defaultConfig {
         applicationId "totalcross.android"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 35
         versionCode 305419896
         versionName "!1.0!"
@@ -101,7 +101,7 @@ dependencies {
 
     implementation "com.google.guava:guava:31.0.1-android"
 
-    def cameraxVersion = "1.1.0"
+    def cameraxVersion = "1.5.2"
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
     implementation "androidx.camera:camera-lifecycle:${cameraxVersion}"

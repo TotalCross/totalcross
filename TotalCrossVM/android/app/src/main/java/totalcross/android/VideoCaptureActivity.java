@@ -19,9 +19,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.Preview;
-import androidx.camera.core.VideoCapture;
-import androidx.camera.core.VideoCapture.OutputFileOptions;
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.video.FallbackStrategy;
+import androidx.camera.video.FileOutputOptions;
+import androidx.camera.video.Quality;
+import androidx.camera.video.QualitySelector;
+import androidx.camera.video.Recorder;
+import androidx.camera.video.Recording;
+import androidx.camera.video.VideoCapture;
+import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -33,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class VideoCaptureActivity extends AppCompatActivity {
 
@@ -74,7 +81,8 @@ public class VideoCaptureActivity extends AppCompatActivity {
 
     // CameraX
     private ProcessCameraProvider cameraProvider;
-    private VideoCapture videoCapture;
+    private VideoCapture<Recorder> videoCapture;
+    private Recording activeRecording;
 
     // Progress UI
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
@@ -97,6 +105,7 @@ public class VideoCaptureActivity extends AppCompatActivity {
 
     private int bitrate;
 
+    private static final long PHOTO_THRESHOLD_MS = 200;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +114,8 @@ public class VideoCaptureActivity extends AppCompatActivity {
         previewView = findViewById(R.id.previewView);
         btnRecord = findViewById(R.id.btnRecord);
         btnBackCapture = findViewById(R.id.btnBackCapture);
+
+        previewView.setScaleType(PreviewView.ScaleType.FILL_CENTER);
 
         Bundle b = getIntent().getExtras();
         maxSeconds = Math.max(1, b.getInt(EXTRA_MAX_SECONDS, 30));
@@ -251,11 +262,16 @@ public class VideoCaptureActivity extends AppCompatActivity {
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
         // VIDEO CAPTURE (CameraX VideoCapture)
-        videoCapture = new VideoCapture.Builder()
+        Recorder recorder =
+                new Recorder.Builder()
+                        .setExecutor(ContextCompat.getMainExecutor(this))
+                        .setQualitySelector(QualitySelector.from(Quality.HD,
+                                FallbackStrategy.higherQualityOrLowerThan(Quality.HD)))
+                        .setTargetVideoEncodingBitRate(bitrate)
+                        .build();
+
+        videoCapture = VideoCapture.withOutput(recorder);
                 .setTargetRotation(rotation)
-                .setTargetResolution(targetSize)
-                .setVideoFrameRate(targetFps)
-                .setBitRate(bitrate)
                 .build();
 
         // Final bind
@@ -273,33 +289,59 @@ public class VideoCaptureActivity extends AppCompatActivity {
         }
 
         File file = new File(lastSavedVideoPath);
-        OutputFileOptions opts = new OutputFileOptions.Builder(file).build();
+        FileOutputOptions outputOptions =
+                new FileOutputOptions.Builder(file).build();
 
-        videoCapture.startRecording(
-                opts,
-                ContextCompat.getMainExecutor(this),
-                new VideoCapture.OnVideoSavedCallback() {
-                    @Override
-                    public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
-                        openVideoPlayer(lastSavedVideoPath);
+        activeRecording =
+                videoCapture.getOutput()
+                        .prepareRecording(this, outputOptions)
+                        .withAudioEnabled()
+                        .start(ContextCompat.getMainExecutor(this),
+                                event -> {
+                                    if (event instanceof VideoRecordEvent.Status) {
+                                        VideoRecordEvent.Status s = (VideoRecordEvent.Status) event;
+
+                                        long seconds =
+                                                TimeUnit.NANOSECONDS.toSeconds(
+                                                        s.getRecordingStats().getRecordedDurationNanos()
+                                                );
+
+                                        updateTimer(seconds);
+                                        tvTimer.setVisibility(View.VISIBLE);
+                                        tvTimer.setCompoundDrawablesWithIntrinsicBounds(
+                                                R.drawable.ic_rec_dot, 0, 0, 0
+                                        );
                     }
+                                    if (event instanceof VideoRecordEvent.Finalize) {
+                                        tvTimer.setVisibility(View.GONE);
+                                        VideoRecordEvent.Finalize finalize =
+                                                (VideoRecordEvent.Finalize) event;
 
-                    @Override
-                    public void onError(int videoCaptureError,
-                                        @NonNull String message,
-                                        Throwable cause) {
-                        new File(lastSavedVideoPath).delete();
-                        Toast.makeText(VideoCaptureActivity.this,
-                                "Record failed: " + message,
-                                Toast.LENGTH_LONG).show();
+                                        if (!finalize.hasError()) {
+                                            openVideoPlayer(lastSavedVideoPath);
+                                        } else {
+                                            if (TimeUnit.NANOSECONDS.toMillis(
+                                                    finalize.getRecordingStats().getRecordedDurationNanos()
+                                                    ) < PHOTO_THRESHOLD_MS) {
+                                                // it's fine
+                                            } else {
+                                                file.delete();
+                                                Toast.makeText(
+                                                        this,
+                                                        "Record failed: " + ((VideoRecordEvent.Finalize) event).getError(),
+                                                        Toast.LENGTH_LONG
+                                                ).show();
                     }
                 }
-        );
+    }
+                                });
     }
 
+
     private void stopRecording() {
-        if (videoCapture != null) {
-            videoCapture.stopRecording();
+        if (activeRecording != null) {
+            activeRecording.stop();
+            activeRecording = null;
         }
     }
 
