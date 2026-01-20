@@ -116,8 +116,8 @@ dependencies {
 
     implementation 'com.github.cliftonlabs:json-simple:2.1.2'
 
-    // Supports Android 4.0.3 and later (API level 15)
-    implementation 'com.journeyapps:zxing-android-embedded:3.5.0@aar'
+    // API level 19+ combined with zxing:core 3.3.0
+    implementation('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false }
 
     // Version 3.0.x of zxing core contains some code that is not compatible on Android 2.2 and earlier.
     // This mostly affects encoding, but you should test if you plan to support these versions.

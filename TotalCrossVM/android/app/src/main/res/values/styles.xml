@@ -26,7 +26,7 @@
     <item name="android:layout_height">wrap_content</item>
   </style>
 
-    <style name="TCThemeNS" parent="@android:style/Theme.Black">
+    <style name="TCThemeNS" parent="@style/Theme.AppCompat.NoActionBar">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>

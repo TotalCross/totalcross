@@ -35,7 +35,10 @@ import android.view.inputmethod.*;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 // import com.google.android.gms.ads.*;
@@ -48,6 +51,10 @@ import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.concurrent.*;
 import java.text.SimpleDateFormat;
+
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanIntentResult;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -62,7 +69,7 @@ import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.graphics.Insets;
 
-public class Loader extends Activity implements TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
+public class Loader extends AppCompatActivity implements TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
 {
   public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
   public Handler achandler;
@@ -82,6 +89,8 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
   Uri capturedImageURI;
   
   private static final String GOOGLECHROME_NAVIGATE_PREFIX = "googlechrome://navigate?url=";  
+
+  private ActivityResultLauncher<Intent> scanQrResultLauncher;
 
   private static boolean onCreateCalled; //
   /** Called when the activity is first created. */
@@ -106,6 +115,18 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
       AndroidUtils.debug(stack);
          AndroidUtils.error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
     }
+
+       scanQrResultLauncher = Loader.this.registerForActivityResult(
+               new ActivityResultContracts.StartActivityForResult(),
+               resultData -> {
+                   if (resultData.getResultCode() == RESULT_OK) {
+                       ScanIntentResult result = ScanIntentResult.parseActivityResult(resultData.getResultCode(), resultData.getData());
+                       if (result.getContents() != null) {
+                           Launcher4A.zxingResult = result.getContents();
+                       }
+                   }
+                   Launcher4A.callingZXing = false;
+               });
   }
 
    public void onRestart()
@@ -241,14 +262,10 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
         }
-        default:
-          if (requestCode == IntentIntegrator.REQUEST_CODE) {
-            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-            Launcher4A.zxingResult = result.getContents();
-            Launcher4A.callingZXing = false;
-          }
-          break;
-    }
+          default:
+              super.onActivityResult(requestCode, resultCode, data);
+              break;
+      }
   }
 
    private void removeLastImageFromGallery(long orig)
@@ -812,47 +829,34 @@ public class Loader extends Activity implements TextToSpeech.OnInitListener, Act
         }
         break;
       }
-            case ZXING_SCAN:
-            {
-        String cmd = b.getString("zxing.mode");
-               
-          StringTokenizer st = new StringTokenizer(cmd, "&");
-          String mode = "SCAN_MODE";
-          String scanmsg = "";
-                  while (st.hasMoreTokens())
-                  {
-            String s = st.nextToken();
-            int i = s.indexOf('=');
-                     if (i == -1) continue;
-            String s1 = s.substring(0, i);
-            String s2 = s.substring(i + 1);
-            if (s1.equalsIgnoreCase("mode"))
-              mode = s2;
-                     else
-                     if (s1.equalsIgnoreCase("msg"))
-              scanmsg = s2;
+             case ZXING_SCAN: {
+                 String cmd = b.getString("zxing.mode");
 
-          IntentIntegrator integrator = new IntentIntegrator(Loader.this);
-                  if (mode.equalsIgnoreCase("1D"))
-                  {
-            integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
-                  }
-                  else if (mode.equalsIgnoreCase("2D"))
-                  {
-            integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
-                  }
-                  else
-                  {
-            List<String> modes = new ArrayList<>();
-            modes.addAll(IntentIntegrator.ONE_D_CODE_TYPES);
-            modes.addAll(IntentIntegrator.QR_CODE_TYPES);
-            modes.addAll(IntentIntegrator.DATA_MATRIX_TYPES);
-            integrator.setDesiredBarcodeFormats(modes);
-          }
-          integrator.setPrompt(scanmsg);
-          integrator.setCameraId(0); // Use a specific camera of the device
-          integrator.initiateScan();
-        }
+                     StringTokenizer st = new StringTokenizer(cmd, "&");
+                     String mode = "SCAN_MODE";
+                     String scanmsg = "";
+                     while (st.hasMoreTokens()) {
+                         String s = st.nextToken();
+                         int i = s.indexOf('=');
+                         if (i == -1) continue;
+                         String s1 = s.substring(0, i);
+                         String s2 = s.substring(i + 1);
+                         if (s1.equalsIgnoreCase("mode"))
+                             mode = s2;
+                         else if (s1.equalsIgnoreCase("msg"))
+                             scanmsg = s2;
+                     }
+
+                     ScanOptions scanOptions = new ScanOptions();
+                     if (mode.equalsIgnoreCase("1D")) {
+                         scanOptions = scanOptions.setDesiredBarcodeFormats(ScanOptions.ONE_D_CODE_TYPES);
+                     } else if (mode.equalsIgnoreCase("2D")) {
+                         scanOptions = scanOptions.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+                     } else {
+                         scanOptions = scanOptions.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES);
+                     }
+                     scanOptions = scanOptions.setCaptureActivity(MyCaptureActivity.class);
+                     scanQrResultLauncher.launch(new ScanContract().createIntent(Loader.this.getApplicationContext(), scanOptions));
         break;
       }
       case TOTEXT:
