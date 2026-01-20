@@ -4,7 +4,11 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -25,6 +29,7 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.core.resolutionselector.AspectRatioStrategy;
 import androidx.camera.core.resolutionselector.ResolutionSelector;
@@ -44,6 +49,9 @@ import androidx.core.content.ContextCompat;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -51,10 +59,12 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import totalcross.AndroidUtils;
+
 public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     public enum VideoQuality {
-        FHD(1920, 1080), HD(1280,720), SD(720,480);
+        FHD(1920, 1080), HD(1280, 720), SD(720, 480);
 
         final int width;
         final int height;
@@ -287,7 +297,8 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             try {
                 cameraProvider = future.get();
                 bindCamera();
-            } catch (ExecutionException | InterruptedException ignored) {}
+            } catch (ExecutionException | InterruptedException ignored) {
+            }
         }, ContextCompat.getMainExecutor(this));
     }
 
@@ -477,25 +488,55 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                 new ImageCapture.OutputFileOptions.Builder(photoFile).build();
 
         imageCapture.takePicture(
-                options,
                 ContextCompat.getMainExecutor(this),
-                new ImageCapture.OnImageSavedCallback() {
-
+                new ImageCapture.OnImageCapturedCallback() {
                     @Override
-                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults result) {
-                        openImagePreview(photoFile.getAbsolutePath());
+                    public void onCaptureSuccess(@NonNull ImageProxy image) {
+                        int rotation = image.getImageInfo().getRotationDegrees();
+
+                        // 1. Convert ImageProxy to Bitmap
+                        Bitmap bmp = imageProxyToBitmap(image);
+
+                        // 2. Adjust rotation
+                        bmp = rotateBitmap(bmp, rotation);
+
+                        try {
+                            OutputStream outStream = getContentResolver().openOutputStream(Uri.fromFile(photoFile));
+                            saveBitmap(bmp, outStream);
+                            openImagePreview(photoFile.getAbsolutePath());
+                        } catch (IOException e) {
+                            AndroidUtils.handleException(e, false);
+                        }
+
+                        image.close();
                     }
 
                     @Override
-                    public void onError(@NonNull ImageCaptureException exc) {
-                        Toast.makeText(
-                                VideoCaptureActivity.this,
-                                "Erro ao capturar foto",
-                                Toast.LENGTH_LONG
-                        ).show();
+                    public void onError(@NonNull ImageCaptureException exception) {
+                        AndroidUtils.handleException(exception, false);
+                        setResult(RESULT_CANCELED);
+                        finish();
                     }
-                }
-        );
+                });
+    }
+
+    private Bitmap imageProxyToBitmap(ImageProxy image) {
+        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
+
+    private Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotationDegrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    private void saveBitmap(Bitmap bitmap, OutputStream outStream) throws IOException {
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outStream);
+        outStream.flush();
+        outStream.close();
     }
 
     private void openVideoPlayer(String path) {
@@ -533,7 +574,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             }
         }
     }
-    
+
     /* =========================
    🔍 PINCH TO ZOOM
    ========================= */
