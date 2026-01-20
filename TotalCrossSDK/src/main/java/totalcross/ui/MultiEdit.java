@@ -1335,7 +1335,14 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
         g.drawRect(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
       }
       if (Window.isScreenShifted() && lastZ1y != z1.y) {
-        getParentWindow().shiftScreen(this, lastZ1y = z1.y);
+        for (Container c = parent; c != null; c = c.parent) {
+          if (c instanceof ScrollContainer) {
+            ScrollContainer scrollContainer = (ScrollContainer) c;
+            scrollContainer.scrollToControl(this);
+            break;
+          }
+        }
+        lastZ1y = z1.y;
       }
     } else {
       cursorShowing = false;
