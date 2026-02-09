@@ -671,8 +671,16 @@ int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32
     // }
 }
 
-void skia_shiftScreen(int32 x, int32 y) {
-    canvas->translate(x, y);
+void skia_shiftScreen(float w, float h, float glShiftY) {
+    canvas->save();
+
+    // resets the matrix before translating
+    canvas->setMatrix(SkMatrix::I());
+
+    // equivalent to:
+    // 1.0f - (2.0f * glShiftY / h)
+    canvas->translate(0, glShiftY);
+
     flushSkia();
 }
 

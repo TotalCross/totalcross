@@ -2226,13 +2226,11 @@ extern int32 setShiftYonNextUpdateScreen;
 static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *shiftH)
 {
    int32 appHeightOnSipOpen = screen.screenH - keyboardH;
-/*
    if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
    {
       lastAppHeightOnSipOpen = appHeightOnSipOpen;
       markWholeScreenDirty(currentContext);
    }
-*/
    if ((*shiftY + *shiftH) > screen.screenH)
       *shiftH = screen.screenH - *shiftY;
 
@@ -2240,16 +2238,14 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
       *shiftY = 0;
    else
    {
-      int32 diffBetweenShiftAndAppHOSOpen = appHeightOnSipOpen - (*shiftY - (screen.screenH - *shiftY)); // difference between shift and app height on sip open.
-      *shiftY += diffBetweenShiftAndAppHOSOpen - *shiftH; // add remaining space between sip and component
+      *shiftY -= appHeightOnSipOpen - *shiftH;
+      *shiftH = appHeightOnSipOpen ;
    }
-/*
    if (oldShiftY != *shiftY)
    {
       oldShiftY = *shiftY;
       setShiftYonNextUpdateScreen = true;
    }
-*/
 }
 #elif defined(ANDROID)
 extern int realAppH;
@@ -2271,7 +2267,7 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
       // 2. Portrait/landscape and Android 3.x
       if (sipVisible && (screen.screenH > screen.screenW || *tcSettings.romVersionPtr >= 11))
       {
-         int32 appHeightOnSipOpen = screen.screenH - (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+         int32 appHeightOnSipOpen = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
          int32 appTitleH = (*env)->GetStaticIntField(env, applicationClass, jappTitleH);
          // when application is in full screen, this function would erase a possibly valid shiftY value;
          // so, here i store the desired shiftY and restore it when the application is really not full screen
@@ -2284,15 +2280,29 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
          else
          if (isFullScreen && desiredShiftY == -1)
             desiredShiftY = *shiftY;
-         
-            if (*shiftY < appHeightOnSipOpen) {// don't shift the screen if above
-                *shiftY = - appHeightOnSipOpen + screen.screenH;
-            }
-            else {
-                *shiftY += *shiftH;
-            }
-        }
-    }
+
+         if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
+         {
+            lastAppHeightOnSipOpen = appHeightOnSipOpen;
+            markWholeScreenDirty(currentContext);
+         }
+         if ((*shiftY + *shiftH) > screen.screenH)
+            *shiftH = screen.screenH - *shiftY;
+
+         if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above
+            *shiftY = 0;
+         else
+         {
+            *shiftY -= appHeightOnSipOpen - *shiftH;
+            *shiftH = appHeightOnSipOpen ;
+         }
+         if (oldShiftY != *shiftY) // prevent 100% cpu use - shift can change on ENTER or PEN_UP - now same code of iOS
+         {
+            oldShiftY = *shiftY;
+            setShiftYonNextUpdateScreen = true;
+         }
+      }
+   }
 }
 #endif
 
@@ -2335,10 +2345,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       if (shiftYfield == null)
          return false;
    }
-
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-
 #ifdef WINCE
    if (!isWindowsMobile) {
 	   shiftY = 0;
@@ -2568,19 +2576,63 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 #else
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
-   int32 shiftY = 0, shiftH = 0, lastShiftY = 0;
+   int32 screenW, screenH, shiftY = 0, shiftH = 0;
    TCClass window;
+   PixelConv gray;
+
+   gray.pixel = *shiftScreenColorP;
    
-    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
-    {
-        needsPaint = getStaticFieldInt(window, "needsPaint");
-        shiftYfield = getStaticFieldInt(window, "shiftY");
-        shiftHfield = getStaticFieldInt(window, "shiftH");
-        lastShiftYfield = getStaticFieldInt(window, "lastShiftY");
-        if (shiftYfield == null)
-            return false;
-    }
-    
+   if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
+   {              
+      needsPaint = getStaticFieldInt(window, "needsPaint");
+      shiftYfield = getStaticFieldInt(window, "shiftY");
+      shiftHfield = getStaticFieldInt(window, "shiftH");
+      lastShiftYfield = getStaticFieldInt(window, "lastShiftY");
+      if (shiftYfield == null)
+         return false;
+   }
+
+   shiftY = *shiftYfield;
+   shiftH = *shiftHfield;
+
+#if defined ANDROID || defined darwin
+   checkKeyboardAndSIP(currentContext, &shiftY,&shiftH);
+#ifdef ANDROID
+   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != screen.screenH)
+#else
+   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != realAppH)
+#endif
+   {
+      *lastShiftYfield = *shiftYfield = shiftY;
+      *shiftHfield = shiftH;
+   }
+#endif
+   screenW = screen.screenW;
+   screenH = screen.screenH;
+
+   if ((shiftY+shiftH) > screen.screenH)
+      shiftH = screen.screenH - shiftY;
+   if (shiftY != 0 && shiftH <= 0)
+      return false;
+
+   if (!currentContext->fullDirty && shiftY != 0) // *1* clip dirty Y values to screen shift area
+   {
+      if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
+      {
+         lastShiftY = shiftY;
+         markWholeScreenDirty(currentContext);
+      }
+      else
+      {
+         if (currentContext->dirtyY1 <   shiftY)         currentContext->dirtyY1 = shiftY;
+         if (currentContext->dirtyY2 >= (shiftY+shiftH)) currentContext->dirtyY2 = shiftY+shiftH;
+         currentContext->dirtyY1 -= shiftY;
+         currentContext->dirtyY2 = currentContext->dirtyY1 + min32(currentContext->dirtyY2-(currentContext->dirtyY1+shiftY), shiftH);
+      }
+   }
+
+   desiredScreenShiftY = shiftY; // will be set with glScreenShiftY in updateScreen
+
    return true;
 }
 #endif
@@ -2941,47 +2993,6 @@ static bool startupGraphics(int16 appTczAttr) // there are no threads running at
     return graphicsStartup(&screen, appTczAttr);
 }
 
-#ifdef SKIA_H
-static void shiftScreen(Context currentContext) {
-    int32 shiftY = 0, shiftH = 0;
-    TCClass window;
-    
-    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
-    {
-        needsPaint = getStaticFieldInt(window, "needsPaint");
-        shiftYfield = getStaticFieldInt(window, "shiftY");
-        shiftHfield = getStaticFieldInt(window, "shiftH");
-        lastShiftYfield = getStaticFieldInt(window, "lastShiftY");
-        if (shiftYfield == null)
-            return;
-    }
-    shiftY = *shiftYfield;
-    shiftH = *shiftHfield;
-    
-// #if defined ANDROID || defined darwin
-//     checkKeyboardAndSIP(currentContext, &shiftY, &shiftH); // Adjust shift according to the keyboard
-//     int32 delta = shiftY - screen.screenH;
-// #ifdef ANDROID
-//     delta = 0;
-// #endif
-//     if(lastShiftY == shiftY) return;
-//     debug("c shiftY: %d", shiftY);
-//     debug("c screenH: %d", screen.screenH); 
-//     if(shiftY == 0) {
-//         skia_shiftScreen(0, -screenY); // return to origin
-//         screenY = 0;
-//     }
-//     else {
-//         delta -= screenY;
-//         skia_shiftScreen(0, delta);
-//         screenY += delta;
-//     }
-//     //screenY += delta;
-//     lastShiftY = shiftY;
-// #endif
-}
-#endif
-
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
@@ -3055,8 +3066,12 @@ void updateScreen(Context currentContext)
       currentContext->fullDirty = false;
    }
    UNLOCKVAR(screen);
-#ifdef SKIA_H
-    shiftScreen(currentContext);
+#if defined ANDROID || defined darwin
+   if (desiredScreenShiftY != UNDEFINED_SHIFTY)
+   {
+      setShiftYgl(desiredScreenShiftY);
+      desiredScreenShiftY = UNDEFINED_SHIFTY;
+   }
 #endif
 }
 

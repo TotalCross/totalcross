@@ -48,7 +48,7 @@ void skia_drawRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
 void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c);
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical);
 int skia_getsetRGB(int32 skiaSurface, void *dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet);
-void skia_shiftScreen(int32 x, int32 y);
+void skia_shiftScreen(float w, float h, float glShiftY);
 #ifdef __cplusplus
 }
 #endif

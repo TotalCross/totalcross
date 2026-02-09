@@ -50,6 +50,7 @@ static void resetGlobals()
 bool initGLES(ScreenSurface screen);
 
 void setTimerInterval(int32 t);
+int32 desiredglShiftY;
 int32 setShiftYonNextUpdateScreen;
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
@@ -61,14 +62,39 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    {
       if (width == -999)
       {
-         setShiftYonNextUpdateScreen = true;
-         setTimerInterval(1);
+         if (needsPaint != null)
+         {
+            desiredglShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
+            setShiftYonNextUpdateScreen = true;
+            *needsPaint = true; // schedule a screen paint to update the shiftY values
+            setTimerInterval(1);
+         }
+      }
+      else
+      if (width == -998)
+      {
+         if (ENABLE_TEXTURE_TRACE) debug("deleting textures due to screen change");
+         if (glShiftY != 0) // fixes green screen that occurs when the keyboard is open and the user turns off the device
+         {
+            desiredglShiftY = 0; // change only after the next screen update, since here we are running in a different thread
+            setShiftYonNextUpdateScreen = true;
+            *needsPaint = true; // schedule a screen paint to update the shiftY values
+            setTimerInterval(1);
+         }
+      }
+      else
+      if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
+      {
+         if (lastWindow)
+         {
+            if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 1");
+         }
       }
       else
          surfaceWillChange = true; // block all screen updates
       return;
    }
-
+   desiredglShiftY = glShiftY = 0;
    setShiftYonNextUpdateScreen = true;
    appW = width;
    appH = height;
@@ -84,7 +110,6 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       destroyEGL();
       initGLES(&screen);
       if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 2");
-//      invalidateTextures(INVTEX_INVALIDATE); // now we set the changed flag for all textures
    }
    lastWindow = window;
 }
@@ -168,13 +193,20 @@ static void destroyEGL()
    _surface = EGL_NO_SURFACE;
    _context = EGL_NO_CONTEXT;
 }
-
 #endif
+
+static void setProjectionMatrix(float w, float h)
+{
+    skia_shiftScreen(w, h, glShiftY);
+}
+
+/////////////////////////////////////////////////////////////////////////
 
 void privateScreenChange(int32 w, int32 h)
 {
    appW = w;
    appH = h;
+   setProjectionMatrix(w,h);
 }
 
 int32 graphicsStartup(ScreenSurface screen, int16 appTczAttr)
@@ -219,12 +251,27 @@ void graphicsDestroy(ScreenSurface screen, int32 isScreenChange)
       if (screen->extension)
          free(screen->extension);
       deviceCtx = screen->extension = NULL;
-      //xfree(glXYA);
    }
 #endif
 }
 
 void setTimerInterval(int32 t);
+void setShiftYgl(int32 shiftY)
+{
+   if (setShiftYonNextUpdateScreen && needsPaint != null)
+   {
+      setShiftYonNextUpdateScreen = false;
+#ifdef ANDROID
+      glShiftY = max32(0,desiredglShiftY - shiftY); // guich: under 0 occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
+#else
+      glShiftY = -shiftY;
+#endif
+      setProjectionMatrix(appW,appH);
+      screen.shiftY = shiftY;
+      *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
+      setTimerInterval(1); // needed, dont remove!
+   }
+}
 void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 {
