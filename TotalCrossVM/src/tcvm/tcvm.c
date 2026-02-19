@@ -5,8 +5,19 @@
 
 #include "tcvm.h"
 
-#if defined(__GNUC__) && !defined(TRACK_USED_OPCODES)
-#define DIRECT_JUMP
+// TRACK_USED_OPCODES needs DIRECT_JUMP to be disabled
+#if !defined(TRACK_USED_OPCODES)
+
+   // GCC builds
+   #if defined(__GNUC__) && !defined(__ANDROID__)
+      #define DIRECT_JUMP
+
+   // Android NDK builds (up to r21)
+   // DIRECT_JUMP helps older compilers but hurts modern Clang optimizations
+   #elif defined(__ANDROID__) && defined(__NDK_MAJOR__) && __NDK_MAJOR__ <= 21
+      #define DIRECT_JUMP
+   #endif
+
 #endif
 
 #define TRACE if (traceOn) debug
