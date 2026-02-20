@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.11)
 include(FetchContent)
 
 # set the project name
-project(tcvm VERSION 7.0.2)
+project(tcvm VERSION 7.2.0)
 
 if(MSVC)
   if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
