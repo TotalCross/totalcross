@@ -10,7 +10,7 @@ cd ~/build
 
 rm -rf ios*
 
-git clone --shallow-submodules --depth 1 --single-branch --branch master git@gitlab.com:totalcross/vm.git ios
+git clone --shallow-submodules --depth 1 --single-branch --branch master https://github.com/TotalCross/totalcross.git ios
 
 pushd ios/TotalCrossVM/xcode
    cmake ../ -GXcode
