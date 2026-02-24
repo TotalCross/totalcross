@@ -1,49 +1,91 @@
-name: 'Commit Message Check'
-on: [push]
+name: Commit Message Check
+
+on:
+  push:
+  pull_request:
 
 jobs:
   check-commit-message:
-    name: Check Commit Message
-    runs-on: ubuntu-20.04
-    steps:
+    name: Validate commit messages
+    runs-on: ubuntu-latest
 
-      - name: Check Commit Type
+    steps:
+      # --------------------------------------------------------------------
+      # Validate commit title format:
+      # <type>(<scope>[,<platform>][,<arch>]): short description
+      #
+      # - type must be one of the project-defined technical types
+      # - scope is required and must come first
+      # - platform and arch are optional extra qualifiers
+      # - all qualifiers must be lowercase
+      # - description must be lowercase
+      # - maximum title length is enforced separately
+      # --------------------------------------------------------------------
+      - name: Check commit type and format
         uses: gsactions/commit-message-checker@v1
         with:
-          pattern: '^[a-z0-9,\s]+: .+(?:\n(?:\n.+)+)?(?:\n\n.+)?$'
-          error: 'Your message must have the correct format "<scope>: <subject>" with an optional body and footer separated by blank lines.'
+          pattern: '^(vm|runtime|sdk|compiler|tools|build|perf|fix|refactor|test|doc|chore)\([a-z0-9_-]+(,[a-z0-9_-]+){0,2}\): [a-z0-9 ].*$'
+          error: |
+            Invalid commit title format.
 
-      - name: Check Title Capitalize
+            Expected:
+              <type>(<scope>[,<platform>][,<arch>]): short description
+
+            Examples:
+              vm(gc): fix invalid mark on promoted objects
+              fix(socket,posix): handle eof correctly
+              build(cmake,windows,x86): fix static linking
+
+      # --------------------------------------------------------------------
+      # Ensure the commit title starts with a lowercase letter.
+      # This avoids sentence-style or prose-like titles.
+      # --------------------------------------------------------------------
+      - name: Check title capitalization
         uses: gsactions/commit-message-checker@v1
         with:
           pattern: '^[^A-Z]'
-          flags: ''
-          error: 'Your title should not capitalize first word.'
+          error: 'Commit title must not start with an uppercase letter.'
 
-      - name: Check Title Length
+      # --------------------------------------------------------------------
+      # Enforce a meaningful commit title:
+      # - At least 3 words to avoid vague messages like "fix bug".
+      # --------------------------------------------------------------------
+      - name: Check title word count
         uses: gsactions/commit-message-checker@v1
         with:
-          pattern: '^[^\s]+([ \t]+[^\s]+){2,}[ \t]*(\n.*)?$'
+          pattern: '^[^ ]+([ \t]+[^ ]+){2,}'
           flags: 's'
-          error: 'A meaningful title should contain at least 3 words.'
+          error: 'Commit title must contain at least 3 words.'
 
-      - name: Check Title Line Length
+      # --------------------------------------------------------------------
+      # Enforce maximum commit title length (80 characters).
+      # The body is checked separately.
+      # --------------------------------------------------------------------
+      - name: Check title length
         uses: gsactions/commit-message-checker@v1
         with:
-          pattern: '^([^\n]{1,80}|Merge pull request.*)(\n.*)?$'
+          pattern: '^([^\n]{1,80})(\n.*)?$'
           flags: 's'
-          error: 'The maximum title line length of 80 characters is exceeded.'
+          error: 'Commit title must be 80 characters or less.'
 
-      - name: Check Title Line Separator
+      # --------------------------------------------------------------------
+      # If a commit body is present, it must be separated from the title
+      # by a blank line.
+      # --------------------------------------------------------------------
+      - name: Check blank line between title and body
         uses: gsactions/commit-message-checker@v1
         with:
           pattern: '^[^\n]+(\n\n.+)?$'
           flags: 's'
-          error: 'Should leave an empty line after title.'
+          error: 'If a commit body is present, it must be separated from the title by a blank line.'
 
-      - name: Check Line Length
+      # --------------------------------------------------------------------
+      # Enforce body line length (80 characters per line).
+      # This improves readability and long-term maintainability.
+      # --------------------------------------------------------------------
+      - name: Check commit body line length
         uses: gsactions/commit-message-checker@v1
         with:
           pattern: '^[^\n]+(\n[^\n]{0,80})*$'
           flags: 's'
-          error: 'The maximum line length of 80 characters is exceeded.'
+          error: 'Each line in the commit body must be 80 characters or less.'
