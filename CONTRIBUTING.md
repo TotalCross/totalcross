@@ -15,7 +15,7 @@
   - [Feedback](#feedback)
   - [Code](#code)
     - [Environment](#environment)
-- [Commiting](#commiting)
+  - [Commit Message Guidelines](#commit-message-guidelines)
   - [Why all these rules?](#why-all-these-rules)
 - [Submitting a pull request](#submitting-a-pull-request)
 
@@ -121,62 +121,192 @@ To build TotalCross for each system below, you will need::
 
 With these prerequisites, you may need to clone this repository, as well as have a ready SDK and a [sample code](https://github.com/TotalCross/hello-world) to get started.
 
-## Commiting
+### Commit Message Guidelines
 
-Our commit style:
+To keep the project history clear, consistent, and easy to maintain, all commits must follow the rules below.<br>
+This project follows a Conventional Commits–inspired format,
+adapted to reflect internal subsystems rather than release semantics.<br>
+> [!WARNING]
+> Commit messages are automatically validated by GitHub Actions.
 
+#### Commit message format
 ```
-<type>: <subject>
+<type>(<scope>[,<platform>][,<arch>]): short description
 
-[optional body]
-
-[optional footer]
+optional body
 ```
 
-About our standard:
-- The header (first line) is the only mandatory part of the commit message;
-- The body and footer are both optional but its use is highly encouraged;
-> The blank line separating the header from the body is critical, same for footer.
-- The header should contains:
-  - A type:
-    - Must be lowercase;
-  - A subject:
-    - Must be non capitalized;
-    - Must omit any trailing punctuation.
-  - Must be limited to 80 characters or less (length = type + subject);
-- The body:
-  - Must have a leading blank line;
-  - Each line must be limited to 80 characters or less.
-- The footer:
-  - Must have a leading blank line;
-  - Each line must be limited to 80 characters or less;
-  - If needed, reference to issues and pull requests must be made here in the last line.
-
-You also should follow these general guidelines when committing:
-
-- Use the present tense ("remove feature" not "removed feature");
-- Use the imperative mood ("resize object to..." not "resizes object to...");
-- Try to answer the following questions:
-  - What is the reason for this change?
-  - What side effects (if any) does this change may have?
-
-Example of commit message:
+**Example**
 ```
-doc: summarize changes in around 80 characters or less
+fix(socket,posix): handle eof correctly
 
-More detailed explanatory text, if necessary. Wrap it to about 80
-characters per line. In some contexts, the first line is treated as
-the subject of the commit and the rest of the text as the body. The
-blank line separating the header from the body is critical (unless
-you omit the body entirely); various tools like `log`, `shortlog`
-and. 
-Explain the problem that this commit is solving. Focus on why you
-are making this change as opposed to how (the code explains that).
-Are there side effects or other unintuitive consequences of this
-change? Here's the place to explain them.
-
-Closes #123
+Handle eof correctly in the posix socket path to avoid spurious
+connection failures during shutdown.
 ```
+
+#### Commit title rules
+The first line of the commit message (the title):
+
+- Must start with a lowercase letter
+- Must contain at least 3 words (to avoid vague titles such as "fix bug")
+- Must be at most 80 characters long
+- Must use the imperative mood (e.g. fix, add, remove)
+- Must follow the format <type>(<scope>[,<platform>][,<arch>]): description
+- Must not end with a period
+- If a commit body is present, it must be separated from the title by a blank line.
+
+These rules are enforced automatically by CI.
+
+#### Commit types
+
+Use the following commit types to describe the primary intent of the change.
+Choose the most specific type that matches the nature of the change.
+
+> [!IMPORTANT]
+> Each commit should represent a single logical change.
+> Avoid mixing refactors, fixes, and formatting in the same commit.
+
+##### Core and tooling
+| Type       | Description                                                                                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `vm`       | Changes in the virtual machine, bytecode interpreter, garbage collector, memory management, or native runtime behavior. |
+| `runtime`  | Cross-platform runtime behavior shared across platforms (event loop, threading, system services).                       |
+| `sdk`      | TotalCross Java SDK, public APIs, UI components, or standard libraries.                                                 |
+| `compiler` | Compiler, bytecode generation, parsing, optimization passes, or code transformation logic.                              |
+| `tools`    | Developer tools such as packagers, CLI utilities, or internal automation tools.                                         |
+| `build`    | Build system configuration (CMake, Gradle, scripts, CI, cross-compilation).                                             |
+| `perf`     | Performance improvements without functional changes (CPU, memory, allocations).                                         |
+| `fix`      | Bug fixes where the primary distinction is correctness rather than build or refactor intent.                            |
+| `refactor` | Code restructuring without changing external behavior.                                                                  |
+| `test`     | Adding, updating, or fixing tests (unit, integration, regression).                                                      |
+| `doc`      | Documentation, examples, comments, or changelog updates.                                                                |
+| `chore`    | Maintenance tasks such as cleanup, formatting, or non-functional changes.                                               |
+
+> [!TIP]
+> Use `fix` for correctness bugs, even if they incidentally improve performance.
+> Prefer expressing the affected area in the scope rather than inventing new types.
+
+#### Scope, platform, and architecture
+
+Inside the parentheses, qualifiers are positional and must follow this order:
+
+1. `scope` (required): the primary subsystem or area
+2. `platform` (optional): the operating system or target environment
+3. `arch` (optional): the architecture or target variant
+
+Examples:
+- `fix(socket,posix): ...`
+- `sdk(camera,android): ...`
+- `build(cmake,windows,x86): ...`
+
+##### Common scopes
+
+Scopes should be short, stable subsystem names. Examples:
+- `gc`
+- `bytecode`
+- `socket`
+- `ssl`
+- `camera`
+- `ui`
+- `json`
+- `jpeg`
+- `cmake`
+- `packager`
+- `deploy`
+
+##### Common platforms
+
+Use a platform qualifier when the change is mainly specific to that target:
+
+| Platform  | Description                                                                                  |
+| --------- | -------------------------------------------------------------------------------------------- |
+| `android` | Android-specific code, packaging, lifecycle, NDK/JNI integration.                            |
+| `ios`     | iOS-specific code, packaging, native bindings, platform integration.                         |
+| `macos`   | macOS-specific changes not tied to a single macOS architecture.                              |
+| `windows` | Windows-specific changes not tied to a single Windows target.                                |
+| `wince`   | Windows CE-specific behavior, compatibility, or toolchain changes.                           |
+| `winmo`   | Windows Mobile-specific behavior, integration, or packaging.                                 |
+| `linux`   | Linux-specific behavior not tied to a single Linux architecture.                             |
+| `posix`   | Shared POSIX behavior spanning Linux, macOS, Android, iOS, or other POSIX-like targets.     |
+
+##### Common architectures
+
+Use an architecture qualifier only when it materially narrows the target:
+
+| Architecture | Description |
+| ------------ | ----------- |
+| `x86`        | 32-bit x86  |
+| `x64`        | x86-64      |
+| `arm`        | 32-bit ARM  |
+| `arm64`      | 64-bit ARM  |
+
+**Qualified commit examples**
+```
+runtime(gc): fix invalid mark on promoted objects
+fix(socket,posix): handle eof correctly
+sdk(camera,android): add video resolution query
+build(cmake,windows,x86): fix static png linking
+build(toolchain,wince,arm): adjust errno compatibility
+build(deploy,android): add custom keystore support
+```
+> [!IMPORTANT]
+> The first qualifier must always be the subsystem scope.
+> Use the optional platform and architecture qualifiers only when they
+> make the history materially clearer.
+
+> Prefer multiple small commits over a single broad one when platform or
+> architecture behavior differs.
+
+#### Commit body guidelines
+The commit body is optional, but encouraged when:
+- the change is non-trivial
+- the reasoning is not obvious from the diff
+- there are trade-offs or side effects
+
+Guidelines:
+- Wrap lines at 80 characters
+- Explain why the change was made, not just what changed
+- Reference issues when applicable (e.g. closes #123)
+
+> [!TIP]
+> Use the commit body to capture reasoning, constraints,
+> and rejected alternatives when relevant.
+
+Language and consistency
+- All commit messages must be written in English
+- Use technical and precise language
+- Avoid vague titles such as:
+  ```
+  fix bug
+  update files
+  changes
+  ```
+
+Example body
+```
+Fixes an invalid GC mark when objects are promoted
+during minor collection.
+
+This prevents rescanning promoted objects and avoids
+invalid memory access under heavy allocation.
+```
+
+#### Commit template (recommended)
+Developers are encouraged to use the provided commit message template to avoid CI failures and keep consistency:
+```
+<type>(<scope>): short description (lowercase, ≤ 80 chars)
+
+Optional body:
+- explain what changed
+- explain why it changed
+- reference issues if applicable
+```
+You can enable it locally with:
+```
+git config commit.template .gitmessage.txt
+````
+
+Following these guidelines ensures a clean, searchable history and helps maintain the long-term stability of the TotalCross codebase.
 
 ### Why all these rules?
 
