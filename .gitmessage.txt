@@ -1,0 +1,47 @@
+# ----------------------------------------------------------------------
+# Commit message template
+#
+# Format:
+#   <type>(<optional-scope>): short description
+#
+# Rules for the title:
+# - Use one of the allowed types (vm, runtime, sdk, build, android, etc.)
+# - Scope is optional but recommended for non-trivial changes
+# - Use the imperative mood (fix, add, remove, improve)
+# - Start with a lowercase letter
+# - At least 3 words
+# - Maximum 80 characters
+# - Do not end with a period
+#
+# Examples:
+#   vm(gc): fix invalid mark on promoted objects
+#   android(ime): prevent keyboard reopening on back press
+#   build(cmake): fix static linking on arm64
+# ----------------------------------------------------------------------
+
+<type>(<scope>): short description
+
+# ----------------------------------------------------------------------
+# Commit body (optional but strongly recommended when applicable)
+#
+# Use the body to explain:
+# - WHY the change was made
+# - WHAT problem it solves
+# - Any important constraints or trade-offs
+# - Rejected alternatives, if relevant
+#
+# Guidelines:
+# - Wrap lines at 80 characters
+# - Do not repeat the title
+# - Prefer technical, precise language
+#
+# Example:
+#   This fixes an invalid GC mark when objects are promoted
+#   during minor collection.
+#
+#   Without this change, promoted objects could be rescanned,
+#   leading to invalid memory access under heavy allocation.
+#
+# References:
+#   Fixes #123
+# ----------------------------------------------------------------------
