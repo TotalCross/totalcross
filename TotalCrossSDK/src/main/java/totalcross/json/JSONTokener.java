@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-import jdkcompat.io.StringReader4D;
-
 /*
 Copyright (c) 2002 JSON.org
 
@@ -68,7 +66,7 @@ public class JSONTokener {
    * @param s     A source string.
    */
   public JSONTokener(String s) {
-    source = new StringReader4D(s);
+    source = new StringReader(s);
   }
 
   /**
