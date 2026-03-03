@@ -19,6 +19,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
@@ -1422,28 +1423,38 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
       appPaused = false;
    }
-   
-   public static String getNativeResolutions()
-   {
-      try
-      {
-         StringBuffer sb = new StringBuffer(32);
-         Camera camera = Camera.open();
-         Camera.Parameters parameters=camera.getParameters();
-         List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
-         if (sizes == null)
+ 
+   public static String getNativeResolutions() {
+      try {
+         CameraManager cameraManager = (CameraManager) instance.getContext().getSystemService(Context.CAMERA_SERVICE);
+
+         Size[] outputSizes = null;
+         for (String cameraId : cameraManager.getCameraIdList()) {
+            CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
+            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
+            outputSizes = map.getOutputSizes(ImageFormat.JPEG);
+            if (outputSizes != null && outputSizes.length > 0) {
+               break;
+            }
+         }
+
+         if (outputSizes == null) {
             return null;
-         for (Camera.Size ss: sizes)
-            sb.append(ss.width).append("x").append(ss.height).append(',');
+         }
+
+         StringBuffer sb = new StringBuffer(32);
+         for (Size size : outputSizes) {
+            sb.append(size.getWidth()).append("x").append(size.getHeight()).append(',');
+         }
+
          int l = sb.length();
-         if (l > 0)
-            sb.setLength(l-1); // remove last ,
-         camera.release();
+         if (l > 0) {
+            sb.setLength(l - 1); // remove last ,
+         }
          return sb.toString();
-      }
-      catch (Exception e)
-      {
-         AndroidUtils.handleException(e,false);
+      } catch (Exception e) {
+         AndroidUtils.handleException(e, false);
          return null;
       }
    }
