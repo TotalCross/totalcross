@@ -402,6 +402,16 @@ public class InputStreamReader4D extends Reader {
       int offsetUsed = off;
       int totalRead = 0;
 
+      int available = decodedSize - decodedReadPos;
+      if (available > 0) {
+        int size = Math.min(remaining, available);
+        Vm.arrayCopy(charsDecodedRead, decodedReadPos, b, offsetUsed, size);
+        decodedReadPos += size;
+        offsetUsed += size;
+        remaining -= size;
+        totalRead += size;
+      }
+
       while (remaining > 0) {
         ensureFetch();
         if (decodedSize <= 0) {
@@ -432,12 +442,24 @@ public class InputStreamReader4D extends Reader {
    */
   @Override
   public int read() throws java.io.IOException {
-    char[] buf = new char[1];
-    int count = read(buf, 0, 1);
-    while (count == 0) {
-      count = read(buf, 0, 1);
+    synchronized (lock) {
+      if (eos) {
+        return -1;
+      }
+
+      if (decodedReadPos < decodedSize) {
+        return charsDecodedRead[decodedReadPos++];
+      }
+
+      do {
+        ensureFetch();
+        if (eos) {
+          return -1;
+        }
+      } while (decodedReadPos >= decodedSize);
+
+      return charsDecodedRead[decodedReadPos++];
     }
-    return count > 0 ? buf[0] : -1;
   }
 
   /**
