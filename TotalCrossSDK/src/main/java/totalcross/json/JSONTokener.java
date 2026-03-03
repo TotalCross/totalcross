@@ -48,6 +48,10 @@ public class JSONTokener {
 
   private Reader source;
 
+  private char buffer[] = new char[8 * 1024];
+  private int bufferPos = Integer.MAX_VALUE;
+  private int bufferLimit = 0;
+
   /**
    * Construct a JSONTokener from a Reader.
    *
@@ -130,11 +134,15 @@ public class JSONTokener {
       this.usePrevious = false;
       c = this.previous;
     } else {
-      try {
-        c = source.read();
-      } catch (IOException e) {
-        throw new JSONException(e);
-      }
+      if (bufferPos < bufferLimit) {
+        c = buffer[bufferPos++];
+      } else {
+        try {
+          c = fetch();
+        } catch (IOException e) {
+          throw new JSONException(e);
+        }
+      }  
       
       if (c <= 0) { // End of stream
         this.eof = true;
@@ -153,6 +161,32 @@ public class JSONTokener {
     }
     this.previous = (char) c;
     return this.previous;
+  }
+
+  private int fetch() throws IOException {
+
+    if (bufferPos < bufferLimit) {
+      return buffer[bufferPos++];
+    }
+
+    if (this.eof == true) {
+      return -1;
+    }
+
+    bufferPos = 0;
+
+    int count = 0;
+    while (count == 0) {
+      count = source.read(buffer, bufferPos, buffer.length);
+      if (count == -1) {
+        this.eof = true;
+        bufferLimit = 0;
+        return -1;
+      }
+    }
+    bufferLimit = count;
+
+    return buffer[bufferPos++];
   }
 
   /**
