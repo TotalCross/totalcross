@@ -131,6 +131,8 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private int height;
 
+    private int stillQuality;
+
     private int bitrate;
 
     private ImageCapture imageCapture;
@@ -197,8 +199,8 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         width = b.getInt("width");
         height = b.getInt("height");
         bitrate = b.getInt("bitrate", 200_000);
-        int q = b.getInt(EXTRA_QUALITY, 2);
-        qualidade = (q == 3 ? VideoQuality.FHD : q == 1 ? VideoQuality.SD : VideoQuality.HD);
+        stillQuality = b.getInt(EXTRA_QUALITY, 2);
+        qualidade = (stillQuality == 3 ? VideoQuality.FHD : stillQuality == 1 ? VideoQuality.SD : VideoQuality.HD);
 
         lastSavedVideoPath = b.getString("file");
 //        lastSavedVideoPath = "/sdcard/DCIM/" + lastSavedVideoPath.substring(lastSavedVideoPath.lastIndexOf('/'));
@@ -326,11 +328,6 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     private void bindCamera(int rotation) {
         lastRotation = rotation;
 
-        boolean isLandscape =
-                rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270;
-
-        Size targetSize = VideoQuality.getQualitySelectorFor(width, height, isLandscape, qualidade);
-
         // Remove all before recreating
         cameraProvider.unbindAll();
 
@@ -364,12 +361,29 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
         videoCapture = VideoCapture.withOutput(recorder);
 
-        imageCapture =
-                new ImageCapture.Builder()
-                        .setResolutionSelector(resolutionSelector)
-                        .setTargetRotation(rotation)
-                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                        .build();
+        final boolean isLandscape =
+                getResources().getConfiguration().screenWidthDp >
+                        getResources().getConfiguration().screenHeightDp;
+
+        imageCapture = new ImageCapture.Builder()
+                .setTargetRotation(rotation)
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100)
+                /*
+                    We'll keep using setTargetResolution for the time being, because the preferred
+                    method using ResolutionSelector, as of now, only allows selecting 4:3 or 16:9
+                    resolutions.
+                 */
+                .setTargetResolution(
+                        /*
+                            setTargetResolution picks resolution based on the current orientation
+                            of the application, so in landscape we have to invert the dimensions to
+                            pick the correct resolution.
+                         */
+                        isLandscape ?
+                                new Size(width, height) :
+                                new Size(height, width))
+                .build();
 
         // Final bind
         camera = cameraProvider.bindToLifecycle(

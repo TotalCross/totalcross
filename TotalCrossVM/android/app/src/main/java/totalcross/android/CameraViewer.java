@@ -183,11 +183,28 @@ public class CameraViewer extends AdjustedInsetsActivity {
 
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
+        final boolean isLandscape =
+                getResources().getConfiguration().screenWidthDp >
+                        getResources().getConfiguration().screenHeightDp;
+
         imageCapture = new ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
-                .setTargetResolution(new Size(width, height))
                 .setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100)
+                /*
+                    We'll keep using setTargetResolution for the time being, because the preferred
+                    method using ResolutionSelector, as of now, only allows selecting 4:3 or 16:9
+                    resolutions.
+                 */
+                .setTargetResolution(
+                        /*
+                            setTargetResolution picks resolution based on the current orientation
+                            of the application, so in landscape we have to invert the dimensions to
+                            pick the correct resolution.
+                         */
+                        isLandscape ?
+                                new Size(width, height) :
+                                new Size(height, width))
                 .build();
 
         videoCapture = VideoCapture.withOutput(new Recorder.Builder()
