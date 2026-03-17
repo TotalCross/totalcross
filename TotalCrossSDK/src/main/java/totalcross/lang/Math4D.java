@@ -1008,4 +1008,22 @@ public final class Math4D {
     long n = round(INV_PI_2 * x);
     return x - n * PI_2;
   }
+
+  public static double hypot(double x, double y) {
+    x = Math.abs(x);
+    y = Math.abs(y);
+
+    if (x < y) {
+        double t = x;
+        x = y;
+        y = t;
+    }
+
+    if (x == 0.0) {
+        return 0.0;
+    }
+
+    double r = y / x;
+    return x * Math.sqrt(1 + r * r);
+  }
 }
