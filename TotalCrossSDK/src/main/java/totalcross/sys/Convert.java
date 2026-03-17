@@ -2285,36 +2285,21 @@ public final class Convert {
    * @since TotalCross 1.2
    */
   public static double getDistancePoint2Rect(int x, int y, int x1, int y1, int x2, int y2) {
-    int xMx1 = x - x1;
-    int xMx2 = x - x2;
-    int yMy1 = y - y1;
-    int yMy2 = y - y2;
+    if (x1 > x2) { int t = x1; x1 = x2; x2 = t; }
+    if (y1 > y2) { int t = y1; y1 = y2; y2 = t; }
 
-    if (y < y1) {
-      if (x < x1) {
-        return Math.sqrt(xMx1 * xMx1 + yMy1 * yMy1); // distance from point (x,y) to point (x1,y1)
-      } else if (x < x2) {
-        return y1 - y; // distance from point (x,y) to line (x1,y1)->(x2,y1)
-      } else {
-        return Math.sqrt(xMx2 * xMx2 + yMy1 * yMy1); // distance from point (x,y) to point (x2,y1)
-      }
-    } else if (y < y2) {
-      if (x < x1) {
-        return x1 - x; // distance from point (x,y) to line (x1,y1)->(x1,y2)
-      } else if (x < x2) {
-        return 0;
-      } else {
-        return x - x2; // distance from point (x,y) to line (x2,y1)->(x2,y2)
-      }
-    } else {
-      if (x < x1) {
-        return Math.sqrt(xMx1 * xMx1 + yMy2 * yMy2); // distance from point (x,y) to point (x1,y2)
-      } else if (x < x2) {
-        return y - y2; // distance from point (x,y) to line (x1,y2)->(x2,y2)
-      } else {
-        return Math.sqrt(xMx2 * xMx2 + yMy2 * yMy2); // distance from point (x,y) to point (x2,y2)
-      }
-    }
+    /* 
+      Code below equivalent to:
+      double dx = Math.max(Math.max(x1 - x, 0), x - x2);
+     */
+    double dx = (x < x1) ? (x1 - x) : (x > x2 ? x - x2 : 0);
+    /* 
+      Code below equivalent to:
+      double dy = Math.max(Math.max(y1 - y, 0), y - y2);
+     */
+    double dy = (y < y1) ? (y1 - y) : (y > y2 ? y - y2 : 0);
+
+    return Math.hypot(dx, dy);
   }
 
   /** Appends the given timestamp to a StringBuffer, using the current Date format and separators.
