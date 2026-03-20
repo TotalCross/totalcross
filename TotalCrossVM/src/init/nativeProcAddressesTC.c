@@ -156,6 +156,12 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillPolygonGradient_IIi"), &tugG_fillPolygonGradient_IIi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_getRGB_Iiiiii"), &tugG_getRGB_Iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_setRGB_Iiiiii"), &tugG_setRGB_Iiiiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugRR_containsCorner_ddddddi"), &tugRR_containsCorner_ddddddi);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugRR_leftBoundForY_dddddddd"), &tugRR_leftBoundForY_dddddddd);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugRR_rightBoundForY_dddddddd"), &tugRR_rightBoundForY_dddddddd);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugRR_ellipseLeftBound_ddddd"), &tugRR_ellipseLeftBound_ddddd);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugRR_ellipseRightBound_ddddd"), &tugRR_ellipseRightBound_ddddd);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugRR_ellipseDx_ddd"), &tugRR_ellipseDx_ddd);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fadeScreen_i"), &tugG_fadeScreen_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tufF_fontCreate"), &tufF_fontCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_fontMetricsCreate"), &tufFM_fontMetricsCreate);
