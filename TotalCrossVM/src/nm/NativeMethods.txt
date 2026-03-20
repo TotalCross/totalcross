@@ -133,6 +133,12 @@ totalcross/ui/gfx/Graphics|native public void drawPolyline(int []xPoints, int []
 totalcross/ui/gfx/Graphics|native public void drawText(String text, int x, int y, int justifyWidth);
 totalcross/ui/gfx/Graphics|native public void drawRoundRect(int x, int y, int width, int height, int r);
 totalcross/ui/gfx/Graphics|native public void fillRoundRect(int x, int y, int width, int height, int r);
+totalcross/ui/gfx/RRect|native private static boolean containsCorner(double px, double py, double x, double y, double rx, double ry, int corner);
+totalcross/ui/gfx/RRect|native private static double leftBoundForY(double py, double left, double top, double bottom, double topRx, double topRy, double bottomRx, double bottomRy);
+totalcross/ui/gfx/RRect|native private static double rightBoundForY(double py, double right, double top, double bottom, double topRx, double topRy, double bottomRx, double bottomRy);
+totalcross/ui/gfx/RRect|native private static double ellipseLeftBound(double cx, double cy, double rx, double ry, double py);
+totalcross/ui/gfx/RRect|native private static double ellipseRightBound(double cx, double cy, double rx, double ry, double py);
+totalcross/ui/gfx/RRect|native private static double ellipseDx(double rx, double ry, double dy);
 totalcross/ui/gfx/Graphics|native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
 totalcross/ui/gfx/Graphics|native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
 totalcross/ui/gfx/Graphics|native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
