@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -157,6 +158,7 @@ TC_API void tugG_drawText_Ciiii(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
 TC_API void tugG_fillRoundRect_iiiii(NMParams p);
+TC_API void tugG_drawRRect_rib(NMParams p);
 TC_API void tugRR_containsCorner_ddddddi(NMParams p);
 TC_API void tugRR_leftBoundForY_dddddddd(NMParams p);
 TC_API void tugRR_rightBoundForY_dddddddd(NMParams p);

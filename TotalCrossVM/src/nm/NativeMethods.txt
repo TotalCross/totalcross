@@ -133,6 +133,7 @@ totalcross/ui/gfx/Graphics|native public void drawPolyline(int []xPoints, int []
 totalcross/ui/gfx/Graphics|native public void drawText(String text, int x, int y, int justifyWidth);
 totalcross/ui/gfx/Graphics|native public void drawRoundRect(int x, int y, int width, int height, int r);
 totalcross/ui/gfx/Graphics|native public void fillRoundRect(int x, int y, int width, int height, int r);
+totalcross/ui/gfx/Graphics|native public void drawRRect(totalcross.ui.gfx.RRect rrect, int color, boolean filled);
 totalcross/ui/gfx/RRect|native private static boolean containsCorner(double px, double py, double x, double y, double rx, double ry, int corner);
 totalcross/ui/gfx/RRect|native private static double leftBoundForY(double py, double left, double top, double bottom, double topRx, double topRy, double bottomRx, double bottomRy);
 totalcross/ui/gfx/RRect|native private static double rightBoundForY(double py, double right, double top, double bottom, double topRx, double topRy, double bottomRx, double bottomRy);
