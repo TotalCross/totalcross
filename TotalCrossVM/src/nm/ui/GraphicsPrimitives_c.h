@@ -2153,6 +2153,76 @@ static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
 }
 #endif
 
+////////////////////////////////////////////////////////////////////////////
+#ifndef SKIA_H
+static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+   int32 top = y;
+   int32 bottom = y + h - 1;
+   int32 yy;
+   int32 start, end;
+   int32 previousStart = 0x7FFFFFFF;
+   int32 previousEnd = 0x7FFFFFFF;
+
+   if (w <= 0 || h <= 0)
+      return;
+
+   if (radii == null)
+   {
+      if (filled)
+         fillRect(currentContext, g, x, y, w, h, c);
+      else
+         drawRect(currentContext, g, x, y, w, h, c);
+      return;
+   }
+
+   for (yy = top; yy <= bottom; yy++)
+   {
+      if (!gfxComputeRRectSpan(x, y, w, h, radii, yy, &start, &end))
+         continue;
+
+      if (filled)
+         drawLine(currentContext, g, start, yy, end, yy, c);
+      else
+      {
+         if (previousStart == 0x7FFFFFFF)
+            drawLine(currentContext, g, start, yy, end, yy, c);
+         else
+         {
+            if (start < previousStart)
+               drawLine(currentContext, g, start, yy, previousStart, yy, c);
+            else if (start > previousStart)
+               drawLine(currentContext, g, previousStart, yy - 1, start, yy - 1, c);
+
+            if (end > previousEnd)
+               drawLine(currentContext, g, previousEnd, yy, end, yy, c);
+            else if (end < previousEnd)
+               drawLine(currentContext, g, end, yy - 1, previousEnd, yy - 1, c);
+         }
+         setPixel(currentContext, g, start, yy, c);
+         setPixel(currentContext, g, end, yy, c);
+      }
+
+      previousStart = start;
+      previousEnd = end;
+   }
+
+   if (!filled && previousStart != 0x7FFFFFFF)
+      drawLine(currentContext, g, previousStart, bottom, previousEnd, bottom, c);
+}
+#else
+static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+   skia_setClip(Get_Clip(g));
+   skia_drawRRect(0, x, y, w, h, radii, c | Graphics_alpha(g), filled);
+   skia_restoreClip();
+
+   markDirty(currentContext, g, x, y, w, h);
+}
+#endif
+
 #ifndef SKIA_H
 ////////////////////////////////////////////////////////////////////////////
 static void setPixelA(Context currentContext, TCObject g, int32 x, int32 y, PixelConv color, int32 alpha);

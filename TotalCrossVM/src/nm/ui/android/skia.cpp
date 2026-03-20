@@ -72,6 +72,7 @@
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkImageEncoder.h"
 #include "include/core/SkPath.h"
+#include "include/core/SkRRect.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/core/SkTextBlob.h"
 
@@ -644,6 +645,30 @@ void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
     SKIA_TRACE()
     backPaint.setColor(c);
     canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), backPaint);
+}
+
+void skia_drawRRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+    SKIA_TRACE()
+    SkRect rect = SkRect::MakeXYWH(x, y, w, h);
+    SkPaint &paint = filled ? backPaint : forePaint;
+    paint.setColor(c);
+
+    if (radii == nullptr) {
+        canvas->drawRect(rect, paint);
+        return;
+    }
+
+    SkVector corners[4] = {
+        SkVector::Make((SkScalar)radii[0], (SkScalar)radii[1]),
+        SkVector::Make((SkScalar)radii[2], (SkScalar)radii[3]),
+        SkVector::Make((SkScalar)radii[4], (SkScalar)radii[5]),
+        SkVector::Make((SkScalar)radii[6], (SkScalar)radii[7])
+    };
+
+    SkRRect rr;
+    rr.setRectRadii(rect, corners);
+    canvas->drawRRect(rr, paint);
 }
 
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)

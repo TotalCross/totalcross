@@ -1193,6 +1193,74 @@ public final class Graphics {
   }
 
   /**
+   * Draws a rounded rectangle.
+   *
+   * @param rrect the rounded rectangle to draw
+   * @param color the color in {@code 0xRRGGBB} format
+   * @param filled whether the rounded rectangle should be filled
+   * @throws NullPointerException if {@code rrect} is {@code null}
+   * @throws IllegalArgumentException if {@code rrect.width < 0} or {@code rrect.height < 0}
+   */
+  @ReplacedByNativeOnDeploy
+  public void drawRRect(RRect rrect, int color, boolean filled) {
+    if (rrect == null) {
+      throw new NullPointerException("rrect");
+    }
+    if (rrect.width < 0) {
+      throw new IllegalArgumentException("rrect.width must be >= 0");
+    }
+    if (rrect.height < 0) {
+      throw new IllegalArgumentException("rrect.height must be >= 0");
+    }
+    if (rrect.width == 0 || rrect.height == 0) {
+      return;
+    }
+
+    int top = rrect.y;
+    int bottom = rrect.y + rrect.height - 1;
+    int previousStart = Integer.MIN_VALUE;
+    int previousEnd = Integer.MIN_VALUE;
+
+    for (int yy = top; yy <= bottom; yy++) {
+      Span span = rrect.horizontalSpan(yy);
+      if (!span.isValid()) {
+        continue;
+      }
+      int start = span.start;
+      int end = span.end;
+
+      if (filled) {
+        drawLine(start, yy, end, yy, color);
+      } else {
+        if (previousStart == Integer.MIN_VALUE) {
+          drawLine(start, yy, end, yy, color);
+        } else {
+          if (start < previousStart) {
+            drawLine(start, yy, previousStart, yy, color);
+          } else if (start > previousStart) {
+            drawLine(previousStart, yy - 1, start, yy - 1, color);
+          }
+          if (end > previousEnd) {
+            drawLine(previousEnd, yy, end, yy, color);
+          } else if (end < previousEnd) {
+            drawLine(end, yy - 1, previousEnd, yy - 1, color);
+          }
+        }
+
+        setPixel(start, yy, color);
+        setPixel(end, yy, color);
+      }
+
+      previousStart = start;
+      previousEnd = end;
+    }
+
+    if (!filled && previousStart != Integer.MIN_VALUE) {
+      drawLine(previousStart, bottom, previousEnd, bottom, color);
+    }
+  }
+
+  /**
    * Sets the clipping rectangle, translated to the current translated origin. Anything drawn outside of the
    * rectangular area specified will be clipped. Setting a clip overrides any previous clip. This clipping rectangle
    * affects all the drawing operations.
