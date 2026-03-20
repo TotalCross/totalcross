@@ -6,6 +6,8 @@
 #ifndef OBJECTMEMORYMANAGER_H
 #define OBJECTMEMORYMANAGER_H
 
+#include "datastructures.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
