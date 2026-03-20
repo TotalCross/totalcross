@@ -157,6 +157,7 @@ TC_API void tugG_drawText_Ciiii(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
 TC_API void tugG_fillRoundRect_iiiii(NMParams p);
+TC_API void tugG_drawRRect_rib(NMParams p);
 TC_API void tugRR_containsCorner_ddddddi(NMParams p);
 TC_API void tugRR_leftBoundForY_dddddddd(NMParams p);
 TC_API void tugRR_rightBoundForY_dddddddd(NMParams p);

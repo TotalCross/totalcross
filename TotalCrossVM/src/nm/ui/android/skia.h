@@ -46,6 +46,7 @@ void skia_drawPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
 void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient);
 void skia_drawRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c);
 void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c);
+void skia_drawRRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled);
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical);
 int skia_getsetRGB(int32 skiaSurface, void *dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet);
 void skia_shiftScreen(float w, float h, float glShiftY);

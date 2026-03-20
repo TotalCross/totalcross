@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
+#include "gfx.h"
 #if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
 #define Graphics_forePixel(o) (Graphics_foreColor(o) | 0xFF000000)
 #define Graphics_backPixel(o) (Graphics_backColor(o) | 0xFF000000)
@@ -273,6 +274,40 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p) // totalcross/ui/gfx/Graphics n
 {
    TCObject g = p->obj[0];
    fillRoundRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], Graphics_backPixel(g));
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawRRect_rib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRRect(totalcross.ui.gfx.RRect rrect, int color, boolean filled);
+{
+   TCObject g = p->obj[0];
+   TCObject rrect = p->obj[1];
+   double *radii;
+   int32 width, height;
+   if (rrect == null)
+   {
+      throwNullArgumentException(p->currentContext, "rrect");
+      return;
+   }
+
+   width = Rect_width(rrect);
+   height = Rect_height(rrect);
+   if (width < 0)
+   {
+      throwException(p->currentContext, IllegalArgumentException, "rrect.width must be >= 0");
+      return;
+   }
+   if (height < 0)
+   {
+      throwException(p->currentContext, IllegalArgumentException, "rrect.height must be >= 0");
+      return;
+   }
+   if (width == 0 || height == 0)
+      return;
+
+   radii = RRect_radii(rrect);
+
+   drawRRect(p->currentContext, g,
+      Rect_x(rrect), Rect_y(rrect), width, height,
+      radii, p->i32[0], p->i32[1] != 0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
