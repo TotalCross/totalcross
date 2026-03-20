@@ -450,7 +450,7 @@ endif(DEFINED SKIA_LIBRARIES)
 # add_definitions
 if(DEFINED ANDROID_ABI)
   add_definitions(-DANDROID)
-  if ("${ANDROID_ABI}" MATCHES "arm64-v8a")
+  if ("${ANDROID_ABI}" MATCHES "arm64-v8a" OR USE_SKIA)
 	  add_definitions(-DFORCE_LIBC_ALLOC)
   endif()
 elseif(TARGET_WINCE)
