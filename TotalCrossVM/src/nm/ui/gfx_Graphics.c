@@ -173,10 +173,16 @@ TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native 
    drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g));
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by, int c);
+TC_API void tugG_drawLine_iiiip(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by, totalcross.ui.gfx.Paint paint);
 {
     TCObject g = p->obj[0];
-    drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4]);
+    TCObject paint = p->obj[1];
+    if (paint == null)
+    {
+      throwNullArgumentException(p->currentContext, "paint");
+      return;
+    }
+    drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Paint_color(paint));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawDots_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDots(int ax, int ay, int bx, int by);

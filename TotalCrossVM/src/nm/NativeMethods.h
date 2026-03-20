@@ -145,7 +145,7 @@ TC_API void tugG_fillCircle_iii(NMParams p);
 TC_API void tugG_getPixel_ii(NMParams p);
 TC_API void tugG_setPixel_ii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
-TC_API void tugG_drawLine_iiiii(NMParams p);
+TC_API void tugG_drawLine_iiiip(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
 TC_API void tugG_fillRect_iiii(NMParams p);

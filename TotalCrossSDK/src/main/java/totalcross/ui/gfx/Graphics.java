@@ -573,7 +573,7 @@ public final class Graphics {
    */
   @ReplacedByNativeOnDeploy
   public void drawLine(int Ax, int Ay, int Bx, int By) {
-    drawLine(Ax, Ay, Bx, By, foreColor | alpha);
+    drawLine(Ax, Ay, Bx, By, paintOfColor(foreColor | alpha));
   }
 
   /**
@@ -695,7 +695,7 @@ public final class Graphics {
       throw new ArrayIndexOutOfBoundsException("array index out of range at drawPolygon: " + nPoints);
     } else {
       drawPolygon(xPoints, yPoints, 0, nPoints, foreColor | alpha);
-      drawLine(xPoints[0], yPoints[0], xPoints[nPoints - 1], yPoints[nPoints - 1], foreColor | alpha);
+      drawLine(xPoints[0], yPoints[0], xPoints[nPoints - 1], yPoints[nPoints - 1], paintOfColor(foreColor | alpha));
     }
   }
 
@@ -1134,8 +1134,8 @@ public final class Graphics {
     do {
       i = 255 - 255 * Math.abs(err - 2 * (x + y) - 2) / r;
 
-      drawLine(px1 + x + 1, py1 - y, px2 - x - 1, py1 - y, c);
-      drawLine(px1 + x + 1, py2 + y, px2 - x - 1, py2 + y, c);
+      drawLine(px1 + x + 1, py1 - y, px2 - x - 1, py1 - y, paintOfColor(c));
+      drawLine(px1 + x + 1, py2 + y, px2 - x - 1, py2 + y, paintOfColor(c));
 
       if (i < 256 && i > 0) {
         xm = px2;
@@ -1230,20 +1230,20 @@ public final class Graphics {
       int end = span.end;
 
       if (filled) {
-        drawLine(start, yy, end, yy, color);
+        drawLine(start, yy, end, yy, paintOfColor(color));
       } else {
         if (previousStart == Integer.MIN_VALUE) {
-          drawLine(start, yy, end, yy, color);
+          drawLine(start, yy, end, yy, paintOfColor(color));
         } else {
           if (start < previousStart) {
-            drawLine(start, yy, previousStart, yy, color);
+            drawLine(start, yy, previousStart, yy, paintOfColor(color));
           } else if (start > previousStart) {
-            drawLine(previousStart, yy - 1, start, yy - 1, color);
+            drawLine(previousStart, yy - 1, start, yy - 1, paintOfColor(color));
           }
           if (end > previousEnd) {
-            drawLine(previousEnd, yy, end, yy, color);
+            drawLine(previousEnd, yy, end, yy, paintOfColor(color));
           } else if (end < previousEnd) {
-            drawLine(end, yy - 1, previousEnd, yy - 1, color);
+            drawLine(end, yy - 1, previousEnd, yy - 1, paintOfColor(color));
           }
         }
 
@@ -1256,7 +1256,7 @@ public final class Graphics {
     }
 
     if (!filled && previousStart != Integer.MIN_VALUE) {
-      drawLine(previousStart, bottom, previousEnd, bottom, color);
+      drawLine(previousStart, bottom, previousEnd, bottom, paintOfColor(color));
     }
   }
 
@@ -1641,13 +1641,13 @@ public final class Graphics {
     int x2 = x + width - 1;
     int y2 = y + height - 1;
     foreColor = topColor | alpha;
-    drawLine(x1, y, x2 - 1, y, foreColor);
+    drawLine(x1, y, x2 - 1, y, paintOfColor(foreColor));
     foreColor = rightColor | alpha;
-    drawLine(x2, y1, x2, y2 - 1, foreColor);
+    drawLine(x2, y1, x2, y2 - 1, paintOfColor(foreColor));
     foreColor = bottomColor | alpha;
-    drawLine(x1, y2, x2 - 1, y2, foreColor);
+    drawLine(x1, y2, x2 - 1, y2, paintOfColor(foreColor));
     foreColor = leftColor | alpha;
-    drawLine(x, y1, x, y2 - 1, foreColor);
+    drawLine(x, y1, x, y2 - 1, paintOfColor(foreColor));
   }
 
   /**
@@ -1735,12 +1735,12 @@ public final class Graphics {
       fillRect(x, y, width, height);
     } else if (type == R3D_SHADED) {
       boolean menu = simple; // is menu?
-      drawLine(menu ? 0 : 1, 0, menu ? width - 1 : width - 3, 0, foreColor | alpha);
-      drawLine(0, 1, 0, height - 3, foreColor | alpha);
-      drawLine(width - 2, 1, width - 2, height - 3, foreColor | alpha);
-      drawLine(width - 1, menu ? 1 : 2, width - 1, height - 3, foreColor | alpha);
-      drawLine(1, height - 2, width - 2, height - 2, foreColor | alpha);
-      drawLine(2, height - 1, width - 3, height - 1, foreColor | alpha);
+      drawLine(menu ? 0 : 1, 0, menu ? width - 1 : width - 3, 0, paintOfColor(foreColor | alpha));
+      drawLine(0, 1, 0, height - 3, paintOfColor(foreColor | alpha));
+      drawLine(width - 2, 1, width - 2, height - 3, paintOfColor(foreColor | alpha));
+      drawLine(width - 1, menu ? 1 : 2, width - 1, height - 3, paintOfColor(foreColor | alpha));
+      drawLine(1, height - 2, width - 2, height - 2, paintOfColor(foreColor | alpha));
+      drawLine(2, height - 1, width - 3, height - 1, paintOfColor(foreColor | alpha));
     } else {
       switch (Settings.uiStyle) {
       case Settings.Flat:
@@ -1832,7 +1832,7 @@ public final class Graphics {
       }
       h--;
       while (h >= 0) {
-        drawLine(x, y, x, y + (h << 1), foreColor);
+        drawLine(x, y, x, y + (h << 1), paintOfColor(foreColor));
         x += step;
         y++;
         h--;
@@ -1844,7 +1844,7 @@ public final class Graphics {
       }
       h--;
       while (h >= 0) {
-        drawLine(x, y, x + (h << 1), y, foreColor);
+        drawLine(x, y, x + (h << 1), y, paintOfColor(foreColor));
         y += step;
         x++;
         h--;
@@ -2392,7 +2392,7 @@ public final class Graphics {
     }
 
     for (i = 1; i < nPoints1; i++) {
-      drawLine(xPoints1[base1 + i - 1], yPoints1[base1 + i - 1], xPoints1[base1 + i], yPoints1[base1 + i], c);
+      drawLine(xPoints1[base1 + i - 1], yPoints1[base1 + i - 1], xPoints1[base1 + i], yPoints1[base1 + i], paintOfColor(c));
     }
   }
 
@@ -2466,9 +2466,22 @@ public final class Graphics {
     }
   }
 
+  /**
+   * Draws a line using the provided paint state.
+   * <p>
+   * The current implementation only reads {@link Paint#getColor()} from the supplied paint.
+   *
+   * @param Ax x coordinate of the start of the line
+   * @param Ay y coordinate of the start of the line
+   * @param Bx x coordinate of the end of the line
+   * @param By y coordinate of the end of the line
+   * @param paint the paint used to draw the line
+   * @throws NullPointerException if {@code paint} is {@code null}
+   */
   // Bresenham algorithm to draw lines (modified by guich to improve performance in vertical and horizontal lines)
   @ReplacedByNativeOnDeploy
-  private void drawLine(int Ax, int Ay, int Bx, int By, int c) {
+  public void drawLine(int Ax, int Ay, int Bx, int By, Paint paint) {
+    int c = paint.getColor();
     if (surelyOutsideClip(Ax, Ay, Bx, By)) {
       return;
     }
@@ -2539,6 +2552,10 @@ public final class Graphics {
         }
       }
     }
+  }
+
+  private static Paint paintOfColor(int color) {
+    return new Paint().setColor(color);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -3073,20 +3090,20 @@ public final class Graphics {
       kx = x1l;
       ky = yy + i;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, x2r, yy + i, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // top
+      drawLine(kx, ky, x2r, yy + i, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // top
 
       ky = y2 - i;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, x2r, y2 - i, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // bottom
+      drawLine(kx, ky, x2r, y2 - i, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // bottom
 
       kx = xx + i;
       ky = y1l;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, xx + i, y2r, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // left
+      drawLine(kx, ky, xx + i, y2r, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // left
 
       kx = x2 - i;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, x2 - i, y2r, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // right
+      drawLine(kx, ky, x2 - i, y2r, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // right
     }
     // round corners
     for (int j = 0; j < 7; j++) {
@@ -3162,7 +3179,7 @@ public final class Graphics {
     // separator
     if (drawSeparators && titleH > 0 && titleColor == bodyColor) {
       drawLine(rectX1, ty - 1, rectX2, ty - 1,
-          interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64));
+          paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64)));
     }
     // body
     backColor = bodyColor | alpha;
@@ -3171,7 +3188,7 @@ public final class Graphics {
     // separator
     if (drawSeparators && footerH > 0 && bodyColor == footerColor) {
       drawLine(rectX1, ty, rectX2, ty,
-          interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64));
+          paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64)));
       ty++;
       footerH--;
     }

@@ -123,7 +123,7 @@ totalcross/ui/gfx/Graphics|native public void fillCircle(int xc, int yc, int r);
 totalcross/ui/gfx/Graphics|native public int getPixel(int x, int y);
 totalcross/ui/gfx/Graphics|native public void setPixel(int x, int y);
 totalcross/ui/gfx/Graphics|native public void drawLine(int ax, int ay, int bx, int by);
-totalcross/ui/gfx/Graphics|native public void drawLine(int ax, int ay, int bx, int by, int c);
+totalcross/ui/gfx/Graphics|native public void drawLine(int ax, int ay, int bx, int by, totalcross.ui.gfx.Paint paint);
 totalcross/ui/gfx/Graphics|native public void drawDots(int ax, int ay, int bx, int by);
 totalcross/ui/gfx/Graphics|native public void drawRect(int x, int y, int w, int h);
 totalcross/ui/gfx/Graphics|native public void fillRect(int x, int y, int w, int h);
