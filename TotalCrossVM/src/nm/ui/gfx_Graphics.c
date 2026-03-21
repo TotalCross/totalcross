@@ -170,19 +170,21 @@ TC_API void tugG_setPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native pu
 TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
    TCObject g = p->obj[0];
-   drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g));
+   Pixel pixel = Graphics_forePixel(g);
+   drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], gfxPaintFromColor(&pixel));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawLine_iiiip(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by, totalcross.ui.gfx.Paint paint);
 {
     TCObject g = p->obj[0];
     TCObject paint = p->obj[1];
+    GfxPaint paintFields = gfxPaint(paint);
     if (paint == null)
     {
       throwNullArgumentException(p->currentContext, "paint");
       return;
     }
-    drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Paint_color(paint));
+    drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], paintFields);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawDots_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDots(int ax, int ay, int bx, int by);
@@ -237,14 +239,15 @@ TC_API void tugG_drawPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics nativ
    TCObject xPoints = p->obj[1];
    TCObject yPoints = p->obj[2];
    int32 nPoints = p->i32[0];
+   Pixel pixel = Graphics_forePixel(g);
    // fdie@ the vm has a 4bytes pointer!
    int32* xp = (int32 *)ARRAYOBJ_START(xPoints);
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
    {
-      drawPolygon(p->currentContext, g, xp, yp, nPoints, 0, 0, 0, 0, 0, Graphics_forePixel(g));
-      drawLine(p->currentContext, g, xp[0],yp[0],xp[nPoints-1],yp[nPoints-1], Graphics_forePixel(g));
+      drawPolygon(p->currentContext, g, xp, yp, nPoints, 0, 0, 0, 0, 0, pixel);
+      drawLine(p->currentContext, g, xp[0],yp[0],xp[nPoints-1],yp[nPoints-1], gfxPaintFromColor(&pixel));
    }
 }
 //////////////////////////////////////////////////////////////////////////

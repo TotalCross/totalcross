@@ -424,19 +424,21 @@ void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 
 {
     SKIA_TRACE()
     float intervals[] = {5, 5};
+    GfxPaint paint1 = gfxPaintFromColor((int32*)&pixel1);
+    GfxPaint paint2 = gfxPaintFromColor((int32*)&pixel2);
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 2.5f));
-    skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel1);
+    skia_drawLine(skiaSurface, x1, y1, x2, y2, paint1);
     forePaint.setPathEffect(nullptr);
 
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 7.5f));
-    skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel2);
+    skia_drawLine(skiaSurface, x1, y1, x2, y2, paint2);
     forePaint.setPathEffect(nullptr);
 }
 
-void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint)
 {
     SKIA_TRACE()
-    forePaint.setColor(pixel);
+    forePaint.setColor(*paint.color);
     canvas->drawLine(x1, y1, x2, y2, forePaint);
 }
 
