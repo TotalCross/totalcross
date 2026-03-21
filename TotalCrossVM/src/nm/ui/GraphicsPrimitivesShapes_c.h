@@ -353,10 +353,11 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #endif
       {
          int32 i;
+         GfxPaint paint = gfxPaintFromColor(&pixel);
          for (i=1; i < nPoints1; i++)
-            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
+            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], paint);
          for (i=1; i < nPoints2; i++)
-            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
+            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], paint);
       }
    }
 }
@@ -639,7 +640,10 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       yPoints[endIndex]   = oldY1;
 #ifdef ANDROID
       if (!gradient && endAngle == 360)
-         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);
+      {
+         Pixel lineColor = c;
+         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], gfxPaintFromColor(&lineColor));
+      }
 #endif
    }
 }
@@ -704,6 +708,8 @@ static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int3
    int32 start, end;
    int32 previousStart = 0x7FFFFFFF;
    int32 previousEnd = 0x7FFFFFFF;
+   Pixel lineColor = c;
+   GfxPaint paint = gfxPaintFromColor(&lineColor);
 
    if (w <= 0 || h <= 0)
       return;
@@ -723,22 +729,22 @@ static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int3
          continue;
 
       if (filled)
-         drawLine(currentContext, g, start, yy, end, yy, c);
+         drawLine(currentContext, g, start, yy, end, yy, paint);
       else
       {
          if (previousStart == 0x7FFFFFFF)
-            drawLine(currentContext, g, start, yy, end, yy, c);
+            drawLine(currentContext, g, start, yy, end, yy, paint);
          else
          {
             if (start < previousStart)
-               drawLine(currentContext, g, start, yy, previousStart, yy, c);
+               drawLine(currentContext, g, start, yy, previousStart, yy, paint);
             else if (start > previousStart)
-               drawLine(currentContext, g, previousStart, yy - 1, start, yy - 1, c);
+               drawLine(currentContext, g, previousStart, yy - 1, start, yy - 1, paint);
 
             if (end > previousEnd)
-               drawLine(currentContext, g, previousEnd, yy, end, yy, c);
+               drawLine(currentContext, g, previousEnd, yy, end, yy, paint);
             else if (end < previousEnd)
-               drawLine(currentContext, g, end, yy - 1, previousEnd, yy - 1, c);
+               drawLine(currentContext, g, end, yy - 1, previousEnd, yy - 1, paint);
          }
          setPixel(currentContext, g, start, yy, c);
          setPixel(currentContext, g, end, yy, c);
@@ -749,7 +755,7 @@ static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int3
    }
 
    if (!filled && previousStart != 0x7FFFFFFF)
-      drawLine(currentContext, g, previousStart, bottom, previousEnd, bottom, c);
+      drawLine(currentContext, g, previousStart, bottom, previousEnd, bottom, paint);
 }
 #else
 static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
@@ -775,6 +781,8 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy
 {
    int32 px1,px2,py1,py2,xm,ym,x,y=0, i, x2, e2, err;
    PixelConv color;
+   Pixel lineColor = c;
+   GfxPaint gfxPaint = gfxPaintFromColor(&lineColor);
    if (r > (width/2) || r > (height/2)) r = min32(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.
 
    x = -r;
@@ -796,8 +804,8 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy
    {
       i = 255 - 255 * abs(err - 2 * (x + y) - 2) / r;
 
-      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,c);
-      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,c);
+      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,gfxPaint);
+      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,gfxPaint);
 
       if (i < 256 && i > 0)
       {

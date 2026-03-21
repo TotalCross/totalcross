@@ -568,19 +568,20 @@ static int32 abs32(int32 a)
    return a < 0 ? -a : a;
 }
 
-static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint)
 {
+   Pixel pixel = *paint.color;
    drawDottedLine(currentContext, g, x1, y1, x2, y2, pixel, pixel);
 }
 #else
-static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint)
 {
    x1 += Graphics_transX(g);
    y1 += Graphics_transY(g);
    x2 += Graphics_transX(g);
    y2 += Graphics_transY(g);
    skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
-   skia_drawLine(skiaSurfaceForGraphics(g), x1, y1, x2, y2, pixel | Graphics_alpha(g));
+   skia_drawLine(skiaSurfaceForGraphics(g), x1, y1, x2, y2, paint);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
    markDirty(currentContext, g, min32(x1, x2), min32(y1, y2), abs(x2 - x1), abs(y2 - y1));
@@ -1268,6 +1269,7 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
 
    for (i = 0; i < numSteps; i++)
    {
+      GfxPaint paint;
       if (hasRadius)
       {
          leftOffset = rightOffset = 0;
@@ -1288,19 +1290,20 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
          if (rightOffset < 0) rightOffset = 0;
       }
       p = makePixel(red >> 16, green >> 16, blue >> 16);
+      paint = gfxPaintFromColor(&p);
       if (!optimize || leftOffset != 0 || rightOffset != 0)
       {
          if (vertical)
          {
             int32 fc = p;
-            drawLine(currentContext, g, startX + leftOffset, startY + i, endX - rightOffset, startY + i, p);
+            drawLine(currentContext, g, startX + leftOffset, startY + i, endX - rightOffset, startY + i, paint);
             if (drawFadedPixels && rightOffset != 0) // since there's no fading of pixels in opengl, we can safely ignore this
                drawFadedPixel(currentContext, g, endX - rightOffset + 1, startY + i, fc);
             if (drawFadedPixels && leftOffset != 0)
                drawFadedPixel(currentContext, g, startX + leftOffset - 1, startY + i, fc);
          }
          else
-            drawLine(currentContext, g, startX + i, startY + leftOffset, startX + i, endY - rightOffset, p);
+            drawLine(currentContext, g, startX + i, startY + leftOffset, startX + i, endY - rightOffset, paint);
       }
       if (stage < 2) // find starting and ending colors
       {
