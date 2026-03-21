@@ -57,6 +57,9 @@ build*/
 
 # Git
 *.orig
+TotalCrossVM/skia/local/
+TotalCrossVM/skia/local/out/Release/**/libskia.a
+TotalCrossVM/android/tcvm/src/main/jniLibs/**/libskia.so
 
 # JetBrain's IDEs
 TotalCrossVM/android/.idea

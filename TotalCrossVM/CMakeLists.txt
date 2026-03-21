@@ -41,6 +41,10 @@ if (NOT DEFINED USE_SKIA)
   set(USE_SKIA ON)
 endif()
 
+if (NOT DEFINED SKIA_AUTO_FETCH)
+  set(SKIA_AUTO_FETCH ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
@@ -70,6 +74,8 @@ target_link_libraries(tcvm SQLite3)
 
 # Find SDL2 and Skia
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+set(TCVM_REPO_ROOT "${CMAKE_SOURCE_DIR}/..")
+include("${CMAKE_SOURCE_DIR}/skia/AutoFetchSkia.cmake")
 
 # Find SDL2
 IF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
@@ -79,6 +85,9 @@ ENDIF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
 
 # Find Skia
 if(NOT MSVC AND USE_SKIA)
+  if(SKIA_AUTO_FETCH)
+    tcvm_auto_fetch_skia()
+  endif()
   find_package(Skia REQUIRED)
   include_directories(${SKIA_INCLUDE_DIRS})
   add_definitions(-DUSE_SKIA)
