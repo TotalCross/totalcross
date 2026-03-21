@@ -6,6 +6,8 @@
 #ifndef SKIA_H
 #define SKIA_H
 
+#include "../gfx.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -36,7 +38,7 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, 
 void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2);
 Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y);
 void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel);
-void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel);
+void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint);
 void skia_drawRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel);
 void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel);
 void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth, int32 fontSize, int32 typefaceIndex);
