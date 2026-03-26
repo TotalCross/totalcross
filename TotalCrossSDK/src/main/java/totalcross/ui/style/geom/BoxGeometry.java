@@ -112,23 +112,19 @@ public final class BoxGeometry {
 
         g.borderBox.set(borderBoxX, borderBoxY, Math.max(0, borderBoxW), Math.max(0, borderBoxH));
 
-        g.borderRadii = clampRadii(
-                shape == null ? CornerRadii.ZERO : shape.radii,
-                g.borderBox.width,
-                g.borderBox.height);
+        g.borderRadii = (shape == null ? CornerRadii.ZERO : shape.radii)
+                .clamp(g.borderBox.width, g.borderBox.height);
 
         insetRect(g.borderBox, borderInsets, g.paddingBox);
-        g.paddingRadii = clampRadii(
-                insetRadii(g.borderRadii, borderInsets),
-                g.paddingBox.width,
-                g.paddingBox.height);
+        g.paddingRadii = g.borderRadii
+                .inset(borderInsets)
+                .clamp(g.paddingBox.width, g.paddingBox.height);
 
         Insets safePadding = padding == null ? new Insets() : padding;
         insetRect(g.paddingBox, safePadding, g.contentBox);
-        g.contentRadii = clampRadii(
-                insetRadii(g.paddingRadii, safePadding),
-                g.contentBox.width,
-                g.contentBox.height);
+        g.contentRadii = g.paddingRadii
+                .inset(safePadding)
+                .clamp(g.contentBox.width, g.contentBox.height);
 
         return g;
     }
@@ -142,44 +138,6 @@ public final class BoxGeometry {
         int w = src.width - insets.left - insets.right;
         int h = src.height - insets.top - insets.bottom;
         dst.set(x, y, Math.max(0, w), Math.max(0, h));
-    }
-
-    /**
-     * Insets corner radii according to the provided insets.
-     */
-    public static CornerRadii insetRadii(CornerRadii src, Insets insets) {
-        if (src == null) {
-            return CornerRadii.ZERO;
-        }
-        return CornerRadii.of(
-                Math.max(0, src.topLeftX - insets.left),
-                Math.max(0, src.topLeftY - insets.top),
-                Math.max(0, src.topRightX - insets.right),
-                Math.max(0, src.topRightY - insets.top),
-                Math.max(0, src.bottomRightX - insets.right),
-                Math.max(0, src.bottomRightY - insets.bottom),
-                Math.max(0, src.bottomLeftX - insets.left),
-                Math.max(0, src.bottomLeftY - insets.bottom));
-    }
-
-    /**
-     * Clamps corner radii so they fit inside the given dimensions.
-     */
-    public static CornerRadii clampRadii(CornerRadii radii, int w, int h) {
-        if (radii == null) {
-            return CornerRadii.ZERO;
-        }
-        double maxX = Math.max(0, w / 2.0);
-        double maxY = Math.max(0, h / 2.0);
-        return CornerRadii.of(
-                Math.min(radii.topLeftX, maxX),
-                Math.min(radii.topLeftY, maxY),
-                Math.min(radii.topRightX, maxX),
-                Math.min(radii.topRightY, maxY),
-                Math.min(radii.bottomRightX, maxX),
-                Math.min(radii.bottomRightY, maxY),
-                Math.min(radii.bottomLeftX, maxX),
-                Math.min(radii.bottomLeftY, maxY));
     }
 
     private static int resolveStrokeAlign(BoxBorder border) {
