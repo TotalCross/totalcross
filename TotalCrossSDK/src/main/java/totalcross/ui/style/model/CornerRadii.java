@@ -4,6 +4,8 @@
 
 package totalcross.ui.style.model;
 
+import totalcross.ui.Insets;
+
 /**
  * Represents the x and y radii for each corner of a box.
  */
@@ -118,6 +120,40 @@ public final class CornerRadii {
             Math.max(0, bottomRightY + delta),
             Math.max(0, bottomLeftX + delta),
             Math.max(0, bottomLeftY + delta)
+        );
+    }
+
+    /**
+     * Returns a copy inset by the given edge insets.
+     */
+    public CornerRadii inset(Insets insets) {
+        return of(
+            Math.max(0, topLeftX - insets.left),
+            Math.max(0, topLeftY - insets.top),
+            Math.max(0, topRightX - insets.right),
+            Math.max(0, topRightY - insets.top),
+            Math.max(0, bottomRightX - insets.right),
+            Math.max(0, bottomRightY - insets.bottom),
+            Math.max(0, bottomLeftX - insets.left),
+            Math.max(0, bottomLeftY - insets.bottom)
+        );
+    }
+
+    /**
+     * Returns a copy clamped to fit inside the given dimensions.
+     */
+    public CornerRadii clamp(int w, int h) {
+        double maxX = Math.max(0, w / 2.0);
+        double maxY = Math.max(0, h / 2.0);
+        return of(
+            Math.min(topLeftX, maxX),
+            Math.min(topLeftY, maxY),
+            Math.min(topRightX, maxX),
+            Math.min(topRightY, maxY),
+            Math.min(bottomRightX, maxX),
+            Math.min(bottomRightY, maxY),
+            Math.min(bottomLeftX, maxX),
+            Math.min(bottomLeftY, maxY)
         );
     }
 

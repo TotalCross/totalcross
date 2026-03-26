@@ -138,11 +138,9 @@ public final class BoxPainter {
                 int weight = layers - layer + 1;
                 int layerAlpha = Math.max(1, Math.min(255,
                     (int) Math.round(((shadow.alpha * weight) / (double) totalWeight) * SHADOW_ALPHA_GAIN)));
-                CornerRadii shadowRadii = BoxGeometry.clampRadii(
-                    geom.borderRadii.offset(spread + blurOffset),
-                    shadowW,
-                    shadowH
-                );
+                CornerRadii shadowRadii = geom.borderRadii
+                    .offset(spread + blurOffset)
+                    .clamp(shadowW, shadowH);
 
                 g.alpha = (layerAlpha & 0xFF) << 24;
                 g.foreColor = shadow.color;
