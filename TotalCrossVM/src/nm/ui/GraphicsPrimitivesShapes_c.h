@@ -126,7 +126,7 @@ static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int
 {
    xc += Graphics_transX(g);
    yc += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_ellipseDrawAndFill(skiaSurfaceForGraphics(g), xc, yc, rx, ry, pc1 | Graphics_alpha(g), pc2 | Graphics_alpha(g), fill, gradient);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -325,7 +325,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #else
 static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie)
 {
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_fillPolygon(skiaSurfaceForGraphics(g), xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1 | Graphics_alpha(g), c2 | Graphics_alpha(g), gradient, isPie);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -364,7 +364,7 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #else
 static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel)
 {
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_drawPolygon(skiaSurfaceForGraphics(g), xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -381,7 +381,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
 {
    xc += Graphics_transX(g);
    yc += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_arcPiePointDrawAndFill(skiaSurfaceForGraphics(g), xc, yc, rx, ry, startAngle, endAngle, c | Graphics_alpha(g), c2 | Graphics_alpha(g), fill, pie, gradient);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -398,7 +398,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
    int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
-   int32 clipFactor = Graphics_minX(g) * 1000000000 + Graphics_maxX(g) * 10000000 + Graphics_minY(g) * 100000 + Graphics_maxY(g);
+   int32 clipFactor = 0;
    bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;
 
    if (rx < 0 || ry < 0) // guich@501_13
@@ -690,7 +690,7 @@ static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_drawRoundRect(skiaSurfaceForGraphics(g), x, y, w, h, r, c | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -764,7 +764,7 @@ static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int3
 
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(skiaSurface, Get_Clip(g));
+   skia_applyClip(skiaSurface, g);
    skia_drawRRect(skiaSurface, x, y, w, h, radii, c | Graphics_alpha(g), filled);
    skia_restoreClip(skiaSurface);
 
@@ -847,7 +847,7 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_fillRoundRect(skiaSurfaceForGraphics(g), x, y, w, h, r, c | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
