@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-package totalcross.ui.style.paint;
+package totalcross.ui.style.render;
 
 import totalcross.ui.Control;
+import totalcross.ui.Insets;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.RRect;
+import totalcross.ui.gfx.Rect;
 import totalcross.ui.gfx.Span;
 import totalcross.ui.style.geom.BoxGeometry;
 import totalcross.ui.style.model.BorderSide;
@@ -21,9 +23,9 @@ import totalcross.ui.style.model.Shadow;
 import totalcross.util.UnitsConverter;
 
 /**
- * Paints the visual representation of a {@link BoxStyle}.
+ * Renders the visual representation of a {@link BoxStyle}.
  */
-public final class BoxPainter {
+public final class BoxRenderer implements ControlRenderer {
     private static final double SHADOW_ALPHA_GAIN = 1.8d;
 
     public final BoxStyle style;
@@ -36,7 +38,7 @@ public final class BoxPainter {
     /**
      * Creates a painter for the given style.
      */
-    public BoxPainter(BoxStyle style) {
+    public BoxRenderer(BoxStyle style) {
         this.style = style;
         BoxPaint paint = style == null ? null : style.paint;
         BoxShape shape = style == null ? null : style.shape;
@@ -50,12 +52,63 @@ public final class BoxPainter {
     /**
      * Paints the box for the given bounds.
      */
+    @Override
     public void draw(Graphics g, int x, int y, int w, int h, boolean pressed) {
         BoxGeometry geom = BoxGeometry.compute(x, y, w, h, style);
         drawElevation(g, geom, elevation);
         int bg = pressed ? pressedColor : backgroundColor;
         g.drawRRect(geom.borderRRect(), bg, true);
         drawBorderStrip(g, geom, spec);
+    }
+
+    /**
+     * Returns how much the renderer extends beyond the control bounds.
+     */
+    @Override
+    public double getOutset() {
+        return elevation == null ? 0d : elevation.outset;
+    }
+
+    /**
+     * Returns the effective renderer insets, including layout padding and border widths.
+     */
+    @Override
+    public Insets getInsets() {
+        Insets insets = new Insets();
+        if (style != null && style.layout != null) {
+            insets.left += style.layout.padding.left;
+            insets.right += style.layout.padding.right;
+            insets.top += style.layout.padding.top;
+            insets.bottom += style.layout.padding.bottom;
+        }
+        if (spec != null) {
+            Insets borderInsets = spec.getInsets();
+            insets.left += borderInsets.left;
+            insets.right += borderInsets.right;
+            insets.top += borderInsets.top;
+            insets.bottom += borderInsets.bottom;
+        }
+        return insets;
+    }
+
+    /**
+     * Returns whether child painting should be clipped.
+     */
+    @Override
+    public boolean shouldClipChildren() {
+        return style != null && style.clip != null && style.clip.shouldClip();
+    }
+
+    /**
+     * Returns the clip used for children for the given control size.
+     */
+    @Override
+    public Rect getChildrenClip(int width, int height) {
+        if (!shouldClipChildren()) {
+            return null;
+        }
+        BoxGeometry geom = BoxGeometry.compute(0, 0, width, height, style);
+        return geom.paddingRadii.isZero() ? geom.paddingBox : geom.paddingRRect();
     }
 
     /**
