@@ -9,7 +9,6 @@ import totalcross.ui.Insets;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.RRect;
-import totalcross.ui.gfx.Rect;
 import totalcross.ui.gfx.Span;
 import totalcross.ui.style.geom.BoxGeometry;
 import totalcross.ui.style.model.BorderSide;
@@ -103,12 +102,12 @@ public final class BoxRenderer implements ControlRenderer {
      * Returns the clip used for children for the given control size.
      */
     @Override
-    public Rect getChildrenClip(int width, int height) {
+    public RRect getChildrenClip(int width, int height) {
         if (!shouldClipChildren()) {
             return null;
         }
         BoxGeometry geom = BoxGeometry.compute(0, 0, width, height, style);
-        return geom.paddingRadii.isZero() ? geom.paddingBox : geom.paddingRRect();
+        return geom.paddingRRect();
     }
 
     /**
