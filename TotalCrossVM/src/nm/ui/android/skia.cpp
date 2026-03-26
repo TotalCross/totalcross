@@ -93,6 +93,9 @@
 #include <vector>
 #include <map>
 
+#include "../gfx.h"
+#include "../../instancefields.h"
+
 
 extern "C" {
 #if !defined APPLE && !defined ANDROID && !defined darwin && defined linux && defined __arm__ && !defined __aarch64__
@@ -350,6 +353,43 @@ void skia_setClip(int32 x1, int32 y1, int32 x2, int32 y2)
     canvas->save();
     canvas->clipRect(SkRect::MakeLTRB(x1, y1, x2, y2));
 }
+
+void skia_applyClip(TCObject g)
+{
+    TCObject roundClip = Graphics_roundClip(g);
+
+    canvas->save();
+    if (roundClip != null)
+    {
+        const double *radii = RRect_radii(roundClip);
+        SkVector corners[4];
+        SkRRect rrect;
+        int i;
+
+        for (i = 0; i < 4; i++)
+        {
+            corners[i].set((SkScalar)radii[i * 2], (SkScalar)radii[i * 2 + 1]);
+        }
+
+        rrect.setRectRadii(
+            SkRect::MakeXYWH(
+                (SkScalar)Rect_x(roundClip),
+                (SkScalar)Rect_y(roundClip),
+                (SkScalar)Rect_width(roundClip),
+                (SkScalar)Rect_height(roundClip)),
+            corners);
+        canvas->clipRRect(rrect, true);
+    }
+    else
+    {
+        canvas->clipRect(SkRect::MakeLTRB(
+            Graphics_clipX1(g),
+            Graphics_clipY1(g),
+            Graphics_clipX2(g),
+            Graphics_clipY2(g)));
+    }
+}
+
 void skia_restoreClip()
 {
     canvas->restore();
