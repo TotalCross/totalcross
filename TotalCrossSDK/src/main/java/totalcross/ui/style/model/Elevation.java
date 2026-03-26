@@ -15,9 +15,11 @@ public final class Elevation {
     public static final Elevation NONE = new Elevation(new Shadow[] {Shadow.NONE});
 
     public final Shadow[] shadows;
+    public final double outset;
 
     private Elevation(Shadow[] shadows) {
         this.shadows = copyShadows(shadows);
+        this.outset = computeOutset(this.shadows);
     }
 
     /**
@@ -83,5 +85,21 @@ public final class Elevation {
             copy[i] = Objects.requireNonNull(copy[i], "Elevation.shadows[" + i + "] cannot be null");
         }
         return copy;
+    }
+
+    private static double computeOutset(Shadow[] shadows) {
+        double expand = 0;
+        for (int i = 0; i < shadows.length; i++) {
+            Shadow shadow = shadows[i];
+            if (shadow == null || shadow == Shadow.NONE || shadow.alpha <= 0) {
+                continue;
+            }
+            expand = Math.max(
+                expand,
+                Math.max(Math.abs(shadow.dx), Math.abs(shadow.dy))
+                    + Math.max(0d, shadow.spread)
+                    + Math.max(0d, shadow.blurRadius));
+        }
+        return expand;
     }
 }

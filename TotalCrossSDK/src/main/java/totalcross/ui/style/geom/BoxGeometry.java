@@ -4,7 +4,6 @@
 
 package totalcross.ui.style.geom;
 
-import totalcross.ui.Control;
 import totalcross.ui.Insets;
 import totalcross.ui.gfx.RRect;
 import totalcross.ui.gfx.Rect;
@@ -15,9 +14,6 @@ import totalcross.ui.style.model.BoxPaint;
 import totalcross.ui.style.model.BoxShape;
 import totalcross.ui.style.model.BoxStyle;
 import totalcross.ui.style.model.CornerRadii;
-import totalcross.ui.style.model.Elevation;
-import totalcross.ui.style.model.Shadow;
-import totalcross.util.UnitsConverter;
 
 /**
  * Resolves the concrete rectangles and corner radii used to paint a box.
@@ -80,31 +76,6 @@ public final class BoxGeometry {
                         contentRadii.bottomRightX, contentRadii.bottomRightY,
                         contentRadii.bottomLeftX, contentRadii.bottomLeftY
                 });
-    }
-
-    /**
-     * Computes the extra paint area required by the style, such as shadows.
-     */
-    public static int paintExpand(BoxStyle style) {
-        Elevation elevation = style == null ? null : style.elevation;
-        Shadow[] shadows = elevation == null ? null : elevation.shadows;
-        if (shadows == null) {
-            return 0;
-        }
-
-        int expand = 0;
-        for (int i = 0; i < shadows.length; i++) {
-            Shadow shadow = shadows[i];
-            if (shadow == null || shadow == Shadow.NONE || shadow.alpha <= 0) {
-                continue;
-            }
-            expand = Math.max(
-                    expand,
-                    Math.max(Math.abs(toPixels(shadow.dx)), Math.abs(toPixels(shadow.dy)))
-                            + Math.max(0, toPixels(shadow.spread))
-                            + Math.max(0, toPixels(shadow.blurRadius)));
-        }
-        return expand;
     }
 
     /**
@@ -216,9 +187,5 @@ public final class BoxGeometry {
             return BorderSide.Align.INSIDE;
         }
         return border.top.align;
-    }
-
-    private static int toPixels(double value) {
-        return (int) Math.round(UnitsConverter.toPixels(Control.DP + value));
     }
 }
