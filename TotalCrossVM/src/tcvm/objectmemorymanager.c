@@ -341,10 +341,13 @@ bool initObjectMemoryManager()
    weakList = newPtrArrayOf(TCObject,1,ommHeap);
    lockList[0] = (TCObject)l;
    weakList[0] = (TCObject)w;
+   xmemzero(OBJ_PROPERTIES(lockList[0]), sizeof(TObjectProperties));
    for (i =0; i < n; i++) // and now we just assign the starting pointer of each block
    {
       freeList[i] = (TCObject)f; f += size;
       usedList[i] = (TCObject)u; u += size;
+      xmemzero(OBJ_PROPERTIES(freeList[i]), sizeof(TObjectProperties));
+      xmemzero(OBJ_PROPERTIES(usedList[i]), sizeof(TObjectProperties));
    }
    markedAsUsed = 1;
    objStack = newStack(2048, sizeof(TObjectsToVisit), null); // must be > 1k!
