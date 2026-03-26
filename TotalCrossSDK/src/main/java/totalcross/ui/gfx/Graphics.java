@@ -63,6 +63,7 @@ public final class Graphics {
   private int transX, transY;
 
   private int clipX1, clipY1, clipX2, clipY2; // clip1 <= k < clip2
+  private RRect roundClip;
 
   private int minX, minY, maxX, maxY;
 
@@ -270,6 +271,7 @@ public final class Graphics {
     clipY1 = minY = Math.max(0, sy);
     clipX2 = maxX = Math.min(sx + sw, scrW);
     clipY2 = maxY = Math.min(sy + sh, scrH);
+    roundClip = null;
     transX = tx;
     transY = ty;
     if (f != null) {
@@ -534,7 +536,7 @@ public final class Graphics {
   public int getPixel(int x, int y) {
     x += transX;
     y += transY;
-    if (clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2) {
+    if (isInsideClip(x, y)) {
       return getSurfacePixels(surface)[y * pitch + x] & 0xFFFFFF;
     }
     return -1;
@@ -639,8 +641,16 @@ public final class Graphics {
         return;
       }
       int[] pix = getSurfacePixels(surface);
-      for (x += y * pitch; h-- > 0; x += pitch) {
-        Convert.fill(pix, x, x + w, backColor | alpha);
+      int rowX = x;
+      int rowY = y;
+      int color = backColor | alpha;
+      for (int row = 0; row < h; row++, rowY++) {
+        if (!clipHorizontalSpanToCurrentClip(rowY, rowX, rowX + w - 1, translateAndClipResults)) {
+          continue;
+        }
+        int start = translateAndClipResults[0];
+        int width = translateAndClipResults[2];
+        Convert.fill(pix, start + rowY * pitch, start + rowY * pitch + width, color);
       }
       if (isControlSurface) {
         needsUpdate = true;
@@ -959,13 +969,20 @@ public final class Graphics {
 
         // draws the char
         for (; r < rmax; start += rowWIB, r++, y++) {
+          int rowStart;
+          int rowEnd;
           // draw each row
+          if (!clipHorizontalSpanToCurrentClip(y, x0, xMax - 1, translateAndClipResults)) {
+            continue;
+          }
+          rowStart = translateAndClipResults[0];
+          rowEnd = rowStart + translateAndClipResults[2];
           int yy = y * pitch;
           current = start;
           currentBit = startBit;
           for (x = x0; x < xMax; x++) {
             // draw each column
-            if (bitmapTable != null && (bitmapTable[current] & ands8[currentBit]) != 0 && x >= xMin) {
+            if (bitmapTable != null && (bitmapTable[current] & ands8[currentBit]) != 0 && rowStart <= x && x < rowEnd) {
               pixels[yy + x] = foreColor | alpha;
             }
             if (++currentBit == 8) { // finished this byte?
@@ -982,7 +999,14 @@ public final class Graphics {
         int transparency;
         // draw the char
         for (; r < rmax; start += rowWIB, r++, y++) {
+          int rowStart;
+          int rowEnd;
           // draw each row
+          if (!clipHorizontalSpanToCurrentClip(y, x0, xMax - 1, translateAndClipResults)) {
+            continue;
+          }
+          rowStart = translateAndClipResults[0];
+          rowEnd = rowStart + translateAndClipResults[2];
           int yy = y * pitch;
           current = start;
           boolean isLowNibble = isNibbleStartingLow;
@@ -990,7 +1014,7 @@ public final class Graphics {
             // draw each column
             transparency = isLowNibble ? (bitmapTable[current++] & 0xF) : ((bitmapTable[current] >> 4) & 0xF);
             isLowNibble = !isLowNibble;
-            if (transparency == 0 || x < xMin) {
+            if (transparency == 0 || x < rowStart || x >= rowEnd) {
               continue;
             }
             if (transparency == 0xF) {
@@ -1011,13 +1035,20 @@ public final class Graphics {
         int[] imgPixels = font.nativeFonts[bits.index].getPixels();
         // draw the char
         for (; r < rmax; start += rowWIB, r++, y++) {
+          int rowStart;
+          int rowEnd;
           // draw each row
+          if (!clipHorizontalSpanToCurrentClip(y, x0, xMax - 1, translateAndClipResults)) {
+            continue;
+          }
+          rowStart = translateAndClipResults[0];
+          rowEnd = rowStart + translateAndClipResults[2];
           int yy = y * pitch;
           current = start;
           for (x = x0; x < xMax; x++) {
             // draw each column
             transparency = (imgPixels[current++] >>> 24) & 0xFF;
-            if (transparency == 0 || x < xMin) {
+            if (transparency == 0 || x < rowStart || x >= rowEnd) {
               continue;
             }
             if (transparency == 0xFF) {
@@ -1316,6 +1347,7 @@ public final class Graphics {
     this.clipY1 = clipY1;
     this.clipX2 = clipX2;
     this.clipY2 = clipY2;
+    this.roundClip = null;
   }
 
   /**
@@ -1330,6 +1362,24 @@ public final class Graphics {
   }
 
   /**
+   * Sets the clipping area using a rounded rectangle. Backends without rounded clipping support
+   * currently fall back to the bounding rectangle.
+   *
+   * @param r the rounded rectangle with the clipping coordinates
+   */
+  public void setClip(RRect r) {
+    if (r == null) {
+      clearClip();
+      return;
+    }
+    setClip(r.x, r.y, r.width, r.height);
+    if (r.width <= 0 || r.height <= 0) {
+      return;
+    }
+    this.roundClip = new RRect(r.x + transX, r.y + transY, r.width, r.height, r.radii);
+  }
+
+  /**
    * Gets the current clipping rectangle.
    * 
    * @param r a Rect object where the clip coordinates will be stored and returned.
@@ -1340,6 +1390,23 @@ public final class Graphics {
     r.width = clipX2 - clipX1; // guich@300_36: removed +1 here and in line below
     r.height = clipY2 - clipY1;
     return r;
+  }
+
+  /**
+   * Gets the current clipping shape. If the current clip is rounded, the radii are preserved;
+   * otherwise this returns the current rectangular clip with zero radii.
+   */
+  public RRect getClip() {
+    if (roundClip != null) {
+      return new RRect(
+          roundClip.x - transX,
+          roundClip.y - transY,
+          roundClip.width,
+          roundClip.height,
+          roundClip.radii);
+    }
+    Rect rect = getClip(new Rect());
+    return new RRect(rect.x, rect.y, rect.width, rect.height, null);
   }
 
   /** Returns the clip's width */
@@ -1378,6 +1445,7 @@ public final class Graphics {
     clipY1 = minY;
     clipX2 = maxX;
     clipY2 = maxY;
+    roundClip = null;
   }
 
   /**
@@ -2047,10 +2115,17 @@ public final class Graphics {
       h = results[3];
 
       int[] pixels = getSurfacePixels(surface);
-      int inc = pitch, pos = y * inc + x, count = w * h;
+      int inc = pitch, count = 0;
 
-      for (; h-- > 0; pos += inc, offset += w) {
-        System.arraycopy(pixels, pos, data, offset, w);
+      for (int yy = y; yy < y + h; yy++) {
+        if (!clipHorizontalSpanToCurrentClip(yy, x, x + w - 1, translateAndClipResults)) {
+          continue;
+        }
+        int start = translateAndClipResults[0];
+        int width = translateAndClipResults[2];
+        System.arraycopy(pixels, yy * inc + start, data, offset, width);
+        offset += width;
+        count += width;
       }
 
       return count;
@@ -2084,10 +2159,17 @@ public final class Graphics {
       h = results[3];
 
       int[] pixels = getSurfacePixels(surface);
-      int inc = pitch, pos = y * inc + x, count = w * h;
+      int inc = pitch, count = 0;
 
-      for (; h-- > 0; pos += inc, offset += w) {
-        Vm.arrayCopy(data, offset, pixels, pos, w);
+      for (int yy = y; yy < y + h; yy++) {
+        if (!clipHorizontalSpanToCurrentClip(yy, x, x + w - 1, translateAndClipResults)) {
+          continue;
+        }
+        int start = translateAndClipResults[0];
+        int width = translateAndClipResults[2];
+        Vm.arrayCopy(data, offset, pixels, yy * inc + start, width);
+        offset += width;
+        count += width;
       }
 
       return count;
@@ -2205,15 +2287,21 @@ public final class Graphics {
       int psrc = (bmpY + y) * scrPitch + bmpX + x;
       int pdst = dstY * pitch + dstX;
       int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
-      for (j = height; --j >= 0; psrc += scrPitch, pdst += pitch) {
-        int srcIdx = psrc; // guich@450_1
-        int dstIdx = pdst;
+      for (j = height; --j >= 0; psrc += scrPitch, pdst += pitch, dstY++) {
+        if (!clipHorizontalSpanToCurrentClip(dstY, dstX, dstX + width - 1, translateAndClipResults)) {
+          continue;
+        }
+        int spanStart = translateAndClipResults[0];
+        int spanWidth = translateAndClipResults[2];
+        int skip = spanStart - dstX;
+        int srcIdx = psrc + skip; // guich@450_1
+        int dstIdx = pdst + skip;
         if (isSrcScreen) {
-          for (i = width; --i >= 0;) {
+          for (i = spanWidth; --i >= 0;) {
             dst[dstIdx++] = pixels[srcIdx++] | 0xFF000000;
           }
         } else {
-          for (i = width; --i >= 0; dstIdx++) {
+          for (i = spanWidth; --i >= 0; dstIdx++) {
             bmpPt = pixels[srcIdx++];
             int a = (bmpPt >>> 24) & 0xFF;
             a = alphaMask * a / 255;
@@ -2401,7 +2489,7 @@ public final class Graphics {
   private void setPixel(int x, int y, int color) {
     x += transX;
     y += transY;
-    if (clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2) {
+    if (isInsideClip(x, y)) {
       if (x < 0 || y < 0) {
         return;
       }
@@ -2430,6 +2518,11 @@ public final class Graphics {
       if (x < 0 || y < 0 || w < 0) {
         return;
       }
+      if (!clipHorizontalSpanToCurrentClip(y, x, x + w - 1, translateAndClipResults)) {
+        return;
+      }
+      x = translateAndClipResults[0];
+      w = translateAndClipResults[2];
       int[] pix = getSurfacePixels(surface);
       x += y * pitch;
       Convert.fill(pix, x, x + w, color);
@@ -2457,8 +2550,11 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
-      for (x += y * pitch; h-- > 0; x += pitch) {
-        pixels[x] = color;
+      int baseX = x;
+      for (x += y * pitch; h-- > 0; x += pitch, y++) {
+        if (isInsideClip(baseX, y)) {
+          pixels[x] = color;
+        }
       }
       if (isControlSurface) {
         needsUpdate = true;
@@ -2661,6 +2757,48 @@ public final class Graphics {
     return true;
   }
 
+  private boolean isInsideClip(int x, int y) {
+    if (!(clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2)) {
+      return false;
+    }
+    return roundClip == null || roundClip.contains(x, y);
+  }
+
+  private boolean clipHorizontalSpanToCurrentClip(int y, int start, int end, int[] out) {
+    if (y < clipY1 || y >= clipY2 || end < start) {
+      return false;
+    }
+    if (start < clipX1) {
+      start = clipX1;
+    }
+    if (end >= clipX2) {
+      end = clipX2 - 1;
+    }
+    if (end < start) {
+      return false;
+    }
+    if (roundClip != null) {
+      Span span = roundClip.horizontalSpan(y);
+      if (!span.isValid()) {
+        return false;
+      }
+      if (start < span.start) {
+        start = span.start;
+      }
+      if (end > span.end) {
+        end = span.end;
+      }
+      if (end < start) {
+        return false;
+      }
+    }
+    out[0] = start;
+    out[1] = y;
+    out[2] = end - start + 1;
+    out[3] = 1;
+    return true;
+  }
+
   private int doClipX(int x) {
     return ((x + transX) < clipX1) ? (clipX1 - transX) : ((x + transX) >= clipX2) ? (clipX2 - transX) : x; // guich@401_2: added TRANSX/Y
   }
@@ -2796,9 +2934,6 @@ public final class Graphics {
     double ppd;
     int startIndex, endIndex, index, i, oldX1 = 0, oldY1 = 0, oldX2 = 0, oldY2 = 0;
     int nq, size = 0;
-    boolean checkClipX = (xc + rx + transX) > clipX2 || (xc - rx + transX) < clipX1; // guich@340_3 - guich@401_2:
-    // added TRANSX/Y
-    boolean checkClipY = (yc + ry + transY) > clipY2 || (yc - ry + transY) < clipY1;
     if (rx < 0 || ry < 0) {
       return;
     }
@@ -2813,7 +2948,7 @@ public final class Graphics {
     int[] xPoints = gxPoints;
     int[] yPoints = gyPoints;
     // step 0: if possible, use cached results
-    int clipFactor = clipX1 * 1000000000 + clipX2 * 10000000 + clipY1 * 100000 + clipY2;
+    int clipFactor = 0;
     boolean sameClip = clipFactor == lastClipFactor;
     boolean sameC = sameClip && xc == lastXC && yc == lastYC;
     boolean sameR = sameClip && rx == lastRX && ry == lastRY;
@@ -2884,20 +3019,20 @@ public final class Graphics {
         // save 4 points using symmetry
         // guich@340_3: added clipping
         index = nq * 0 + i; // 0/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 - i - 1; // 1/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 + i; // 2/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc + y;
 
         index = nq * 4 - i - 1; // 3/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc + y;
         i++;
 
         y++; // always move up here
@@ -2917,20 +3052,20 @@ public final class Graphics {
         // save 4 points using symmetry
         // guich@340_3: added clipping
         index = nq * 0 + i; // 0/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 - i - 1; // 1/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 + i; // 2/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc + y;
 
         index = nq * 4 - i - 1; // 3/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc + y;
         i++;
 
         x--; // always move left here

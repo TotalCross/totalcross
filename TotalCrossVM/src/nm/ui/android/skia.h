@@ -32,6 +32,7 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h);
 void skia_deleteBitmap(int32 id);
 
 void skia_setClip(int32 x1, int32 y1, int32 x2, int32 y2);
+void skia_applyClip(TCObject g);
 void skia_restoreClip();
 
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
