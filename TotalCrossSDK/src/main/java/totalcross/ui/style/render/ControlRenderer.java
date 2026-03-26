@@ -6,7 +6,7 @@ package totalcross.ui.style.render;
 
 import totalcross.ui.Insets;
 import totalcross.ui.gfx.Graphics;
-import totalcross.ui.gfx.Rect;
+import totalcross.ui.gfx.RRect;
 
 /**
  * Describes the visual rendering contract used by a control.
@@ -35,5 +35,5 @@ public interface ControlRenderer {
     /**
      * Returns the clip used for children at the given control size, or {@code null} when child clipping is disabled.
      */
-    Rect getChildrenClip(int width, int height);
+    RRect getChildrenClip(int width, int height);
 }
