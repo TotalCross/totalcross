@@ -106,7 +106,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
    if (lastWindow && lastWindow != window)
    {
-      if (window == null) {debug("window is null. surface is %X. app will likely crash...",surface);}
+      if (window == null) {debug("window is null. surface is %p. app will likely crash...", (void*)surface);}
       destroyEGL();
       initGLES(&screen);
       if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 2");
