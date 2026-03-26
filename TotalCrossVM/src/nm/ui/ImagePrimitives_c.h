@@ -688,7 +688,8 @@ void onImage(int32 it, VoidP ptr)
    if (!Surface_isImage(ptr)) // Image can be created and an exception be thrown before the constructor is called
       return;
 
-   Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+   if (Image_changedObj(img) != null)
+      Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
 }
 
 static bool nativeEquals(TCObject thisObj, TCObject otherObj)
