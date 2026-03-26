@@ -1,5 +1,27 @@
 apply plugin: 'com.android.library'
 
+def skiaFetchScript = file("${projectDir}/../../skia/fetch-skia.sh")
+def skiaAndroidAbis = ['armeabi-v7a', 'arm64-v8a']
+
+tasks.register('fetchSkiaArtifacts') {
+    group = 'build setup'
+    description = 'Fetches the Android Skia prebuilts required by the native build.'
+
+    inputs.file(skiaFetchScript)
+    outputs.files(skiaAndroidAbis.collect { abi ->
+        file("${projectDir}/src/main/jniLibs/${abi}/libskia.so")
+    })
+
+    doLast {
+        skiaAndroidAbis.each { abi ->
+            exec {
+                executable 'bash'
+                args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', abi
+            }
+        }
+    }
+}
+
  repositories { 
      google()
      mavenCentral()
@@ -77,5 +99,15 @@ android {
         cmake {
             path "../../CMakeLists.txt"
         }
+    }
+}
+
+afterEvaluate {
+    tasks.matching { Task task ->
+        task.name == 'preBuild' ||
+        task.name.startsWith('configureCMake') ||
+        task.name.startsWith('externalNativeBuild')
+    }.configureEach {
+        dependsOn(tasks.named('fetchSkiaArtifacts'))
     }
 }
