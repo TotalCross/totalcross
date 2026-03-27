@@ -143,30 +143,49 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
                       currentAddrInfo->ai_addr, currentAddrInfo->ai_addrlen);
         if (res < 0)
         {
-           if (errno != EINPROGRESS)
-              goto close_and_continue;
+            int32 startMillis = getTimeStamp();
+            int32 endMillis = startMillis + timeout;
+            int32 nowMillis = startMillis;
+            bool connected = false;
 
-           pfdWrite.fd = hostSocket;
-           pfdWrite.events = POLLOUT;
-           if ((res = poll(&pfdWrite, 1, timeout)) < 0) {
-              goto close_and_continue;
-           }
-           if (res == 0)
-           {
-              err = ETIMEDOUT;
-              *timedOut = true;
-              goto close_and_continue;
-           }
-           if (pfdWrite.revents & (POLLERR|POLLNVAL)) {
-              goto close_and_continue;
-           }
-           lon = sizeof(int);
-           getsockopt(hostSocket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
-           if (valopt)
-           {
-              errno = valopt;
-              goto close_and_continue;
-           }
+            if (errno != EINPROGRESS && errno != EALREADY) {
+               goto close_and_continue;
+            }
+
+            while (nowMillis < endMillis && !connected) {
+               int32 remainingMillis = (int)(endMillis - nowMillis);
+
+               pfdWrite.fd = hostSocket;
+               pfdWrite.events = POLLOUT;
+               if ((res = poll(&pfdWrite, 1, remainingMillis)) < 0) {
+                  goto close_and_continue;
+               }
+               if (res == 0)
+               {
+                  nowMillis = getTimeStamp();
+                  continue;
+               }
+               
+               lon = sizeof(valopt);
+               if (getsockopt(hostSocket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) {
+                  goto close_and_continue;
+               }
+
+               if (valopt == 0) {
+                  connected = true;
+               } else if (valopt != EINPROGRESS && valopt != EALREADY) {
+                  errno = valopt;
+                  goto close_and_continue;
+               }
+
+               nowMillis = getTimeStamp();
+            }
+
+            if (!connected) {
+               errno = ETIMEDOUT;
+               *timedOut = true;
+               goto close_and_continue;
+            }
         }
  
         break;  /* okay we got one */
@@ -222,29 +241,47 @@ IPV4:
                  sizeof(destination_sin));
    if (res < 0)
    {
-      if (errno != EINPROGRESS) {
+      int32 startMillis = getTimeStamp();
+      int32 endMillis = startMillis + timeout;
+      int32 nowMillis = startMillis;
+      bool connected = false;
+      
+      if (errno != EINPROGRESS && errno != EALREADY) {
          goto Error;
       }
 
-      pfdWrite.fd = hostSocket;
-      pfdWrite.events = POLLOUT;
-      if ((res = poll(&pfdWrite, 1, timeout)) < 0) {
-         goto Error;
+      while (nowMillis < endMillis && !connected) {
+         int32 remainingMillis = (int)(endMillis - nowMillis);
+
+         pfdWrite.fd = hostSocket;
+         pfdWrite.events = POLLOUT;
+         if ((res = poll(&pfdWrite, 1, remainingMillis)) < 0) {
+            goto Error;
+         }
+         if (res == 0)
+         {
+            nowMillis = getTimeStamp();
+            continue;
+         }
+
+         lon = sizeof(valopt);
+         if (getsockopt(hostSocket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) {
+            goto Error;
+         }
+
+         if (valopt == 0) {
+            connected = true;
+         } else if (valopt != EINPROGRESS && valopt != EALREADY) {
+            errno = valopt;
+            goto Error;
+         }
+
+         nowMillis = getTimeStamp();
       }
-      if (res == 0)
-      {
-         err = ETIMEDOUT;
+
+      if (!connected) {
+         errno = ETIMEDOUT;
          *timedOut = true;
-         goto Finish;
-      }
-      if (pfdWrite.revents & (POLLERR|POLLNVAL)) {
-         goto Error;
-      }
-      lon = sizeof(int);
-      getsockopt(hostSocket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
-      if (valopt)
-      {
-         errno = valopt;
          goto Error;
       }
    }
@@ -263,7 +300,7 @@ Success:
    return NO_ERROR;
 
 Error: // Close the socket.
-   err = (*isUnknownHost) ? EHOSTUNREACH : (err == ETIMEDOUT ? err : errno);
+   err = (*isUnknownHost) ? EHOSTUNREACH : errno;
 Finish:
    if (hostSocket > 0) {
       socketClose(&hostSocket);
