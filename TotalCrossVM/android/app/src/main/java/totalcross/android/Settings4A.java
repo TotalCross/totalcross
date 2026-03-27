@@ -277,6 +277,16 @@ public final class Settings4A
       return ' ';
    }
 
+    private static boolean isRestrictedIdentifierAccess(Throwable t) {
+        while (t != null) {
+            if (t instanceof SecurityException) {
+                return true;
+            }
+            t = t.getCause();
+        }
+        return false;
+    }
+
     public static void fillTelephonySettings() {
         String id1, id2;
         // imei
@@ -286,6 +296,10 @@ public final class Settings4A
             lineNumber = telephonyMgr.getLine1Number();
         } catch (SecurityException e) {
             e.printStackTrace();
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            telephonyInitialized = true;
+            return;
         }
         // handle dual-sim phones. Usually, they overload the method with a
         Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
@@ -312,7 +326,9 @@ public final class Settings4A
                         break;
                     }
                 } catch (Exception ee) {
-                    AndroidUtils.handleException(ee, false);
+                    if (!isRestrictedIdentifierAccess(ee)) {
+                        AndroidUtils.handleException(ee, false);
+                    }
                 }
             } else if (name.startsWith("getSimSerialNumber") && signat.endsWith("(int)")) {
                 try {
@@ -325,7 +341,9 @@ public final class Settings4A
                         break;
                     }
                 } catch (Exception ee) {
-                    AndroidUtils.handleException(ee, false);
+                    if (!isRestrictedIdentifierAccess(ee)) {
+                        AndroidUtils.handleException(ee, false);
+                    }
                 }
             }
         }
