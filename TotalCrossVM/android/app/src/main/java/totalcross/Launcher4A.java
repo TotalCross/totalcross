@@ -280,6 +280,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
    private android.view.Surface lastSurface;
+
+   private void tryBootstrapSurface(SurfaceHolder holder)
+   {
+      android.view.Surface surface = holder == null ? null : holder.getSurface();
+      Rect rect = holder == null ? null : holder.getSurfaceFrame();
+      int w = rect == null ? getWidth() : rect.width();
+      int h = rect == null ? getHeight() : rect.height();
+      if (surface != null && surface.isValid() && w > 0 && h > 0 && eventThread != null)
+      {
+         lastSurface = surface;
+         lastScreenW = w;
+         lastScreenH = h;
+         sendScreenChangeEvent();
+      }
+   }
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
@@ -385,11 +400,26 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          eventThread = new TCEventThread(this);
          eventThread.popTime = 20;
          sgd = new ScaleGestureDetector(loader, scaleList = new ScaleListener());
+         tryBootstrapSurface(holder);
+         post(new Runnable()
+         {
+            public void run()
+            {
+               tryBootstrapSurface(getHolder());
+            }
+         });
       }
       else
       {
-         lastSurface = holder.getSurface();
-         sendScreenChangeEvent();
+         tryBootstrapSurface(holder);
+         if ((lastSurface == null || !lastSurface.isValid() || lastScreenW <= 0 || lastScreenH <= 0))
+            post(new Runnable()
+            {
+               public void run()
+               {
+                  tryBootstrapSurface(getHolder());
+               }
+            });
       }
    }
 
@@ -1418,7 +1448,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
+      SurfaceHolder holder = instance == null ? null : instance.getHolder();
+      Surface surface = holder == null ? null : holder.getSurface();
       instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
+      if (eventThread != null && surface != null && surface.isValid() && lastScreenW > 0 && lastScreenH > 0)
+      {
+         instance.lastSurface = surface;
+         instance.sendScreenChangeEvent();
+      }
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
       appPaused = false;
