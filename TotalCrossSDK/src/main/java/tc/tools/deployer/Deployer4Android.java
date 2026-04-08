@@ -199,7 +199,7 @@ public class Deployer4Android {
       unzip(tempZip.toString(), outputDir);
     }
 
-    private static void downloadFile(String fileURL, File outputFile) throws IOException {
+    static void downloadFile(String fileURL, File outputFile) throws IOException {
       URL url = new URL(fileURL);
       HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
       httpConn.setRequestProperty("User-Agent", "Mozilla/5.0"); // Prevents some servers from blocking the request
@@ -244,6 +244,38 @@ public class Deployer4Android {
           entry = zipIn.getNextEntry();
         }
       }
+    }
+  }
+
+  abstract static class BundletoolExec {
+    final static String NAME = "bundletool-all";
+    final static String VERSION = "1.10.0";
+    final static String FILE_NAME = NAME + "-" + VERSION + ".jar";
+    final static String DOWNLOAD_URL =
+        "https://github.com/google/bundletool/releases/download/" + VERSION + "/" + FILE_NAME;
+
+    public static String getJarPath() {
+      final File androidToolsFolder = new File(DeploySettings.etcDir, "tools/android");
+      androidToolsFolder.mkdirs();
+
+      final File bundletoolJar = new File(androidToolsFolder, FILE_NAME);
+      if (!bundletoolJar.exists()) {
+        try {
+          System.out.println("Downloading bundletool...");
+          ProtocExec.downloadFile(DOWNLOAD_URL, bundletoolJar);
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to download bundletool at: " + DOWNLOAD_URL
+              + " ; You may download it yourself and place the jar into the folder: "
+              + androidToolsFolder.getAbsolutePath(), e);
+        }
+      }
+
+      final String bundletoolJarPath = bundletoolJar.getAbsolutePath();
+      if (!bundletoolJar.exists()) {
+        throw new RuntimeException("Couldn't find bundletool at: " + bundletoolJarPath);
+      }
+
+      return bundletoolJarPath;
     }
   }
 
@@ -442,10 +474,11 @@ public class Deployer4Android {
     List<String> javaCmdList = new ArrayList<>();
     
     final String javaExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("java"));
+    final String bundletoolJar = BundletoolExec.getJarPath();
     javaCmdList.add(javaExe);
     javaCmdList.add("-Djava.io.tmpdir=" + new File(targetDir).getAbsolutePath());
     javaCmdList.add("-jar");
-    javaCmdList.add(new File(DeploySettings.etcDir, "tools/android/bundletool-all-1.10.0.jar").getAbsolutePath());
+    javaCmdList.add(bundletoolJar);
     javaCmdList.add("build-apks");
     javaCmdList.add("--bundle=" + fileName + ".aab");
     javaCmdList.add("--mode=universal");
