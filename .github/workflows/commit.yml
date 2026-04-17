@@ -10,82 +10,105 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --------------------------------------------------------------------
-      # Validate commit title format:
-      # <type>(<scope>[,<platform>][,<arch>]): short description
-      #
-      # - type must be one of the project-defined technical types
-      # - scope is required and must come first
-      # - platform and arch are optional extra qualifiers
-      # - all qualifiers must be lowercase
-      # - description must be lowercase
-      # - maximum title length is enforced separately
-      # --------------------------------------------------------------------
-      - name: Check commit type and format
-        uses: gsactions/commit-message-checker@v1
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
-          pattern: '^(vm|runtime|sdk|compiler|tools|build|perf|fix|refactor|test|doc|chore)\([a-z0-9_-]+(,[a-z0-9_-]+){0,2}\): [a-z0-9 ].*$'
-          error: |
-            Invalid commit title format.
+          fetch-depth: 0
 
-            Expected:
-              <type>(<scope>[,<platform>][,<arch>]): short description
+      - name: Validate commit messages in range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 <<'PY'
+          import os
+          import re
+          import subprocess
+          import sys
 
-            Examples:
-              vm(gc): fix invalid mark on promoted objects
-              fix(socket,posix): handle eof correctly
-              build(cmake,windows,x86): fix static linking
+          TITLE_FORMAT = re.compile(
+              r'^(vm|runtime|sdk|compiler|tools|build|perf|fix|refactor|test|doc|chore)'
+              r'\([a-z0-9_-]+(,[a-z0-9_-]+){0,2}\): [a-z0-9 ].*$'
+          )
+          TITLE_CAPITALIZATION = re.compile(r'^[^A-Z]')
+          TITLE_WORD_COUNT = re.compile(r'^[^ ]+([ \t]+[^ ]+){2,}$', re.S)
+          TITLE_LENGTH = re.compile(r'^([^\n]{1,80})(\n.*)?$', re.S)
+          BLANK_LINE = re.compile(r'^[^\n]+(\n\n.+)?$', re.S)
+          BODY_LINE_LENGTH = re.compile(r'^[^\n]+(\n[^\n]{0,80})*$', re.S)
 
-      # --------------------------------------------------------------------
-      # Ensure the commit title starts with a lowercase letter.
-      # This avoids sentence-style or prose-like titles.
-      # --------------------------------------------------------------------
-      - name: Check title capitalization
-        uses: gsactions/commit-message-checker@v1
-        with:
-          pattern: '^[^A-Z]'
-          error: 'Commit title must not start with an uppercase letter.'
+          def run(*args):
+            return subprocess.check_output(args, text=True).strip()
 
-      # --------------------------------------------------------------------
-      # Enforce a meaningful commit title:
-      # - At least 3 words to avoid vague messages like "fix bug".
-      # --------------------------------------------------------------------
-      - name: Check title word count
-        uses: gsactions/commit-message-checker@v1
-        with:
-          pattern: '^[^ ]+([ \t]+[^ ]+){2,}'
-          flags: 's'
-          error: 'Commit title must contain at least 3 words.'
+          def commit_range():
+            event_name = os.environ["EVENT_NAME"]
+            if event_name == "pull_request":
+              return os.environ["PR_BASE_SHA"], os.environ["PR_HEAD_SHA"]
 
-      # --------------------------------------------------------------------
-      # Enforce maximum commit title length (80 characters).
-      # The body is checked separately.
-      # --------------------------------------------------------------------
-      - name: Check title length
-        uses: gsactions/commit-message-checker@v1
-        with:
-          pattern: '^([^\n]{1,80})(\n.*)?$'
-          flags: 's'
-          error: 'Commit title must be 80 characters or less.'
+            before = os.environ["PUSH_BEFORE"]
+            after = os.environ["PUSH_AFTER"]
+            if before == "0000000000000000000000000000000000000000":
+              return "", after
+            return before, after
 
-      # --------------------------------------------------------------------
-      # If a commit body is present, it must be separated from the title
-      # by a blank line.
-      # --------------------------------------------------------------------
-      - name: Check blank line between title and body
-        uses: gsactions/commit-message-checker@v1
-        with:
-          pattern: '^[^\n]+(\n\n.+)?$'
-          flags: 's'
-          error: 'If a commit body is present, it must be separated from the title by a blank line.'
+          def list_commits(base, head):
+            if base:
+              output = run("git", "rev-list", f"{base}..{head}")
+            else:
+              output = run("git", "rev-list", head)
+            return [line for line in output.splitlines() if line]
 
-      # --------------------------------------------------------------------
-      # Enforce body line length (80 characters per line).
-      # This improves readability and long-term maintainability.
-      # --------------------------------------------------------------------
-      - name: Check commit body line length
-        uses: gsactions/commit-message-checker@v1
-        with:
-          pattern: '^[^\n]+(\n[^\n]{0,80})*$'
-          flags: 's'
-          error: 'Each line in the commit body must be 80 characters or less.'
+          def read_message(commit):
+            return subprocess.check_output(
+                ["git", "show", "-s", "--format=%B", commit],
+                text=True,
+            ).rstrip("\n")
+
+          def validate(commit, message):
+            title = message.split("\n", 1)[0]
+            failures = []
+
+            if not TITLE_FORMAT.match(title):
+              failures.append("Invalid commit title format.")
+            if not TITLE_CAPITALIZATION.match(title):
+              failures.append("Commit title must not start with an uppercase letter.")
+            if not TITLE_WORD_COUNT.match(title):
+              failures.append("Commit title must contain at least 3 words.")
+            if not TITLE_LENGTH.match(message):
+              failures.append("Commit title must be 80 characters or less.")
+            if not BLANK_LINE.match(message):
+              failures.append(
+                  "If a commit body is present, it must be separated from the title by a blank line."
+              )
+            if not BODY_LINE_LENGTH.match(message):
+              failures.append("Each line in the commit body must be 80 characters or less.")
+
+            return title, failures
+
+          base, head = commit_range()
+          commits = list_commits(base, head)
+
+          if not commits:
+            print("No commits to validate.")
+            sys.exit(0)
+
+          invalid = []
+          for commit in reversed(commits):
+            message = read_message(commit)
+            title, failures = validate(commit, message)
+            if failures:
+              invalid.append((commit, title, failures))
+
+          if invalid:
+            print("Commit message validation failed.\n")
+            for commit, title, failures in invalid:
+              print(f"{commit} {title}")
+              for failure in failures:
+                print(f"  - {failure}")
+              print()
+            sys.exit(1)
+
+          print(f"Validated {len(commits)} commit message(s).")
+          PY
