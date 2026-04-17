@@ -56,7 +56,7 @@ public final class BoxRenderer implements ControlRenderer {
         BoxGeometry geom = BoxGeometry.compute(x, y, w, h, style);
         drawElevation(g, geom, elevation);
         int bg = pressed ? pressedColor : backgroundColor;
-        g.drawRRect(geom.borderRRect(), bg, true);
+        g.drawRRect(geom.borderRRect(), 0xFF000000 | bg, true);
         drawBorderStrip(g, geom, spec);
     }
 
