@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import totalcross.sys.Settings;
 import totalcross.ui.Control;
 import totalcross.ui.Insets;
 import totalcross.ui.gfx.Color;
+import totalcross.ui.style.render.BoxRenderer;
 import totalcross.ui.style.model.BorderSide;
 import totalcross.ui.style.model.BoxBorder;
 import totalcross.ui.style.model.BoxClip;
@@ -37,19 +39,44 @@ public final class BoxStyleCssParser {
      */
     public static BoxStyle parse(String css) {
         String body = extractRuleBody(css);
+        return parseBody(body, new BoxStyle());
+    }
 
-        BorderDecl top = new BorderDecl();
-        BorderDecl right = new BorderDecl();
-        BorderDecl bottom = new BorderDecl();
-        BorderDecl left = new BorderDecl();
+    /**
+     * Parses normal and {@code :active} rules for the given selector into a box renderer.
+     */
+    public static BoxRenderer parseRenderer(String css, String selector) {
+        String baseBody = findRuleBody(css, selector);
+        if (baseBody == null) {
+            baseBody = extractRuleBody(css);
+        }
 
-        BoxStyle defaults = new BoxStyle();
-        CornerRadii radii = defaults.shape.radii;
-        Insets padding = new Insets();
-        int backgroundColor = defaults.paint.backgroundColor;
-        int pressedColor = defaults.paint.pressedColor;
-        int overflow = defaults.clip.overflow;
-        Elevation elevation = defaults.elevation;
+        BoxStyle baseStyle = parseBody(baseBody, new BoxStyle());
+        String activeBody = findRuleBody(css, selector + ":active");
+        if (activeBody == null) {
+            return new BoxRenderer(baseStyle);
+        }
+
+        return new BoxRenderer(baseStyle, parseBody(activeBody, baseStyle));
+    }
+
+    private static BoxStyle parseBody(String body, BoxStyle base) {
+        BorderDecl top = BorderDecl.from(base.paint.border.top);
+        BorderDecl right = BorderDecl.from(base.paint.border.right);
+        BorderDecl bottom = BorderDecl.from(base.paint.border.bottom);
+        BorderDecl left = BorderDecl.from(base.paint.border.left);
+
+        CornerRadii radii = base.shape.radii;
+        Insets padding = new Insets(
+            base.layout.padding.top,
+            base.layout.padding.left,
+            base.layout.padding.bottom,
+            base.layout.padding.right
+        );
+        int backgroundColor = base.paint.backgroundColor;
+        int pressedColor = base.paint.pressedColor;
+        int overflow = base.clip.overflow;
+        Elevation elevation = base.elevation;
 
         for (String decl : splitDeclarations(body)) {
             int colon = decl.indexOf(':');
@@ -251,11 +278,68 @@ public final class BoxStyleCssParser {
         }
         String s = removeComments(css).trim();
         int open = s.indexOf('{');
-        int close = s.lastIndexOf('}');
+        int close = findMatchingBrace(s, open);
         if (open >= 0 && close > open) {
             return s.substring(open + 1, close).trim();
         }
         return s;
+    }
+
+    private static String findRuleBody(String css, String selector) {
+        if (css == null || selector == null) {
+            return null;
+        }
+
+        String s = removeComments(css).trim();
+        int searchFrom = 0;
+        while (searchFrom < s.length()) {
+            int open = s.indexOf('{', searchFrom);
+            if (open < 0) {
+                return null;
+            }
+
+            int close = findMatchingBrace(s, open);
+            if (close < 0) {
+                return null;
+            }
+
+            String selectorList = s.substring(searchFrom, open).trim();
+            if (selectorListContains(selectorList, selector)) {
+                return s.substring(open + 1, close).trim();
+            }
+            searchFrom = close + 1;
+        }
+        return null;
+    }
+
+    private static int findMatchingBrace(String s, int open) {
+        if (open < 0) {
+            return -1;
+        }
+
+        int depth = 0;
+        for (int i = open; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (ch == '{') {
+                depth++;
+            } else if (ch == '}') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private static boolean selectorListContains(String selectorList, String selector) {
+        List<String> selectors = splitTopLevelCommaSeparated(selectorList);
+        for (int i = 0; i < selectors.size(); i++) {
+            if (normalize(selectors.get(i)).equals(normalize(selector))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String removeComments(String s) {
@@ -779,6 +863,17 @@ public final class BoxStyleCssParser {
         int style = BorderSide.Style.NONE;
         int color = 0;
         int align = BorderSide.Align.INSIDE;
+
+        static BorderDecl from(BorderSide side) {
+            BorderDecl decl = new BorderDecl();
+            if (side != null) {
+                decl.width = Settings.screenDensity == 0 ? side.width : side.width / Settings.screenDensity;
+                decl.style = side.style;
+                decl.color = side.color;
+                decl.align = side.align;
+            }
+            return decl;
+        }
 
         BorderSide toBorderSide() {
             return BorderSide.with(width, style, color, align);

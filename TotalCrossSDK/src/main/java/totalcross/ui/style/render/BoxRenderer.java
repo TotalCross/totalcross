@@ -28,6 +28,7 @@ public final class BoxRenderer implements ControlRenderer {
     private static final double SHADOW_ALPHA_GAIN = 1.8d;
 
     public final BoxStyle style;
+    public final BoxStyle activeStyle;
     public final BoxBorder spec;
     public final CornerRadii radii;
     public final int backgroundColor;
@@ -38,14 +39,23 @@ public final class BoxRenderer implements ControlRenderer {
      * Creates a painter for the given style.
      */
     public BoxRenderer(BoxStyle style) {
+        this(style, null);
+    }
+
+    /**
+     * Creates a painter for the given normal and pressed styles.
+     */
+    public BoxRenderer(BoxStyle style, BoxStyle activeStyle) {
         this.style = style;
+        this.activeStyle = activeStyle;
         BoxPaint paint = style == null ? null : style.paint;
         BoxShape shape = style == null ? null : style.shape;
         this.spec = paint == null ? null : paint.border;
         this.radii = shape == null || shape.radii == null ? CornerRadii.ZERO : shape.radii;
         this.backgroundColor = paint == null ? 0 : paint.backgroundColor;
         this.pressedColor = paint == null ? Color.WHITE : paint.pressedColor;
-        this.elevation = style == null ? Elevation.NONE : style.elevation;
+        this.elevation = maxOutset(style == null ? Elevation.NONE : style.elevation,
+            activeStyle == null ? Elevation.NONE : activeStyle.elevation);
     }
 
     /**
@@ -53,8 +63,13 @@ public final class BoxRenderer implements ControlRenderer {
      */
     @Override
     public void draw(Graphics g, int x, int y, int w, int h, boolean pressed) {
+        if (pressed && activeStyle != null) {
+            drawStyle(g, x, y, w, h, activeStyle);
+            return;
+        }
+
         BoxGeometry geom = BoxGeometry.compute(x, y, w, h, style);
-        drawElevation(g, geom, elevation);
+        drawElevation(g, geom, style == null ? Elevation.NONE : style.elevation);
         int bg = pressed ? pressedColor : backgroundColor;
         g.drawRRect(geom.borderRRect(), 0xFF000000 | bg, true);
         drawBorderStrip(g, geom, spec);
@@ -114,7 +129,7 @@ public final class BoxRenderer implements ControlRenderer {
      * Paints only the border strip for an already computed geometry.
      */
     public static void drawBorderStrip(Graphics g, BoxGeometry geom, BoxBorder spec) {
-        if (!spec.isVisible()) {
+        if (spec == null || !spec.isVisible()) {
             return;
         }
 
@@ -157,6 +172,26 @@ public final class BoxRenderer implements ControlRenderer {
         for (int i = 0; i < elevation.shadows.length; i++) {
             drawShadow(g, geom, elevation.shadows[i]);
         }
+    }
+
+    private static void drawStyle(Graphics g, int x, int y, int w, int h, BoxStyle style) {
+        BoxGeometry geom = BoxGeometry.compute(x, y, w, h, style);
+        drawElevation(g, geom, style == null ? Elevation.NONE : style.elevation);
+        BoxPaint paint = style == null ? null : style.paint;
+        BoxBorder border = paint == null ? null : paint.border;
+        int background = paint == null ? 0 : paint.backgroundColor;
+        g.drawRRect(geom.borderRRect(), 0xFF000000 | background, true);
+        drawBorderStrip(g, geom, border);
+    }
+
+    private static Elevation maxOutset(Elevation first, Elevation second) {
+        if (first == null) {
+            return second == null ? Elevation.NONE : second;
+        }
+        if (second == null || first.outset >= second.outset) {
+            return first;
+        }
+        return second;
     }
 
     private static void drawShadow(Graphics g, BoxGeometry geom, Shadow shadow) {
