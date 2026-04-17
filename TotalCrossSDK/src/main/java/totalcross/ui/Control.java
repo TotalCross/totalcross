@@ -57,6 +57,7 @@ import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.RRect;
 import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
+import totalcross.ui.style.render.ControlRenderer;
 import totalcross.util.UnitsConverter;
 import totalcross.util.Vector;
 
@@ -108,6 +109,7 @@ public class Control extends GfxSurface {
   public int clearValueInt; // guich@572_19
   /** The next control that will receive focus when tab is hit. */
   public Control nextTabControl;
+  protected ControlRenderer controlRenderer;
   public static final int RANGE = 10000000;
   public static final int UICONST = RANGE * 2 + 1000000;
   /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: PREFERRED+2 or PREFERRED-1. */
@@ -1700,7 +1702,7 @@ public class Control extends GfxSurface {
    *         needed.
    */
   protected double getPaintExpand() {
-    return 0d;
+    return controlRenderer == null ? 0d : controlRenderer.getOutset();
   }
 
   /**
@@ -1961,6 +1963,39 @@ public class Control extends GfxSurface {
   /** Internal use Only. */
   public static void resetStyle() {
 	  uiStyleAlreadyChanged = false;
+  }
+
+  /**
+   * Sets the renderer responsible for drawing this control and providing visual metrics such as
+   * paint outset.
+   * <p>
+   * Passing {@code null} removes the renderer and makes the control fall back to its normal
+   * painting behavior. This method calls {@link #onStyleChanged()} after updating the renderer.
+   *
+   * @param renderer the renderer to associate with this control, or {@code null} to clear it.
+   */
+  public void setControlRenderer(ControlRenderer renderer) {
+    this.controlRenderer = renderer;
+    onStyleChanged();
+  }
+
+  /**
+   * Returns the renderer currently associated with this control.
+   *
+   * @return the current renderer, or {@code null} when this control uses its normal painting
+   *         behavior.
+   */
+  public ControlRenderer getControlRenderer() {
+    return controlRenderer;
+  }
+
+  /**
+   * Called after the control renderer or visual style associated with this control changes.
+   * <p>
+   * Subclasses may override this hook to update cached geometry, insets, clips, or any other
+   * derived state that depends on the current style. The default implementation does nothing.
+   */
+  protected void onStyleChanged() {
   }
   
   /** Internal use only */
