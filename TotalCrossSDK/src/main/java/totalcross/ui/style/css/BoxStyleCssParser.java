@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import totalcross.ui.Control;
 import totalcross.ui.Insets;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.style.model.BorderSide;
@@ -22,6 +23,7 @@ import totalcross.ui.style.model.BoxStyle;
 import totalcross.ui.style.model.CornerRadii;
 import totalcross.ui.style.model.Elevation;
 import totalcross.ui.style.model.Shadow;
+import totalcross.util.UnitsConverter;
 
 /**
  * Parses a CSS-like subset into a {@link BoxStyle}.
@@ -127,8 +129,8 @@ public final class BoxStyleCssParser {
                     break;
                 case "border-top-left-radius":
                     radii = CornerRadii.of(
-                        parseLengthDouble(firstToken(value)),
-                        parseLengthDouble(firstToken(value)),
+                        parseLengthPixelsDouble(firstToken(value)),
+                        parseLengthPixelsDouble(firstToken(value)),
                         radii.topRightX,
                         radii.topRightY,
                         radii.bottomRightX,
@@ -141,8 +143,8 @@ public final class BoxStyleCssParser {
                     radii = CornerRadii.of(
                         radii.topLeftX,
                         radii.topLeftY,
-                        parseLengthDouble(firstToken(value)),
-                        parseLengthDouble(firstToken(value)),
+                        parseLengthPixelsDouble(firstToken(value)),
+                        parseLengthPixelsDouble(firstToken(value)),
                         radii.bottomRightX,
                         radii.bottomRightY,
                         radii.bottomLeftX,
@@ -155,8 +157,8 @@ public final class BoxStyleCssParser {
                         radii.topLeftY,
                         radii.topRightX,
                         radii.topRightY,
-                        parseLengthDouble(firstToken(value)),
-                        parseLengthDouble(firstToken(value)),
+                        parseLengthPixelsDouble(firstToken(value)),
+                        parseLengthPixelsDouble(firstToken(value)),
                         radii.bottomLeftX,
                         radii.bottomLeftY
                     );
@@ -169,8 +171,8 @@ public final class BoxStyleCssParser {
                         radii.topRightY,
                         radii.bottomRightX,
                         radii.bottomRightY,
-                        parseLengthDouble(firstToken(value)),
-                        parseLengthDouble(firstToken(value))
+                        parseLengthPixelsDouble(firstToken(value)),
+                        parseLengthPixelsDouble(firstToken(value))
                     );
                     break;
                 case "background":
@@ -354,11 +356,11 @@ public final class BoxStyleCssParser {
 
     private static CornerRadii applyBorderRadius(String value) {
         String[] parts = value.split("/");
-        double[] horizontal = normalize1To4Doubles(parseLengthsAsDouble(parts[0]));
+        double[] horizontal = normalize1To4Doubles(parseLengthsAsPixelsDouble(parts[0]));
         if (parts.length == 1) {
             return CornerRadii.of(horizontal[0], horizontal[1], horizontal[2], horizontal[3]);
         }
-        double[] vertical = normalize1To4Doubles(parseLengthsAsDouble(parts[1]));
+        double[] vertical = normalize1To4Doubles(parseLengthsAsPixelsDouble(parts[1]));
         return CornerRadii.of(
             horizontal[0], vertical[0],
             horizontal[1], vertical[1],
@@ -372,6 +374,15 @@ public final class BoxStyleCssParser {
         double[] values = new double[tokens.length];
         for (int i = 0; i < tokens.length; i++) {
             values[i] = parseLengthDouble(tokens[i]);
+        }
+        return values;
+    }
+
+    private static double[] parseLengthsAsPixelsDouble(String value) {
+        String[] tokens = tokenize(value);
+        double[] values = new double[tokens.length];
+        for (int i = 0; i < tokens.length; i++) {
+            values[i] = parseLengthPixelsDouble(tokens[i]);
         }
         return values;
     }
@@ -481,18 +492,7 @@ public final class BoxStyleCssParser {
     }
 
     private static int parseLength(String s) {
-        s = normalize(s);
-        if (s.endsWith("px")) {
-            s = s.substring(0, s.length() - 2).trim();
-        }
-        if (s.isEmpty()) {
-            return 0;
-        }
-        try {
-            return Math.max(0, (int) Math.round(Double.parseDouble(s)));
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        return (int) Math.round(parseLengthPixelsDouble(s));
     }
 
     private static double parseLengthDouble(String s) {
@@ -508,6 +508,10 @@ public final class BoxStyleCssParser {
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    private static double parseLengthPixelsDouble(String s) {
+        return UnitsConverter.toPixels(Control.DP + parseLengthDouble(s));
     }
 
     private static int parseSignedLength(String s) {
