@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 def skiaFetchScript = file("${projectDir}/../../skia/fetch-skia.sh")
-def skiaAndroidAbis = ['armeabi-v7a', 'arm64-v8a']
+def skiaAndroidAbis = ['arm64-v8a']
 
 tasks.register('fetchSkiaArtifacts') {
     group = 'build setup'
