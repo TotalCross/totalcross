@@ -788,97 +788,102 @@ public class Button extends Control implements TextControl {
 		if (skipPaint) {
 			return;
 		}
-		
+
 		int tx = tx0;
 		int ty = ty0;
 		int ix = ix0;
 		int iy = iy0;
-		
-		if ((uiMaterial || uiAndroid) && this.border == BORDER_3D) {
-			int bbackColor = isEnabled() ? 
-					backColor : (uiMaterial ? disabledColor : Color.interpolate(parent.backColor, backColor));
-			if(!transparentBackground) {
-				g.backColor = bbackColor;
-				if(!drawNinePatch) {
-					g.fillRect(4, 4, width - 6, height - 6);
-				}
-			}
 
-			if(npParts != null) {
-				try {
-					if (!drawTranslucentBackground(g, armed ? alphaValue >= 80 ? alphaValue / 2 : alphaValue * 2 : alphaValue)) {
-						if(npback == null) {
-							npback = NinePatch.getInstance().getNormalInstance(npParts, width, height,
-									isEnabled() ? transparentBackground ? borderColor : bbackColor : bbackColor, false);
-						}
-						this.originalForeColor = this.originalForeColor == -1 ? this.foreColor : this.originalForeColor;
-						this.foreColor = this.isEnabled() ? this.originalForeColor : Color.BLACK;
-					}
-					if (npback != null) {
-    					NinePatch.tryDrawImage(g, armed && (isSticky || effect == null) ? 
-    							NinePatch.getInstance().getPressedInstance(npback, backColor,pressColor) : npback,
-    							0, 0);
-					}
-				} catch (ImageException ie) {
-					ie.printStackTrace();
-				}
-			}
+		boolean rendererPainted = controlRenderer != null;
+		if (rendererPainted) {
+			controlRenderer.draw(g, 0, 0, width, height, armed);
 		} else {
-			boolean isBorderRound = border == BORDER_ROUND;
-			if (uiMaterial && effect != null) {
-				effect.darkSideOnPress = border != BORDER_NONE;
-			}
-			if (isAndroidStyle) {
-				if (translucentShape == TranslucentShape.NONE && !uiMaterial && !Settings.isOpenGL) {
-					g.getClip(clip);
-					g.backColor = Settings.isOpenGL ? parent.backColor : g.getPixel(clip.x, clip.y);
-						g.fillRect(0, 0, width, height);
+			if ((uiMaterial || uiAndroid) && this.border == BORDER_3D) {
+				int bbackColor = isEnabled() ? 
+						backColor : (uiMaterial ? disabledColor : Color.interpolate(parent.backColor, backColor));
+				if(!transparentBackground) {
+					g.backColor = bbackColor;
+					if(!drawNinePatch) {
+						g.fillRect(4, 4, width - 6, height - 6);
+					}
 				}
-			} else if (!isBorderRound && (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground)
-					|| drawBordersIfTransparentBackground)) {
-				paintBackground(g);
-			}
-	
-			if (isBorderRound) {
-				g.backColor = backColor;
-					g.fillRoundRect(0, 0, width, height,
-							uiMaterial ? UnitsConverter.toPixels(DP + 4) : height / roundBorderFactor);
-			} else if (this.border == BORDER_OUTLINED) {
-				g.foreColor = transparentBackground ? this.borderColor : this.backColor;
-				g.drawRoundRect(0, 0, width, height,
-						uiMaterial ? UnitsConverter.toPixels(DP + 4) : height / roundBorderFactor);
-	
-			} else if (isAndroidStyle || (uiMaterial && border != BORDER_NONE)) {
-				paintImage(g, true, 0, 0);
-			}
 
-			int border = txtPos == CENTER ? 0 : Math.min(2, this.border); // guich@tc112_31
-			g.setClip(border, border, width - (border << 1), height - (border << 1)); // guich@101: cut text if button is
-																						// too small - guich@510_4
-	
-			boolean isBorder3D = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-			if (armed && !isAndroidStyle && shiftOnPress && (isBorder3D || uiVista || (img != null && text == null))) { // guich@tc100: if this is an image-only button, let the button be pressed
-				int inc = isBorder3D ? borderWidth3DG : 1;
-				tx += inc;
-				ix += inc;
-				ty += inc;
-				iy += inc;
-			}
-			if(this.border != BORDER_OUTLINED)
-			{
-				g.foreColor = fColor;
-			}
-		}
-		
-		if (getDoEffect() && effect != null) {
-			if(this.border == BORDER_OUTLINED) {
-				effect.color = Color.getBrightness(fColor) < 127 ? Color.brighter(fColor, 64) : Color.darker(fColor, 64);
-				int backup = this.backColor;
-				this.backColor = this.foreColor;
-				effect.paintEffect(g);
-				this.backColor = backup;
+				if(npParts != null) {
+					try {
+						if (!drawTranslucentBackground(g, armed ? alphaValue >= 80 ? alphaValue / 2 : alphaValue * 2 : alphaValue)) {
+							if(npback == null) {
+								npback = NinePatch.getInstance().getNormalInstance(npParts, width, height,
+										isEnabled() ? transparentBackground ? borderColor : bbackColor : bbackColor, false);
+							}
+							this.originalForeColor = this.originalForeColor == -1 ? this.foreColor : this.originalForeColor;
+							this.foreColor = this.isEnabled() ? this.originalForeColor : Color.BLACK;
+						}
+						if (npback != null) {
+							NinePatch.tryDrawImage(g, armed && (isSticky || effect == null) ? 
+									NinePatch.getInstance().getPressedInstance(npback, backColor,pressColor) : npback,
+									0, 0);
+						}
+					} catch (ImageException ie) {
+						ie.printStackTrace();
+					}
+				}
 			} else {
-				effect.paintEffect(g);
+				boolean isBorderRound = border == BORDER_ROUND;
+				if (uiMaterial && effect != null) {
+					effect.darkSideOnPress = border != BORDER_NONE;
+				}
+				if (isAndroidStyle) {
+					if (translucentShape == TranslucentShape.NONE && !uiMaterial && !Settings.isOpenGL) {
+						g.getClip(clip);
+						g.backColor = Settings.isOpenGL ? parent.backColor : g.getPixel(clip.x, clip.y);
+							g.fillRect(0, 0, width, height);
+					}
+				} else if (!isBorderRound && (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground)
+						|| drawBordersIfTransparentBackground)) {
+					paintBackground(g);
+				}
+		
+				if (isBorderRound) {
+					g.backColor = backColor;
+						g.fillRoundRect(0, 0, width, height,
+								uiMaterial ? UnitsConverter.toPixels(DP + 4) : height / roundBorderFactor);
+				} else if (this.border == BORDER_OUTLINED) {
+					g.foreColor = transparentBackground ? this.borderColor : this.backColor;
+					g.drawRoundRect(0, 0, width, height,
+							uiMaterial ? UnitsConverter.toPixels(DP + 4) : height / roundBorderFactor);
+		
+				} else if (isAndroidStyle || (uiMaterial && border != BORDER_NONE)) {
+					paintImage(g, true, 0, 0);
+				}
+
+				int border = txtPos == CENTER ? 0 : Math.min(2, this.border); // guich@tc112_31
+				g.setClip(border, border, width - (border << 1), height - (border << 1)); // guich@101: cut text if button is
+																							// too small - guich@510_4
+		
+				boolean isBorder3D = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
+				if (armed && !isAndroidStyle && shiftOnPress && (isBorder3D || uiVista || (img != null && text == null))) { // guich@tc100: if this is an image-only button, let the button be pressed
+					int inc = isBorder3D ? borderWidth3DG : 1;
+					tx += inc;
+					ix += inc;
+					ty += inc;
+					iy += inc;
+				}
+				if(this.border != BORDER_OUTLINED)
+				{
+					g.foreColor = fColor;
+				}
+			}
+			
+			if (getDoEffect() && effect != null) {
+				if(this.border == BORDER_OUTLINED) {
+					effect.color = Color.getBrightness(fColor) < 127 ? Color.brighter(fColor, 64) : Color.darker(fColor, 64);
+					int backup = this.backColor;
+					this.backColor = this.foreColor;
+					effect.paintEffect(g);
+					this.backColor = backup;
+				} else {
+					effect.paintEffect(g);
+				}
 			}
 		}
 
