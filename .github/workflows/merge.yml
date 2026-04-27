@@ -45,6 +45,23 @@ jobs:
           fi &&
           ninja
         "
+
+  build-windows:
+    name: Build `windows`
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Build VM
+      shell: cmd
+      run: |
+        mkdir TotalCrossVM\vc2022
+        pushd TotalCrossVM\vc2022
+        cmake ..\ -G"Visual Studio 17 2022" -A Win32
+        cmake --build . --config Release
+        popd
           
   build-sdk:
     name: Build `SDK`
