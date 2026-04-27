@@ -294,6 +294,14 @@ set(SOURCES
 
     )
 
+if(UNIX AND (CMAKE_SYSTEM_NAME STREQUAL "Linux") AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
+  set_source_files_properties(
+    ${TC_SRCDIR}/nm/map/GoogleMaps.c
+    PROPERTIES
+    COMPILE_OPTIONS "-O0"
+  )
+endif()
+
 if(UNIX AND NOT (DEFINED ANDROID_ABI OR APPLE))
   set(SOURCES
     ${SOURCES}
