@@ -25,7 +25,14 @@ jobs:
 
     - name: Build VM & Launcher
       run: |
-        docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -c "cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja && ninja"
+        docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -lc "
+          apt-get update &&
+          apt-get install -y python3-pip &&
+          pip3 install cmake==3.28.6 &&
+          cmake --version &&
+          cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
+          ninja
+        "
           
   build-sdk-and-android:
     name: Build `${{ matrix.project.name }}`
