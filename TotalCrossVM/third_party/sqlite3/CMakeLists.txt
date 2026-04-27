@@ -61,6 +61,7 @@ if(NOT sqlite3_POPULATED)
     set_target_properties(
         SQLite3
         PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
         PUBLIC_HEADER "${sqlite3_SOURCE_DIR}"
         XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 13.0
     )
