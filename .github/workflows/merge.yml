@@ -14,11 +14,11 @@ jobs:
       matrix:
         project: [ linux-amd64, linux-arm32v7, linux-arm64 ]
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Allow multiarch
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
@@ -29,7 +29,7 @@ jobs:
           
   build-sdk-and-android:
     name: Build `${{ matrix.project.name }}`
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     container:
       image: docker://fabernovel/android:api-29-ndk-v1.2.0
     strategy:
@@ -45,15 +45,16 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup JDK 11
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v4
       with:
+        distribution: temurin
         java-version: 11
 
     - name: Cache Gradle packages
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}

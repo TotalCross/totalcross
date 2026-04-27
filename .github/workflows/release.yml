@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         
       - name: Download last artifact
         uses: dawidd6/action-download-artifact@v2
@@ -57,4 +57,3 @@ jobs:
           asset_path: ./TotalCross-${{ github.event.inputs.tag }}.zip
           asset_name: TotalCross-${{ github.event.inputs.tag }}.zip
           asset_content_type: application/zip
-
