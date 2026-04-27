@@ -27,13 +27,22 @@ jobs:
       run: |
         docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -lc "
           apt-get update &&
-          apt-get install -y apt-transport-https ca-certificates gnupg wget &&
+          apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget &&
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - &&
           echo 'deb https://apt.kitware.com/ubuntu/ bionic main' > /etc/apt/sources.list.d/kitware.list &&
+          if [ '${{ matrix.project }}' = 'linux-arm64' ]; then
+            add-apt-repository -y ppa:ubuntu-toolchain-r/test &&
+            apt-get update &&
+            apt-get install -y gcc-10 g++-10;
+          fi &&
           apt-get update &&
-          apt-get install -y cmake curl git rsync ${{ matrix.project == 'linux-arm64' && 'clang' || '' }} &&
+          apt-get install -y cmake curl git rsync &&
           cmake --version &&
-          ${{ matrix.project == 'linux-arm64' && 'CC=clang CXX=clang++' || '' }} cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
+          if [ '${{ matrix.project }}' = 'linux-arm64' ]; then
+            CC=gcc-10 CXX=g++-10 cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja;
+          else
+            cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja;
+          fi &&
           ninja
         "
           
