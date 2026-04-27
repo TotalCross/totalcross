@@ -28,7 +28,7 @@ jobs:
         docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -lc "
           apt-get update &&
           apt-get install -y python3-pip &&
-          pip3 install cmake==3.28.6 &&
+          pip3 install cmake==3.28.4 &&
           cmake --version &&
           cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
           ninja
