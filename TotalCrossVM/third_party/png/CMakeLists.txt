@@ -34,13 +34,20 @@ endif()
     set(PNG_DEBUG_POSTFIX "" CACHE STRING "" FORCE) # XCode gets confused if used
     set(ZLIB_USE_STATIC_LIBS ON CACHE BOOL "" FORCE)
 
-    if(NOT TARGET ZLIB::ZLIB)
-        add_library(ZLIB::ZLIB ALIAS zlibstatic)
+    get_target_property(TC_ZLIB_ALIASED_TARGET zlibstatic ALIASED_TARGET)
+    if(TC_ZLIB_ALIASED_TARGET)
+        set(TC_ZLIB_TARGET ${TC_ZLIB_ALIASED_TARGET})
+    else()
+        set(TC_ZLIB_TARGET zlibstatic)
     endif()
 
-    get_target_property(TC_ZLIB_INCLUDE_DIRS zlibstatic INTERFACE_INCLUDE_DIRECTORIES)
+    if(NOT TARGET ZLIB::ZLIB)
+        add_library(ZLIB::ZLIB ALIAS ${TC_ZLIB_TARGET})
+    endif()
+
+    get_target_property(TC_ZLIB_INCLUDE_DIRS ${TC_ZLIB_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
     if(NOT TC_ZLIB_INCLUDE_DIRS)
-        get_target_property(TC_ZLIB_INCLUDE_DIRS zlibstatic INCLUDE_DIRECTORIES)
+        get_target_property(TC_ZLIB_INCLUDE_DIRS ${TC_ZLIB_TARGET} INCLUDE_DIRECTORIES)
     endif()
     list(GET TC_ZLIB_INCLUDE_DIRS 0 TC_ZLIB_INCLUDE_DIR)
 
