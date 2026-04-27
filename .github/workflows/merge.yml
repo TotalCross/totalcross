@@ -27,8 +27,11 @@ jobs:
       run: |
         docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -lc "
           apt-get update &&
-          apt-get install -y python3-pip &&
-          pip3 install cmake==3.28.4 &&
+          apt-get install -y apt-transport-https ca-certificates gnupg wget &&
+          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - &&
+          echo 'deb https://apt.kitware.com/ubuntu/ bionic main' > /etc/apt/sources.list.d/kitware.list &&
+          apt-get update &&
+          apt-get install -y cmake &&
           cmake --version &&
           cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
           ninja
