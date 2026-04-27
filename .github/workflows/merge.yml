@@ -31,9 +31,9 @@ jobs:
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - &&
           echo 'deb https://apt.kitware.com/ubuntu/ bionic main' > /etc/apt/sources.list.d/kitware.list &&
           apt-get update &&
-          apt-get install -y cmake curl git rsync &&
+          apt-get install -y cmake curl git rsync ${{ matrix.project == 'linux-arm64' && 'clang' || '' }} &&
           cmake --version &&
-          cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
+          ${{ matrix.project == 'linux-arm64' && 'CC=clang CXX=clang++' || '' }} cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
           ninja
         "
           
