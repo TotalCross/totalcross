@@ -40,7 +40,7 @@ jobs:
           apt-get install -y cmake curl git rsync &&
           cmake --version &&
           if [ '${{ matrix.project }}' = 'linux-arm64' ]; then
-            CC=gcc-10 CXX=g++-10 cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja;
+            CC=gcc-10 CXX=g++-10 cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE=-O0 -DCMAKE_CXX_FLAGS_RELEASE=-O0 -G Ninja;
           else
             cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja;
           fi &&
