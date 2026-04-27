@@ -2,18 +2,29 @@ apply plugin: 'com.android.library'
 
 def skiaFetchScript = file("${projectDir}/../../skia/fetch-skia.sh")
 def skiaAndroidAbis = ['arm64-v8a']
+def skiaDevBundleOutputs = [
+    file("${projectDir}/../../skia/local/include/core/SkPathEffect.h"),
+    file("${projectDir}/../../skia/local/src/gpu/gl/GrGLDefines.h")
+]
 
 tasks.register('fetchSkiaArtifacts') {
     group = 'build setup'
     description = 'Fetches the Android Skia prebuilts required by the native build.'
 
     inputs.file(skiaFetchScript)
-    outputs.files(skiaAndroidAbis.collect { abi ->
-        file("${projectDir}/src/main/jniLibs/${abi}/libskia.so")
-    })
+    outputs.files(
+        skiaAndroidAbis.collect { abi ->
+            file("${projectDir}/src/main/jniLibs/${abi}/libskia.so")
+        } + skiaDevBundleOutputs
+    )
 
     doLast {
-        skiaAndroidAbis.each { abi ->
+        exec {
+            executable 'bash'
+            args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', skiaAndroidAbis[0], '--install-dev'
+        }
+
+        skiaAndroidAbis.drop(1).each { abi ->
             exec {
                 executable 'bash'
                 args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', abi
