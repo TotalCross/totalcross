@@ -27,11 +27,12 @@ jobs:
       run: |
         docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -lc "
           apt-get update &&
-          apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget &&
+          apt-get install -y apt-transport-https ca-certificates gnupg wget &&
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - &&
           echo 'deb https://apt.kitware.com/ubuntu/ bionic main' > /etc/apt/sources.list.d/kitware.list &&
           if [ '${{ matrix.project }}' = 'linux-arm64' ]; then
-            add-apt-repository -y ppa:ubuntu-toolchain-r/test &&
+            apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F &&
+            echo 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu bionic main' > /etc/apt/sources.list.d/ubuntu-toolchain-r-test.list &&
             apt-get update &&
             apt-get install -y gcc-10 g++-10;
           fi &&
