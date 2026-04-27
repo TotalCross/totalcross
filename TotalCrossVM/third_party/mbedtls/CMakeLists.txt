@@ -42,6 +42,7 @@ if(NOT mbedtls_POPULATED)
     set_target_properties(
         mbedtls mbedx509 mbedcrypto
         PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
         PUBLIC_HEADER "${mbedtls_SOURCE_DIR}/include/**"
         XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 13.0
     )
