@@ -58,6 +58,11 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
 
+    - name: Install native build tools
+      run: |
+        apt-get update
+        apt-get install -y curl git python3 rsync tar
+
     - name: Download Dependences S3 Libs
       uses: prewk/s3-cp-action@master
       env:
