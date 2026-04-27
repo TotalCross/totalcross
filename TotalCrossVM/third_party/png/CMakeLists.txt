@@ -32,6 +32,26 @@ endif()
     set(PNG_FRAMEWORK OFF CACHE BOOL "" FORCE)
     set(PNG_TESTS OFF CACHE BOOL "" FORCE)
     set(PNG_DEBUG_POSTFIX "" CACHE STRING "" FORCE) # XCode gets confused if used
+    set(ZLIB_USE_STATIC_LIBS ON CACHE BOOL "" FORCE)
+
+    if(NOT TARGET ZLIB::ZLIB)
+        add_library(ZLIB::ZLIB ALIAS zlibstatic)
+    endif()
+
+    get_target_property(TC_ZLIB_INCLUDE_DIRS zlibstatic INTERFACE_INCLUDE_DIRECTORIES)
+    if(NOT TC_ZLIB_INCLUDE_DIRS)
+        get_target_property(TC_ZLIB_INCLUDE_DIRS zlibstatic INCLUDE_DIRECTORIES)
+    endif()
+    list(GET TC_ZLIB_INCLUDE_DIRS 0 TC_ZLIB_INCLUDE_DIR)
+
+    set(ZLIB_INCLUDE_DIR "${TC_ZLIB_INCLUDE_DIR}" CACHE PATH "" FORCE)
+    if(MSVC)
+        set(ZLIB_LIBRARY_RELEASE "${ZLIB_BINARY_DIR}/Release/zlibstatic.lib" CACHE FILEPATH "" FORCE)
+        set(ZLIB_LIBRARY_DEBUG "${ZLIB_BINARY_DIR}/Debug/zlibstatic.lib" CACHE FILEPATH "" FORCE)
+        set(ZLIB_LIBRARY "${ZLIB_BINARY_DIR}/Release/zlibstatic.lib" CACHE FILEPATH "" FORCE)
+    else()
+        set(ZLIB_LIBRARY "${ZLIB_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}zlibstatic${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE FILEPATH "" FORCE)
+    endif()
 
     if(TARGET_WINCE)
         # Edit pnglibconf.h
