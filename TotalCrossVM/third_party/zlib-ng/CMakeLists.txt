@@ -16,6 +16,7 @@ if(NOT zlib_POPULATED)
 
     FetchContent_Populate(zlib)
     set(ZLIB_COMPAT ON CACHE BOOL "" FORCE)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
     # Optimization options
     set(WITH_OPTIM ON CACHE BOOL "" FORCE)
