@@ -31,7 +31,7 @@ jobs:
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - &&
           echo 'deb https://apt.kitware.com/ubuntu/ bionic main' > /etc/apt/sources.list.d/kitware.list &&
           apt-get update &&
-          apt-get install -y cmake &&
+          apt-get install -y cmake git &&
           cmake --version &&
           cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
           ninja
