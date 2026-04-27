@@ -37,21 +37,36 @@ jobs:
           ninja
         "
           
-  build-sdk-and-android:
-    name: Build `${{ matrix.project.name }}`
+  build-sdk:
+    name: Build `SDK`
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 11
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+
+    - name: Build SDK
+      working-directory: TotalCrossSDK
+      run: ./gradlew dist -x test --stacktrace
+
+  build-android:
+    name: Build `Android`
     runs-on: ubuntu-22.04
     container:
       image: docker://fabernovel/android:api-29-ndk-v1.2.0
-    strategy:
-      fail-fast: false
-      matrix:
-        project: 
-          - name: SDK
-            command: ./gradlew dist -x test --stacktrace
-            directory: TotalCrossSDK
-          - name: Android
-            command: ./gradlew assembleRelease -x test --stacktrace
-            directory: TotalCrossVM/android
 
     steps:
     - name: Checkout
@@ -75,6 +90,6 @@ jobs:
         apt-get update
         apt-get install -y curl git python3 rsync tar
 
-    - name: Build ${{ matrix.project.name }}
-      working-directory: ${{ matrix.project.directory }}
-      run: ${{ matrix.project.command }}
+    - name: Build Android
+      working-directory: TotalCrossVM/android
+      run: ./gradlew assembleRelease -x test --stacktrace

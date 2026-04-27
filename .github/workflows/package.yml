@@ -33,8 +33,45 @@ jobs:
         name: ${{ matrix.project }}
         path: build
           
-  build_sdk_android:
-    name: Build SDK and Android 
+  build_sdk:
+    name: Build SDK
+    if: ${{ always() }}
+    needs: build_linux
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 11
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+
+    - name: Build SDK
+      working-directory: TotalCrossSDK
+      run: |
+        ./gradlew dist -x test --stacktrace
+        cp build/libs/totalcross-sdk-* dist
+
+    - name: Upload SDK build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: sdk-build
+        path: |
+          TotalCrossSDK/build/
+          TotalCrossSDK/dist/
+
+  build_android:
+    name: Build Android
     if: ${{ always() }}
     needs: build_linux
     runs-on: ubuntu-22.04
@@ -45,7 +82,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: set up JDK 17
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: temurin
@@ -62,6 +99,20 @@ jobs:
       run: |
         apt-get update
         apt-get install -y curl git python3 rsync tar
+
+    - name: Build Android
+      working-directory: TotalCrossVM/android
+      run: ./gradlew assembleRelease -x test --stacktrace
+
+  package_totalcross:
+    name: Package TotalCross
+    if: ${{ always() }}
+    needs: [build_linux, build_sdk, build_android]
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
     - name: Download Dependences S3 Libs
       uses: prewk/s3-cp-action@master
@@ -111,16 +162,11 @@ jobs:
         SOURCE: 's3://${{ secrets.S3_BUCKET }}/lb.zip'
         DEST: 'lb.zip'
 
-    - name: Build SDK
-      working-directory: TotalCrossSDK
-      run: |
-        ./gradlew dist -x test --stacktrace
-        cp build/libs/totalcross-sdk-* dist
-    
-    - name: Build Android
-      working-directory: TotalCrossVM/android
-      run: |
-        ./gradlew assembleRelease -x test --stacktrace
+    - name: Download SDK build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: sdk-build
+        path: .
  
     - name: Download Linux amd64
       continue-on-error: true
