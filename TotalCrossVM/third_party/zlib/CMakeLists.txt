@@ -62,6 +62,7 @@ if(NOT zlib_POPULATED)
     set_target_properties(
         zlibstatic
         PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
         PUBLIC_HEADER "${zlib_BINARY_DIR}"
         XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 13.0
     )
