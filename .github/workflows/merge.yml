@@ -12,15 +12,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [ linux-amd64, linux-arm32v7, linux-arm64 ]
+        include:
+          - project: linux-amd64
+            runner: ubuntu-22.04
+            use_qemu: true
+          - project: linux-arm32v7
+            runner: ubuntu-22.04
+            use_qemu: true
+          - project: linux-arm64
+            runner: ubuntu-22.04-arm
+            use_qemu: false
 
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.runner }}
 
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
 
     - name: Allow multiarch
+      if: ${{ matrix.use_qemu }}
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
     - name: Build VM & Launcher
