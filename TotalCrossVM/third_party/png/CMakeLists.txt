@@ -70,6 +70,7 @@ if(NOT libpng_POPULATED)
     set_target_properties(
         png_static
         PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
         PUBLIC_HEADER "${libpng_SOURCE_DIR} ${libpng_BINARY_DIR}"
         XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 13.0
     )
