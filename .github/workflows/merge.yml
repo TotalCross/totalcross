@@ -40,20 +40,10 @@ jobs:
           apt-get install -y apt-transport-https ca-certificates gnupg wget &&
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - &&
           echo 'deb https://apt.kitware.com/ubuntu/ bionic main' > /etc/apt/sources.list.d/kitware.list &&
-          if [ '${{ matrix.project }}' = 'linux-arm64' ]; then
-            apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F &&
-            echo 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu bionic main' > /etc/apt/sources.list.d/ubuntu-toolchain-r-test.list &&
-            apt-get update &&
-            apt-get install -y gcc-10 g++-10;
-          fi &&
           apt-get update &&
           apt-get install -y cmake curl git rsync &&
           cmake --version &&
-          if [ '${{ matrix.project }}' = 'linux-arm64' ]; then
-            CC=gcc-10 CXX=g++-10 cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE=-O0 -DCMAKE_CXX_FLAGS_RELEASE=-O0 -G Ninja;
-          else
-            cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja;
-          fi &&
+          cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
           ninja
         "
 

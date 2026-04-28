@@ -55,8 +55,6 @@ endif()
 if(NOT DEFINED USE_MADLER_ZLIB)
   if(TARGET_WINCE)
     set(USE_MADLER_ZLIB ON)
-  elseif(UNIX AND (CMAKE_SYSTEM_NAME STREQUAL "Linux") AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
-    set(USE_MADLER_ZLIB ON)
   endif()
 endif()
 
@@ -295,14 +293,6 @@ set(SOURCES
     ${TC_SRCDIR}/nm/io/device/gpiod/Gpiod.c
 
     )
-
-if(UNIX AND (CMAKE_SYSTEM_NAME STREQUAL "Linux") AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
-  set_source_files_properties(
-    ${TC_SRCDIR}/nm/map/GoogleMaps.c
-    PROPERTIES
-    COMPILE_OPTIONS "-O0"
-  )
-endif()
 
 if(UNIX AND NOT (DEFINED ANDROID_ABI OR APPLE))
   set(SOURCES
