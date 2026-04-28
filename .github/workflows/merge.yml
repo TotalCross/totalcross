@@ -47,6 +47,36 @@ jobs:
           ninja
         "
 
+  build-linux-arm32v7-cross:
+    name: Build `linux-arm32v7-cross`
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Install cross toolchain
+      run: |
+        sudo dpkg --add-architecture armhf
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          curl \
+          gcc-arm-linux-gnueabihf \
+          g++-arm-linux-gnueabihf \
+          git \
+          ninja-build \
+          rsync
+
+    - name: Build VM & Launcher
+      run: |
+        cmake TotalCrossVM \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_TOOLCHAIN_FILE=${PWD}/TotalCrossVM/cmake/toolchains/linux-arm32v7.cmake \
+          -DPNG_ARM_NEON_OPT=0 \
+          -G Ninja
+        ninja
+
   build-windows:
     name: Build `windows`
     runs-on: windows-2022
