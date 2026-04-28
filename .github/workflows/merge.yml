@@ -29,6 +29,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
 
+    - name: Cache Skia artifacts
+      uses: actions/cache@v4
+      with:
+        path: TotalCrossVM/skia/local
+        key: skia-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+
     - name: Allow multiarch
       if: ${{ matrix.use_qemu }}
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
@@ -131,6 +137,14 @@ jobs:
       with:
         distribution: temurin
         java-version: 17
+
+    - name: Cache Skia artifacts
+      uses: actions/cache@v4
+      with:
+        path: |
+          TotalCrossVM/skia/local
+          TotalCrossVM/android/tcvm/src/main/jniLibs
+        key: skia-android-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
