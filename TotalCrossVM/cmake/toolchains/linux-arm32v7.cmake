@@ -11,8 +11,8 @@ set(CMAKE_ASM_COMPILER arm-linux-gnueabihf-gcc)
 
 set(CMAKE_CROSSCOMPILING TRUE)
 
-set(CMAKE_C_FLAGS_INIT "-march=armv7-a -mfloat-abi=hard")
-set(CMAKE_CXX_FLAGS_INIT "-march=armv7-a -mfloat-abi=hard")
+set(CMAKE_C_FLAGS_INIT "-march=armv7-a -mfpu=neon -mfloat-abi=hard")
+set(CMAKE_CXX_FLAGS_INIT "-march=armv7-a -mfpu=neon -mfloat-abi=hard")
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
