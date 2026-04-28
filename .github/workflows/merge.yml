@@ -17,8 +17,8 @@ jobs:
             runner: ubuntu-22.04
             use_qemu: true
           - project: linux-arm32v7
-            runner: ubuntu-22.04
-            use_qemu: true
+            runner: ubuntu-22.04-arm
+            use_qemu: false
           - project: linux-arm64
             runner: ubuntu-22.04-arm
             use_qemu: false
