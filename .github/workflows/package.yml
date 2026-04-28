@@ -74,9 +74,7 @@ jobs:
     name: Build Android
     if: ${{ always() }}
     needs: build_linux
-    runs-on: ubuntu-22.04
-    container:
-      image: docker://fabernovel/android:api-29-ndk-v1.2.0
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout
@@ -88,17 +86,17 @@ jobs:
         distribution: temurin
         java-version: 17
 
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        packages: ''
+
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
-
-    - name: Install native build tools
-      run: |
-        apt-get update
-        apt-get install -y curl git python3 rsync tar
 
     - name: Build Android
       working-directory: TotalCrossVM/android
