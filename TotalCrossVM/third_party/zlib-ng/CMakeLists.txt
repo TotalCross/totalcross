@@ -46,15 +46,8 @@ if(NOT zlib_POPULATED)
     
     add_subdirectory(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
 
-    get_target_property(ZLIBSTATIC_ALIASED_TARGET zlibstatic ALIASED_TARGET)
-    if(ZLIBSTATIC_ALIASED_TARGET)
-        set(ZLIBSTATIC_TARGET ${ZLIBSTATIC_ALIASED_TARGET})
-    else()
-        set(ZLIBSTATIC_TARGET zlibstatic)
-    endif()
-
     set_target_properties(
-        ${ZLIBSTATIC_TARGET}
+        zlibstatic
         PROPERTIES
         POSITION_INDEPENDENT_CODE ON
         PUBLIC_HEADER "${zlib_BINARY_DIR}"
