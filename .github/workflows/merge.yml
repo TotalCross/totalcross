@@ -43,7 +43,7 @@ jobs:
           apt-get update &&
           apt-get install -y cmake curl git rsync &&
           cmake --version &&
-          cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja &&
+          cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${{ matrix.project == 'linux-arm32v7' && '-DPNG_ARM_NEON_OPT=0' || '' }} -G Ninja &&
           ninja
         "
 
