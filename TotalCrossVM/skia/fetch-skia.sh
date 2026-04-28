@@ -50,12 +50,41 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "missing required command: $1"
 }
 
+SKIA_DOWNLOAD_RETRIES="${SKIA_DOWNLOAD_RETRIES:-5}"
+SKIA_DOWNLOAD_RETRY_DELAY="${SKIA_DOWNLOAD_RETRY_DELAY:-2}"
+
+should_retry_download() {
+  local status="$1"
+  [[ "$status" == "000" || "$status" == "408" || "$status" == "429" || "$status" == "500" || "$status" == "502" || "$status" == "503" || "$status" == "504" ]]
+}
+
 download_to_file() {
   local url="$1"
   local out="$2"
+  local attempt=1
+  local max_attempts="$SKIA_DOWNLOAD_RETRIES"
+  local delay="$SKIA_DOWNLOAD_RETRY_DELAY"
+  local status
+  local curl_exit
 
   require_cmd curl
-  curl -fsSL "$url" -o "$out"
+
+  while true; do
+    status=$(curl -w "%{http_code}" -fsSL -o "$out" "$url") && return 0
+    curl_exit=$?
+
+    if [[ $attempt -ge $max_attempts ]] || ! should_retry_download "${status:-000}"; then
+      rm -f "$out"
+      echo "error: failed to download '$url' after $attempt attempt(s) (curl exit $curl_exit, http ${status:-000})" >&2
+      return "$curl_exit"
+    fi
+
+    rm -f "$out"
+    echo "warning: transient download failure for '$url' (attempt $attempt/$max_attempts, curl exit $curl_exit, http ${status:-000}); retrying in ${delay}s" >&2
+    sleep "$delay"
+    attempt=$((attempt + 1))
+    delay=$((delay * 2))
+  done
 }
 
 verify_sha256() {
