@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.11)
 cmake_policy(SET CMP0007 NEW) # CMP0007: list command no longer ignores empty elements.
 
 include(FetchContent)
