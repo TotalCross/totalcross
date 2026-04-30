@@ -14,6 +14,7 @@
 #if defined (WIN32) || defined (WINCE)
  #include <stdint.h> // Include stdint before we check for INT32_MAX to avoid redefinition
 #endif
+#include "tcarch.h"
 
 #define TCVM_CRID 'TCvm'
 
