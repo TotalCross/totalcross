@@ -60,6 +60,7 @@ framework_phase_match = find_unique(
 )
 
 framework_phase_entries = framework_phase_match[:files]
+normalized_framework_phase_entries = framework_phase_entries.gsub(/[ \t]+/, '')
 new_build_file_lines = []
 missing_framework_entries = []
 
@@ -83,9 +84,19 @@ DEPENDENCY_LIBRARIES.each do |library_name|
       generated_id
     end
 
-  next if framework_phase_entries.include?("/* #{library_name} in Frameworks */")
+  next if normalized_framework_phase_entries.include?("/*#{library_name}inFrameworks*/,")
 
   missing_framework_entries << "\t\t\t\t#{build_file_id} /* #{library_name} in Frameworks */,\n"
+end
+
+framework_phase_entries_without_pods = framework_phase_entries.gsub(
+  /^\s*[0-9A-F]{24} \/\* libPods-tcvm\.a in Frameworks \*\/,\n?/,
+  ''
+)
+
+if framework_phase_entries_without_pods != framework_phase_entries
+  framework_phase_entries = framework_phase_entries_without_pods
+  changed = true
 end
 
 unless new_build_file_lines.empty?
