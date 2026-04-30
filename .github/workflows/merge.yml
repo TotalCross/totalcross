@@ -161,3 +161,44 @@ jobs:
     - name: Build Android
       working-directory: TotalCrossVM/android
       run: ./gradlew assembleRelease -x test --stacktrace
+
+  build-ios:
+    name: Build `iOS`
+    runs-on: macos-15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Cache Skia artifacts
+      uses: actions/cache@v4
+      with:
+        path: TotalCrossVM/skia/local
+        key: skia-ios-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+
+    - name: Show tool versions
+      run: |
+        xcodebuild -version
+        cmake --version
+        pod --version
+
+    - name: Generate and patch Xcode project
+      working-directory: TotalCrossVM/xcode
+      run: |
+        cmake ../ -GXcode
+        pod install
+        /usr/libexec/PlistBuddy -c "Add :DisableBuildSystemDeprecationDiagnostic bool" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings || true
+        /usr/libexec/PlistBuddy -c "Set :DisableBuildSystemDeprecationDiagnostic true" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+        ruby ../../scripts/fix-ios-xcode-dependencies.rb TCVM.xcodeproj/project.pbxproj
+
+    - name: Build iOS app for simulator
+      working-directory: TotalCrossVM/xcode
+      run: |
+        xcodebuild \
+          -workspace TotalCross.xcworkspace \
+          -scheme TotalCross \
+          -configuration Release \
+          -sdk iphonesimulator \
+          -destination 'generic/platform=iOS Simulator' \
+          CODE_SIGNING_ALLOWED=NO \
+          build
