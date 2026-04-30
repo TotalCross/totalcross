@@ -18,7 +18,7 @@ pushd ios/TotalCrossVM/xcode
    # Make sure legacy build system is enabled
    /usr/libexec/PlistBuddy -c "Add :DisableBuildSystemDeprecationDiagnostic bool" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
    /usr/libexec/PlistBuddy -c "Set :DisableBuildSystemDeprecationDiagnostic true" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
-   read -p "Fix the mbedTLS dependencies and press any key to continue... " -n1 -s
+   ruby ../../scripts/fix-ios-xcode-dependencies.rb TCVM.xcodeproj/project.pbxproj
    xcodebuild -workspace TotalCross.xcworkspace -scheme TotalCross BUILD_DIR=${PWD} archive -archivePath build/TotalCross.xcarchive teamID="W5Y7X2KNUL" -configuration Release
    xcodebuild -exportArchive -archivePath build/TotalCross.xcarchive -exportPath build/TotalCross.ipa -exportOptionsPlist ExportOptions.plist
 popd
