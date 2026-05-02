@@ -55,11 +55,13 @@ raise 'Unable to locate tcvm Frameworks build phase' unless framework_phase_id
 
 framework_phase_match = find_unique(
   content,
-  /(#{framework_phase_id} \/\* Frameworks \*\/ = \{\n\t\t\tisa = PBXFrameworksBuildPhase;\n\t\t\tbuildActionMask = 2147483647;\n\t\t\tfiles = \(\n)(?<files>.*?)(\n\t\t\t\);\n\t\t\trunOnlyForDeploymentPostprocessing = 0;\n\t\t\};)/m,
+  /(?<prefix>#{framework_phase_id} \/\* Frameworks \*\/ = \{\n\t\t\tisa = PBXFrameworksBuildPhase;\n\t\t\tbuildActionMask = 2147483647;\n\t\t\tfiles = \(\n)(?<files>.*?)(?<suffix>\n\t\t\t\);\n\t\t\trunOnlyForDeploymentPostprocessing = 0;\n\t\t\};)/m,
   'tcvm Frameworks build phase block'
 )
 
+framework_phase_prefix = framework_phase_match[:prefix]
 framework_phase_entries = framework_phase_match[:files]
+framework_phase_suffix = framework_phase_match[:suffix]
 normalized_framework_phase_entries = framework_phase_entries.gsub(/[ \t]+/, '')
 new_build_file_lines = []
 missing_framework_entries = []
@@ -106,23 +108,16 @@ end
 
 unless missing_framework_entries.empty?
   insertion = missing_framework_entries.join
-  updated_entries =
-    if framework_phase_entries.include?('libPods-tcvm.a in Frameworks')
-      framework_phase_entries.sub(
-        /(\t\t\t\t[0-9A-F]{24} \/\* libPods-tcvm\.a in Frameworks \*\/,\n?)/,
-        insertion + "\\1"
-      )
-    else
-      suffix = framework_phase_entries.end_with?("\n") || framework_phase_entries.empty? ? '' : "\n"
-      framework_phase_entries + suffix + insertion
-    end
-
-  updated_framework_phase = framework_phase_match[0].sub(
-    framework_phase_entries,
-    updated_entries
-  )
+  suffix = framework_phase_entries.end_with?("\n") || framework_phase_entries.empty? ? '' : "\n"
+  updated_entries = framework_phase_entries + suffix + insertion
+  updated_framework_phase = framework_phase_prefix + updated_entries + framework_phase_suffix
   content.sub!(framework_phase_match[0], updated_framework_phase)
   changed = true
+else
+  if framework_phase_entries_without_pods != framework_phase_match[:files]
+  updated_framework_phase = framework_phase_prefix + framework_phase_entries + framework_phase_suffix
+  content.sub!(framework_phase_match[0], updated_framework_phase)
+  end
 end
 
 if changed
