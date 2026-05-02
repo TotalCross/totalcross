@@ -192,16 +192,14 @@ jobs:
         /usr/libexec/PlistBuddy -c "Set :DisableBuildSystemDeprecationDiagnostic true" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
         ruby ../../scripts/fix-ios-xcode-dependencies.rb TCVM.xcodeproj/project.pbxproj
 
-    - name: Build iOS app for simulator
+    - name: Build iOS app for device
       working-directory: TotalCrossVM/xcode
       run: |
         xcodebuild \
           -workspace TotalCross.xcworkspace \
           -scheme TotalCross \
           -configuration Release \
-          -sdk iphonesimulator \
-          -destination 'generic/platform=iOS Simulator' \
-          ARCHS=arm64 \
-          ONLY_ACTIVE_ARCH=YES \
+          -sdk iphoneos \
+          -destination 'generic/platform=iOS' \
           CODE_SIGNING_ALLOWED=NO \
           build
