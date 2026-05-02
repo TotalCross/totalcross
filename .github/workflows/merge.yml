@@ -55,6 +55,8 @@ jobs:
 
   build-linux-arm32v7-cross:
     name: Build `linux-arm32v7-cross`
+    # Temporarily disabled; remove this condition to re-enable the cross build.
+    if: ${{ false }}
     runs-on: ubuntu-22.04
 
     steps:
