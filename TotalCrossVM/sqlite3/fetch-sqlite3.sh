@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: fetch-sqlite3.sh [options]
+
+Options:
+  --platform PLATFORM      Target platform: linux, windows, android, ios
+  --arch ARCH              Target architecture, e.g. x86_64, armv7l, aarch64
+  --variant VARIANT        Artifact variant, default: plain
+  --release-tag TAG        GitHub release tag, default: sqlite-3.32.3
+  --github-repo OWNER/REPO GitHub repository, default: TotalCross/totalcross-sqlite3-build
+  --dest DIR               Destination directory, default: TotalCrossVM/sqlite3/local
+EOF
+}
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${script_dir}/.." && pwd)"
+
+platform=""
+arch=""
+variant="plain"
+release_tag="sqlite-3.32.3"
+github_repo="TotalCross/totalcross-sqlite3-build"
+dest="${script_dir}/local"
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --platform)
+      platform="${2:-}"
+      shift 2
+      ;;
+    --arch)
+      arch="${2:-}"
+      shift 2
+      ;;
+    --variant)
+      variant="${2:-}"
+      shift 2
+      ;;
+    --release-tag)
+      release_tag="${2:-}"
+      shift 2
+      ;;
+    --github-repo)
+      github_repo="${2:-}"
+      shift 2
+      ;;
+    --dest)
+      dest="${2:-}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [ -z "$platform" ] || [ -z "$arch" ]; then
+  usage >&2
+  exit 2
+fi
+
+case "$platform" in
+  linux)
+    case "$arch" in
+      amd64) arch="x86_64" ;;
+      arm64) arch="aarch64" ;;
+      arm|armv7) arch="armv7l" ;;
+    esac
+    ;;
+  macos|ios)
+    case "$arch" in
+      aarch64) arch="arm64" ;;
+      amd64) arch="x86_64" ;;
+    esac
+    ;;
+esac
+
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "${tmp_dir}"' EXIT
+
+asset_name=""
+archive=""
+for candidate in "sqlite3-${platform}-${arch}.tar.gz" "sqlite3-${variant}-${platform}-${arch}.tar.gz"; do
+  download_url="https://github.com/${github_repo}/releases/download/${release_tag}/${candidate}"
+  archive="${tmp_dir}/${candidate}"
+  echo "Downloading ${download_url}"
+  if curl -fsSL -o "${archive}" "${download_url}"; then
+    asset_name="${candidate}"
+    break
+  fi
+done
+
+if [ -z "${asset_name}" ]; then
+  echo "Unable to download a SQLite3 artifact for ${variant}/${platform}/${arch}" >&2
+  exit 1
+fi
+
+tar -tzf "${archive}" >/dev/null
+tar -xzf "${archive}" -C "${tmp_dir}"
+
+include_header="$(find "${tmp_dir}" -path "*/include/sqlite3.h" -type f | head -n 1)"
+if [ -z "${include_header}" ]; then
+  echo "Unable to find include/sqlite3.h in ${asset_name}" >&2
+  exit 1
+fi
+
+artifact_root="$(cd "$(dirname "${include_header}")/.." && pwd)"
+if ! find "${artifact_root}/lib" -type f \( -name "libsqlite3.a" -o -name "sqlite3.lib" \) | grep -q .; then
+  echo "Unable to find sqlite3 static library under ${artifact_root}/lib" >&2
+  exit 1
+fi
+
+rm -rf "${dest}"
+mkdir -p "${dest}"
+cp -a "${artifact_root}/." "${dest}/"
+
+echo "Installed SQLite3 ${variant}/${platform}/${arch} into ${dest}"

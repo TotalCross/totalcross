@@ -45,6 +45,10 @@ if (NOT DEFINED SKIA_AUTO_FETCH)
   set(SKIA_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED SQLITE3_AUTO_FETCH)
+  set(SQLITE3_AUTO_FETCH ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
@@ -63,6 +67,15 @@ if(DEFINED PNG_ARM_NEON_OPT)
   add_definitions(-DPNG_ARM_NEON_OPT=${PNG_ARM_NEON_OPT})
 endif(DEFINED PNG_ARM_NEON_OPT)
 
+# Find SQLite3
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+set(TCVM_REPO_ROOT "${CMAKE_SOURCE_DIR}/..")
+include("${CMAKE_SOURCE_DIR}/sqlite3/AutoFetchSQLite3.cmake")
+if(SQLITE3_AUTO_FETCH)
+  tcvm_auto_fetch_sqlite3()
+endif()
+find_package(SQLite3 REQUIRED)
+
 add_subdirectory(third_party) 
 
 target_link_libraries(tcvm zlibstatic)
@@ -73,8 +86,6 @@ endif()
 target_link_libraries(tcvm SQLite3)
 
 # Find SDL2 and Skia
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
-set(TCVM_REPO_ROOT "${CMAKE_SOURCE_DIR}/..")
 include("${CMAKE_SOURCE_DIR}/skia/AutoFetchSkia.cmake")
 
 # Find SDL2
@@ -469,9 +480,9 @@ elseif(MSVC)
 else()
   if(CMAKE_GENERATOR STREQUAL Xcode)
     add_definitions(-Ddarwin -DSK_GL)
-    set(CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS} "-lskia")
-    set(CMAKE_XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS ${SKIA_LIBRARY_DIRS})
-    set(CMAKE_XCODE_ATTRIBUTE_LINK_BINARIES_WITH_LIBRARIES ${SKIA_LIBRARIES})
+    set(CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS} "-lskia -lsqlite3")
+    set(CMAKE_XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${SKIA_LIBRARY_DIRS} ${SQLITE3_LIBRARY_DIR}")
+    set(CMAKE_XCODE_ATTRIBUTE_LINK_BINARIES_WITH_LIBRARIES "${SKIA_LIBRARIES} ${SQLITE3_LIBRARIES}")
     set(CMAKE_OSX_SYSROOT iphoneos)
     set(CMAKE_OSX_ARCHITECTURES "arm64")
   else()

@@ -7,7 +7,6 @@ DEPENDENCY_LIBRARIES = %w[
   libmbedtls.a
   libmbedx509.a
   libpng16.a
-  libSQLite3.a
   libz.a
 ].freeze
 
