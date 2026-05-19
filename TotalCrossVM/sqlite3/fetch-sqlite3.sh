@@ -11,6 +11,8 @@ Options:
   --variant VARIANT        Artifact variant, default: plain
   --release-tag TAG        GitHub release tag, default: sqlite-3.32.3
   --github-repo OWNER/REPO GitHub repository, default: TotalCross/totalcross-sqlite3-build
+  --github-token-env NAME  Environment variable containing a GitHub token,
+                           default: SQLITE3_GITHUB_TOKEN, then GITHUB_TOKEN
   --dest DIR               Destination directory, default: TotalCrossVM/sqlite3/local
 EOF
 }
@@ -23,6 +25,7 @@ arch=""
 variant="plain"
 release_tag="sqlite-3.32.3"
 github_repo="TotalCross/totalcross-sqlite3-build"
+github_token_env=""
 dest="${script_dir}/local"
 
 while [ "$#" -gt 0 ]; do
@@ -45,6 +48,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --github-repo)
       github_repo="${2:-}"
+      shift 2
+      ;;
+    --github-token-env)
+      github_token_env="${2:-}"
       shift 2
       ;;
     --dest)
@@ -87,13 +94,83 @@ esac
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "${tmp_dir}"' EXIT
 
+github_token=""
+if [ -n "${github_token_env}" ]; then
+  github_token="${!github_token_env:-}"
+elif [ -n "${SQLITE3_GITHUB_TOKEN:-}" ]; then
+  github_token="${SQLITE3_GITHUB_TOKEN}"
+elif [ -n "${GITHUB_TOKEN:-}" ]; then
+  github_token="${GITHUB_TOKEN}"
+fi
+
+github_curl() {
+  if [ -n "${github_token}" ]; then
+    curl -fsSL \
+      -H "Authorization: Bearer ${github_token}" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "$@"
+  else
+    curl -fsSL "$@"
+  fi
+}
+
+download_release_asset() {
+  local candidate="$1"
+  local archive_path="$2"
+  local download_url="https://github.com/${github_repo}/releases/download/${release_tag}/${candidate}"
+
+  echo "Downloading SQLite3 artifact ${candidate} from ${github_repo}@${release_tag}"
+
+  if github_curl -o "${archive_path}" "${download_url}"; then
+    return 0
+  fi
+
+  if [ -z "${github_token}" ]; then
+    return 1
+  fi
+
+  local release_json="${tmp_dir}/release.json"
+  local asset_id=""
+  github_curl \
+    -o "${release_json}" \
+    "https://api.github.com/repos/${github_repo}/releases/tags/${release_tag}"
+
+  asset_id="$(
+    awk -v asset_name="${candidate}" '
+      /"id":/ && id == "" {
+        line = $0
+        sub(/.*"id": */, "", line)
+        sub(/,.*/, "", line)
+        id = line
+      }
+      /"name":/ {
+        line = $0
+        sub(/.*"name": "/, "", line)
+        sub(/".*/, "", line)
+        if (line == asset_name) {
+          print id
+          exit
+        }
+        id = ""
+      }
+    ' "${release_json}"
+  )"
+
+  if [ -z "${asset_id}" ]; then
+    return 1
+  fi
+
+  github_curl \
+    -H "Accept: application/octet-stream" \
+    -o "${archive_path}" \
+    "https://api.github.com/repos/${github_repo}/releases/assets/${asset_id}"
+}
+
 asset_name=""
 archive=""
 for candidate in "sqlite3-${platform}-${arch}.tar.gz" "sqlite3-${variant}-${platform}-${arch}.tar.gz"; do
-  download_url="https://github.com/${github_repo}/releases/download/${release_tag}/${candidate}"
   archive="${tmp_dir}/${candidate}"
-  echo "Downloading ${download_url}"
-  if curl -fsSL -o "${archive}" "${download_url}"; then
+  if download_release_asset "${candidate}" "${archive}"; then
     asset_name="${candidate}"
     break
   fi
