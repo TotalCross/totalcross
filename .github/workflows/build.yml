@@ -179,17 +179,21 @@ jobs:
         ./gradlew dist -x test --stacktrace
         cp build/libs/totalcross-sdk-* dist
 
+    - name: Pack SDK build artifacts
+      run: |
+        tar -czf sdk-build.tar.gz \
+          TotalCrossSDK/license.txt \
+          TotalCrossSDK/etc \
+          TotalCrossSDK/src \
+          TotalCrossSDK/build \
+          TotalCrossSDK/dist \
+          TotalCrossSDK/docs
+
     - name: Upload SDK build artifacts
       uses: actions/upload-artifact@v7
       with:
         name: sdk-build
-        path: |
-          TotalCrossSDK/README.txt
-          TotalCrossSDK/license.txt
-          TotalCrossSDK/etc/
-          TotalCrossSDK/src/
-          TotalCrossSDK/build/
-          TotalCrossSDK/dist/
+        path: sdk-build.tar.gz
 
   build-android:
     name: Build `Android`
