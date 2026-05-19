@@ -5,6 +5,9 @@ FROM arm64v8/ubuntu:bionic AS build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         cmake \
+        curl \
+        git \
+        gnupg \
         ninja-build \
         build-essential \
         libfontconfig1-dev \
@@ -36,10 +39,12 @@ RUN apt-get update && \
         libwayland-dev \
         libxkbcommon-dev \
         wayland-protocols \
-        git \
-        ca-certificates; \
+        ca-certificates \
+        rsync \
+        wget; \
     apt-get install -y libglvnd-dev || apt-get -f install; \
-    apt-get clean
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/SDL-mirror/SDL.git \
         --branch=release-2.0.10 \
