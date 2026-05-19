@@ -34,12 +34,15 @@ jobs:
         include:
           - project: linux-amd64
             runner: ubuntu-22.04
-            use_qemu: true
+            docker_platform: linux/amd64
+            use_qemu: false
           - project: linux-arm32v7
             runner: ubuntu-22.04
+            docker_platform: linux/arm/v7
             use_qemu: true
           - project: linux-arm64
             runner: ubuntu-22.04-arm
+            docker_platform: linux/arm64
             use_qemu: false
 
     runs-on: ${{ matrix.runner }}
@@ -65,7 +68,7 @@ jobs:
 
     - name: Build VM & Launcher
       run: |
-        docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.5 bash -lc "
+        docker run --platform ${{ matrix.docker_platform }} -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.5 bash -lc "
           cmake --version &&
           cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${{ matrix.project == 'linux-arm32v7' && '-DPNG_ARM_NEON_OPT=0' || '' }} -G Ninja &&
           ninja
