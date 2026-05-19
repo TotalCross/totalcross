@@ -59,6 +59,7 @@ build*/
 *.orig
 TotalCrossVM/skia/local/
 TotalCrossVM/sqlite3/local/
+TotalCrossVM/mbedtls/local/
 TotalCrossVM/skia/local/out/Release/**/libskia.a
 TotalCrossVM/android/tcvm/src/main/jniLibs/**/libskia.so
 

@@ -3,9 +3,6 @@
 require 'digest'
 
 DEPENDENCY_LIBRARIES = %w[
-  libmbedcrypto.a
-  libmbedtls.a
-  libmbedx509.a
   libpng16.a
   libz.a
 ].freeze
