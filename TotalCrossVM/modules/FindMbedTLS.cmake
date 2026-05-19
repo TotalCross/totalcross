@@ -76,5 +76,11 @@ if(MbedTLS_FOUND)
       IMPORTED_LOCATION "${MBEDCRYPTO_LIBRARY}"
       INTERFACE_INCLUDE_DIRECTORIES "${MBEDTLS_INCLUDE_DIR}"
     )
+
+    if(WIN32)
+      set_property(TARGET MbedTLS::mbedcrypto APPEND PROPERTY
+        INTERFACE_LINK_LIBRARIES bcrypt
+      )
+    endif()
   endif()
 endif()
