@@ -238,16 +238,14 @@ jobs:
         restore-keys: ${{ runner.os }}-gradle
 
     - name: Build Android
-      working-directory: TotalCrossVM/android
-      run: ./gradlew assembleRelease -x test --stacktrace
+      working-directory: scripts
+      run: ./package-android.sh
 
     - name: Upload Android build artifacts
       uses: actions/upload-artifact@v7
       with:
         name: android
-        path: |
-          TotalCrossVM/android/app/build/outputs/apk/**/*.apk
-          TotalCrossVM/android/app/build/outputs/bundle/**/*.aab
+        path: build/TotalCross/dist/vm/android/TotalCross.aab
 
   build-ios:
     name: Build `iOS`

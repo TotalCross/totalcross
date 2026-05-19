@@ -98,8 +98,16 @@ jobs:
       if: ${{ success() }}
       shell: bash
       run: |
+        android_artifact="$(find android -name "TotalCross.aab" -type f -print -quit)"
+        if [ -z "$android_artifact" ]; then
+          echo "Could not find TotalCross.aab in Android build artifact" >&2
+          exit 1
+        fi
+
         mkdir -p TotalCrossSDK/dist/vm/android
-        find android -name "*.aab" -exec cp -p -a -R {} TotalCrossSDK/dist/vm/android/TotalCross.aab \; -quit
+        mkdir -p TotalCrossSDK/etc/launchers/android
+        mkdir -p TotalCrossSDK/etc/tools/android
+        cp -p -a -R "$android_artifact" TotalCrossSDK/dist/vm/android/TotalCross.aab
 
     - name: Download iOS
       continue-on-error: true
