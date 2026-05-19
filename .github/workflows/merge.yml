@@ -65,14 +65,7 @@ jobs:
 
     - name: Build VM & Launcher
       run: |
-        docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.0 bash -lc "
-          sed -i -e 's|http://ports.ubuntu.com|https://ports.ubuntu.com|g' -e 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g' -e 's|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list &&
-          apt-get update &&
-          apt-get install -y apt-transport-https ca-certificates gnupg wget &&
-          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - &&
-          echo 'deb https://apt.kitware.com/ubuntu/ bionic main' > /etc/apt/sources.list.d/kitware.list &&
-          apt-get update &&
-          apt-get install -y cmake curl git rsync &&
+        docker run -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.3 bash -lc "
           cmake --version &&
           cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${{ matrix.project == 'linux-arm32v7' && '-DPNG_ARM_NEON_OPT=0' || '' }} -G Ninja &&
           ninja
