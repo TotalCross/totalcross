@@ -184,6 +184,10 @@ jobs:
       with:
         name: sdk-build
         path: |
+          TotalCrossSDK/README.txt
+          TotalCrossSDK/license.txt
+          TotalCrossSDK/etc/
+          TotalCrossSDK/src/
           TotalCrossSDK/build/
           TotalCrossSDK/dist/
 

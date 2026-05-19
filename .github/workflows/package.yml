@@ -17,57 +17,6 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-
-    - name: Download Dependences S3 Libs
-      uses: prewk/s3-cp-action@master
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://${{ secrets.S3_BUCKET }}/libs.zip'
-        DEST: 'libs.zip'
-
-    - name: Download Dependences S3 Tools
-      uses: prewk/s3-cp-action@master
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://${{ secrets.S3_BUCKET }}/tools.zip'
-        DEST: 'tools.zip'
-
-    - name: Download Dependences S3 LitebaseLib.tcz
-      uses: prewk/s3-cp-action@master
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://${{ secrets.S3_BUCKET }}/LitebaseLib.tcz'
-        DEST: 'LitebaseLib.tcz'
-
-    - name: Download Dependences S3 Android Key
-      uses: prewk/s3-cp-action@master
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://${{ secrets.S3_BUCKET }}/key_android.zip'
-        DEST: 'key_android.zip'
-
-    - name: Download Dependences S3 Docs Litebase
-      uses: prewk/s3-cp-action@master
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://${{ secrets.S3_BUCKET }}/docs_litebase.zip'
-        DEST: 'docs_litebase.zip'
-
-    - name: Download Dependences S3 Sources Litebase
-      uses: prewk/s3-cp-action@master
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        SOURCE: 's3://${{ secrets.S3_BUCKET }}/lb.zip'
-        DEST: 'lb.zip'
-
     - name: Download SDK build artifacts
       uses: actions/download-artifact@v4
       with:
@@ -163,23 +112,54 @@ jobs:
         mkdir -p TotalCrossSDK/dist/vm/ios
         find ios -name "TotalCross.app" -type d -exec cp -p -a -R {} TotalCrossSDK/dist/vm/ios/ \; -quit
 
-    - name: Manager files
+    - name: Manage files
+      shell: bash
       run: |
-        rm -rf TotalCrossSDK/docs/* && mv TotalCrossSDK/build/docs/javadoc TotalCrossSDK/docs/html
-        mv LitebaseLib.tcz TotalCrossSDK/dist/vm/
-        find TotalCrossSDK -name .DS_Store -exec rm -rf -- {} +
-        find TotalCrossSDK -name "*git*" -exec rm -rf -- {} +
-        find TotalCrossSDK -name "*gradle*" -type f -exec rm -rf -- {} + && find TotalCrossSDK -name "*gradle*" -type d -exec rm -rf -- {} +
-        rm -rf TotalCrossSDK/build TotalCrossSDK/build.xml TotalCrossSDK/proguard.txt TotalCrossSDK/src/test
-        unzip -n libs.zip -x "__MACOSX/*" -d TotalCrossSDK/etc/
-        unzip -n tools.zip -x "__MACOSX/*" -d TotalCrossSDK/etc/
-        unzip -n key_android.zip -d TotalCrossSDK/etc/
-        unzip -n lb.zip -d TotalCrossSDK/src/
-        unzip -n docs_litebase.zip -d TotalCrossSDK/docs/html
+        outdir="build/TotalCross"
+
+        rm -rf "$outdir"
+        mkdir -p "$outdir/dist/vm" "$outdir/docs/html"
+
+        cp TotalCrossSDK/README.txt "$outdir/"
+        cp TotalCrossSDK/license.txt "$outdir/"
+
+        rsync --recursive \
+          --exclude=obfuscator \
+          --exclude=scripts \
+          --exclude='tools/ant/*[0-9].jar' \
+          --exclude=tools/jdeb \
+          --exclude='tools/makecab/*.inf' \
+          TotalCrossSDK/etc \
+          "$outdir/"
+
+        rsync \
+          --exclude='*-intermediate.jar' \
+          --exclude='*-proguard.jar' \
+          TotalCrossSDK/build/libs/totalcross-sdk*.jar \
+          "$outdir/dist/"
+        cp TotalCrossSDK/build/libs/totalcross-sdk-?.?.?.jar "$outdir/dist/totalcross-sdk.jar"
+        cp TotalCrossSDK/build/libs/*.tcz "$outdir/dist/vm/"
+        cp TotalCrossSDK/etc/fonts/TCFont.tcz "$outdir/dist/vm/"
+
+        cp -R TotalCrossSDK/build/docs/javadoc/. "$outdir/docs/html/"
+
+        rsync --recursive -m \
+          --exclude=test \
+          --exclude='jdkcompat*' \
+          --exclude=ras \
+          --exclude=tc/tools \
+          --exclude='**/package.html' \
+          --exclude='**/subbuild.xml' \
+          --exclude='**/*4D.java' \
+          TotalCrossSDK/src \
+          "$outdir/"
+
+        rsync --recursive TotalCrossSDK/dist/vm/ "$outdir/dist/vm/"
+        rsync --recursive TotalCrossSDK/etc/launchers/ "$outdir/etc/launchers/"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: TotalCross
         path: |
-          TotalCrossSDK/
+          build/TotalCross/
