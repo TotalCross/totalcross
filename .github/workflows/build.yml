@@ -52,7 +52,7 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Cache Skia artifacts
+    - name: Cache artifacts
       uses: actions/cache@v5
       with:
         path: |
@@ -73,6 +73,15 @@ jobs:
           cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${{ matrix.project == 'linux-arm32v7' && '-DPNG_ARM_NEON_OPT=0' || '' }} -G Ninja &&
           ninja
         "
+
+    - name: Fix Docker-owned files
+      if: ${{ always() }}
+      run: |
+        sudo chown -R "$USER:$USER" \
+          build \
+          TotalCrossVM/skia/local \
+          TotalCrossVM/sqlite3/local \
+          TotalCrossVM/mbedtls/local
 
     - name: Upload Linux build artifacts
       uses: actions/upload-artifact@v7
@@ -211,7 +220,7 @@ jobs:
         distribution: temurin
         java-version: 17
 
-    - name: Cache Skia artifacts
+    - name: Cache artifacts
       uses: actions/cache@v5
       with:
         path: |
@@ -257,7 +266,7 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Cache Skia artifacts
+    - name: Cache artifacts
       uses: actions/cache@v5
       with:
         path: |
