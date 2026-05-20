@@ -274,7 +274,7 @@ jobs:
         /usr/libexec/PlistBuddy -c "Set :DisableBuildSystemDeprecationDiagnostic true" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
         ruby ../../scripts/fix-ios-xcode-dependencies.rb TCVM.xcodeproj/project.pbxproj
 
-    - name: Build iOS app for device
+    - name: Build iOS archive for device
       working-directory: TotalCrossVM/xcode
       run: |
         xcodebuild \
@@ -283,12 +283,12 @@ jobs:
           -configuration Release \
           -sdk iphoneos \
           -destination 'generic/platform=iOS' \
-          -derivedDataPath build \
+          -archivePath build/TotalCross.xcarchive \
           CODE_SIGNING_ALLOWED=NO \
-          build
+          archive
 
     - name: Upload iOS build artifacts
       uses: actions/upload-artifact@v7
       with:
         name: ios
-        path: TotalCrossVM/xcode/build/Build/Products/Release-iphoneos/TotalCross.app
+        path: TotalCrossVM/xcode/build/TotalCross.xcarchive

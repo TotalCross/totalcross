@@ -120,8 +120,8 @@ jobs:
       if: ${{ success() }}
       shell: bash
       run: |
-        mkdir -p build/TotalCross/dist/vm/ios
-        find ios -name "TotalCross.app" -type d -exec cp -p -a -R {} build/TotalCross/dist/vm/ios/ \; -quit
+        mkdir -p build/TotalCross/etc/tools/iOSCodesign
+        find ios -name "TotalCross.xcarchive" -type d -exec cp -p -a -R {} build/TotalCross/etc/tools/iOSCodesign/ \; -quit
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
