@@ -287,8 +287,11 @@ jobs:
           CODE_SIGNING_ALLOWED=NO \
           archive
 
+    - name: Pack iOS archive
+      run: tar -czf ios-xcarchive.tar.gz -C TotalCrossVM/xcode/build TotalCross.xcarchive
+
     - name: Upload iOS build artifacts
       uses: actions/upload-artifact@v7
       with:
         name: ios
-        path: TotalCrossVM/xcode/build/TotalCross.xcarchive
+        path: ios-xcarchive.tar.gz
