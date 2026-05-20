@@ -55,8 +55,11 @@ jobs:
     - name: Cache Skia artifacts
       uses: actions/cache@v5
       with:
-        path: TotalCrossVM/skia/local
-        key: skia-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+        path: |
+          TotalCrossVM/skia/local
+          TotalCrossVM/sqlite3/local
+          TotalCrossVM/mbedtls/local
+        key: native-deps-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
     - name: Allow multiarch
       if: ${{ matrix.use_qemu }}
@@ -213,8 +216,10 @@ jobs:
       with:
         path: |
           TotalCrossVM/skia/local
+          TotalCrossVM/sqlite3/local
+          TotalCrossVM/mbedtls/local
           TotalCrossVM/android/tcvm/src/main/jniLibs
-        key: skia-android-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+        key: native-deps-android-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
@@ -255,8 +260,11 @@ jobs:
     - name: Cache Skia artifacts
       uses: actions/cache@v5
       with:
-        path: TotalCrossVM/skia/local
-        key: skia-ios-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+        path: |
+          TotalCrossVM/skia/local
+          TotalCrossVM/sqlite3/local
+          TotalCrossVM/mbedtls/local
+        key: native-deps-ios-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
     - name: Show tool versions
       run: |
