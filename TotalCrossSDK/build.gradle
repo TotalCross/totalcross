@@ -124,9 +124,9 @@ jar {
         rename ".*", "pom.xml"
     }
 
-    // collect all dependencies
+    // collect all runtime dependencies shipped in dist/libs
     int i = 0;
-    String classpathVar = configurations.compile.collect { " libs/" + (i++==0?String.format("%0\$-50s", it.getName()):String.format("%0\$-62s", it.getName()))   }.join(" ");
+    String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++==0?String.format("%0\$-50s", it.getName()):String.format("%0\$-62s", it.getName()))   }.join(" ");
     manifest {
         attributes('Main-Class': 'totalcross.Launcher')
         manifest {
@@ -249,7 +249,12 @@ task deployTcui(type:JavaExec, dependsOn: [jar, tcuiJar]) {
         configurations.runtime.collect())
 }
 
-task dist(dependsOn: build) {
+task copySdkDependencies(type: Copy) {
+	from configurations.runtimeClasspath
+	into 'dist/libs'
+}
+
+task dist(dependsOn: [build, copySdkDependencies]) {
 
 	doLast{
 		copy { 

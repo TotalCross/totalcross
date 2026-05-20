@@ -1155,8 +1155,9 @@ public final class J2TC implements JConstants, TCConstants {
       Map<String, JavaClass> classes = new HashMap<>();
       DeploySettings.isJarOrZip = fLow.endsWith(".zip") || fLow.endsWith(".jar");
       if (fLow.endsWith(".jar")) {
-        JarClassPathLoader.addFile(fName);
-        classes = getJavaClassFromJar(new JarFile(new java.io.File(fName)));
+        java.io.File jarFile = new java.io.File(fName);
+        JarClassPathLoader.addFile(jarFile);
+        classes = getJavaClassFromJar(new JarFile(jarFile));
       }
       if (DeploySettings.isJarOrZip) // process bat of files?
       {

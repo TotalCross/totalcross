@@ -148,6 +148,8 @@ jobs:
           TotalCrossSDK/build/libs/totalcross-sdk*.jar \
           "$outdir/dist/"
         cp TotalCrossSDK/build/libs/totalcross-sdk-?.?.?.jar "$outdir/dist/totalcross-sdk.jar"
+        mkdir -p "$outdir/dist/libs"
+        rsync --recursive TotalCrossSDK/dist/libs/ "$outdir/dist/libs/"
         cp TotalCrossSDK/build/libs/*.tcz "$outdir/dist/vm/"
         cp TotalCrossSDK/etc/fonts/TCFont.tcz "$outdir/dist/vm/"
 

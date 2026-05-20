@@ -185,20 +185,20 @@ public class Deploy {
   }
 
   private void addJars() throws IOException {
-    //flsobral@tc210: dynamically load some useful libs for handling files and compression 
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-1.56.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-1.56.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-io-2.2.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-compress-1.4.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-file-7.5.1.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-zip-7.5.1.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-file-7.5.1.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-kernel-7.5.1.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-swing-7.5.1.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/dd-plist.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/totalcross-annotations.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/asm-5.2.jar");
-    JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/asm-tree-5.2.jar");
+    File libsFile = new File(DeploySettings.distDir, "libs");
+    JarClassPathLoader.addJar(libsFile, "bcprov-jdk15on");
+    JarClassPathLoader.addJar(libsFile, "bcpkix-jdk15on");
+    JarClassPathLoader.addJar(libsFile, "commons-io");
+    JarClassPathLoader.addJar(libsFile, "commons-compress");
+    JarClassPathLoader.addJar(libsFile, "truezip-driver-file");
+    JarClassPathLoader.addJar(libsFile, "truezip-driver-zip");
+    JarClassPathLoader.addJar(libsFile, "truezip-file");
+    JarClassPathLoader.addJar(libsFile, "truezip-kernel");
+    JarClassPathLoader.addJar(libsFile, "truezip-swing");
+    JarClassPathLoader.addJar(libsFile, "dd-plist");
+    JarClassPathLoader.addJar(libsFile, "totalcross-annotations");
+    JarClassPathLoader.addJar(libsFile, "asm");
+    JarClassPathLoader.addJar(libsFile, "asm-tree");
   }
 
   private void showException(Throwable e, String extraMsg) {

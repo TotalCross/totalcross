@@ -27,6 +27,8 @@ pushd $BASEDIR/TotalCrossSDK
       build/libs/totalcross-sdk*.jar \
       $OUTDIR/dist/
    cp build/libs/totalcross-sdk-?.?.?.jar $OUTDIR/dist/totalcross-sdk.jar
+   mkdir -p $OUTDIR/dist/libs
+   rsync --recursive dist/libs/ $OUTDIR/dist/libs/
    cp build/libs/*.tcz $OUTDIR/dist/vm
    cp etc/fonts/TCFont.tcz $OUTDIR/dist/vm
 
