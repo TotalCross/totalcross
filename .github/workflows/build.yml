@@ -174,20 +174,11 @@ jobs:
         restore-keys: ${{ runner.os }}-gradle
 
     - name: Build SDK
-      working-directory: TotalCrossSDK
-      run: |
-        ./gradlew dist -x test --stacktrace
-        cp build/libs/totalcross-sdk-* dist
+      working-directory: scripts
+      run: ./package-sdk.sh
 
     - name: Pack SDK build artifacts
-      run: |
-        tar -czf sdk-build.tar.gz \
-          TotalCrossSDK/license.txt \
-          TotalCrossSDK/etc \
-          TotalCrossSDK/src \
-          TotalCrossSDK/build \
-          TotalCrossSDK/dist \
-          TotalCrossSDK/docs
+      run: tar -czf sdk-build.tar.gz build/TotalCross
 
     - name: Upload SDK build artifacts
       uses: actions/upload-artifact@v7

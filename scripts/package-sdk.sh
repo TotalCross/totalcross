@@ -3,20 +3,17 @@
 BASEDIR=$(cd ..; pwd)
 OUTDIR=$BASEDIR/build/TotalCross
 
-echo "STARTING SDK"
+echo "PACKAGE SDK"
 
-mkdir -p $OUTDIR/dist/vm/wince
+mkdir -p $OUTDIR/dist/vm
+
 pushd $BASEDIR/TotalCrossSDK
-   cp README.txt $OUTDIR
    cp license.txt $OUTDIR
 
    # PREPARE ETC
    rsync --recursive \
          --exclude=obfuscator \
          --exclude=scripts \
-         --exclude=tools/ant/*[0-9].jar \
-         --exclude=tools/jdeb \
-         --exclude=tools/makecab/*.inf \
       etc \
       $OUTDIR
 
@@ -26,16 +23,22 @@ pushd $BASEDIR/TotalCrossSDK
          --exclude=*-proguard.jar      \
       build/libs/totalcross-sdk*.jar \
       $OUTDIR/dist/
-   cp build/libs/totalcross-sdk-?.?.?.jar $OUTDIR/dist/totalcross-sdk.jar
+   sdk_jar="$(find build/libs -maxdepth 1 -name 'totalcross-sdk-[0-9]*.[0-9]*.[0-9]*.jar' -print -quit)"
+   if [ -z "$sdk_jar" ]; then
+      echo "Could not find versioned totalcross-sdk jar" >&2
+      exit 1
+   fi
+
+   cp "$sdk_jar" "$OUTDIR/dist/totalcross-sdk.jar"
    mkdir -p $OUTDIR/dist/libs
    rsync --recursive dist/libs/ $OUTDIR/dist/libs/
    cp build/libs/*.tcz $OUTDIR/dist/vm
-   cp etc/fonts/TCFont.tcz $OUTDIR/dist/vm
+   cp etc/fonts/*.tcz $OUTDIR/dist/vm
 
    # DOCS
    mkdir -p $OUTDIR/docs/html 
-   cp -r \
-      build/docs/javadoc/**  \
+   cp -R \
+      build/docs/javadoc/.  \
       $OUTDIR/docs/html
 
    # SOURCES
@@ -50,6 +53,4 @@ pushd $BASEDIR/TotalCrossSDK
       src \
       $OUTDIR
 
-   # CAB bat
-   cp etc/tools/makecab/*CEinstall* $OUTDIR/dist/vm/wince
 popd

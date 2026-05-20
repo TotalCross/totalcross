@@ -36,10 +36,10 @@ jobs:
     - name: Manage Linux amd64 files
       if: ${{ success() }}
       run: |
-        mkdir -p TotalCrossSDK/dist/vm/linux
-        mkdir -p TotalCrossSDK/etc/launchers/linux
-        cp -p -a -R linux-amd64/libtcvm.so TotalCrossSDK/dist/vm/linux/
-        cp -p -a -R linux-amd64/Launcher TotalCrossSDK/etc/launchers/linux/
+        mkdir -p build/TotalCross/dist/vm/linux
+        mkdir -p build/TotalCross/etc/launchers/linux
+        cp -p -a -R linux-amd64/libtcvm.so build/TotalCross/dist/vm/linux/
+        cp -p -a -R linux-amd64/Launcher build/TotalCross/etc/launchers/linux/
  
     - name: Download Linux arm32
       continue-on-error: true
@@ -51,10 +51,10 @@ jobs:
     - name: Manage Linux arm32 files
       if: ${{ success() }}
       run: |
-        mkdir -p TotalCrossSDK/dist/vm/linux_arm
-        mkdir -p TotalCrossSDK/etc/launchers/linux_arm
-        cp -p -a -R linux-arm32v7/libtcvm.so TotalCrossSDK/dist/vm/linux_arm/
-        cp -p -a -R linux-arm32v7/Launcher TotalCrossSDK/etc/launchers/linux_arm/
+        mkdir -p build/TotalCross/dist/vm/linux_arm
+        mkdir -p build/TotalCross/etc/launchers/linux_arm
+        cp -p -a -R linux-arm32v7/libtcvm.so build/TotalCross/dist/vm/linux_arm/
+        cp -p -a -R linux-arm32v7/Launcher build/TotalCross/etc/launchers/linux_arm/
 
     - name: Download Linux arm64
       continue-on-error: true
@@ -66,10 +66,10 @@ jobs:
     - name: Manage Linux arm64 files
       if: ${{ success() }}
       run: |
-        mkdir -p TotalCrossSDK/dist/vm/linux_arm64
-        mkdir -p TotalCrossSDK/etc/launchers/linux_arm64
-        cp -p -a -R linux-arm64/libtcvm.so TotalCrossSDK/dist/vm/linux_arm64/
-        cp -p -a -R linux-arm64/Launcher TotalCrossSDK/etc/launchers/linux_arm64/
+        mkdir -p build/TotalCross/dist/vm/linux_arm64
+        mkdir -p build/TotalCross/etc/launchers/linux_arm64
+        cp -p -a -R linux-arm64/libtcvm.so build/TotalCross/dist/vm/linux_arm64/
+        cp -p -a -R linux-arm64/Launcher build/TotalCross/etc/launchers/linux_arm64/
 
     - name: Download Windows
       continue-on-error: true
@@ -82,10 +82,10 @@ jobs:
       if: ${{ success() }}
       shell: bash
       run: |
-        mkdir -p TotalCrossSDK/dist/vm/win32
-        mkdir -p TotalCrossSDK/etc/launchers/win32
-        find windows -iname "tcvm.dll" -exec cp -p -a -R {} TotalCrossSDK/dist/vm/win32/TCVM.dll \; -quit
-        find windows -iname "launcher.exe" -exec cp -p -a -R {} TotalCrossSDK/etc/launchers/win32/Launcher.exe \; -quit
+        mkdir -p build/TotalCross/dist/vm/win32
+        mkdir -p build/TotalCross/etc/launchers/win32
+        find windows -iname "tcvm.dll" -exec cp -p -a -R {} build/TotalCross/dist/vm/win32/TCVM.dll \; -quit
+        find windows -iname "launcher.exe" -exec cp -p -a -R {} build/TotalCross/etc/launchers/win32/Launcher.exe \; -quit
 
     - name: Download Android
       continue-on-error: true
@@ -104,10 +104,10 @@ jobs:
           exit 1
         fi
 
-        mkdir -p TotalCrossSDK/dist/vm/android
-        mkdir -p TotalCrossSDK/etc/launchers/android
-        mkdir -p TotalCrossSDK/etc/tools/android
-        cp -p -a -R "$android_artifact" TotalCrossSDK/dist/vm/android/TotalCross.aab
+        mkdir -p build/TotalCross/dist/vm/android
+        mkdir -p build/TotalCross/etc/launchers/android
+        mkdir -p build/TotalCross/etc/tools/android
+        cp -p -a -R "$android_artifact" build/TotalCross/dist/vm/android/TotalCross.aab
 
     - name: Download iOS
       continue-on-error: true
@@ -120,54 +120,8 @@ jobs:
       if: ${{ success() }}
       shell: bash
       run: |
-        mkdir -p TotalCrossSDK/dist/vm/ios
-        find ios -name "TotalCross.app" -type d -exec cp -p -a -R {} TotalCrossSDK/dist/vm/ios/ \; -quit
-
-    - name: Manage files
-      shell: bash
-      run: |
-        outdir="build/TotalCross"
-
-        rm -rf "$outdir"
-        mkdir -p "$outdir/dist/vm" "$outdir/docs/html"
-
-        cp TotalCrossSDK/license.txt "$outdir/"
-
-        rsync --recursive \
-          --exclude=obfuscator \
-          --exclude=scripts \
-          --exclude='tools/ant/*[0-9].jar' \
-          --exclude=tools/jdeb \
-          --exclude='tools/makecab/*.inf' \
-          TotalCrossSDK/etc \
-          "$outdir/"
-
-        rsync \
-          --exclude='*-intermediate.jar' \
-          --exclude='*-proguard.jar' \
-          TotalCrossSDK/build/libs/totalcross-sdk*.jar \
-          "$outdir/dist/"
-        cp TotalCrossSDK/build/libs/totalcross-sdk-?.?.?.jar "$outdir/dist/totalcross-sdk.jar"
-        mkdir -p "$outdir/dist/libs"
-        rsync --recursive TotalCrossSDK/dist/libs/ "$outdir/dist/libs/"
-        cp TotalCrossSDK/build/libs/*.tcz "$outdir/dist/vm/"
-        cp TotalCrossSDK/etc/fonts/TCFont.tcz "$outdir/dist/vm/"
-
-        cp -R TotalCrossSDK/build/docs/javadoc/. "$outdir/docs/html/"
-
-        rsync --recursive -m \
-          --exclude=test \
-          --exclude='jdkcompat*' \
-          --exclude=ras \
-          --exclude=tc/tools \
-          --exclude='**/package.html' \
-          --exclude='**/subbuild.xml' \
-          --exclude='**/*4D.java' \
-          TotalCrossSDK/src \
-          "$outdir/"
-
-        rsync --recursive TotalCrossSDK/dist/vm/ "$outdir/dist/vm/"
-        rsync --recursive TotalCrossSDK/etc/launchers/ "$outdir/etc/launchers/"
+        mkdir -p build/TotalCross/dist/vm/ios
+        find ios -name "TotalCross.app" -type d -exec cp -p -a -R {} build/TotalCross/dist/vm/ios/ \; -quit
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
