@@ -123,9 +123,30 @@ jobs:
         mkdir -p build/TotalCross/etc/tools/iOSCodesign
         find ios -name "TotalCross.xcarchive" -type d -exec cp -p -a -R {} build/TotalCross/etc/tools/iOSCodesign/ \; -quit
 
+    - name: Read TotalCross version
+      id: totalcross-version
+      shell: bash
+      run: |
+        version="$(find build/TotalCross/dist -maxdepth 1 -name 'totalcross-sdk-[0-9]*.[0-9]*.[0-9]*.jar' -print -quit)"
+        version="${version##*/}"
+        version="${version#totalcross-sdk-}"
+        version="${version%.jar}"
+        if [ -z "$version" ]; then
+          echo "Could not determine TotalCross version from packaged SDK jar" >&2
+          exit 1
+        fi
+
+        echo "version=${version}" >> "$GITHUB_OUTPUT"
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: TotalCross
+        name: TotalCross-${{ steps.totalcross-version.outputs.version }}
         path: |
           build/TotalCross/
+
+    - name: Upload dist jars
+      uses: actions/upload-artifact@v4
+      with:
+        name: TotalCross-${{ steps.totalcross-version.outputs.version }}-jars
+        path: build/TotalCross/dist/*.jar
