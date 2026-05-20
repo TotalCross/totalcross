@@ -303,6 +303,17 @@ jobs:
           TotalCrossVM/mbedtls/local
         key: native-deps-ios-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
+    - name: Cache CocoaPods
+      uses: actions/cache@v5
+      with:
+        path: |
+          TotalCrossVM/xcode/Pods
+          ~/Library/Caches/CocoaPods
+          ~/.cocoapods/repos
+        key: cocoapods-ios-${{ hashFiles('TotalCrossVM/xcode/Podfile') }}
+        restore-keys: |
+          cocoapods-ios-
+
     - name: Show tool versions
       run: |
         xcodebuild -version
