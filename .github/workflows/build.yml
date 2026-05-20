@@ -61,24 +61,52 @@ jobs:
           TotalCrossVM/mbedtls/local
         key: native-deps-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
+    - name: Cache C/C++ compilation
+      uses: actions/cache@v5
+      with:
+        path: .ccache
+        key: ccache-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/**/*.c', 'TotalCrossVM/**/*.cc', 'TotalCrossVM/**/*.cpp', 'TotalCrossVM/**/*.h', 'TotalCrossVM/**/*.hpp', 'TotalCrossVM/**/*.cmake', 'TotalCrossVM/CMakeLists.txt') }}
+        restore-keys: |
+          ccache-${{ matrix.project }}-
+
     - name: Allow multiarch
       if: ${{ matrix.use_qemu }}
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
     - name: Build VM & Launcher
       run: |
-        mkdir -p build
-        docker run --platform ${{ matrix.docker_platform }} -v ${PWD}/build:/build -v ${PWD}:/sources -t totalcross/${{ matrix.project }}:v1.0.6 bash -lc "
-          cmake --version &&
-          cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${{ matrix.project == 'linux-arm32v7' && '-DPNG_ARM_NEON_OPT=0' || '' }} -G Ninja &&
+        mkdir -p build .ccache
+        docker run --platform ${{ matrix.docker_platform }} \
+          -e CCACHE_DIR=/ccache \
+          -e CCACHE_BASEDIR=/sources \
+          -e CCACHE_COMPRESS=true \
+          -e CCACHE_MAXSIZE=1G \
+          -v ${PWD}/build:/build \
+          -v ${PWD}/.ccache:/ccache \
+          -v ${PWD}:/sources \
+          -t totalcross/${{ matrix.project }}:v1.0.7 bash -lc '
+          set -e
+          cmake --version
+          if command -v ccache >/dev/null; then
+            ccache --zero-stats || true
+            CMAKE_CCACHE_ARGS="-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+          else
+            echo "::warning::ccache is not installed in this Docker image; building without compiler cache"
+            CMAKE_CCACHE_ARGS=""
+          fi
+          cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${{ matrix.project == 'linux-arm32v7' && '-DPNG_ARM_NEON_OPT=0' || '' }} ${CMAKE_CCACHE_ARGS} -G Ninja &&
           ninja
-        "
+          if command -v ccache >/dev/null; then
+            ccache --show-stats || true
+          fi
+        '
 
     - name: Fix Docker-owned files
       if: ${{ always() }}
       run: |
         sudo chown -R "$USER:$USER" \
           build \
+          .ccache \
           TotalCrossVM/skia/local \
           TotalCrossVM/sqlite3/local \
           TotalCrossVM/mbedtls/local
