@@ -75,6 +75,16 @@ if [ -z "$platform" ] || [ -z "$arch" ]; then
   exit 2
 fi
 
+if [[ ! "${github_repo}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+  echo "Invalid SQLite3 GitHub repository value. Expected OWNER/REPO." >&2
+  exit 2
+fi
+
+if [[ "${release_tag}" == *"{"* || "${release_tag}" == *"}"* || "${release_tag}" == *" "* ]]; then
+  echo "Invalid SQLite3 release tag value." >&2
+  exit 2
+fi
+
 case "$platform" in
   linux)
     case "$arch" in
@@ -137,6 +147,8 @@ download_release_asset() {
   if [ -z "${github_token}" ]; then
     return 1
   fi
+
+  echo "Direct SQLite3 artifact download failed; trying GitHub release asset API"
 
   local release_json="${tmp_dir}/release.json"
   local asset_id=""
