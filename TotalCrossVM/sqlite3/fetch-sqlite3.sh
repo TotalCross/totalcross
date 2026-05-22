@@ -119,7 +119,7 @@ download_release_asset() {
   local archive_path="$2"
   local download_url="https://github.com/${github_repo}/releases/download/${release_tag}/${candidate}"
 
-  echo "Downloading SQLite3 artifact ${candidate} from ${github_repo}@${release_tag}"
+  echo "Downloading SQLite3 artifact ${candidate}"
 
   if github_curl -o "${archive_path}" "${download_url}"; then
     return 0
@@ -168,7 +168,14 @@ download_release_asset() {
 
 asset_name=""
 archive=""
-for candidate in "sqlite3-${platform}-${arch}.tar.gz" "sqlite3-${variant}-${platform}-${arch}.tar.gz"; do
+candidate_assets=()
+if [ "${variant}" != "plain" ]; then
+  candidate_assets+=("sqlite3-${variant}-${platform}-${arch}.tar.gz")
+else
+  candidate_assets+=("sqlite3-${platform}-${arch}.tar.gz")
+fi
+
+for candidate in "${candidate_assets[@]}"; do
   archive="${tmp_dir}/${candidate}"
   if download_release_asset "${candidate}" "${archive}"; then
     asset_name="${candidate}"
