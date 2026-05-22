@@ -181,6 +181,15 @@ if [ -z "${asset_name}" ]; then
   exit 1
 fi
 
+resolved_variant="plain"
+if [ "${asset_name}" = "sqlite3-${variant}-${platform}-${arch}.tar.gz" ]; then
+  resolved_variant="${variant}"
+fi
+
+echo "SQLite3 variant requested: ${variant}"
+echo "SQLite3 variant resolved: ${resolved_variant}"
+echo "SQLite3 artifact: ${asset_name}"
+
 tar -tzf "${archive}" >/dev/null
 tar -xzf "${archive}" -C "${tmp_dir}"
 
@@ -200,4 +209,4 @@ rm -rf "${dest}"
 mkdir -p "${dest}"
 cp -a "${artifact_root}/." "${dest}/"
 
-echo "Installed SQLite3 ${variant}/${platform}/${arch} into ${dest}"
+echo "Installed SQLite3 ${resolved_variant}/${platform}/${arch} into ${dest}"
