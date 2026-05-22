@@ -106,11 +106,12 @@ fi
 github_curl() {
   if [ -n "${github_token}" ]; then
     curl -fsSL \
+      --globoff \
       -H "Authorization: Bearer ${github_token}" \
       -H "X-GitHub-Api-Version: 2022-11-28" \
       "$@"
   else
-    curl -fsSL "$@"
+    curl -fsSL --globoff "$@"
   fi
 }
 
