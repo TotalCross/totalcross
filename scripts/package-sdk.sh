@@ -23,7 +23,7 @@ pushd $BASEDIR/TotalCrossSDK
          --exclude=*-proguard.jar      \
       build/libs/totalcross-sdk*.jar \
       $OUTDIR/dist/
-   sdk_jar="$(find build/libs -maxdepth 1 -name 'totalcross-sdk-[0-9]*.[0-9]*.[0-9]*.jar' -print -quit)"
+   sdk_jar="$(find build/libs -maxdepth 1 -type f -regex '.*/totalcross-sdk-[0-9]+\.[0-9]+\.[0-9]+\.jar' -print -quit)"
    if [ -z "$sdk_jar" ]; then
       echo "Could not find versioned totalcross-sdk jar" >&2
       exit 1
