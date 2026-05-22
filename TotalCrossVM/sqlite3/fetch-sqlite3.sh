@@ -136,24 +136,12 @@ download_release_asset() {
     "https://api.github.com/repos/${github_repo}/releases/tags/${release_tag}"
 
   asset_id="$(
-    awk -v asset_name="${candidate}" '
-      /"id":/ && id == "" {
-        line = $0
-        sub(/.*"id": */, "", line)
-        sub(/,.*/, "", line)
-        id = line
-      }
-      /"name":/ {
-        line = $0
-        sub(/.*"name": "/, "", line)
-        sub(/".*/, "", line)
-        if (line == asset_name) {
-          print id
-          exit
-        }
-        id = ""
-      }
-    ' "${release_json}"
+    ruby -rjson -e '
+      release = JSON.parse(File.read(ARGV.fetch(0)))
+      asset_name = ARGV.fetch(1)
+      asset = release.fetch("assets", []).find { |item| item["name"] == asset_name }
+      puts asset["id"] if asset
+    ' "${release_json}" "${candidate}"
   )"
 
   if [ -z "${asset_id}" ]; then
