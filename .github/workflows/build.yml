@@ -6,6 +6,9 @@ env:
   SQLITE3_VARIANT: ${{ vars.SQLITE3_VARIANT || 'plain' }}
   SQLITE3_RELEASE_TAG: ${{ vars.SQLITE3_RELEASE_TAG || 'sqlite-3.32.3' }}
   SQLITE3_GITHUB_REPO: ${{ vars.SQLITE3_GITHUB_REPO || 'TotalCross/totalcross-sqlite3-build' }}
+  SQLITE3_CACHE_VARIANT: ${{ vars.SQLITE3_VARIANT || 'plain' }}
+  SQLITE3_CACHE_RELEASE_TAG: ${{ vars.SQLITE3_RELEASE_TAG || 'sqlite-3.32.3' }}
+  SQLITE3_CACHE_GITHUB_REPO: ${{ vars.SQLITE3_GITHUB_REPO || 'TotalCross/totalcross-sqlite3-build' }}
 
 jobs:
   checkout-source:
@@ -66,7 +69,7 @@ jobs:
           TotalCrossVM/skia/local
           TotalCrossVM/sqlite3/local
           TotalCrossVM/mbedtls/local
-        key: native-deps-${{ matrix.project }}-${{ env.SQLITE3_GITHUB_REPO }}-${{ env.SQLITE3_RELEASE_TAG }}-${{ env.SQLITE3_VARIANT }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+        key: native-deps-${{ matrix.project }}-${{ env.SQLITE3_CACHE_GITHUB_REPO }}-${{ env.SQLITE3_CACHE_RELEASE_TAG }}-${{ env.SQLITE3_CACHE_VARIANT }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
     - name: Cache C/C++ compilation
       uses: actions/cache@v5
@@ -272,7 +275,7 @@ jobs:
           TotalCrossVM/sqlite3/local
           TotalCrossVM/mbedtls/local
           TotalCrossVM/android/tcvm/src/main/jniLibs
-        key: native-deps-android-${{ env.SQLITE3_GITHUB_REPO }}-${{ env.SQLITE3_RELEASE_TAG }}-${{ env.SQLITE3_VARIANT }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+        key: native-deps-android-${{ env.SQLITE3_CACHE_GITHUB_REPO }}-${{ env.SQLITE3_CACHE_RELEASE_TAG }}-${{ env.SQLITE3_CACHE_VARIANT }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
@@ -324,7 +327,7 @@ jobs:
           TotalCrossVM/skia/local
           TotalCrossVM/sqlite3/local
           TotalCrossVM/mbedtls/local
-        key: native-deps-ios-${{ env.SQLITE3_GITHUB_REPO }}-${{ env.SQLITE3_RELEASE_TAG }}-${{ env.SQLITE3_VARIANT }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
+        key: native-deps-ios-${{ env.SQLITE3_CACHE_GITHUB_REPO }}-${{ env.SQLITE3_CACHE_RELEASE_TAG }}-${{ env.SQLITE3_CACHE_VARIANT }}-${{ hashFiles('TotalCrossVM/skia/artifacts.json') }}
 
     - name: Cache CocoaPods
       uses: actions/cache@v5
