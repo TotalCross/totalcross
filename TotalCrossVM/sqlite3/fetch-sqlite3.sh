@@ -107,11 +107,21 @@ github_curl() {
   if [ -n "${github_token}" ]; then
     curl -fsSL \
       --globoff \
+      --http1.1 \
+      --retry 3 \
+      --retry-delay 2 \
+      --retry-all-errors \
       -H "Authorization: Bearer ${github_token}" \
       -H "X-GitHub-Api-Version: 2022-11-28" \
       "$@"
   else
-    curl -fsSL --globoff "$@"
+    curl -fsSL \
+      --globoff \
+      --http1.1 \
+      --retry 3 \
+      --retry-delay 2 \
+      --retry-all-errors \
+      "$@"
   fi
 }
 
@@ -137,12 +147,26 @@ download_release_asset() {
     "https://api.github.com/repos/${github_repo}/releases/tags/${release_tag}"
 
   asset_id="$(
-    ruby -rjson -e '
-      release = JSON.parse(File.read(ARGV.fetch(0)))
-      asset_name = ARGV.fetch(1)
-      asset = release.fetch("assets", []).find { |item| item["name"] == asset_name }
-      puts asset["id"] if asset
-    ' "${release_json}" "${candidate}"
+    awk -v asset_name="${candidate}" '
+      /"assets"[[:space:]]*:/ {
+        in_assets = 1
+      }
+      in_assets && /"url"[[:space:]]*:[[:space:]]*"https:\/\/api.github.com\/repos\/[^"]+\/releases\/assets\// {
+        line = $0
+        sub(/.*\/releases\/assets\//, "", line)
+        sub(/".*/, "", line)
+        current_id = line
+      }
+      in_assets && /"name"[[:space:]]*:/ {
+        line = $0
+        sub(/.*"name"[[:space:]]*:[[:space:]]*"/, "", line)
+        sub(/".*/, "", line)
+        if (line == asset_name && current_id != "") {
+          print current_id
+          exit
+        }
+      }
+    ' "${release_json}"
   )"
 
   if [ -z "${asset_id}" ]; then
