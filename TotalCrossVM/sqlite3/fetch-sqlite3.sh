@@ -110,7 +110,6 @@ github_curl() {
       --http1.1 \
       --retry 3 \
       --retry-delay 2 \
-      --retry-all-errors \
       -H "Authorization: Bearer ${github_token}" \
       -H "X-GitHub-Api-Version: 2022-11-28" \
       "$@"
@@ -120,7 +119,6 @@ github_curl() {
       --http1.1 \
       --retry 3 \
       --retry-delay 2 \
-      --retry-all-errors \
       "$@"
   fi
 }
@@ -142,9 +140,11 @@ download_release_asset() {
 
   local release_json="${tmp_dir}/release.json"
   local asset_id=""
-  github_curl \
+  if ! github_curl \
     -o "${release_json}" \
-    "https://api.github.com/repos/${github_repo}/releases/tags/${release_tag}"
+    "https://api.github.com/repos/${github_repo}/releases/tags/${release_tag}"; then
+    return 1
+  fi
 
   asset_id="$(
     awk -v asset_name="${candidate}" '
