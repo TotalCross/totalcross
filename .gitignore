@@ -57,10 +57,7 @@ build*/
 
 # Git
 *.orig
-TotalCrossVM/skia/local/
-TotalCrossVM/sqlite3/local/
-TotalCrossVM/mbedtls/local/
-TotalCrossVM/skia/local/out/Release/**/libskia.a
+TotalCrossVM/deps/totalcross-depot-tools/
 TotalCrossVM/android/tcvm/src/main/jniLibs/**/libskia.so
 
 # JetBrain's IDEs

@@ -1,33 +1,160 @@
 apply plugin: 'com.android.library'
 
-def skiaFetchScript = file("${projectDir}/../../skia/fetch-skia.sh")
-def skiaAndroidAbis = ['arm64-v8a']
+def depotToolsFetchScript = file("${projectDir}/../../fetch-depot-tools.sh")
+def depotToolsDir = file("${projectDir}/../../deps/totalcross-depot-tools")
+def skiaFetchScript = file("${depotToolsDir}/skia/fetch.sh")
+def zlibNgFetchScript = file("${depotToolsDir}/zlib-ng/fetch.sh")
+def libpngFetchScript = file("${depotToolsDir}/libpng/fetch.sh")
+def sqliteFetchScript = file("${depotToolsDir}/sqlite3/fetch.sh")
+def mbedtlsFetchScript = file("${depotToolsDir}/mbedtls/fetch.sh")
+def nativeAndroidAbis = ['arm64-v8a']
 def skiaDevBundleOutputs = [
-    file("${projectDir}/../../skia/local/include/core/SkPathEffect.h"),
-    file("${projectDir}/../../skia/local/src/gpu/gl/GrGLDefines.h")
+    file("${depotToolsDir}/skia/local/include/core/SkPathEffect.h"),
+    file("${depotToolsDir}/skia/local/src/gpu/gl/GrGLDefines.h")
 ]
+def envOrDefault = { name, defaultValue ->
+    def value = System.getenv(name)
+    value ? value : defaultValue
+}
+def sha256 = { value ->
+    java.security.MessageDigest.getInstance('SHA-256')
+        .digest(value.getBytes('UTF-8'))
+        .collect { String.format('%02x', it) }
+        .join()
+}
+def sqliteReleaseTag = envOrDefault('SQLITE3_RELEASE_TAG', 'sqlite-3.32.3')
+def sqliteGithubRepo = envOrDefault('SQLITE3_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
+def sqliteNamespace = "${sqliteReleaseTag}-${sha256(sqliteGithubRepo).substring(0, 12)}"
+def sqliteLocalDir = file("${depotToolsDir}/sqlite3/local/${sqliteNamespace}")
+def zlibNgReleaseTag = envOrDefault('ZLIB_NG_RELEASE_TAG', 'zlib-ng-2.1.6')
+def zlibNgGithubRepo = envOrDefault('ZLIB_NG_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
+def libpngReleaseTag = envOrDefault('LIBPNG_RELEASE_TAG', 'libpng-1.6.48')
+def libpngGithubRepo = envOrDefault('LIBPNG_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
+def mbedtlsReleaseTag = envOrDefault('MBEDTLS_RELEASE_TAG', 'mbedtls-3.5.2')
+def mbedtlsGithubRepo = envOrDefault('MBEDTLS_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
 
-tasks.register('fetchSkiaArtifacts') {
+tasks.register('fetchNativeDependencies') {
     group = 'build setup'
-    description = 'Fetches the Android Skia prebuilts required by the native build.'
+    description = 'Fetches the Android native dependency prebuilts required by the native build.'
 
-    inputs.file(skiaFetchScript)
+    inputs.file(depotToolsFetchScript)
+    inputs.property('sqliteReleaseTag', sqliteReleaseTag)
+    inputs.property('sqliteGithubRepo', sqliteGithubRepo)
+    inputs.property('zlibNgReleaseTag', zlibNgReleaseTag)
+    inputs.property('zlibNgGithubRepo', zlibNgGithubRepo)
+    inputs.property('libpngReleaseTag', libpngReleaseTag)
+    inputs.property('libpngGithubRepo', libpngGithubRepo)
+    inputs.property('mbedtlsReleaseTag', mbedtlsReleaseTag)
+    inputs.property('mbedtlsGithubRepo', mbedtlsGithubRepo)
     outputs.files(
-        skiaAndroidAbis.collect { abi ->
+        nativeAndroidAbis.collect { abi ->
             file("${projectDir}/src/main/jniLibs/${abi}/libskia.so")
-        } + skiaDevBundleOutputs
+        } + nativeAndroidAbis.collect { abi ->
+            file("${depotToolsDir}/skia/local/out/Release/android/${abi}/libskia.so")
+        } + nativeAndroidAbis.collect { abi ->
+            file("${depotToolsDir}/zlib-ng/local/android/${abi}/include/zlib.h")
+        } + nativeAndroidAbis.collect { abi ->
+            file("${depotToolsDir}/zlib-ng/local/android/${abi}/lib/libz.a")
+        } + nativeAndroidAbis.collect { abi ->
+            file("${depotToolsDir}/libpng/local/android/${abi}/include/png.h")
+        } + nativeAndroidAbis.collect { abi ->
+            file("${depotToolsDir}/libpng/local/android/${abi}/manifest.txt")
+        } + nativeAndroidAbis.collect { abi ->
+            file("${sqliteLocalDir}/android/${abi}/include/sqlite3.h")
+        } + nativeAndroidAbis.collect { abi ->
+            file("${sqliteLocalDir}/android/${abi}/lib/libsqlite3.a")
+        } + nativeAndroidAbis.collectMany { abi -> [
+            file("${depotToolsDir}/mbedtls/local/android/${abi}/include/mbedtls/ssl.h"),
+            file("${depotToolsDir}/mbedtls/local/android/${abi}/lib/libmbedtls.a"),
+            file("${depotToolsDir}/mbedtls/local/android/${abi}/lib/libmbedx509.a"),
+            file("${depotToolsDir}/mbedtls/local/android/${abi}/lib/libmbedcrypto.a")
+        ] } + skiaDevBundleOutputs
     )
 
     doLast {
         exec {
             executable 'bash'
-            args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', skiaAndroidAbis[0], '--install-dev'
+            args depotToolsFetchScript.absolutePath
         }
 
-        skiaAndroidAbis.drop(1).each { abi ->
+        exec {
+            executable 'bash'
+            args zlibNgFetchScript.absolutePath,
+                '--platform', 'android',
+                '--arch', nativeAndroidAbis[0],
+                '--release-tag', zlibNgReleaseTag,
+                '--github-repo', zlibNgGithubRepo,
+                '--github-token-env', 'ZLIB_NG_GITHUB_TOKEN'
+        }
+
+        exec {
+            executable 'bash'
+            args libpngFetchScript.absolutePath,
+                '--platform', 'android',
+                '--arch', nativeAndroidAbis[0],
+                '--release-tag', libpngReleaseTag,
+                '--github-repo', libpngGithubRepo,
+                '--github-token-env', 'LIBPNG_GITHUB_TOKEN'
+        }
+
+        exec {
+            executable 'bash'
+            args sqliteFetchScript.absolutePath,
+                '--platform', 'android',
+                '--arch', nativeAndroidAbis[0],
+                '--release-tag', sqliteReleaseTag,
+                '--github-repo', sqliteGithubRepo,
+                '--github-token-env', 'SQLITE3_GITHUB_TOKEN'
+        }
+
+        exec {
+            executable 'bash'
+            args mbedtlsFetchScript.absolutePath,
+                '--platform', 'android',
+                '--arch', nativeAndroidAbis[0],
+                '--release-tag', mbedtlsReleaseTag,
+                '--github-repo', mbedtlsGithubRepo,
+                '--github-token-env', 'MBEDTLS_GITHUB_TOKEN'
+        }
+
+        exec {
+            executable 'bash'
+            args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', nativeAndroidAbis[0], '--install-dev'
+        }
+
+        nativeAndroidAbis.drop(1).each { abi ->
             exec {
                 executable 'bash'
                 args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', abi
+            }
+        }
+
+        nativeAndroidAbis.each { abi ->
+            copy {
+                from file("${depotToolsDir}/skia/local/out/Release/android/${abi}/libskia.so")
+                into file("${projectDir}/src/main/jniLibs/${abi}")
+            }
+        }
+    }
+}
+
+tasks.register('removeStaleNativeBuildDirs') {
+    group = 'build setup'
+    description = 'Removes stale Android native build directories for ABIs that are no longer built.'
+
+    doLast {
+        def cxxDir = file("${projectDir}/.cxx")
+        if (!cxxDir.isDirectory()) {
+            return
+        }
+
+        cxxDir.eachDir { buildTypeDir ->
+            buildTypeDir.eachDir { buildHashDir ->
+                buildHashDir.eachDir { abiDir ->
+                    if (!nativeAndroidAbis.contains(abiDir.name)) {
+                        delete abiDir
+                    }
+                }
             }
         }
     }
@@ -66,9 +193,12 @@ android {
         targetSdkVersion 35
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        ndk {
+            abiFilters nativeAndroidAbis as String[]
+        }
         externalNativeBuild {
             cmake {
-                abiFilters skiaAndroidAbis as String[]
+                abiFilters nativeAndroidAbis as String[]
                 arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF", "-DANDROID_LIBS_DIR="+sourceSets.getByName("main").jniLibs.srcDirs[0]
                 cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"
@@ -122,7 +252,10 @@ afterEvaluate {
         task.name == 'preBuild' ||
         task.name.startsWith('configureCMake') ||
         task.name.startsWith('externalNativeBuild')
-    }.configureEach {
-        dependsOn(tasks.named('fetchSkiaArtifacts'))
+    }.configureEach { Task task ->
+        dependsOn(tasks.named('fetchNativeDependencies'))
+        if (task.name.startsWith('externalNativeBuildClean')) {
+            dependsOn(tasks.named('removeStaleNativeBuildDirs'))
+        }
     }
 }

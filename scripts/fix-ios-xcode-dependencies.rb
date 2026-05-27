@@ -3,8 +3,6 @@
 require 'digest'
 
 DEPENDENCY_LIBRARIES = %w[
-  libpng16.a
-  libz.a
 ].freeze
 
 def stable_id(seed, content)

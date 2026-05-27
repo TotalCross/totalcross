@@ -4,9 +4,9 @@ cmake_policy(SET CMP0007 NEW) # CMP0007: list command no longer ignores empty el
 include(FetchContent)
 
 set(TC_LIBPNG_GIT_TAG v1.6.48)
-if(MSVC)
-    set(TC_LIBPNG_GIT_TAG v1.6.40)
-endif()
+# if(MSVC)
+#     set(TC_LIBPNG_GIT_TAG v1.6.40)
+# endif()
 
 set(SKIP_INSTALL_ALL TRUE) # Skip default libPNG installation
 FetchContent_Declare(
@@ -22,12 +22,17 @@ if(NOT libpng_POPULATED)
     message("Setting up PNG...")
 
     FetchContent_Populate(libpng)
-if(MSVC)
-    set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE) # Use our own version of zlib
-    set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE)
-else()
+    # Keep pnglibconf.h independent from the detected zlib version so
+    # incremental reconfigures do not break when switching zlib providers.
+    if(NOT TARGET_WINCE)
+        set(PNG_LIBCONF_HEADER "${libpng_SOURCE_DIR}/scripts/pnglibconf.h.prebuilt" CACHE FILEPATH "" FORCE)
+    endif()
+
+# if(MSVC)
+#     set(PNG_EXECUTABLES OFF CACHE BOOL "" FORCE)
+# else()
     set(PNG_TOOLS OFF CACHE BOOL "" FORCE)
-endif()
+# endif()
     set(PNG_SHARED OFF CACHE BOOL "" FORCE)
     set(PNG_FRAMEWORK OFF CACHE BOOL "" FORCE)
     set(PNG_TESTS OFF CACHE BOOL "" FORCE)

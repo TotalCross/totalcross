@@ -53,6 +53,14 @@ if (NOT DEFINED MBEDTLS_AUTO_FETCH)
   set(MBEDTLS_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED ZLIBNG_AUTO_FETCH)
+  set(ZLIBNG_AUTO_FETCH ON)
+endif()
+
+if (NOT DEFINED LIBPNG_AUTO_FETCH)
+  set(LIBPNG_AUTO_FETCH ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
@@ -71,35 +79,132 @@ if(DEFINED PNG_ARM_NEON_OPT)
   add_definitions(-DPNG_ARM_NEON_OPT=${PNG_ARM_NEON_OPT})
 endif(DEFINED PNG_ARM_NEON_OPT)
 
+# Find native dependencies from totalcross-depot-tools
+set(TCVM_DEPOT_TOOLS_DIR "${CMAKE_SOURCE_DIR}/deps/totalcross-depot-tools" CACHE PATH "totalcross-depot-tools checkout")
+
+if(NOT EXISTS "${TCVM_DEPOT_TOOLS_DIR}/deps.yml")
+  find_program(TCVM_BASH_EXECUTABLE bash)
+  if(NOT TCVM_BASH_EXECUTABLE)
+    message(FATAL_ERROR "Unable to fetch totalcross-depot-tools because 'bash' was not found")
+  endif()
+
+  execute_process(
+    COMMAND "${CMAKE_COMMAND}" -E env
+      "TOTALCROSS_DEPOT_TOOLS_DIR=${TCVM_DEPOT_TOOLS_DIR}"
+      "${TCVM_BASH_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/fetch-depot-tools.sh"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE TCVM_DEPOT_TOOLS_FETCH_RESULT
+    OUTPUT_VARIABLE TCVM_DEPOT_TOOLS_FETCH_STDOUT
+    ERROR_VARIABLE TCVM_DEPOT_TOOLS_FETCH_STDERR
+  )
+
+  if(NOT TCVM_DEPOT_TOOLS_FETCH_RESULT EQUAL 0)
+    message(FATAL_ERROR
+      "Failed to fetch totalcross-depot-tools.\n"
+      "stdout:\n${TCVM_DEPOT_TOOLS_FETCH_STDOUT}\n"
+      "stderr:\n${TCVM_DEPOT_TOOLS_FETCH_STDERR}"
+    )
+  endif()
+endif()
+
+set(CMAKE_MODULE_PATH
+  "${TCVM_DEPOT_TOOLS_DIR}/zlib-ng/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/libpng/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/sqlite3/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/mbedtls/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/skia/cmake"
+  "${CMAKE_SOURCE_DIR}/modules"
+)
+
+set(SKIA_DIR "${TCVM_DEPOT_TOOLS_DIR}/skia/local" CACHE PATH "Skia directory" FORCE)
+
+foreach(TCVM_DEP_CACHE_VAR
+    ZLIB_DIR
+    ZLIB_INCLUDE_DIR
+    ZLIB_LIBRARY
+    PNG_DIR
+    PNG_INCLUDE_DIR
+    PNG_LIBRARY
+    SQLITE3_DIR
+    SQLite3_INCLUDE_DIR
+    SQLite3_LIBRARY
+    MBEDTLS_DIR
+    MbedTLS_INCLUDE_DIR
+    MbedTLS_LIBRARY
+    MbedCrypto_LIBRARY
+    MbedX509_LIBRARY
+    SKIA_CONFIG_INCLUDE_DIR
+    SKIA_CORE_INCLUDE_DIR
+    SKIA_UTILS_INCLUDE_DIR
+    SKIA_EFFECTS_INCLUDE_DIR
+    SKIA_GPU_INCLUDE_DIR
+    SKIA_GPU2_INCLUDE_DIR
+    SKIA_LIBRARY_DIRS
+    SKIA_LIBRARIES)
+  unset(${TCVM_DEP_CACHE_VAR} CACHE)
+  unset(${TCVM_DEP_CACHE_VAR})
+endforeach()
+
+if(NOT USE_MADLER_ZLIB)
+  include("${TCVM_DEPOT_TOOLS_DIR}/zlib-ng/cmake/AutoFetchZlibNg.cmake")
+  if(ZLIBNG_AUTO_FETCH)
+    tcvm_auto_fetch_zlibng()
+  endif()
+endif()
+
+# Find libpng
+if(NOT TARGET_WINCE)
+  include("${TCVM_DEPOT_TOOLS_DIR}/libpng/cmake/AutoFetchLibPng.cmake")
+  if(LIBPNG_AUTO_FETCH)
+    tcvm_auto_fetch_libpng()
+  endif()
+endif()
+
 # Find SQLite3
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
-set(TCVM_REPO_ROOT "${CMAKE_SOURCE_DIR}/..")
-include("${CMAKE_SOURCE_DIR}/sqlite3/AutoFetchSQLite3.cmake")
+include("${TCVM_DEPOT_TOOLS_DIR}/sqlite3/cmake/AutoFetchSQLite3.cmake")
 if(SQLITE3_AUTO_FETCH)
   tcvm_auto_fetch_sqlite3()
 endif()
 find_package(SQLite3 REQUIRED)
+set(SQLITE3_LIBRARIES "${SQLite3_LIBRARY}")
+set(SQLITE3_INCLUDE_DIRS "${SQLite3_INCLUDE_DIR}")
+get_filename_component(SQLITE3_LIBRARY_DIR "${SQLite3_LIBRARY}" DIRECTORY)
+include_directories("${SQLite3_INCLUDE_DIR}")
 
 # Find mbedTLS
 if(NOT TARGET_WINCE)
-  include("${CMAKE_SOURCE_DIR}/mbedtls/AutoFetchMbedTLS.cmake")
+  include("${TCVM_DEPOT_TOOLS_DIR}/mbedtls/cmake/AutoFetchMbedTLS.cmake")
   if(MBEDTLS_AUTO_FETCH)
     tcvm_auto_fetch_mbedtls()
   endif()
   find_package(MbedTLS REQUIRED)
+  set(MBEDTLS_LIBRARIES "${MbedTLS_LIBRARY};${MbedX509_LIBRARY};${MbedCrypto_LIBRARY}")
+  set(MBEDTLS_INCLUDE_DIRS "${MbedTLS_INCLUDE_DIR}")
+  get_filename_component(MBEDTLS_LIBRARY_DIR "${MbedTLS_LIBRARY}" DIRECTORY)
 endif()
 
 add_subdirectory(third_party) 
 
-target_link_libraries(tcvm zlibstatic)
-target_link_libraries(tcvm png_static)
-if(NOT TARGET_WINCE)
-  target_link_libraries(tcvm MbedTLS::mbedtls MbedTLS::mbedx509 MbedTLS::mbedcrypto)
+if(CMAKE_GENERATOR STREQUAL Xcode)
+  target_link_libraries(tcvm PRIVATE zlibstatic png_static SQLite::SQLite3)
+  if(NOT TARGET_WINCE)
+    target_link_libraries(tcvm PRIVATE
+      MbedTLS::mbedtls
+      MbedTLS::mbedx509
+      MbedTLS::mbedcrypto
+    )
+  endif()
+else()
+  target_link_libraries(tcvm zlibstatic)
+  target_link_libraries(tcvm png_static)
+  target_link_libraries(tcvm ${SQLITE3_LIBRARIES})
+  if(NOT TARGET_WINCE)
+    target_link_libraries(tcvm MbedTLS::mbedtls)
+  endif()
 endif()
-target_link_libraries(tcvm SQLite3)
 
 # Find SDL2 and Skia
-include("${CMAKE_SOURCE_DIR}/skia/AutoFetchSkia.cmake")
+include("${TCVM_DEPOT_TOOLS_DIR}/skia/cmake/AutoFetchSkia.cmake")
 
 # Find SDL2
 IF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
@@ -113,6 +218,13 @@ if(NOT MSVC AND USE_SKIA)
     tcvm_auto_fetch_skia()
   endif()
   find_package(Skia REQUIRED)
+  if(CMAKE_GENERATOR STREQUAL Xcode AND NOT TARGET skia_static)
+    add_library(skia_static STATIC IMPORTED GLOBAL)
+    set_target_properties(skia_static PROPERTIES
+      IMPORTED_LOCATION "${SKIA_LIBRARIES}"
+      INTERFACE_INCLUDE_DIRECTORIES "${SKIA_INCLUDE_DIRS}"
+    )
+  endif()
   include_directories(${SKIA_INCLUDE_DIRS})
   add_definitions(-DUSE_SKIA)
 endif(NOT MSVC AND USE_SKIA)
@@ -493,9 +605,6 @@ elseif(MSVC)
 else()
   if(CMAKE_GENERATOR STREQUAL Xcode)
     add_definitions(-Ddarwin -DSK_GL)
-    set(CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS} "-lskia -lsqlite3 -lmbedtls -lmbedcrypto -lmbedx509")
-    set(CMAKE_XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS "${SKIA_LIBRARY_DIRS} ${SQLITE3_LIBRARY_DIR} ${MBEDTLS_LIBRARY_DIR}")
-    set(CMAKE_XCODE_ATTRIBUTE_LINK_BINARIES_WITH_LIBRARIES "${SKIA_LIBRARIES} ${SQLITE3_LIBRARIES} ${MBEDTLS_LIBRARIES}")
     set(CMAKE_OSX_SYSROOT iphoneos)
     set(CMAKE_OSX_ARCHITECTURES "arm64")
   else()
@@ -548,6 +657,28 @@ else()
 endif()
 # XCode Properties
 if(CMAKE_GENERATOR STREQUAL Xcode)
+  # Fold prebuilt native dependencies into libtcvm.a at archive creation time.
+  set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
+    "${SKIA_LIBRARIES}"
+    "${PNG_LIBRARY}"
+    "${ZLIB_LIBRARY}"
+    "${SQLITE3_LIBRARIES}"
+    "${MBEDTLS_LIBRARIES}"
+  )
+  list(REMOVE_DUPLICATES TCVM_XCODE_ARCHIVE_DEPENDENCIES)
+
+  set(TCVM_XCODE_OTHER_LIBTOOLFLAGS "")
+  foreach(TCVM_XCODE_ARCHIVE_DEPENDENCY ${TCVM_XCODE_ARCHIVE_DEPENDENCIES})
+    if(TCVM_XCODE_ARCHIVE_DEPENDENCY)
+      if(NOT EXISTS "${TCVM_XCODE_ARCHIVE_DEPENDENCY}")
+        message(FATAL_ERROR
+          "Unable to locate the iOS static dependency '${TCVM_XCODE_ARCHIVE_DEPENDENCY}' "
+          "that must be folded into libtcvm.a"
+        )
+      endif()
+      string(APPEND TCVM_XCODE_OTHER_LIBTOOLFLAGS " \"${TCVM_XCODE_ARCHIVE_DEPENDENCY}\"")
+    endif()
+  endforeach()
   
   # adds $(inherited) to HEADER_SEARCH_PATHS in order to get pod libraries headers
   get_target_property(INCLUDED_HEADERS tcvm INCLUDE_DIRECTORIES)
@@ -566,7 +697,9 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     XCODE_ATTRIBUTE_HEADER_SEARCH_PATHS "${INCLUDED_HEADERS_STR}"
     XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x"
     XCODE_ATTRIBUTE_GCC_C_LANGUAGE_STANDARD c99
-    XCODE_LINK_BUILD_PHASE_MODE BUILT_ONLY
+    STATIC_LIBRARY_FLAGS "${TCVM_XCODE_OTHER_LIBTOOLFLAGS}"
+    XCODE_ATTRIBUTE_OTHER_LIBTOOLFLAGS "${TCVM_XCODE_OTHER_LIBTOOLFLAGS}"
+    XCODE_LINK_BUILD_PHASE_MODE KNOWN_LOCATION
   )
 endif()
 
@@ -625,7 +758,11 @@ elseif(MSVC)
     target_link_libraries(tcvm winmm.lib ws2_32.lib imm32.lib Rasapi32.lib)
   endif()
 else()
-  target_link_libraries(tcvm ${SKIA_LIBRARIES} pthread stdc++)
+  if(CMAKE_GENERATOR STREQUAL Xcode)
+    target_link_libraries(tcvm PRIVATE skia_static)
+  else()
+    target_link_libraries(tcvm ${SKIA_LIBRARIES} pthread stdc++)
+  endif()
   if(NOT APPLE AND UNIX)
     target_link_libraries(tcvm fontconfig)
     if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
