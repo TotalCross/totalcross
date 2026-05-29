@@ -353,6 +353,9 @@ jobs:
         cmake --version
         pod --version
 
+    - name: Install xcodebuild formatter
+      run: brew install xcbeautify
+
     - name: Generate and patch Xcode project
       working-directory: TotalCrossVM/xcode
       run: |
@@ -366,6 +369,8 @@ jobs:
     - name: Build iOS archive for device
       working-directory: TotalCrossVM/xcode
       run: |
+        set -o pipefail
+        mkdir -p build/logs
         xcodebuild \
           -workspace TotalCross.xcworkspace \
           -scheme TotalCross \
@@ -373,8 +378,20 @@ jobs:
           -sdk iphoneos \
           -destination 'generic/platform=iOS' \
           -archivePath build/TotalCross.xcarchive \
+          -resultBundlePath build/logs/TotalCross.xcresult \
           CODE_SIGNING_ALLOWED=NO \
-          archive
+          archive \
+          2>&1 | tee build/logs/xcodebuild-raw.log | xcbeautify
+
+    - name: Upload iOS xcodebuild diagnostics
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: ios-xcodebuild-diagnostics
+        path: |
+          TotalCrossVM/xcode/build/logs/xcodebuild-raw.log
+          TotalCrossVM/xcode/build/logs/TotalCross.xcresult
+        if-no-files-found: warn
 
     - name: Pack iOS archive
       run: tar -czf ios-xcarchive.tar.gz -C TotalCrossVM/xcode/build TotalCross.xcarchive
