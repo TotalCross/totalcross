@@ -6,14 +6,12 @@ platform :ios, '11.0'
 target 'TotalCross' do
   project 'TotalCross.xcodeproject'
   pod 'FirebaseMessaging', '10.8.0'
-  pod 'FirebaseInstanceID', '2.0.4'
   pod "youtube-ios-player-helper", "~> 1.0.2"
 end
 
 target 'tcvm' do
   project 'TCVM.xcodeproject'
   pod 'FirebaseMessaging', '10.8.0'
-  pod 'FirebaseInstanceID', '2.0.4'
   pod "youtube-ios-player-helper", "~> 1.0.2"
 end
 
