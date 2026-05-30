@@ -4,13 +4,13 @@ use_modular_headers!
 
 platform :ios, '11.0'
 target 'TotalCross' do
-  project 'TotalCross.xcodeproject'
+  project 'TotalCross.xcodeproj'
   pod 'FirebaseMessaging', '10.8.0'
   pod "youtube-ios-player-helper", "~> 1.0.2"
 end
 
 target 'tcvm' do
-  project 'TCVM.xcodeproject'
+  project 'TCVM.xcodeproj'
   pod 'FirebaseMessaging', '10.8.0'
   pod "youtube-ios-player-helper", "~> 1.0.2"
 end
