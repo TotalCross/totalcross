@@ -934,7 +934,7 @@ public final class J2TC implements JConstants, TCConstants {
           }
         } else if (!DeploySettings.testClass) {
           ByteArrayStream basz = new ByteArrayStream(bytes);
-          print = !name.equals("tcparms.bin") && !name.equals(DeploySettings.TCAPP_PROP);
+          print = !name.equals("tckey.bin") && !name.equals("tcparms.bin") && !name.equals(DeploySettings.TCAPP_PROP);
 
           if (print) {
             System.out.print("Adding " + name);
@@ -1247,6 +1247,28 @@ public final class J2TC implements JConstants, TCConstants {
       }
       if (DeploySettings.currentDir == null) {
         DeploySettings.currentDir = "./";
+      }
+      if (DeploySettings.rasKey != null && !DeploySettings.isTotalCrossJarDeploy
+          && (DeploySettings.isMainWindow || DeploySettings.isService || DeploySettings.isMainClass)) { // registration key was specified - guich@tc310: only if not deploying the sdk and if its not a library
+        AESCipher cipher = new AESCipher();
+        AESKey key = new AESKey(new byte[] { (byte) 0x06, (byte) 0x05, (byte) 0xF4, (byte) 0xF0, (byte) 0xF4,
+            (byte) 0x08, (byte) 0x01, (byte) 0x09, (byte) 0xF7, (byte) 0x09, (byte) 0xFE, (byte) 0xFC, (byte) 0xF5,
+            (byte) 0x04, (byte) 0x00, (byte) 0x0B });
+
+        cipher.reset(Cipher.OPERATION_ENCRYPT, key, Cipher.CHAINING_CBC, null, Cipher.PADDING_PKCS5);
+        cipher.update(DeploySettings.rasKey);
+        byte[] riv = cipher.getIV();
+        byte[] out = cipher.getOutput();
+
+        ByteArrayStream bas = new ByteArrayStream(128);
+        DataStream ds = new DataStream(bas);
+        ds.writeInt(riv.length);
+        ds.writeBytes(riv);
+        ds.writeInt(out.length);
+        ds.writeBytes(out);
+
+        byte[] enc = bas.toByteArray();
+        vin.addElement(new TCZ.Entry(enc, "tckey.bin", enc.length));
       }
       if (DeploySettings.mainClassName != null && !DeploySettings.isTotalCrossJarDeploy && DeploySettings.isMainWindow) //flsobral@tc126: test for mainClassName instead of mainClassDir. The later is always null when deploy is used with a zip/jar file. This fixes third-party server activation when the application is deployed from a jar file. - guich@tc310 only if not deploying the sdk and if its not a library
       {

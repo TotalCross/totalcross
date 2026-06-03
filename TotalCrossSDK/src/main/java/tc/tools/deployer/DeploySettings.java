@@ -50,6 +50,7 @@ public class DeploySettings {
 
   public static boolean autoStart;
 
+  public static byte[] rasKey;
   public static boolean autoSign;
   public static String autoSignPassword;
   public static boolean quiet = true; // to set to false, pass /v(erbose) to tc.Deploy

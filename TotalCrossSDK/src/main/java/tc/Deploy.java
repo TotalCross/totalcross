@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import tc.tools.JarClassPathLoader;
+import tc.tools.RegisterSDK;
 import tc.tools.AnonymousUserData;
 import tc.tools.converter.J2TC;
 import tc.tools.deployer.Bitmaps;
@@ -25,6 +26,7 @@ import tc.tools.deployer.Deployer4LinuxArm;
 import tc.tools.deployer.Deployer4LinuxArm64;
 import tc.tools.deployer.DeployerException;
 import tc.tools.deployer.Utils;
+import totalcross.sys.Convert;
 import totalcross.util.ElementNotFoundException;
 import totalcross.util.IntHashtable;
 
@@ -50,6 +52,7 @@ public class Deploy {
   public static final int BUILD_ALL = 0xFFFF;
 
   private boolean waitIfError; // guich@tc111_24
+  public static String activationKey;
 
   public Deploy(String[] args) throws Exception {
     try {
@@ -366,7 +369,15 @@ public class Deploy {
           DeploySettings.quiet = false;
           break;
         case 'r':
-          i++; // Ignore next argument
+          String key = args[++i].toUpperCase();
+          if (key.startsWith("%")) {
+            key = System.getenv(key.substring(1, key.length() - 1));
+          }
+          if (key != null && key.length() != 24) {
+            throw new DeployerException(
+                "The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX; optionally, you can use %key% to refer to an environment variable");
+          }
+          activationKey = key;
           break;
         case 't':
           DeploySettings.testClass = true;
@@ -395,6 +406,13 @@ public class Deploy {
           throw new DeployerException("Invalid option: " + op);
         }
       }
+    }
+    if (activationKey == null) {
+      activationKey = RegisterSDK.getStoredActivationKey();
+    }
+    if (activationKey != null) {
+      DeploySettings.rasKey = Convert.hexStringToBytes(activationKey, true);
+      System.out.println("The application was signed with the given registration key.");
     }
     return options;
   }
@@ -443,6 +461,7 @@ public class Deploy {
             + "   /p      : Package the vm with the application, creating a single installation file. "
             + "The SDK must be in the path or in the TOTALCROSS3_HOME environment variable. "
             + "The files are always installed at the same folder of the application, so each application will have its own vm.\n"
+            + "   /r key  : Specify a registration key to be used to activate TotalCross when required\n"
             + "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n"
             + "   /v      : Verbose output for information messages\n"
             + "   /w      : Waits for a key press if an error occurs\n"

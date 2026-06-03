@@ -176,25 +176,17 @@ TC_API void tdsNDB_enable_see_extension(NMParams p) // totalcross/db/sqlite/Nati
     TRACE("tdsNDB_enable_see_extension")
     TCObject this_ = p->obj[0];
     TCClass c;
-    TCObject rasClientInstance, ret;
+    TCObject ret;
     Method m;
     uint8 *retb;
 
-   // load ActivationClient
-   c = loadClass(p->currentContext, "ras.ActivationClient", true);
+   c = loadClass(p->currentContext, "totalcross.sys.Vm", true);
    if (p->currentContext->thrownException) {
       return;
    }
    
-   m = getMethod(c, true, "getInstance", 0);
-   rasClientInstance = executeMethod(p->currentContext, m).asObj;
-   if (!rasClientInstance || p->currentContext->thrownException) {
-      return;
-   }
-   
-   // noras has priority over ras
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
-   ret = executeMethod(p->currentContext, m, rasClientInstance).asObj;
+   m = getMethod(c, true, "readKey", 0);
+   ret = executeMethod(p->currentContext, m).asObj;
    // if readKey is null, the application was not signed!
    if (ret == null || p->currentContext->thrownException) {
       return;

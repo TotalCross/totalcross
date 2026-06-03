@@ -5,6 +5,14 @@
 
 package totalcross.sys;
 
+import java.io.IOException;
+
+import totalcross.crypto.CryptoException;
+import totalcross.crypto.cipher.AESCipher;
+import totalcross.crypto.cipher.AESKey;
+import totalcross.crypto.cipher.Cipher;
+import totalcross.io.ByteArrayStream;
+import totalcross.io.DataStream;
 import totalcross.ui.Window;
 import totalcross.util.Hashtable;
 
@@ -142,5 +150,41 @@ public final class Vm4D {
     } catch (Exception e) {
       return getStackTrace(e);
     }
+  }
+
+  private static final String RESFILE_TCKEY = "tckey.bin";
+
+  private static byte[] readKey() throws IOException, CryptoException {
+    // Read encrypted data from the key file
+    byte[] enc = Vm.getFile(RESFILE_TCKEY);
+    if (enc == null) {
+      return null;
+    }
+
+    // Decrypt data and return
+    return aesDecrypt(enc);
+  }
+
+  private static byte[] aesDecrypt(byte[] enc) throws IOException, CryptoException {
+    AESKey aesKey = new AESKey(getAESKeyData());
+    AESCipher aesCipher = new AESCipher();
+    ByteArrayStream bas = new ByteArrayStream(enc);
+    DataStream ds = new DataStream(bas);
+
+    byte[] riv = new byte[ds.readInt()];
+    ds.readBytes(riv, 0, riv.length);
+    byte[] out = new byte[ds.readInt()];
+    ds.readBytes(out, 0, out.length);
+
+    aesCipher.reset(Cipher.OPERATION_DECRYPT, aesKey, Cipher.CHAINING_CBC, riv, Cipher.PADDING_PKCS5);
+    aesCipher.update(out);
+
+    return aesCipher.getOutput();
+  }
+
+  private static byte[] getAESKeyData() {
+    return new byte[] { (byte) 0x06, (byte) 0x05, (byte) 0xF4, (byte) 0xF0, (byte) 0xF4, (byte) 0x08, (byte) 0x01,
+        (byte) 0x09, (byte) 0xF7, (byte) 0x09, (byte) 0xFE, (byte) 0xFC, (byte) 0xF5, (byte) 0x04, (byte) 0x00,
+        (byte) 0x0B };
   }
 }
