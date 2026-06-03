@@ -1,6 +1,12 @@
 name: Build
 on:
   workflow_call:
+    inputs:
+      signed-ios:
+        description: Build and export a signed iOS IPA
+        required: false
+        type: boolean
+        default: false
 
 env:
   SQLITE3_RELEASE_TAG: ${{ vars.SQLITE3_RELEASE_TAG || 'sqlite-3.32.3' }}
@@ -356,6 +362,58 @@ jobs:
     - name: Install xcodebuild formatter
       run: brew install xcbeautify
 
+    - name: Install iOS signing assets
+      if: ${{ inputs.signed-ios }}
+      env:
+        IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+        IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+        IOS_KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "$IOS_CERTIFICATE_BASE64" ] || [ -z "$IOS_CERTIFICATE_PASSWORD" ] || [ -z "$IOS_PROVISION_PROFILE_BASE64" ] || [ -z "$IOS_KEYCHAIN_PASSWORD" ]; then
+          echo "::error::Missing iOS signing secrets. Configure IOS_CERTIFICATE_BASE64, IOS_CERTIFICATE_PASSWORD, IOS_PROVISION_PROFILE_BASE64, and IOS_KEYCHAIN_PASSWORD."
+          exit 1
+        fi
+
+        certificate_path="${RUNNER_TEMP}/ios-signing-certificate.p12"
+        profile_path="${RUNNER_TEMP}/TotalCross_VM.mobileprovision"
+        profile_plist_path="${RUNNER_TEMP}/TotalCross_VM.plist"
+        keychain_path="${RUNNER_TEMP}/ios-signing.keychain-db"
+
+        printf '%s' "$IOS_CERTIFICATE_BASE64" | base64 -D > "$certificate_path"
+        printf '%s' "$IOS_PROVISION_PROFILE_BASE64" | base64 -D > "$profile_path"
+
+        security create-keychain -p "$IOS_KEYCHAIN_PASSWORD" "$keychain_path"
+        security set-keychain-settings -lut 21600 "$keychain_path"
+        security unlock-keychain -p "$IOS_KEYCHAIN_PASSWORD" "$keychain_path"
+        security import "$certificate_path" -P "$IOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$keychain_path"
+        security list-keychain -d user -s "$keychain_path"
+        security default-keychain -s "$keychain_path"
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$IOS_KEYCHAIN_PASSWORD" "$keychain_path"
+
+        mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+        security cms -D -i "$profile_path" > "$profile_plist_path"
+        profile_uuid="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$profile_plist_path")"
+        profile_name="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$profile_plist_path")"
+        profile_team_id="$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$profile_plist_path")"
+        profile_app_id="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$profile_plist_path")"
+
+        if [[ "$profile_app_id" != *.com.totalcross.vm && "$profile_app_id" != *.com.totalcross.* ]]; then
+          echo "::error::The installed iOS provisioning profile is for '${profile_app_id}', but this build requires com.totalcross.vm or a matching wildcard profile."
+          exit 1
+        fi
+
+        cp "$profile_path" "$HOME/Library/MobileDevice/Provisioning Profiles/${profile_uuid}.mobileprovision"
+        {
+          echo "IOS_PROVISION_PROFILE_SPECIFIER=${profile_name}"
+          echo "IOS_PROVISION_PROFILE_UUID=${profile_uuid}"
+          echo "IOS_TEAM_ID=${profile_team_id}"
+        } >> "$GITHUB_ENV"
+
+        echo "Installed iOS provisioning profile '${profile_name}' (${profile_uuid}) for team '${profile_team_id}' and app id '${profile_app_id}'."
+
     - name: Generate and patch Xcode project
       working-directory: TotalCrossVM/xcode
       run: |
@@ -368,20 +426,51 @@ jobs:
 
     - name: Build iOS archive for device
       working-directory: TotalCrossVM/xcode
+      env:
+        SIGN_IOS: ${{ inputs.signed-ios }}
       run: |
         set -o pipefail
         mkdir -p build/logs
+
+        signing_args=()
+        if [ "$SIGN_IOS" = "true" ]; then
+          signing_args=(
+            DEVELOPMENT_TEAM="${IOS_TEAM_ID}"
+            PROVISIONING_PROFILE_SPECIFIER="${IOS_PROVISION_PROFILE_SPECIFIER}"
+            teamID="${IOS_TEAM_ID}"
+          )
+        else
+          signing_args=(
+            CODE_SIGNING_ALLOWED=NO
+          )
+        fi
+
         xcodebuild \
           -workspace TotalCross.xcworkspace \
           -scheme TotalCross \
+          BUILD_DIR=${PWD} \
           -configuration Release \
           -sdk iphoneos \
           -destination 'generic/platform=iOS' \
           -archivePath build/TotalCross.xcarchive \
           -resultBundlePath build/logs/TotalCross.xcresult \
-          CODE_SIGNING_ALLOWED=NO \
+          "${signing_args[@]}" \
           archive \
           2>&1 | tee build/logs/xcodebuild-raw.log | xcbeautify
+
+    - name: Export signed iOS IPA
+      if: ${{ inputs.signed-ios }}
+      working-directory: TotalCrossVM/xcode
+      run: |
+        set -o pipefail
+        /usr/libexec/PlistBuddy -c "Set :teamID ${IOS_TEAM_ID}" ExportOptions.plist
+        /usr/libexec/PlistBuddy -c "Set :provisioningProfiles:com.totalcross.vm ${IOS_PROVISION_PROFILE_SPECIFIER}" ExportOptions.plist
+        xcodebuild \
+          -exportArchive \
+          -archivePath build/TotalCross.xcarchive \
+          -exportPath build/TotalCross.ipa \
+          -exportOptionsPlist ExportOptions.plist \
+          2>&1 | tee build/logs/xcodebuild-export-raw.log | xcbeautify
 
     - name: Upload iOS xcodebuild diagnostics
       if: always()
@@ -390,14 +479,22 @@ jobs:
         name: ios-xcodebuild-diagnostics
         path: |
           TotalCrossVM/xcode/build/logs/xcodebuild-raw.log
+          TotalCrossVM/xcode/build/logs/xcodebuild-export-raw.log
           TotalCrossVM/xcode/build/logs/TotalCross.xcresult
         if-no-files-found: warn
 
-    - name: Pack iOS archive
-      run: tar -czf ios-xcarchive.tar.gz -C TotalCrossVM/xcode/build TotalCross.xcarchive
+    - name: Pack iOS artifacts
+      env:
+        SIGN_IOS: ${{ inputs.signed-ios }}
+      run: |
+        if [ "$SIGN_IOS" = "true" ]; then
+          tar -czf ios.tar.gz -C TotalCrossVM/xcode/build TotalCross.xcarchive TotalCross.ipa
+        else
+          tar -czf ios.tar.gz -C TotalCrossVM/xcode/build TotalCross.xcarchive
+        fi
 
     - name: Upload iOS build artifacts
       uses: actions/upload-artifact@v7
       with:
         name: ios
-        path: ios-xcarchive.tar.gz
+        path: ios.tar.gz

@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     uses: ./.github/workflows/build.yml
+    with:
+      signed-ios: true
     secrets: inherit
 
   package_totalcross:
@@ -120,8 +122,12 @@ jobs:
       if: ${{ success() }}
       shell: bash
       run: |
+        mkdir -p build/TotalCross/dist/vm/ios
         mkdir -p build/TotalCross/etc/tools/iOSCodesign
-        tar -xzf ios/ios-xcarchive.tar.gz -C build/TotalCross/etc/tools/iOSCodesign
+        mkdir -p ios/extracted
+        tar -xzf ios/ios.tar.gz -C ios/extracted
+        cp -p -a -R ios/extracted/TotalCross.xcarchive build/TotalCross/etc/tools/iOSCodesign/
+        cp -p -a ios/extracted/TotalCross.ipa/TotalCross.ipa build/TotalCross/dist/vm/ios/
 
     - name: Read TotalCross version
       id: totalcross-version
