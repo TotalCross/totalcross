@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate a Markdown changelog from commit messages in the current project format.
+Generate a Markdown changelog from commit messages.
 
 Usage:
     python3 scripts/generate-changelog.py <start-commit> <end-commit>
@@ -10,8 +10,7 @@ that follow the repository convention:
 
     <type>(<scope>[,<platform>]): short description
 
-and groups them by commit type and primary scope. Commits that do not match the
-format are ignored.
+and renders release-note sections grouped by type, scope, and platform.
 """
 
 from __future__ import annotations
@@ -21,7 +20,17 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
+from datetime import date
+from pathlib import Path
 
+
+NO_PLATFORM = ""
+CHANGELOG_OMITTED_TYPES = {"ci", "chore"}
+ROOT_DIR = Path(__file__).resolve().parents[1]
+CHANGELOG_PATH = ROOT_DIR / "CHANGELOG.md"
+SDK_BUILD_GRADLE = ROOT_DIR / "TotalCrossSDK" / "build.gradle"
+VERSION_HEADER = re.compile(r"^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}$", re.M)
+SDK_VERSION = re.compile(r"^version\s*=\s*['\"](?P<version>\d+\.\d+\.\d+)['\"]", re.M)
 
 TITLE_PATTERN = re.compile(
     r"^(?P<type>fix|feat|refactor|perf|style|test|docs|build|ci|chore|revert)"
@@ -47,17 +56,24 @@ TYPE_ORDER = [
 
 TYPE_TITLES = {
     "feat": "Features",
-    "fix": "Fixes",
-    "perf": "Performance",
+    "fix": "Bug Fixes",
+    "perf": "Performance Improvements",
     "refactor": "Refactors",
-    "style": "Style",
+    "style": "Styles",
     "test": "Tests",
     "docs": "Documentation",
     "build": "Build",
-    "ci": "CI",
+    "ci": "Continuous Integration",
     "chore": "Chores",
     "revert": "Reverts",
 }
+
+
+def is_release_commit(scope: str, description: str) -> bool:
+    description = description.lower()
+    return scope == "release" or description.startswith("release ") or description.startswith(
+        "bump version"
+    )
 
 
 def run_git(*args: str) -> str:
@@ -70,6 +86,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("start_commit", help="Commit that marks the start of the range.")
     parser.add_argument("end_commit", help="Commit that marks the end of the range.")
+    parser.add_argument(
+        "--update-changelog",
+        action="store_true",
+        help="insert the generated section into CHANGELOG.md before the first version entry",
+    )
     return parser.parse_args()
 
 
@@ -87,8 +108,14 @@ def read_commits(start_commit: str, end_commit: str) -> list[tuple[str, str]]:
 
 def group_commits(
     commits: list[tuple[str, str]],
-) -> tuple[OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]], list[tuple[str, str]]]:
-    grouped: OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]] = OrderedDict(
+) -> tuple[
+    OrderedDict[str, OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]]],
+    list[tuple[str, str]],
+]:
+    grouped: OrderedDict[
+        str,
+        OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]],
+    ] = OrderedDict(
         (commit_type, OrderedDict()) for commit_type in TYPE_ORDER
     )
     ignored: list[tuple[str, str]] = []
@@ -101,19 +128,24 @@ def group_commits(
 
         commit_type = match.group("type")
         qualifiers = match.group("qualifiers")
-        scope = qualifiers.split(",", 1)[0]
+        qualifier_parts = qualifiers.split(",", 1)
+        scope = qualifier_parts[0]
+        platform = qualifier_parts[1] if len(qualifier_parts) > 1 else NO_PLATFORM
         description = match.group("description")
+        if is_release_commit(scope, description):
+            continue
         is_breaking = bool(match.group("leading_breaking") or match.group("trailing_breaking"))
         if is_breaking:
             description = f"{description} [breaking]"
-        target_type = commit_type
 
-        if scope not in grouped[target_type]:
-            grouped[target_type][scope] = []
-        grouped[target_type][scope].append((qualifiers, description))
+        if scope not in grouped[commit_type]:
+            grouped[commit_type][scope] = OrderedDict()
+        if platform not in grouped[commit_type][scope]:
+            grouped[commit_type][scope][platform] = []
+        grouped[commit_type][scope][platform].append((commit_hash[:7], description))
 
     grouped = OrderedDict(
-        (commit_type, entries) for commit_type, entries in grouped.items() if entries
+        (commit_type, scopes) for commit_type, scopes in grouped.items() if scopes
     )
     return grouped, ignored
 
@@ -121,7 +153,7 @@ def group_commits(
 def render_markdown(
     start_commit: str,
     end_commit: str,
-    grouped: OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]],
+    grouped: OrderedDict[str, OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]]],
     ignored: list[tuple[str, str]],
 ) -> str:
     lines: list[str] = [
@@ -133,28 +165,25 @@ def render_markdown(
 
     if not grouped:
         lines.append("No matching commits found in the selected range.")
-        if ignored:
-            lines.extend(
-                [
-                    "",
-                    "Ignored commits:",
-                    "",
-                ]
-            )
-            for commit_hash, subject in ignored:
-                lines.append(f"- `{commit_hash[:10]}` {subject}")
-        return "\n".join(lines)
+        return "\n".join(lines) + "\n"
 
     for commit_type, scopes in grouped.items():
-        lines.append(f"## {TYPE_TITLES[commit_type]}")
+        lines.append(f"### {TYPE_TITLES[commit_type]}")
         lines.append("")
-        for scope, entries in scopes.items():
-            for qualifiers, description in entries:
-                lines.append(f"- `{qualifiers}` {description}")
-            lines.append("")
+        for scope, platforms in scopes.items():
+            lines.append(f"- **{scope}:**")
+            for platform, entries in platforms.items():
+                if platform == NO_PLATFORM:
+                    for short_hash, description in entries:
+                        lines.append(f"  - {description} (`{short_hash}`)")
+                else:
+                    lines.append(f"  - **{platform}:**")
+                    for short_hash, description in entries:
+                        lines.append(f"    - {description} (`{short_hash}`)")
+        lines.append("")
 
     if ignored:
-        lines.append("## Ignored")
+        lines.append("### Ignored")
         lines.append("")
         lines.append("These commits were skipped because their titles do not match the project format.")
         lines.append("")
@@ -163,6 +192,50 @@ def render_markdown(
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
+
+
+def read_sdk_version() -> str:
+    content = SDK_BUILD_GRADLE.read_text()
+    match = SDK_VERSION.search(content)
+    if not match:
+        raise ValueError(f"could not find SDK version in {SDK_BUILD_GRADLE}")
+    return match.group("version")
+
+
+def filter_changelog_groups(
+    grouped: OrderedDict[str, OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]]],
+) -> OrderedDict[str, OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]]]:
+    return OrderedDict(
+        (commit_type, scopes)
+        for commit_type, scopes in grouped.items()
+        if commit_type not in CHANGELOG_OMITTED_TYPES
+    )
+
+
+def render_release_section(
+    version: str,
+    release_date: date,
+    grouped: OrderedDict[str, OrderedDict[str, OrderedDict[str, list[tuple[str, str]]]]],
+    ignored: list[tuple[str, str]],
+) -> str:
+    lines = render_markdown("", "", grouped, ignored).splitlines()
+    body = "\n".join(lines[4:]).strip()
+    if not body:
+        body = "No matching commits found."
+    return f"## [{version}] - {release_date.isoformat()}\n\n{body}\n"
+
+
+def update_changelog(section: str) -> None:
+    content = CHANGELOG_PATH.read_text()
+    match = VERSION_HEADER.search(content)
+    if not match:
+        raise ValueError(
+            f"could not find a version header like '## [7.2.0] - 2026-06-08' in {CHANGELOG_PATH}"
+        )
+
+    before = content[: match.start()].rstrip()
+    after = content[match.start() :].lstrip()
+    CHANGELOG_PATH.write_text(f"{before}\n\n{section.rstrip()}\n\n{after}")
 
 
 def main() -> int:
@@ -176,6 +249,15 @@ def main() -> int:
         return exc.returncode or 1
 
     grouped, ignored = group_commits(commits)
+    if args.update_changelog:
+        version = read_sdk_version()
+        section = render_release_section(
+            version, date.today(), filter_changelog_groups(grouped), ignored
+        )
+        update_changelog(section)
+        print(f"Inserted changelog section for {version} into {CHANGELOG_PATH}.")
+        return 0
+
     sys.stdout.write(
         render_markdown(args.start_commit, args.end_commit, grouped, ignored)
     )
