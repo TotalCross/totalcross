@@ -2,24 +2,33 @@
 # Commit message template
 #
 # Format:
-#   <type>(<optional-scope>): short description
+#   <type>(<scope>[,<platform>]): short description
+#   <type>!(<scope>[,<platform>]): short description
+#   <type>(<scope>[,<platform>])!: short description
 #
 # Rules for the title:
-# - Use one of the allowed types (vm, runtime, sdk, build, android, etc.)
-# - Scope is optional but recommended for non-trivial changes
+# - Use one of: fix, feat, refactor, perf, style, test, docs, build, ci, chore,
+#   revert
+# - Scope is required, such as vm, runtime, gc, sdk, compiler, socket, cmake
+# - Platform is optional after the scope, such as android, ios, linux, windows
+# - Do not include architecture in the title; mention it in the body if relevant
 # - Use the imperative mood (fix, add, remove, improve)
 # - Start with a lowercase letter
 # - At least 3 words
 # - Maximum 80 characters
 # - Do not end with a period
+# - Use ! for breaking changes
 #
 # Examples:
-#   vm(gc): fix invalid mark on promoted objects
-#   android(ime): prevent keyboard reopening on back press
-#   build(cmake): fix static linking on arm64
+#   fix(vm): handle null class loader
+#   feat(sdk,android): add camera permission helper
+#   refactor(gc): simplify mark queue handling
+#   build(cmake,windows): link bundled sqlite
+#   feat(sdk)!: remove legacy deploy option
+#   revert(sdk): restore legacy deploy option
 # ----------------------------------------------------------------------
 
-<type>(<scope>): short description
+<type>(<scope>[,<platform>]): short description
 
 # ----------------------------------------------------------------------
 # Commit body (optional but strongly recommended when applicable)
@@ -28,6 +37,8 @@
 # - WHY the change was made
 # - WHAT problem it solves
 # - Any important constraints or trade-offs
+# - Architecture details, if relevant (for example, arm64, x86, x64)
+# - Reverted commit hashes, for revert commits
 # - Rejected alternatives, if relevant
 #
 # Guidelines:
@@ -44,4 +55,7 @@
 #
 # References:
 #   Fixes #123
+#
+# Breaking-change footer:
+#   BREAKING CHANGE: explain compatibility impact and migration
 # ----------------------------------------------------------------------
