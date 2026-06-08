@@ -144,12 +144,17 @@ jobs:
 
         echo "version=${version}" >> "$GITHUB_OUTPUT"
 
+    - name: Create packaged SDK zip
+      shell: bash
+      run: |
+        cd build
+        zip -r "TotalCross-${{ steps.totalcross-version.outputs.version }}.zip" TotalCross
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: TotalCross-${{ steps.totalcross-version.outputs.version }}
-        path: |
-          build/TotalCross/
+        path: build/TotalCross-${{ steps.totalcross-version.outputs.version }}.zip
 
     - name: Upload dist jars
       uses: actions/upload-artifact@v4

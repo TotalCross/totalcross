@@ -10,50 +10,108 @@ on:
         description: 'Version (name of the tag to be referenced)'
         required: true
 
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
-  build:
-    name: Upload Release Asset
+  release:
+    name: Create Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-        
-      - name: Download last artifact
+
+      - name: Resolve release version
+        id: release-version
+        shell: bash
+        run: |
+          tag="${{ github.event.inputs.tag }}"
+          if [ -z "$tag" ]; then
+            tag="${GITHUB_REF_NAME}"
+          fi
+
+          version="${tag#v}"
+          if [ -z "$version" ]; then
+            echo "Could not determine release version" >&2
+            exit 1
+          fi
+
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Download packaged SDK
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: package.yml
           workflow_conclusion: success
-          name: TotalCross
-          path: ../TotalCross
+          name: TotalCross-${{ steps.release-version.outputs.version }}
+          path: release-assets
 
-      - name: "ZIP TotalCross"
-        run: |
-          zip -r TotalCross-${{ github.event.inputs.tag }}.zip ../TotalCross
+      - name: Download packaged jars
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: package.yml
+          workflow_conclusion: success
+          name: TotalCross-${{ steps.release-version.outputs.version }}-jars
+          path: release-assets/jars
 
-      - name: "CHANGELOG Release ${{ github.event.inputs.tag }}"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::801206326054:role/github-action-release
+          aws-region: us-east-1
+
+      - name: Upload release zip to S3
+        shell: bash
         run: |
-          version=$(echo '${{ github.event.inputs.tag }}' | sed 's/v//g')
-          sed -n '/^## '$version'/,/^## /p' CHANGELOG.md | sed -e '$d' > CHANGELOG-${{ github.event.inputs.tag }}.md
-          
+          version="${{ steps.release-version.outputs.version }}"
+          zip_asset="release-assets/TotalCross-${version}.zip"
+          version_prefix="$(echo "$version" | awk -F. '{ print $1 "." $2 }')"
+          s3_uri="s3://totalcross-release/${version_prefix}/TotalCross-${version}.zip"
+
+          if [ ! -f "$zip_asset" ]; then
+            echo "Could not find release zip: $zip_asset" >&2
+            exit 1
+          fi
+
+          aws s3 cp "$zip_asset" "$s3_uri"
+
+      - name: Extract release notes
+        run: |
+          version="${{ steps.release-version.outputs.version }}"
+          awk -v version="$version" '
+            $0 ~ "^## \\[" version "\\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" {
+              emit = 1
+              print
+              next
+            }
+            emit && /^## \[[0-9]+\.[0-9]+\.[0-9]+\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$/ {
+              exit
+            }
+            emit {
+              print
+            }
+          ' CHANGELOG.md > "CHANGELOG-${{ steps.release-version.outputs.tag }}.md"
+
+          if [ ! -s "CHANGELOG-${{ steps.release-version.outputs.tag }}.md" ]; then
+            echo "Could not find changelog entry for ${version}" >&2
+            exit 1
+          fi
+
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.event.inputs.tag }}
-          release_name: Release ${{ github.event.inputs.tag }}
-          body_path: CHANGELOG-${{ github.event.inputs.tag }}.md
-          draft: false
-          prerelease: false
-          
-      - name: Upload Release ZIP
-        id: upload-zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./TotalCross-${{ github.event.inputs.tag }}.zip
-          asset_name: TotalCross-${{ github.event.inputs.tag }}.zip
-          asset_content_type: application/zip
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.release-version.outputs.tag }}"
+          version="${{ steps.release-version.outputs.version }}"
+          notes="CHANGELOG-${tag}.md"
+          zip_asset="release-assets/TotalCross-${version}.zip"
+
+          gh release create "$tag" \
+            --verify-tag \
+            --title "Release ${tag}" \
+            --notes-file "$notes" \
+            "$zip_asset" \
+            release-assets/jars/*.jar
