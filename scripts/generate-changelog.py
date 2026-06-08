@@ -8,7 +8,7 @@ Usage:
 The script reads commits in the range <start-commit>..<end-commit>, parses titles
 that follow the repository convention:
 
-    <type>(<scope>[,<platform>][,<arch>]): short description
+    <type>(<scope>[,<platform>]): short description
 
 and groups them by commit type and primary scope. Commits that do not match the
 format are ignored.
@@ -24,39 +24,39 @@ from collections import OrderedDict
 
 
 TITLE_PATTERN = re.compile(
-    r"^(?P<type>vm|runtime|sdk|compiler|tools|build|perf|fix|refactor|test|doc|chore)"
-    r"\((?P<qualifiers>[a-z0-9_-]+(?:,[a-z0-9_-]+){0,2})\): "
+    r"^(?P<type>fix|feat|refactor|perf|style|test|docs|build|ci|chore|revert)"
+    r"(?P<leading_breaking>!)?"
+    r"\((?P<qualifiers>[a-z0-9_-]+(?:,[a-z0-9_-]+)?)\)"
+    r"(?P<trailing_breaking>!)?: "
     r"(?P<description>[a-z0-9 ].*)$"
 )
 
 TYPE_ORDER = [
+    "feat",
     "fix",
     "perf",
-    "sdk",
-    "runtime",
-    "vm",
-    "compiler",
-    "tools",
-    "build",
     "refactor",
+    "style",
     "test",
-    "doc",
+    "docs",
+    "build",
+    "ci",
     "chore",
+    "revert",
 ]
 
 TYPE_TITLES = {
+    "feat": "Features",
     "fix": "Fixes",
     "perf": "Performance",
-    "sdk": "SDK",
-    "runtime": "Runtime",
-    "vm": "VM",
-    "compiler": "Compiler",
-    "tools": "Tools",
-    "build": "Build",
     "refactor": "Refactors",
+    "style": "Style",
     "test": "Tests",
-    "doc": "Documentation",
+    "docs": "Documentation",
+    "build": "Build",
+    "ci": "CI",
     "chore": "Chores",
+    "revert": "Reverts",
 }
 
 
@@ -103,9 +103,10 @@ def group_commits(
         qualifiers = match.group("qualifiers")
         scope = qualifiers.split(",", 1)[0]
         description = match.group("description")
-        target_type = "build" if scope == "build" else commit_type
-        if commit_type == "fix" and scope in {"launcher", "deploy"}:
-            target_type = "tools"
+        is_breaking = bool(match.group("leading_breaking") or match.group("trailing_breaking"))
+        if is_breaking:
+            description = f"{description} [breaking]"
+        target_type = commit_type
 
         if scope not in grouped[target_type]:
             grouped[target_type][scope] = []
