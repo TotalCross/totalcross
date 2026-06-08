@@ -2,6 +2,8 @@ name: Commit Message Check
 
 on:
   push:
+    branches:
+      - master
   pull_request:
 
 jobs:
@@ -46,7 +48,9 @@ jobs:
           def commit_range():
             event_name = os.environ["EVENT_NAME"]
             if event_name == "pull_request":
-              return os.environ["PR_BASE_SHA"], os.environ["PR_HEAD_SHA"]
+              head = os.environ["PR_HEAD_SHA"]
+              base = run("git", "merge-base", os.environ["PR_BASE_SHA"], head)
+              return base, head
 
             before = os.environ["PUSH_BEFORE"]
             after = os.environ["PUSH_AFTER"]
@@ -92,6 +96,9 @@ jobs:
 
           base, head = commit_range()
           commits = list_commits(base, head)
+          range_label = f"{base}..{head}" if base else head
+          print(f"Validating commit messages in range: {range_label}")
+          print(f"Event: {os.environ['EVENT_NAME']}")
 
           if not commits:
             print("No commits to validate.")
@@ -105,11 +112,13 @@ jobs:
               invalid.append((commit, title, failures))
 
           if invalid:
-            print("Commit message validation failed.\n")
+            print(f"Commit message validation failed for {len(invalid)} commit(s).\n")
+            print("Commits outside the expected format:")
             for commit, title, failures in invalid:
-              print(f"{commit} {title}")
+              print(f"- {commit} {title}")
               for failure in failures:
-                print(f"  - {failure}")
+                print(f"    - {failure}")
+                print(f"::error title={commit[:10]} {title}::{failure}")
               print()
             sys.exit(1)
 
