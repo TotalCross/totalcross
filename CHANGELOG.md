@@ -5,6 +5,507 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.2.0] - 2026-06-08
+
+### Features
+
+- **sqlite:**
+  - update sqlite to 3.36.0.3 (`2d1bd6e`)
+- **deploy:**
+  - **android:**
+    - add keystore option for android signing (`8e172b0`)
+    - add request_install_packages option (`197e695`)
+    - download bundletool on demand (`fe1ab29`)
+  - download protoc on first deploy (`05fa2e5`)
+- **platform:**
+  - **macos:**
+    - add basic macos debugging support (`bc77edb`)
+- **ssl:**
+  - use mbedtls instead of axtls (`97d1a93`)
+  - support multiple ssl providers (`92a8392`)
+- **file:**
+  - **android:**
+    - add method to create external storage directory (`dcf97fa`)
+- **image:**
+  - add memory saving option for jpeg loading (`9bbf62c`)
+  - make freeTexture public (`1c6186b`)
+  - implement hashCode (`06ec18c`)
+- **window:**
+  - add safe area inset support (`fa40948`)
+  - **android:**
+    - implement getSafeAreaInsets (`423110e`)
+- **simulator:**
+  - add safeAreaInsets simulation support (`54f4079`)
+- **httpstream:**
+  - add default deflate and gzip support (`1719ed7`)
+  - pick socket factory automatically (`cd9c4dd`)
+- **settings:**
+  - add device unique identifier (`e60eba7`)
+- **json:**
+  - add inputstream parsing support (`0d86d55`)
+  - use Reader for character encoding (`6a17b4b`)
+- **socket:**
+  - **posix:**
+    - add ipv6 resolution support for posix (`83ea772`)
+- **gps:**
+  - **android:**
+    - add ephemerides data operations (`c52851b`)
+- **camera:**
+  - **android:**
+    - use CameraX (`2725655`)
+    - add player and recorder video modes (`3a1f035`)
+    - add getVideoResolutions method (`86d54f9`)
+    - rework VideoCaptureActivity with CameraX (`989c489`)
+    - add bitrate field for video recording (`377c3fd`)
+    - add pinch-to-zoom support (`98ca2e5`)
+    - add photo and preview to video capture (`1eeb3c2`)
+    - add flash and camera switch support (`3fe7be0`)
+    - add timer for video recording (`a510174`)
+    - add picture, video, and full modes (`1eb3a9d`)
+- **keyboard:**
+  - **android:**
+    - smooth slide animation on sip close (`15593ff`)
+- **uicolors:**
+  - add unsafeAreaColor field (`efdc797`)
+- **gfx:**
+  - **macos:**
+    - add software rendering support (`cb95f37`)
+- **filepicker:**
+  - **ios:**
+    - add native file selector (`d46c031`)
+- **math:**
+  - implement Math.hypot (`7e0beb5`)
+- **changelog:**
+  - add changelog generation scripts (`aa81dd2`)
+
+### Bug Fixes
+
+- **xcode:**
+  - **ios:**
+    - fix xcode configuration (`3b64bdb`)
+- **script:**
+  - **ios:**
+    - fix typo with empty space (`325353f`)
+    - fix xcode path and target detection (`148fd6d`)
+  - **android:**
+    - stop checking includeSms in script (`9caaf13`)
+- **socket:**
+  - **android:**
+    - check fd validity before closing (`413fc94`)
+  - **posix:**
+    - use poll for socket io monitoring (`05ecf76`)
+    - shutdown socket before close (`710fb6b`)
+    - fix open timeout on ios (`150ee08`)
+    - leave address info flags empty (`9b0eb46`)
+    - use AF_UNSPEC instead of PF_UNSPEC (`c22f7fe`)
+    - keep ipv4 dns resolution fallback (`e17d6dc`)
+    - improve nonblocking socket connect timeout handling (`18e3b97`)
+- **launcher:**
+  - **android:**
+    - resume event handling after activity readiness (`1aa6274`)
+- **camera:**
+  - **android:**
+    - use ContentResolver for file handling (`346bbea`)
+    - fix rotation support for custom camera (`41811b0`)
+    - fix orientation detection for custom camera (`0e15028`)
+    - apply auto rotation to gallery camera images (`2ab20e8`)
+    - avoid resizing image during auto rotation (`eac99c3`)
+    - prevent NO_COPY from overwriting last picture (`ca696fe`)
+    - require RECORD_AUDIO for camera (`ab29d28`)
+    - fix image orientation (`3277016`)
+    - avoid setTargetAspectRatio with setTargetResolution (`489b890`)
+    - fix picture orientation (`a2a57cc`)
+    - migrate getSupportedResolutions to Camera2 API (`707b843`)
+    - fix resolution handling in custom and picture modes (`4469019`)
+  - adjust to safe area insets (`8335c6e`)
+- **permissions:**
+  - **android:**
+    - require storage permission on api level 30 (`da8a3de`)
+    - request file manage permission from manifest (`af48e5d`)
+    - request manage_external_storage only on android 10+ (`b558bf3`)
+    - request manage external storage on android 11+ (`624b87c`)
+    - use media permissions on android 13 and above (`6a729e8`)
+  - **ios:**
+    - add missing location usage permission (`1293896`)
+- **build:**
+  - **android:**
+    - disable resource optimization (`bab4a47`)
+    - wrap paths in double quotes (`e130c5a`)
+    - fix pre and post build task execution (`1f44ac5`)
+    - fix zlib-ng build (`9012f2b`)
+  - **ios:**
+    - fix runpatch search paths for libswiftcore (`46fa390`)
+    - use correct xcode signing configuration (`479cd64`)
+    - fix xcode build (`d2c887e`)
+  - silence old warnings treated as errors (`57f870b`)
+- **loader:**
+  - **android:**
+    - fix native library loading for aab distribution (`c49c4ca`)
+    - avoid invalid BuildConfig application id at runtime (`0c51aa9`)
+    - guard manage_external_storage permission request (`cb0076e`)
+    - avoid restricted telephony identifier access on Q+ (`d351fb9`)
+- **deploy:**
+  - **android:**
+    - fix keystore path resolution for apk signing (`ff9f219`)
+    - fix removal of android permissions (`60233dd`)
+    - avoid race on pipe initialization (`9d6cb4c`)
+  - fix tcz splitting at class limit (`4240f54`)
+  - fix dist vm path discovery (`0a86f01`)
+  - improve host system detection for protoc (`f32c9d9`)
+- **io:**
+  - prevent overflow on large inputs (`0494ae5`)
+  - support encoding correctly (`7b8bbe7`)
+  - make read block correctly (`2e799ba`)
+  - validate args for IOOBE (`3131a42`)
+- **ssl:**
+  - restore simulator sslsocket support (`ec316ef`)
+  - enable timeout for sslsocket io (`479da73`)
+  - avoid reporting empty reads as eof (`befcfb6`)
+  - use native startHandshake in sslsocket (`d9057a3`)
+  - disable sslsocket timeout support (`d4dd7d8`)
+  - handle eof correctly and throw on read error (`81e6dd6`)
+  - fix read return value on close notify (`62e1009`)
+  - fix eof detection on read (`1900075`)
+  - **wince:**
+    - disables mbedtls on wince (`7c80f7c`)
+  - **posix:**
+    - avoid double close on unix (`a9e849f`)
+- **file:**
+  - **android:**
+    - handle eperm as access denial (`601da81`)
+- **firebase:**
+  - **ios:**
+    - disable firebase temporarily (`790f7c0`)
+    - disable firebase temporarily due to api changes (`5652eb6`)
+- **bluetooth:**
+  - **android:**
+    - add bluetooth runtime permission request on 12+ (`a5589cb`)
+- **sqlite:**
+  - return the correct sqlite version value (`48f7ad2`)
+  - enable use of sqlite-see for crypto support (`c739613`)
+  - fix retrieval of key for see activation (`6c707a6`)
+  - **wince:**
+    - fix wince build (`78ba44e`)
+- **gps:**
+  - **android:**
+    - restore gps support (`234c078`)
+  - **ios:**
+    - fix gps lastFix time on ios (`191d0e2`)
+- **png:**
+  - **windows:**
+    - fix crash from png stack corruption (`aef94ca`)
+  - fix support for c89 compilers (`20abf02`)
+  - **wince:**
+    - patch PNG_ABORT declaration for wince (`17e0f02`)
+    - patch files for wince errno support (`8d28604`)
+- **jpeg:**
+  - fix exact scale match for scaled jpeg reads (`66e29aa`)
+- **gfx:**
+  - **ios:**
+    - stop changing frame bounds for margins (`014881c`)
+  - fix shifted color screen glitch (`7b04c56`)
+- **window:**
+  - fix Menu object usage (`2442759`)
+  - improve safeAreaInsets support (`8d903a7`)
+- **scanner:**
+  - **android:**
+    - improve reading speed on android (`e6efeba`)
+    - upgrade scanner dependency to 3.5.0 (`de77e71`)
+- **utf8:**
+  - use replacement character on failure (`0d3844c`)
+- **ui:**
+  - fix occasional npe (`5ef55b5`)
+  - adjust popup position and size (`3b3882e`)
+- **insets:**
+  - **android:**
+    - fix sip detection with insets (`e314e11`)
+    - fix usable area detection (`0423729`)
+- **keyboard:**
+  - **android:**
+    - restore keyboard support with skia (`f132afd`)
+    - smooth slide animation on sip open (`52aaab3`)
+    - fix sip slide animation (`75d35e2`)
+    - fix keyboard handling on samsung (`3b59cbf`)
+- **multiedit:**
+  - fix scroll glitch with sip (`5eabeea`)
+- **scrollcontainer:**
+  - pair SCROLL_END with SCROLL_START (`d77866f`)
+- **interpreter:**
+  - **android:**
+    - avoid ndk 22 performance loss (`2349086`)
+- **sys:**
+  - use Math.hypot in Convert.getDistancePoint2Rect (`f15d65f`)
+- **omm:**
+  - initialize OMM list heads to prevent invalid image traversal (`71facca`)
+- **image:**
+  - guard texture state against partially initialized image objects (`0df85e8`)
+- **runtime:**
+  - **android:**
+    - use pointer-safe format in surface null debug log (`6568c69`)
+- **surface:**
+  - **android:**
+    - bootstrap surface earlier to avoid black screen on resume (`161e275`)
+- **misc:**
+  - **ios:**
+    - keep pod archive out of static tcvm link phase (`af2800b`)
+    - generate a valid Xcode frameworks phase patch (`2eec588`)
+    - remove obsolete firebase instance id pod (`6b57534`)
+    - correct xcode project references (`5e1f83c`)
+    - inherit pod search paths for tcvm (`9bc02f2`)
+
+### Performance Improvements
+
+- **sqlite:**
+  - downgrade sqlite to 3.32.3 (`6bcf3b0`)
+- **image:**
+  - let gpu handle image scaling when possible (`4d01b9e`)
+  - reduce createJpg output size (`0ce69d8`)
+- **jpeg:**
+  - **posix:**
+    - use mmap in getJpegBestFit (`e09a624`)
+- **gfx:**
+  - **ios:**
+    - avoid recreating opengl context on rotation (`4162e4d`)
+- **simulator:**
+  - reduce cost when scaled (`87b66e7`)
+- **vm:**
+  - **macos:**
+    - increase default memory allocation chunk size (`92a507f`)
+- **json:**
+  - increase JSONTokener initial size (`d36da93`)
+  - optimize JSONTokener character reading (`2569780`)
+- **scanner:**
+  - **android:**
+    - improve scanning speed (`f62b324`)
+- **ninepatch:**
+  - avoid recreating parts for the same image (`5155afd`)
+  - add cache to avoid recreating parts (`98d2361`)
+- **button:**
+  - skip onBoundsChanged when text length is unchanged (`a131268`)
+- **ui:**
+  - use freeTexture to release discarded resources sooner (`372d397`)
+- **scrollposition:**
+  - avoid recreating ninepatch parts during paint (`be6b19f`)
+  - reuse ninepatch parts across instances (`e9476e5`)
+- **i18n:**
+  - load maps on demand (`98f824d`)
+- **sdk:**
+  - reduce overhead in InputStreamReader read methods (`f13dea5`)
+
+### Refactors
+
+- **file:**
+  - **posix:**
+    - move duplicate code into define (`0343411`)
+- **zlib:**
+  - fix zlib include usage (`cd4cd8f`)
+- **png:**
+  - use public api instead of internal headers (`9e8c808`)
+- **sqlite:**
+  - clean sqlite integration (`51cca0a`)
+- **c:**
+  - fix INT32_MAX redefinition warnings (`d920fc8`)
+- **misc:**
+  - **ios:**
+    - remove unused taskbar and bounds helpers (`736e251`)
+  - **android:**
+    - rename enum to avoid clash (`081fa85`)
+- **cmake:**
+  - set env var by target (`146d955`)
+  - use TARGET_WINCE for readability (`25a9288`)
+- **camera:**
+  - **android:**
+    - refactor adjustToSafeArea (`4bbab73`)
+- **ninepatch:**
+  - remove duplicate code (`e676ce8`)
+  - group methods with the same name (`77e0fa1`)
+  - make Parts immutable (`1fb5003`)
+  - make final load method private (`2dd4ca9`)
+- **scrollposition:**
+  - rename fields for readability (`5509c11`)
+- **json:**
+  - replace StringReader4D with StringReader in JSONTokener (`ce881c8`)
+- **tcvm:**
+  - move architecture size macros out of tcvm.h (`656f93e`)
+
+### Documentation
+
+- **contributing:**
+  - update commit message guidelines (`f475e6a`)
+  - simplify commit message rules (`08f0c24`)
+- **git:**
+  - update commit message template (`1ec7814`)
+- **changelog:**
+  - update commit message template (`411475f`)
+  - update changelog generator (`5e99f31`)
+- **agents:**
+  - add repository agent guidelines (`ab63a39`)
+
+### Build
+
+- **vs2008:**
+  - update output path (`587d1c2`)
+  - move build files to project root (`c604e88`)
+- **script:**
+  - add scripts for building and packaging (`66ffb1a`)
+  - **ios:**
+    - warn about mbedtls dependencies in xcode (`c83201e`)
+    - update script to build ios from github (`7d6d564`)
+- **misc:**
+  - **android:**
+    - remove jcenter repository (`83fc4aa`)
+    - make SingleApk the default build (`b8e5b9a`)
+    - move build files to project root (`e87f0af`)
+    - raise compile and target sdk to 32 (`3d3188c`)
+    - raise compile and target sdk to 33 (`de5366e`)
+    - upgrade agp to 7.4.2 (`fc41de8`)
+    - upgrade agp to 8 and remove unsupported flag (`ff45f9b`)
+    - upgrade agp to 8.1.0 (`8b96176`)
+    - upgrade agp to 8.2.2 (`8fd9b77`)
+    - raise compile and target sdk to 34 (`fe2264d`)
+    - raise compile and target sdk to 35 (`1033325`)
+    - upgrade agp to 8.3.0 (`1df6c73`)
+    - upgrade agp to 8.4.0 (`57e50ae`)
+    - upgrade agp to 8.5.1 (`96de1d8`)
+    - enable minify with proguard keep rules (`cac1d69`)
+    - upgrade agp to 8.5.2 (`eb36de0`)
+    - upgrade agp to 8.6.0 (`dec6133`)
+    - fetch skia prebuilts before native builds (`5f0a9cd`)
+    - reuse skia abi list for native build (`50c197b`)
+    - generate only arm64 native library (`068378a`)
+    - fetch Skia dev bundle for native headers (`85b4ff3`)
+    - restrict TotalCross maven repository (`cea381d`)
+  - **ios:**
+    - update mobile provision (`5a1c289`)
+    - move ios build files to project root (`a10e60e`)
+    - raise minimum support to ios 12.1 and drop armv7 (`7b90804`)
+    - fix simulator build on apple silicon (`2e615ae`)
+    - automate static library links in generated Xcode project (`e2faa59`)
+    - normalize generated project name casing (`95ed417`)
+    - align deployment target to 12.1 (`f4e292c`)
+  - **linux:**
+    - lower optimization for GoogleMaps workaround (`bdbdb77`)
+    - use madler zlib for legacy toolchain compatibility (`a0d9e55`)
+- **toolchain:**
+  - **android:**
+    - update build tools and android dependencies (`f605f79`)
+    - raise sdk to 31 and ndk to 25.0.8775105 lts (`72ce2e5`)
+    - update ndk and gradle tools versions (`e5e62a6`)
+    - avoid ndk 22 and newer for performance (`7b1ca7b`)
+    - use new toolchain for release builds (`963d910`)
+    - upgrade ndk to 22.1.7171670 (`da4f74e`)
+    - upgrade ndk to 23.2.8568313 (`46f3257`)
+    - upgrade ndk to 24.0.8215888 (`6e05266`)
+    - upgrade ndk to 25.2.9519653 (`6f95257`)
+    - upgrade ndk to 26.3.11579264 (`e1cddad`)
+    - upgrade ndk to 28.2.13676358 (`f4f097c`)
+- **deploy:**
+  - **android:**
+    - remove includeSms option (`541513c`)
+    - generate aab and apk files (`18643d5`)
+- **dependencies:**
+  - **android:**
+    - update android dependencies (`344dbb1`)
+    - update firebase dependencies (`89bf6b9`)
+    - upgrade google-services plugin (`19ded5e`)
+    - upgrade maps dependency (`61f9b17`)
+    - upgrade location dependency (`153c28f`)
+  - **ios:**
+    - raise FirebaseMessaging version to 10.8.0 (`6894901`)
+- **scanner:**
+  - **ios:**
+    - remove scandit support (`08b8303`)
+  - **wince:**
+    - disable scanner library build on wince (`455d7cd`)
+  - **android:**
+    - upgrade zxing to 4.3.0 (`a1fccd1`)
+- **cocoapods:**
+  - **ios:**
+    - raise podfile minimum ios version to 11 (`d1fae5e`)
+    - enable use_modular_headers for static library modules (`c712ad1`)
+- **xcode:**
+  - **ios:**
+    - update xcode files for xcode 14.3 (14E22B) (`49cc49d`)
+- **cmake:**
+  - **ios:**
+    - set xcode compiler attributes (`3448885`)
+    - target ios 13 in all configurations (`136e184`)
+    - fix xcode dependency handling in cmake (`6b8cc68`)
+  - remove unnecessary install section (`6f794c4`)
+  - move third-party dependencies into separate files (`d22087f`)
+  - standardize third-party property names (`6b43f0c`)
+  - use shallow clone to speed up builds (`ab50ee9`)
+  - externalize skia artifacts and auto-fetch prebuilts (`690e2ca`)
+  - require CMake 3.11 for FetchContent (`39f46c5`)
+  - require CMake 3.11 across TCVM subprojects (`44dfcb3`)
+  - use prebuilt sqlite artifacts (`be4e09a`)
+  - support private sqlite artifacts (`e9c7103`)
+  - use prebuilt mbedtls artifacts (`2dac5c4`)
+- **zlib:**
+  - replace zlib with zlib-ng (`22719eb`)
+  - add option for madler zlib (`775d7f9`)
+  - enable PIC for shared TCVM linking (`afa9ddb`)
+- **png:**
+  - upgrade libpng to 1.6.40 (`7ad735b`)
+  - use the active zlib implementation for libpng (`dd389c3`)
+  - disable png write support (`e7637b4`)
+  - patch files only for wince (`cd1ef2d`)
+  - upgrade libpng to 1.6.48 (`48f52a3`)
+  - enable PIC for shared TCVM linking (`f49ba61`)
+  - expose fetched zlib to libpng on Windows (`7ff71cc`)
+  - resolve zlibstatic alias before exporting ZLIB target (`c58a1d4`)
+  - **windows:**
+    - use libpng 1.6.40 for MSVC builds (`5110a4f`)
+- **debug:**
+  - **android:**
+    - add debug guards for android debugging (`3b8043a`)
+- **ads:**
+  - **android:**
+    - disable ads support temporarily (`e58c7e2`)
+- **zlib-ng:**
+  - upgrade to 2.1.6 and fix for xcode and clang build (`93721b0`)
+  - disable shared library builds in embedded setup (`86901ed`)
+  - resolve aliased static target before setting properties (`ee6a5ab`)
+  - resolve aliased zlibstatic target before setting properties (`ae0055e`)
+- **mbedtls:**
+  - upgrade to 3.5.2 and fix for xcode and clang build (`46be2b8`)
+  - enable PIC for shared TCVM linking (`634390d`)
+  - link bcrypt on Windows (`d2765a2`)
+- **camera:**
+  - **android:**
+    - upgrade CameraX to 1.5.2 (`b23dc13`)
+- **vm:**
+  - force libc allocators when building with Skia (`6796482`)
+- **sqlite3:**
+  - enable PIC for shared TCVM linking (`9f50007`)
+- **ci:**
+  - drop legacy arm64 workarounds after native runner switch (`3f960b8`)
+  - add experimental linux arm32v7 cross-build job (`2ee14b5`)
+  - fetch sqlite before linux docker builds (`c192ab9`)
+  - add versioned linux docker image workflow (`58f388d`)
+- **third-party:**
+  - simplify embedded zlib integration hooks (`f7999bd`)
+- **cross:**
+  - declare NEON FPU in linux arm32v7 toolchain (`2e847b0`)
+- **skia:**
+  - retry transient artifact download failures (`413999a`)
+- **sdk:**
+  - package runtime dependencies in dist libs (`0147677`)
+- **package:**
+  - use packaged SDK artifact as package base (`4295dde`)
+  - match SDK version jar exactly (`6978719`)
+- **sqlite:**
+  - log resolved artifact variant (`056c84a`)
+  - support configurable SQLite variants (`977e84c`)
+  - fix release asset id lookup (`b339107`)
+  - disable curl globbing in fetch script (`8f6c0e8`)
+  - harden release asset download (`d32a448`)
+  - keep fetch script compatible with older curl (`5b5c3eb`)
+  - validate fetch release parameters (`56cddff`)
+  - ignore empty fetch environment values (`52b9b56`)
+- **deps:**
+  - consume native deps from depot tools (`2970716`)
+
 ## [7.2.0] - 2026-02-20
 
 PLACEHOLDER FOR CHANGELOG
