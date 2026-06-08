@@ -30,8 +30,9 @@ jobs:
           import sys
 
           TITLE_FORMAT = re.compile(
-              r'^(vm|runtime|sdk|compiler|tools|build|perf|fix|refactor|test|doc|chore)'
-              r'\([a-z0-9_-]+(,[a-z0-9_-]+){0,2}\): [a-z0-9 ].*$'
+              r'^(fix|feat|refactor|perf|style|test|docs|build|ci|chore|revert)'
+              r'(!\([a-z0-9_-]+(,[a-z0-9_-]+)?\)|'
+              r'\([a-z0-9_-]+(,[a-z0-9_-]+)?\)!?): [a-z0-9 ].*$'
           )
           TITLE_CAPITALIZATION = re.compile(r'^[^A-Z]')
           TITLE_WORD_COUNT = re.compile(r'^[^ ]+([ \t]+[^ ]+){2,}$', re.S)
@@ -78,6 +79,8 @@ jobs:
               failures.append("Commit title must contain at least 3 words.")
             if not TITLE_LENGTH.match(message):
               failures.append("Commit title must be 80 characters or less.")
+            if title.endswith("."):
+              failures.append("Commit title must not end with a period.")
             if not BLANK_LINE.match(message):
               failures.append(
                   "If a commit body is present, it must be separated from the title by a blank line."
