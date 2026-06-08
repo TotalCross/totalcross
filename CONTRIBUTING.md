@@ -125,15 +125,19 @@ With these prerequisites, you may need to clone this repository, as well as have
 
 To keep the project history clear, consistent, and easy to maintain, all commits must follow the rules below.<br>
 This project follows a Conventional Commits–inspired format,
-adapted to reflect internal subsystems rather than release semantics.<br>
+using project subsystems as scopes.<br>
 > [!WARNING]
 > Commit messages are automatically validated by GitHub Actions.
 
 #### Commit message format
 ```
-<type>(<scope>[,<platform>][,<arch>]): short description
+<type>(<scope>[,<platform>]): short description
+<type>!(<scope>[,<platform>]): short description
+<type>(<scope>[,<platform>])!: short description
 
 optional body
+
+optional footer
 ```
 
 **Example**
@@ -151,7 +155,7 @@ The first line of the commit message (the title):
 - Must contain at least 3 words (to avoid vague titles such as "fix bug")
 - Must be at most 80 characters long
 - Must use the imperative mood (e.g. fix, add, remove)
-- Must follow the format <type>(<scope>[,<platform>][,<arch>]): description
+- Must follow the format <type>(<scope>[,<platform>]): description
 - Must not end with a period
 - If a commit body is present, it must be separated from the title by a blank line.
 
@@ -166,43 +170,44 @@ Choose the most specific type that matches the nature of the change.
 > Each commit should represent a single logical change.
 > Avoid mixing refactors, fixes, and formatting in the same commit.
 
-##### Core and tooling
-| Type       | Description                                                                                                             |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `vm`       | Changes in the virtual machine, bytecode interpreter, garbage collector, memory management, or native runtime behavior. |
-| `runtime`  | Cross-platform runtime behavior shared across platforms (event loop, threading, system services).                       |
-| `sdk`      | TotalCross Java SDK, public APIs, UI components, or standard libraries.                                                 |
-| `compiler` | Compiler, bytecode generation, parsing, optimization passes, or code transformation logic.                              |
-| `tools`    | Developer tools such as packagers, CLI utilities, or internal automation tools.                                         |
-| `build`    | Build system configuration (CMake, Gradle, scripts, CI, cross-compilation).                                             |
-| `perf`     | Performance improvements without functional changes (CPU, memory, allocations).                                         |
-| `fix`      | Bug fixes where the primary distinction is correctness rather than build or refactor intent.                            |
-| `refactor` | Code restructuring without changing external behavior.                                                                  |
-| `test`     | Adding, updating, or fixing tests (unit, integration, regression).                                                      |
-| `doc`      | Documentation, examples, comments, or changelog updates.                                                                |
-| `chore`    | Maintenance tasks such as cleanup, formatting, or non-functional changes.                                               |
+| Type       | Description                                                                        |
+| ---------- | ---------------------------------------------------------------------------------- |
+| `fix`      | Bug fixes where the primary intent is correctness.                                 |
+| `feat`     | New user-facing or public functionality.                                           |
+| `refactor` | Code restructuring without changing external behavior.                             |
+| `perf`     | Performance improvements without functional changes.                               |
+| `style`    | Formatting, whitespace, or style-only changes without behavior changes.            |
+| `test`     | Adding, updating, or fixing tests.                                                 |
+| `docs`     | Documentation, examples, comments, or changelog updates.                           |
+| `build`    | Build system, dependency, packaging, or release configuration changes.             |
+| `ci`       | GitHub Actions or other continuous integration configuration changes.              |
+| `chore`    | Maintenance tasks that do not fit a more specific type.                            |
+| `revert`   | Reverts one or more previous commits.                                              |
 
 > [!TIP]
 > Use `fix` for correctness bugs, even if they incidentally improve performance.
 > Prefer expressing the affected area in the scope rather than inventing new types.
 
-#### Scope, platform, and architecture
+#### Scope and platform
 
 Inside the parentheses, qualifiers are positional and must follow this order:
 
 1. `scope` (required): the primary subsystem or area
 2. `platform` (optional): the operating system or target environment
-3. `arch` (optional): the architecture or target variant
 
 Examples:
-- `fix(socket,posix): ...`
-- `sdk(camera,android): ...`
-- `build(cmake,windows,x86): ...`
+- `fix(vm,linux): ...`
+- `feat(sdk,android): ...`
+- `build(cmake,windows): ...`
 
 ##### Common scopes
 
 Scopes should be short, stable subsystem names. Examples:
+- `vm`
+- `runtime`
 - `gc`
+- `sdk`
+- `compiler`
 - `bytecode`
 - `socket`
 - `ssl`
@@ -213,6 +218,7 @@ Scopes should be short, stable subsystem names. Examples:
 - `cmake`
 - `packager`
 - `deploy`
+- `toolchain`
 
 ##### Common platforms
 
@@ -229,33 +235,47 @@ Use a platform qualifier when the change is mainly specific to that target:
 | `linux`   | Linux-specific behavior not tied to a single Linux architecture.                             |
 | `posix`   | Shared POSIX behavior spanning Linux, macOS, Android, iOS, or other POSIX-like targets.     |
 
-##### Common architectures
+##### Architectures
 
-Use an architecture qualifier only when it materially narrows the target:
-
-| Architecture | Description |
-| ------------ | ----------- |
-| `x86`        | 32-bit x86  |
-| `x64`        | x86-64      |
-| `arm`        | 32-bit ARM  |
-| `arm64`      | 64-bit ARM  |
+Architecture is not part of the commit title format. When a change is relevant
+to a specific architecture, mention it in the commit body instead, such as
+`arm64`, `x86`, or `x64`.
 
 **Qualified commit examples**
 ```
-runtime(gc): fix invalid mark on promoted objects
+fix(vm): handle null class loader
 fix(socket,posix): handle eof correctly
-sdk(camera,android): add video resolution query
-build(cmake,windows,x86): fix static png linking
-build(toolchain,wince,arm): adjust errno compatibility
+feat(sdk,android): add video resolution query
+refactor(gc): simplify mark queue handling
+build(cmake,windows): fix static png linking
 build(deploy,android): add custom keystore support
+revert(sdk): restore legacy deploy option
 ```
 > [!IMPORTANT]
 > The first qualifier must always be the subsystem scope.
-> Use the optional platform and architecture qualifiers only when they
-> make the history materially clearer.
+> Use the optional platform qualifier only when it makes the history
+> materially clearer.
 
 > Prefer multiple small commits over a single broad one when platform or
-> architecture behavior differs.
+> architecture behavior differs. Mention architecture in the body when it
+> materially affects the change.
+
+#### Breaking changes
+
+Use `!` in the commit title when a change breaks compatibility:
+
+```
+feat(sdk)!: remove legacy deploy option
+feat!(sdk): remove legacy deploy option
+```
+
+When the impact or migration path needs explanation, add a footer:
+
+```
+BREAKING CHANGE: legacy deploy option is no longer supported.
+```
+
+Keep the breaking-change footer separated from the body by a blank line.
 
 #### Commit body guidelines
 The commit body is optional, but encouraged when:
@@ -266,6 +286,8 @@ The commit body is optional, but encouraged when:
 Guidelines:
 - Wrap lines at 80 characters
 - Explain why the change was made, not just what changed
+- Mention architecture here when relevant (for example, `arm64`, `x86`, `x64`)
+- For `revert` commits, reference the commit hash or hashes being reverted
 - Reference issues when applicable (e.g. closes #123)
 
 > [!TIP]
@@ -294,17 +316,20 @@ invalid memory access under heavy allocation.
 #### Commit template (recommended)
 Developers are encouraged to use the provided commit message template to avoid CI failures and keep consistency:
 ```
-<type>(<scope>): short description (lowercase, ≤ 80 chars)
+<type>(<scope>[,<platform>]): short description (lowercase, ≤ 80 chars)
 
 Optional body:
 - explain what changed
 - explain why it changed
 - reference issues if applicable
+
+Optional footer:
+BREAKING CHANGE: explain compatibility impact and migration
 ```
 You can enable it locally with:
 ```
 git config commit.template .gitmessage.txt
-````
+```
 
 Following these guidelines ensures a clean, searchable history and helps maintain the long-term stability of the TotalCross codebase.
 
