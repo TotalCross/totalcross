@@ -5,6 +5,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Message;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -13,11 +14,10 @@ import androidx.core.location.LocationManagerCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.Calendar;
@@ -27,10 +27,11 @@ import java.util.TimeZone;
 import totalcross.AndroidUtils;
 import totalcross.Launcher4A;
 
-public class GPSHelper extends GnssStatusCompat.Callback implements android.location.LocationListener, LocationListener, ConnectionCallbacks, OnConnectionFailedListener
+public class GPSHelper extends GnssStatusCompat.Callback implements android.location.LocationListener
 {
    public static GPSHelper instance = new GPSHelper();
-   private GoogleApiClient googleApiClient;
+   private FusedLocationProviderClient fusedLocationClient;
+   private LocationCallback locationCallback;
    private LocationRequest locationRequest;
    private int validSatellites;
    private static final String NOGPS = "*";
@@ -89,15 +90,17 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
       boolean isHigh = Launcher4A.gpsPrecision == HIGH_GPS_PRECISION;
       if (isHigh)
          return gps != null && gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? lastGps : null;
-      String ret = isHigh ? (gps != null ? lastGps : null) : (googleApiClient != null ? lastGps : null);
+      String ret = isHigh ? (gps != null ? lastGps : null) : (fusedLocationClient != null ? lastGps : null);
       //lastGps = NOGPS;
-      Location fusedLocation = null;
       try {
-      if ((ret == null || ret.equals(NOGPS)) && googleApiClient != null && (fusedLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient)) != null)
+      if ((ret == null || ret.equals(NOGPS)) && fusedLocationClient != null)
       {
-         onLocationChanged(fusedLocation);
-         ret = lastGps;
-         lastGps = NOGPS;
+         fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+            if (location != null)
+            {
+               onLocationChanged(location);
+            }
+         });
       }
       } catch (SecurityException e) {
          e.printStackTrace();
@@ -160,7 +163,7 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
    
    private static final int HIGH_GPS_PRECISION = 0;
 
-   // high=gps only, low=gps+googleApiClient (gps is used to get satellite info)
+   // high=gps only, low=gps+fusedLocationClient (gps is used to get satellite info)
    public void startGps()
    {
       boolean isHigh = Launcher4A.gpsPrecision == HIGH_GPS_PRECISION;
@@ -174,7 +177,7 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
 		     e.printStackTrace();
 		 }
       }      
-      if (!isHigh && googleApiClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
+      if (!isHigh && fusedLocationClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
       {
          locationRequest = LocationRequest.create();
          locationRequest.setInterval(5000);
@@ -182,9 +185,28 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
          locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
          locationRequest.setSmallestDisplacement(2); // meters
 
-         googleApiClient = new GoogleApiClient.Builder(Launcher4A.loader).addConnectionCallbacks(this)
-               .addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
-         googleApiClient.connect();
+         locationCallback = new LocationCallback()
+         {
+            @Override
+            public void onLocationResult(LocationResult locationResult)
+            {
+               if (locationResult != null)
+               {
+                  Location location = locationResult.getLastLocation();
+                  if (location != null)
+                  {
+                     GPSHelper.this.onLocationChanged(location);
+                  }
+               }
+            }
+         };
+
+         fusedLocationClient = LocationServices.getFusedLocationProviderClient(Launcher4A.loader);
+         try {
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+         } catch (SecurityException e) {
+            e.printStackTrace();
+         }
          
          // try only to get satellite information, since this is not given by Google Play Services
          gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
@@ -200,11 +222,7 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
       if (gps != null)
          try {gps.removeUpdates(instance);} catch (Throwable t) {}
 
-      if (googleApiClient != null)
-      {
-         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-         googleApiClient = null;
-      }
+      stopFusedLocationUpdates();
       if (gps != null) {
          LocationManagerCompat.unregisterGnssStatusCallback(gps, this);
       }
@@ -222,31 +240,16 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
          msg.setData(b);
          Launcher4A.viewhandler.sendMessage(msg);
       }
-      if (googleApiClient != null)
+      stopFusedLocationUpdates();
+   }
+
+   private void stopFusedLocationUpdates()
+   {
+      if (fusedLocationClient != null && locationCallback != null)
       {
-         if (googleApiClient.isConnected())
-            googleApiClient.disconnect();
-         googleApiClient = null;
-      }         
-   }
-
-   public void onConnected(Bundle arg0)
-   {
-      if (googleApiClient != null)
-    	try {
-         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-        } catch (SecurityException e) {
-        	e.printStackTrace();
-        }
-   }
-
-   public void onConnectionSuspended(int arg0)
-   {
-      if (googleApiClient != null)
-         googleApiClient.connect();
-   }
-
-   public void onConnectionFailed(ConnectionResult arg0)
-   {
+         fusedLocationClient.removeLocationUpdates(locationCallback);
+      }
+      fusedLocationClient = null;
+      locationCallback = null;
    }
 }
