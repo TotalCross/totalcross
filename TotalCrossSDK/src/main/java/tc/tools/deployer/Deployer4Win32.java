@@ -96,7 +96,7 @@ public class Deployer4Win32 {
       for (java.io.File file : defaultTczs) {
         FileUtils.copyFileToDirectory(file, new java.io.File(targetDir));
       }
-      FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "/win32/TCVM.dll"),
+      FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "/win32/tcvm.dll"),
           new java.io.File(targetDir));
     }
     System.out.println("... Files written to folder " + targetDir);
