@@ -14,6 +14,85 @@
 #include "SDL2/SDL.h"
 #endif
 #include "../../init/tcsdl.h"
+
+#define MAX_SCALE_FINGERS 2
+
+typedef struct
+{
+   SDL_FingerID id;
+   float x;
+   float y;
+   bool active;
+} ScaleFinger;
+
+static ScaleFinger scaleFingers[MAX_SCALE_FINGERS];
+static int32 scaleFingerCount;
+static bool scaleGestureActive;
+static double lastScaleDistance;
+
+static void postScaleEvent(double scale) {
+   union
+   {
+      double d;
+      uint64 l;
+   } bits;
+
+   bits.d = scale;
+   postEvent(mainContext, MULTITOUCHEVENT_SCALE, 0, (int32)(bits.l >> 32), (int32)bits.l, -1);
+}
+
+static int32 findScaleFinger(SDL_FingerID id) {
+   int32 i;
+   for (i = 0; i < MAX_SCALE_FINGERS; i++) {
+      if (scaleFingers[i].active && scaleFingers[i].id == id) {
+         return i;
+      }
+   }
+   return -1;
+}
+
+static double scaleSqrt(double value) {
+   int32 i;
+   double result;
+
+   if (value <= 0) {
+      return 0;
+   }
+
+   result = value >= 1 ? value : 1;
+   for (i = 0; i < 12; i++) {
+      result = (result + value / result) / 2;
+   }
+   return result;
+}
+
+static double getScaleDistance() {
+   double dx = (double)scaleFingers[0].x - (double)scaleFingers[1].x;
+   double dy = (double)scaleFingers[0].y - (double)scaleFingers[1].y;
+   return scaleSqrt(dx * dx + dy * dy);
+}
+
+static void beginScaleGesture() {
+   if (!scaleGestureActive && scaleFingerCount >= MAX_SCALE_FINGERS) {
+      scaleGestureActive = true;
+      lastScaleDistance = getScaleDistance();
+#if !__APPLE__
+      if (isDragging) {
+         isDragging = false;
+         postEvent(mainContext, PENEVENT_PEN_UP, 0, 10000, 10000, -1);
+      }
+#endif
+      postEvent(mainContext, MULTITOUCHEVENT_SCALE, 1, 0, 0, -1);
+   }
+}
+
+static void endScaleGesture() {
+   if (scaleGestureActive) {
+      scaleGestureActive = false;
+      lastScaleDistance = 0;
+      postEvent(mainContext, MULTITOUCHEVENT_SCALE, 2, 0, 0, -1);
+   }
+}
 #endif
 
 bool privateIsEventAvailable()
@@ -30,16 +109,69 @@ void handleFingerTouchEvent(SDL_Event event) {
    TCSDL_GetWindowSize(&screen, &width, &height);
    int32 x = event.tfinger.x * width, y = event.tfinger.y * height;
    switch (event.type) {
-      case SDL_FINGERDOWN: 
-         isDragging = true;
-         postEvent(mainContext, PENEVENT_PEN_DOWN, 0, x, y, -1);
+      case SDL_FINGERDOWN: {
+         int32 i = findScaleFinger(event.tfinger.fingerId);
+         if (i < 0 && scaleFingerCount < MAX_SCALE_FINGERS) {
+            for (i = 0; i < MAX_SCALE_FINGERS; i++) {
+               if (!scaleFingers[i].active) {
+                  scaleFingers[i].id = event.tfinger.fingerId;
+                  scaleFingers[i].x = event.tfinger.x;
+                  scaleFingers[i].y = event.tfinger.y;
+                  scaleFingers[i].active = true;
+                  scaleFingerCount++;
+                  break;
+               }
+            }
+         }
+         if (scaleFingerCount >= MAX_SCALE_FINGERS) {
+            beginScaleGesture();
+         }
+#if !__APPLE__
+         else {
+            isDragging = true;
+            postEvent(mainContext, PENEVENT_PEN_DOWN, 0, x, y, -1);
+         }
+#endif
          break;
+      }
       case SDL_FINGERUP:
-         isDragging = false;
-         postEvent(mainContext, PENEVENT_PEN_UP, 0, x, y, -1);
+      {
+         int32 i = findScaleFinger(event.tfinger.fingerId);
+         if (i >= 0) {
+            scaleFingers[i].active = false;
+            scaleFingerCount--;
+            if (scaleGestureActive) {
+               endScaleGesture();
+               break;
+            }
+         }
+#if !__APPLE__
+         if (!scaleGestureActive) {
+            isDragging = false;
+            postEvent(mainContext, PENEVENT_PEN_UP, 0, x, y, -1);
+         }
+#endif
          break;
-      case SDL_FINGERMOTION:
-         postEvent(mainContext, MOUSEEVENT_MOUSE_MOVE, 0, x, y, -1);
+      }
+      case SDL_FINGERMOTION: {
+         int32 i = findScaleFinger(event.tfinger.fingerId);
+         if (i >= 0) {
+            scaleFingers[i].x = event.tfinger.x;
+            scaleFingers[i].y = event.tfinger.y;
+         }
+         if (scaleGestureActive) {
+            if (i >= 0) {
+               double distance = getScaleDistance();
+               if (lastScaleDistance > 0 && distance > 0) {
+                  postScaleEvent(distance / lastScaleDistance);
+               }
+               lastScaleDistance = distance;
+            }
+         } else {
+            postEvent(mainContext, MOUSEEVENT_MOUSE_MOVE, 0, x, y, -1);
+         }
+         break;
+      }
    }
 }
 
