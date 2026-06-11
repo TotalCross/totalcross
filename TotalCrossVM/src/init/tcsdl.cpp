@@ -40,6 +40,11 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	}
 	std::cout << '\n';
 
+#if __APPLE__
+	// Trackpad support for Macbook
+	SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
+#endif
+
 	// Only init video (without audio)
 	if (NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
 		std::cerr << "SDL_Init(): " << SDL_GetError() << '\n';
