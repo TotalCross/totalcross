@@ -62,7 +62,7 @@
 #include "include/gpu/gl/GrGLTypes.h"
 
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrTypes.h"
 
 #include "include/core/SkColorSpace.h"
@@ -147,7 +147,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     // the different OpenGL variants (Core, ES, etc). Most of the code bellow is dedicated to create
     // a GL context and produce a valid rendertarget out of it for rendering.
     auto interface = GrGLMakeNativeInterface();
-    sk_sp<GrContext> grContext(GrContext::MakeGL(interface));
+    sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(interface));
 
     GLint defaultFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFBO);
@@ -160,7 +160,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
         framebuffer_info);
 
     SkSurfaceProps surface_props =
-        SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+        SkSurfaceProps();
 
     sk_sp<SkSurface> gpuSurface = SkSurface::MakeFromBackendRenderTarget(
         grContext.get(), render_target, kBottomLeft_GrSurfaceOrigin,
