@@ -9,15 +9,17 @@ on:
         default: false
 
 env:
-  SQLITE3_RELEASE_TAG: ${{ vars.SQLITE3_RELEASE_TAG || 'sqlite-3.32.3' }}
-  SQLITE3_GITHUB_REPO: ${{ secrets.SQLITE3_GITHUB_REPO || 'TotalCross/totalcross-sqlite3-build' }}
+  SQLITE3_RELEASE_TAG: ${{ vars.SQLITE3_RELEASE_TAG }}
+  SQLITE3_GITHUB_REPO: ${{ secrets.SQLITE3_GITHUB_REPO }}
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
-  ZLIB_NG_RELEASE_TAG: ${{ vars.ZLIB_NG_RELEASE_TAG || 'zlib-ng-2.1.6' }}
-  ZLIB_NG_GITHUB_REPO: ${{ secrets.ZLIB_NG_GITHUB_REPO || 'TotalCross/totalcross-depot-tools' }}
+  ZLIB_NG_RELEASE_TAG: ${{ vars.ZLIB_NG_RELEASE_TAG }}
+  ZLIB_NG_GITHUB_REPO: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
   ZLIB_NG_GITHUB_TOKEN: ${{ secrets.ZLIB_NG_GITHUB_TOKEN }}
-  LIBPNG_RELEASE_TAG: ${{ vars.LIBPNG_RELEASE_TAG || 'libpng-1.6.48' }}
-  LIBPNG_GITHUB_REPO: ${{ secrets.LIBPNG_GITHUB_REPO || 'TotalCross/totalcross-depot-tools' }}
+  LIBPNG_RELEASE_TAG: ${{ vars.LIBPNG_RELEASE_TAG }}
+  LIBPNG_GITHUB_REPO: ${{ secrets.LIBPNG_GITHUB_REPO }}
   LIBPNG_GITHUB_TOKEN: ${{ secrets.LIBPNG_GITHUB_TOKEN }}
+  SKIA_RELEASE_TAG: ${{ vars.SKIA_RELEASE_TAG }}
+  SKIA_GITHUB_REPO: ${{ secrets.SKIA_GITHUB_REPO }}
 
 jobs:
   checkout-source:
@@ -69,6 +71,9 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Fetch depot tools metadata
+      run: TotalCrossVM/fetch-depot-tools.sh
+
     - name: Cache artifacts
       uses: actions/cache@v5
       with:
@@ -78,7 +83,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-${{ matrix.project }}-${{ env.SQLITE3_GITHUB_REPO }}-${{ env.SQLITE3_RELEASE_TAG }}-${{ env.ZLIB_NG_GITHUB_REPO }}-${{ env.ZLIB_NG_RELEASE_TAG }}-${{ env.LIBPNG_GITHUB_REPO }}-${{ env.LIBPNG_RELEASE_TAG }}-${{ hashFiles('TotalCrossVM/fetch-depot-tools.sh') }}
+        key: native-deps-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
 
     - name: Cache C/C++ compilation
       uses: actions/cache@v5
@@ -95,20 +100,27 @@ jobs:
     - name: Build VM & Launcher
       run: |
         mkdir -p build .ccache
+        DOCKER_ENV_ARGS=(
+          -e CCACHE_DIR=/ccache
+          -e CCACHE_BASEDIR=/sources
+          -e CCACHE_COMPRESS=true
+          -e CCACHE_MAXSIZE=1G
+          -e SQLITE3_GITHUB_TOKEN
+          -e ZLIB_NG_GITHUB_TOKEN
+          -e LIBPNG_GITHUB_TOKEN
+        )
+        for env_name in \
+          SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
+          ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
+          LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          SKIA_RELEASE_TAG SKIA_GITHUB_REPO
+        do
+          if [ -n "${!env_name:-}" ]; then
+            DOCKER_ENV_ARGS+=(-e "$env_name")
+          fi
+        done
         docker run --platform ${{ matrix.docker_platform }} \
-          -e CCACHE_DIR=/ccache \
-          -e CCACHE_BASEDIR=/sources \
-          -e CCACHE_COMPRESS=true \
-          -e CCACHE_MAXSIZE=1G \
-          -e SQLITE3_RELEASE_TAG \
-          -e SQLITE3_GITHUB_REPO \
-          -e SQLITE3_GITHUB_TOKEN \
-          -e ZLIB_NG_RELEASE_TAG \
-          -e ZLIB_NG_GITHUB_REPO \
-          -e ZLIB_NG_GITHUB_TOKEN \
-          -e LIBPNG_RELEASE_TAG \
-          -e LIBPNG_GITHUB_REPO \
-          -e LIBPNG_GITHUB_TOKEN \
+          "${DOCKER_ENV_ARGS[@]}" \
           -v ${PWD}/build:/build \
           -v ${PWD}/.ccache:/ccache \
           -v ${PWD}:/sources \
@@ -278,6 +290,9 @@ jobs:
         distribution: temurin
         java-version: 17
 
+    - name: Fetch depot tools metadata
+      run: TotalCrossVM/fetch-depot-tools.sh
+
     - name: Cache artifacts
       uses: actions/cache@v5
       with:
@@ -288,7 +303,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
           TotalCrossVM/android/tcvm/src/main/jniLibs
-        key: native-deps-android-${{ env.SQLITE3_GITHUB_REPO }}-${{ env.SQLITE3_RELEASE_TAG }}-${{ env.ZLIB_NG_GITHUB_REPO }}-${{ env.ZLIB_NG_RELEASE_TAG }}-${{ env.LIBPNG_GITHUB_REPO }}-${{ env.LIBPNG_RELEASE_TAG }}-${{ hashFiles('TotalCrossVM/fetch-depot-tools.sh') }}
+        key: native-deps-android-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
@@ -331,6 +346,9 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Fetch depot tools metadata
+      run: TotalCrossVM/fetch-depot-tools.sh
+
     - name: Cache artifacts
       uses: actions/cache@v5
       with:
@@ -340,7 +358,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-ios-${{ env.SQLITE3_GITHUB_REPO }}-${{ env.SQLITE3_RELEASE_TAG }}-${{ env.ZLIB_NG_GITHUB_REPO }}-${{ env.ZLIB_NG_RELEASE_TAG }}-${{ env.LIBPNG_GITHUB_REPO }}-${{ env.LIBPNG_RELEASE_TAG }}-${{ hashFiles('TotalCrossVM/fetch-depot-tools.sh') }}
+        key: native-deps-ios-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
 
     - name: Cache CocoaPods
       uses: actions/cache@v5
