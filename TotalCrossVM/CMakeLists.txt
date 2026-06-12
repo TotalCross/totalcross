@@ -19,6 +19,8 @@ elseif(DEFINED ANDROID_ABI)
   set(TARGET_ANDROID ON)
 elseif(CMAKE_GENERATOR STREQUAL Xcode)
   set(TARGET_XCODE ON)
+elseif(WIN32)
+  set(TARGET_WIN32 ON)
 elseif(APPLE)
   set(TARGET_MACOSX ON)
 elseif(UNIX)
@@ -39,6 +41,11 @@ endif()
 # Use skia
 if (NOT DEFINED USE_SKIA)
   set(USE_SKIA ON)
+endif()
+
+set(TCVM_ENABLE_SKIA OFF)
+if(USE_SKIA AND NOT (WIN32 OR TARGET_WIN32 OR TARGET_WINCE))
+  set(TCVM_ENABLE_SKIA ON)
 endif()
 
 if (NOT DEFINED SKIA_AUTO_FETCH)
@@ -139,6 +146,7 @@ foreach(TCVM_DEP_CACHE_VAR
     SKIA_EFFECTS_INCLUDE_DIR
     SKIA_GPU_INCLUDE_DIR
     SKIA_GPU2_INCLUDE_DIR
+    SKIA_LIBRARY
     SKIA_LIBRARY_DIRS
     SKIA_LIBRARIES)
   unset(${TCVM_DEP_CACHE_VAR} CACHE)
@@ -213,21 +221,13 @@ IF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
 ENDIF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
 
 # Find Skia
-if(NOT MSVC AND USE_SKIA)
+if(TCVM_ENABLE_SKIA)
   if(SKIA_AUTO_FETCH)
     tcvm_auto_fetch_skia()
   endif()
   find_package(Skia REQUIRED)
-  if(CMAKE_GENERATOR STREQUAL Xcode AND NOT TARGET skia_static)
-    add_library(skia_static STATIC IMPORTED GLOBAL)
-    set_target_properties(skia_static PROPERTIES
-      IMPORTED_LOCATION "${SKIA_LIBRARIES}"
-      INTERFACE_INCLUDE_DIRECTORIES "${SKIA_INCLUDE_DIRS}"
-    )
-  endif()
-  include_directories(${SKIA_INCLUDE_DIRS})
   add_definitions(-DUSE_SKIA)
-endif(NOT MSVC AND USE_SKIA)
+endif(TCVM_ENABLE_SKIA)
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
@@ -451,11 +451,11 @@ if(NOT MSVC)
   )
 endif(NOT MSVC)
 
-if(DEFINED SKIA_LIBRARIES)
+if(TCVM_ENABLE_SKIA)
   set(TC_SKIA_SOURCES
     ${TC_SRCDIR}/nm/ui/android/skia.cpp
   )
-endif(DEFINED SKIA_LIBRARIES)
+endif(TCVM_ENABLE_SKIA)
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
   set(TCVM_iOS_FILES
@@ -574,24 +574,6 @@ else()
   include_directories(${TC_SRCDIR}/nm/lang/posix)
 endif(MSVC)
 
-if(DEFINED SKIA_LIBRARIES)
-  include_directories(${SKIA_DIR}/android)
-  include_directories(${SKIA_DIR}/atlastext)
-  include_directories(${SKIA_DIR}/c)
-  include_directories(${SKIA_DIR}/codec)
-  include_directories(${SKIA_DIR}/config)
-  include_directories(${SKIA_DIR}/core)
-  include_directories(${SKIA_DIR}/effects)
-  include_directories(${SKIA_DIR}/encode)
-  include_directories(${SKIA_DIR}/gpu)
-  include_directories(${SKIA_DIR}/mac)
-  include_directories(${SKIA_DIR}/pathops)
-  include_directories(${SKIA_DIR}/ports)
-  include_directories(${SKIA_DIR}/private)
-  include_directories(${SKIA_DIR}/svg)
-  include_directories(${SKIA_DIR}/utils)
-endif(DEFINED SKIA_LIBRARIES)
-
 # add_definitions
 if(DEFINED ANDROID_ABI)
   add_definitions(-DANDROID)
@@ -659,12 +641,17 @@ endif()
 if(CMAKE_GENERATOR STREQUAL Xcode)
   # Fold prebuilt native dependencies into libtcvm.a at archive creation time.
   set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
-    "${SKIA_LIBRARIES}"
     "${PNG_LIBRARY}"
     "${ZLIB_LIBRARY}"
     "${SQLITE3_LIBRARIES}"
     "${MBEDTLS_LIBRARIES}"
   )
+  if(TCVM_ENABLE_SKIA)
+    set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
+      "${SKIA_LIBRARIES}"
+      ${TCVM_XCODE_ARCHIVE_DEPENDENCIES}
+    )
+  endif()
   list(REMOVE_DUPLICATES TCVM_XCODE_ARCHIVE_DEPENDENCIES)
 
   set(TCVM_XCODE_OTHER_LIBTOOLFLAGS "")
@@ -683,6 +670,10 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
   # adds $(inherited) to HEADER_SEARCH_PATHS in order to get pod libraries headers
   get_target_property(INCLUDED_HEADERS tcvm INCLUDE_DIRECTORIES)
   set(INCLUDED_HEADERS "$(inherited)" ${INCLUDED_HEADERS})
+  if(TCVM_ENABLE_SKIA)
+    get_target_property(TCVM_SKIA_INCLUDED_HEADERS Skia::Skia INTERFACE_INCLUDE_DIRECTORIES)
+    list(APPEND INCLUDED_HEADERS ${TCVM_SKIA_INCLUDED_HEADERS})
+  endif()
   string(REPLACE ";" " " INCLUDED_HEADERS_STR "${INCLUDED_HEADERS}")
   
   set_target_properties(
@@ -708,17 +699,6 @@ if(DEFINED SDL2_LIBRARY)
 endif(DEFINED SDL2_LIBRARY)
 
 if(DEFINED ANDROID_ABI)
-  add_library(libskia SHARED IMPORTED)
-  set_target_properties(# Specifies the target library.
-                        libskia
-
-                        # Specifies the parameter you want to define.
-                        PROPERTIES IMPORTED_LOCATION
-
-                        # Provides the path to the library you want to import.
-                        ${SKIA_LIBRARIES}
-                       )
-
   # Searches for a specified prebuilt library and stores the path as a
   # variable. Because CMake includes system libraries in the search path by
   # default, you only need to specify the name of the public NDK library
@@ -741,16 +721,20 @@ if(DEFINED ANDROID_ABI)
   # Specifies libraries CMake should link to your target library. You
   # can link multiple libraries, such as libraries you define in this
   # build script, prebuilt third-party libraries, or system libraries.
+  set(TCVM_ANDROID_LIBRARIES
+      GLESv2
+      EGL
+      android
+      ${log-lib}
+      ${jnigraphics-lib})
+  if(TCVM_ENABLE_SKIA)
+    set(TCVM_ANDROID_LIBRARIES
+        Skia::Skia
+        ${TCVM_ANDROID_LIBRARIES})
+  endif()
   target_link_libraries(# Specifies the target library.
                         tcvm
-                        libskia
-                        GLESv2
-                        EGL
-                        android
-                        # Links the target library to the log library
-                        # included in the NDK.
-                        ${log-lib} 
-                        ${jnigraphics-lib} )
+                        ${TCVM_ANDROID_LIBRARIES})
 elseif(MSVC)
   if(TARGET_WINCE)
     target_link_libraries(tcvm secchk.lib coredll.lib corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib)
@@ -759,9 +743,15 @@ elseif(MSVC)
   endif()
 else()
   if(CMAKE_GENERATOR STREQUAL Xcode)
-    target_link_libraries(tcvm PRIVATE skia_static)
+    if(TCVM_ENABLE_SKIA)
+      target_link_libraries(tcvm PRIVATE Skia::Skia)
+    endif()
   else()
-    target_link_libraries(tcvm ${SKIA_LIBRARIES} pthread stdc++)
+    if(TCVM_ENABLE_SKIA)
+      target_link_libraries(tcvm Skia::Skia pthread stdc++)
+    else()
+      target_link_libraries(tcvm pthread stdc++)
+    endif()
   endif()
   if(NOT APPLE AND UNIX)
     target_link_libraries(tcvm fontconfig)

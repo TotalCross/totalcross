@@ -48,9 +48,7 @@ tasks.register('fetchNativeDependencies') {
     inputs.property('mbedtlsGithubRepo', mbedtlsGithubRepo)
     outputs.files(
         nativeAndroidAbis.collect { abi ->
-            file("${projectDir}/src/main/jniLibs/${abi}/libskia.so")
-        } + nativeAndroidAbis.collect { abi ->
-            file("${depotToolsDir}/skia/local/out/Release/android/${abi}/libskia.so")
+            file("${depotToolsDir}/skia/local/out/Release/android/${abi}/libskia.a")
         } + nativeAndroidAbis.collect { abi ->
             file("${depotToolsDir}/zlib-ng/local/android/${abi}/include/zlib.h")
         } + nativeAndroidAbis.collect { abi ->
@@ -128,13 +126,6 @@ tasks.register('fetchNativeDependencies') {
                 args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', abi
             }
         }
-
-        nativeAndroidAbis.each { abi ->
-            copy {
-                from file("${depotToolsDir}/skia/local/out/Release/android/${abi}/libskia.so")
-                into file("${projectDir}/src/main/jniLibs/${abi}")
-            }
-        }
     }
 }
 
@@ -199,15 +190,11 @@ android {
         externalNativeBuild {
             cmake {
                 abiFilters nativeAndroidAbis as String[]
-                arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF", "-DANDROID_LIBS_DIR="+sourceSets.getByName("main").jniLibs.srcDirs[0]
+                arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF"
                 cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"
             }
         }
-    }
-
-    packagingOptions {
-        pickFirst "**/libskia.so"
     }
     
     signingConfigs {
