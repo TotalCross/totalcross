@@ -7,45 +7,52 @@ def zlibNgFetchScript = file("${depotToolsDir}/zlib-ng/fetch.sh")
 def libpngFetchScript = file("${depotToolsDir}/libpng/fetch.sh")
 def sqliteFetchScript = file("${depotToolsDir}/sqlite3/fetch.sh")
 def mbedtlsFetchScript = file("${depotToolsDir}/mbedtls/fetch.sh")
+def depotToolsDepsFile = file("${depotToolsDir}/deps.yml")
 def nativeAndroidAbis = ['arm64-v8a']
 def skiaDevBundleOutputs = [
     file("${depotToolsDir}/skia/local/include/core/SkPathEffect.h"),
     file("${depotToolsDir}/skia/local/src/gpu/gl/GrGLDefines.h")
 ]
-def envOrDefault = { name, defaultValue ->
+def envOrNull = { name ->
     def value = System.getenv(name)
-    value ? value : defaultValue
+    value ? value : null
 }
-def sha256 = { value ->
-    java.security.MessageDigest.getInstance('SHA-256')
-        .digest(value.getBytes('UTF-8'))
-        .collect { String.format('%02x', it) }
-        .join()
+def addOptionalArg = { args, optionName, value ->
+    if (value) {
+        args.add(optionName)
+        args.add(value)
+    }
 }
-def sqliteReleaseTag = envOrDefault('SQLITE3_RELEASE_TAG', 'sqlite-3.32.3')
-def sqliteGithubRepo = envOrDefault('SQLITE3_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
-def sqliteNamespace = "${sqliteReleaseTag}-${sha256(sqliteGithubRepo).substring(0, 12)}"
-def sqliteLocalDir = file("${depotToolsDir}/sqlite3/local/${sqliteNamespace}")
-def zlibNgReleaseTag = envOrDefault('ZLIB_NG_RELEASE_TAG', 'zlib-ng-2.1.6')
-def zlibNgGithubRepo = envOrDefault('ZLIB_NG_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
-def libpngReleaseTag = envOrDefault('LIBPNG_RELEASE_TAG', 'libpng-1.6.48')
-def libpngGithubRepo = envOrDefault('LIBPNG_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
-def mbedtlsReleaseTag = envOrDefault('MBEDTLS_RELEASE_TAG', 'mbedtls-3.5.2')
-def mbedtlsGithubRepo = envOrDefault('MBEDTLS_GITHUB_REPO', 'TotalCross/totalcross-depot-tools')
+def optionalInput = { value ->
+    value ?: ''
+}
+def sqliteReleaseTag = envOrNull('SQLITE3_RELEASE_TAG')
+def sqliteGithubRepo = envOrNull('SQLITE3_GITHUB_REPO')
+def zlibNgReleaseTag = envOrNull('ZLIB_NG_RELEASE_TAG')
+def zlibNgGithubRepo = envOrNull('ZLIB_NG_GITHUB_REPO')
+def libpngReleaseTag = envOrNull('LIBPNG_RELEASE_TAG')
+def libpngGithubRepo = envOrNull('LIBPNG_GITHUB_REPO')
+def mbedtlsReleaseTag = envOrNull('MBEDTLS_RELEASE_TAG')
+def mbedtlsGithubRepo = envOrNull('MBEDTLS_GITHUB_REPO')
+def skiaReleaseTag = envOrNull('SKIA_RELEASE_TAG')
+def skiaGithubRepo = envOrNull('SKIA_GITHUB_REPO')
 
 tasks.register('fetchNativeDependencies') {
     group = 'build setup'
     description = 'Fetches the Android native dependency prebuilts required by the native build.'
 
     inputs.file(depotToolsFetchScript)
-    inputs.property('sqliteReleaseTag', sqliteReleaseTag)
-    inputs.property('sqliteGithubRepo', sqliteGithubRepo)
-    inputs.property('zlibNgReleaseTag', zlibNgReleaseTag)
-    inputs.property('zlibNgGithubRepo', zlibNgGithubRepo)
-    inputs.property('libpngReleaseTag', libpngReleaseTag)
-    inputs.property('libpngGithubRepo', libpngGithubRepo)
-    inputs.property('mbedtlsReleaseTag', mbedtlsReleaseTag)
-    inputs.property('mbedtlsGithubRepo', mbedtlsGithubRepo)
+    inputs.file(depotToolsDepsFile).optional()
+    inputs.property('sqliteReleaseTag', optionalInput(sqliteReleaseTag))
+    inputs.property('sqliteGithubRepo', optionalInput(sqliteGithubRepo))
+    inputs.property('zlibNgReleaseTag', optionalInput(zlibNgReleaseTag))
+    inputs.property('zlibNgGithubRepo', optionalInput(zlibNgGithubRepo))
+    inputs.property('libpngReleaseTag', optionalInput(libpngReleaseTag))
+    inputs.property('libpngGithubRepo', optionalInput(libpngGithubRepo))
+    inputs.property('mbedtlsReleaseTag', optionalInput(mbedtlsReleaseTag))
+    inputs.property('mbedtlsGithubRepo', optionalInput(mbedtlsGithubRepo))
+    inputs.property('skiaReleaseTag', optionalInput(skiaReleaseTag))
+    inputs.property('skiaGithubRepo', optionalInput(skiaGithubRepo))
     outputs.files(
         nativeAndroidAbis.collect { abi ->
             file("${depotToolsDir}/skia/local/out/Release/android/${abi}/libskia.a")
@@ -57,10 +64,6 @@ tasks.register('fetchNativeDependencies') {
             file("${depotToolsDir}/libpng/local/android/${abi}/include/png.h")
         } + nativeAndroidAbis.collect { abi ->
             file("${depotToolsDir}/libpng/local/android/${abi}/manifest.txt")
-        } + nativeAndroidAbis.collect { abi ->
-            file("${sqliteLocalDir}/android/${abi}/include/sqlite3.h")
-        } + nativeAndroidAbis.collect { abi ->
-            file("${sqliteLocalDir}/android/${abi}/lib/libsqlite3.a")
         } + nativeAndroidAbis.collectMany { abi -> [
             file("${depotToolsDir}/mbedtls/local/android/${abi}/include/mbedtls/ssl.h"),
             file("${depotToolsDir}/mbedtls/local/android/${abi}/lib/libmbedtls.a"),
@@ -68,6 +71,7 @@ tasks.register('fetchNativeDependencies') {
             file("${depotToolsDir}/mbedtls/local/android/${abi}/lib/libmbedcrypto.a")
         ] } + skiaDevBundleOutputs
     )
+    outputs.dir(file("${depotToolsDir}/sqlite3/local"))
 
     doLast {
         exec {
@@ -76,54 +80,87 @@ tasks.register('fetchNativeDependencies') {
         }
 
         exec {
-            executable 'bash'
-            args zlibNgFetchScript.absolutePath,
+            def fetchArgs = [
+                zlibNgFetchScript.absolutePath,
                 '--platform', 'android',
                 '--arch', nativeAndroidAbis[0],
-                '--release-tag', zlibNgReleaseTag,
-                '--github-repo', zlibNgGithubRepo,
                 '--github-token-env', 'ZLIB_NG_GITHUB_TOKEN'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', zlibNgReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', zlibNgGithubRepo)
+
+            executable 'bash'
+            args fetchArgs
         }
 
         exec {
-            executable 'bash'
-            args libpngFetchScript.absolutePath,
+            def fetchArgs = [
+                libpngFetchScript.absolutePath,
                 '--platform', 'android',
                 '--arch', nativeAndroidAbis[0],
-                '--release-tag', libpngReleaseTag,
-                '--github-repo', libpngGithubRepo,
                 '--github-token-env', 'LIBPNG_GITHUB_TOKEN'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', libpngReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', libpngGithubRepo)
+
+            executable 'bash'
+            args fetchArgs
         }
 
         exec {
-            executable 'bash'
-            args sqliteFetchScript.absolutePath,
+            def fetchArgs = [
+                sqliteFetchScript.absolutePath,
                 '--platform', 'android',
                 '--arch', nativeAndroidAbis[0],
-                '--release-tag', sqliteReleaseTag,
-                '--github-repo', sqliteGithubRepo,
                 '--github-token-env', 'SQLITE3_GITHUB_TOKEN'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', sqliteReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', sqliteGithubRepo)
+
+            executable 'bash'
+            args fetchArgs
         }
 
         exec {
-            executable 'bash'
-            args mbedtlsFetchScript.absolutePath,
+            def fetchArgs = [
+                mbedtlsFetchScript.absolutePath,
                 '--platform', 'android',
                 '--arch', nativeAndroidAbis[0],
-                '--release-tag', mbedtlsReleaseTag,
-                '--github-repo', mbedtlsGithubRepo,
                 '--github-token-env', 'MBEDTLS_GITHUB_TOKEN'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', mbedtlsReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', mbedtlsGithubRepo)
+
+            executable 'bash'
+            args fetchArgs
         }
 
         exec {
+            def fetchArgs = [
+                skiaFetchScript.absolutePath,
+                '--platform', 'android',
+                '--arch', nativeAndroidAbis[0],
+                '--install-dev'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', skiaReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', skiaGithubRepo)
+
             executable 'bash'
-            args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', nativeAndroidAbis[0], '--install-dev'
+            args fetchArgs
         }
 
         nativeAndroidAbis.drop(1).each { abi ->
             exec {
+                def fetchArgs = [
+                    skiaFetchScript.absolutePath,
+                    '--platform', 'android',
+                    '--arch', abi
+                ]
+                addOptionalArg(fetchArgs, '--release-tag', skiaReleaseTag)
+                addOptionalArg(fetchArgs, '--github-repo', skiaGithubRepo)
+
                 executable 'bash'
-                args skiaFetchScript.absolutePath, '--platform', 'android', '--arch', abi
+                args fetchArgs
             }
         }
     }
