@@ -65,13 +65,13 @@ jobs:
 
     - name: Export dependency overrides
       env:
-        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ vars.SQLITE3_RELEASE_TAG }}
+        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
         SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
-        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ vars.ZLIB_NG_RELEASE_TAG }}
+        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
-        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ vars.LIBPNG_RELEASE_TAG }}
+        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
-        SKIA_RELEASE_TAG_OVERRIDE: ${{ vars.SKIA_RELEASE_TAG }}
+        SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
         for name in \
@@ -229,13 +229,13 @@ jobs:
     - name: Export dependency overrides
       shell: bash
       env:
-        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ vars.SQLITE3_RELEASE_TAG }}
+        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
         SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
-        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ vars.ZLIB_NG_RELEASE_TAG }}
+        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
-        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ vars.LIBPNG_RELEASE_TAG }}
+        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
-        SKIA_RELEASE_TAG_OVERRIDE: ${{ vars.SKIA_RELEASE_TAG }}
+        SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
         for name in \
@@ -325,13 +325,13 @@ jobs:
 
     - name: Export dependency overrides
       env:
-        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ vars.SQLITE3_RELEASE_TAG }}
+        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
         SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
-        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ vars.ZLIB_NG_RELEASE_TAG }}
+        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
-        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ vars.LIBPNG_RELEASE_TAG }}
+        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
-        SKIA_RELEASE_TAG_OVERRIDE: ${{ vars.SKIA_RELEASE_TAG }}
+        SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
         for name in \
@@ -410,13 +410,13 @@ jobs:
 
     - name: Export dependency overrides
       env:
-        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ vars.SQLITE3_RELEASE_TAG }}
+        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
         SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
-        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ vars.ZLIB_NG_RELEASE_TAG }}
+        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
-        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ vars.LIBPNG_RELEASE_TAG }}
+        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
-        SKIA_RELEASE_TAG_OVERRIDE: ${{ vars.SKIA_RELEASE_TAG }}
+        SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
         for name in \
