@@ -520,7 +520,9 @@ jobs:
     - name: Generate and patch Xcode project
       working-directory: TotalCrossVM/xcode
       run: |
-        cmake ../ -GXcode
+        cmake ../ \
+          -GXcode \
+          -DCMAKE_SYSTEM_NAME=iOS
         ruby -pi -e "gsub(\"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'x86_64'\", \"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'arm64'\")" Podfile
         pod install
         /usr/libexec/PlistBuddy -c "Add :DisableBuildSystemDeprecationDiagnostic bool" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings || true
