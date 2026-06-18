@@ -5,9 +5,23 @@
 
 #include "skia.h"
 
-#define USE_COMPUTE_OPAQUE 1
 #define USE_WRITE_PIXELS 1
+
+#ifndef USE_COMPUTE_OPAQUE
+#if __APPLE__ || ANDROID
+#define USE_COMPUTE_OPAQUE 0
+#else
+#define USE_COMPUTE_OPAQUE 1
+#endif
+#endif
+
+#ifndef USE_COLORTYPE_CONVERSION
+#if __APPLE__ || ANDROID
+#define USE_COLORTYPE_CONVERSION 0
+#else
 #define USE_COLORTYPE_CONVERSION 1
+#endif
+#endif
 
 #ifndef USE_NATIVE_SWAP
 #if __APPLE__ || ANDROID
@@ -282,15 +296,17 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
 
     if (id < 0) { // must create a new bitmap
         SkBitmap bitmap;
-		bitmap.installPixels(SkImageInfo::Make(w, h, kN32_SkColorType, kUnpremul_SkAlphaType),
-							 (void*)converted, sizeof(Pixel) * w, releaseProc, nullptr);
+        bitmap.installPixels(SkImageInfo::Make(w, h, kN32_SkColorType, kUnpremul_SkAlphaType),
+                             (void*)converted, sizeof(Pixel) * w, releaseProc, nullptr);
 
+        // TODO: Reevaluate this optimization; it was added for embedded Linux ARM, but forced scale draws broke on Android/iOS.
 #if USE_COMPUTE_OPAQUE
-		if (SkBitmap::ComputeIsOpaque(bitmap)) {
-			bitmap.setAlphaType(kOpaque_SkAlphaType);
-		}
+        if (SkBitmap::ComputeIsOpaque(bitmap)) {
+            bitmap.setAlphaType(kOpaque_SkAlphaType);
+        }
 #endif
 
+        // TODO: Recheck the color type before re-enabling on Android/iOS; macOS did not reproduce the forced scale issue.
 #if USE_COLORTYPE_CONVERSION
         if (bitmap.isOpaque()) {
             void* dstPixels = operator new(w * h * canvas->imageInfo().bytesPerPixel());
