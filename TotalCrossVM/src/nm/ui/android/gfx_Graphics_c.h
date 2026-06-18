@@ -289,12 +289,6 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    eglSwapBuffers(_display, _surface);
 #elif defined (darwin)
    graphicsUpdateScreenIOS();
-   // erase buffer with keyboard's background color
-   PixelConv gray;
-   gray.pixel = unsafeAreaColorP ? makePixelARGB(*unsafeAreaColorP) : 0xFFFFFFFF;
-   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1);
-   glClear(GL_COLOR_BUFFER_BIT);
-   glClear(GL_DEPTH_BUFFER_BIT);
 #endif
 
    resetGlobals();

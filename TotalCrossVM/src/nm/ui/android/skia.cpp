@@ -223,7 +223,11 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 
 void flushSkia()
 {
-    canvas->flush();
+    if (surface) {
+        surface->flushAndSubmit();
+    } else if (canvas) {
+        canvas->flush();
+    }
 #ifdef HEADLESS
     TCSDL_UpdateTexture(bitmap.width(), bitmap.height(), bitmap.rowBytes(),bitmap.getPixels());
 #endif
@@ -691,7 +695,7 @@ int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32
 }
 
 void skia_shiftScreen(float w, float h, float glShiftY) {
-    canvas->save();
+    canvas->restoreToCount(1);
 
     // resets the matrix before translating
     canvas->setMatrix(SkMatrix::I());
