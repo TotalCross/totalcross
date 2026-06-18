@@ -112,6 +112,27 @@ bool iosLowMemory;
       NSLog(@"TC_ROTATION ios viewDidLayoutSubviews orientation unchanged");
 }
 
+- (void)viewSafeAreaInsetsDidChange
+{
+   [super viewSafeAreaInsetsDidChange];
+   UIEdgeInsets insets = self.view.safeAreaInsets;
+   BOOL changed = !hasLastSafeAreaInsetsSentToVM || !UIEdgeInsetsEqualToEdgeInsets(insets, lastSafeAreaInsetsSentToVM);
+   NSLog(@"TC_ROTATION ios viewSafeAreaInsetsDidChange previous=%.0f,%.0f,%.0f,%.0f current=%.0f,%.0f,%.0f,%.0f changed=%d",
+         lastSafeAreaInsetsSentToVM.top,
+         lastSafeAreaInsetsSentToVM.left,
+         lastSafeAreaInsetsSentToVM.bottom,
+         lastSafeAreaInsetsSentToVM.right,
+         insets.top,
+         insets.left,
+         insets.bottom,
+         insets.right,
+         changed);
+   lastSafeAreaInsetsSentToVM = insets;
+   hasLastSafeAreaInsetsSentToVM = YES;
+   if (changed)
+      [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChanged", @"type", nil]];
+}
+
 - (void)loadView
 {
    self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
