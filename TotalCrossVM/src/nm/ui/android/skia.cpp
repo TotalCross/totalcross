@@ -350,11 +350,15 @@ void skia_restoreClip()
     canvas->restore();
 }
 
-void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32 srcW, int32 srcH, int32 w, int32 h, int32 dstX, int32 dstY, int32 alphaMask, int32 doClip)
+void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask)
 {
     SKIA_TRACE()
 
 	const auto& texture {textures[id]};
+    const SkRect srcRect = SkRect::MakeLTRB(srcLeft, srcTop, srcRight, srcBottom);
+    const SkRect dstRect = SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom);
+    const bool fullSource = srcLeft == 0.0f && srcTop == 0.0f && srcRight == texture.width() && srcBottom == texture.height();
+    const bool sameSize = (srcRight - srcLeft) == (dstRight - dstLeft) && (srcBottom - srcTop) == (dstBottom - dstTop);
 
 #if USE_WRITE_PIXELS
     /*
@@ -365,25 +369,25 @@ void skia_drawSurface(int32 skiaSurface, int32 id, int32 srcX, int32 srcY, int32
         TODO:
             - add actual numbers to back this statement
     */
-if (texture.isOpaque() && alphaMask == 255) {
+if (texture.isOpaque() && alphaMask == 255 && fullSource && sameSize) {
     canvas->writePixels(
         texture.info(),
         texture.getPixels(),
         texture.rowBytes(),
-        dstX,
-        dstY
+        (int)dstLeft,
+        (int)dstTop
     );
 } else
 #endif
     {
         alphaPaint.setAlpha(alphaMask);
+        alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
         canvas->drawBitmapRect(
             texture,
-            //texture.bounds(),
-            SkRect::MakeXYWH(srcX, srcY, w, h),
-            SkRect::MakeXYWH(dstX, dstY, w, h),
+            srcRect,
+            dstRect,
             &alphaPaint,
-            SkCanvas::kFast_SrcRectConstraint
+            fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint
         );
     }
 }

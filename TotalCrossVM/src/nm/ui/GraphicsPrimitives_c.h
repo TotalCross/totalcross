@@ -401,32 +401,116 @@ end:
 }
 #else
 static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSurf, int32 srcX, int32 srcY, int32 w, int32 h,
-                        int32 dstX, int32 dstY, int32 doClip)
-{
-    if (Surface_isImage(srcSurf)) {
-        int32 id = Image_textureId(srcSurf);
-        if (Image_changed(srcSurf) || id == -1) {
-            TCObject pixelsObj = Image_pixels(srcSurf);
-            Pixel *pixels = (Pixel *)ARRAYOBJ_START(pixelsObj);
-            int32 width = Image_width(srcSurf);
-            int32 height = Image_height(srcSurf);
-            Image_textureId(srcSurf) = skia_makeBitmap(id, pixels, width, height);
-        }
-        dstX += Graphics_transX(dstSurf);
-        dstY += Graphics_transY(dstSurf);
-        skia_setClip(Get_Clip(dstSurf));
-        if (Image_frameCount(srcSurf) > 1) {
-           srcX += Image_currentFrame(srcSurf) * w;
-        }
-        skia_drawSurface(0, Image_textureId(srcSurf), srcX, srcY, w, h, w, h, dstX, dstY, Image_alphaMask(srcSurf), doClip);
-        skia_restoreClip();
-    }
-    else
-    {
-        LOGD("Trying to draw a control surface into some other surface");
-    }
+   int32 dstX, int32 dstY, int32 doClip) {
+   if (Surface_isImage(srcSurf)) {
+      int32 srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
+      int32 srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
+      double scaleW = Image_hwScaleW(srcSurf);
+      double scaleH = Image_hwScaleH(srcSurf);
+      int32 frameCount = Image_frameCount(srcSurf);
+      int32 frame = 0;
+      bool clipSet = false;
 
-    markDirty(currentContext, dstSurf, dstX, dstY, w, h);
+      if (scaleW <= 0 || scaleH <= 0 || w <= 0 || h <= 0 || srcWidth <= 0 || srcHeight <= 0) {
+         return;
+      }
+
+      if (!doClip) {
+         if (srcX <= -w || srcX >= srcWidth || srcY <= -h || srcY >= srcHeight) {
+            return;
+         }
+         dstX += Graphics_transX(dstSurf);
+         dstY += Graphics_transY(dstSurf);
+      }
+      else {
+         int32 i;
+
+         dstX += Graphics_transX(dstSurf);
+         dstY += Graphics_transY(dstSurf);
+
+         if (srcX < 0) {
+            w += srcX;
+            dstX -= srcX;
+            srcX = 0;
+         }
+         i = srcWidth - srcX;
+         if (w > i) {
+            w = i;
+         }
+         if (srcY < 0) {
+            h += srcY;
+            dstY -= srcY;
+            srcY = 0;
+         }
+         i = srcHeight - srcY;
+         if (h > i) {
+            h = i;
+         }
+
+         if (dstX < Graphics_clipX1(dstSurf)) {
+            i = Graphics_clipX1(dstSurf) - dstX;
+            dstX = Graphics_clipX1(dstSurf);
+            srcX += i;
+            w -= i;
+         }
+         if ((dstX + w) > Graphics_clipX2(dstSurf)) {
+            w = Graphics_clipX2(dstSurf) - dstX;
+         }
+         if (dstY < Graphics_clipY1(dstSurf)) {
+            i = Graphics_clipY1(dstSurf) - dstY;
+            dstY = Graphics_clipY1(dstSurf);
+            srcY += i;
+            h -= i;
+         }
+         if ((dstY + h) > Graphics_clipY2(dstSurf)) {
+            h = Graphics_clipY2(dstSurf) - dstY;
+         }
+
+         if (w <= 0 || h <= 0) {
+            return;
+         }
+      }
+
+      int32 id = Image_textureId(srcSurf);
+      if (Image_changed(srcSurf) || id == -1) {
+         TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
+         Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+         int32 width = frameCount > 1 ? Image_widthOfAllFrames(srcSurf) : Image_width(srcSurf);
+         int32 height = Image_height(srcSurf);
+         Image_textureId(srcSurf) = skia_makeBitmap(id, pixels, width, height);
+         Image_changed(srcSurf) = false;
+      }
+
+      if (doClip) {
+         skia_setClip(Get_Clip(dstSurf));
+         clipSet = true;
+      }
+      if (frameCount > 1) {
+         frame = Image_currentFrame(srcSurf);
+         if (frame < 0) {
+            frame = 0;
+         }
+         else if (frame >= frameCount) {
+            frame = frameCount - 1;
+         }
+      }
+
+      skia_drawSurface(0, Image_textureId(srcSurf),
+         (float)(srcX / scaleW + frame * Image_width(srcSurf)),
+         (float)(srcY / scaleH),
+         (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
+         (float)((srcY + h) / scaleH),
+         (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
+         Image_alphaMask(srcSurf));
+      if (clipSet) {
+         skia_restoreClip();
+      }
+   }
+   else {
+      LOGD("Trying to draw a control surface into some other surface");
+   }
+
+   markDirty(currentContext, dstSurf, dstX, dstY, w, h);
 }
 #endif
 
