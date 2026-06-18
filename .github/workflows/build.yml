@@ -21,6 +21,7 @@ env:
   MBEDTLS_GITHUB_TOKEN: ${{ secrets.MBEDTLS_GITHUB_TOKEN }}
   SKIA_GITHUB_TOKEN: ${{ secrets.SKIA_GITHUB_TOKEN }}
   VCRUNTIME_GITHUB_TOKEN: ${{ secrets.VCRUNTIME_GITHUB_TOKEN }}
+  LIBJPEG_TURBO_GITHUB_TOKEN: ${{ secrets.LIBJPEG_TURBO_GITHUB_TOKEN }}
 
 jobs:
   checkout-source:
@@ -55,6 +56,8 @@ jobs:
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
         MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
         MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
+        LIBJPEG_TURBO_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_RELEASE_TAG }}
+        LIBJPEG_TURBO_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
         VCRUNTIME_RELEASE_TAG_OVERRIDE: ${{ secrets.VCRUNTIME_RELEASE_TAG }}
@@ -65,6 +68,7 @@ jobs:
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
           MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+          LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO \
           VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
         do
@@ -135,6 +139,7 @@ jobs:
           read -r platform arch <<< "${target}"
           fetch_dep zlib-ng "${platform}" "${arch}" ZLIB_NG_GITHUB_TOKEN ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO
           fetch_dep libpng "${platform}" "${arch}" LIBPNG_GITHUB_TOKEN LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO
+          fetch_dep libjpeg-turbo "${platform}" "${arch}" LIBJPEG_TURBO_GITHUB_TOKEN LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO
           fetch_dep sqlite3 "${platform}" "${arch}" SQLITE3_GITHUB_TOKEN SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO
           fetch_dep mbedtls "${platform}" "${arch}" MBEDTLS_GITHUB_TOKEN MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO
           fetch_dep skia "${platform}" "${arch}" SKIA_GITHUB_TOKEN SKIA_RELEASE_TAG SKIA_GITHUB_REPO --install-dev
@@ -197,6 +202,8 @@ jobs:
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
         MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
         MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
+        LIBJPEG_TURBO_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_RELEASE_TAG }}
+        LIBJPEG_TURBO_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -205,6 +212,7 @@ jobs:
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
           MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+          LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -237,12 +245,14 @@ jobs:
           -e ZLIB_NG_GITHUB_TOKEN
           -e LIBPNG_GITHUB_TOKEN
           -e MBEDTLS_GITHUB_TOKEN
+          -e LIBJPEG_TURBO_GITHUB_TOKEN
         )
         for env_name in \
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
           MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+          LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           if [ -n "${!env_name:-}" ]; then
@@ -280,6 +290,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/skia/local \
           TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local \
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local \
+          TotalCrossVM/deps/totalcross-depot-tools/libjpeg-turbo/local \
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local \
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
 
@@ -366,6 +377,8 @@ jobs:
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
         MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
         MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
+        LIBJPEG_TURBO_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_RELEASE_TAG }}
+        LIBJPEG_TURBO_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -374,6 +387,7 @@ jobs:
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
           MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+          LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -566,6 +580,8 @@ jobs:
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
         MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
         MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
+        LIBJPEG_TURBO_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_RELEASE_TAG }}
+        LIBJPEG_TURBO_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -574,6 +590,7 @@ jobs:
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
           MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+          LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -646,6 +663,8 @@ jobs:
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
         MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
         MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
+        LIBJPEG_TURBO_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_RELEASE_TAG }}
+        LIBJPEG_TURBO_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -654,6 +673,7 @@ jobs:
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
           MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+          LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
