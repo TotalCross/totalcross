@@ -8,7 +8,14 @@
 #define USE_COMPUTE_OPAQUE 1
 #define USE_WRITE_PIXELS 1
 #define USE_COLORTYPE_CONVERSION 1
+
+#ifndef USE_NATIVE_SWAP
+#if __APPLE__ || ANDROID
+#define USE_NATIVE_SWAP 0
+#else
 #define USE_NATIVE_SWAP 1
+#endif
+#endif
 
 #if __APPLE__
 #ifdef darwin
@@ -116,7 +123,20 @@ float __wrap_exp2f(float x) {
     #define SKIA_TRACE() //LOGD();
 #endif
 
-
+#if USE_NATIVE_SWAP
+inline uint32_t builtinSwap32(uint32_t val) noexcept {
+        #if defined(__clang__)
+            return  __builtin_bswap32(val);
+        #elif defined(__GNUG__)
+            return  __builtin_bswap32(val);
+        #elif defined(_MSC_VER)
+             return = _byteswap_ulong(val);
+        #endif
+}
+#define SWAP32(n) builtinSwap32(n)
+#else
+#define SWAP32(n) (((n >> 24) & 0xFF)) | ((((n >> 16) & 0xFF) << 8) | (((n >> 8) & 0xFF) << 16) | ((n & 0xFF) << 24))
+#endif
 
 sk_sp<SkSurface> surface;
 SkCanvas *canvas;
@@ -248,21 +268,6 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, i
 static void releaseProc(void* addr, void* ) {
     delete[] static_cast<int32*>(addr);
 }
-
-#if USE_NATIVE_SWAP
-inline uint32_t builtinSwap32(uint32_t val) noexcept {
-        #if defined(__clang__)
-            return  __builtin_bswap32(val);
-        #elif defined(__GNUG__)
-            return  __builtin_bswap32(val);
-        #elif defined(_MSC_VER)
-             return = _byteswap_ulong(val);
-        #endif
-}
-#define SWAP32(n) builtinSwap32(n)
-#else
-#define SWAP32(n) (((n >> 24) & 0xFF)) | ((((n >> 16) & 0xFF) << 8) | (((n >> 8) & 0xFF) << 16) | ((n & 0xFF) << 24))
-#endif
 
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
     SKIA_TRACE()
