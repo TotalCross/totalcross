@@ -708,9 +708,16 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                    WindowInsetsCompat.Type.systemBars()
                            | WindowInsetsCompat.Type.displayCutout()
            );
+           AndroidUtils.debug("TC_ROTATION android insets safe=" + safeInsets
+                   + " root=" + rootInsets
+                   + " view=" + view.getWidth() + "x" + view.getHeight()
+                   + " mainView=" + (Launcher4A.instance == null ? "null" : Launcher4A.instance.getWidth() + "x" + Launcher4A.instance.getHeight()));
 
            // IMPORTANT: make sure the view was already resized
            view.post(() -> {
+               AndroidUtils.debug("TC_ROTATION android insets post safe=" + safeInsets
+                       + " decor=" + view.getWidth() + "x" + view.getHeight()
+                       + " mainView=" + (Launcher4A.instance == null ? "null" : Launcher4A.instance.getWidth() + "x" + Launcher4A.instance.getHeight()));
                Launcher4A.instance.onSafeAreaChanged(safeInsets);
            });
 

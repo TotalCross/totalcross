@@ -961,7 +961,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
     private Insets safeInsets;
 
     public void onSafeAreaChanged(Insets insets) {
+        Insets previousInsets = safeInsets;
+        boolean changed = previousInsets == null
+                || previousInsets.top != insets.top
+                || previousInsets.left != insets.left
+                || previousInsets.bottom != insets.bottom
+                || previousInsets.right != insets.right;
         safeInsets = insets;
+        traceRotation("safeAreaChanged previous=" + previousInsets
+                + " current=" + insets
+                + " changed=" + changed
+                + " last=" + lastScreenW + "x" + lastScreenH
+                + " surface=" + surfaceState(lastSurface));
+        if (changed && eventThread != null && lastSurface != null && lastSurface.isValid() && lastScreenW > 0 && lastScreenH > 0) {
+            sendScreenChangeEvent();
+        }
     }
 
     @Nullable
