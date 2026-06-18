@@ -72,6 +72,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     target_include_directories(tcvm PUBLIC
         ${ZLIB_INCLUDE_DIRS}
         ${PNG_INCLUDE_DIRS}
+        ${JPEG_INCLUDE_DIRS}
         ${MBEDTLS_INCLUDE_DIRS}
         ${SQLITE3_INCLUDE_DIRS}
     )
@@ -79,3 +80,7 @@ endif()
 
 # TotalCross uses its own wrapper around libpng.
 target_sources(tcvm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/png/PngLoader.c")
+
+# TotalCross uses its own stream/object wrapper around libjpeg.
+target_sources(tcvm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/jpeg/JpegLoader.c")
+target_include_directories(tcvm PRIVATE ${JPEG_INCLUDE_DIRS})

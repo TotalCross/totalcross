@@ -69,6 +69,10 @@ if (NOT DEFINED LIBPNG_AUTO_FETCH)
   set(LIBPNG_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED LIBJPEG_TURBO_AUTO_FETCH)
+  set(LIBJPEG_TURBO_AUTO_FETCH ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
@@ -118,6 +122,7 @@ endif()
 set(CMAKE_MODULE_PATH
   "${TCVM_DEPOT_TOOLS_DIR}/zlib-ng/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/libpng/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/libjpeg-turbo/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/sqlite3/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/mbedtls/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/skia/cmake"
@@ -133,6 +138,10 @@ foreach(TCVM_DEP_CACHE_VAR
     PNG_DIR
     PNG_INCLUDE_DIR
     PNG_LIBRARY
+    JPEG_DIR
+    JPEG_INCLUDE_DIR
+    JPEG_LIBRARY
+    JPEG_LIBRARIES
     SQLITE3_DIR
     SQLite3_INCLUDE_DIR
     SQLite3_LIBRARY
@@ -169,6 +178,33 @@ if(NOT TARGET_WINCE)
   endif()
 endif()
 
+# Find libjpeg-turbo
+include("${TCVM_DEPOT_TOOLS_DIR}/libjpeg-turbo/cmake/AutoFetchLibJpegTurbo.cmake")
+if(LIBJPEG_TURBO_AUTO_FETCH)
+  tcvm_auto_fetch_libjpeg_turbo()
+endif()
+find_package(JPEG REQUIRED)
+if(NOT JPEG_LIBRARY AND JPEG_LIBRARIES)
+  list(GET JPEG_LIBRARIES 0 JPEG_LIBRARY)
+endif()
+if(NOT JPEG_LIBRARIES)
+  set(JPEG_LIBRARIES "${JPEG_LIBRARY}")
+endif()
+if(NOT JPEG_INCLUDE_DIR AND JPEG_INCLUDE_DIRS)
+  list(GET JPEG_INCLUDE_DIRS 0 JPEG_INCLUDE_DIR)
+endif()
+if(NOT JPEG_INCLUDE_DIRS)
+  set(JPEG_INCLUDE_DIRS "${JPEG_INCLUDE_DIR}")
+endif()
+if(NOT TARGET JPEG::JPEG)
+  add_library(JPEG::JPEG UNKNOWN IMPORTED GLOBAL)
+  set_target_properties(JPEG::JPEG PROPERTIES
+    IMPORTED_LOCATION "${JPEG_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${JPEG_INCLUDE_DIRS}"
+  )
+endif()
+get_filename_component(JPEG_LIBRARY_DIR "${JPEG_LIBRARY}" DIRECTORY)
+
 # Find SQLite3
 include("${TCVM_DEPOT_TOOLS_DIR}/sqlite3/cmake/AutoFetchSQLite3.cmake")
 if(SQLITE3_AUTO_FETCH)
@@ -195,7 +231,7 @@ endif()
 add_subdirectory(third_party) 
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
-  target_link_libraries(tcvm PRIVATE zlibstatic png_static SQLite::SQLite3)
+  target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3)
   if(NOT TARGET_WINCE)
     target_link_libraries(tcvm PRIVATE
       MbedTLS::mbedtls
@@ -206,6 +242,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
 else()
   target_link_libraries(tcvm zlibstatic)
   target_link_libraries(tcvm png_static)
+  target_link_libraries(tcvm JPEG::JPEG)
   target_link_libraries(tcvm ${SQLITE3_LIBRARIES})
   if(NOT TARGET_WINCE)
     target_link_libraries(tcvm MbedTLS::mbedtls)
@@ -368,55 +405,6 @@ set(SOURCES
     ${TC_SRCDIR}/nm/util/zip/ZipFile.c
     ${TC_SRCDIR}/nm/util/zip/ZipEntry.c
 
-    ${TC_SRCDIR}/jpeg/jcapimin.c
-    ${TC_SRCDIR}/jpeg/jcapistd.c
-    ${TC_SRCDIR}/jpeg/jccoefct.c
-    ${TC_SRCDIR}/jpeg/jccolor.c
-    ${TC_SRCDIR}/jpeg/jcdctmgr.c
-    ${TC_SRCDIR}/jpeg/jchuff.c
-    ${TC_SRCDIR}/jpeg/jcinit.c
-    ${TC_SRCDIR}/jpeg/jcmainct.c
-    ${TC_SRCDIR}/jpeg/jcmarker.c
-    ${TC_SRCDIR}/jpeg/jcmaster.c
-    ${TC_SRCDIR}/jpeg/jcomapi.c
-    ${TC_SRCDIR}/jpeg/jcparam.c
-    ${TC_SRCDIR}/jpeg/jcphuff.c
-    ${TC_SRCDIR}/jpeg/jcprepct.c
-    ${TC_SRCDIR}/jpeg/jcsample.c
-    ${TC_SRCDIR}/jpeg/jdapimin.c
-    ${TC_SRCDIR}/jpeg/jdapistd.c
-    ${TC_SRCDIR}/jpeg/jdatadst.c
-    ${TC_SRCDIR}/jpeg/jdatasrc.c
-    ${TC_SRCDIR}/jpeg/jdcoefct.c
-    ${TC_SRCDIR}/jpeg/jdcolor.c
-    ${TC_SRCDIR}/jpeg/jddctmgr.c
-    ${TC_SRCDIR}/jpeg/jdhuff.c
-    ${TC_SRCDIR}/jpeg/jdinput.c
-    ${TC_SRCDIR}/jpeg/jdmainct.c
-    ${TC_SRCDIR}/jpeg/jdmarker.c
-    ${TC_SRCDIR}/jpeg/jdmaster.c
-    ${TC_SRCDIR}/jpeg/jdphuff.c
-    ${TC_SRCDIR}/jpeg/jdpostct.c
-    ${TC_SRCDIR}/jpeg/jdsample.c
-    ${TC_SRCDIR}/jpeg/jerror.c
-    ${TC_SRCDIR}/jpeg/jfdctfst.c
-    ${TC_SRCDIR}/jpeg/jmemmgr.c
-    ${TC_SRCDIR}/jpeg/jmemnobs.c
-    ${TC_SRCDIR}/jpeg/JpegLoader.c
-    ${TC_SRCDIR}/jpeg/jquant1.c
-    ${TC_SRCDIR}/jpeg/jquant2.c
-    ${TC_SRCDIR}/jpeg/jutils.c
-    ${TC_SRCDIR}/jpeg/jcarith.c
-    ${TC_SRCDIR}/jpeg/jdarith.c
-    ${TC_SRCDIR}/jpeg/jdmerge.c
-    ${TC_SRCDIR}/jpeg/jidctflt.c
-    ${TC_SRCDIR}/jpeg/jidctfst.c
-    ${TC_SRCDIR}/jpeg/jidctint.c
-    ${TC_SRCDIR}/jpeg/jfdctflt.c
-    ${TC_SRCDIR}/jpeg/jfdctint.c
-    ${TC_SRCDIR}/jpeg/jaricom.c
-    ${TC_SRCDIR}/jpeg/rdbmp.c
-
     ${TC_SRCDIR}/event/Event.c
     ${TC_SRCDIR}/event/specialkeys.c
 
@@ -539,7 +527,6 @@ include_directories(${TC_SRCDIR}/event)
 include_directories(${TC_SRCDIR}/event/android)
 include_directories(${TC_SRCDIR}/init)
 include_directories(${TC_SRCDIR}/init/android)
-include_directories(${TC_SRCDIR}/jpeg)
 include_directories(${TC_SRCDIR}/minizip)
 include_directories(${TC_SRCDIR}/nm)
 include_directories(${TC_SRCDIR}/nm/crypto)
@@ -641,6 +628,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
   set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
     "${PNG_LIBRARY}"
     "${ZLIB_LIBRARY}"
+    "${JPEG_LIBRARIES}"
     "${SQLITE3_LIBRARIES}"
     "${MBEDTLS_LIBRARIES}"
   )
