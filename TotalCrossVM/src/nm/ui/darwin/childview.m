@@ -46,6 +46,14 @@ extern int32 deviceFontHeight,iosScale;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
    deviceFontHeight = [UIFont labelFontSize];
+   NSLog(@"TC_ROTATION ios setScreenValues bounds=%.0fx%.0f scale=%d screen=%dx%d pitch=%d bpp=%d",
+         self.bounds.size.width,
+         self.bounds.size.height,
+         iosScale,
+         screen->screenW,
+         screen->screenH,
+         screen->pitch,
+         screen->bpp);
    // if ((deviceFontHeight&1) == 1) deviceFontHeight++; // even size fonts are better
 }
 
@@ -67,8 +75,22 @@ void graphicsSetupIOS()
 
 - (CGSize)getResolution
 {
-   CGRect r = [[UIScreen mainScreen] bounds];
-   return CGSizeMake(lround(r.size.width * iosScale), lround(r.size.height * iosScale));
+   UIScreen *screen = [UIScreen mainScreen];
+   CGRect r = [screen bounds];
+   CGSize viewSize = self.bounds.size;
+   CGSize resolution = CGSizeMake(lround(r.size.width * iosScale), lround(r.size.height * iosScale));
+   CGFloat nativeScale = [screen respondsToSelector:@selector(nativeScale)] ? screen.nativeScale : screen.scale;
+   NSLog(@"TC_ROTATION ios getResolution screenBounds=%.0fx%.0f viewBounds=%.0fx%.0f scale=%d uiScale=%.2f nativeScale=%.2f result=%.0fx%.0f",
+         r.size.width,
+         r.size.height,
+         viewSize.width,
+         viewSize.height,
+         iosScale,
+         screen.scale,
+         nativeScale,
+         resolution.width,
+         resolution.height);
+   return resolution;
 }
 
 - (void)createGLcontext

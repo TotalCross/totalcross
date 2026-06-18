@@ -99,6 +99,7 @@ import totalcross.android.Scanner4A;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener
 {
+   private static final boolean TRACE_ROTATION = true;
    public static final boolean GENERATE_FONT = false;
 
    public static boolean canQuit = true;
@@ -124,6 +125,17 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static String appPath;
    private static android.text.ClipboardManager clip;
    public final String tczname;
+
+   private static void traceRotation(String msg)
+   {
+      if (TRACE_ROTATION)
+         AndroidUtils.debug("TC_ROTATION android " + msg);
+   }
+
+   private static String surfaceState(Surface surface)
+   {
+      return surface == null ? "null" : "id=" + System.identityHashCode(surface) + " valid=" + surface.isValid();
+   }
    
    public static Handler viewhandler = new Handler(Looper.getMainLooper())
    {
@@ -287,6 +299,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       Rect rect = holder == null ? null : holder.getSurfaceFrame();
       int w = rect == null ? getWidth() : rect.width();
       int h = rect == null ? getHeight() : rect.height();
+      traceRotation("tryBootstrapSurface holder=" + (holder != null)
+            + " surface=" + surfaceState(surface)
+            + " frame=" + rect
+            + " view=" + getWidth() + "x" + getHeight()
+            + " candidate=" + w + "x" + h
+            + " last=" + lastScreenW + "x" + lastScreenH
+            + " eventThread=" + (eventThread != null));
       if (surface != null && surface.isValid() && w > 0 && h > 0 && eventThread != null)
       {
          lastSurface = surface;
@@ -298,13 +317,29 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
+      Rect traceRect = holder == null ? null : holder.getSurfaceFrame();
+      traceRotation("surfaceChanged enter format=" + format
+            + " params=" + w + "x" + h
+            + " frame=" + traceRect
+            + " view=" + getWidth() + "x" + getHeight()
+            + " last=" + lastScreenW + "x" + lastScreenH
+            + " lastOrientation=" + lastOrientation
+            + " interactive=" + loader.isInteractive()
+            + " surface=" + surfaceState(holder == null ? null : holder.getSurface()));
       if (h == 0 || w == 0 || !loader.isInteractive()) {
+        traceRotation("surfaceChanged ignored params=" + w + "x" + h + " interactive=" + loader.isInteractive());
         return;
       }
       Rect rect = holder.getSurfaceFrame();
       int screenHeight = rect.bottom;
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
+      traceRotation("surfaceChanged state currentOrientation=" + currentOrientation
+            + " previousOrientation=" + lastOrientation
+            + " rotated=" + rotated
+            + " screenHeight=" + screenHeight
+            + " sipVisible=" + sipVisible
+            + " appTitleH=" + appTitleH);
       lastOrientation = currentOrientation;
       
       if (h < lastScreenH && Loader.isFullScreen && lastScreenH == screenHeight && appTitleH == 0) // 1: surfaceChanged. 0 -> 480. displayH: 480  =>  2: surfaceChanged. 480 -> 455. displayH: 480
@@ -318,16 +353,24 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          android.view.Surface surface = holder == null ? lastSurface : holder.getSurface();
          if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
          {
+            traceRotation("surfaceChanged scheduling screen change params=" + w + "x" + h
+                  + " previous=" + lastScreenW + "x" + lastScreenH
+                  + " surfaceChanged=" + (surface != lastSurface));
             lastSurface = surface;
             lastScreenW = w;
             lastScreenH = h;
             sendScreenChangeEvent();
          }
+         else
+            traceRotation("surfaceChanged skipped duplicate params=" + w + "x" + h);
       }
    }
 
    private void sendScreenChangeEvent()
    {
+      traceRotation("sendScreenChangeEvent requested interactive=" + loader.isInteractive()
+            + " last=" + lastScreenW + "x" + lastScreenH
+            + " surface=" + surfaceState(lastSurface));
       if (!loader.isInteractive()) {
         return;
       }
@@ -336,6 +379,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          public void run()
          {
+            traceRotation("sendScreenChangeEvent run before nativeInitSize last=" + lastScreenW + "x" + lastScreenH
+                  + " view=" + getWidth() + "x" + getHeight()
+                  + " appHeight=" + getAppHeight()
+                  + " surface=" + surfaceState(lastSurface));
             nativeInitSize(lastSurface,lastScreenW,lastScreenH);
             DisplayMetrics metrics = getResources().getDisplayMetrics();
             final double defaultTextSize = new TextView(getContext()).getTextSize();
@@ -349,6 +396,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             rDirty.bottom = lastScreenH;
             
             setSIP(SIP_HIDE,false);
+            traceRotation("sendScreenChangeEvent posting SCREEN_CHANGED size=" + lastScreenW + "x" + lastScreenH
+                  + " dpi=" + (int)(metrics.xdpi+0.5) + "x" + (int)(metrics.ydpi+0.5)
+                  + " density=" + metrics.density
+                  + " fontHeight=" + deviceFontHeight
+                  + " dirty=" + rDirty);
             _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             sendCloseSIPEvent(); // makes first screen rotation work
          }

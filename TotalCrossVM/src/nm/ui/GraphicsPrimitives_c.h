@@ -7,6 +7,14 @@
 #include "PalmFont.h"
 #include "GraphicsPrimitives.h"
 #include "math.h"
+#include <stdio.h>
+
+#ifdef ANDROID
+#include <android/log.h>
+#define TC_ROTATION_LOG(...) __android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__)
+#else
+#define TC_ROTATION_LOG(...) do { printf(__VA_ARGS__); printf("\n"); } while (0)
+#endif
 
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
@@ -99,23 +107,48 @@ void repaintActiveWindows(Context currentContext)
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
+   int32 oldScreenW = screen.screenW;
+   int32 oldScreenH = screen.screenH;
+   int32 oldSettingsW = *tcSettings.screenWidthPtr;
+   int32 oldSettingsH = *tcSettings.screenHeightPtr;
+   TC_ROTATION_LOG("TC_ROTATION vm screenChange enter oldScreen=%dx%d oldSettings=%dx%d new=%dx%d dpi=%dx%d nothingChanged=%d mainClass=%d",
+      oldScreenW, oldScreenH, oldSettingsW, oldSettingsH, newWidth, newHeight, hRes, vRes, nothingChanged, mainClass != null);
+
    // IMPORTANT: this is the only place that changes tcSettings
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
    screen.screenH = *tcSettings.screenHeightPtr = newHeight;
    screen.hRes = *tcSettings.screenWidthInDPIPtr = hRes;
    screen.vRes = *tcSettings.screenHeightInDPIPtr = vRes;
+   TC_ROTATION_LOG("TC_ROTATION vm screenChange applied screen=%dx%d pitch=%d bpp=%d settings=%dx%d dpi=%dx%d",
+      screen.screenW, screen.screenH, screen.pitch, screen.bpp,
+      *tcSettings.screenWidthPtr, *tcSettings.screenHeightPtr,
+      *tcSettings.screenWidthInDPIPtr, *tcSettings.screenHeightInDPIPtr);
    markWholeScreenDirty(currentContext);
+   TC_ROTATION_LOG("TC_ROTATION vm screenChange dirty=%d,%d-%d,%d fullDirty=%d",
+      currentContext->dirtyX1, currentContext->dirtyY1, currentContext->dirtyX2, currentContext->dirtyY2, currentContext->fullDirty);
    privateScreenChange(newWidth, newHeight);
    if (!nothingChanged)
    {
+      bool created;
+      TC_ROTATION_LOG("TC_ROTATION vm screenChange recreateSurface begin pixels=%p mainWindowPixels=%p",
+         (void*)screen.pixels, (void*)screen.mainWindowPixels);
       graphicsDestroy(&screen, true);
-      createScreenSurface(currentContext, true);
+      created = createScreenSurface(currentContext, true);
+      TC_ROTATION_LOG("TC_ROTATION vm screenChange recreateSurface end created=%d pixels=%p mainWindowPixels=%p",
+         created, (void*)screen.pixels, (void*)screen.mainWindowPixels);
    }
+   else
+      TC_ROTATION_LOG("TC_ROTATION vm screenChange reuseSurface pixels=%p mainWindowPixels=%p", (void*)screen.pixels, (void*)screen.mainWindowPixels);
    // post the event to the vm
    if (mainClass != null)
+   {
+      TC_ROTATION_LOG("TC_ROTATION vm screenChange post SK_SCREEN_CHANGE");
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1); //XXX
+   }
+   TC_ROTATION_LOG("TC_ROTATION vm screenChange repaintActiveWindows");
    repaintActiveWindows(mainContext);
+   TC_ROTATION_LOG("TC_ROTATION vm screenChange done");
 }
 
 Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
