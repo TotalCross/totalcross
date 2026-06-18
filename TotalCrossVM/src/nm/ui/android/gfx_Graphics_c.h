@@ -23,6 +23,9 @@
 
 #ifdef darwin
 bool isIpad;
+#ifndef TC_IOS_CLEAR_AFTER_PRESENT
+#define TC_IOS_CLEAR_AFTER_PRESENT 0
+#endif
 #else
 bool isIpad = false;
 #endif
@@ -289,12 +292,14 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    eglSwapBuffers(_display, _surface);
 #elif defined (darwin)
    graphicsUpdateScreenIOS();
+#if TC_IOS_CLEAR_AFTER_PRESENT
    // erase buffer with keyboard's background color
    PixelConv gray;
    gray.pixel = unsafeAreaColorP ? makePixelARGB(*unsafeAreaColorP) : 0xFFFFFFFF;
    glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1);
    glClear(GL_COLOR_BUFFER_BIT);
    glClear(GL_DEPTH_BUFFER_BIT);
+#endif
 #endif
 
    resetGlobals();

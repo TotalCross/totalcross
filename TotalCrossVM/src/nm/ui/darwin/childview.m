@@ -1,6 +1,7 @@
 #define Object NSObject*
 #import "childview.h"
 #import "mainview.h"
+#include <math.h>
 
 @implementation ChildView
 
@@ -39,8 +40,8 @@ extern int32 deviceFontHeight,iosScale;
 {
    ScreenSurface screen = gscreen == null ? gscreen = scr : gscreen;
    iosScale = [UIScreen mainScreen].scale;
-   screen->screenW = self.bounds.size.width *iosScale;
-   screen->screenH = self.bounds.size.height*iosScale;
+   screen->screenW = (int32)lround(self.bounds.size.width * iosScale);
+   screen->screenH = (int32)lround(self.bounds.size.height * iosScale);
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
@@ -67,13 +68,17 @@ void graphicsSetupIOS()
 - (CGSize)getResolution
 {
    CGRect r = [[UIScreen mainScreen] bounds];
-   return CGSizeMake(r.size.width * iosScale, r.size.height * iosScale);
+   return CGSizeMake(lround(r.size.width * iosScale), lround(r.size.height * iosScale));
 }
 
 - (void)createGLcontext
 {
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
    eaglLayer.opaque = TRUE;
+   eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+      [NSNumber numberWithBool:YES], kEAGLDrawablePropertyRetainedBacking,
+      kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+      nil];
    if (glcontext != null)
    {
       glDeleteFramebuffers(1, &defaultFramebuffer);
@@ -121,8 +126,8 @@ void graphicsSetupIOS()
          [ (MainViewController*)controller addEvent:
           [[NSDictionary alloc] initWithObjectsAndKeys:
            touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
-           [NSNumber numberWithInt:(int)point.x * iosScale], @"x",
-           [NSNumber numberWithInt:(int)point.y * iosScale], @"y", nil]
+           [NSNumber numberWithInt:(int)lround(point.x * iosScale)], @"x",
+           [NSNumber numberWithInt:(int)lround(point.y * iosScale)], @"y", nil]
           ];
       }
    }

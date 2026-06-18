@@ -168,6 +168,21 @@ std::vector<SkBitmap> textures;
 
 std::map<std::string, int> typefaceIndexMap;
 
+#ifndef NDEBUG
+static void skia_checkCanvasSaveCount(const char* op)
+{
+    if (canvas != nullptr) {
+        const int saveCount = canvas->getSaveCount();
+        if (saveCount != 1) {
+            LOGD("Unexpected SkCanvas save count after %s: %d", op, saveCount);
+        }
+        SkASSERT(saveCount == 1);
+    }
+}
+#else
+#define skia_checkCanvasSaveCount(op) ((void)0)
+#endif
+
 void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
@@ -223,7 +238,12 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 
 void flushSkia()
 {
-    canvas->flush();
+    if (surface) {
+        surface->flushAndSubmit();
+    } else if (canvas) {
+        canvas->flush();
+    }
+    skia_checkCanvasSaveCount("flushSkia");
 #ifdef HEADLESS
     TCSDL_UpdateTexture(bitmap.width(), bitmap.height(), bitmap.rowBytes(),bitmap.getPixels());
 #endif
@@ -691,13 +711,8 @@ int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32
 }
 
 void skia_shiftScreen(float w, float h, float glShiftY) {
-    canvas->save();
-
-    // resets the matrix before translating
+    canvas->restoreToCount(1);
     canvas->setMatrix(SkMatrix::I());
-
-    // equivalent to:
-    // 1.0f - (2.0f * glShiftY / h)
     canvas->translate(0, glShiftY);
 
     flushSkia();

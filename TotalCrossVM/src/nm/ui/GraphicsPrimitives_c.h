@@ -3140,17 +3140,22 @@ void updateScreen(Context currentContext)
       if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
       {
 #ifdef darwin
+         currentContext->dirtyX1 = screen.screenW;
+         currentContext->dirtyY1 = screen.screenH;
+         currentContext->dirtyX2 = currentContext->dirtyY2 = 0;
+         currentContext->fullDirty = false;
          UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
 #endif
          graphicsUpdateScreen(currentContext, &screen);
 #ifdef darwin
          LOCKVAR(screen);
+#else
+         currentContext->dirtyX1 = screen.screenW;
+         currentContext->dirtyY1 = screen.screenH;
+         currentContext->dirtyX2 = currentContext->dirtyY2 = 0;
+         currentContext->fullDirty = false;
 #endif
       }
-      currentContext->dirtyX1 = screen.screenW;
-      currentContext->dirtyY1 = screen.screenH;
-      currentContext->dirtyX2 = currentContext->dirtyY2 = 0;
-      currentContext->fullDirty = false;
    }
    UNLOCKVAR(screen);
 #if defined ANDROID || defined darwin
