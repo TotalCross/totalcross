@@ -246,8 +246,7 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, i
 }
 
 static void releaseProc(void* addr, void* ) {
-    // printf("releaseProc called\n");
-    operator delete (addr);
+    delete[] static_cast<int32*>(addr);
 }
 
 #if USE_NATIVE_SWAP
