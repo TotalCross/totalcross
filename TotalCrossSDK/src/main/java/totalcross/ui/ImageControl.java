@@ -322,16 +322,8 @@ public class ImageControl extends Control {
       }
     }
     if (tempHwScale != NOTEMP) {
-        try {
-          /** TODO
-           * The correct solution must use hwScale.
-           * However hwScale is not working correctly on totalcross skia version yet.
-           * This might consumes more memory to scale
-           */
-          temp = temp.scaledBy(tempHwScale/scaleX, tempHwScale/scaleY);
-        } catch (ImageException e) {
-            e.printStackTrace();
-        }
+      temp.hwScaleW = tempHwScale / scaleX;
+      temp.hwScaleH = tempHwScale / scaleY;
     }
     if (allowBeyondLimits) {
       g.drawImage(temp, lastX, lastY, true);
