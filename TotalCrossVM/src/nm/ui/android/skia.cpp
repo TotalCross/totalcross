@@ -260,26 +260,21 @@ inline uint32_t builtinSwap32(uint32_t val) noexcept {
              return = _byteswap_ulong(val);
         #endif
 }
+#define SWAP32(n) builtinSwap32(n)
+#else
+#define SWAP32(n) (((n >> 24) & 0xFF)) | ((((n >> 16) & 0xFF) << 8) | (((n >> 8) & 0xFF) << 16) | ((n & 0xFF) << 24))
 #endif
 
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
     SKIA_TRACE()
-    
-    #if USE_NATIVE_SWAP
-        const auto count = w * h;
-        int32* const converted = new int32[count];
-        const auto d32 = reinterpret_cast<const Pixel*>(data);
-        for (int i = 0; i < count; i++) {
-            converted[i] = builtinSwap32(d32[i]);
-        }
-    #else
-        //TODO: reuse pixel data and avoid all this allocation, maybe using data directly with the correct color type
-        int32 *converted = new int32[w * h];
-        for (int i = 0; i < w * h; i++) {
-            int32 pixel = ((Pixel*)data)[i];
-            converted[i] = (((pixel >> 24) & 0xFF)) | ((((pixel >> 16) & 0xFF) << 8) | (((pixel >> 8) & 0xFF) << 16) | ((pixel & 0xFF) << 24));
-        }
-    #endif
+
+    const size_t count = (size_t)w * (size_t)h;
+    int32* const converted = new int32[count];
+    const Pixel* const src = reinterpret_cast<const Pixel*>(data);
+
+    for (size_t i = 0; i < count; i++) {
+        converted[i] = SWAP32(src[i]);
+    }
 
     if (id < 0) { // must create a new bitmap
         SkBitmap bitmap;
