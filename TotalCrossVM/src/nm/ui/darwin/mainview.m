@@ -85,15 +85,31 @@ bool iosLowMemory;
 {
    //NSLog(@"*** view will layout subviews");
    int orientation = [child_view getOrientation];
+   UIScreen *screen = [UIScreen mainScreen];
+   CGFloat nativeScale = [screen respondsToSelector:@selector(nativeScale)] ? screen.nativeScale : screen.scale;
+   NSLog(@"TC_ROTATION ios viewDidLayoutSubviews orientation=%d lastSent=%d viewBounds=%.0fx%.0f childBounds=%.0fx%.0f screenBounds=%.0fx%.0f scale=%.2f nativeScale=%.2f",
+         orientation,
+         lastOrientationSentToVM,
+         self.view.bounds.size.width,
+         self.view.bounds.size.height,
+         child_view.bounds.size.width,
+         child_view.bounds.size.height,
+         screen.bounds.size.width,
+         screen.bounds.size.height,
+         screen.scale,
+         nativeScale);
    if (orientation != lastOrientationSentToVM)
    {
       //[self destroySIP];
       lastOrientationSentToVM = orientation;
       CGSize res = [child_view getResolution];
+      NSLog(@"TC_ROTATION ios viewDidLayoutSubviews enqueue screenChange width=%.0f height=%.0f", res.width, res.height);
       [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
                         [NSNumber numberWithInt: res.width], @"width",
                         [NSNumber numberWithInt: res.height], @"height", nil] ];
    }
+   else
+      NSLog(@"TC_ROTATION ios viewDidLayoutSubviews orientation unchanged");
 }
 
 - (void)loadView

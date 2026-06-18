@@ -4,10 +4,12 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "gfx_ex.h"
+#include <stdio.h>
 
 
 #ifdef ANDROID
 #include "skia.h"
+#include <android/log.h>
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
 #include <GLES2/gl2.h>
@@ -20,6 +22,11 @@
 #define __gl2_h_
 #endif
 
+#ifdef ANDROID
+#define TC_ROTATION_GFX_LOG(...) __android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__)
+#else
+#define TC_ROTATION_GFX_LOG(...) do { printf(__VA_ARGS__); printf("\n"); } while (0)
+#endif
 
 #ifdef darwin
 bool isIpad;
@@ -55,11 +62,15 @@ int32 setShiftYonNextUpdateScreen;
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
 {
+   TC_ROTATION_GFX_LOG("TC_ROTATION android nativeInitSize enter surface=%p width=%d height=%d screenExt=%p window=%p lastWindow=%p",
+      (void*)surface, width, height, screen.extension, (void*)window, (void*)lastWindow);
    if (!screen.extension)
       screen.extension = xmalloc(4);//newX(ScreenSurfaceEx);
 
    if (surface == null) // passed null when the surface is destroyed
    {
+      TC_ROTATION_GFX_LOG("TC_ROTATION android nativeInitSize nullSurface command=%d value=%d needsPaint=%p glShiftY=%d desiredglShiftY=%d",
+         width, height, (void*)needsPaint, glShiftY, desiredglShiftY);
       if (width == -999)
       {
          if (needsPaint != null)
@@ -104,6 +115,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
 
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+   TC_ROTATION_GFX_LOG("TC_ROTATION android nativeInitSize surfaceApplied app=%dx%d realAppH=%d window=%p lastWindow=%p",
+      appW, appH, realAppH, (void*)window, (void*)lastWindow);
    if (lastWindow && lastWindow != window)
    {
       if (window == null) {debug("window is null. surface is %p. app will likely crash...", (void*)surface);}
@@ -166,6 +179,8 @@ bool initGLES(ScreenSurface screen)
 	   if (!(context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attribs))) {debug("eglCreateContext() returned error %d", eglGetError()); destroyEGL(); return false;}
 	   if (!eglMakeCurrent(display, surface, surface, context))                 {debug("eglMakeCurrent() returned error %d", eglGetError()); destroyEGL(); return false;}
 	   if (!eglQuerySurface(display, surface, EGL_WIDTH, &width) || !eglQuerySurface(display, surface, EGL_HEIGHT, &height)) {debug("eglQuerySurface() returned error %d", eglGetError()); destroyEGL(); return false;}
+      TC_ROTATION_GFX_LOG("TC_ROTATION android initGLES eglSurface=%dx%d app=%dx%d screen=%dx%d pitch=%d window=%p",
+         width, height, appW, appH, screen->screenW, screen->screenH, screen->pitch, (void*)window);
 
 	   _display = display;
 	   _surface = surface;
@@ -204,6 +219,8 @@ static void setProjectionMatrix(float w, float h)
 
 void privateScreenChange(int32 w, int32 h)
 {
+   TC_ROTATION_GFX_LOG("TC_ROTATION gfx privateScreenChange oldApp=%dx%d new=%dx%d glShiftY=%d",
+      appW, appH, w, h, glShiftY);
    appW = w;
    appH = h;
    setProjectionMatrix(w,h);

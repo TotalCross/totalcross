@@ -71,12 +71,16 @@ void iphone_privatePumpEvent(Context currentContext)
       if([type isEqualToString:@"screenChanged"])
       {
          #define SK_SCREEN_CHANGE -1030
+         NSLog(@"TC_ROTATION ios event pump screenChanged -> SK_SCREEN_CHANGE");
          postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
       }
       else
       if([type isEqualToString:@"screenChange"])
       {
-         screenChange(currentContext, [[event objectForKey:@"width"] intValue], [[event objectForKey:@"height"] intValue],0,0,false);
+         int width = [[event objectForKey:@"width"] intValue];
+         int height = [[event objectForKey:@"height"] intValue];
+         NSLog(@"TC_ROTATION ios event pump screenChange width=%d height=%d", width, height);
+         screenChange(currentContext, width, height,0,0,false);
       }
       else
       if([type isEqualToString:@"keyPress"]) //flsobral@tc126_59: now we support text edition directly in TotalCross controls!
