@@ -76,21 +76,55 @@ void graphicsSetupIOS()
 - (CGSize)getResolution
 {
    UIScreen *screen = [UIScreen mainScreen];
-   CGRect r = [screen bounds];
    CGSize viewSize = self.bounds.size;
-   CGSize resolution = CGSizeMake(lround(r.size.width * iosScale), lround(r.size.height * iosScale));
+   CGFloat scale = self.contentScaleFactor > 0 ? self.contentScaleFactor : screen.scale;
+   iosScale = (int32)lround(scale);
+   CGSize resolution = CGSizeMake(lround(viewSize.width * scale), lround(viewSize.height * scale));
    CGFloat nativeScale = [screen respondsToSelector:@selector(nativeScale)] ? screen.nativeScale : screen.scale;
-   NSLog(@"TC_ROTATION ios getResolution screenBounds=%.0fx%.0f viewBounds=%.0fx%.0f scale=%d uiScale=%.2f nativeScale=%.2f result=%.0fx%.0f",
-         r.size.width,
-         r.size.height,
+   NSLog(@"TC_ROTATION ios getResolution viewBounds=%.0fx%.0f contentScale=%.2f iosScale=%d uiScale=%.2f nativeScale=%.2f result=%.0fx%.0f",
          viewSize.width,
          viewSize.height,
+         scale,
          iosScale,
          screen.scale,
          nativeScale,
          resolution.width,
          resolution.height);
    return resolution;
+}
+
+- (CGSize)resizeGLDrawable
+{
+   CGSize fallback = [self getResolution];
+   if (glcontext == nil)
+      return fallback;
+
+   [EAGLContext setCurrentContext:glcontext];
+   glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer); GL_CHECK_ERROR
+   glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
+   [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+
+   GLint width = 0;
+   GLint height = 0;
+   glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width); GL_CHECK_ERROR
+   glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height); GL_CHECK_ERROR
+
+   int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+   if (stat != GL_FRAMEBUFFER_COMPLETE)
+      NSLog(@"Failed to make complete framebuffer object %x", stat);
+
+   if (width <= 0 || height <= 0)
+   {
+      width = (GLint)fallback.width;
+      height = (GLint)fallback.height;
+   }
+   glViewport(0, 0, width, height); GL_CHECK_ERROR
+   NSLog(@"TC_ROTATION ios resizeGLDrawable drawable=%dx%d viewBounds=%.0fx%.0f",
+         width,
+         height,
+         self.bounds.size.width,
+         self.bounds.size.height);
+   return CGSizeMake(width, height);
 }
 
 - (void)createGLcontext
@@ -116,12 +150,7 @@ void graphicsSetupIOS()
    glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
 
-   [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:eaglLayer];
-   int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-   if (stat != GL_FRAMEBUFFER_COMPLETE)
-      NSLog(@"Failed to make complete framebuffer object %x", stat);
-   CGSize res = [self getResolution];
-   //setupGL(res.width,res.height);
+   [self resizeGLDrawable];
    realAppH = appH;
    //invalidateTextures(INVTEX_INVALIDATE);
 }

@@ -109,7 +109,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
 
 char* getTotalCrossAndroidClass(CharP className)
 {
-#ifdef DEBUG
+#if 1 //def DEBUG
    return className;
 #else
 	 char* an;

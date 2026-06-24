@@ -20,6 +20,7 @@ bool allowMainThread();
 int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
+void iphone_privateSetSurfaceWillChange(bool willChange);
 static bool callingCamera;
 UIWindow* barwindow;
 static bool callingBarcode;
@@ -85,11 +86,21 @@ bool iosLowMemory;
 {
    //NSLog(@"*** view will layout subviews");
    int orientation = [child_view getOrientation];
+   CGSize res = [child_view getResolution];
+   int width = (int)res.width;
+   int height = (int)res.height;
+   bool sizeChanged = width > 0 && height > 0 && (width != lastScreenWidthSentToVM || height != lastScreenHeightSentToVM);
+   bool orientationChanged = orientation != lastOrientationSentToVM;
    UIScreen *screen = [UIScreen mainScreen];
    CGFloat nativeScale = [screen respondsToSelector:@selector(nativeScale)] ? screen.nativeScale : screen.scale;
-   NSLog(@"TC_ROTATION ios viewDidLayoutSubviews orientation=%d lastSent=%d viewBounds=%.0fx%.0f childBounds=%.0fx%.0f screenBounds=%.0fx%.0f scale=%.2f nativeScale=%.2f",
+   NSLog(@"TC_ROTATION ios viewDidLayoutSubviews orientation=%d lastSent=%d size=%dx%d lastSize=%dx%d changed=%d viewBounds=%.0fx%.0f childBounds=%.0fx%.0f screenBounds=%.0fx%.0f scale=%.2f nativeScale=%.2f",
          orientation,
          lastOrientationSentToVM,
+         width,
+         height,
+         lastScreenWidthSentToVM,
+         lastScreenHeightSentToVM,
+         sizeChanged,
          self.view.bounds.size.width,
          self.view.bounds.size.height,
          child_view.bounds.size.width,
@@ -98,18 +109,26 @@ bool iosLowMemory;
          screen.bounds.size.height,
          screen.scale,
          nativeScale);
-   if (orientation != lastOrientationSentToVM)
+   if (sizeChanged)
    {
+      iphone_privateSetSurfaceWillChange(true);
+      res = [child_view resizeGLDrawable];
+      width = (int)res.width;
+      height = (int)res.height;
       //[self destroySIP];
       lastOrientationSentToVM = orientation;
-      CGSize res = [child_view getResolution];
-      NSLog(@"TC_ROTATION ios viewDidLayoutSubviews enqueue screenChange width=%.0f height=%.0f", res.width, res.height);
+      lastScreenWidthSentToVM = width;
+      lastScreenHeightSentToVM = height;
+      NSLog(@"TC_ROTATION ios viewDidLayoutSubviews enqueue screenChange width=%d height=%d", width, height);
       [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
-                        [NSNumber numberWithInt: res.width], @"width",
-                        [NSNumber numberWithInt: res.height], @"height", nil] ];
+                        [NSNumber numberWithInt: width], @"width",
+                        [NSNumber numberWithInt: height], @"height", nil] ];
    }
    else
-      NSLog(@"TC_ROTATION ios viewDidLayoutSubviews orientation unchanged");
+   if (orientationChanged)
+      lastOrientationSentToVM = orientation;
+   else
+      NSLog(@"TC_ROTATION ios viewDidLayoutSubviews size unchanged");
 }
 
 - (void)viewSafeAreaInsetsDidChange
