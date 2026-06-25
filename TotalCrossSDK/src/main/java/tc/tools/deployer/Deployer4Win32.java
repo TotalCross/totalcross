@@ -98,6 +98,8 @@ public class Deployer4Win32 {
       }
       FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "/win32/tcvm.dll"),
           new java.io.File(targetDir));
+      FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.distDir, "libs/vcruntime140.dll"),
+          new java.io.File(targetDir));
     }
     System.out.println("... Files written to folder " + targetDir);
   }

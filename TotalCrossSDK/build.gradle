@@ -30,6 +30,28 @@ configurations {
 	obfuscatedArchive
 }
 
+def depotToolsFetchScript = file("${rootDir}/../TotalCrossVM/fetch-depot-tools.sh")
+def depotToolsDir = file("${rootDir}/../TotalCrossVM/deps/totalcross-depot-tools")
+def depotToolsDepsFile = file("${depotToolsDir}/deps.yml")
+def vcruntimeFetchScript = file("${depotToolsDir}/vcruntime/fetch.sh")
+def vcruntimeLocalDir = file("${depotToolsDir}/vcruntime/local/windows/x86")
+def vcruntimeDll = file("${vcruntimeLocalDir}/vcruntime140.dll")
+def envOrNull = { name ->
+    def value = System.getenv(name)
+    value ? value : null
+}
+def addOptionalArg = { args, optionName, value ->
+    if (value) {
+        args.add(optionName)
+        args.add(value)
+    }
+}
+def optionalInput = { value ->
+    value ?: ''
+}
+def vcruntimeReleaseTag = envOrNull('VCRUNTIME_RELEASE_TAG')
+def vcruntimeGithubRepo = envOrNull('VCRUNTIME_GITHUB_REPO')
+
 retrolambda {
   javaVersion JavaVersion.VERSION_1_7
   defaultMethods true
@@ -249,8 +271,48 @@ task deployTcui(type:JavaExec, dependsOn: [jar, tcuiJar]) {
         configurations.runtime.collect())
 }
 
-task copySdkDependencies(type: Copy) {
+task fetchSdkNativeRuntime {
+	group = 'build setup'
+	description = 'Fetches native runtime DLLs distributed with the SDK.'
+
+	inputs.file(depotToolsFetchScript)
+	inputs.file(depotToolsDepsFile).optional()
+	inputs.file(vcruntimeFetchScript).optional()
+	inputs.property('vcruntimeReleaseTag', optionalInput(vcruntimeReleaseTag))
+	inputs.property('vcruntimeGithubRepo', optionalInput(vcruntimeGithubRepo))
+	outputs.file(vcruntimeDll)
+
+	doLast {
+		exec {
+			executable 'bash'
+			args depotToolsFetchScript.absolutePath
+		}
+
+		if (!vcruntimeFetchScript.isFile()) {
+			throw new GradleException("Could not find vcruntime fetch script at ${vcruntimeFetchScript}")
+		}
+
+		exec {
+			def fetchArgs = [
+				vcruntimeFetchScript.absolutePath,
+				'--platform', 'windows',
+				'--arch', 'x86',
+				'--github-token-env', 'VCRUNTIME_GITHUB_TOKEN'
+			]
+			addOptionalArg(fetchArgs, '--release-tag', vcruntimeReleaseTag)
+			addOptionalArg(fetchArgs, '--github-repo', vcruntimeGithubRepo)
+
+			executable 'bash'
+			args fetchArgs
+		}
+	}
+}
+
+task copySdkDependencies(type: Copy, dependsOn: fetchSdkNativeRuntime) {
 	from configurations.runtimeClasspath
+	from(vcruntimeLocalDir) {
+		include '*.dll'
+	}
 	into 'dist/libs'
 }
 
