@@ -37,6 +37,13 @@ static void destroyEGL();
 #endif
 static bool surfaceWillChange;
 
+#ifdef darwin
+void iphone_privateSetSurfaceWillChange(bool willChange)
+{
+   surfaceWillChange = willChange;
+}
+#endif
+
 int32 realAppH,appW,appH,glShiftY;
 extern float f255[256];
 int32 flen;
@@ -204,6 +211,9 @@ static void setProjectionMatrix(float w, float h)
 
 void privateScreenChange(int32 w, int32 h)
 {
+#ifdef darwin
+   surfaceWillChange = false;
+#endif
    appW = w;
    appH = h;
    setProjectionMatrix(w,h);

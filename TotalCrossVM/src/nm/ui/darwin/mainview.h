@@ -26,6 +26,10 @@
    NSMutableArray* _events;
    ChildView *child_view;
    int lastOrientationSentToVM;
+   int lastScreenWidthSentToVM;
+   int lastScreenHeightSentToVM;
+   UIEdgeInsets lastSafeAreaInsetsSentToVM;
+   BOOL hasLastSafeAreaInsetsSentToVM;
    // keyboard
    UITextView* kbd;
    UIView* kbdDisabled;

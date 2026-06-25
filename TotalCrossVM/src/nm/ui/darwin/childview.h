@@ -22,6 +22,7 @@
    UIDeviceOrientation lastKnownOrientation;
 }
 - (CGSize)getResolution;
+- (CGSize)resizeGLDrawable;
 - (UIDeviceOrientation)getOrientation;
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
