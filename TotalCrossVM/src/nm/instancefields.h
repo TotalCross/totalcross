@@ -47,10 +47,6 @@
 #define StringBuffer_charsStart(o)  ((JCharP)(ARRAYOBJ_START(StringBuffer_chars(o))))
 #define StringBuffer_count(o)       FIELD_I32(o, 0)
 
-// java.lang.Class
-#define Class_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
-#define Class_targetName(o)         FIELD_OBJ(o, OBJ_CLASS(o), 1)
-
 // java.lang.reflect.Field
 #define Field_index(o)              FIELD_I32(o, 0)
 #define Field_mod(o)                FIELD_I32(o, 1)
