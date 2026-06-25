@@ -35,7 +35,7 @@ SDK_VERSION = re.compile(r"^version\s*=\s*['\"](?P<version>\d+\.\d+\.\d+)['\"]",
 TITLE_PATTERN = re.compile(
     r"^(?P<type>fix|feat|refactor|perf|style|test|docs|build|ci|chore|revert)"
     r"(?P<leading_breaking>!)?"
-    r"\((?P<qualifiers>[a-z0-9_-]+(?:,[a-z0-9_-]+)?)\)"
+    r"\((?P<qualifiers>[A-Za-z0-9_-]+(?:,[a-z0-9_-]+)?)\)"
     r"(?P<trailing_breaking>!)?: "
     r"(?P<description>[a-z0-9 ].*)$"
 )

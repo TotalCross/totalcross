@@ -33,8 +33,8 @@ jobs:
 
           TITLE_FORMAT = re.compile(
               r'^(fix|feat|refactor|perf|style|test|docs|build|ci|chore|revert)'
-              r'(!\([a-z0-9_-]+(,[a-z0-9_-]+)?\)|'
-              r'\([a-z0-9_-]+(,[a-z0-9_-]+)?\)!?): [a-z0-9 ].*$'
+              r'(!\([A-Za-z0-9_-]+(,[a-z0-9_-]+)?\)|'
+              r'\([A-Za-z0-9_-]+(,[a-z0-9_-]+)?\)!?): [a-z0-9 ].*$'
           )
           TITLE_CAPITALIZATION = re.compile(r'^[^A-Z]')
           TITLE_WORD_COUNT = re.compile(r'^[^ ]+([ \t]+[^ ]+){2,}$', re.S)

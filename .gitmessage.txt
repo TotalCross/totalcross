@@ -10,6 +10,7 @@
 # - Use one of: fix, feat, refactor, perf, style, test, docs, build, ci, chore,
 #   revert
 # - Scope is required, such as vm, runtime, gc, sdk, compiler, socket, cmake
+# - Scope may include uppercase letters, numbers, underscores, and hyphens
 # - Platform is optional after the scope, such as android, ios, linux, windows
 # - Do not include architecture in the title; mention it in the body if relevant
 # - Use the imperative mood (fix, add, remove, improve)

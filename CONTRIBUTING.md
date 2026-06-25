@@ -192,7 +192,7 @@ Choose the most specific type that matches the nature of the change.
 
 Inside the parentheses, qualifiers are positional and must follow this order:
 
-1. `scope` (required): the primary subsystem or area
+1. `scope` (required): the primary subsystem or area; uppercase letters are allowed
 2. `platform` (optional): the operating system or target environment
 
 Examples:
@@ -219,6 +219,9 @@ Scopes should be short, stable subsystem names. Examples:
 - `packager`
 - `deploy`
 - `toolchain`
+
+Scopes may contain lowercase or uppercase letters, numbers, underscores, and
+hyphens. Platform qualifiers remain lowercase.
 
 ##### Common platforms
 
@@ -316,7 +319,7 @@ invalid memory access under heavy allocation.
 #### Commit template (recommended)
 Developers are encouraged to use the provided commit message template to avoid CI failures and keep consistency:
 ```
-<type>(<scope>[,<platform>]): short description (lowercase, ≤ 80 chars)
+<type>(<scope>[,<platform>]): short description (lowercase description, ≤ 80 chars)
 
 Optional body:
 - explain what changed
