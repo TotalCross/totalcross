@@ -423,6 +423,7 @@ Cleanup: /* CLEANUP */
    return fSuccess ? ob0 : null;
 }
 
+#ifndef SKIA_H
 #ifdef __gl2_h_
 bool lowmemDevice;
 int32 glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, int32 onlyAlpha);
@@ -498,12 +499,15 @@ static void reset1font(int32 i32, VoidP ptr)
    uf->textureId[0] = 0;
 }
 #endif
+#endif
 
 void resetFontTexture()
 {
+#ifndef SKIA_H
    #ifdef __gl2_h_
    htTraverse(&htBaseFonts, reset1font);
    #endif
+#endif
 }
 
 static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int32 size, int32 uIndex)
