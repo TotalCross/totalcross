@@ -316,7 +316,7 @@ task copySdkDependencies(type: Copy, dependsOn: fetchSdkNativeRuntime) {
 	into 'dist/libs'
 }
 
-task dist(dependsOn: [build, copySdkDependencies]) {
+task dist(dependsOn: [build, copySdkDependencies, 'sourcesJar', 'javadocJar']) {
 
 	doLast{
 		copy { 

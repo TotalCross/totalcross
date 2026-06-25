@@ -56,6 +56,62 @@ jobs:
           name: TotalCross-${{ steps.release-version.outputs.version }}-jars
           path: release-assets/jars
 
+      - name: Upload jars to Artifactory
+        shell: bash
+        env:
+          JFROG_USER: ${{ secrets.JFROG_USER }}
+          JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.release-version.outputs.version }}"
+          artifactory_url="https://maven.totalcross.com/artifactory"
+          repository="repo1-release"
+          group_path="com/totalcross"
+          artifact_id="totalcross-sdk"
+          artifact_base_url="${artifactory_url}/${repository}/${group_path}/${artifact_id}/${version}"
+          jars_dir="release-assets/jars"
+          main_jar="${jars_dir}/${artifact_id}-${version}.jar"
+          javadoc_jar="${jars_dir}/${artifact_id}-${version}-javadoc.jar"
+          sources_jar="${jars_dir}/${artifact_id}-${version}-sources.jar"
+          pom_file="$(mktemp)"
+
+          if [ -z "$JFROG_USER" ] || [ -z "$JFROG_PASSWORD" ]; then
+            echo "JFROG_USER and JFROG_PASSWORD secrets must be configured" >&2
+            exit 1
+          fi
+
+          for artifact in "$main_jar" "$javadoc_jar" "$sources_jar"; do
+            if [ ! -f "$artifact" ]; then
+              echo "Could not find Artifactory artifact: $artifact" >&2
+              exit 1
+            fi
+          done
+
+          unzip -p "$main_jar" "META-INF/maven/com.totalcross/${artifact_id}/pom.xml" > "$pom_file"
+          if [ ! -s "$pom_file" ]; then
+            echo "Could not extract Maven POM from $main_jar" >&2
+            exit 1
+          fi
+
+          upload_artifact() {
+            local file="$1"
+            local name="$2"
+
+            curl \
+              --fail \
+              --show-error \
+              --silent \
+              --user "${JFROG_USER}:${JFROG_PASSWORD}" \
+              --upload-file "$file" \
+              "${artifact_base_url}/${name}"
+          }
+
+          upload_artifact "$pom_file" "${artifact_id}-${version}.pom"
+          upload_artifact "$main_jar" "${artifact_id}-${version}.jar"
+          upload_artifact "$javadoc_jar" "${artifact_id}-${version}-javadoc.jar"
+          upload_artifact "$sources_jar" "${artifact_id}-${version}-sources.jar"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
