@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.2.1] - 2026-06-25
+
+### Features
+
+- **GPS:**
+  - **android:**
+    - replace deprecated GoogleApi with FusedLocationProvider (`403e4ac`)
+- **Deploy:**
+  - **windows:**
+    - distribute vc dependency along with the deploy (`c635329`)
+- **event:**
+  - **macos:**
+    - add support for pinch/scale event with SDL (`aa9a023`)
+
+### Bug Fixes
+
+- **Deploy:**
+  - **windows:**
+    - support deploy on case sensitive systems (`286cfd7`)
+- **skia:**
+  - match skia bitmap buffer release (`ad12f5d`) - #382
+  - **android:**
+    - disable unsafe skia bitmap optimizations (`04df583`) - #382
+- **ImageControl:**
+  - restore skia image hardware scaling (`05b61ed`) - #382
+- **ui:**
+  - **ios:**
+    - prevent stale Skia frames during scroll (`c4663b0`) - #388
+    - avoid undefined GL font texture calls (`77d3645`)
+    - resize drawable after layout changes (`114a770`) - #381
+  - **android:**
+    - refresh layout after safe area changes (`6ba786f`) - #381
+
+### Performance Improvements
+
+- **skia:**
+  - disable native skia swap by default (`8c29626`) - #382
+
+### Refactors
+
+- **skia:**
+  - simplify skia pixel conversion (`9ddbc16`)
+
 ## [7.2.0] - 2026-06-08
 
 ### Features
@@ -505,10 +548,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - ignore empty fetch environment values (`52b9b56`)
 - **deps:**
   - consume native deps from depot tools (`2970716`)
-
-## [7.2.0] - 2026-02-20
-
-PLACEHOLDER FOR CHANGELOG
 
 ## [7.1.0] - 2021-04-23
 
