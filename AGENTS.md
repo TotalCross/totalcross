@@ -210,6 +210,7 @@ Rules:
   `build`, `ci`, `chore`, `revert`.
 - Scope is required. Common scopes include `vm`, `runtime`, `gc`, `sdk`,
   `compiler`, `socket`, `ssl`, `cmake`, `packager`, and `deploy`.
+- Scope may include uppercase letters, numbers, underscores, and hyphens.
 - Platform remains optional after the scope.
 - Architecture is not part of the title format; mention it in the body when
   relevant.
