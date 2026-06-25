@@ -67,8 +67,41 @@ void graphicsSetupIOS()
 
 - (CGSize)getResolution
 {
-   CGRect r = [[UIScreen mainScreen] bounds];
-   return CGSizeMake(lround(r.size.width * iosScale), lround(r.size.height * iosScale));
+   UIScreen *screen = [UIScreen mainScreen];
+   CGSize viewSize = self.bounds.size;
+   CGFloat scale = self.contentScaleFactor > 0 ? self.contentScaleFactor : screen.scale;
+   iosScale = (int32)lround(scale);
+   CGSize resolution = CGSizeMake(lround(viewSize.width * scale), lround(viewSize.height * scale));
+   return resolution;
+}
+
+- (CGSize)resizeGLDrawable
+{
+   CGSize fallback = [self getResolution];
+   if (glcontext == nil)
+      return fallback;
+
+   [EAGLContext setCurrentContext:glcontext];
+   glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer); GL_CHECK_ERROR
+   glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
+   [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+
+   GLint width = 0;
+   GLint height = 0;
+   glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width); GL_CHECK_ERROR
+   glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height); GL_CHECK_ERROR
+
+   int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+   if (stat != GL_FRAMEBUFFER_COMPLETE)
+      NSLog(@"Failed to make complete framebuffer object %x", stat);
+
+   if (width <= 0 || height <= 0)
+   {
+      width = (GLint)fallback.width;
+      height = (GLint)fallback.height;
+   }
+   glViewport(0, 0, width, height); GL_CHECK_ERROR
+   return CGSizeMake(width, height);
 }
 
 - (void)createGLcontext
@@ -94,12 +127,7 @@ void graphicsSetupIOS()
    glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
 
-   [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:eaglLayer];
-   int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-   if (stat != GL_FRAMEBUFFER_COMPLETE)
-      NSLog(@"Failed to make complete framebuffer object %x", stat);
-   CGSize res = [self getResolution];
-   //setupGL(res.width,res.height);
+   [self resizeGLDrawable];
    realAppH = appH;
    //invalidateTextures(INVTEX_INVALIDATE);
 }
