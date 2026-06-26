@@ -1934,7 +1934,7 @@ public class Control extends GfxSurface {
   
   /** Internal use only */
   public static void uiStyleChanged() {
-    if (!uiStyleAlreadyChanged) {
+    if (Settings.onJavaSE || !uiStyleAlreadyChanged) {
       uiFlat = Settings.uiStyle == Settings.Flat;
       uiMaterial = Settings.uiStyle == Settings.Material;
       uiAndroid = Settings.uiStyle == Settings.Android || Settings.uiStyle == Settings.Holo || uiMaterial;

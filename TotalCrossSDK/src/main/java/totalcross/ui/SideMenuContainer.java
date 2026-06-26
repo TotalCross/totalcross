@@ -146,6 +146,14 @@ public class SideMenuContainer extends Container implements PenListener {
     bar.setFont(f);
   }
 
+  public void open() {
+    topMenu.popup();
+  }
+
+  public void close() {
+    topMenu.unpop();
+  }
+
   /**
    * Presents the given SideMenuContainer.Item, swapping the caption and the
    * contents of this SideMenu.

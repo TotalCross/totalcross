@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -134,8 +135,10 @@ public class MainWindow extends Window implements totalcross.MainClass {
     if (bytes != null) {
       Settings.appProps = new Hashtable(new String(bytes));
     }
-    FirebaseManager.getInstance().registerFirebaseInstanceIdService(initFirebaseInstanceIdService());
-    FirebaseManager.getInstance().setMessagingService(initFirebaseMessagingService());
+    if (!Settings.onJavaSE) {
+      FirebaseManager.getInstance().registerFirebaseInstanceIdService(initFirebaseInstanceIdService());
+      FirebaseManager.getInstance().setMessagingService(initFirebaseMessagingService());
+    }
   }
 
   @Override
@@ -193,6 +196,19 @@ public class MainWindow extends Window implements totalcross.MainClass {
 
   void mainWindowCreate4D() {
   } // not needed at device
+
+  /**
+   * Resets singleton window state before a preview reload creates a fresh
+   * application MainWindow with a disposable classloader.
+   */
+  public static void resetPreviewState() {
+    Window.destroyZStack();
+    topMost = null;
+    mainWindowInstance = null;
+    mainThread = null;
+    lastMinInterval = 0;
+    timeAvailable = 0;
+  }
 
   /** Sets the default font used in all controls created. To change the default font, assign it to this member in the MainWindow constructor,
    * making it the FIRST LINE in the constructor; you'll not be able to use super(title,border): change by setBorderStyle and setTitle, after

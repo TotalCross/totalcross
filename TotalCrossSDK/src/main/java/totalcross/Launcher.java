@@ -8,17 +8,13 @@
 package totalcross;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
 import java.awt.Panel;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -37,7 +33,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -45,25 +40,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
 
-import net.coobird.thumbnailator.Thumbnails;
-import tc.tools.AnonymousUserData;
-import net.coobird.thumbnailator.Thumbnails.Builder;
-import net.coobird.thumbnailator.resizers.configurations.Antialiasing;
-import net.coobird.thumbnailator.resizers.configurations.Dithering;
-import net.coobird.thumbnailator.resizers.configurations.Rendering;
-import net.coobird.thumbnailator.resizers.configurations.ScalingMode;
 import tc.tools.JarClassPathLoader;
 import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
 import totalcross.io.RandomAccessStream;
 import totalcross.io.Stream;
+import totalcross.preview.AppletPreviewSurface;
+import totalcross.preview.AwtWindowBackend;
+import totalcross.preview.PreviewRuntime;
 import totalcross.sys.Settings;
 import totalcross.sys.SpecialKeys;
 import totalcross.sys.Time;
 import totalcross.sys.Vm;
 import totalcross.ui.Control;
+import totalcross.ui.Container;
 import totalcross.ui.MainWindow;
-import totalcross.ui.UIColors;
 import totalcross.ui.Window;
 import totalcross.ui.event.KeyEvent;
 import totalcross.ui.event.MultiTouchEvent;
@@ -74,7 +65,7 @@ import totalcross.util.zip.TCZ;
 
 /*
  * Note: Everything that calls TotalCross code in these classes must be
- * synchronized with respect to the Applet uiLock object to allow TotalCross
+ * synchronized with respect to the launcher uiLock object to allow TotalCross
  * programs to be single threaded. This is because of the multi-threaded
  * nature of Java and because timers use multiple threads.
  *
@@ -83,9 +74,21 @@ import totalcross.util.zip.TCZ;
  * into TotalCross code, we would have the possibility of deadlock.
  */
 
-/** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
+/**
+ * Represents the AWT component used to run TotalCross at the desktop.
+ *
+ * <p>Transition map for the Applet-to-backend refactor:
+ * argument parsing, settings initialization, MainWindow creation, timers,
+ * event loop integration, setNewMainWindow, and legacy Applet parameters still
+ * live here. BufferedImage creation and the mainWindowPixels backing-array
+ * alias still live in updateScreen() to preserve rendering semantics.
+ * Presentation is delegated through PreviewRuntime.FrameConsumer/AwtCanvasSurface. AWT frame
+ * creation, title, resize, repaint, and native window operations live in
+ * AwtWindowBackend. Mouse, keyboard, focus, and window events are still handled
+ * by this compatibility class until LauncherRuntime can own them directly.
+ */
 @SuppressWarnings({"deprecation", "removal"})
-final public class Launcher extends java.applet.Applet implements WindowListener, KeyListener,
+final public class Launcher extends Panel implements WindowListener, KeyListener,
     java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener {
   public static Launcher instance;
   public static boolean isApplication;
@@ -103,13 +106,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private int toWidth = -1;
   private int toHeight = -1;
   
-  private boolean fullscreen = false;
   private String className;
   private boolean appletInitialized; // guich@500_1
-  private LauncherFrame frame;
+  private AwtWindowBackend windowBackend;
   private int toUI = -1; // guich@573_6: since now we have 4 styles, select the target one directly.
   private double toScale = -1;
-  private int toX = -1, toY = -1;
   private WinTimer winTimer;
   private boolean started; // guich@120
   private boolean destroyed; // guich@230_24
@@ -119,15 +120,21 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private int pal685[];
   private Class<?> _class; // used by the openInputStream method.
   protected BufferedImage screenImg;
-  private Builder<BufferedImage> thumbnailBuilder;
   private AlertBox alert;
   private String frameTitle;
   private String crid4settings; // prevent from having two different crids for loading and storing the settings.
   private StringBuffer mmsb = new StringBuffer(32);
   private TCEventThread eventThread;
-  private boolean isMainClass;
+  private static final long PREVIEW_DESTROY_TIMEOUT_MILLIS = 10000;
   private boolean isDemo;
   private boolean fastScale;
+  private final boolean previewMode;
+  private PreviewRuntime.FrameConsumer previewSurface;
+  private ClassLoader appClassLoader;
+  private LauncherRuntime runtime;
+  private String appletArguments;
+  private URL appletCodeBase;
+  private final Map<String, String> appletParameters = new HashMap<String, String>();
   
   private double toScaleValue = -1;
   private double toDensityValue = 1;
@@ -135,11 +142,26 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   public totalcross.ui.Insets toInsetsLandscape;
 
   public Launcher() {
+    this(null, false, null);
+  }
+
+  @SuppressWarnings("deprecation")
+  Launcher(PreviewRuntime.FrameConsumer previewSurface, boolean previewMode) {
+    this(previewSurface, previewMode, null);
+  }
+
+  @SuppressWarnings("deprecation")
+  Launcher(PreviewRuntime.FrameConsumer previewSurface, boolean previewMode, ClassLoader appClassLoader) {
     instance = this;
-    addKeyListener(this);
-    addMouseListener(this);
-    addMouseWheelListener(this);
-    addMouseMotionListener(this);
+    this.previewSurface = previewSurface;
+    this.previewMode = previewMode;
+    this.appClassLoader = appClassLoader;
+    if (!previewMode) {
+      addKeyListener(this);
+      addMouseListener(this);
+      addMouseWheelListener(this);
+      addMouseMotionListener(this);
+    }
     try {
       File libsFile = new File(DeploySettings.distDir, "libs");
       JarClassPathLoader.addJar(libsFile, "jna");
@@ -152,38 +174,32 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
   }
 
-  @Override
   public void destroy() {
     if (mainWindow == null || destroyed) {
       return;
     }
     destroyed = true;
-    eventThread.invokeInEventThread(true, new Runnable() {
+    boolean ended = eventThread == null || eventThread.invokeInEventThread(true, new Runnable() {
       @Override
       public void run() {
         mainWindow.appEnding();
         System.runFinalization();
         storeSettings();
       }
-    });
-    winTimer.stopGracefully(); // timer must be running when appEnding is called
+    }, previewMode ? PREVIEW_DESTROY_TIMEOUT_MILLIS : 0);
+    if (!ended) {
+      System.err.println("Timed out waiting for TotalCross preview appEnding during reload.");
+    }
+    if (winTimer != null) {
+      winTimer.stopGracefully(); // timer must be running when appEnding is called
+    }
+    if (eventThread != null) {
+      eventThread.stopGracefully();
+      eventThread = null;
+    }
+    stopWindowBackend();
   }
 
-  private void runtimeInstructions() {
-    System.out.println("Current path: " + System.getProperty("user.dir"));
-    System.out.println("TotalCross " + Settings.versionStr + "." + Settings.buildNumber);
-    // print instructions
-    System.out.println("===================================");
-    System.out.println("Device key emulations:");
-    System.out.println("F2 : TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER");
-    System.out.println("F6 : MENU");
-    System.out.println("F7 : BACK (ESCAPE)");
-    System.out.println("F9 : CHANGE ORIENTATION");
-    System.out.println("F11: OPEN KEYBOARD");
-    System.out.println("===================================");
-  }
-
-  @Override
   @SuppressWarnings("static-access")
   final public void init() {
     boolean showInstructionsOnError = true;
@@ -191,50 +207,35 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     totalcross.sys.Settings.showDesktopMessages = true; // guich@500_1: redo the messages.
     try {
       alert = new AlertBox();
-      // NOTE: getParameter() and size() don't work in a
-      // java applet constructor, so we need to call them here
+      // NOTE: applet parameters are supplied by LauncherApplet after construction,
+      // so they can only be parsed during init.
       if (!isApplication) {
-        String arguments = getParameter("arguments");
+        String arguments = appletArguments;
         if (arguments == null) {
           throw new Exception(
               "Error: you must suply an 'arguments' property with all the argments to create the application");
         }
         String[] args = tokenizeString(arguments, ' ');
         parseArguments(args);
+        getRuntime().recordLauncherUsage();
       }
 
-      fillSettings();
+      getRuntime().initializeSettings(this);
 
       try {
         _class = getClass(); // guich@500_1: we can use ourselves
         // if the user pass: tc/samples/ui/image/test/ImageTest.class, change to tc.samples.ui.image.test.ImageTest
-        if (className.endsWith(".class")) {
-          className = className.substring(0, className.length() - 6);
-        }
-        className = className.replace('/', '.');
-
-        Class<?> c = Class.forName(className); // guich@200b2: applets dont let you specify the path. it must be set in the codebase param - guich@520_9: changed from Class. to getClass
+        className = LauncherRuntime.normalizeMainWindowClassName(className);
+        mainWindow = getRuntime().createMainWindow(className, getAppClassLoader(), terminateIfMainClass);
         showInstructionsOnError = false;
-        isMainClass = checkIfMainClass(c); // guich@tc122_4
-        if (!isMainClass) {
-          runtimeInstructions();
+        if (mainWindow == null) {
+          return;
         }
-        Object o = c.newInstance();
-        if (o instanceof MainClass && !(o instanceof MainWindow)) {
-          ((MainClass) o).appStarting(0);
-          ((MainClass) o).appEnding();
-          if (terminateIfMainClass) {
-            System.exit(0); // currently we just exit after the constructor is called in a Non-GUI (headless) application
-          } else {
-            return;
-          }
-        }
-        mainWindow = (MainWindow) o;
         // NOTE: java will call a partially constructed object if show() is called before all the objects are constructed
-        if (isApplication) {
-          frame = new LauncherFrame();
+        if (isApplication && !previewMode) {
+          createWindowBackend();
           requestFocus();
-        } else {
+        } else if (!previewMode) {
           setLayout(new java.awt.BorderLayout());
         }
         if (toUI != -1) {
@@ -272,55 +273,69 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     } // guich@120
   }
 
-  private static boolean checkIfMainClass(Class<?> c) {
-    Class<?>[] interfaces = c.getInterfaces();
-    if (interfaces != null) {
-      for (int i = 0; i < interfaces.length; i++) {
-        if (interfaces[i].getName().equals("totalcross.MainClass")) {
-          return true;
-        }
-      }
-    }
-    return false;
+  private ClassLoader getAppClassLoader() {
+    return appClassLoader == null ? getClass().getClassLoader() : appClassLoader;
   }
 
-  private class LauncherFrame extends Frame {
-    private Insets insets;
-
-    public LauncherFrame() {
-      if (fullscreen) {
-        setExtendedState(Frame.MAXIMIZED_BOTH);
-        setUndecorated(true);
-      }
-      setBackground(new java.awt.Color(getScreenColor(mainWindow.getBackColor())));
-      setResizable(Settings.resizableWindow); // guich@570_54
-      setLayout(null);
-      add(instance);
-      addNotify(); // without this, the insets will not be correctly set.
-      insets = getInsets();
-      if (insets == null) {
-        insets = new Insets(0, 0, 0, 0);
-      }
-      setFrameSize(toWidth, toHeight, true);
-      setLocation(toX, toY);
-      super.setTitle(frameTitle != null ? frameTitle : mainWindow.getClass().getName());
-      setVisible(true);
-      addWindowListener(instance);
-      addComponentListener(instance);
+  private LauncherRuntime getRuntime() {
+    if (runtime == null) {
+      runtime = new LauncherRuntime();
     }
+    return runtime;
+  }
 
-    @Override
-    public void update(java.awt.Graphics g) {
-    }
+  private void createWindowBackend() {
+    windowBackend = getRuntime().startWindowBackend(instance,
+        frameTitle != null ? frameTitle : mainWindow.getClass().getName(),
+        new java.awt.Color(getScreenColor(mainWindow.getBackColor())), instance, instance);
+  }
 
-    public void setFrameSize(int toWidth, int toHeight, boolean set) {
-      if (set) {
-        setSize((int) (toWidth * toScale) + insets.left + insets.right,
-            (int) (toHeight * toScale) + insets.top + insets.bottom);
-      }
-      instance.setBounds(insets.left, insets.top, (int) (toWidth * toScale), (int) (toHeight * toScale));
+  private boolean hasWindowBackend() {
+    return windowBackend != null;
+  }
+
+  private void stopWindowBackend() {
+    if (windowBackend != null) {
+      windowBackend.stop();
+      windowBackend = null;
     }
-  };
+  }
+
+  private void setWindowSize(int width, int height, boolean resizeFrame) {
+    windowBackend.setContentSize(width, height, resizeFrame);
+  }
+
+  private void setWindowTitle(String title) {
+    windowBackend.setTitle(title);
+  }
+
+  private void minimizeWindow() {
+    windowBackend.setExtendedState(Frame.ICONIFIED);
+  }
+
+  private void restoreWindow() {
+    windowBackend.setExtendedState(Frame.NORMAL);
+  }
+
+  private boolean windowFocusOwnerIsNotThis() {
+    return windowBackend.getFocusOwner() != this;
+  }
+
+  private Point getWindowLocation() {
+    return windowBackend.getLocation();
+  }
+
+  private void setWindowLocation(int x, int y) {
+    windowBackend.setLocation(x, y);
+  }
+
+  private int getWindowContentWidth() {
+    return windowBackend.getContentWidth();
+  }
+
+  private int getWindowContentHeight() {
+    return windowBackend.getContentHeight();
+  }
 
   private class WinTimer extends java.lang.Thread {
     private int interval;
@@ -457,9 +472,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       args = new String[] { "/scr", "480x620x32", "/fontsize", "16", "tc.Help" };
     }
     isApplication = true;
-    Launcher app = new Launcher();
-    app.parseArguments(args);
-    app.init();
+    LauncherRuntime.startApplication(args[args.length - 1], Arrays.copyOf(args, args.length - 1));
   }
 
   private int toInt(String s) // Convert.toInt can't be used here, otherwise, the settings will be set too early!
@@ -471,243 +484,38 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
   }
 
-  private double toDouble(String s) {
-    try {
-      return Double.parseDouble(s);
-    } catch (Exception e) {
-      return 0;
-    }
-  }
-
   protected void parseArguments(String... args) {
     parseArguments(args[args.length - 1], Arrays.copyOf(args, args.length - 1));
   }
 
   protected void parseArguments(String clazz, String... args) {
-    // Send statistic data if user agreed
-    new Thread(() -> {
-      try {
-        AnonymousUserData.instance().launcher(args);
-      } catch (Exception e) {
-        //TODO: handle exception in a Log level
-      } 
-    }).start();
-
-    int n = args.length, i = 0;
-    String newDataPath = null;
+    LauncherConfig config = new LauncherConfig(clazz, args);
     try {
-      className = clazz;
-      for (i = 0; i < n; i++) {
-        if (args[i].equalsIgnoreCase("/fontsize")) {
-          userFontSize = toInt(args[++i]);
-        } else if (args[i].equalsIgnoreCase("/dataPath")) {
-          newDataPath = args[++i];
-          System.out.println("Data path is " + newDataPath);
-        } else if (args[i].equalsIgnoreCase("/scr")) /* /scr 320x320  or  /scr 320x320x8 */
-        {
-          String next = args[++i];
-          if (next.equalsIgnoreCase("win32")) {
-            toWidth = 240;
-            toHeight = 320;
-            toBpp = 24;
-          } else if (next.equalsIgnoreCase("iPhone")) {
-            toWidth = 393;
-            toHeight = 852;
-            toBpp = 24;
-            toDensityValue = 3;
-            toInsetsPortrait = new totalcross.ui.Insets(59, 0, 34, 0);
-            toInsetsLandscape = new totalcross.ui.Insets(0, 59, 21, 59);
-          } else if (next.equalsIgnoreCase("iPhoneSE")) {
-            toWidth = 375;
-            toHeight = 667;
-            toBpp = 24;
-            toDensityValue = 2;
-          } else if (next.equalsIgnoreCase("ipad")) {
-            toWidth = 768;
-            toHeight = 1024;
-            toBpp = 24;
-            toDensityValue = 2;
-          } else if (next.equalsIgnoreCase("android")) {
-            toWidth = 360;
-            toHeight = 592;
-            toBpp = 24;
-            toDensityValue = 2;
-          } else {
-            String[] scr = tokenizeString(next.toLowerCase(), 'x');
-            if (scr.length == 1) {
-              throw new Exception();
-            }
-            toWidth = toInt(scr[0]);
-            toHeight = toInt(scr[1]);
-            if (scr.length == 3) {
-              toBpp = toInt(scr[2]);
-            }
-          }
-          System.out.println("Screen is " + toWidth + "x" + toHeight + "x" + toBpp);
-        } else if (args[i].equalsIgnoreCase("/fullscreen")) {
-          fullscreen = true;
-        } else if (args[i].equalsIgnoreCase("/safeAreaPortrait")) {
-          String[] scr = tokenizeString(args[++i].toLowerCase(), ',');
-          if (scr.length != 4) {
-            throw new Exception("Argument /safeAreaPortrait expects 4 comma separated values in the following format: top,left,bottom,right");
-          }
-          toInsetsPortrait = new totalcross.ui.Insets(toInt(scr[0]), toInt(scr[1]), toInt(scr[2]), toInt(scr[3]));
-        } else if (args[i].equalsIgnoreCase("/safeAreaLandscape")) {
-          String[] scr = tokenizeString(args[++i].toLowerCase(), ',');
-          if (scr.length != 4) {
-            throw new Exception("Argument /safeAreaLandscape expects 4 comma separated values in the following format: top,left,bottom,right");
-          }
-          toInsetsLandscape = new totalcross.ui.Insets(toInt(scr[0]), toInt(scr[1]), toInt(scr[2]), toInt(scr[3]));
-        } else if (args[i].equalsIgnoreCase("/r")) {
-          ++i;
-        } else if (args[i].equalsIgnoreCase("/pos")) /* x,y */
-        {
-          String[] scr = tokenizeString(args[++i].toLowerCase(), ',');
-          if (scr.length == 1) {
-            throw new Exception();
-          }
-          toX = toInt(scr[0]);
-          toY = toInt(scr[1]);
-        } else if (args[i].equalsIgnoreCase("/cmdline")) {
-          commandLine = "";
-          while (++i < n) {
-            commandLine += args[i] + " ";
-          }
-          commandLine = commandLine.trim();
-          System.out.println("Command line is '" + commandLine + "'");
-        } else if (args[i].equalsIgnoreCase("/uiStyle")) {
-          String next = args[++i];
-          if (next.equalsIgnoreCase("Flat")) {
-            toUI = Settings.FLAT_UI;
-          } else if (next.equalsIgnoreCase("Vista")) {
-            toUI = Settings.VISTA_UI;
-          } else if (next.equalsIgnoreCase("Android")) {
-            toUI = Settings.ANDROID_UI;
-          } else if (next.equalsIgnoreCase("Holo")) {
-            toUI = Settings.HOLO_UI;
-          } else if (next.equalsIgnoreCase("Material")) {
-            toUI = Settings.MATERIAL_UI;
-          } else {
-            throw new Exception();
-          }
-          System.out.println("UI style is " + toUI);
-        } else if (args[i].equalsIgnoreCase("/penlessDevice")) // guich@573_20
-        {
-          Settings.keyboardFocusTraversable = true;
-          System.out.println("Penless device is on");
-        } else if (args[i].equalsIgnoreCase("/fingertouch")) // guich@573_20
-        {
-          Settings.fingerTouch = true;
-          System.out.println("Finger touch is on");
-        } else if (args[i].equalsIgnoreCase("/unmovablesip")) // guich@573_20
-        {
-          Settings.unmovableSIP = true;
-          System.out.println("Unmovable SIP is on");
-        } else if (args[i].equalsIgnoreCase("/geofocus")) // guich@tc114_31
-        {
-          Settings.geographicalFocus = Settings.keyboardFocusTraversable = true;
-          System.out.println("Geographical focus is on");
-        } else if (args[i].equalsIgnoreCase("/virtualKeyboard")) // bruno@tc110
-        {
-          Settings.virtualKeyboard = true;
-          System.out.println("Virtual keyboard is on");
-        } else if (args[i].equalsIgnoreCase("/bpp")) {
-          toBpp = toInt(args[++i]);
-          if (toBpp != 8 && toBpp != 16 && toBpp != 24 && toBpp != 32) {
-            throw new Exception();
-          }
-          System.out.println("Bpp is " + toBpp);
-        } else if (args[i].equalsIgnoreCase("/scale")) {
-          final BigDecimal scaleDecimal = new BigDecimal(args[++i]);
-          if (scaleDecimal.compareTo(BigDecimal.ZERO) < 0 || scaleDecimal.compareTo(BigDecimal.valueOf(8)) > 0) {
-            throw new Exception();
-          }
-          toScaleValue = scaleDecimal.doubleValue();
-          System.out.println("Scale is " + toScaleValue);
-        } else if (args[i].equalsIgnoreCase("/fastscale")) {
-            fastScale = true;
-        } else if (args[i].equalsIgnoreCase("/showmousepos")) {
-          Settings.showMousePosition = true;
-        } else if (args[i].equalsIgnoreCase("/demo")) {
-          isDemo = true;
-        } else if (args[i].equalsIgnoreCase("/density")) {
-            final BigDecimal screenDensityDecimal = new BigDecimal(args[++i]);
-            if (screenDensityDecimal.compareTo(BigDecimal.ZERO) <= 0
-                    || screenDensityDecimal.compareTo(BigDecimal.valueOf(4)) > 0) {
-                throw new Exception();
-            }
-            toDensityValue = screenDensityDecimal.doubleValue();
-        } else if(args[i].equalsIgnoreCase("/dbginfo")){
-          Settings.showDebugMessages=true;
-        } else {
-          throw new Exception();
-        }
-      }
-    } catch (Exception e) {
+      getRuntime().parseLauncherArguments(this, config, isApplication, getSize().width, getSize().height);
+    } catch (LauncherArgumentParser.InvalidArgumentException e) {
       showInstructions();
-      System.err.println("Invalid or incomplete argument at position " + i + ": " + args[i]);
-      String s = "";
-      for (i = 0; i < args.length; i++) {
-        s += " " + args[i];
-      }
+      System.err.println("Invalid or incomplete argument at position " + e.getIndex() + ": " + e.getArgument());
       System.err.println(e.getMessage());
-      System.err.println("Full command line:\n" + s.trim());
+      System.err.println("Full command line:\n" + e.getFullCommandLine());
       exit(-1);
       return;
     }
+  }
 
-    // verify the parameters
-    if (toWidth == -1 || toHeight == -1) // if no width specified, use the lowest one
-    {
-      if (isApplication) {
-        toWidth = 320;
-        toHeight = 568;
-      } else {
-        toWidth = getSize().width;
-        toHeight = getSize().height;
-      }
-    }
-    
-    Settings.screenDensity = toDensityValue;
-    toWidth *= toDensityValue;
-    toHeight *= toDensityValue;
-    if (toInsetsPortrait != null) {
-      toInsetsPortrait.top *= toDensityValue;
-      toInsetsPortrait.left *= toDensityValue;
-      toInsetsPortrait.bottom *= toDensityValue;
-      toInsetsPortrait.right *= toDensityValue;
-    }
-    if (toInsetsLandscape != null) {
-      toInsetsLandscape.top *= toDensityValue;
-      toInsetsLandscape.left *= toDensityValue;
-      toInsetsLandscape.bottom *= toDensityValue;
-      toInsetsLandscape.right *= toDensityValue;
-    }
-
-    /*
-     * Gets the display resolution and automatically scales down the Launcher to fit
-     * in the display *only* if a scale value isn't provided on the command line
-     */
-    if (toScaleValue == -1) {
-        final Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice()
-                .getDefaultConfiguration()
-                .getBounds();
-        
-        /**
-         * Arbitrary value based on tests to avoid overlapping a docked task bar.
-         */
-        final double USEABLE_AREA = 0.88;
-        final int viewportW = (int) (toWidth / toDensityValue);
-        final int viewportH = (int) (toHeight / toDensityValue);
-        final double maxRatio = Math.max((double) viewportW / r.width, (double) viewportH / r.height);
-        if (maxRatio > USEABLE_AREA) {
-            toScaleValue = USEABLE_AREA / maxRatio;
-        }
-    }
-    toScale = Math.abs(toScaleValue) / toDensityValue;
-
-    Settings.dataPath = newDataPath;
+  void applyParsedArguments(LauncherParsedConfig result) {
+    className = result.className;
+    toWidth = result.width;
+    toHeight = result.height;
+    toBpp = result.bpp;
+    commandLine = result.commandLine;
+    toUI = result.uiStyle;
+    toScaleValue = result.scaleValue;
+    toDensityValue = result.densityValue;
+    toScale = result.scale;
+    fastScale = result.fastScale;
+    isDemo = result.demo;
+    toInsetsPortrait = result.insetsPortrait;
+    toInsetsLandscape = result.insetsLandscape;
   }
 
   private String[] tokenizeString(String string, char c) {
@@ -719,9 +527,34 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     return ret;
   }
 
-  @Override
   public void start() {
     mainWindow = MainWindow.getMainWindow();
+  }
+
+  void setAppletArguments(String appletArguments) {
+    this.appletArguments = appletArguments;
+  }
+
+  void setAppletCodeBase(URL appletCodeBase) {
+    this.appletCodeBase = appletCodeBase;
+  }
+
+  void setAppletParameter(String name, String value) {
+    if (name != null && value != null) {
+      appletParameters.put(name, value);
+    }
+  }
+
+  private String getLauncherParameter(String name) {
+    return appletParameters.get(name);
+  }
+
+  private URL getLauncherCodeBase() throws java.net.MalformedURLException {
+    return appletCodeBase == null ? new File(".").toURI().toURL() : appletCodeBase;
+  }
+
+  void setRuntime(LauncherRuntime runtime) {
+    this.runtime = runtime;
   }
 
   ///////// guich@200b2: to make the vm easier to port, i removed all methods from the TotalCross classes that uses the jdk classes /////////
@@ -741,14 +574,14 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   }
 
   public void minimize() {
-    if (frame != null) {
-      frame.setExtendedState(Frame.ICONIFIED);
+    if (hasWindowBackend()) {
+      minimizeWindow();
     }
   }
 
   public void restore() {
-    if (frame != null) {
-      frame.setExtendedState(Frame.NORMAL);
+    if (hasWindowBackend()) {
+      restoreWindow();
     }
   }
 
@@ -923,7 +756,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     }
     Settings.screenWidth = w;
     Settings.screenHeight = h;
-    frame.setFrameSize(w, h, setframe);
+    setWindowSize(w, h, setframe);
     screenImg = null; // force the creation of a new screen image
     eventThread.pushEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.SCREEN_CHANGE, 0, 0, modifiers, Vm.getTimeStamp());
   }
@@ -1055,7 +888,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   @Override
   public void mouseEntered(java.awt.event.MouseEvent event) {
-    if (frame != null && frame.getFocusOwner() != this && !destroyed) {
+    if (hasWindowBackend() && windowFocusOwnerIsNotThis() && !destroyed) {
       requestFocus(); // guich@200b4: correct a bug that sometimes key events was not being sent anymore to the canvas.
     }
   }
@@ -1104,7 +937,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       eventThread.pushEvent(totalcross.ui.event.MouseEvent.MOUSE_MOVE, 0, (int) (event.getX() / toScale),
           (int) (event.getY() / toScale), modifiers, Vm.getTimeStamp());
     }
-    if (frame != null && Settings.showMousePosition) // guich@tc115_48
+    if (hasWindowBackend() && Settings.showMousePosition) // guich@tc115_48
     {
       mmsb.setLength(0);
       if (frameTitle != null) {
@@ -1118,7 +951,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       if (frameTitle != null) {
         mmsb.append(")");
       }
-      frame.setTitle(mmsb.toString());
+      setWindowTitle(mmsb.toString());
     }
   }
 
@@ -1153,11 +986,80 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
   public void setNewMainWindow(MainWindow newInstance, String args) // called on Vm.exec
   {
+    if (runtime != null) {
+      runtime.setNewMainWindow(newInstance, args);
+    } else {
+      replaceMainWindow(newInstance, args);
+    }
+  }
+
+  void replaceMainWindow(MainWindow newInstance, String args)
+  {
     commandLine = args; // guich@200b3: added command line support for desktop classes.
-    winTimer.stopGracefully(); // guich@120
+    if (winTimer != null) {
+      winTimer.stopGracefully(); // guich@120
+      winTimer = null;
+    }
     Window.destroyZStack();
     mainWindow = newInstance;
     mainWindow.initUI(); // ps: since we are being called from an app, we cannot use the synchronized method
+  }
+
+  void preparePreviewMainWindowReload() {
+    if (winTimer != null) {
+      winTimer.stopGracefully();
+      winTimer = null;
+    }
+    MainWindow.resetPreviewState();
+  }
+
+  void replacePreviewMainWindow(MainWindow newInstance, String args) {
+    commandLine = args;
+    mainWindow = newInstance;
+    if (eventThread != null) {
+      eventThread.setMainClass(newInstance);
+      boolean started = eventThread.invokeInEventThread(true, new Runnable() {
+        @Override
+        public void run() {
+          mainWindow.appStarting(isDemo ? 80 : -1);
+        }
+      }, PREVIEW_DESTROY_TIMEOUT_MILLIS);
+      if (!started) {
+        System.err.println("Timed out waiting for TotalCross preview appStarting during reload.");
+      }
+    } else {
+      mainWindow.appStarting(isDemo ? 80 : -1);
+    }
+  }
+
+  void showPreviewContainer(final Container container) {
+    runInPreviewEventThread(new Runnable() {
+      @Override
+      public void run() {
+        mainWindow.swap(container);
+      }
+    }, "container preview");
+  }
+
+  void showPreviewControl(final Control control) {
+    runInPreviewEventThread(new Runnable() {
+      @Override
+      public void run() {
+        mainWindow.removeAll();
+        mainWindow.add(control, Control.CENTER, Control.CENTER, Control.PREFERRED, Control.PREFERRED);
+      }
+    }, "control preview");
+  }
+
+  private void runInPreviewEventThread(Runnable runnable, String operation) {
+    if (eventThread != null) {
+      boolean completed = eventThread.invokeInEventThread(true, runnable, PREVIEW_DESTROY_TIMEOUT_MILLIS);
+      if (!completed) {
+        System.err.println("Timed out waiting for TotalCross " + operation + ".");
+      }
+    } else {
+      runnable.run();
+    }
   }
 
   /** Calls System.out.println. TotalCross system debugging uses this method. See also debug(String s). */
@@ -1223,8 +1125,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     //int ini = totalcross.sys.Vm.getTimeStamp();
     int w = totalcross.sys.Settings.screenWidth;
     int h = totalcross.sys.Settings.screenHeight;
-    int ww = (int) (w * toScale);
-    int hh = (int) (h * toScale);
 
     if (screenImg == null) {
       screenImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -1235,16 +1135,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.arraycopy(totalcross.ui.gfx.Graphics.mainWindowPixels, 0, pixels, 0, w*h);
       // And replace with our bytes, now we no longer need to copy from the mainWindowPixels to our image. Saving a ton of memory.
       totalcross.ui.gfx.Graphics.mainWindowPixels = pixels;
-      if (toScale != 1 && !fastScale) {
-        // And as a bonus, we can reuse the thumbnailator builder because it always references the same object.
-        thumbnailBuilder = Thumbnails
-            .of(screenImg)
-            .size(ww, hh)
-            .rendering(Rendering.SPEED)
-            .scalingMode(ScalingMode.PROGRESSIVE_BILINEAR)
-            .antialiasing(Antialiasing.OFF)
-            .dithering(Dithering.DISABLE);
-      }
     }
     int[] pixels = totalcross.ui.gfx.Graphics.mainWindowPixels;
     int n = Settings.screenWidth * Settings.screenHeight;
@@ -1280,39 +1170,16 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       break;
     }
     }
-    Graphics g = getGraphics();
-    int shiftY = totalcross.ui.Window.shiftY;
-    int shiftH = totalcross.ui.Window.shiftH;
-    if ((shiftY + shiftH) > h) {
-      totalcross.ui.Window.shiftY = shiftY = h - shiftH;
-    }
-    if (shiftY != 0) {
-      g.setColor(new Color(UIColors.unsafeAreaColor));
-      int yy = (int) (shiftH * toScale);
-      g.fillRect(0, yy, ww, hh - yy); // erase empty area
-      g.setClip(0, 0, ww, yy); // limit drawing area
-      g.translate(0, -(int) (shiftY * toScale));
-    }
-    if (toScale != 1) // guich@tc126_74 - guich@tc130 
-    {
-        if (fastScale) {
-            g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this);
-        } else {
-            try {
-                g.drawImage(thumbnailBuilder.asBufferedImage(), 0, 0, this);
-            } catch (java.io.IOException e) {
-                e.printStackTrace();
-            }
-        }
-    } else if (g != null) {
-      g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this); // this is faster than use img.getScaledInstance
-    }
-    if (shiftY != 0) {
-      g.translate(0, (int) (shiftY * toScale));
-      g.setClip(0, 0, ww, hh);
-    }
+    getPreviewSurface().present(screenImg);
     // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
     //java.util.Arrays.fill(pixels, getScreenColor(UIColors.unsafeAreaColor));
+  }
+
+  private PreviewRuntime.FrameConsumer getPreviewSurface() {
+    if (previewSurface == null) {
+      previewSurface = new AppletPreviewSurface(this, toScale, fastScale);
+    }
+    return previewSurface;
   }
 
   public static BufferedImage toBufferedImage(java.awt.Image img) {
@@ -1546,7 +1413,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         // first in the jar file
         // guich@200b4: using this in Internet makes the archive be fetched from the server at each call of this function.
         if (stream == null) {
-          String archive = getParameter("archive");
+          String archive = getLauncherParameter("archive");
           sread += "#2 - archive: " + archive + "\n";
           if (isOk(archive) && !archive.equals("null")) {
             String[] archives = tokenizeString(archive, ','); // guich@580_39: if there are more than one file, split them
@@ -1555,7 +1422,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
               if (archive.startsWith("null")) {
                 archive = archive.substring(4);
               }
-              URL codeBase = getCodeBase();
+              URL codeBase = getLauncherCodeBase();
               url = new URL(codeBase + "/" + archive);
               try {
                 ZipInputStream zIn = new ZipInputStream(url.openStream());
@@ -1579,7 +1446,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         // second under the codebase
         if (stream == null) {
           try {
-            URL codeBase = getCodeBase();
+            URL codeBase = getLauncherCodeBase();
             String cb = codeBase.toString();
             char lastc = cb.charAt(cb.length() - 1);
             char firstc = path.charAt(0);
@@ -1712,7 +1579,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         // first under the codebase
         if (stream == null) {
           try {
-            URL codeBase = getCodeBase();
+            URL codeBase = getLauncherCodeBase();
             debug("#1- codeBase: " + codeBase);
             String cb = codeBase.toString();
             char lastc = cb.charAt(cb.length() - 1);
@@ -2627,18 +2494,18 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   public void setTitle(String title) {
     if (isApplication) {
       frameTitle = title;
-      if (frame != null) {
-        frame.setTitle(title);
+      if (hasWindowBackend()) {
+        setWindowTitle(title);
       }
     }
   }
 
   public void vibrate(final int millis) {
-    if (isApplication && frame != null) {
+    if (isApplication && hasWindowBackend()) {
       new Thread() {
         @Override
         public void run() {
-          Point p = frame.getLocation();
+          Point p = getWindowLocation();
           int x = p.x, y = p.y;
 
           int[] xPoints = { x - 3, x, x + 3, x, x + 3, x, x - 3, x };
@@ -2648,7 +2515,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
           int t = Vm.getTimeStamp();
           do {
-            frame.setLocation(xPoints[i], yPoints[j]);
+            setWindowLocation(xPoints[i], yPoints[j]);
 
             i = ++i % xPoints.length;
             if (i == 0) {
@@ -2658,7 +2525,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             Thread.yield();// give some time for the other threads to execute
           } while (Vm.getTimeStamp() - t < millis);
 
-          frame.setLocation(x, y); // restore original location
+          setWindowLocation(x, y); // restore original location
         }
       }.start();
     }
@@ -2687,8 +2554,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       ignoreNextResize = false;
       return;
     }
-    int w = frame.getWidth() - frame.insets.left - frame.insets.right;
-    int h = frame.getHeight() - frame.insets.top - frame.insets.bottom;
+    if (!hasWindowBackend()) {
+      return;
+    }
+    int w = getWindowContentWidth();
+    int h = getWindowContentHeight();
     w /= toScale; // guich@tc168: consider scale
     h /= toScale;
     if (w < toWidth || h < toHeight) {

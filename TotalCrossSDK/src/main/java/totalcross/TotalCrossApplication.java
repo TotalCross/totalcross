@@ -1,3 +1,7 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 package totalcross;
 
 import tc.Help;
@@ -43,10 +47,8 @@ public class TotalCrossApplication {
       clazz = Help.class;
       args = new String[] { "/scr", "android", "/fontsize", "20", "/fingertouch" };
     }
-    Launcher.isApplication = true;
-
-    Launcher app = new Launcher();
-    app.parseArguments(clazz.getCanonicalName(), args);
-    app.init();
+    LauncherRuntime runtime = new LauncherRuntime();
+    runtime.configure(new LauncherConfig(clazz.getCanonicalName(), args));
+    runtime.startApplication();
   }
 }
