@@ -1,6 +1,7 @@
 // Copyright (C) 2000 Dave Slaughter
-// Copyright (C) 2000-2010 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -50,17 +51,35 @@ public class TCEventThread extends Thread {
     }
   }
 
+  void stopGracefully() {
+    running = false;
+    eventQueue.push(new TCEvent(INVOKE_IN_EVENT_THREAD, new Runnable() {
+      @Override
+      public void run() {
+      }
+    }));
+    interrupt();
+  }
+
+  void setMainClass(MainClass win) {
+    this.win = win;
+  }
+
   void privatePumpEvents() {
     // This gives the system CPU some breathing room when in a tight event
     // loop and no events are posted.
     final TCEvent event = popTime <= 0 ? (TCEvent) eventQueue.pop() : (TCEvent) eventQueue.popWait(popTime);
     if (event != null) {
       if (event.type == INVOKE_IN_EVENT_THREAD) {
-        event.r.run();
-        // If they are waiting for this, then notify.
-        if (event.synch != null) {
-          synchronized (event.synch) {
-            event.synch.notify();
+        try {
+          event.r.run();
+        } finally {
+          // If they are waiting for this, notify even when the runnable fails.
+          if (event.synch != null) {
+            synchronized (event.synch) {
+              event.completed = true;
+              event.synch.notify();
+            }
           }
         }
       } else {
@@ -86,8 +105,13 @@ public class TCEventThread extends Thread {
   }
 
   public void invokeInEventThread(boolean wait, Runnable r) {
+    invokeInEventThread(wait, r, 0);
+  }
+
+  public boolean invokeInEventThread(boolean wait, Runnable r, long timeoutMillis) {
     if (!wait) {
       eventQueue.push(new TCEvent(INVOKE_IN_EVENT_THREAD, r));
+      return true;
     } else {
       // 9/16/02 - Andy - I have modified the code below so that it now checks
       // to see if we are currently in the event thread.  If we are in the
@@ -98,18 +122,32 @@ public class TCEventThread extends Thread {
       java.lang.Thread current = java.lang.Thread.currentThread();
       if (current.equals(this)) {
         r.run(); // Execute directly.
+        return true;
       } else {
         // We are not in the event thread, so push to event thread.
         // We have to create a new Object, in case there is more than one
         // thread waiting on an invoke.
         Object synch = new Object();
+        TCEvent event = new TCEvent(INVOKE_IN_EVENT_THREAD, r, synch);
         synchronized (synch) {
-          eventQueue.push(new TCEvent(INVOKE_IN_EVENT_THREAD, r, synch));
+          eventQueue.push(event);
           try {
-            synch.wait();
+            if (timeoutMillis <= 0) {
+              while (!event.completed) {
+                synch.wait();
+              }
+            } else {
+              long deadline = System.currentTimeMillis() + timeoutMillis;
+              long remaining = timeoutMillis;
+              while (!event.completed && remaining > 0) {
+                synch.wait(remaining);
+                remaining = deadline - System.currentTimeMillis();
+              }
+            }
           } catch (Exception ie) {
           }
         }
+        return event.completed;
       }
     }
   }
@@ -187,6 +225,7 @@ public class TCEventThread extends Thread {
     int timestamp;
     Runnable r;
     Object synch;
+    boolean completed;
 
     TCEvent(int type, int key, int x, int y, int modifiers, int timestamp) {
       this.type = type;

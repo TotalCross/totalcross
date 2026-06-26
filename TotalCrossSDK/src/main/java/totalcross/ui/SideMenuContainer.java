@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import java.util.ArrayList;
@@ -144,6 +149,14 @@ public class SideMenuContainer extends Container implements PenListener {
 
   public void setBarFont(Font f) {
     bar.setFont(f);
+  }
+
+  public void open() {
+    topMenu.popup();
+  }
+
+  public void close() {
+    topMenu.unpop();
   }
 
   /**
