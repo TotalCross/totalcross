@@ -8,7 +8,6 @@
 package totalcross;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
@@ -45,25 +44,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
 
-import net.coobird.thumbnailator.Thumbnails;
 import tc.tools.AnonymousUserData;
-import net.coobird.thumbnailator.Thumbnails.Builder;
-import net.coobird.thumbnailator.resizers.configurations.Antialiasing;
-import net.coobird.thumbnailator.resizers.configurations.Dithering;
-import net.coobird.thumbnailator.resizers.configurations.Rendering;
-import net.coobird.thumbnailator.resizers.configurations.ScalingMode;
 import tc.tools.JarClassPathLoader;
 import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
 import totalcross.io.RandomAccessStream;
 import totalcross.io.Stream;
+import totalcross.preview.AppletPreviewSurface;
+import totalcross.preview.PreviewSurface;
 import totalcross.sys.Settings;
 import totalcross.sys.SpecialKeys;
 import totalcross.sys.Time;
 import totalcross.sys.Vm;
 import totalcross.ui.Control;
 import totalcross.ui.MainWindow;
-import totalcross.ui.UIColors;
 import totalcross.ui.Window;
 import totalcross.ui.event.KeyEvent;
 import totalcross.ui.event.MultiTouchEvent;
@@ -119,7 +113,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private int pal685[];
   private Class<?> _class; // used by the openInputStream method.
   protected BufferedImage screenImg;
-  private Builder<BufferedImage> thumbnailBuilder;
   private AlertBox alert;
   private String frameTitle;
   private String crid4settings; // prevent from having two different crids for loading and storing the settings.
@@ -128,6 +121,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   private boolean isMainClass;
   private boolean isDemo;
   private boolean fastScale;
+  private final boolean previewMode;
+  private PreviewSurface previewSurface;
   
   private double toScaleValue = -1;
   private double toDensityValue = 1;
@@ -135,11 +130,20 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   public totalcross.ui.Insets toInsetsLandscape;
 
   public Launcher() {
+    this(null, false);
+  }
+
+  @SuppressWarnings("deprecation")
+  Launcher(PreviewSurface previewSurface, boolean previewMode) {
     instance = this;
-    addKeyListener(this);
-    addMouseListener(this);
-    addMouseWheelListener(this);
-    addMouseMotionListener(this);
+    this.previewSurface = previewSurface;
+    this.previewMode = previewMode;
+    if (!previewMode) {
+      addKeyListener(this);
+      addMouseListener(this);
+      addMouseWheelListener(this);
+      addMouseMotionListener(this);
+    }
     try {
       File libsFile = new File(DeploySettings.distDir, "libs");
       JarClassPathLoader.addJar(libsFile, "jna");
@@ -231,10 +235,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
         }
         mainWindow = (MainWindow) o;
         // NOTE: java will call a partially constructed object if show() is called before all the objects are constructed
-        if (isApplication) {
+        if (isApplication && !previewMode) {
           frame = new LauncherFrame();
           requestFocus();
-        } else {
+        } else if (!previewMode) {
           setLayout(new java.awt.BorderLayout());
         }
         if (toUI != -1) {
@@ -1223,8 +1227,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
     //int ini = totalcross.sys.Vm.getTimeStamp();
     int w = totalcross.sys.Settings.screenWidth;
     int h = totalcross.sys.Settings.screenHeight;
-    int ww = (int) (w * toScale);
-    int hh = (int) (h * toScale);
 
     if (screenImg == null) {
       screenImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -1235,16 +1237,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.arraycopy(totalcross.ui.gfx.Graphics.mainWindowPixels, 0, pixels, 0, w*h);
       // And replace with our bytes, now we no longer need to copy from the mainWindowPixels to our image. Saving a ton of memory.
       totalcross.ui.gfx.Graphics.mainWindowPixels = pixels;
-      if (toScale != 1 && !fastScale) {
-        // And as a bonus, we can reuse the thumbnailator builder because it always references the same object.
-        thumbnailBuilder = Thumbnails
-            .of(screenImg)
-            .size(ww, hh)
-            .rendering(Rendering.SPEED)
-            .scalingMode(ScalingMode.PROGRESSIVE_BILINEAR)
-            .antialiasing(Antialiasing.OFF)
-            .dithering(Dithering.DISABLE);
-      }
     }
     int[] pixels = totalcross.ui.gfx.Graphics.mainWindowPixels;
     int n = Settings.screenWidth * Settings.screenHeight;
@@ -1280,39 +1272,16 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       break;
     }
     }
-    Graphics g = getGraphics();
-    int shiftY = totalcross.ui.Window.shiftY;
-    int shiftH = totalcross.ui.Window.shiftH;
-    if ((shiftY + shiftH) > h) {
-      totalcross.ui.Window.shiftY = shiftY = h - shiftH;
-    }
-    if (shiftY != 0) {
-      g.setColor(new Color(UIColors.unsafeAreaColor));
-      int yy = (int) (shiftH * toScale);
-      g.fillRect(0, yy, ww, hh - yy); // erase empty area
-      g.setClip(0, 0, ww, yy); // limit drawing area
-      g.translate(0, -(int) (shiftY * toScale));
-    }
-    if (toScale != 1) // guich@tc126_74 - guich@tc130 
-    {
-        if (fastScale) {
-            g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this);
-        } else {
-            try {
-                g.drawImage(thumbnailBuilder.asBufferedImage(), 0, 0, this);
-            } catch (java.io.IOException e) {
-                e.printStackTrace();
-            }
-        }
-    } else if (g != null) {
-      g.drawImage(screenImg, 0, 0, ww, hh, 0, 0, w, h, this); // this is faster than use img.getScaledInstance
-    }
-    if (shiftY != 0) {
-      g.translate(0, (int) (shiftY * toScale));
-      g.setClip(0, 0, ww, hh);
-    }
+    getPreviewSurface().present(screenImg);
     // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
     //java.util.Arrays.fill(pixels, getScreenColor(UIColors.unsafeAreaColor));
+  }
+
+  private PreviewSurface getPreviewSurface() {
+    if (previewSurface == null) {
+      previewSurface = new AppletPreviewSurface(this, toScale, fastScale);
+    }
+    return previewSurface;
   }
 
   public static BufferedImage toBufferedImage(java.awt.Image img) {
