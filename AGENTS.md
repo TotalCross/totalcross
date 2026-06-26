@@ -1,3 +1,9 @@
+<!--
+Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+
+SPDX-License-Identifier: LGPL-2.1-only
+-->
+
 # AGENTS.md
 
 Guidance for automated coding agents working in this repository.
@@ -36,6 +42,35 @@ Important top-level areas:
   secrets, tokens, private repository names, or authenticated URLs.
 - For package layout changes, compare with the relevant script in `scripts/`
   before changing only the workflow.
+
+## Copyright Headers
+
+- New repository files must start with the current-year Amalgam header:
+
+```text
+// Copyright (C) <current year> Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+```
+
+- For HTML or Markdown files, use the equivalent comment syntax for the file
+  type while keeping the same copyright and SPDX text.
+- When updating an existing file, update its copyright header through the
+  current year. For example, in 2027 an existing Amalgam range should end in
+  2027.
+- If the last copyright entry belongs to TotalCross, change its end year to
+  2021 and add `Copyright (C) 2022-<current year> Amalgam Solucoes em TI Ltda`.
+- If an existing file has no header, use its creation date in Git to choose the
+  first copyright year:
+  - files created from 2014 through 2021 use
+    `Copyright (C) <creation year>-2021 TotalCross Global Mobile Platform Ltda`,
+    followed by the Amalgam entry from 2022 through the current year.
+  - files created from 2000 through 2013 use
+    `Copyright (C) <creation year>-2013 SuperWaba Ltda`, followed by
+    `Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda`, then the
+    Amalgam entry from 2022 through the current year.
+  - files created in 2022 or later use Amalgam from the creation year through
+    the current year, or only the creation year when it equals the current year.
 
 ## Build And Test Commands
 
