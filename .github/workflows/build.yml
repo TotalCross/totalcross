@@ -1,3 +1,9 @@
+---
+# Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 name: Build
 on:
   workflow_call:
@@ -21,6 +27,17 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Validate copyright headers
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        PUSH_BEFORE: ${{ github.event.before }}
+        PUSH_AFTER: ${{ github.sha }}
+        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: bash scripts/validate-copyright-headers.sh
 
     - name: Pack source code
       run: tar --exclude=.git -czf "${RUNNER_TEMP}/source-code.tar.gz" .
