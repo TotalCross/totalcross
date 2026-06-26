@@ -148,7 +148,7 @@ def parse_copyrights(header_lines):
         match = COPYRIGHT_RE.search(stripped)
         if match:
             start, end, owner = match.groups()
-            entries.append((int(start), int(end or start), owner.strip()))
+            entries.append((int(start), int(end or start), owner.strip().rstrip(".")))
     return entries
 
 

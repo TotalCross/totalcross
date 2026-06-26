@@ -37,7 +37,7 @@ jobs:
         PUSH_AFTER: ${{ github.sha }}
         PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-      run: bash scripts/validate-copyright-headers.sh
+      run: python3 scripts/validate-copyright-headers.sh
 
     - name: Pack source code
       run: tar --exclude=.git -czf "${RUNNER_TEMP}/source-code.tar.gz" .
