@@ -15,6 +15,7 @@ import totalcross.ui.event.Event;
 import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PenListener;
 import totalcross.ui.gfx.Graphics;
+import totalcross.ui.gfx.RRect;
 import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
@@ -115,6 +116,8 @@ public class Container extends Control {
    * @see #setInsets
    */
   protected Insets insets = new Insets(); // guich@tc110_87
+  protected Insets userInsets = new Insets();
+  protected RRect childrenClip;
 
   /** Set to true to always erase the background when repainting this container.
    * @since TotalCross 1.0
@@ -196,11 +199,11 @@ public class Container extends Control {
    */
   public void setInsets(int left, int right, int top, int bottom) // guich@tc110_87
   {
-    int gap = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
-    insets.left = left + gap;
-    insets.right = right + gap;
-    insets.top = top + gap;
-    insets.bottom = bottom + gap;
+    userInsets.left = left;
+    userInsets.right = right;
+    userInsets.top = top;
+    userInsets.bottom = bottom;
+    recomputeInsets();
   }
 
   /** Copy the current insets values into the given insets. If you call this method often,
@@ -504,21 +507,43 @@ public class Container extends Control {
 
   /** Called by the system to draw the children of the container. */
   public void paintChildren() {
-    for (Control child = children; child != null; child = child.next) {
-      if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
-      {
-        if (child.offscreen != null) {
-          Graphics g = getGraphics();
-          g.drawImage(child.offscreen, child.x, child.y);
-          if (child.offscreen0 != null) {
-            g.drawImage(child.offscreen0, child.x, child.y);
-          }
-        } else {
-          child.onPaint(child.getGraphics());
-          if (child.asContainer != null) {
-            child.asContainer.paintChildren();
+    paintChildren(getGraphics());
+  }
+
+  private void paintChildren(Graphics g) {
+    if (g == null) {
+      return;
+    }
+
+    RRect oldClip = null;
+    if (childrenClip != null) {
+      oldClip = g.getClip();
+      if (childrenClip.width <= 0 || childrenClip.height <= 0) {
+        return;
+      }
+      g.setClip(childrenClip);
+    }
+    try {
+      for (Control child = children; child != null; child = child.next) {
+        if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+        {
+          if (child.offscreen != null) {
+            g.drawImage(child.offscreen, child.x, child.y);
+            if (child.offscreen0 != null) {
+              g.drawImage(child.offscreen0, child.x, child.y);
+            }
+          } else {
+            Graphics childGraphics = child.getGraphics(g);
+            child.onPaint(childGraphics);
+            if (child.asContainer != null) {
+              child.asContainer.paintChildren(childGraphics);
+            }
           }
         }
+      }
+    } finally {
+      if (oldClip != null) {
+        g.setClip(oldClip);
       }
     }
   }
@@ -534,9 +559,8 @@ public class Container extends Control {
    */
   public void setBorderStyle(byte border) // guich@200final_16
   {
-    int gap = border == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
-    setInsets(gap, gap, gap, gap);
     this.borderStyle = border;
+    recomputeInsets();
     if (border == BORDER_ROUNDED) {
       transparentBackground = true;
     }
@@ -611,6 +635,12 @@ public class Container extends Control {
   @Override
   public void onPaint(Graphics g) {
     int b = pressColor != -1 && cpressed ? pressColor : backColor;
+
+    if (controlRenderer != null) {
+      controlRenderer.draw(g, 0, 0, width, height, cpressed);
+      return;
+    }
+
     if (drawTranslucentBackground(g, alphaValue)) {
     } else if (!transparentBackground
         && (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground))) {
@@ -1106,6 +1136,55 @@ public class Container extends Control {
    */
   public void setBorderRadius(int borderRadius) {
     this.borderRadius = borderRadius;
+  }
+
+  @Override
+  protected void onBoundsChanged(boolean screenChanged) {
+    super.onBoundsChanged(screenChanged);
+    updateChildrenClip();
+  }
+
+  @Override
+  protected void onStyleChanged() {
+    recomputeInsets();
+    updateChildrenClip();
+  }
+
+  private void recomputeInsets() {
+    int left = userInsets.left;
+    int right = userInsets.right;
+    int top = userInsets.top;
+    int bottom = userInsets.bottom;
+
+    if (controlRenderer != null) {
+      Insets rendererInsets = controlRenderer.getInsets();
+      left += rendererInsets.left;
+      right += rendererInsets.right;
+      top += rendererInsets.top;
+      bottom += rendererInsets.bottom;
+    } else {
+      int gap = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
+      left += gap;
+      right += gap;
+      top += gap;
+      bottom += gap;
+    }
+
+    insets.left = left;
+    insets.right = right;
+    insets.top = top;
+    insets.bottom = bottom;
+  }
+
+  private void updateChildrenClip() {
+    childrenClip = computeChildrenClip();
+  }
+
+  private RRect computeChildrenClip() {
+    if (controlRenderer != null) {
+      return controlRenderer.getChildrenClip(width, height);
+    }
+    return null;
   }
 
 }

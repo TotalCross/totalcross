@@ -143,11 +143,14 @@
 
 #define Graphics_lastPPD(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 
-#define Graphics_surface(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
-#define Graphics_font(o)            FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define Graphics_xPoints(o)         FIELD_OBJ(o, OBJ_CLASS(o), 2)
-#define Graphics_yPoints(o)         FIELD_OBJ(o, OBJ_CLASS(o), 3)
-#define Graphics_ints(o)            FIELD_OBJ(o, OBJ_CLASS(o), 4)
+#define Graphics_roundClip(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Graphics_surface(o)         FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define Graphics_font(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define Graphics_xPoints(o)         FIELD_OBJ(o, OBJ_CLASS(o), 3)
+#define Graphics_yPoints(o)         FIELD_OBJ(o, OBJ_CLASS(o), 4)
+#define Graphics_ints(o)            FIELD_OBJ(o, OBJ_CLASS(o), 5)
+#define Graphics_cyPoints(o)        FIELD_OBJ(o, OBJ_CLASS(o), 6)
+#define Graphics_cxPoints(o)        FIELD_OBJ(o, OBJ_CLASS(o), 7)
 
 // totalcross.ui.image.Image
 #define Image_width(o)              FIELD_I32(o, 1)

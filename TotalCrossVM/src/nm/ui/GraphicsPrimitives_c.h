@@ -64,6 +64,68 @@ static bool translateAndClip(TCObject g, int32 *pX, int32 *pY, int32 *pWidth, in
 
 #define Get_Clip(g) Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g)
 
+static bool gfxClipContains(TCObject g, int32 x, int32 y)
+{
+   TCObject roundClip = Graphics_roundClip(g);
+   int32 start, end;
+
+   if (x < Graphics_clipX1(g) || x >= Graphics_clipX2(g) || y < Graphics_clipY1(g) || y >= Graphics_clipY2(g))
+      return false;
+
+   if (roundClip == null)
+      return true;
+
+   if (!gfxComputeRRectSpan(
+      Rect_x(roundClip),
+      Rect_y(roundClip),
+      Rect_width(roundClip),
+      Rect_height(roundClip),
+      RRect_radii(roundClip),
+      y,
+      &start,
+      &end))
+      return false;
+
+   return start <= x && x <= end;
+}
+
+static bool gfxClipHorizontalSpan(TCObject g, int32 y, int32 *start, int32 *end)
+{
+   TCObject roundClip = Graphics_roundClip(g);
+   int32 clipStart = Graphics_clipX1(g);
+   int32 clipEnd = Graphics_clipX2(g) - 1;
+   int32 roundStart, roundEnd;
+
+   if (y < Graphics_clipY1(g) || y >= Graphics_clipY2(g))
+      return false;
+
+   if (roundClip != null)
+   {
+      if (!gfxComputeRRectSpan(
+         Rect_x(roundClip),
+         Rect_y(roundClip),
+         Rect_width(roundClip),
+         Rect_height(roundClip),
+         RRect_radii(roundClip),
+         y,
+         &roundStart,
+         &roundEnd))
+         return false;
+
+      if (clipStart < roundStart)
+         clipStart = roundStart;
+      if (clipEnd > roundEnd)
+         clipEnd = roundEnd;
+   }
+
+   if (clipEnd < clipStart)
+      return false;
+
+   *start = clipStart;
+   *end = clipEnd;
+   return true;
+}
+
 // >>>>>>>>>
 // DO NOT LOCK THE SCREEN ON THESE METHODS. THE CALLER MUST DO THAT.
 static Pixel* getSurfacePixels(TCObject surf)
@@ -227,6 +289,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    Pixel * srcPixels;
    Pixel * dstPixels;
    int32 srcPitch, srcWidth, srcHeight, alphaMask = 0;
+   TCObject roundClip = Graphics_roundClip(dstSurf);
    bool isSrcScreen = !Surface_isImage(srcSurf);
    bool unlockSrc = false;
    if (Surface_isImage(srcSurf))
@@ -356,9 +419,39 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 #endif
    for (i=0; i < (uint32)height; i++) // in opengl, only case of image drawing on image
    {
-      PixelConv *ps = (PixelConv*)srcPixels;
-      PixelConv *pt = (PixelConv*)dstPixels;
-      uint32 count = width;
+      int32 currentY = dstY + (int32)i;
+      int32 rowStart = dstX;
+      int32 rowEnd = dstX + width - 1;
+      int32 rowWidth;
+      PixelConv *ps;
+      PixelConv *pt;
+      uint32 count;
+
+      if (roundClip != null)
+      {
+         int32 spanStart, spanEnd;
+         if (!gfxClipHorizontalSpan(dstSurf, currentY, &spanStart, &spanEnd))
+         {
+            srcPixels += srcPitch;
+            dstPixels += Graphics_pitch(dstSurf);
+            continue;
+         }
+         if (rowStart < spanStart)
+            rowStart = spanStart;
+         if (rowEnd > spanEnd)
+            rowEnd = spanEnd;
+         if (rowEnd < rowStart)
+         {
+            srcPixels += srcPitch;
+            dstPixels += Graphics_pitch(dstSurf);
+            continue;
+         }
+      }
+
+      rowWidth = rowEnd - rowStart + 1;
+      ps = (PixelConv*)srcPixels + (rowStart - dstX);
+      pt = (PixelConv*)dstPixels + (rowStart - dstX);
+      count = (uint32)rowWidth;
       if (isSrcScreen)
          for (;count != 0; pt++,ps++, count--)
          {
@@ -482,7 +575,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       }
 
       if (doClip) {
-         skia_setClip(Get_Clip(dstSurf));
+         skia_applyClip(dstSurf);
          clipSet = true;
       }
       if (frameCount > 1) {
@@ -522,7 +615,7 @@ static int32 getPixel(TCObject g, int32 x, int32 y)
    int32 ret = -1;
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
+   if (gfxClipContains(g, x, y))
    {
       PixelConv p;
 #ifdef SKIA_H
@@ -547,7 +640,7 @@ static PixelConv getPixelConv(TCObject g, int32 x, int32 y)
    p.pixel = -1;
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
+   if (gfxClipContains(g, x, y))
    {
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
@@ -567,7 +660,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
+   if (gfxClipContains(g, x, y))
    {
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
@@ -591,7 +684,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_setPixel(0, x, y, pixel | Graphics_alpha(g));
    skia_restoreClip();
 
@@ -632,22 +725,22 @@ static bool surelyOutsideClip(TCObject g, int32 x1, int32 y1, int32 x2, int32 y2
 //   Draws a horizontal line from x to x+w-1, translating and clipping
 static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int32 width, Pixel pixel1, Pixel pixel2)
 {
+   int32 clipStart, clipEnd;
+
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   /*
-   | line must lie inside y clip bounds, must not end before clip x1
-   | and must not start after clip x2
-   */
-   if (Graphics_clipY1(g) <= y && y < Graphics_clipY2(g) && Graphics_clipX1(g) <= (x+width) && x < Graphics_clipX2(g)) // NOPT
+   if (width <= 0 || !gfxClipHorizontalSpan(g, y, &clipStart, &clipEnd) || clipStart > (x + width - 1) || x > clipEnd)
+      return;
+
    {
       Pixel* pTgt;
-      if (x < Graphics_clipX1(g))           // line start before clip x1
+      if (x < clipStart)
       {
-         width -= Graphics_clipX1(g)-x;
-         x = Graphics_clipX1(g);
+         width -= clipStart - x;
+         x = clipStart;
       }
-      if ((x+width) > Graphics_clipX2(g))   // line stops after clip x2
-         width = Graphics_clipX2(g)-x;
+      if ((x + width - 1) > clipEnd)
+         width = clipEnd - x + 1;
 
       if (width <= 0)
          return;
@@ -684,8 +777,46 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 //   Draws a vertical line from y to y+h-1 using the given color
 static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int32 height, Pixel pixel1, Pixel pixel2)
 {
+   TCObject roundClip = Graphics_roundClip(g);
    x += Graphics_transX(g);
    y += Graphics_transY(g);
+
+   if (roundClip != null)
+   {
+      int32 startY = y;
+      int32 endY = y + height;
+      Pixel *pTgt;
+      int32 pitch = Graphics_pitch(g);
+      uint32 i = 0;
+
+      if (x < Graphics_clipX1(g) || x >= Graphics_clipX2(g))
+         return;
+      if (startY < Graphics_clipY1(g))
+         startY = Graphics_clipY1(g);
+      if (endY > Graphics_clipY2(g))
+         endY = Graphics_clipY2(g);
+      if (endY <= startY)
+         return;
+#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
+      {
+         int32 yy;
+         for (yy = startY; yy < endY; yy++)
+            if (gfxClipContains(g, x, yy))
+               glDrawPixel(x, yy, pixel1 == pixel2 ? pixel1 : ((i++ & 1) ? pixel1 : pixel2), 255);
+         currentContext->fullDirty = true;
+         return;
+      }
+#endif
+      pTgt = getGraphicsPixels(g) + startY * pitch + x;
+      for (y = startY; y < endY; y++, pTgt += pitch)
+         if (gfxClipContains(g, x, y))
+            *pTgt = pixel1 == pixel2 ? pixel1 : ((i++ & 1) ? pixel1 : pixel2);
+
+      if (!currentContext->fullDirty && !Graphics_isImageSurface(g))
+         markScreenDirty(currentContext, x, startY, 1, endY - startY);
+      return;
+   }
    /*
    | line must lie inside x clip bounds, must not end before clip y1
    | and must not start after clip y2
@@ -790,7 +921,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
        Pixel *row;
        int32 on = 1;
        int32 clipX1 = Graphics_clipX1(g), clipY1 = Graphics_clipY1(g), clipX2 = Graphics_clipX2(g), clipY2 = Graphics_clipY2(g);
-       bool dontClip = true; // the most common will be draw lines that do not cross the clip bounds, so we may speedup a little
+       bool dontClip = Graphics_roundClip(g) == null; // the most common will be draw lines that do not cross the clip bounds, so we may speedup a little
 
        xMin += tX;
        yMin += tY;
@@ -817,7 +948,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
           if (pixel1 == pixel2) // quick optimization
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                if (dontClip || gfxClipContains(g, currentX, currentY))
                 {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
@@ -840,7 +971,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
           else
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                if (dontClip || gfxClipContains(g, currentX, currentY))
                 {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
@@ -870,7 +1001,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
           if (pixel1 == pixel2) // quick optimization
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                if (dontClip || gfxClipContains(g, currentX, currentY))
                 {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
@@ -893,7 +1024,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
           else
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                if (dontClip || gfxClipContains(g, currentX, currentY))
                 {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
@@ -931,7 +1062,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
     y1 += Graphics_transY(g);
     x2 += Graphics_transX(g);
     y2 += Graphics_transY(g);
-    skia_setClip(Get_Clip(g));
+    skia_applyClip(g);
     skia_drawDottedLine(0, x1, y1, x2, y2, pixel1 | Graphics_alpha(g), pixel2 | Graphics_alpha(g));
     skia_restoreClip();
 
@@ -945,19 +1076,21 @@ static int32 abs32(int32 a)
    return a < 0 ? -a : a;
 }
 
-static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint)
 {
+   Pixel pixel = *paint.color;
    drawDottedLine(currentContext, g, x1, y1, x2, y2, pixel, pixel);
 }
 #else
-static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint)
 {
+   Pixel pixel = *paint.color;
    x1 += Graphics_transX(g);
    y1 += Graphics_transY(g);
    x2 += Graphics_transX(g);
    y2 += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
-   skia_drawLine(0, x1, y1, x2, y2, pixel | Graphics_alpha(g));
+   skia_applyClip(g);
+   skia_drawLine(0, x1, y1, x2, y2, paint);
    skia_restoreClip();
 
    markDirty(currentContext, g, min32(x1, x2), min32(y1, y2), abs(x2 - x1), abs(y2 - y1));
@@ -978,7 +1111,7 @@ static void drawRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_drawRect(0, x, y, w, h, pixel | Graphics_alpha(g));
    skia_restoreClip();
 
@@ -992,6 +1125,7 @@ static void drawRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 #ifndef SKIA_H
 static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
 {
+   TCObject roundClip = Graphics_roundClip(g);
    int32 clipX1 = Graphics_clipX1(g);
    int32 clipX2 = Graphics_clipX2(g);
    int32 clipY1 = Graphics_clipY1(g);
@@ -1017,6 +1151,40 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 
    if (height > 0 && width > 0)
    {
+      if (roundClip != null)
+      {
+         int32 pitch = Graphics_pitch(g);
+         Pixel *base = getGraphicsPixels(g);
+         int32 yy;
+
+         for (yy = y; yy < y + height; yy++)
+         {
+            int32 spanStart, spanEnd;
+            int32 rowX = x;
+            int32 rowWidth = width;
+            Pixel *to;
+            uint32 i;
+
+            if (!gfxClipHorizontalSpan(g, yy, &spanStart, &spanEnd))
+               continue;
+            if (rowX < spanStart)
+            {
+               rowWidth -= spanStart - rowX;
+               rowX = spanStart;
+            }
+            if ((rowX + rowWidth - 1) > spanEnd)
+               rowWidth = spanEnd - rowX + 1;
+            if (rowWidth <= 0)
+               continue;
+
+            to = base + yy * pitch + rowX;
+            for (i = (uint32)rowWidth; i != 0; i--)
+               *to++ = pixel;
+         }
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g))
+            markScreenDirty(currentContext, x, y, width, height);
+         return;
+      }
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
@@ -1056,7 +1224,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_fillRect(0, x, y, w, h, pixel | Graphics_alpha(g));
    skia_restoreClip();
 
@@ -1267,13 +1435,16 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif
-            for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+            for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
             {
+               int32 rowStart, rowEnd;
+               if (!gfxClipHorizontalSpan(g, y, &rowStart, &rowEnd))
+                  continue;
                current = start;
                ands = ands8 + (currentBit = startBit);
                for (x=x0; x < xMax; x++)
                {
-                  if ((*current & *ands++) != 0 && x >= xMin)
+                  if ((*current & *ands++) != 0 && rowStart <= x && x <= rowEnd)
                      row[x] = foreColor;
                   if (++currentBit == 8)   // finished this uint8?
                   {
@@ -1320,8 +1491,11 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif
-               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
                {
+                  int32 rowStart, rowEnd;
+                  if (!gfxClipHorizontalSpan(g, y, &rowStart, &rowEnd))
+                     continue;
                   current = start;
                   isLowNibble = isNibbleStartingLow;
                   i = (PixelConv*)&row[x0];
@@ -1329,7 +1503,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                   {
                      transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
                      isLowNibble = !isLowNibble;
-                     if (transparency == 0 || x < xMin)
+                     if (transparency == 0 || x < rowStart || x > rowEnd)
                         continue;
                      if (transparency == 0xF)
                         i->pixel = foreColor;
@@ -1393,14 +1567,17 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                {                             
                   rowWIB = width+diffW;
                   start = alpha + istart * rowWIB;
-                  for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+                  for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
                   {
+                     int32 rowStart, rowEnd;
+                     if (!gfxClipHorizontalSpan(g, y, &rowStart, &rowEnd))
+                        continue;
                      current = start;
                      i = (PixelConv*)&row[x0];
                      for (x=x0; x < xMax; x++,i++)
                      {
                         transparency = *current++;
-                        if (transparency == 0 || x < xMin)
+                        if (transparency == 0 || x < rowStart || x > rowEnd)
                            continue;
                         if (transparency == 0xFF)
                            i->pixel = foreColor;
@@ -1453,7 +1630,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_drawText(0, text, chrCount * sizeof(JChar), x, y + fontSize, foreColor | Graphics_alpha(g), justifyWidth, fontSize, typefaceIndex);
    skia_restoreClip();
 
@@ -1585,7 +1762,7 @@ static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int
 {
    xc += Graphics_transX(g);
    yc += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_ellipseDrawAndFill(0, xc, yc, rx, ry, pc1 | Graphics_alpha(g), pc2 | Graphics_alpha(g), fill, gradient);
    skia_restoreClip();
 
@@ -1784,7 +1961,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #else
 static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie)
 {
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_fillPolygon(0, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1 | Graphics_alpha(g), c2 | Graphics_alpha(g), gradient, isPie);
    skia_restoreClip();
 
@@ -1812,17 +1989,18 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #endif
       {
          int32 i;
+         GfxPaint paint = gfxPaintFromColor(&pixel);
          for (i=1; i < nPoints1; i++)
-            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
+            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], paint);
          for (i=1; i < nPoints2; i++)
-            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
+            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], paint);
       }
    }
 }
 #else
 static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel)
 {
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_drawPolygon(0, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel | Graphics_alpha(g));
    skia_restoreClip();
 
@@ -1839,7 +2017,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
 {
    xc += Graphics_transX(g);
    yc += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_arcPiePointDrawAndFill(0, xc, yc, rx, ry, startAngle, endAngle, c | Graphics_alpha(g), c2 | Graphics_alpha(g), fill, pie, gradient);
    skia_restoreClip();
 
@@ -1856,7 +2034,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
    int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
-   int32 clipFactor = Graphics_minX(g) * 1000000000 + Graphics_maxX(g) * 10000000 + Graphics_minY(g) * 100000 + Graphics_maxY(g);
+   int32 clipFactor = 0;
    bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;
 
    if (rx < 0 || ry < 0) // guich@501_13
@@ -2098,7 +2276,10 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       yPoints[endIndex]   = oldY1;
 #ifdef ANDROID
       if (!gradient && endAngle == 360) 
-         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);
+      {
+         Pixel lineColor = c;
+         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], gfxPaintFromColor(&lineColor));
+      }
 #endif         
    }
 }
@@ -2145,8 +2326,80 @@ static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_drawRoundRect(0, x, y, w, h, r, c | Graphics_alpha(g));
+   skia_restoreClip();
+
+   markDirty(currentContext, g, x, y, w, h);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////
+#ifndef SKIA_H
+static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+   int32 top = y;
+   int32 bottom = y + h - 1;
+   int32 yy;
+   int32 start, end;
+   int32 previousStart = 0x7FFFFFFF;
+   int32 previousEnd = 0x7FFFFFFF;
+   Pixel lineColor = c;
+   GfxPaint paint = gfxPaintFromColor(&lineColor);
+
+   if (w <= 0 || h <= 0)
+      return;
+
+   if (radii == null)
+   {
+      if (filled)
+         fillRect(currentContext, g, x, y, w, h, c);
+      else
+         drawRect(currentContext, g, x, y, w, h, c);
+      return;
+   }
+
+   for (yy = top; yy <= bottom; yy++)
+   {
+      if (!gfxComputeRRectSpan(x, y, w, h, radii, yy, &start, &end))
+         continue;
+
+      if (filled)
+         drawLine(currentContext, g, start, yy, end, yy, paint);
+      else
+      {
+         if (previousStart == 0x7FFFFFFF)
+            drawLine(currentContext, g, start, yy, end, yy, paint);
+         else
+         {
+            if (start < previousStart)
+               drawLine(currentContext, g, start, yy, previousStart, yy, paint);
+            else if (start > previousStart)
+               drawLine(currentContext, g, previousStart, yy - 1, start, yy - 1, paint);
+
+            if (end > previousEnd)
+               drawLine(currentContext, g, previousEnd, yy, end, yy, paint);
+            else if (end < previousEnd)
+               drawLine(currentContext, g, end, yy - 1, previousEnd, yy - 1, paint);
+         }
+         setPixel(currentContext, g, start, yy, c);
+         setPixel(currentContext, g, end, yy, c);
+      }
+
+      previousStart = start;
+      previousEnd = end;
+   }
+
+   if (!filled && previousStart != 0x7FFFFFFF)
+      drawLine(currentContext, g, previousStart, bottom, previousEnd, bottom, paint);
+}
+#else
+static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+   skia_applyClip(g);
+   skia_drawRRect(0, x, y, w, h, radii, c | Graphics_alpha(g), filled);
    skia_restoreClip();
 
    markDirty(currentContext, g, x, y, w, h);
@@ -2162,6 +2415,8 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy
 {
    int32 px1,px2,py1,py2,xm,ym,x,y=0, i, x2, e2, err;
    PixelConv color;
+   Pixel lineColor = c;
+   GfxPaint gfxPaint = gfxPaintFromColor(&lineColor);
    if (r > (width/2) || r > (height/2)) r = min32(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.
 
    x = -r;
@@ -2183,8 +2438,8 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy
    {
       i = 255 - 255 * abs(err - 2 * (x + y) - 2) / r;
 
-      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,c);
-      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,c);
+      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,gfxPaint);
+      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,gfxPaint);
 
       if (i < 256 && i > 0)
       {
@@ -2226,7 +2481,7 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
+   skia_applyClip(g);
    skia_fillRoundRect(0, x, y, w, h, r, c | Graphics_alpha(g));
    skia_restoreClip();
 
@@ -2845,6 +3100,7 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
 
    for (i = 0; i < numSteps; i++)
    {
+      GfxPaint paint;
       if (hasRadius)
       {
          leftOffset = rightOffset = 0;
@@ -2865,19 +3121,20 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
          if (rightOffset < 0) rightOffset = 0;
       }
       p = makePixel(red >> 16, green >> 16, blue >> 16);
+      paint = gfxPaintFromColor(&p);
       if (!optimize || leftOffset != 0 || rightOffset != 0)
       {
          if (vertical)
          {
             int32 fc = p;
-            drawLine(currentContext, g, startX + leftOffset, startY + i, endX - rightOffset, startY + i, p);
+            drawLine(currentContext, g, startX + leftOffset, startY + i, endX - rightOffset, startY + i, paint);
             if (drawFadedPixels && rightOffset != 0) // since there's no fading of pixels in opengl, we can safely ignore this
                drawFadedPixel(currentContext, g, endX - rightOffset + 1, startY + i, fc);
             if (drawFadedPixels && leftOffset != 0)
                drawFadedPixel(currentContext, g, startX + leftOffset - 1, startY + i, fc);
          }
          else
-            drawLine(currentContext, g, startX + i, startY + leftOffset, startX + i, endY - rightOffset, p);
+            drawLine(currentContext, g, startX + i, startY + leftOffset, startX + i, endY - rightOffset, paint);
       }
       if (stage < 2) // find starting and ending colors
       {
@@ -2925,7 +3182,7 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
     startY += Graphics_transY(g);
     endX += Graphics_transX(g);
     endY += Graphics_transY(g);
-    skia_setClip(Get_Clip(g));
+    skia_applyClip(g);
     skia_drawRoundGradient(0, startX, startY, endX, endY, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius, startColor | Graphics_alpha(g), endColor | Graphics_alpha(g), vertical);
     skia_restoreClip();
 
@@ -2946,9 +3203,10 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
    if (translateAndClip(g, &x, &y, &w, &h))
    {
       Pixel* data = ((Pixel*)ARRAYOBJ_START(dataObj)) + offset;
-      int32 inc = Graphics_pitch(g), count = w * h;
-      Pixel* pixels = getGraphicsPixels(g) + y * inc + x;
+      int32 inc = Graphics_pitch(g), count = 0;
+      Pixel* pixels = getGraphicsPixels(g);
       bool markDirty = !currentContext->fullDirty && !Graphics_isImageSurface(g);
+      int32 yy;
 #if 0//def __gl2_h_
       currentContext->fullDirty |= markDirty;
       if (isGet && Graphics_useOpenGL(g))
@@ -2956,15 +3214,41 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
       else
 #endif
       if (isGet)
-         for (; h-- > 0; pixels += inc, data += w)
-            xmemmove(data, pixels, w<<2);
-      else
-         for (; h-- > 0; pixels += inc, data += w)
+         for (yy = y; yy < y + h; yy++)
          {
-            xmemmove(pixels, data, w<<2);
+            int32 start, end, width;
+            if (!gfxClipHorizontalSpan(g, yy, &start, &end))
+               continue;
+            if (start < x)
+               start = x;
+            if (end > (x + w - 1))
+               end = x + w - 1;
+            if (end < start)
+               continue;
+            width = end - start + 1;
+            xmemmove(data, pixels + yy * inc + start, width << 2);
+            data += width;
+            count += width;
+         }
+      else
+         for (yy = y; yy < y + h; yy++)
+         {
+            int32 start, end, width;
+            if (!gfxClipHorizontalSpan(g, yy, &start, &end))
+               continue;
+            if (start < x)
+               start = x;
+            if (end > (x + w - 1))
+               end = x + w - 1;
+            if (end < start)
+               continue;
+            width = end - start + 1;
+            xmemmove(pixels + yy * inc + start, data, width << 2);
+            data += width;
+            count += width;
 #ifndef __gl2_h_
             if (markDirty)
-               markScreenDirty(currentContext, x, y++, w, 1);
+               markScreenDirty(currentContext, start, yy, width, 1);
 #endif
          }
       return count;

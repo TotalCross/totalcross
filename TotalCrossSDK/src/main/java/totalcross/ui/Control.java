@@ -54,8 +54,11 @@ import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Coord;
 import totalcross.ui.gfx.GfxSurface;
 import totalcross.ui.gfx.Graphics;
+import totalcross.ui.gfx.RRect;
 import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
+import totalcross.ui.style.render.ControlRenderer;
+import totalcross.util.UnitsConverter;
 import totalcross.util.Vector;
 
 /**
@@ -106,6 +109,7 @@ public class Control extends GfxSurface {
   public int clearValueInt; // guich@572_19
   /** The next control that will receive focus when tab is hit. */
   public Control nextTabControl;
+  protected ControlRenderer controlRenderer;
   public static final int RANGE = 10000000;
   public static final int UICONST = RANGE * 2 + 1000000;
   /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: PREFERRED+2 or PREFERRED-1. */
@@ -469,7 +473,7 @@ public class Control extends GfxSurface {
         if (child.visible) {
           Rect r = child.getAbsoluteRect();
           if (rtop.intersects(r)) {
-            child.refreshGraphics(g, 0, top, x0, y0);
+            child.refreshGraphics(g, child.getPaintExpand(), top, x0, y0);
             child.onPaint(g);
             if (child.asContainer != null) {
               child.asContainer.paint2shot(g, top, shift);
@@ -1589,7 +1593,7 @@ public class Control extends GfxSurface {
       } else if (transparentBackground) {
         parent.repaintNow(); // guich@tc100: for transparent backgrounds we have to force paint everything
       } else {
-        Graphics g = refreshGraphics(gfx, 0, null, 0, 0);
+        Graphics g = refreshGraphics(gfx, getPaintExpand(), null, 0, 0);
         if (g != null) {
           onPaint(g);
           if (asContainer != null) {
@@ -1625,13 +1629,22 @@ public class Control extends GfxSurface {
    * It sets a clipping rectangle on the graphics, clipping it against all parent areas.
    */
   public Graphics getGraphics() {
-    return refreshGraphics(gfx, 0, null, 0, 0);
+    return getGraphics(null);
   }
 
-  Graphics refreshGraphics(Graphics g, int expand, Control topParent, int tx0, int ty0) {
+  public Graphics getGraphics(Graphics sourceGraphics) {
+    return refreshGraphics(gfx, getPaintExpand(), null, 0, 0, sourceGraphics);
+  }
+
+  Graphics refreshGraphics(Graphics g, double expand, Control topParent, int tx0, int ty0) {
+    return refreshGraphics(g, expand, topParent, tx0, ty0, null);
+  }
+
+  Graphics refreshGraphics(Graphics g, double expand, Control topParent, int tx0, int ty0, Graphics sourceGraphics) {
     if (asWindow == null && parent == null) {
       return null;
     }
+    int roundedExpand = (int) Math.round(UnitsConverter.toPixels(Control.DP + expand));
     int sw = this.width;
     int sh = this.height;
     int sx = this.x, sy = this.y, cx, cy, delta, tx = sx, ty = sy;
@@ -1667,9 +1680,29 @@ public class Control extends GfxSurface {
         }
       }
     }
-    g.refresh(sx + tx0 - expand, sy - expand + ty0, sw + expand + expand, sh + expand + expand, tx + tx0, ty + ty0,
+    g.refresh(sx + tx0 - roundedExpand, sy - roundedExpand + ty0, sw + roundedExpand + roundedExpand, sh + roundedExpand + roundedExpand, tx + tx0, ty + ty0,
         font);
+    if (sourceGraphics != null) {
+      RRect inheritedClip = sourceGraphics.getClip();
+      inheritedClip.x -= this.x;
+      inheritedClip.y -= this.y;
+      g.setClip(inheritedClip);
+    }
     return g;
+  }
+
+  /**
+   * Returns how far this control may paint outside its bounds, in density-independent units.
+   * <p>
+   * The value is used to expand the refreshed graphics area so visual effects such as shadows
+   * are not clipped by the control bounds. The refresh pipeline converts this value to pixels
+   * at the point where the repaint rectangle is computed.
+   *
+   * @return the visual outset required by this control, or {@code 0} when no extra paint area is
+   *         needed.
+   */
+  protected double getPaintExpand() {
+    return controlRenderer == null ? 0d : controlRenderer.getOutset();
   }
 
   /**
@@ -1931,6 +1964,39 @@ public class Control extends GfxSurface {
   public static void resetStyle() {
 	  uiStyleAlreadyChanged = false;
   }
+
+  /**
+   * Sets the renderer responsible for drawing this control and providing visual metrics such as
+   * paint outset.
+   * <p>
+   * Passing {@code null} removes the renderer and makes the control fall back to its normal
+   * painting behavior. This method calls {@link #onStyleChanged()} after updating the renderer.
+   *
+   * @param renderer the renderer to associate with this control, or {@code null} to clear it.
+   */
+  public void setControlRenderer(ControlRenderer renderer) {
+    this.controlRenderer = renderer;
+    onStyleChanged();
+  }
+
+  /**
+   * Returns the renderer currently associated with this control.
+   *
+   * @return the current renderer, or {@code null} when this control uses its normal painting
+   *         behavior.
+   */
+  public ControlRenderer getControlRenderer() {
+    return controlRenderer;
+  }
+
+  /**
+   * Called after the control renderer or visual style associated with this control changes.
+   * <p>
+   * Subclasses may override this hook to update cached geometry, insets, clips, or any other
+   * derived state that depends on the current style. The default implementation does nothing.
+   */
+  protected void onStyleChanged() {
+  }
   
   /** Internal use only */
   public static void uiStyleChanged() {
@@ -2098,7 +2164,7 @@ public class Control extends GfxSurface {
         font = current;
         fm = font.fm;
         fmH = font.fm.height;
-        refreshGraphics(gfx, 0, null, 0, 0);
+        refreshGraphics(gfx, getPaintExpand(), null, 0, 0);
       }
       if (recursive) {
         repositionChildren();

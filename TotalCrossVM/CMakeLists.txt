@@ -344,6 +344,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/sys/Convert.c
 
     ${TC_SRCDIR}/nm/ui/gfx_Graphics.c
+    ${TC_SRCDIR}/nm/ui/gfx_RRect.c
     ${TC_SRCDIR}/nm/ui/event_Event.c
     ${TC_SRCDIR}/nm/ui/Control.c
     ${TC_SRCDIR}/nm/ui/font_Font.c

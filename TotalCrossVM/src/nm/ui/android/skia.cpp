@@ -72,6 +72,7 @@
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkImageEncoder.h"
 #include "include/core/SkPath.h"
+#include "include/core/SkRRect.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/core/SkTextBlob.h"
 
@@ -91,6 +92,9 @@
 
 #include <vector>
 #include <map>
+
+#include "../gfx.h"
+#include "../../instancefields.h"
 
 
 extern "C" {
@@ -349,6 +353,43 @@ void skia_setClip(int32 x1, int32 y1, int32 x2, int32 y2)
     canvas->save();
     canvas->clipRect(SkRect::MakeLTRB(x1, y1, x2, y2));
 }
+
+void skia_applyClip(TCObject g)
+{
+    TCObject roundClip = Graphics_roundClip(g);
+
+    canvas->save();
+    if (roundClip != null)
+    {
+        const double *radii = RRect_radii(roundClip);
+        SkVector corners[4];
+        SkRRect rrect;
+        int i;
+
+        for (i = 0; i < 4; i++)
+        {
+            corners[i].set((SkScalar)radii[i * 2], (SkScalar)radii[i * 2 + 1]);
+        }
+
+        rrect.setRectRadii(
+            SkRect::MakeXYWH(
+                (SkScalar)Rect_x(roundClip),
+                (SkScalar)Rect_y(roundClip),
+                (SkScalar)Rect_width(roundClip),
+                (SkScalar)Rect_height(roundClip)),
+            corners);
+        canvas->clipRRect(rrect, true);
+    }
+    else
+    {
+        canvas->clipRect(SkRect::MakeLTRB(
+            Graphics_clipX1(g),
+            Graphics_clipY1(g),
+            Graphics_clipX2(g),
+            Graphics_clipY2(g)));
+    }
+}
+
 void skia_restoreClip()
 {
     canvas->restore();
@@ -423,19 +464,21 @@ void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 
 {
     SKIA_TRACE()
     float intervals[] = {5, 5};
+    GfxPaint paint1 = gfxPaintFromColor((int32*)&pixel1);
+    GfxPaint paint2 = gfxPaintFromColor((int32*)&pixel2);
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 2.5f));
-    skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel1);
+    skia_drawLine(skiaSurface, x1, y1, x2, y2, paint1);
     forePaint.setPathEffect(nullptr);
 
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 7.5f));
-    skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel2);
+    skia_drawLine(skiaSurface, x1, y1, x2, y2, paint2);
     forePaint.setPathEffect(nullptr);
 }
 
-void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint)
 {
     SKIA_TRACE()
-    forePaint.setColor(pixel);
+    forePaint.setColor(*paint.color);
     canvas->drawLine(x1, y1, x2, y2, forePaint);
 }
 
@@ -644,6 +687,30 @@ void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
     SKIA_TRACE()
     backPaint.setColor(c);
     canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), backPaint);
+}
+
+void skia_drawRRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+    SKIA_TRACE()
+    SkRect rect = SkRect::MakeXYWH(x, y, w, h);
+    SkPaint &paint = filled ? backPaint : forePaint;
+    paint.setColor(c);
+
+    if (radii == nullptr) {
+        canvas->drawRect(rect, paint);
+        return;
+    }
+
+    SkVector corners[4] = {
+        SkVector::Make((SkScalar)radii[0], (SkScalar)radii[1]),
+        SkVector::Make((SkScalar)radii[2], (SkScalar)radii[3]),
+        SkVector::Make((SkScalar)radii[4], (SkScalar)radii[5]),
+        SkVector::Make((SkScalar)radii[6], (SkScalar)radii[7])
+    };
+
+    SkRRect rr;
+    rr.setRectRadii(rect, corners);
+    canvas->drawRRect(rr, paint);
 }
 
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)

@@ -63,6 +63,7 @@ public final class Graphics {
   private int transX, transY;
 
   private int clipX1, clipY1, clipX2, clipY2; // clip1 <= k < clip2
+  private RRect roundClip;
 
   private int minX, minY, maxX, maxY;
 
@@ -270,6 +271,7 @@ public final class Graphics {
     clipY1 = minY = Math.max(0, sy);
     clipX2 = maxX = Math.min(sx + sw, scrW);
     clipY2 = maxY = Math.min(sy + sh, scrH);
+    roundClip = null;
     transX = tx;
     transY = ty;
     if (f != null) {
@@ -534,7 +536,7 @@ public final class Graphics {
   public int getPixel(int x, int y) {
     x += transX;
     y += transY;
-    if (clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2) {
+    if (isInsideClip(x, y)) {
       return getSurfacePixels(surface)[y * pitch + x] & 0xFFFFFF;
     }
     return -1;
@@ -573,7 +575,7 @@ public final class Graphics {
    */
   @ReplacedByNativeOnDeploy
   public void drawLine(int Ax, int Ay, int Bx, int By) {
-    drawLine(Ax, Ay, Bx, By, foreColor | alpha);
+    drawLine(Ax, Ay, Bx, By, paintOfColor(foreColor | alpha));
   }
 
   /**
@@ -639,8 +641,16 @@ public final class Graphics {
         return;
       }
       int[] pix = getSurfacePixels(surface);
-      for (x += y * pitch; h-- > 0; x += pitch) {
-        Convert.fill(pix, x, x + w, backColor | alpha);
+      int rowX = x;
+      int rowY = y;
+      int color = backColor | alpha;
+      for (int row = 0; row < h; row++, rowY++) {
+        if (!clipHorizontalSpanToCurrentClip(rowY, rowX, rowX + w - 1, translateAndClipResults)) {
+          continue;
+        }
+        int start = translateAndClipResults[0];
+        int width = translateAndClipResults[2];
+        Convert.fill(pix, start + rowY * pitch, start + rowY * pitch + width, color);
       }
       if (isControlSurface) {
         needsUpdate = true;
@@ -695,7 +705,7 @@ public final class Graphics {
       throw new ArrayIndexOutOfBoundsException("array index out of range at drawPolygon: " + nPoints);
     } else {
       drawPolygon(xPoints, yPoints, 0, nPoints, foreColor | alpha);
-      drawLine(xPoints[0], yPoints[0], xPoints[nPoints - 1], yPoints[nPoints - 1], foreColor | alpha);
+      drawLine(xPoints[0], yPoints[0], xPoints[nPoints - 1], yPoints[nPoints - 1], paintOfColor(foreColor | alpha));
     }
   }
 
@@ -959,13 +969,20 @@ public final class Graphics {
 
         // draws the char
         for (; r < rmax; start += rowWIB, r++, y++) {
+          int rowStart;
+          int rowEnd;
           // draw each row
+          if (!clipHorizontalSpanToCurrentClip(y, x0, xMax - 1, translateAndClipResults)) {
+            continue;
+          }
+          rowStart = translateAndClipResults[0];
+          rowEnd = rowStart + translateAndClipResults[2];
           int yy = y * pitch;
           current = start;
           currentBit = startBit;
           for (x = x0; x < xMax; x++) {
             // draw each column
-            if (bitmapTable != null && (bitmapTable[current] & ands8[currentBit]) != 0 && x >= xMin) {
+            if (bitmapTable != null && (bitmapTable[current] & ands8[currentBit]) != 0 && rowStart <= x && x < rowEnd) {
               pixels[yy + x] = foreColor | alpha;
             }
             if (++currentBit == 8) { // finished this byte?
@@ -982,7 +999,14 @@ public final class Graphics {
         int transparency;
         // draw the char
         for (; r < rmax; start += rowWIB, r++, y++) {
+          int rowStart;
+          int rowEnd;
           // draw each row
+          if (!clipHorizontalSpanToCurrentClip(y, x0, xMax - 1, translateAndClipResults)) {
+            continue;
+          }
+          rowStart = translateAndClipResults[0];
+          rowEnd = rowStart + translateAndClipResults[2];
           int yy = y * pitch;
           current = start;
           boolean isLowNibble = isNibbleStartingLow;
@@ -990,7 +1014,7 @@ public final class Graphics {
             // draw each column
             transparency = isLowNibble ? (bitmapTable[current++] & 0xF) : ((bitmapTable[current] >> 4) & 0xF);
             isLowNibble = !isLowNibble;
-            if (transparency == 0 || x < xMin) {
+            if (transparency == 0 || x < rowStart || x >= rowEnd) {
               continue;
             }
             if (transparency == 0xF) {
@@ -1011,13 +1035,20 @@ public final class Graphics {
         int[] imgPixels = font.nativeFonts[bits.index].getPixels();
         // draw the char
         for (; r < rmax; start += rowWIB, r++, y++) {
+          int rowStart;
+          int rowEnd;
           // draw each row
+          if (!clipHorizontalSpanToCurrentClip(y, x0, xMax - 1, translateAndClipResults)) {
+            continue;
+          }
+          rowStart = translateAndClipResults[0];
+          rowEnd = rowStart + translateAndClipResults[2];
           int yy = y * pitch;
           current = start;
           for (x = x0; x < xMax; x++) {
             // draw each column
             transparency = (imgPixels[current++] >>> 24) & 0xFF;
-            if (transparency == 0 || x < xMin) {
+            if (transparency == 0 || x < rowStart || x >= rowEnd) {
               continue;
             }
             if (transparency == 0xFF) {
@@ -1134,8 +1165,8 @@ public final class Graphics {
     do {
       i = 255 - 255 * Math.abs(err - 2 * (x + y) - 2) / r;
 
-      drawLine(px1 + x + 1, py1 - y, px2 - x - 1, py1 - y, c);
-      drawLine(px1 + x + 1, py2 + y, px2 - x - 1, py2 + y, c);
+      drawLine(px1 + x + 1, py1 - y, px2 - x - 1, py1 - y, paintOfColor(c));
+      drawLine(px1 + x + 1, py2 + y, px2 - x - 1, py2 + y, paintOfColor(c));
 
       if (i < 256 && i > 0) {
         xm = px2;
@@ -1190,6 +1221,74 @@ public final class Graphics {
         err += ++y * 2 + 1;
       }
     } while (x < 0);
+  }
+
+  /**
+   * Draws a rounded rectangle.
+   *
+   * @param rrect the rounded rectangle to draw
+   * @param color the color in {@code 0xRRGGBB} format
+   * @param filled whether the rounded rectangle should be filled
+   * @throws NullPointerException if {@code rrect} is {@code null}
+   * @throws IllegalArgumentException if {@code rrect.width < 0} or {@code rrect.height < 0}
+   */
+  @ReplacedByNativeOnDeploy
+  public void drawRRect(RRect rrect, int color, boolean filled) {
+    if (rrect == null) {
+      throw new NullPointerException("rrect");
+    }
+    if (rrect.width < 0) {
+      throw new IllegalArgumentException("rrect.width must be >= 0");
+    }
+    if (rrect.height < 0) {
+      throw new IllegalArgumentException("rrect.height must be >= 0");
+    }
+    if (rrect.width == 0 || rrect.height == 0) {
+      return;
+    }
+
+    int top = rrect.y;
+    int bottom = rrect.y + rrect.height - 1;
+    int previousStart = Integer.MIN_VALUE;
+    int previousEnd = Integer.MIN_VALUE;
+
+    for (int yy = top; yy <= bottom; yy++) {
+      Span span = rrect.horizontalSpan(yy);
+      if (!span.isValid()) {
+        continue;
+      }
+      int start = span.start;
+      int end = span.end;
+
+      if (filled) {
+        drawLine(start, yy, end, yy, paintOfColor(color));
+      } else {
+        if (previousStart == Integer.MIN_VALUE) {
+          drawLine(start, yy, end, yy, paintOfColor(color));
+        } else {
+          if (start < previousStart) {
+            drawLine(start, yy, previousStart, yy, paintOfColor(color));
+          } else if (start > previousStart) {
+            drawLine(previousStart, yy - 1, start, yy - 1, paintOfColor(color));
+          }
+          if (end > previousEnd) {
+            drawLine(previousEnd, yy, end, yy, paintOfColor(color));
+          } else if (end < previousEnd) {
+            drawLine(end, yy - 1, previousEnd, yy - 1, paintOfColor(color));
+          }
+        }
+
+        setPixel(start, yy, color);
+        setPixel(end, yy, color);
+      }
+
+      previousStart = start;
+      previousEnd = end;
+    }
+
+    if (!filled && previousStart != Integer.MIN_VALUE) {
+      drawLine(previousStart, bottom, previousEnd, bottom, paintOfColor(color));
+    }
   }
 
   /**
@@ -1248,6 +1347,7 @@ public final class Graphics {
     this.clipY1 = clipY1;
     this.clipX2 = clipX2;
     this.clipY2 = clipY2;
+    this.roundClip = null;
   }
 
   /**
@@ -1262,6 +1362,24 @@ public final class Graphics {
   }
 
   /**
+   * Sets the clipping area using a rounded rectangle. Backends without rounded clipping support
+   * currently fall back to the bounding rectangle.
+   *
+   * @param r the rounded rectangle with the clipping coordinates
+   */
+  public void setClip(RRect r) {
+    if (r == null) {
+      clearClip();
+      return;
+    }
+    setClip(r.x, r.y, r.width, r.height);
+    if (r.width <= 0 || r.height <= 0) {
+      return;
+    }
+    this.roundClip = new RRect(r.x + transX, r.y + transY, r.width, r.height, r.radii);
+  }
+
+  /**
    * Gets the current clipping rectangle.
    * 
    * @param r a Rect object where the clip coordinates will be stored and returned.
@@ -1272,6 +1390,23 @@ public final class Graphics {
     r.width = clipX2 - clipX1; // guich@300_36: removed +1 here and in line below
     r.height = clipY2 - clipY1;
     return r;
+  }
+
+  /**
+   * Gets the current clipping shape. If the current clip is rounded, the radii are preserved;
+   * otherwise this returns the current rectangular clip with zero radii.
+   */
+  public RRect getClip() {
+    if (roundClip != null) {
+      return new RRect(
+          roundClip.x - transX,
+          roundClip.y - transY,
+          roundClip.width,
+          roundClip.height,
+          roundClip.radii);
+    }
+    Rect rect = getClip(new Rect());
+    return new RRect(rect.x, rect.y, rect.width, rect.height, null);
   }
 
   /** Returns the clip's width */
@@ -1310,6 +1445,7 @@ public final class Graphics {
     clipY1 = minY;
     clipX2 = maxX;
     clipY2 = maxY;
+    roundClip = null;
   }
 
   /**
@@ -1573,13 +1709,13 @@ public final class Graphics {
     int x2 = x + width - 1;
     int y2 = y + height - 1;
     foreColor = topColor | alpha;
-    drawLine(x1, y, x2 - 1, y, foreColor);
+    drawLine(x1, y, x2 - 1, y, paintOfColor(foreColor));
     foreColor = rightColor | alpha;
-    drawLine(x2, y1, x2, y2 - 1, foreColor);
+    drawLine(x2, y1, x2, y2 - 1, paintOfColor(foreColor));
     foreColor = bottomColor | alpha;
-    drawLine(x1, y2, x2 - 1, y2, foreColor);
+    drawLine(x1, y2, x2 - 1, y2, paintOfColor(foreColor));
     foreColor = leftColor | alpha;
-    drawLine(x, y1, x, y2 - 1, foreColor);
+    drawLine(x, y1, x, y2 - 1, paintOfColor(foreColor));
   }
 
   /**
@@ -1667,12 +1803,12 @@ public final class Graphics {
       fillRect(x, y, width, height);
     } else if (type == R3D_SHADED) {
       boolean menu = simple; // is menu?
-      drawLine(menu ? 0 : 1, 0, menu ? width - 1 : width - 3, 0, foreColor | alpha);
-      drawLine(0, 1, 0, height - 3, foreColor | alpha);
-      drawLine(width - 2, 1, width - 2, height - 3, foreColor | alpha);
-      drawLine(width - 1, menu ? 1 : 2, width - 1, height - 3, foreColor | alpha);
-      drawLine(1, height - 2, width - 2, height - 2, foreColor | alpha);
-      drawLine(2, height - 1, width - 3, height - 1, foreColor | alpha);
+      drawLine(menu ? 0 : 1, 0, menu ? width - 1 : width - 3, 0, paintOfColor(foreColor | alpha));
+      drawLine(0, 1, 0, height - 3, paintOfColor(foreColor | alpha));
+      drawLine(width - 2, 1, width - 2, height - 3, paintOfColor(foreColor | alpha));
+      drawLine(width - 1, menu ? 1 : 2, width - 1, height - 3, paintOfColor(foreColor | alpha));
+      drawLine(1, height - 2, width - 2, height - 2, paintOfColor(foreColor | alpha));
+      drawLine(2, height - 1, width - 3, height - 1, paintOfColor(foreColor | alpha));
     } else {
       switch (Settings.uiStyle) {
       case Settings.Flat:
@@ -1764,7 +1900,7 @@ public final class Graphics {
       }
       h--;
       while (h >= 0) {
-        drawLine(x, y, x, y + (h << 1), foreColor);
+        drawLine(x, y, x, y + (h << 1), paintOfColor(foreColor));
         x += step;
         y++;
         h--;
@@ -1776,7 +1912,7 @@ public final class Graphics {
       }
       h--;
       while (h >= 0) {
-        drawLine(x, y, x + (h << 1), y, foreColor);
+        drawLine(x, y, x + (h << 1), y, paintOfColor(foreColor));
         y += step;
         x++;
         h--;
@@ -1979,10 +2115,17 @@ public final class Graphics {
       h = results[3];
 
       int[] pixels = getSurfacePixels(surface);
-      int inc = pitch, pos = y * inc + x, count = w * h;
+      int inc = pitch, count = 0;
 
-      for (; h-- > 0; pos += inc, offset += w) {
-        System.arraycopy(pixels, pos, data, offset, w);
+      for (int yy = y; yy < y + h; yy++) {
+        if (!clipHorizontalSpanToCurrentClip(yy, x, x + w - 1, translateAndClipResults)) {
+          continue;
+        }
+        int start = translateAndClipResults[0];
+        int width = translateAndClipResults[2];
+        System.arraycopy(pixels, yy * inc + start, data, offset, width);
+        offset += width;
+        count += width;
       }
 
       return count;
@@ -2016,10 +2159,17 @@ public final class Graphics {
       h = results[3];
 
       int[] pixels = getSurfacePixels(surface);
-      int inc = pitch, pos = y * inc + x, count = w * h;
+      int inc = pitch, count = 0;
 
-      for (; h-- > 0; pos += inc, offset += w) {
-        Vm.arrayCopy(data, offset, pixels, pos, w);
+      for (int yy = y; yy < y + h; yy++) {
+        if (!clipHorizontalSpanToCurrentClip(yy, x, x + w - 1, translateAndClipResults)) {
+          continue;
+        }
+        int start = translateAndClipResults[0];
+        int width = translateAndClipResults[2];
+        Vm.arrayCopy(data, offset, pixels, yy * inc + start, width);
+        offset += width;
+        count += width;
       }
 
       return count;
@@ -2137,15 +2287,21 @@ public final class Graphics {
       int psrc = (bmpY + y) * scrPitch + bmpX + x;
       int pdst = dstY * pitch + dstX;
       int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
-      for (j = height; --j >= 0; psrc += scrPitch, pdst += pitch) {
-        int srcIdx = psrc; // guich@450_1
-        int dstIdx = pdst;
+      for (j = height; --j >= 0; psrc += scrPitch, pdst += pitch, dstY++) {
+        if (!clipHorizontalSpanToCurrentClip(dstY, dstX, dstX + width - 1, translateAndClipResults)) {
+          continue;
+        }
+        int spanStart = translateAndClipResults[0];
+        int spanWidth = translateAndClipResults[2];
+        int skip = spanStart - dstX;
+        int srcIdx = psrc + skip; // guich@450_1
+        int dstIdx = pdst + skip;
         if (isSrcScreen) {
-          for (i = width; --i >= 0;) {
+          for (i = spanWidth; --i >= 0;) {
             dst[dstIdx++] = pixels[srcIdx++] | 0xFF000000;
           }
         } else {
-          for (i = width; --i >= 0; dstIdx++) {
+          for (i = spanWidth; --i >= 0; dstIdx++) {
             bmpPt = pixels[srcIdx++];
             int a = (bmpPt >>> 24) & 0xFF;
             a = alphaMask * a / 255;
@@ -2324,7 +2480,7 @@ public final class Graphics {
     }
 
     for (i = 1; i < nPoints1; i++) {
-      drawLine(xPoints1[base1 + i - 1], yPoints1[base1 + i - 1], xPoints1[base1 + i], yPoints1[base1 + i], c);
+      drawLine(xPoints1[base1 + i - 1], yPoints1[base1 + i - 1], xPoints1[base1 + i], yPoints1[base1 + i], paintOfColor(c));
     }
   }
 
@@ -2333,7 +2489,7 @@ public final class Graphics {
   private void setPixel(int x, int y, int color) {
     x += transX;
     y += transY;
-    if (clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2) {
+    if (isInsideClip(x, y)) {
       if (x < 0 || y < 0) {
         return;
       }
@@ -2362,6 +2518,11 @@ public final class Graphics {
       if (x < 0 || y < 0 || w < 0) {
         return;
       }
+      if (!clipHorizontalSpanToCurrentClip(y, x, x + w - 1, translateAndClipResults)) {
+        return;
+      }
+      x = translateAndClipResults[0];
+      w = translateAndClipResults[2];
       int[] pix = getSurfacePixels(surface);
       x += y * pitch;
       Convert.fill(pix, x, x + w, color);
@@ -2389,8 +2550,11 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
-      for (x += y * pitch; h-- > 0; x += pitch) {
-        pixels[x] = color;
+      int baseX = x;
+      for (x += y * pitch; h-- > 0; x += pitch, y++) {
+        if (isInsideClip(baseX, y)) {
+          pixels[x] = color;
+        }
       }
       if (isControlSurface) {
         needsUpdate = true;
@@ -2398,9 +2562,22 @@ public final class Graphics {
     }
   }
 
+  /**
+   * Draws a line using the provided paint state.
+   * <p>
+   * The current implementation only reads {@link Paint#getColor()} from the supplied paint.
+   *
+   * @param Ax x coordinate of the start of the line
+   * @param Ay y coordinate of the start of the line
+   * @param Bx x coordinate of the end of the line
+   * @param By y coordinate of the end of the line
+   * @param paint the paint used to draw the line
+   * @throws NullPointerException if {@code paint} is {@code null}
+   */
   // Bresenham algorithm to draw lines (modified by guich to improve performance in vertical and horizontal lines)
   @ReplacedByNativeOnDeploy
-  private void drawLine(int Ax, int Ay, int Bx, int By, int c) {
+  public void drawLine(int Ax, int Ay, int Bx, int By, Paint paint) {
+    int c = paint.getColor();
     if (surelyOutsideClip(Ax, Ay, Bx, By)) {
       return;
     }
@@ -2471,6 +2648,10 @@ public final class Graphics {
         }
       }
     }
+  }
+
+  private static Paint paintOfColor(int color) {
+    return new Paint().setColor(color);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -2573,6 +2754,48 @@ public final class Graphics {
     translateAndClipResults[1] = y;
     translateAndClipResults[2] = w;
     translateAndClipResults[3] = h;
+    return true;
+  }
+
+  private boolean isInsideClip(int x, int y) {
+    if (!(clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2)) {
+      return false;
+    }
+    return roundClip == null || roundClip.contains(x, y);
+  }
+
+  private boolean clipHorizontalSpanToCurrentClip(int y, int start, int end, int[] out) {
+    if (y < clipY1 || y >= clipY2 || end < start) {
+      return false;
+    }
+    if (start < clipX1) {
+      start = clipX1;
+    }
+    if (end >= clipX2) {
+      end = clipX2 - 1;
+    }
+    if (end < start) {
+      return false;
+    }
+    if (roundClip != null) {
+      Span span = roundClip.horizontalSpan(y);
+      if (!span.isValid()) {
+        return false;
+      }
+      if (start < span.start) {
+        start = span.start;
+      }
+      if (end > span.end) {
+        end = span.end;
+      }
+      if (end < start) {
+        return false;
+      }
+    }
+    out[0] = start;
+    out[1] = y;
+    out[2] = end - start + 1;
+    out[3] = 1;
     return true;
   }
 
@@ -2711,9 +2934,6 @@ public final class Graphics {
     double ppd;
     int startIndex, endIndex, index, i, oldX1 = 0, oldY1 = 0, oldX2 = 0, oldY2 = 0;
     int nq, size = 0;
-    boolean checkClipX = (xc + rx + transX) > clipX2 || (xc - rx + transX) < clipX1; // guich@340_3 - guich@401_2:
-    // added TRANSX/Y
-    boolean checkClipY = (yc + ry + transY) > clipY2 || (yc - ry + transY) < clipY1;
     if (rx < 0 || ry < 0) {
       return;
     }
@@ -2728,7 +2948,7 @@ public final class Graphics {
     int[] xPoints = gxPoints;
     int[] yPoints = gyPoints;
     // step 0: if possible, use cached results
-    int clipFactor = clipX1 * 1000000000 + clipX2 * 10000000 + clipY1 * 100000 + clipY2;
+    int clipFactor = 0;
     boolean sameClip = clipFactor == lastClipFactor;
     boolean sameC = sameClip && xc == lastXC && yc == lastYC;
     boolean sameR = sameClip && rx == lastRX && ry == lastRY;
@@ -2799,20 +3019,20 @@ public final class Graphics {
         // save 4 points using symmetry
         // guich@340_3: added clipping
         index = nq * 0 + i; // 0/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 - i - 1; // 1/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 + i; // 2/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc + y;
 
         index = nq * 4 - i - 1; // 3/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc + y;
         i++;
 
         y++; // always move up here
@@ -2832,20 +3052,20 @@ public final class Graphics {
         // save 4 points using symmetry
         // guich@340_3: added clipping
         index = nq * 0 + i; // 0/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 - i - 1; // 1/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc - y) : (yc - y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc - y;
 
         index = nq * 2 + i; // 2/3
-        xPoints[index] = checkClipX ? doClipX(xc - x) : (xc - x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc - x;
+        yPoints[index] = yc + y;
 
         index = nq * 4 - i - 1; // 3/3
-        xPoints[index] = checkClipX ? doClipX(xc + x) : (xc + x);
-        yPoints[index] = checkClipY ? doClipY(yc + y) : (yc + y);
+        xPoints[index] = xc + x;
+        yPoints[index] = yc + y;
         i++;
 
         x--; // always move left here
@@ -3005,20 +3225,20 @@ public final class Graphics {
       kx = x1l;
       ky = yy + i;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, x2r, yy + i, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // top
+      drawLine(kx, ky, x2r, yy + i, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // top
 
       ky = y2 - i;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, x2r, y2 - i, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // bottom
+      drawLine(kx, ky, x2r, y2 - i, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // bottom
 
       kx = xx + i;
       ky = y1l;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, xx + i, y2r, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // left
+      drawLine(kx, ky, xx + i, y2r, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // left
 
       kx = x2 - i;
       c = getPixel(kx, ky);
-      drawLine(kx, ky, x2 - i, y2r, interpolate(borderColorR, borderColorG, borderColorB, c, a)); // right
+      drawLine(kx, ky, x2 - i, y2r, paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, c, a))); // right
     }
     // round corners
     for (int j = 0; j < 7; j++) {
@@ -3094,7 +3314,7 @@ public final class Graphics {
     // separator
     if (drawSeparators && titleH > 0 && titleColor == bodyColor) {
       drawLine(rectX1, ty - 1, rectX2, ty - 1,
-          interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64));
+          paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64)));
     }
     // body
     backColor = bodyColor | alpha;
@@ -3103,7 +3323,7 @@ public final class Graphics {
     // separator
     if (drawSeparators && footerH > 0 && bodyColor == footerColor) {
       drawLine(rectX1, ty, rectX2, ty,
-          interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64));
+          paintOfColor(interpolate(borderColorR, borderColorG, borderColorB, titleColorR, titleColorG, titleColorB, 64)));
       ty++;
       footerH--;
     }
