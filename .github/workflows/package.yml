@@ -233,9 +233,18 @@ jobs:
 
         javac -source 7 -target 7 -cp $sdkJar -d $workDir (Join-Path $workDir 'HelloWorld.java')
 
+        $distLibs = Join-Path $env:TOTALCROSS3_HOME 'dist/libs'
+        $deployClasspathEntries = @($sdkJar)
+        if (Test-Path -LiteralPath $distLibs -PathType Container) {
+          $deployClasspathEntries += Get-ChildItem -Path $distLibs -Filter '*.jar' -File |
+            Sort-Object FullName |
+            ForEach-Object { $_.FullName }
+        }
+        $deployClasspath = $deployClasspathEntries -join [IO.Path]::PathSeparator
+
         Push-Location $workDir
         try {
-          java -cp $sdkJar tc.Deploy (Join-Path $workDir 'HelloWorld.class') -win32 -android -ios -linux -linux_arm /n 'Hello World'
+          java -cp $deployClasspath tc.Deploy (Join-Path $workDir 'HelloWorld.class') -win32 -android -ios -linux -linux_arm /n 'Hello World'
         } finally {
           Pop-Location
         }
