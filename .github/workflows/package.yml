@@ -242,9 +242,22 @@ jobs:
               Select-Object -ExpandProperty FullName
           )
         }
-        $deployClasspathEntries = @($sdkJar) + $distLibJars
+        $appDirsJar = Join-Path $distLibs 'appdirs-1.2.0.jar'
+        if (-not (Test-Path -LiteralPath $appDirsJar -PathType Leaf)) {
+          Write-Host "Packaged dist directory:"
+          Get-ChildItem -LiteralPath (Join-Path $env:TOTALCROSS3_HOME 'dist') -Recurse -Force |
+            ForEach-Object { Write-Host "  $($_.FullName)" }
+          throw "Required packaged SDK dependency not found: $appDirsJar"
+        }
+
+        $distLibsWildcard = Join-Path $distLibs '*'
+        $deployClasspathEntries = @($sdkJar, $distLibsWildcard)
         $deployClasspath = [string]::Join([string][IO.Path]::PathSeparator, [string[]]$deployClasspathEntries)
 
+        Write-Host 'Packaged dist/libs jars:'
+        foreach ($jar in $distLibJars) {
+          Write-Host "  $jar"
+        }
         Write-Host 'Deploy classpath entries:'
         foreach ($entry in $deployClasspathEntries) {
           Write-Host "  $entry"
