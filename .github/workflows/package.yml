@@ -1,3 +1,9 @@
+---
+# Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 name: Packages `totalcross`
 
 on:
@@ -17,6 +23,8 @@ jobs:
     if: ${{ always() }}
     needs: build
     runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.totalcross-version.outputs.version }}
 
     steps:
     - name: Download SDK build artifacts
@@ -86,7 +94,7 @@ jobs:
       run: |
         mkdir -p build/TotalCross/dist/vm/win32
         mkdir -p build/TotalCross/etc/launchers/win32
-        find windows -iname "tcvm.dll" -exec cp -p -a -R {} build/TotalCross/dist/vm/win32/TCVM.dll \; -quit
+        find windows -iname "tcvm.dll" -exec cp -p -a -R {} build/TotalCross/dist/vm/win32/tcvm.dll \; -quit
         find windows -iname "launcher.exe" -exec cp -p -a -R {} build/TotalCross/etc/launchers/win32/Launcher.exe \; -quit
 
     - name: Download Android
@@ -161,3 +169,105 @@ jobs:
       with:
         name: TotalCross-${{ steps.totalcross-version.outputs.version }}-jars
         path: build/TotalCross/dist/*.jar
+
+  test_packaged_zip:
+    name: Test packaged ZIP on ${{ matrix.name }}
+    needs: package_totalcross
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x86/64
+            runner: windows-2022
+          - name: macOS ARM
+            runner: macos-15
+          - name: Linux x86/64
+            runner: ubuntu-22.04
+
+    steps:
+    - name: Setup JDK 11
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 11
+
+    - name: Download packaged SDK zip
+      uses: actions/download-artifact@v4
+      with:
+        name: TotalCross-${{ needs.package_totalcross.outputs.version }}
+        path: packaged
+
+    - name: Test packaged SDK deploy
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+
+        $zipPath = Join-Path 'packaged' 'TotalCross-${{ needs.package_totalcross.outputs.version }}.zip'
+        $extractPath = Join-Path $PWD 'packaged-sdk'
+        Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+
+        $env:TOTALCROSS3_HOME = Join-Path $extractPath 'TotalCross'
+        "TOTALCROSS3_HOME=$env:TOTALCROSS3_HOME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+        $sdkJar = Join-Path $env:TOTALCROSS3_HOME 'dist/totalcross-sdk-${{ needs.package_totalcross.outputs.version }}.jar'
+        if (-not (Test-Path -LiteralPath $sdkJar -PathType Leaf)) {
+          throw "Packaged SDK jar not found: $sdkJar"
+        }
+
+        $workDir = Join-Path $PWD 'package-test'
+        New-Item -ItemType Directory -Force -Path $workDir | Out-Null
+
+        @'
+        import totalcross.ui.Label;
+        import totalcross.ui.MainWindow;
+
+        public class HelloWorld extends MainWindow {
+
+            @Override
+            public void initUI() {
+                add(new Label("Hello World"), CENTER, CENTER);
+            }
+        }
+        '@ | Set-Content -Path (Join-Path $workDir 'HelloWorld.java') -Encoding utf8
+
+        javac -source 7 -target 7 -cp $sdkJar -d $workDir (Join-Path $workDir 'HelloWorld.java')
+
+        Push-Location $workDir
+        try {
+          java -cp $sdkJar tc.Deploy (Join-Path $workDir 'HelloWorld.class') -win32 -android -ios -linux -linux_arm /n 'Hello World'
+        } finally {
+          Pop-Location
+        }
+
+        $installDir = Join-Path $workDir 'install'
+        $expectedFiles = @(
+          'win32/Hello World.exe',
+          'win32/Hello World.tcz',
+          'win32/tcvm.dll',
+          'win32/vcruntime140.dll',
+          'android/HelloWorld.aab',
+          'android/HelloWorld.apk',
+          'ios/Hello World.ipa',
+          'linux/Hello World',
+          'linux/Hello World.tcz',
+          'linux/libtcvm.so',
+          'linux_arm/Hello World',
+          'linux_arm/Hello World.tcz',
+          'linux_arm/libtcvm.so'
+        )
+
+        foreach ($file in $expectedFiles) {
+          $path = Join-Path $installDir $file
+          if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw "Expected deploy artifact not found: $path"
+          }
+        }
+
+        $expectedDirectories = @('win32', 'android', 'ios', 'linux', 'linux_arm')
+        foreach ($directory in $expectedDirectories) {
+          $path = Join-Path $installDir $directory
+          if (-not (Test-Path -LiteralPath $path -PathType Container)) {
+            throw "Expected deploy directory not found: $path"
+          }
+        }
