@@ -234,13 +234,22 @@ jobs:
         javac -source 7 -target 7 -cp $sdkJar -d $workDir (Join-Path $workDir 'HelloWorld.java')
 
         $distLibs = Join-Path $env:TOTALCROSS3_HOME 'dist/libs'
-        $deployClasspathEntries = @($sdkJar)
+        $distLibJars = @()
         if (Test-Path -LiteralPath $distLibs -PathType Container) {
-          $deployClasspathEntries += Get-ChildItem -Path $distLibs -Filter '*.jar' -File |
-            Sort-Object FullName |
-            ForEach-Object { $_.FullName }
+          $distLibJars = @(
+            Get-ChildItem -LiteralPath $distLibs -Filter '*.jar' -File |
+              Sort-Object -Property FullName |
+              Select-Object -ExpandProperty FullName
+          )
         }
-        $deployClasspath = $deployClasspathEntries -join [IO.Path]::PathSeparator
+        $deployClasspathEntries = @($sdkJar) + $distLibJars
+        $deployClasspath = [string]::Join([string][IO.Path]::PathSeparator, [string[]]$deployClasspathEntries)
+
+        Write-Host 'Deploy classpath entries:'
+        foreach ($entry in $deployClasspathEntries) {
+          Write-Host "  $entry"
+        }
+        Write-Host "Deploy classpath: $deployClasspath"
 
         Push-Location $workDir
         try {
