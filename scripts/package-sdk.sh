@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Copyright (C) 2021 TotalCross Global Mobile Platform Ltda
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
 
 BASEDIR=$(cd ..; pwd)
 OUTDIR=$BASEDIR/build/TotalCross
@@ -18,6 +23,12 @@ pushd $BASEDIR/TotalCrossSDK
       $OUTDIR
 
    ./gradlew clean dist -x test
+   if [ ! -f dist/libs/appdirs-1.2.0.jar ]; then
+      echo "Could not find appdirs-1.2.0.jar in TotalCrossSDK/dist/libs after Gradle dist" >&2
+      find dist -maxdepth 3 -type f -print >&2
+      exit 1
+   fi
+
    rsync \
          --exclude=*-intermediate.jar  \
          --exclude=*-proguard.jar      \
@@ -32,6 +43,12 @@ pushd $BASEDIR/TotalCrossSDK
    cp "$sdk_jar" "$OUTDIR/dist/totalcross-sdk.jar"
    mkdir -p $OUTDIR/dist/libs
    rsync --recursive dist/libs/ $OUTDIR/dist/libs/
+   if [ ! -f "$OUTDIR/dist/libs/appdirs-1.2.0.jar" ]; then
+      echo "Could not copy appdirs-1.2.0.jar to packaged SDK dist/libs" >&2
+      find "$OUTDIR/dist" -maxdepth 3 -type f -print >&2
+      exit 1
+   fi
+
    cp build/libs/*.tcz $OUTDIR/dist/vm
    cp etc/fonts/*.tcz $OUTDIR/dist/vm
 
