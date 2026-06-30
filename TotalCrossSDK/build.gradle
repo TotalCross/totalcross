@@ -37,7 +37,6 @@ configurations {
 
 def depotToolsFetchScript = file("${rootDir}/../TotalCrossVM/fetch-depot-tools.sh")
 def depotToolsDir = file("${rootDir}/../TotalCrossVM/deps/totalcross-depot-tools")
-def depotToolsDepsFile = file("${depotToolsDir}/deps.yml")
 def vcruntimeFetchScript = file("${depotToolsDir}/vcruntime/fetch.sh")
 def vcruntimeLocalDir = file("${depotToolsDir}/vcruntime/local/windows/x86")
 def vcruntimeDll = file("${vcruntimeLocalDir}/vcruntime140.dll")
@@ -281,8 +280,6 @@ task fetchSdkNativeRuntime {
 	description = 'Fetches native runtime DLLs distributed with the SDK.'
 
 	inputs.file(depotToolsFetchScript)
-	inputs.file(depotToolsDepsFile).optional()
-	inputs.file(vcruntimeFetchScript).optional()
 	inputs.property('vcruntimeReleaseTag', optionalInput(vcruntimeReleaseTag))
 	inputs.property('vcruntimeGithubRepo', optionalInput(vcruntimeGithubRepo))
 	outputs.file(vcruntimeDll)
