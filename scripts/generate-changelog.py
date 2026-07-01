@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 """
 Generate a Markdown changelog from commit messages.
 
@@ -26,6 +30,9 @@ from pathlib import Path
 
 NO_PLATFORM = ""
 CHANGELOG_OMITTED_TYPES = {"ci", "chore"}
+CHANGELOG_OMITTED_SCOPES = {
+    "docs": {"agents"},
+}
 ROOT_DIR = Path(__file__).resolve().parents[1]
 CHANGELOG_PATH = ROOT_DIR / "CHANGELOG.md"
 SDK_BUILD_GRADLE = ROOT_DIR / "TotalCrossSDK" / "build.gradle"
@@ -74,6 +81,10 @@ def is_release_commit(scope: str, description: str) -> bool:
     return scope == "release" or description.startswith("release ") or description.startswith(
         "bump version"
     )
+
+
+def is_changelog_omitted_scope(commit_type: str, scope: str) -> bool:
+    return scope in CHANGELOG_OMITTED_SCOPES.get(commit_type, set())
 
 
 def run_git(*args: str) -> str:
@@ -132,7 +143,7 @@ def group_commits(
         scope = qualifier_parts[0]
         platform = qualifier_parts[1] if len(qualifier_parts) > 1 else NO_PLATFORM
         description = match.group("description")
-        if is_release_commit(scope, description):
+        if is_release_commit(scope, description) or is_changelog_omitted_scope(commit_type, scope):
             continue
         is_breaking = bool(match.group("leading_breaking") or match.group("trailing_breaking"))
         if is_breaking:
