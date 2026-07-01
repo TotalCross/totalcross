@@ -1,3 +1,8 @@
+# Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 name: Release
 
 on:
@@ -131,7 +136,7 @@ jobs:
             exit 1
           fi
 
-          aws s3 cp "$zip_asset" "$s3_uri"
+          aws s3 cp "$zip_asset" "$s3_uri" --acl public-read
 
       - name: Extract release notes
         run: |
