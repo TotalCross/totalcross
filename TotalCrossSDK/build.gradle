@@ -70,6 +70,18 @@ wrapper {
 sourceSets {
     main {
         java {
+            exclude 'tc/RunSSLSocketTestApplication.java'
+            exclude 'tc/SSLSocketTest.java'
+            exclude 'totalcross/LauncherApplet.java'
+            exclude 'totalcross/LauncherRuntime.java'
+            exclude 'totalcross/preview/**'
+        }
+    }
+    test {
+        java {
+            exclude 'totalcross/LauncherRuntimeTest.java'
+            exclude 'totalcross/TCEventThreadTest.java'
+            exclude 'totalcross/preview/**'
         }
     }
 }
