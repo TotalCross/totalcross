@@ -27,12 +27,12 @@ public final class Settings {
    * @deprecated Use {@link #versionStr} instead
    */
   @Deprecated
-  public static int version = 721;
+  public static int version = 722;
 
   /**
    * TotalCross version following the SemVer specification in MAJOR.MINOR.PATCH format.
    */
-  public static String versionStr = "7.2.1";
+  public static String versionStr = "7.2.2";
 
   /**
    * Current build number for the TotalCross SDK.

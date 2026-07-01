@@ -19,7 +19,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
-version = '7.2.1'
+version = '7.2.2'
 group = 'com.totalcross'
 archivesBaseName = 'totalcross-sdk'
 

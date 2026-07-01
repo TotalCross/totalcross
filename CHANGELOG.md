@@ -1,9 +1,36 @@
+<!--
+Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda
+Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+
+SPDX-License-Identifier: LGPL-2.1-only
+-->
+
 # TotalCross Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [7.2.2] - 2026-07-01
+
+### Bug Fixes
+
+- **vm:**
+  - render image graphics into image pixels (`92f0174`) - #393
+
+### Refactors
+
+- **sdk:**
+  - deprecate legacy version fields (`29ef810`)
+
+### Build
+
+- **sdk:**
+  - package runtime dependencies in dist libs (`b364193`) - #395
+  - avoid validating generated depot files (`2c152a6`) - #395
+- **changelog:**
+  - omit agent docs from release notes (`9fdd2be`)
 
 ## [7.2.1] - 2026-06-25
 
