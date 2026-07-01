@@ -44,7 +44,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-01 23:01Z) Revised this ExecPlan so the objective is broader modern class-file support, with `invokedynamic` implemented incrementally according to common compiler output and value delivered.
 - [x] (2026-07-01 23:35Z) Built the initial class-file compatibility test harness under `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava`. It generates minimal class files for Java 8, 11, 17, 21, 25, and 26 majors, and compiles source fixtures with the local `javac` when that compiler can target the requested release.
 - [x] (2026-07-01 23:38Z) Added temporary Gradle source excludes for unrelated local preview, launcher runtime, SSL, and incompatible test sources so `./gradlew test --tests tc.tools.converter.modernjava.*` can validate the new harness in the current worktree.
-- [ ] Implement robust class-file parsing for modern constant-pool tags and class, method, field, and code attributes.
+- [x] (2026-07-01 23:47Z) Implemented initial parser infrastructure and version gates: normal class files through Java 26 major 70 are accepted, preview minor 65535 and majors above 70 are rejected, class-level attributes are skipped by length, and constant-pool tags 17, 19, and 20 are parsed.
 - [ ] Implement Java 8 lambda and method-reference lowering from `LambdaMetafactory`.
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
@@ -73,6 +73,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: Focused Gradle test execution needed temporary excludes for unrelated local sources before it could reach the new tests.
   Evidence: Before the excludes, `:compileJava` failed on `tc/SSLSocketTest.java`, `totalcross/LauncherRuntime.java`, and `totalcross/preview/*`, and `:compileTestJava` failed on preview/runtime tests. After excluding those sources in `TotalCrossSDK/build.gradle`, `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home ./gradlew test --tests tc.tools.converter.modernjava.*` completed successfully.
 
+- Observation: Direct parser tests that instantiate `JavaClass` with methods must initialize bytecode classes first.
+  Evidence: The first `ClassFileVersionTest` run failed with a `NullPointerException` in `JavaCode` until the tests called `ByteCode.initClasses()`, matching the deployer flow where `J2TC.process` initializes bytecode classes before parsing input classes.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -96,6 +99,8 @@ Preview class files, identified by minor version 65535, are out of scope for the
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
 
 2026-07-01 / Codex: The first harness milestone is in place. It does not yet change production parser behavior. Temporary Gradle excludes were added for unrelated local preview, SSL, launcher runtime, and incompatible test sources, and the focused `modernjava` test package passes with JDK 11.
+
+2026-07-01 / Codex: The parser now has a data-driven class-file version policy through Java 26, rejects preview and future major versions clearly, reads modern constant-pool tags for dynamic constants, modules, and packages, and skips unknown class attributes by declared length. The focused `modernjava` tests pass with JDK 11.
 
 ## Context and Orientation
 
@@ -344,3 +349,5 @@ Compatibility classes should follow the existing `jdkcompat` convention and use 
 2026-07-01 / Codex: Added the initial `modernjava` test harness and recorded the current validation blocker. The next implementation step remains parser infrastructure and version gates.
 
 2026-07-01 / Codex: Added Gradle excludes for unrelated local preview/SSL/runtime test sources and reran the focused package successfully. The next implementation step remains parser infrastructure and version gates.
+
+2026-07-01 / Codex: Implemented parser infrastructure and version gates, with focused tests covering roadmap major versions, preview rejection, future-version rejection, unknown class attributes, and modern constant-pool tags. The next implementation step is Java 8 lambda and method-reference lowering from `LambdaMetafactory`.

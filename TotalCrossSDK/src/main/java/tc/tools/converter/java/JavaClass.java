@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.java;
@@ -32,6 +33,7 @@ public final class JavaClass {
     ds.skipBytes(4); // skip 4-byte  magic number
     minorVersion = ds.readUnsignedShort();
     majorVersion = ds.readUnsignedShort();
+    JavaClassFileVersion.validate(null, majorVersion, minorVersion);
 
     cp = new JavaConstantPool(ds);
     // access flags
@@ -44,15 +46,7 @@ public final class JavaClass {
     isAbstract = (f & 0x400) != 0;
     // names
     className = cp.getString1(ds.readUnsignedShort());
-
-    if (!onlyHeader && majorVersion > 52) // check if we're using the correct class file format
-    {
-      String e = "-target 1.8 -source 1.8";
-      throw new IllegalArgumentException("\n\nThe class " + className
-          + " has an invalid .class file format.\n\nTo correct this, you must make sure that the file is compiled using the 1.8 Java Class specification. So, if you're compiling using JAVAC in the command shell (or an ANT file), add this to your javac command line:\n\nJAVAC "
-          + e
-          + " ...\n\nOtherwise, if the files were compiled in Eclipse, go to the project properties, select 'Java Compiler', set 'Enable project specific settings', and set 'Compiler compliance level' to 1.8.");
-    }
+    JavaClassFileVersion.validate(className, majorVersion, minorVersion);
 
     int idx = ds.readUnsignedShort();
     if (idx == 0) {
@@ -78,12 +72,8 @@ public final class JavaClass {
       methods = new JavaMethod[n];
       for (i = 0; i < n; i++) {
         methods[i] = new JavaMethod(this, ds, cp);
-        // skip - attributes
-        /*
-         * n = ds.readUnsignedShort(); attrs = new ClassAttribute[n]; for (i
-         * =0; i < n; i++) fields[i] = new JavaField(ds);
-         */
       }
+      skipClassAttributes(ds);
     }
   }
 
@@ -120,27 +110,17 @@ public final class JavaClass {
     DataStream ds = new DataStream(new ByteArrayStream(bytes));
     ds.skipBytes(4); // skip 4-byte  magic number
 
-    // skip major version
-    ds.readUnsignedShort();
-    // skip minor version
-    ds.readUnsignedShort();
+    minorVersion = ds.readUnsignedShort();
+    majorVersion = ds.readUnsignedShort();
+    JavaClassFileVersion.validate(className, majorVersion, minorVersion);
 
     cp = new JavaConstantPool(ds);
 
     // skip access flags
     ds.readUnsignedShort();
 
-    // skip className
-    cp.getString1(ds.readUnsignedShort());
-
-    if (!onlyHeader && majorVersion > 52) // check if we're using the correct class file format
-    {
-      String e = "-target 1.8 -source 1.8";
-      throw new IllegalArgumentException("\n\nThe class " + className
-          + " has an invalid .class file format.\n\nTo correct this, you must make sure that the file is compiled using the 1.8 Java Class specification. So, if you're compiling using JAVAC in the command shell (or an ANT file), add this to your javac command line:\n\nJAVAC "
-          + e
-          + " ...\n\nOtherwise, if the files were compiled in Eclipse, go to the project properties, select 'Java Compiler', set 'Enable project specific settings', and set 'Compiler compliance level' to 1.8.");
-    }
+    className = cp.getString1(ds.readUnsignedShort());
+    JavaClassFileVersion.validate(className, majorVersion, minorVersion);
 
     // skip superClass
     int idx = ds.readUnsignedShort();
@@ -167,24 +147,30 @@ public final class JavaClass {
       methods = new JavaMethod[n];
       for (i = 0; i < n; i++) {
         JavaMethod m = new JavaMethod(this, ds, cp);
-        for (JavaMethod javaMethod : oldMethods) {
-          if (javaMethod.replaceWithNative) {
-            if (javaMethod.signature.equals(m.signature)) {
-              m.replaceWithNative = javaMethod.replaceWithNative;
-              m.isNative = true;
+        if (oldMethods != null) {
+          for (JavaMethod javaMethod : oldMethods) {
+            if (javaMethod.replaceWithNative) {
+              if (javaMethod.signature.equals(m.signature)) {
+                m.replaceWithNative = javaMethod.replaceWithNative;
+                m.isNative = true;
+              }
             }
           }
         }
         methods[i] = m;
       }
-
-      // skip - attributes
-      /*
-       * n = ds.readUnsignedShort(); attrs = new ClassAttribute[n]; for (i
-       * =0; i < n; i++) fields[i] = new JavaField(ds);
-       */
+      skipClassAttributes(ds);
     }
     return this;
+  }
+
+  private void skipClassAttributes(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    for (int i = 0; i < n; i++) {
+      ds.readUnsignedShort();
+      int len = ds.readInt();
+      ds.skipBytes(len);
+    }
   }
 
   @Override

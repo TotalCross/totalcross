@@ -133,7 +133,7 @@ final class ModernJavaClassFileFixtures {
     }
   }
 
-  private static byte[] minimalClassFile(String internalName, int majorVersion, int minorVersion) throws IOException {
+  static byte[] minimalClassFile(String internalName, int majorVersion, int minorVersion) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(bytes);
     out.writeInt(0xCAFEBABE);
@@ -177,6 +177,66 @@ final class ModernJavaClassFileFixtures {
     return bytes.toByteArray();
   }
 
+  static byte[] classFileWithUnknownClassAttribute(String internalName, int majorVersion) throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(bytes);
+    out.writeInt(0xCAFEBABE);
+    out.writeShort(0);
+    out.writeShort(majorVersion);
+
+    out.writeShort(11);
+    writeRef(out, 10, 2, 3);
+    writeClass(out, 4);
+    writeNameAndType(out, 5, 6);
+    writeUtf8(out, "java/lang/Object");
+    writeUtf8(out, "<init>");
+    writeUtf8(out, "()V");
+    writeClass(out, 8);
+    writeUtf8(out, internalName);
+    writeUtf8(out, "Code");
+    writeUtf8(out, "UnknownModernAttribute");
+
+    writeMinimalClassBody(out, 7, 2, 9);
+    out.writeShort(1);
+    out.writeShort(10);
+    out.writeInt(4);
+    out.writeInt(0x12345678);
+    out.flush();
+    return bytes.toByteArray();
+  }
+
+  static byte[] classFileWithModernConstantPoolTags(String internalName, int majorVersion) throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(bytes);
+    out.writeInt(0xCAFEBABE);
+    out.writeShort(0);
+    out.writeShort(majorVersion);
+
+    out.writeShort(18);
+    writeRef(out, 10, 2, 3);
+    writeClass(out, 4);
+    writeNameAndType(out, 5, 6);
+    writeUtf8(out, "java/lang/Object");
+    writeUtf8(out, "<init>");
+    writeUtf8(out, "()V");
+    writeClass(out, 8);
+    writeUtf8(out, internalName);
+    writeUtf8(out, "Code");
+    writeUtf8(out, "fixture.module");
+    writeClassLike(out, 19, 10);
+    writeUtf8(out, "fixture/package");
+    writeClassLike(out, 20, 12);
+    writeUtf8(out, "DYNAMIC_CONSTANT");
+    writeUtf8(out, "I");
+    writeNameAndType(out, 14, 15);
+    writeRef(out, 17, 0, 16);
+
+    writeMinimalClassBody(out, 7, 2, 9);
+    out.writeShort(0);
+    out.flush();
+    return bytes.toByteArray();
+  }
+
   private static void writeRef(DataOutputStream out, int tag, int classIndex, int nameAndTypeIndex) throws IOException {
     out.writeByte(tag);
     out.writeShort(classIndex);
@@ -185,6 +245,11 @@ final class ModernJavaClassFileFixtures {
 
   private static void writeClass(DataOutputStream out, int nameIndex) throws IOException {
     out.writeByte(7);
+    out.writeShort(nameIndex);
+  }
+
+  private static void writeClassLike(DataOutputStream out, int tag, int nameIndex) throws IOException {
+    out.writeByte(tag);
     out.writeShort(nameIndex);
   }
 
@@ -197,6 +262,31 @@ final class ModernJavaClassFileFixtures {
   private static void writeUtf8(DataOutputStream out, String value) throws IOException {
     out.writeByte(1);
     out.writeUTF(value);
+  }
+
+  private static void writeMinimalClassBody(DataOutputStream out, int thisClassIndex, int superClassIndex,
+      int codeAttributeNameIndex) throws IOException {
+    out.writeShort(0x0021);
+    out.writeShort(thisClassIndex);
+    out.writeShort(superClassIndex);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(1);
+    out.writeShort(0x0001);
+    out.writeShort(5);
+    out.writeShort(6);
+    out.writeShort(1);
+    out.writeShort(codeAttributeNameIndex);
+    out.writeInt(17);
+    out.writeShort(1);
+    out.writeShort(1);
+    out.writeInt(5);
+    out.writeByte(0x2A);
+    out.writeByte(0xB7);
+    out.writeShort(1);
+    out.writeByte(0xB1);
+    out.writeShort(0);
+    out.writeShort(0);
   }
 
   private static String sanitize(String className) {
