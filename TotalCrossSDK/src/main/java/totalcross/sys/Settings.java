@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -19,18 +20,27 @@ import totalcross.util.Hashtable;
 
 public final class Settings {
   /**
-   * Field that represents the version of the TotalCross Virtual Machine. The major version is
-   * base 100. For example, version 1.0 has value 100. version 4 has a
-   * version value of 400. A beta 0.81 VM will have version 81.
+   * Field that represents the version of the TotalCross Virtual Machine. The
+   * major version is base 100. For example, version 1.0 has value 100. version 4
+   * has a version value of 400. A beta 0.81 VM will have version 81.
+   *
+   * @deprecated Use {@link #versionStr} instead
    */
+  @Deprecated
   public static int version = 721;
 
-  /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
+  /**
+   * TotalCross version following the SemVer specification in MAJOR.MINOR.PATCH format.
+   */
   public static String versionStr = "7.2.1";
 
-  /** Current build number for the TotalCross SDK.
-   * @since TotalCross 1.53 
+  /**
+   * Current build number for the TotalCross SDK.
+   *
+   * @since TotalCross 1.53
+   * @deprecated No longer updated, use only {@link #versionStr}
    */
+  @Deprecated
   public static int buildNumber = 000;
 
   /** Some properties you may want to use in the application. 
