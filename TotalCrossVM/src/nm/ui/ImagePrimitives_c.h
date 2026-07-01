@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -55,6 +56,7 @@ static void applyColor(TCObject obj, Pixel color) // guich@tc112_24
       Image_currentFrame(obj) = 2;
       setCurrentFrame(obj, 0);
    }
+   Image_changed(obj) = true;
 }
 
 #define BIAS_BITS 16
@@ -312,6 +314,7 @@ static void changeColors(TCObject obj, Pixel from, Pixel to)
       Image_currentFrame(obj) = 2;
       setCurrentFrame(obj, 0);
    }
+   Image_changed(obj) = true;
 }
 
 static void getScaledInstance(TCObject thisObj, TCObject newObj)
@@ -656,6 +659,7 @@ static void applyColor2(TCObject obj, Pixel color)
       Image_currentFrame(obj) = 2;
       setCurrentFrame(obj, 0);
    }
+   Image_changed(obj) = true;
 }
 
 void setTransparentColor(TCObject obj, Pixel color);
@@ -679,6 +683,7 @@ void setTransparentColor(TCObject obj, Pixel color)
       Image_currentFrame(obj) = 2;
       setCurrentFrame(obj, 0);
    }
+   Image_changed(obj) = true;
 }
 
 static int timestampOldLimit;
