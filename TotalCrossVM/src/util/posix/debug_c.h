@@ -58,6 +58,8 @@ static bool privateDebug(char* str)
          fflush(fdebug);
          fsync(fileno(fdebug));
       }
+   } else {
+      printf("%s\n", str);
    }
 #endif
     return err;
