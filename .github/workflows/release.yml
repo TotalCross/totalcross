@@ -176,3 +176,32 @@ jobs:
             --notes-file "$notes" \
             "$zip_asset" \
             release-assets/jars/*.jar
+
+      - name: Verify public release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.release-version.outputs.version }}"
+          version_prefix="$(echo "$version" | awk -F. '{ print $1 "." $2 }')"
+          s3_url="https://totalcross-release.s3.amazonaws.com/${version_prefix}/TotalCross-${version}.zip"
+          artifactory_base_url="https://maven.totalcross.com/artifactory/repo1-release/com/totalcross/totalcross-sdk/${version}"
+
+          verify_public_url() {
+            local url="$1"
+
+            curl \
+              --fail \
+              --head \
+              --location \
+              --show-error \
+              --silent \
+              "$url" \
+              > /dev/null
+          }
+
+          verify_public_url "$s3_url"
+          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}.pom"
+          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}.jar"
+          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}-javadoc.jar"
+          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}-sources.jar"
