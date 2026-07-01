@@ -136,7 +136,7 @@ jobs:
             exit 1
           fi
 
-          aws s3 cp "$zip_asset" "$s3_uri" --acl public-read
+          aws s3 cp "$zip_asset" "$s3_uri"
 
       - name: Extract release notes
         run: |
