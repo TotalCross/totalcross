@@ -20,7 +20,7 @@ public class MethodCall extends ByteCode {
     JavaConstantInfo jci = (JavaConstantInfo) cp.constants[idx];
     int classIndex = jci.index1;
     int nameAndTypeIndex = jci.index2;
-    className = cp.getString1(classIndex);
+    className = cp.getClassName(jci);
     name = cp.getString1(nameAndTypeIndex);
     parameters = cp.getString2(nameAndTypeIndex);
     pcInc = 3;

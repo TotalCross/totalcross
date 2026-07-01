@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.java;
@@ -14,10 +15,10 @@ public final class JavaConstantPool {
     totalcross.sys.Convert.setDefaultConverter("UTF8");
     numConstants = ds.readUnsignedShort();
     if (numConstants > 0) {
-      byte b;
+      int b;
       constants = new Object[numConstants + 1]; // constants start from 1
       for (int i = 1; i < numConstants; i++) {
-        switch (b = ds.readByte())
+        switch (b = ds.readUnsignedByte())
         // guich@400_16: moved to here since now we compute other things; also, ordered and inserted blank cases to let the compiler optimize it to a jump table
         {
         case 1: // utf8 - IDENTIFIER
@@ -39,14 +40,26 @@ public final class JavaConstantPool {
           break;
         case 7: // Class
         case 8: // String
-          constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort());
-          break;
+        case 16: // method type
+        constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort());
+        break;
         case 9: // field
         case 10: // method
         case 11: // interface method
         case 12: // name and type
-          constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort(), ds.readUnsignedShort());
-          break;
+        case 17: // dynamic
+        case 18: // invoke dynamic
+        constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort(), ds.readUnsignedShort());
+        break;
+        case 15: // method handle
+        constants[i] = new JavaConstantInfo(b, ds.readUnsignedByte(), ds.readUnsignedShort());
+        break;
+        case 19: // module
+        case 20: // package
+        constants[i] = new JavaConstantInfo(b, ds.readUnsignedShort());
+        break;
+        default:
+          throw new totalcross.io.IOException("Unsupported constant pool tag " + b + " at index " + i);
         }
       }
     }
@@ -70,5 +83,12 @@ public final class JavaConstantPool {
     }
     JavaConstantInfo ci = (JavaConstantInfo) constants[idx];
     return (String) constants[ci.index2];
+  }
+
+  public String getClassName(JavaConstantInfo jci) {
+    if (jci.type == 18) {
+      return String.valueOf(jci.index1);
+    }
+    return getString1(jci.index1);
   }
 }

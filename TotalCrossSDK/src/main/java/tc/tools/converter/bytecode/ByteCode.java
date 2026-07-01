@@ -246,6 +246,7 @@ public class ByteCode implements JConstants {
       bcClasses[183] = tc.tools.converter.bytecode.BC183_invokespecial.class;
       bcClasses[184] = tc.tools.converter.bytecode.BC184_invokestatic.class;
       bcClasses[185] = tc.tools.converter.bytecode.BC185_invokeinterface.class;
+      bcClasses[186] = tc.tools.converter.bytecode.BC186_invokedynamic.class;
       bcClasses[187] = tc.tools.converter.bytecode.BC187_new.class;
       bcClasses[188] = tc.tools.converter.bytecode.BC188_newarray.class;
       bcClasses[189] = tc.tools.converter.bytecode.BC189_anewarray.class;
