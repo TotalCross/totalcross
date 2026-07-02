@@ -49,10 +49,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   - [x] (2026-07-02 00:05Z) Parse `BootstrapMethods`, expose method-handle metadata, and model `BC186_invokedynamic` without pretending it is a normal method call.
   - [x] (2026-07-02 00:25Z) Generate synthetic adapter classes for stateless `metafactory` lambdas backed by `REF_invokeStatic`, enqueue those adapters for deploy, and lower the original site to a normal static factory call.
   - [x] (2026-07-02 00:40Z) Support simply captured `metafactory` lambdas by storing captured arguments in generated adapter fields and passing captured values through the generated factory.
-  - [ ] Support method references emitted through `LambdaMetafactory`.
+  - [x] (2026-07-02 01:05Z) Support common method references emitted through `LambdaMetafactory`: static references, unbound virtual references whose receiver is the first SAM argument, and bound virtual references whose receiver is captured by the factory.
   - [ ] Support constructor references emitted through `LambdaMetafactory`.
   - [ ] Support bridge and marker-interface cases from `altMetafactory`.
-  - [ ] Support non-static implementation handles and descriptor adaptation.
+  - [ ] Support descriptor adaptation beyond exact argument and return descriptors.
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
@@ -92,6 +92,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: A captured lambda from javac can use the same adapter pattern by storing captured values in final fields and passing them before SAM arguments to the static implementation method.
   Evidence: `Java8LambdaLoweringTest` compiles `Runnable runnable(final String value) { return () -> value.length(); }`, verifies the generated adapter has field `arg$0`, constructor `<init>(Ljava/lang/String;)`, factory `$$tc_lambda_factory$0(Ljava/lang/String;)`, no `invokedynamic`, and both the adapter and original class convert through `J2TC`.
 
+- Observation: Method references emitted by javac can share the generated adapter path as long as the implementation descriptor does not require adaptation.
+  Evidence: `Java8LambdaLoweringTest` compiles static `CompiledJava8MethodReference::text`, unbound virtual `CompiledJava8MethodReference::value`, and bound virtual `source::value` references, then verifies three generated adapters and conversion of the adapters and original class through `J2TC`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -118,6 +121,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: This unlocks a very common lambda shape without adding runtime `invokedynamic` support. It also keeps unsupported adaptations explicit because the implementation descriptor must exactly equal captured parameters followed by SAM parameters.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Treat static, unbound virtual, and bound virtual method references as supported when the receiver can be found exactly in the captured values or SAM arguments.
+  Rationale: These shapes cover common javac output and reuse the existing adapter class strategy. Exact receiver matching keeps the implementation small and avoids type-adaptation semantics until descriptor adaptation is deliberately implemented.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -131,6 +138,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-02 / Codex: The first Java 8 lambda lowering slice is implemented for stateless lambdas emitted as `LambdaMetafactory.metafactory` with a static implementation method and no descriptor adaptation. `Java8LambdaLowering` generates deterministic adapter classes, `J2TC` enqueues them when expanding an owner class, and `Bytecode2TCCode` lowers the original `invokedynamic` to a normal static factory call. The focused `modernjava` tests pass with JDK 11. Captured lambdas and method references remain intentionally unsupported with precise diagnostics.
 
 2026-07-02 / Codex: Java 8 lambda lowering now also supports simple captured lambdas where the call-site parameters exactly prefix the static implementation method parameters. The generated adapter stores captures in final fields, the generated factory accepts the captured values, and `Bytecode2TCCode` pops those values from the operand stack before emitting the static factory call. Method references, constructor references, non-static handles, bridge/marker cases, and descriptor adaptation remain unsupported.
+
+2026-07-02 / Codex: The `LambdaMetafactory` lowering now supports common method references in addition to lambda bodies: static method references, unbound virtual method references, and bound virtual method references. The generated SAM method now chooses the correct invoke opcode and receiver source. Constructor references, bridge/marker cases, and descriptor adaptation remain unsupported.
 
 ## Context and Orientation
 

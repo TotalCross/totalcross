@@ -91,6 +91,22 @@ final class ModernJavaClassFileFixtures {
         "java 8 stateless lambda", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8MethodReferenceFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8MethodReference";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface TextFactory { String get(); }\n"
+        + "  public interface TextMapper { String map(" + simpleName + " source); }\n"
+        + "  public TextFactory staticReference() { return " + simpleName + "::text; }\n"
+        + "  public TextMapper virtualReference() { return " + simpleName + "::value; }\n"
+        + "  public TextFactory boundReference(" + simpleName + " source) { return source::value; }\n"
+        + "  public static String text() { return \"text\"; }\n"
+        + "  public String value() { return \"value\"; }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 method reference", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");

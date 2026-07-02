@@ -52,7 +52,7 @@ public final class Java8LambdaLowering implements Opcodes {
     JavaClass[] adapters = new JavaClass[sites.length];
     for (int i = 0; i < sites.length; i++) {
       LambdaSite site = resolve(owner, sites[i]);
-      validateSupportedStaticLambda(owner, sites[i], site);
+      validateSupportedLambdaMetafactory(owner, sites[i], site);
       adapters[i] = new JavaClass(generateAdapterBytes(site), false);
     }
     return adapters;
@@ -62,22 +62,21 @@ public final class Java8LambdaLowering implements Opcodes {
     return lambdaSites(owner).length > 0;
   }
 
-  public static void validateSupportedStaticLambda(JavaClass owner, BC186_invokedynamic bytecode, LambdaSite site) {
-    if (site.implementationKind != JavaMethodHandle.REF_INVOKE_STATIC) {
+  public static void validateSupportedLambdaMetafactory(JavaClass owner, BC186_invokedynamic bytecode,
+      LambdaSite site) {
+    if (!site.samDescriptor.equals(site.instantiatedDescriptor)) {
       throw unsupported(owner, bytecode,
-          "only REF_invokeStatic lambda implementations are lowered yet; reference kind is "
-              + site.implementationKind);
-    }
-    String expectedImplementationDescriptor = capturedAndSamDescriptor(site);
-    if (!expectedImplementationDescriptor.equals(site.implementationDescriptor)
-        || !site.samDescriptor.equals(site.instantiatedDescriptor)) {
-      throw unsupported(owner, bytecode,
-          "lambda method adaptation is not lowered yet; SAM " + site.samDescriptor + ", implementation "
-              + site.implementationDescriptor + ", instantiated " + site.instantiatedDescriptor);
+          "lambda method adaptation is not lowered yet; SAM " + site.samDescriptor + ", instantiated "
+              + site.instantiatedDescriptor);
     }
     if (!site.factoryReturnDescriptor.startsWith("L") || !site.factoryReturnDescriptor.endsWith(";")) {
       throw unsupported(owner, bytecode,
           "lambda call site must return an interface type, found " + site.factoryReturnDescriptor);
+    }
+    if (!expectedImplementationDescriptor(site).equals(site.implementationDescriptor)) {
+      throw unsupported(owner, bytecode,
+          "lambda method adaptation is not lowered yet; expected implementation "
+              + expectedImplementationDescriptor(site) + ", found " + site.implementationDescriptor);
     }
   }
 
@@ -150,28 +149,115 @@ public final class Java8LambdaLowering implements Opcodes {
     MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, site.samMethodName, site.samDescriptor, null, null);
     mv.visitCode();
     Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
-    for (int i = 0; i < captureTypes.length; i++) {
-      Type captureType = captureTypes[i];
-      mv.visitVarInsn(ALOAD, 0);
-      mv.visitFieldInsn(GETFIELD, site.adapterClassName, captureFieldName(i), captureType.getDescriptor());
-    }
     Type[] argumentTypes = Type.getArgumentTypes(site.samDescriptor);
-    int local = 1;
-    for (int i = 0; i < argumentTypes.length; i++) {
-      Type argumentType = argumentTypes[i];
-      mv.visitVarInsn(argumentType.getOpcode(ILOAD), local);
-      local += argumentType.getSize();
+    if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
+      loadCapturedValues(mv, site, captureTypes, 0);
+      loadSamArguments(mv, argumentTypes, 0);
+      mv.visitMethodInsn(INVOKESTATIC, site.implementationOwner, site.implementationName, site.implementationDescriptor,
+          false);
+    } else {
+      ReceiverSource receiverSource = receiverSource(site, captureTypes, argumentTypes);
+      if (receiverSource == ReceiverSource.CAPTURED) {
+        loadCapturedValue(mv, site, captureTypes, 0);
+        loadCapturedValues(mv, site, captureTypes, 1);
+        loadSamArguments(mv, argumentTypes, 0);
+      } else {
+        loadSamArgument(mv, argumentTypes, 0);
+        loadCapturedValues(mv, site, captureTypes, 0);
+        loadSamArguments(mv, argumentTypes, 1);
+      }
+      mv.visitMethodInsn(invokeOpcode(site), site.implementationOwner, site.implementationName,
+          site.implementationDescriptor, site.implementationKind == JavaMethodHandle.REF_INVOKE_INTERFACE);
     }
-    mv.visitMethodInsn(INVOKESTATIC, site.implementationOwner, site.implementationName, site.implementationDescriptor,
-        false);
     mv.visitInsn(Type.getReturnType(site.samDescriptor).getOpcode(IRETURN));
     mv.visitMaxs(0, 0);
     mv.visitEnd();
   }
 
-  private static String capturedAndSamDescriptor(LambdaSite site) {
-    return site.factoryDescriptorWithoutReturn.substring(0, site.factoryDescriptorWithoutReturn.length() - 1)
-        + site.samDescriptor.substring(1);
+  private static void loadCapturedValues(MethodVisitor mv, LambdaSite site, Type[] captureTypes, int start) {
+    for (int i = start; i < captureTypes.length; i++) {
+      loadCapturedValue(mv, site, captureTypes, i);
+    }
+  }
+
+  private static void loadCapturedValue(MethodVisitor mv, LambdaSite site, Type[] captureTypes, int index) {
+    Type captureType = captureTypes[index];
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitFieldInsn(GETFIELD, site.adapterClassName, captureFieldName(index), captureType.getDescriptor());
+  }
+
+  private static void loadSamArguments(MethodVisitor mv, Type[] argumentTypes, int start) {
+    for (int i = start; i < argumentTypes.length; i++) {
+      loadSamArgument(mv, argumentTypes, i);
+    }
+  }
+
+  private static void loadSamArgument(MethodVisitor mv, Type[] argumentTypes, int index) {
+    int local = 1;
+    for (int i = 0; i < index; i++) {
+      local += argumentTypes[i].getSize();
+    }
+    mv.visitVarInsn(argumentTypes[index].getOpcode(ILOAD), local);
+  }
+
+  private static String expectedImplementationDescriptor(LambdaSite site) {
+    Type returnType = Type.getReturnType(site.samDescriptor);
+    if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
+      return descriptor(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
+          Type.getArgumentTypes(site.samDescriptor), returnType);
+    }
+    Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
+    Type[] samTypes = Type.getArgumentTypes(site.samDescriptor);
+    ReceiverSource receiverSource = receiverSource(site, captureTypes, samTypes);
+    if (receiverSource == ReceiverSource.CAPTURED) {
+      return descriptor(tail(captureTypes, 1), samTypes, returnType);
+    }
+    return descriptor(captureTypes, tail(samTypes, 1), returnType);
+  }
+
+  private static String descriptor(Type[] prefixTypes, Type[] suffixTypes, Type returnType) {
+    StringBuffer descriptor = new StringBuffer();
+    descriptor.append('(');
+    for (int i = 0; i < prefixTypes.length; i++) {
+      descriptor.append(prefixTypes[i].getDescriptor());
+    }
+    for (int i = 0; i < suffixTypes.length; i++) {
+      descriptor.append(suffixTypes[i].getDescriptor());
+    }
+    descriptor.append(')').append(returnType.getDescriptor());
+    return descriptor.toString();
+  }
+
+  private static Type[] tail(Type[] types, int start) {
+    Type[] tail = new Type[types.length - start];
+    System.arraycopy(types, start, tail, 0, tail.length);
+    return tail;
+  }
+
+  private static ReceiverSource receiverSource(LambdaSite site, Type[] captureTypes, Type[] samTypes) {
+    String receiverDescriptor = "L" + site.implementationOwner + ";";
+    if (captureTypes.length > 0 && receiverDescriptor.equals(captureTypes[0].getDescriptor())) {
+      return ReceiverSource.CAPTURED;
+    }
+    if (samTypes.length > 0 && receiverDescriptor.equals(samTypes[0].getDescriptor())) {
+      return ReceiverSource.SAM_ARGUMENT;
+    }
+    throw new ConverterException("Unsupported invokedynamic in " + site.implementationOwner + "."
+        + site.implementationName + ": instance method reference does not expose receiver " + receiverDescriptor);
+  }
+
+  private static int invokeOpcode(LambdaSite site) {
+    switch (site.implementationKind) {
+    case JavaMethodHandle.REF_INVOKE_VIRTUAL:
+      return INVOKEVIRTUAL;
+    case JavaMethodHandle.REF_INVOKE_INTERFACE:
+      return INVOKEINTERFACE;
+    case JavaMethodHandle.REF_INVOKE_SPECIAL:
+      return INVOKESPECIAL;
+    default:
+      throw new ConverterException("Unsupported invokedynamic implementation reference kind "
+          + site.implementationKind);
+    }
   }
 
   private static String captureFieldName(int index) {
@@ -286,5 +372,10 @@ public final class Java8LambdaLowering implements Opcodes {
       this.instantiatedDescriptor = instantiatedDescriptor;
       this.bytecodeIndex = bytecodeIndex;
     }
+  }
+
+  private enum ReceiverSource {
+    CAPTURED,
+    SAM_ARGUMENT
   }
 }
