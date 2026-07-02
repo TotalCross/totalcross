@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.java;
@@ -19,6 +20,9 @@ import totalcross.util.ElementNotFoundException;
 import totalcross.util.Vector;
 
 public final class JavaMethod {
+  private static final String REPLACED_BY_NATIVE_ON_DEPLOY_DESCRIPTOR =
+      Type.getDescriptor(ReplacedByNativeOnDeploy.class);
+
   public String name, ret, signature;
   public JavaCode code;
   public JavaClass classOfMethod;
@@ -130,6 +134,8 @@ public final class JavaMethod {
         for (int j = 0; j < checkedExceptions.length; j++) {
           checkedExceptions[j] = cp.getString1(ds.readUnsignedShort());
         }
+      } else if (name.equals("RuntimeInvisibleAnnotations") || name.equals("RuntimeVisibleAnnotations")) {
+        readAnnotations(ds, cp);
       } else {
         ds.skipBytes(len);
       }
@@ -165,7 +171,7 @@ public final class JavaMethod {
 
     if (methodNode.invisibleAnnotations != null && methodNode.invisibleAnnotations.size() > 0) {
       for (AnnotationNode annotation : (List<AnnotationNode>) methodNode.invisibleAnnotations) {
-        if (Type.getDescriptor(ReplacedByNativeOnDeploy.class).equals(annotation.desc)) {
+        if (REPLACED_BY_NATIVE_ON_DEPLOY_DESCRIPTOR.equals(annotation.desc)) {
           replaceWithNative = true;
         }
       }
@@ -221,11 +227,70 @@ public final class JavaMethod {
         for (int j = 0; j < checkedExceptions.length; j++) {
           checkedExceptions[j] = cp.getString1(ds.readUnsignedShort());
         }
+      } else if (name.equals("RuntimeInvisibleAnnotations") || name.equals("RuntimeVisibleAnnotations")) {
+        readAnnotations(ds, cp);
       } else {
         ds.skipBytes(len);
       }
     }
     return this;
+  }
+
+  private void readAnnotations(DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
+    int annotationCount = ds.readUnsignedShort();
+    for (int i = 0; i < annotationCount; i++) {
+      String descriptor = (String) cp.constants[ds.readUnsignedShort()];
+      if (REPLACED_BY_NATIVE_ON_DEPLOY_DESCRIPTOR.equals(descriptor)) {
+        replaceWithNative = true;
+      }
+      int pairCount = ds.readUnsignedShort();
+      for (int j = 0; j < pairCount; j++) {
+        ds.readUnsignedShort();
+        skipAnnotationElementValue(ds);
+      }
+    }
+  }
+
+  private static void skipAnnotationElementValue(DataStream ds) throws totalcross.io.IOException {
+    int tag = ds.readUnsignedByte();
+    switch (tag) {
+    case 'B':
+    case 'C':
+    case 'D':
+    case 'F':
+    case 'I':
+    case 'J':
+    case 'S':
+    case 'Z':
+    case 's':
+    case 'c':
+      ds.readUnsignedShort();
+      break;
+    case 'e':
+      ds.readUnsignedShort();
+      ds.readUnsignedShort();
+      break;
+    case '@':
+      skipAnnotation(ds);
+      break;
+    case '[':
+      int valueCount = ds.readUnsignedShort();
+      for (int i = 0; i < valueCount; i++) {
+        skipAnnotationElementValue(ds);
+      }
+      break;
+    default:
+      throw new totalcross.io.IOException("Invalid annotation element value tag: " + tag);
+    }
+  }
+
+  private static void skipAnnotation(DataStream ds) throws totalcross.io.IOException {
+    ds.readUnsignedShort();
+    int pairCount = ds.readUnsignedShort();
+    for (int i = 0; i < pairCount; i++) {
+      ds.readUnsignedShort();
+      skipAnnotationElementValue(ds);
+    }
   }
 
   @Override
