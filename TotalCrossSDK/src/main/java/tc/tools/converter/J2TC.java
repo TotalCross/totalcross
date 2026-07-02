@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter;
@@ -1054,6 +1055,7 @@ public final class J2TC implements JConstants, TCConstants {
   }
 
   private static void expandClass(Vector vin, JavaClass jc) throws Exception {
+    addSyntheticLambdaAdapters(vin, jc);
     JavaConstantPool jcp = jc.cp;
     for (int i = 1; i < jcp.numConstants; i++) {
       if (jcp.constants[i] instanceof JavaConstantInfo) {
@@ -1069,6 +1071,21 @@ public final class J2TC implements JConstants, TCConstants {
           }
           break;
         }
+      }
+    }
+  }
+
+  private static void addSyntheticLambdaAdapters(Vector vin, JavaClass jc) throws Exception {
+    if (!Java8LambdaLowering.hasLambdaSites(jc)) {
+      return;
+    }
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(jc);
+    for (int i = 0; i < adapters.length; i++) {
+      JavaClass adapter = adapters[i];
+      String name = adapter.className + ".class";
+      if (!htAddedClasses.exists(name) && !htExcludedClasses.exists(name)) {
+        vin.addElement(new TCZ.Entry(adapter.bytes, name, adapter.bytes.length, adapter));
+        htAddedClasses.put(name, adapter);
       }
     }
   }

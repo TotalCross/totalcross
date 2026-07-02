@@ -45,7 +45,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-01 23:35Z) Built the initial class-file compatibility test harness under `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava`. It generates minimal class files for Java 8, 11, 17, 21, 25, and 26 majors, and compiles source fixtures with the local `javac` when that compiler can target the requested release.
 - [x] (2026-07-01 23:38Z) Added temporary Gradle source excludes for unrelated local preview, launcher runtime, SSL, and incompatible test sources so `./gradlew test --tests tc.tools.converter.modernjava.*` can validate the new harness in the current worktree.
 - [x] (2026-07-01 23:47Z) Implemented initial parser infrastructure and version gates: normal class files through Java 26 major 70 are accepted, preview minor 65535 and majors above 70 are rejected, class-level attributes are skipped by length, and constant-pool tags 17, 19, and 20 are parsed.
-- [ ] Implement Java 8 lambda and method-reference lowering from `LambdaMetafactory` (completed: parse `BootstrapMethods`, expose method-handle metadata, and model `BC186_invokedynamic` without pretending it is a normal method call; remaining: generate/lower lambda adapter classes and method-reference cases).
+- [ ] Implement Java 8 lambda and method-reference lowering from `LambdaMetafactory` (completed: parse `BootstrapMethods`, expose method-handle metadata, model `BC186_invokedynamic` without pretending it is a normal method call, generate synthetic adapter classes for stateless `metafactory` lambdas backed by `REF_invokeStatic`, enqueue those adapters for deploy, and lower the original site to a normal static factory call; remaining: captured lambdas, method references, constructor references, bridge/marker cases, and non-static implementation handles).
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
@@ -79,6 +79,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: For a `Runnable` lambda inside a method named `runnable`, javac emits an invokedynamic call-site name of `run`, the single abstract method name, not the enclosing factory method name.
   Evidence: `InvokeDynamicMetadataTest` initially expected `runnable` and failed with `expected: <runnable> but was: <run>`.
 
+- Observation: A stateless lambda can be lowered without adding a TCVM opcode by generating an ordinary adapter class and replacing the call site with a static factory call.
+  Evidence: `Java8LambdaLoweringTest` compiles `Runnable runnable() { return () -> touch(); }`, verifies the generated adapter has `run()` and `$$tc_lambda_factory$0()`, verifies the adapter contains no `invokedynamic`, and `new J2TC(javaClass, true)` no longer throws for the original class.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -97,6 +100,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: Preview features intentionally change across releases and are marked by minor version 65535. Clear rejection is less risky than pretending to support bytecode whose semantics may not match the target JDK.
   Date/Author: 2026-07-01 / Codex
 
+- Decision: Start Java 8 lambda lowering with stateless `LambdaMetafactory.metafactory` sites whose implementation handle is `REF_invokeStatic` and whose SAM, implementation, and instantiated descriptors already match.
+  Rationale: This is the smallest deployer-only slice that proves the lowering architecture: generated adapter class, deterministic factory method, normal `CALL_normal`, no TCVM change. Captures and adaptations can build on the same metadata and naming path.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -106,6 +113,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-01 / Codex: The parser now has a data-driven class-file version policy through Java 26, rejects preview and future major versions clearly, reads modern constant-pool tags for dynamic constants, modules, and packages, and skips unknown class attributes by declared length. The focused `modernjava` tests pass with JDK 11.
 
 2026-07-01 / Codex: The Java 8 lambda milestone now has correct metadata parsing: class-level `BootstrapMethods` are parsed, method handles expose owner/name/descriptor, and opcode 186 has its own bytecode model. Actual lowering to generated adapter classes remains to be implemented.
+
+2026-07-02 / Codex: The first Java 8 lambda lowering slice is implemented for stateless lambdas emitted as `LambdaMetafactory.metafactory` with a static implementation method and no descriptor adaptation. `Java8LambdaLowering` generates deterministic adapter classes, `J2TC` enqueues them when expanding an owner class, and `Bytecode2TCCode` lowers the original `invokedynamic` to a normal static factory call. The focused `modernjava` tests pass with JDK 11. Captured lambdas and method references remain intentionally unsupported with precise diagnostics.
 
 ## Context and Orientation
 
