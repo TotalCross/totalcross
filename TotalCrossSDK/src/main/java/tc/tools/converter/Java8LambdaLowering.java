@@ -52,7 +52,7 @@ public final class Java8LambdaLowering implements Opcodes {
     JavaClass[] adapters = new JavaClass[sites.length];
     for (int i = 0; i < sites.length; i++) {
       LambdaSite site = resolve(owner, sites[i]);
-      validateStatelessStaticLambda(owner, sites[i], site);
+      validateSupportedStaticLambda(owner, sites[i], site);
       adapters[i] = new JavaClass(generateAdapterBytes(site), false);
     }
     return adapters;
@@ -62,17 +62,14 @@ public final class Java8LambdaLowering implements Opcodes {
     return lambdaSites(owner).length > 0;
   }
 
-  public static void validateStatelessStaticLambda(JavaClass owner, BC186_invokedynamic bytecode, LambdaSite site) {
-    if (site.factoryParams != null && site.factoryParams.length > 0) {
-      throw unsupported(owner, bytecode,
-          "captured lambdas are not lowered yet; captured parameter count is " + site.factoryParams.length);
-    }
+  public static void validateSupportedStaticLambda(JavaClass owner, BC186_invokedynamic bytecode, LambdaSite site) {
     if (site.implementationKind != JavaMethodHandle.REF_INVOKE_STATIC) {
       throw unsupported(owner, bytecode,
           "only REF_invokeStatic lambda implementations are lowered yet; reference kind is "
               + site.implementationKind);
     }
-    if (!site.samDescriptor.equals(site.implementationDescriptor)
+    String expectedImplementationDescriptor = capturedAndSamDescriptor(site);
+    if (!expectedImplementationDescriptor.equals(site.implementationDescriptor)
         || !site.samDescriptor.equals(site.instantiatedDescriptor)) {
       throw unsupported(owner, bytecode,
           "lambda method adaptation is not lowered yet; SAM " + site.samDescriptor + ", implementation "
@@ -93,18 +90,37 @@ public final class Java8LambdaLowering implements Opcodes {
     ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
     cw.visit(V1_7, ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_SYNTHETIC, site.adapterClassName, null,
         "java/lang/Object", new String[] { functionalInterface });
-    generateConstructor(cw, site.adapterClassName);
+    generateCaptureFields(cw, site);
+    generateConstructor(cw, site);
     generateFactory(cw, site);
     generateSamMethod(cw, site);
     cw.visitEnd();
     return cw.toByteArray();
   }
 
-  private static void generateConstructor(ClassWriter cw, String adapterClassName) {
-    MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+  private static void generateCaptureFields(ClassWriter cw, LambdaSite site) {
+    Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
+    for (int i = 0; i < captureTypes.length; i++) {
+      cw.visitField(ACC_PRIVATE | ACC_FINAL, captureFieldName(i), captureTypes[i].getDescriptor(), null, null)
+          .visitEnd();
+    }
+  }
+
+  private static void generateConstructor(ClassWriter cw, LambdaSite site) {
+    String constructorDescriptor = site.factoryDescriptorWithoutReturn + "V";
+    MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", constructorDescriptor, null, null);
     mv.visitCode();
     mv.visitVarInsn(ALOAD, 0);
     mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+    Type[] captureTypes = Type.getArgumentTypes(constructorDescriptor);
+    int local = 1;
+    for (int i = 0; i < captureTypes.length; i++) {
+      Type captureType = captureTypes[i];
+      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(captureType.getOpcode(ILOAD), local);
+      mv.visitFieldInsn(PUTFIELD, site.adapterClassName, captureFieldName(i), captureType.getDescriptor());
+      local += captureType.getSize();
+    }
     mv.visitInsn(RETURN);
     mv.visitMaxs(0, 0);
     mv.visitEnd();
@@ -116,7 +132,15 @@ public final class Java8LambdaLowering implements Opcodes {
     mv.visitCode();
     mv.visitTypeInsn(NEW, site.adapterClassName);
     mv.visitInsn(DUP);
-    mv.visitMethodInsn(INVOKESPECIAL, site.adapterClassName, "<init>", "()V", false);
+    Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
+    int local = 0;
+    for (int i = 0; i < captureTypes.length; i++) {
+      Type captureType = captureTypes[i];
+      mv.visitVarInsn(captureType.getOpcode(ILOAD), local);
+      local += captureType.getSize();
+    }
+    mv.visitMethodInsn(INVOKESPECIAL, site.adapterClassName, "<init>", site.factoryDescriptorWithoutReturn + "V",
+        false);
     mv.visitInsn(ARETURN);
     mv.visitMaxs(0, 0);
     mv.visitEnd();
@@ -125,6 +149,12 @@ public final class Java8LambdaLowering implements Opcodes {
   private static void generateSamMethod(ClassWriter cw, LambdaSite site) {
     MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, site.samMethodName, site.samDescriptor, null, null);
     mv.visitCode();
+    Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
+    for (int i = 0; i < captureTypes.length; i++) {
+      Type captureType = captureTypes[i];
+      mv.visitVarInsn(ALOAD, 0);
+      mv.visitFieldInsn(GETFIELD, site.adapterClassName, captureFieldName(i), captureType.getDescriptor());
+    }
     Type[] argumentTypes = Type.getArgumentTypes(site.samDescriptor);
     int local = 1;
     for (int i = 0; i < argumentTypes.length; i++) {
@@ -137,6 +167,15 @@ public final class Java8LambdaLowering implements Opcodes {
     mv.visitInsn(Type.getReturnType(site.samDescriptor).getOpcode(IRETURN));
     mv.visitMaxs(0, 0);
     mv.visitEnd();
+  }
+
+  private static String capturedAndSamDescriptor(LambdaSite site) {
+    return site.factoryDescriptorWithoutReturn.substring(0, site.factoryDescriptorWithoutReturn.length() - 1)
+        + site.samDescriptor.substring(1);
+  }
+
+  private static String captureFieldName(int index) {
+    return "arg$" + index;
   }
 
   private static JavaBootstrapMethod bootstrapMethod(JavaClass owner, BC186_invokedynamic site) {
