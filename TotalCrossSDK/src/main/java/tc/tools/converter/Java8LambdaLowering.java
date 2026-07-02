@@ -155,6 +155,13 @@ public final class Java8LambdaLowering implements Opcodes {
       loadSamArguments(mv, argumentTypes, 0);
       mv.visitMethodInsn(INVOKESTATIC, site.implementationOwner, site.implementationName, site.implementationDescriptor,
           false);
+    } else if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
+      mv.visitTypeInsn(NEW, site.implementationOwner);
+      mv.visitInsn(DUP);
+      loadCapturedValues(mv, site, captureTypes, 0);
+      loadSamArguments(mv, argumentTypes, 0);
+      mv.visitMethodInsn(INVOKESPECIAL, site.implementationOwner, site.implementationName,
+          site.implementationDescriptor, false);
     } else {
       ReceiverSource receiverSource = receiverSource(site, captureTypes, argumentTypes);
       if (receiverSource == ReceiverSource.CAPTURED) {
@@ -205,6 +212,15 @@ public final class Java8LambdaLowering implements Opcodes {
     if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
       return descriptor(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
           Type.getArgumentTypes(site.samDescriptor), returnType);
+    }
+    if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
+      String constructedType = "L" + site.implementationOwner + ";";
+      if (!constructedType.equals(returnType.getDescriptor())) {
+        throw new ConverterException("Unsupported constructor reference adaptation from " + constructedType
+            + " to " + returnType.getDescriptor());
+      }
+      return descriptor(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
+          Type.getArgumentTypes(site.samDescriptor), Type.VOID_TYPE);
     }
     Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
     Type[] samTypes = Type.getArgumentTypes(site.samDescriptor);
