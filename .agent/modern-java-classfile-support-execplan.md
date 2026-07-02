@@ -57,7 +57,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
     - [x] (2026-07-02 02:50Z) Support reference-covariant return adaptation when SAM and instantiated arguments match exactly, such as `Object get()` backed by an implementation returning `String`.
     - [x] (2026-07-02 03:10Z) Support reference argument casts for SAM/instantiated argument descriptors that differ safely, including erased generic SAM arguments lowered through `CHECKCAST`.
     - [x] (2026-07-02 03:35Z) Support common boxing, unboxing, primitive widening, and primitive return adaptation for lambda adapters by lowering through wrapper `valueOf` and primitive value methods.
-- [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
+- [x] (2026-07-02 03:55Z) Add a specific Retrolambda removal milestone and prove the deployer converts direct Java 8 lambda class files without Retrolambda for representative lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
 - [ ] Accept Java 17 class-file structures, including records and sealed-class metadata, with minimal compatibility classes where needed.
@@ -117,6 +117,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: Generic SAMs can require both unboxing before invoking the implementation handle and boxing before returning through the erased SAM descriptor.
   Evidence: `Java8LambdaLoweringTest` compiles `Function<String, Integer> lengthReference() { return String::length; }` and `Function<Integer, Integer> twiceReference() { return CompiledJava8PrimitiveAdaptation::twice; }`, verifies generated adapters expose `apply(Ljava/lang/Object;)Ljava/lang/Object;`, emit `CHECKCAST`, call `Integer.intValue()` where unboxing is needed, call `Integer.valueOf(int)` where boxing is needed, contain no `invokedynamic`, and convert both adapters plus the original class through `J2TC`.
 
+- Observation: A class compiled directly by javac to Java 8 bytecode can now pass through the deployer lambda lowering path without first running Retrolambda.
+  Evidence: `RetrolambdaRemovalTest` compiles `CompiledJava8RetrolambdaRemoval` with javac targeting Java 8, verifies class-file major 52 and remaining `invokedynamic` in the original class, generates five synthetic adapters for captured lambda, static method reference, marker-interface `altMetafactory`, primitive method reference, and constructor reference, verifies the adapters contain no `invokedynamic`, and converts the original class plus every adapter through `J2TC`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -171,6 +174,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: This keeps the deployer-only lowering model intact and covers common Java 8 generic method-reference shapes without adding runtime `invokedynamic` support.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Treat Retrolambda as removable for the tested Java 8 lambda/method-reference bytecode shapes, but do not remove the Gradle plugin in this milestone.
+  Rationale: The deployer can now lower representative direct Java 8 `invokedynamic` sites, but permanently removing the plugin should also validate SDK build behavior, default methods, and runtime API availability in a broader build-focused change.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -198,6 +205,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-02 / Codex: Descriptor adaptation now also supports reference argument casts for erased generic SAM methods. Generated adapters load arguments using the public SAM descriptor and insert `CHECKCAST` to the instantiated argument or receiver type before invoking the implementation handle. Boxing, unboxing, primitive widening, and primitive return adaptation remain unsupported.
 
 2026-07-02 / Codex: The planned Java 8 `LambdaMetafactory` lowering milestone is complete for the common javac shapes targeted by this ExecPlan. Generated adapters now support stateless and captured lambdas, static/bound/unbound method references, constructor references, `altMetafactory` markers and direct bridges, reference casts, reference-covariant returns, and common primitive boxing/unboxing/widening through wrapper methods. Rare adaptations and arbitrary bootstrap behavior remain intentionally outside this initial lowering milestone.
+
+2026-07-02 / Codex: The Retrolambda-removal proof for lambda bytecode is in place. A javac-produced Java 8 class file with `invokedynamic` is converted directly by the deployer lowering path, along with all generated adapters. The Gradle Retrolambda plugin remains configured until a separate build change validates the full SDK/app build surface, including default methods and runtime API compatibility.
 
 ## Context and Orientation
 
