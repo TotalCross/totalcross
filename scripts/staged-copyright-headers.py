@@ -39,6 +39,10 @@ EXCLUDED_PREFIXES = (
     "build/",
 )
 
+EXCLUDED_PATHS = {
+    ".agent/PLANS.md",
+}
+
 COPYRIGHT_RE = re.compile(r"Copyright \(C\) ([0-9]{4})(?:-([0-9]{4}))? (.+)$")
 
 
@@ -69,6 +73,8 @@ def staged_entries():
 
 
 def should_check(path):
+    if path in EXCLUDED_PATHS:
+        return False
     path_obj = Path(path)
     if path_obj.suffix not in CHECK_EXTENSIONS:
         return False
