@@ -87,6 +87,47 @@ class Java8LambdaLoweringTest {
     assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
+  @Test
+  void generatesAdapterClassesForMethodReferences() throws Exception {
+    JavaClass javaClass = methodReferenceClass();
+
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(javaClass);
+
+    assertEquals(3, adapters.length);
+    assertEquals("fixtures/CompiledJava8MethodReference$$TC$$Lambda$0", adapters[0].className);
+    assertTrue(hasMethod(adapters[0], "get", "get()"));
+    assertTrue(hasMethod(adapters[0], "$$tc_lambda_factory$0", "$$tc_lambda_factory$0()"));
+    assertFalse(hasInvokeDynamic(adapters[0]));
+
+    assertEquals("fixtures/CompiledJava8MethodReference$$TC$$Lambda$1", adapters[1].className);
+    assertTrue(hasMethod(adapters[1], "map",
+        "map(Lfixtures/CompiledJava8MethodReference;)"));
+    assertTrue(hasMethod(adapters[1], "$$tc_lambda_factory$1", "$$tc_lambda_factory$1()"));
+    assertFalse(hasInvokeDynamic(adapters[1]));
+
+    assertEquals("fixtures/CompiledJava8MethodReference$$TC$$Lambda$2", adapters[2].className);
+    assertTrue(hasField(adapters[2], "arg$0", "Lfixtures/CompiledJava8MethodReference;"));
+    assertTrue(hasMethod(adapters[2], "get", "get()"));
+    assertTrue(hasMethod(adapters[2], "$$tc_lambda_factory$2",
+        "$$tc_lambda_factory$2(Lfixtures/CompiledJava8MethodReference;)"));
+    assertFalse(hasInvokeDynamic(adapters[2]));
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[0], true));
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[1], true));
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[2], true));
+  }
+
+  @Test
+  void convertsMethodReferencesToNormalFactoryCalls() throws Exception {
+    JavaClass javaClass = methodReferenceClass();
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
+  }
+
   private JavaClass statelessLambdaClass() throws Exception {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8StatelessLambdaFixture(workDir);
@@ -97,6 +138,13 @@ class Java8LambdaLoweringTest {
   private JavaClass capturedLambdaClass() throws Exception {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8LambdaFixture(workDir);
+    assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
+    return new JavaClass(fixture.get().bytes, false);
+  }
+
+  private JavaClass methodReferenceClass() throws Exception {
+    assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
+    Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8MethodReferenceFixture(workDir);
     assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
     return new JavaClass(fixture.get().bytes, false);
   }

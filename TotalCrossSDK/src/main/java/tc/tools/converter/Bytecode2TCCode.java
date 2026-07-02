@@ -1610,7 +1610,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
     {
       BC186_invokedynamic site = (BC186_invokedynamic) i;
       Java8LambdaLowering.LambdaSite lambda = Java8LambdaLowering.resolve(currentJClass, site);
-      Java8LambdaLowering.validateSupportedStaticLambda(currentJClass, site, lambda);
+      Java8LambdaLowering.validateSupportedLambdaMetafactory(currentJClass, site, lambda);
 
       int paramCount = lambda.factoryParams == null ? 0 : lambda.factoryParams.length;
       OperandReg ret = new OperandRegO();
