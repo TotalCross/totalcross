@@ -1609,6 +1609,16 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
     case INVOKEDYNAMIC: //186
     {
       BC186_invokedynamic site = (BC186_invokedynamic) i;
+      if (JavaStringConcatLowering.isStringConcatFactory(currentJClass, site)) {
+        int paramCount = site.jargs == null ? 0 : site.jargs.length;
+        Operand[] arguments = new Operand[paramCount];
+        for (int j = paramCount - 1; j >= 0; j--) {
+          arguments[j] = stack.pop();
+        }
+        stack.push(JavaStringConcatLowering.lower(currentJClass, site, arguments, vcode, lineOfPC));
+        break;
+      }
+
       Java8LambdaLowering.LambdaSite lambda = Java8LambdaLowering.resolve(currentJClass, site);
       Java8LambdaLowering.validateSupportedLambdaMetafactory(currentJClass, site, lambda);
 

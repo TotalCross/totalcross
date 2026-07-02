@@ -216,6 +216,18 @@ final class ModernJavaClassFileFixtures {
         "java 8 retrolambda removal", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava11StringConcatFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava11StringConcat";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public String concat(String value, int count) {\n"
+        + "    return \"value=\" + value + \", count=\" + count;\n"
+        + "  }\n" + "}\n";
+    return compile(workDir, JAVA_11, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_11)).intValue(),
+        "java 11 string concat", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
