@@ -45,7 +45,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-01 23:35Z) Built the initial class-file compatibility test harness under `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava`. It generates minimal class files for Java 8, 11, 17, 21, 25, and 26 majors, and compiles source fixtures with the local `javac` when that compiler can target the requested release.
 - [x] (2026-07-01 23:38Z) Added temporary Gradle source excludes for unrelated local preview, launcher runtime, SSL, and incompatible test sources so `./gradlew test --tests tc.tools.converter.modernjava.*` can validate the new harness in the current worktree.
 - [x] (2026-07-01 23:47Z) Implemented initial parser infrastructure and version gates: normal class files through Java 26 major 70 are accepted, preview minor 65535 and majors above 70 are rejected, class-level attributes are skipped by length, and constant-pool tags 17, 19, and 20 are parsed.
-- [ ] Implement Java 8 lambda and method-reference lowering from `LambdaMetafactory`.
+- [x] Implement Java 8 lambda and method-reference lowering from `LambdaMetafactory`.
   - [x] (2026-07-02 00:05Z) Parse `BootstrapMethods`, expose method-handle metadata, and model `BC186_invokedynamic` without pretending it is a normal method call.
   - [x] (2026-07-02 00:25Z) Generate synthetic adapter classes for stateless `metafactory` lambdas backed by `REF_invokeStatic`, enqueue those adapters for deploy, and lower the original site to a normal static factory call.
   - [x] (2026-07-02 00:40Z) Support simply captured `metafactory` lambdas by storing captured arguments in generated adapter fields and passing captured values through the generated factory.
@@ -53,10 +53,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   - [x] (2026-07-02 01:25Z) Support constructor references emitted through `LambdaMetafactory` when the constructed type exactly matches the SAM return type and no descriptor adaptation is required.
   - [x] (2026-07-02 02:05Z) Support marker-interface cases from `altMetafactory`, including extra marker interfaces declared by javac and the serializable marker flag.
   - [x] (2026-07-02 02:30Z) Support direct bridge methods from `altMetafactory` when bridge arguments exactly match the SAM arguments and the bridge return is exact or reference-covariant.
-  - [ ] Support descriptor adaptation beyond exact argument and return descriptors.
+  - [x] Support descriptor adaptation beyond exact argument and return descriptors.
     - [x] (2026-07-02 02:50Z) Support reference-covariant return adaptation when SAM and instantiated arguments match exactly, such as `Object get()` backed by an implementation returning `String`.
     - [x] (2026-07-02 03:10Z) Support reference argument casts for SAM/instantiated argument descriptors that differ safely, including erased generic SAM arguments lowered through `CHECKCAST`.
-    - [ ] Support boxing, unboxing, primitive widening, and primitive return adaptation.
+    - [x] (2026-07-02 03:35Z) Support common boxing, unboxing, primitive widening, and primitive return adaptation for lambda adapters by lowering through wrapper `valueOf` and primitive value methods.
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
@@ -114,6 +114,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: Generic functional interfaces often erase SAM arguments to `Object` while the instantiated method type and implementation handle require a narrower reference type.
   Evidence: `Java8LambdaLoweringTest` compiles `ValueMapper<String>` method references backed by both `CompiledJava8ReferenceArgumentAdaptation::trim` and `String::trim`, verifies generated adapters expose `map(Ljava/lang/Object;)Ljava/lang/String;`, contain `CHECKCAST`, contain no `invokedynamic`, and convert both adapters plus the original class through `J2TC`.
 
+- Observation: Generic SAMs can require both unboxing before invoking the implementation handle and boxing before returning through the erased SAM descriptor.
+  Evidence: `Java8LambdaLoweringTest` compiles `Function<String, Integer> lengthReference() { return String::length; }` and `Function<Integer, Integer> twiceReference() { return CompiledJava8PrimitiveAdaptation::twice; }`, verifies generated adapters expose `apply(Ljava/lang/Object;)Ljava/lang/Object;`, emit `CHECKCAST`, call `Integer.intValue()` where unboxing is needed, call `Integer.valueOf(int)` where boxing is needed, contain no `invokedynamic`, and convert both adapters plus the original class through `J2TC`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -164,6 +167,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: This covers common generic SAM erasure, such as `map(Object)` dispatching to a `String` method reference, without introducing primitive conversion or boxing semantics.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Implement primitive descriptor adaptation in generated adapters by composing casts, wrapper unboxing calls, primitive widening opcodes, and wrapper `valueOf` calls.
+  Rationale: This keeps the deployer-only lowering model intact and covers common Java 8 generic method-reference shapes without adding runtime `invokedynamic` support.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -189,6 +196,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-02 / Codex: Descriptor adaptation now supports the first small non-exact case for Java 8 lambdas and method references: SAM and instantiated argument descriptors must still match exactly, but the implementation may return a more specific reference type than the erased SAM return type. Argument casts, primitive conversions, boxing, and unboxing remain unsupported.
 
 2026-07-02 / Codex: Descriptor adaptation now also supports reference argument casts for erased generic SAM methods. Generated adapters load arguments using the public SAM descriptor and insert `CHECKCAST` to the instantiated argument or receiver type before invoking the implementation handle. Boxing, unboxing, primitive widening, and primitive return adaptation remain unsupported.
+
+2026-07-02 / Codex: The planned Java 8 `LambdaMetafactory` lowering milestone is complete for the common javac shapes targeted by this ExecPlan. Generated adapters now support stateless and captured lambdas, static/bound/unbound method references, constructor references, `altMetafactory` markers and direct bridges, reference casts, reference-covariant returns, and common primitive boxing/unboxing/widening through wrapper methods. Rare adaptations and arbitrary bootstrap behavior remain intentionally outside this initial lowering milestone.
 
 ## Context and Orientation
 
