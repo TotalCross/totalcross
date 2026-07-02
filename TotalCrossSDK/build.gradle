@@ -97,8 +97,8 @@ dependencies {
     implementation(group: 'org.vafer', name: 'jdeb', version: '1.14') {
 		exclude group: 'org.bouncycastle'
 	}
-    // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
-    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.56'
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-bcpkix-lts8on
+    implementation("org.bouncycastle:bcpkix-lts8on:2.73.11")
     // https://mvnrepository.com/artifact/com.googlecode.plist/dd-plist
     implementation group: 'com.googlecode.plist', name: 'dd-plist', version: '1.19'
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc

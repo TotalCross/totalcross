@@ -1,5 +1,6 @@
-// Copyright (C) 2012 SuperWaba Ltda.
-// Copyright (C) 2019-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2012-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Store;
@@ -77,7 +79,7 @@ public class EmbeddedSignature extends SuperBlob {
     super.add(blobIndex);
   }
 
-  public void sign(KeyStore keyStore, Store certStore) throws IOException, CMSException, UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException {
+  public void sign(KeyStore keyStore, Store<X509CertificateHolder> certStore) throws IOException, CMSException, UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException {
     blobWrapper.sign(keyStore, certStore, codeDirectory);
   }
 
