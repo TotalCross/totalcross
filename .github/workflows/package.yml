@@ -186,11 +186,11 @@ jobs:
             runner: ubuntu-22.04
 
     steps:
-    - name: Setup JDK 11
+    - name: Setup JDK 17
       uses: actions/setup-java@v5
       with:
         distribution: temurin
-        java-version: 11
+        java-version: 17
 
     - name: Download packaged SDK zip
       uses: actions/download-artifact@v4

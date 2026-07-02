@@ -298,11 +298,11 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Setup JDK 11
+    - name: Setup JDK 17
       uses: actions/setup-java@v5
       with:
         distribution: temurin
-        java-version: 11
+        java-version: 17
 
     - name: Cache Gradle packages
       uses: actions/cache@v5
