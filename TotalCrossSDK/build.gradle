@@ -290,7 +290,7 @@ task fetchSdkNativeRuntime {
 		}.result.get().assertNormalExitValue()
 
 		if (!vcruntimeFetchScript.isFile()) {
-			throw new GradleException("Could not find vcruntime fetch script at ${vcruntimeFetchScript}")
+			throw GradleException("Could not find vcruntime fetch script at ${vcruntimeFetchScript}")
 		}
 
 		providers.exec {
