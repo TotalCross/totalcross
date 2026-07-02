@@ -94,7 +94,7 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.vafer/jdeb
-    implementation(group: 'org.vafer', name: 'jdeb', version: '0.7') {
+    implementation(group: 'org.vafer', name: 'jdeb', version: '1.14') {
 		exclude group: 'org.bouncycastle'
 	}
     // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
