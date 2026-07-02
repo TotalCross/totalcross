@@ -81,6 +81,16 @@ final class ModernJavaClassFileFixtures {
         "java 8 lambda", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8StatelessLambdaFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8StatelessLambda";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public Runnable runnable() { return () -> touch(); }\n" + "  private static void touch() { }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 stateless lambda", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");

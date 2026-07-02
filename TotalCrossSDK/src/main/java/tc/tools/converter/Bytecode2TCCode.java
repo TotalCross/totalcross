@@ -16,6 +16,7 @@ import tc.tools.converter.bytecode.BC178_getstatic;
 import tc.tools.converter.bytecode.BC179_putstatic;
 import tc.tools.converter.bytecode.BC180_getfield;
 import tc.tools.converter.bytecode.BC181_putfield;
+import tc.tools.converter.bytecode.BC186_invokedynamic;
 import tc.tools.converter.bytecode.BC187_new;
 import tc.tools.converter.bytecode.BC188_newarray;
 import tc.tools.converter.bytecode.BC189_anewarray;
@@ -1606,8 +1607,26 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
       break;
     }
     case INVOKEDYNAMIC: //186
-      throw new ConverterException("invokedynamic lowering is not implemented yet in " + currentJClass.className + "."
-          + javaCodeCurrent.method.signature + " at bytecode index " + i.pcInMethod);
+    {
+      BC186_invokedynamic site = (BC186_invokedynamic) i;
+      Java8LambdaLowering.LambdaSite lambda = Java8LambdaLowering.resolve(currentJClass, site);
+      Java8LambdaLowering.validateStatelessStaticLambda(currentJClass, site, lambda);
+
+      OperandReg ret = new OperandRegO();
+      Operand[] retAndParams = new Operand[] { ret };
+      OperandReg _this = new OperandReg(TCConstants.opr_regO);
+      _this.index = 0;
+
+      int idx = GlobalConstantPool.putMethod(lambda.adapterClassName, lambda.factoryMethodName, lambda.factoryParams,
+          Java8LambdaLowering.factorySignature(lambda));
+      OperandSym sym = new OperandSymO(idx);
+      Call call = (Call) GenerateInstruction.newInstruction(vcode, CALL_normal, sym, _this, retAndParams, false,
+          lineOfPC);
+      call.isStatic = true;
+      tc = call;
+      stack.push(ret);
+      break;
+    }
     case NEW: //187
     {
       BC187_new ji = (BC187_new) i;
