@@ -1518,7 +1518,6 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
     case INVOKESPECIAL: //183
     case INVOKESTATIC: //184
     case INVOKEINTERFACE: //185
-    case INVOKEDYNAMIC: //186
     {
       MethodCall ji = (MethodCall) i;
       ji.className = replaceTotalCrossLangToJavaLang(ji.className);
@@ -1606,6 +1605,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
       }
       break;
     }
+    case INVOKEDYNAMIC: //186
+      throw new ConverterException("invokedynamic lowering is not implemented yet in " + currentJClass.className + "."
+          + javaCodeCurrent.method.signature + " at bytecode index " + i.pcInMethod);
     case NEW: //187
     {
       BC187_new ji = (BC187_new) i;

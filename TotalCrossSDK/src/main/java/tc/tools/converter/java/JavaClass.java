@@ -22,6 +22,7 @@ public final class JavaClass {
   public String[] interfaces;
   public JavaField[] fields;
   public JavaMethod[] methods;
+  public JavaBootstrapMethod[] bootstrapMethods;
   public byte[] bytes;
 
   //public ClassAttribute[] attrs;
@@ -167,9 +168,27 @@ public final class JavaClass {
   private void skipClassAttributes(DataStream ds) throws totalcross.io.IOException {
     int n = ds.readUnsignedShort();
     for (int i = 0; i < n; i++) {
-      ds.readUnsignedShort();
+      String name = (String) cp.constants[ds.readUnsignedShort()];
       int len = ds.readInt();
-      ds.skipBytes(len);
+      if ("BootstrapMethods".equals(name)) {
+        readBootstrapMethods(ds);
+      } else {
+        ds.skipBytes(len);
+      }
+    }
+  }
+
+  private void readBootstrapMethods(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    bootstrapMethods = new JavaBootstrapMethod[n];
+    for (int i = 0; i < n; i++) {
+      int bootstrapMethodRef = ds.readUnsignedShort();
+      int argumentCount = ds.readUnsignedShort();
+      int[] arguments = new int[argumentCount];
+      for (int j = 0; j < argumentCount; j++) {
+        arguments[j] = ds.readUnsignedShort();
+      }
+      bootstrapMethods[i] = new JavaBootstrapMethod(bootstrapMethodRef, arguments);
     }
   }
 
