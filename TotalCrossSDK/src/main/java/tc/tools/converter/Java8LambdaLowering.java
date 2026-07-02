@@ -79,10 +79,7 @@ public final class Java8LambdaLowering implements Opcodes {
       throw unsupported(owner, bytecode,
           "lambda call site must return an interface type, found " + site.factoryReturnDescriptor);
     }
-    if (site.bridgeDescriptors.length > 0) {
-      throw unsupported(owner, bytecode,
-          "altMetafactory bridge methods are not lowered yet; bridge count is " + site.bridgeDescriptors.length);
-    }
+    validateBridgeDescriptors(owner, bytecode, site);
     if (!expectedImplementationDescriptor(site).equals(site.implementationDescriptor)) {
       throw unsupported(owner, bytecode,
           "lambda method adaptation is not lowered yet; expected implementation "
@@ -106,6 +103,7 @@ public final class Java8LambdaLowering implements Opcodes {
     generateConstructor(cw, site);
     generateFactory(cw, site);
     generateSamMethod(cw, site);
+    generateBridgeMethods(cw, site);
     cw.visitEnd();
     return cw.toByteArray();
   }
@@ -136,6 +134,24 @@ public final class Java8LambdaLowering implements Opcodes {
     mv.visitInsn(RETURN);
     mv.visitMaxs(0, 0);
     mv.visitEnd();
+  }
+
+  private static void generateBridgeMethods(ClassWriter cw, LambdaSite site) {
+    for (int i = 0; i < site.bridgeDescriptors.length; i++) {
+      String bridgeDescriptor = site.bridgeDescriptors[i];
+      if (bridgeDescriptor.equals(site.samDescriptor)) {
+        continue;
+      }
+      MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_BRIDGE | ACC_SYNTHETIC, site.samMethodName,
+          bridgeDescriptor, null, null);
+      mv.visitCode();
+      mv.visitVarInsn(ALOAD, 0);
+      loadSamArguments(mv, Type.getArgumentTypes(bridgeDescriptor), 0);
+      mv.visitMethodInsn(INVOKEVIRTUAL, site.adapterClassName, site.samMethodName, site.samDescriptor, false);
+      mv.visitInsn(Type.getReturnType(bridgeDescriptor).getOpcode(IRETURN));
+      mv.visitMaxs(0, 0);
+      mv.visitEnd();
+    }
   }
 
   private static void generateFactory(ClassWriter cw, LambdaSite site) {
@@ -242,6 +258,44 @@ public final class Java8LambdaLowering implements Opcodes {
       return descriptor(tail(captureTypes, 1), samTypes, returnType);
     }
     return descriptor(captureTypes, tail(samTypes, 1), returnType);
+  }
+
+  private static void validateBridgeDescriptors(JavaClass owner, BC186_invokedynamic bytecode, LambdaSite site) {
+    Type[] samArguments = Type.getArgumentTypes(site.samDescriptor);
+    Type samReturn = Type.getReturnType(site.samDescriptor);
+    for (int i = 0; i < site.bridgeDescriptors.length; i++) {
+      String bridgeDescriptor = site.bridgeDescriptors[i];
+      Type[] bridgeArguments = Type.getArgumentTypes(bridgeDescriptor);
+      Type bridgeReturn = Type.getReturnType(bridgeDescriptor);
+      if (!sameTypes(samArguments, bridgeArguments) || !compatibleBridgeReturn(samReturn, bridgeReturn)) {
+        throw unsupported(owner, bytecode,
+            "altMetafactory bridge method adaptation is not lowered yet; SAM " + site.samDescriptor
+                + ", bridge " + bridgeDescriptor);
+      }
+    }
+  }
+
+  private static boolean sameTypes(Type[] left, Type[] right) {
+    if (left.length != right.length) {
+      return false;
+    }
+    for (int i = 0; i < left.length; i++) {
+      if (!left[i].equals(right[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean compatibleBridgeReturn(Type samReturn, Type bridgeReturn) {
+    if (samReturn.equals(bridgeReturn)) {
+      return true;
+    }
+    return isReferenceType(samReturn) && isReferenceType(bridgeReturn);
+  }
+
+  private static boolean isReferenceType(Type type) {
+    return type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY;
   }
 
   private static String descriptor(Type[] prefixTypes, Type[] suffixTypes, Type returnType) {

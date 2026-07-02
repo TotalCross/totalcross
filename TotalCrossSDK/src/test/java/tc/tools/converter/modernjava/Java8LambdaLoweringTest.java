@@ -178,6 +178,32 @@ class Java8LambdaLoweringTest {
     assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
+  @Test
+  void generatesAdapterClassForAltMetafactoryBridges() throws Exception {
+    JavaClass javaClass = altMetafactoryBridgeClass();
+
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(javaClass);
+
+    assertEquals(1, adapters.length);
+    assertEquals("fixtures/CompiledJava8AltMetafactoryBridge$$TC$$Lambda$0", adapters[0].className);
+    assertTrue(hasInterface(adapters[0], "fixtures/CompiledJava8AltMetafactoryBridge$StringFactory"));
+    assertTrue(hasInterface(adapters[0], "fixtures/CompiledJava8AltMetafactoryBridge$ObjectFactory"));
+    assertTrue(hasMethod(adapters[0], "get", "get()", "Ljava/lang/String;"));
+    assertTrue(hasMethod(adapters[0], "get", "get()", "Ljava/lang/Object;"));
+    assertFalse(hasInvokeDynamic(adapters[0]));
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[0], true));
+  }
+
+  @Test
+  void convertsAltMetafactoryBridgesToNormalFactoryCalls() throws Exception {
+    JavaClass javaClass = altMetafactoryBridgeClass();
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
+  }
+
   private JavaClass statelessLambdaClass() throws Exception {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8StatelessLambdaFixture(workDir);
@@ -215,10 +241,28 @@ class Java8LambdaLoweringTest {
     return new JavaClass(fixture.get().bytes, false);
   }
 
+  private JavaClass altMetafactoryBridgeClass() throws Exception {
+    assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
+    Optional<ModernJavaClassFileFixture> fixture =
+        ModernJavaClassFileFixtures.compileJava8AltMetafactoryBridgeFixture(workDir);
+    assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
+    return new JavaClass(fixture.get().bytes, false);
+  }
+
   private static boolean hasMethod(JavaClass javaClass, String name, String signature) {
     for (int i = 0; i < javaClass.methods.length; i++) {
       JavaMethod method = javaClass.methods[i];
       if (name.equals(method.name) && signature.equals(method.signature)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasMethod(JavaClass javaClass, String name, String signature, String ret) {
+    for (int i = 0; i < javaClass.methods.length; i++) {
+      JavaMethod method = javaClass.methods[i];
+      if (name.equals(method.name) && signature.equals(method.signature) && ret.equals(method.ret)) {
         return true;
       }
     }
