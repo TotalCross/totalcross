@@ -1,22 +1,23 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
 
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import java.util.Collections;
 
-import org.apache.tools.tar.TarEntry;
+import org.vafer.jdeb.Compression;
 import org.vafer.jdeb.Console;
 import org.vafer.jdeb.DataProducer;
+import org.vafer.jdeb.DebMaker;
 import org.vafer.jdeb.PackagingException;
-import org.vafer.jdeb.Processor;
-import org.vafer.jdeb.descriptors.InvalidDescriptorException;
-import org.vafer.jdeb.descriptors.PackageDescriptor;
+import org.vafer.jdeb.debian.BinaryPackageControlFile;
 import org.vafer.jdeb.mapping.Mapper;
 import org.vafer.jdeb.producers.DataProducerDirectory;
-import org.vafer.jdeb.utils.VariableResolver;
+import org.vafer.jdeb.shaded.commons.compress.archivers.tar.TarArchiveEntry;
 
 import totalcross.io.File;
 import totalcross.util.Vector;
@@ -141,9 +142,6 @@ public class LinuxBuildNatives {
       dir.createDir();
     }
 
-    //Set<java.io.File> ctrlFiles = new HashSet<java.io.File>();
-    java.io.File[] ctrlFiles = new java.io.File[3]; // control files
-
     String outFile = "control";
     Utils.println("...writing " + outFile);
     DataOutputStream dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
@@ -154,24 +152,17 @@ public class LinuxBuildNatives {
             ? "libdirectfb-1.2-0 (>= 1.2.7)" : "totalcross (>= " + getTCVersion(totalcross.sys.Settings.version) + ")")
         + "\n");
     dos.close();
-    //ctrlFiles.add(new java.io.File(controlDir + outFile));
-    ctrlFiles[0] = new java.io.File(controlDir + outFile);
-
-    VariableResolver vars = null;
-
-    Processor debProc = new Processor(new JDebConsole(), vars);
 
     Mapper mapper = new Mapper() {
       //@Override
       @Override
-      public TarEntry map(TarEntry entry) {
+      public TarArchiveEntry map(TarArchiveEntry entry) {
         if (entry.getName().contains("/lib") && entry.getName().contains(".so")) {
           entry.setMode(0100755);
         }
         return entry;
       }
     };
-    DataProducer[] dataProd = new DataProducer[1];
     for (int i = 0; i < files.size(); i++) {
       String source = (String) files.items[i];
       String fname = source.substring(source.lastIndexOf('/') + 1);
@@ -188,7 +179,6 @@ public class LinuxBuildNatives {
     dos.close();
     java.io.File ff = new java.io.File(controlDir + outFile);
     ff.setExecutable(true, false);
-    ctrlFiles[1] = ff;
 
     outFile = "postrm";
     Utils.println("...writing " + outFile);
@@ -198,20 +188,21 @@ public class LinuxBuildNatives {
     dos.close();
     ff = new java.io.File(controlDir + outFile);
     ff.setExecutable(true, false);
-    ctrlFiles[2] = ff;
 
-    dataProd[0] = new DataProducerDirectory(new java.io.File("install/linux/"),
+    DataProducer dataProducer = new DataProducerDirectory(new java.io.File("install/linux/"),
         new String[] { "usr" + java.io.File.separatorChar + "**" }, // includes
         new String[] {}, // excludes
         new Mapper[] { mapper });
     String debName = name + "_" + version + "_i386.deb";
     java.io.File debOut = new java.io.File("install/linux/" + debName);
     try {
-      PackageDescriptor pdsc = debProc.createDeb(ctrlFiles, dataProd, debOut, "bzip2");
+      DebMaker debMaker = new DebMaker(new JDebConsole(), Collections.singletonList(dataProducer), null);
+      debMaker.setControl(new java.io.File(controlDir));
+      debMaker.setDeb(debOut);
+      debMaker.validate();
+      BinaryPackageControlFile pdsc = debMaker.createDeb(Compression.BZIP2);
       System.out.println("debian package descriptor:\n" + pdsc.toString());
     } catch (PackagingException e) {
-      System.err.println(e);
-    } catch (InvalidDescriptorException e) {
       System.err.println(e);
     }
     Utils.copyFile("install/linux/" + debName, targetDir + "/" + debName, false);
@@ -293,10 +284,20 @@ public class LinuxBuildNatives {
   }
 
   static class JDebConsole implements Console {
-    //@Override
+
     @Override
-    public void println(String s) {
+    public void debug(String s) {
       Utils.println(s);
+    }
+
+    @Override
+    public void info(String s) {
+      Utils.println(s);
+    }
+
+    @Override
+    public void warn(String s) {
+      Utils.warn(s);
     }
   }
 }
