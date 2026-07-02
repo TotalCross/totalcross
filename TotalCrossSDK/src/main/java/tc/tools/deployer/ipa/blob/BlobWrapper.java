@@ -1,5 +1,6 @@
-// Copyright (C) 2012 SuperWaba Ltda.
-// Copyright (C) 2019-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2012-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -40,14 +41,14 @@ public class BlobWrapper extends BlobCore {
     super(CSMAGIC_BLOB_WRAPPER);
   }
 
-  public BlobWrapper(KeyStore keyStore, Store certStore, CodeDirectory codeDirectory)
+  public BlobWrapper(KeyStore keyStore, Store<X509CertificateHolder> certStore, CodeDirectory codeDirectory)
       throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException,
       OperatorCreationException, IOException, CMSException {
     super(CSMAGIC_BLOB_WRAPPER);
     sign(keyStore, certStore, codeDirectory);
   }
 
-  public void sign(KeyStore keyStore, Store certStore, CodeDirectory codeDirectory) throws IOException, CMSException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException, OperatorCreationException {
+  public void sign(KeyStore keyStore, Store<X509CertificateHolder> certStore, CodeDirectory codeDirectory) throws IOException, CMSException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException, OperatorCreationException {
     signedDataGenerator = new CMSSignedDataGenerator();
     String firstAlias = (String) keyStore.aliases().nextElement();
     PrivateKey priv = (PrivateKey) (keyStore.getKey(firstAlias, "".toCharArray()));

@@ -1,5 +1,6 @@
-// Copyright (C) 2012 SuperWaba Ltda.
-// Copyright (C) 2019-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2012-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -14,9 +15,10 @@ import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.x509.X509Store;
+import org.bouncycastle.util.Store;
 
 import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
@@ -96,7 +98,7 @@ public class MachObjectFile extends AppleBinary {
   }
 
   @Override
-  public byte[] resign(KeyStore ks, X509Store certStore, String bundleIdentifier, byte[] entitlementsBytes, byte[] info,
+  public byte[] resign(KeyStore ks, Store<X509CertificateHolder> certStore, String bundleIdentifier, byte[] entitlementsBytes, byte[] info,
       byte[] sourceData) throws IOException, CMSException, UnrecoverableKeyException, CertificateEncodingException,
       KeyStoreException, NoSuchAlgorithmException, OperatorCreationException {
     // update the bundle identifier

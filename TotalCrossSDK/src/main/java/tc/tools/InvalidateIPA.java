@@ -1,5 +1,6 @@
-// Copyright (C) 2012 SuperWaba Ltda.
-// Copyright (C) 2019-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2012-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -28,8 +29,8 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.crypto.digests.GeneralDigest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.x509.X509CollectionStoreParameters;
-import org.bouncycastle.x509.X509Store;
+import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.util.Store;
 
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
@@ -143,8 +144,7 @@ public class InvalidateIPA {
     }
     certs[2] = new X509CertificateHolder(storecert.getEncoded());
 
-    X509Store certStore = X509Store.getInstance("CERTIFICATE/Collection",
-        new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
+    Store<X509CertificateHolder> certStore = new CollectionStore<>(Arrays.asList(certs));
 
     /** PROCESS MOBILE PROVISION **/
     // update the mobile provision
