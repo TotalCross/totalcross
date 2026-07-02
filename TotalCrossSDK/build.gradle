@@ -6,8 +6,8 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_1_9
+targetCompatibility = JavaVersion.VERSION_1_9
 version = '7.2.2'
 group = 'com.totalcross'
 archivesBaseName = 'totalcross-sdk'

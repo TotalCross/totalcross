@@ -14,9 +14,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipInputStream;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
-
 import tc.Deploy;
 import tc.tools.JarClassPathLoader;
 import tc.tools.converter.bytecode.BC004_iconst_1;
@@ -1507,18 +1504,25 @@ public final class J2TC implements JConstants, TCConstants {
 
       String entryName = entry.getName();
       if (entryName.endsWith(".class")) {
-        ClassNode classNode = new ClassNode();
-
         InputStream classFileInputStream = jarFile.getInputStream(entry);
         try {
-          ClassReader classReader = new ClassReader(classFileInputStream);
-          classReader.accept(classNode, 0);
+          JavaClass javaClass = new JavaClass(readAllBytes(classFileInputStream), false);
+          ret.put(javaClass.className, javaClass);
         } finally {
           classFileInputStream.close();
         }
-        ret.put(classNode.name, new JavaClass(classNode));
       }
     }
     return ret;
+  }
+
+  private static byte[] readAllBytes(InputStream inputStream) throws java.io.IOException {
+    java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
+    byte[] buffer = new byte[8192];
+    int read;
+    while ((read = inputStream.read(buffer)) != -1) {
+      outputStream.write(buffer, 0, read);
+    }
+    return outputStream.toByteArray();
   }
 }
