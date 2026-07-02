@@ -23,6 +23,7 @@ import tc.tools.converter.GlobalConstantPool;
 import tc.tools.converter.J2TC;
 import tc.tools.converter.Java8LambdaLowering;
 import tc.tools.converter.bytecode.BC186_invokedynamic;
+import tc.tools.converter.bytecode.BC192_checkcast;
 import tc.tools.converter.bytecode.ByteCode;
 import tc.tools.converter.java.JavaClass;
 import tc.tools.converter.java.JavaField;
@@ -229,6 +230,39 @@ class Java8LambdaLoweringTest {
     assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
+  @Test
+  void generatesAdapterClassesForReferenceArgumentAdaptation() throws Exception {
+    JavaClass javaClass = referenceArgumentAdaptationClass();
+
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(javaClass);
+
+    assertEquals(2, adapters.length);
+    assertEquals("fixtures/CompiledJava8ReferenceArgumentAdaptation$$TC$$Lambda$0", adapters[0].className);
+    assertTrue(hasInterface(adapters[0], "fixtures/CompiledJava8ReferenceArgumentAdaptation$ValueMapper"));
+    assertTrue(hasMethod(adapters[0], "map", "map(Ljava/lang/Object;)", "Ljava/lang/String;"));
+    assertTrue(hasCheckCast(adapters[0]));
+    assertFalse(hasInvokeDynamic(adapters[0]));
+
+    assertEquals("fixtures/CompiledJava8ReferenceArgumentAdaptation$$TC$$Lambda$1", adapters[1].className);
+    assertTrue(hasInterface(adapters[1], "fixtures/CompiledJava8ReferenceArgumentAdaptation$ValueMapper"));
+    assertTrue(hasMethod(adapters[1], "map", "map(Ljava/lang/Object;)", "Ljava/lang/String;"));
+    assertTrue(hasCheckCast(adapters[1]));
+    assertFalse(hasInvokeDynamic(adapters[1]));
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[0], true));
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[1], true));
+  }
+
+  @Test
+  void convertsReferenceArgumentAdaptationToNormalFactoryCalls() throws Exception {
+    JavaClass javaClass = referenceArgumentAdaptationClass();
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
+  }
+
   private JavaClass statelessLambdaClass() throws Exception {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8StatelessLambdaFixture(workDir);
@@ -282,6 +316,14 @@ class Java8LambdaLoweringTest {
     return new JavaClass(fixture.get().bytes, false);
   }
 
+  private JavaClass referenceArgumentAdaptationClass() throws Exception {
+    assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
+    Optional<ModernJavaClassFileFixture> fixture =
+        ModernJavaClassFileFixtures.compileJava8ReferenceArgumentAdaptationFixture(workDir);
+    assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
+    return new JavaClass(fixture.get().bytes, false);
+  }
+
   private static boolean hasMethod(JavaClass javaClass, String name, String signature) {
     for (int i = 0; i < javaClass.methods.length; i++) {
       JavaMethod method = javaClass.methods[i];
@@ -329,6 +371,21 @@ class Java8LambdaLoweringTest {
       }
       for (int j = 0; j < method.code.bcs.length; j++) {
         if (method.code.bcs[j] instanceof BC186_invokedynamic) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasCheckCast(JavaClass javaClass) {
+    for (int i = 0; i < javaClass.methods.length; i++) {
+      JavaMethod method = javaClass.methods[i];
+      if (method.code == null || method.code.bcs == null) {
+        continue;
+      }
+      for (int j = 0; j < method.code.bcs.length; j++) {
+        if (method.code.bcs[j] instanceof BC192_checkcast) {
           return true;
         }
       }

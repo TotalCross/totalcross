@@ -165,6 +165,20 @@ final class ModernJavaClassFileFixtures {
         "java 8 reference return adaptation", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8ReferenceArgumentAdaptationFixture(Path workDir)
+      throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8ReferenceArgumentAdaptation";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface ValueMapper<T> { String map(T value); }\n"
+        + "  public ValueMapper<String> staticReference() { return " + simpleName + "::trim; }\n"
+        + "  public ValueMapper<String> virtualReference() { return String::trim; }\n"
+        + "  public static String trim(String value) { return value.trim(); }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 reference argument adaptation", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
