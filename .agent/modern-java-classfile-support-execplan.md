@@ -57,7 +57,8 @@ Preview class files, identified by minor version 65535, are out of scope for the
     - [x] (2026-07-02 02:50Z) Support reference-covariant return adaptation when SAM and instantiated arguments match exactly, such as `Object get()` backed by an implementation returning `String`.
     - [x] (2026-07-02 03:10Z) Support reference argument casts for SAM/instantiated argument descriptors that differ safely, including erased generic SAM arguments lowered through `CHECKCAST`.
     - [x] (2026-07-02 03:35Z) Support common boxing, unboxing, primitive widening, and primitive return adaptation for lambda adapters by lowering through wrapper `valueOf` and primitive value methods.
-- [x] (2026-07-02 03:55Z) Add a specific Retrolambda removal milestone and prove the deployer converts direct Java 8 lambda class files without Retrolambda for representative lambda use cases.
+- [x] (2026-07-02 03:55Z) Prove the deployer converts direct Java 8 lambda class files without Retrolambda for representative lambda use cases.
+- [x] (2026-07-02 04:20Z) Prove the full TotalCrossSDK Gradle build works without the Retrolambda plugin while compiling SDK classes as Java 8 class files.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
 - [ ] Accept Java 17 class-file structures, including records and sealed-class metadata, with minimal compatibility classes where needed.
@@ -120,6 +121,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: A class compiled directly by javac to Java 8 bytecode can now pass through the deployer lambda lowering path without first running Retrolambda.
   Evidence: `RetrolambdaRemovalTest` compiles `CompiledJava8RetrolambdaRemoval` with javac targeting Java 8, verifies class-file major 52 and remaining `invokedynamic` in the original class, generates five synthetic adapters for captured lambda, static method reference, marker-interface `altMetafactory`, primitive method reference, and constructor reference, verifies the adapters contain no `invokedynamic`, and converts the original class plus every adapter through `J2TC`.
 
+- Observation: The full `TotalCrossSDK` Gradle distribution build can complete after removing the Retrolambda plugin and compiling SDK classes as Java 8 class files.
+  Evidence: After removing `me.tatarka.retrolambda`, the `retrolambda` block, and `retrolambdaConfig`, and setting `targetCompatibility = 1.8`, `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home ./gradlew clean dist -x test` completed successfully. The build output no longer includes `compileRetrolambdaMain` or `compileRetrolambdaTest`. Javadoc still reports legacy malformed-doc comments, but `javadoc.failOnError = false` lets the distribution build continue as before.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -174,8 +178,12 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: This keeps the deployer-only lowering model intact and covers common Java 8 generic method-reference shapes without adding runtime `invokedynamic` support.
   Date/Author: 2026-07-02 / Codex
 
-- Decision: Treat Retrolambda as removable for the tested Java 8 lambda/method-reference bytecode shapes, but do not remove the Gradle plugin in this milestone.
-  Rationale: The deployer can now lower representative direct Java 8 `invokedynamic` sites, but permanently removing the plugin should also validate SDK build behavior, default methods, and runtime API availability in a broader build-focused change.
+- Decision: Treat the deployer-only Retrolambda proof as insufficient by itself to remove the Gradle plugin.
+  Rationale: The deployer can lower representative direct Java 8 `invokedynamic` sites, but permanently removing the plugin also needs validation of SDK build behavior, default methods, and runtime API availability in a broader build-focused change.
+  Date/Author: 2026-07-02 / Codex
+
+- Decision: Remove the Retrolambda Gradle plugin from `TotalCrossSDK` after proving `clean dist -x test` and focused modern-Java tests pass with Java 8 target bytecode.
+  Rationale: The deployer now supports the representative Java 8 lambda bytecode shapes, and the SDK distribution build no longer needs Retrolambda to produce Java 7 class files.
   Date/Author: 2026-07-02 / Codex
 
 ## Outcomes & Retrospective
@@ -207,6 +215,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-02 / Codex: The planned Java 8 `LambdaMetafactory` lowering milestone is complete for the common javac shapes targeted by this ExecPlan. Generated adapters now support stateless and captured lambdas, static/bound/unbound method references, constructor references, `altMetafactory` markers and direct bridges, reference casts, reference-covariant returns, and common primitive boxing/unboxing/widening through wrapper methods. Rare adaptations and arbitrary bootstrap behavior remain intentionally outside this initial lowering milestone.
 
 2026-07-02 / Codex: The Retrolambda-removal proof for lambda bytecode is in place. A javac-produced Java 8 class file with `invokedynamic` is converted directly by the deployer lowering path, along with all generated adapters. The Gradle Retrolambda plugin remains configured until a separate build change validates the full SDK/app build surface, including default methods and runtime API compatibility.
+
+2026-07-02 / Codex: The full SDK distribution build now passes without the Retrolambda Gradle plugin. `TotalCrossSDK/build.gradle` compiles source and target compatibility as Java 8, and `clean dist -x test` plus the focused `tc.tools.converter.modernjava.*` test suite pass with JDK 11. The next compatibility frontier is Java 9+ `StringConcatFactory` lowering and Java 11 class-file structures.
 
 ## Context and Orientation
 
@@ -276,40 +286,47 @@ Work from the repository root unless a command specifies another directory.
 
    Expect stateless lambdas, captured lambdas, method references, and constructor references supported by the milestone to convert into generated classes and ordinary `CALL_normal` calls.
 
-5. Prove whether Retrolambda can be removed:
+5. Prove whether the deployer can convert Java 8 lambda bytecode without Retrolambda:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.RetrolambdaRemovalTest
 
-   This test group should compile fixtures without Retrolambda and verify deployer behavior. If the build file is changed to remove Retrolambda, run the full focused SDK test suite before committing that removal.
+   This test group should compile fixtures without Retrolambda and verify deployer behavior.
 
-6. Implement Java 9+ string-concat lowering and Java 11 parser support:
+6. Prove whether the full SDK build can remove Retrolambda:
+
+       cd TotalCrossSDK
+       ./gradlew clean dist -x test
+
+   Run this only after changing `build.gradle` to remove or gate the Retrolambda plugin, remove `retrolambdaConfig`, and keep Java compilation targeting Java 8 class files. If this fails, keep the plugin change uncommitted until the missing SDK build, default-method, functional-interface, or runtime API support is fixed.
+
+7. Implement Java 9+ string-concat lowering and Java 11 parser support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java11ClassFileTest --tests tc.tools.converter.modernjava.StringConcatFactoryLoweringTest
 
    Expect ordinary Java 11 classes with string concatenation and nestmate metadata to deploy or fail only for known missing runtime APIs.
 
-7. Implement Java 17 parser support:
+8. Implement Java 17 parser support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17ClassFileTest
 
    Expect record and sealed metadata to be accepted or precisely rejected if a specific runtime API is missing.
 
-8. Implement Java 21, Java 25, and Java 26 parser support:
+9. Implement Java 21, Java 25, and Java 26 parser support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java21ClassFileTest --tests tc.tools.converter.modernjava.Java25ClassFileTest --tests tc.tools.converter.modernjava.Java26ClassFileTest
 
    Expect class-file major 65, 69, and 70 to pass parser acceptance and common conversion fixtures.
 
-9. Run focused regression tests after each milestone:
+10. Run focused regression tests after each milestone:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.* --tests totalcross.LauncherArgumentParserTest --tests totalcross.LauncherRuntimeTest
 
-10. Run broad SDK validation when focused tests pass:
+11. Run broad SDK validation when focused tests pass:
 
        cd TotalCrossSDK
        ./gradlew clean dist -x test
