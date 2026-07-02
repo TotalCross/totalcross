@@ -55,7 +55,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
   - [x] (2026-07-02 02:30Z) Support direct bridge methods from `altMetafactory` when bridge arguments exactly match the SAM arguments and the bridge return is exact or reference-covariant.
   - [ ] Support descriptor adaptation beyond exact argument and return descriptors.
     - [x] (2026-07-02 02:50Z) Support reference-covariant return adaptation when SAM and instantiated arguments match exactly, such as `Object get()` backed by an implementation returning `String`.
-    - [ ] Support reference argument casts for SAM/instantiated argument descriptors that differ safely.
+    - [x] (2026-07-02 03:10Z) Support reference argument casts for SAM/instantiated argument descriptors that differ safely, including erased generic SAM arguments lowered through `CHECKCAST`.
     - [ ] Support boxing, unboxing, primitive widening, and primitive return adaptation.
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
@@ -111,6 +111,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: `LambdaMetafactory.metafactory` can emit an instantiated return descriptor that is more specific than the erased SAM return descriptor.
   Evidence: `Java8LambdaLoweringTest` compiles `ObjectFactory factory() { return CompiledJava8ReferenceReturnAdaptation::text; }`, where `ObjectFactory.get()` returns `Object` and `text()` returns `String`, then verifies the adapter has `get()Ljava/lang/Object;`, contains no `invokedynamic`, and converts both the adapter and original class through `J2TC`.
 
+- Observation: Generic functional interfaces often erase SAM arguments to `Object` while the instantiated method type and implementation handle require a narrower reference type.
+  Evidence: `Java8LambdaLoweringTest` compiles `ValueMapper<String>` method references backed by both `CompiledJava8ReferenceArgumentAdaptation::trim` and `String::trim`, verifies generated adapters expose `map(Ljava/lang/Object;)Ljava/lang/String;`, contain `CHECKCAST`, contain no `invokedynamic`, and convert both adapters plus the original class through `J2TC`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -157,6 +160,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: A more specific implementation return can satisfy an erased reference SAM return with the same bytecode return opcode, so this expands common method-reference support without casts, boxing, unboxing, or assignability analysis.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Support reference argument adaptation by casting SAM arguments to the instantiated descriptor before invoking the implementation handle.
+  Rationale: This covers common generic SAM erasure, such as `map(Object)` dispatching to a `String` method reference, without introducing primitive conversion or boxing semantics.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -180,6 +187,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-02 / Codex: Direct `altMetafactory` bridge methods are now generated when they can delegate to the SAM body without adapting arguments and with only exact or reference-covariant return descriptors. Descriptor adaptation remains unsupported for bridge arguments, primitive conversions, boxing, unboxing, or incompatible returns.
 
 2026-07-02 / Codex: Descriptor adaptation now supports the first small non-exact case for Java 8 lambdas and method references: SAM and instantiated argument descriptors must still match exactly, but the implementation may return a more specific reference type than the erased SAM return type. Argument casts, primitive conversions, boxing, and unboxing remain unsupported.
+
+2026-07-02 / Codex: Descriptor adaptation now also supports reference argument casts for erased generic SAM methods. Generated adapters load arguments using the public SAM descriptor and insert `CHECKCAST` to the instantiated argument or receiver type before invoking the implementation handle. Boxing, unboxing, primitive widening, and primitive return adaptation remain unsupported.
 
 ## Context and Orientation
 

@@ -140,6 +140,7 @@ public final class Java8LambdaLowering implements Opcodes {
       mv.visitVarInsn(ALOAD, 0);
       loadSamArguments(mv, Type.getArgumentTypes(bridgeDescriptor), 0);
       mv.visitMethodInsn(INVOKEVIRTUAL, site.adapterClassName, site.samMethodName, site.samDescriptor, false);
+      adaptReference(mv, Type.getReturnType(site.samDescriptor), Type.getReturnType(bridgeDescriptor));
       mv.visitInsn(Type.getReturnType(bridgeDescriptor).getOpcode(IRETURN));
       mv.visitMaxs(0, 0);
       mv.visitEnd();
@@ -170,33 +171,35 @@ public final class Java8LambdaLowering implements Opcodes {
     MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, site.samMethodName, site.samDescriptor, null, null);
     mv.visitCode();
     Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
-    Type[] argumentTypes = Type.getArgumentTypes(site.samDescriptor);
+    Type[] samArgumentTypes = Type.getArgumentTypes(site.samDescriptor);
+    Type[] instantiatedArgumentTypes = Type.getArgumentTypes(site.instantiatedDescriptor);
     if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
       loadCapturedValues(mv, site, captureTypes, 0);
-      loadSamArguments(mv, argumentTypes, 0);
+      loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 0);
       mv.visitMethodInsn(INVOKESTATIC, site.implementationOwner, site.implementationName, site.implementationDescriptor,
           false);
     } else if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
       mv.visitTypeInsn(NEW, site.implementationOwner);
       mv.visitInsn(DUP);
       loadCapturedValues(mv, site, captureTypes, 0);
-      loadSamArguments(mv, argumentTypes, 0);
+      loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 0);
       mv.visitMethodInsn(INVOKESPECIAL, site.implementationOwner, site.implementationName,
           site.implementationDescriptor, false);
     } else {
-      ReceiverSource receiverSource = receiverSource(site, captureTypes, argumentTypes);
+      ReceiverSource receiverSource = receiverSource(site, captureTypes, instantiatedArgumentTypes);
       if (receiverSource == ReceiverSource.CAPTURED) {
         loadCapturedValue(mv, site, captureTypes, 0);
         loadCapturedValues(mv, site, captureTypes, 1);
-        loadSamArguments(mv, argumentTypes, 0);
+        loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 0);
       } else {
-        loadSamArgument(mv, argumentTypes, 0);
+        loadSamArgument(mv, samArgumentTypes, 0, Type.getObjectType(site.implementationOwner));
         loadCapturedValues(mv, site, captureTypes, 0);
-        loadSamArguments(mv, argumentTypes, 1);
+        loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 1);
       }
       mv.visitMethodInsn(invokeOpcode(site), site.implementationOwner, site.implementationName,
           site.implementationDescriptor, site.implementationKind == JavaMethodHandle.REF_INVOKE_INTERFACE);
     }
+    adaptReturnValue(mv, site);
     mv.visitInsn(Type.getReturnType(site.samDescriptor).getOpcode(IRETURN));
     mv.visitMaxs(0, 0);
     mv.visitEnd();
@@ -220,19 +223,39 @@ public final class Java8LambdaLowering implements Opcodes {
     }
   }
 
+  private static void loadSamArguments(MethodVisitor mv, Type[] sourceTypes, Type[] targetTypes, int start) {
+    for (int i = start; i < sourceTypes.length; i++) {
+      loadSamArgument(mv, sourceTypes, i, targetTypes[i]);
+    }
+  }
+
   private static void loadSamArgument(MethodVisitor mv, Type[] argumentTypes, int index) {
+    loadSamArgument(mv, argumentTypes, index, argumentTypes[index]);
+  }
+
+  private static void loadSamArgument(MethodVisitor mv, Type[] argumentTypes, int index, Type targetType) {
     int local = 1;
     for (int i = 0; i < index; i++) {
       local += argumentTypes[i].getSize();
     }
     mv.visitVarInsn(argumentTypes[index].getOpcode(ILOAD), local);
+    adaptReference(mv, argumentTypes[index], targetType);
+  }
+
+  private static void adaptReturnValue(MethodVisitor mv, LambdaSite site) {
+    Type sourceReturn = site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL
+        ? Type.getObjectType(site.implementationOwner) : Type.getReturnType(site.implementationDescriptor);
+    Type instantiatedReturn = Type.getReturnType(site.instantiatedDescriptor);
+    Type samReturn = Type.getReturnType(site.samDescriptor);
+    adaptReference(mv, sourceReturn, instantiatedReturn);
+    adaptReference(mv, instantiatedReturn, samReturn);
   }
 
   private static void validateImplementationDescriptor(JavaClass owner, BC186_invokedynamic bytecode,
       LambdaSite site) {
     Type[] expectedArguments = expectedImplementationArguments(site);
     Type[] implementationArguments = Type.getArgumentTypes(site.implementationDescriptor);
-    Type expectedReturn = Type.getReturnType(site.samDescriptor);
+    Type expectedReturn = Type.getReturnType(site.instantiatedDescriptor);
     Type implementationReturn = Type.getReturnType(site.implementationDescriptor);
     if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
       String constructedType = "L" + site.implementationOwner + ";";
@@ -254,19 +277,19 @@ public final class Java8LambdaLowering implements Opcodes {
   private static Type[] expectedImplementationArguments(LambdaSite site) {
     if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
       return concat(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
-          Type.getArgumentTypes(site.samDescriptor));
+          Type.getArgumentTypes(site.instantiatedDescriptor));
     }
     if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
       return concat(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
-          Type.getArgumentTypes(site.samDescriptor));
+          Type.getArgumentTypes(site.instantiatedDescriptor));
     }
     Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
-    Type[] samTypes = Type.getArgumentTypes(site.samDescriptor);
-    ReceiverSource receiverSource = receiverSource(site, captureTypes, samTypes);
+    Type[] instantiatedTypes = Type.getArgumentTypes(site.instantiatedDescriptor);
+    ReceiverSource receiverSource = receiverSource(site, captureTypes, instantiatedTypes);
     if (receiverSource == ReceiverSource.CAPTURED) {
-      return concat(tail(captureTypes, 1), samTypes);
+      return concat(tail(captureTypes, 1), instantiatedTypes);
     }
-    return concat(captureTypes, tail(samTypes, 1));
+    return concat(captureTypes, tail(instantiatedTypes, 1));
   }
 
   private static void validateBridgeDescriptors(JavaClass owner, BC186_invokedynamic bytecode, LambdaSite site) {
@@ -289,11 +312,31 @@ public final class Java8LambdaLowering implements Opcodes {
     Type[] instantiatedArguments = Type.getArgumentTypes(site.instantiatedDescriptor);
     Type samReturn = Type.getReturnType(site.samDescriptor);
     Type instantiatedReturn = Type.getReturnType(site.instantiatedDescriptor);
-    if (!sameTypes(samArguments, instantiatedArguments) || !compatibleBridgeReturn(instantiatedReturn, samReturn)) {
+    if (!compatibleArgumentTypes(samArguments, instantiatedArguments)
+        || !compatibleBridgeReturn(instantiatedReturn, samReturn)) {
       throw unsupported(owner, bytecode,
           "lambda method adaptation is not lowered yet; SAM " + site.samDescriptor + ", instantiated "
               + site.instantiatedDescriptor);
     }
+  }
+
+  private static boolean compatibleArgumentTypes(Type[] sourceTypes, Type[] targetTypes) {
+    if (sourceTypes.length != targetTypes.length) {
+      return false;
+    }
+    for (int i = 0; i < sourceTypes.length; i++) {
+      if (!compatibleArgumentType(sourceTypes[i], targetTypes[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean compatibleArgumentType(Type sourceType, Type targetType) {
+    if (sourceType.equals(targetType)) {
+      return true;
+    }
+    return isReferenceType(sourceType) && isReferenceType(targetType);
   }
 
   private static boolean sameTypes(Type[] left, Type[] right) {
@@ -324,6 +367,20 @@ public final class Java8LambdaLowering implements Opcodes {
 
   private static boolean isReferenceType(Type type) {
     return type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY;
+  }
+
+  private static void adaptReference(MethodVisitor mv, Type sourceType, Type targetType) {
+    if (sourceType.equals(targetType) || !isReferenceType(sourceType) || !isReferenceType(targetType)) {
+      return;
+    }
+    mv.visitTypeInsn(CHECKCAST, checkcastTypeName(targetType));
+  }
+
+  private static String checkcastTypeName(Type type) {
+    if (type.getSort() == Type.ARRAY) {
+      return type.getDescriptor();
+    }
+    return type.getInternalName();
   }
 
   private static String descriptor(Type[] prefixTypes, Type[] suffixTypes, Type returnType) {
