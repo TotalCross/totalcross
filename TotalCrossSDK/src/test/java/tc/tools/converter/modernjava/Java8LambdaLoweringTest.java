@@ -25,6 +25,7 @@ import tc.tools.converter.Java8LambdaLowering;
 import tc.tools.converter.bytecode.BC186_invokedynamic;
 import tc.tools.converter.bytecode.BC192_checkcast;
 import tc.tools.converter.bytecode.ByteCode;
+import tc.tools.converter.bytecode.MethodCall;
 import tc.tools.converter.java.JavaClass;
 import tc.tools.converter.java.JavaField;
 import tc.tools.converter.java.JavaMethod;
@@ -263,6 +264,40 @@ class Java8LambdaLoweringTest {
     assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
+  @Test
+  void generatesAdapterClassesForPrimitiveAdaptation() throws Exception {
+    JavaClass javaClass = primitiveAdaptationClass();
+
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(javaClass);
+
+    assertEquals(2, adapters.length);
+    assertEquals("fixtures/CompiledJava8PrimitiveAdaptation$$TC$$Lambda$0", adapters[0].className);
+    assertTrue(hasMethod(adapters[0], "apply", "apply(Ljava/lang/Object;)", "Ljava/lang/Object;"));
+    assertTrue(hasCheckCast(adapters[0]));
+    assertTrue(hasMethodCall(adapters[0], "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;"));
+    assertFalse(hasInvokeDynamic(adapters[0]));
+
+    assertEquals("fixtures/CompiledJava8PrimitiveAdaptation$$TC$$Lambda$1", adapters[1].className);
+    assertTrue(hasMethod(adapters[1], "apply", "apply(Ljava/lang/Object;)", "Ljava/lang/Object;"));
+    assertTrue(hasCheckCast(adapters[1]));
+    assertTrue(hasMethodCall(adapters[1], "java/lang/Integer", "intValue", "()I"));
+    assertTrue(hasMethodCall(adapters[1], "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;"));
+    assertFalse(hasInvokeDynamic(adapters[1]));
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[0], true));
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[1], true));
+  }
+
+  @Test
+  void convertsPrimitiveAdaptationToNormalFactoryCalls() throws Exception {
+    JavaClass javaClass = primitiveAdaptationClass();
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
+  }
+
   private JavaClass statelessLambdaClass() throws Exception {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8StatelessLambdaFixture(workDir);
@@ -320,6 +355,14 @@ class Java8LambdaLoweringTest {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture =
         ModernJavaClassFileFixtures.compileJava8ReferenceArgumentAdaptationFixture(workDir);
+    assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
+    return new JavaClass(fixture.get().bytes, false);
+  }
+
+  private JavaClass primitiveAdaptationClass() throws Exception {
+    assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
+    Optional<ModernJavaClassFileFixture> fixture =
+        ModernJavaClassFileFixtures.compileJava8PrimitiveAdaptationFixture(workDir);
     assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
     return new JavaClass(fixture.get().bytes, false);
   }
@@ -387,6 +430,24 @@ class Java8LambdaLoweringTest {
       for (int j = 0; j < method.code.bcs.length; j++) {
         if (method.code.bcs[j] instanceof BC192_checkcast) {
           return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasMethodCall(JavaClass javaClass, String className, String name, String parameters) {
+    for (int i = 0; i < javaClass.methods.length; i++) {
+      JavaMethod method = javaClass.methods[i];
+      if (method.code == null || method.code.bcs == null) {
+        continue;
+      }
+      for (int j = 0; j < method.code.bcs.length; j++) {
+        if (method.code.bcs[j] instanceof MethodCall) {
+          MethodCall call = (MethodCall) method.code.bcs[j];
+          if (className.equals(call.className) && name.equals(call.name) && parameters.equals(call.parameters)) {
+            return true;
+          }
         }
       }
     }

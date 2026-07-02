@@ -173,28 +173,34 @@ public final class Java8LambdaLowering implements Opcodes {
     Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
     Type[] samArgumentTypes = Type.getArgumentTypes(site.samDescriptor);
     Type[] instantiatedArgumentTypes = Type.getArgumentTypes(site.instantiatedDescriptor);
+    Type[] implementationArgumentTypes = Type.getArgumentTypes(site.implementationDescriptor);
     if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
-      loadCapturedValues(mv, site, captureTypes, 0);
-      loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 0);
+      loadCapturedValues(mv, site, captureTypes, implementationArgumentTypes, 0, 0);
+      loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes,
+          tail(implementationArgumentTypes, captureTypes.length), 0);
       mv.visitMethodInsn(INVOKESTATIC, site.implementationOwner, site.implementationName, site.implementationDescriptor,
           false);
     } else if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
       mv.visitTypeInsn(NEW, site.implementationOwner);
       mv.visitInsn(DUP);
-      loadCapturedValues(mv, site, captureTypes, 0);
-      loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 0);
+      loadCapturedValues(mv, site, captureTypes, implementationArgumentTypes, 0, 0);
+      loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes,
+          tail(implementationArgumentTypes, captureTypes.length), 0);
       mv.visitMethodInsn(INVOKESPECIAL, site.implementationOwner, site.implementationName,
           site.implementationDescriptor, false);
     } else {
       ReceiverSource receiverSource = receiverSource(site, captureTypes, instantiatedArgumentTypes);
       if (receiverSource == ReceiverSource.CAPTURED) {
-        loadCapturedValue(mv, site, captureTypes, 0);
-        loadCapturedValues(mv, site, captureTypes, 1);
-        loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 0);
+        loadCapturedValue(mv, site, captureTypes, 0, Type.getObjectType(site.implementationOwner));
+        loadCapturedValues(mv, site, captureTypes, implementationArgumentTypes, 1, 0);
+        loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes,
+            tail(implementationArgumentTypes, captureTypes.length - 1), 0);
       } else {
-        loadSamArgument(mv, samArgumentTypes, 0, Type.getObjectType(site.implementationOwner));
-        loadCapturedValues(mv, site, captureTypes, 0);
-        loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes, 1);
+        loadSamArgument(mv, samArgumentTypes, 0, instantiatedArgumentTypes[0],
+            Type.getObjectType(site.implementationOwner));
+        loadCapturedValues(mv, site, captureTypes, implementationArgumentTypes, 0, 0);
+        loadSamArguments(mv, samArgumentTypes, instantiatedArgumentTypes,
+            tail(implementationArgumentTypes, captureTypes.length), 1);
       }
       mv.visitMethodInsn(invokeOpcode(site), site.implementationOwner, site.implementationName,
           site.implementationDescriptor, site.implementationKind == JavaMethodHandle.REF_INVOKE_INTERFACE);
@@ -212,9 +218,22 @@ public final class Java8LambdaLowering implements Opcodes {
   }
 
   private static void loadCapturedValue(MethodVisitor mv, LambdaSite site, Type[] captureTypes, int index) {
+    loadCapturedValue(mv, site, captureTypes, index, captureTypes[index]);
+  }
+
+  private static void loadCapturedValue(MethodVisitor mv, LambdaSite site, Type[] captureTypes, int index,
+      Type targetType) {
     Type captureType = captureTypes[index];
     mv.visitVarInsn(ALOAD, 0);
     mv.visitFieldInsn(GETFIELD, site.adapterClassName, captureFieldName(index), captureType.getDescriptor());
+    adaptValue(mv, captureType, captureType, targetType);
+  }
+
+  private static void loadCapturedValues(MethodVisitor mv, LambdaSite site, Type[] sourceTypes, Type[] targetTypes,
+      int start, int targetStart) {
+    for (int i = start; i < sourceTypes.length; i++) {
+      loadCapturedValue(mv, site, sourceTypes, i, targetTypes[targetStart + i - start]);
+    }
   }
 
   private static void loadSamArguments(MethodVisitor mv, Type[] argumentTypes, int start) {
@@ -229,17 +248,29 @@ public final class Java8LambdaLowering implements Opcodes {
     }
   }
 
+  private static void loadSamArguments(MethodVisitor mv, Type[] sourceTypes, Type[] intermediateTypes,
+      Type[] targetTypes, int start) {
+    for (int i = start; i < sourceTypes.length; i++) {
+      loadSamArgument(mv, sourceTypes, i, intermediateTypes[i], targetTypes[i - start]);
+    }
+  }
+
   private static void loadSamArgument(MethodVisitor mv, Type[] argumentTypes, int index) {
     loadSamArgument(mv, argumentTypes, index, argumentTypes[index]);
   }
 
   private static void loadSamArgument(MethodVisitor mv, Type[] argumentTypes, int index, Type targetType) {
+    loadSamArgument(mv, argumentTypes, index, targetType, targetType);
+  }
+
+  private static void loadSamArgument(MethodVisitor mv, Type[] argumentTypes, int index, Type intermediateType,
+      Type targetType) {
     int local = 1;
     for (int i = 0; i < index; i++) {
       local += argumentTypes[i].getSize();
     }
     mv.visitVarInsn(argumentTypes[index].getOpcode(ILOAD), local);
-    adaptReference(mv, argumentTypes[index], targetType);
+    adaptValue(mv, argumentTypes[index], intermediateType, targetType);
   }
 
   private static void adaptReturnValue(MethodVisitor mv, LambdaSite site) {
@@ -247,8 +278,7 @@ public final class Java8LambdaLowering implements Opcodes {
         ? Type.getObjectType(site.implementationOwner) : Type.getReturnType(site.implementationDescriptor);
     Type instantiatedReturn = Type.getReturnType(site.instantiatedDescriptor);
     Type samReturn = Type.getReturnType(site.samDescriptor);
-    adaptReference(mv, sourceReturn, instantiatedReturn);
-    adaptReference(mv, instantiatedReturn, samReturn);
+    adaptValue(mv, sourceReturn, instantiatedReturn, samReturn);
   }
 
   private static void validateImplementationDescriptor(JavaClass owner, BC186_invokedynamic bytecode,
@@ -266,7 +296,7 @@ public final class Java8LambdaLowering implements Opcodes {
       }
       expectedReturn = Type.VOID_TYPE;
     }
-    if (!sameTypes(expectedArguments, implementationArguments)
+    if (!compatibleValueTypes(expectedArguments, implementationArguments)
         || !compatibleImplementationReturn(implementationReturn, expectedReturn)) {
       throw unsupported(owner, bytecode,
           "lambda method adaptation is not lowered yet; expected implementation "
@@ -321,22 +351,19 @@ public final class Java8LambdaLowering implements Opcodes {
   }
 
   private static boolean compatibleArgumentTypes(Type[] sourceTypes, Type[] targetTypes) {
+    return compatibleValueTypes(sourceTypes, targetTypes);
+  }
+
+  private static boolean compatibleValueTypes(Type[] sourceTypes, Type[] targetTypes) {
     if (sourceTypes.length != targetTypes.length) {
       return false;
     }
     for (int i = 0; i < sourceTypes.length; i++) {
-      if (!compatibleArgumentType(sourceTypes[i], targetTypes[i])) {
+      if (!compatibleValueType(sourceTypes[i], targetTypes[i])) {
         return false;
       }
     }
     return true;
-  }
-
-  private static boolean compatibleArgumentType(Type sourceType, Type targetType) {
-    if (sourceType.equals(targetType)) {
-      return true;
-    }
-    return isReferenceType(sourceType) && isReferenceType(targetType);
   }
 
   private static boolean sameTypes(Type[] left, Type[] right) {
@@ -359,14 +386,38 @@ public final class Java8LambdaLowering implements Opcodes {
   }
 
   private static boolean compatibleImplementationReturn(Type implementationReturn, Type expectedReturn) {
-    if (implementationReturn.equals(expectedReturn)) {
+    return compatibleValueType(implementationReturn, expectedReturn);
+  }
+
+  private static boolean compatibleValueType(Type sourceType, Type targetType) {
+    if (sourceType.equals(targetType)) {
       return true;
     }
-    return isReferenceType(implementationReturn) && isReferenceType(expectedReturn);
+    if (isReferenceType(sourceType) && isReferenceType(targetType)) {
+      return true;
+    }
+    if (isReferenceType(sourceType) && isPrimitiveType(targetType)) {
+      Type sourcePrimitive = primitiveForWrapper(sourceType);
+      return sourcePrimitive != null && canWidenPrimitive(sourcePrimitive, targetType);
+    }
+    if (isPrimitiveType(sourceType) && isPrimitiveType(targetType)) {
+      return canWidenPrimitive(sourceType, targetType);
+    }
+    if (isPrimitiveType(sourceType) && isReferenceType(targetType)) {
+      Type targetPrimitive = primitiveForWrapper(targetType);
+      return targetPrimitive == null ? "java/lang/Object".equals(targetType.getInternalName())
+          : canWidenPrimitive(sourceType, targetPrimitive);
+    }
+    return false;
   }
 
   private static boolean isReferenceType(Type type) {
     return type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY;
+  }
+
+  private static boolean isPrimitiveType(Type type) {
+    int sort = type.getSort();
+    return sort >= Type.BOOLEAN && sort <= Type.DOUBLE;
   }
 
   private static void adaptReference(MethodVisitor mv, Type sourceType, Type targetType) {
@@ -374,6 +425,183 @@ public final class Java8LambdaLowering implements Opcodes {
       return;
     }
     mv.visitTypeInsn(CHECKCAST, checkcastTypeName(targetType));
+  }
+
+  private static void adaptValue(MethodVisitor mv, Type sourceType, Type intermediateType, Type targetType) {
+    Type currentType = adaptSingleValue(mv, sourceType, intermediateType);
+    adaptSingleValue(mv, currentType, targetType);
+  }
+
+  private static Type adaptSingleValue(MethodVisitor mv, Type sourceType, Type targetType) {
+    if (sourceType.equals(targetType)) {
+      return targetType;
+    }
+    if (isReferenceType(sourceType) && isReferenceType(targetType)) {
+      adaptReference(mv, sourceType, targetType);
+      return targetType;
+    }
+    if (isReferenceType(sourceType) && isPrimitiveType(targetType)) {
+      return unboxValue(mv, sourceType, targetType);
+    }
+    if (isPrimitiveType(sourceType) && isPrimitiveType(targetType)) {
+      widenPrimitive(mv, sourceType, targetType);
+      return targetType;
+    }
+    if (isPrimitiveType(sourceType) && isReferenceType(targetType)) {
+      Type boxedType = boxValue(mv, sourceType, targetType);
+      adaptReference(mv, boxedType, targetType);
+      return targetType;
+    }
+    throw new ConverterException("Unsupported lambda descriptor adaptation from " + sourceType.getDescriptor()
+        + " to " + targetType.getDescriptor());
+  }
+
+  private static Type unboxValue(MethodVisitor mv, Type sourceType, Type targetType) {
+    Type sourcePrimitive = primitiveForWrapper(sourceType);
+    Type wrapperType = sourcePrimitive == null ? wrapperForPrimitive(targetType) : sourceType;
+    Type unboxedType = sourcePrimitive == null ? targetType : sourcePrimitive;
+    mv.visitTypeInsn(CHECKCAST, wrapperType.getInternalName());
+    mv.visitMethodInsn(INVOKEVIRTUAL, wrapperType.getInternalName(), unboxMethodName(unboxedType),
+        "()" + unboxedType.getDescriptor(), false);
+    widenPrimitive(mv, unboxedType, targetType);
+    return targetType;
+  }
+
+  private static Type boxValue(MethodVisitor mv, Type sourceType, Type targetType) {
+    Type targetPrimitive = primitiveForWrapper(targetType);
+    Type boxedPrimitive = targetPrimitive == null ? sourceType : targetPrimitive;
+    widenPrimitive(mv, sourceType, boxedPrimitive);
+    Type boxedType = wrapperForPrimitive(boxedPrimitive);
+    mv.visitMethodInsn(INVOKESTATIC, boxedType.getInternalName(), "valueOf",
+        "(" + boxedPrimitive.getDescriptor() + ")" + boxedType.getDescriptor(), false);
+    return boxedType;
+  }
+
+  private static boolean canWidenPrimitive(Type sourceType, Type targetType) {
+    if (sourceType.equals(targetType)) {
+      return true;
+    }
+    switch (sourceType.getSort()) {
+    case Type.BYTE:
+    case Type.SHORT:
+    case Type.CHAR:
+      return targetType.getSort() == Type.INT || targetType.getSort() == Type.LONG
+          || targetType.getSort() == Type.FLOAT || targetType.getSort() == Type.DOUBLE;
+    case Type.INT:
+      return targetType.getSort() == Type.LONG || targetType.getSort() == Type.FLOAT
+          || targetType.getSort() == Type.DOUBLE;
+    case Type.LONG:
+      return targetType.getSort() == Type.FLOAT || targetType.getSort() == Type.DOUBLE;
+    case Type.FLOAT:
+      return targetType.getSort() == Type.DOUBLE;
+    default:
+      return false;
+    }
+  }
+
+  private static void widenPrimitive(MethodVisitor mv, Type sourceType, Type targetType) {
+    if (sourceType.equals(targetType)) {
+      return;
+    }
+    if (sourceType.getSort() == Type.BYTE || sourceType.getSort() == Type.SHORT
+        || sourceType.getSort() == Type.CHAR) {
+      sourceType = Type.INT_TYPE;
+    }
+    if (sourceType.getSort() == Type.INT) {
+      if (targetType.getSort() == Type.LONG) {
+        mv.visitInsn(I2L);
+      } else if (targetType.getSort() == Type.FLOAT) {
+        mv.visitInsn(I2F);
+      } else if (targetType.getSort() == Type.DOUBLE) {
+        mv.visitInsn(I2D);
+      }
+    } else if (sourceType.getSort() == Type.LONG) {
+      if (targetType.getSort() == Type.FLOAT) {
+        mv.visitInsn(L2F);
+      } else if (targetType.getSort() == Type.DOUBLE) {
+        mv.visitInsn(L2D);
+      }
+    } else if (sourceType.getSort() == Type.FLOAT && targetType.getSort() == Type.DOUBLE) {
+      mv.visitInsn(F2D);
+    }
+  }
+
+  private static Type wrapperForPrimitive(Type primitiveType) {
+    switch (primitiveType.getSort()) {
+    case Type.BOOLEAN:
+      return Type.getObjectType("java/lang/Boolean");
+    case Type.BYTE:
+      return Type.getObjectType("java/lang/Byte");
+    case Type.CHAR:
+      return Type.getObjectType("java/lang/Character");
+    case Type.SHORT:
+      return Type.getObjectType("java/lang/Short");
+    case Type.INT:
+      return Type.getObjectType("java/lang/Integer");
+    case Type.LONG:
+      return Type.getObjectType("java/lang/Long");
+    case Type.FLOAT:
+      return Type.getObjectType("java/lang/Float");
+    case Type.DOUBLE:
+      return Type.getObjectType("java/lang/Double");
+    default:
+      throw new ConverterException("Unsupported primitive wrapper for " + primitiveType.getDescriptor());
+    }
+  }
+
+  private static Type primitiveForWrapper(Type wrapperType) {
+    if (!isReferenceType(wrapperType)) {
+      return null;
+    }
+    String internalName = wrapperType.getInternalName();
+    if ("java/lang/Boolean".equals(internalName)) {
+      return Type.BOOLEAN_TYPE;
+    }
+    if ("java/lang/Byte".equals(internalName)) {
+      return Type.BYTE_TYPE;
+    }
+    if ("java/lang/Character".equals(internalName)) {
+      return Type.CHAR_TYPE;
+    }
+    if ("java/lang/Short".equals(internalName)) {
+      return Type.SHORT_TYPE;
+    }
+    if ("java/lang/Integer".equals(internalName)) {
+      return Type.INT_TYPE;
+    }
+    if ("java/lang/Long".equals(internalName)) {
+      return Type.LONG_TYPE;
+    }
+    if ("java/lang/Float".equals(internalName)) {
+      return Type.FLOAT_TYPE;
+    }
+    if ("java/lang/Double".equals(internalName)) {
+      return Type.DOUBLE_TYPE;
+    }
+    return null;
+  }
+
+  private static String unboxMethodName(Type primitiveType) {
+    switch (primitiveType.getSort()) {
+    case Type.BOOLEAN:
+      return "booleanValue";
+    case Type.BYTE:
+      return "byteValue";
+    case Type.CHAR:
+      return "charValue";
+    case Type.SHORT:
+      return "shortValue";
+    case Type.INT:
+      return "intValue";
+    case Type.LONG:
+      return "longValue";
+    case Type.FLOAT:
+      return "floatValue";
+    case Type.DOUBLE:
+      return "doubleValue";
+    default:
+      throw new ConverterException("Unsupported primitive unboxing for " + primitiveType.getDescriptor());
+    }
   }
 
   private static String checkcastTypeName(Type type) {

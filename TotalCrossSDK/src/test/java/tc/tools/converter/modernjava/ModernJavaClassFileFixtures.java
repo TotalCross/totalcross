@@ -179,6 +179,20 @@ final class ModernJavaClassFileFixtures {
         "java 8 reference argument adaptation", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8PrimitiveAdaptationFixture(Path workDir)
+      throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8PrimitiveAdaptation";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface Function<T, R> { R apply(T value); }\n"
+        + "  public Function<String, Integer> lengthReference() { return String::length; }\n"
+        + "  public Function<Integer, Integer> twiceReference() { return " + simpleName + "::twice; }\n"
+        + "  public static int twice(int value) { return value * 2; }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 primitive adaptation", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
