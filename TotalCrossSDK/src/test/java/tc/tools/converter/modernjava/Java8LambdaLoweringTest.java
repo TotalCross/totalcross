@@ -152,6 +152,32 @@ class Java8LambdaLoweringTest {
     assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
+  @Test
+  void generatesAdapterClassForAltMetafactoryMarkers() throws Exception {
+    JavaClass javaClass = altMetafactoryMarkerClass();
+
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(javaClass);
+
+    assertEquals(1, adapters.length);
+    assertEquals("fixtures/CompiledJava8AltMetafactoryMarker$$TC$$Lambda$0", adapters[0].className);
+    assertTrue(hasInterface(adapters[0], "fixtures/CompiledJava8AltMetafactoryMarker$TextFactory"));
+    assertTrue(hasInterface(adapters[0], "fixtures/CompiledJava8AltMetafactoryMarker$Marker"));
+    assertTrue(hasMethod(adapters[0], "get", "get()"));
+    assertTrue(hasMethod(adapters[0], "$$tc_lambda_factory$0", "$$tc_lambda_factory$0()"));
+    assertFalse(hasInvokeDynamic(adapters[0]));
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[0], true));
+  }
+
+  @Test
+  void convertsAltMetafactoryMarkersToNormalFactoryCalls() throws Exception {
+    JavaClass javaClass = altMetafactoryMarkerClass();
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
+  }
+
   private JavaClass statelessLambdaClass() throws Exception {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8StatelessLambdaFixture(workDir);
@@ -181,6 +207,14 @@ class Java8LambdaLoweringTest {
     return new JavaClass(fixture.get().bytes, false);
   }
 
+  private JavaClass altMetafactoryMarkerClass() throws Exception {
+    assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
+    Optional<ModernJavaClassFileFixture> fixture =
+        ModernJavaClassFileFixtures.compileJava8AltMetafactoryMarkerFixture(workDir);
+    assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
+    return new JavaClass(fixture.get().bytes, false);
+  }
+
   private static boolean hasMethod(JavaClass javaClass, String name, String signature) {
     for (int i = 0; i < javaClass.methods.length; i++) {
       JavaMethod method = javaClass.methods[i];
@@ -195,6 +229,15 @@ class Java8LambdaLoweringTest {
     for (int i = 0; i < javaClass.fields.length; i++) {
       JavaField field = javaClass.fields[i];
       if (name.equals(field.name) && type.equals(field.type)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasInterface(JavaClass javaClass, String name) {
+    for (int i = 0; i < javaClass.interfaces.length; i++) {
+      if (name.equals(javaClass.interfaces[i])) {
         return true;
       }
     }
