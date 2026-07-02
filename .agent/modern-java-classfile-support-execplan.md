@@ -45,7 +45,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-01 23:35Z) Built the initial class-file compatibility test harness under `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava`. It generates minimal class files for Java 8, 11, 17, 21, 25, and 26 majors, and compiles source fixtures with the local `javac` when that compiler can target the requested release.
 - [x] (2026-07-01 23:38Z) Added temporary Gradle source excludes for unrelated local preview, launcher runtime, SSL, and incompatible test sources so `./gradlew test --tests tc.tools.converter.modernjava.*` can validate the new harness in the current worktree.
 - [x] (2026-07-01 23:47Z) Implemented initial parser infrastructure and version gates: normal class files through Java 26 major 70 are accepted, preview minor 65535 and majors above 70 are rejected, class-level attributes are skipped by length, and constant-pool tags 17, 19, and 20 are parsed.
-- [ ] Implement Java 8 lambda and method-reference lowering from `LambdaMetafactory`.
+- [ ] Implement Java 8 lambda and method-reference lowering from `LambdaMetafactory` (completed: parse `BootstrapMethods`, expose method-handle metadata, and model `BC186_invokedynamic` without pretending it is a normal method call; remaining: generate/lower lambda adapter classes and method-reference cases).
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
@@ -76,6 +76,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: Direct parser tests that instantiate `JavaClass` with methods must initialize bytecode classes first.
   Evidence: The first `ClassFileVersionTest` run failed with a `NullPointerException` in `JavaCode` until the tests called `ByteCode.initClasses()`, matching the deployer flow where `J2TC.process` initializes bytecode classes before parsing input classes.
 
+- Observation: For a `Runnable` lambda inside a method named `runnable`, javac emits an invokedynamic call-site name of `run`, the single abstract method name, not the enclosing factory method name.
+  Evidence: `InvokeDynamicMetadataTest` initially expected `runnable` and failed with `expected: <runnable> but was: <run>`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -101,6 +104,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-01 / Codex: The first harness milestone is in place. It does not yet change production parser behavior. Temporary Gradle excludes were added for unrelated local preview, SSL, launcher runtime, and incompatible test sources, and the focused `modernjava` test package passes with JDK 11.
 
 2026-07-01 / Codex: The parser now has a data-driven class-file version policy through Java 26, rejects preview and future major versions clearly, reads modern constant-pool tags for dynamic constants, modules, and packages, and skips unknown class attributes by declared length. The focused `modernjava` tests pass with JDK 11.
+
+2026-07-01 / Codex: The Java 8 lambda milestone now has correct metadata parsing: class-level `BootstrapMethods` are parsed, method handles expose owner/name/descriptor, and opcode 186 has its own bytecode model. Actual lowering to generated adapter classes remains to be implemented.
 
 ## Context and Orientation
 
@@ -351,3 +356,5 @@ Compatibility classes should follow the existing `jdkcompat` convention and use 
 2026-07-01 / Codex: Added Gradle excludes for unrelated local preview/SSL/runtime test sources and reran the focused package successfully. The next implementation step remains parser infrastructure and version gates.
 
 2026-07-01 / Codex: Implemented parser infrastructure and version gates, with focused tests covering roadmap major versions, preview rejection, future-version rejection, unknown class attributes, and modern constant-pool tags. The next implementation step is Java 8 lambda and method-reference lowering from `LambdaMetafactory`.
+
+2026-07-01 / Codex: Added the metadata foundation for Java 8 lambda lowering and a focused test proving a compiled Java 8 lambda exposes `LambdaMetafactory.metafactory` through `BootstrapMethods`. The next implementation step remains the actual lambda adapter generation/lowering.
