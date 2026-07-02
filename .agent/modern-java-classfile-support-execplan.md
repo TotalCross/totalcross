@@ -20,18 +20,16 @@ After this plan is implemented through the early milestones, users should be abl
 
 The source of truth for class-file major versions is the Java Version Almanac class-file table. Class files are backward compatible, but newer class files normally cannot run on older VMs unless the VM or deployer understands their class-file structure. This plan targets the following stages:
 
-| Stage | Java release | Class file major | Goal |
-| ---: | ---: | ---: | --- |
-| Today | Java 7 | 51 | Preserve existing Retrolambda-era behavior. |
-| 1 | Java 8 | 52 | Parse Java 8 class files, lower lambda `invokedynamic`, and make Retrolambda removable for lambda use cases. |
-| 2 | Java 11 LTS | 55 | Accept Java 9-11 class-file structures and lower common Java 9+ string concatenation `invokedynamic`. |
-| 3 | Java 17 LTS | 61 | Accept records, sealed-class metadata, nestmate metadata, and normal Java 17 compiler output when APIs exist. |
-| 4 | Java 21 LTS | 65 | Accept Java 21 class files and common non-preview compiler output, while explicitly rejecting unsupported preview or dynamic features. |
-| 5 | Java 22 | 66 | Maintain parser acceptance and clear diagnostics for newer attributes and constant-pool entries. |
-| 6 | Java 23 | 67 | Maintain parser acceptance and keep common compiler output deployable. |
-| 7 | Java 24 | 68 | Maintain parser acceptance and keep common compiler output deployable. |
-| 8 | Java 25 LTS | 69 | Treat as the main modern LTS target after Java 21. |
-| 9 | Java 26 | 70 | Accept current class-file major 70 where no unsupported runtime feature is required. |
+| Priority | Java release / feature area | Class file major | Goal |
+| ---: | --- | ---: | --- |
+| Today | Java 8 | 52 | Preserve direct Java 8 class-file deploy, lambda lowering, string concat lowering, and Retrolambda-free SDK build behavior. |
+| 1 | Java 11 LTS | 55 | Complete class-file acceptance for Java 9-11 structures, including modules, nestmates, dynamic constants, and clear diagnostics. |
+| 2 | Java 17 LTS | 61 | Complete class-file acceptance through Java 17, including metadata needed by records, sealed classes, and ordinary Java 17 compiler output. |
+| 3 | Java 17 feature set | 52-61 | Support high-value language features in this order: records, instanceof pattern matching, switch expressions, then text blocks. |
+| 4 | Java 21 LTS | 65 | Accept Java 21 class files and common non-preview compiler output. |
+| 5 | Remaining features through Java 17 | 52-61 | Finish Java 9-17 features not listed above or left incomplete after the high-priority feature pass. |
+| 6 | Remaining features through Java 21 | 52-65 | Finish Java 18-21 features not listed above or left incomplete; `invokedynamic` support should be complete by the end of this gate. |
+| 7 | Later class files | 66+ | Add Java 22, 23, 24, 25, 26, and later class-file acceptance one version at a time. |
 
 Preview class files, identified by minor version 65535, are out of scope for the initial pass. The deployer should reject preview class files with a clear message naming the class, major version, minor version, and the fact that preview bytecode is intentionally unsupported.
 
@@ -62,11 +60,13 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-02 16:44Z) Add a TotalCross Java 8 smoke application that exercises supported Java 8 language/class-file features, compile it as major 52, and convert it with `tc.Deploy`.
 - [x] (2026-07-02 16:44Z) Fix the deployer class-expansion crash found by the smoke app when modern constant-pool entries were treated like class/string constants.
 - [x] (2026-07-02 16:55Z) Implement Java 9+ string-concat lowering from `StringConcatFactory.makeConcat` and common `makeConcatWithConstants` recipes.
-- [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
-- [ ] Accept Java 17 class-file structures, including records and sealed-class metadata, with minimal compatibility classes where needed.
-- [ ] Accept Java 21, Java 25, and Java 26 class-file major versions when bytecode and APIs are otherwise supported.
-- [ ] Add lower-priority Java 8 runtime API compatibility found by smoke validation, including `java.util.function` default helper methods and serializable lambda deserialization.
-- [ ] Add limited runtime `invokedynamic` or method-handle execution only after the high-value lowering paths and modern class-file parsing are working.
+- [ ] Complete Java 11 class-file support, including module metadata, nestmate metadata, `CONSTANT_Dynamic`, and clear unsupported-feature diagnostics.
+- [ ] Complete Java 17 class-file support, including class-file majors 56 through 61, record metadata, sealed-class metadata, and ordinary non-preview Java 17 compiler output.
+- [ ] Support Java 17-era language features in priority order: records, instanceof pattern matching, switch expressions, and text blocks.
+- [ ] Complete Java 21 class-file support for major 65 and intermediate majors 62 through 64 when bytecode and APIs are otherwise supported.
+- [ ] Finish support for features introduced through Java 17 that were not listed above or remain incomplete, including lower-priority Java 8 runtime API compatibility found by smoke validation.
+- [ ] Finish support for features introduced through Java 21 that were not listed above or remain incomplete; by this milestone, `invokedynamic` support should be complete rather than limited to selected bootstraps.
+- [ ] Support class files for later Java versions, starting with Java 22 major 66 and continuing through Java 26 major 70 and newer versions as needed.
 
 ## Surprises & Discoveries
 
@@ -222,6 +222,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: `StringConcatFactory` is a javac implementation detail for common string `+` source code. Emitting ordinary constructor, append, and `toString` calls keeps the compatibility gain local to the deployer and avoids new TCVM call-site machinery.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Reprioritize the remaining work around Java 11, Java 17, selected Java 17-era features, Java 21, and only then later class-file versions.
+  Rationale: Users get more practical value from finishing LTS class-file support and high-frequency language features than from raising parser acceptance for newer majors while Java 11, Java 17, or Java 21 behavior remains incomplete. Records depend on Java 17 class-file metadata, so the feature pass follows Java 17 parser acceptance.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -274,7 +278,7 @@ Start by building tests that define compatibility as observable behavior. Add a 
 
 Implement a strict class-file version gate in `JavaClass`. It should accept normal minor version 0 up to the highest milestone currently implemented, reject preview minor 65535 with a clear message, and reject higher major versions with a message that says which maximum is supported. The gate must be data-driven so each milestone can raise the maximum without hunting for scattered constants.
 
-Modernize the class-file parser before changing conversion semantics. Update `JavaConstantPool` to parse and name all constant-pool tags needed through Java 26 class-file acceptance: existing tags 1 through 18, plus `CONSTANT_Module` tag 19 and `CONSTANT_Package` tag 20. Keep explicit accessor methods for MethodHandle, MethodType, Dynamic, InvokeDynamic, Module, and Package entries. Update `JavaClass`, `JavaField`, `JavaMethod`, and `JavaCode` to skip unknown attributes using their declared lengths and to parse known attributes only when the deployer needs their contents.
+Modernize the class-file parser in staged milestones before changing feature semantics. Java 11 support must cover the constant-pool and attribute forms introduced through majors 53, 54, and 55, including `CONSTANT_Dynamic`, `CONSTANT_Module`, `CONSTANT_Package`, module attributes, and nestmate attributes. Java 17 support then adds parser coverage for majors 56 through 61, including record and sealed-class metadata. Java 21 support follows with majors 62 through 65. Only after the Java 21 feature backlog is complete should parser acceptance for Java 22 and newer become the main work. Keep explicit accessor methods for MethodHandle, MethodType, Dynamic, InvokeDynamic, Module, and Package entries. Update `JavaClass`, `JavaField`, `JavaMethod`, and `JavaCode` to skip unknown attributes using their declared lengths and to parse known attributes only when the deployer needs their contents.
 
 The first `invokedynamic` layer is metadata correctness. Add `JavaBootstrapMethod`, `JavaMethodHandle`, and descriptor utilities. `BC186_invokedynamic` must stop extending `MethodCall`, because an invokedynamic entry is not a normal method reference. It should expose the call-site name, descriptor, bootstrap method index, static bootstrap arguments, parsed return type, and parsed argument descriptors. Unsupported dynamic sites must fail with a diagnostic that names the capturing class, method, bytecode position, bootstrap owner, and bootstrap method.
 
@@ -286,15 +290,19 @@ Before moving to Java 9+, keep a real TotalCross Java 8 smoke app in the tree. T
 
 The third `invokedynamic` layer is Java 9+ string concatenation. Modern javac emits calls to `java/lang/invoke/StringConcatFactory.makeConcat` or `makeConcatWithConstants` for many string concatenations. Lower these sites in the deployer to existing TotalCross-compatible string building behavior, preferably using `java.lang.StringBuffer`/`StringBuilder` mappings already present in `GlobalConstantPool`. This is required for practical Java 11+ support because ordinary source code with `+` on strings can otherwise introduce unsupported `invokedynamic`.
 
-For Java 11 class-file support, accept major 55 and all intermediate majors 53 and 54. Parse or skip module attributes, `ModulePackages`, `ModuleMainClass`, `NestHost`, and `NestMembers`. Parse `CONSTANT_Dynamic` tag 17. Initially support only dynamic constants that can be lowered cheaply and deterministically; reject the rest with precise diagnostics. Add tests for a Java 11 class that uses string concatenation, a nested private-access pattern that emits nestmate metadata, and a jar that includes `module-info.class`.
+The next priority is Java 11 class-file support. Accept major 55 and all intermediate majors 53 and 54. Parse or skip module attributes, `ModulePackages`, `ModuleMainClass`, `NestHost`, and `NestMembers`. Parse `CONSTANT_Dynamic` tag 17. Initially support only dynamic constants that can be lowered cheaply and deterministically; reject the rest with precise diagnostics. Add tests for a Java 11 class that uses string concatenation, a nested private-access pattern that emits nestmate metadata, and a jar that includes `module-info.class`.
 
-For Java 17 class-file support, accept major 61 and intermediate majors 56 through 60. Parse or skip `Record`, `PermittedSubclasses`, and related attributes. Add minimal `jdkcompat.lang.Record4D` if record classes need a superclass available on device. Record classes should deploy as ordinary final classes with fields and generated methods; sealed-class enforcement can initially be treated as metadata only. Add tests that deploy a simple record-like compiled class if API support allows it, and tests that sealed metadata is accepted or clearly rejected if the runtime type hierarchy cannot represent it.
+After Java 11 class files, prioritize Java 17 class-file support. Accept major 61 and intermediate majors 56 through 60. Parse or skip `Record`, `PermittedSubclasses`, and related attributes. Add fixtures for ordinary non-preview Java 17 compiler output, record metadata, sealed-class metadata, and parser behavior for attributes introduced between Java 12 and Java 17. This stage is primarily class-file acceptance; feature-specific behavior is split into the following stage so each language feature can be validated independently.
 
-For Java 21 class-file support, accept major 65 and intermediate majors 62 through 64. Keep preview bytecode rejected. Add fixtures for ordinary Java 21 compiler output that does not require unavailable Java 21 runtime APIs. If javac emits `invokedynamic` for switch or pattern-related runtime bootstraps in non-preview code, decide based on frequency: either lower the bootstrap if it is common and simple, or reject it clearly while still accepting other Java 21 class files.
+After Java 17 class-file acceptance, support the requested high-value language features in this exact order unless a dependency forces a small reorder: records, instanceof pattern matching, switch expressions, and text blocks. Records depend on Java 17 class-file and `Record` metadata acceptance, so they come after the Java 17 parser stage. Instanceof pattern matching and switch expressions mostly compile to ordinary bytecode in non-preview Java 17, but fixtures should prove the deployer accepts the compiler output and any synthetic helpers javac emits. Text blocks are source syntax that normally compiles to ordinary string constants, so acceptance means proving that generated constants and line content survive deploy.
 
-For Java 22 through Java 26, raise parser acceptance one release at a time: major 66, 67, 68, 69, then 70. Each step must include at least one fixture proving the deployer can parse and either convert or intentionally reject a class file of that version. The main work is expected to be keeping the parser resilient, maintaining the known attribute list, and ensuring unsupported runtime APIs produce actionable errors rather than parser crashes.
+Then prioritize Java 21 class-file support. Accept major 65 and intermediate majors 62 through 64. Keep preview bytecode rejected. Add fixtures for ordinary Java 21 compiler output that does not require unavailable Java 21 runtime APIs. If javac emits `invokedynamic` for common non-preview Java 21 runtime bootstraps, lower or implement those before declaring Java 21 feature completion.
 
-Only after the high-value lowering paths are working should runtime `invokedynamic` be considered. A limited runtime implementation may add TCZ metadata and a TCVM dynamic-call mechanism for `ConstantCallSite`-like behavior, but it should be justified by real unsupported applications. Full `MutableCallSite`, `VolatileCallSite`, arbitrary bootstrap methods, and complete `MethodHandle.invokeExact` semantics are not the priority while class-file-version support remains behind current Java releases.
+After Java 21 class-file support, return to features introduced through Java 17 that were not listed in the priority feature pass or remain incomplete. This includes lower-priority Java 8 compatibility gaps found by the smoke app, Java 9-17 API/runtime compatibility gaps that block real applications, sealed-class behavior beyond metadata acceptance, private interface methods, nestmate access behavior, and any remaining javac output patterns through Java 17.
+
+After the Java 17 feature backlog, finish features introduced through Java 21 that were not listed above or remain incomplete. By the end of this gate, `invokedynamic` support should be complete for supported class files, including arbitrary supported bootstrap metadata and any TCVM/runtime mechanism needed for dynamic sites that cannot be lowered safely. Full completion should still reject unsupported preview features clearly.
+
+Only after those Java 21 gates are complete should later class-file versions become the priority. For Java 22 through Java 26 and beyond, raise parser acceptance one release at a time: major 66, 67, 68, 69, then 70, followed by newer majors as they appear. Each step must include at least one fixture proving the deployer can parse and either convert or intentionally reject a class file of that version. The main work is expected to be keeping the parser resilient, maintaining the known attribute list, and ensuring unsupported runtime APIs produce actionable errors rather than parser crashes.
 
 ## Concrete Steps
 
@@ -353,33 +361,61 @@ Work from the repository root unless a command specifies another directory.
 
    Expect the compiled app class to be major 52 and still contain `InvokeDynamic` entries before deploy. The deployer should produce `Java8FeatureSmokeApp.tcz` with generated `$$TC$$Lambda` adapter classes. If the app fails only for an unavailable Java 8 runtime API, document it and decide whether it is high-value enough to fix before Java 9+.
 
-8. Implement Java 9+ string-concat lowering and Java 11 parser support:
+8. Complete Java 11 class-file support:
 
        cd TotalCrossSDK
-       ./gradlew test --tests tc.tools.converter.modernjava.StringConcatFactoryLoweringTest
+       ./gradlew test --tests tc.tools.converter.modernjava.StringConcatFactoryLoweringTest --tests tc.tools.converter.modernjava.Java11ClassFileTest
 
-   Expect an ordinary Java 11 class with string concatenation to compile as major 55, retain a `StringConcatFactory` `invokedynamic` in the original class file, and convert through `J2TC`. After this passes, add separate Java 11 fixtures for module metadata and nestmate metadata.
+   Expect ordinary Java 11 classes to compile as major 55, module metadata and nestmate metadata to parse or skip safely, `CONSTANT_Dynamic` to be handled or rejected precisely, and string concatenation to keep passing through `StringConcatFactoryLoweringTest`.
 
-9. Implement Java 17 parser support:
+9. Complete Java 17 class-file support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17ClassFileTest
 
-   Expect record and sealed metadata to be accepted or precisely rejected if a specific runtime API is missing.
+   Expect major 61 and intermediate majors 56 through 60 to parse, record and sealed metadata to be accepted or precisely rejected, and ordinary non-preview Java 17 compiler output to avoid parser crashes.
 
-10. Implement Java 21, Java 25, and Java 26 parser support:
+10. Support the prioritized Java 17-era language features:
 
        cd TotalCrossSDK
-       ./gradlew test --tests tc.tools.converter.modernjava.Java21ClassFileTest --tests tc.tools.converter.modernjava.Java25ClassFileTest --tests tc.tools.converter.modernjava.Java26ClassFileTest
+       ./gradlew test --tests tc.tools.converter.modernjava.Java17FeatureTest
 
-   Expect class-file major 65, 69, and 70 to pass parser acceptance and common conversion fixtures.
+   Implement and validate the feature fixtures in this order: records, instanceof pattern matching, switch expressions, then text blocks. Expect records to deploy as ordinary classes when required runtime APIs exist or to fail with precise missing-API diagnostics. Expect pattern matching, switch expressions, and text blocks to prove that javac output deploys without special VM support unless a concrete unsupported bytecode/API appears.
 
-11. Run focused regression tests after each milestone:
+11. Complete Java 21 class-file support:
+
+       cd TotalCrossSDK
+       ./gradlew test --tests tc.tools.converter.modernjava.Java21ClassFileTest
+
+   Expect class-file major 65 and intermediate majors 62 through 64 to pass parser acceptance and common conversion fixtures. Preview class files remain rejected with clear diagnostics.
+
+12. Finish features introduced through Java 17 that were not listed above or remain incomplete:
+
+       cd TotalCrossSDK
+       ./gradlew test --tests tc.tools.converter.modernjava.Java17BacklogFeatureTest
+
+   Expect remaining Java 8-17 compatibility gaps to be either implemented or documented as unsupported with precise diagnostics. Include the lower-priority Java 8 smoke gaps, sealed-class behavior beyond metadata acceptance, nestmate access behavior, and any remaining common javac output patterns through Java 17.
+
+13. Finish features introduced through Java 21 that were not listed above or remain incomplete:
+
+       cd TotalCrossSDK
+       ./gradlew test --tests tc.tools.converter.modernjava.Java21BacklogFeatureTest --tests tc.tools.converter.modernjava.InvokeDynamicCompletenessTest
+
+   Expect remaining Java 18-21 compatibility gaps to be either implemented or documented as unsupported with precise diagnostics. By the end of this step, supported class files should no longer depend on a partial `invokedynamic` implementation.
+
+14. Support later class-file versions:
+
+       cd TotalCrossSDK
+       ./gradlew test --tests tc.tools.converter.modernjava.Java22ClassFileTest --tests tc.tools.converter.modernjava.Java23ClassFileTest --tests tc.tools.converter.modernjava.Java24ClassFileTest --tests tc.tools.converter.modernjava.Java25ClassFileTest --tests tc.tools.converter.modernjava.Java26ClassFileTest
+
+   Expect class-file majors 66 through 70, and later majors as they are added, to pass parser acceptance and common conversion fixtures one version at a time.
+
+15. Run focused regression tests after each milestone:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.* --tests totalcross.LauncherArgumentParserTest --tests totalcross.LauncherRuntimeTest
 
-12. Run broad SDK validation when focused tests pass:
+16. Run broad SDK validation when focused tests pass:
 
        cd TotalCrossSDK
        ./gradlew clean dist -x test
@@ -396,11 +432,17 @@ Retrolambda removal is accepted only when disabling the plugin still lets the SD
 
 Java 11 acceptance includes successful parsing of class-file major 55, module metadata, nestmate metadata, and lowering of javac string concatenation via `StringConcatFactory`. This matters because string `+` is common enough that Java 11 support without string-concat lowering would be frustratingly narrow.
 
-Java 17 acceptance includes successful parsing of major 61 and metadata for records and sealed classes. Full semantic enforcement of sealed classes is not required initially; deployer acceptance and ordinary method behavior are more important.
+Java 17 class-file acceptance includes successful parsing of major 61, intermediate majors 56 through 60, metadata for records and sealed classes, and ordinary non-preview Java 17 compiler output. Full semantic enforcement of sealed classes is not required in the parser stage; deployer acceptance and ordinary method behavior are more important.
 
-Java 21, 25, and 26 acceptance is parser and common-output acceptance. Each stage must prove that the deployer can recognize the major version, skip or understand metadata safely, and either convert ordinary code or reject unsupported runtime APIs with clear messages.
+The prioritized Java 17-era feature pass is accepted only when records, instanceof pattern matching, switch expressions, and text blocks each have fixtures and clear outcomes. Records should deploy as ordinary classes when runtime APIs exist or fail with precise missing-API diagnostics. Instanceof pattern matching, switch expressions, and text blocks are accepted when their javac output deploys or fails only for a named unsupported runtime/API feature.
 
-`invokedynamic` acceptance is intentionally layered. The first accepted bootstraps are `LambdaMetafactory` and `StringConcatFactory`. Other bootstraps are accepted only when implemented or rejected clearly. Complete dynamic-language support, mutable call sites, volatile call sites, arbitrary bootstrap execution, and full `MethodHandle` combinators are not required for the modern-class-file milestones unless a real high-value fixture depends on them.
+Java 21 class-file acceptance is parser and common-output acceptance for major 65 and intermediate majors 62 through 64. It must prove that the deployer can recognize the major version, skip or understand metadata safely, keep preview bytecode rejected, and either convert ordinary code or reject unsupported runtime APIs with clear messages.
+
+The remaining Java 17 feature backlog is accepted when Java 8-17 language, compiler-output, and runtime compatibility gaps not covered by the prioritized feature pass are either implemented or explicitly rejected with actionable diagnostics. This includes lower-priority Java 8 smoke gaps and any Java 9-17 common compiler output that users are likely to hit.
+
+The remaining Java 21 feature backlog is accepted when Java 18-21 language, compiler-output, and runtime compatibility gaps are either implemented or explicitly rejected with actionable diagnostics. By this point, `invokedynamic` support should be complete for supported class files: dynamic sites must be lowered, executed through a supported runtime mechanism, or rejected only when they depend on an unsupported runtime feature rather than because opcode 186 is partially implemented.
+
+Later class-file acceptance for Java 22 and newer is parser and common-output acceptance one major version at a time. Each stage must prove that the deployer can recognize the major version, skip or understand metadata safely, and either convert ordinary code or reject unsupported runtime APIs with clear messages.
 
 ## Idempotence and Recovery
 
