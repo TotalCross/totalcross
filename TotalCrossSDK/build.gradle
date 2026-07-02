@@ -3,22 +3,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-buildscript {
-  repositories {
-    maven {
-      url 'https://plugins.gradle.org/m2/'
-    }
-  }
-  dependencies {
-    classpath 'gradle.plugin.me.tatarka:gradle-retrolambda:3.7.1'
-  }
-}
-
-apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 version = '7.2.2'
 group = 'com.totalcross'
 archivesBaseName = 'totalcross-sdk'
@@ -55,12 +44,6 @@ def optionalInput = { value ->
 }
 def vcruntimeReleaseTag = envOrNull('VCRUNTIME_RELEASE_TAG')
 def vcruntimeGithubRepo = envOrNull('VCRUNTIME_GITHUB_REPO')
-
-retrolambda {
-  javaVersion JavaVersion.VERSION_1_7
-  defaultMethods true
-  incremental true
-}
 
 wrapper {
     gradleVersion = '5.0'
@@ -103,8 +86,6 @@ repositories {
 }
 
 dependencies {
-    retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.5.7'
-
     // https://mvnrepository.com/artifact/org.vafer/jdeb
     compile(group: 'org.vafer', name: 'jdeb', version: '0.7') {
 		exclude group: 'org.bouncycastle'
