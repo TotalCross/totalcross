@@ -107,6 +107,22 @@ final class ModernJavaClassFileFixtures {
         "java 8 method reference", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8ConstructorReferenceFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8ConstructorReference";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface BoxFactory { Box create(String value); }\n"
+        + "  public BoxFactory factory() { return Box::new; }\n"
+        + "  public static class Box {\n"
+        + "    private final String value;\n"
+        + "    public Box(String value) { this.value = value; }\n"
+        + "    public String value() { return value; }\n"
+        + "  }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 constructor reference", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
