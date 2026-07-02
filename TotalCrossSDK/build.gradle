@@ -6,10 +6,13 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-sourceCompatibility = JavaVersion.VERSION_1_9
-targetCompatibility = JavaVersion.VERSION_1_9
 version = '7.2.2'
 group = 'com.totalcross'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_9
+    targetCompatibility = JavaVersion.VERSION_1_9
+}
 
 base {
     archivesName = 'totalcross-sdk'
@@ -49,7 +52,7 @@ def vcruntimeReleaseTag = envOrNull('VCRUNTIME_RELEASE_TAG')
 def vcruntimeGithubRepo = envOrNull('VCRUNTIME_GITHUB_REPO')
 
 wrapper {
-    gradleVersion = '8.14.5'
+    gradleVersion = '9.6.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -149,7 +152,7 @@ jar {
 
     // collect all runtime dependencies shipped in dist/libs
     int i = 0;
-    String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++==0?String.format("%0\$-50s", it.getName()):String.format("%0\$-62s", it.getName()))   }.join(" ");
+    String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++ == 0 ? String.format("%-50s", it.getName()) : String.format("%-62s", it.getName())) }.join(" ");
     manifest {
         attributes('Main-Class': 'totalcross.Launcher')
         manifest {
@@ -282,17 +285,17 @@ task fetchSdkNativeRuntime {
 	outputs.file(vcruntimeDll)
 
 	doLast {
-		exec {
-			executable 'bash'
-			args depotToolsFetchScript.absolutePath
-		}
+		providers.exec {
+			commandLine 'bash', depotToolsFetchScript.absolutePath
+		}.result.get().assertNormalExitValue()
 
 		if (!vcruntimeFetchScript.isFile()) {
 			throw new GradleException("Could not find vcruntime fetch script at ${vcruntimeFetchScript}")
 		}
 
-		exec {
+		providers.exec {
 			def fetchArgs = [
+				'bash',
 				vcruntimeFetchScript.absolutePath,
 				'--platform', 'windows',
 				'--arch', 'x86',
@@ -301,9 +304,8 @@ task fetchSdkNativeRuntime {
 			addOptionalArg(fetchArgs, '--release-tag', vcruntimeReleaseTag)
 			addOptionalArg(fetchArgs, '--github-repo', vcruntimeGithubRepo)
 
-			executable 'bash'
-			args fetchArgs
-		}
+			commandLine fetchArgs
+		}.result.get().assertNormalExitValue()
 	}
 }
 
