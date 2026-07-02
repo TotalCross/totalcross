@@ -51,7 +51,8 @@ Preview class files, identified by minor version 65535, are out of scope for the
   - [x] (2026-07-02 00:40Z) Support simply captured `metafactory` lambdas by storing captured arguments in generated adapter fields and passing captured values through the generated factory.
   - [x] (2026-07-02 01:05Z) Support common method references emitted through `LambdaMetafactory`: static references, unbound virtual references whose receiver is the first SAM argument, and bound virtual references whose receiver is captured by the factory.
   - [x] (2026-07-02 01:25Z) Support constructor references emitted through `LambdaMetafactory` when the constructed type exactly matches the SAM return type and no descriptor adaptation is required.
-  - [ ] Support bridge and marker-interface cases from `altMetafactory`.
+  - [x] (2026-07-02 02:05Z) Support marker-interface cases from `altMetafactory`, including extra marker interfaces declared by javac and the serializable marker flag.
+  - [ ] Support bridge methods from `altMetafactory`.
   - [ ] Support descriptor adaptation beyond exact argument and return descriptors.
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
@@ -98,6 +99,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: Constructor references emitted by javac use `REF_newInvokeSpecial` and can be lowered by generating `NEW`, `DUP`, argument loads, `INVOKESPECIAL <init>`, and object return inside the adapter SAM method.
   Evidence: `Java8LambdaLoweringTest` compiles `Box::new`, verifies adapter method `create(Ljava/lang/String;)`, verifies the generated adapter contains no `invokedynamic`, and converts both the adapter and original class through `J2TC`.
 
+- Observation: `altMetafactory` marker-interface arguments can be lowered by adding the marker interfaces to the generated adapter class while keeping the same SAM method body.
+  Evidence: `Java8LambdaLoweringTest` compiles `(TextFactory & Marker) CompiledJava8AltMetafactoryMarker::text`, verifies the generated adapter implements both `TextFactory` and `Marker`, verifies it contains no `invokedynamic`, and converts both the adapter and original class through `J2TC`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -132,6 +136,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: Exact matching keeps this deployer-only lowering small and predictable. Wider assignability checks and return adaptation can be added with the broader descriptor-adaptation milestone.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Support `altMetafactory` marker interfaces now, but keep bridge methods as a separate pending slice.
+  Rationale: Marker interfaces only affect the generated adapter class interface list. Bridge methods usually need extra method bodies and often descriptor adaptation, so splitting them preserves the small-step approach and keeps unsupported cases explicit.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -149,6 +157,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-02 / Codex: The `LambdaMetafactory` lowering now supports common method references in addition to lambda bodies: static method references, unbound virtual method references, and bound virtual method references. The generated SAM method now chooses the correct invoke opcode and receiver source. Constructor references, bridge/marker cases, and descriptor adaptation remain unsupported.
 
 2026-07-02 / Codex: Constructor references are now supported for exact `REF_newInvokeSpecial` cases such as `Box::new`. The generated adapter allocates the implementation owner, invokes its constructor, and returns the new object from the SAM method. `altMetafactory` bridge/marker cases and descriptor adaptation remain unsupported.
+
+2026-07-02 / Codex: `altMetafactory` marker-interface support is implemented for marker-only cases. The parser reads alt-metafactory flags, adds serializable and declared marker interfaces to the generated adapter, and rejects bridge methods with a precise diagnostic. Bridge generation and descriptor adaptation remain unsupported.
 
 ## Context and Orientation
 

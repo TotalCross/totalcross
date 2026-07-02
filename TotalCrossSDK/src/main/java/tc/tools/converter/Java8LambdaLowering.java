@@ -19,7 +19,11 @@ import tc.tools.converter.java.JavaMethodHandle;
 public final class Java8LambdaLowering implements Opcodes {
   private static final String BOOTSTRAP_OWNER = "java/lang/invoke/LambdaMetafactory";
   private static final String BOOTSTRAP_METHOD = "metafactory";
+  private static final String ALT_BOOTSTRAP_METHOD = "altMetafactory";
   private static final String FACTORY_PREFIX = "$$tc_lambda_factory$";
+  private static final int FLAG_SERIALIZABLE = 1;
+  private static final int FLAG_MARKERS = 2;
+  private static final int FLAG_BRIDGES = 4;
 
   private Java8LambdaLowering() {
   }
@@ -28,7 +32,7 @@ public final class Java8LambdaLowering implements Opcodes {
     JavaBootstrapMethod bootstrapMethod = bootstrapMethod(owner, site);
     JavaMethodHandle bootstrapHandle = new JavaMethodHandle(owner.cp, bootstrapMethod.bootstrapMethodRef);
     if (!BOOTSTRAP_OWNER.equals(bootstrapHandle.getOwner(owner.cp))
-        || !BOOTSTRAP_METHOD.equals(bootstrapHandle.getName(owner.cp))) {
+        || !isSupportedBootstrapMethod(bootstrapHandle.getName(owner.cp))) {
       throw unsupported(owner, site,
           "unsupported invokedynamic bootstrap " + bootstrapHandle.getOwner(owner.cp) + "."
               + bootstrapHandle.getName(owner.cp));
@@ -40,11 +44,13 @@ public final class Java8LambdaLowering implements Opcodes {
     String samDescriptor = methodTypeDescriptor(owner.cp, bootstrapMethod.bootstrapArguments[0]);
     JavaMethodHandle implementation = new JavaMethodHandle(owner.cp, bootstrapMethod.bootstrapArguments[1]);
     String instantiatedDescriptor = methodTypeDescriptor(owner.cp, bootstrapMethod.bootstrapArguments[2]);
+    AltMetafactoryOptions options = parseAltMetafactoryOptions(owner, site, bootstrapHandle, bootstrapMethod);
     int ordinal = lambdaOrdinal(owner, site);
     return new LambdaSite(owner.className + "$$TC$$Lambda$" + ordinal, FACTORY_PREFIX + ordinal,
         site.descriptor.substring(0, site.descriptor.length() - site.ret.length()), site.ret, site.jargs, site.name,
         samDescriptor, implementation.referenceKind, implementation.getOwner(owner.cp), implementation.getName(owner.cp),
-        implementation.getDescriptor(owner.cp), instantiatedDescriptor, site.pcInMethod);
+        implementation.getDescriptor(owner.cp), instantiatedDescriptor, options.markerInterfaces,
+        options.bridgeDescriptors, site.pcInMethod);
   }
 
   public static JavaClass[] generateAdapterClasses(JavaClass owner) throws totalcross.io.IOException {
@@ -73,6 +79,10 @@ public final class Java8LambdaLowering implements Opcodes {
       throw unsupported(owner, bytecode,
           "lambda call site must return an interface type, found " + site.factoryReturnDescriptor);
     }
+    if (site.bridgeDescriptors.length > 0) {
+      throw unsupported(owner, bytecode,
+          "altMetafactory bridge methods are not lowered yet; bridge count is " + site.bridgeDescriptors.length);
+    }
     if (!expectedImplementationDescriptor(site).equals(site.implementationDescriptor)) {
       throw unsupported(owner, bytecode,
           "lambda method adaptation is not lowered yet; expected implementation "
@@ -86,9 +96,12 @@ public final class Java8LambdaLowering implements Opcodes {
 
   private static byte[] generateAdapterBytes(LambdaSite site) {
     String functionalInterface = site.factoryReturnDescriptor.substring(1, site.factoryReturnDescriptor.length() - 1);
+    String[] interfaces = new String[site.markerInterfaces.length + 1];
+    interfaces[0] = functionalInterface;
+    System.arraycopy(site.markerInterfaces, 0, interfaces, 1, site.markerInterfaces.length);
     ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
     cw.visit(V1_7, ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_SYNTHETIC, site.adapterClassName, null,
-        "java/lang/Object", new String[] { functionalInterface });
+        "java/lang/Object", interfaces);
     generateCaptureFields(cw, site);
     generateConstructor(cw, site);
     generateFactory(cw, site);
@@ -322,7 +335,57 @@ public final class Java8LambdaLowering implements Opcodes {
     JavaBootstrapMethod bootstrapMethod = bootstrapMethod(owner, site);
     JavaMethodHandle bootstrapHandle = new JavaMethodHandle(owner.cp, bootstrapMethod.bootstrapMethodRef);
     return BOOTSTRAP_OWNER.equals(bootstrapHandle.getOwner(owner.cp))
-        && BOOTSTRAP_METHOD.equals(bootstrapHandle.getName(owner.cp));
+        && isSupportedBootstrapMethod(bootstrapHandle.getName(owner.cp));
+  }
+
+  private static boolean isSupportedBootstrapMethod(String name) {
+    return BOOTSTRAP_METHOD.equals(name) || ALT_BOOTSTRAP_METHOD.equals(name);
+  }
+
+  private static AltMetafactoryOptions parseAltMetafactoryOptions(JavaClass owner, BC186_invokedynamic site,
+      JavaMethodHandle bootstrapHandle, JavaBootstrapMethod bootstrapMethod) {
+    if (BOOTSTRAP_METHOD.equals(bootstrapHandle.getName(owner.cp))) {
+      return new AltMetafactoryOptions(new String[0], new String[0]);
+    }
+    int[] bootstrapArguments = bootstrapMethod.bootstrapArguments;
+    if (bootstrapArguments.length < 4) {
+      throw unsupported(owner, site, "LambdaMetafactory.altMetafactory requires flags after the three fixed arguments");
+    }
+    int cursor = 3;
+    int flags = intConstant(owner.cp, bootstrapArguments[cursor++]);
+    totalcross.util.Vector markerInterfaces = new totalcross.util.Vector(2);
+    totalcross.util.Vector bridgeDescriptors = new totalcross.util.Vector(2);
+    if ((flags & FLAG_SERIALIZABLE) != 0) {
+      markerInterfaces.addElement("java/io/Serializable");
+    }
+    if ((flags & FLAG_MARKERS) != 0) {
+      int markerCount = intConstant(owner.cp, bootstrapArguments[cursor++]);
+      for (int i = 0; i < markerCount; i++) {
+        markerInterfaces.addElement(owner.cp.getString1(bootstrapArguments[cursor++]));
+      }
+    }
+    if ((flags & FLAG_BRIDGES) != 0) {
+      int bridgeCount = intConstant(owner.cp, bootstrapArguments[cursor++]);
+      for (int i = 0; i < bridgeCount; i++) {
+        bridgeDescriptors.addElement(methodTypeDescriptor(owner.cp, bootstrapArguments[cursor++]));
+      }
+    }
+    return new AltMetafactoryOptions(toStringArray(markerInterfaces), toStringArray(bridgeDescriptors));
+  }
+
+  private static int intConstant(JavaConstantPool cp, int constantPoolIndex) {
+    Object constant = cp.constants[constantPoolIndex];
+    if (!(constant instanceof Integer)) {
+      throw new IllegalArgumentException("Constant pool entry " + constantPoolIndex + " is not an Integer");
+    }
+    return ((Integer) constant).intValue();
+  }
+
+  private static String[] toStringArray(totalcross.util.Vector vector) {
+    if (vector.size() == 0) {
+      return new String[0];
+    }
+    return (String[]) vector.toObjectArray();
   }
 
   private static int lambdaOrdinal(JavaClass owner, BC186_invokedynamic target) {
@@ -368,12 +431,14 @@ public final class Java8LambdaLowering implements Opcodes {
     public final String implementationName;
     public final String implementationDescriptor;
     public final String instantiatedDescriptor;
+    public final String[] markerInterfaces;
+    public final String[] bridgeDescriptors;
     public final int bytecodeIndex;
 
     private LambdaSite(String adapterClassName, String factoryMethodName, String factoryDescriptorWithoutReturn,
         String factoryReturnDescriptor, String[] factoryParams, String samMethodName, String samDescriptor,
         int implementationKind, String implementationOwner, String implementationName, String implementationDescriptor,
-        String instantiatedDescriptor, int bytecodeIndex) {
+        String instantiatedDescriptor, String[] markerInterfaces, String[] bridgeDescriptors, int bytecodeIndex) {
       this.adapterClassName = adapterClassName;
       this.factoryMethodName = factoryMethodName;
       this.factoryDescriptorWithoutReturn = factoryDescriptorWithoutReturn;
@@ -386,7 +451,19 @@ public final class Java8LambdaLowering implements Opcodes {
       this.implementationName = implementationName;
       this.implementationDescriptor = implementationDescriptor;
       this.instantiatedDescriptor = instantiatedDescriptor;
+      this.markerInterfaces = markerInterfaces;
+      this.bridgeDescriptors = bridgeDescriptors;
       this.bytecodeIndex = bytecodeIndex;
+    }
+  }
+
+  private static final class AltMetafactoryOptions {
+    final String[] markerInterfaces;
+    final String[] bridgeDescriptors;
+
+    AltMetafactoryOptions(String[] markerInterfaces, String[] bridgeDescriptors) {
+      this.markerInterfaces = markerInterfaces;
+      this.bridgeDescriptors = bridgeDescriptors;
     }
   }
 

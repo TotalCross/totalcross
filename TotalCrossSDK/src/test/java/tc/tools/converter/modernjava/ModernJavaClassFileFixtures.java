@@ -123,6 +123,20 @@ final class ModernJavaClassFileFixtures {
         "java 8 constructor reference", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8AltMetafactoryMarkerFixture(Path workDir)
+      throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8AltMetafactoryMarker";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface TextFactory { String get(); }\n"
+        + "  public interface Marker { }\n"
+        + "  public TextFactory markerReference() { return (TextFactory & Marker) " + simpleName + "::text; }\n"
+        + "  public static String text() { return \"text\"; }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 altMetafactory marker", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
