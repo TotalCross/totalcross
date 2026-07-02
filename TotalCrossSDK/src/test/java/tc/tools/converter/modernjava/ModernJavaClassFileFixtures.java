@@ -193,6 +193,29 @@ final class ModernJavaClassFileFixtures {
         "java 8 primitive adaptation", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8RetrolambdaRemovalFixture(Path workDir)
+      throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8RetrolambdaRemoval";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface TextFactory { String get(); }\n"
+        + "  public interface Marker { }\n"
+        + "  public interface Mapper<T, R> { R map(T value); }\n"
+        + "  public interface BoxFactory { Box create(String value); }\n"
+        + "  public Runnable captured(final String value) { return () -> value.length(); }\n"
+        + "  public TextFactory staticReference() { return " + simpleName + "::text; }\n"
+        + "  public TextFactory markerReference() { return (TextFactory & Marker) " + simpleName + "::text; }\n"
+        + "  public Mapper<String, Integer> primitiveReference() { return String::length; }\n"
+        + "  public BoxFactory constructorReference() { return Box::new; }\n"
+        + "  public static String text() { return \"text\"; }\n"
+        + "  public static class Box {\n"
+        + "    public Box(String value) { }\n"
+        + "  }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 retrolambda removal", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
