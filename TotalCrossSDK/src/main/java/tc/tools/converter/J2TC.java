@@ -1060,11 +1060,18 @@ public final class J2TC implements JConstants, TCConstants {
     for (int i = 1; i < jcp.numConstants; i++) {
       if (jcp.constants[i] instanceof JavaConstantInfo) {
         JavaConstantInfo jci = (JavaConstantInfo) jcp.constants[i];
-        String c = jcp.getString1(jci.index1);
+        String c;
         switch (jci.type) {
         case 7: // class identifier
+          c = jcp.getString1(jci.index1);
           c += ".class";
+          if (!inProhibitedList(c, false) && isValidFile(c)
+              && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) {
+            addAndExpand(vin, c, true);
+          }
+          break;
         case 8: // string
+          c = jcp.getString1(jci.index1);
           if (!inProhibitedList(c, false) && isValidFile(c)
               && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) {
             addAndExpand(vin, c, true);

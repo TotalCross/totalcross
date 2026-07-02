@@ -59,10 +59,13 @@ Preview class files, identified by minor version 65535, are out of scope for the
     - [x] (2026-07-02 03:35Z) Support common boxing, unboxing, primitive widening, and primitive return adaptation for lambda adapters by lowering through wrapper `valueOf` and primitive value methods.
 - [x] (2026-07-02 03:55Z) Prove the deployer converts direct Java 8 lambda class files without Retrolambda for representative lambda use cases.
 - [x] (2026-07-02 04:20Z) Prove the full TotalCrossSDK Gradle build works without the Retrolambda plugin while compiling SDK classes as Java 8 class files.
+- [x] (2026-07-02 16:44Z) Add a TotalCross Java 8 smoke application that exercises supported Java 8 language/class-file features, compile it as major 52, and convert it with `tc.Deploy`.
+- [x] (2026-07-02 16:44Z) Fix the deployer class-expansion crash found by the smoke app when modern constant-pool entries were treated like class/string constants.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
 - [ ] Accept Java 17 class-file structures, including records and sealed-class metadata, with minimal compatibility classes where needed.
 - [ ] Accept Java 21, Java 25, and Java 26 class-file major versions when bytecode and APIs are otherwise supported.
+- [ ] Add lower-priority Java 8 runtime API compatibility found by smoke validation, including `java.util.function` default helper methods and serializable lambda deserialization.
 - [ ] Add limited runtime `invokedynamic` or method-handle execution only after the high-value lowering paths and modern class-file parsing are working.
 
 ## Surprises & Discoveries
@@ -123,6 +126,21 @@ Preview class files, identified by minor version 65535, are out of scope for the
 
 - Observation: The full `TotalCrossSDK` Gradle distribution build can complete after removing the Retrolambda plugin and compiling SDK classes as Java 8 class files.
   Evidence: After removing `me.tatarka.retrolambda`, the `retrolambda` block, and `retrolambdaConfig`, and setting `targetCompatibility = 1.8`, `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home ./gradlew clean dist -x test` completed successfully. The build output no longer includes `compileRetrolambdaMain` or `compileRetrolambdaTest`. Javadoc still reports legacy malformed-doc comments, but `javadoc.failOnError = false` lets the distribution build continue as before.
+
+- Observation: A real TotalCross Java 8 smoke application found a class-expansion bug that focused unit tests had not exposed.
+  Evidence: Deploying `smoke/Java8FeatureSmokeApp.class`, compiled with `javac -source 1.8 -target 1.8`, initially failed with `ClassCastException: tc.tools.converter.java.JavaConstantInfo cannot be cast to java.lang.String` from `JavaConstantPool.getString1` through `J2TC.expandClass`. The fix is to call `getString1(jci.index1)` only for constant-pool tags 7 (`Class`) and 8 (`String`) instead of every `JavaConstantInfo`.
+
+- Observation: `tc.Deploy` aborts on this local macOS environment unless the validation command is run headless.
+  Evidence: Deploying both a simple HelloWorld class and the Java 8 smoke app aborted before conversion without `-Djava.awt.headless=true`; the same HelloWorld deploy and the final Java 8 smoke deploy proceeded when that property was set.
+
+- Observation: Java 8 `java.util.function` default helper methods are runtime API compatibility gaps, not class-file parser or lambda-lowering blockers.
+  Evidence: Adding `Predicate<String>.and(...)` to the smoke app compiled successfully but deploy failed with `Method java/util/function/Predicate.and(java.util.function.Predicate) is not available at the device`. The app now keeps core `Function` and `Supplier` SAM usage but leaves default helper methods for a lower-priority API milestone.
+
+- Observation: Serializable lambdas pull in Java lambda serialization support even when the runtime behavior is not needed by the smoke app.
+  Evidence: Casting a lambda to `Serializable` made javac emit `$deserializeLambda$`, and deploy failed because `java.lang.invoke.SerializedLambda` is not available at the device. The smoke app now validates `altMetafactory` marker interfaces with a custom marker and postpones serializable lambda deserialization.
+
+- Observation: The Java 8 smoke app now converts end-to-end with the generated SDK.
+  Evidence: `javap -verbose /tmp/totalcross-java8-smoke/classes/smoke/Java8FeatureSmokeApp.class` reports `major version: 52` and multiple `InvokeDynamic` entries. After rebuilding the SDK, compiling the smoke app, and running `tc.Deploy` headless, the deployer wrote `/tmp/totalcross-java8-smoke/classes/Java8FeatureSmokeApp.tcz`.
 
 ## Decision Log
 
@@ -186,9 +204,17 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: The deployer now supports the representative Java 8 lambda bytecode shapes, and the SDK distribution build no longer needs Retrolambda to produce Java 7 class files.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Use a TotalCross smoke application to validate the supported Java 8 class-file/lambda surface before moving to Java 9+.
+  Rationale: Focused converter tests prove individual lowering cases, but a real `MainWindow` application catches integration issues in class expansion, deploy packaging, default methods, and runtime API allowlists.
+  Date/Author: 2026-07-02 / Codex
+
+- Decision: Keep Java 8 library default helpers and lambda serialization out of the immediate Java 8 class-file acceptance gate.
+  Rationale: `Predicate.and` and `SerializedLambda` are useful compatibility gaps, but they do not block ordinary lambdas, method references, constructor references, marker/bridge `altMetafactory`, descriptor adaptation, or default/static interface methods. Java 9+ string concatenation and modern class-file parsing have higher compatibility leverage.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
-No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
+Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
 
 2026-07-01 / Codex: The first harness milestone is in place. It does not yet change production parser behavior. Temporary Gradle excludes were added for unrelated local preview, SSL, launcher runtime, and incompatible test sources, and the focused `modernjava` test package passes with JDK 11.
 
@@ -218,6 +244,8 @@ No implementation has been completed yet. Update this section after each milesto
 
 2026-07-02 / Codex: The full SDK distribution build now passes without the Retrolambda Gradle plugin. `TotalCrossSDK/build.gradle` compiles source and target compatibility as Java 8, and `clean dist -x test` plus the focused `tc.tools.converter.modernjava.*` test suite pass with JDK 11. The next compatibility frontier is Java 9+ `StringConcatFactory` lowering and Java 11 class-file structures.
 
+2026-07-02 / Codex: A real TotalCross Java 8 smoke app now exists at `TotalCrossSDK/src/test/resources/modernjava/smoke/Java8FeatureSmokeApp.java`. It extends `MainWindow`, calls one method per supported Java 8 feature slice from `initUI`, compiles as class-file major 52, retains `InvokeDynamic` entries before deploy, and converts successfully to `/tmp/totalcross-java8-smoke/classes/Java8FeatureSmokeApp.tcz` through `tc.Deploy` after the SDK build. This validation found and fixed a production deployer bug in `J2TC.expandClass`, where modern constant-pool entries were resolved as UTF-8 strings before checking their tag. The same validation also found lower-priority runtime gaps: `java.util.function.Predicate.and` is not available at the device, and serializable lambdas pull in `$deserializeLambda$` plus `java.lang.invoke.SerializedLambda`. Those two gaps are now documented for later API compatibility work instead of blocking Java 9+ class-file progress.
+
 ## Context and Orientation
 
 A Java class file has a major version. Java 7 uses major 51, Java 8 uses 52, Java 11 uses 55, Java 17 uses 61, Java 21 uses 65, Java 25 uses 69, and Java 26 uses 70. A class file also has a minor version. For modern Java releases, minor version 0 is normal and minor version 65535 means the class uses preview features from that exact JDK release.
@@ -240,7 +268,9 @@ The first `invokedynamic` layer is metadata correctness. Add `JavaBootstrapMetho
 
 The second `invokedynamic` layer is Java 8 lambda lowering. Recognize `java/lang/invoke/LambdaMetafactory.metafactory` and the common subset of `altMetafactory`. Generate synthetic adapter classes with ASM, append them to the `J2TC` input queue, and lower the original `invokedynamic` to a normal `CALL_normal` factory call. Support stateless lambdas, captured lambdas, static method references, virtual/interface method references, private/special helper references emitted by javac, and constructor references when the generator can do so safely. Unsupported adaptations such as complex bridge generation, unusual marker interfaces, or hard boxing/unboxing cases should fail clearly at first.
 
-The Retrolambda milestone comes immediately after Java 8 lambda lowering. Remove or disable the Retrolambda plugin in a controlled branch of the build, compile the SDK/application fixtures directly to Java 8 class files, deploy them, and compare behavior. Do not remove Retrolambda permanently until tests prove lambdas, method references, default methods used by the SDK, and `java.util.function` compatibility classes all work. If default methods need separate support, implement that before declaring Retrolambda removable.
+The Retrolambda milestone comes immediately after Java 8 lambda lowering. Remove or disable the Retrolambda plugin in a controlled branch of the build, compile the SDK/application fixtures directly to Java 8 class files, deploy them, and compare behavior. Do not remove Retrolambda permanently until tests prove lambdas, method references, default/static interface methods used by the SDK, and the core `java.util.function` SAM interfaces used by the fixtures deploy. Java 8 library helper defaults such as `Predicate.and` and serializable lambda deserialization are compatibility follow-ups, not blockers for class-file support unless SDK code depends on them.
+
+Before moving to Java 9+, keep a real TotalCross Java 8 smoke app in the tree. The app should extend `MainWindow`, call one method per Java 8 feature slice in `initUI`, and be compiled outside Gradle against the generated `totalcross-sdk.jar`. Its deployment command should run `tc.Deploy` against the compiled `.class` file. The smoke app is intentionally focused on high-value language/class-file features: stateless and captured lambdas, method references, constructor references, custom marker interfaces, direct bridges, descriptor adaptation, and default/static interface methods. Lower-priority Java 8 runtime API gaps discovered by this app should be documented and planned without blocking Java 9+ class-file work.
 
 The third `invokedynamic` layer is Java 9+ string concatenation. Modern javac emits calls to `java/lang/invoke/StringConcatFactory.makeConcat` or `makeConcatWithConstants` for many string concatenations. Lower these sites in the deployer to existing TotalCross-compatible string building behavior, preferably using `java.lang.StringBuffer`/`StringBuilder` mappings already present in `GlobalConstantPool`. This is required for practical Java 11+ support because ordinary source code with `+` on strings can otherwise introduce unsupported `invokedynamic`.
 
@@ -300,33 +330,44 @@ Work from the repository root unless a command specifies another directory.
 
    Run this only after changing `build.gradle` to remove or gate the Retrolambda plugin, remove `retrolambdaConfig`, and keep Java compilation targeting Java 8 class files. If this fails, keep the plugin change uncommitted until the missing SDK build, default-method, functional-interface, or runtime API support is fixed.
 
-7. Implement Java 9+ string-concat lowering and Java 11 parser support:
+7. Compile and deploy the Java 8 TotalCross smoke app:
+
+       cd TotalCrossSDK
+       ./gradlew clean dist -x test
+       mkdir -p /tmp/totalcross-java8-smoke/classes
+       javac -source 1.8 -target 1.8 -cp dist/totalcross-sdk.jar -d /tmp/totalcross-java8-smoke/classes src/test/resources/modernjava/smoke/Java8FeatureSmokeApp.java
+       cd /tmp/totalcross-java8-smoke/classes
+       java -Djava.awt.headless=true -cp "/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/totalcross-sdk.jar:/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/libs/*" tc.Deploy smoke/Java8FeatureSmokeApp.class /v
+
+   Expect the compiled app class to be major 52 and still contain `InvokeDynamic` entries before deploy. The deployer should produce `Java8FeatureSmokeApp.tcz` with generated `$$TC$$Lambda` adapter classes. If the app fails only for an unavailable Java 8 runtime API, document it and decide whether it is high-value enough to fix before Java 9+.
+
+8. Implement Java 9+ string-concat lowering and Java 11 parser support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java11ClassFileTest --tests tc.tools.converter.modernjava.StringConcatFactoryLoweringTest
 
    Expect ordinary Java 11 classes with string concatenation and nestmate metadata to deploy or fail only for known missing runtime APIs.
 
-8. Implement Java 17 parser support:
+9. Implement Java 17 parser support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17ClassFileTest
 
    Expect record and sealed metadata to be accepted or precisely rejected if a specific runtime API is missing.
 
-9. Implement Java 21, Java 25, and Java 26 parser support:
+10. Implement Java 21, Java 25, and Java 26 parser support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java21ClassFileTest --tests tc.tools.converter.modernjava.Java25ClassFileTest --tests tc.tools.converter.modernjava.Java26ClassFileTest
 
    Expect class-file major 65, 69, and 70 to pass parser acceptance and common conversion fixtures.
 
-10. Run focused regression tests after each milestone:
+11. Run focused regression tests after each milestone:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.* --tests totalcross.LauncherArgumentParserTest --tests totalcross.LauncherRuntimeTest
 
-11. Run broad SDK validation when focused tests pass:
+12. Run broad SDK validation when focused tests pass:
 
        cd TotalCrossSDK
        ./gradlew clean dist -x test
@@ -337,7 +378,7 @@ Work from the repository root unless a command specifies another directory.
 
 Class-file acceptance is proven by tests that compile or generate class files for the targeted major version and then parse them with `JavaClass`. A successful milestone must either convert the class or reject it with a message that identifies a specific unsupported feature. Generic parser crashes, fake numeric class names, array-index failures, and misleading `Invalid bytecode index` errors are not acceptable.
 
-Java 8 acceptance is that lambdas and method references deploy without Retrolambda. The generated TCZ must contain ordinary synthetic adapter classes, and the converted methods must use ordinary TotalCross calls. A smoke application must demonstrate at least one stateless lambda and one captured lambda producing the expected output.
+Java 8 acceptance is that high-value language/class-file features deploy without Retrolambda. The generated TCZ must contain ordinary synthetic adapter classes, and the converted methods must use ordinary TotalCross calls. A smoke application must demonstrate stateless and captured lambdas, static/bound/unbound method references, constructor references, custom marker-interface `altMetafactory`, direct bridge `altMetafactory`, reference and primitive descriptor adaptation, and default/static interface methods. Java 8 runtime API helpers such as `Predicate.and` and serializable lambda deserialization are tracked separately unless SDK code requires them.
 
 Retrolambda removal is accepted only when disabling the plugin still lets the SDK and app fixtures compile, deploy, and run the Java 8 lambda tests. If default methods or functional interfaces fail, the milestone is incomplete even if lambda lowering itself works.
 
