@@ -61,7 +61,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-02 04:20Z) Prove the full TotalCrossSDK Gradle build works without the Retrolambda plugin while compiling SDK classes as Java 8 class files.
 - [x] (2026-07-02 16:44Z) Add a TotalCross Java 8 smoke application that exercises supported Java 8 language/class-file features, compile it as major 52, and convert it with `tc.Deploy`.
 - [x] (2026-07-02 16:44Z) Fix the deployer class-expansion crash found by the smoke app when modern constant-pool entries were treated like class/string constants.
-- [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
+- [x] (2026-07-02 16:55Z) Implement Java 9+ string-concat lowering from `StringConcatFactory.makeConcat` and common `makeConcatWithConstants` recipes.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
 - [ ] Accept Java 17 class-file structures, including records and sealed-class metadata, with minimal compatibility classes where needed.
 - [ ] Accept Java 21, Java 25, and Java 26 class-file major versions when bytecode and APIs are otherwise supported.
@@ -142,6 +142,12 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: The Java 8 smoke app now converts end-to-end with the generated SDK.
   Evidence: `javap -verbose /tmp/totalcross-java8-smoke/classes/smoke/Java8FeatureSmokeApp.class` reports `major version: 52` and multiple `InvokeDynamic` entries. After rebuilding the SDK, compiling the smoke app, and running `tc.Deploy` headless, the deployer wrote `/tmp/totalcross-java8-smoke/classes/Java8FeatureSmokeApp.tcz`.
 
+- Observation: Java 11 javac emits `StringConcatFactory.makeConcatWithConstants` for ordinary string `+` expressions.
+  Evidence: `StringConcatFactoryLoweringTest` compiles `CompiledJava11StringConcat` with `--release 11`, verifies class-file major 55, finds a `java/lang/invoke/StringConcatFactory.makeConcatWithConstants` bootstrap, and converts the class through `J2TC`.
+
+- Observation: String-concat lowering can stay deployer-only and reuse existing TCVM method calls.
+  Evidence: `JavaStringConcatLowering` recognizes `makeConcat` and `makeConcatWithConstants`, expands the recipe placeholders to `java/lang/StringBuffer.<init>`, `append(...)`, and `toString()` calls, and both the focused `tc.tools.converter.modernjava.*` suite and `./gradlew clean dist -x test` pass with JDK 11.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -212,6 +218,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: `Predicate.and` and `SerializedLambda` are useful compatibility gaps, but they do not block ordinary lambdas, method references, constructor references, marker/bridge `altMetafactory`, descriptor adaptation, or default/static interface methods. Java 9+ string concatenation and modern class-file parsing have higher compatibility leverage.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: Lower Java 9+ string concatenation to `StringBuffer` calls instead of adding runtime `invokedynamic`.
+  Rationale: `StringConcatFactory` is a javac implementation detail for common string `+` source code. Emitting ordinary constructor, append, and `toString` calls keeps the compatibility gain local to the deployer and avoids new TCVM call-site machinery.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -245,6 +255,8 @@ Update this section after each milestone with the highest class-file version pro
 2026-07-02 / Codex: The full SDK distribution build now passes without the Retrolambda Gradle plugin. `TotalCrossSDK/build.gradle` compiles source and target compatibility as Java 8, and `clean dist -x test` plus the focused `tc.tools.converter.modernjava.*` test suite pass with JDK 11. The next compatibility frontier is Java 9+ `StringConcatFactory` lowering and Java 11 class-file structures.
 
 2026-07-02 / Codex: A real TotalCross Java 8 smoke app now exists at `TotalCrossSDK/src/test/resources/modernjava/smoke/Java8FeatureSmokeApp.java`. It extends `MainWindow`, calls one method per supported Java 8 feature slice from `initUI`, compiles as class-file major 52, retains `InvokeDynamic` entries before deploy, and converts successfully to `/tmp/totalcross-java8-smoke/classes/Java8FeatureSmokeApp.tcz` through `tc.Deploy` after the SDK build. This validation found and fixed a production deployer bug in `J2TC.expandClass`, where modern constant-pool entries were resolved as UTF-8 strings before checking their tag. The same validation also found lower-priority runtime gaps: `java.util.function.Predicate.and` is not available at the device, and serializable lambdas pull in `$deserializeLambda$` plus `java.lang.invoke.SerializedLambda`. Those two gaps are now documented for later API compatibility work instead of blocking Java 9+ class-file progress.
+
+2026-07-02 / Codex: Java 9+ string concatenation now has deployer lowering for `StringConcatFactory.makeConcat` and the common `makeConcatWithConstants` recipe form. A Java 11 class compiled with `--release 11` and ordinary string `+` keeps its original `invokedynamic` in the class file, then converts through `J2TC` by expanding the concat site to ordinary `StringBuffer` calls. The focused `modernjava` tests and full SDK `clean dist -x test` build pass with JDK 11. This completes the high-value invokedynamic part of Java 11 support; module, nestmate, and broader Java 11 metadata/API fixtures remain as the next parser-acceptance stage.
 
 ## Context and Orientation
 
@@ -344,9 +356,9 @@ Work from the repository root unless a command specifies another directory.
 8. Implement Java 9+ string-concat lowering and Java 11 parser support:
 
        cd TotalCrossSDK
-       ./gradlew test --tests tc.tools.converter.modernjava.Java11ClassFileTest --tests tc.tools.converter.modernjava.StringConcatFactoryLoweringTest
+       ./gradlew test --tests tc.tools.converter.modernjava.StringConcatFactoryLoweringTest
 
-   Expect ordinary Java 11 classes with string concatenation and nestmate metadata to deploy or fail only for known missing runtime APIs.
+   Expect an ordinary Java 11 class with string concatenation to compile as major 55, retain a `StringConcatFactory` `invokedynamic` in the original class file, and convert through `J2TC`. After this passes, add separate Java 11 fixtures for module metadata and nestmate metadata.
 
 9. Implement Java 17 parser support:
 
