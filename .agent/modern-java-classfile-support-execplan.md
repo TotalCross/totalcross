@@ -288,10 +288,10 @@ If class-file parsing becomes blocked by a rare feature, keep the milestone movi
 
 Current branch evidence:
 
-       7aaa3f98c invokedynamic: converts invoke dynamic into tcvm instruction
-       a68e9bb50 invokedynamic: fixes getting the class name for invoke dynamic
-       f6ee290d4 invokedynamic: adds bytecode for parsing invoke dynamic
-       3619bde71 invokedynamic: first parser to support new bytecodes from Java 8
+       730453e70 feat(converter): parse Java 8 invokedynamic bytecode
+       1deab8bed feat(converter): parse invokedynamic bytecode
+       7c4fdeaf8 fix(converter): resolve invokedynamic class names
+       6ecdbe0ee feat(converter): lower invokedynamic to tcvm instructions
 
 Important current code locations:
 
