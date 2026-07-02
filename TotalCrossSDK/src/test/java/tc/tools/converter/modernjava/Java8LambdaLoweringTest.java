@@ -204,6 +204,31 @@ class Java8LambdaLoweringTest {
     assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
+  @Test
+  void generatesAdapterClassForReferenceReturnAdaptation() throws Exception {
+    JavaClass javaClass = referenceReturnAdaptationClass();
+
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(javaClass);
+
+    assertEquals(1, adapters.length);
+    assertEquals("fixtures/CompiledJava8ReferenceReturnAdaptation$$TC$$Lambda$0", adapters[0].className);
+    assertTrue(hasInterface(adapters[0], "fixtures/CompiledJava8ReferenceReturnAdaptation$ObjectFactory"));
+    assertTrue(hasMethod(adapters[0], "get", "get()", "Ljava/lang/Object;"));
+    assertTrue(hasMethod(adapters[0], "$$tc_lambda_factory$0", "$$tc_lambda_factory$0()"));
+    assertFalse(hasInvokeDynamic(adapters[0]));
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[0], true));
+  }
+
+  @Test
+  void convertsReferenceReturnAdaptationToNormalFactoryCall() throws Exception {
+    JavaClass javaClass = referenceReturnAdaptationClass();
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
+  }
+
   private JavaClass statelessLambdaClass() throws Exception {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture = ModernJavaClassFileFixtures.compileJava8StatelessLambdaFixture(workDir);
@@ -245,6 +270,14 @@ class Java8LambdaLoweringTest {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture =
         ModernJavaClassFileFixtures.compileJava8AltMetafactoryBridgeFixture(workDir);
+    assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
+    return new JavaClass(fixture.get().bytes, false);
+  }
+
+  private JavaClass referenceReturnAdaptationClass() throws Exception {
+    assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
+    Optional<ModernJavaClassFileFixture> fixture =
+        ModernJavaClassFileFixtures.compileJava8ReferenceReturnAdaptationFixture(workDir);
     assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
     return new JavaClass(fixture.get().bytes, false);
   }

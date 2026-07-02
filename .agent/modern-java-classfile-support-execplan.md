@@ -54,6 +54,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
   - [x] (2026-07-02 02:05Z) Support marker-interface cases from `altMetafactory`, including extra marker interfaces declared by javac and the serializable marker flag.
   - [x] (2026-07-02 02:30Z) Support direct bridge methods from `altMetafactory` when bridge arguments exactly match the SAM arguments and the bridge return is exact or reference-covariant.
   - [ ] Support descriptor adaptation beyond exact argument and return descriptors.
+    - [x] (2026-07-02 02:50Z) Support reference-covariant return adaptation when SAM and instantiated arguments match exactly, such as `Object get()` backed by an implementation returning `String`.
+    - [ ] Support reference argument casts for SAM/instantiated argument descriptors that differ safely.
+    - [ ] Support boxing, unboxing, primitive widening, and primitive return adaptation.
 - [ ] Add a specific Retrolambda removal milestone and prove the SDK/app deploy path works without the plugin for lambda use cases.
 - [ ] Implement Java 9+ string-concat lowering from `StringConcatFactory`.
 - [ ] Accept Java 11 class-file structures, including module and nestmate metadata, with clear unsupported-feature diagnostics.
@@ -105,6 +108,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: `altMetafactory` bridge methods can be lowered for direct bridge descriptors by delegating the bridge method to the generated SAM method.
   Evidence: `Java8LambdaLoweringTest` compiles `(StringFactory & ObjectFactory) CompiledJava8AltMetafactoryBridge::text`, verifies generated `get()Ljava/lang/String;` and bridge `get()Ljava/lang/Object;` methods, verifies the adapter contains no `invokedynamic`, and converts both the adapter and original class through `J2TC`.
 
+- Observation: `LambdaMetafactory.metafactory` can emit an instantiated return descriptor that is more specific than the erased SAM return descriptor.
+  Evidence: `Java8LambdaLoweringTest` compiles `ObjectFactory factory() { return CompiledJava8ReferenceReturnAdaptation::text; }`, where `ObjectFactory.get()` returns `Object` and `text()` returns `String`, then verifies the adapter has `get()Ljava/lang/Object;`, contains no `invokedynamic`, and converts both the adapter and original class through `J2TC`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -147,6 +153,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: This covers common bridge output such as `String get()` plus `Object get()` without introducing casting, boxing, unboxing, primitive conversion, or assignability analysis. Broader adaptation remains in the descriptor-adaptation milestone.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: For descriptor adaptation, start with reference-covariant returns while keeping arguments exact.
+  Rationale: A more specific implementation return can satisfy an erased reference SAM return with the same bytecode return opcode, so this expands common method-reference support without casts, boxing, unboxing, or assignability analysis.
+  Date/Author: 2026-07-02 / Codex
+
 ## Outcomes & Retrospective
 
 No implementation has been completed yet. Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -168,6 +178,8 @@ No implementation has been completed yet. Update this section after each milesto
 2026-07-02 / Codex: `altMetafactory` marker-interface support is implemented for marker-only cases. The parser reads alt-metafactory flags, adds serializable and declared marker interfaces to the generated adapter, and rejects bridge methods with a precise diagnostic. Bridge generation and descriptor adaptation remain unsupported.
 
 2026-07-02 / Codex: Direct `altMetafactory` bridge methods are now generated when they can delegate to the SAM body without adapting arguments and with only exact or reference-covariant return descriptors. Descriptor adaptation remains unsupported for bridge arguments, primitive conversions, boxing, unboxing, or incompatible returns.
+
+2026-07-02 / Codex: Descriptor adaptation now supports the first small non-exact case for Java 8 lambdas and method references: SAM and instantiated argument descriptors must still match exactly, but the implementation may return a more specific reference type than the erased SAM return type. Argument casts, primitive conversions, boxing, and unboxing remain unsupported.
 
 ## Context and Orientation
 

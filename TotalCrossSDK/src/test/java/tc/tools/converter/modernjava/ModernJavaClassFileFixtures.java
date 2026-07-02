@@ -152,6 +152,19 @@ final class ModernJavaClassFileFixtures {
         "java 8 altMetafactory bridge", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8ReferenceReturnAdaptationFixture(Path workDir)
+      throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8ReferenceReturnAdaptation";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface ObjectFactory { Object get(); }\n"
+        + "  public ObjectFactory factory() { return " + simpleName + "::text; }\n"
+        + "  public static String text() { return \"text\"; }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 reference return adaptation", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");

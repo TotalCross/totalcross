@@ -70,20 +70,12 @@ public final class Java8LambdaLowering implements Opcodes {
 
   public static void validateSupportedLambdaMetafactory(JavaClass owner, BC186_invokedynamic bytecode,
       LambdaSite site) {
-    if (!site.samDescriptor.equals(site.instantiatedDescriptor)) {
-      throw unsupported(owner, bytecode,
-          "lambda method adaptation is not lowered yet; SAM " + site.samDescriptor + ", instantiated "
-              + site.instantiatedDescriptor);
-    }
+    validateDescriptorAdaptation(owner, bytecode, site);
+    validateBridgeDescriptors(owner, bytecode, site);
+    validateImplementationDescriptor(owner, bytecode, site);
     if (!site.factoryReturnDescriptor.startsWith("L") || !site.factoryReturnDescriptor.endsWith(";")) {
       throw unsupported(owner, bytecode,
           "lambda call site must return an interface type, found " + site.factoryReturnDescriptor);
-    }
-    validateBridgeDescriptors(owner, bytecode, site);
-    if (!expectedImplementationDescriptor(site).equals(site.implementationDescriptor)) {
-      throw unsupported(owner, bytecode,
-          "lambda method adaptation is not lowered yet; expected implementation "
-              + expectedImplementationDescriptor(site) + ", found " + site.implementationDescriptor);
     }
   }
 
@@ -236,28 +228,45 @@ public final class Java8LambdaLowering implements Opcodes {
     mv.visitVarInsn(argumentTypes[index].getOpcode(ILOAD), local);
   }
 
-  private static String expectedImplementationDescriptor(LambdaSite site) {
-    Type returnType = Type.getReturnType(site.samDescriptor);
-    if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
-      return descriptor(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
-          Type.getArgumentTypes(site.samDescriptor), returnType);
-    }
+  private static void validateImplementationDescriptor(JavaClass owner, BC186_invokedynamic bytecode,
+      LambdaSite site) {
+    Type[] expectedArguments = expectedImplementationArguments(site);
+    Type[] implementationArguments = Type.getArgumentTypes(site.implementationDescriptor);
+    Type expectedReturn = Type.getReturnType(site.samDescriptor);
+    Type implementationReturn = Type.getReturnType(site.implementationDescriptor);
     if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
       String constructedType = "L" + site.implementationOwner + ";";
-      if (!constructedType.equals(returnType.getDescriptor())) {
-        throw new ConverterException("Unsupported constructor reference adaptation from " + constructedType
-            + " to " + returnType.getDescriptor());
+      if (!compatibleBridgeReturn(Type.getType(constructedType), expectedReturn)) {
+        throw unsupported(owner, bytecode,
+            "constructor reference return adaptation is not lowered yet; constructed " + constructedType
+                + ", SAM return " + expectedReturn.getDescriptor());
       }
-      return descriptor(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
-          Type.getArgumentTypes(site.samDescriptor), Type.VOID_TYPE);
+      expectedReturn = Type.VOID_TYPE;
+    }
+    if (!sameTypes(expectedArguments, implementationArguments)
+        || !compatibleImplementationReturn(implementationReturn, expectedReturn)) {
+      throw unsupported(owner, bytecode,
+          "lambda method adaptation is not lowered yet; expected implementation "
+              + descriptor(expectedArguments, expectedReturn) + ", found " + site.implementationDescriptor);
+    }
+  }
+
+  private static Type[] expectedImplementationArguments(LambdaSite site) {
+    if (site.implementationKind == JavaMethodHandle.REF_INVOKE_STATIC) {
+      return concat(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
+          Type.getArgumentTypes(site.samDescriptor));
+    }
+    if (site.implementationKind == JavaMethodHandle.REF_NEW_INVOKE_SPECIAL) {
+      return concat(Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V"),
+          Type.getArgumentTypes(site.samDescriptor));
     }
     Type[] captureTypes = Type.getArgumentTypes(site.factoryDescriptorWithoutReturn + "V");
     Type[] samTypes = Type.getArgumentTypes(site.samDescriptor);
     ReceiverSource receiverSource = receiverSource(site, captureTypes, samTypes);
     if (receiverSource == ReceiverSource.CAPTURED) {
-      return descriptor(tail(captureTypes, 1), samTypes, returnType);
+      return concat(tail(captureTypes, 1), samTypes);
     }
-    return descriptor(captureTypes, tail(samTypes, 1), returnType);
+    return concat(captureTypes, tail(samTypes, 1));
   }
 
   private static void validateBridgeDescriptors(JavaClass owner, BC186_invokedynamic bytecode, LambdaSite site) {
@@ -272,6 +281,18 @@ public final class Java8LambdaLowering implements Opcodes {
             "altMetafactory bridge method adaptation is not lowered yet; SAM " + site.samDescriptor
                 + ", bridge " + bridgeDescriptor);
       }
+    }
+  }
+
+  private static void validateDescriptorAdaptation(JavaClass owner, BC186_invokedynamic bytecode, LambdaSite site) {
+    Type[] samArguments = Type.getArgumentTypes(site.samDescriptor);
+    Type[] instantiatedArguments = Type.getArgumentTypes(site.instantiatedDescriptor);
+    Type samReturn = Type.getReturnType(site.samDescriptor);
+    Type instantiatedReturn = Type.getReturnType(site.instantiatedDescriptor);
+    if (!sameTypes(samArguments, instantiatedArguments) || !compatibleBridgeReturn(instantiatedReturn, samReturn)) {
+      throw unsupported(owner, bytecode,
+          "lambda method adaptation is not lowered yet; SAM " + site.samDescriptor + ", instantiated "
+              + site.instantiatedDescriptor);
     }
   }
 
@@ -294,6 +315,13 @@ public final class Java8LambdaLowering implements Opcodes {
     return isReferenceType(samReturn) && isReferenceType(bridgeReturn);
   }
 
+  private static boolean compatibleImplementationReturn(Type implementationReturn, Type expectedReturn) {
+    if (implementationReturn.equals(expectedReturn)) {
+      return true;
+    }
+    return isReferenceType(implementationReturn) && isReferenceType(expectedReturn);
+  }
+
   private static boolean isReferenceType(Type type) {
     return type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY;
   }
@@ -309,6 +337,17 @@ public final class Java8LambdaLowering implements Opcodes {
     }
     descriptor.append(')').append(returnType.getDescriptor());
     return descriptor.toString();
+  }
+
+  private static String descriptor(Type[] argumentTypes, Type returnType) {
+    return descriptor(argumentTypes, new Type[0], returnType);
+  }
+
+  private static Type[] concat(Type[] prefixTypes, Type[] suffixTypes) {
+    Type[] result = new Type[prefixTypes.length + suffixTypes.length];
+    System.arraycopy(prefixTypes, 0, result, 0, prefixTypes.length);
+    System.arraycopy(suffixTypes, 0, result, prefixTypes.length, suffixTypes.length);
+    return result;
   }
 
   private static Type[] tail(Type[] types, int start) {
