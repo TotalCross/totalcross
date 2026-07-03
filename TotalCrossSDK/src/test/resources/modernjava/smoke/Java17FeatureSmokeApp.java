@@ -10,12 +10,19 @@ import totalcross.ui.MainWindow;
 public class Java17FeatureSmokeApp extends MainWindow {
   @Override
   public void initUI() {
+    testRecordCarrier();
     testInstanceofPatternMatching();
     testSwitchExpression();
     testTextBlock();
     testSealedClassMetadata();
 
     add(new Label("Java 17 smoke OK"), LEFT + 8, TOP + 8);
+  }
+
+  private void testRecordCarrier() {
+    Release release = new Release("java", 17);
+    checkEquals("java17", release.label(), "record carrier");
+    checkEquals(Integer.valueOf(17), Integer.valueOf(release.version()), "record accessor");
   }
 
   private void testInstanceofPatternMatching() {
@@ -53,6 +60,12 @@ public class Java17FeatureSmokeApp extends MainWindow {
   private static void checkEquals(Object expected, Object actual, String feature) {
     if (expected == null ? actual != null : !expected.equals(actual)) {
       throw new RuntimeException("Java 17 smoke failed: " + feature);
+    }
+  }
+
+  record Release(String name, int version) {
+    String label() {
+      return name + version;
     }
   }
 

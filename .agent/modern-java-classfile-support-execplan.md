@@ -33,6 +33,21 @@ The source of truth for class-file major versions is the Java Version Almanac cl
 
 Preview class files, identified by minor version 65535, are out of scope for the initial pass. The deployer should reject preview class files with a clear message naming the class, major version, minor version, and the fact that preview bytecode is intentionally unsupported.
 
+## Java 17 Feature Status
+
+The Java 17 feature pass is split between features that already compile to bytecode and metadata the deployer can handle, and features that still need compatibility or lowering work.
+
+| Feature | Current status | Evidence / next work |
+| --- | --- | --- |
+| Class file major 61 | Supported | `Java17ClassFileTest`, the Java 17 SDK build, and `Java17FeatureSmokeApp` all use major 61 class files. |
+| Sealed classes and interfaces | Metadata supported and deploy smoke proven | `JavaClass` reads `PermittedSubclasses`; `Java17FeatureSmokeApp` deploys a sealed interface plus permitted implementation. Runtime semantic enforcement is not implemented and is not required for the current deployer milestone. |
+| Instanceof pattern matching | Supported for ordinary javac output | `Java17FeatureSmokeApp` deploys a pattern variable from `instanceof`, which javac lowers to existing `instanceof`, `checkcast`, and local-variable bytecode. |
+| Switch expressions | Supported for ordinary javac output | `Java17FeatureSmokeApp` deploys a string switch expression, which javac lowers to supported branch and switch bytecode plus ordinary string calls. |
+| Text blocks | Supported | `Java17FeatureSmokeApp` deploys a text block as an ordinary string constant. |
+| Records | Initial deploy support | The parser reads `Record` metadata, `Record4D` supplies the `java/lang/Record` superclass mapping, and the deployer lowers javac-generated `ObjectMethods` bootstrap sites enough for construction, accessors, and custom record methods to deploy. Exact record `equals`, `hashCode`, and `toString` semantics remain to be implemented. |
+| Pattern matching for switch | Deferred | It is preview in Java 17, so preview class files remain intentionally unsupported. |
+| Other Java 12-17 library APIs | Deferred until found by fixtures or real apps | Missing runtime APIs should be added only when a fixture or smoke app proves they block common code. |
+
 ## Progress
 
 - [x] (2026-07-01 23:01Z) Read `.agent/PLANS.md` and created the initial ExecPlan focused on Java 8 lambda lowering.
@@ -67,6 +82,11 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-04 02:55Z) Complete Java 17 class-file support, including class-file majors 56 through 61, record metadata, sealed-class metadata, and ordinary non-preview Java 17 compiler output.
 - [x] (2026-07-04 03:18Z) Compile the SDK as Java 17 class files, keep `clean dist -x test` passing, and deploy a TotalCross Java 17 smoke application for deployable Java 17-era features.
 - [ ] Support Java 17-era language features in priority order: records, instanceof pattern matching, switch expressions, and text blocks.
+  - [x] (2026-07-04 03:42Z) Support record construction, accessors, and custom methods by adding `java/lang/Record` compatibility and lowering javac `ObjectMethods` sites to deployable object calls.
+  - [x] (2026-07-04 03:42Z) Prove instanceof pattern matching deploys for ordinary javac Java 17 output.
+  - [x] (2026-07-04 03:42Z) Prove switch expressions deploy for ordinary javac Java 17 output.
+  - [x] (2026-07-04 03:42Z) Prove text blocks deploy as ordinary string constants.
+  - [ ] Implement exact generated record `equals`, `hashCode`, and `toString` semantics instead of the current object-semantic fallback.
 - [ ] Complete Java 21 class-file support for major 65 and intermediate majors 62 through 64 when bytecode and APIs are otherwise supported.
 - [ ] Finish support for features introduced through Java 17 that were not listed above or remain incomplete, including lower-priority Java 8 runtime API compatibility found by smoke validation.
 - [ ] Finish support for features introduced through Java 21 that were not listed above or remain incomplete; by this milestone, `invokedynamic` support should be complete rather than limited to selected bootstraps.
@@ -179,6 +199,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - Observation: A real Java 17 smoke app can deploy when it uses Java 17-era features that compile to supported bytecode and metadata.
   Evidence: With SDK `sourceCompatibility` and `targetCompatibility` set to `JavaVersion.VERSION_17`, `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` completed successfully. `Java17FeatureSmokeApp` compiles with `javac --release 17` to class-file major 61, includes `PermittedSubclasses` metadata for a sealed interface, and deploys through headless `tc.Deploy` to `/tmp/totalcross-java17-smoke/classes/Java17FeatureSmokeApp.tcz`. The app covers instanceof pattern matching, switch expressions, text blocks, and sealed-class metadata.
 
+- Observation: javac emits `ObjectMethods` invokedynamic sites in record classes even when a smoke app only exercises record construction, accessors, and a custom method.
+  Evidence: `javap -verbose /tmp/totalcross-java17-smoke/classes/smoke/Java17FeatureSmokeApp$Release.class` reports major version 61, superclass `java/lang/Record`, the `Record` attribute, and `InvokeDynamic` entries for generated `toString`, `hashCode`, and `equals` backed by `java/lang/runtime/ObjectMethods.bootstrap`.
+
 ## Decision Log
 
 - Decision: Prioritize accepting modern class-file versions and common javac output over implementing every legal `invokedynamic` behavior.
@@ -257,6 +280,10 @@ Preview class files, identified by minor version 65535, are out of scope for the
   Rationale: Users get more practical value from finishing LTS class-file support and high-frequency language features than from raising parser acceptance for newer majors while Java 11, Java 17, or Java 21 behavior remains incomplete. Records depend on Java 17 class-file metadata, so the feature pass follows Java 17 parser acceptance.
   Date/Author: 2026-07-02 / Codex
 
+- Decision: For the first records slice, lower javac `ObjectMethods` sites to existing `java/lang/Object` virtual calls instead of implementing full record component semantics immediately.
+  Rationale: This unblocks deploy of record construction, accessors, and custom methods with a tiny deployer-only change. Exact generated `equals`, `hashCode`, and `toString` output is visible application behavior, so it remains a documented follow-up rather than hidden unsupported behavior.
+  Date/Author: 2026-07-04 / Codex
+
 ## Outcomes & Retrospective
 
 Update this section after each milestone with the highest class-file version proven by tests, which `invokedynamic` bootstraps are lowered, whether Retrolambda is still required, and which unsupported cases remain intentionally rejected.
@@ -300,6 +327,8 @@ Update this section after each milestone with the highest class-file version pro
 2026-07-04 / Codex: Java 17 class-file acceptance is now in place. `JavaClass` reads the `Record` attribute into record component metadata and reads `PermittedSubclasses` for sealed classes. `Java17ClassFileTest` proves javac `--release 17` output is major 61, verifies record and sealed metadata, and converts an ordinary Java 17 class through `J2TC`. The focused `Java17ClassFileTest`, full `tc.tools.converter.modernjava.*` suite, and broad `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` validation pass. The next planned stage is the prioritized Java 17-era feature pass, starting with records.
 
 2026-07-04 / Codex: The SDK build now targets Java 17 class files directly. `clean dist -x test` passes with JDK 17, and a Java 17 TotalCross smoke app compiles as major 61 and deploys successfully to `/tmp/totalcross-java17-smoke/classes/Java17FeatureSmokeApp.tcz`. The smoke app proves deployer behavior for instanceof pattern matching, switch expressions, text blocks, and sealed-class metadata. Records remain the next Java 17 feature priority because record runtime/lowering support is broader than class-file metadata acceptance.
+
+2026-07-04 / Codex: Initial Java 17 record deploy support is now in place. `Record4D` gives record classes a deployable `java/lang/Record` compatibility superclass, and `JavaObjectMethodsLowering` recognizes javac `java/lang/runtime/ObjectMethods.bootstrap` sites for generated record methods. This lets record construction, accessors, and custom methods convert through `J2TC` and through the Java 17 smoke app deploy. The focused `Java17FeatureTest`, full `tc.tools.converter.modernjava.*` suite, `clean dist -x test`, `javac --release 17` smoke compilation, and headless `tc.Deploy smoke/Java17FeatureSmokeApp.class /v` pass with JDK 17. Exact record `equals`, `hashCode`, and `toString` semantics remain intentionally pending.
 
 ## Context and Orientation
 
@@ -458,7 +487,7 @@ Work from the repository root unless a command specifies another directory.
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17FeatureTest
 
-   Implement and validate the feature fixtures in this order: records, instanceof pattern matching, switch expressions, then text blocks. Expect records to deploy as ordinary classes when required runtime APIs exist or to fail with precise missing-API diagnostics. Expect pattern matching, switch expressions, and text blocks to prove that javac output deploys without special VM support unless a concrete unsupported bytecode/API appears.
+   Implement and validate the feature fixtures in this order: records, instanceof pattern matching, switch expressions, then text blocks. Expect records to deploy as ordinary classes for construction, accessors, and custom methods when required runtime APIs exist, while exact generated record `equals`, `hashCode`, and `toString` semantics may remain a documented follow-up until the record component algorithm is implemented. Expect pattern matching, switch expressions, and text blocks to prove that javac output deploys without special VM support unless a concrete unsupported bytecode/API appears.
 
 14. Complete Java 21 class-file support:
 
