@@ -64,7 +64,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-02 17:45Z) Add and deploy a TotalCross Java 9 smoke application that exercises Java 9 class-file/source features which are practical for TotalCross apps.
 - [x] (2026-07-03 21:11Z) Complete Java 11 class-file support, including module metadata, nestmate metadata, `CONSTANT_Dynamic`, and clear unsupported-feature diagnostics.
 - [x] (2026-07-04 02:31Z) Compile the SDK as Java 11 class files, keep `clean dist -x test` passing, and deploy a TotalCross Java 11 smoke application that exercises practical Java 11 compiler output.
-- [ ] Complete Java 17 class-file support, including class-file majors 56 through 61, record metadata, sealed-class metadata, and ordinary non-preview Java 17 compiler output.
+- [x] (2026-07-04 02:55Z) Complete Java 17 class-file support, including class-file majors 56 through 61, record metadata, sealed-class metadata, and ordinary non-preview Java 17 compiler output.
 - [ ] Support Java 17-era language features in priority order: records, instanceof pattern matching, switch expressions, and text blocks.
 - [ ] Complete Java 21 class-file support for major 65 and intermediate majors 62 through 64 when bytecode and APIs are otherwise supported.
 - [ ] Finish support for features introduced through Java 17 that were not listed above or remain incomplete, including lower-priority Java 8 runtime API compatibility found by smoke validation.
@@ -171,6 +171,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 
 - Observation: `clean dist -x test` did not clear stale dependency jars from `dist/libs`, which can break smoke deploys even after a successful clean build.
   Evidence: The first Java 11 smoke deploy failed before conversion because stale old SLF4J jars remained in `dist/libs` beside the current runtime jars. Updating `copySdkDependencies` to delete its destination before copying dependencies produced a clean `dist/libs` and let the Java 11 smoke deploy proceed.
+
+- Observation: Java 17 record and sealed-class support is a parser metadata milestone, not yet full feature semantics.
+  Evidence: `Java17ClassFileTest` compiles a Java 17 record and verifies `JavaClass.recordComponents`, compiles a Java 17 sealed class and verifies `JavaClass.permittedSubclasses`, and converts an ordinary Java 17 class through `J2TC`. It intentionally does not convert the record class yet, because javac-generated record methods can depend on `java/lang/Record` and `ObjectMethods` behavior planned for the next feature stage.
 
 ## Decision Log
 
@@ -289,6 +292,8 @@ Update this section after each milestone with the highest class-file version pro
 2026-07-03 / Codex: Java 11 class-file support now accepts and exposes the main metadata forms introduced by Java 9-11. `JavaClass` reads `Module`, `ModuleMainClass`, `ModulePackages`, `NestHost`, and `NestMembers`; `BC018_ldc` rejects `CONSTANT_Dynamic` loads with a precise unsupported-feature diagnostic instead of resolving the wrong constant; and `ByteCode.getInstance` no longer masks runtime converter errors as later null dereferences. `Java11ClassFileTest`, `StringConcatFactoryLoweringTest`, the full `tc.tools.converter.modernjava.*` suite, and `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` pass with Gradle 9.6.1. The next compatibility frontier is Java 17 class-file acceptance for majors 56 through 61, including record and sealed metadata.
 
 2026-07-04 / Codex: The SDK build now targets Java 11 class files directly. `clean dist -x test` passes with JDK 17, and a Java 11 TotalCross smoke app compiles as major 55 and deploys successfully to `/tmp/totalcross-java11-smoke/classes/Java11FeatureSmokeApp.tcz`. The smoke app covers javac `StringConcatFactory` output, nestmate private access, local variable type inference, and lambda `var` parameters. The build now cleans `dist/libs` before copying runtime dependencies so old local jars cannot corrupt deployer smoke tests after Gradle dependency upgrades.
+
+2026-07-04 / Codex: Java 17 class-file acceptance is now in place. `JavaClass` reads the `Record` attribute into record component metadata and reads `PermittedSubclasses` for sealed classes. `Java17ClassFileTest` proves javac `--release 17` output is major 61, verifies record and sealed metadata, and converts an ordinary Java 17 class through `J2TC`. The focused `Java17ClassFileTest`, full `tc.tools.converter.modernjava.*` suite, and broad `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` validation pass. The next planned stage is the prioritized Java 17-era feature pass, starting with records.
 
 ## Context and Orientation
 
@@ -627,3 +632,5 @@ Compatibility classes should follow the existing `jdkcompat` convention and use 
 2026-07-01 / Codex: Added the metadata foundation for Java 8 lambda lowering and a focused test proving a compiled Java 8 lambda exposes `LambdaMetafactory.metafactory` through `BootstrapMethods`. The next implementation step remains the actual lambda adapter generation/lowering.
 
 2026-07-03 / Codex: Completed the Java 11 class-file metadata milestone. The parser now keeps module and nestmate metadata, dynamic constants are parsed and rejected clearly when loaded by `ldc`, and Gradle 9 test execution now includes the required JUnit Platform launcher runtime dependency. The next implementation step is Java 17 class-file support.
+
+2026-07-04 / Codex: Completed the Java 17 class-file metadata milestone. The parser now keeps record components and permitted subclasses, with tests for ordinary Java 17 conversion, record metadata, and sealed-class metadata. The next implementation step is the Java 17 feature pass in priority order, beginning with records.

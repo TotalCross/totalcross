@@ -272,6 +272,31 @@ final class ModernJavaClassFileFixtures {
     return Optional.of(fixtures);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava17RecordFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava17Record";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n"
+        + "public record " + simpleName + "(String name, int count) {\n"
+        + "  public int total() { return name.length() + count; }\n"
+        + "}\n";
+    return compile(workDir, JAVA_17, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_17)).intValue(),
+        "java 17 record metadata", className, source);
+  }
+
+  static Optional<ModernJavaClassFileFixture> compileJava17SealedFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava17Sealed";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n"
+        + "public sealed class " + simpleName + " permits " + simpleName + ".Allowed {\n"
+        + "  public int value() { return 17; }\n"
+        + "  public static final class Allowed extends " + simpleName + " { }\n"
+        + "}\n";
+    return compile(workDir, JAVA_17, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_17)).intValue(),
+        "java 17 sealed metadata", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
