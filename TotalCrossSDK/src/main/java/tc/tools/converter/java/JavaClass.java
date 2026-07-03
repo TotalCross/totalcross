@@ -25,6 +25,8 @@ public final class JavaClass {
   public JavaBootstrapMethod[] bootstrapMethods;
   public String nestHost;
   public String[] nestMembers;
+  public JavaRecordComponent[] recordComponents;
+  public String[] permittedSubclasses;
   public String moduleName;
   public String moduleMainClass;
   public String[] modulePackages;
@@ -187,6 +189,10 @@ public final class JavaClass {
         readModuleMainClass(ds);
       } else if ("ModulePackages".equals(name)) {
         readModulePackages(ds);
+      } else if ("Record".equals(name)) {
+        readRecord(ds);
+      } else if ("PermittedSubclasses".equals(name)) {
+        readPermittedSubclasses(ds);
       } else {
         ds.skipBytes(len);
       }
@@ -258,6 +264,33 @@ public final class JavaClass {
     modulePackages = new String[n];
     for (int i = 0; i < n; i++) {
       modulePackages[i] = cp.getString1(ds.readUnsignedShort());
+    }
+  }
+
+  private void readRecord(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    recordComponents = new JavaRecordComponent[n];
+    for (int i = 0; i < n; i++) {
+      String name = (String) cp.constants[ds.readUnsignedShort()];
+      String descriptor = (String) cp.constants[ds.readUnsignedShort()];
+      recordComponents[i] = new JavaRecordComponent(name, descriptor);
+      skipAttributes(ds);
+    }
+  }
+
+  private void readPermittedSubclasses(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    permittedSubclasses = new String[n];
+    for (int i = 0; i < n; i++) {
+      permittedSubclasses[i] = cp.getString1(ds.readUnsignedShort());
+    }
+  }
+
+  private void skipAttributes(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    for (int i = 0; i < n; i++) {
+      ds.readUnsignedShort();
+      ds.skipBytes(ds.readInt());
     }
   }
 
