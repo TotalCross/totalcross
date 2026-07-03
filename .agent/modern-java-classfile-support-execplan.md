@@ -63,6 +63,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-02 17:35Z) Compile the SDK itself as Java 9 class files, keep `clean dist -x test` passing, and fix deployer jar parsing regressions found by the Java 9 SDK build.
 - [x] (2026-07-02 17:45Z) Add and deploy a TotalCross Java 9 smoke application that exercises Java 9 class-file/source features which are practical for TotalCross apps.
 - [x] (2026-07-03 21:11Z) Complete Java 11 class-file support, including module metadata, nestmate metadata, `CONSTANT_Dynamic`, and clear unsupported-feature diagnostics.
+- [x] (2026-07-04 02:31Z) Compile the SDK as Java 11 class files, keep `clean dist -x test` passing, and deploy a TotalCross Java 11 smoke application that exercises practical Java 11 compiler output.
 - [ ] Complete Java 17 class-file support, including class-file majors 56 through 61, record metadata, sealed-class metadata, and ordinary non-preview Java 17 compiler output.
 - [ ] Support Java 17-era language features in priority order: records, instanceof pattern matching, switch expressions, and text blocks.
 - [ ] Complete Java 21 class-file support for major 65 and intermediate majors 62 through 64 when bytecode and APIs are otherwise supported.
@@ -164,6 +165,12 @@ Preview class files, identified by minor version 65535, are out of scope for the
 
 - Observation: Java 11 parser acceptance now covers module and nestmate metadata explicitly, not only by skipping unknown attributes.
   Evidence: `Java11ClassFileTest` parses a generated major-55 `module-info.class` and verifies `moduleName`, compiles a Java 11 nested-class fixture and verifies `NestMembers`/`NestHost`, and verifies `ldc` of `CONSTANT_Dynamic` fails with a clear unsupported-feature message naming the constant-pool index.
+
+- Observation: The SDK can now be compiled as Java 11 class files and still deploy a real Java 11 TotalCross smoke app.
+  Evidence: With `sourceCompatibility` and `targetCompatibility` set to `JavaVersion.VERSION_11`, `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` completed successfully. `TotalCrossSDK/src/test/resources/modernjava/smoke/Java11FeatureSmokeApp.java` compiles with `javac --release 11` to class-file major 55 and converts through headless `tc.Deploy`, which writes `/tmp/totalcross-java11-smoke/classes/Java11FeatureSmokeApp.tcz`.
+
+- Observation: `clean dist -x test` did not clear stale dependency jars from `dist/libs`, which can break smoke deploys even after a successful clean build.
+  Evidence: The first Java 11 smoke deploy failed before conversion because stale old SLF4J jars remained in `dist/libs` beside the current runtime jars. Updating `copySdkDependencies` to delete its destination before copying dependencies produced a clean `dist/libs` and let the Java 11 smoke deploy proceed.
 
 ## Decision Log
 
@@ -280,6 +287,8 @@ Update this section after each milestone with the highest class-file version pro
 2026-07-02 / Codex: Java 9+ string concatenation now has deployer lowering for `StringConcatFactory.makeConcat` and the common `makeConcatWithConstants` recipe form. A Java 11 class compiled with `--release 11` and ordinary string `+` keeps its original `invokedynamic` in the class file, then converts through `J2TC` by expanding the concat site to ordinary `StringBuffer` calls. The focused `modernjava` tests and full SDK `clean dist -x test` build pass with JDK 11. This completes the high-value invokedynamic part of Java 11 support; module, nestmate, and broader Java 11 metadata/API fixtures remain as the next parser-acceptance stage.
 
 2026-07-03 / Codex: Java 11 class-file support now accepts and exposes the main metadata forms introduced by Java 9-11. `JavaClass` reads `Module`, `ModuleMainClass`, `ModulePackages`, `NestHost`, and `NestMembers`; `BC018_ldc` rejects `CONSTANT_Dynamic` loads with a precise unsupported-feature diagnostic instead of resolving the wrong constant; and `ByteCode.getInstance` no longer masks runtime converter errors as later null dereferences. `Java11ClassFileTest`, `StringConcatFactoryLoweringTest`, the full `tc.tools.converter.modernjava.*` suite, and `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` pass with Gradle 9.6.1. The next compatibility frontier is Java 17 class-file acceptance for majors 56 through 61, including record and sealed metadata.
+
+2026-07-04 / Codex: The SDK build now targets Java 11 class files directly. `clean dist -x test` passes with JDK 17, and a Java 11 TotalCross smoke app compiles as major 55 and deploys successfully to `/tmp/totalcross-java11-smoke/classes/Java11FeatureSmokeApp.tcz`. The smoke app covers javac `StringConcatFactory` output, nestmate private access, local variable type inference, and lambda `var` parameters. The build now cleans `dist/libs` before copying runtime dependencies so old local jars cannot corrupt deployer smoke tests after Gradle dependency upgrades.
 
 ## Context and Orientation
 
@@ -401,54 +410,66 @@ Work from the repository root unless a command specifies another directory.
 
    Expect ordinary Java 11 classes to compile as major 55, module metadata and nestmate metadata to parse or skip safely, `CONSTANT_Dynamic` to be handled or rejected precisely, and string concatenation to keep passing through `StringConcatFactoryLoweringTest`.
 
-10. Complete Java 17 class-file support:
+10. Compile the SDK as Java 11 and deploy the Java 11 TotalCross smoke app:
+
+       cd TotalCrossSDK
+       ./gradlew clean dist -x test
+       mkdir -p /tmp/totalcross-java11-smoke/classes
+       javac --release 11 -cp dist/totalcross-sdk.jar -d /tmp/totalcross-java11-smoke/classes src/test/resources/modernjava/smoke/Java11FeatureSmokeApp.java
+       javap -verbose /tmp/totalcross-java11-smoke/classes/smoke/Java11FeatureSmokeApp.class
+       cd /tmp/totalcross-java11-smoke/classes
+       java -Djava.awt.headless=true -cp "/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/totalcross-sdk.jar:/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/libs/*" tc.Deploy smoke/Java11FeatureSmokeApp.class /v
+
+   Expect the SDK classes and smoke app to be major 55. The smoke app should contain Java 11 `StringConcatFactory` output, nestmate metadata, and a lambda with `var` parameters before deploy, and should produce `Java11FeatureSmokeApp.tcz`.
+
+11. Complete Java 17 class-file support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17ClassFileTest
 
    Expect major 61 and intermediate majors 56 through 60 to parse, record and sealed metadata to be accepted or precisely rejected, and ordinary non-preview Java 17 compiler output to avoid parser crashes.
 
-11. Support the prioritized Java 17-era language features:
+12. Support the prioritized Java 17-era language features:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17FeatureTest
 
    Implement and validate the feature fixtures in this order: records, instanceof pattern matching, switch expressions, then text blocks. Expect records to deploy as ordinary classes when required runtime APIs exist or to fail with precise missing-API diagnostics. Expect pattern matching, switch expressions, and text blocks to prove that javac output deploys without special VM support unless a concrete unsupported bytecode/API appears.
 
-12. Complete Java 21 class-file support:
+13. Complete Java 21 class-file support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java21ClassFileTest
 
    Expect class-file major 65 and intermediate majors 62 through 64 to pass parser acceptance and common conversion fixtures. Preview class files remain rejected with clear diagnostics.
 
-13. Finish features introduced through Java 17 that were not listed above or remain incomplete:
+14. Finish features introduced through Java 17 that were not listed above or remain incomplete:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17BacklogFeatureTest
 
    Expect remaining Java 8-17 compatibility gaps to be either implemented or documented as unsupported with precise diagnostics. Include the lower-priority Java 8 smoke gaps, sealed-class behavior beyond metadata acceptance, nestmate access behavior, and any remaining common javac output patterns through Java 17.
 
-14. Finish features introduced through Java 21 that were not listed above or remain incomplete:
+15. Finish features introduced through Java 21 that were not listed above or remain incomplete:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java21BacklogFeatureTest --tests tc.tools.converter.modernjava.InvokeDynamicCompletenessTest
 
    Expect remaining Java 18-21 compatibility gaps to be either implemented or documented as unsupported with precise diagnostics. By the end of this step, supported class files should no longer depend on a partial `invokedynamic` implementation.
 
-15. Support later class-file versions:
+16. Support later class-file versions:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java22ClassFileTest --tests tc.tools.converter.modernjava.Java23ClassFileTest --tests tc.tools.converter.modernjava.Java24ClassFileTest --tests tc.tools.converter.modernjava.Java25ClassFileTest --tests tc.tools.converter.modernjava.Java26ClassFileTest
 
    Expect class-file majors 66 through 70, and later majors as they are added, to pass parser acceptance and common conversion fixtures one version at a time.
 
-16. Run focused regression tests after each milestone:
+17. Run focused regression tests after each milestone:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.* --tests totalcross.LauncherArgumentParserTest --tests totalcross.LauncherRuntimeTest
 
-17. Run broad SDK validation when focused tests pass:
+18. Run broad SDK validation when focused tests pass:
 
        cd TotalCrossSDK
        ./gradlew clean dist -x test

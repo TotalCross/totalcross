@@ -10,8 +10,8 @@ version = '7.2.2'
 group = 'com.totalcross'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_9
-    targetCompatibility = JavaVersion.VERSION_1_9
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 base {
@@ -311,6 +311,9 @@ task fetchSdkNativeRuntime {
 }
 
 task copySdkDependencies(type: Copy, dependsOn: fetchSdkNativeRuntime) {
+	doFirst {
+		delete destinationDir
+	}
 	from({ configurations.runtimeClasspath.findAll { it.name.endsWith('.jar') } })
 	from(vcruntimeLocalDir) {
 		include '*.dll'
