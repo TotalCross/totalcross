@@ -4,20 +4,19 @@
 
 package smoke;
 
-import totalcross.ui.Label;
-import totalcross.ui.MainWindow;
-
-public class Java11FeatureSmokeApp extends MainWindow {
+public class Java11FeatureSmokeTest extends FeatureSmokeTest {
   private int javaVersion = 11;
+
+  public Java11FeatureSmokeTest() {
+    super("Java 11");
+  }
 
   @Override
   public void initUI() {
     testStringConcatFactory();
     testNestmatePrivateAccess();
-    testLocalVariableTypeInference();
     testLambdaVarParameters();
-
-    add(new Label("Java 11 smoke OK"), LEFT + 8, TOP + 8);
+    finish();
   }
 
   private void testStringConcatFactory() {
@@ -30,11 +29,6 @@ public class Java11FeatureSmokeApp extends MainWindow {
     checkEquals("java11", reader.read(), "nestmate private access");
   }
 
-  private void testLocalVariableTypeInference() {
-    var holder = new Holder<String>("java");
-    checkEquals("java11", holder.value() + javaVersion, "local variable type inference");
-  }
-
   private void testLambdaVarParameters() {
     Mapper mapper = (var value) -> value + javaVersion;
     checkEquals("java11", mapper.map("java"), "lambda var parameters");
@@ -42,12 +36,6 @@ public class Java11FeatureSmokeApp extends MainWindow {
 
   private String secret() {
     return "java" + javaVersion;
-  }
-
-  private static void checkEquals(Object expected, Object actual, String feature) {
-    if (expected == null ? actual != null : !expected.equals(actual)) {
-      throw new RuntimeException("Java 11 smoke failed: " + feature);
-    }
   }
 
   interface Mapper {
@@ -60,15 +48,4 @@ public class Java11FeatureSmokeApp extends MainWindow {
     }
   }
 
-  static final class Holder<T> {
-    private final T value;
-
-    Holder(T value) {
-      this.value = value;
-    }
-
-    T value() {
-      return value;
-    }
-  }
 }

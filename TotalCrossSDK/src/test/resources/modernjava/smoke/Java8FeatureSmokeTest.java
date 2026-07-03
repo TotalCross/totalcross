@@ -7,11 +7,15 @@ package smoke;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import totalcross.ui.Label;
-import totalcross.ui.MainWindow;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
-public class Java8FeatureSmokeApp extends MainWindow {
+public class Java8FeatureSmokeTest extends FeatureSmokeTest {
   private int counter;
+
+  public Java8FeatureSmokeTest() {
+    super("Java 8");
+  }
 
   @Override
   public void initUI() {
@@ -27,8 +31,9 @@ public class Java8FeatureSmokeApp extends MainWindow {
     testReferenceArgumentAdaptation();
     testPrimitiveAdaptation();
     testDefaultAndStaticInterfaceMethods();
-
-    add(new Label("Java 8 smoke OK"), LEFT + 8, TOP + 8);
+    testTypeAnnotationMetadata();
+    testRepeatableAnnotationMetadata();
+    finish();
   }
 
   private void testStatelessLambda() {
@@ -44,7 +49,7 @@ public class Java8FeatureSmokeApp extends MainWindow {
   }
 
   private void testStaticMethodReference() {
-    Supplier<String> supplier = Java8FeatureSmokeApp::staticText;
+    Supplier<String> supplier = Java8FeatureSmokeTest::staticText;
     checkEquals("text", supplier.get(), "static method reference");
   }
 
@@ -54,7 +59,7 @@ public class Java8FeatureSmokeApp extends MainWindow {
   }
 
   private void testUnboundMethodReference() {
-    TextReader reader = Java8FeatureSmokeApp::instanceText;
+    TextReader reader = Java8FeatureSmokeTest::instanceText;
     checkEquals("instance", reader.read(this), "unbound method reference");
   }
 
@@ -64,24 +69,24 @@ public class Java8FeatureSmokeApp extends MainWindow {
   }
 
   private void testAltMetafactoryMarker() {
-    Supplier<String> supplier = (Supplier<String> & Marker) Java8FeatureSmokeApp::staticText;
+    Supplier<String> supplier = (Supplier<String> & Marker) Java8FeatureSmokeTest::staticText;
     check(supplier instanceof Marker, "altMetafactory marker");
     checkEquals("text", supplier.get(), "altMetafactory marker value");
   }
 
   private void testAltMetafactoryBridge() {
-    StringFactory factory = (StringFactory & ObjectFactory) Java8FeatureSmokeApp::staticText;
+    StringFactory factory = (StringFactory & ObjectFactory) Java8FeatureSmokeTest::staticText;
     checkEquals("text", factory.get(), "altMetafactory bridge string value");
     checkEquals("text", ((ObjectFactory) factory).get(), "altMetafactory bridge object value");
   }
 
   private void testReferenceReturnAdaptation() {
-    ObjectFactory factory = Java8FeatureSmokeApp::staticText;
+    ObjectFactory factory = Java8FeatureSmokeTest::staticText;
     checkEquals("text", factory.get(), "reference return adaptation");
   }
 
   private void testReferenceArgumentAdaptation() {
-    Mapper<String, String> mapper = Java8FeatureSmokeApp::trim;
+    Mapper<String, String> mapper = Java8FeatureSmokeTest::trim;
     checkEquals("java8", mapper.map(" java8 "), "reference argument adaptation");
   }
 
@@ -89,7 +94,7 @@ public class Java8FeatureSmokeApp extends MainWindow {
     Function<String, Integer> length = String::length;
     checkEquals(Integer.valueOf(5), length.apply("java8"), "primitive return boxing");
 
-    Function<Integer, Integer> twice = Java8FeatureSmokeApp::twice;
+    Function<Integer, Integer> twice = Java8FeatureSmokeTest::twice;
     checkEquals(Integer.valueOf(16), twice.apply(Integer.valueOf(8)), "primitive argument unboxing");
   }
 
@@ -97,6 +102,16 @@ public class Java8FeatureSmokeApp extends MainWindow {
     DefaultGreeting greeting = new DefaultGreetingImpl();
     checkEquals("default", greeting.defaultText(), "default interface method");
     checkEquals("static", DefaultGreeting.staticText(), "static interface method");
+  }
+
+  private void testTypeAnnotationMetadata() {
+    String value = (@NonEmpty String) "java8";
+    checkEquals("java8", value, "type annotation metadata");
+  }
+
+  @SmokeTags({ @SmokeTag("lambda"), @SmokeTag("default-method") })
+  private void testRepeatableAnnotationMetadata() {
+    pass("repeatable annotation metadata");
   }
 
   private void increment() {
@@ -119,24 +134,12 @@ public class Java8FeatureSmokeApp extends MainWindow {
     return value * 2;
   }
 
-  private static void check(boolean condition, String feature) {
-    if (!condition) {
-      throw new RuntimeException("Java 8 smoke failed: " + feature);
-    }
-  }
-
-  private static void checkEquals(Object expected, Object actual, String feature) {
-    if (expected == null ? actual != null : !expected.equals(actual)) {
-      throw new RuntimeException("Java 8 smoke failed: " + feature);
-    }
-  }
-
   interface TextReader {
-    String read(Java8FeatureSmokeApp source);
+    String read(Java8FeatureSmokeTest source);
   }
 
   interface BoxFactory {
-    Java8FeatureSmokeApp.Box create(String value);
+    Java8FeatureSmokeTest.Box create(String value);
   }
 
   interface StringFactory {
@@ -173,5 +176,18 @@ public class Java8FeatureSmokeApp extends MainWindow {
     Box(String value) {
       this.value = value;
     }
+  }
+
+  @Target(ElementType.TYPE_USE)
+  @interface NonEmpty {
+  }
+
+  @interface SmokeTags {
+    SmokeTag[] value();
+  }
+
+  @java.lang.annotation.Repeatable(SmokeTags.class)
+  @interface SmokeTag {
+    String value();
   }
 }

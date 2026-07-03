@@ -4,21 +4,22 @@
 
 package smoke;
 
-import totalcross.ui.Label;
-import totalcross.ui.MainWindow;
-
-public class Java9FeatureSmokeApp extends MainWindow {
+public class Java9FeatureSmokeTest extends FeatureSmokeTest {
   private int javaVersion = 9;
+
+  public Java9FeatureSmokeTest() {
+    super("Java 9");
+  }
 
   @Override
   public void initUI() {
     testStringConcatFactory();
     testPrivateInterfaceMethods();
+    testPrivateStaticInterfaceMethods();
     testDiamondAnonymousClass();
     testTryWithResourcesEffectivelyFinal();
     testPrivateSafeVarargs();
-
-    add(new Label("Java 9 smoke OK"), LEFT + 8, TOP + 8);
+    finish();
   }
 
   private void testStringConcatFactory() {
@@ -29,6 +30,10 @@ public class Java9FeatureSmokeApp extends MainWindow {
   private void testPrivateInterfaceMethods() {
     Greeter greeter = new DefaultGreeter();
     checkEquals("hello java9", greeter.greet("java9"), "private interface method");
+  }
+
+  private void testPrivateStaticInterfaceMethods() {
+    checkEquals("static java9", Greeter.staticGreet("java9"), "private static interface method");
   }
 
   private void testDiamondAnonymousClass() {
@@ -62,25 +67,21 @@ public class Java9FeatureSmokeApp extends MainWindow {
     checkEquals("java9", joinPieces("java", "9"), "@SafeVarargs private method");
   }
 
-  private static void check(boolean condition, String feature) {
-    if (!condition) {
-      throw new RuntimeException("Java 9 smoke failed: " + feature);
-    }
-  }
-
-  private static void checkEquals(Object expected, Object actual, String feature) {
-    if (expected == null ? actual != null : !expected.equals(actual)) {
-      throw new RuntimeException("Java 9 smoke failed: " + feature);
-    }
-  }
-
   interface Greeter {
     default String greet(String value) {
       return prefix() + value;
     }
 
+    static String staticGreet(String value) {
+      return staticPrefix() + value;
+    }
+
     private String prefix() {
       return "hello ";
+    }
+
+    private static String staticPrefix() {
+      return "static ";
     }
   }
 
