@@ -62,7 +62,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-02 16:55Z) Implement Java 9+ string-concat lowering from `StringConcatFactory.makeConcat` and common `makeConcatWithConstants` recipes.
 - [x] (2026-07-02 17:35Z) Compile the SDK itself as Java 9 class files, keep `clean dist -x test` passing, and fix deployer jar parsing regressions found by the Java 9 SDK build.
 - [x] (2026-07-02 17:45Z) Add and deploy a TotalCross Java 9 smoke application that exercises Java 9 class-file/source features which are practical for TotalCross apps.
-- [ ] Complete Java 11 class-file support, including module metadata, nestmate metadata, `CONSTANT_Dynamic`, and clear unsupported-feature diagnostics.
+- [x] (2026-07-03 21:11Z) Complete Java 11 class-file support, including module metadata, nestmate metadata, `CONSTANT_Dynamic`, and clear unsupported-feature diagnostics.
 - [ ] Complete Java 17 class-file support, including class-file majors 56 through 61, record metadata, sealed-class metadata, and ordinary non-preview Java 17 compiler output.
 - [ ] Support Java 17-era language features in priority order: records, instanceof pattern matching, switch expressions, and text blocks.
 - [ ] Complete Java 21 class-file support for major 65 and intermediate majors 62 through 64 when bytecode and APIs are otherwise supported.
@@ -155,6 +155,15 @@ Preview class files, identified by minor version 65535, are out of scope for the
 
 - Observation: A Java 9 TotalCross smoke app deploys end-to-end with the Java 9-compiled SDK.
   Evidence: `TotalCrossSDK/src/test/resources/modernjava/smoke/Java9FeatureSmokeApp.java` compiles with `javac --release 9` to class-file major 53, contains a `StringConcatFactory.makeConcatWithConstants` bootstrap, and converts successfully through headless `tc.Deploy`, which writes `/tmp/totalcross-java9-smoke/classes/Java9FeatureSmokeApp.tcz`. The smoke app covers Java 9 string concat, private interface methods, diamond with anonymous classes, try-with-resources using an effectively-final resource variable, and `@SafeVarargs` on a private method. The try-with-resources fixture emits `Throwable.addSuppressed`, and this deploys with the current runtime mappings.
+
+- Observation: Gradle 9 requires the JUnit Platform launcher to be present on the test runtime classpath when running JUnit Platform tests.
+  Evidence: The first Java 11 focused test run with Gradle 9.6.1 failed after `compileTestJava` with `Failed to load JUnit Platform`. Adding `testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'` alongside the existing JUnit Jupiter 5.7.0 dependencies fixed test execution.
+
+- Observation: `ByteCode.getInstance` masked precise bytecode-constructor diagnostics by catching every exception and returning `null`.
+  Evidence: The initial `CONSTANT_Dynamic` `ldc` diagnostic test expected `ConverterException`, but `BC018_ldc` threw inside its constructor, `ByteCode.getInstance` swallowed it, and `JavaCode` later failed with `NullPointerException: Cannot assign field "posInMethod" because "bc" is null`. Re-throwing `RuntimeException` preserves actionable converter diagnostics.
+
+- Observation: Java 11 parser acceptance now covers module and nestmate metadata explicitly, not only by skipping unknown attributes.
+  Evidence: `Java11ClassFileTest` parses a generated major-55 `module-info.class` and verifies `moduleName`, compiles a Java 11 nested-class fixture and verifies `NestMembers`/`NestHost`, and verifies `ldc` of `CONSTANT_Dynamic` fails with a clear unsupported-feature message naming the constant-pool index.
 
 ## Decision Log
 
@@ -269,6 +278,8 @@ Update this section after each milestone with the highest class-file version pro
 2026-07-02 / Codex: A real TotalCross Java 8 smoke app now exists at `TotalCrossSDK/src/test/resources/modernjava/smoke/Java8FeatureSmokeApp.java`. It extends `MainWindow`, calls one method per supported Java 8 feature slice from `initUI`, compiles as class-file major 52, retains `InvokeDynamic` entries before deploy, and converts successfully to `/tmp/totalcross-java8-smoke/classes/Java8FeatureSmokeApp.tcz` through `tc.Deploy` after the SDK build. This validation found and fixed a production deployer bug in `J2TC.expandClass`, where modern constant-pool entries were resolved as UTF-8 strings before checking their tag. The same validation also found lower-priority runtime gaps: `java.util.function.Predicate.and` is not available at the device, and serializable lambdas pull in `$deserializeLambda$` plus `java.lang.invoke.SerializedLambda`. Those two gaps are now documented for later API compatibility work instead of blocking Java 9+ class-file progress.
 
 2026-07-02 / Codex: Java 9+ string concatenation now has deployer lowering for `StringConcatFactory.makeConcat` and the common `makeConcatWithConstants` recipe form. A Java 11 class compiled with `--release 11` and ordinary string `+` keeps its original `invokedynamic` in the class file, then converts through `J2TC` by expanding the concat site to ordinary `StringBuffer` calls. The focused `modernjava` tests and full SDK `clean dist -x test` build pass with JDK 11. This completes the high-value invokedynamic part of Java 11 support; module, nestmate, and broader Java 11 metadata/API fixtures remain as the next parser-acceptance stage.
+
+2026-07-03 / Codex: Java 11 class-file support now accepts and exposes the main metadata forms introduced by Java 9-11. `JavaClass` reads `Module`, `ModuleMainClass`, `ModulePackages`, `NestHost`, and `NestMembers`; `BC018_ldc` rejects `CONSTANT_Dynamic` loads with a precise unsupported-feature diagnostic instead of resolving the wrong constant; and `ByteCode.getInstance` no longer masks runtime converter errors as later null dereferences. `Java11ClassFileTest`, `StringConcatFactoryLoweringTest`, the full `tc.tools.converter.modernjava.*` suite, and `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` pass with Gradle 9.6.1. The next compatibility frontier is Java 17 class-file acceptance for majors 56 through 61, including record and sealed metadata.
 
 ## Context and Orientation
 
@@ -593,3 +604,5 @@ Compatibility classes should follow the existing `jdkcompat` convention and use 
 2026-07-01 / Codex: Implemented parser infrastructure and version gates, with focused tests covering roadmap major versions, preview rejection, future-version rejection, unknown class attributes, and modern constant-pool tags. The next implementation step is Java 8 lambda and method-reference lowering from `LambdaMetafactory`.
 
 2026-07-01 / Codex: Added the metadata foundation for Java 8 lambda lowering and a focused test proving a compiled Java 8 lambda exposes `LambdaMetafactory.metafactory` through `BootstrapMethods`. The next implementation step remains the actual lambda adapter generation/lowering.
+
+2026-07-03 / Codex: Completed the Java 11 class-file metadata milestone. The parser now keeps module and nestmate metadata, dynamic constants are parsed and rejected clearly when loaded by `ldc`, and Gradle 9 test execution now includes the required JUnit Platform launcher runtime dependency. The next implementation step is Java 17 class-file support.

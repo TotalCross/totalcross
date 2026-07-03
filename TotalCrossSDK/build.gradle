@@ -128,6 +128,7 @@ dependencies {
 	// https://mvnrepository.com/artifact/junit/junit
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
 
     implementation(group: 'com.totalcross.annotations', name: 'totalcross-annotations', version: '1.0.0')
 }

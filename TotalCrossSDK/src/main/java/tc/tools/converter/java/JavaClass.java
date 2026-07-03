@@ -23,6 +23,11 @@ public final class JavaClass {
   public JavaField[] fields;
   public JavaMethod[] methods;
   public JavaBootstrapMethod[] bootstrapMethods;
+  public String nestHost;
+  public String[] nestMembers;
+  public String moduleName;
+  public String moduleMainClass;
+  public String[] modulePackages;
   public byte[] bytes;
 
   //public ClassAttribute[] attrs;
@@ -172,6 +177,16 @@ public final class JavaClass {
       int len = ds.readInt();
       if ("BootstrapMethods".equals(name)) {
         readBootstrapMethods(ds);
+      } else if ("NestHost".equals(name)) {
+        readNestHost(ds);
+      } else if ("NestMembers".equals(name)) {
+        readNestMembers(ds);
+      } else if ("Module".equals(name)) {
+        readModule(ds);
+      } else if ("ModuleMainClass".equals(name)) {
+        readModuleMainClass(ds);
+      } else if ("ModulePackages".equals(name)) {
+        readModulePackages(ds);
       } else {
         ds.skipBytes(len);
       }
@@ -189,6 +204,72 @@ public final class JavaClass {
         arguments[j] = ds.readUnsignedShort();
       }
       bootstrapMethods[i] = new JavaBootstrapMethod(bootstrapMethodRef, arguments);
+    }
+  }
+
+  private void readNestHost(DataStream ds) throws totalcross.io.IOException {
+    nestHost = cp.getString1(ds.readUnsignedShort());
+  }
+
+  private void readNestMembers(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    nestMembers = new String[n];
+    for (int i = 0; i < n; i++) {
+      nestMembers[i] = cp.getString1(ds.readUnsignedShort());
+    }
+  }
+
+  private void readModule(DataStream ds) throws totalcross.io.IOException {
+    moduleName = cp.getString1(ds.readUnsignedShort());
+    ds.readUnsignedShort(); // module_flags
+    ds.readUnsignedShort(); // module_version_index
+
+    int requiresCount = ds.readUnsignedShort();
+    for (int i = 0; i < requiresCount; i++) {
+      ds.readUnsignedShort(); // requires_index
+      ds.readUnsignedShort(); // requires_flags
+      ds.readUnsignedShort(); // requires_version_index
+    }
+
+    skipModuleExportsOrOpens(ds);
+    skipModuleExportsOrOpens(ds);
+
+    int usesCount = ds.readUnsignedShort();
+    for (int i = 0; i < usesCount; i++) {
+      ds.readUnsignedShort();
+    }
+
+    int providesCount = ds.readUnsignedShort();
+    for (int i = 0; i < providesCount; i++) {
+      ds.readUnsignedShort(); // provides_index
+      int providesWithCount = ds.readUnsignedShort();
+      for (int j = 0; j < providesWithCount; j++) {
+        ds.readUnsignedShort();
+      }
+    }
+  }
+
+  private void readModuleMainClass(DataStream ds) throws totalcross.io.IOException {
+    moduleMainClass = cp.getString1(ds.readUnsignedShort());
+  }
+
+  private void readModulePackages(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    modulePackages = new String[n];
+    for (int i = 0; i < n; i++) {
+      modulePackages[i] = cp.getString1(ds.readUnsignedShort());
+    }
+  }
+
+  private void skipModuleExportsOrOpens(DataStream ds) throws totalcross.io.IOException {
+    int n = ds.readUnsignedShort();
+    for (int i = 0; i < n; i++) {
+      ds.readUnsignedShort(); // exports_index or opens_index
+      ds.readUnsignedShort(); // flags
+      int targetCount = ds.readUnsignedShort();
+      for (int j = 0; j < targetCount; j++) {
+        ds.readUnsignedShort();
+      }
     }
   }
 

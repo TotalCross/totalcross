@@ -228,6 +228,50 @@ final class ModernJavaClassFileFixtures {
         "java 11 string concat", className, source);
   }
 
+  static Optional<List<ModernJavaClassFileFixture>> compileJava11NestmateFixture(Path workDir) throws IOException {
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    if (compiler == null) {
+      return Optional.empty();
+    }
+
+    int javaRelease = JAVA_11;
+    int expectedMajorVersion = ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_11)).intValue();
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava11Nestmates";
+    String className = packageName + "." + simpleName;
+    String innerClassName = className + "$Inner";
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  private String secret() { return \"secret\"; }\n"
+        + "  public class Inner {\n"
+        + "    public String read() { return secret(); }\n"
+        + "  }\n"
+        + "}\n";
+
+    Path sourceDir = workDir.resolve("src");
+    Path classesDir = workDir.resolve("classes-" + javaRelease + "-" + sanitize(className));
+    Path sourceFile = sourceDir.resolve(className.replace('.', '/') + ".java");
+    Files.createDirectories(sourceFile.getParent());
+    Files.createDirectories(classesDir);
+    try (Writer writer = new OutputStreamWriter(Files.newOutputStream(sourceFile), StandardCharsets.UTF_8)) {
+      writer.write(source);
+    }
+
+    CompilationResult result = compileWithOptions(sourceFile, classesDir, "--release", String.valueOf(javaRelease));
+    if (!result.succeeded && result.releaseIsUnsupported()) {
+      return Optional.empty();
+    }
+    if (!result.succeeded) {
+      throw new AssertionError("Compilation failed for Java 11 nestmate fixture:\n" + result.diagnostics);
+    }
+
+    List<ModernJavaClassFileFixture> fixtures = new ArrayList<ModernJavaClassFileFixture>();
+    fixtures.add(new ModernJavaClassFileFixture(javaRelease, expectedMajorVersion, "java 11 nestmate outer",
+        className, Files.readAllBytes(classesDir.resolve(className.replace('.', '/') + ".class")), true));
+    fixtures.add(new ModernJavaClassFileFixture(javaRelease, expectedMajorVersion, "java 11 nestmate inner",
+        innerClassName, Files.readAllBytes(classesDir.resolve(innerClassName.replace('.', '/') + ".class")), true));
+    return Optional.of(fixtures);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");
@@ -382,6 +426,129 @@ final class ModernJavaClassFileFixtures {
     out.writeShort(0);
     out.flush();
     return bytes.toByteArray();
+  }
+
+  static byte[] moduleInfoClassFile(String moduleName, int majorVersion) throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(bytes);
+    out.writeInt(0xCAFEBABE);
+    out.writeShort(0);
+    out.writeShort(majorVersion);
+
+    out.writeShort(8);
+    writeUtf8(out, "module-info");
+    writeClass(out, 1);
+    writeUtf8(out, "Module");
+    writeUtf8(out, moduleName);
+    writeClassLike(out, 19, 4);
+    writeUtf8(out, "java.base");
+    writeClassLike(out, 19, 6);
+
+    out.writeShort(0x8000);
+    out.writeShort(2);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(1);
+    out.writeShort(3);
+    out.writeInt(22);
+    out.writeShort(5);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(1);
+    out.writeShort(7);
+    out.writeShort(0x8000);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.flush();
+    return bytes.toByteArray();
+  }
+
+  static byte[] classFileWithLdcDynamicConstant(String internalName, int majorVersion) throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(bytes);
+    out.writeInt(0xCAFEBABE);
+    out.writeShort(0);
+    out.writeShort(majorVersion);
+
+    out.writeShort(24);
+    writeRef(out, 10, 2, 3);
+    writeClass(out, 4);
+    writeNameAndType(out, 5, 6);
+    writeUtf8(out, "java/lang/Object");
+    writeUtf8(out, "<init>");
+    writeUtf8(out, "()V");
+    writeClass(out, 8);
+    writeUtf8(out, internalName);
+    writeUtf8(out, "Code");
+    writeUtf8(out, "BootstrapMethods");
+    writeUtf8(out, "dynamicValue");
+    writeUtf8(out, "Ljava/lang/String;");
+    writeNameAndType(out, 11, 12);
+    writeRef(out, 17, 0, 13);
+    writeClass(out, 16);
+    writeUtf8(out, "java/lang/invoke/ConstantBootstraps");
+    writeUtf8(out, "nullConstant");
+    writeUtf8(out, "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;");
+    writeNameAndType(out, 17, 18);
+    writeRef(out, 10, 15, 19);
+    out.writeByte(15);
+    out.writeByte(6);
+    out.writeShort(20);
+    writeUtf8(out, "value");
+    writeUtf8(out, "()Ljava/lang/String;");
+
+    out.writeShort(0x0021);
+    out.writeShort(7);
+    out.writeShort(2);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(2);
+    writeDefaultConstructor(out, 9);
+    out.writeShort(0x0001);
+    out.writeShort(22);
+    out.writeShort(23);
+    out.writeShort(1);
+    out.writeShort(9);
+    out.writeInt(15);
+    out.writeShort(1);
+    out.writeShort(1);
+    out.writeInt(3);
+    out.writeByte(0x12);
+    out.writeByte(14);
+    out.writeByte(0xB0);
+    out.writeShort(0);
+    out.writeShort(0);
+    out.writeShort(1);
+    out.writeShort(10);
+    out.writeInt(6);
+    out.writeShort(1);
+    out.writeShort(21);
+    out.writeShort(0);
+    out.flush();
+    return bytes.toByteArray();
+  }
+
+  private static void writeDefaultConstructor(DataOutputStream out, int codeAttributeNameIndex) throws IOException {
+    out.writeShort(0x0001);
+    out.writeShort(5);
+    out.writeShort(6);
+    out.writeShort(1);
+    out.writeShort(codeAttributeNameIndex);
+    out.writeInt(17);
+    out.writeShort(1);
+    out.writeShort(1);
+    out.writeInt(5);
+    out.writeByte(0x2A);
+    out.writeByte(0xB7);
+    out.writeShort(1);
+    out.writeByte(0xB1);
+    out.writeShort(0);
+    out.writeShort(0);
   }
 
   private static void writeRef(DataOutputStream out, int tag, int classIndex, int nameAndTypeIndex) throws IOException {

@@ -295,6 +295,8 @@ public class ByteCode implements JConstants {
   public static ByteCode getInstance(int idx) {
     try {
       return (ByteCode) bcClasses[idx].newInstance();
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Exception e) {
       e.printStackTrace();
       return null;
