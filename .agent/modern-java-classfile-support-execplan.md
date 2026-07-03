@@ -65,6 +65,7 @@ Preview class files, identified by minor version 65535, are out of scope for the
 - [x] (2026-07-03 21:11Z) Complete Java 11 class-file support, including module metadata, nestmate metadata, `CONSTANT_Dynamic`, and clear unsupported-feature diagnostics.
 - [x] (2026-07-04 02:31Z) Compile the SDK as Java 11 class files, keep `clean dist -x test` passing, and deploy a TotalCross Java 11 smoke application that exercises practical Java 11 compiler output.
 - [x] (2026-07-04 02:55Z) Complete Java 17 class-file support, including class-file majors 56 through 61, record metadata, sealed-class metadata, and ordinary non-preview Java 17 compiler output.
+- [x] (2026-07-04 03:18Z) Compile the SDK as Java 17 class files, keep `clean dist -x test` passing, and deploy a TotalCross Java 17 smoke application for deployable Java 17-era features.
 - [ ] Support Java 17-era language features in priority order: records, instanceof pattern matching, switch expressions, and text blocks.
 - [ ] Complete Java 21 class-file support for major 65 and intermediate majors 62 through 64 when bytecode and APIs are otherwise supported.
 - [ ] Finish support for features introduced through Java 17 that were not listed above or remain incomplete, including lower-priority Java 8 runtime API compatibility found by smoke validation.
@@ -174,6 +175,9 @@ Preview class files, identified by minor version 65535, are out of scope for the
 
 - Observation: Java 17 record and sealed-class support is a parser metadata milestone, not yet full feature semantics.
   Evidence: `Java17ClassFileTest` compiles a Java 17 record and verifies `JavaClass.recordComponents`, compiles a Java 17 sealed class and verifies `JavaClass.permittedSubclasses`, and converts an ordinary Java 17 class through `J2TC`. It intentionally does not convert the record class yet, because javac-generated record methods can depend on `java/lang/Record` and `ObjectMethods` behavior planned for the next feature stage.
+
+- Observation: A real Java 17 smoke app can deploy when it uses Java 17-era features that compile to supported bytecode and metadata.
+  Evidence: With SDK `sourceCompatibility` and `targetCompatibility` set to `JavaVersion.VERSION_17`, `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` completed successfully. `Java17FeatureSmokeApp` compiles with `javac --release 17` to class-file major 61, includes `PermittedSubclasses` metadata for a sealed interface, and deploys through headless `tc.Deploy` to `/tmp/totalcross-java17-smoke/classes/Java17FeatureSmokeApp.tcz`. The app covers instanceof pattern matching, switch expressions, text blocks, and sealed-class metadata.
 
 ## Decision Log
 
@@ -294,6 +298,8 @@ Update this section after each milestone with the highest class-file version pro
 2026-07-04 / Codex: The SDK build now targets Java 11 class files directly. `clean dist -x test` passes with JDK 17, and a Java 11 TotalCross smoke app compiles as major 55 and deploys successfully to `/tmp/totalcross-java11-smoke/classes/Java11FeatureSmokeApp.tcz`. The smoke app covers javac `StringConcatFactory` output, nestmate private access, local variable type inference, and lambda `var` parameters. The build now cleans `dist/libs` before copying runtime dependencies so old local jars cannot corrupt deployer smoke tests after Gradle dependency upgrades.
 
 2026-07-04 / Codex: Java 17 class-file acceptance is now in place. `JavaClass` reads the `Record` attribute into record component metadata and reads `PermittedSubclasses` for sealed classes. `Java17ClassFileTest` proves javac `--release 17` output is major 61, verifies record and sealed metadata, and converts an ordinary Java 17 class through `J2TC`. The focused `Java17ClassFileTest`, full `tc.tools.converter.modernjava.*` suite, and broad `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home ./gradlew clean dist -x test` validation pass. The next planned stage is the prioritized Java 17-era feature pass, starting with records.
+
+2026-07-04 / Codex: The SDK build now targets Java 17 class files directly. `clean dist -x test` passes with JDK 17, and a Java 17 TotalCross smoke app compiles as major 61 and deploys successfully to `/tmp/totalcross-java17-smoke/classes/Java17FeatureSmokeApp.tcz`. The smoke app proves deployer behavior for instanceof pattern matching, switch expressions, text blocks, and sealed-class metadata. Records remain the next Java 17 feature priority because record runtime/lowering support is broader than class-file metadata acceptance.
 
 ## Context and Orientation
 
@@ -434,47 +440,60 @@ Work from the repository root unless a command specifies another directory.
 
    Expect major 61 and intermediate majors 56 through 60 to parse, record and sealed metadata to be accepted or precisely rejected, and ordinary non-preview Java 17 compiler output to avoid parser crashes.
 
-12. Support the prioritized Java 17-era language features:
+12. Compile the SDK as Java 17 and deploy the Java 17 TotalCross smoke app:
+
+       cd TotalCrossSDK
+       ./gradlew clean dist -x test
+       mkdir -p /tmp/totalcross-java17-smoke/classes
+       javac --release 17 -cp dist/totalcross-sdk.jar -d /tmp/totalcross-java17-smoke/classes src/test/resources/modernjava/smoke/Java17FeatureSmokeApp.java
+       javap -verbose /tmp/totalcross-java17-smoke/classes/smoke/Java17FeatureSmokeApp.class
+       javap -verbose /tmp/totalcross-java17-smoke/classes/smoke/Java17FeatureSmokeApp\$JavaRelease.class
+       cd /tmp/totalcross-java17-smoke/classes
+       java -Djava.awt.headless=true -cp "/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/totalcross-sdk.jar:/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/libs/*" tc.Deploy smoke/Java17FeatureSmokeApp.class /v
+
+   Expect the SDK classes and smoke app to be major 61. The smoke app should cover deployable Java 17-era compiler output such as instanceof pattern matching, switch expressions, text blocks, and sealed-class metadata, and should produce `Java17FeatureSmokeApp.tcz`. Records remain in the next feature-specific stage.
+
+13. Support the prioritized Java 17-era language features:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17FeatureTest
 
    Implement and validate the feature fixtures in this order: records, instanceof pattern matching, switch expressions, then text blocks. Expect records to deploy as ordinary classes when required runtime APIs exist or to fail with precise missing-API diagnostics. Expect pattern matching, switch expressions, and text blocks to prove that javac output deploys without special VM support unless a concrete unsupported bytecode/API appears.
 
-13. Complete Java 21 class-file support:
+14. Complete Java 21 class-file support:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java21ClassFileTest
 
    Expect class-file major 65 and intermediate majors 62 through 64 to pass parser acceptance and common conversion fixtures. Preview class files remain rejected with clear diagnostics.
 
-14. Finish features introduced through Java 17 that were not listed above or remain incomplete:
+15. Finish features introduced through Java 17 that were not listed above or remain incomplete:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17BacklogFeatureTest
 
    Expect remaining Java 8-17 compatibility gaps to be either implemented or documented as unsupported with precise diagnostics. Include the lower-priority Java 8 smoke gaps, sealed-class behavior beyond metadata acceptance, nestmate access behavior, and any remaining common javac output patterns through Java 17.
 
-15. Finish features introduced through Java 21 that were not listed above or remain incomplete:
+16. Finish features introduced through Java 21 that were not listed above or remain incomplete:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java21BacklogFeatureTest --tests tc.tools.converter.modernjava.InvokeDynamicCompletenessTest
 
    Expect remaining Java 18-21 compatibility gaps to be either implemented or documented as unsupported with precise diagnostics. By the end of this step, supported class files should no longer depend on a partial `invokedynamic` implementation.
 
-16. Support later class-file versions:
+17. Support later class-file versions:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java22ClassFileTest --tests tc.tools.converter.modernjava.Java23ClassFileTest --tests tc.tools.converter.modernjava.Java24ClassFileTest --tests tc.tools.converter.modernjava.Java25ClassFileTest --tests tc.tools.converter.modernjava.Java26ClassFileTest
 
    Expect class-file majors 66 through 70, and later majors as they are added, to pass parser acceptance and common conversion fixtures one version at a time.
 
-17. Run focused regression tests after each milestone:
+18. Run focused regression tests after each milestone:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.* --tests totalcross.LauncherArgumentParserTest --tests totalcross.LauncherRuntimeTest
 
-18. Run broad SDK validation when focused tests pass:
+19. Run broad SDK validation when focused tests pass:
 
        cd TotalCrossSDK
        ./gradlew clean dist -x test
@@ -634,3 +653,5 @@ Compatibility classes should follow the existing `jdkcompat` convention and use 
 2026-07-03 / Codex: Completed the Java 11 class-file metadata milestone. The parser now keeps module and nestmate metadata, dynamic constants are parsed and rejected clearly when loaded by `ldc`, and Gradle 9 test execution now includes the required JUnit Platform launcher runtime dependency. The next implementation step is Java 17 class-file support.
 
 2026-07-04 / Codex: Completed the Java 17 class-file metadata milestone. The parser now keeps record components and permitted subclasses, with tests for ordinary Java 17 conversion, record metadata, and sealed-class metadata. The next implementation step is the Java 17 feature pass in priority order, beginning with records.
+
+2026-07-04 / Codex: Added the Java 17 SDK-build and smoke-app validation step. The SDK now compiles as Java 17, the Java 17 smoke app deploys, and the next implementation step remains records as the first prioritized Java 17-era feature.
