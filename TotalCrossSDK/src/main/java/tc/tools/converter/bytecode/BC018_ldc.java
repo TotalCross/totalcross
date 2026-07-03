@@ -1,9 +1,11 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.bytecode;
 
+import tc.tools.converter.ConverterException;
 import tc.tools.converter.TCValue;
 import tc.tools.converter.java.JavaConstantInfo;
 
@@ -20,6 +22,12 @@ public class BC018_ldc extends LoadLocal {
     Object o = cp.constants[ofs];
     if (o instanceof JavaConstantInfo) {
       JavaConstantInfo jci = (JavaConstantInfo) o;
+      if (jci.type == 17) {
+        throw new ConverterException("Unsupported CONSTANT_Dynamic at constant pool index " + ofs + " in LDC");
+      }
+      if (jci.type != 7 && jci.type != 8 && jci.type != 16) {
+        throw new ConverterException("Unsupported constant pool tag " + jci.type + " at index " + ofs + " in LDC");
+      }
       o = cp.constants[jci.index1];
     }
     if (o instanceof String) {
