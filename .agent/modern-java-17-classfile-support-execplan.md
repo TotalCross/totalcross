@@ -57,7 +57,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 | 12-13 | Switch expressions as preview | Unsupported by policy | Preview class files are rejected by minor version 65535. | Keep preview rejection clear. |
 | 14 | Switch expressions | Supported | `Java14FeatureSmokeTest` covers final switch expressions. | No known deployer gap. |
 | 15 | Text blocks | Supported | `Java15FeatureSmokeTest` covers text blocks as ordinary string constants. | No known deployer gap. |
-| 16 | Records | Partial | `Java16FeatureSmokeTest`, `Java17ClassFileTest`, and `Java17FeatureTest` cover record metadata, construction, accessors, and custom methods. `Record4D` supplies the `java/lang/Record` superclass mapping, and `JavaObjectMethodsLowering` handles javac-generated `ObjectMethods` sites enough for deploy. | Exact generated record `equals`, `hashCode`, and `toString` semantics currently fall back to `Object` semantics and must be completed. |
+| 16 | Records | Supported for common javac output | `Java16FeatureSmokeTest`, `Java17ClassFileTest`, and `Java17FeatureTest` cover record metadata, construction, accessors, custom methods, and generated `equals`, `hashCode`, and `toString` object methods. `Record4D` supplies the `java/lang/Record` superclass mapping, and `JavaObjectMethodsLowering` lowers javac-generated `ObjectMethods` sites through record component metadata. | Reflection over record components and annotations remains normal runtime API compatibility work, not a deployer blocker. |
 | 16 | Instanceof pattern matching | Supported | `Java16FeatureSmokeTest` covers pattern variables from `instanceof`, which javac lowers to supported bytecode. | No known deployer gap. |
 | 17 | Sealed classes and interfaces | Partial | `JavaClass` reads `PermittedSubclasses`; `Java17FeatureSmokeTest` deploys a sealed interface plus permitted implementation. | Runtime semantic enforcement is not implemented; decide whether metadata-only support is enough for TotalCross. |
 | Through 17 | Preview features | Unsupported by policy | Class-file minor version 65535 is rejected. | Keep diagnostics naming class, major, minor, and preview status. |
@@ -78,7 +78,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 - [x] (2026-07-04) Added initial record deploy support through `Record4D` and `ObjectMethods` lowering.
 - [x] (2026-07-04) Reorganized smoke tests into per-version `Container` classes plus a single `FeatureSmokeApp` `MainWindow`, with stdout pass/fail logging and UI labels.
 - [x] (2026-07-04) Added smoke coverage for earlier language features that were missing from the smoke suite: Java 1.4 assertions, Java 5 enums/generics/varargs/autoboxing/enhanced-for/annotations/covariant returns, Java 6 interface `@Override`, Java 7 source features, Java 10 `var`, Java 14 switch expressions, Java 15 text blocks, and Java 16 records/instanceof patterns.
-- [ ] Complete exact generated record `equals`, `hashCode`, and `toString` semantics using record component metadata instead of `Object` semantics.
+- [x] (2026-07-06) Completed generated record `equals`, `hashCode`, and `toString` semantics using record component metadata and runtime compatibility helpers instead of `Object` fallback semantics.
 - [ ] Decide and document whether sealed classes remain metadata-only or need runtime enforcement in TotalCross.
 - [ ] Add a repeatable Gradle or script target for compiling and deploying `FeatureSmokeApp` from the generated SDK.
 - [ ] Review Java 8 runtime API gaps found by smoke validation, especially `Predicate.and` and serializable lambda deserialization, and either implement or document precise unsupported diagnostics.
@@ -134,6 +134,10 @@ This table tracks language and class-file features through Java 17. "Supported" 
   Rationale: This unblocks deploy of record construction, accessors, and custom methods. Exact record object-method semantics remain visible application behavior and are tracked as follow-up work.
   Date/Author: 2026-07-04 / Codex
 
+- Decision: Complete record object methods by lowering `ObjectMethods` call sites to a compatibility helper plus component-value arrays.
+  Rationale: The deployer already has record component metadata and can generate ordinary TotalCross calls without adding dynamic call-site support to TCVM. The helper keeps exact visible `toString`, `hashCode`, and `equals` behavior for common javac records while preserving the low-effort lowering strategy.
+  Date/Author: 2026-07-06 / Codex
+
 - Decision: Use per-version smoke `Container` classes plus a single aggregate `FeatureSmokeApp`.
   Rationale: The source layout documents when each feature was introduced, while the aggregate app gives one deploy target that schedules every smoke suite.
   Date/Author: 2026-07-04 / Codex
@@ -152,6 +156,8 @@ This table tracks language and class-file features through Java 17. "Supported" 
 
 2026-07-04 / Codex: The smoke suite is reorganized around `FeatureSmokeApp`. Each version-specific smoke class extends `Container`, logs pass/fail results to stdout, and displays a label in the UI. The aggregate app extends `MainWindow` and adds every suite from `initUI` so one deploy target exercises Java 1.4 through Java 17 feature coverage.
 
+2026-07-06 / Codex: Generated record object methods now use component semantics. `JavaObjectMethodsLowering` extracts component fields, boxes primitive components, creates an `Object[]`, and calls `java/lang/runtime/ObjectMethods` compatibility helpers for record `toString`, `hashCode`, and `equals`. Validation passed with `./gradlew test --tests tc.tools.converter.modernjava.Java17FeatureTest`, `./gradlew test --tests tc.tools.converter.modernjava.*`, `./gradlew clean dist -x test`, and a Java 17 compile plus `tc.Deploy` of `smoke/FeatureSmokeApp.class`.
+
 ## Context and Orientation
 
 The deployer parses Java class files under `TotalCrossSDK/src/main/java/tc/tools/converter/java`. `JavaClass` owns class metadata, `JavaConstantPool` owns raw constants, `JavaMethod` owns method declarations, and `JavaCode` turns method bytecode bytes into `ByteCode` objects. `Bytecode2TCCode` converts those bytecode objects into TotalCross IR instructions. `GlobalConstantPool` serializes method, field, class, and literal references into the TCZ constant pool. TCVM reads that pool in `TotalCrossVM/src/tcvm/tcclass.c` and executes method calls in `TotalCrossVM/src/tcvm/tcvm.c`.
@@ -164,9 +170,9 @@ Modern class files through Java 17 add constant-pool tags and attributes that ol
 
 Keep the class-file parser strict and explicit. It accepts normal class files through Java 17 major 61, rejects preview minor 65535 clearly, and rejects unsupported known features before they mutate global conversion state. Unknown attributes should be skipped using their declared lengths.
 
-Finish Java 17 feature support by first completing record object-method semantics. Use parsed record component metadata and the bootstrap arguments from `ObjectMethods` to generate the same visible behavior javac expects for `equals`, `hashCode`, and `toString`. Keep the current construction/accessor/custom-method support as the baseline that must not regress.
+Record object-method semantics are complete for common javac output. Keep parsed record component metadata and `ObjectMethods` lowering covered by focused tests and the aggregate smoke app so construction, accessors, custom methods, generated `equals`, `hashCode`, and generated `toString` do not regress.
 
-Review sealed classes after records. If metadata-only behavior is acceptable for TotalCross, document that in tests and diagnostics. If runtime enforcement is required, add the smallest deploy/runtime check that preserves normal permitted subclass behavior.
+Review sealed classes next. If metadata-only behavior is acceptable for TotalCross, document that in tests and diagnostics. If runtime enforcement is required, add the smallest deploy/runtime check that preserves normal permitted subclass behavior.
 
 Turn `FeatureSmokeApp` into the standard smoke validation target. The generated SDK should compile the smoke sources with `javac --release 17`, then deploy `smoke/FeatureSmokeApp.class` with `tc.Deploy`. The deploy should include all per-version containers and prove no class expansion, constant-pool parsing, or lowering path regresses.
 
@@ -199,7 +205,7 @@ At the end of every implementation step, stage only the files changed for that s
 
    Expect the aggregate app to compile as Java 17 class files and deploy into `FeatureSmokeApp.tcz`. The deploy should include every per-version smoke container. Running the app should print `[PASS]` lines to stdout and display one label per suite.
 
-4. Complete record object-method semantics:
+4. Re-run record object-method semantic validation after any record lowering change:
 
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17FeatureTest
