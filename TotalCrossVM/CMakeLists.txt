@@ -694,7 +694,43 @@ endif()
 
 if(DEFINED SDL2_LIBRARY)
   target_link_libraries(tcvm ${SDL2_LIBRARY})
-endif(DEFINED SDL2_LIBRARY)
+
+  if(APPLE)
+    set_target_properties(tcvm PROPERTIES
+      MACOSX_RPATH ON
+      BUILD_WITH_INSTALL_RPATH TRUE
+      INSTALL_RPATH
+        "/opt/homebrew/lib;/opt/homebrew/opt/sdl2-compat/lib;/opt/homebrew/sdl2/lib"
+    )
+
+    foreach(item IN LISTS SDL2_LIBRARY)
+      if(item MATCHES ".*libSDL2.*\\.dylib$")
+        set(SDL2_DYLIB_PATH "${item}")
+      endif()
+    endforeach()
+
+    if(SDL2_DYLIB_PATH)
+      execute_process(
+        COMMAND otool -D "${SDL2_DYLIB_PATH}"
+        OUTPUT_VARIABLE SDL2_OTOOl_D_OUTPUT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+
+      string(REGEX MATCH
+        "([^\n]+libSDL2-2\\.0\\.0\\.dylib)"
+        SDL2_INSTALL_NAME
+        "${SDL2_OTOOl_D_OUTPUT}"
+      )
+
+      add_custom_command(TARGET tcvm POST_BUILD
+        COMMAND install_name_tool
+          -change "${SDL2_INSTALL_NAME}"
+                  "@rpath/libSDL2.dylib"
+                  "$<TARGET_FILE:tcvm>"
+      )
+    endif()
+  endif()
+endif()
 
 if(DEFINED ANDROID_ABI)
   # Searches for a specified prebuilt library and stores the path as a
