@@ -341,6 +341,42 @@ task dist(dependsOn: [build, copySdkDependencies, 'sourcesJar', 'javadocJar']) {
 	}
 }
 
+def featureSmokeClassesDir = layout.buildDirectory.dir('feature-smoke/classes')
+def featureSmokeSdkJar = file('dist/totalcross-sdk.jar')
+def featureSmokeSources = fileTree('src/test/resources/modernjava/smoke') {
+	include '*.java'
+}
+
+tasks.register('compileModernJavaFeatureSmoke', JavaCompile) {
+	group = 'verification'
+	description = 'Compiles the aggregate modern Java feature smoke app against the generated SDK.'
+
+	source featureSmokeSources
+	classpath = files(featureSmokeSdkJar)
+	destinationDirectory = featureSmokeClassesDir
+	options.encoding = 'UTF-8'
+	options.release.set(17)
+
+	doFirst {
+		if (!featureSmokeSdkJar.isFile()) {
+			throw new GradleException('Run ./gradlew dist -x test before compiling the feature smoke app.')
+		}
+	}
+}
+
+tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
+	group = 'verification'
+	description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'
+	dependsOn 'compileModernJavaFeatureSmoke'
+
+	mainClass = 'tc.Deploy'
+	classpath = files(featureSmokeSdkJar) + fileTree('dist/libs') {
+		include '*.jar'
+	}
+	workingDir featureSmokeClassesDir.get().asFile
+	args 'smoke/FeatureSmokeApp.class'
+}
+
 build.finalizedBy(deployTcbase, deployTcui)
 
 /**
