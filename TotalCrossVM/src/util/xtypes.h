@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -258,6 +259,8 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
 #define TARGET_SLASH '/'
 #ifdef WINCE
 #define MAX_PATHNAME 256
+#elif __APPLE__ && !defined darwin
+#define MAX_PATHNAME FILENAME_MAX
 #else
 #define MAX_PATHNAME 1024 // guich@20170801 - some sdcards have very big paths
 #endif
