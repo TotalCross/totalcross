@@ -8,12 +8,10 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import totalcross.io.File;
-import totalcross.sys.Vm;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 
 public class Deployer4MacOS {
-  private static byte[] versionBytes = { 52, 0, 36, 0 };
 
   public Deployer4MacOS() throws Exception {
     String macosArguments = DeploySettings.commandLine; // the name of the tcz will be the same as the executable
@@ -52,19 +50,6 @@ public class Deployer4MacOS {
       byte[] buf = Utils.findAndLoadFile(DeploySettings.etcDir + "launchers/macos/Launcher", false);
       if (buf == null) {
         throw new DeployerException("File macos/Launcher not found!");
-      }
-
-      int ofs = Utils.indexOf(buf, DeploySettings.defaultArgument, false);
-      if (ofs < 0) {
-        throw new DeployerException("Can't find offset for command line on macOS!");
-      }
-      Vm.arrayCopy(args, 0, buf, ofs, args.length);
-      buf[ofs + args.length] = 0;
-
-      ofs = Utils.indexOf(buf, versionBytes, false);
-      if (ofs > 0) {
-        buf[ofs] = (byte) DeploySettings.getAppVersionHi();
-        buf[ofs + 2] = (byte) DeploySettings.getAppVersionLo();
       }
 
       String out = targetDir + DeploySettings.filePrefix;
