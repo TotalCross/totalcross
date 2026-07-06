@@ -20,6 +20,11 @@ public class Java16FeatureSmokeTest extends FeatureSmokeTest {
     Release release = new Release("java", 16);
     checkEquals("java16", release.label(), "record carrier");
     checkEquals(Integer.valueOf(16), Integer.valueOf(release.version()), "record accessor");
+    checkEquals("Release[name=java, version=16]", release.toString(), "record toString");
+    check(new Release("java", 16).equals(release), "record equals");
+    check(!new Release("java", 17).equals(release), "record equals mismatch");
+    checkEquals(Integer.valueOf(new Release("java", 16).hashCode()), Integer.valueOf(release.hashCode()),
+        "record hashCode");
   }
 
   private void testInstanceofPatternMatching() {
