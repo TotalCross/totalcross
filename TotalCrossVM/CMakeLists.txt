@@ -1,4 +1,5 @@
-# Copyright (C) 2020 TotalCross Global Mobile Platform Ltda.
+# Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
@@ -595,10 +596,6 @@ else()
   add_definitions(-Dlinux -DFORCE_LIBC_ALLOC -D_REENTRANT -DPOSIX -DHAVE_MREMAP=0 -fPIC -Wunused-function -Wno-import -fno-strict-aliasing)
 endif(DEFINED ANDROID_ABI)
 add_definitions(-DTOTALCROSS -DTC_EXPORTS)
-
-if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
-  add_definitions(-DCURRENT_DEBUG_PATH="${CMAKE_CURRENT_BINARY_DIR}")
-endif(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
 
 link_directories(${PROJECT_SOURCE_DIR})
 

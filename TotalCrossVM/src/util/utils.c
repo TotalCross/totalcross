@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -764,11 +765,7 @@ FILE* findFile(CharP name, CharP pathOut)
    char fullName[MAX_PATHNAME];
 
    // 1. search in current folder
-#ifdef CURRENT_DEBUG_PATH
-   xstrprintf(fullName,"%s/%s", CURRENT_DEBUG_PATH, name);
-#else
    xstrprintf(fullName,"%s", name);
-#endif
 
    f = fopen(fullName,"rb");
    // 2. search in vmPath
