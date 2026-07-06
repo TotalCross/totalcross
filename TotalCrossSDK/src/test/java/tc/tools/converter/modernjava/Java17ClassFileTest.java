@@ -58,13 +58,16 @@ class Java17ClassFileTest {
   }
 
   @Test
-  void parserReadsPermittedSubclassesFromJavacOutput() throws Exception {
+  void parserReadsPermittedSubclassesAsMetadataOnlySupport() throws Exception {
     JavaClass javaClass = compileJava17SealedClass();
 
     assertEquals(JavaClassFileVersion.JAVA_17, javaClass.majorVersion);
     assertNotNull(javaClass.permittedSubclasses);
     assertEquals(1, javaClass.permittedSubclasses.length);
     assertEquals("fixtures/CompiledJava17Sealed$Allowed", javaClass.permittedSubclasses[0]);
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
   private JavaClass compileSimpleJava17Class() throws Exception {

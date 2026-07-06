@@ -59,7 +59,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 | 15 | Text blocks | Supported | `Java15FeatureSmokeTest` covers text blocks as ordinary string constants. | No known deployer gap. |
 | 16 | Records | Supported for common javac output | `Java16FeatureSmokeTest`, `Java17ClassFileTest`, and `Java17FeatureTest` cover record metadata, construction, accessors, custom methods, and generated `equals`, `hashCode`, and `toString` object methods. `Record4D` supplies the `java/lang/Record` superclass mapping, and `JavaObjectMethodsLowering` lowers javac-generated `ObjectMethods` sites through record component metadata. | Reflection over record components and annotations remains normal runtime API compatibility work, not a deployer blocker. |
 | 16 | Instanceof pattern matching | Supported | `Java16FeatureSmokeTest` covers pattern variables from `instanceof`, which javac lowers to supported bytecode. | No known deployer gap. |
-| 17 | Sealed classes and interfaces | Partial | `JavaClass` reads `PermittedSubclasses`; `Java17FeatureSmokeTest` deploys a sealed interface plus permitted implementation. | Runtime semantic enforcement is not implemented; decide whether metadata-only support is enough for TotalCross. |
+| 17 | Sealed classes and interfaces | Supported as metadata-only | `JavaClass` reads `PermittedSubclasses`; `Java17ClassFileTest` verifies the metadata and conversion path; `Java17FeatureSmokeTest` deploys a sealed interface plus permitted implementation. | Runtime semantic enforcement is intentionally not implemented. javac already rejects invalid hierarchies for common source builds, and TotalCross accepts deployable Java 17 output while preserving sealed metadata. |
 | Through 17 | Preview features | Unsupported by policy | Class-file minor version 65535 is rejected. | Keep diagnostics naming class, major, minor, and preview status. |
 
 ## Progress
@@ -79,7 +79,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 - [x] (2026-07-04) Reorganized smoke tests into per-version `Container` classes plus a single `FeatureSmokeApp` `MainWindow`, with stdout pass/fail logging and UI labels.
 - [x] (2026-07-04) Added smoke coverage for earlier language features that were missing from the smoke suite: Java 1.4 assertions, Java 5 enums/generics/varargs/autoboxing/enhanced-for/annotations/covariant returns, Java 6 interface `@Override`, Java 7 source features, Java 10 `var`, Java 14 switch expressions, Java 15 text blocks, and Java 16 records/instanceof patterns.
 - [x] (2026-07-06) Completed generated record `equals`, `hashCode`, and `toString` semantics using record component metadata and runtime compatibility helpers instead of `Object` fallback semantics.
-- [ ] Decide and document whether sealed classes remain metadata-only or need runtime enforcement in TotalCross.
+- [x] (2026-07-06) Decided sealed classes remain metadata-only in TotalCross for this milestone, with parser/deployer acceptance covered and runtime enforcement deferred unless real apps require it.
 - [ ] Add a repeatable Gradle or script target for compiling and deploying `FeatureSmokeApp` from the generated SDK.
 - [ ] Review Java 8 runtime API gaps found by smoke validation, especially `Predicate.and` and serializable lambda deserialization, and either implement or document precise unsupported diagnostics.
 - [ ] Review Java 9-11 runtime/API gaps found by fixtures, especially module runtime behavior and deterministic `CONSTANT_Dynamic` lowering.
@@ -138,6 +138,10 @@ This table tracks language and class-file features through Java 17. "Supported" 
   Rationale: The deployer already has record component metadata and can generate ordinary TotalCross calls without adding dynamic call-site support to TCVM. The helper keeps exact visible `toString`, `hashCode`, and `equals` behavior for common javac records while preserving the low-effort lowering strategy.
   Date/Author: 2026-07-06 / Codex
 
+- Decision: Treat sealed classes as metadata-only support for the Java 17 milestone.
+  Rationale: javac rejects invalid sealed hierarchies for common source builds, while TotalCross primarily needs to parse and deploy valid Java 17 output. Runtime enforcement can remain deferred until a real app needs it.
+  Date/Author: 2026-07-06 / Codex
+
 - Decision: Use per-version smoke `Container` classes plus a single aggregate `FeatureSmokeApp`.
   Rationale: The source layout documents when each feature was introduced, while the aggregate app gives one deploy target that schedules every smoke suite.
   Date/Author: 2026-07-04 / Codex
@@ -158,6 +162,8 @@ This table tracks language and class-file features through Java 17. "Supported" 
 
 2026-07-06 / Codex: Generated record object methods now use component semantics. `JavaObjectMethodsLowering` extracts component fields, boxes primitive components, creates an `Object[]`, and calls `java/lang/runtime/ObjectMethods` compatibility helpers for record `toString`, `hashCode`, and `equals`. Validation passed with `./gradlew test --tests tc.tools.converter.modernjava.Java17FeatureTest`, `./gradlew test --tests tc.tools.converter.modernjava.*`, `./gradlew clean dist -x test`, and a Java 17 compile plus `tc.Deploy` of `smoke/FeatureSmokeApp.class`.
 
+2026-07-06 / Codex: Sealed classes are accepted as metadata-only support. `JavaClass` keeps reading `PermittedSubclasses`, `Java17ClassFileTest` documents the metadata-only conversion contract, and the Java 17 smoke app labels sealed coverage accordingly. Runtime enforcement remains deferred because common javac source builds already reject invalid sealed hierarchies before deploy.
+
 ## Context and Orientation
 
 The deployer parses Java class files under `TotalCrossSDK/src/main/java/tc/tools/converter/java`. `JavaClass` owns class metadata, `JavaConstantPool` owns raw constants, `JavaMethod` owns method declarations, and `JavaCode` turns method bytecode bytes into `ByteCode` objects. `Bytecode2TCCode` converts those bytecode objects into TotalCross IR instructions. `GlobalConstantPool` serializes method, field, class, and literal references into the TCZ constant pool. TCVM reads that pool in `TotalCrossVM/src/tcvm/tcclass.c` and executes method calls in `TotalCrossVM/src/tcvm/tcvm.c`.
@@ -172,7 +178,7 @@ Keep the class-file parser strict and explicit. It accepts normal class files th
 
 Record object-method semantics are complete for common javac output. Keep parsed record component metadata and `ObjectMethods` lowering covered by focused tests and the aggregate smoke app so construction, accessors, custom methods, generated `equals`, `hashCode`, and generated `toString` do not regress.
 
-Review sealed classes next. If metadata-only behavior is acceptable for TotalCross, document that in tests and diagnostics. If runtime enforcement is required, add the smallest deploy/runtime check that preserves normal permitted subclass behavior.
+Sealed classes are accepted as metadata-only for this Java 17 milestone. Keep tests proving `PermittedSubclasses` parsing and deployer acceptance, but do not add TCVM runtime enforcement unless a real application needs behavior beyond javac-validated sealed hierarchies.
 
 Turn `FeatureSmokeApp` into the standard smoke validation target. The generated SDK should compile the smoke sources with `javac --release 17`, then deploy `smoke/FeatureSmokeApp.class` with `tc.Deploy`. The deploy should include all per-version containers and prove no class expansion, constant-pool parsing, or lowering path regresses.
 
@@ -217,7 +223,7 @@ At the end of every implementation step, stage only the files changed for that s
        cd TotalCrossSDK
        ./gradlew test --tests tc.tools.converter.modernjava.Java17ClassFileTest
 
-   Either add runtime/deploy enforcement tests or explicitly document metadata-only sealed support as the accepted TotalCross behavior.
+   This focused test documents metadata-only support as the accepted TotalCross behavior. Add runtime/deploy enforcement only if a real application needs behavior beyond javac-validated sealed hierarchies.
 
 6. Close remaining through-Java-17 runtime/API gaps:
 
@@ -238,7 +244,7 @@ Java 8 acceptance is that high-value language/class-file features deploy without
 
 Java 11 acceptance includes successful parsing of class-file major 55, module metadata, nestmate metadata, and lowering of javac string concatenation via `StringConcatFactory`. Dynamic constants may remain unsupported only when diagnostics are precise and actionable.
 
-Java 17 acceptance includes successful parsing of class-file major 61, metadata for records and sealed classes, and deployable non-preview Java 17 compiler output. Records are complete only when construction, accessors, custom methods, and generated `equals`, `hashCode`, and `toString` semantics all behave correctly.
+Java 17 acceptance includes successful parsing of class-file major 61, metadata for records and sealed classes, and deployable non-preview Java 17 compiler output. Records are complete only when construction, accessors, custom methods, and generated `equals`, `hashCode`, and `toString` semantics all behave correctly. Sealed classes are complete for this milestone when `PermittedSubclasses` metadata is parsed and deployable javac output converts; runtime enforcement is intentionally out of scope.
 
 ## Idempotence and Recovery
 

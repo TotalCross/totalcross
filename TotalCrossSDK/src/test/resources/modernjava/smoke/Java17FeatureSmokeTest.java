@@ -17,7 +17,7 @@ public class Java17FeatureSmokeTest extends FeatureSmokeTest {
 
   private void testSealedClassMetadata() {
     JavaRelease release = new LtsRelease(17);
-    checkEquals(Integer.valueOf(17), Integer.valueOf(release.version()), "sealed class metadata");
+    checkEquals(Integer.valueOf(17), Integer.valueOf(release.version()), "sealed class metadata-only support");
   }
 
   sealed interface JavaRelease permits LtsRelease {
