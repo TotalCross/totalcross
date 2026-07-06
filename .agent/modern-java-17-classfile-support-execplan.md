@@ -176,6 +176,8 @@ After the aggregate smoke target is stable, address the remaining runtime/API ga
 
 Work from the repository root unless a command specifies another directory.
 
+At the end of every implementation step, stage only the files changed for that step and generate a descriptive commit message that follows the repository commit-message rules. Do this after validation, and leave unrelated dirty or untracked files untouched.
+
 1. Run focused converter tests:
 
        cd TotalCrossSDK
@@ -221,6 +223,8 @@ Work from the repository root unless a command specifies another directory.
 ## Validation and Acceptance
 
 Class-file acceptance is proven by tests that compile or generate class files through Java 17 and then parse or convert them with the TotalCross deployer. A successful milestone must either convert the class or reject it with a message that identifies a specific unsupported feature.
+
+Each completed step is ready to hand off only when its relevant files are staged and a descriptive commit message has been produced. The staged set must be limited to that step's changes and must not include generated artifacts, local logs, downloaded dependencies, or unrelated worktree files.
 
 The aggregate smoke suite is accepted when `FeatureSmokeApp` compiles with `javac --release 17`, deploys through `tc.Deploy`, includes every per-version smoke container, prints pass/fail results to stdout, and displays UI labels for successful suites.
 
@@ -287,3 +291,5 @@ Each helper should either lower a recognized common bootstrap into ordinary Tota
 2026-07-04 / Codex: Completed the Java 17 class-file metadata milestone and added initial record deploy support.
 
 2026-07-04 / Codex: Renamed this plan to `modern-java-17-classfile-support-execplan`, limited scope to Java 17, expanded feature status through Java 17, and reorganized smoke coverage around `FeatureSmokeApp`.
+
+2026-07-06 / Codex: Added the handoff rule that each implementation step must finish with the relevant files staged and a descriptive commit message generated.
