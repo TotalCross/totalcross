@@ -80,7 +80,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 - [x] (2026-07-04) Added smoke coverage for earlier language features that were missing from the smoke suite: Java 1.4 assertions, Java 5 enums/generics/varargs/autoboxing/enhanced-for/annotations/covariant returns, Java 6 interface `@Override`, Java 7 source features, Java 10 `var`, Java 14 switch expressions, Java 15 text blocks, and Java 16 records/instanceof patterns.
 - [x] (2026-07-06) Completed generated record `equals`, `hashCode`, and `toString` semantics using record component metadata and runtime compatibility helpers instead of `Object` fallback semantics.
 - [x] (2026-07-06) Decided sealed classes remain metadata-only in TotalCross for this milestone, with parser/deployer acceptance covered and runtime enforcement deferred unless real apps require it.
-- [ ] Add a repeatable Gradle or script target for compiling and deploying `FeatureSmokeApp` from the generated SDK.
+- [x] (2026-07-06) Added repeatable Gradle targets for compiling and deploying `FeatureSmokeApp` from the generated SDK.
 - [ ] Review Java 8 runtime API gaps found by smoke validation, especially `Predicate.and` and serializable lambda deserialization, and either implement or document precise unsupported diagnostics.
 - [ ] Review Java 9-11 runtime/API gaps found by fixtures, especially module runtime behavior and deterministic `CONSTANT_Dynamic` lowering.
 - [ ] Add focused tests for annotation metadata retention/reflection only if TotalCross apps need annotation reflection through Java 17.
@@ -164,6 +164,8 @@ This table tracks language and class-file features through Java 17. "Supported" 
 
 2026-07-06 / Codex: Sealed classes are accepted as metadata-only support. `JavaClass` keeps reading `PermittedSubclasses`, `Java17ClassFileTest` documents the metadata-only conversion contract, and the Java 17 smoke app labels sealed coverage accordingly. Runtime enforcement remains deferred because common javac source builds already reject invalid sealed hierarchies before deploy.
 
+2026-07-06 / Codex: The aggregate feature smoke app now has repeatable Gradle targets. After `dist` is generated, `compileModernJavaFeatureSmoke` compiles the smoke sources against `dist/totalcross-sdk.jar` with Java 17 release bytecode, and `deployModernJavaFeatureSmoke` runs `tc.Deploy` against the compiled `smoke/FeatureSmokeApp.class` without verbose deploy output.
+
 ## Context and Orientation
 
 The deployer parses Java class files under `TotalCrossSDK/src/main/java/tc/tools/converter/java`. `JavaClass` owns class metadata, `JavaConstantPool` owns raw constants, `JavaMethod` owns method declarations, and `JavaCode` turns method bytecode bytes into `ByteCode` objects. `Bytecode2TCCode` converts those bytecode objects into TotalCross IR instructions. `GlobalConstantPool` serializes method, field, class, and literal references into the TCZ constant pool. TCVM reads that pool in `TotalCrossVM/src/tcvm/tcclass.c` and executes method calls in `TotalCrossVM/src/tcvm/tcvm.c`.
@@ -180,7 +182,7 @@ Record object-method semantics are complete for common javac output. Keep parsed
 
 Sealed classes are accepted as metadata-only for this Java 17 milestone. Keep tests proving `PermittedSubclasses` parsing and deployer acceptance, but do not add TCVM runtime enforcement unless a real application needs behavior beyond javac-validated sealed hierarchies.
 
-Turn `FeatureSmokeApp` into the standard smoke validation target. The generated SDK should compile the smoke sources with `javac --release 17`, then deploy `smoke/FeatureSmokeApp.class` with `tc.Deploy`. The deploy should include all per-version containers and prove no class expansion, constant-pool parsing, or lowering path regresses.
+`FeatureSmokeApp` is the standard smoke validation target after the SDK distribution has been generated. `compileModernJavaFeatureSmoke` compiles the smoke sources with `javac --release 17` against `dist/totalcross-sdk.jar`, then `deployModernJavaFeatureSmoke` deploys `smoke/FeatureSmokeApp.class`. The deploy should include all per-version containers and prove no class expansion, constant-pool parsing, or lowering path regresses.
 
 After the aggregate smoke target is stable, address the remaining runtime/API gaps through Java 17 by priority: Java 8 functional helper defaults used by real apps, serializable lambda deserialization if needed, deterministic `CONSTANT_Dynamic` lowering when a common source fixture requires it, annotation reflection if apps need it, and sealed runtime enforcement if metadata-only behavior is insufficient.
 
@@ -203,11 +205,7 @@ At the end of every implementation step, stage only the files changed for that s
 3. Compile and deploy the aggregate feature smoke app:
 
        cd TotalCrossSDK
-       mkdir -p /tmp/totalcross-feature-smoke/classes
-       javac --release 17 -cp dist/totalcross-sdk.jar -d /tmp/totalcross-feature-smoke/classes src/test/resources/modernjava/smoke/*.java
-       javap -verbose /tmp/totalcross-feature-smoke/classes/smoke/FeatureSmokeApp.class
-       cd /tmp/totalcross-feature-smoke/classes
-       java -Djava.awt.headless=true -cp "/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/totalcross-sdk.jar:/Users/flsobral/repos/totalcross-github/TotalCrossSDK/dist/libs/*" tc.Deploy smoke/FeatureSmokeApp.class /v
+       ./gradlew deployModernJavaFeatureSmoke --warning-mode=none --console=plain
 
    Expect the aggregate app to compile as Java 17 class files and deploy into `FeatureSmokeApp.tcz`. The deploy should include every per-version smoke container. Running the app should print `[PASS]` lines to stdout and display one label per suite.
 
