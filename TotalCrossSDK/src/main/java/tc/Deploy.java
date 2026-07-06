@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc;
@@ -20,10 +21,11 @@ import tc.tools.deployer.Deployer4Android;
 import tc.tools.deployer.Deployer4Applet;
 import tc.tools.deployer.Deployer4IPhoneIPA;
 import tc.tools.deployer.Deployer4Linux;
-import tc.tools.deployer.Deployer4Win32;
-import tc.tools.deployer.Deployer4WinCE;
 import tc.tools.deployer.Deployer4LinuxArm;
 import tc.tools.deployer.Deployer4LinuxArm64;
+import tc.tools.deployer.Deployer4MacOS;
+import tc.tools.deployer.Deployer4Win32;
+import tc.tools.deployer.Deployer4WinCE;
 import tc.tools.deployer.DeployerException;
 import tc.tools.deployer.Utils;
 import totalcross.sys.Convert;
@@ -49,6 +51,7 @@ public class Deploy {
   public static final int BUILD_IPHONE = 128;
   public static final int BUILD_ANDROID = 256;
   public static final int BUILD_WINMO = 512; // guich@tc125_17
+  public static final int BUILD_MACOS = 1024;
   public static final int BUILD_ALL = 0xFFFF;
 
   private boolean waitIfError; // guich@tc111_24
@@ -107,10 +110,13 @@ public class Deploy {
         if ((options & BUILD_LINUX) != 0) {
           new Deployer4Linux();
         }
-          if ((options & BUILD_LINUX_ARM) != 0) {
-              new Deployer4LinuxArm();
-              new Deployer4LinuxArm64();
-          }
+        if ((options & BUILD_MACOS) != 0) {
+          new Deployer4MacOS();
+        }
+        if ((options & BUILD_LINUX_ARM) != 0) {
+          new Deployer4LinuxArm();
+          new Deployer4LinuxArm64();
+        }
         if ((options & BUILD_APPLET) != 0) {
           new Deployer4Applet();
         }
@@ -253,6 +259,9 @@ public class Deploy {
     iht.put("winmo".hashCode(), BUILD_WINMO);
     iht.put("win32".hashCode(), BUILD_WIN32);
     iht.put("linux".hashCode(), BUILD_LINUX);
+    iht.put("mac".hashCode(), BUILD_MACOS);
+    iht.put("macos".hashCode(), BUILD_MACOS);
+    iht.put("osx".hashCode(), BUILD_MACOS);
     iht.put("applet".hashCode(), BUILD_APPLET);
     iht.put("html".hashCode(), BUILD_APPLET);
     iht.put("ios".hashCode(), BUILD_IPHONE);
@@ -424,7 +433,7 @@ public class Deploy {
         + "You can also specify a .tcz that will be converted to the target platforms.\n"
         + "Library files must be specified in a jar, and the file's name must end with 'Lib', or it will not be loaded by the VM.\n"
         + "A package file, if present in the current folder, will be used to specify additional files that will "
-        + "be included in the installations (palm.pkg, wince.pkg, bb.pkg, iphone.pkg, android.pkg, win32.pkg, linux.pkg; or all.pkg for all platforms, "
+        + "be included in the installations (palm.pkg, wince.pkg, bb.pkg, iphone.pkg, android.pkg, win32.pkg, linux.pkg, macos.pkg; or all.pkg for all platforms, "
         + "used if the platform's pkg was not found). Inside these files, [G] states that the "
         + "file will be placed in the same folder of the TCVM, and [L] states that the file will be placed in the program's folder "
         + "(this rule applies only for wince; in all other platforms, [G] and [L] are placed in the same folder). If the file ends with a slash '/', "
@@ -436,6 +445,7 @@ public class Deploy {
         + "   -winmo : create the cab files for Windows Mobile only\n"
         + "   -win32 : create the exe file to launch the application in Windows\n"
         + "   -linux : create the .sh file to launch the application in Linux\n"
+        + "   -macos : create the executable file to launch the application in macOS\n"
         + "   -applet or -html : create the html file and a jar file with all dependencies\n"
         + "       to run the app from a java-enabled browser (the input cannot be a jar file)\n"
         + "   -iphone or -ios: create the iPhone 4.x (and up) installer packages\n"
