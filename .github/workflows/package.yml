@@ -81,6 +81,21 @@ jobs:
         cp -p -a -R linux-arm64/libtcvm.so build/TotalCross/dist/vm/linux_arm64/
         cp -p -a -R linux-arm64/Launcher build/TotalCross/etc/launchers/linux_arm64/
 
+    - name: Download macOS ARM64
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: macos-arm64
+        path: macos-arm64
+
+    - name: Manage macOS ARM64 files
+      if: ${{ success() }}
+      run: |
+        mkdir -p build/TotalCross/dist/vm/macos
+        mkdir -p build/TotalCross/etc/launchers/macos
+        cp -p -a -R macos-arm64/libtcvm.dylib build/TotalCross/dist/vm/macos/
+        cp -p -a -R macos-arm64/Launcher build/TotalCross/etc/launchers/macos/
+
     - name: Download Windows
       continue-on-error: true
       uses: actions/download-artifact@v4
@@ -266,7 +281,7 @@ jobs:
 
         Push-Location $workDir
         try {
-          java -cp $deployClasspath tc.Deploy (Join-Path $workDir 'HelloWorld.class') -win32 -android -ios -linux -linux_arm /n 'Hello World'
+          java -cp $deployClasspath tc.Deploy (Join-Path $workDir 'HelloWorld.class') -win32 -android -ios -linux -linux_arm -macos /n 'Hello World'
         } finally {
           Pop-Location
         }
@@ -285,7 +300,10 @@ jobs:
           'linux/libtcvm.so',
           'linux_arm/Hello World',
           'linux_arm/Hello World.tcz',
-          'linux_arm/libtcvm.so'
+          'linux_arm/libtcvm.so',
+          'macos/Hello World',
+          'macos/Hello World.tcz',
+          'macos/libtcvm.dylib'
         )
 
         foreach ($file in $expectedFiles) {
@@ -295,7 +313,7 @@ jobs:
           }
         }
 
-        $expectedDirectories = @('win32', 'android', 'ios', 'linux', 'linux_arm')
+        $expectedDirectories = @('win32', 'android', 'ios', 'linux', 'linux_arm', 'macos')
         foreach ($directory in $expectedDirectories) {
           $path = Join-Path $installDir $directory
           if (-not (Test-Path -LiteralPath $path -PathType Container)) {

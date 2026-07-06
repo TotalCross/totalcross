@@ -284,6 +284,76 @@ jobs:
           TotalCrossVM/vc2022/Release/*.dll
           TotalCrossVM/vc2022/Release/*.exe
 
+  build-macos-arm64:
+    name: Build `macos-arm64`
+    needs: checkout-source
+    runs-on: macos-15
+
+    steps:
+    - name: Download source code
+      uses: actions/download-artifact@v7
+      with:
+        name: source-code
+
+    - name: Extract source code
+      run: tar -xzf source-code.tar.gz
+
+    - name: Export dependency overrides
+      env:
+        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
+        SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
+        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
+        ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
+        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
+        LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+        SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
+        SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
+      run: |
+        for name in \
+          SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
+          ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
+          LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          SKIA_RELEASE_TAG SKIA_GITHUB_REPO
+        do
+          value_name="${name}_OVERRIDE"
+          if [ -n "${!value_name:-}" ]; then
+            printf '%s=%s\n' "$name" "${!value_name}" >> "$GITHUB_ENV"
+          fi
+        done
+
+    - name: Install build tools
+      run: brew install ninja sdl2
+
+    - name: Fetch depot tools metadata
+      run: TotalCrossVM/fetch-depot-tools.sh
+
+    - name: Cache artifacts
+      uses: actions/cache@v5
+      with:
+        path: |
+          TotalCrossVM/deps/totalcross-depot-tools/skia/local
+          TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local
+          TotalCrossVM/deps/totalcross-depot-tools/libpng/local
+          TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
+          TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
+        key: native-deps-macos-arm64-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
+
+    - name: Build VM & Launcher
+      run: |
+        cmake -S TotalCrossVM -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_OSX_ARCHITECTURES=arm64 \
+          -G Ninja
+        cmake --build build --target tcvm Launcher --parallel
+
+    - name: Upload macOS ARM64 build artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: macos-arm64
+        path: |
+          build/libtcvm.dylib
+          build/Launcher
+
   build-sdk:
     name: Build `SDK`
     needs: checkout-source
