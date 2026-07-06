@@ -60,13 +60,13 @@ public final class JavaClass {
     if (idx == 0) {
       superClass = "";
     } else {
-      superClass = cp.getString1(idx);
+      superClass = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(cp.getString1(idx));
     }
     // interfaces
     n = ds.readUnsignedShort();
     interfaces = new String[n];
     for (i = 0; i < n; i++) {
-      interfaces[i] = cp.getString1(ds.readUnsignedShort());
+      interfaces[i] = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(cp.getString1(ds.readUnsignedShort()));
     }
     if (!onlyHeader) {
       // fields
