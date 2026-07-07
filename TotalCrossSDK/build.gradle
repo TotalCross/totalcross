@@ -232,11 +232,27 @@ task signJar {
     
 }
 
-// tcbase.jar
-task tcbaseJar(type: Jar) {
-    archiveBaseName = "tcbase"
+// tc.base.lang.jar
+task tcbaselangJar(type: Jar) {
+    archiveBaseName = "tc.base.lang"
     from(sourceSets.main.output) {
-        exclude '**/*4A.*', 'totalcross/Launcher*', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA*'
+        include 'jdkcompat/lang/**', 'totalcross/lang/**'
+    }
+}
+
+// tc.base.util.jar
+task tcbaseutilJar(type: Jar) {
+    archiveBaseName = "tc.base.util"
+    from(sourceSets.main.output) {
+        include 'jdkcompat/util/**', 'totalcross/util/**'
+    }
+}
+
+// tc.base.misc.jar
+task tcbasemiscJar(type: Jar) {
+    archiveBaseName = "tc.base.misc"
+    from(sourceSets.main.output) {
+        exclude 'jdkcompat/lang/**', 'totalcross/lang/**', 'jdkcompat/util/**', 'totalcross/util/**', '**/*4A.*', 'totalcross/Launcher*', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA*'
     }
 }
 
@@ -252,11 +268,35 @@ tasks.withType(Jar) {
     includeEmptyDirs = false
 }
 
-task deployTcbase(type:JavaExec, dependsOn: [jar, tcbaseJar]) {
+task deployTcbaselang(type:JavaExec, dependsOn: [jar, tcbaselangJar]) {
 	mainClass = 'tc.Deploy'
 	args = [
-		tcbaseJar.archiveFile.get().asFile,
-		'/n', 'TCBase',
+		tcbaselangJar.archiveFile.get().asFile,
+		'/n', 'tc.base.lang',
+		'/a', 'TCvm'
+		]
+	classpath = files(
+        jar.archiveFile,
+        configurations.runtimeClasspath)
+}
+
+task deployTcbaseutil(type:JavaExec, dependsOn: [jar, tcbaseutilJar]) {
+	mainClass = 'tc.Deploy'
+	args = [
+		tcbaseutilJar.archiveFile.get().asFile,
+		'/n', 'tc.base.util',
+		'/a', 'TCvm'
+		]
+	classpath = files(
+        jar.archiveFile,
+        configurations.runtimeClasspath)
+}
+
+task deployTcbasemisc(type:JavaExec, dependsOn: [jar, tcbasemiscJar]) {
+	mainClass = 'tc.Deploy'
+	args = [
+		tcbasemiscJar.archiveFile.get().asFile,
+		'/n', 'tc.base.misc',
 		'/a', 'TCvm'
 		]
 	classpath = files(
@@ -327,7 +367,9 @@ task dist(dependsOn: [build, copySdkDependencies, 'sourcesJar', 'javadocJar']) {
 		copy { 
 			from 'etc/fonts/TCFont.tcz'
 			from 'build/libs/TCUI.tcz'
-			from 'build/libs/TCBase.tcz'
+			from 'build/libs/tc.base.lang.tcz'
+            from 'build/libs/tc.base.util.tcz'
+            from 'build/libs/tc.base.misc.tcz'
 			into 'dist/vm/'
 		}
 	
@@ -377,7 +419,7 @@ tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
 	args 'smoke/FeatureSmokeApp.class'
 }
 
-build.finalizedBy(deployTcbase, deployTcui)
+build.finalizedBy(deployTcbaselang, deployTcbaseutil, deployTcbasemisc, deployTcui)
 
 /**
     Sources
@@ -402,5 +444,5 @@ task javadocJar(type: Jar) {
 javadoc.finalizedBy(javadocJar)
 
 artifacts {
-    archives sourcesJar, javadocJar, tcbaseJar, tcuiJar
+    archives sourcesJar, javadocJar, tcbaselangJar, tcbaseutilJar, tcbasemiscJar, tcuiJar
 }
