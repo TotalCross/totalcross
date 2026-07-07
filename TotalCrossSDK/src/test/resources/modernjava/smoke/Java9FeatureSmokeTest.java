@@ -29,11 +29,11 @@ public class Java9FeatureSmokeTest extends FeatureSmokeTest {
 
   private void testPrivateInterfaceMethods() {
     Greeter greeter = new DefaultGreeter();
-    checkEquals("hello java9", greeter.greet("java9"), "private interface method");
+    checkEquals("hello java9", greeter::greet, "java9", "private interface method");
   }
 
   private void testPrivateStaticInterfaceMethods() {
-    checkEquals("static java9", Greeter.staticGreet("java9"), "private static interface method");
+    checkEquals("static java9", Greeter::staticGreet, "java9", "private static interface method");
   }
 
   private void testDiamondAnonymousClass() {
