@@ -409,14 +409,33 @@ tasks.register('compileModernJavaFeatureSmoke', JavaCompile) {
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
 	group = 'verification'
 	description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'
-	dependsOn 'compileModernJavaFeatureSmoke'
+	dependsOn 'copySdkDependencies', 'compileModernJavaFeatureSmoke'
 
 	mainClass = 'tc.Deploy'
 	classpath = files(featureSmokeSdkJar) + fileTree('dist/libs') {
 		include '*.jar'
 	}
 	workingDir featureSmokeClassesDir.get().asFile
-	args 'smoke/FeatureSmokeApp.class'
+    
+    doFirst {
+        def os = System.getProperty("os.name").toLowerCase()
+        def platformArg
+
+        if (os.contains("win")) {
+            platformArg = "-win32"
+        } else if (os.contains("mac")) {
+            platformArg = "-macos"
+        } else if (os.contains("linux")) {
+            platformArg = "-linux"
+        } else {
+            throw new GradleException("Unsupported operating system: ${System.getProperty("os.name")}")
+        }
+
+        args = [
+            'smoke/FeatureSmokeApp.class',
+            platformArg
+        ]
+    }
 }
 
 build.finalizedBy(deployTcbaselang, deployTcbaseutil, deployTcbasemisc, deployTcui)
