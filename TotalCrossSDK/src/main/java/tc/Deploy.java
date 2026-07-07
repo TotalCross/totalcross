@@ -166,7 +166,7 @@ public class Deploy {
           String ext = fn.substring(dot + 1);
           System.out.println("\nThe file '" + fileName + "' does not contain a class named '" + name
               + "' that extends totalcross.ui.MainWindow, so this file is considered as LIBRARY-ONLY and no executable were generated. However, if this jar is indeed an application, make sure that the JAR has the same name of your MainWindow class.");
-          if (!DeploySettings.filePrefix.equals("TCBase") && !DeploySettings.filePrefix.equals("TCUI")
+          if (!DeploySettings.filePrefix.startsWith("tc.base") && !DeploySettings.filePrefix.equals("TCUI")
               && !DeploySettings.filePrefix.toLowerCase().endsWith("lib")) {
             System.out.println("If this file is really a library, you must name it " + DeploySettings.filePrefix
                 + "Lib." + ext + ", or it will NOT be loaded in the device.");
@@ -357,7 +357,7 @@ public class Deploy {
           if (DeploySettings.filePrefix.toLowerCase().endsWith(".tcz")) {
             DeploySettings.filePrefix = DeploySettings.filePrefix.substring(0, DeploySettings.filePrefix.length() - 4);
           }
-          DeploySettings.isTotalCrossJarDeploy = DeploySettings.filePrefix.equals("TCBase")
+          DeploySettings.isTotalCrossJarDeploy = DeploySettings.filePrefix.startsWith("tc.base")
               || DeploySettings.filePrefix.equals("TCUI");
           break;
         case 'x':

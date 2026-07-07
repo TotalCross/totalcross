@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
@@ -96,7 +97,9 @@ public class DeploySettings {
     if (defaultTczs == null) {
       defaultTczs = new ArrayList<>();
       
-      defaultTczs.add(new java.io.File(DeploySettings.folderTotalCross3DistVM, "TCBase.tcz"));
+      defaultTczs.add(new java.io.File(DeploySettings.folderTotalCross3DistVM, "tc.base.lang.tcz"));
+      defaultTczs.add(new java.io.File(DeploySettings.folderTotalCross3DistVM, "tc.base.util.tcz"));
+      defaultTczs.add(new java.io.File(DeploySettings.folderTotalCross3DistVM, "tc.base.misc.tcz"));
       defaultTczs.add(new java.io.File(DeploySettings.folderTotalCross3DistVM, "TCUI.tcz"));
       defaultTczs.add(new java.io.File(DeploySettings.folderTotalCross3DistVM, "TCFont.tcz"));
       defaultTczs.add(new java.io.File(Convert.appendPath(DeploySettings.etcDir, "fonts"), "Material Icons.tcz"));

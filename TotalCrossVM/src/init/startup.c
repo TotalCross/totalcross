@@ -22,6 +22,16 @@
  #include "posix/startup_c.h"
 #endif
 
+static const char *const modules[] = {
+    "tc.base.lang.tcz",
+    "tc.base.util.tcz",
+    "tc.base.misc.tcz",
+    "TCUI.tcz"
+};
+
+static const size_t moduleCount =
+    sizeof(modules) / sizeof(modules[0]);
+
 void rebootDevice(); // implemented in nm/sys/<plat>/Vm_c.h
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr);
 bool initGraphicsAfterSettings(Context currentContext);
@@ -269,7 +279,6 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 {
    CharP cmdline;
    TCZFile loadedTCZ;
-   char tcbase[11];
    char args[256];
    char argsLower[256];
    CharP tczName;
@@ -293,7 +302,6 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    }
 #endif
 
-   xstrcpy(tcbase, "TCBase.tcz"); // copy to a temp buffer, it may be truncated in tczLoad
    xstrncpy(args, argsOriginal, min32(sizeof(args)-1, argsOriginalLen));
    tczName = args;
 
@@ -301,18 +309,15 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    if (currentContext == null)
       return 100;
 
-   if (!tczLoad(currentContext, tcbase))
-   {
-      alert("TCBase not found or corrupted. Please reinstall TotalCross");
-      return 101;
+   for (size_t i = 0; i < moduleCount; ++i) {
+      const char *module = modules[i];
+
+      if (!tczLoad(currentContext, module)) {
+         alert("%s not found or corrupted. Please reinstall TotalCross", module);
+         return 101;
+      }
    }
-   xstrcpy(tcbase, "TCUI.tcz");
-   if (!tczLoad(currentContext, tcbase))
-   {
-      alert("TCUI not found or corrupted. Please reinstall TotalCross");
-      return 103;
-   }
-   
+
    initException(); // load exceptions
 
    xstrcpy(argsLower, args);
