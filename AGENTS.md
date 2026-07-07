@@ -287,3 +287,134 @@ revert(sdk): restore legacy deploy option
 - Treat `TotalCrossVM/deps/totalcross-depot-tools` as a fetched dependency
   checkout. Changes needed there should usually be made in the depot-tools
   repository and then consumed here through the bootstrap/ref mechanism.
+
+## Token and Tool Output Budget
+
+Operate in token-efficient mode by default.
+
+### Validation strategy
+
+Prefer focused, incremental validation before broad validation.
+
+Use the smallest validation that can prove the current change:
+
+1. Run feature-specific tests first.
+2. Run module-level tests only when the affected area requires it.
+3. Run full `dist`, smoke deploys, or expensive builds only when the change affects runtime, deploy, build scripts, packaging, native integration, or when closing an important milestone.
+4. Do not run `clean` by default. Use `clean` only when stale artifacts are suspected.
+
+Avoid repeating expensive validation after cosmetic-only changes. For formatting, comments, plan edits, or line wrapping, prefer:
+
+```sh
+git diff --check
+```
+
+### Gradle output policy
+
+Gradle and build tools must be quiet by default.
+
+Prefer:
+
+```sh
+./gradlew <task> --warning-mode=none --console=plain
+```
+
+Avoid `clean dist` unless necessary.
+
+Prefer:
+
+```sh
+./gradlew dist -x test --warning-mode=none --console=plain
+```
+
+When a command is known to be verbose, save the full log to a file and show only the result summary, relevant errors, and a short tail.
+
+Example:
+
+```sh
+./gradlew dist -x test --warning-mode=none --console=plain > /tmp/gradle-dist.log 2>&1
+status=$?
+tail -80 /tmp/gradle-dist.log
+exit $status
+```
+
+If the command succeeds, summarize success and mention where the full log was saved. Do not paste the full log.
+
+### Deploy and smoke test output
+
+Do not use verbose deploy flags by default.
+
+Avoid deploy modes that list every class or resource unless debugging deploy behavior specifically.
+
+Run smoke deploys only when the change affects deploy, runtime loading, packaging, class-file handling, or generated artifacts.
+
+### Git inspection policy
+
+Do not run broad repository status commands in noisy repositories.
+
+Prefer scoped commands:
+
+```sh
+git status --short -- <paths>
+git diff --stat
+git diff -- <paths>
+```
+
+Avoid global:
+
+```sh
+git status --short
+```
+
+when the repository has many unrelated untracked files.
+
+Before reading large diffs, inspect summary first:
+
+```sh
+git diff --stat
+```
+
+Then open only the files relevant to the current task.
+
+### Reading files and plans
+
+Do not repeatedly dump large sections of `PLANS.md`, `AGENTS.md`, diffs, logs, or generated files.
+
+Read only the sections needed for the current step. When reporting progress, summarize instead of pasting large excerpts.
+
+### Failure handling
+
+When validation fails, show only:
+
+* the failed command
+* exit code
+* the most relevant error lines
+* a short surrounding context
+* the log file path, if applicable
+
+Do not paste thousands of lines of warnings, Javadoc output, generated class lists, or repeated build progress.
+
+### Escalation rule
+
+Use this validation escalation order:
+
+1. Static check or diff check
+2. Focused unit test
+3. Focused integration test
+4. Module build
+5. Smoke deploy
+6. Full distribution build
+7. Clean full distribution build
+
+Stop at the first level that gives enough confidence for the current change.
+
+### Final response policy
+
+In the final answer, report:
+
+* files changed
+* validation commands actually run
+* whether each passed or failed
+* any skipped expensive validations and why
+
+Do not include full logs unless explicitly requested.
